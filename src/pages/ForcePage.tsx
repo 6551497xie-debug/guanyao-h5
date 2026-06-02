@@ -50,7 +50,7 @@ export function ForcePage() {
             原力定格
           </GuanyaoText>
           <GuanyaoText className="gy-text-instrument" size="body" tone="faint">
-            引力场已确立。
+            引力场已确立
           </GuanyaoText>
         </div>
         <article className="gy-front-panel gy-force-imprint gyFadeRise">

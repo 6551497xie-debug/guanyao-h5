@@ -46,23 +46,23 @@ type YaoRitualScene = {
 function buildYaoRitualCopyFromScene(sceneSlice: SceneSlice): YaoRitualScene[] {
   return [
     {
-      title: "本能反应。",
+      title: "本能反应",
       lines: ["刚才那一幕还停在你眼前：", sceneSlice.flashLine],
     },
     {
-      title: "身体代偿。",
+      title: "身体代偿",
       lines: ["你的身体先有了反应：", `${sceneSlice.bodyReaction}。`, "它比判断更早接管现场。"],
     },
     {
-      title: "行为惯性。",
+      title: "行为惯性",
       lines: ["你开始重复那个熟悉动作：", `${sceneSlice.behaviorInertia}。`, "代价正在显形。"],
     },
     {
-      title: "高压塌缩。",
+      title: "高压塌缩",
       lines: [sceneSlice.gravityHook, "这股重力已经进入高压层。"],
     },
     {
-      title: "临界悬停。",
+      title: "临界悬停",
       lines: ["前四层偏转已经把你推到这里。", "现在，这枚现实种子，", "正在要求你给出最后的方向。"],
     },
   ];
@@ -174,7 +174,9 @@ export function GravityPage() {
             })}
           </div>
           {!isComplete ? (
-            <article className={`gy-ritual-message gy-text-yao-plane gy-ritual-message--${activeScene + 1} ${completedScene === activeScene ? "is-complete" : ""}`}>
+            <article
+              className={`gy-ritual-message gy-text-yao-plane gy-ritual-message--${activeScene + 1} ${activeScene >= 3 ? "gy-ritual-message--pressure" : ""} ${completedScene === activeScene ? "is-complete" : ""}`}
+            >
               <YaoTextBlock kicker={`心智重力 0${activeScene + 1}`} title={currentScene.title} lines={currentScene.lines} muted="因果显影完成后，请从底部闸门推进" />
             </article>
           ) : null}

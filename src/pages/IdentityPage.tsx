@@ -43,7 +43,7 @@ export function IdentityPage() {
             时空引力场已对齐
           </GuanyaoText>
           <GuanyaoText size="body" tone="faint">
-            哪一幕，正在照见你？
+            哪一幕正在照见你
           </GuanyaoText>
         </div>
         <article className="gy-front-panel gy-text-fragment gyFadeRise" data-clickable="true" onClick={handleNext}>

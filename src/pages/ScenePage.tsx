@@ -48,7 +48,7 @@ export function ScenePage() {
             GY / 03 / SCENE
           </GuanyaoText>
           <GuanyaoText className="gy-scene-title" as="h2" size="title">
-            {isLocked ? "现实引力已捕获" : "哪一幕，正在发生？"}
+            {isLocked ? "现实引力已捕获" : "哪一幕正在发生"}
           </GuanyaoText>
         </div>
         <article className="gy-front-panel gy-scene-slice-panel gyFadeRise">

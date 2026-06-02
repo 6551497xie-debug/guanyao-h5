@@ -33,10 +33,10 @@ export function ChoicePage() {
         {isSettling ? (
           <div className="gy-choice-settle gyBreath">
             <GuanyaoText as="h2" size="title">
-              最后一爻已落下。
+              最后一爻已落下
             </GuanyaoText>
             <GuanyaoText size="body" tone="gold">
-              人格迁移正在定格。
+              人格迁移正在定格
             </GuanyaoText>
           </div>
         ) : (

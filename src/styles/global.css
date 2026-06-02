@@ -74,28 +74,28 @@ h1 {
 .flow-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 7px;
   justify-content: center;
   max-width: 100%;
   margin-top: 0;
-  opacity: 0.12;
+  opacity: 0.42;
 }
 
 .flow-nav a {
   display: grid;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.095);
   border-radius: 4px;
-  color: var(--faint);
-  font-size: 9px;
+  color: rgba(242, 243, 245, 0.42);
+  font-size: 10px;
 }
 
 .flow-nav a.active {
-  border-color: rgba(199, 169, 107, 0.28);
-  color: rgba(255, 255, 255, 0.72);
-  background: rgba(199, 169, 107, 0.035);
+  border-color: rgba(199, 169, 107, 0.42);
+  color: rgba(255, 255, 255, 0.84);
+  background: rgba(199, 169, 107, 0.055);
 }
 
 .stage-card {
