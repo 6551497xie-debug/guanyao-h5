@@ -33,16 +33,18 @@ export function MigrationPage() {
 
   return (
     <GuanyaoShell className="gy-delivery-shell" density="compact">
-      <section className="gy-delivery-stage gyFadeRise">
-        <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
-          成果定格
-        </GuanyaoText>
-        <GuanyaoText as="h2" size="title">
-          人格迁移已定格
-        </GuanyaoText>
-        <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
-          {card.cardTitle}
-        </GuanyaoText>
+      <section className="gy-delivery-stage gy-causal-line gy-causal-line-press gyFadeRise">
+        <div className="gy-result-hero">
+          <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
+            成果定格
+          </GuanyaoText>
+          <GuanyaoText as="h2" size="title">
+            人格迁移已定格
+          </GuanyaoText>
+          <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
+            {card.cardTitle}
+          </GuanyaoText>
+        </div>
 
         <div className="gy-result-frame">
           <div>
@@ -76,7 +78,7 @@ export function MigrationPage() {
           </div>
         </div>
 
-        <div className="gy-delivery-copy gy-delivery-copy--compact">
+        <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
           {["前五步不是选择。", "它们只是惯性替你走完的轨迹。", "最后一爻，才暴露你是否愿意停下那条旧路。"].map((line) => (
             <GuanyaoText key={line} size="body" tone="muted">
               {line}
@@ -85,17 +87,17 @@ export function MigrationPage() {
         </div>
 
         <div className="gy-delivery-actions">
-          <GuanyaoButton variant="ghost" onClick={() => setIsExpanded((current) => !current)}>
-            {isExpanded ? "收起完整解构" : "展开完整解构"}
+          <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-secondary" variant="ghost" onClick={() => setIsExpanded((current) => !current)}>
+            {isExpanded ? "收起 90 天剧本" : "展开 90 天惯性冲突剧本"}
           </GuanyaoButton>
-          <GuanyaoButton variant="gate" onClick={handleSave}>
+          <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-save" variant="gate" onClick={handleSave}>
             保存到人格档案
           </GuanyaoButton>
         </div>
 
         {isExpanded ? (
           <div className="gy-analysis-stack gyFadeRise">
-            <details className="gy-analysis-card" open>
+            <details className="gy-analysis-card">
               <summary>第0幕｜出厂重力坐标</summary>
               {card.originGravityCoordinate ? (
                 <>
@@ -137,6 +139,13 @@ export function MigrationPage() {
             <details className="gy-analysis-card">
               <summary>反本能节点</summary>
               <p>{card.antiInstinctNode}</p>
+            </details>
+            <details className="gy-analysis-card">
+              <summary>轨迹代码</summary>
+              <p>{finalChoiceCode}</p>
+              <p>
+                {card.currentTrack.code} → {card.migrationDirection.code}
+              </p>
             </details>
           </div>
         ) : null}

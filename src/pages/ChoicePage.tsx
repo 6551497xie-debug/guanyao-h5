@@ -29,7 +29,7 @@ export function ChoicePage() {
 
   return (
     <GuanyaoShell className="gy-delivery-shell" density="compact">
-      <section className="gy-delivery-stage gy-delivery-stage--pressure gyFadeRise">
+      <section className="gy-delivery-stage gy-delivery-stage--pressure gy-choice-brake-stage gy-causal-line gy-causal-line-brake gyFadeRise">
         {isSettling ? (
           <div className="gy-choice-settle gyBreath">
             <GuanyaoText as="h2" size="title">
@@ -52,11 +52,11 @@ export function ChoicePage() {
               ))}
             </div>
             <div className="gy-delivery-actions">
-              <GuanyaoButton variant="ghost" onClick={() => handleChoice(1)}>
-                继续沿着惯性走
+              <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-final gy-behavior-gate-secondary" variant="ghost" onClick={() => handleChoice(1)}>
+                照旧反应
               </GuanyaoButton>
-              <GuanyaoButton variant="gate" onClick={() => handleChoice(0)}>
-                做一次反本能操作
+              <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-final gy-behavior-gate-primary" variant="gate" onClick={() => handleChoice(0)}>
+                反本能偏转
               </GuanyaoButton>
             </div>
           </>

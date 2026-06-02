@@ -61,7 +61,7 @@ export function IdentityPage() {
             </GuanyaoButton>
           </Link>
           <GuanyaoButton className="gy-identity-gate" variant="ghost" onClick={handleNext}>
-            继续寻找
+            继续漂流
           </GuanyaoButton>
         </div>
       </section>

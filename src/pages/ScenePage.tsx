@@ -42,7 +42,7 @@ export function ScenePage() {
 
   return (
     <GuanyaoShell density="compact">
-      <section className="gy-front-screen gy-front-instrument gy-scene-screen" data-intensity="quiet">
+      <section className={`gy-front-screen gy-front-instrument gy-scene-screen gy-causal-line gy-causal-line-intercept ${isLocked ? "gy-scene-screen--locked" : ""}`} data-intensity="quiet">
         <div className="gy-front-copy gyFadeRise">
           <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
             GY / 03 / SCENE
@@ -51,7 +51,7 @@ export function ScenePage() {
             {isLocked ? "现实引力已捕获" : "哪一幕正在发生"}
           </GuanyaoText>
         </div>
-        <article className="gy-front-panel gy-scene-slice-panel gyFadeRise">
+        <article className="gy-front-panel gy-scene-slice-panel gy-scene-capture-plane gyFadeRise">
           {isLocked ? (
             <div className="gy-capture-stack">
               {capturedLineGroups.map((group, groupIndex) => (
@@ -75,10 +75,10 @@ export function ScenePage() {
         </article>
         {!isLocked ? (
           <div className="gy-front-actions">
-            <GuanyaoButton className="gy-front-gate" variant="ghost" onClick={handleNext}>
+            <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-secondary" variant="ghost" onClick={handleNext}>
               还不是我
             </GuanyaoButton>
-            <GuanyaoButton className="gy-front-gate" variant="ghost" onClick={handleConfirm}>
+            <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-intercept" variant="ghost" onClick={handleConfirm}>
               拦截 —— 正在发生
             </GuanyaoButton>
           </div>
@@ -88,7 +88,7 @@ export function ScenePage() {
             <GuanyaoText className="gy-text-instrument" size="body" tone="muted">
               行为黑洞装填完毕
             </GuanyaoText>
-            <GuanyaoButton className="gy-front-gate" variant="ghost" onClick={handleStartYao}>
+            <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-primary" variant="ghost" onClick={handleStartYao}>
               以此起爻
             </GuanyaoButton>
           </div>

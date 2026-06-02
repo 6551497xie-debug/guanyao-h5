@@ -10,24 +10,24 @@ import type { SceneSlice, YaoBit } from "../types";
 
 const yaoGateCopy = [
   {
-    yin: "0｜顺着本能收回",
-    yang: "1｜迎着压力顶出",
+    yin: "收回本能",
+    yang: "顶住压力",
   },
   {
-    yin: "0｜让旧习惯接管",
-    yang: "1｜打断旧习惯",
+    yin: "延续旧习",
+    yang: "打破旧习",
   },
   {
-    yin: "0｜继续承担代价",
-    yang: "1｜撞开眼前代价",
+    yin: "继续硬扛",
+    yang: "直面代价",
   },
   {
-    yin: "0｜守住沉默",
-    yang: "1｜撕开压迫",
+    yin: "守住沉默",
+    yang: "撕开压迫",
   },
   {
-    yin: "0｜让惯性继续",
-    yang: "1｜把原力推到底",
+    yin: "放任惯性",
+    yang: "中断轨迹",
   },
 ] as const;
 

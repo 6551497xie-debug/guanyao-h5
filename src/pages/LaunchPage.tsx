@@ -32,7 +32,7 @@ export function LaunchPage() {
               </GuanyaoButton>
             </Link>
           </div>
-          <GuanyaoText size="eyebrow" tone="faint">
+          <GuanyaoText className="gy-launch-subgate-note" size="eyebrow" tone="faint">
             照见行为黑洞
           </GuanyaoText>
         </div>
