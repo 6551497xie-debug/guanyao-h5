@@ -1,9 +1,14 @@
-import type { GuanyaoSession } from "../types";
+import type { GuanyaoSession, SceneSlice } from "../types";
 
 const SESSION_KEY = "guanyao_h5_session";
 
 const defaultSession: GuanyaoSession = {
+  selectedForceId: null,
+  selectedForceName: null,
+  selectedSceneSlice: null,
+  selectedSceneId: null,
   autoYaoPath: [],
+  interactiveYaoPath: [],
   sixthYaoChoice: null,
   finalChoiceCode: "",
   choiceHistory: [],
@@ -48,6 +53,15 @@ export function updateSession(partial: Partial<GuanyaoSession>): GuanyaoSession 
   }
 
   return nextSession;
+}
+
+export function setSelectedSceneSlice(sceneSlice: SceneSlice): GuanyaoSession {
+  return updateSession({
+    selectedSceneSlice: sceneSlice,
+    selectedSceneId: sceneSlice.id,
+    realitySeed: sceneSlice,
+    sceneText: sceneSlice.fixedLines.join("\n"),
+  });
 }
 
 export function resetSession(): GuanyaoSession {

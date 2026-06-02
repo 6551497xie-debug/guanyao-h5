@@ -1,12 +1,31 @@
 export type YaoBit = 0 | 1;
 
+export type SceneSlice = {
+  id: string;
+  forceId: string;
+  forceName: string;
+  title: string;
+  flashLine: string;
+  fixedLines: string[];
+  bodyReaction: string;
+  behaviorInertia: string;
+  gravityHook: string;
+  tone: string;
+  intensity: 1 | 2 | 3 | 4 | 5;
+};
+
 export interface GuanyaoSession {
   selectedFragment?: any;
+  selectedForceId?: string | null;
+  selectedForceName?: string | null;
   forceProfile?: any;
   forceReading?: any;
   realitySeed?: any;
+  selectedSceneSlice?: SceneSlice | null;
+  selectedSceneId?: string | null;
   sceneText?: string;
   autoYaoPath: YaoBit[];
+  interactiveYaoPath?: YaoBit[];
   sixthYaoChoice: YaoBit | null;
   finalChoiceCode: string;
   choiceHistory: YaoBit[];

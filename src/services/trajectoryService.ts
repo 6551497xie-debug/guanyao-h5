@@ -15,6 +15,14 @@ export function normalizeAutoYaoPath(path: unknown): YaoBit[] {
   return path.filter(isYaoBit).slice(0, 5);
 }
 
+export function normalizeInteractiveYaoPath(path: unknown): YaoBit[] {
+  if (!Array.isArray(path)) {
+    return [];
+  }
+
+  return path.filter(isYaoBit).slice(0, 5);
+}
+
 export function generateMockAutoYaoPath(context?: Partial<GuanyaoSession>): YaoBit[] {
   const title = String(context?.realitySeed?.title ?? "");
 
@@ -44,6 +52,31 @@ export function getAutoYaoPath(): YaoBit[] {
   return normalizeAutoYaoPath(getSession().autoYaoPath);
 }
 
+export function getInteractiveYaoPath(): YaoBit[] {
+  return normalizeInteractiveYaoPath(getSession().interactiveYaoPath);
+}
+
+export function appendInteractiveYaoChoice(bit: unknown): YaoBit[] {
+  const nextBit: YaoBit = isYaoBit(bit) ? bit : 0;
+  const currentPath = getInteractiveYaoPath();
+  const nextPath = [...currentPath, nextBit].slice(0, 5);
+
+  updateSession({ interactiveYaoPath: nextPath });
+
+  return nextPath;
+}
+
+export function resetInteractiveYaoPath(): YaoBit[] {
+  updateSession({
+    interactiveYaoPath: [],
+    sixthYaoChoice: null,
+    finalChoiceCode: "",
+    choiceHistory: [],
+  });
+
+  return [];
+}
+
 export function setSixthYaoChoice(choice: unknown): YaoBit {
   const nextChoice: YaoBit = isYaoBit(choice) ? choice : 0;
   updateSession({ sixthYaoChoice: nextChoice });
@@ -57,14 +90,17 @@ export function getSixthYaoChoice(): YaoBit | null {
 
 export function buildFinalChoiceCode(): string {
   const session = getSession();
+  const interactiveYaoPath = normalizeInteractiveYaoPath(session.interactiveYaoPath);
   const normalizedPath = normalizeAutoYaoPath(session.autoYaoPath);
   const autoYaoPath = normalizedPath.length >= 5 ? normalizedPath : [...defaultAutoYaoPath];
+  const fiveYaoPath = interactiveYaoPath.length >= 5 ? interactiveYaoPath : autoYaoPath;
   const sixthYaoChoice = isYaoBit(session.sixthYaoChoice) ? session.sixthYaoChoice : 0;
-  const choiceHistory = [...autoYaoPath, sixthYaoChoice];
+  const choiceHistory = [...fiveYaoPath, sixthYaoChoice];
   const finalChoiceCode = choiceHistory.join("");
 
   updateSession({
     autoYaoPath,
+    interactiveYaoPath,
     sixthYaoChoice,
     finalChoiceCode,
     choiceHistory,

@@ -44,7 +44,7 @@ button {
 }
 
 .app-header {
-  margin-bottom: 22px;
+  display: none;
 }
 
 .eyebrow {

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { TextLines } from "../components/TextLines";
+import { GuanyaoButton } from "../components/visual/GuanyaoButton";
+import { GuanyaoShell } from "../components/visual/GuanyaoShell";
+import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { identityFragments } from "../data/identityFragments";
 import { updateSession } from "../services/sessionService";
 
@@ -31,25 +33,38 @@ export function IdentityPage() {
   }, []);
 
   return (
-    <section className="stage-card">
-      <span>01 Identity</span>
-      <h2>
-        时空引力场已对齐。
-        <br />
-        哪一幕，正在照见你？
-      </h2>
-      <article className="slice-card identity-reel" onClick={handleNext}>
-        <h3>{currentFragment.text}</h3>
-        <TextLines lines={[currentFragment.desc]} />
-      </article>
-      <div className="action-row">
-        <Link className="primary-action" to="/force" onClick={handleConfirm}>
-          好像是我
-        </Link>
-        <button className="secondary-action" type="button" onClick={handleNext}>
-          继续寻找
-        </button>
-      </div>
-    </section>
+    <GuanyaoShell density="compact">
+      <section className="gy-front-screen" data-intensity="quiet">
+        <div className="gy-front-copy gyFadeRise">
+          <GuanyaoText as="span" size="eyebrow" tone="gold">
+            01 Identity
+          </GuanyaoText>
+          <GuanyaoText as="h2" size="title">
+            时空引力场已对齐。
+          </GuanyaoText>
+          <GuanyaoText size="body" tone="muted">
+            哪一幕，正在照见你？
+          </GuanyaoText>
+        </div>
+        <article className="gy-front-panel gyFadeRise" data-clickable="true" onClick={handleNext}>
+          <GuanyaoText as="h3" size="title">
+            {currentFragment.text}
+          </GuanyaoText>
+          <GuanyaoText size="body" tone="muted">
+            {currentFragment.desc}
+          </GuanyaoText>
+        </article>
+        <div className="gy-front-actions">
+          <Link to="/force" onClick={handleConfirm}>
+            <GuanyaoButton as="span" variant="primary">
+              好像是我
+            </GuanyaoButton>
+          </Link>
+          <GuanyaoButton variant="secondary" onClick={handleNext}>
+            继续寻找
+          </GuanyaoButton>
+        </div>
+      </section>
+    </GuanyaoShell>
   );
 }

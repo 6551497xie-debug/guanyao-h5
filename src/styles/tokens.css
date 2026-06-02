@@ -1,0 +1,38 @@
+:root {
+  --gy-color-void: #08080b;
+  --gy-color-ink: #0d0d11;
+  --gy-color-panel: rgba(13, 13, 17, 0.84);
+  --gy-color-panel-soft: rgba(242, 243, 245, 0.04);
+  --gy-color-text: #f2f3f5;
+  --gy-color-text-muted: rgba(242, 243, 245, 0.64);
+  --gy-color-text-faint: rgba(242, 243, 245, 0.4);
+  --gy-color-gold: #b89b5e;
+  --gy-color-gold-soft: rgba(184, 155, 94, 0.5);
+  --gy-color-blue-haze: rgba(120, 150, 180, 0.2);
+  --gy-color-line: rgba(242, 243, 245, 0.12);
+  --gy-color-line-gold: rgba(184, 155, 94, 0.2);
+
+  --gy-font-sans: Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --gy-font-weight-regular: 400;
+  --gy-font-weight-medium: 500;
+
+  --gy-space-1: 4px;
+  --gy-space-2: 8px;
+  --gy-space-3: 12px;
+  --gy-space-4: 16px;
+  --gy-space-5: 20px;
+  --gy-space-6: 24px;
+  --gy-space-7: 32px;
+  --gy-space-8: 40px;
+  --gy-space-9: 48px;
+
+  --gy-radius-control: 8px;
+  --gy-radius-panel: 8px;
+
+  --gy-shadow-panel: 0 24px 80px rgba(0, 0, 0, 0.42);
+  --gy-shadow-focus: 0 0 0 2px rgba(184, 155, 94, 0.28);
+
+  --gy-shell-width: 480px;
+  --gy-shell-gutter: 28px;
+  --gy-stage-min-height: 62vh;
+}

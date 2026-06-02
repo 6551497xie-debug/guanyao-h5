@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { TextLines } from "../components/TextLines";
+import { GuanyaoButton } from "../components/visual/GuanyaoButton";
+import { GuanyaoShell } from "../components/visual/GuanyaoShell";
+import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { getForceReading } from "../data/forceReadings";
+import { normalizeSceneForceId } from "../services/sceneService";
 import { getSession, updateSession } from "../services/sessionService";
 
 export function ForcePage() {
@@ -11,7 +15,7 @@ export function ForcePage() {
   const [recordMessage, setRecordMessage] = useState("");
   const [savedReading, setSavedReading] = useState<typeof forceReadingTemplate & { createdAt: string }>();
 
-  function handleRecord() {
+  function persistForceReading() {
     const forceReading = {
       ...forceReadingTemplate,
       createdAt: new Date().toISOString(),
@@ -19,41 +23,75 @@ export function ForcePage() {
 
     updateSession({
       selectedFragment: session.selectedFragment,
+      selectedForceId: normalizeSceneForceId(forceReadingTemplate.forceKey),
+      selectedForceName: `${forceReadingTemplate.symbol} ${forceReadingTemplate.forceName} · ${forceReadingTemplate.archetype}`,
       forceProfile: forceReading,
       forceReading,
     });
+
+    return forceReading;
+  }
+
+  function handleRecord() {
+    const forceReading = persistForceReading();
+
     setSavedReading(forceReading);
     setRecordMessage("已记录本次原力定格");
   }
 
   return (
-    <section className="stage-card">
-      <span>02 Force</span>
-      <h2>
-        原力定格，
-        <br />
-        引力场已确立。
-      </h2>
-      <p>Code {forceReadingTemplate.code}</p>
-      <p>
-        {forceReadingTemplate.symbol} {forceReadingTemplate.forceName} · {forceReadingTemplate.archetype}
-      </p>
-      <TextLines
-        className="choice-copy"
-        lines={["它不是你的标签。", "它是你此刻与现实重力对撞时，", "最先燃尽的那股原力。"]}
-      />
-      <div className="action-row">
-        <button className="secondary-action" type="button" onClick={handleRecord}>
-          记录解卦
-        </button>
-        <Link className="primary-action" to="/scene">
-          继续探索
-        </Link>
-      </div>
-      {recordMessage ? <p className="inline-note">{recordMessage}</p> : null}
+    <GuanyaoShell density="compact">
+      <section className="gy-front-screen" data-intensity="fixed">
+        <div className="gy-front-copy gyFadeRise">
+          <GuanyaoText as="span" size="eyebrow" tone="gold">
+            02 Force
+          </GuanyaoText>
+          <GuanyaoText as="h2" size="title">
+            原力定格，
+          </GuanyaoText>
+          <GuanyaoText size="body" tone="muted">
+            引力场已确立。
+          </GuanyaoText>
+        </div>
+        <article className="gy-front-panel gyFadeRise">
+          <div className="gy-front-meta">
+            <GuanyaoText as="span" size="eyebrow" tone="faint">
+              Code {forceReadingTemplate.code}
+            </GuanyaoText>
+            <GuanyaoText as="span" size="eyebrow" tone="gold">
+              {forceReadingTemplate.symbol} {forceReadingTemplate.forceName} · {forceReadingTemplate.archetype}
+            </GuanyaoText>
+          </div>
+          <div className="gy-front-lines">
+            {["它不是你的标签。", "它是你此刻与现实重力对撞时，", "最先燃尽的那股原力。"].map((line) => (
+              <GuanyaoText key={line} size="body" tone="muted">
+                {line}
+              </GuanyaoText>
+            ))}
+          </div>
+        </article>
+        <div className="gy-front-actions">
+          <GuanyaoButton variant="secondary" onClick={handleRecord}>
+            记录解卦
+          </GuanyaoButton>
+          <Link to="/scene" onClick={persistForceReading}>
+            <GuanyaoButton as="span" variant="primary">
+              继续探索
+            </GuanyaoButton>
+          </Link>
+        </div>
+        <div className="gy-front-note">
+          {recordMessage ? (
+            <GuanyaoText size="body" tone="gold">
+              {recordMessage}
+            </GuanyaoText>
+          ) : null}
+        </div>
       {savedReading ? (
-        <article className="reading-panel">
-          <h3>原力解卦已记录</h3>
+        <article className="reading-panel gyFadeRise">
+          <GuanyaoText as="h3" size="body">
+            原力解卦已记录
+          </GuanyaoText>
           <section>
             <strong>原力定格</strong>
             <p>Code {savedReading.code}</p>
@@ -75,6 +113,7 @@ export function ForcePage() {
           </section>
         </article>
       ) : null}
-    </section>
+      </section>
+    </GuanyaoShell>
   );
 }

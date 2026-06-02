@@ -1,21 +1,42 @@
 import { Link } from "react-router-dom";
 import { GravityWave } from "../components/GravityWave";
-import { TextLines } from "../components/TextLines";
+import { GuanyaoButton } from "../components/visual/GuanyaoButton";
+import { GuanyaoShell } from "../components/visual/GuanyaoShell";
+import { GuanyaoText } from "../components/visual/GuanyaoText";
 
 export function LaunchPage() {
   return (
-    <section className="stage-card launch-stage">
-      <div className="time-coordinate">时序坐标已校准</div>
-      <GravityWave />
-      <span>00 Launch</span>
-      <h2>观爻 SANDBOX</h2>
-      <TextLines
-        lines={["你不是被命运困住的。", "你只是被自己的执念与恐惧，", "留在了原地。"]}
-      />
-      <TextLines className="launch-line" lines={["开启沙盒，", "照见行为黑洞。"]} />
-      <Link className="primary-action" to="/identity">
-        开启沙盒
-      </Link>
-    </section>
+    <GuanyaoShell density="compact">
+      <section className="gy-front-screen" data-intensity="quiet">
+        <div className="gy-launch-core">
+          <GravityWave variant="core" />
+        </div>
+        <div className="gy-front-copy gyFadeRise">
+          <GuanyaoText as="span" size="eyebrow" tone="gold">
+            00 Launch · 时序坐标已校准
+          </GuanyaoText>
+          <GuanyaoText as="h2" size="title">
+            观爻 SANDBOX
+          </GuanyaoText>
+          <div className="gy-front-lines">
+            {["你不是被命运困住的。", "你只是被自己的执念与恐惧，", "留在了原地。"].map((line) => (
+              <GuanyaoText key={line} size="body" tone="muted">
+                {line}
+              </GuanyaoText>
+            ))}
+          </div>
+          <div className="gy-front-actions">
+            <Link to="/identity">
+              <GuanyaoButton as="span" variant="primary">
+                开启沙盒
+              </GuanyaoButton>
+            </Link>
+          </div>
+          <GuanyaoText size="eyebrow" tone="faint">
+            照见行为黑洞
+          </GuanyaoText>
+        </div>
+      </section>
+    </GuanyaoShell>
   );
 }
