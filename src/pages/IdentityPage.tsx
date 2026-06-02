@@ -9,6 +9,7 @@ import { updateSession } from "../services/sessionService";
 export function IdentityPage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const currentFragment = identityFragments[activeIndex];
+  const fragmentDescLines = currentFragment.desc.split(/[，。]/).filter(Boolean);
 
   function handleNext() {
     setActiveIndex((currentIndex) => (currentIndex + 1) % identityFragments.length);
@@ -50,9 +51,13 @@ export function IdentityPage() {
           <GuanyaoText as="h3" size="title">
             {currentFragment.text}
           </GuanyaoText>
-          <GuanyaoText size="body" tone="muted">
-            {currentFragment.desc}
-          </GuanyaoText>
+          <div className="gy-identity-fragment-desc">
+            {fragmentDescLines.map((line) => (
+              <GuanyaoText key={line} size="body" tone="muted">
+                {line}
+              </GuanyaoText>
+            ))}
+          </div>
         </article>
         <div className="gy-front-actions">
           <Link to="/force" onClick={handleConfirm}>

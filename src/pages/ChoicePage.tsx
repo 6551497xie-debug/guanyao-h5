@@ -41,11 +41,8 @@ export function ChoicePage() {
           </div>
         ) : (
           <>
-            <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
-              最后一爻
-            </GuanyaoText>
-            <div className="gy-delivery-copy">
-              {["前五爻已经走完。", "那不是选择，", "是惯性替你完成的轨迹。", "现在，", "只剩你亲手按下最后一个动作。"].map((line) => (
+            <div className="gy-delivery-copy gy-choice-copy-tight">
+              {["前五爻已经走完", "那不是选择", "是惯性替你完成的轨迹", "现在", "只剩你亲手按下最后一个动作", "启动六爻"].map((line) => (
                 <GuanyaoText key={line} size="body" tone="muted">
                   {line}
                 </GuanyaoText>

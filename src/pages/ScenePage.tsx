@@ -14,6 +14,7 @@ export function ScenePage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
   const currentScene = sceneSlices[activeIndex % sceneSlices.length];
+  const flashLineParts = currentScene.flashLine.split(/[，。]/).filter(Boolean);
   const capturedLineGroups = [
     currentScene.fixedLines.slice(0, 2),
     currentScene.fixedLines.slice(2, 4),
@@ -47,8 +48,8 @@ export function ScenePage() {
           <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
             GY / 03 / SCENE
           </GuanyaoText>
-          <GuanyaoText className="gy-scene-title" as="h2" size="title">
-            {isLocked ? "现实引力已捕获" : "哪一幕正在发生"}
+          <GuanyaoText className={`gy-scene-title ${!isLocked ? "gy-scene-title--flow" : ""}`} as="h2" size="title">
+            {isLocked ? "现实引力已捕获" : "哪一幕　正在发生"}
           </GuanyaoText>
         </div>
         <article className="gy-front-panel gy-scene-slice-panel gy-scene-capture-plane gyFadeRise">
@@ -68,9 +69,13 @@ export function ScenePage() {
               </GuanyaoText>
             </div>
           ) : (
-            <GuanyaoText className="gy-scene-flashline" as="p" size="title">
-              {currentScene.flashLine}
-            </GuanyaoText>
+            <div className="gy-scene-flashline-group">
+              {flashLineParts.map((line) => (
+                <GuanyaoText className="gy-scene-flashline" as="p" key={line} size="title">
+                  {line}
+                </GuanyaoText>
+              ))}
+            </div>
           )}
         </article>
         {!isLocked ? (

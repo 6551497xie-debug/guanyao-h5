@@ -36,10 +36,10 @@ export function MigrationPage() {
       <section className="gy-delivery-stage gy-causal-line gy-causal-line-press gyFadeRise">
         <div className="gy-result-hero">
           <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
-            成果定格
+            迁移压印
           </GuanyaoText>
           <GuanyaoText as="h2" size="title">
-            人格迁移已定格
+            人格迁移已压印
           </GuanyaoText>
           <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
             {card.cardTitle}
@@ -47,6 +47,14 @@ export function MigrationPage() {
         </div>
 
         <div className="gy-result-frame">
+          <div className="gy-result-code gy-result-code--primary">
+            <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
+              轨迹代码
+            </GuanyaoText>
+            <GuanyaoText size="body" tone="gold">
+              {finalChoiceCode}
+            </GuanyaoText>
+          </div>
           <div>
             <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
               当前轨迹
@@ -68,18 +76,10 @@ export function MigrationPage() {
               {card.migrationDirection.scriptTitle}
             </GuanyaoText>
           </div>
-          <div className="gy-result-code">
-            <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-              六爻代码
-            </GuanyaoText>
-            <GuanyaoText size="body" tone="gold">
-              {finalChoiceCode}
-            </GuanyaoText>
-          </div>
         </div>
 
         <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
-          {["前五步不是选择。", "它们只是惯性替你走完的轨迹。", "最后一爻，才暴露你是否愿意停下那条旧路。"].map((line) => (
+          {["前五爻不是选择。", "它们只是惯性替你走完的轨迹。", "最后一爻，才暴露你是否愿意停下那条旧路。"].map((line) => (
             <GuanyaoText key={line} size="body" tone="muted">
               {line}
             </GuanyaoText>

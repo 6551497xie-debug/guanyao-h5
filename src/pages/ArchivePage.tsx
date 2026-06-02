@@ -5,6 +5,17 @@ import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { getArchives } from "../services/archiveService";
 
+function formatArchiveTime(createdAt: string) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(createdAt));
+}
+
 export function ArchivePage() {
   const archives = getArchives();
   const [expandedArchiveId, setExpandedArchiveId] = useState<string | null>(null);
@@ -30,16 +41,13 @@ export function ArchivePage() {
               return (
                 <article className="gy-archive-card" key={item.archiveId}>
                   <div className="gy-archive-summary">
-                    <p>创建时间：{new Date(item.createdAt).toLocaleString()}</p>
                     <p>六爻代码：{item.finalChoiceCode}</p>
                     <p>
-                      当前轨迹：{item.currentTrack.code} {item.currentTrack.traditionalName}
-                      {item.currentTrack.scriptTitle}
-                    </p>
-                    <p>
-                      迁移方向：{item.migrationDirection.code} {item.migrationDirection.traditionalName}
+                      迁移轨迹：{item.currentTrack.code} {item.currentTrack.traditionalName}
+                      {item.currentTrack.scriptTitle} → {item.migrationDirection.code} {item.migrationDirection.traditionalName}
                       {item.migrationDirection.scriptTitle}
                     </p>
+                    <p>沉积时间：{formatArchiveTime(item.createdAt)}</p>
                   </div>
                   <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-save" variant="ghost" onClick={() => setExpandedArchiveId(isExpanded ? null : item.archiveId)}>
                     {isExpanded ? "收起档案" : "展开这次偏转"}

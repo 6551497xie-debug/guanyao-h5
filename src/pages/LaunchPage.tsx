@@ -19,7 +19,7 @@ export function LaunchPage() {
             观爻 SANDBOX
           </GuanyaoText>
           <div className="gy-front-lines">
-            {["你不是被命运困住的。", "你只是被自己的执念与恐惧，", "留在了原地。"].map((line) => (
+            {["你不是被命运困住", "你只是被自己的执念与恐惧", "留在了原地"].map((line) => (
               <GuanyaoText key={line} size="body" tone="muted">
                 {line}
               </GuanyaoText>

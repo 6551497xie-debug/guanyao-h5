@@ -63,7 +63,7 @@ export function ForcePage() {
             </GuanyaoText>
           </div>
           <div className="gy-front-lines">
-            {["它不是你的标签。", "它是你此刻与现实重力对撞时，", "最先燃尽的那股原力。"].map((line) => (
+            {["它不是你的标签", "它是你此刻与现实重力对撞时", "最先燃尽的那股原力"].map((line) => (
               <GuanyaoText key={line} size="body" tone="muted">
                 {line}
               </GuanyaoText>
