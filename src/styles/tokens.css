@@ -1,16 +1,18 @@
 :root {
-  --gy-color-void: #08080b;
-  --gy-color-ink: #0d0d11;
-  --gy-color-panel: rgba(13, 13, 17, 0.84);
-  --gy-color-panel-soft: rgba(242, 243, 245, 0.04);
-  --gy-color-text: #f2f3f5;
-  --gy-color-text-muted: rgba(242, 243, 245, 0.64);
-  --gy-color-text-faint: rgba(242, 243, 245, 0.4);
-  --gy-color-gold: #b89b5e;
-  --gy-color-gold-soft: rgba(184, 155, 94, 0.5);
-  --gy-color-blue-haze: rgba(120, 150, 180, 0.2);
-  --gy-color-line: rgba(242, 243, 245, 0.12);
-  --gy-color-line-gold: rgba(184, 155, 94, 0.2);
+  --gy-color-void: #000000;
+  --gy-color-ink: #080808;
+  --gy-color-panel: rgba(8, 8, 8, 0.86);
+  --gy-color-panel-soft: rgba(255, 255, 255, 0.035);
+  --gy-color-text: #ffffff;
+  --gy-color-text-muted: rgba(255, 255, 255, 0.64);
+  --gy-color-text-faint: rgba(85, 85, 85, 0.9);
+  --gy-color-ash: #555555;
+  --gy-color-gold: #c7a96b;
+  --gy-color-gold-soft: rgba(199, 169, 107, 0.5);
+  --gy-color-crisis: #450a0a;
+  --gy-color-blue-haze: rgba(85, 85, 85, 0.2);
+  --gy-color-line: rgba(255, 255, 255, 0.12);
+  --gy-color-line-gold: rgba(199, 169, 107, 0.2);
 
   --gy-font-sans: Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --gy-font-weight-regular: 400;

@@ -34,7 +34,7 @@ export function MigrationPage() {
   return (
     <GuanyaoShell className="gy-delivery-shell" density="compact">
       <section className="gy-delivery-stage gyFadeRise">
-        <GuanyaoText as="span" size="eyebrow" tone="gold">
+        <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
           成果定格
         </GuanyaoText>
         <GuanyaoText as="h2" size="title">
@@ -46,7 +46,7 @@ export function MigrationPage() {
 
         <div className="gy-result-frame">
           <div>
-            <GuanyaoText as="span" size="eyebrow" tone="faint">
+            <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
               当前轨迹
             </GuanyaoText>
             <GuanyaoText size="body">
@@ -58,7 +58,7 @@ export function MigrationPage() {
             ↓
           </GuanyaoText>
           <div>
-            <GuanyaoText as="span" size="eyebrow" tone="faint">
+            <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
               迁移方向
             </GuanyaoText>
             <GuanyaoText size="body">
@@ -67,7 +67,7 @@ export function MigrationPage() {
             </GuanyaoText>
           </div>
           <div className="gy-result-code">
-            <GuanyaoText as="span" size="eyebrow" tone="faint">
+            <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
               六爻代码
             </GuanyaoText>
             <GuanyaoText size="body" tone="gold">

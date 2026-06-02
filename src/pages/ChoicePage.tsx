@@ -41,7 +41,7 @@ export function ChoicePage() {
           </div>
         ) : (
           <>
-            <GuanyaoText as="span" size="eyebrow" tone="gold">
+            <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
               最后一爻
             </GuanyaoText>
             <div className="gy-delivery-copy">

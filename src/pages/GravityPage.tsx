@@ -174,7 +174,7 @@ export function GravityPage() {
             })}
           </div>
           {!isComplete ? (
-            <article className={`gy-ritual-message gy-ritual-message--${activeScene + 1} ${completedScene === activeScene ? "is-complete" : ""}`}>
+            <article className={`gy-ritual-message gy-text-yao-plane gy-ritual-message--${activeScene + 1} ${completedScene === activeScene ? "is-complete" : ""}`}>
               <YaoTextBlock kicker={`心智重力 0${activeScene + 1}`} title={currentScene.title} lines={currentScene.lines} muted="因果显影完成后，请从底部闸门推进" />
             </article>
           ) : null}

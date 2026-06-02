@@ -41,19 +41,19 @@ export function ForcePage() {
 
   return (
     <GuanyaoShell density="compact">
-      <section className="gy-front-screen" data-intensity="fixed">
+      <section className="gy-front-screen gy-front-instrument gy-force-screen" data-intensity="fixed">
         <div className="gy-front-copy gyFadeRise">
-          <GuanyaoText as="span" size="eyebrow" tone="gold">
-            02 Force
+          <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
+            GY / 02 / FORCE
           </GuanyaoText>
-          <GuanyaoText as="h2" size="title">
-            原力定格，
+          <GuanyaoText className="gy-force-readout" as="h2" size="title">
+            原力定格
           </GuanyaoText>
-          <GuanyaoText size="body" tone="muted">
+          <GuanyaoText className="gy-text-instrument" size="body" tone="faint">
             引力场已确立。
           </GuanyaoText>
         </div>
-        <article className="gy-front-panel gyFadeRise">
+        <article className="gy-front-panel gy-force-imprint gyFadeRise">
           <div className="gy-front-meta">
             <GuanyaoText as="span" size="eyebrow" tone="faint">
               Code {forceReadingTemplate.code}
@@ -75,7 +75,7 @@ export function ForcePage() {
             记录解卦
           </GuanyaoButton>
           <Link to="/scene" onClick={persistForceReading}>
-            <GuanyaoButton as="span" variant="primary">
+            <GuanyaoButton className="gy-front-gate" as="span" variant="ghost">
               继续探索
             </GuanyaoButton>
           </Link>

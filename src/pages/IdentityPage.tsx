@@ -34,19 +34,19 @@ export function IdentityPage() {
 
   return (
     <GuanyaoShell density="compact">
-      <section className="gy-front-screen" data-intensity="quiet">
-        <div className="gy-front-copy gyFadeRise">
-          <GuanyaoText as="span" size="eyebrow" tone="gold">
-            01 Identity
+      <section className="gy-front-screen gy-front-instrument gy-identity-screen" data-intensity="quiet">
+        <div className="gy-front-copy gy-identity-coord gyFadeRise">
+          <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
+            GY / 01 / IDENTITY
           </GuanyaoText>
-          <GuanyaoText as="h2" size="title">
-            时空引力场已对齐。
+          <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="faint">
+            时空引力场已对齐
           </GuanyaoText>
-          <GuanyaoText size="body" tone="muted">
+          <GuanyaoText size="body" tone="faint">
             哪一幕，正在照见你？
           </GuanyaoText>
         </div>
-        <article className="gy-front-panel gyFadeRise" data-clickable="true" onClick={handleNext}>
+        <article className="gy-front-panel gy-text-fragment gyFadeRise" data-clickable="true" onClick={handleNext}>
           <GuanyaoText as="h3" size="title">
             {currentFragment.text}
           </GuanyaoText>
@@ -56,11 +56,11 @@ export function IdentityPage() {
         </article>
         <div className="gy-front-actions">
           <Link to="/force" onClick={handleConfirm}>
-            <GuanyaoButton as="span" variant="primary">
+            <GuanyaoButton className="gy-identity-gate" as="span" variant="ghost">
               好像是我
             </GuanyaoButton>
           </Link>
-          <GuanyaoButton variant="secondary" onClick={handleNext}>
+          <GuanyaoButton className="gy-identity-gate" variant="ghost" onClick={handleNext}>
             继续寻找
           </GuanyaoButton>
         </div>

@@ -14,6 +14,11 @@ export function ScenePage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
   const currentScene = sceneSlices[activeIndex % sceneSlices.length];
+  const capturedLineGroups = [
+    currentScene.fixedLines.slice(0, 2),
+    currentScene.fixedLines.slice(2, 4),
+    currentScene.fixedLines.slice(4),
+  ].filter((group) => group.length > 0);
 
   function handleNext() {
     setActiveIndex((currentIndex) => (currentIndex + 1) % sceneSlices.length);
@@ -37,58 +42,53 @@ export function ScenePage() {
 
   return (
     <GuanyaoShell density="compact">
-      <section className="gy-front-screen" data-intensity="quiet">
+      <section className="gy-front-screen gy-front-instrument gy-scene-screen" data-intensity="quiet">
         <div className="gy-front-copy gyFadeRise">
-          <GuanyaoText as="span" size="eyebrow" tone="gold">
-            03 Scene
+          <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
+            GY / 03 / SCENE
           </GuanyaoText>
-          <GuanyaoText as="h2" size="title">
-            哪一幕，正在发生？
+          <GuanyaoText className="gy-scene-title" as="h2" size="title">
+            {isLocked ? "现实引力已捕获" : "哪一幕，正在发生？"}
           </GuanyaoText>
         </div>
-        <article className="gy-front-panel gyFadeRise">
+        <article className="gy-front-panel gy-scene-slice-panel gyFadeRise">
           {isLocked ? (
-            <GuanyaoText as="span" size="eyebrow" tone="gold">
-              现实引力已捕获。
-            </GuanyaoText>
-          ) : null}
-          {isLocked ? (
-            <div className="gy-front-lines">
-              {currentScene.fixedLines.map((line) => (
-                <GuanyaoText key={line} size="body" tone="muted">
-                  {line}
-                </GuanyaoText>
+            <div className="gy-capture-stack">
+              {capturedLineGroups.map((group, groupIndex) => (
+                <div className="gy-capture-line-group gy-text-slice" key={group.join("")}>
+                  {group.map((line) => (
+                    <GuanyaoText key={line} size="body" tone={groupIndex === 0 ? "muted" : "faint"}>
+                      {line}
+                    </GuanyaoText>
+                  ))}
+                </div>
               ))}
-              <GuanyaoText size="body" tone="gold">
+              <GuanyaoText className="gy-capture-hook gy-text-hook" size="body" tone="gold">
                 {currentScene.gravityHook}
               </GuanyaoText>
             </div>
           ) : (
-            <GuanyaoText as="p" size="title">
+            <GuanyaoText className="gy-scene-flashline" as="p" size="title">
               {currentScene.flashLine}
             </GuanyaoText>
           )}
-          {isLocked ? (
-            <div className="gy-front-lines">
-              <GuanyaoText size="body" tone="muted">
-                行为黑洞装填完毕。
-              </GuanyaoText>
-            </div>
-          ) : null}
         </article>
         {!isLocked ? (
           <div className="gy-front-actions">
-            <GuanyaoButton variant="secondary" onClick={handleNext}>
+            <GuanyaoButton className="gy-front-gate" variant="ghost" onClick={handleNext}>
               还不是我
             </GuanyaoButton>
-            <GuanyaoButton variant="primary" onClick={handleConfirm}>
+            <GuanyaoButton className="gy-front-gate" variant="ghost" onClick={handleConfirm}>
               拦截 —— 正在发生
             </GuanyaoButton>
           </div>
         ) : null}
         {isLocked ? (
           <div className="gy-front-actions gyFadeRise">
-            <GuanyaoButton variant="gate" onClick={handleStartYao}>
+            <GuanyaoText className="gy-text-instrument" size="body" tone="muted">
+              行为黑洞装填完毕
+            </GuanyaoText>
+            <GuanyaoButton className="gy-front-gate" variant="ghost" onClick={handleStartYao}>
               以此起爻
             </GuanyaoButton>
           </div>

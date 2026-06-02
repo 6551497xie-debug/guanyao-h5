@@ -82,6 +82,19 @@
   }
 }
 
+@keyframes gy-fragment-float {
+  0%,
+  100% {
+    opacity: 0.86;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-6px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

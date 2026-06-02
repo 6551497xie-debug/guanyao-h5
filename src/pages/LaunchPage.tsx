@@ -7,13 +7,13 @@ import { GuanyaoText } from "../components/visual/GuanyaoText";
 export function LaunchPage() {
   return (
     <GuanyaoShell density="compact">
-      <section className="gy-front-screen" data-intensity="quiet">
+      <section className="gy-front-screen gy-front-instrument gy-launch-screen" data-intensity="quiet">
         <div className="gy-launch-core">
           <GravityWave variant="core" />
         </div>
         <div className="gy-front-copy gyFadeRise">
-          <GuanyaoText as="span" size="eyebrow" tone="gold">
-            00 Launch · 时序坐标已校准
+          <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
+            GY / 00 / LAUNCH
           </GuanyaoText>
           <GuanyaoText as="h2" size="title">
             观爻 SANDBOX
@@ -27,7 +27,7 @@ export function LaunchPage() {
           </div>
           <div className="gy-front-actions">
             <Link to="/identity">
-              <GuanyaoButton as="span" variant="primary">
+              <GuanyaoButton className="gy-front-gate" as="span" variant="ghost">
                 开启沙盒
               </GuanyaoButton>
             </Link>
