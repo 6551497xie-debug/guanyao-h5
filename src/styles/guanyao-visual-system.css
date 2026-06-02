@@ -584,6 +584,12 @@
   content: "";
 }
 
+.gy-ritual-node {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
 .gy-ritual-ring {
   position: relative;
   display: grid;
@@ -628,6 +634,67 @@
   box-shadow:
     0 0 36px rgba(184, 155, 94, 0.13),
     0 0 20px rgba(110, 34, 34, 0.14);
+}
+
+.gy-ritual-index-label {
+  position: absolute;
+  right: calc(100% + 14px);
+  top: 50%;
+  display: inline-grid;
+  min-width: 24px;
+  place-items: center;
+  color: rgba(242, 243, 245, 0.56);
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 340;
+  line-height: 1;
+  pointer-events: none;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+
+.gy-ritual-node:nth-child(2n) .gy-ritual-index-label {
+  right: auto;
+  left: calc(100% + 14px);
+}
+
+.gy-ritual-index-label--pending {
+  color: rgba(242, 243, 245, 0.18);
+}
+
+.gy-ritual-index-label--locked {
+  color: rgba(242, 243, 245, 0.26);
+}
+
+.gy-ritual-index-label--current {
+  color: rgba(242, 243, 245, 0.52);
+}
+
+.gy-ritual-pressure-value {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  color: rgba(242, 243, 245, 0.36);
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 420;
+  letter-spacing: 0;
+  line-height: 1;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.gy-ritual-node--pressure .gy-ritual-index-label,
+.gy-ritual-node--pressure .gy-ritual-pressure-value {
+  text-shadow: 0 0 12px rgba(69, 10, 10, 0.22);
+}
+
+.gy-ritual-node--pressure .gy-ritual-pressure-value {
+  color: rgba(242, 243, 245, 0.42);
+}
+
+.gy-gravity-index-reveal {
+  animation: gy-index-emerge 420ms var(--gy-motion-ease-presence) both;
 }
 
 .gy-ritual-trace {

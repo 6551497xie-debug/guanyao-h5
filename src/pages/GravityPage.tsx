@@ -31,6 +31,14 @@ const yaoGateCopy = [
   },
 ] as const;
 
+const yaoIndexReadouts = [
+  { label: "本能", value: "20" },
+  { label: "习惯", value: "35" },
+  { label: "代价", value: "60" },
+  { label: "高压", value: "75" },
+  { label: "临界", value: "90" },
+] as const;
+
 type YaoTextBlockProps = {
   kicker: string;
   title?: string;
@@ -144,7 +152,7 @@ export function GravityPage() {
 
     window.setTimeout(() => {
       setCompletedScene(null);
-    }, 260);
+    }, 520);
   }
 
   const currentScene = ritualScenes[activeScene];
@@ -154,7 +162,7 @@ export function GravityPage() {
     <GuanyaoShell className="gy-gravity-shell" density="compact">
       <div className="gy-gravity-screen" data-intensity="gravity">
         <div className="gy-ritual-layout">
-          <div className="gy-five-rings" aria-label="五爻心智重力环">
+          <div className="gy-five-rings" aria-label="五爻仪式环">
             {Array.from({ length: 5 }, (_, index) => {
               const lockedBit = interactivePath[index];
               const isCurrent = !isComplete && index === activeScene;
@@ -162,13 +170,17 @@ export function GravityPage() {
               const state = isLocked ? "locked" : isCurrent ? "current" : "pending";
 
               return (
-                <div className={`gy-ritual-ring gy-ritual-ring--${state} ${index === 4 ? "gy-ritual-ring--pressure" : ""}`} data-yao={index + 1} key={index}>
-                  {isLocked ? (
-                    <span className={`gy-ritual-trace gy-ritual-trace--${lockedBit === 0 ? "yin" : "yang"}`} aria-hidden="true">
-                      <span />
-                      <span />
-                    </span>
-                  ) : null}
+                <div className={`gy-ritual-node gy-ritual-node--${state} ${index === 4 ? "gy-ritual-node--pressure" : ""}`} data-yao={index + 1} key={index}>
+                  <span className={`gy-ritual-index-label gy-ritual-index-label--${state}`}>{yaoIndexReadouts[index].label}</span>
+                  {isLocked ? <span className={`gy-ritual-pressure-value ${completedScene === index ? "gy-gravity-index-reveal" : ""}`}>{yaoIndexReadouts[index].value}</span> : null}
+                  <div className={`gy-ritual-ring gy-ritual-ring--${state} ${index === 4 ? "gy-ritual-ring--pressure" : ""}`} aria-hidden="true">
+                    {isLocked ? (
+                      <span className={`gy-ritual-trace gy-ritual-trace--${lockedBit === 0 ? "yin" : "yang"}`}>
+                        <span />
+                        <span />
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
               );
             })}
@@ -177,11 +189,11 @@ export function GravityPage() {
             <article
               className={`gy-ritual-message gy-text-yao-plane gy-ritual-message--${activeScene + 1} ${activeScene >= 3 ? "gy-ritual-message--pressure" : ""} ${completedScene === activeScene ? "is-complete" : ""}`}
             >
-              <YaoTextBlock kicker={`心智重力 0${activeScene + 1}`} title={currentScene.title} lines={currentScene.lines} muted="因果显影完成后，请从底部闸门推进" />
+              <YaoTextBlock kicker={`GY / LAYER 0${activeScene + 1}`} title={currentScene.title} lines={currentScene.lines} muted="因果显影完成后，请从底部闸门推进" />
             </article>
           ) : null}
           {isGateVisible && !isComplete ? (
-            <div className="gy-binary-gate gyFadeRise" aria-label="心智重力偏转闸门">
+            <div className="gy-binary-gate gyFadeRise" aria-label="二元偏转闸门">
               <GuanyaoButton className="gy-binary-gate__button" variant="ghost" onClick={() => handleYaoChoice(0)}>
                 {currentGateCopy.yin}
               </GuanyaoButton>
@@ -190,7 +202,7 @@ export function GravityPage() {
               </GuanyaoButton>
             </div>
           ) : null}
-          {isComplete ? (
+          {isComplete && completedScene === null ? (
             <div className="gy-pressure-gate gyFadeRise">
               <YaoTextBlock
                 kicker="高压停留"
