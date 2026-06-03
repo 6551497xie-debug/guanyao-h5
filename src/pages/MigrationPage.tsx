@@ -15,13 +15,17 @@ const ninetyDayScriptBills = [
     window: "7—15 天",
     trigger: "一条催促、一次临时变动、一个迟迟没有答案的消息，可能重新把你推回旧轨道。",
     inertia: "你会继续等待更完整的准备感。越等待，越容易把行动误认为风险。",
-    antiInstinct: "不要证明自己，只完成一个最小动作，让轨迹先发生一次偏移。",
+    bodySignalLabel: "身体信号",
+    bodySignal: "拖延开始前，身体可能先出现紧绷、发闷、反复刷新或无法真正休息的信号。",
+    antiInstinct: "不要证明自己。只完成一个最小动作，让轨迹先发生一次偏移。",
   },
   {
     title: "第二幕｜中期执念过载点",
     window: "30—45 天",
     trigger: "当外部压力没有明显变化，你会开始用解释、校准、准备来维持停滞。",
-    inertia: "真正消耗你的，不是外界阻力，而是反复校准。",
+    inertia: "真正消耗你的，不是外界阻力，而是反复校准。你会继续寻找一个更安全的开始时刻。",
+    bodySignalLabel: "现实代价",
+    bodySignal: "行动被延后，关系被悬置，真正的问题继续留在原位。",
     antiInstinct: "停止新增解释。删掉一个用来拖延行动的准备动作。",
   },
   {
@@ -29,6 +33,8 @@ const ninetyDayScriptBills = [
     window: "60—90 天",
     trigger: "当你再次想把行动推迟到“更确定以后”，节点会出现。",
     inertia: "你会本能地照旧反应：继续等、继续校准、继续让轨迹停在原地。",
+    bodySignalLabel: "现实代价",
+    bodySignal: "如果继续沿着这条轨迹，你更容易把停滞误认为谨慎，把退后误认为安全。",
     antiInstinct: "选择一个最小动作，在当天完成。不要证明自己，只让轨迹发生偏移。",
   },
 ];
@@ -167,6 +173,10 @@ export function MigrationPage() {
                   <div className="gy-script-bill-row">
                     <span>惯性反应</span>
                     <p>{act.inertia}</p>
+                  </div>
+                  <div className="gy-script-bill-row gy-script-bill-row--cost">
+                    <span>{act.bodySignalLabel}</span>
+                    <p>{act.bodySignal}</p>
                   </div>
                   <div className="gy-script-bill-row gy-script-bill-row--anti">
                     <span>反本能提示</span>

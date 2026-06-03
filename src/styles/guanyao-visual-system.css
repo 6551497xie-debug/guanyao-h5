@@ -625,6 +625,10 @@
   color: rgba(199, 169, 107, 0.82);
 }
 
+.gy-script-bill-row--cost p {
+  color: rgba(255, 255, 255, 0.62);
+}
+
 .gy-archive-list {
   display: grid;
   gap: var(--gy-space-4);
