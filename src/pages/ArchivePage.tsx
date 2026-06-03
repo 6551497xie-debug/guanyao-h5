@@ -19,20 +19,29 @@ function formatArchiveTime(createdAt: string) {
 export function ArchivePage() {
   const archives = getArchives();
   const [expandedArchiveId, setExpandedArchiveId] = useState<string | null>(null);
+  const archiveReadout = archives.length === 0 ? "暂无偏转沉积" : `已沉积 ${archives.length} 次偏转`;
 
   return (
     <GuanyaoShell className="gy-delivery-shell" density="compact">
-      <section className="gy-delivery-stage gy-causal-line gy-causal-line-sediment gyFadeRise">
+      <section className="gy-delivery-stage gy-archive-stage gy-causal-line gy-causal-line-sediment gyFadeRise">
         <GuanyaoText as="span" size="eyebrow" tone="gold">
           档案沉淀
         </GuanyaoText>
         <GuanyaoText as="h2" size="title">
           人格档案
         </GuanyaoText>
+        <GuanyaoText className="gy-archive-readout" as="span" size="eyebrow" tone="faint">
+          {archiveReadout}
+        </GuanyaoText>
         {archives.length === 0 ? (
-          <GuanyaoText size="body" tone="muted">
-            当前暂无记录
-          </GuanyaoText>
+          <div className="gy-archive-empty">
+            <GuanyaoText size="body" tone="muted">
+              当前暂无记录
+            </GuanyaoText>
+            <GuanyaoText size="body" tone="faint">
+              完成一次人格迁移后，它会沉积在这里。
+            </GuanyaoText>
+          </div>
         ) : (
           <div className="gy-archive-list">
             {archives.map((item) => {
