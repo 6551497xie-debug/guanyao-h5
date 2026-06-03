@@ -1,5 +1,18 @@
 export type YaoBit = 0 | 1;
 
+export type ChronoAgeRange = "18_22" | "23_31" | "32_39" | "40_52" | "53_plus";
+
+export type ChronoProfile = {
+  birthYear: number;
+  birthMonth: number;
+  birthDay: number;
+  birthDate: string;
+  ageRange: ChronoAgeRange;
+  lifeStageLabel: string;
+  pressureField: string[];
+  sceneWeightTags: string[];
+};
+
 export type SceneSlice = {
   id: string;
   forceId: string;
@@ -15,6 +28,7 @@ export type SceneSlice = {
 };
 
 export interface GuanyaoSession {
+  chronoProfile?: ChronoProfile | null;
   selectedFragment?: any;
   selectedForceId?: string | null;
   selectedForceName?: string | null;

@@ -2,6 +2,7 @@ import type { FlowStep } from "../types/session";
 
 export const flowSteps: FlowStep[] = [
   { code: "00", key: "launch", path: "/", title: "Launch 启动舱门" },
+  { code: "00-Fix", key: "chrono", path: "/chrono", title: "Chrono 时序校准" },
   { code: "01", key: "identity", path: "/identity", title: "Identity 人格映照碎片" },
   { code: "02", key: "force", path: "/force", title: "Force 原力定格" },
   { code: "03", key: "scene", path: "/scene", title: "Scene 现实场景切片" },

@@ -9,6 +9,30 @@ import { saveArchive } from "../services/archiveService";
 import { getSession } from "../services/sessionService";
 import { buildFinalChoiceCode } from "../services/trajectoryService";
 
+const ninetyDayScriptBills = [
+  {
+    title: "第一幕｜近期惯性引爆点",
+    window: "7—15 天",
+    trigger: "一条催促、一次临时变动、一个迟迟没有答案的消息，可能重新把你推回旧轨道。",
+    inertia: "你会继续等待更完整的准备感。越等待，越容易把行动误认为风险。",
+    antiInstinct: "不要证明自己，只完成一个最小动作，让轨迹先发生一次偏移。",
+  },
+  {
+    title: "第二幕｜中期执念过载点",
+    window: "30—45 天",
+    trigger: "当外部压力没有明显变化，你会开始用解释、校准、准备来维持停滞。",
+    inertia: "真正消耗你的，不是外界阻力，而是反复校准。",
+    antiInstinct: "停止新增解释。删掉一个用来拖延行动的准备动作。",
+  },
+  {
+    title: "第三幕｜90天反本能节点",
+    window: "60—90 天",
+    trigger: "当你再次想把行动推迟到“更确定以后”，节点会出现。",
+    inertia: "你会本能地照旧反应：继续等、继续校准、继续让轨迹停在原地。",
+    antiInstinct: "选择一个最小动作，在当天完成。不要证明自己，只让轨迹发生偏移。",
+  },
+];
+
 export function MigrationPage() {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -42,7 +66,7 @@ export function MigrationPage() {
             人格迁移已压印
           </GuanyaoText>
           <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
-            {card.cardTitle}
+            从原地蓄力，迁移到一次清晰动作
           </GuanyaoText>
         </div>
 
@@ -88,7 +112,7 @@ export function MigrationPage() {
 
         <div className="gy-delivery-actions">
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-secondary" variant="ghost" onClick={() => setIsExpanded((current) => !current)}>
-            {isExpanded ? "收起 90 天剧本" : "展开 90 天惯性冲突剧本"}
+            {isExpanded ? "收束 90 天剧本" : "展开 90 天惯性冲突剧本"}
           </GuanyaoButton>
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-save" variant="gate" onClick={handleSave}>
             保存到人格档案
@@ -127,12 +151,27 @@ export function MigrationPage() {
                 <p>这条轨迹的原力双因子尚未完全展开。</p>
               )}
             </details>
-            <details className="gy-analysis-card">
+            <details className="gy-analysis-card" open>
               <summary>90天惯性冲突剧本</summary>
-              {[card.conflictScript90d.act1, card.conflictScript90d.act2, card.conflictScript90d.act3].map((act) => (
-                <section key={act.title}>
+              {ninetyDayScriptBills.map((act) => (
+                <section className="gy-script-bill" key={act.title}>
                   <h3>{act.title}</h3>
-                  <TextLines lines={act.lines} />
+                  <div className="gy-script-bill-row">
+                    <span>时间窗口</span>
+                    <p>{act.window}</p>
+                  </div>
+                  <div className="gy-script-bill-row">
+                    <span>现实触发器</span>
+                    <p>{act.trigger}</p>
+                  </div>
+                  <div className="gy-script-bill-row">
+                    <span>惯性反应</span>
+                    <p>{act.inertia}</p>
+                  </div>
+                  <div className="gy-script-bill-row gy-script-bill-row--anti">
+                    <span>反本能提示</span>
+                    <p>{act.antiInstinct}</p>
+                  </div>
                 </section>
               ))}
             </details>

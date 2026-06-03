@@ -1,8 +1,9 @@
-import type { GuanyaoSession, SceneSlice } from "../types";
+import type { ChronoProfile, GuanyaoSession, SceneSlice } from "../types";
 
 const SESSION_KEY = "guanyao_h5_session";
 
 const defaultSession: GuanyaoSession = {
+  chronoProfile: null,
   selectedForceId: null,
   selectedForceName: null,
   selectedSceneSlice: null,
@@ -61,6 +62,12 @@ export function setSelectedSceneSlice(sceneSlice: SceneSlice): GuanyaoSession {
     selectedSceneId: sceneSlice.id,
     realitySeed: sceneSlice,
     sceneText: sceneSlice.fixedLines.join("\n"),
+  });
+}
+
+export function setChronoProfile(chronoProfile: ChronoProfile): GuanyaoSession {
+  return updateSession({
+    chronoProfile,
   });
 }
 

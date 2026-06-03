@@ -41,13 +41,22 @@ export function ArchivePage() {
               return (
                 <article className="gy-archive-card" key={item.archiveId}>
                   <div className="gy-archive-summary">
-                    <p>六爻代码：{item.finalChoiceCode}</p>
-                    <p>
-                      迁移轨迹：{item.currentTrack.code} {item.currentTrack.traditionalName}
-                      {item.currentTrack.scriptTitle} → {item.migrationDirection.code} {item.migrationDirection.traditionalName}
-                      {item.migrationDirection.scriptTitle}
-                    </p>
-                    <p>沉积时间：{formatArchiveTime(item.createdAt)}</p>
+                    <div className="gy-archive-summary-row gy-archive-summary-code">
+                      <span>六爻代码</span>
+                      <strong>{item.finalChoiceCode}</strong>
+                    </div>
+                    <div className="gy-archive-summary-row gy-archive-summary-track">
+                      <span>迁移轨迹</span>
+                      <p>
+                        {item.currentTrack.code} {item.currentTrack.traditionalName}
+                        {item.currentTrack.scriptTitle} → {item.migrationDirection.code} {item.migrationDirection.traditionalName}
+                        {item.migrationDirection.scriptTitle}
+                      </p>
+                    </div>
+                    <div className="gy-archive-summary-row gy-archive-summary-time">
+                      <span>沉积时间</span>
+                      <p>{formatArchiveTime(item.createdAt)}</p>
+                    </div>
                   </div>
                   <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-save" variant="ghost" onClick={() => setExpandedArchiveId(isExpanded ? null : item.archiveId)}>
                     {isExpanded ? "收起档案" : "展开这次偏转"}
