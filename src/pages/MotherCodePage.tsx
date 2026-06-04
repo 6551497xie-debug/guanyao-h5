@@ -7,7 +7,7 @@ import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getSession, setMotherCodeResult } from "../services/sessionService";
 
 function readFragmentText(fragment: any) {
-  return fragment?.text ?? fragment?.title ?? "未记录";
+  return fragment?.fragmentLine ?? fragment?.text ?? fragment?.title ?? "未记录";
 }
 
 function readForceText(forceResult: any, selectedForceName?: string | null) {
@@ -32,7 +32,12 @@ export function MotherCodePage() {
       ? `${session.chronoProfile.birthDate}｜${session.chronoProfile.lifeStageLabel}`
       : "未记录";
   const forceText = readForceText(session.forceReading ?? session.forceProfile, session.selectedForceName);
-  const sceneText = session.selectedSceneSlice?.flashLine ?? session.realitySeed?.title ?? "未记录";
+  const sceneText =
+    session.selectedSceneSeed?.seedLine ??
+    session.realitySeed?.seedLine ??
+    session.selectedSceneSlice?.flashLine ??
+    session.realitySeed?.title ??
+    "未记录";
 
   return (
     <GuanyaoShell className="gy-delivery-shell" density="compact">
@@ -99,6 +104,9 @@ export function MotherCodePage() {
         </div>
 
         <div className="gy-delivery-actions">
+          <GuanyaoText className="gy-text-instrument gy-mother-record-status" size="body" tone="muted">
+            本次母码已记录，接下来观察它如何在六爻中变化。
+          </GuanyaoText>
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-primary" variant="gate" onClick={() => navigate("/gravity")}>
             继续进入六爻推进
           </GuanyaoButton>

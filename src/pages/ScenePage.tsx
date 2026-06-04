@@ -156,6 +156,13 @@ export function ScenePage() {
                   <GuanyaoText className="gy-scene-flashline" as="span" size="body">
                     {seed.seedLine}
                   </GuanyaoText>
+                  {flowState === "frozen" ? (
+                    <span className="gy-scene-seed-tags" aria-hidden="true">
+                      {seed.thematicField.slice(0, 3).map((tag) => (
+                        <span key={tag}>{tag}</span>
+                      ))}
+                    </span>
+                  ) : null}
                 </div>
               ))}
             </div>
