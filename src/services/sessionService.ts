@@ -4,6 +4,8 @@ const SESSION_KEY = "guanyao_h5_session";
 
 const defaultSession: GuanyaoSession = {
   chronoProfile: null,
+  chronoHash: null,
+  chronoPrototypeCard: null,
   selectedForceId: null,
   selectedForceName: null,
   selectedSceneSlice: null,
@@ -68,6 +70,8 @@ export function setSelectedSceneSlice(sceneSlice: SceneSlice): GuanyaoSession {
 export function setChronoProfile(chronoProfile: ChronoProfile): GuanyaoSession {
   return updateSession({
     chronoProfile,
+    chronoHash: chronoProfile.chronoHash ?? null,
+    chronoPrototypeCard: chronoProfile.chronoPrototypeCard ?? null,
   });
 }
 

@@ -39,9 +39,131 @@ const ninetyDayScriptBills = [
   },
 ];
 
+const behaviorDefenseVerdict = ["你不是在谨慎。", "你是在用反复校准，推迟一次真正的行动。"];
+
+const behaviorRadarNodes = [
+  {
+    window: ninetyDayScriptBills[0].window,
+    title: "第7—15天｜身体先报警",
+    state: "shift",
+    line: "你可能不会立刻反击。你更可能反扣手机，继续刷新，用忙碌麻痹已经醒过来的恐惧。",
+  },
+  {
+    window: ninetyDayScriptBills[1].window,
+    title: "第30—45天｜现实代价开始结算",
+    state: "pressure",
+    line: "真正开始失控的，不是某一句话，而是必须知情的人终于发现你早就知道盘面。",
+  },
+  {
+    window: ninetyDayScriptBills[2].window,
+    title: "第60—90天｜旧轨迹要求你回到原位",
+    state: "shift",
+    line: "它会把再等等包装成成熟，把先别说包装成顾全大局。",
+  },
+] as const;
+
+const antiInstinctOperationCards = [
+  {
+    title: "操作卡 01｜身体中断",
+    when: "当你开始反复刷新、反扣手机、假装自己还在处理问题。",
+    action: "断开屏幕 12 分钟。离开原位置。走到有自然光的地方。让身体先从假死里退出来。",
+    forbid: "不要解释。不要补救。不要发长消息。不要继续用刷新证明自己还在掌控。",
+    done: "身体离开原位。手机离开手。当天完成一个 10 分钟内能结束的小动作。",
+  },
+  {
+    title: "操作卡 02｜底牌交出",
+    when: "当你又想继续隐瞒真实进度，继续把盘面往后拖。",
+    action: "找一个必须知情的人。只交出三句话：现在发生了什么；还能撑多久；你需要对方知道什么。",
+    forbid: "不要包装。不要铺垫。不要卖惨。不要让沉默继续替你做决定。",
+    done: "至少一个必须知情的人，知道真实情况。",
+  },
+  {
+    title: "操作卡 03｜删减动作",
+    when: "当你想用更多计划、会议、解释、准备，证明自己还在推进。",
+    action: "删掉一个最像表面补救的动作。停止新增战线。只保留一个能触碰真实问题的动作。",
+    forbid: "不要用忙碌掩盖停滞。不要用勤奋证明你没有害怕。不要再把我很努力当成遮羞布。",
+    done: "少做一件消耗动作。把能量交还给真正有效的动作。",
+  },
+] as const;
+
+const reviewRingCells = Array.from({ length: 90 }, (_, index) => {
+  if ([12, 44].includes(index)) return "inertia";
+  if ([14, 61, 78].includes(index)) return "shift";
+  return "empty";
+});
+
+function BehaviorDefenseKit() {
+  return (
+    <div className="gy-defense-kit">
+      <div className="gy-defense-verdict">
+        {behaviorDefenseVerdict.map((line) => (
+          <GuanyaoText key={line} size="body" tone="muted">
+            {line}
+          </GuanyaoText>
+        ))}
+      </div>
+
+      <section className="gy-defense-module">
+        <h3>01｜90天行为重力雷达</h3>
+        <p className="gy-defense-note">系统不吓唬你。它只用你刚刚走完的六爻轨迹，把未来90天里最容易复发的惯性节点摊开。</p>
+        <div className="gy-defense-radar" aria-label="90天行为重力雷达">
+          <div className="gy-defense-radar-line" aria-hidden="true" />
+          {behaviorRadarNodes.map((node) => (
+            <article className={`gy-defense-radar-node gy-defense-radar-node--${node.state}`} key={node.title}>
+              <span>{node.window}</span>
+              <strong>{node.title}</strong>
+              <p>{node.line}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="gy-defense-module">
+        <h3>02｜3张反本能操作卡</h3>
+        <p className="gy-defense-note">当旧惯性再次启动时，不要再临场想办法。直接执行卡片上的动作。</p>
+        <div className="gy-defense-card-stack">
+          {antiInstinctOperationCards.map((card) => (
+            <article className="gy-defense-action-card" key={card.title}>
+              <strong>{card.title}</strong>
+              <div className="gy-defense-field">
+                <span>适用时刻</span>
+                <p>{card.when}</p>
+              </div>
+              <div className="gy-defense-field">
+                <span>立即动作</span>
+                <p>{card.action}</p>
+              </div>
+              <div className="gy-defense-field">
+                <span>禁止动作</span>
+                <p>{card.forbid}</p>
+              </div>
+              <div className="gy-defense-field gy-defense-field--done">
+                <span>完成标准</span>
+                <p>{card.done}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="gy-defense-module">
+        <h3>03｜90天复盘年轮入口</h3>
+        <p className="gy-defense-note">未来90天，每一次顺应惯性或完成偏转，都可以沉积在这里。</p>
+        <div className="gy-defense-review-ring" aria-label="90天复盘年轮">
+          {reviewRingCells.map((state, index) => (
+            <span className={`gy-defense-review-cell gy-defense-review-cell--${state}`} key={`${state}-${index}`} />
+          ))}
+        </div>
+        <p className="gy-defense-note">后续每一次现实偏转，都将沉积为新的行为年轮。</p>
+      </section>
+    </div>
+  );
+}
+
 export function MigrationPage() {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
+  const session = getSession();
   const { card, finalChoiceCode } = useMemo(() => {
     const sessionCode = getSession().finalChoiceCode;
     const nextFinalChoiceCode = sessionCode || buildFinalChoiceCode() || "101100";
@@ -66,32 +188,32 @@ export function MigrationPage() {
       <section className="gy-delivery-stage gy-causal-line gy-causal-line-press gyFadeRise">
         <div className="gy-result-hero">
           <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
-            迁移压印
+            爻码生成
           </GuanyaoText>
           <GuanyaoText as="h2" size="title">
-            人格迁移已压印
+            爻码卡已生成
           </GuanyaoText>
           <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
-            从原地蓄力，迁移到一次清晰动作
+            这不是结论 是六爻偏转留下的状态压印
           </GuanyaoText>
         </div>
 
         <div className="gy-result-frame">
           <div className="gy-result-code gy-result-code--primary">
             <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-              轨迹代码
+              爻码
             </GuanyaoText>
             <GuanyaoText size="body" tone="gold">
-              {finalChoiceCode}
+              {card.migrationDirection.code} {card.migrationDirection.traditionalName}
+              {card.migrationDirection.scriptTitle}｜上爻
             </GuanyaoText>
           </div>
           <div>
             <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-              当前轨迹
+              轨迹代码
             </GuanyaoText>
             <GuanyaoText size="body">
-              {card.currentTrack.code} {card.currentTrack.traditionalName}
-              {card.currentTrack.scriptTitle}
+              {finalChoiceCode}
             </GuanyaoText>
           </div>
           <GuanyaoText className="gy-result-arrow" size="title" tone="gold">
@@ -99,18 +221,32 @@ export function MigrationPage() {
           </GuanyaoText>
           <div>
             <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-              迁移方向
+              迁移来源
             </GuanyaoText>
             <GuanyaoText size="body">
-              {card.migrationDirection.code} {card.migrationDirection.traditionalName}
+              {card.currentTrack.code} {card.currentTrack.traditionalName}
+              {card.currentTrack.scriptTitle} → {card.migrationDirection.code} {card.migrationDirection.traditionalName}
               {card.migrationDirection.scriptTitle}
             </GuanyaoText>
           </div>
         </div>
 
         <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
-          {["前五爻不是选择。", "它们只是惯性替你走完的轨迹。", "最后一爻，才暴露你是否愿意停下那条旧路。"].map((line) => (
+          {["你不是在谨慎。", "你是在用反复校准，推迟一次真正的行动。", "这张爻码卡，是这枚现实种子上的状态压印。"].map((line) => (
             <GuanyaoText key={line} size="body" tone="muted">
+              {line}
+            </GuanyaoText>
+          ))}
+        </div>
+
+        <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
+          {[
+            `人格映照：${session.selectedFragment?.text ?? "本次碎片已认领"}`,
+            `原力定格：${session.selectedForceName ?? "本次原力已定格"}`,
+            `现实切片：${session.selectedSceneSlice?.flashLine ?? session.realitySeed?.title ?? "现实种子已捕获"}`,
+            `第六爻：${session.sixthYaoChoice === 0 ? "反本能偏转" : session.sixthYaoChoice === 1 ? "照旧反应" : "最终动作已落下"}`,
+          ].map((line) => (
+            <GuanyaoText key={line} size="eyebrow" tone="faint">
               {line}
             </GuanyaoText>
           ))}
@@ -118,7 +254,7 @@ export function MigrationPage() {
 
         <div className="gy-delivery-actions">
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-secondary" variant="ghost" onClick={() => setIsExpanded((current) => !current)}>
-            {isExpanded ? "收束 90 天剧本" : "展开 90 天惯性冲突剧本"}
+            {isExpanded ? "收束90天行为防御本" : "展开90天行为防御本"}
           </GuanyaoButton>
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-save" variant="gate" onClick={handleSave}>
             保存到人格档案
@@ -128,7 +264,7 @@ export function MigrationPage() {
         {isExpanded ? (
           <div className="gy-analysis-stack gyFadeRise">
             <details className="gy-analysis-card">
-              <summary>第0幕｜出厂重力坐标</summary>
+              <summary>因果来源</summary>
               {card.originGravityCoordinate ? (
                 <>
                   <p>{card.originGravityCoordinate.coordinate}</p>
@@ -158,39 +294,15 @@ export function MigrationPage() {
               )}
             </details>
             <details className="gy-analysis-card" open>
-              <summary>90天惯性冲突剧本</summary>
-              {ninetyDayScriptBills.map((act) => (
-                <section className="gy-script-bill" key={act.title}>
-                  <h3>{act.title}</h3>
-                  <div className="gy-script-bill-row">
-                    <span>时间窗口</span>
-                    <p>{act.window}</p>
-                  </div>
-                  <div className="gy-script-bill-row">
-                    <span>现实触发器</span>
-                    <p>{act.trigger}</p>
-                  </div>
-                  <div className="gy-script-bill-row">
-                    <span>惯性反应</span>
-                    <p>{act.inertia}</p>
-                  </div>
-                  <div className="gy-script-bill-row gy-script-bill-row--cost">
-                    <span>{act.bodySignalLabel}</span>
-                    <p>{act.bodySignal}</p>
-                  </div>
-                  <div className="gy-script-bill-row gy-script-bill-row--anti">
-                    <span>反本能提示</span>
-                    <p>{act.antiInstinct}</p>
-                  </div>
-                </section>
-              ))}
+              <summary>90天行为防御本</summary>
+              <BehaviorDefenseKit />
             </details>
             <details className="gy-analysis-card">
               <summary>反本能节点</summary>
               <p>{card.antiInstinctNode}</p>
             </details>
             <details className="gy-analysis-card">
-              <summary>轨迹代码</summary>
+              <summary>爻码轨迹</summary>
               <p>{finalChoiceCode}</p>
               <p>
                 {card.currentTrack.code} → {card.migrationDirection.code}

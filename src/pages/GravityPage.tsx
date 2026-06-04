@@ -55,23 +55,23 @@ function buildYaoRitualCopyFromScene(sceneSlice: SceneSlice): YaoRitualScene[] {
   return [
     {
       title: "本能反应",
-      lines: ["刚才那一幕还停在你眼前：", sceneSlice.flashLine],
+      lines: ["你先回到那一幕：", sceneSlice.flashLine, "本能先替你做了第一步。"],
     },
     {
       title: "身体代偿",
-      lines: ["你的身体先有了反应：", `${sceneSlice.bodyReaction}。`, "它比判断更早接管现场。"],
+      lines: ["身体比判断更早报警：", `${sceneSlice.bodyReaction}。`, "它正在替你承受没有说出口的压力。"],
     },
     {
       title: "行为惯性",
-      lines: ["你开始重复那个熟悉动作：", `${sceneSlice.behaviorInertia}。`, "代价正在显形。"],
+      lines: ["旧习惯接管现场：", `${sceneSlice.behaviorInertia}。`, "代价开始从旁边显形。"],
     },
     {
       title: "高压塌缩",
-      lines: [sceneSlice.gravityHook, "这股重力已经进入高压层。"],
+      lines: [sceneSlice.gravityHook, "高压不是突然来的。", "它是每一次旧反应叠上去的重量。"],
     },
     {
       title: "临界悬停",
-      lines: ["前四层偏转已经把你推到这里。", "现在，这枚现实种子，", "正在要求你给出最后的方向。"],
+      lines: ["你快要把旧轨道误认为安全。", "真正危险的不是这一次压力，", "而是你已经太熟悉如何退回原位。"],
     },
   ];
 }

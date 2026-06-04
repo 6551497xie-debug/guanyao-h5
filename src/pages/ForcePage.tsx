@@ -50,7 +50,7 @@ export function ForcePage() {
             原力定格
           </GuanyaoText>
           <GuanyaoText className="gy-text-instrument" size="body" tone="faint">
-            引力场已确立
+            系统捕获到的 不是性格
           </GuanyaoText>
         </div>
         <article className="gy-front-panel gy-force-imprint gy-force-press-readout gyFadeRise">
@@ -63,7 +63,7 @@ export function ForcePage() {
             </GuanyaoText>
           </div>
           <div className="gy-front-lines">
-            {["它不是你的标签", "它是你此刻与现实重力对撞时", "最先燃尽的那股原力"].map((line) => (
+            {["是一股正在推动你", "反复行动的力量", "它会先于解释接管现场"].map((line) => (
               <GuanyaoText key={line} size="body" tone="muted">
                 {line}
               </GuanyaoText>
@@ -72,7 +72,7 @@ export function ForcePage() {
         </article>
         <div className="gy-front-actions">
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-secondary" variant="secondary" onClick={handleRecord}>
-            记录解卦
+            记录压印
           </GuanyaoButton>
           <Link to="/scene" onClick={persistForceReading}>
             <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-primary" as="span" variant="ghost">
@@ -90,7 +90,7 @@ export function ForcePage() {
       {savedReading ? (
         <article className="reading-panel gyFadeRise">
           <GuanyaoText as="h3" size="body">
-            原力解卦已记录
+            原力压印已记录
           </GuanyaoText>
           <section>
             <strong>原力定格</strong>

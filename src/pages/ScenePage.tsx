@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
@@ -11,9 +11,22 @@ export function ScenePage() {
   const session = getSession();
   const forceId = getSessionForceId(session) ?? "";
   const sceneSlices = useMemo(() => pickSceneSlicesForForce(forceId), [forceId]);
+  const displaySceneSlices = useMemo(() => {
+    if (forceId) {
+      return sceneSlices;
+    }
+
+    const fallbackSceneIndex = sceneSlices.findIndex((sceneSlice) => sceneSlice.id === "scene_qian_001");
+    if (fallbackSceneIndex < 0) {
+      return sceneSlices;
+    }
+
+    return [sceneSlices[fallbackSceneIndex], ...sceneSlices.filter((_, index) => index !== fallbackSceneIndex)];
+  }, [forceId, sceneSlices]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
-  const currentScene = sceneSlices[activeIndex % sceneSlices.length];
+  const currentScene = displaySceneSlices[activeIndex % displaySceneSlices.length];
+  const sliceSource = "fallback";
   const flashLineParts = currentScene.flashLine.split(/[，。]/).filter(Boolean);
   const capturedLineGroups = [
     currentScene.fixedLines.slice(0, 2),
@@ -21,9 +34,17 @@ export function ScenePage() {
     currentScene.fixedLines.slice(4),
   ].filter((group) => group.length > 0);
 
-  function handleNext() {
-    setActiveIndex((currentIndex) => (currentIndex + 1) % sceneSlices.length);
-  }
+  useEffect(() => {
+    if (isLocked || displaySceneSlices.length <= 1) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setActiveIndex((currentIndex) => (currentIndex + 1) % displaySceneSlices.length);
+    }, 1800);
+
+    return () => window.clearInterval(timer);
+  }, [displaySceneSlices.length, isLocked]);
 
   function handleConfirm() {
     setSelectedSceneSlice(currentScene);
@@ -51,8 +72,13 @@ export function ScenePage() {
           <GuanyaoText className={`gy-scene-title ${!isLocked ? "gy-scene-title--flow" : ""}`} as="h2" size="title">
             {isLocked ? "现实引力已捕获" : "哪一幕　正在发生"}
           </GuanyaoText>
+          {!isLocked ? (
+            <GuanyaoText className="gy-text-instrument" size="body" tone="faint" data-slice-source={sliceSource}>
+              现实种子已抵达
+            </GuanyaoText>
+          ) : null}
         </div>
-        <article className="gy-front-panel gy-scene-slice-panel gy-scene-capture-plane gyFadeRise">
+        <article className="gy-front-panel gy-scene-slice-panel gy-scene-capture-plane gyFadeRise" key={isLocked ? "locked" : currentScene.id}>
           {isLocked ? (
             <div className="gy-capture-stack">
               {capturedLineGroups.map((group, groupIndex) => (
@@ -80,9 +106,6 @@ export function ScenePage() {
         </article>
         {!isLocked ? (
           <div className="gy-front-actions">
-            <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-secondary" variant="ghost" onClick={handleNext}>
-              还不是我
-            </GuanyaoButton>
             <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-intercept" variant="ghost" onClick={handleConfirm}>
               拦截 —— 正在发生
             </GuanyaoButton>
@@ -91,7 +114,7 @@ export function ScenePage() {
         {isLocked ? (
           <div className="gy-front-actions gyFadeRise">
             <GuanyaoText className="gy-text-instrument" size="body" tone="muted">
-              行为黑洞装填完毕
+              现实种子装填完毕
             </GuanyaoText>
             <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-primary" variant="ghost" onClick={handleStartYao}>
               以此起爻

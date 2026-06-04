@@ -2,15 +2,33 @@ export type YaoBit = 0 | 1;
 
 export type ChronoAgeRange = "18_22" | "23_31" | "32_39" | "40_52" | "53_plus";
 
+export type ChronoPrototypeCard = {
+  trigramId: string;
+  trigramSymbol: string;
+  trigramName: string;
+  archetypeName: string;
+  timeRange: string;
+  hourBranch: string;
+  prototypeName: string;
+  pressureWeights: string[];
+  shortReading: string;
+  shadowReading: string;
+};
+
 export type ChronoProfile = {
   birthYear: number;
   birthMonth: number;
   birthDay: number;
   birthDate: string;
+  birthTimeRange?: string;
+  birthHourBranch?: string;
+  birthHourBranchLabel?: string;
+  chronoHash?: string;
   ageRange: ChronoAgeRange;
   lifeStageLabel: string;
   pressureField: string[];
   sceneWeightTags: string[];
+  chronoPrototypeCard?: ChronoPrototypeCard;
 };
 
 export type SceneSlice = {
@@ -29,6 +47,8 @@ export type SceneSlice = {
 
 export interface GuanyaoSession {
   chronoProfile?: ChronoProfile | null;
+  chronoHash?: string | null;
+  chronoPrototypeCard?: ChronoPrototypeCard | null;
   selectedFragment?: any;
   selectedForceId?: string | null;
   selectedForceName?: string | null;
