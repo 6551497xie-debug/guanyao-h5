@@ -1,4 +1,4 @@
-import type { ChronoProfile, GuanyaoSession, MotherCodeResult, SceneSlice } from "../types";
+import type { ChronoProfile, GuanyaoSession, MotherCodeResult, SceneSeed, SceneSlice } from "../types";
 import { buildYuanCodeResult, normalizeGuaFieldFromLegacy } from "./codeContractService";
 import { initializeTimeSandglassAfterChrono } from "./timeSandglassService";
 
@@ -13,6 +13,7 @@ const defaultSession: GuanyaoSession = {
   identityFragment: null,
   selectedForceId: null,
   selectedForceName: null,
+  selectedSceneSeed: null,
   selectedSceneSlice: null,
   selectedSceneId: null,
   guaField: null,
@@ -76,6 +77,32 @@ export function setSelectedSceneSlice(sceneSlice: SceneSlice): GuanyaoSession {
     selectedSceneId: sceneSlice.id,
     realitySeed: sceneSlice,
     sceneText: sceneSlice.fixedLines.join("\n"),
+  });
+}
+
+export function setSelectedSceneSeed(sceneSeed: SceneSeed): GuanyaoSession {
+  const legacySceneSlice: SceneSlice = {
+    id: sceneSeed.id,
+    forceId: sceneSeed.yuanCodeKey,
+    forceName: sceneSeed.pressureLayerLabel,
+    title: sceneSeed.title,
+    flashLine: sceneSeed.seedLine,
+    fixedLines: [sceneSeed.realitySnapshot, sceneSeed.behaviorInertia],
+    bodyReaction: sceneSeed.bodySignalHint ?? sceneSeed.behaviorInertia,
+    behaviorInertia: sceneSeed.behaviorInertia,
+    gravityHook: sceneSeed.gravityHook,
+    tone: sceneSeed.pressureLayerId,
+    intensity: sceneSeed.intensity,
+  };
+
+  return updateSession({
+    selectedSceneSeed: sceneSeed,
+    selectedSceneSlice: legacySceneSlice,
+    selectedSceneId: sceneSeed.id,
+    realitySeed: sceneSeed,
+    sceneText: [sceneSeed.realitySnapshot, sceneSeed.behaviorInertia, sceneSeed.gravityHook]
+      .filter(Boolean)
+      .join("\n"),
   });
 }
 

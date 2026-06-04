@@ -234,6 +234,7 @@ export interface GuanyaoSession {
   forceProfile?: any;
   forceReading?: any;
   realitySeed?: any;
+  selectedSceneSeed?: SceneSeed | null;
   selectedSceneSlice?: SceneSlice | null;
   selectedSceneId?: string | null;
   guaField?: GuaFieldResult | MotherCodeResult | null;
@@ -319,7 +320,7 @@ export type CausalContextPackage = {
   chronoCode?: YuanCodeResult | null;
   identityFragment?: any;
   forceResult?: any;
-  sceneSeed?: SceneSlice | null;
+  sceneSeed?: any;
   guaField?: GuaFieldResult | MotherCodeResult | null;
   motherCode?: MotherCodeResult | null;
   autoYaoPath?: YaoBit[];

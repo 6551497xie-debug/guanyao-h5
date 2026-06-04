@@ -4,39 +4,93 @@ import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { buildMotherCodeResult } from "../services/motherCodeService";
-import { getSessionForceId, pickSceneSlicesForForce } from "../services/sceneService";
-import { getSession, setMotherCodeResult, setSelectedSceneSlice, updateSession } from "../services/sessionService";
+import { getSceneSeedGroup } from "../services/sceneSeedService";
+import { getSession, setMotherCodeResult, setSelectedSceneSeed, updateSession } from "../services/sessionService";
+import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId, SceneSeed } from "../types";
+
+const yuanCodeKeys: IdentityFragment["yuanCodeKey"][] = ["qian", "kun", "zhen", "xun", "kan", "li", "gen", "dui"];
+
+function readYuanCodeKey(session: GuanyaoSession): IdentityFragment["yuanCodeKey"] | undefined {
+  const candidate =
+    session.identityFragment?.yuanCodeKey ??
+    session.selectedFragment?.yuanCodeKey ??
+    session.yuanCode?.trigramKey ??
+    session.chronoCode?.trigramKey ??
+    session.chronoPrototypeCard?.trigramId;
+
+  return yuanCodeKeys.includes(candidate as IdentityFragment["yuanCodeKey"])
+    ? (candidate as IdentityFragment["yuanCodeKey"])
+    : undefined;
+}
+
+function readLifeStageId(session: GuanyaoSession): IdentityLifeStageId | undefined {
+  const identityLifeStage = session.identityFragment?.lifeStageId ?? session.selectedFragment?.lifeStageId;
+  if (identityLifeStage) {
+    return identityLifeStage;
+  }
+
+  switch (session.chronoProfile?.ageRange) {
+    case "18_22":
+      return "18_22";
+    case "23_31":
+      return "23_31";
+    case "32_39":
+      return "32_42";
+    case "40_52":
+    case "53_plus":
+      return "43_55";
+    default:
+      return undefined;
+  }
+}
+
+type SceneFlowState = "flowing" | "frozen" | "selected";
 
 export function ScenePage() {
   const navigate = useNavigate();
   const session = getSession();
-  const forceId = getSessionForceId(session) ?? "";
-  const sceneSlices = useMemo(() => pickSceneSlicesForForce(forceId), [forceId]);
-  const displaySceneSlices = useMemo(() => {
-    if (forceId) {
-      return sceneSlices;
-    }
-
-    const fallbackSceneIndex = sceneSlices.findIndex((sceneSlice) => sceneSlice.id === "scene_qian_001");
-    if (fallbackSceneIndex < 0) {
-      return sceneSlices;
-    }
-
-    return [sceneSlices[fallbackSceneIndex], ...sceneSlices.filter((_, index) => index !== fallbackSceneIndex)];
-  }, [forceId, sceneSlices]);
-  const activeIndex = 0;
-  const [isLocked, setIsLocked] = useState(false);
-  const currentScene = displaySceneSlices[activeIndex % displaySceneSlices.length];
-  const sliceSource = "fallback";
-  const flashLineParts = currentScene.flashLine.split(/[，。]/).filter(Boolean);
-  const capturedLineGroups = [
-    currentScene.fixedLines.slice(0, 2),
-    currentScene.fixedLines.slice(2, 4),
-    currentScene.fixedLines.slice(4),
-  ].filter((group) => group.length > 0);
+  const seedGroup = useMemo(
+    () =>
+      getSceneSeedGroup({
+        yuanCodeKey: readYuanCodeKey(session),
+        lifeStageId: readLifeStageId(session),
+        identityFragmentId: session.identityFragment?.id ?? session.selectedFragment?.id,
+      }),
+    [session],
+  );
+  const [flowState, setFlowState] = useState<SceneFlowState>("flowing");
+  const [selectedSeedId, setSelectedSeedId] = useState<string | null>(null);
+  const selectedSeed = seedGroup.seeds.find((seed) => seed.id === selectedSeedId) ?? null;
+  const isLocked = flowState !== "flowing";
+  const isSelected = flowState === "selected" && selectedSeed;
+  const sliceSource = seedGroup.matchedBy;
+  const sceneTitle =
+    flowState === "flowing"
+      ? "哪一幕　正在发生"
+      : flowState === "frozen"
+        ? "现实信号已截停"
+        : "现实引力已捕获";
+  const sceneStatus =
+    flowState === "flowing"
+      ? "现实信号流"
+      : flowState === "frozen"
+        ? "三枚现实种子已冻结"
+        : "本次现实种子已锁定";
+  const capturedLineGroups = selectedSeed
+    ? [
+        ["现实现场", selectedSeed.realitySnapshot],
+        ["行为惯性", selectedSeed.behaviorInertia],
+        ["重力钩子", selectedSeed.gravityHook],
+        selectedSeed.bodySignalHint ? ["身体信号", selectedSeed.bodySignalHint] : null,
+      ].filter((group): group is string[] => Boolean(group))
+    : [];
 
   function handleConfirm() {
-    setSelectedSceneSlice(currentScene);
+    setFlowState("frozen");
+  }
+
+  function handleSelectSeed(sceneSeed: SceneSeed) {
+    setSelectedSceneSeed(sceneSeed);
     updateSession({
       autoYaoPath: [],
       interactiveYaoPath: [],
@@ -44,7 +98,8 @@ export function ScenePage() {
       finalChoiceCode: "",
       choiceHistory: [],
     });
-    setIsLocked(true);
+    setSelectedSeedId(sceneSeed.id);
+    setFlowState("selected");
   }
 
   function handleStartYao() {
@@ -60,48 +115,55 @@ export function ScenePage() {
             GY / 03 / SCENE
           </GuanyaoText>
           <GuanyaoText className={`gy-scene-title ${!isLocked ? "gy-scene-title--flow" : ""}`} as="h2" size="title">
-            {isLocked ? "现实引力已捕获" : "哪一幕　正在发生"}
+            {sceneTitle}
           </GuanyaoText>
-          {!isLocked ? (
-            <GuanyaoText className="gy-text-instrument" size="body" tone="faint" data-slice-source={sliceSource}>
-              现实种子已抵达
-            </GuanyaoText>
-          ) : null}
+          <GuanyaoText className="gy-text-instrument" size="body" tone="faint" data-slice-source={sliceSource}>
+            {sceneStatus}
+          </GuanyaoText>
         </div>
-        <article className="gy-front-panel gy-scene-slice-panel gy-scene-capture-plane gyFadeRise" key={isLocked ? "locked" : currentScene.id}>
-          {isLocked ? (
+        <article className="gy-front-panel gy-scene-slice-panel gy-scene-capture-plane gyFadeRise" key={flowState}>
+          {isSelected ? (
             <div className="gy-capture-stack">
-              {capturedLineGroups.map((group, groupIndex) => (
-                <div className="gy-capture-line-group gy-text-slice" key={group.join("")}>
-                  {group.map((line) => (
-                    <GuanyaoText key={line} size="body" tone={groupIndex === 0 ? "muted" : "faint"}>
-                      {line}
-                    </GuanyaoText>
-                  ))}
+              {capturedLineGroups.map(([label, line], groupIndex) => (
+                <div className="gy-capture-line-group gy-text-slice" key={label}>
+                  <GuanyaoText className="gy-text-instrument" size="body" tone="faint">
+                    {label}
+                  </GuanyaoText>
+                  <GuanyaoText size="body" tone={groupIndex === 2 ? "gold" : "muted"}>
+                    {line}
+                  </GuanyaoText>
                 </div>
               ))}
-              <GuanyaoText className="gy-capture-hook gy-text-hook" size="body" tone="gold">
-                {currentScene.gravityHook}
-              </GuanyaoText>
             </div>
           ) : (
             <div className="gy-scene-flashline-group">
-              {flashLineParts.map((line) => (
-                <GuanyaoText className="gy-scene-flashline" as="p" key={line} size="title">
-                  {line}
-                </GuanyaoText>
+              {seedGroup.seeds.map((seed) => (
+                <div
+                  className="gy-scene-flashline"
+                  key={seed.id}
+                  onClick={flowState === "frozen" ? () => handleSelectSeed(seed) : undefined}
+                  onKeyDown={(event) => {
+                    if (flowState === "frozen" && (event.key === "Enter" || event.key === " ")) {
+                      handleSelectSeed(seed);
+                    }
+                  }}
+                  role={flowState === "frozen" ? "button" : undefined}
+                  tabIndex={flowState === "frozen" ? 0 : undefined}
+                >
+                  {seed.seedLine}
+                </div>
               ))}
             </div>
           )}
         </article>
-        {!isLocked ? (
+        {flowState === "flowing" ? (
           <div className="gy-front-actions">
             <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-intercept" variant="ghost" onClick={handleConfirm}>
               拦截 —— 正在发生
             </GuanyaoButton>
           </div>
         ) : null}
-        {isLocked ? (
+        {isSelected ? (
           <div className="gy-front-actions gyFadeRise">
             <GuanyaoText className="gy-text-instrument" size="body" tone="muted">
               现实种子装填完毕
