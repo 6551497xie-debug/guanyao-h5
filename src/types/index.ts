@@ -103,6 +103,36 @@ export type SceneSlice = {
   intensity: 1 | 2 | 3 | 4 | 5;
 };
 
+export type ScenePressureLayer = {
+  id: string;
+  label: string;
+  applicableLifeStages: IdentityLifeStageId[];
+  description: string;
+};
+
+export type SceneSeed = {
+  id: string;
+  sourceYuanCodeId: string;
+  yuanCodeKey: IdentityFragment["yuanCodeKey"];
+  lifeStageId: IdentityLifeStageId;
+  sourceIdentityFragmentId: string;
+  pressureLayerId: string;
+  pressureLayerLabel: string;
+  seedGroupId: string;
+  seedIndex: 1 | 2 | 3;
+  title: string;
+  seedLine: string;
+  realitySnapshot: string;
+  behaviorInertia: string;
+  gravityHook: string;
+  bodySignalHint?: string;
+  thematicField: string[];
+  motherCodeBiasTags: string[];
+  yaoCodeBiasTags: string[];
+  intensity: 1 | 2 | 3 | 4 | 5;
+  forbiddenToneTags: string[];
+};
+
 export type GuaFieldResult = {
   id: string;
   code64: string;
