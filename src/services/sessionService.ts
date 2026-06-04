@@ -10,6 +10,7 @@ const defaultSession: GuanyaoSession = {
   chronoPrototypeCard: null,
   chronoCode: null,
   yuanCode: null,
+  identityFragment: null,
   selectedForceId: null,
   selectedForceName: null,
   selectedSceneSlice: null,

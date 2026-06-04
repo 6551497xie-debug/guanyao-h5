@@ -197,6 +197,7 @@ export interface GuanyaoSession {
   chronoPrototypeCard?: ChronoPrototypeCard | null;
   chronoCode?: YuanCodeResult | null;
   yuanCode?: YuanCodeResult | null;
+  identityFragment?: IdentityFragment | null;
   selectedFragment?: any;
   selectedForceId?: string | null;
   selectedForceName?: string | null;

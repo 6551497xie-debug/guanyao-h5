@@ -1,52 +1,81 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { identityFragments } from "../data/identityFragments";
-import { updateSession } from "../services/sessionService";
+import { getSession, updateSession } from "../services/sessionService";
+import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId } from "../types";
 
-const identityFragmentCopy: Record<string, { title: string; lines: string[] }> = {
-  "FRAG-001": {
-    title: "我总觉得只要再撑一下",
-    lines: ["局面就不会真的塌下来"],
-  },
-  "FRAG-002": {
-    title: "我不是没看见问题",
-    lines: ["我只是一直在等", "一个不用我亲手处理的时机"],
-  },
-  "FRAG-003": {
-    title: "我习惯把话说轻一点",
-    lines: ["好像这样冲突", "就不会真的发生"],
-  },
-  "FRAG-004": {
-    title: "我每天都在动",
-    lines: ["但真正该面对的那件事", "一直没有被碰到"],
-  },
-  "FRAG-005": {
-    title: "我不是不累",
-    lines: ["我是已经习惯了", "把累藏进还能再坚持一下"],
-  },
-  "FRAG-006": {
-    title: "我总在引爆前收回去",
-    lines: ["不是没有立场", "是太熟悉冲突逼近时", "那一秒的空气"],
-  },
-};
+const yuanCodeKeys: IdentityFragment["yuanCodeKey"][] = ["qian", "kun", "zhen", "xun", "kan", "li", "gen", "dui"];
+
+function readYuanCodeKey(session: GuanyaoSession): IdentityFragment["yuanCodeKey"] | null {
+  const candidate =
+    session.yuanCode?.trigramKey ??
+    session.chronoCode?.trigramKey ??
+    session.chronoPrototypeCard?.trigramId;
+
+  return yuanCodeKeys.includes(candidate as IdentityFragment["yuanCodeKey"])
+    ? (candidate as IdentityFragment["yuanCodeKey"])
+    : null;
+}
+
+function readLifeStageId(session: GuanyaoSession): IdentityLifeStageId | null {
+  switch (session.chronoProfile?.ageRange) {
+    case "18_22":
+      return "18_22";
+    case "23_31":
+      return "23_31";
+    case "32_39":
+      return "32_42";
+    case "40_52":
+    case "53_plus":
+      return "43_55";
+    default:
+      return null;
+  }
+}
+
+function readIdentityPool(session: GuanyaoSession) {
+  const yuanCodeKey = readYuanCodeKey(session);
+  const lifeStageId = readLifeStageId(session);
+
+  if (yuanCodeKey && lifeStageId) {
+    const matchedFragments = identityFragments.filter(
+      (fragment) => fragment.yuanCodeKey === yuanCodeKey && fragment.lifeStageId === lifeStageId,
+    );
+
+    if (matchedFragments.length > 0) {
+      return matchedFragments;
+    }
+  }
+
+  console.warn("Identity fallback: missing yuanCode or lifeStage, using the first available fragment group.");
+  const fallbackKey = identityFragments[0]?.yuanCodeKey;
+  const fallbackStage = identityFragments[0]?.lifeStageId;
+
+  return identityFragments.filter(
+    (fragment) => fragment.yuanCodeKey === fallbackKey && fragment.lifeStageId === fallbackStage,
+  );
+}
 
 export function IdentityPage() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const currentFragment = identityFragments[activeIndex];
-  const fragmentCopy = identityFragmentCopy[currentFragment.id] ?? {
-    title: currentFragment.text,
-    lines: currentFragment.desc.split(/[，。]/).filter(Boolean),
+  const session = getSession();
+  const fragmentPool = useMemo(() => readIdentityPool(session), [session]);
+  const currentFragment = fragmentPool[activeIndex % fragmentPool.length] ?? identityFragments[0];
+  const fragmentCopy = {
+    title: currentFragment.fragmentLine,
+    lines: currentFragment.systemPerspective,
   };
 
   function handleNext() {
-    setActiveIndex((currentIndex) => (currentIndex + 1) % identityFragments.length);
+    setActiveIndex((currentIndex) => (currentIndex + 1) % fragmentPool.length);
   }
 
   function handleConfirm() {
     updateSession({
+      identityFragment: currentFragment,
       selectedFragment: currentFragment,
       autoYaoPath: [],
       sixthYaoChoice: null,
