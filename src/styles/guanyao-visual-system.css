@@ -3108,17 +3108,45 @@
 }
 
 .gy-scene-seed-list {
+  position: relative;
   width: 100%;
   justify-items: stretch;
   text-align: left;
+  padding: 8px 0 8px 12px;
+}
+
+.gy-scene-seed-list::before {
+  content: "";
+  position: absolute;
+  top: 34px;
+  bottom: 16px;
+  left: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.gy-scene-seed-list--flowing::before {
+  background: rgba(255, 255, 255, 0.16);
+  animation: gy-scene-signal-spine 4.8s ease-in-out infinite;
+}
+
+.gy-scene-seed-list--frozen::before {
+  background: rgba(199, 169, 107, 0.24);
+}
+
+.gy-scene-seed-group-label {
+  display: block;
+  margin: 0 0 2px;
+  color: rgba(85, 85, 85, 0.92) !important;
+  letter-spacing: 0.14em;
 }
 
 .gy-scene-seed-signal {
   display: grid;
   gap: 5px;
   width: 100%;
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 9px 0 9px 12px;
+  border-left: 0;
+  padding: 9px 0 9px 14px;
   color: rgba(255, 255, 255, 0.82);
   background: transparent;
   transition:
@@ -3128,39 +3156,23 @@
 }
 
 .gy-scene-seed-list--flowing .gy-scene-seed-signal {
-  opacity: 0.5;
-  animation: gy-scene-signal-drift 5.6s ease-in-out infinite;
+  opacity: 0.86;
 }
 
-.gy-scene-seed-list--flowing .gy-scene-seed-signal:nth-child(2) {
-  animation-delay: 0.8s;
-  transform: translateX(8px);
+.gy-scene-seed-list--flowing {
+  animation: gy-scene-group-drift 3s ease-in-out infinite;
 }
 
 .gy-scene-seed-list--flowing .gy-scene-seed-signal:nth-child(3) {
-  animation-delay: 1.4s;
-  transform: translateX(-4px);
+  transform: translateX(5px);
 }
 
-.gy-scene-seed-list--flowing .gy-scene-seed-signal--active {
-  opacity: 1;
-  border-left-color: rgba(199, 169, 107, 0.48);
-  background: linear-gradient(90deg, rgba(199, 169, 107, 0.055), rgba(199, 169, 107, 0) 68%);
-  transform: translateX(2px) translateY(-2px);
-  animation: none;
-}
-
-.gy-scene-seed-list--flowing .gy-scene-seed-signal--active .gy-scene-seed-index {
-  color: rgba(199, 169, 107, 0.78) !important;
-}
-
-.gy-scene-seed-list--flowing .gy-scene-seed-signal--active .gy-scene-flashline {
-  color: rgba(255, 255, 255, 0.92) !important;
+.gy-scene-seed-list--flowing .gy-scene-seed-signal:nth-child(4) {
+  transform: translateX(-3px);
 }
 
 .gy-scene-seed-list--frozen .gy-scene-seed-signal {
   cursor: pointer;
-  border-left-color: rgba(199, 169, 107, 0.22);
   background: rgba(199, 169, 107, 0.025);
   animation: none;
   opacity: 1;
@@ -3170,9 +3182,36 @@
 .gy-scene-seed-list--frozen .gy-scene-seed-signal:hover,
 .gy-scene-seed-list--frozen .gy-scene-seed-signal:focus-visible {
   outline: none;
-  border-left-color: rgba(199, 169, 107, 0.46);
   background: rgba(199, 169, 107, 0.045);
   transform: translateX(1px);
+}
+
+.gy-scene-seed-list--selected .gy-scene-seed-signal {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+
+.gy-scene-seed-signal--selected {
+  background: linear-gradient(90deg, rgba(199, 169, 107, 0.06), rgba(255, 255, 255, 0.018) 72%);
+}
+
+.gy-scene-seed-signal--selected .gy-scene-seed-index {
+  color: rgba(199, 169, 107, 0.8) !important;
+}
+
+.gy-scene-seed-signal--selected .gy-scene-flashline {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.gy-scene-seed-signal--muted {
+  opacity: 0.34;
+}
+
+.gy-scene-seed-detail {
+  margin-top: 8px;
+  padding: 10px 0 2px;
+  border-top: 1px solid rgba(199, 169, 107, 0.12);
 }
 
 .gy-scene-seed-index {
@@ -3215,6 +3254,30 @@
   45% {
     opacity: 0.86;
     transform: translateY(-4px);
+  }
+}
+
+@keyframes gy-scene-group-drift {
+  0%,
+  100% {
+    opacity: 0.78;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes gy-scene-signal-spine {
+  0%,
+  100% {
+    opacity: 0.28;
+  }
+
+  50% {
+    opacity: 0.62;
   }
 }
 

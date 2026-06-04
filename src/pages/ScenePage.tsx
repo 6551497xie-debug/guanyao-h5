@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
+import { sceneSeeds } from "../data/sceneSeeds";
 import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getSceneSeedGroup } from "../services/sceneSeedService";
 import { getSession, setMotherCodeResult, setSelectedSceneSeed, updateSession } from "../services/sessionService";
@@ -46,37 +47,108 @@ function readLifeStageId(session: GuanyaoSession): IdentityLifeStageId | undefin
 
 type SceneFlowState = "flowing" | "frozen" | "selected";
 
+type SceneSeedSceneGroup = {
+  seedGroupId: string;
+  pressureLayerId: string;
+  pressureLayerLabel: string;
+  seeds: SceneSeed[];
+};
+
+const requiredSceneSeedIndexes: SceneSeed["seedIndex"][] = [1, 2, 3];
+
+function normalizeSceneSeedGroup(seeds: SceneSeed[]): SceneSeedSceneGroup | null {
+  const orderedSeeds = [...seeds].sort((a, b) => a.seedIndex - b.seedIndex).slice(0, 3);
+  const [firstSeed] = orderedSeeds;
+
+  if (!firstSeed || orderedSeeds.length !== 3) {
+    return null;
+  }
+
+  const hasRequiredIndexes = requiredSceneSeedIndexes.every((index) =>
+    orderedSeeds.some((seed) => seed.seedIndex === index),
+  );
+  const hasOneGroup = orderedSeeds.every((seed) => seed.seedGroupId === firstSeed.seedGroupId);
+  const hasOnePressureLayer = orderedSeeds.every((seed) => seed.pressureLayerId === firstSeed.pressureLayerId);
+
+  if (!hasRequiredIndexes || !hasOneGroup || !hasOnePressureLayer) {
+    return null;
+  }
+
+  return {
+    seedGroupId: firstSeed.seedGroupId,
+    pressureLayerId: firstSeed.pressureLayerId,
+    pressureLayerLabel: firstSeed.pressureLayerLabel,
+    seeds: orderedSeeds,
+  };
+}
+
+function collectSceneSeedGroups(candidates: SceneSeed[]): SceneSeedSceneGroup[] {
+  const groupIds = [...new Set(candidates.map((seed) => seed.seedGroupId))];
+
+  return groupIds
+    .map((groupId) => normalizeSceneSeedGroup(candidates.filter((seed) => seed.seedGroupId === groupId)))
+    .filter((group): group is SceneSeedSceneGroup => Boolean(group));
+}
+
 export function ScenePage() {
   const navigate = useNavigate();
   const session = getSession();
-  const seedGroup = useMemo(
+  const yuanCodeKey = readYuanCodeKey(session);
+  const lifeStageId = readLifeStageId(session);
+  const identityFragmentId = session.identityFragment?.id ?? session.selectedFragment?.id;
+  const seedGroupFallback = useMemo(
     () =>
       getSceneSeedGroup({
-        yuanCodeKey: readYuanCodeKey(session),
-        lifeStageId: readLifeStageId(session),
-        identityFragmentId: session.identityFragment?.id ?? session.selectedFragment?.id,
+        yuanCodeKey,
+        lifeStageId,
+        identityFragmentId,
       }),
-    [session],
+    [identityFragmentId, lifeStageId, yuanCodeKey],
   );
+  const sceneGroups = useMemo(() => {
+    const exactGroups = identityFragmentId
+      ? collectSceneSeedGroups(sceneSeeds.filter((seed) => seed.sourceIdentityFragmentId === identityFragmentId))
+      : [];
+    const yuanLifeStageGroups =
+      yuanCodeKey && lifeStageId
+        ? collectSceneSeedGroups(sceneSeeds.filter((seed) => seed.yuanCodeKey === yuanCodeKey && seed.lifeStageId === lifeStageId))
+        : [];
+    const yuanGroups = yuanCodeKey
+      ? collectSceneSeedGroups(sceneSeeds.filter((seed) => seed.yuanCodeKey === yuanCodeKey))
+      : [];
+    const fallbackGroup = normalizeSceneSeedGroup(seedGroupFallback.seeds);
+
+    return exactGroups.length > 0
+      ? exactGroups
+      : yuanLifeStageGroups.length > 0
+        ? yuanLifeStageGroups
+        : yuanGroups.length > 0
+          ? yuanGroups
+          : fallbackGroup
+            ? [fallbackGroup]
+            : [];
+  }, [identityFragmentId, lifeStageId, seedGroupFallback.seeds, yuanCodeKey]);
+  const [currentSceneGroupIndex, setCurrentSceneGroupIndex] = useState(0);
   const [flowState, setFlowState] = useState<SceneFlowState>("flowing");
   const [selectedSeedId, setSelectedSeedId] = useState<string | null>(null);
-  const [activeSignalIndex, setActiveSignalIndex] = useState(0);
+  const seedGroup = sceneGroups[currentSceneGroupIndex] ?? sceneGroups[0] ?? seedGroupFallback;
   const selectedSeed = seedGroup.seeds.find((seed) => seed.id === selectedSeedId) ?? null;
   const isLocked = flowState !== "flowing";
-  const isSelected = flowState === "selected" && selectedSeed;
-  const sliceSource = seedGroup.matchedBy;
+  const isSelected = flowState === "selected" && Boolean(selectedSeed);
+  const sliceSource = sceneGroups.length > 1 ? "sceneGroupFlow" : seedGroupFallback.matchedBy;
+  const sceneGroupOrdinal = sceneGroups.length > 1 ? `第 ${currentSceneGroupIndex + 1} 幕` : "当前这一幕";
   const sceneTitle =
     flowState === "flowing"
       ? "哪一幕　正在发生"
       : flowState === "frozen"
-        ? "现实信号已截停"
+        ? "这一幕已截停"
         : "现实引力已捕获";
   const sceneStatus =
     flowState === "flowing"
-      ? "现实信号流"
+      ? "三枚现实种子正在组成同一幕"
       : flowState === "frozen"
-        ? "三枚现实种子已冻结"
-        : "本次现实种子已锁定";
+        ? "这一幕里的三枚现实入口已冻结"
+        : "现实入口已锁定";
   const capturedLineGroups = selectedSeed
     ? [
         ["现实现场", selectedSeed.realitySnapshot],
@@ -87,25 +159,30 @@ export function ScenePage() {
     : [];
 
   useEffect(() => {
-    if (flowState !== "flowing" || seedGroup.seeds.length <= 1) {
+    if (currentSceneGroupIndex >= sceneGroups.length) {
+      setCurrentSceneGroupIndex(0);
+    }
+  }, [currentSceneGroupIndex, sceneGroups.length]);
+
+  useEffect(() => {
+    if (flowState !== "flowing" || sceneGroups.length <= 1) {
       return undefined;
     }
 
-    const signalTimer = window.setInterval(() => {
-      setActiveSignalIndex((currentIndex) => (currentIndex + 1) % seedGroup.seeds.length);
-    }, 1400);
+    const sceneTimer = window.setInterval(() => {
+      setCurrentSceneGroupIndex((currentIndex) => (currentIndex + 1) % sceneGroups.length);
+    }, 3000);
 
     return () => {
-      window.clearInterval(signalTimer);
+      window.clearInterval(sceneTimer);
     };
-  }, [flowState, seedGroup.seeds.length]);
+  }, [flowState, sceneGroups.length]);
 
   function handleConfirm() {
     setFlowState("frozen");
-    setActiveSignalIndex(-1);
   }
 
-  function handleSelectSeed(sceneSeed: SceneSeed, seedIndex: number) {
+  function handleSelectSeed(sceneSeed: SceneSeed) {
     setSelectedSceneSeed(sceneSeed);
     updateSession({
       autoYaoPath: [],
@@ -115,7 +192,6 @@ export function ScenePage() {
       choiceHistory: [],
     });
     setSelectedSeedId(sceneSeed.id);
-    setActiveSignalIndex(seedIndex);
     setFlowState("selected");
   }
 
@@ -138,56 +214,69 @@ export function ScenePage() {
             {sceneStatus}
           </GuanyaoText>
         </div>
-        <article className="gy-front-panel gy-scene-slice-panel gy-scene-capture-plane gyFadeRise" key={flowState}>
-          {isSelected ? (
-            <div className="gy-capture-stack">
-              {capturedLineGroups.map(([label, line], groupIndex) => (
-                <div className="gy-capture-line-group gy-text-slice" key={label}>
-                  <GuanyaoText className="gy-text-instrument" size="body" tone="faint">
-                    {label}
-                  </GuanyaoText>
-                  <GuanyaoText size="body" tone={groupIndex === 2 ? "gold" : "muted"}>
-                    {line}
-                  </GuanyaoText>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className={`gy-scene-flashline-group gy-scene-seed-list gy-scene-seed-list--${flowState}`}>
-              {seedGroup.seeds.map((seed, seedIndex) => {
-                const isActiveSignal = flowState === "flowing" && seedIndex === activeSignalIndex;
+        <article className="gy-front-panel gy-scene-slice-panel gy-scene-capture-plane gyFadeRise">
+          <div className={`gy-scene-flashline-group gy-scene-seed-list gy-scene-seed-list--${flowState}`}>
+            <GuanyaoText className="gy-scene-seed-group-label" as="span" size="eyebrow" tone="faint">
+              {flowState === "flowing"
+                ? `${sceneGroupOrdinal}｜现实信号流`
+                : flowState === "frozen"
+                  ? `${sceneGroupOrdinal}｜点击压住你的入口`
+                  : `${sceneGroupOrdinal}｜现实入口已展开`}
+            </GuanyaoText>
+            {seedGroup.seeds.map((seed) => {
+              const isSelectedSeed = flowState === "selected" && seed.id === selectedSeedId;
+              const isMutedSeed = flowState === "selected" && seed.id !== selectedSeedId;
 
-                return (
-                  <div
-                    className={`gy-scene-seed-signal ${isActiveSignal ? "gy-scene-seed-signal--active" : ""}`}
-                    key={seed.id}
-                    onClick={flowState === "frozen" ? () => handleSelectSeed(seed, seedIndex) : undefined}
-                    onKeyDown={(event) => {
-                      if (flowState === "frozen" && (event.key === "Enter" || event.key === " ")) {
-                        handleSelectSeed(seed, seedIndex);
-                      }
-                    }}
-                    role={flowState === "frozen" ? "button" : undefined}
-                    tabIndex={flowState === "frozen" ? 0 : undefined}
-                  >
-                    <GuanyaoText className="gy-scene-seed-index" as="span" size="eyebrow" tone="faint">
-                      现实种子 {String(seed.seedIndex).padStart(2, "0")}｜{seed.title}
-                    </GuanyaoText>
-                    <GuanyaoText className="gy-scene-flashline" as="span" size="body">
-                      {seed.seedLine}
-                    </GuanyaoText>
-                    {flowState === "frozen" ? (
-                      <span className="gy-scene-seed-tags" aria-hidden="true">
-                        {seed.thematicField.slice(0, 3).map((tag) => (
-                          <span key={tag}>{tag}</span>
-                        ))}
-                      </span>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+              return (
+                <div
+                  className={[
+                    "gy-scene-seed-signal",
+                    isSelectedSeed ? "gy-scene-seed-signal--selected" : "",
+                    isMutedSeed ? "gy-scene-seed-signal--muted" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  key={seed.id}
+                  onClick={flowState === "frozen" ? () => handleSelectSeed(seed) : undefined}
+                  onKeyDown={(event) => {
+                    if (flowState === "frozen" && (event.key === "Enter" || event.key === " ")) {
+                      handleSelectSeed(seed);
+                    }
+                  }}
+                  role={flowState === "frozen" ? "button" : undefined}
+                  tabIndex={flowState === "frozen" ? 0 : undefined}
+                >
+                  <GuanyaoText className="gy-scene-seed-index" as="span" size="eyebrow" tone="faint">
+                    {flowState === "flowing" ? "现实信号" : "现实入口"} {String(seed.seedIndex).padStart(2, "0")}｜{seed.title}
+                  </GuanyaoText>
+                  <GuanyaoText className="gy-scene-flashline" as="span" size="body">
+                    {seed.seedLine}
+                  </GuanyaoText>
+                  {flowState !== "flowing" ? (
+                    <span className="gy-scene-seed-tags" aria-hidden="true">
+                      {seed.thematicField.slice(0, 3).map((tag) => (
+                        <span key={tag}>{tag}</span>
+                      ))}
+                    </span>
+                  ) : null}
+                  {isSelectedSeed ? (
+                    <div className="gy-scene-seed-detail gy-capture-stack">
+                      {capturedLineGroups.map(([label, line], groupIndex) => (
+                        <div className="gy-capture-line-group gy-text-slice" key={label}>
+                          <GuanyaoText className="gy-text-instrument" size="body" tone="faint">
+                            {label}
+                          </GuanyaoText>
+                          <GuanyaoText size="body" tone={groupIndex === 2 ? "gold" : "muted"}>
+                            {line}
+                          </GuanyaoText>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
         </article>
         {flowState === "flowing" ? (
           <div className="gy-front-actions">
