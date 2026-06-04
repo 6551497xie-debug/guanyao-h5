@@ -136,10 +136,10 @@ export function ScenePage() {
               ))}
             </div>
           ) : (
-            <div className="gy-scene-flashline-group">
+            <div className={`gy-scene-flashline-group gy-scene-seed-list gy-scene-seed-list--${flowState}`}>
               {seedGroup.seeds.map((seed) => (
                 <div
-                  className="gy-scene-flashline"
+                  className="gy-scene-seed-signal"
                   key={seed.id}
                   onClick={flowState === "frozen" ? () => handleSelectSeed(seed) : undefined}
                   onKeyDown={(event) => {
@@ -150,7 +150,12 @@ export function ScenePage() {
                   role={flowState === "frozen" ? "button" : undefined}
                   tabIndex={flowState === "frozen" ? 0 : undefined}
                 >
-                  {seed.seedLine}
+                  <GuanyaoText className="gy-scene-seed-index" as="span" size="eyebrow" tone="faint">
+                    现实种子 {String(seed.seedIndex).padStart(2, "0")}｜{seed.title}
+                  </GuanyaoText>
+                  <GuanyaoText className="gy-scene-flashline" as="span" size="body">
+                    {seed.seedLine}
+                  </GuanyaoText>
                 </div>
               ))}
             </div>
