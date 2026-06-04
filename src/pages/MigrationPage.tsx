@@ -298,7 +298,7 @@ export function MigrationPage() {
             `人格映照：${session.selectedFragment?.text ?? "本次碎片已认领"}`,
             `原力定格：${session.selectedForceName ?? "本次原力已定格"}`,
             `现实切片：${session.selectedSceneSlice?.flashLine ?? session.realitySeed?.title ?? "现实种子已捕获"}`,
-            `观爻卦场｜64：${yaoCodeCard.sourceGuaField?.code64 ?? "已显影"} ${("hexagramName" in (yaoCodeCard.sourceGuaField ?? {}) ? yaoCodeCard.sourceGuaField?.hexagramName : (yaoCodeCard.sourceGuaField as any)?.name) ?? ""}${yaoCodeCard.sourceGuaField?.title ? `｜${yaoCodeCard.sourceGuaField.title}` : ""}`,
+            `观爻母码｜64：${yaoCodeCard.sourceGuaField?.code64 ?? "已生成"} ${("hexagramName" in (yaoCodeCard.sourceGuaField ?? {}) ? yaoCodeCard.sourceGuaField?.hexagramName : (yaoCodeCard.sourceGuaField as any)?.name) ?? ""}${yaoCodeCard.sourceGuaField?.title ? `｜${yaoCodeCard.sourceGuaField.title}` : ""}`,
             `观爻爻码｜384：${yaoCode.code384}｜${yaoCode.personalityBehaviorTrack}`,
             `时间沙漏：${session.timeSandglass?.currentEnergy ?? session.energyState?.currentEnergy ?? getTimeSandglassState()?.currentEnergy ?? "已装填"}${session.timeSandglass?.unitName ?? session.energyState?.unitName ?? getTimeSandglassState()?.unitName ?? ""}`,
             `第六爻：${session.sixthYaoChoice === 0 ? "反本能偏转" : session.sixthYaoChoice === 1 ? "照旧反应" : "最终动作已落下"}`,

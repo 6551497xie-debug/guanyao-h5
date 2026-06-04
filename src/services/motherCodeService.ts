@@ -13,14 +13,14 @@ const motherCodeFallbacks = [
     name: "坎",
     title: "低处",
     shortSeal: "你被推到更深的低处，开始看见自己反复回到同一种反应。",
-    gravityField: "这片卦场承载的是压力逼近时的旧路径。六爻闭合后，才会压印成本次爻码卡。",
+    gravityField: "这枚母码承载的是压力逼近时的旧路径。六爻闭合后，才会压印成本次爻码卡。",
   },
   {
     code64: "052",
     name: "艮",
     title: "停住",
     shortSeal: "你最难的不是继续行动，而是在惯性要求你动的时候停住。",
-    gravityField: "这片卦场正在收束人格映照与现实种子之间的拉扯。",
+    gravityField: "这枚母码正在收束人格映照与现实种子之间的拉扯。",
   },
   {
     code64: "021",

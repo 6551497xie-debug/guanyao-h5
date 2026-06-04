@@ -39,20 +39,20 @@ export function MotherCodePage() {
       <section className="gy-delivery-stage gy-causal-line gy-causal-line-press gyFadeRise">
         <div className="gy-result-hero">
           <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
-            观爻卦场｜64
+            观爻母码｜64
           </GuanyaoText>
           <GuanyaoText as="h2" size="title">
-            卦场已显影
+            母码已生成
           </GuanyaoText>
           <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
-            这不是结论，而是你的人格惯性与现实种子对撞后形成的行为重力场。
+            母码不是最终结果，而是你的人格源代码与现实种子对撞后形成的行为母型。
           </GuanyaoText>
         </div>
 
         <div className="gy-result-frame">
           <div className="gy-result-code gy-result-code--primary">
             <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-              卦场
+              母码
             </GuanyaoText>
             <GuanyaoText size="body" tone="gold">
               {motherCode.code64} {motherCode.name}｜{motherCode.title}
@@ -68,7 +68,7 @@ export function MotherCodePage() {
           </div>
           <div>
             <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-              行为重力场
+              人格场域
             </GuanyaoText>
             <GuanyaoText size="body" tone="muted">
               {motherCode.gravityField}
@@ -91,7 +91,7 @@ export function MotherCodePage() {
 
         <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
           <GuanyaoText size="body" tone="muted">
-            接下来，系统会观察它如何在五爻中变形。
+            接下来，系统会观察它如何在六爻中发生变化。
           </GuanyaoText>
           <GuanyaoText size="body" tone="muted">
             六爻闭合后，才会压印成本次爻码卡。
@@ -100,7 +100,7 @@ export function MotherCodePage() {
 
         <div className="gy-delivery-actions">
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-primary" variant="gate" onClick={() => navigate("/gravity")}>
-            进入五爻推进
+            继续进入六爻推进
           </GuanyaoButton>
         </div>
       </section>

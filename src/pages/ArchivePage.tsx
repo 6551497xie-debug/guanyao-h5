@@ -108,7 +108,7 @@ function renderCausalSource(context: CausalContextPackage | undefined, item: Arc
         <p>人格映照：未记录</p>
         <p>原力定格：未记录</p>
         <p>现实种子：未记录</p>
-        <p>观爻卦场｜64：未记录</p>
+        <p>观爻母码｜64：未记录</p>
         <p>五爻惯性轨迹：{formatYaoPath(undefined)}</p>
         <p>第六爻偏转：未记录</p>
         <p>观爻爻码｜384：未记录</p>
@@ -126,7 +126,7 @@ function renderCausalSource(context: CausalContextPackage | undefined, item: Arc
       <p>人格映照：{readFragmentText(context.identityFragment)}</p>
       <p>原力定格：{readForceText(context.forceResult)}</p>
       <p>现实种子：{readSceneText(context.sceneSeed)}</p>
-      <p>观爻卦场｜64：{readGuaFieldText(context)}</p>
+      <p>观爻母码｜64：{readGuaFieldText(context)}</p>
       <p>前五爻惯性轨迹：{formatYaoPath(context.interactiveYaoPath && context.interactiveYaoPath.length >= 5 ? context.interactiveYaoPath : context.autoYaoPath)}</p>
       <p>第六爻偏转：{formatYaoBit(context.sixthYaoChoice)}</p>
       <p>观爻爻码｜384：{readYaoCodeText(context)}</p>
