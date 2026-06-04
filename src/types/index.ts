@@ -34,11 +34,37 @@ export type ChronoProfile = {
 export type YuanCodeResult = {
   id: string;
   code8: string;
+  trigramKey?: string;
+  trigramSymbol?: string;
+  trigramName?: string;
+  forceName?: string;
+  userFacingName?: string;
+  frontName?: string;
   trigram: string;
   name: string;
   title: string;
   personalitySourceCode: string;
+  gravityVector?: string;
+  sourceMechanism?: string;
+  sourceCore?: string;
+  sourceShadow?: string;
+  sourceCodeSlice?: string;
+  grayNote?: string;
+  sourceSeal?: string;
   shortSeal: string;
+  systemPerspective?: string[];
+  thematicField?: string[];
+  coreImpulse?: string;
+  shadowInertia?: string;
+  pressureTrigger?: string;
+  bodySignal?: string;
+  behaviorPattern?: string;
+  antiInstinctHint?: string;
+  chronoRevealLine?: string;
+  sourceCodeReading?: string;
+  identityBiasTags?: string[];
+  sceneBiasTags?: string[];
+  forbiddenToneTags?: string[];
 };
 
 export type SceneSlice = {

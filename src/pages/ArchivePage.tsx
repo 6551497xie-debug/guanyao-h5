@@ -50,10 +50,43 @@ function readGuaFieldText(context: CausalContextPackage | undefined) {
 
 function readYuanCodeText(context: CausalContextPackage | undefined) {
   const yuanCode = context?.yuanCode ?? context?.chronoCode;
-  if (yuanCode) return `${yuanCode.personalitySourceCode}｜${yuanCode.title}`;
+  if (yuanCode) return `${yuanCode.userFacingName ?? yuanCode.personalitySourceCode}｜${yuanCode.sourceSeal ?? yuanCode.shortSeal}`;
   return context?.chronoProfile?.chronoPrototypeCard
     ? `${context.chronoProfile.chronoPrototypeCard.trigramSymbol} ${context.chronoProfile.chronoPrototypeCard.trigramName}｜${context.chronoProfile.chronoPrototypeCard.archetypeName}`
     : "未记录";
+}
+
+function renderYuanCodeDetail(context: CausalContextPackage | undefined) {
+  const yuanCode = context?.yuanCode ?? context?.chronoCode;
+  if (!yuanCode) return null;
+
+  return (
+    <div className="gy-yuan-source-detail">
+      <p>元码名称：{yuanCode.userFacingName ?? yuanCode.name}</p>
+      {yuanCode.frontName ? <p>前台读数：{yuanCode.frontName}</p> : null}
+      <p>人格源代码：{yuanCode.personalitySourceCode}</p>
+      {yuanCode.gravityVector ? <p>行为重力向量：{yuanCode.gravityVector}</p> : null}
+      {yuanCode.sourceMechanism ? <p>源代码运行机制：{yuanCode.sourceMechanism}</p> : null}
+      {yuanCode.sourceCore ? <p>源代码核心剖面：{yuanCode.sourceCore}</p> : null}
+      {yuanCode.sourceShadow ? <p>原力阴影：{yuanCode.sourceShadow}</p> : null}
+      {yuanCode.sourceCodeSlice ? <p>降维核心剖面：{yuanCode.sourceCodeSlice}</p> : null}
+      {yuanCode.grayNote ? <p>骨灰注释：{yuanCode.grayNote}</p> : null}
+      <p>元码压印：{yuanCode.sourceSeal ?? yuanCode.shortSeal}</p>
+      {yuanCode.systemPerspective && yuanCode.systemPerspective.length > 0 ? (
+        <div>
+          <strong>SYSTEM PERSPECTIVE</strong>
+          {yuanCode.systemPerspective.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </div>
+      ) : null}
+      {yuanCode.thematicField && yuanCode.thematicField.length > 0 ? (
+        <p>THEMATIC FIELD：{yuanCode.thematicField.join(" · ")}</p>
+      ) : null}
+      {yuanCode.coreImpulse ? <p>核心冲动：{yuanCode.coreImpulse}</p> : null}
+      {yuanCode.shadowInertia ? <p>阴影惯性：{yuanCode.shadowInertia}</p> : null}
+    </div>
+  );
 }
 
 function readYaoCodeText(context: CausalContextPackage | undefined) {
@@ -89,6 +122,7 @@ function renderCausalSource(context: CausalContextPackage | undefined, item: Arc
   return (
     <div className="gy-causal-source-stack">
       <p>观爻元码｜8：{readYuanCodeText(context)}</p>
+      {renderYuanCodeDetail(context)}
       <p>人格映照：{readFragmentText(context.identityFragment)}</p>
       <p>原力定格：{readForceText(context.forceResult)}</p>
       <p>现实种子：{readSceneText(context.sceneSeed)}</p>

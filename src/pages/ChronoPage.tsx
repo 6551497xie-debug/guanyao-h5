@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
+import { buildYuanCodeResult } from "../services/codeContractService";
 import { setChronoProfile } from "../services/sessionService";
 import type { ChronoAgeRange, ChronoProfile, ChronoPrototypeCard } from "../types";
 
@@ -286,6 +287,7 @@ export function ChronoPage() {
 
   const currentTimeRange = birthTimeRanges[timeIndex];
   const generatedCard = chronoProfile?.chronoPrototypeCard;
+  const generatedYuanCode = chronoProfile ? buildYuanCodeResult(chronoProfile) : null;
 
   return (
     <GuanyaoShell density="compact">
@@ -394,10 +396,10 @@ export function ChronoPage() {
           ))}
         </div>
 
-        {chronoProfile && generatedCard ? (
-          <article className="gy-front-panel gy-chrono-prototype-card gyFadeRise">
+        {chronoProfile && generatedCard && generatedYuanCode ? (
+          <article className="gy-front-panel gy-chrono-prototype-card gy-yuan-code-panel gyFadeRise">
             <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
-              时序原型已生成
+              观爻元码｜8
             </GuanyaoText>
             <div className="gy-front-lines">
               <GuanyaoText size="body" tone="muted">
@@ -407,14 +409,40 @@ export function ChronoPage() {
                 时辰读数 {chronoProfile.birthHourBranchLabel}
               </GuanyaoText>
             </div>
-            <GuanyaoText as="h3" size="title">
-              {generatedCard.trigramSymbol} {generatedCard.trigramName}｜{generatedCard.archetypeName}
+            <GuanyaoText className="gy-yuan-code-title" as="h3" size="title">
+              {generatedYuanCode.frontName ?? generatedYuanCode.userFacingName ?? `${generatedCard.trigramSymbol} ${generatedCard.trigramName}｜${generatedCard.archetypeName}`}
             </GuanyaoText>
-            <div className="gy-front-lines">
-              {["元码已生成，沙漏已点亮", "本次行为因果推演开始", "系统捕获到的 不是性格", "是一股正在推动你反复行动的力量", generatedCard.shortReading, generatedCard.shadowReading].map((line) => (
+            {generatedYuanCode.gravityVector ? (
+              <GuanyaoText className="gy-yuan-code-vector" size="body" tone="muted">
+                {generatedYuanCode.gravityVector}
+              </GuanyaoText>
+            ) : null}
+            <GuanyaoText className="gy-yuan-code-core-slice" size="body">
+              {generatedYuanCode.sourceCodeSlice ?? generatedYuanCode.personalitySourceCode}
+            </GuanyaoText>
+            <GuanyaoText className="gy-yuan-code-note" size="body" tone="faint">
+              {generatedYuanCode.grayNote ?? generatedYuanCode.sourceSeal ?? generatedYuanCode.shortSeal}
+            </GuanyaoText>
+            <div className="gy-front-lines gy-yuan-code-source">
+              {["元码已生成，沙漏已点亮", generatedYuanCode.chronoRevealLine ?? "人格源代码已激活", generatedYuanCode.sourceSeal ?? generatedYuanCode.shortSeal].map((line) => (
                 <GuanyaoText key={line} size="body" tone="muted">
                   {line}
                 </GuanyaoText>
+              ))}
+            </div>
+            <div className="gy-yuan-system-perspective">
+              <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
+                SYSTEM PERSPECTIVE
+              </GuanyaoText>
+              {(generatedYuanCode.systemPerspective ?? []).map((line) => (
+                <GuanyaoText key={line} size="body" tone="muted">
+                  {line}
+                </GuanyaoText>
+              ))}
+            </div>
+            <div className="gy-yuan-thematic-field" aria-label="元码主题场">
+              {(generatedYuanCode.thematicField ?? []).map((field) => (
+                <span key={field}>{field}</span>
               ))}
             </div>
             <GuanyaoText className="gy-text-muted-coord" size="eyebrow" tone="faint">

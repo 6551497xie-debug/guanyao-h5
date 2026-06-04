@@ -24,7 +24,9 @@ export function MotherCodePage() {
     setMotherCodeResult(currentMotherCode);
     return currentMotherCode;
   }, [session]);
-  const chronoText = session.chronoPrototypeCard
+  const chronoText = session.yuanCode ?? session.chronoCode
+    ? `${(session.yuanCode ?? session.chronoCode)?.frontName ?? (session.yuanCode ?? session.chronoCode)?.userFacingName ?? (session.yuanCode ?? session.chronoCode)?.personalitySourceCode}｜${(session.yuanCode ?? session.chronoCode)?.sourceSeal ?? (session.yuanCode ?? session.chronoCode)?.shortSeal}`
+    : session.chronoPrototypeCard
     ? `${session.chronoPrototypeCard.trigramSymbol} ${session.chronoPrototypeCard.trigramName}｜${session.chronoPrototypeCard.archetypeName}`
     : session.chronoProfile
       ? `${session.chronoProfile.birthDate}｜${session.chronoProfile.lifeStageLabel}`

@@ -1,19 +1,15 @@
 import type { ChronoProfile, GuaFieldResult, GuanyaoSession, MigrationCard, MotherCodeResult, YaoCodeCard, YaoCodeResult, YuanCodeResult } from "../types";
+import { getYuanCodeByTrigramKey } from "../data/yuanCodes";
 
 export function buildYuanCodeResult(chronoProfile: ChronoProfile): YuanCodeResult {
   const prototype = chronoProfile.chronoPrototypeCard;
-  const trigram = prototype?.trigramName ?? "震";
-  const code8 = prototype?.trigramId ?? "zhen";
-  const archetype = prototype?.archetypeName ?? "行动者";
+  const yuanTemplate = getYuanCodeByTrigramKey(prototype?.trigramId);
 
   return {
-    id: `yuan_${code8}`,
-    code8,
-    trigram,
-    name: archetype,
-    title: prototype?.prototypeName ?? "时序原型",
-    personalitySourceCode: `${prototype?.trigramSymbol ?? "☳"} ${trigram}｜${archetype}`,
-    shortSeal: prototype?.shortReading ?? "本次时序原型已生成。",
+    ...yuanTemplate,
+    title: prototype?.prototypeName ?? yuanTemplate.title,
+    personalitySourceCode: yuanTemplate.personalitySourceCode,
+    shortSeal: yuanTemplate.sourceSeal,
   };
 }
 
