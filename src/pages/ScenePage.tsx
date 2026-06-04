@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
@@ -60,6 +60,7 @@ export function ScenePage() {
   );
   const [flowState, setFlowState] = useState<SceneFlowState>("flowing");
   const [selectedSeedId, setSelectedSeedId] = useState<string | null>(null);
+  const [activeSignalIndex, setActiveSignalIndex] = useState(0);
   const selectedSeed = seedGroup.seeds.find((seed) => seed.id === selectedSeedId) ?? null;
   const isLocked = flowState !== "flowing";
   const isSelected = flowState === "selected" && selectedSeed;
@@ -85,11 +86,26 @@ export function ScenePage() {
       ].filter((group): group is string[] => Boolean(group))
     : [];
 
+  useEffect(() => {
+    if (flowState !== "flowing" || seedGroup.seeds.length <= 1) {
+      return undefined;
+    }
+
+    const signalTimer = window.setInterval(() => {
+      setActiveSignalIndex((currentIndex) => (currentIndex + 1) % seedGroup.seeds.length);
+    }, 1400);
+
+    return () => {
+      window.clearInterval(signalTimer);
+    };
+  }, [flowState, seedGroup.seeds.length]);
+
   function handleConfirm() {
     setFlowState("frozen");
+    setActiveSignalIndex(-1);
   }
 
-  function handleSelectSeed(sceneSeed: SceneSeed) {
+  function handleSelectSeed(sceneSeed: SceneSeed, seedIndex: number) {
     setSelectedSceneSeed(sceneSeed);
     updateSession({
       autoYaoPath: [],
@@ -99,6 +115,7 @@ export function ScenePage() {
       choiceHistory: [],
     });
     setSelectedSeedId(sceneSeed.id);
+    setActiveSignalIndex(seedIndex);
     setFlowState("selected");
   }
 
@@ -137,34 +154,38 @@ export function ScenePage() {
             </div>
           ) : (
             <div className={`gy-scene-flashline-group gy-scene-seed-list gy-scene-seed-list--${flowState}`}>
-              {seedGroup.seeds.map((seed) => (
-                <div
-                  className="gy-scene-seed-signal"
-                  key={seed.id}
-                  onClick={flowState === "frozen" ? () => handleSelectSeed(seed) : undefined}
-                  onKeyDown={(event) => {
-                    if (flowState === "frozen" && (event.key === "Enter" || event.key === " ")) {
-                      handleSelectSeed(seed);
-                    }
-                  }}
-                  role={flowState === "frozen" ? "button" : undefined}
-                  tabIndex={flowState === "frozen" ? 0 : undefined}
-                >
-                  <GuanyaoText className="gy-scene-seed-index" as="span" size="eyebrow" tone="faint">
-                    现实种子 {String(seed.seedIndex).padStart(2, "0")}｜{seed.title}
-                  </GuanyaoText>
-                  <GuanyaoText className="gy-scene-flashline" as="span" size="body">
-                    {seed.seedLine}
-                  </GuanyaoText>
-                  {flowState === "frozen" ? (
-                    <span className="gy-scene-seed-tags" aria-hidden="true">
-                      {seed.thematicField.slice(0, 3).map((tag) => (
-                        <span key={tag}>{tag}</span>
-                      ))}
-                    </span>
-                  ) : null}
-                </div>
-              ))}
+              {seedGroup.seeds.map((seed, seedIndex) => {
+                const isActiveSignal = flowState === "flowing" && seedIndex === activeSignalIndex;
+
+                return (
+                  <div
+                    className={`gy-scene-seed-signal ${isActiveSignal ? "gy-scene-seed-signal--active" : ""}`}
+                    key={seed.id}
+                    onClick={flowState === "frozen" ? () => handleSelectSeed(seed, seedIndex) : undefined}
+                    onKeyDown={(event) => {
+                      if (flowState === "frozen" && (event.key === "Enter" || event.key === " ")) {
+                        handleSelectSeed(seed, seedIndex);
+                      }
+                    }}
+                    role={flowState === "frozen" ? "button" : undefined}
+                    tabIndex={flowState === "frozen" ? 0 : undefined}
+                  >
+                    <GuanyaoText className="gy-scene-seed-index" as="span" size="eyebrow" tone="faint">
+                      现实种子 {String(seed.seedIndex).padStart(2, "0")}｜{seed.title}
+                    </GuanyaoText>
+                    <GuanyaoText className="gy-scene-flashline" as="span" size="body">
+                      {seed.seedLine}
+                    </GuanyaoText>
+                    {flowState === "frozen" ? (
+                      <span className="gy-scene-seed-tags" aria-hidden="true">
+                        {seed.thematicField.slice(0, 3).map((tag) => (
+                          <span key={tag}>{tag}</span>
+                        ))}
+                      </span>
+                    ) : null}
+                  </div>
+                );
+              })}
             </div>
           )}
         </article>
