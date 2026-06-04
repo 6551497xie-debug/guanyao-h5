@@ -36,7 +36,7 @@ export function ChoicePage() {
               最后一爻已落下
             </GuanyaoText>
             <GuanyaoText size="body" tone="gold">
-              人格迁移正在定格
+              爻码卡正在生成
             </GuanyaoText>
           </div>
         ) : (

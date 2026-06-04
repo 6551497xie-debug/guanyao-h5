@@ -8,24 +8,24 @@ import { updateSession } from "../services/sessionService";
 
 const identityFragmentCopy: Record<string, { title: string; lines: string[] }> = {
   "FRAG-001": {
-    title: "我总觉得再撑一下",
-    lines: ["局面就不会真的塌下来", "可真正该处理的伤口", "一直被你放在最后"],
+    title: "我总觉得只要再撑一下",
+    lines: ["局面就不会真的塌下来"],
   },
   "FRAG-002": {
-    title: "我把话咽回去",
-    lines: ["直到所有人都以为", "我没有需求", "也没有疼痛"],
+    title: "我不是没看见问题",
+    lines: ["我只是一直在等", "一个不用我亲手处理的时机"],
   },
   "FRAG-003": {
+    title: "我习惯把话说轻一点",
+    lines: ["好像这样冲突", "就不会真的发生"],
+  },
+  "FRAG-004": {
     title: "我每天都在动",
     lines: ["但真正该面对的那件事", "一直没有被碰到"],
   },
-  "FRAG-004": {
-    title: "我不允许自己掉下来",
-    lines: ["更不允许别人看见", "我其实已经在发抖"],
-  },
   "FRAG-005": {
-    title: "我不是想依赖谁",
-    lines: ["只是漂得太久", "死活想要一个边界"],
+    title: "我不是不累",
+    lines: ["我是已经习惯了", "把累藏进还能再坚持一下"],
   },
   "FRAG-006": {
     title: "我总在引爆前收回去",
@@ -66,7 +66,7 @@ export function IdentityPage() {
             人格映照碎片
           </GuanyaoText>
           <GuanyaoText size="body" tone="faint">
-            哪一句 像你此刻的惯性
+            哪一句，像你此刻的惯性？
           </GuanyaoText>
         </div>
         <article className="gy-front-panel gy-text-fragment gyFadeRise" data-clickable="true" onClick={handleNext}>

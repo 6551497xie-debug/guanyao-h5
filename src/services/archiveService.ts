@@ -1,4 +1,4 @@
-import type { ArchiveItem, MigrationCard } from "../types";
+import type { ArchiveItem, CausalContextPackage, MigrationCard } from "../types";
 
 const ARCHIVE_KEY = "guanyao_h5_archive";
 
@@ -19,7 +19,7 @@ export function getArchives(): ArchiveItem[] {
   }
 }
 
-export function saveArchive(item: MigrationCard & { finalChoiceCode: string }): ArchiveItem[] {
+export function saveArchive(item: MigrationCard & { finalChoiceCode: string; causalContext?: CausalContextPackage }): ArchiveItem[] {
   const archiveItem: ArchiveItem = {
     archiveId: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
@@ -33,6 +33,7 @@ export function saveArchive(item: MigrationCard & { finalChoiceCode: string }): 
     conflictScript90d: item.conflictScript90d,
     antiInstinctNode: item.antiInstinctNode,
     status: item.status,
+    causalContext: item.causalContext,
   };
 
   const nextArchive = [archiveItem, ...getArchives()];

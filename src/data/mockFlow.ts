@@ -6,6 +6,7 @@ export const flowSteps: FlowStep[] = [
   { code: "01", key: "identity", path: "/identity", title: "Identity 人格映照碎片" },
   { code: "02", key: "force", path: "/force", title: "Force 原力定格" },
   { code: "03", key: "scene", path: "/scene", title: "Scene 现实场景切片" },
+  { code: "03-G", key: "gua-field", path: "/gua-field", title: "GuaField 观爻卦场显影" },
   { code: "04", key: "gravity", path: "/gravity", title: "Gravity 1-3爻自动观影" },
   { code: "05", key: "collapse", path: "/collapse", title: "Collapse 4-5爻自动观影与高压停滞" },
   { code: "06", key: "choice", path: "/choice", title: "Choice 第六爻唯一手动抉择" },

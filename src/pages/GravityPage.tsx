@@ -54,24 +54,24 @@ type YaoRitualScene = {
 function buildYaoRitualCopyFromScene(sceneSlice: SceneSlice): YaoRitualScene[] {
   return [
     {
-      title: "本能反应",
-      lines: ["你先回到那一幕：", sceneSlice.flashLine, "本能先替你做了第一步。"],
+      title: "本能",
+      lines: ["你先把声音放轻了。", "不是因为你没立场，", "是因为你太熟悉压力逼近时那一秒的空气。"],
     },
     {
-      title: "身体代偿",
-      lines: ["身体比判断更早报警：", `${sceneSlice.bodyReaction}。`, "它正在替你承受没有说出口的压力。"],
+      title: "习惯",
+      lines: ["旧习惯接管了你。", `身体先报警：${sceneSlice.bodyReaction}。`, "你开始让每一句话都留有退路。"],
     },
     {
-      title: "行为惯性",
-      lines: ["旧习惯接管现场：", `${sceneSlice.behaviorInertia}。`, "代价开始从旁边显形。"],
+      title: "代价",
+      lines: ["代价开始显形。", `${sceneSlice.behaviorInertia}。`, "别人学会了：关键时刻，你会把自己交给旧反应。"],
     },
     {
-      title: "高压塌缩",
-      lines: [sceneSlice.gravityHook, "高压不是突然来的。", "它是每一次旧反应叠上去的重量。"],
+      title: "高压",
+      lines: ["高压不是突然来的。", "它是你每一次沉默之后，", "别人替你多放上去的一块重量。"],
     },
     {
-      title: "临界悬停",
-      lines: ["你快要把旧轨道误认为安全。", "真正危险的不是这一次压力，", "而是你已经太熟悉如何退回原位。"],
+      title: "临界",
+      lines: ["你快要把退让误认为安全。", "真正危险的不是这一次冲突，", "而是你已经开始相信：只要不站出来，就不会失去更多。"],
     },
   ];
 }

@@ -8,6 +8,7 @@ import { migrations } from "../data/migrations";
 import { saveArchive } from "../services/archiveService";
 import { getSession } from "../services/sessionService";
 import { buildFinalChoiceCode } from "../services/trajectoryService";
+import type { CausalContextPackage, GuanyaoSession, MigrationCard } from "../types";
 
 const ninetyDayScriptBills = [
   {
@@ -23,7 +24,7 @@ const ninetyDayScriptBills = [
     title: "第二幕｜中期执念过载点",
     window: "30—45 天",
     trigger: "当外部压力没有明显变化，你会开始用解释、校准、准备来维持停滞。",
-    inertia: "真正消耗你的，不是外界阻力，而是反复校准。你会继续寻找一个更安全的开始时刻。",
+    inertia: "真正消耗你的，不是外界阻力，而是反复校准。你会继续等待一个更安全的开始时刻。",
     bodySignalLabel: "现实代价",
     bodySignal: "行动被延后，关系被悬置，真正的问题继续留在原位。",
     antiInstinct: "停止新增解释。删掉一个用来拖延行动的准备动作。",
@@ -39,26 +40,32 @@ const ninetyDayScriptBills = [
   },
 ];
 
-const behaviorDefenseVerdict = ["你不是在谨慎。", "你是在用反复校准，推迟一次真正的行动。"];
+const behaviorDefenseVerdict = [
+  "系统不吓唬你。",
+  "它只用你刚刚走完的六爻轨迹，",
+  "把未来90天里最容易复发的惯性节点摊开。",
+  "你真正要防的，不是外面的事。",
+  "是你在压力出现时，那个太熟练的旧反应。",
+];
 
 const behaviorRadarNodes = [
   {
     window: ninetyDayScriptBills[0].window,
     title: "第7—15天｜身体先报警",
     state: "shift",
-    line: "你可能不会立刻反击。你更可能反扣手机，继续刷新，用忙碌麻痹已经醒过来的恐惧。",
+    line: "你可能不会立刻反击，也不会立刻说清楚。你更可能反扣手机，继续刷新，用一点无意义的忙碌麻痹已经醒过来的恐惧。",
   },
   {
     window: ninetyDayScriptBills[1].window,
     title: "第30—45天｜现实代价开始结算",
     state: "pressure",
-    line: "真正开始失控的，不是某一句话，而是必须知情的人终于发现你早就知道盘面。",
+    line: "你以为隐瞒是在保护局面。但系统推演到这里，必须知情的人会发现：你早就知道问题存在，只是一直没有把真实盘面交出来。",
   },
   {
     window: ninetyDayScriptBills[2].window,
     title: "第60—90天｜旧轨迹要求你回到原位",
     state: "shift",
-    line: "它会把再等等包装成成熟，把先别说包装成顾全大局。",
+    line: "这条轨迹最会骗你的地方，就是它永远不像逃避。它会把再等等包装成成熟，把先别说包装成顾全大局。",
   },
 ] as const;
 
@@ -81,7 +88,7 @@ const antiInstinctOperationCards = [
     title: "操作卡 03｜删减动作",
     when: "当你想用更多计划、会议、解释、准备，证明自己还在推进。",
     action: "删掉一个最像表面补救的动作。停止新增战线。只保留一个能触碰真实问题的动作。",
-    forbid: "不要用忙碌掩盖停滞。不要用勤奋证明你没有害怕。不要再把我很努力当成遮羞布。",
+    forbid: "不要用忙碌掩盖停滞。不要用勤奋证明你没有害怕。不要再把“我很努力”当成遮羞布。",
     done: "少做一件消耗动作。把能量交还给真正有效的动作。",
   },
 ] as const;
@@ -91,6 +98,30 @@ const reviewRingCells = Array.from({ length: 90 }, (_, index) => {
   if ([14, 61, 78].includes(index)) return "shift";
   return "empty";
 });
+
+function buildCausalContextPackage(session: GuanyaoSession, card: MigrationCard, finalChoiceCode: string): CausalContextPackage {
+  return {
+    chronoProfile: session.chronoProfile ?? null,
+    identityFragment: session.selectedFragment ?? null,
+    forceResult: session.forceReading ?? session.forceProfile ?? null,
+    sceneSeed: session.selectedSceneSlice ?? session.realitySeed ?? null,
+    motherCode: session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode ?? null,
+    autoYaoPath: session.autoYaoPath,
+    interactiveYaoPath: session.interactiveYaoPath ?? [],
+    sixthYaoChoice: session.sixthYaoChoice,
+    finalChoiceCode,
+    yaoCodeCard: {
+      code: `${card.migrationDirection.code} ${card.migrationDirection.traditionalName}${card.migrationDirection.scriptTitle}｜上爻`,
+      title: card.cardTitle,
+      track: `${card.currentTrack.code} ${card.currentTrack.traditionalName}${card.currentTrack.scriptTitle} → ${card.migrationDirection.code} ${card.migrationDirection.traditionalName}${card.migrationDirection.scriptTitle}`,
+      source: card.shortReading.join(" / "),
+    },
+    defenseBook90d: {
+      title: "90天行为防御本",
+      sections: ["90天行为重力雷达", "3张反本能操作卡", "90天复盘年轮"],
+    },
+  };
+}
 
 function BehaviorDefenseKit() {
   return (
@@ -105,7 +136,8 @@ function BehaviorDefenseKit() {
 
       <section className="gy-defense-module">
         <h3>01｜90天行为重力雷达</h3>
-        <p className="gy-defense-note">系统不吓唬你。它只用你刚刚走完的六爻轨迹，把未来90天里最容易复发的惯性节点摊开。</p>
+        <p className="gy-defense-note">如果继续顺着目前的行为惯性走，未来90天，最容易反复触发的不是灾难，而是你那套已经练得很熟的自保动作。</p>
+        <p className="gy-defense-note">装作没事。继续硬撑。把话咽回去。把手机反扣。把真实盘面继续往后拖。</p>
         <div className="gy-defense-radar" aria-label="90天行为重力雷达">
           <div className="gy-defense-radar-line" aria-hidden="true" />
           {behaviorRadarNodes.map((node) => (
@@ -147,14 +179,15 @@ function BehaviorDefenseKit() {
       </section>
 
       <section className="gy-defense-module">
-        <h3>03｜90天复盘年轮入口</h3>
+        <h3>03｜90天复盘年轮</h3>
         <p className="gy-defense-note">未来90天，每一次顺应惯性或完成偏转，都可以沉积在这里。</p>
         <div className="gy-defense-review-ring" aria-label="90天复盘年轮">
           {reviewRingCells.map((state, index) => (
             <span className={`gy-defense-review-cell gy-defense-review-cell--${state}`} key={`${state}-${index}`} />
           ))}
         </div>
-        <p className="gy-defense-note">后续每一次现实偏转，都将沉积为新的行为年轮。</p>
+        <p className="gy-defense-note">你不是在打卡。你是在记录自己有没有从旧轨道里醒来。</p>
+        <p className="gy-defense-note">每一个骨灰格，都是一次你没有记录的旧反应。每一个冷金点，都是一次你从惯性里夺回来的动作。</p>
       </section>
     </div>
   );
@@ -179,6 +212,7 @@ export function MigrationPage() {
     saveArchive({
       ...card,
       finalChoiceCode,
+      causalContext: buildCausalContextPackage(getSession(), card, finalChoiceCode),
     });
     navigate("/archive");
   }
@@ -193,8 +227,8 @@ export function MigrationPage() {
           <GuanyaoText as="h2" size="title">
             爻码卡已生成
           </GuanyaoText>
-          <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
-            这不是结论 是六爻偏转留下的状态压印
+            <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
+            这不是结论 是你刚刚完成的六爻偏转留下的状态压印
           </GuanyaoText>
         </div>
 
@@ -244,6 +278,7 @@ export function MigrationPage() {
             `人格映照：${session.selectedFragment?.text ?? "本次碎片已认领"}`,
             `原力定格：${session.selectedForceName ?? "本次原力已定格"}`,
             `现实切片：${session.selectedSceneSlice?.flashLine ?? session.realitySeed?.title ?? "现实种子已捕获"}`,
+            `观爻卦场｜64：${(session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode)?.code64 ?? "已显影"} ${(session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode)?.name ?? ""}${(session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode)?.title ? `｜${(session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode)?.title}` : ""}`,
             `第六爻：${session.sixthYaoChoice === 0 ? "反本能偏转" : session.sixthYaoChoice === 1 ? "照旧反应" : "最终动作已落下"}`,
           ].map((line) => (
             <GuanyaoText key={line} size="eyebrow" tone="faint">
@@ -298,11 +333,11 @@ export function MigrationPage() {
               <BehaviorDefenseKit />
             </details>
             <details className="gy-analysis-card">
-              <summary>反本能节点</summary>
+              <summary>反本能动作</summary>
               <p>{card.antiInstinctNode}</p>
             </details>
             <details className="gy-analysis-card">
-              <summary>爻码轨迹</summary>
+              <summary>因果轨迹</summary>
               <p>{finalChoiceCode}</p>
               <p>
                 {card.currentTrack.code} → {card.migrationDirection.code}

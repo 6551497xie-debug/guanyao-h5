@@ -9,6 +9,7 @@ import { GravityPage } from "./pages/GravityPage";
 import { IdentityPage } from "./pages/IdentityPage";
 import { LaunchPage } from "./pages/LaunchPage";
 import { MigrationPage } from "./pages/MigrationPage";
+import { MotherCodePage } from "./pages/MotherCodePage";
 import { ScenePage } from "./pages/ScenePage";
 
 export default function App() {
@@ -20,6 +21,8 @@ export default function App() {
         <Route path="/identity" element={<IdentityPage />} />
         <Route path="/force" element={<ForcePage />} />
         <Route path="/scene" element={<ScenePage />} />
+        <Route path="/gua-field" element={<MotherCodePage />} />
+        <Route path="/mother-code" element={<MotherCodePage />} />
         <Route path="/gravity" element={<GravityPage />} />
         <Route path="/collapse" element={<CollapsePage />} />
         <Route path="/choice" element={<ChoicePage />} />

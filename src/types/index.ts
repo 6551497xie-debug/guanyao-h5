@@ -45,6 +45,20 @@ export type SceneSlice = {
   intensity: 1 | 2 | 3 | 4 | 5;
 };
 
+export type MotherCodeResult = {
+  id: string;
+  code64: string;
+  name: string;
+  title: string;
+  upperTrigram?: string;
+  lowerTrigram?: string;
+  sourceIdentityId?: string;
+  sourceSceneId?: string;
+  sourceForceId?: string;
+  shortSeal: string;
+  gravityField: string;
+};
+
 export interface GuanyaoSession {
   chronoProfile?: ChronoProfile | null;
   chronoHash?: string | null;
@@ -57,6 +71,9 @@ export interface GuanyaoSession {
   realitySeed?: any;
   selectedSceneSlice?: SceneSlice | null;
   selectedSceneId?: string | null;
+  motherCode?: MotherCodeResult | null;
+  motherCodeResult?: MotherCodeResult | null;
+  currentMotherCode?: MotherCodeResult | null;
   sceneText?: string;
   autoYaoPath: YaoBit[];
   interactiveYaoPath?: YaoBit[];
@@ -120,8 +137,31 @@ export interface MigrationCard {
   status: "active";
 }
 
+export type CausalContextPackage = {
+  chronoProfile?: ChronoProfile | null;
+  identityFragment?: any;
+  forceResult?: any;
+  sceneSeed?: SceneSlice | null;
+  motherCode?: MotherCodeResult | null;
+  autoYaoPath?: YaoBit[];
+  interactiveYaoPath?: YaoBit[];
+  sixthYaoChoice?: YaoBit | null;
+  finalChoiceCode: string;
+  yaoCodeCard: {
+    code: string;
+    title: string;
+    track: string;
+    source: string;
+  };
+  defenseBook90d: {
+    title: string;
+    sections: string[];
+  };
+};
+
 export interface ArchiveItem extends MigrationCard {
   archiveId: string;
   createdAt: string;
   finalChoiceCode: string;
+  causalContext?: CausalContextPackage;
 }

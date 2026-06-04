@@ -50,7 +50,7 @@ export function ForcePage() {
             原力定格
           </GuanyaoText>
           <GuanyaoText className="gy-text-instrument" size="body" tone="faint">
-            系统捕获到的 不是性格
+            系统捕获到的，不是性格。
           </GuanyaoText>
         </div>
         <article className="gy-front-panel gy-force-imprint gy-force-press-readout gyFadeRise">
@@ -63,7 +63,7 @@ export function ForcePage() {
             </GuanyaoText>
           </div>
           <div className="gy-front-lines">
-            {["是一股正在推动你", "反复行动的力量", "它会先于解释接管现场"].map((line) => (
+            {["是一股正在推动你反复行动的力量。", "你不是热爱行动。", "你只是太害怕一停下来，就看见真正的问题还在原地。"].map((line) => (
               <GuanyaoText key={line} size="body" tone="muted">
                 {line}
               </GuanyaoText>

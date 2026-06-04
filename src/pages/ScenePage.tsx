@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
+import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getSessionForceId, pickSceneSlicesForForce } from "../services/sceneService";
-import { getSession, setSelectedSceneSlice, updateSession } from "../services/sessionService";
+import { getSession, setMotherCodeResult, setSelectedSceneSlice, updateSession } from "../services/sessionService";
 
 export function ScenePage() {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ export function ScenePage() {
 
     const timer = window.setInterval(() => {
       setActiveIndex((currentIndex) => (currentIndex + 1) % displaySceneSlices.length);
-    }, 1800);
+    }, 2200);
 
     return () => window.clearInterval(timer);
   }, [displaySceneSlices.length, isLocked]);
@@ -59,7 +60,8 @@ export function ScenePage() {
   }
 
   function handleStartYao() {
-    navigate("/gravity");
+    setMotherCodeResult(buildMotherCodeResult(getSession()));
+    navigate("/gua-field");
   }
 
   return (

@@ -1,4 +1,4 @@
-import type { ChronoProfile, GuanyaoSession, SceneSlice } from "../types";
+import type { ChronoProfile, GuanyaoSession, MotherCodeResult, SceneSlice } from "../types";
 
 const SESSION_KEY = "guanyao_h5_session";
 
@@ -10,6 +10,9 @@ const defaultSession: GuanyaoSession = {
   selectedForceName: null,
   selectedSceneSlice: null,
   selectedSceneId: null,
+  motherCode: null,
+  motherCodeResult: null,
+  currentMotherCode: null,
   autoYaoPath: [],
   interactiveYaoPath: [],
   sixthYaoChoice: null,
@@ -72,6 +75,14 @@ export function setChronoProfile(chronoProfile: ChronoProfile): GuanyaoSession {
     chronoProfile,
     chronoHash: chronoProfile.chronoHash ?? null,
     chronoPrototypeCard: chronoProfile.chronoPrototypeCard ?? null,
+  });
+}
+
+export function setMotherCodeResult(motherCode: MotherCodeResult): GuanyaoSession {
+  return updateSession({
+    motherCode,
+    motherCodeResult: motherCode,
+    currentMotherCode: motherCode,
   });
 }
 
