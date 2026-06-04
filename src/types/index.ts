@@ -67,6 +67,28 @@ export type YuanCodeResult = {
   forbiddenToneTags?: string[];
 };
 
+export type IdentityLifeStageId = "18_22" | "23_31" | "32_42" | "43_55";
+
+export type IdentityFragment = {
+  id: string;
+  sourceYuanCodeId: string;
+  yuanCodeKey: "qian" | "kun" | "zhen" | "xun" | "kan" | "li" | "gen" | "dui";
+  lifeStageId: IdentityLifeStageId;
+  lifeStageLabel: string;
+  fragmentGroup: string;
+  title: string;
+  fragmentLine: string;
+  systemPerspective: string[];
+  identityHook: string;
+  shadowInertia: string;
+  misrecognitionPattern: string;
+  thematicField: string[];
+  pressureLayerHints: string[];
+  sceneSeedBiasTags: string[];
+  intensity: 1 | 2 | 3 | 4 | 5;
+  forbiddenToneTags: string[];
+};
+
 export type SceneSlice = {
   id: string;
   forceId: string;
