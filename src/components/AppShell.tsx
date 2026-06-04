@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { flowSteps } from "../data/mockFlow";
 import type { ReactNode } from "react";
+import { TimeSandglassReadout } from "./visual/TimeSandglassReadout";
 
 type AppShellProps = {
   children: ReactNode;
@@ -22,6 +23,7 @@ export function AppShell({ children }: AppShellProps) {
           ))}
         </nav>
       </header>
+      <TimeSandglassReadout />
       <main>{children}</main>
     </div>
   );

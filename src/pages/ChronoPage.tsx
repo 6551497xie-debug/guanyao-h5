@@ -411,7 +411,7 @@ export function ChronoPage() {
               {generatedCard.trigramSymbol} {generatedCard.trigramName}｜{generatedCard.archetypeName}
             </GuanyaoText>
             <div className="gy-front-lines">
-              {["系统捕获到的 不是性格", "是一股正在推动你反复行动的力量", generatedCard.shortReading, generatedCard.shadowReading].map((line) => (
+              {["元码已生成，沙漏已点亮", "本次行为因果推演开始", "系统捕获到的 不是性格", "是一股正在推动你反复行动的力量", generatedCard.shortReading, generatedCard.shadowReading].map((line) => (
                 <GuanyaoText key={line} size="body" tone="muted">
                   {line}
                 </GuanyaoText>

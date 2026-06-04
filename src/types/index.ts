@@ -31,6 +31,16 @@ export type ChronoProfile = {
   chronoPrototypeCard?: ChronoPrototypeCard;
 };
 
+export type YuanCodeResult = {
+  id: string;
+  code8: string;
+  trigram: string;
+  name: string;
+  title: string;
+  personalitySourceCode: string;
+  shortSeal: string;
+};
+
 export type SceneSlice = {
   id: string;
   forceId: string;
@@ -45,24 +55,100 @@ export type SceneSlice = {
   intensity: 1 | 2 | 3 | 4 | 5;
 };
 
-export type MotherCodeResult = {
+export type GuaFieldResult = {
   id: string;
   code64: string;
-  name: string;
+  hexagramName: string;
   title: string;
   upperTrigram?: string;
   lowerTrigram?: string;
+  sourceYuanCodeId?: string;
   sourceIdentityId?: string;
   sourceSceneId?: string;
   sourceForceId?: string;
+  personalityField: string;
   shortSeal: string;
+  fieldDescription: string;
+};
+
+export type MotherCodeResult = GuaFieldResult & {
+  name: string;
   gravityField: string;
+};
+
+export type YaoCodeResult = {
+  id: string;
+  code384: string;
+  sourceGuaFieldId: string;
+  yaoIndex: number;
+  finalChoiceCode: string;
+  personalityBehaviorTrack: string;
+  trackSeal: string;
+  dynamicState: string;
+};
+
+export type YaoCodeCard = {
+  id: string;
+  sourceYuanCode?: YuanCodeResult | null;
+  sourceGuaField?: GuaFieldResult | MotherCodeResult | null;
+  sourceYaoCode?: YaoCodeResult | null;
+  title: string;
+  coreSeal: string;
+  antiInstinctNode: string;
+  defenseBook90d?: {
+    title: string;
+    sections: string[];
+  };
+};
+
+export type TimeSandglassStatus = "stable" | "low" | "empty" | "recharging" | "mock_paid";
+
+export type TimeSandglassUnlocks = {
+  canStartSandbox: boolean;
+  canRevealGuaField: boolean;
+  canCompleteYaoFlow: boolean;
+  canViewYaoCodeCard: boolean;
+  canViewDefenseBook90d: boolean;
+  canSaveArchive: boolean;
+  canViewDeepSource: boolean;
+};
+
+export type TimeSandglassConsumptionLog = {
+  id: string;
+  action: string;
+  amount: number;
+  occurredAt: string;
+  note?: string;
+};
+
+export type TimeSandglassState = {
+  id: string;
+  currentEnergy: number;
+  maxEnergy: number;
+  unitName: string;
+  status: TimeSandglassStatus;
+  lastRecoveredAt?: string;
+  nextRecoveryAt?: string;
+  recoveryIntervalMinutes?: number;
+  recoveryAmount?: number;
+  totalConsumed?: number;
+  totalRecharged?: number;
+  unlocks?: TimeSandglassUnlocks;
+  consumptionLog?: TimeSandglassConsumptionLog[];
+  mockPayment?: {
+    enabled: boolean;
+    lastMockPaidAt?: string;
+    lastMockAmount?: number;
+    packageId?: string;
+  };
 };
 
 export interface GuanyaoSession {
   chronoProfile?: ChronoProfile | null;
   chronoHash?: string | null;
   chronoPrototypeCard?: ChronoPrototypeCard | null;
+  chronoCode?: YuanCodeResult | null;
+  yuanCode?: YuanCodeResult | null;
   selectedFragment?: any;
   selectedForceId?: string | null;
   selectedForceName?: string | null;
@@ -71,6 +157,8 @@ export interface GuanyaoSession {
   realitySeed?: any;
   selectedSceneSlice?: SceneSlice | null;
   selectedSceneId?: string | null;
+  guaField?: GuaFieldResult | MotherCodeResult | null;
+  guaFieldResult?: GuaFieldResult | MotherCodeResult | null;
   motherCode?: MotherCodeResult | null;
   motherCodeResult?: MotherCodeResult | null;
   currentMotherCode?: MotherCodeResult | null;
@@ -80,6 +168,15 @@ export interface GuanyaoSession {
   sixthYaoChoice: YaoBit | null;
   finalChoiceCode: string;
   choiceHistory: YaoBit[];
+  yaoCode?: YaoCodeResult | null;
+  yaoCodeResult?: YaoCodeResult | null;
+  yaoCodeCard?: YaoCodeCard | null;
+  defenseBook90d?: {
+    title: string;
+    sections: string[];
+  } | null;
+  timeSandglass?: TimeSandglassState | null;
+  energyState?: TimeSandglassState | null;
 }
 
 export interface ConflictScript90d {
@@ -139,14 +236,18 @@ export interface MigrationCard {
 
 export type CausalContextPackage = {
   chronoProfile?: ChronoProfile | null;
+  yuanCode?: YuanCodeResult | null;
+  chronoCode?: YuanCodeResult | null;
   identityFragment?: any;
   forceResult?: any;
   sceneSeed?: SceneSlice | null;
+  guaField?: GuaFieldResult | MotherCodeResult | null;
   motherCode?: MotherCodeResult | null;
   autoYaoPath?: YaoBit[];
   interactiveYaoPath?: YaoBit[];
   sixthYaoChoice?: YaoBit | null;
   finalChoiceCode: string;
+  yaoCode?: YaoCodeResult | null;
   yaoCodeCard: {
     code: string;
     title: string;
@@ -157,6 +258,8 @@ export type CausalContextPackage = {
     title: string;
     sections: string[];
   };
+  timeSandglass?: TimeSandglassState | null;
+  energyState?: TimeSandglassState | null;
 };
 
 export interface ArchiveItem extends MigrationCard {

@@ -6,9 +6,11 @@ import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { migrations } from "../data/migrations";
 import { saveArchive } from "../services/archiveService";
-import { getSession } from "../services/sessionService";
+import { buildYaoCodeCard, buildYaoCodeResult, normalizeGuaFieldFromLegacy } from "../services/codeContractService";
+import { getSession, updateSession } from "../services/sessionService";
+import { consumeEnergy, getTimeSandglassState } from "../services/timeSandglassService";
 import { buildFinalChoiceCode } from "../services/trajectoryService";
-import type { CausalContextPackage, GuanyaoSession, MigrationCard } from "../types";
+import type { CausalContextPackage, GuanyaoSession, MigrationCard, YaoCodeCard, YaoCodeResult } from "../types";
 
 const ninetyDayScriptBills = [
   {
@@ -99,27 +101,33 @@ const reviewRingCells = Array.from({ length: 90 }, (_, index) => {
   return "empty";
 });
 
-function buildCausalContextPackage(session: GuanyaoSession, card: MigrationCard, finalChoiceCode: string): CausalContextPackage {
+function buildCausalContextPackage(session: GuanyaoSession, card: MigrationCard, finalChoiceCode: string, yaoCode: YaoCodeResult, yaoCodeCard: YaoCodeCard): CausalContextPackage {
   return {
     chronoProfile: session.chronoProfile ?? null,
+    yuanCode: session.yuanCode ?? session.chronoCode ?? null,
+    chronoCode: session.chronoCode ?? session.yuanCode ?? null,
     identityFragment: session.selectedFragment ?? null,
     forceResult: session.forceReading ?? session.forceProfile ?? null,
     sceneSeed: session.selectedSceneSlice ?? session.realitySeed ?? null,
+    guaField: normalizeGuaFieldFromLegacy(session.guaFieldResult ?? session.guaField ?? session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode),
     motherCode: session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode ?? null,
     autoYaoPath: session.autoYaoPath,
     interactiveYaoPath: session.interactiveYaoPath ?? [],
     sixthYaoChoice: session.sixthYaoChoice,
     finalChoiceCode,
+    yaoCode,
     yaoCodeCard: {
-      code: `${card.migrationDirection.code} ${card.migrationDirection.traditionalName}${card.migrationDirection.scriptTitle}｜上爻`,
-      title: card.cardTitle,
-      track: `${card.currentTrack.code} ${card.currentTrack.traditionalName}${card.currentTrack.scriptTitle} → ${card.migrationDirection.code} ${card.migrationDirection.traditionalName}${card.migrationDirection.scriptTitle}`,
-      source: card.shortReading.join(" / "),
+      code: yaoCodeCard.title,
+      title: yaoCodeCard.title,
+      track: yaoCodeCard.sourceYaoCode?.personalityBehaviorTrack ?? `${card.currentTrack.code} ${card.currentTrack.traditionalName}${card.currentTrack.scriptTitle} → ${card.migrationDirection.code} ${card.migrationDirection.traditionalName}${card.migrationDirection.scriptTitle}`,
+      source: yaoCodeCard.coreSeal,
     },
-    defenseBook90d: {
+    defenseBook90d: yaoCodeCard.defenseBook90d ?? {
       title: "90天行为防御本",
       sections: ["90天行为重力雷达", "3张反本能操作卡", "90天复盘年轮"],
     },
+    timeSandglass: session.timeSandglass ?? session.energyState ?? getTimeSandglassState(),
+    energyState: session.energyState ?? session.timeSandglass ?? getTimeSandglassState(),
   };
 }
 
@@ -207,12 +215,23 @@ export function MigrationPage() {
       finalChoiceCode: nextFinalChoiceCode,
     };
   }, []);
+  const yaoCode = useMemo(() => buildYaoCodeResult(session, card, finalChoiceCode), [card, finalChoiceCode, session]);
+  const yaoCodeCard = useMemo(() => buildYaoCodeCard(session, card, finalChoiceCode, yaoCode), [card, finalChoiceCode, session, yaoCode]);
 
   function handleSave() {
+    const timeSandglass = consumeEnergy("archive_save", 0, "保存行为年轮");
+    updateSession({
+      yaoCode,
+      yaoCodeResult: yaoCode,
+      yaoCodeCard,
+      defenseBook90d: yaoCodeCard.defenseBook90d,
+      timeSandglass,
+      energyState: timeSandglass,
+    });
     saveArchive({
       ...card,
       finalChoiceCode,
-      causalContext: buildCausalContextPackage(getSession(), card, finalChoiceCode),
+      causalContext: buildCausalContextPackage(getSession(), card, finalChoiceCode, yaoCode, yaoCodeCard),
     });
     navigate("/archive");
   }
@@ -275,10 +294,13 @@ export function MigrationPage() {
 
         <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
           {[
+            `观爻元码｜8：${yaoCodeCard.sourceYuanCode?.personalitySourceCode ?? "已生成"}`,
             `人格映照：${session.selectedFragment?.text ?? "本次碎片已认领"}`,
             `原力定格：${session.selectedForceName ?? "本次原力已定格"}`,
             `现实切片：${session.selectedSceneSlice?.flashLine ?? session.realitySeed?.title ?? "现实种子已捕获"}`,
-            `观爻卦场｜64：${(session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode)?.code64 ?? "已显影"} ${(session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode)?.name ?? ""}${(session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode)?.title ? `｜${(session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode)?.title}` : ""}`,
+            `观爻卦场｜64：${yaoCodeCard.sourceGuaField?.code64 ?? "已显影"} ${("hexagramName" in (yaoCodeCard.sourceGuaField ?? {}) ? yaoCodeCard.sourceGuaField?.hexagramName : (yaoCodeCard.sourceGuaField as any)?.name) ?? ""}${yaoCodeCard.sourceGuaField?.title ? `｜${yaoCodeCard.sourceGuaField.title}` : ""}`,
+            `观爻爻码｜384：${yaoCode.code384}｜${yaoCode.personalityBehaviorTrack}`,
+            `时间沙漏：${session.timeSandglass?.currentEnergy ?? session.energyState?.currentEnergy ?? getTimeSandglassState()?.currentEnergy ?? "已装填"}${session.timeSandglass?.unitName ?? session.energyState?.unitName ?? getTimeSandglassState()?.unitName ?? ""}`,
             `第六爻：${session.sixthYaoChoice === 0 ? "反本能偏转" : session.sixthYaoChoice === 1 ? "照旧反应" : "最终动作已落下"}`,
           ].map((line) => (
             <GuanyaoText key={line} size="eyebrow" tone="faint">

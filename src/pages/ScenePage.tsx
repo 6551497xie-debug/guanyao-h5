@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
@@ -24,7 +24,7 @@ export function ScenePage() {
 
     return [sceneSlices[fallbackSceneIndex], ...sceneSlices.filter((_, index) => index !== fallbackSceneIndex)];
   }, [forceId, sceneSlices]);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const activeIndex = 0;
   const [isLocked, setIsLocked] = useState(false);
   const currentScene = displaySceneSlices[activeIndex % displaySceneSlices.length];
   const sliceSource = "fallback";
@@ -34,18 +34,6 @@ export function ScenePage() {
     currentScene.fixedLines.slice(2, 4),
     currentScene.fixedLines.slice(4),
   ].filter((group) => group.length > 0);
-
-  useEffect(() => {
-    if (isLocked || displaySceneSlices.length <= 1) {
-      return;
-    }
-
-    const timer = window.setInterval(() => {
-      setActiveIndex((currentIndex) => (currentIndex + 1) % displaySceneSlices.length);
-    }, 2200);
-
-    return () => window.clearInterval(timer);
-  }, [displaySceneSlices.length, isLocked]);
 
   function handleConfirm() {
     setSelectedSceneSlice(currentScene);

@@ -1,4 +1,6 @@
 import type { ChronoProfile, GuanyaoSession, MotherCodeResult, SceneSlice } from "../types";
+import { buildYuanCodeResult, normalizeGuaFieldFromLegacy } from "./codeContractService";
+import { initializeTimeSandglassAfterChrono } from "./timeSandglassService";
 
 const SESSION_KEY = "guanyao_h5_session";
 
@@ -6,10 +8,14 @@ const defaultSession: GuanyaoSession = {
   chronoProfile: null,
   chronoHash: null,
   chronoPrototypeCard: null,
+  chronoCode: null,
+  yuanCode: null,
   selectedForceId: null,
   selectedForceName: null,
   selectedSceneSlice: null,
   selectedSceneId: null,
+  guaField: null,
+  guaFieldResult: null,
   motherCode: null,
   motherCodeResult: null,
   currentMotherCode: null,
@@ -18,6 +24,8 @@ const defaultSession: GuanyaoSession = {
   sixthYaoChoice: null,
   finalChoiceCode: "",
   choiceHistory: [],
+  timeSandglass: null,
+  energyState: null,
 };
 
 function canUseStorage(): boolean {
@@ -71,15 +79,26 @@ export function setSelectedSceneSlice(sceneSlice: SceneSlice): GuanyaoSession {
 }
 
 export function setChronoProfile(chronoProfile: ChronoProfile): GuanyaoSession {
+  const yuanCode = buildYuanCodeResult(chronoProfile);
+  const timeSandglass = initializeTimeSandglassAfterChrono(chronoProfile);
+
   return updateSession({
     chronoProfile,
     chronoHash: chronoProfile.chronoHash ?? null,
     chronoPrototypeCard: chronoProfile.chronoPrototypeCard ?? null,
+    chronoCode: yuanCode,
+    yuanCode,
+    timeSandglass,
+    energyState: timeSandglass,
   });
 }
 
 export function setMotherCodeResult(motherCode: MotherCodeResult): GuanyaoSession {
+  const guaField = normalizeGuaFieldFromLegacy(motherCode);
+
   return updateSession({
+    guaField,
+    guaFieldResult: guaField,
     motherCode,
     motherCodeResult: motherCode,
     currentMotherCode: motherCode,

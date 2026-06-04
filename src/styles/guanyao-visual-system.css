@@ -401,6 +401,36 @@
   background: rgba(199, 169, 107, 0.04);
 }
 
+.gy-time-sandglass-readout {
+  position: fixed;
+  top: 18px;
+  right: max(16px, env(safe-area-inset-right));
+  z-index: 30;
+  display: grid;
+  min-width: 84px;
+  gap: 1px;
+  border-right: 1px solid rgba(199, 169, 107, 0.24);
+  padding: 4px 9px 4px 0;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 10px;
+  line-height: 1.35;
+  letter-spacing: 0.12em;
+  text-align: right;
+  pointer-events: none;
+}
+
+.gy-time-sandglass-readout span,
+.gy-time-sandglass-readout em {
+  color: rgba(85, 85, 85, 0.95);
+  font-style: normal;
+}
+
+.gy-time-sandglass-readout strong {
+  color: rgba(199, 169, 107, 0.78);
+  font-size: 13px;
+  font-weight: 420;
+}
+
 .gy-stage-shell {
   width: min(430px, calc(100% - 48px));
   margin: 0 auto;

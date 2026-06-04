@@ -40,47 +40,66 @@ function readSceneText(sceneSeed: CausalContextPackage["sceneSeed"]) {
   return sceneSeed?.flashLine ?? sceneSeed?.title ?? "未记录";
 }
 
-function readMotherCodeText(motherCode: CausalContextPackage["motherCode"]) {
-  if (!motherCode) return "未记录";
-  return `${motherCode.code64} ${motherCode.name}｜${motherCode.title}`;
+function readGuaFieldText(context: CausalContextPackage | undefined) {
+  const guaField = context?.guaField ?? context?.motherCode;
+  if (!guaField) return "未记录";
+  const legacy = guaField as NonNullable<CausalContextPackage["motherCode"]>;
+  const name = guaField.hexagramName ?? legacy.name;
+  return `${guaField.code64} ${name}｜${guaField.title}`;
+}
+
+function readYuanCodeText(context: CausalContextPackage | undefined) {
+  const yuanCode = context?.yuanCode ?? context?.chronoCode;
+  if (yuanCode) return `${yuanCode.personalitySourceCode}｜${yuanCode.title}`;
+  return context?.chronoProfile?.chronoPrototypeCard
+    ? `${context.chronoProfile.chronoPrototypeCard.trigramSymbol} ${context.chronoProfile.chronoPrototypeCard.trigramName}｜${context.chronoProfile.chronoPrototypeCard.archetypeName}`
+    : "未记录";
+}
+
+function readYaoCodeText(context: CausalContextPackage | undefined) {
+  if (!context?.yaoCode) return "未记录";
+  return `${context.yaoCode.code384}｜${context.yaoCode.personalityBehaviorTrack}`;
+}
+
+function readTimeSandglassText(context: CausalContextPackage | undefined) {
+  const sandglass = context?.timeSandglass ?? context?.energyState;
+  if (!sandglass) return "未记录";
+  return `${sandglass.currentEnergy}/${sandglass.maxEnergy}${sandglass.unitName}｜${sandglass.status}`;
 }
 
 function renderCausalSource(context: CausalContextPackage | undefined, item: ArchiveItem) {
   if (!context) {
     return (
       <div className="gy-causal-source-stack">
-        <p>时序原型：未记录</p>
+        <p>观爻元码｜8：未记录</p>
         <p>人格映照：未记录</p>
         <p>原力定格：未记录</p>
         <p>现实种子：未记录</p>
         <p>观爻卦场｜64：未记录</p>
         <p>五爻惯性轨迹：{formatYaoPath(undefined)}</p>
         <p>第六爻偏转：未记录</p>
+        <p>观爻爻码｜384：未记录</p>
         <p>爻码卡：{item.migrationDirection.code} {item.migrationDirection.traditionalName}{item.migrationDirection.scriptTitle}｜上爻</p>
         <p>90天行为防御本：已生成</p>
+        <p>时间沙漏状态：未记录</p>
       </div>
     );
   }
 
   return (
     <div className="gy-causal-source-stack">
-      <p>
-        时序原型：
-        {context.chronoProfile?.chronoPrototypeCard
-          ? `${context.chronoProfile.chronoPrototypeCard.trigramSymbol} ${context.chronoProfile.chronoPrototypeCard.trigramName}｜${context.chronoProfile.chronoPrototypeCard.archetypeName}`
-          : context.chronoProfile
-            ? `${context.chronoProfile.birthDate}｜${context.chronoProfile.lifeStageLabel}`
-            : "未记录"}
-      </p>
+      <p>观爻元码｜8：{readYuanCodeText(context)}</p>
       <p>人格映照：{readFragmentText(context.identityFragment)}</p>
       <p>原力定格：{readForceText(context.forceResult)}</p>
       <p>现实种子：{readSceneText(context.sceneSeed)}</p>
-      <p>观爻卦场｜64：{readMotherCodeText(context.motherCode)}</p>
+      <p>观爻卦场｜64：{readGuaFieldText(context)}</p>
       <p>前五爻惯性轨迹：{formatYaoPath(context.interactiveYaoPath && context.interactiveYaoPath.length >= 5 ? context.interactiveYaoPath : context.autoYaoPath)}</p>
       <p>第六爻偏转：{formatYaoBit(context.sixthYaoChoice)}</p>
-      <p>最终轨迹代码：{context.finalChoiceCode}</p>
-      <p>爻码卡：{context.yaoCodeCard.code}</p>
-      <p>90天行为防御本：{context.defenseBook90d.sections.join(" / ")}</p>
+      <p>观爻爻码｜384：{readYaoCodeText(context)}</p>
+        <p>最终轨迹代码：{context.finalChoiceCode}</p>
+        <p>爻码卡：{context.yaoCodeCard.code}</p>
+        <p>90天行为防御本：{context.defenseBook90d.sections.join(" / ")}</p>
+        <p>时间沙漏状态：{readTimeSandglassText(context)}</p>
     </div>
   );
 }

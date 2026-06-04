@@ -37,6 +37,7 @@ function stableIndex(input: string, length: number) {
 }
 
 export function buildMotherCodeResult(session: GuanyaoSession): MotherCodeResult {
+  const yuanCode = session.yuanCode ?? session.chronoCode;
   const identityId = session.selectedFragment?.id;
   const sceneId = session.selectedSceneSlice?.id ?? session.selectedSceneId ?? session.realitySeed?.id;
   const forceId = session.selectedForceId ?? session.forceReading?.forceKey ?? session.forceProfile?.forceKey;
@@ -47,11 +48,15 @@ export function buildMotherCodeResult(session: GuanyaoSession): MotherCodeResult
     id: `mother_${fallback.code64}_${stableIndex(seed, 10000).toString().padStart(4, "0")}`,
     code64: fallback.code64,
     name: fallback.name,
+    hexagramName: fallback.name,
     title: fallback.title,
+    sourceYuanCodeId: yuanCode?.id,
     sourceIdentityId: identityId,
     sourceSceneId: sceneId,
     sourceForceId: forceId,
+    personalityField: `${fallback.name}｜${fallback.title}`,
     shortSeal: fallback.shortSeal,
+    fieldDescription: fallback.gravityField,
     gravityField: fallback.gravityField,
   };
 }
