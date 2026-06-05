@@ -123,7 +123,7 @@ function buildCausalContextPackage(session: GuanyaoSession, card: MigrationCard,
       source: yaoCodeCard.coreSeal,
     },
     defenseBook90d: yaoCodeCard.defenseBook90d ?? {
-      title: "90天行为防御本",
+      title: "90天行为预警",
       sections: ["90天行为重力雷达", "3张反本能操作卡", "90天复盘年轮"],
     },
     timeSandglass: session.timeSandglass ?? session.energyState ?? getTimeSandglassState(),
@@ -285,7 +285,7 @@ export function MigrationPage() {
         </div>
 
         <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
-          {["先看这次轨迹。", "再展开90天行为防御本。", "这张爻码卡，是这枚现实种子上的状态压印。"].map((line) => (
+          {["先看这次轨迹。", "再查看90天行为预警。", "这张爻码卡，是这枚现实种子上的状态压印。"].map((line) => (
             <GuanyaoText key={line} size="body" tone="muted">
               {line}
             </GuanyaoText>
@@ -294,9 +294,9 @@ export function MigrationPage() {
 
         <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
           {[
-            `来源链已记录：元码 → 母码 → 爻码`,
+            "来源链已记录：元码 → 母码 → 爻码",
             `人格映照 / 原力：${session.selectedFragment?.text ?? "本次碎片已认领"} / ${session.selectedForceName ?? "本次原力已定格"}`,
-            `现实种子：${session.selectedSceneSlice?.flashLine ?? session.realitySeed?.title ?? "现实种子已捕获"}`,
+            `现实入口：${session.selectedSceneSlice?.flashLine ?? session.realitySeed?.title ?? "现实种子已捕获"}`,
             `本次爻码：${yaoCode.code384}｜${yaoCode.personalityBehaviorTrack}｜第六爻 ${session.sixthYaoChoice === 0 ? "反本能偏转" : session.sixthYaoChoice === 1 ? "照旧反应" : "最终动作已落下"}`,
           ].map((line) => (
             <GuanyaoText key={line} size="eyebrow" tone="faint">
@@ -307,7 +307,7 @@ export function MigrationPage() {
 
         <div className="gy-delivery-actions">
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-secondary" variant="ghost" onClick={() => setIsExpanded((current) => !current)}>
-            {isExpanded ? "收起90天行为防御本" : "展开90天行为防御本"}
+            {isExpanded ? "收起90天行为预警" : "查看90天行为预警"}
           </GuanyaoButton>
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-save" variant="gate" onClick={handleSave}>
             保存到人格档案
@@ -347,7 +347,7 @@ export function MigrationPage() {
               )}
             </details>
             <details className="gy-analysis-card" open>
-              <summary>90天行为防御本</summary>
+              <summary>90天行为预警</summary>
               <BehaviorDefenseKit />
             </details>
             <details className="gy-analysis-card">

@@ -60,7 +60,7 @@ export function buildYaoCodeCard(session: GuanyaoSession, card: MigrationCard, f
     coreSeal: card.shortReading[0] ?? "这张爻码卡，是这枚现实种子上的状态压印。",
     antiInstinctNode: card.antiInstinctNode,
     defenseBook90d: {
-      title: "90天行为防御本",
+      title: "90天行为预警",
       sections: ["90天行为重力雷达", "3张反本能操作卡", "90天复盘年轮"],
     },
   };

@@ -113,7 +113,7 @@ function renderCausalSource(context: CausalContextPackage | undefined, item: Arc
         <p>第六爻偏转：未记录</p>
         <p>观爻爻码｜384：未记录</p>
         <p>爻码卡：{item.migrationDirection.code} {item.migrationDirection.traditionalName}{item.migrationDirection.scriptTitle}｜上爻</p>
-        <p>90天行为防御本：已生成</p>
+        <p>90天行为预警：已生成</p>
         <p>时间沙漏状态：未记录</p>
       </div>
     );
@@ -132,7 +132,7 @@ function renderCausalSource(context: CausalContextPackage | undefined, item: Arc
       <p>观爻爻码｜384：{readYaoCodeText(context)}</p>
         <p>最终轨迹代码：{context.finalChoiceCode}</p>
         <p>爻码卡：{context.yaoCodeCard.code}</p>
-        <p>90天行为防御本：{context.defenseBook90d.sections.join(" / ")}</p>
+        <p>90天行为预警：{context.defenseBook90d.sections.join(" / ")}</p>
         <p>时间沙漏状态：{readTimeSandglassText(context)}</p>
     </div>
   );
@@ -320,7 +320,7 @@ export function ArchivePage() {
                     <div className="gy-analysis-stack gyFadeRise">
                       <nav className="gy-archive-anchor-nav" aria-label="档案分段">
                         <a href={`#archive-${item.archiveId}-fixed`}>爻码卡</a>
-                        <a href={`#archive-${item.archiveId}-90d`}>90天防御本</a>
+                        <a href={`#archive-${item.archiveId}-90d`}>90天预警</a>
                         <a href={`#archive-${item.archiveId}-anti`}>反本能动作</a>
                         <a href={`#archive-${item.archiveId}-track`}>因果轨迹</a>
                       </nav>
@@ -367,7 +367,7 @@ export function ArchivePage() {
                         <GuanyaoText className="gy-archive-section-note" as="span" size="eyebrow" tone="faint">
                           查看这条轨迹未来90天更容易反复触发的位置，以及对应的操作工具。
                         </GuanyaoText>
-                        <strong>90天行为防御本</strong>
+                        <strong>90天行为预警</strong>
                         <ArchiveBehaviorDefenseKit />
                       </div>
                       <div className="gy-analysis-card" id={`archive-${item.archiveId}-anti`}>
