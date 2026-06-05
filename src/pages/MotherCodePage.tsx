@@ -106,7 +106,7 @@ export function MotherCodePage() {
             记录本次母码
           </GuanyaoButton>
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-primary" variant="gate" onClick={() => navigate("/gravity")}>
-            进入六爻推进
+            进入6爻推进
           </GuanyaoButton>
         </div>
       </section>

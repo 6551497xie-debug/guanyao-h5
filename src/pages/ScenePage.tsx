@@ -316,7 +316,7 @@ export function ScenePage() {
               现实种子已填入
             </GuanyaoText>
             <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-primary" variant="ghost" onClick={handleStartYao}>
-              生成母码
+              生成观爻母码
             </GuanyaoButton>
           </div>
         ) : null}
