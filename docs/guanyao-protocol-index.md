@@ -6,6 +6,11 @@
 - H5-Content-R2A｜观爻元码｜8 人格源代码内容母本
 - Commit: c26c4fe
 
+最新命名协议补丁：
+
+- H5-Docs-R2｜MotherCode Naming Protocol Patch
+- 前台第二层核心命名统一为“观爻母码｜64”。
+
 后续 Codex 任务必须优先引用本目录内的协议文档，不再重复读取长指令。
 
 ## 协议入口
