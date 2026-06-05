@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
@@ -18,6 +18,7 @@ function readForceText(forceResult: any, selectedForceName?: string | null) {
 
 export function MotherCodePage() {
   const navigate = useNavigate();
+  const [isRecorded, setIsRecorded] = useState(false);
   const session = getSession();
   const motherCode = useMemo(() => {
     const currentMotherCode = session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode ?? buildMotherCodeResult(session);
@@ -96,13 +97,16 @@ export function MotherCodePage() {
 
         <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
           <GuanyaoText size="body" tone="muted">
-            本次母码已记录。接下来进入六爻，看它会把你推到哪里。
+            {isRecorded ? "本次母码已记录。" : "本次母码已生成。你可以先记录它，再进入六爻推进。"}
           </GuanyaoText>
         </div>
 
         <div className="gy-delivery-actions">
+          <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-secondary" variant="gate" onClick={() => setIsRecorded(true)}>
+            记录本次母码
+          </GuanyaoButton>
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-primary" variant="gate" onClick={() => navigate("/gravity")}>
-            继续进入六爻推进
+            进入六爻推进
           </GuanyaoButton>
         </div>
       </section>

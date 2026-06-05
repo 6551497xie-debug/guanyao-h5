@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { TextLines } from "../components/TextLines";
 import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
@@ -12,8 +10,6 @@ export function ForcePage() {
   const session = getSession();
   const primaryForce = session.selectedFragment?.forceMapping?.[0];
   const forceReadingTemplate = getForceReading(primaryForce);
-  const [recordMessage, setRecordMessage] = useState("");
-  const [savedReading, setSavedReading] = useState<typeof forceReadingTemplate & { createdAt: string }>();
 
   function persistForceReading() {
     const forceReading = {
@@ -30,13 +26,6 @@ export function ForcePage() {
     });
 
     return forceReading;
-  }
-
-  function handleRecord() {
-    const forceReading = persistForceReading();
-
-    setSavedReading(forceReading);
-    setRecordMessage("本次原力已定格，下一步将拦截正在发生的现实种子。");
   }
 
   return (
@@ -71,48 +60,12 @@ export function ForcePage() {
           </div>
         </article>
         <div className="gy-front-actions">
-          <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-secondary" variant="secondary" onClick={handleRecord}>
-            记录本次原力
-          </GuanyaoButton>
           <Link to="/scene" onClick={persistForceReading}>
             <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-primary" as="span" variant="ghost">
-              继续拦截现实
+              继续推进
             </GuanyaoButton>
           </Link>
         </div>
-        <div className="gy-front-note">
-          {recordMessage ? (
-            <GuanyaoText size="body" tone="gold">
-              {recordMessage}
-            </GuanyaoText>
-          ) : null}
-        </div>
-      {savedReading ? (
-        <article className="reading-panel gyFadeRise">
-          <GuanyaoText as="h3" size="body">
-            原力压印已记录
-          </GuanyaoText>
-          <section>
-            <strong>原力定格</strong>
-            <p>Code {savedReading.code}</p>
-            <p>
-              {savedReading.symbol} {savedReading.forceName} · {savedReading.archetype}
-            </p>
-          </section>
-          <section>
-            <strong>核心映照</strong>
-            <TextLines lines={savedReading.coreMirror} />
-          </section>
-          <section>
-            <strong>防御机制</strong>
-            <TextLines lines={savedReading.defensePattern} />
-          </section>
-          <section>
-            <strong>当前提醒</strong>
-            <TextLines lines={savedReading.currentReminder} />
-          </section>
-        </article>
-      ) : null}
       </section>
     </GuanyaoShell>
   );
