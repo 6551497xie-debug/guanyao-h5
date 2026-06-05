@@ -457,11 +457,11 @@ export function ChronoPage() {
         <div className="gy-front-actions">
           {!chronoProfile ? (
             <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-primary" variant="ghost" onClick={handleGenerate}>
-              生成时序原型
+              生成我的元码
             </GuanyaoButton>
           ) : (
             <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-primary" variant="ghost" onClick={() => navigate("/identity")}>
-              进入人格切片
+              进入人格映照
             </GuanyaoButton>
           )}
         </div>

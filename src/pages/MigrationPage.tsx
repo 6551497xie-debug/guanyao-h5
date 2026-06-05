@@ -244,7 +244,7 @@ export function MigrationPage() {
             爻码生成
           </GuanyaoText>
           <GuanyaoText as="h2" size="title">
-            爻码卡已生成
+            爻码卡已生成，本次行为轨迹已压印
           </GuanyaoText>
             <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
             这不是结论 是你刚刚完成的六爻偏转留下的状态压印
@@ -311,7 +311,7 @@ export function MigrationPage() {
 
         <div className="gy-delivery-actions">
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-secondary" variant="ghost" onClick={() => setIsExpanded((current) => !current)}>
-            {isExpanded ? "收束90天行为防御本" : "展开90天行为防御本"}
+            {isExpanded ? "收起90天行为防御本" : "展开90天行为防御本"}
           </GuanyaoButton>
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-save" variant="gate" onClick={handleSave}>
             保存到人格档案

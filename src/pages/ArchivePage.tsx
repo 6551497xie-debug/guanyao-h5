@@ -279,10 +279,10 @@ export function ArchivePage() {
         {archives.length === 0 ? (
           <div className="gy-archive-empty">
             <GuanyaoText size="body" tone="muted">
-              当前暂无记录
+              这里还没有档案
             </GuanyaoText>
             <GuanyaoText size="body" tone="faint">
-              完成一次爻码卡生成后，它会沉积在这里。
+              完成一次爻码卡后，它会被保存到这里。
             </GuanyaoText>
           </div>
         ) : (

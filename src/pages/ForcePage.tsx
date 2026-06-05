@@ -36,7 +36,7 @@ export function ForcePage() {
     const forceReading = persistForceReading();
 
     setSavedReading(forceReading);
-    setRecordMessage("已记录本次原力定格");
+    setRecordMessage("本次原力已定格，下一步将拦截正在发生的现实种子。");
   }
 
   return (
@@ -72,11 +72,11 @@ export function ForcePage() {
         </article>
         <div className="gy-front-actions">
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-secondary" variant="secondary" onClick={handleRecord}>
-            记录压印
+            记录本次原力
           </GuanyaoButton>
           <Link to="/scene" onClick={persistForceReading}>
             <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-primary" as="span" variant="ghost">
-              继续装填现实
+              继续拦截现实
             </GuanyaoButton>
           </Link>
         </div>
