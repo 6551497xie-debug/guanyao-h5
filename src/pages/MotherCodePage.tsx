@@ -1,30 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getSession, setMotherCodeResult } from "../services/sessionService";
-
-function readFragmentText(fragment: any) {
-  return fragment?.fragmentLine ?? fragment?.text ?? fragment?.title ?? "未记录";
-}
-
-function readForceText(forceResult: any, selectedForceName?: string | null) {
-  if (selectedForceName) return selectedForceName;
-  if (!forceResult) return "未记录";
-  return [forceResult.symbol, forceResult.forceName, forceResult.archetype].filter(Boolean).join(" · ") || forceResult.forceKey || "未记录";
-}
-
-function compactLabel(value: unknown, fallback: string) {
-  if (!value) return fallback;
-  const text = Array.isArray(value) ? value.find(Boolean) : String(value);
-  if (!text) return fallback;
-  return String(text)
-    .replace(/[｜|/].*$/, "")
-    .replace(/[，。,.、\s].*$/, "")
-    .slice(0, 6) || fallback;
-}
 
 function getMotherTypeName(motherCode: any) {
   const source = `${motherCode?.name ?? ""}${motherCode?.hexagramName ?? ""}${motherCode?.title ?? ""}`;
@@ -41,176 +21,370 @@ function getMotherTypeName(motherCode: any) {
   return "行为惯性母型";
 }
 
-function getForceLabel(session: any) {
-  const force = session.forceReading ?? session.forceProfile;
-  return compactLabel(
-    session.selectedForceName ??
-      force?.archetype ??
-      force?.forceName ??
-      force?.forceKey,
-    "原力牵引",
-  );
-}
-
 function getMotherSignature(motherCode: any) {
   const source = `${motherCode?.code64 ?? ""}${motherCode?.name ?? ""}${motherCode?.hexagramName ?? ""}${motherCode?.title ?? ""}`;
 
   if (source.includes("043") || source.includes("夬") || source.includes("决")) {
     return {
+      sequence: "01001",
+      stateName: "风险决口态",
       field: "拉扯已经结束，惯性正在把你推向一次明确切断。",
       dimensions: ["逼近临界", "忍到决口", "必须表态", "边界破裂"],
+      assertion: [
+        "你的行为惯性与现实种子，正在把退让推到决口。",
+        "拉扯已经结束，它正在把你推向一次明确的切断。",
+      ],
+      hotzones: [
+        ["时序惯性", "临界", "时间不再给你缓冲，所有拖延都在逼近一个必须表态的点。"],
+        ["行为反应", "决口", "你不是突然爆发，而是已经忍到再退一步就会失守。"],
+        ["原力驱动", "表态", "你的行动力不再用于维持局面，而是在逼你切开局面。"],
+        ["现实触发", "破裂", "现实不是在提醒你，而是在把边界直接撕开。"],
+      ],
     };
   }
 
   if (source.includes("052") || source.includes("艮") || source.includes("停")) {
     return {
+      sequence: "00100",
+      stateName: "惯性制动态",
       field: "你不是冷静下来，而是已经把自己停在不敢往前的位置。",
       dimensions: ["被迫停住", "原地冻结", "收紧动作", "问题逼近"],
+      assertion: [
+        motherCode?.shortSeal ?? "你最难的不是继续行动，而是在惯性要求你动的时候停住。",
+        "停住不是答案，它只是惯性把你锁在原地的方式。",
+      ],
+      hotzones: [
+        ["时序惯性", "停顿", "时间没有真的停下，只是你先把自己按在原地。"],
+        ["行为反应", "冻结", "你不是没有反应，而是不敢让下一步变成事实。"],
+        ["原力驱动", "收紧", "你的力正在把所有动作压回身体里。"],
+        ["现实触发", "逼近", "现实越靠近，你越想让它先停在门外。"],
+      ],
     };
   }
 
   if (source.includes("029") || source.includes("坎") || source.includes("低")) {
     return {
+      sequence: "01010",
+      stateName: "深层防御态",
       field: "你不是看不见危险，而是先把自己沉到别人够不到的地方。",
       dimensions: ["压力下沉", "沉默防御", "反复确认", "暗处逼近"],
+      assertion: [
+        motherCode?.shortSeal ?? "你被推到更深的低处，开始看见自己反复回到同一种反应。",
+        "真正困住你的不是危险本身，而是你先把自己沉下去。",
+      ],
+      hotzones: [
+        ["时序惯性", "下沉", "压力一出现，时间就开始往低处坠。"],
+        ["行为反应", "沉默", "你把不开口当成保护，把隔绝当成清醒。"],
+        ["原力驱动", "确认", "你反复确认危险，却迟迟没有真正打开它。"],
+        ["现实触发", "暗涌", "现实没有爆开，但它一直在暗处逼近。"],
+      ],
     };
   }
 
   if (source.includes("021") || source.includes("噬嗑") || source.includes("硬骨")) {
     return {
+      sequence: "10101",
+      stateName: "硬骨咬合态",
       field: "真正卡住你的不是外部压力，而是那块迟迟没有咬开的硬骨。",
       dimensions: ["硬点显形", "迟迟不咬", "必须处理", "阻力成形"],
+      assertion: [
+        motherCode?.shortSeal ?? "真正的阻力不是外部压力，而是你迟迟没有咬开的那块硬骨。",
+        "它不会自己消失，只会在每一次回避后变得更硬。",
+      ],
+      hotzones: [
+        ["时序惯性", "硬点", "时间把问题压成硬块，不再允许你绕过去。"],
+        ["行为反应", "回避", "你一直绕开那一口，直到它开始反过来咬住你。"],
+        ["原力驱动", "处理", "你的力不再适合维持表面，只适合处理硬点。"],
+        ["现实触发", "咬合", "现实已经咬住缺口，拖延只会加深阻力。"],
+      ],
     };
   }
 
   return {
+    sequence: "00000",
+    stateName: "行为母型已结晶",
     field: "本次行为母型已经形成，惯性正在等待展开。",
     dimensions: ["时序压迫", "惯性接管", "原力牵引", "现实逼近"],
+    assertion: [
+      motherCode?.shortSeal ?? "本次行为母型已经压印。",
+      "它还没有展开成六爻，只是先把当前惯性固定下来。",
+    ],
+    hotzones: [
+      ["时序惯性", "收束", "时间已经把这次惯性收束成一个固定入口。"],
+      ["行为反应", "压印", "你的反应已经留下痕迹，等待被推进。"],
+      ["原力驱动", "定格", "背后的力已经定住，下一步会进入六爻。"],
+      ["现实触发", "逼近", "现实压力已经靠近，不再只是背景。"],
+    ],
   };
 }
 
+function renderCoreAssertion(line: string) {
+  if (line.includes("退让") && line.includes("决口")) {
+    return (
+      <>
+        你的行为惯性与现实种子，
+        <br />
+        正在把「<mark>退让</mark>」推到「<mark>决口</mark>」。
+      </>
+    );
+  }
+
+  if (line.includes("拉扯") && line.includes("切断")) {
+    return (
+      <>
+        <mark>拉扯</mark>已经结束。
+        <br />
+        它正在把你推向一次明确的「<mark>切断</mark>」。
+      </>
+    );
+  }
+
+  return line;
+}
+
+const paidDiagnostic = {
+  matrixHash: "GY_MATRIX_043_DEC_01001",
+  code: "043",
+  guaName: "夬｜决口",
+  archetype: "风险决口态",
+  status: "已付费解锁",
+  label: "观爻母码卡 · 全景诊断书",
+  sections: [
+    {
+      id: "matrix",
+      title: "01 状态矩阵解密",
+      subtitle: "原始源点 × 内部解释 × 外部压力",
+      lines: [
+        "系统读取你的初始原力、人格映照与现实种子后，生成当前母型：风险决口态。",
+        "你带着先发动作、强占主控的源点原力，撞上了一枚持续加压的现实种子。",
+        "两股力在盘面里交汇后，没有形成缓冲，而是把你推向一次必须表态的决口。",
+      ],
+    },
+    {
+      id: "profile",
+      title: "02 人物场域剖面",
+      subtitle: "足够锋利，但不定罪",
+      lines: [
+        "你不是突然想撕破什么。",
+        "你只是已经忍到身体先于语言进入紧绷。",
+        "很多话没有说出口，很多边界没有真正划下去，于是代价被你吞回身体里。",
+        "沉默看起来像体面，但在这个局里，它已经开始变成决口前的蓄水。",
+      ],
+    },
+    {
+      id: "defect",
+      title: "03 底层缺陷诊断",
+      subtitle: "动作太急，底牌太虚",
+      lines: [
+        "你的问题不是不够果断，而是动作太急，底牌太虚。",
+        "你正在用连续推进和持续加码，掩盖自己不敢停下来的失重感。",
+        "如果这个习惯不被打断，你的行为惯性会把你推向一次现实层面的明确切断。",
+      ],
+    },
+    {
+      id: "gate",
+      title: "04 因果飞轮闸门",
+      subtitle: "启动前五爻自动推进",
+      lines: [
+        "系统不给你命运的判词。",
+        "观爻只把改写结局的执笔权交还给你。",
+        "当前母型已经解密。接下来，按住底部 1px 因果闸门。",
+        "你将看到这条行为惯性如何自动推进、加压、炭化，并在第六爻出现一次反本能偏转。",
+      ],
+    },
+  ],
+};
+
 export function MotherCodePage() {
   const navigate = useNavigate();
+  const [activeHotzone, setActiveHotzone] = useState<string | null>(null);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [activeDrawer, setActiveDrawer] = useState<string | null>(null);
+  const [isHoldingGate, setIsHoldingGate] = useState(false);
+  const holdTimerRef = useRef<number | null>(null);
   const session = getSession();
   const motherCode = useMemo(() => {
     const currentMotherCode = session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode ?? buildMotherCodeResult(session);
     setMotherCodeResult(currentMotherCode);
     return currentMotherCode;
   }, [session]);
-  const chronoText = session.yuanCode ?? session.chronoCode
-    ? `${(session.yuanCode ?? session.chronoCode)?.frontName ?? (session.yuanCode ?? session.chronoCode)?.userFacingName ?? (session.yuanCode ?? session.chronoCode)?.personalitySourceCode}｜${(session.yuanCode ?? session.chronoCode)?.sourceSeal ?? (session.yuanCode ?? session.chronoCode)?.shortSeal}`
-    : session.chronoPrototypeCard
-    ? `${session.chronoPrototypeCard.trigramSymbol} ${session.chronoPrototypeCard.trigramName}｜${session.chronoPrototypeCard.archetypeName}`
-    : session.chronoProfile
-      ? `${session.chronoProfile.birthDate}｜${session.chronoProfile.lifeStageLabel}`
-      : "未记录";
-  const forceText = readForceText(session.forceReading ?? session.forceProfile, session.selectedForceName);
   const motherTypeName = getMotherTypeName(motherCode);
   const motherSignature = getMotherSignature(motherCode);
-  const dimensionLabels = [
-    ["时序惯性", motherSignature.dimensions[0] ?? compactLabel(session.chronoProfile?.pressureField, "时序压迫")],
-    ["人格反应", motherSignature.dimensions[1] ?? compactLabel(session.identityFragment?.thematicField ?? session.selectedFragment?.thematicField, "惯性接管")],
-    ["原力驱动", motherSignature.dimensions[2] ?? getForceLabel(session)],
-    ["现实触发", motherSignature.dimensions[3] ?? compactLabel(session.selectedSceneSeed?.thematicField ?? session.selectedSceneSeed?.title ?? session.realitySeed?.thematicField, "现实逼近")],
-  ];
-  const sceneText =
-    session.selectedSceneSeed?.seedLine ??
-    session.realitySeed?.seedLine ??
-    session.selectedSceneSlice?.flashLine ??
-    session.realitySeed?.title ??
-    "未记录";
+  const activeHotzoneIndex = motherSignature.hotzones.findIndex(([label]) => label === activeHotzone);
+
+  const releaseCausalGate = () => {
+    if (holdTimerRef.current !== null) {
+      window.clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    setIsHoldingGate(false);
+  };
+
+  const holdCausalGate = () => {
+    releaseCausalGate();
+    setIsHoldingGate(true);
+    holdTimerRef.current = window.setTimeout(() => {
+      holdTimerRef.current = null;
+      setIsHoldingGate(false);
+      navigate("/gravity");
+    }, 1500);
+  };
 
   return (
-    <GuanyaoShell className="gy-delivery-shell" density="compact">
-      <section className="gy-delivery-stage gy-causal-line gy-causal-line-press gyFadeRise">
-        <div className="gy-result-hero">
-          <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
-            观爻母码｜64
-          </GuanyaoText>
-          <GuanyaoText as="h2" size="title">
-            母码已压印
-          </GuanyaoText>
-          <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
-            这不是最终答案。它只是你本次人格惯性与现实压力相撞后，留下的行为母型。
-          </GuanyaoText>
-        </div>
-
-        <div className="gy-result-frame">
-          <div className="gy-result-code gy-result-code--primary">
-            <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-              母码
-            </GuanyaoText>
-            <GuanyaoText size="body" tone="gold">
-              {motherCode.code64} {motherCode.name}｜{motherCode.title}
-            </GuanyaoText>
-            <GuanyaoText className="gy-mother-type-name" size="body" tone="muted">
-              {motherTypeName}
-            </GuanyaoText>
-          </div>
-          <div>
-            <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-              压印
-            </GuanyaoText>
-            <GuanyaoText size="body" tone="muted">
-              {motherCode.shortSeal}
-            </GuanyaoText>
-          </div>
-          <div>
-            <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-              惯性场
-            </GuanyaoText>
-            <GuanyaoText size="body" tone="muted">
-              {motherSignature.field}
-            </GuanyaoText>
-          </div>
-
-          <div className="gy-mother-dimension-grid">
-            {dimensionLabels.map(([label, value]) => (
-              <div className="gy-mother-dimension" key={label}>
-                <span>{label}</span>
-                <strong>{value}</strong>
+    <GuanyaoShell className="gy-mother-reactor-shell" density="compact">
+      <section className={`gy-mother-reactor gyFadeRise ${isUnlocked ? "gy-mother-reactor--unlocked" : ""}`}>
+        <div className="gy-mother-reactor-main">
+          {!isUnlocked ? (
+            <div className={`gy-mother-asset-card gy-mother-asset-card--hotzone-${Math.max(activeHotzoneIndex, 0)}`}>
+              <div className="gy-mother-sequence">{motherSignature.sequence}</div>
+              <div className="gy-mother-sigil" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
               </div>
-            ))}
-          </div>
+              <div className="gy-mother-card-footer">No.{motherCode.code64}</div>
+            </div>
+          ) : null}
 
-          <GuanyaoText className="gy-mother-not-fixed" size="eyebrow" tone="faint">
-            这不是你是谁，而是你这一次被现实压出来的行为惯性。
-          </GuanyaoText>
+          <div className="gy-mother-reactor-readout">
+            {!isUnlocked ? (
+              <>
+                <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
+                  观爻母码｜64
+                </GuanyaoText>
+                <GuanyaoText className="gy-mother-system-status" as="span" size="eyebrow" tone="faint">
+                  状态：母码已压印
+                </GuanyaoText>
+
+                <div className="gy-mother-state-code">
+                  <span>No.{motherCode.code64}</span>
+                  <strong>// {motherSignature.stateName}</strong>
+                  <em>{motherSignature.sequence}</em>
+                </div>
+
+                <div className="gy-mother-current-type">
+                  <span>{motherCode.name}｜{motherCode.title}</span>
+                </div>
+
+                <div className="gy-mother-core-assertion">
+                  {motherSignature.assertion.map((line, index) => (
+                    <p className={index > 0 ? "gy-mother-core-assertion-break" : ""} key={line}>
+                      {renderCoreAssertion(line)}
+                    </p>
+                  ))}
+                </div>
+
+                <div className="gy-mother-hotzone-grid">
+                  {motherSignature.hotzones.map(([label, value, note]) => {
+                    const isActive = activeHotzone === label;
+                    return (
+                      <button
+                        className={`gy-mother-hotzone ${isActive ? "gy-mother-hotzone--active" : ""}`}
+                        key={label}
+                        type="button"
+                        onClick={() => setActiveHotzone(isActive ? null : label)}
+                      >
+                        <span>{label}</span>
+                        <strong>// {value}</strong>
+                        {isActive ? <em>{note}</em> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <GuanyaoText className="gy-mother-not-fixed" size="eyebrow" tone="faint">
+                  这不是你是谁，而是你这一次被现实压出来的行为惯性。
+                </GuanyaoText>
+              </>
+            ) : (
+              <div className="gy-mother-paid-panel">
+                <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
+                  {paidDiagnostic.label}
+                </GuanyaoText>
+                <div className="gy-mother-paid-matrix">
+                  <span>{paidDiagnostic.matrixHash}</span>
+                  <strong>
+                    {paidDiagnostic.code} {paidDiagnostic.guaName}
+                  </strong>
+                  <em>
+                    {paidDiagnostic.archetype}｜{paidDiagnostic.status}
+                  </em>
+                </div>
+
+                <div className="gy-mother-diagnostic-drawers">
+                  {paidDiagnostic.sections.map((section) => {
+                    const isActive = activeDrawer === section.id;
+                    return (
+                      <button
+                        className={`gy-mother-diagnostic-drawer ${isActive ? "gy-mother-diagnostic-drawer--active" : ""}`}
+                        key={section.id}
+                        type="button"
+                        onClick={() => setActiveDrawer(isActive ? null : section.id)}
+                      >
+                        <span>{section.title}</span>
+                        <strong>{section.subtitle}</strong>
+                        {isActive ? (
+                          <div className="gy-mother-diagnostic-body">
+                            {section.lines.map((line) => (
+                              <p key={line}>{line}</p>
+                            ))}
+                          </div>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        <details className="gy-mother-source-fold">
-          <summary>查看来源痕迹</summary>
-          <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
-            {[
-              `时序原型：${chronoText}`,
-              `人格映照：${readFragmentText(session.selectedFragment)}`,
-              `原力定格：${forceText}`,
-              `现实种子：${sceneText}`,
-            ].map((line) => (
-              <GuanyaoText key={line} size="eyebrow" tone="faint">
-                {line}
+        <div className="gy-mother-lockwall">
+          <div className="gy-mother-lockline" />
+          {!isUnlocked ? (
+            <>
+              <GuanyaoText className="gy-mother-record-status" size="body" tone="muted">
+                母型已结晶。
+                <br />
+                本局母码已写入行为年轮。
               </GuanyaoText>
-            ))}
-          </div>
-        </details>
-
-        <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy gy-mother-record-status">
-          <GuanyaoText size="body" tone="muted">
-            你的母型已经出现。
-            <br />
-            但它还没有展开成六爻。
-            <br />
-            接下来，你会看到这条惯性如何推进、失控、转折，并在第六爻出现一次反本能偏转。
-          </GuanyaoText>
-        </div>
-
-        <div className="gy-delivery-actions">
-          <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-primary" variant="gate" onClick={() => navigate("/gravity")}>
-            解锁六爻推演
-          </GuanyaoButton>
-          <GuanyaoText className="gy-mother-unlock-note" size="eyebrow" tone="faint">
-            包含：前五爻惯性推进 / 第六爻反本能选择 / 爻码卡 / 90天行为防御本
-          </GuanyaoText>
+              <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-primary gy-mother-unlock-button" variant="gate" onClick={() => setIsUnlocked(true)}>
+                🔒 支付 9.9 元 · 解锁本局六爻推演
+              </GuanyaoButton>
+              <GuanyaoText className="gy-mother-unlock-note" size="eyebrow" tone="faint">
+                含：母码全景诊断 / 六爻启动权 / 基础爻码结果
+              </GuanyaoText>
+            </>
+          ) : (
+            <>
+              <GuanyaoText className="gy-mother-record-status" size="body" tone="muted">
+                母码全景诊断已展开。
+                <br />
+                长按底部因果闸门，启动前五爻自动推进。
+              </GuanyaoText>
+              <button
+                className={`gy-mother-causal-hold ${isHoldingGate ? "gy-mother-causal-hold--charging" : ""}`}
+                type="button"
+                onContextMenu={(event) => event.preventDefault()}
+                onMouseDown={holdCausalGate}
+                onMouseLeave={releaseCausalGate}
+                onMouseUp={releaseCausalGate}
+                onPointerCancel={releaseCausalGate}
+                onPointerDown={holdCausalGate}
+                onPointerLeave={releaseCausalGate}
+                onPointerUp={releaseCausalGate}
+                onTouchCancel={releaseCausalGate}
+                onTouchEnd={releaseCausalGate}
+                onTouchStart={holdCausalGate}
+              >
+                <span>⚡ 传动轴已复活 · 长按启动前五爻自动因果推进</span>
+                <i />
+              </button>
+            </>
+          )}
         </div>
       </section>
     </GuanyaoShell>
