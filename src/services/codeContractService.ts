@@ -57,7 +57,7 @@ export function buildYaoCodeCard(session: GuanyaoSession, card: MigrationCard, f
     sourceGuaField: normalizeGuaFieldFromLegacy(session.guaFieldResult ?? session.guaField ?? session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode),
     sourceYaoCode: yaoCode,
     title: `${card.migrationDirection.code} ${card.migrationDirection.traditionalName}${card.migrationDirection.scriptTitle}｜上爻`,
-    coreSeal: card.shortReading[0] ?? "这张爻码卡，是这枚现实种子上的状态压印。",
+    coreSeal: card.shortReading[0] ?? "本次轨迹已记录。",
     antiInstinctNode: card.antiInstinctNode,
     defenseBook90d: {
       title: "90天行为预警",

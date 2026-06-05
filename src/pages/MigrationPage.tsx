@@ -244,10 +244,10 @@ export function MigrationPage() {
             爻码生成
           </GuanyaoText>
           <GuanyaoText as="h2" size="title">
-            爻码卡已生成，本次行为轨迹已压印
+            轨迹已压印
           </GuanyaoText>
             <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
-            你的母码经过六爻推进，已经压印成本次人格行为轨迹
+            六爻已经闭合，这条行为轨迹被记录下来。
           </GuanyaoText>
         </div>
 
@@ -285,7 +285,7 @@ export function MigrationPage() {
         </div>
 
         <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
-          {["先看这次轨迹。", "再查看90天行为预警。", "这张爻码卡，是这枚现实种子上的状态压印。"].map((line) => (
+          {["先看这次轨迹。", "再查看90天行为预警。"].map((line) => (
             <GuanyaoText key={line} size="body" tone="muted">
               {line}
             </GuanyaoText>

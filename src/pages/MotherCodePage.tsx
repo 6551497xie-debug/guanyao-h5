@@ -96,17 +96,11 @@ export function MotherCodePage() {
 
         <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
           <GuanyaoText size="body" tone="muted">
-            本次母码已记录。
-          </GuanyaoText>
-          <GuanyaoText size="body" tone="muted">
-            接下来进入六爻，看它会把你推到哪里。
+            本次母码已记录。接下来进入六爻，看它会把你推到哪里。
           </GuanyaoText>
         </div>
 
         <div className="gy-delivery-actions">
-          <GuanyaoText className="gy-text-instrument gy-mother-record-status" size="body" tone="muted">
-            点击后进入六爻推进。
-          </GuanyaoText>
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-primary" variant="gate" onClick={() => navigate("/gravity")}>
             继续进入六爻推进
           </GuanyaoButton>
