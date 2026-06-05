@@ -160,7 +160,7 @@ export function ScenePage() {
       ? "现实信号流每次浮出一幕，每一幕由三枚现实种子组成"
       : flowState === "frozen"
         ? "这一幕已截停，点中最压住你的现实入口"
-        : "人格映照与现实种子已填入。接下来，三层信号会对撞生成本次母码。";
+        : "现实种子已填入。接下来，它会和你的元码、人格映照一起生成本次母码。";
   const capturedLineGroups = selectedSeed
     ? [
         ["现实现场", selectedSeed.realitySnapshot],
@@ -313,7 +313,7 @@ export function ScenePage() {
         {isSelected ? (
           <div className="gy-front-actions gyFadeRise">
             <GuanyaoText className="gy-text-instrument" size="body" tone="muted">
-              人格映照与现实种子已填入
+              现实种子已填入
             </GuanyaoText>
             <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-primary" variant="ghost" onClick={handleStartYao}>
               生成母码

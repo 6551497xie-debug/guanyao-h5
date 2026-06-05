@@ -97,7 +97,7 @@ export function MotherCodePage() {
 
         <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
           <GuanyaoText size="body" tone="muted">
-            {isRecorded ? "本次母码已记录。" : "本次母码已生成。你可以先记录它，再进入六爻推进。"}
+            {isRecorded ? "本次母码已记录。接下来进入六爻，看它会把你推到哪里。" : "本次母码已生成。你可以先记录它，再进入六爻推进。"}
           </GuanyaoText>
         </div>
 

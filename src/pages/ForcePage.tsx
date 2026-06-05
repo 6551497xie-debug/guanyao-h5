@@ -62,7 +62,7 @@ export function ForcePage() {
         <div className="gy-front-actions">
           <Link to="/scene" onClick={persistForceReading}>
             <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-primary" as="span" variant="ghost">
-              继续推进
+              添加现实种子
             </GuanyaoButton>
           </Link>
         </div>
