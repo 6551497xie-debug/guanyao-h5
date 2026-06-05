@@ -194,6 +194,12 @@ export function ScenePage() {
     setFlowState("frozen");
   }
 
+  function handleContinueMoment() {
+    setSelectedSeedId(null);
+    setCurrentMomentIndex((currentIndex) => (currentIndex + 1) % Math.max(momentGroups.length, 1));
+    setFlowState("flowing");
+  }
+
   function handleSelectSeed(sceneSeed: SceneSeed) {
     setSelectedSceneSeed(sceneSeed);
     updateSession({
@@ -298,9 +304,9 @@ export function ScenePage() {
           </div>
         ) : null}
         {flowState === "frozen" ? (
-          <div className="gy-front-actions gy-scene-action-placeholder" aria-hidden="true">
-            <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-intercept" variant="ghost" tabIndex={-1}>
-              拦截 —— 正在发生
+          <div className="gy-front-actions">
+            <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-secondary" variant="ghost" onClick={handleContinueMoment}>
+              继续下一幕
             </GuanyaoButton>
           </div>
         ) : null}

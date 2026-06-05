@@ -3226,11 +3226,6 @@
   letter-spacing: 0.08em;
 }
 
-.gy-scene-action-placeholder {
-  visibility: hidden;
-  pointer-events: none;
-}
-
 .gy-mother-record-status {
   max-width: 280px;
   text-align: center;
