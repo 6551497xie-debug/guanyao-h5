@@ -276,6 +276,9 @@ export function ArchivePage() {
         <GuanyaoText className="gy-archive-readout" as="span" size="eyebrow" tone="faint">
           {archiveReadout}
         </GuanyaoText>
+        <GuanyaoText className="gy-archive-readout" as="span" size="eyebrow" tone="faint">
+          每一次爻码卡，都会在这里沉积成你的行为年轮。
+        </GuanyaoText>
         {archives.length === 0 ? (
           <div className="gy-archive-empty">
             <GuanyaoText size="body" tone="muted">

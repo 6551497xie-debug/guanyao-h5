@@ -247,7 +247,7 @@ export function MigrationPage() {
             爻码卡已生成，本次行为轨迹已压印
           </GuanyaoText>
             <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
-            这不是结论 是你刚刚完成的六爻偏转留下的状态压印
+            你的母码经过六爻推进，已经压印成本次人格行为轨迹
           </GuanyaoText>
         </div>
 
@@ -285,7 +285,7 @@ export function MigrationPage() {
         </div>
 
         <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
-          {["你不是在谨慎。", "你是在用反复校准，推迟一次真正的行动。", "这张爻码卡，是这枚现实种子上的状态压印。"].map((line) => (
+          {["先看这次轨迹。", "再展开90天行为防御本。", "这张爻码卡，是这枚现实种子上的状态压印。"].map((line) => (
             <GuanyaoText key={line} size="body" tone="muted">
               {line}
             </GuanyaoText>

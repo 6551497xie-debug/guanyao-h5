@@ -424,7 +424,7 @@ export function ChronoPage() {
               {generatedYuanCode.grayNote ?? generatedYuanCode.sourceSeal ?? generatedYuanCode.shortSeal}
             </GuanyaoText>
             <div className="gy-front-lines gy-yuan-code-source">
-              {["元码已生成，沙漏已点亮", generatedYuanCode.chronoRevealLine ?? "人格源代码已激活", generatedYuanCode.sourceSeal ?? generatedYuanCode.shortSeal].map((line) => (
+              {["元码已生成，你的人格源代码已被激活", "时间沙漏已装填，接下来进入人格映照", generatedYuanCode.sourceSeal ?? generatedYuanCode.shortSeal].map((line) => (
                 <GuanyaoText key={line} size="body" tone="muted">
                   {line}
                 </GuanyaoText>

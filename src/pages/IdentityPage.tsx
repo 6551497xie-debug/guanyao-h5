@@ -92,10 +92,10 @@ export function IdentityPage() {
             GY / 01 / IDENTITY
           </GuanyaoText>
           <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="faint">
-            人格映照碎片
+            人格映照正在显影
           </GuanyaoText>
           <GuanyaoText size="body" tone="faint">
-            哪一句，像你此刻的惯性？
+            看到刺中的那一条，就点“好像是我”。还没刺中，就继续漂流。
           </GuanyaoText>
         </div>
         <article className="gy-front-panel gy-text-fragment gyFadeRise" data-clickable="true" onClick={handleNext}>

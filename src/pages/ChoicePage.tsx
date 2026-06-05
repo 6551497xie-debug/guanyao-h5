@@ -42,7 +42,7 @@ export function ChoicePage() {
         ) : (
           <>
             <div className="gy-delivery-copy gy-choice-copy-tight">
-              {["前五爻已经走完", "那不是选择", "是惯性替你完成的轨迹", "现在", "只剩你亲手按下最后一个动作", "你不是在选择答案", "你是在决定这条轨迹是否继续替你走下去"].map((line) => (
+              {["最后一爻，由你偏转", "前五爻已经走完", "现在，只剩一次反本能选择", "你可以照旧反应", "也可以让惯性在这里偏开"].map((line) => (
                 <GuanyaoText key={line} size="body" tone="muted">
                   {line}
                 </GuanyaoText>

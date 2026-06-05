@@ -47,10 +47,10 @@ export function ForcePage() {
             GY / 02 / FORCE
           </GuanyaoText>
           <GuanyaoText className="gy-force-readout" as="h2" size="title">
-            原力定格
+            原力已定格
           </GuanyaoText>
           <GuanyaoText className="gy-text-instrument" size="body" tone="faint">
-            系统捕获到的，不是性格。
+            你刚认领的人格碎片，正在沉入本次原力。
           </GuanyaoText>
         </div>
         <article className="gy-front-panel gy-force-imprint gy-force-press-readout gyFadeRise">

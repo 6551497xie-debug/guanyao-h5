@@ -50,7 +50,7 @@ export function MotherCodePage() {
             母码已生成
           </GuanyaoText>
           <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
-            母码不是最终结果，而是你的人格源代码与现实种子对撞后形成的行为母型。
+            你的人格源代码、人格映照与现实种子，已经撞成一个行为母型。
           </GuanyaoText>
         </div>
 

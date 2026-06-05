@@ -189,7 +189,7 @@ export function GravityPage() {
             <article
               className={`gy-ritual-message gy-text-yao-plane gy-ritual-message--${activeScene + 1} ${activeScene >= 3 ? "gy-ritual-message--pressure" : ""} ${completedScene === activeScene ? "is-complete" : ""}`}
             >
-              <YaoTextBlock kicker={`GY / LAYER 0${activeScene + 1}`} title={currentScene.title} lines={currentScene.lines} muted="因果显影完成后，请从底部闸门推进" />
+              <YaoTextBlock kicker={`GY / LAYER 0${activeScene + 1}`} title={currentScene.title} lines={currentScene.lines} muted="先不用选择。观察它如何一步步形成压力" />
             </article>
           ) : null}
           {isGateVisible && !isComplete ? (
@@ -207,7 +207,7 @@ export function GravityPage() {
               <YaoTextBlock
                 kicker="高压停留"
                 lines={["当前轨迹已进入高压。", "完成最后一爻，", "需要你亲手按下最后一个动作。"]}
-                muted="进入第六爻后，将由你完成选择"
+                muted="前五爻已经走完，下一步由你完成最后一次偏转"
               />
               <GuanyaoButton variant="gate" onClick={() => navigate("/choice")}>
                 继续进入最后一爻

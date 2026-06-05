@@ -157,10 +157,10 @@ export function ScenePage() {
         : "现实入口已锁定";
   const sceneStatus =
     flowState === "flowing"
-      ? "三枚现实种子正在组成同一幕"
+      ? "现实信号流每次浮出一幕，每一幕由三枚现实种子组成"
       : flowState === "frozen"
-        ? "点中这一幕里最压住你的入口"
-        : "以此起爻";
+        ? "这一幕已截停，点中最压住你的现实入口"
+        : "现实入口已锁定，以此起爻生成本次母码";
   const capturedLineGroups = selectedSeed
     ? [
         ["现实现场", selectedSeed.realitySnapshot],
