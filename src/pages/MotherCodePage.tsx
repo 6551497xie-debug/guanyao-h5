@@ -50,7 +50,7 @@ export function MotherCodePage() {
             母码已生成
           </GuanyaoText>
           <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
-            你的人格源代码、人格映照与现实种子，已经撞成一个行为母型。
+            这不是最终答案。它只是你这次人格惯性和现实压力撞出来的母型。
           </GuanyaoText>
         </div>
 
@@ -96,16 +96,16 @@ export function MotherCodePage() {
 
         <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
           <GuanyaoText size="body" tone="muted">
-            本次母码已记录，接下来进入六爻，观察它如何发生变化。
+            本次母码已记录。
           </GuanyaoText>
           <GuanyaoText size="body" tone="muted">
-            六爻闭合后，才会压印成本次爻码卡。
+            接下来进入六爻，看它会把你推到哪里。
           </GuanyaoText>
         </div>
 
         <div className="gy-delivery-actions">
           <GuanyaoText className="gy-text-instrument gy-mother-record-status" size="body" tone="muted">
-            母码已经停在这里，点击后进入六爻推进。
+            点击后进入六爻推进。
           </GuanyaoText>
           <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-primary" variant="gate" onClick={() => navigate("/gravity")}>
             继续进入六爻推进
