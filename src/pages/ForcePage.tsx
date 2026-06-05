@@ -6,10 +6,25 @@ import { getForceReading } from "../data/forceReadings";
 import { normalizeSceneForceId } from "../services/sceneService";
 import { getSession, updateSession } from "../services/sessionService";
 
+const forceActionLines: Record<string, string[]> = {
+  乾: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先把局面抓回手里。", "不是因为你真的稳，而是失控会让你觉得自己正在掉下去。"],
+  坤: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先把别人托住。", "不是因为你不累，而是你太习惯把自己的需要往后放。"],
+  震: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先动起来。", "不是因为你真的有方向，而是停下来会让问题变得太清楚。"],
+  巽: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先观察风向。", "不是因为你没有立场，而是正面冲突会让你太快暴露自己。"],
+  坎: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先沉下去。", "不是因为你真的冷静，而是把事情说出来会让危险变得太近。"],
+  离: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先让自己看起来还亮着。", "不是因为你不累，而是暗下来会让你觉得自己快要消失。"],
+  艮: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先停住。", "不是因为你真的冷静，而是往前一步会让问题变得太真实。"],
+  兑: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先把关系稳住。", "不是因为你没有边界，而是冷场会让你害怕关系直接断掉。"],
+};
+
 export function ForcePage() {
   const session = getSession();
   const primaryForce = session.selectedFragment?.forceMapping?.[0];
   const forceReadingTemplate = getForceReading(primaryForce);
+  const forceLines = [
+    ...(forceActionLines[forceReadingTemplate.forceKey] ?? forceReadingTemplate.coreMirror ?? []),
+    "这股力已经记录。下一步，把它放进正在发生的现实里。",
+  ];
 
   function persistForceReading() {
     const forceReading = {
@@ -39,7 +54,7 @@ export function ForcePage() {
             原力已定格
           </GuanyaoText>
           <GuanyaoText className="gy-text-instrument" size="body" tone="faint">
-            你刚认领的人格碎片，正在沉入本次原力。
+            刚才那块人格碎片，已经暴露出它背后的驱动力。
           </GuanyaoText>
         </div>
         <article className="gy-front-panel gy-force-imprint gy-force-press-readout gyFadeRise">
@@ -52,7 +67,7 @@ export function ForcePage() {
             </GuanyaoText>
           </div>
           <div className="gy-front-lines">
-            {["是一股正在推动你反复行动的力量。", "你不是热爱行动。", "你只是太害怕一停下来，就看见真正的问题还在原地。"].map((line) => (
+            {forceLines.map((line) => (
               <GuanyaoText key={line} size="body" tone="muted">
                 {line}
               </GuanyaoText>
