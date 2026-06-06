@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
@@ -61,12 +61,17 @@ function readIdentityPool(session: GuanyaoSession) {
 
 export function IdentityPage() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isShifting, setIsShifting] = useState(false);
+  const shiftTimerRef = useRef<number | null>(null);
   const session = getSession();
   const fragmentPool = useMemo(() => readIdentityPool(session), [session]);
   const currentFragment = fragmentPool[activeIndex % fragmentPool.length] ?? identityFragments[0];
   const sliceIndex = (activeIndex % fragmentPool.length) + 1;
   const sliceTotal = fragmentPool.length;
   const sliceProgress = sliceTotal > 1 ? ((sliceIndex - 1) / (sliceTotal - 1)) * 100 : 50;
+  const sliceMarks = Array.from({ length: sliceTotal }, (_, index) =>
+    sliceTotal > 1 ? (index / (sliceTotal - 1)) * 100 : 50,
+  );
   const fragmentCopy = {
     title: currentFragment.fragmentLine,
     lines: currentFragment.systemPerspective,
@@ -78,10 +83,20 @@ export function IdentityPage() {
 
   useEffect(() => {
     document.body.classList.add("gy-identity-r2-mode");
-    return () => document.body.classList.remove("gy-identity-r2-mode");
+    return () => {
+      document.body.classList.remove("gy-identity-r2-mode");
+      if (shiftTimerRef.current) {
+        window.clearTimeout(shiftTimerRef.current);
+      }
+    };
   }, []);
 
   function handleNext() {
+    setIsShifting(true);
+    if (shiftTimerRef.current) {
+      window.clearTimeout(shiftTimerRef.current);
+    }
+    shiftTimerRef.current = window.setTimeout(() => setIsShifting(false), 240);
     setActiveIndex((currentIndex) => (currentIndex + 1) % fragmentPool.length);
   }
 
@@ -119,10 +134,14 @@ export function IdentityPage() {
               <span>TOTAL_{String(sliceTotal).padStart(2, "0")}</span>
             </div>
             <div className="gy-identity-vertical-track" aria-hidden="true">
-              <span className="gy-identity-track-mark" />
-              <span className="gy-identity-track-mark" />
-              <span className="gy-identity-track-mark" />
-              <span className="gy-identity-track-point" />
+              {sliceMarks.map((mark, index) => (
+                <span
+                  className="gy-identity-track-mark"
+                  key={`slice-mark-${index}`}
+                  style={{ "--gy-slice-mark": `${mark}%` } as CSSProperties}
+                />
+              ))}
+              <span className={`gy-identity-track-point${isShifting ? " is-shifting" : ""}`} />
             </div>
           </aside>
 
