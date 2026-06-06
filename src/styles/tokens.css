@@ -14,7 +14,7 @@
   --gy-color-line: rgba(255, 255, 255, 0.12);
   --gy-color-line-gold: rgba(199, 169, 107, 0.2);
 
-  --gy-font-sans: Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --gy-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --gy-font-weight-regular: 400;
   --gy-font-weight-medium: 500;
 

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, PointerEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { GuanyaoButton } from "../components/visual/GuanyaoButton";
@@ -15,6 +15,34 @@ const defaultBirthMonth = 6;
 const defaultBirthDay = 2;
 
 type ChronoAxis = "year" | "month" | "day" | "time";
+type YuanHotzone = {
+  label: string;
+  value: string;
+  note: string;
+};
+
+const sourceDrawerItems: YuanHotzone[] = [
+  {
+    label: "启动方式",
+    value: "先动起来",
+    note: "你不是先想清楚再行动。\n一旦现实失重，你会先用动作把自己从坠落感里拽出来。",
+  },
+  {
+    label: "安全补偿",
+    value: "忙就安全",
+    note: "忙碌对你来说不是效率，而是一种安全补偿。\n只要身体还在推进，你就暂时不用面对停下来的空洞。",
+  },
+  {
+    label: "失控误判",
+    value: "停下=坠落",
+    note: "你真正害怕的不是慢。\n是一旦停下，就会感觉局面正在失控。",
+  },
+  {
+    label: "第一撞点",
+    value: "被评价",
+    note: "这股原力最容易被“别人怎么看我”点燃。\n一旦进入评价场，你会立刻启动证明自己的动作。",
+  },
+];
 
 const chronoAxisMeta: Record<ChronoAxis, { label: string; hint: string; min: number; max: number }> = {
   year: { label: "年", hint: "轴向滑动 · 定位年份", min: minBirthYear, max: maxBirthYear },
@@ -65,6 +93,114 @@ const chronoStageProfiles: Record<ChronoAgeRange, Omit<ChronoProfile, "birthYear
     sceneWeightTags: ["reconstruction", "health_signal", "family_relation", "life_review"],
   },
 };
+
+const yuanInstrumentProfiles: Record<string, { sequence: string; coreImpulse: string; shadowInertia: string; assertion: string[]; hotzones: YuanHotzone[] }> = {
+  qian: {
+    sequence: "SOURCE_01",
+    coreImpulse: "主控开局",
+    shadowInertia: "加码证明",
+    assertion: ["你习惯在失重时先抓回主控，", "用更大的目标维持心智的安全感。", "你不是必须一直向上。", "你只是把停下误认为失控。"],
+    hotzones: [
+      { label: "初始原力", value: "创世者", note: "你进入沙盒时，第一反应是先定方向、先把盘面拉回手里。" },
+      { label: "核心脉冲", value: "主控开局", note: "你习惯用启动和建构抵消失重，让世界重新围绕一个中心运转。" },
+      { label: "脉冲惯性", value: "加码证明", note: "压力升高时，你会用更大的目标证明自己还没有失控。" },
+      { label: "压力权重", value: "主控秩序", note: "现实对你的拉扯，常落在目标、位置、评价和控制权上。" },
+    ],
+  },
+  kun: {
+    sequence: "SOURCE_02",
+    coreImpulse: "先行承接",
+    shadowInertia: "过度托底",
+    assertion: ["你习惯在失重时先把重量接住，", "用持续承载维持局面的表面稳定。", "你不是必须一直退让。", "你只是把不扛误认为崩塌。"],
+    hotzones: [
+      { label: "初始原力", value: "承载者", note: "你进入沙盒时，第一反应不是争夺，而是先把缺口托住。" },
+      { label: "核心脉冲", value: "先行承接", note: "你习惯用退让和容纳延缓失重，让局面暂时不散。" },
+      { label: "脉冲惯性", value: "过度托底", note: "压力升高时，你会把更多不属于你的重量接到自己身上。" },
+      { label: "压力权重", value: "关系责任", note: "现实对你的拉扯，常落在家庭责任、关系稳定和长期消耗上。" },
+    ],
+  },
+  zhen: {
+    sequence: "SOURCE_03",
+    coreImpulse: "先发动作",
+    shadowInertia: "盲目忙碌",
+    assertion: ["你习惯在失重时先动起来，", "用高频动作维持心智的安全感。", "你不是必须一直加速。", "你只是把刹车误认为坠落。"],
+    hotzones: [
+      { label: "启动方式", value: "先动起来", note: "你不是先想清楚再行动。\n一旦现实失重，你会先用动作把自己从坠落感里拽出来。" },
+      { label: "安全补偿", value: "忙就安全", note: "忙碌对你来说不是效率，而是一种安全补偿。\n只要身体还在推进，你就暂时不用面对停下来的空洞。" },
+      { label: "失控误判", value: "停下=坠落", note: "你真正害怕的不是慢。\n是一旦停下，就会感觉局面正在失控。" },
+      { label: "第一撞点", value: "被评价", note: "这股原力最容易被“别人怎么看我”点燃。\n一旦进入评价场，你会立刻启动证明自己的动作。" },
+    ],
+  },
+  xun: {
+    sequence: "SOURCE_04",
+    coreImpulse: "顺势绕行",
+    shadowInertia: "长期让位",
+    assertion: ["你习惯在失重时先降低姿态，", "用绕行换取继续存在的空间。", "你不是没有立场。", "你只是把正面表态误认为绝路。"],
+    hotzones: [
+      { label: "初始原力", value: "适应者", note: "你进入沙盒时，第一反应是先看风向，再寻找能通过的缝隙。" },
+      { label: "核心脉冲", value: "顺势绕行", note: "你习惯用局部调整抵消阻力，把自己放到更安全的位置。" },
+      { label: "脉冲惯性", value: "长期让位", note: "压力升高时，你会把一次次退让误认为还能继续前行。" },
+      { label: "压力权重", value: "关系风向", note: "现实对你的拉扯，常落在风向、评价、边界和位置感上。" },
+    ],
+  },
+  kan: {
+    sequence: "SOURCE_05",
+    coreImpulse: "先行下潜",
+    shadowInertia: "隔绝确认",
+    assertion: ["你习惯在失重时先沉下去，", "用隔绝和确认维持最低限度的安全。", "你不是必须独自下沉。", "你只是把开口误认为危险。"],
+    hotzones: [
+      { label: "初始原力", value: "深渊者", note: "你进入沙盒时，第一反应是先让外部危险够不到自己。" },
+      { label: "核心脉冲", value: "先行下潜", note: "你习惯用沉默和距离抵消冲击，让问题先停在外面。" },
+      { label: "脉冲惯性", value: "隔绝确认", note: "压力升高时，你会反复确认危险，却迟迟不真正打开它。" },
+      { label: "压力权重", value: "暗处逼近", note: "现实对你的拉扯，常落在信用、风险、孤立和未说出口的压力上。" },
+    ],
+  },
+  li: {
+    sequence: "SOURCE_06",
+    coreImpulse: "先行显影",
+    shadowInertia: "外部续光",
+    assertion: ["你习惯在失重时先让自己被看见，", "用外部光源维持人格轮廓。", "你不是必须一直发光。", "你只是把暗下来误认为消失。"],
+    hotzones: [
+      { label: "初始原力", value: "燃烧者", note: "你进入沙盒时，第一反应是先显影、先表达、先被看见。" },
+      { label: "核心脉冲", value: "先行显影", note: "你习惯用表达和亮度抵消失重，确认自己仍然存在。" },
+      { label: "脉冲惯性", value: "外部续光", note: "压力升高时，你会更依赖外部回应来证明自己的价值。" },
+      { label: "压力权重", value: "外部评价", note: "现实对你的拉扯，常落在曝光、标签、体面和被看见上。" },
+    ],
+  },
+  gen: {
+    sequence: "SOURCE_07",
+    coreImpulse: "先行停住",
+    shadowInertia: "封存拖延",
+    assertion: ["你习惯在失重时先停下来，", "用封存边界保存最后的自我。", "你不是必须一直不动。", "你只是把往前一步误认为再次受伤。"],
+    hotzones: [
+      { label: "初始原力", value: "停滞者", note: "你进入沙盒时，第一反应是先把自己停在不会继续受伤的位置。" },
+      { label: "核心脉冲", value: "先行停住", note: "你习惯用收束和阻断抵消冲击，让现实先停在门外。" },
+      { label: "脉冲惯性", value: "封存拖延", note: "压力升高时，你会把不打开问题误认为问题还没发生。" },
+      { label: "压力权重", value: "边界逼近", note: "现实对你的拉扯，常落在责任、决定、数字和无法再拖的结果上。" },
+    ],
+  },
+  dui: {
+    sequence: "SOURCE_08",
+    coreImpulse: "先找回应",
+    shadowInertia: "关系缓冲",
+    assertion: ["你习惯在失重时先寻找回应，", "用连接稀释即将爆发的对抗。", "你不是必须一直缓和。", "你只是把冷场误认为关系断裂。"],
+    hotzones: [
+      { label: "初始原力", value: "连接者", note: "你进入沙盒时，第一反应是先确认还有没有回应。" },
+      { label: "核心脉冲", value: "先找回应", note: "你习惯用连接和缓和抵消失重，让现实不那么硬。" },
+      { label: "脉冲惯性", value: "关系缓冲", note: "压力升高时，你会用更多回应换取关系还在的感觉。" },
+      { label: "压力权重", value: "关系回响", note: "现实对你的拉扯，常落在关系、气氛、边界和别人是否回应上。" },
+    ],
+  },
+};
+
+function getYuanInstrumentProfile(key?: string) {
+  return yuanInstrumentProfiles[key ?? ""] ?? yuanInstrumentProfiles.zhen;
+}
+
+function formatYuanSectionName(name: string) {
+  const [trigram, archetype] = name.split("｜");
+  return trigram && archetype ? `${trigram}｜${archetype}` : name;
+}
 
 const trigramPrototypes = [
   {
@@ -231,9 +367,18 @@ export function ChronoPage() {
   const [activeAxis, setActiveAxis] = useState<ChronoAxis>("year");
   const [isDragging, setIsDragging] = useState(false);
   const [chronoProfile, setGeneratedChronoProfile] = useState<ChronoProfile | null>(null);
+  const [activeYuanHotzone, setActiveYuanHotzone] = useState<string | null>(null);
   const activeMeta = chronoAxisMeta[activeAxis];
   const activeValue = activeAxis === "year" ? birthYear : activeAxis === "month" ? birthMonth : activeAxis === "day" ? birthDay : timeIndex;
   const progress = ((activeValue - activeMeta.min) / (activeMeta.max - activeMeta.min)) * 100;
+  const chronoAxisTicks =
+    activeAxis === "year"
+      ? ["1970", "1980", "1990", "2000", "2010", "2020"]
+      : activeAxis === "month"
+        ? ["01", "03", "06", "09", "12"]
+        : activeAxis === "day"
+          ? ["01", "10", "20", "31"]
+          : ["子", "卯", "午", "酉", "亥"];
 
   function updateChronoValueFromPointer(clientX: number) {
     if (!trackRef.current) return;
@@ -288,42 +433,62 @@ export function ChronoPage() {
   const currentTimeRange = birthTimeRanges[timeIndex];
   const generatedCard = chronoProfile?.chronoPrototypeCard;
   const generatedYuanCode = chronoProfile ? buildYuanCodeResult(chronoProfile) : null;
+  const yuanInstrument = getYuanInstrumentProfile(generatedYuanCode?.trigramKey ?? generatedCard?.trigramId);
+  const activeYuanHotzoneIndex = yuanInstrument.hotzones.findIndex((hotzone) => hotzone.label === activeYuanHotzone);
+  const yuanCodeName =
+    generatedYuanCode?.userFacingName ??
+    (generatedCard ? `${generatedCard.trigramSymbol} ${generatedCard.trigramName}｜${generatedCard.archetypeName}` : "☳ 震｜行动者");
+
+  useEffect(() => {
+    document.body.classList.toggle("gy-source-generated-mode", Boolean(chronoProfile));
+    document.body.classList.toggle("gy-chrono-r1-mode", !chronoProfile);
+    return () => {
+      document.body.classList.remove("gy-source-generated-mode");
+      document.body.classList.remove("gy-chrono-r1-mode");
+    };
+  }, [chronoProfile]);
 
   return (
     <GuanyaoShell density="compact">
-      <section className="gy-front-screen gy-front-instrument gy-chrono-screen gy-causal-line gy-causal-line-anchor" data-intensity="quiet">
-        <div className="gy-front-copy gyFadeRise">
-          <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-            GY / 00-FIX / CHRONO
-          </GuanyaoText>
-          <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
-            时序装填
-          </GuanyaoText>
-          <GuanyaoText as="h2" size="title">
-            时间年轮
-          </GuanyaoText>
-          <div className="gy-front-lines gy-chrono-copy">
-            {["把你的出生坐标", "放回这条时间轴"].map((line) => (
-              <GuanyaoText key={line} size="body" tone="muted">
-                {line}
-              </GuanyaoText>
-            ))}
-          </div>
-        </div>
+      <section
+        className={`gy-front-screen gy-front-instrument gy-chrono-screen gy-causal-line gy-causal-line-anchor${chronoProfile ? "" : " gy-chrono-r1"}`}
+        data-generated={chronoProfile ? "true" : "false"}
+        data-intensity="quiet"
+      >
+        {!chronoProfile ? (
+          <header className="gy-chrono-r1-header gyFadeRise">
+            <span>GY / 00-FIX / CHRONO</span>
+            <strong>时 序 装 填</strong>
+          </header>
+        ) : null}
 
-        <div className="gy-chrono-wheel" aria-hidden="true">
-          <span className="gy-chrono-wheel-year gy-chrono-wheel-year--1970">1970</span>
-          <span className="gy-chrono-wheel-year gy-chrono-wheel-year--1980">1980</span>
-          <span className="gy-chrono-wheel-year gy-chrono-wheel-year--1990">1990</span>
-          <span className="gy-chrono-wheel-year gy-chrono-wheel-year--2000">2000</span>
-          <span className="gy-chrono-wheel-year gy-chrono-wheel-year--2010">2010</span>
-          <span className="gy-chrono-wheel-pin" />
-        </div>
+        {!chronoProfile ? (
+          <div
+            className="gy-chrono-r1-axis"
+            ref={trackRef}
+            role="slider"
+            aria-label="时序校准轴"
+            aria-valuemin={activeMeta.min}
+            aria-valuemax={activeMeta.max}
+            aria-valuenow={activeValue}
+            tabIndex={0}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            style={{ "--gy-chrono-progress": `${progress}%` } as CSSProperties}
+          >
+            <div className="gy-chrono-r1-axis-line" />
+            {chronoAxisTicks.map((tick) => (
+              <span key={tick}>
+                {tick}
+              </span>
+            ))}
+            <i />
+          </div>
+        ) : null}
 
         <div className="gy-chrono-readout gyFadeRise" aria-live="polite" data-dragging={isDragging}>
-          <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-            出生坐标
-          </GuanyaoText>
           <div className="gy-chrono-current">
             <div className="gy-chrono-date-readout" aria-label="出生坐标">
               <div className="gy-chrono-date-primary">
@@ -341,55 +506,28 @@ export function ChronoPage() {
               </div>
               <button className="gy-chrono-date-part gy-chrono-date-part--time" type="button" data-active={activeAxis === "time"} onClick={() => setActiveAxis("time")}>
                 {currentTimeRange.range}
-                <span>{currentTimeRange.label}</span>
+                <span>｜{currentTimeRange.label}断面</span>
               </button>
             </div>
           </div>
         </div>
 
-        <div className="gy-chrono-axis-tabs" aria-label="校准对象">
+        <div className="gy-chrono-control-grid" aria-label="校准对象">
           {(["year", "month", "day", "time"] as ChronoAxis[]).map((axis) => (
             <button key={axis} type="button" data-active={activeAxis === axis} onClick={() => setActiveAxis(axis)}>
-              {chronoAxisMeta[axis].label}
+              {axis === "time" ? "时" : chronoAxisMeta[axis].label}轨.TRACK
             </button>
           ))}
         </div>
 
-        <GuanyaoText className="gy-text-muted-coord gy-launch-chrono-axis" size="eyebrow" tone="faint">
-          {activeMeta.hint}
-        </GuanyaoText>
-
-        <div
-          className="gy-chrono-scale gyFadeRise"
-          ref={trackRef}
-          role="slider"
-          aria-label="出生坐标校准轴"
-          aria-valuemin={activeMeta.min}
-          aria-valuemax={activeMeta.max}
-          aria-valuenow={activeValue}
-          tabIndex={0}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-          style={{ "--gy-chrono-progress": `${progress}%` } as CSSProperties}
-        >
-          <div className="gy-chrono-scale-line" />
-          <div className="gy-chrono-scale-marks" aria-hidden="true" />
-          <div className="gy-chrono-cursor" />
-        </div>
-
-        <div className="gy-chrono-scale-labels" aria-hidden="true">
-          <span>1970</span>
-          <span>1980</span>
-          <span>1990</span>
-          <span>2000</span>
-          <span>2010</span>
-          <span>2020</span>
-        </div>
+        {!chronoProfile ? (
+          <GuanyaoText className="gy-text-muted-coord gy-launch-chrono-axis" size="eyebrow" tone="faint">
+            {activeMeta.hint}
+          </GuanyaoText>
+        ) : null}
 
         <div className="gy-front-lines gy-chrono-bottom-note">
-          {["不是为了定义你", "是为了让现实切片找到它的重力"].map((line) => (
+          {["时空重力初速度已就位", "不允许任何自嗨式解释"].map((line) => (
             <GuanyaoText key={line} size="body" tone="faint">
               {line}
             </GuanyaoText>
@@ -397,72 +535,83 @@ export function ChronoPage() {
         </div>
 
         {chronoProfile && generatedCard && generatedYuanCode ? (
-          <article className="gy-front-panel gy-chrono-prototype-card gy-yuan-code-panel gyFadeRise">
-            <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
-              观爻元码｜8
-            </GuanyaoText>
-            <div className="gy-front-lines">
-              <GuanyaoText size="body" tone="muted">
-                出生坐标 {chronoProfile.birthYear} / {padDateUnit(chronoProfile.birthMonth)} / {padDateUnit(chronoProfile.birthDay)} / {chronoProfile.birthTimeRange}
-              </GuanyaoText>
-              <GuanyaoText size="body" tone="muted">
-                时辰读数 {chronoProfile.birthHourBranchLabel}
-              </GuanyaoText>
-            </div>
-            <GuanyaoText className="gy-yuan-code-title" as="h3" size="title">
-              {generatedYuanCode.frontName ?? generatedYuanCode.userFacingName ?? `${generatedCard.trigramSymbol} ${generatedCard.trigramName}｜${generatedCard.archetypeName}`}
-            </GuanyaoText>
-            {generatedYuanCode.gravityVector ? (
-              <GuanyaoText className="gy-yuan-code-vector" size="body" tone="muted">
-                {generatedYuanCode.gravityVector}
-              </GuanyaoText>
-            ) : null}
-            <GuanyaoText className="gy-yuan-code-core-slice" size="body">
-              {generatedYuanCode.sourceCodeSlice ?? generatedYuanCode.personalitySourceCode}
-            </GuanyaoText>
-            <GuanyaoText className="gy-yuan-code-note" size="body" tone="faint">
-              {generatedYuanCode.grayNote ?? generatedYuanCode.sourceSeal ?? generatedYuanCode.shortSeal}
-            </GuanyaoText>
-            <div className="gy-front-lines gy-yuan-code-source">
-              {["元码已生成，你的人格源代码已被激活", "时间沙漏已装填，接下来进入人格映照", generatedYuanCode.sourceSeal ?? generatedYuanCode.shortSeal].map((line) => (
-                <GuanyaoText key={line} size="body" tone="muted">
-                  {line}
-                </GuanyaoText>
-              ))}
-            </div>
-            <div className="gy-yuan-system-perspective">
-              <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
-                SYSTEM PERSPECTIVE
-              </GuanyaoText>
-              {(generatedYuanCode.systemPerspective ?? []).map((line) => (
-                <GuanyaoText key={line} size="body" tone="muted">
-                  {line}
-                </GuanyaoText>
-              ))}
-            </div>
-            <div className="gy-yuan-thematic-field" aria-label="元码主题场">
-              {(generatedYuanCode.thematicField ?? []).map((field) => (
-                <span key={field}>{field}</span>
-              ))}
-            </div>
-            <GuanyaoText className="gy-text-muted-coord" size="eyebrow" tone="faint">
-              现实分位 {chronoProfile.lifeStageLabel}
-            </GuanyaoText>
-            <GuanyaoText className="gy-text-muted-coord" size="eyebrow" tone="faint">
-              压力权重 {generatedCard.pressureWeights.join(" / ")}
-            </GuanyaoText>
+          <article className="gy-source-shell gyFadeRise" aria-label="观爻元码初始原力装填">
+            <header className="gy-source-header">
+              <span>{yuanInstrument.sequence}</span>
+              <span>初始动作模式已识别</span>
+              <strong>{formatYuanSectionName(yuanCodeName)}</strong>
+            </header>
+
+            <main className="gy-source-main">
+              <div
+                className="gy-source-card"
+                data-active-hotzone={activeYuanHotzoneIndex >= 0 ? activeYuanHotzoneIndex + 1 : 0}
+                aria-hidden="true"
+              >
+                <span className="gy-source-card-code">{yuanInstrument.sequence}</span>
+                <div className="gy-source-sigil" data-trigram={generatedYuanCode.trigramKey}>
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                </div>
+                <span className="gy-source-card-seal">{generatedYuanCode.code8 ?? generatedCard.trigramSymbol}</span>
+              </div>
+
+              <div className="gy-source-assertion">
+                <p>
+                  你习惯在失重时高频动作，
+                  <br />
+                  借由<span>「不断启动」</span>来维持心智安全感。
+                </p>
+                <p>
+                  你不是一直加速，
+                  <br />
+                  而是把<strong>「刹车」</strong>误认为<strong>「坠落」</strong>。
+                </p>
+              </div>
+            </main>
+
+            <section className="gy-source-drawer-grid" aria-label="元码参数热区">
+              {sourceDrawerItems.map((hotzone) => {
+                const isActive = activeYuanHotzone === hotzone.label;
+                return (
+                  <button
+                    key={hotzone.label}
+                    className="gy-source-drawer"
+                    type="button"
+                    aria-expanded={isActive}
+                    data-active={isActive}
+                    onClick={() => setActiveYuanHotzone(isActive ? null : hotzone.label)}
+                  >
+                    <span>{hotzone.label}</span>
+                    <strong>{hotzone.value}</strong>
+                    {isActive ? <em>{hotzone.note}</em> : null}
+                  </button>
+                );
+              })}
+            </section>
           </article>
         ) : null}
 
-        <div className="gy-front-actions">
+        <div className={chronoProfile ? "gy-source-gate" : "gy-chrono-r1-gate"}>
           {!chronoProfile ? (
-            <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-primary" variant="ghost" onClick={handleGenerate}>
-              生成我的元码
+            <GuanyaoButton className="gy-chrono-r1-gate-button" variant="ghost" onClick={handleGenerate}>
+              <span>➔ 点火，装填我的观爻元码</span>
             </GuanyaoButton>
           ) : (
-            <GuanyaoButton className="gy-front-gate gy-behavior-gate gy-behavior-gate-primary" variant="ghost" onClick={() => navigate("/identity")}>
-              进入人格映照
-            </GuanyaoButton>
+            <>
+              <GuanyaoText className="gy-source-gate-note" size="body" tone="faint">
+                极核已装填。第一组人格映照碎片等待抓取。
+              </GuanyaoText>
+              <GuanyaoButton className="gy-source-gate-button" variant="ghost" onClick={() => navigate("/identity")}>
+                拉断第一阀门，抓取人格映照碎片
+              </GuanyaoButton>
+            </>
           )}
         </div>
       </section>
