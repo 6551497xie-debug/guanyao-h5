@@ -5381,7 +5381,7 @@ body.gy-chrono-r1-mode .app-shell {
   min-height: clamp(62px, 10dvh, 86px);
   margin-inline: calc(clamp(18px, 5vw, 44px) * -1);
   padding-inline: clamp(18px, 5vw, 44px);
-  color: rgba(85, 85, 85, 0.86);
+  color: rgba(85, 85, 85, 0.68);
   font-family: "SFMono-Regular", "Roboto Mono", monospace;
   font-size: clamp(10px, 2vw, 12px);
   letter-spacing: 0.08em;
@@ -5394,7 +5394,7 @@ body.gy-chrono-r1-mode .app-shell {
   right: 0;
   top: calc(50% + 5px);
   height: 1px;
-  background: #555;
+  background: rgba(85, 85, 85, 0.76);
 }
 
 .gy-chrono-r1-axis span {
@@ -5428,7 +5428,7 @@ body.gy-chrono-r1-mode .app-shell {
   position: absolute;
   left: 50%;
   top: 50%;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.78);
   transform: translate(-50%, -50%);
 }
 

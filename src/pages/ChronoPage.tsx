@@ -601,7 +601,7 @@ export function ChronoPage() {
         <div className={chronoProfile ? "gy-source-gate" : "gy-chrono-r1-gate"}>
           {!chronoProfile ? (
             <GuanyaoButton className="gy-chrono-r1-gate-button" variant="ghost" onClick={handleGenerate}>
-              <span>➔ 点火，装填我的观爻元码</span>
+              <span>点火，装填我的观爻元码</span>
             </GuanyaoButton>
           ) : (
             <>
