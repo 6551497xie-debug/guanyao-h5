@@ -62,7 +62,10 @@ function readIdentityPool(session: GuanyaoSession) {
 export function IdentityPage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isShifting, setIsShifting] = useState(false);
+  const [motionPhase, setMotionPhase] = useState<"idle" | "exit" | "enter">("idle");
   const shiftTimerRef = useRef<number | null>(null);
+  const motionTimerRef = useRef<number | null>(null);
+  const enterTimerRef = useRef<number | null>(null);
   const session = getSession();
   const fragmentPool = useMemo(() => readIdentityPool(session), [session]);
   const currentFragment = fragmentPool[activeIndex % fragmentPool.length] ?? identityFragments[0];
@@ -88,16 +91,34 @@ export function IdentityPage() {
       if (shiftTimerRef.current) {
         window.clearTimeout(shiftTimerRef.current);
       }
+      if (motionTimerRef.current) {
+        window.clearTimeout(motionTimerRef.current);
+      }
+      if (enterTimerRef.current) {
+        window.clearTimeout(enterTimerRef.current);
+      }
     };
   }, []);
 
   function handleNext() {
+    if (motionTimerRef.current) {
+      window.clearTimeout(motionTimerRef.current);
+    }
+    if (enterTimerRef.current) {
+      window.clearTimeout(enterTimerRef.current);
+    }
     setIsShifting(true);
+    setMotionPhase("exit");
     if (shiftTimerRef.current) {
       window.clearTimeout(shiftTimerRef.current);
     }
-    shiftTimerRef.current = window.setTimeout(() => setIsShifting(false), 240);
-    setActiveIndex((currentIndex) => (currentIndex + 1) % fragmentPool.length);
+    shiftTimerRef.current = window.setTimeout(() => setIsShifting(false), 300);
+    motionTimerRef.current = window.setTimeout(() => {
+      setActiveIndex((currentIndex) => (currentIndex + 1) % fragmentPool.length);
+      setMotionPhase("enter");
+      enterTimerRef.current = window.setTimeout(() => setMotionPhase("idle"), 90);
+      navigator.vibrate?.(10);
+    }, 120);
   }
 
   function handleConfirm() {
@@ -123,7 +144,7 @@ export function IdentityPage() {
           </GuanyaoText>
         </header>
 
-        <main className="gy-identity-dual-cabin gyFadeRise">
+          <main className={`gy-identity-dual-cabin gyFadeRise${isShifting ? " is-shifting" : ""}`}>
           <aside
             className="gy-identity-slice-rail"
             aria-label="人格映照切片滑轨"
@@ -145,7 +166,7 @@ export function IdentityPage() {
             </div>
           </aside>
 
-          <section className="gy-identity-data-flow" aria-label="人格映照断言数据流">
+          <section className={`gy-identity-data-flow is-${motionPhase}`} aria-label="人格映照断言数据流">
             <div className="gy-identity-fragment-core">
               <GuanyaoText className="gy-identity-r2-label" as="span" size="eyebrow" tone="faint">
                 人格映照碎片

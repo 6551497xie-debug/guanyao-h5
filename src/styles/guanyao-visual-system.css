@@ -6931,6 +6931,10 @@ body.gy-identity-r2-mode .app-shell {
   color: rgba(199, 169, 107, 0.64);
 }
 
+.gy-identity-dual-cabin.is-shifting .gy-identity-slice-meta span:first-child {
+  animation: gyIdentitySliceFlash 180ms steps(2, end) 1;
+}
+
 .gy-identity-vertical-track {
   position: relative;
   min-height: 0;
@@ -6971,7 +6975,7 @@ body.gy-identity-r2-mode .app-shell {
   box-shadow: 0 0 18px rgba(199, 169, 107, 0.12);
   transform: translate(-50%, -50%);
   transition:
-    top 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    top 220ms cubic-bezier(0.2, 0.9, 0.2, 1.15),
     border-color 160ms ease,
     box-shadow 160ms ease;
 }
@@ -7002,6 +7006,7 @@ body.gy-identity-r2-mode .app-shell {
 .gy-identity-track-point.is-shifting {
   border-color: rgba(199, 169, 107, 0.98);
   box-shadow: 0 0 22px rgba(199, 169, 107, 0.2);
+  animation: gyIdentityTrackLatch 240ms cubic-bezier(0.2, 0.9, 0.2, 1.15) 1;
 }
 
 .gy-identity-data-flow {
@@ -7012,6 +7017,21 @@ body.gy-identity-r2-mode .app-shell {
   min-height: 0;
   height: 100%;
   gap: clamp(18px, 2.8dvh, 28px);
+  will-change: opacity, transform, filter;
+}
+
+.gy-identity-data-flow.is-exit {
+  opacity: 0.18;
+  filter: blur(1px);
+  transform: translateX(-14px);
+  transition:
+    opacity 120ms ease,
+    filter 120ms ease,
+    transform 120ms cubic-bezier(0.55, 0, 0.2, 1);
+}
+
+.gy-identity-data-flow.is-enter {
+  animation: gyIdentityFragmentStamp 90ms steps(2, end) 1;
 }
 
 .gy-identity-fragment-core {
@@ -7144,6 +7164,55 @@ body.gy-identity-r2-mode .app-shell {
 .gy-identity-binary-action--claim:hover,
 .gy-identity-binary-action--claim:focus-visible {
   color: rgba(199, 169, 107, 0.92);
+}
+
+@keyframes gyIdentitySliceFlash {
+  0%,
+  100% {
+    color: rgba(199, 169, 107, 0.64);
+  }
+
+  34% {
+    color: rgba(255, 255, 255, 0.74);
+  }
+
+  67% {
+    color: rgba(199, 169, 107, 0.92);
+  }
+}
+
+@keyframes gyIdentityTrackLatch {
+  0% {
+    transform: translate(-50%, -50%) translateY(-3px);
+  }
+
+  70% {
+    transform: translate(-50%, -50%) translateY(4px);
+  }
+
+  100% {
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes gyIdentityFragmentStamp {
+  0% {
+    opacity: 0.2;
+    filter: blur(1px);
+    transform: translateX(6px);
+  }
+
+  55% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateX(0);
+  }
+
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateX(0);
+  }
 }
 
 .gy-identity-binary-hint {
