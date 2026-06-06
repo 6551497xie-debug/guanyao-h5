@@ -37,19 +37,20 @@ export function LaunchPage() {
             观爻 SANDBOX
           </GuanyaoText>
           <div className="gy-front-lines gy-launch-verdict">
-            {["你不是被命运困住", "你只是被自己的执念与恐惧", "留在了原地"].map((line) => (
-              <GuanyaoText key={line} size="body" tone="muted">
-                {line}
-              </GuanyaoText>
-            ))}
+            <GuanyaoText size="body" tone="muted">
+              这里没有答案。
+            </GuanyaoText>
+            <GuanyaoText size="body" tone="muted">
+              你只是进入一台行为因果沙盒。
+            </GuanyaoText>
           </div>
           <div className="gy-front-actions">
             <GuanyaoButton className="gy-front-gate" variant="ghost" onClick={handleOpenSandbox}>
-              开启沙盒
+              <span>沿线右滑，启动观爻。</span>
             </GuanyaoButton>
           </div>
           <GuanyaoText className="gy-launch-subgate-note" size="eyebrow" tone="faint">
-            照见行为因果
+            GY_SANDBOX_PROTOCOL_INITIALIZED
           </GuanyaoText>
         </div>
       </section>

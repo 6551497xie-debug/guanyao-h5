@@ -1,6 +1,176 @@
 @import "./tokens.css";
 @import "./motion.css";
 
+:root {
+  --gy-safe-x: 8.5%;
+  --gy-safe-right: 91.5%;
+  --gy-color-bg: #000000;
+  --gy-color-panel: #070708;
+  --gy-color-line-muted: rgba(85, 85, 85, 0.55);
+  --gy-color-line-gold: rgba(199, 169, 107, 0.76);
+  --gy-color-text-main: rgba(255, 255, 255, 0.82);
+  --gy-color-text-strong: rgba(255, 255, 255, 0.92);
+  --gy-color-text-muted: rgba(255, 255, 255, 0.34);
+  --gy-color-text-ghost: rgba(255, 255, 255, 0.22);
+  --gy-color-gold: #c7a96b;
+  --gy-line-thin: 1px;
+  --gy-rail-bottom-y: 92%;
+  --gy-grid-lower-y: 72%;
+  --gy-font-system: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+
+/*
+  GY_STATIC_AESTHETICS_CODEX_SEALED V1
+  Global Gate Protocol R1
+
+  Static law:
+  - 1px rails carry structure or action. They are not decorative dividers.
+  - Main information stays in grid/flex flow; absolute positioning is reserved for non-information texture.
+  - Cold gold is a signal, not ornament.
+  - Long content collapses into instrument drawers by default.
+
+  Main-flow action map:
+  Launch: along-rail slide, start sandbox.
+  Chrono: ignite and load Guanyao source code.
+  Source: break first valve, capture identity fragment.
+  Identity: claim identity fragment / keep drifting.
+  Force: lock force.
+  Scene: intercept reality seed / continue next moment / generate MotherCode.
+  Mother: unlock 9.9 six-yao inference / hold to start first five yao.
+  Gravity: advance first five yao / enter pressure stage.
+  Choice: bend sixth yao.
+  YaoCode: generate base yao code / inspect 90-day warning.
+  Archive: sink into behavior rings.
+*/
+
+.gy-causal-rail {
+  --gy-rail-line: var(--gy-color-line-gold);
+  --gy-rail-text: var(--gy-color-text-main);
+  --gy-rail-note: var(--gy-color-text-ghost);
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 44px;
+  place-items: center;
+  border: 0;
+  border-radius: 0;
+  padding: 0 clamp(16px, 5vw, 28px);
+  background: transparent;
+  color: var(--gy-rail-text);
+  font-family: var(--gy-font-system);
+  font-size: clamp(17px, 4.4vw, 21px);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-align: center;
+  cursor: pointer;
+}
+
+.gy-causal-rail::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--gy-line-thin);
+  background: var(--gy-rail-line);
+  transform: translateY(-50%);
+}
+
+.gy-causal-rail > span,
+.gy-causal-rail__label {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  padding: 0 16px;
+  background: var(--gy-color-bg);
+}
+
+.gy-causal-rail__note {
+  margin: 0;
+  color: var(--gy-rail-note);
+  font-family: var(--gy-font-system);
+  font-size: clamp(12px, 3vw, 14px);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.gy-causal-rail--launch {
+  --gy-rail-line: rgba(199, 169, 107, 0.72);
+  --gy-rail-text: rgba(255, 255, 255, 0.68);
+}
+
+.gy-causal-rail--enter {
+  --gy-rail-line: rgba(199, 169, 107, 0.68);
+  --gy-rail-text: rgba(255, 255, 255, 0.76);
+}
+
+.gy-causal-rail--unlock {
+  --gy-rail-line: rgba(199, 169, 107, 0.86);
+  --gy-rail-text: rgba(255, 255, 255, 0.82);
+}
+
+.gy-causal-rail--hold {
+  --gy-rail-line: rgba(255, 255, 255, 0.76);
+  --gy-rail-text: rgba(255, 255, 255, 0.78);
+}
+
+.gy-causal-rail--danger {
+  --gy-rail-line: rgba(255, 255, 255, 0.82);
+  --gy-rail-text: rgba(255, 255, 255, 0.8);
+}
+
+.gy-causal-rail--save {
+  --gy-rail-line: rgba(85, 85, 85, 0.82);
+  --gy-rail-text: rgba(255, 255, 255, 0.58);
+}
+
+.gy-instrument-box {
+  border: var(--gy-line-thin) solid var(--gy-color-line-muted);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 42%),
+    rgba(0, 0, 0, 0.42);
+  color: var(--gy-color-text-main);
+  font-family: var(--gy-font-system);
+}
+
+.gy-instrument-readout {
+  color: var(--gy-color-text-muted);
+  font-family: var(--gy-font-system);
+  font-size: clamp(12px, 3vw, 14px);
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+}
+
+.gy-instrument-readout strong {
+  color: rgba(199, 169, 107, 0.76);
+  font-weight: 400;
+}
+
+.gy-instrument-drawer {
+  border-top: var(--gy-line-thin) solid rgba(85, 85, 85, 0.52);
+  border-bottom: var(--gy-line-thin) solid rgba(85, 85, 85, 0.34);
+  background: transparent;
+  color: var(--gy-color-text-muted);
+}
+
+.gy-instrument-drawer[data-active="true"] {
+  border-color: rgba(199, 169, 107, 0.42);
+}
+
+.gy-instrument-drawer__body {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: clamp(13px, 3.2vw, 15px);
+  font-weight: 300;
+  line-height: 1.58;
+}
+
+.gy-static-audit-note {
+  display: none;
+}
+
 .gy-shell {
   width: min(var(--gy-shell-width), calc(100% - var(--gy-shell-gutter)));
   margin: 0 auto;
@@ -4374,6 +4544,252 @@ body:has(.gy-mother-reactor-shell) .app-header {
 
   .gy-launch-screen .gy-front-actions {
     margin-top: clamp(16px, 3.2vh, 24px) !important;
+  }
+}
+
+/* Launch R1: minimal sandbox airlock. */
+.gy-launch-screen.gy-front-instrument {
+  min-height: 100dvh;
+  height: 100dvh;
+  max-height: 100dvh;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 0;
+  padding: clamp(16px, 3dvh, 26px) clamp(18px, 5vw, 44px) max(18px, env(safe-area-inset-bottom));
+  overflow: clip;
+}
+
+.gy-launch-screen::before,
+.gy-launch-screen::after {
+  display: none;
+}
+
+.gy-launch-protocol-axis {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  width: 100vw;
+  margin-inline: calc(clamp(18px, 5vw, 44px) * -1);
+  padding: 0 clamp(18px, 5vw, 44px) clamp(12px, 2dvh, 18px);
+  color: #555;
+  font-family: "SFMono-Regular", "Roboto Mono", monospace;
+  font-size: clamp(9px, 2vw, 12px);
+  font-weight: 300;
+  letter-spacing: 0.08em;
+}
+
+.gy-launch-protocol-axis::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: rgba(85, 85, 85, 0.76);
+}
+
+.gy-launch-protocol-axis span {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: clip;
+}
+
+.gy-launch-protocol-axis span[data-active="true"] {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.gy-launch-protocol-axis span[data-active="true"]::before,
+.gy-launch-protocol-axis span[data-active="true"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(clamp(12px, 2dvh, 18px) * -1);
+  background: rgba(255, 255, 255, 0.78);
+  transform: translate(-50%, 50%);
+}
+
+.gy-launch-protocol-axis span[data-active="true"]::before {
+  width: 11px;
+  height: 1px;
+}
+
+.gy-launch-protocol-axis span[data-active="true"]::after {
+  width: 1px;
+  height: 11px;
+}
+
+.gy-launch-screen .gy-launch-core {
+  display: none;
+}
+
+.gy-launch-screen .gy-front-copy {
+  width: min(620px, 92vw);
+  min-height: calc(100dvh - clamp(92px, 15dvh, 128px));
+  margin: clamp(118px, 22dvh, 178px) auto 0;
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  text-align: center;
+  transform: none;
+}
+
+.gy-launch-screen .gy-front-copy > * + * {
+  margin-top: 0;
+}
+
+.gy-launch-screen .gy-text-muted-coord {
+  color: #555;
+  font-family: "SFMono-Regular", "Roboto Mono", monospace;
+  font-size: clamp(10px, 2vw, 12px);
+  font-weight: 300;
+  letter-spacing: 0.16em;
+}
+
+.gy-launch-nameplate.gy-text[data-size="title"] {
+  margin-top: clamp(10px, 1.8dvh, 16px);
+  color: rgba(255, 255, 255, 0.66);
+  font-size: clamp(24px, 6.6vw, 38px);
+  font-weight: 360;
+  line-height: 1.05;
+  letter-spacing: 0.1em;
+}
+
+.gy-launch-screen .gy-front-copy > .gy-launch-verdict {
+  margin-top: clamp(36px, 7.2dvh, 64px);
+}
+
+.gy-launch-verdict {
+  display: grid;
+  gap: clamp(8px, 1.5dvh, 13px);
+  max-width: min(27em, 86vw);
+}
+
+.gy-launch-verdict .gy-text[data-size="body"] {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: clamp(15px, 4vw, 20px);
+  font-weight: 320;
+  line-height: 1.62;
+  letter-spacing: 0.04em;
+}
+
+.gy-launch-verdict .gy-text[data-size="body"]:last-child {
+  margin-top: 0;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.gy-launch-verdict span {
+  color: rgba(199, 169, 107, 0.82);
+  font-weight: 500;
+}
+
+.gy-launch-screen .gy-front-actions {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: 100vw;
+  align-self: end;
+  margin: 0 calc(clamp(18px, 5vw, 44px) * -1);
+  padding-top: clamp(22px, 4dvh, 34px);
+}
+
+.gy-launch-screen .gy-front-actions::before {
+  display: none;
+}
+
+.gy-launch-screen .gy-front-actions::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: clamp(38px, 6dvh, 50px);
+  height: 1px;
+  background: rgba(199, 169, 107, 0.78);
+}
+
+.gy-launch-screen .gy-front-gate,
+.gy-launch-screen .gy-front-gate.gy-button {
+  appearance: none;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: auto;
+  min-width: 0;
+  min-height: clamp(28px, 4dvh, 36px);
+  padding: 0 clamp(12px, 4vw, 20px);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: clamp(15px, 3.8vw, 19px);
+  font-weight: 420;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+.gy-launch-screen .gy-front-gate span {
+  display: inline-block;
+  background: #000;
+  padding: 0 15px;
+}
+
+.gy-launch-screen .gy-front-gate:hover,
+.gy-launch-screen .gy-front-gate:focus-visible {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.gy-launch-subgate-note.gy-text[data-size="eyebrow"] {
+  margin-top: clamp(9px, 1.7dvh, 15px);
+  color: rgba(255, 255, 255, 0.18);
+  font-family: "SFMono-Regular", "Roboto Mono", monospace;
+  font-size: clamp(9px, 1.9vw, 11px);
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+@media (max-width: 430px) {
+  .gy-launch-screen.gy-front-instrument {
+    padding: clamp(14px, 2.6dvh, 22px) 18px max(16px, env(safe-area-inset-bottom));
+  }
+
+  .gy-launch-screen .gy-front-copy {
+    width: min(94vw, 620px);
+    margin-top: clamp(98px, 19dvh, 148px);
+    min-height: calc(100dvh - clamp(92px, 15dvh, 128px));
+  }
+
+  .gy-launch-protocol-axis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    row-gap: 6px;
+    font-size: 9px;
+  }
+
+  .gy-launch-protocol-axis span:nth-child(n + 5) {
+    display: none;
+  }
+
+  .gy-launch-screen .gy-front-actions {
+    margin-top: 0;
+  }
+
+  .gy-launch-screen .gy-front-actions::before {
+    width: min(88vw, 680px);
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+  .gy-launch-screen .gy-front-gate,
+  .gy-launch-screen .gy-front-gate.gy-button {
+    max-width: 92vw;
+    font-size: 13px;
+    letter-spacing: 0.04em;
   }
 }
 
