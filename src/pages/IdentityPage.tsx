@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { identityFragments } from "../data/identityFragments";
@@ -64,10 +64,22 @@ export function IdentityPage() {
   const session = getSession();
   const fragmentPool = useMemo(() => readIdentityPool(session), [session]);
   const currentFragment = fragmentPool[activeIndex % fragmentPool.length] ?? identityFragments[0];
+  const sliceIndex = (activeIndex % fragmentPool.length) + 1;
+  const sliceTotal = fragmentPool.length;
+  const sliceProgress = sliceTotal > 1 ? ((sliceIndex - 1) / (sliceTotal - 1)) * 100 : 50;
   const fragmentCopy = {
     title: currentFragment.fragmentLine,
     lines: currentFragment.systemPerspective,
   };
+  const dissectionLines = [
+    currentFragment.shadowInertia,
+    currentFragment.misrecognitionPattern,
+  ].filter(Boolean);
+
+  useEffect(() => {
+    document.body.classList.add("gy-identity-r2-mode");
+    return () => document.body.classList.remove("gy-identity-r2-mode");
+  }, []);
 
   function handleNext() {
     setActiveIndex((currentIndex) => (currentIndex + 1) % fragmentPool.length);
@@ -85,41 +97,71 @@ export function IdentityPage() {
   }
 
   return (
-    <GuanyaoShell density="compact">
-      <section className="gy-front-screen gy-front-instrument gy-identity-screen" data-intensity="quiet">
-        <div className="gy-front-copy gy-identity-coord gyFadeRise">
+    <GuanyaoShell className="gy-identity-shell" density="compact">
+      <section className="gy-front-screen gy-front-instrument gy-identity-screen gy-identity-r2" data-intensity="quiet">
+        <header className="gy-identity-r2-header gyFadeRise">
           <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
             GY / 01 / IDENTITY
           </GuanyaoText>
-          <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="faint">
-            人格映照正在显影
+          <GuanyaoText className="gy-identity-r2-status" as="span" size="eyebrow" tone="faint">
+            人格映照碎片捕获中
           </GuanyaoText>
-          <GuanyaoText size="body" tone="faint">
-            看到刺中的那一条，就点“好像是我”。还没刺中，就继续漂流。
-          </GuanyaoText>
-        </div>
-        <article className="gy-front-panel gy-text-fragment gyFadeRise" data-clickable="true" onClick={handleNext}>
-          <GuanyaoText as="h3" size="title">
-            {fragmentCopy.title}
-          </GuanyaoText>
-          <div className="gy-identity-fragment-desc">
-            {fragmentCopy.lines.map((line) => (
-              <GuanyaoText key={line} size="body" tone="muted">
-                {line}
+        </header>
+
+        <main className="gy-identity-dual-cabin gyFadeRise">
+          <aside
+            className="gy-identity-slice-rail"
+            aria-label="人格映照切片滑轨"
+            style={{ "--gy-slice-progress": `${sliceProgress}%` } as CSSProperties}
+          >
+            <div className="gy-identity-slice-meta">
+              <span>SLICE_{String(sliceIndex).padStart(2, "0")}</span>
+              <span>TOTAL_{String(sliceTotal).padStart(2, "0")}</span>
+            </div>
+            <div className="gy-identity-vertical-track" aria-hidden="true">
+              <span className="gy-identity-track-mark" />
+              <span className="gy-identity-track-mark" />
+              <span className="gy-identity-track-mark" />
+              <span className="gy-identity-track-point" />
+            </div>
+          </aside>
+
+          <section className="gy-identity-data-flow" aria-label="人格映照断言数据流">
+            <div className="gy-identity-fragment-core">
+              <GuanyaoText className="gy-identity-r2-label" as="span" size="eyebrow" tone="faint">
+                人格映照碎片
               </GuanyaoText>
-            ))}
+              <GuanyaoText className="gy-identity-r2-fragment" as="h2" size="title">
+                {fragmentCopy.title}
+              </GuanyaoText>
+            </div>
+
+            <div className="gy-identity-r2-void" aria-hidden="true" />
+
+            <div className="gy-identity-r2-dissection">
+              {dissectionLines.map((line) => (
+                <GuanyaoText key={line} as="p" size="body" tone="muted">
+                  {line}
+                </GuanyaoText>
+              ))}
+            </div>
+          </section>
+        </main>
+
+        <footer className="gy-identity-action-zone gyFadeRise">
+          <div className="gy-identity-binary-rail" aria-label="人格映照二元拨码闸门">
+            <button className="gy-identity-binary-action gy-identity-binary-action--drift" type="button" onClick={handleNext}>
+              <span>0 · 切去当前碎片</span>
+            </button>
+            <span className="gy-identity-binary-pointer" aria-hidden="true" />
+            <Link className="gy-identity-binary-action gy-identity-binary-action--claim" to="/force" onClick={handleConfirm}>
+              <span>1 · 锁定当前碎片</span>
+            </Link>
           </div>
-        </article>
-        <div className="gy-front-actions">
-          <Link to="/force" onClick={handleConfirm}>
-            <GuanyaoButton className="gy-identity-gate" as="span" variant="ghost">
-              好像是我
-            </GuanyaoButton>
-          </Link>
-          <GuanyaoButton className="gy-identity-gate" variant="ghost" onClick={handleNext}>
-            继续漂流
-          </GuanyaoButton>
-        </div>
+          <p className="gy-identity-binary-hint">
+            左端继续漂流 ｜ 右端好像是我
+          </p>
+        </footer>
       </section>
     </GuanyaoShell>
   );
