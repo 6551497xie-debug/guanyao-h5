@@ -203,6 +203,8 @@ export function MotherCodePage() {
   const [isHoldingGate, setIsHoldingGate] = useState(false);
   const holdTimerRef = useRef<number | null>(null);
   const session = getSession();
+  const injectedSceneSeed = session.selectedSceneSeed ?? session.realitySeed;
+  const injectedSceneLine = injectedSceneSeed?.seedLine ?? injectedSceneSeed?.flashLine ?? injectedSceneSeed?.title ?? null;
   const motherCode = useMemo(() => {
     const currentMotherCode = session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode ?? buildMotherCodeResult(session);
     setMotherCodeResult(currentMotherCode);
@@ -298,6 +300,19 @@ export function MotherCodePage() {
                 <GuanyaoText className="gy-mother-not-fixed" size="eyebrow" tone="faint">
                   这不是你是谁，而是你这一次被现实压出来的行为惯性。
                 </GuanyaoText>
+
+                <div className="gy-mother-scene-bridge" aria-label="现实种子钉入承接">
+                  <GuanyaoText as="span" size="eyebrow" tone="faint">
+                    现实种子已钉入。
+                    <br />
+                    母型开始坍缩。
+                  </GuanyaoText>
+                  {injectedSceneLine ? (
+                    <GuanyaoText as="span" size="eyebrow" tone="faint">
+                      钉入信号：{injectedSceneLine}
+                    </GuanyaoText>
+                  ) : null}
+                </div>
               </>
             ) : (
               <div className="gy-mother-paid-panel">
@@ -347,12 +362,12 @@ export function MotherCodePage() {
           {!isUnlocked ? (
             <>
               <GuanyaoText className="gy-mother-record-status" size="body" tone="muted">
-                母型已结晶。
+                因果沙盘已锁定。
                 <br />
-                本局母码已写入行为年轮。
+                推演指针处于断路状态。
               </GuanyaoText>
               <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-primary gy-mother-unlock-button" variant="gate" onClick={() => setIsUnlocked(true)}>
-                🔒 支付 9.9 元 · 解锁本局六爻推演
+                🔒 支付 9.9 元 · 释放下一阶段推演指针
               </GuanyaoButton>
               <GuanyaoText className="gy-mother-unlock-note" size="eyebrow" tone="faint">
                 含：母码全景诊断 / 六爻启动权 / 基础爻码结果
