@@ -7261,3 +7261,358 @@ body.gy-identity-r2-mode .app-shell {
     font-size: 12px;
   }
 }
+
+/* Scene R1: reality pressure signal intercept instrument */
+body.gy-scene-r1-mode {
+  overflow: hidden;
+}
+
+html:has(.gy-scene-screen),
+body:has(.gy-scene-screen) {
+  overflow: hidden;
+}
+
+.gy-scene-screen {
+  min-height: min(640px, calc(100dvh - 108px));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-content: stretch;
+  gap: clamp(12px, 2.8vh, 22px);
+}
+
+.gy-scene-screen.gy-causal-line::before,
+.gy-scene-screen.gy-causal-line::after {
+  display: none;
+}
+
+.gy-scene-screen .gy-front-copy {
+  width: min(360px, 100%);
+  gap: 7px;
+  justify-self: center;
+  text-align: center;
+}
+
+.gy-scene-title {
+  max-width: none;
+  color: rgba(255, 255, 255, 0.82) !important;
+  font-size: clamp(31px, 7vw, 39px) !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.035em !important;
+  line-height: 1.08 !important;
+}
+
+.gy-scene-force-readout {
+  display: block;
+  margin-top: 4px;
+  color: rgba(85, 85, 85, 0.92) !important;
+  font-size: 11px !important;
+  font-weight: 300 !important;
+  letter-spacing: 0.14em;
+}
+
+.gy-scene-slice-panel,
+.gy-front-panel.gy-scene-capture-plane,
+.gy-scene-screen:not(.gy-scene-screen--locked) .gy-scene-slice-panel,
+.gy-scene-screen--locked .gy-scene-capture-plane {
+  align-self: stretch;
+  width: min(390px, 100%);
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.gy-scene-flashline-group {
+  align-content: stretch;
+  justify-items: stretch;
+  gap: clamp(12px, 2.5vh, 18px);
+}
+
+.gy-scene-seed-list {
+  position: relative;
+  display: grid;
+  min-height: 246px;
+  padding: clamp(18px, 3.5vh, 24px) 0 clamp(14px, 3vh, 22px) clamp(42px, 10vw, 54px);
+  text-align: left;
+}
+
+.gy-scene-seed-list::before {
+  content: "";
+  position: absolute;
+  top: clamp(42px, 8vh, 58px);
+  bottom: clamp(32px, 6vh, 46px);
+  left: clamp(17px, 4.6vw, 24px);
+  width: 1px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.gy-scene-seed-list--flowing::before {
+  background: rgba(85, 85, 85, 0.82);
+}
+
+.gy-scene-seed-list--frozen::before {
+  background: rgba(255, 255, 255, 0.34);
+}
+
+.gy-scene-seed-list--selected::before {
+  background: rgba(199, 169, 107, 0.56);
+}
+
+.gy-scene-seed-group-label {
+  margin: 0 0 2px;
+  color: rgba(85, 85, 85, 0.92) !important;
+  font-size: 10px !important;
+  font-weight: 300 !important;
+  letter-spacing: 0.16em;
+}
+
+.gy-scene-seed-signal {
+  position: relative;
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  padding: 8px 0 8px clamp(14px, 3vw, 18px);
+  color: rgba(255, 255, 255, 0.7);
+  background: transparent;
+  transition:
+    color 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.gy-scene-seed-signal::before {
+  content: "";
+  position: absolute;
+  left: calc(clamp(-25px, -5.6vw, -18px));
+  top: 18px;
+  width: clamp(18px, 4.4vw, 24px);
+  height: 1px;
+  background: rgba(85, 85, 85, 0.82);
+}
+
+.gy-scene-seed-signal::after {
+  content: "";
+  position: absolute;
+  left: calc(clamp(-29px, -6.3vw, -22px));
+  top: 16px;
+  width: 5px;
+  height: 5px;
+  border: 1px solid rgba(85, 85, 85, 0.78);
+  background: #000;
+}
+
+.gy-scene-seed-list--flowing .gy-scene-seed-signal {
+  opacity: 0.48;
+}
+
+.gy-scene-seed-list--frozen .gy-scene-seed-signal {
+  cursor: pointer;
+  opacity: 0.84;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.gy-scene-seed-list--frozen .gy-scene-seed-signal::before {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.gy-scene-seed-list--frozen .gy-scene-seed-signal::after {
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.gy-scene-seed-list--frozen .gy-scene-seed-signal:hover,
+.gy-scene-seed-list--frozen .gy-scene-seed-signal:focus-visible {
+  outline: none;
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+.gy-scene-seed-signal--selected {
+  opacity: 1;
+  background: transparent;
+}
+
+.gy-scene-seed-signal--selected::before {
+  background: rgba(199, 169, 107, 0.78);
+}
+
+.gy-scene-seed-signal--selected::after {
+  border-color: rgba(199, 169, 107, 0.82);
+  box-shadow: 0 0 12px rgba(199, 169, 107, 0.16);
+}
+
+.gy-scene-seed-signal--muted {
+  opacity: 0.24;
+}
+
+.gy-scene-seed-index {
+  color: rgba(85, 85, 85, 0.96) !important;
+  font-size: 10px !important;
+  font-weight: 300 !important;
+  letter-spacing: 0.12em;
+}
+
+.gy-scene-seed-signal .gy-scene-flashline,
+.gy-scene-flashline-group .gy-scene-flashline {
+  color: rgba(255, 255, 255, 0.68) !important;
+  font-size: clamp(14px, 3.5vw, 16px) !important;
+  font-weight: 300 !important;
+  line-height: 1.42 !important;
+  letter-spacing: 0.01em !important;
+}
+
+.gy-scene-seed-list--frozen .gy-scene-flashline {
+  color: rgba(255, 255, 255, 0.76) !important;
+}
+
+.gy-scene-seed-signal--selected .gy-scene-seed-index,
+.gy-scene-seed-signal--selected .gy-scene-flashline {
+  color: rgba(199, 169, 107, 0.82) !important;
+}
+
+.gy-scene-actions {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: min(390px, 100%);
+  margin: 0 auto;
+}
+
+.gy-scene-rail-action {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.78);
+  background: transparent;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.gy-scene-rail-action::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(199, 169, 107, 0.52);
+  z-index: -2;
+}
+
+.gy-scene-rail-action::after {
+  content: "";
+  position: absolute;
+  inset: calc(50% - 12px) max(18px, 7vw);
+  background: #000;
+  z-index: -1;
+}
+
+@media (max-width: 430px) {
+  .gy-scene-screen {
+    gap: 18px;
+  }
+
+  .gy-scene-seed-list {
+    min-height: 236px;
+  }
+
+  .gy-scene-rail-action {
+    font-size: 16px;
+  }
+}
+
+/* Scene R1.1: three-stage pressure signal lock refinement */
+.gy-scene-screen .gy-front-copy {
+  gap: 4px;
+}
+
+.gy-scene-status-readout {
+  display: block;
+  color: rgba(85, 85, 85, 0.94) !important;
+  font-size: 11px !important;
+  font-weight: 300 !important;
+  letter-spacing: 0.12em;
+  line-height: 1.35;
+}
+
+.gy-scene-screen--flowing .gy-scene-seed-signal {
+  filter: blur(0.18px);
+}
+
+.gy-scene-screen--frozen .gy-scene-seed-signal {
+  filter: none;
+}
+
+.gy-scene-screen--selected .gy-scene-seed-signal--muted {
+  opacity: 0.2;
+  filter: grayscale(1);
+}
+
+.gy-scene-screen--selected .gy-scene-seed-signal--muted::before {
+  width: clamp(7px, 2vw, 10px);
+  background: rgba(85, 85, 85, 0.22);
+}
+
+.gy-scene-screen--selected .gy-scene-seed-signal--muted::after {
+  border-color: rgba(85, 85, 85, 0.16);
+  box-shadow: none;
+}
+
+.gy-scene-screen--selected .gy-scene-seed-signal--muted .gy-scene-flashline,
+.gy-scene-screen--selected .gy-scene-seed-signal--muted .gy-scene-seed-index {
+  color: rgba(85, 85, 85, 0.58) !important;
+}
+
+.gy-scene-screen--selected .gy-scene-seed-signal--selected {
+  transform: translateX(2px);
+}
+
+.gy-scene-screen--selected .gy-scene-seed-list::before {
+  background:
+    linear-gradient(rgba(199, 169, 107, 0.18), rgba(199, 169, 107, 0.18)) 0 0 / 1px 100% no-repeat;
+}
+
+.gy-scene-actions {
+  min-height: 76px;
+  align-content: end;
+}
+
+.gy-scene-gate-note {
+  margin: 0;
+  color: rgba(85, 85, 85, 0.96) !important;
+  font-size: clamp(11px, 2.9vw, 13px) !important;
+  font-weight: 300 !important;
+  letter-spacing: 0.08em;
+  line-height: 1.36;
+  text-align: center;
+}
+
+.gy-scene-rail-action {
+  display: grid;
+  place-items: center;
+  min-height: 42px;
+}
+
+.gy-scene-rail-action--static {
+  color: rgba(255, 255, 255, 0.46);
+  cursor: default;
+}
+
+.gy-scene-rail-action--static::before {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.gy-scene-rail-action--locked {
+  color: rgba(199, 169, 107, 0.82);
+}
+
+.gy-scene-rail-action--locked::before {
+  background: rgba(199, 169, 107, 0.68);
+}
