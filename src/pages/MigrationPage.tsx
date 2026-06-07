@@ -129,6 +129,16 @@ function buildCausalContextPackage(session: GuanyaoSession, card: MigrationCard,
   };
 }
 
+function readMotherAssetLabel(session: GuanyaoSession) {
+  const motherAsset = normalizeGuaFieldFromLegacy(session.guaFieldResult ?? session.guaField ?? session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode);
+
+  if (!motherAsset) {
+    return "No.--｜母型待压印";
+  }
+
+  return `No.${motherAsset.code64}｜${motherAsset.hexagramName}｜${motherAsset.title}`;
+}
+
 function BehaviorDefenseKit() {
   return (
     <div className="gy-defense-kit">
@@ -237,6 +247,7 @@ export function MigrationPage() {
   const cleanScriptTitle = card.migrationDirection.scriptTitle.replace(/[《》]/g, "");
   const yaoCodeNo = `No.${card.migrationDirection.code}`;
   const yaoCodeTitle = `${card.migrationDirection.traditionalName}【${cleanScriptTitle}】`;
+  const motherAssetLabel = readMotherAssetLabel(session);
 
   return (
     <GuanyaoShell className="gy-migration-r1-shell" density="compact">
@@ -267,14 +278,20 @@ export function MigrationPage() {
             </div>
             <div className="gy-migration-r1-grid" aria-label="基础因果读数">
               <div>
-                <span>第六爻</span>
-                <strong>{sixthYaoLabel}</strong>
+                <span>母码母型</span>
+                <strong>{motherAssetLabel}</strong>
               </div>
               <div>
-                <span>本次爻码</span>
-                <strong>
-                  {yaoCode.code384}｜{yaoCode.personalityBehaviorTrack}
-                </strong>
+                <span>爻码武器</span>
+                <strong>本次爻码｜现实武器待开封</strong>
+              </div>
+              <div>
+                <span>行为沉积</span>
+                <strong>即将沉入行为年轮</strong>
+              </div>
+              <div>
+                <span>第六爻</span>
+                <strong>{sixthYaoLabel}</strong>
               </div>
             </div>
           </section>

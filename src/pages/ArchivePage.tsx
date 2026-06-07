@@ -94,6 +94,15 @@ function readYaoCodeText(context: CausalContextPackage | undefined) {
   return `${context.yaoCode.code384}｜${context.yaoCode.personalityBehaviorTrack}`;
 }
 
+function readMotherAssetText(context: CausalContextPackage | undefined) {
+  const motherAsset = context?.motherCode ?? context?.guaField;
+  if (!motherAsset) return "No.--｜母型待压印";
+
+  const legacy = motherAsset as NonNullable<CausalContextPackage["motherCode"]>;
+  const name = motherAsset.hexagramName ?? legacy.name ?? "母型";
+  return `No.${motherAsset.code64}｜${name}｜${motherAsset.title}`;
+}
+
 function readTimeSandglassText(context: CausalContextPackage | undefined) {
   const sandglass = context?.timeSandglass ?? context?.energyState;
   if (!sandglass) return "未记录";
@@ -287,6 +296,10 @@ function readArchiveAntiNode(item: ArchiveItem) {
   return item.antiInstinctNode || formatYaoBit(item.causalContext?.sixthYaoChoice) || "反本能节点已记录";
 }
 
+function readArchiveYaoWeapon(item: ArchiveItem) {
+  return item.causalContext?.yaoCode?.code384 ?? item.finalChoiceCode ?? item.choiceCode ?? "本次武器待开封";
+}
+
 const archiveVaultSlots = [
   {
     key: "yao",
@@ -374,6 +387,8 @@ export function ArchivePage() {
               <span>刚刚沉积</span>
               <strong>行为年轮_01</strong>
               <h2>{readArchiveAssetName(latestAsset)}</h2>
+              <p>母码母型：{readMotherAssetText(latestAsset.causalContext)}</p>
+              <p>爻码武器：{readArchiveYaoWeapon(latestAsset)}</p>
               <p>本局反本能节点：{readArchiveAntiNode(latestAsset)}</p>
               <em>状态：基础资产已沉积｜深层记录待开封</em>
             </section>
@@ -401,8 +416,8 @@ export function ArchivePage() {
                   <article key={item.archiveId}>
                     <i>{`行为年轮_${String(index + 1).padStart(2, "0")}`}</i>
                     <time>{formatArchiveTime(item.createdAt)}</time>
-                    <strong>{readArchiveAssetCode(item)}</strong>
-                    <p>{readArchiveAssetTrack(item)}</p>
+                    <strong>母码：{readMotherAssetText(item.causalContext)}</strong>
+                    <p>爻码：{readArchiveYaoWeapon(item)}</p>
                     <em>状态：已沉积</em>
                   </article>
                 ))}
