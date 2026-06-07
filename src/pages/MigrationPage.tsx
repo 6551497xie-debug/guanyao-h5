@@ -139,6 +139,17 @@ function readMotherAssetLabel(session: GuanyaoSession) {
   return `No.${motherAsset.code64}｜${motherAsset.hexagramName}｜${motherAsset.title}`;
 }
 
+function buildYaoWeaponName(...sources: Array<string | undefined>) {
+  const source = sources.filter(Boolean).join("｜");
+
+  if (/硬骨|硬撑|扛住|咬合/.test(source)) return "硬骨切断刃";
+  if (/拖延|停滞|推迟|等待|校准/.test(source)) return "破局切断刃";
+  if (/越界|答应|讨好/.test(source)) return "拒绝越界盾";
+  if (/失控|下坠|混乱/.test(source)) return "停止失重钩";
+  if (/回避|沉默|断联|隐藏/.test(source)) return "延迟回应针";
+  return "硬骨切断刃";
+}
+
 function BehaviorDefenseKit() {
   return (
     <div className="gy-defense-kit">
@@ -243,11 +254,12 @@ export function MigrationPage() {
     navigate("/archive");
   }
 
-  const sixthYaoLabel = session.sixthYaoChoice === 0 ? "1 · 反本能偏转" : session.sixthYaoChoice === 1 ? "0 · 照旧反应" : "第六爻已落下";
   const cleanScriptTitle = card.migrationDirection.scriptTitle.replace(/[《》]/g, "");
   const yaoCodeNo = `No.${card.migrationDirection.code}`;
   const yaoCodeTitle = `${card.migrationDirection.traditionalName}【${cleanScriptTitle}】`;
   const motherAssetLabel = readMotherAssetLabel(session);
+  const yaoWeaponName = buildYaoWeaponName(yaoCodeCard.title, yaoCodeCard.coreSeal, card.antiInstinctNode);
+  const antiInstinctAction = card.antiInstinctNode || "把今天最容易拖延的一步，缩小到十分钟内完成。";
 
   return (
     <GuanyaoShell className="gy-migration-r1-shell" density="compact">
@@ -283,15 +295,15 @@ export function MigrationPage() {
               </div>
               <div>
                 <span>爻码武器</span>
-                <strong>本次爻码｜现实武器待开封</strong>
+                <strong>{yaoCode.code384}｜{yaoWeaponName}</strong>
+              </div>
+              <div>
+                <span>本局动作</span>
+                <strong>{antiInstinctAction}</strong>
               </div>
               <div>
                 <span>行为沉积</span>
-                <strong>即将沉入行为年轮</strong>
-              </div>
-              <div>
-                <span>第六爻</span>
-                <strong>{sixthYaoLabel}</strong>
+                <strong>沉入行为年轮</strong>
               </div>
             </div>
           </section>

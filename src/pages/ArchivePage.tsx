@@ -296,8 +296,32 @@ function readArchiveAntiNode(item: ArchiveItem) {
   return item.antiInstinctNode || formatYaoBit(item.causalContext?.sixthYaoChoice) || "反本能节点已记录";
 }
 
+function buildArchiveYaoWeaponName(...sources: Array<string | undefined>) {
+  const source = sources.filter(Boolean).join("｜");
+
+  if (/硬骨|硬撑|扛住|咬合/.test(source)) return "硬骨切断刃";
+  if (/拖延|停滞|推迟|等待|校准/.test(source)) return "破局切断刃";
+  if (/越界|答应|讨好/.test(source)) return "拒绝越界盾";
+  if (/失控|下坠|混乱/.test(source)) return "停止失重钩";
+  if (/回避|沉默|断联|隐藏/.test(source)) return "延迟回应针";
+  return "硬骨切断刃";
+}
+
 function readArchiveYaoWeapon(item: ArchiveItem) {
-  return item.causalContext?.yaoCode?.code384 ?? item.finalChoiceCode ?? item.choiceCode ?? "本次武器待开封";
+  const weaponCode = item.causalContext?.yaoCode?.code384 ?? item.finalChoiceCode ?? item.choiceCode ?? "YAO_WEAPON";
+  const weaponName = buildArchiveYaoWeaponName(
+    item.causalContext?.yaoCodeCard?.title,
+    item.causalContext?.yaoCodeCard?.source,
+    item.antiInstinctNode,
+    item.cardTitle,
+    readArchiveAssetTrack(item),
+  );
+
+  return `${weaponCode}｜${weaponName}`;
+}
+
+function readArchiveAction(item: ArchiveItem) {
+  return item.antiInstinctNode || item.causalContext?.yaoCodeCard?.source || "把今天最容易拖延的一步，缩小到十分钟内完成。";
 }
 
 const archiveVaultSlots = [
@@ -389,8 +413,9 @@ export function ArchivePage() {
               <h2>{readArchiveAssetName(latestAsset)}</h2>
               <p>母码母型：{readMotherAssetText(latestAsset.causalContext)}</p>
               <p>爻码武器：{readArchiveYaoWeapon(latestAsset)}</p>
+              <p>本局动作：{readArchiveAction(latestAsset)}</p>
               <p>本局反本能节点：{readArchiveAntiNode(latestAsset)}</p>
-              <em>状态：基础资产已沉积｜深层记录待开封</em>
+              <em>状态：基础武器已沉积｜深层记录待开封</em>
             </section>
 
             <section className="gy-archive-vault-readout" aria-label="行为年轮总览">
@@ -417,7 +442,7 @@ export function ArchivePage() {
                     <i>{`行为年轮_${String(index + 1).padStart(2, "0")}`}</i>
                     <time>{formatArchiveTime(item.createdAt)}</time>
                     <strong>母码：{readMotherAssetText(item.causalContext)}</strong>
-                    <p>爻码：{readArchiveYaoWeapon(item)}</p>
+                    <p>爻码武器：{readArchiveYaoWeapon(item)}</p>
                     <em>状态：已沉积</em>
                   </article>
                 ))}
