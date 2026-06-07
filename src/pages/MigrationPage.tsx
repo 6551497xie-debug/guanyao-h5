@@ -1,7 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { TextLines } from "../components/TextLines";
-import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { migrations } from "../data/migrations";
@@ -203,7 +201,6 @@ function BehaviorDefenseKit() {
 
 export function MigrationPage() {
   const navigate = useNavigate();
-  const [isExpanded, setIsExpanded] = useState(false);
   const session = getSession();
   const { card, finalChoiceCode } = useMemo(() => {
     const sessionCode = getSession().finalChoiceCode;
@@ -236,133 +233,94 @@ export function MigrationPage() {
     navigate("/archive");
   }
 
+  const sixthYaoLabel = session.sixthYaoChoice === 0 ? "1 · 反本能偏转" : session.sixthYaoChoice === 1 ? "0 · 照旧反应" : "第六爻已落下";
+  const cleanScriptTitle = card.migrationDirection.scriptTitle.replace(/[《》]/g, "");
+  const yaoCodeNo = `No.${card.migrationDirection.code}`;
+  const yaoCodeTitle = `${card.migrationDirection.traditionalName}【${cleanScriptTitle}】`;
+
   return (
-    <GuanyaoShell className="gy-delivery-shell" density="compact">
-      <section className="gy-delivery-stage gy-causal-line gy-causal-line-press gyFadeRise">
-        <div className="gy-result-hero">
-          <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
-            爻码生成
+    <GuanyaoShell className="gy-migration-r1-shell" density="compact">
+      <section className="gy-migration-r1-screen gyFadeRise" aria-label="基础爻码结果">
+        <header className="gy-migration-r1-header">
+          <GuanyaoText as="span" size="eyebrow" tone="gold">
+            GY / 07 / YAOCODE_DELIVERY
           </GuanyaoText>
-          <GuanyaoText as="h2" size="title">
-            轨迹已压印
+          <GuanyaoText as="span" size="eyebrow" tone="faint">
+            ⏳ 基础观察已结束 ｜ 本次行为轨迹已冻结
           </GuanyaoText>
-            <GuanyaoText className="gy-migration-verdict" size="body" tone="muted">
-            六爻已经闭合，这条行为轨迹被记录下来。
-          </GuanyaoText>
-        </div>
-
-        <div className="gy-result-frame">
-          <div className="gy-result-code gy-result-code--primary">
-            <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-              爻码
-            </GuanyaoText>
-            <GuanyaoText size="body" tone="gold">
-              {card.migrationDirection.code} {card.migrationDirection.traditionalName}
-              {card.migrationDirection.scriptTitle}｜上爻
-            </GuanyaoText>
+          <span className="gy-migration-r1-hourglass">观察权限：0</span>
+          <h1 className="gy-migration-r1-title">
+            <span>{yaoCodeNo}</span>
+            <strong>{yaoCodeTitle}</strong>
+          </h1>
+          <div className="gy-migration-r1-meta">
+            <span>轨迹代码 // {finalChoiceCode}</span>
+            <span>基础9.9元因果观察已交割</span>
           </div>
-          <div>
-            <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-              轨迹代码
-            </GuanyaoText>
-            <GuanyaoText size="body">
-              {finalChoiceCode}
-            </GuanyaoText>
-          </div>
-          <GuanyaoText className="gy-result-arrow" size="title" tone="gold">
-            ↓
-          </GuanyaoText>
-          <div>
-            <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-              迁移来源
-            </GuanyaoText>
-            <GuanyaoText size="body">
-              {card.currentTrack.code} {card.currentTrack.traditionalName}
-              {card.currentTrack.scriptTitle} → {card.migrationDirection.code} {card.migrationDirection.traditionalName}
-              {card.migrationDirection.scriptTitle}
-            </GuanyaoText>
-          </div>
-        </div>
+        </header>
 
-        <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
-          {["先看这次轨迹。", "再查看90天行为预警。"].map((line) => (
-            <GuanyaoText key={line} size="body" tone="muted">
-              {line}
-            </GuanyaoText>
-          ))}
-        </div>
+        <main className="gy-migration-r1-panel">
+          <section className="gy-migration-r1-delivery" aria-label="基础爻码交割">
+            <div className="gy-migration-r1-verdict">
+              <p>你不是在硬撑，你是在用高频的肉身毁灭对冲精神崩溃。</p>
+              <p>拉不上脸的硬撑，终将由肉身买单。</p>
+            </div>
+            <div className="gy-migration-r1-grid" aria-label="基础因果读数">
+              <div>
+                <span>第六爻</span>
+                <strong>{sixthYaoLabel}</strong>
+              </div>
+              <div>
+                <span>本次爻码</span>
+                <strong>
+                  {yaoCode.code384}｜{yaoCode.personalityBehaviorTrack}
+                </strong>
+              </div>
+            </div>
+          </section>
 
-        <div className="gy-delivery-copy gy-delivery-copy--compact gy-result-core-copy">
-          {[
-            "来源链已记录：元码 → 母码 → 爻码",
-            `人格映照 / 原力：${session.selectedFragment?.text ?? "本次碎片已认领"} / ${session.selectedForceName ?? "本次原力已定格"}`,
-            `现实入口：${session.selectedSceneSlice?.flashLine ?? session.realitySeed?.title ?? "现实种子已捕获"}`,
-            `本次爻码：${yaoCode.code384}｜${yaoCode.personalityBehaviorTrack}｜第六爻 ${session.sixthYaoChoice === 0 ? "反本能偏转" : session.sixthYaoChoice === 1 ? "照旧反应" : "最终动作已落下"}`,
-          ].map((line) => (
-            <GuanyaoText key={line} size="eyebrow" tone="faint">
-              {line}
-            </GuanyaoText>
-          ))}
-        </div>
+          <section className="gy-migration-r1-settlement" aria-label="观察冻结主轨">
+            <div className="gy-migration-r1-settlement-line" aria-hidden="true" />
+            <span>观察冻结</span>
+            <em>本次基础观察已结束。更深层记录已生成，尚未提取。</em>
+          </section>
 
-        <div className="gy-delivery-actions">
-          <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-secondary" variant="ghost" onClick={() => setIsExpanded((current) => !current)}>
-            {isExpanded ? "收起90天行为预警" : "查看90天行为预警"}
-          </GuanyaoButton>
-          <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-save" variant="gate" onClick={handleSave}>
-            保存到人格档案
-          </GuanyaoButton>
-        </div>
+          <section className="gy-migration-r1-gear" aria-label="已生成记录区">
+            <div className="gy-migration-r1-gear-head">
+              <span>深层记录已生成，尚未开封</span>
+              <strong>行为观察权限已冻结</strong>
+              <em>稍后可在行为资产库继续开封</em>
+            </div>
+            <div className="gy-migration-r1-gear-slots">
+              <article>
+                <span>📓 90天行为防御本</span>
+                <em>观察冻结｜尚未开封</em>
+                <strong>完整记录：未来90天行为冲突与防御路径</strong>
+              </article>
+              <article>
+                <span>⏳ 高风险窗口</span>
+                <em>观察冻结｜尚未开封</em>
+                <strong>观察窗口：15 / 45天现实代价节点</strong>
+              </article>
+              <article>
+                <span>🛡️ 反本能防线记录</span>
+                <em>观察冻结｜尚未开封</em>
+                <strong>防线记录：明确切断刃 / 拒绝越界盾 / 停止失重钩</strong>
+              </article>
+            </div>
+            <p className="gy-migration-r1-warning">
+              本次行为沙漏可先沉积入行为年轮。深层记录可稍后从行为资产库继续开封。
+            </p>
+            <span className="gy-migration-r1-archive">深层记录已生成，稍后可在行为资产库开封</span>
+          </section>
+        </main>
 
-        {isExpanded ? (
-          <div className="gy-analysis-stack gyFadeRise">
-            <details className="gy-analysis-card">
-              <summary>因果来源</summary>
-              {card.originGravityCoordinate ? (
-                <>
-                  <p>{card.originGravityCoordinate.coordinate}</p>
-                  <section>
-                    <h3>
-                      主因｜{card.originGravityCoordinate.primaryFactor.forceKey}：
-                      {card.originGravityCoordinate.primaryFactor.archetype}｜
-                      {card.originGravityCoordinate.primaryFactor.role}
-                    </h3>
-                    <TextLines lines={card.originGravityCoordinate.primaryFactor.lines} />
-                  </section>
-                  <section>
-                    <h3>
-                      潜因｜{card.originGravityCoordinate.secondaryFactor.forceKey}：
-                      {card.originGravityCoordinate.secondaryFactor.archetype}｜
-                      {card.originGravityCoordinate.secondaryFactor.role}
-                    </h3>
-                    <TextLines lines={card.originGravityCoordinate.secondaryFactor.lines} />
-                  </section>
-                  <section>
-                    <h3>塌缩点</h3>
-                    <TextLines lines={card.originGravityCoordinate.collapsePoint} />
-                  </section>
-                </>
-              ) : (
-                <p>这条轨迹的原力双因子尚未完全展开。</p>
-              )}
-            </details>
-            <details className="gy-analysis-card" open>
-              <summary>90天行为预警</summary>
-              <BehaviorDefenseKit />
-            </details>
-            <details className="gy-analysis-card">
-              <summary>反本能动作</summary>
-              <p>{card.antiInstinctNode}</p>
-            </details>
-            <details className="gy-analysis-card">
-              <summary>因果轨迹</summary>
-              <p>{finalChoiceCode}</p>
-              <p>
-                {card.currentTrack.code} → {card.migrationDirection.code}
-              </p>
-            </details>
-          </div>
-        ) : null}
+        <footer className="gy-migration-r1-profit-lock" aria-label="行为年轮沉积闸门">
+          <button className="gy-migration-r1-primary-deposit" type="button" onClick={handleSave}>
+            沉入行为年轮
+          </button>
+          <span>基础资产先沉积入库 · 深层记录留待开封</span>
+        </footer>
       </section>
     </GuanyaoShell>
   );

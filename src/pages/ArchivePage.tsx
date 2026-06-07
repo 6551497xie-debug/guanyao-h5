@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TextLines } from "../components/TextLines";
-import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { getArchives } from "../services/archiveService";
@@ -259,146 +259,182 @@ function ArchiveBehaviorDefenseKit() {
   );
 }
 
+function readArchiveAssetCode(item: ArchiveItem) {
+  return item.causalContext?.yaoCode?.code384 ?? item.causalContext?.yaoCodeCard?.code ?? item.finalChoiceCode ?? item.choiceCode ?? "YAO_CODE";
+}
+
+function readArchiveAssetTrack(item: ArchiveItem) {
+  const migration = item.migrationDirection
+    ? `${item.migrationDirection.code} ${item.migrationDirection.traditionalName}${item.migrationDirection.scriptTitle}`
+    : "";
+  const current = item.currentTrack
+    ? `${item.currentTrack.code} ${item.currentTrack.traditionalName}${item.currentTrack.scriptTitle}`
+    : "";
+
+  if (current && migration) return `${current} → ${migration}`;
+  return migration || current || item.causalContext?.yaoCodeCard?.track || "轨迹已沉积";
+}
+
+function readArchiveAssetName(item: ArchiveItem) {
+  const yao = item.causalContext?.yaoCode;
+  if (yao?.personalityBehaviorTrack) return yao.personalityBehaviorTrack;
+  if (item.causalContext?.yaoCodeCard?.title) return item.causalContext.yaoCodeCard.title;
+  if (item.cardTitle) return item.cardTitle;
+  return readArchiveAssetTrack(item);
+}
+
+function readArchiveAntiNode(item: ArchiveItem) {
+  return item.antiInstinctNode || formatYaoBit(item.causalContext?.sixthYaoChoice) || "反本能节点已记录";
+}
+
+const archiveVaultSlots = [
+  {
+    key: "yao",
+    code: "ASSET_01",
+    label: "基础爻码",
+    value: "等待沉积",
+    line: "完成一次六爻推演后，本局基础爻码会压入行为年轮轴。",
+  },
+  {
+    key: "defense",
+    code: "ASSET_02",
+    label: "反本能防线记录",
+    value: "观察冻结",
+    line: "防线记录不会在空库里生成。它只在真实行为轨迹完成后留下刻痕。",
+  },
+  {
+    key: "window",
+    code: "ASSET_03",
+    label: "观察窗口",
+    value: "尚未提取",
+    line: "15 / 45 天窗口需要先有一条行为资产，才能被打开。",
+  },
+] as const;
+
+type ArchiveVaultSlotKey = (typeof archiveVaultSlots)[number]["key"];
+
 export function ArchivePage() {
+  const navigate = useNavigate();
+  const [activeVaultSlot, setActiveVaultSlot] = useState<ArchiveVaultSlotKey>("yao");
   const archives = getArchives();
-  const [expandedArchiveId, setExpandedArchiveId] = useState<string | null>(null);
-  const archiveReadout = archives.length === 0 ? "暂无偏转沉积" : `已沉积 ${archives.length} 次偏转`;
+  const sortedArchives = [...archives].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const latestAsset = sortedArchives[0];
+  const settledCount = sortedArchives.length;
+  const yaoCodeCount = sortedArchives.filter((item) => item.finalChoiceCode || item.causalContext?.yaoCode || item.causalContext?.yaoCodeCard?.code).length;
+  const pendingRecordCount = 0;
+  const activeSlot = archiveVaultSlots.find((slot) => slot.key === activeVaultSlot) ?? archiveVaultSlots[0];
 
   return (
     <GuanyaoShell className="gy-delivery-shell" density="compact">
-      <section className="gy-delivery-stage gy-archive-stage gy-causal-line gy-causal-line-sediment gyFadeRise">
-        <GuanyaoText as="span" size="eyebrow" tone="gold">
-          档案沉淀
-        </GuanyaoText>
-        <GuanyaoText as="h2" size="title">
-          人格档案
-        </GuanyaoText>
-        <GuanyaoText className="gy-archive-readout" as="span" size="eyebrow" tone="faint">
-          {archiveReadout}
-        </GuanyaoText>
-        <GuanyaoText className="gy-archive-readout" as="span" size="eyebrow" tone="faint">
-          每一次爻码卡，都会在这里沉积成你的行为年轮。
-        </GuanyaoText>
-        {archives.length === 0 ? (
-          <div className="gy-archive-empty">
-            <GuanyaoText size="body" tone="muted">
-              这里还没有档案
-            </GuanyaoText>
-            <GuanyaoText size="body" tone="faint">
-              完成一次爻码卡后，它会被保存到这里。
-            </GuanyaoText>
-          </div>
-        ) : (
-          <div className="gy-archive-list">
-            {archives.map((item) => {
-              const isExpanded = expandedArchiveId === item.archiveId;
+      <section className="gy-archive-vault gyFadeRise">
+        <header className="gy-archive-vault-header">
+          <span>GY / 09 / ARCHIVE_VAULT</span>
+          <em>{sortedArchives.length > 0 ? "本次沉积已入库" : "行为资产库待写入"}</em>
+          <h1>行为资产库</h1>
+          <p>{sortedArchives.length > 0 ? "基础资产已沉积 ｜ 深层记录待开封" : "已归档行为资产 ｜ 观察冻结记录 ｜ 深层记录待开封"}</p>
+        </header>
 
-              return (
-                <article className="gy-archive-card" key={item.archiveId}>
-                  <div className="gy-archive-summary">
-                    <div className="gy-archive-summary-row gy-archive-summary-code">
-                      <span>六爻代码</span>
-                      <strong>{item.finalChoiceCode}</strong>
-                    </div>
-                    <div className="gy-archive-summary-row gy-archive-summary-track">
-                      <span>迁移轨迹</span>
-                      <p>
-                        {item.currentTrack.code} {item.currentTrack.traditionalName}
-                        {item.currentTrack.scriptTitle} → {item.migrationDirection.code} {item.migrationDirection.traditionalName}
-                        {item.migrationDirection.scriptTitle}
-                      </p>
-                    </div>
-                    <div className="gy-archive-summary-row gy-archive-summary-time">
-                      <span>沉积时间</span>
-                      <p>{formatArchiveTime(item.createdAt)}</p>
-                    </div>
-                  </div>
-                  <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-save" variant="ghost" onClick={() => setExpandedArchiveId(isExpanded ? null : item.archiveId)}>
-                    {isExpanded ? "收起档案" : "展开这次偏转"}
-                  </GuanyaoButton>
-                  {isExpanded ? (
-                    <div className="gy-analysis-stack gyFadeRise">
-                      <nav className="gy-archive-anchor-nav" aria-label="档案分段">
-                        <a href={`#archive-${item.archiveId}-fixed`}>爻码卡</a>
-                        <a href={`#archive-${item.archiveId}-90d`}>90天预警</a>
-                        <a href={`#archive-${item.archiveId}-anti`}>反本能动作</a>
-                        <a href={`#archive-${item.archiveId}-track`}>因果轨迹</a>
-                      </nav>
-                      <div className="gy-analysis-card" id={`archive-${item.archiveId}-fixed`}>
-                        <GuanyaoText className="gy-archive-section-note" as="span" size="eyebrow" tone="faint">
-                          查看本次六爻偏转生成的爻码状态。
-                        </GuanyaoText>
-                        <strong>爻码卡</strong>
-                        <p>
-                          {item.migrationDirection.code} {item.migrationDirection.traditionalName}
-                          {item.migrationDirection.scriptTitle}｜上爻
-                        </p>
-                        <p>轨迹代码：{item.finalChoiceCode}</p>
-                        <strong>因果来源</strong>
-                        {renderCausalSource(item.causalContext, item)}
-                        {item.originGravityCoordinate ? (
-                          <>
-                            <strong>{item.originGravityCoordinate.title}</strong>
-                            <p>{item.originGravityCoordinate.coordinate}</p>
-                            <section>
-                              <h3>
-                                主因｜{item.originGravityCoordinate.primaryFactor.forceKey}：
-                                {item.originGravityCoordinate.primaryFactor.archetype}｜
-                                {item.originGravityCoordinate.primaryFactor.role}
-                              </h3>
-                              <TextLines lines={item.originGravityCoordinate.primaryFactor.lines} />
-                            </section>
-                            <section>
-                              <h3>
-                                潜因｜{item.originGravityCoordinate.secondaryFactor.forceKey}：
-                                {item.originGravityCoordinate.secondaryFactor.archetype}｜
-                                {item.originGravityCoordinate.secondaryFactor.role}
-                              </h3>
-                              <TextLines lines={item.originGravityCoordinate.secondaryFactor.lines} />
-                            </section>
-                            <section>
-                              <h3>塌缩点</h3>
-                              <TextLines lines={item.originGravityCoordinate.collapsePoint} />
-                            </section>
-                          </>
-                        ) : null}
-                      </div>
-                      <div className="gy-analysis-card" id={`archive-${item.archiveId}-90d`}>
-                        <GuanyaoText className="gy-archive-section-note" as="span" size="eyebrow" tone="faint">
-                          查看这条轨迹未来90天更容易反复触发的位置，以及对应的操作工具。
-                        </GuanyaoText>
-                        <strong>90天行为预警</strong>
-                        <ArchiveBehaviorDefenseKit />
-                      </div>
-                      <div className="gy-analysis-card" id={`archive-${item.archiveId}-anti`}>
-                        <GuanyaoText className="gy-archive-section-note" as="span" size="eyebrow" tone="faint">
-                          查看可以带回现实执行的三张操作卡。
-                        </GuanyaoText>
-                        <strong>反本能动作</strong>
-                        <p>{item.antiInstinctNode}</p>
-                      </div>
-                      <div className="gy-analysis-card" id={`archive-${item.archiveId}-track`}>
-                        <GuanyaoText className="gy-archive-section-note" as="span" size="eyebrow" tone="faint">
-                          查看这张爻码卡由哪些前因推导而来。
-                        </GuanyaoText>
-                        <strong>因果轨迹</strong>
-                        {renderCausalSource(item.causalContext, item)}
-                        <p>六爻代码：{item.finalChoiceCode}</p>
-                        <p>
-                          当前轨迹：{item.currentTrack.code} {item.currentTrack.traditionalName}
-                          {item.currentTrack.scriptTitle}
-                        </p>
-                        <p>
-                          迁移方向：{item.migrationDirection.code} {item.migrationDirection.traditionalName}
-                          {item.migrationDirection.scriptTitle}
-                        </p>
-                      </div>
-                    </div>
-                  ) : null}
-                </article>
-              );
-            })}
-          </div>
+        {sortedArchives.length === 0 ? (
+          <section className="gy-archive-vault-empty">
+            <div className="gy-archive-vault-empty-copy">
+              <span>VAULT_EMPTY</span>
+              <h2>行为资产库尚未沉积</h2>
+              <p>完成一次观爻沙盒推演后，本次行为沙漏会写入这里。</p>
+            </div>
+
+            <div className="gy-archive-vault-console" aria-label="行为资产库空仓校准台">
+              <div className="gy-archive-vault-console-axis" aria-hidden="true" />
+              <div className="gy-archive-vault-slot-grid">
+                {archiveVaultSlots.map((slot) => (
+                  <button
+                    className={`gy-archive-vault-slot${activeVaultSlot === slot.key ? " gy-archive-vault-slot--active" : ""}`}
+                    key={slot.key}
+                    type="button"
+                    onClick={() => setActiveVaultSlot(slot.key)}
+                  >
+                    <span>{slot.code}</span>
+                    <strong>{slot.label}</strong>
+                    <em>{slot.value}</em>
+                  </button>
+                ))}
+              </div>
+              <div className="gy-archive-vault-slot-readout">
+                <span>{activeSlot.code} // {activeSlot.label}</span>
+                <p>{activeSlot.line}</p>
+              </div>
+            </div>
+
+            <button type="button" onClick={() => navigate("/")}>
+              返回沙盒
+            </button>
+          </section>
+        ) : (
+          <>
+            <section className="gy-archive-vault-latest" aria-label="最近一次行为资产">
+              <span>刚刚沉积</span>
+              <strong>行为年轮_01</strong>
+              <h2>{readArchiveAssetName(latestAsset)}</h2>
+              <p>本局反本能节点：{readArchiveAntiNode(latestAsset)}</p>
+              <em>状态：基础资产已沉积｜深层记录待开封</em>
+            </section>
+
+            <section className="gy-archive-vault-readout" aria-label="行为年轮总览">
+              <span>行为年轮</span>
+              <div>
+                <strong>{settledCount}</strong>
+                <em>基础资产</em>
+              </div>
+              <div>
+                <strong>{pendingRecordCount}</strong>
+                <em>冻结记录</em>
+              </div>
+              <div>
+                <strong>{yaoCodeCount}</strong>
+                <em>行为年轮</em>
+              </div>
+            </section>
+
+            <section className="gy-archive-vault-axis" aria-label="行为年轮轴">
+              <span>行为年轮轴</span>
+              <div>
+                {sortedArchives.map((item, index) => (
+                  <article key={item.archiveId}>
+                    <i>{`行为年轮_${String(index + 1).padStart(2, "0")}`}</i>
+                    <time>{formatArchiveTime(item.createdAt)}</time>
+                    <strong>{readArchiveAssetCode(item)}</strong>
+                    <p>{readArchiveAssetTrack(item)}</p>
+                    <em>状态：已沉积</em>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="gy-archive-vault-pending" aria-label="深层记录待开封">
+              <span>深层记录待开封</span>
+              {archiveVaultSlots.slice(1).map((slot) => (
+                <button
+                  className={`gy-archive-vault-pending-slot${activeVaultSlot === slot.key ? " gy-archive-vault-pending-slot--active" : ""}`}
+                  key={slot.key}
+                  type="button"
+                  onClick={() => setActiveVaultSlot(slot.key)}
+                >
+                  <strong>{slot.label}</strong>
+                  <em>{slot.value === "尚未提取" ? "观察冻结｜尚未开封" : `${slot.value}｜尚未开封`}</em>
+                </button>
+              ))}
+              <div className="gy-archive-vault-slot-readout gy-archive-vault-slot-readout--pending">
+                <span>{activeSlot.code} // {activeSlot.label}</span>
+                <p>{activeSlot.line}</p>
+              </div>
+              <button className="gy-archive-vault-unseal" type="button" onClick={() => setActiveVaultSlot("defense")}>
+                开封深层记录
+              </button>
+            </section>
+
+            <button className="gy-archive-vault-return" type="button" onClick={() => navigate("/")}>
+              返回沙盒
+            </button>
+          </>
         )}
       </section>
     </GuanyaoShell>
