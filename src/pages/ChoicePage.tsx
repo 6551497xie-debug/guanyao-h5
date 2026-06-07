@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { buildFinalChoiceCode, setSixthYaoChoice } from "../services/trajectoryService";
+
+const gravityEchoes = ["01 身体", "02 旧习惯", "03 关系牵引", "04 高风险窗口", "05 临界停留"];
 
 export function ChoicePage() {
   const navigate = useNavigate();
@@ -28,34 +29,82 @@ export function ChoicePage() {
   }
 
   return (
-    <GuanyaoShell className="gy-delivery-shell" density="compact">
-      <section className="gy-delivery-stage gy-delivery-stage--pressure gy-choice-brake-stage gy-causal-line gy-causal-line-brake gyFadeRise">
+    <GuanyaoShell className="gy-choice-r1-shell" density="compact">
+      <section className="gy-choice-r1-screen gyFadeRise" aria-label="第六爻反本能偏转">
         {isSettling ? (
-          <div className="gy-choice-settle gyBreath">
-            <GuanyaoText as="h2" size="title">
-              最后一爻已落下
+          <div className="gy-choice-r1-settle gyBreath">
+            <GuanyaoText as="span" size="eyebrow" tone="gold">
+              GY / 06 / CHOICE
             </GuanyaoText>
-            <GuanyaoText size="body" tone="gold">
-              爻码卡正在生成
+            <GuanyaoText as="h2" size="title">
+              第六爻已落下
+            </GuanyaoText>
+            <GuanyaoText size="body" tone="muted">
+              本局偏转正在写入基础爻码。
             </GuanyaoText>
           </div>
         ) : (
           <>
-            <div className="gy-delivery-copy gy-choice-copy-tight">
-              {["最后一爻，由你偏转", "前五爻已经走完", "现在，只剩一次反本能选择", "你可以照旧反应", "也可以让惯性在这里偏开"].map((line) => (
-                <GuanyaoText key={line} size="body" tone="muted">
-                  {line}
-                </GuanyaoText>
+            <header className="gy-choice-r1-header">
+              <GuanyaoText as="span" size="eyebrow" tone="gold">
+                GY / 06 / CHOICE
+              </GuanyaoText>
+              <GuanyaoText as="span" size="eyebrow" tone="faint">
+                前五爻自动注入代码 0 完毕 ｜ 惯性已滑落至临界
+              </GuanyaoText>
+              <GuanyaoText as="h1" size="title">
+                第六爻 ／ 反本能偏转
+              </GuanyaoText>
+              <GuanyaoText size="body" tone="muted">
+                前五爻已经走完。序列：0-0-0-0-0。
+              </GuanyaoText>
+              <GuanyaoText className="gy-choice-r2-assertion" size="body" tone="muted">
+                你不是在选择答案，而是在切断一次延续了几十年的旧反应。
+              </GuanyaoText>
+            </header>
+
+            <div className="gy-choice-r1-echo" aria-label="前五爻残影">
+              {gravityEchoes.map((item) => (
+                <span key={item}>{item}</span>
               ))}
             </div>
-            <div className="gy-delivery-actions">
-              <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-final gy-behavior-gate-secondary" variant="ghost" onClick={() => handleChoice(1)}>
-                照旧反应
-              </GuanyaoButton>
-              <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-final gy-behavior-gate-primary" variant="gate" onClick={() => handleChoice(0)}>
-                反本能偏转
-              </GuanyaoButton>
-            </div>
+
+            <main className="gy-choice-r1-main">
+              <button className="gy-choice-r1-path gy-choice-r1-path--inertia" type="button" onClick={() => handleChoice(1)}>
+                <span>0 · 照旧反应</span>
+                <strong>继续沿旧惯性滑落</strong>
+                <em>这不是错误，只是让熟悉路径继续全量接管。未来结局已由其写就。</em>
+              </button>
+
+              <div className="gy-choice-r1-split" aria-hidden="true">
+                <span />
+              </div>
+
+              <button className="gy-choice-r1-path gy-choice-r1-path--deflect" type="button" onClick={() => handleChoice(0)}>
+                <span>1 · 执行反本能偏转</span>
+                <strong>做出一次不同的小动作</strong>
+                <em>不是改变整个人生，只是在这个窗口里让旧反应偏开一次。</em>
+              </button>
+            </main>
+
+            <footer className="gy-choice-r2-console" aria-label="第六爻二元偏转操作台">
+              <div className="gy-choice-r2-console-labels">
+                <button type="button" onClick={() => handleChoice(1)}>
+                  0 · 顺从本能下坠
+                </button>
+                <button type="button" onClick={() => handleChoice(0)}>
+                  1 · 激活反本能偏转
+                </button>
+              </div>
+              <div className="gy-choice-r2-rail">
+                <button className="gy-choice-r2-rail-hit gy-choice-r2-rail-hit--left" type="button" aria-label="顺从本能下坠" onClick={() => handleChoice(1)} />
+                <span className="gy-choice-r2-pointer" aria-hidden="true" />
+                <button className="gy-choice-r2-rail-hit gy-choice-r2-rail-hit--right" type="button" aria-label="激活反本能偏转" onClick={() => handleChoice(0)} />
+              </div>
+              <button className="gy-choice-r2-gesture" type="button" onClick={() => handleChoice(0)}>
+                🔒 ➔ 决绝向右拨动指针 · 强行拉断旧本能铁轨
+              </button>
+            </footer>
           </>
         )}
       </section>
