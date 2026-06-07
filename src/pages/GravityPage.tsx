@@ -215,7 +215,10 @@ export function GravityPage() {
             GY / 05 / GRAVITY
           </GuanyaoText>
           <GuanyaoText as="span" size="eyebrow" tone="faint">
-            9.9 重力阻尼已击穿｜前五爻惯性传动中
+            基础观察已解锁｜重力阻尼已击穿
+          </GuanyaoText>
+          <GuanyaoText as="span" size="eyebrow" tone="faint">
+            旧惯性正在漏沙
           </GuanyaoText>
           <GuanyaoText as="h1" size="title">
             重力轴已启动

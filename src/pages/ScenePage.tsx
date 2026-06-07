@@ -161,7 +161,7 @@ export function ScenePage() {
       ? "三联压力信号接入，等待暴停。"
       : flowState === "frozen"
         ? "点击一条压力信号，锁定撞击点。"
-        : "GY_SCENE_INTERCEPTED. 现实种子已锁定，等待压印。";
+        : "现实信号已入沙，等待母码压印。";
 
   useEffect(() => {
     document.body.classList.add("gy-scene-r1-mode");

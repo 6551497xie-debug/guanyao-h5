@@ -52,6 +52,9 @@ export function ChoicePage() {
               <GuanyaoText as="span" size="eyebrow" tone="faint">
                 前五爻自动注入代码 0 完毕 ｜ 惯性已滑落至临界
               </GuanyaoText>
+              <GuanyaoText as="span" size="eyebrow" tone="faint">
+                拨动第六爻沙漏轴
+              </GuanyaoText>
               <GuanyaoText as="h1" size="title">
                 第六爻 ／ 反本能偏转
               </GuanyaoText>
