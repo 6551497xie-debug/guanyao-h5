@@ -605,9 +605,6 @@ export function ChronoPage() {
             </GuanyaoButton>
           ) : (
             <>
-              <GuanyaoText className="gy-source-gate-note" size="body" tone="faint">
-                极核已装填。第一组人格映照碎片等待抓取。
-              </GuanyaoText>
               <GuanyaoButton className="gy-source-gate-button" variant="ghost" onClick={() => navigate("/identity")}>
                 拉断第一阀门，抓取人格映照碎片
               </GuanyaoButton>
