@@ -180,6 +180,35 @@ export type MotherCodeRegistryEntry = {
   gravityField?: string | null;
 };
 
+export type YaoCodeType = "INTERRUPT" | "REDIRECT" | "EXPOSE" | "RELEASE" | "REFRAME";
+
+export type RepairLayer = "SELF" | "RELATIONSHIP" | "DIRECTION" | "MEANING" | "GROWTH";
+
+export type RepairTarget =
+  | "情绪系统"
+  | "身份系统"
+  | "主体系统"
+  | "边界系统"
+  | "责任系统"
+  | "依附系统"
+  | "归属系统"
+  | "方向系统"
+  | "意义系统"
+  | "同行系统";
+
+export type YaoCodeRegistryEntry = {
+  id: string;
+  motherCode: string;
+  title: string;
+  type: YaoCodeType;
+  trigger: string;
+  action: string;
+  expectedShift: string;
+  risk: string;
+  repairTarget: RepairTarget;
+  repairLayer: RepairLayer;
+};
+
 export type YaoCodeResult = {
   id: string;
   code384: string;
