@@ -157,8 +157,8 @@ export type MotherCodeResult = GuaFieldResult & {
 export type MotherCodeRegistryEntry = {
   code: string;
   name: string;
-  entityType: "mother_code" | "PERSONALITY";
-  registryType: "mother_code_registry_v1" | "MAIN_TRACK" | "CROSS_STATE";
+  entityType: "mother_code" | "PERSONALITY" | "SYSTEM";
+  registryType: "mother_code_registry_v1" | "MAIN_TRACK" | "CROSS_STATE" | "SYSTEM_LIFECYCLE";
   primaryForce?: string | null;
   secondaryForce?: string | null;
   forceRatio?: Record<string, number> | null;
