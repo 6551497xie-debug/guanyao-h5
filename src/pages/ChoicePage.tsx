@@ -34,13 +34,16 @@ export function ChoicePage() {
         {isSettling ? (
           <div className="gy-choice-r1-settle gyBreath">
             <GuanyaoText as="span" size="eyebrow" tone="gold">
-              GY / 06 / CHOICE
+              GY / 06 / REPAIR_COMMITTED
+            </GuanyaoText>
+            <GuanyaoText as="span" size="eyebrow" tone="faint">
+              修复靶点生成中
             </GuanyaoText>
             <GuanyaoText as="h2" size="title">
-              第六爻已落下
+              第六爻偏转已提交
             </GuanyaoText>
             <GuanyaoText size="body" tone="muted">
-              本局偏转正在写入基础修复卡。
+              系统正在把本次反本能动作写入修复靶点。
             </GuanyaoText>
           </div>
         ) : (

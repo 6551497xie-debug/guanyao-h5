@@ -355,7 +355,7 @@ const archiveVaultSlots = [
     key: "window",
     code: "ASSET_03",
     label: "观察窗口",
-    value: "尚未提取",
+    value: "尚未开封",
     line: "15 / 45 天窗口需要先有一条行为资产，才能被打开。",
   },
 ] as const;
@@ -388,33 +388,50 @@ export function ArchivePage() {
             <div className="gy-archive-vault-empty-copy">
               <span>VAULT_EMPTY</span>
               <h2>行为修复资产库尚未沉积</h2>
-              <p>完成一次行为修复后，本次 MotherCode、YaoCode 与 RepairTarget 会压入修复年轮轴。</p>
+              <p>
+                完成一次行为修复后，
+                <br />
+                本次 MotherCode、YaoCode 与 RepairTarget
+                <br />
+                将压入修复年轮轴。
+              </p>
             </div>
+
+            <section className="gy-archive-vault-readout gy-archive-vault-readout--empty" aria-label="空仓修复资产读数">
+              <span>修复年轮</span>
+              <div>
+                <strong>00</strong>
+                <em>修复资产</em>
+              </div>
+              <div>
+                <strong>00</strong>
+                <em>复发冻结</em>
+              </div>
+              <div>
+                <strong>00</strong>
+                <em>修复年轮</em>
+              </div>
+            </section>
 
             <div className="gy-archive-vault-console" aria-label="行为修复资产库空仓校准台">
               <div className="gy-archive-vault-console-axis" aria-hidden="true" />
               <div className="gy-archive-vault-slot-grid">
-                {archiveVaultSlots.map((slot) => (
-                  <button
-                    className={`gy-archive-vault-slot${activeVaultSlot === slot.key ? " gy-archive-vault-slot--active" : ""}`}
-                    key={slot.key}
-                    type="button"
-                    onClick={() => setActiveVaultSlot(slot.key)}
-                  >
+                {[
+                  { code: "槽位 01", label: "MotherCode", value: "未写入" },
+                  { code: "槽位 02", label: "YaoCode", value: "未压印" },
+                  { code: "槽位 03", label: "RepairTarget", value: "未生成" },
+                ].map((slot) => (
+                  <button className="gy-archive-vault-slot" key={slot.code} type="button">
                     <span>{slot.code}</span>
                     <strong>{slot.label}</strong>
                     <em>{slot.value}</em>
                   </button>
                 ))}
               </div>
-              <div className="gy-archive-vault-slot-readout">
-                <span>{activeSlot.code} // {activeSlot.label}</span>
-                <p>{activeSlot.line}</p>
-              </div>
             </div>
 
             <button type="button" onClick={() => navigate("/")}>
-              返回沙盒
+              沿线右滑，捕获第一枚行为种子
             </button>
           </section>
         ) : (
@@ -423,14 +440,14 @@ export function ArchivePage() {
               <span>刚刚沉积</span>
               <strong>修复年轮_01</strong>
               <h2>{readArchiveAssetName(latestAsset)}</h2>
-              <p>MotherCode：{readMotherAssetText(latestAsset.causalContext)}</p>
-              <p>YaoCode：{readArchiveYaoWeapon(latestAsset)}</p>
-              <p>RepairLayer：{readArchiveRepairLayer(latestAsset)}</p>
-              <p>RepairTarget：{readArchiveRepairTarget(latestAsset)}</p>
-              <p>Anti-Instinct Action：{readArchiveAction(latestAsset)}</p>
-              <p>Risk Window：{readArchiveRiskWindow(latestAsset)}</p>
+              <p>MotherCode｜行为母码：{readMotherAssetText(latestAsset.causalContext)}</p>
+              <p>YaoCode｜干预爻码：{readArchiveYaoWeapon(latestAsset)}</p>
+              <p>RepairLayer｜修复层：{readArchiveRepairLayer(latestAsset)}</p>
+              <p>RepairTarget｜修复靶点：{readArchiveRepairTarget(latestAsset)}</p>
+              <p>Anti-Instinct Action｜反本能动作：{readArchiveAction(latestAsset)}</p>
+              <p>Risk Window｜复发观察窗口：{readArchiveRiskWindow(latestAsset)}</p>
               <p>本局反本能节点：{readArchiveAntiNode(latestAsset)}</p>
-              <em>状态：修复资产已沉积｜深层修复记录待开封</em>
+              <em>Status｜沉积状态：修复资产已沉积｜深层修复记录待开封</em>
             </section>
 
             <section className="gy-archive-vault-readout" aria-label="修复年轮总览">
@@ -456,11 +473,11 @@ export function ArchivePage() {
                   <article key={item.archiveId}>
                     <i>{`修复年轮_${String(index + 1).padStart(2, "0")}`}</i>
                     <time>{formatArchiveTime(item.createdAt)}</time>
-                    <strong>MotherCode：{readMotherAssetText(item.causalContext)}</strong>
-                    <p>YaoCode：{readArchiveYaoWeapon(item)}</p>
-                    <p>RepairLayer：{readArchiveRepairLayer(item)}</p>
-                    <p>RepairTarget：{readArchiveRepairTarget(item)}</p>
-                    <em>状态：已沉积</em>
+                    <strong>MotherCode｜行为母码：{readMotherAssetText(item.causalContext)}</strong>
+                    <p>YaoCode｜干预爻码：{readArchiveYaoWeapon(item)}</p>
+                    <p>RepairLayer｜修复层：{readArchiveRepairLayer(item)}</p>
+                    <p>RepairTarget｜修复靶点：{readArchiveRepairTarget(item)}</p>
+                    <em>Status｜沉积状态：已沉积</em>
                   </article>
                 ))}
               </div>
@@ -476,7 +493,7 @@ export function ArchivePage() {
                   onClick={() => setActiveVaultSlot(slot.key)}
                 >
                   <strong>{slot.label}</strong>
-                  <em>{slot.value === "尚未提取" ? "观察冻结｜尚未开封" : `${slot.value}｜尚未开封`}</em>
+                  <em>{slot.value === "尚未开封" ? "观察冻结｜尚未开封" : `${slot.value}｜尚未开封`}</em>
                 </button>
               ))}
               <div className="gy-archive-vault-slot-readout gy-archive-vault-slot-readout--pending">

@@ -367,10 +367,10 @@ export function MotherCodePage() {
                   干预指针处于断路状态。
               </GuanyaoText>
               <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-primary gy-mother-unlock-button" variant="gate" onClick={() => setIsUnlocked(true)}>
-                🔒 支付 9.9 元 · 解锁爻码干预与修复靶点
+                🔒 支付 9.9 元 · 释放爻码干预与修复靶点
               </GuanyaoButton>
               <GuanyaoText className="gy-mother-unlock-note" size="eyebrow" tone="faint">
-                含：母码全景诊断 / 爻码干预轴 / 基础修复卡 / RepairTarget 修复靶点 / 行为资产沉积
+                含：母码全景诊断 / 爻码干预轴 / 基础修复卡 / RepairTarget 修复靶点 / 行为修复资产沉积
               </GuanyaoText>
             </>
           ) : (

@@ -310,33 +310,38 @@ export function MigrationPage() {
         <main className="gy-migration-r1-panel">
           <section className="gy-migration-r1-delivery" aria-label="本次修复靶点生成">
             <div className="gy-migration-r1-verdict">
-              <p>本次修复靶点已生成。</p>
+              <p>基础观察已结束。</p>
+              <p>系统已根据本次母码、爻码与第六爻偏转，生成修复靶点。</p>
               <p>你不是在硬撑，你是在用高频的肉身毁灭对冲精神崩溃。</p>
               <p>拉不上脸的硬撑，终将由肉身买单。</p>
             </div>
             <div className="gy-migration-r1-grid" aria-label="基础因果读数">
               <div>
-                <span>Repair Layer</span>
+                <span>Repair Layer｜修复层</span>
                 <strong>{repairTarget.repairLayer}</strong>
               </div>
               <div>
-                <span>Repair Target</span>
+                <span>Repair Target｜修复靶点</span>
                 <strong>{repairTarget.repairTargetName}</strong>
               </div>
               <div>
-                <span>母码母型</span>
+                <span>MotherCode｜行为母码</span>
                 <strong>{motherAssetLabel}</strong>
               </div>
               <div>
-                <span>YaoCode</span>
+                <span>YaoCode｜干预爻码</span>
                 <strong>{yaoCode.code384}｜{yaoWeaponName}</strong>
               </div>
               <div>
-                <span>反本能动作</span>
+                <span>Anti-Instinct Action｜反本能动作</span>
                 <strong>{repairTarget.antiInstinctAction}</strong>
               </div>
               <div>
-                <span>沉积状态</span>
+                <span>Risk Window｜复发观察窗口</span>
+                <strong>{repairTarget.riskWindow}</strong>
+              </div>
+              <div>
+                <span>Archive Status｜沉积状态</span>
                 <strong>{repairTarget.archiveStatus}</strong>
               </div>
             </div>

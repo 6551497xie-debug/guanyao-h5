@@ -194,7 +194,7 @@ export function ForcePage() {
 
         <footer className="gy-force-r1-gate gyFadeRise">
           <GuanyaoText className="gy-force-r1-gate-note" as="p" size="eyebrow" tone="faint">
-            外部压力信号待接入。
+            现实触发证据待接入。
           </GuanyaoText>
           <Link className="gy-force-r1-gate-link" to="/scene" onClick={persistForceReading}>
             <GuanyaoText as="span" size="body" tone="default">
