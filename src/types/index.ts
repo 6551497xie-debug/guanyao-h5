@@ -158,7 +158,7 @@ export type MotherCodeRegistryEntry = {
   code: string;
   name: string;
   entityType: "mother_code" | "PERSONALITY";
-  registryType: "mother_code_registry_v1" | "MAIN_TRACK";
+  registryType: "mother_code_registry_v1" | "MAIN_TRACK" | "CROSS_STATE";
   primaryForce?: string | null;
   secondaryForce?: string | null;
   forceRatio?: Record<string, number> | null;
