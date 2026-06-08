@@ -7,14 +7,14 @@ import { normalizeSceneForceId } from "../services/sceneService";
 import { getSession, updateSession } from "../services/sessionService";
 
 const forceActionLines: Record<string, string[]> = {
-  乾: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先把局面抓回手里。", "不是因为你真的稳，而是失控会让你觉得自己正在掉下去。"],
-  坤: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先把别人托住。", "不是因为你不累，而是你太习惯把自己的需要往后放。"],
-  震: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先动起来。", "不是因为你真的有方向，而是停下来会让问题变得太清楚。"],
-  巽: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先观察风向。", "不是因为你没有立场，而是正面冲突会让你太快暴露自己。"],
-  坎: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先沉下去。", "不是因为你真的冷静，而是把事情说出来会让危险变得太近。"],
-  离: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先让自己看起来还亮着。", "不是因为你不累，而是暗下来会让你觉得自己快要消失。"],
-  艮: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先停住。", "不是因为你真的冷静，而是往前一步会让问题变得太真实。"],
-  兑: ["你认领的，不只是一个状态。", "它背后有一股力：一遇到压力，你会先把关系稳住。", "不是因为你没有边界，而是冷场会让你害怕关系直接断掉。"],
+  乾: ["母码线索已锁定。", "母码驱动的反应很快：一遇到压力，你会先把局面抓回手里。", "不是因为你真的稳，而是失控会让你觉得自己正在掉下去。"],
+  坤: ["母码线索已锁定。", "母码驱动的反应很快：一遇到压力，你会先把别人托住。", "不是因为你不累，而是你太习惯把自己的需要往后放。"],
+  震: ["母码线索已锁定。", "母码驱动的反应很快：一遇到压力，你会先动起来。", "不是因为你真的有方向，而是停下来会让问题变得太清楚。"],
+  巽: ["母码线索已锁定。", "母码驱动的反应很快：一遇到压力，你会先观察风向。", "不是因为你没有立场，而是正面冲突会让你太快暴露自己。"],
+  坎: ["母码线索已锁定。", "母码驱动的反应很快：一遇到压力，你会先沉下去。", "不是因为你真的冷静，而是把事情说出来会让危险变得太近。"],
+  离: ["母码线索已锁定。", "母码驱动的反应很快：一遇到压力，你会先让自己看起来还亮着。", "不是因为你不累，而是暗下来会让你觉得自己快要消失。"],
+  艮: ["母码线索已锁定。", "母码驱动的反应很快：一遇到压力，你会先停住。", "不是因为你真的冷静，而是往前一步会让问题变得太真实。"],
+  兑: ["母码线索已锁定。", "母码驱动的反应很快：一遇到压力，你会先把关系稳住。", "不是因为你没有边界，而是冷场会让你害怕关系直接断掉。"],
 };
 
 const forceHighlightTokens = [
@@ -105,8 +105,8 @@ export function ForcePage() {
   const forceReadingTemplate = getForceReading(primaryForce);
   const forceLines = forceActionLines[forceReadingTemplate.forceKey] ?? forceReadingTemplate.coreMirror ?? [];
   const forceName = `${forceReadingTemplate.symbol}｜${forceReadingTemplate.archetype}`;
-  const forceImpulseLine = (forceLines[1] ?? "").replace("它背后有一股力：", "这股力的反应很快：");
-  const forceReactionLine = forceImpulseLine.replace("这股力的反应很快：", "");
+  const forceImpulseLine = (forceLines[1] ?? "").replace("它背后有一股力：", "母码驱动的反应很快：");
+  const forceReactionLine = forceImpulseLine.replace("母码驱动的反应很快：", "");
   const forceDissectionLine = forceLines[2] ?? "";
   const monitorAxes = forceMonitorAxes[forceReadingTemplate.forceKey] ?? forceMonitorAxes.乾;
 
@@ -137,18 +137,18 @@ export function ForcePage() {
       <section className="gy-force-r1-screen" data-intensity="fixed">
         <header className="gy-force-r1-header gyFadeRise">
           <GuanyaoText className="gy-force-r1-coord" as="span" size="eyebrow" tone="faint">
-            GY / 02 / FORCE
+            GY / 02 / MOTHER_LOCK
           </GuanyaoText>
           <GuanyaoText className="gy-force-r1-status" as="span" size="eyebrow" tone="faint">
-            原力参数冷凝中
+            行为母码冷凝中
           </GuanyaoText>
           <GuanyaoText className="gy-force-r1-title" as="h1" size="title">
-            原力已定格
+            母码驱动已锁定
           </GuanyaoText>
         </header>
 
         <main className="gy-force-r1-main gyFadeRise">
-          <section className="gy-force-r1-lock" aria-label="原力定格舱">
+          <section className="gy-force-r1-lock" aria-label="母码驱动锁定舱">
             <div className="gy-force-r1-code">
               <GuanyaoText as="span" size="eyebrow" tone="faint">
                 Code {forceReadingTemplate.code}
@@ -158,14 +158,14 @@ export function ForcePage() {
               </GuanyaoText>
             </div>
             <GuanyaoText className="gy-force-r1-lock-state" as="span" size="eyebrow" tone="faint">
-              人格映照已锁定｜回应原力冷凝完成
+              母码线索已锁定｜驱动源冷凝完成
             </GuanyaoText>
-            <div className="gy-force-r1-axis" aria-label="三轴重力监视面板">
+            <div className="gy-force-r1-axis" aria-label="三轴识别监视面板">
               <span className="gy-force-r1-anchor" />
               <div className="gy-force-r1-axis-readouts">
                 {monitorAxes.map((axis) => (
                   <span className="gy-force-r1-axis-row" key={axis.id}>
-                    <span>轴 {axis.id} · {axis.label}</span>
+                    <span>识别轴 {axis.id} · {axis.label}</span>
                     <strong>{axis.value}</strong>
                   </span>
                 ))}
@@ -173,9 +173,9 @@ export function ForcePage() {
             </div>
           </section>
 
-          <section className="gy-force-r1-dissection" aria-label="原力解剖舱">
+          <section className="gy-force-r1-dissection" aria-label="母码驱动解剖舱">
             <GuanyaoText className="gy-force-r1-response-readout" as="p" size="body" tone="muted">
-              [ 状态：回应原力 ➔ No.{forceReadingTemplate.code} {forceReadingTemplate.archetype} ]
+              [ 状态：母码驱动 ➔ No.{forceReadingTemplate.code} {forceReadingTemplate.archetype} ]
             </GuanyaoText>
             <div className="gy-force-r1-copy-block">
               {forceReactionLine ? (
@@ -198,7 +198,7 @@ export function ForcePage() {
           </GuanyaoText>
           <Link className="gy-force-r1-gate-link" to="/scene" onClick={persistForceReading}>
             <GuanyaoText as="span" size="body" tone="default">
-              接入外部压力信号
+              接入现实触发证据
             </GuanyaoText>
           </Link>
         </footer>

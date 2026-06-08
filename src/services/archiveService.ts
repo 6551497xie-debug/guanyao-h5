@@ -19,7 +19,7 @@ export function getArchives(): ArchiveItem[] {
   }
 }
 
-export function saveArchive(item: MigrationCard & { finalChoiceCode: string; causalContext?: CausalContextPackage }): ArchiveItem[] {
+export function saveArchive(item: MigrationCard & { finalChoiceCode: string; causalContext?: CausalContextPackage; repairTarget?: ArchiveItem["repairTarget"] }): ArchiveItem[] {
   const archiveItem: ArchiveItem = {
     archiveId: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
@@ -33,6 +33,7 @@ export function saveArchive(item: MigrationCard & { finalChoiceCode: string; cau
     conflictScript90d: item.conflictScript90d,
     antiInstinctNode: item.antiInstinctNode,
     status: item.status,
+    repairTarget: item.repairTarget ?? item.causalContext?.repairTarget ?? null,
     causalContext: item.causalContext,
   };
 

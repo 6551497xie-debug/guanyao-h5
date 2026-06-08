@@ -62,7 +62,7 @@ function getMotherCodeFromSession(session: GuanyaoSession): MotherCodeResult {
 
 function getSceneLine(session: GuanyaoSession) {
   const sceneSeed = session.selectedSceneSeed ?? session.realitySeed;
-  return sceneSeed?.seedLine ?? sceneSeed?.flashLine ?? sceneSeed?.title ?? session.selectedSceneSlice?.title ?? "现实种子已钉入";
+  return sceneSeed?.seedLine ?? sceneSeed?.flashLine ?? sceneSeed?.title ?? session.selectedSceneSlice?.title ?? "现实触发证据已钉入";
 }
 
 function getBodySignal(session: GuanyaoSession) {
@@ -75,7 +75,7 @@ function getMotherLedger(session: GuanyaoSession) {
   return {
     code: motherCode.code64,
     motherName: `${motherCode.name}｜${motherCode.title}`,
-    assertion: (motherCode.shortSeal ?? "你的行为惯性与现实种子，正在把退让推向决口。").replace("人格惯性", "行为惯性"),
+    assertion: (motherCode.shortSeal ?? "你的行为惯性与现实触发证据，正在把退让推向决口。").replace("人格惯性", "行为惯性").replace("现实种子", "现实触发证据"),
     sceneLine: getSceneLine(session),
     bodySignal: getBodySignal(session),
     cost: "外部压力没有消失，只是被你的旧反应继续接管。",
@@ -205,23 +205,23 @@ export function GravityPage() {
   const currentScene = ritualScenes[activeScene];
   const currentYaoLabel = yaoIndexReadouts[activeScene] ?? yaoIndexReadouts[4];
   const currentFallback = gravityFallbackReadouts[activeScene] ?? gravityFallbackReadouts[2];
-  const gateCopy = isComplete ? "进入第六爻偏转" : activeScene === 3 ? "高风险窗口已捕获" : "前五爻惯性传动中";
+  const gateCopy = isComplete ? "进入第六爻偏转" : activeScene === 3 ? "高风险窗口已捕获" : "前五爻惯性链运行中";
 
   return (
     <GuanyaoShell className="gy-gravity-shell" density="compact">
       <div className="gy-gravity-screen gy-gravity-r1-screen" data-intensity="gravity">
         <header className="gy-gravity-r1-header">
           <GuanyaoText as="span" size="eyebrow" tone="gold">
-            GY / 05 / GRAVITY
+            GY / 05 / YAOCODE_AXIS
           </GuanyaoText>
           <GuanyaoText as="span" size="eyebrow" tone="faint">
-            基础观察已解锁｜重力阻尼已击穿
+            基础观察已解锁｜爻码干预轴已接入
           </GuanyaoText>
           <GuanyaoText as="span" size="eyebrow" tone="faint">
-            旧惯性正在漏沙
+            旧惯性正在漏沙｜前五爻惯性链运行中
           </GuanyaoText>
           <GuanyaoText as="h1" size="title">
-            重力轴已启动
+            爻码干预轴已启动
           </GuanyaoText>
         </header>
 
@@ -229,7 +229,7 @@ export function GravityPage() {
           <aside className="gy-gravity-r2-ledger" aria-label="母码因果账本摘要">
             <div className="gy-gravity-r2-ledger-summary" aria-label="母码账本折叠读数">
               <span>母码账本 //</span>
-              <strong>{motherLedger.motherName} · 现实种子已钉入 · 高风险窗口已显影</strong>
+              <strong>{motherLedger.motherName} · 现实触发证据已钉入 · 高风险窗口已显影</strong>
             </div>
             <GuanyaoText as="span" size="eyebrow" tone="gold">
               母码全景账本
@@ -263,7 +263,7 @@ export function GravityPage() {
             </div>
           </aside>
 
-          <section className="gy-gravity-r2-transmission" aria-label="前五爻纵向传动轴">
+          <section className="gy-gravity-r2-transmission" aria-label="前五爻惯性链纵向干预轴">
             <div className="gy-gravity-r1-axis">
               {Array.from({ length: 5 }, (_, index) => {
                 const lockedBit = interactivePath[index];
@@ -346,7 +346,7 @@ export function GravityPage() {
                     <span>LOCKED 03｜代价显影</span>
                   </div>
                   <GuanyaoText className="gy-gravity-r1-muted" size="eyebrow" tone="faint">
-                    完整防御本将在基础爻码压印后解锁。
+                    完整防御本将在基础修复卡压印后解锁。
                   </GuanyaoText>
                 </>
               ) : null}
@@ -415,7 +415,7 @@ export function GravityPage() {
 
         <footer className="gy-gravity-r1-gate">
           <GuanyaoText size="eyebrow" tone="faint">
-            {activeScene === 3 && !isComplete ? "高风险窗口已显影，但基础推演继续。" : isComplete ? "第六爻偏转闸门待命。" : "前五爻惯性传动轴运行中。"}
+            {activeScene === 3 && !isComplete ? "高风险窗口已显影，但基础干预继续。" : isComplete ? "第六爻偏转闸门待命。" : "前五爻惯性链运行中。"}
           </GuanyaoText>
           <button className="gy-gravity-r1-gate-button" type="button" disabled={!isComplete && !isGateVisible} onClick={advanceTransmission}>
             <span>{gateCopy}</span>

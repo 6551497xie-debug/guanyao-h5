@@ -41,12 +41,12 @@ export function LaunchPage() {
               这里没有答案。
             </GuanyaoText>
             <GuanyaoText size="body" tone="muted">
-              你只是进入一台行为因果沙盒。
+              你只是进入一台行为因果仪器。
             </GuanyaoText>
           </div>
           <div className="gy-front-actions">
             <GuanyaoButton className="gy-front-gate" variant="ghost" onClick={handleOpenSandbox}>
-              <span>沿线右滑，启动观爻。</span>
+              <span>沿线右滑，启动母码扫描。</span>
             </GuanyaoButton>
           </div>
           <GuanyaoText className="gy-launch-subgate-note" size="eyebrow" tone="faint">

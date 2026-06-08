@@ -209,6 +209,15 @@ export type YaoCodeRegistryEntry = {
   repairLayer: RepairLayer;
 };
 
+export type RepairTargetResult = {
+  repairLayer: RepairLayer;
+  repairTargetName: RepairTarget;
+  damagePattern: string;
+  antiInstinctAction: string;
+  riskWindow: string;
+  archiveStatus: string;
+};
+
 export type YaoCodeResult = {
   id: string;
   code384: string;
@@ -306,6 +315,7 @@ export interface GuanyaoSession {
   yaoCode?: YaoCodeResult | null;
   yaoCodeResult?: YaoCodeResult | null;
   yaoCodeCard?: YaoCodeCard | null;
+  repairTarget?: RepairTargetResult | null;
   defenseBook90d?: {
     title: string;
     sections: string[];
@@ -389,6 +399,7 @@ export type CausalContextPackage = {
     track: string;
     source: string;
   };
+  repairTarget?: RepairTargetResult | null;
   defenseBook90d: {
     title: string;
     sections: string[];
@@ -402,4 +413,5 @@ export interface ArchiveItem extends MigrationCard {
   createdAt: string;
   finalChoiceCode: string;
   causalContext?: CausalContextPackage;
+  repairTarget?: RepairTargetResult | null;
 }

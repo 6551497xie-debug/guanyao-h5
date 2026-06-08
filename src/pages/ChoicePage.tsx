@@ -40,20 +40,20 @@ export function ChoicePage() {
               第六爻已落下
             </GuanyaoText>
             <GuanyaoText size="body" tone="muted">
-              本局偏转正在写入基础爻码。
+              本局偏转正在写入基础修复卡。
             </GuanyaoText>
           </div>
         ) : (
           <>
             <header className="gy-choice-r1-header">
               <GuanyaoText as="span" size="eyebrow" tone="gold">
-                GY / 06 / CHOICE
+                GY / 06 / REPAIR_WINDOW
               </GuanyaoText>
               <GuanyaoText as="span" size="eyebrow" tone="faint">
-                前五爻自动注入代码 0 完毕 ｜ 惯性已滑落至临界
+                前五爻自动注入代码 0 完毕 ｜ 修复窗口已打开
               </GuanyaoText>
               <GuanyaoText as="span" size="eyebrow" tone="faint">
-                拨动第六爻沙漏轴
+                拨动第六爻沙漏轴｜生成修复靶点
               </GuanyaoText>
               <GuanyaoText as="h1" size="title">
                 第六爻 ／ 反本能偏转

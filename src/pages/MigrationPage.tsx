@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { migrations } from "../data/migrations";
+import { yaoCodes } from "../data/yaoCodes";
 import { saveArchive } from "../services/archiveService";
 import { buildYaoCodeCard, buildYaoCodeResult, normalizeGuaFieldFromLegacy } from "../services/codeContractService";
 import { getSession, updateSession } from "../services/sessionService";
 import { consumeEnergy, getTimeSandglassState } from "../services/timeSandglassService";
 import { buildFinalChoiceCode } from "../services/trajectoryService";
-import type { CausalContextPackage, GuanyaoSession, MigrationCard, YaoCodeCard, YaoCodeResult } from "../types";
+import type { CausalContextPackage, GuanyaoSession, MigrationCard, RepairTargetResult, YaoCodeCard, YaoCodeResult } from "../types";
 
 const ninetyDayScriptBills = [
   {
@@ -99,7 +100,28 @@ const reviewRingCells = Array.from({ length: 90 }, (_, index) => {
   return "empty";
 });
 
-function buildCausalContextPackage(session: GuanyaoSession, card: MigrationCard, finalChoiceCode: string, yaoCode: YaoCodeResult, yaoCodeCard: YaoCodeCard): CausalContextPackage {
+function buildRepairTarget(session: GuanyaoSession, card: MigrationCard, yaoCodeCard: YaoCodeCard): RepairTargetResult {
+  const motherAsset = normalizeGuaFieldFromLegacy(session.guaFieldResult ?? session.guaField ?? session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode);
+  const registryYaoCode = yaoCodes.find((entry) => entry.motherCode === motherAsset?.code64) ?? yaoCodes[0];
+
+  return {
+    repairLayer: registryYaoCode?.repairLayer ?? "RELATIONSHIP",
+    repairTargetName: registryYaoCode?.repairTarget ?? "责任系统",
+    damagePattern: yaoCodeCard.coreSeal || card.shortReading.join(""),
+    antiInstinctAction: card.antiInstinctNode || registryYaoCode?.action || "把今天最容易拖延的一步，缩小到十分钟内完成。",
+    riskWindow: "15 / 45 / 90 天观察节点",
+    archiveStatus: "待压入行为修复资产库",
+  };
+}
+
+function buildCausalContextPackage(
+  session: GuanyaoSession,
+  card: MigrationCard,
+  finalChoiceCode: string,
+  yaoCode: YaoCodeResult,
+  yaoCodeCard: YaoCodeCard,
+  repairTarget: RepairTargetResult,
+): CausalContextPackage {
   return {
     chronoProfile: session.chronoProfile ?? null,
     yuanCode: session.yuanCode ?? session.chronoCode ?? null,
@@ -120,9 +142,10 @@ function buildCausalContextPackage(session: GuanyaoSession, card: MigrationCard,
       track: yaoCodeCard.sourceYaoCode?.personalityBehaviorTrack ?? `${card.currentTrack.code} ${card.currentTrack.traditionalName}${card.currentTrack.scriptTitle} → ${card.migrationDirection.code} ${card.migrationDirection.traditionalName}${card.migrationDirection.scriptTitle}`,
       source: yaoCodeCard.coreSeal,
     },
+    repairTarget,
     defenseBook90d: yaoCodeCard.defenseBook90d ?? {
-      title: "90天行为预警",
-      sections: ["90天行为重力雷达", "3张反本能操作卡", "90天复盘年轮"],
+      title: "90天复发观察",
+      sections: ["90天复发观察雷达", "3张反本能防线记录", "90天修复年轮"],
     },
     timeSandglass: session.timeSandglass ?? session.energyState ?? getTimeSandglassState(),
     energyState: session.energyState ?? session.timeSandglass ?? getTimeSandglassState(),
@@ -235,13 +258,15 @@ export function MigrationPage() {
   }, []);
   const yaoCode = useMemo(() => buildYaoCodeResult(session, card, finalChoiceCode), [card, finalChoiceCode, session]);
   const yaoCodeCard = useMemo(() => buildYaoCodeCard(session, card, finalChoiceCode, yaoCode), [card, finalChoiceCode, session, yaoCode]);
+  const repairTarget = useMemo(() => buildRepairTarget(session, card, yaoCodeCard), [card, session, yaoCodeCard]);
 
   function handleSave() {
-    const timeSandglass = consumeEnergy("archive_save", 0, "保存行为年轮");
+    const timeSandglass = consumeEnergy("archive_save", 0, "压入修复年轮");
     updateSession({
       yaoCode,
       yaoCodeResult: yaoCode,
       yaoCodeCard,
+      repairTarget,
       defenseBook90d: yaoCodeCard.defenseBook90d,
       timeSandglass,
       energyState: timeSandglass,
@@ -249,7 +274,8 @@ export function MigrationPage() {
     saveArchive({
       ...card,
       finalChoiceCode,
-      causalContext: buildCausalContextPackage(getSession(), card, finalChoiceCode, yaoCode, yaoCodeCard),
+      repairTarget,
+      causalContext: buildCausalContextPackage(getSession(), card, finalChoiceCode, yaoCode, yaoCodeCard, repairTarget),
     });
     navigate("/archive");
   }
@@ -259,14 +285,13 @@ export function MigrationPage() {
   const yaoCodeTitle = `${card.migrationDirection.traditionalName}【${cleanScriptTitle}】`;
   const motherAssetLabel = readMotherAssetLabel(session);
   const yaoWeaponName = buildYaoWeaponName(yaoCodeCard.title, yaoCodeCard.coreSeal, card.antiInstinctNode);
-  const antiInstinctAction = card.antiInstinctNode || "把今天最容易拖延的一步，缩小到十分钟内完成。";
 
   return (
     <GuanyaoShell className="gy-migration-r1-shell" density="compact">
-      <section className="gy-migration-r1-screen gyFadeRise" aria-label="基础爻码结果">
+      <section className="gy-migration-r1-screen gyFadeRise" aria-label="本次修复卡">
         <header className="gy-migration-r1-header">
           <GuanyaoText as="span" size="eyebrow" tone="gold">
-            GY / 07 / YAOCODE_DELIVERY
+            GY / 07 / REPAIR_CARD
           </GuanyaoText>
           <GuanyaoText as="span" size="eyebrow" tone="faint">
             ⏳ 基础观察已结束 ｜ 本次行为轨迹已冻结
@@ -283,27 +308,36 @@ export function MigrationPage() {
         </header>
 
         <main className="gy-migration-r1-panel">
-          <section className="gy-migration-r1-delivery" aria-label="基础爻码交割">
+          <section className="gy-migration-r1-delivery" aria-label="本次修复靶点生成">
             <div className="gy-migration-r1-verdict">
+              <p>本次修复靶点已生成。</p>
               <p>你不是在硬撑，你是在用高频的肉身毁灭对冲精神崩溃。</p>
               <p>拉不上脸的硬撑，终将由肉身买单。</p>
             </div>
             <div className="gy-migration-r1-grid" aria-label="基础因果读数">
               <div>
+                <span>Repair Layer</span>
+                <strong>{repairTarget.repairLayer}</strong>
+              </div>
+              <div>
+                <span>Repair Target</span>
+                <strong>{repairTarget.repairTargetName}</strong>
+              </div>
+              <div>
                 <span>母码母型</span>
                 <strong>{motherAssetLabel}</strong>
               </div>
               <div>
-                <span>爻码武器</span>
+                <span>YaoCode</span>
                 <strong>{yaoCode.code384}｜{yaoWeaponName}</strong>
               </div>
               <div>
-                <span>本局动作</span>
-                <strong>{antiInstinctAction}</strong>
+                <span>反本能动作</span>
+                <strong>{repairTarget.antiInstinctAction}</strong>
               </div>
               <div>
-                <span>行为沉积</span>
-                <strong>沉入行为年轮</strong>
+                <span>沉积状态</span>
+                <strong>{repairTarget.archiveStatus}</strong>
               </div>
             </div>
           </section>
@@ -311,14 +345,14 @@ export function MigrationPage() {
           <section className="gy-migration-r1-settlement" aria-label="观察冻结主轨">
             <div className="gy-migration-r1-settlement-line" aria-hidden="true" />
             <span>观察冻结</span>
-            <em>本次基础观察已结束。更深层记录已生成，尚未提取。</em>
+            <em>本次基础观察已结束。更深层修复记录已生成，尚未开封。</em>
           </section>
 
           <section className="gy-migration-r1-gear" aria-label="已生成记录区">
             <div className="gy-migration-r1-gear-head">
-              <span>深层记录已生成，尚未开封</span>
+              <span>深层修复记录已生成，尚未开封</span>
               <strong>行为观察权限已冻结</strong>
-              <em>稍后可在行为资产库继续开封</em>
+              <em>稍后可在行为修复资产库继续开封</em>
             </div>
             <div className="gy-migration-r1-gear-slots">
               <article>
@@ -338,17 +372,17 @@ export function MigrationPage() {
               </article>
             </div>
             <p className="gy-migration-r1-warning">
-              本次行为沙漏可先沉积入行为年轮。深层记录可稍后从行为资产库继续开封。
+              本次修复卡可先沉积入修复年轮。深层修复记录可稍后从行为修复资产库继续开封。
             </p>
-            <span className="gy-migration-r1-archive">深层记录已生成，稍后可在行为资产库开封</span>
+            <span className="gy-migration-r1-archive">深层修复记录已生成，稍后可在行为修复资产库开封</span>
           </section>
         </main>
 
-        <footer className="gy-migration-r1-profit-lock" aria-label="行为年轮沉积闸门">
+        <footer className="gy-migration-r1-profit-lock" aria-label="行为修复资产沉积闸门">
           <button className="gy-migration-r1-primary-deposit" type="button" onClick={handleSave}>
-            沉入行为年轮
+            压入行为修复资产库
           </button>
-          <span>基础资产先沉积入库 · 深层记录留待开封</span>
+          <span>修复资产先沉积入库 · 深层修复记录留待开封</span>
         </footer>
       </section>
     </GuanyaoShell>

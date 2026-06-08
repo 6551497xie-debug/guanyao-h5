@@ -606,7 +606,7 @@ export function ChronoPage() {
           ) : (
             <>
               <GuanyaoButton className="gy-source-gate-button" variant="ghost" onClick={() => navigate("/identity")}>
-                拉断第一阀门，抓取人格映照碎片
+                拉断第一阀门，抓取行为母码线索
               </GuanyaoButton>
             </>
           )}

@@ -149,13 +149,13 @@ export function ScenePage() {
   const sliceSource = `${seedGroupResult.matchedBy}:moment-${currentMomentIndex + 1}`;
   const sceneTitle =
     flowState === "flowing"
-      ? "外部压力信号接入"
+      ? "现实触发证据接入"
       : flowState === "frozen"
-        ? "现实压力信号已暴停"
+        ? "现实触发证据已暴停"
         : "撞击点已锁定";
-  const sceneStatus = `状态：${forceName}原力已接入反应堆`;
+  const sceneStatus = `状态：${forceName}母码驱动已接入反应堆`;
   const sceneGateLabel =
-    flowState === "flowing" ? "暴停当前信号流" : flowState === "frozen" ? "锁定撞击点" : "钉入这枚现实种子";
+    flowState === "flowing" ? "暴停当前信号流" : flowState === "frozen" ? "锁定撞击点" : "钉入当前触发证据";
   const sceneGateNote =
     flowState === "flowing"
       ? "三联压力信号接入，等待暴停。"
@@ -218,7 +218,7 @@ export function ScenePage() {
       >
         <div className="gy-front-copy gyFadeRise">
           <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-            GY / 03 / SCENE
+            GY / 03 / EVIDENCE
           </GuanyaoText>
           <GuanyaoText className="gy-scene-status-readout" as="span" size="eyebrow" tone="faint" data-slice-source={sliceSource}>
             {sceneStatus}
@@ -231,10 +231,10 @@ export function ScenePage() {
           <div className={`gy-scene-flashline-group gy-scene-seed-list gy-scene-seed-list--${flowState}`}>
             <GuanyaoText className="gy-scene-seed-group-label" as="span" size="eyebrow" tone="faint">
               {flowState === "flowing"
-                ? "现实压力信号｜扫描"
+                ? "现实触发证据｜扫描"
                 : flowState === "frozen"
-                  ? "现实压力信号｜可锁定"
-                  : "现实压力信号｜已钉住"}
+                  ? "现实触发证据｜可锁定"
+                  : "现实触发证据｜已钉住"}
             </GuanyaoText>
             {seedGroup.seeds.map((seed) => {
               const isSelectedSeed = flowState === "selected" && seed.id === selectedSeedId;

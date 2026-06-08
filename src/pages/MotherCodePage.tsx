@@ -31,13 +31,13 @@ function getMotherSignature(motherCode: any) {
       field: "拉扯已经结束，惯性正在把你推向一次明确切断。",
       dimensions: ["逼近临界", "忍到决口", "必须表态", "边界破裂"],
       assertion: [
-        "你的行为惯性与现实种子，正在把退让推到决口。",
+        "你的行为惯性与现实触发证据，正在把退让推到决口。",
         "拉扯已经结束，它正在把你推向一次明确的切断。",
       ],
       hotzones: [
         ["时序惯性", "临界", "时间不再给你缓冲，所有拖延都在逼近一个必须表态的点。"],
         ["行为反应", "决口", "你不是突然爆发，而是已经忍到再退一步就会失守。"],
-        ["原力驱动", "表态", "你的行动力不再用于维持局面，而是在逼你切开局面。"],
+        ["母码驱动", "表态", "你的行动力不再用于维持局面，而是在逼你切开局面。"],
         ["现实触发", "破裂", "现实不是在提醒你，而是在把边界直接撕开。"],
       ],
     };
@@ -56,7 +56,7 @@ function getMotherSignature(motherCode: any) {
       hotzones: [
         ["时序惯性", "停顿", "时间没有真的停下，只是你先把自己按在原地。"],
         ["行为反应", "冻结", "你不是没有反应，而是不敢让下一步变成事实。"],
-        ["原力驱动", "收紧", "你的力正在把所有动作压回身体里。"],
+        ["母码驱动", "收紧", "你的力正在把所有动作压回身体里。"],
         ["现实触发", "逼近", "现实越靠近，你越想让它先停在门外。"],
       ],
     };
@@ -75,7 +75,7 @@ function getMotherSignature(motherCode: any) {
       hotzones: [
         ["时序惯性", "下沉", "压力一出现，时间就开始往低处坠。"],
         ["行为反应", "沉默", "你把不开口当成保护，把隔绝当成清醒。"],
-        ["原力驱动", "确认", "你反复确认危险，却迟迟没有真正打开它。"],
+        ["母码驱动", "确认", "你反复确认危险，却迟迟没有真正打开它。"],
         ["现实触发", "暗涌", "现实没有爆开，但它一直在暗处逼近。"],
       ],
     };
@@ -94,7 +94,7 @@ function getMotherSignature(motherCode: any) {
       hotzones: [
         ["时序惯性", "硬点", "时间把问题压成硬块，不再允许你绕过去。"],
         ["行为反应", "回避", "你一直绕开那一口，直到它开始反过来咬住你。"],
-        ["原力驱动", "处理", "你的力不再适合维持表面，只适合处理硬点。"],
+        ["母码驱动", "处理", "你的力不再适合维持表面，只适合处理硬点。"],
         ["现实触发", "咬合", "现实已经咬住缺口，拖延只会加深阻力。"],
       ],
     };
@@ -104,7 +104,7 @@ function getMotherSignature(motherCode: any) {
     sequence: "00000",
     stateName: "行为母型已结晶",
     field: "本次行为母型已经形成，惯性正在等待展开。",
-    dimensions: ["时序压迫", "惯性接管", "原力牵引", "现实逼近"],
+    dimensions: ["时序压迫", "惯性接管", "母码驱动", "现实逼近"],
     assertion: [
       motherCode?.shortSeal ?? "本次行为母型已经压印。",
       "它还没有展开成六爻，只是先把当前惯性固定下来。",
@@ -112,7 +112,7 @@ function getMotherSignature(motherCode: any) {
     hotzones: [
       ["时序惯性", "收束", "时间已经把这次惯性收束成一个固定入口。"],
       ["行为反应", "压印", "你的反应已经留下痕迹，等待被推进。"],
-      ["原力驱动", "定格", "背后的力已经定住，下一步会进入六爻。"],
+      ["母码驱动", "锁定", "背后的驱动已经定住，下一步会进入六爻。"],
       ["现实触发", "逼近", "现实压力已经靠近，不再只是背景。"],
     ],
   };
@@ -122,7 +122,7 @@ function renderCoreAssertion(line: string) {
   if (line.includes("退让") && line.includes("决口")) {
     return (
       <>
-        你的行为惯性与现实种子，
+        你的行为惯性与现实触发证据，
         <br />
         正在把「<mark>退让</mark>」推到「<mark>决口</mark>」。
       </>
@@ -155,8 +155,8 @@ const paidDiagnostic = {
       title: "01 状态矩阵解密",
       subtitle: "原始源点 × 内部解释 × 外部压力",
       lines: [
-        "系统读取你的初始原力、人格映照与现实种子后，生成当前母型：风险决口态。",
-        "你带着先发动作、强占主控的源点原力，撞上了一枚持续加压的现实种子。",
+        "系统读取你的根资产、母码线索与现实触发证据后，生成当前母型：风险决口态。",
+        "你带着先发动作、强占主控的源点驱动，撞上了一枚持续加压的现实触发证据。",
         "两股力在盘面里交汇后，没有形成缓冲，而是把你推向一次必须表态的决口。",
       ],
     },
@@ -301,15 +301,15 @@ export function MotherCodePage() {
                   这不是你是谁，而是你这一次被现实压出来的行为惯性。
                 </GuanyaoText>
 
-                <div className="gy-mother-scene-bridge" aria-label="现实种子钉入承接">
+                <div className="gy-mother-scene-bridge" aria-label="现实触发证据钉入承接">
                   <GuanyaoText as="span" size="eyebrow" tone="faint">
-                    现实种子已钉入。
+                    现实触发证据已钉入。
                     <br />
-                    母型开始坍缩。
+                    母码结晶开始成形。
                   </GuanyaoText>
                   {injectedSceneLine ? (
                     <GuanyaoText as="span" size="eyebrow" tone="faint">
-                      钉入信号：{injectedSceneLine}
+                      钉入证据：{injectedSceneLine}
                     </GuanyaoText>
                   ) : null}
                 </div>
@@ -364,13 +364,13 @@ export function MotherCodePage() {
               <GuanyaoText className="gy-mother-record-status" size="body" tone="muted">
                 因果沙盘已锁定。
                 <br />
-                推演指针处于断路状态。
+                  干预指针处于断路状态。
               </GuanyaoText>
               <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-primary gy-mother-unlock-button" variant="gate" onClick={() => setIsUnlocked(true)}>
-                🔒 支付 9.9 元 · 释放下一阶段推演指针
+                🔒 支付 9.9 元 · 解锁爻码干预与修复靶点
               </GuanyaoButton>
               <GuanyaoText className="gy-mother-unlock-note" size="eyebrow" tone="faint">
-                含：母码全景诊断 / 六爻启动权 / 基础爻码结果
+                含：母码全景诊断 / 爻码干预轴 / 基础修复卡 / RepairTarget 修复靶点 / 行为资产沉积
               </GuanyaoText>
             </>
           ) : (
@@ -378,7 +378,7 @@ export function MotherCodePage() {
               <GuanyaoText className="gy-mother-record-status" size="body" tone="muted">
                 母码全景诊断已展开。
                 <br />
-                长按底部因果闸门，启动前五爻自动推进。
+                长按底部因果闸门，启动爻码干预轴。
               </GuanyaoText>
               <button
                 className={`gy-mother-causal-hold ${isHoldingGate ? "gy-mother-causal-hold--charging" : ""}`}
@@ -395,7 +395,7 @@ export function MotherCodePage() {
                 onTouchEnd={releaseCausalGate}
                 onTouchStart={holdCausalGate}
               >
-                <span>⚡ 传动轴已复活 · 长按启动前五爻自动因果推进</span>
+                <span>⚡ 爻码干预轴已复活 · 长按启动前五爻惯性链</span>
                 <i />
               </button>
             </>

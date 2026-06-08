@@ -60,7 +60,7 @@ export function buildYaoCodeCard(session: GuanyaoSession, card: MigrationCard, f
     coreSeal: card.shortReading[0] ?? "本次轨迹已记录。",
     antiInstinctNode: card.antiInstinctNode,
     defenseBook90d: {
-      title: "90天行为预警",
+      title: "90天复发观察",
       sections: ["90天行为重力雷达", "3张反本能操作卡", "90天复盘年轮"],
     },
   };
