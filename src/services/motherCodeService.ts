@@ -1,35 +1,7 @@
+import { motherCodes } from "../data/motherCodes";
 import type { GuanyaoSession, MotherCodeResult } from "../types";
 
-const motherCodeFallbacks = [
-  {
-    code64: "043",
-    name: "夬",
-    title: "决口",
-    shortSeal: "你的人格惯性与现实种子，正在把退让推到决口。",
-    gravityField: "本次行为母型已经形成。",
-  },
-  {
-    code64: "029",
-    name: "坎",
-    title: "低处",
-    shortSeal: "你被推到更深的低处，开始看见自己反复回到同一种反应。",
-    gravityField: "压力逼近时的旧路径已经显形。",
-  },
-  {
-    code64: "052",
-    name: "艮",
-    title: "停住",
-    shortSeal: "你最难的不是继续行动，而是在惯性要求你动的时候停住。",
-    gravityField: "人格映照与现实种子的拉扯已经收束。",
-  },
-  {
-    code64: "021",
-    name: "噬嗑",
-    title: "硬骨",
-    shortSeal: "真正的阻力不是外部压力，而是你迟迟没有咬开的那块硬骨。",
-    gravityField: "五爻推进前，行为重力场已经显形。",
-  },
-] as const;
+const motherCodeFallbacks = motherCodes.filter((motherCode) => motherCode.title && motherCode.shortSeal && motherCode.gravityField);
 
 function stableIndex(input: string, length: number) {
   const hash = Array.from(input).reduce((sum, char) => sum + char.charCodeAt(0), 0);
@@ -45,18 +17,18 @@ export function buildMotherCodeResult(session: GuanyaoSession): MotherCodeResult
   const fallback = motherCodeFallbacks[stableIndex(seed, motherCodeFallbacks.length)];
 
   return {
-    id: `mother_${fallback.code64}_${stableIndex(seed, 10000).toString().padStart(4, "0")}`,
-    code64: fallback.code64,
+    id: `mother_${fallback.code}_${stableIndex(seed, 10000).toString().padStart(4, "0")}`,
+    code64: fallback.code,
     name: fallback.name,
     hexagramName: fallback.name,
-    title: fallback.title,
+    title: fallback.title ?? fallback.name,
     sourceYuanCodeId: yuanCode?.id,
     sourceIdentityId: identityId,
     sourceSceneId: sceneId,
     sourceForceId: forceId,
-    personalityField: `${fallback.name}｜${fallback.title}`,
-    shortSeal: fallback.shortSeal,
-    fieldDescription: fallback.gravityField,
-    gravityField: fallback.gravityField,
+    personalityField: `${fallback.name}｜${fallback.title ?? fallback.name}`,
+    shortSeal: fallback.shortSeal ?? "本次人格惯性与现实压力已经形成母码压印。",
+    fieldDescription: fallback.gravityField ?? "行为母型已经进入压印状态。",
+    gravityField: fallback.gravityField ?? "行为母型已经进入压印状态。",
   };
 }

@@ -154,6 +154,24 @@ export type MotherCodeResult = GuaFieldResult & {
   gravityField: string;
 };
 
+export type MotherCodeRegistryEntry = {
+  code: string;
+  name: string;
+  entityType: "mother_code";
+  registryType: "mother_code_registry_v1";
+  primaryForce?: string | null;
+  forceRatio?: string | null;
+  track?: string | null;
+  stage?: string | null;
+  collapseTarget?: string | null;
+  recognitionLine?: string | null;
+  coreConflict?: string | null;
+  systemFunction?: string | null;
+  title?: string | null;
+  shortSeal?: string | null;
+  gravityField?: string | null;
+};
+
 export type YaoCodeResult = {
   id: string;
   code384: string;
