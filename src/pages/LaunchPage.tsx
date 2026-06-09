@@ -46,9 +46,12 @@ export function LaunchPage() {
           </div>
           <div className="gy-front-actions">
             <GuanyaoButton className="gy-front-gate" variant="ghost" onClick={handleOpenSandbox}>
-              <span>沿线右滑，启动母码扫描。</span>
+              <span>沿线右滑，开始一次观爻。</span>
             </GuanyaoButton>
           </div>
+          <GuanyaoText className="gy-launch-subgate-note" size="eyebrow" tone="faint">
+            {hasChronoPrototype() ? "时序底色已存在。本次观爻可以直接开始。" : "首次进入，需要先完成时序装填。系统将用它校准你的入局底色。"}
+          </GuanyaoText>
           <GuanyaoText className="gy-launch-subgate-note" size="eyebrow" tone="faint">
             GY_SANDBOX_PROTOCOL_INITIALIZED
           </GuanyaoText>

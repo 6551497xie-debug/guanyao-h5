@@ -140,14 +140,14 @@ export function IdentityPage() {
             GY / 01 / MOTHER_SCAN
           </GuanyaoText>
           <GuanyaoText className="gy-identity-r2-status" as="span" size="eyebrow" tone="faint">
-            行为母码线索捕获中
+            卦码线索捕获中
           </GuanyaoText>
         </header>
 
           <main className={`gy-identity-dual-cabin gyFadeRise${isShifting ? " is-shifting" : ""}`}>
           <aside
             className="gy-identity-slice-rail"
-            aria-label="行为母码线索切片滑轨"
+            aria-label="卦码线索切片滑轨"
             style={{ "--gy-slice-progress": `${sliceProgress}%` } as CSSProperties}
           >
             <div className="gy-identity-slice-meta">
@@ -166,10 +166,10 @@ export function IdentityPage() {
             </div>
           </aside>
 
-          <section className={`gy-identity-data-flow is-${motionPhase}`} aria-label="行为母码线索数据流">
+          <section className={`gy-identity-data-flow is-${motionPhase}`} aria-label="卦码线索数据流">
             <div className="gy-identity-fragment-core">
               <GuanyaoText className="gy-identity-r2-label" as="span" size="eyebrow" tone="faint">
-                行为母码线索
+                卦码线索
               </GuanyaoText>
               <GuanyaoText className="gy-identity-r2-fragment" as="h2" size="title">
                 {fragmentCopy.title}
@@ -189,13 +189,13 @@ export function IdentityPage() {
         </main>
 
         <footer className="gy-identity-action-zone gyFadeRise">
-          <div className="gy-identity-binary-rail" aria-label="行为母码线索二元拨码闸门">
+          <div className="gy-identity-binary-rail" aria-label="卦码线索二元拨码闸门">
             <button className="gy-identity-binary-action gy-identity-binary-action--drift" type="button" onClick={handleNext}>
               <span>0 · 排除此线索</span>
             </button>
             <span className="gy-identity-binary-pointer" aria-hidden="true" />
             <Link className="gy-identity-binary-action gy-identity-binary-action--claim" to="/force" onClick={handleConfirm}>
-              <span>1 · 锁定母码线索</span>
+              <span>1 · 锁定卦码线索</span>
             </Link>
           </div>
           <p className="gy-identity-binary-hint">

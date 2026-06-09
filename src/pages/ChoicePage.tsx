@@ -37,13 +37,13 @@ export function ChoicePage() {
               GY / 06 / REPAIR_COMMITTED
             </GuanyaoText>
             <GuanyaoText as="span" size="eyebrow" tone="faint">
-              修复靶点生成中
+              器法生成中
             </GuanyaoText>
             <GuanyaoText as="h2" size="title">
               第六爻偏转已提交
             </GuanyaoText>
             <GuanyaoText size="body" tone="muted">
-              系统正在把本次反本能动作写入修复靶点。
+              系统正在把本次反本能动作写入器法。
             </GuanyaoText>
           </div>
         ) : (
@@ -53,10 +53,10 @@ export function ChoicePage() {
                 GY / 06 / REPAIR_WINDOW
               </GuanyaoText>
               <GuanyaoText as="span" size="eyebrow" tone="faint">
-                前五爻自动注入代码 0 完毕 ｜ 修复窗口已打开
+                前五爻已经走完。系统检测到：你正在回到同一套旧反应。
               </GuanyaoText>
               <GuanyaoText as="span" size="eyebrow" tone="faint">
-                拨动第六爻沙漏轴｜生成修复靶点
+                序列：0-0-0-0-0 ｜ 修复窗口已打开
               </GuanyaoText>
               <GuanyaoText as="h1" size="title">
                 第六爻 ／ 反本能偏转
@@ -87,8 +87,8 @@ export function ChoicePage() {
               </div>
 
               <button className="gy-choice-r1-path gy-choice-r1-path--deflect" type="button" onClick={() => handleChoice(0)}>
-                <span>1 · 执行反本能偏转</span>
-                <strong>做出一次不同的小动作</strong>
+                <span>1 · 执行器法</span>
+                <strong>把最容易拖延的一步，缩到 10 分钟内完成</strong>
                 <em>不是改变整个人生，只是在这个窗口里让旧反应偏开一次。</em>
               </button>
             </main>
@@ -99,13 +99,13 @@ export function ChoicePage() {
                   0 · 顺从本能下坠
                 </button>
                 <button type="button" onClick={() => handleChoice(0)}>
-                  1 · 激活反本能偏转
+                  1 · 使用本局爻器
                 </button>
               </div>
               <div className="gy-choice-r2-rail">
                 <button className="gy-choice-r2-rail-hit gy-choice-r2-rail-hit--left" type="button" aria-label="顺从本能下坠" onClick={() => handleChoice(1)} />
                 <span className="gy-choice-r2-pointer" aria-hidden="true" />
-                <button className="gy-choice-r2-rail-hit gy-choice-r2-rail-hit--right" type="button" aria-label="激活反本能偏转" onClick={() => handleChoice(0)} />
+                <button className="gy-choice-r2-rail-hit gy-choice-r2-rail-hit--right" type="button" aria-label="使用本局爻器" onClick={() => handleChoice(0)} />
               </div>
               <button className="gy-choice-r2-gesture" type="button" onClick={() => handleChoice(0)}>
                 🔒 ➔ 决绝向右拨动指针 · 强行拉断旧本能铁轨

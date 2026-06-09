@@ -34,23 +34,23 @@ export function CollapsePage() {
           <div className="gy-pressure-gate gyFadeRise">
             <div className="gy-yao-text-block">
               <GuanyaoText as="span" size="eyebrow" tone="gold">
-                五爻仪式
+                五爻惯性链
               </GuanyaoText>
               <GuanyaoText as="h2" size="title">
-                五层重力已统一到同一场。
+                五层爻器已接入同一生成轴。
               </GuanyaoText>
               <div className="gy-yao-lines">
                 <GuanyaoText size="body" tone="muted">
-                  主链路现在从重力场内连续完成五爻。
+                  主链路将在爻器生成轴内完成前五爻定位。
                 </GuanyaoText>
                 <GuanyaoText size="body" tone="muted">
-                  这里保留为旧路径兼容入口。
+                  这里用于兼容旧路径，并继续接入当前生成轴。
                 </GuanyaoText>
               </div>
             </div>
             <Link to={isComplete ? "/choice" : "/gravity"}>
               <GuanyaoButton as="span" variant="gate">
-                {isComplete ? "继续进入最后一爻" : "进入五爻仪式"}
+                {isComplete ? "继续进入最后一爻" : "沿线右滑，启动五爻惯性链"}
               </GuanyaoButton>
             </Link>
           </div>

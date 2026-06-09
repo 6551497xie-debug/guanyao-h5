@@ -153,7 +153,7 @@ export function ScenePage() {
       : flowState === "frozen"
         ? "现实触发证据已暴停"
         : "撞击点已锁定";
-  const sceneStatus = `状态：${forceName}母码驱动已接入反应堆`;
+  const sceneStatus = `状态：${forceName}卦码驱动已接入反应堆`;
   const sceneGateLabel =
     flowState === "flowing" ? "暴停当前信号流" : flowState === "frozen" ? "锁定撞击点" : "钉入当前触发证据";
   const sceneGateNote =
@@ -161,7 +161,7 @@ export function ScenePage() {
       ? "三联压力信号接入，等待暴停。"
       : flowState === "frozen"
         ? "点击一条压力信号，锁定撞击点。"
-        : "现实信号已入沙，等待母码压印。";
+        : "现实信号已入沙，等待卦码显影。";
 
   useEffect(() => {
     document.body.classList.add("gy-scene-r1-mode");

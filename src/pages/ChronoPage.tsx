@@ -459,6 +459,7 @@ export function ChronoPage() {
           <header className="gy-chrono-r1-header gyFadeRise">
             <span>GY / 00-FIX / CHRONO</span>
             <strong>时 序 装 填</strong>
+            <em>首次进入观爻，需要先校准你的入局底色。</em>
           </header>
         ) : null}
 
@@ -527,7 +528,7 @@ export function ChronoPage() {
         ) : null}
 
         <div className="gy-front-lines gy-chrono-bottom-note">
-          {["时空重力初速度已就位", "不允许任何自嗨式解释"].map((line) => (
+          {["时序不是答案", "它只是本次观爻的初始坐标"].map((line) => (
             <GuanyaoText key={line} size="body" tone="faint">
               {line}
             </GuanyaoText>
@@ -535,7 +536,7 @@ export function ChronoPage() {
         </div>
 
         {chronoProfile && generatedCard && generatedYuanCode ? (
-          <article className="gy-source-shell gyFadeRise" aria-label="观爻元码初始原力装填">
+          <article className="gy-source-shell gyFadeRise" aria-label="观爻入局底色装填">
             <header className="gy-source-header">
               <span>{yuanInstrument.sequence}</span>
               <span>初始动作模式已识别</span>
@@ -576,7 +577,7 @@ export function ChronoPage() {
               </div>
             </main>
 
-            <section className="gy-source-drawer-grid" aria-label="元码参数热区">
+            <section className="gy-source-drawer-grid" aria-label="入局底色参数热区">
               {sourceDrawerItems.map((hotzone) => {
                 const isActive = activeYuanHotzone === hotzone.label;
                 return (
@@ -601,12 +602,12 @@ export function ChronoPage() {
         <div className={chronoProfile ? "gy-source-gate" : "gy-chrono-r1-gate"}>
           {!chronoProfile ? (
             <GuanyaoButton className="gy-chrono-r1-gate-button" variant="ghost" onClick={handleGenerate}>
-              <span>点火，装填我的观爻元码</span>
+              <span>装填时序，开始一次观爻</span>
             </GuanyaoButton>
           ) : (
             <>
               <GuanyaoButton className="gy-source-gate-button" variant="ghost" onClick={() => navigate("/identity")}>
-                拉断第一阀门，抓取行为母码线索
+                入局底色已装填，抓取卦码线索
               </GuanyaoButton>
             </>
           )}

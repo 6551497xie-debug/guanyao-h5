@@ -215,24 +215,24 @@ export function GravityPage() {
             GY / 05 / YAOCODE_AXIS
           </GuanyaoText>
           <GuanyaoText as="span" size="eyebrow" tone="faint">
-            基础观察已解锁｜爻码干预轴已接入
+            基础修复已解锁｜爻器生成轴已接入
           </GuanyaoText>
           <GuanyaoText as="span" size="eyebrow" tone="faint">
             旧惯性正在漏沙｜前五爻惯性链运行中
           </GuanyaoText>
           <GuanyaoText as="h1" size="title">
-            爻码干预轴已启动
+            爻器生成轴已启动
           </GuanyaoText>
         </header>
 
         <main className="gy-gravity-r1-main">
-          <aside className="gy-gravity-r2-ledger" aria-label="母码因果账本摘要">
-            <div className="gy-gravity-r2-ledger-summary" aria-label="母码账本折叠读数">
-              <span>母码账本 //</span>
+          <aside className="gy-gravity-r2-ledger" aria-label="卦码因果账本摘要">
+            <div className="gy-gravity-r2-ledger-summary" aria-label="卦码账本折叠读数">
+              <span>卦码账本 //</span>
               <strong>{motherLedger.motherName} · 现实触发证据已钉入 · 高风险窗口已显影</strong>
             </div>
             <GuanyaoText as="span" size="eyebrow" tone="gold">
-              母码全景账本
+              卦码全景账本
             </GuanyaoText>
             <div className="gy-gravity-r2-ledger-code">
               <span>母型断面</span>
