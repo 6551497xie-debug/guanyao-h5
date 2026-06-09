@@ -8,8 +8,7 @@ export const flowSteps: FlowStep[] = [
   { code: "03", key: "scene", path: "/scene", title: "Evidence 现实触发证据接入" },
   { code: "03-G", key: "gua-field", path: "/gua-field", title: "Mother 卦码显影" },
   { code: "04", key: "gravity", path: "/gravity", title: "Yao Implement 前五爻惯性链" },
-  { code: "05", key: "collapse", path: "/collapse", title: "Collapse 高压临界停留" },
-  { code: "06", key: "choice", path: "/choice", title: "Choice 第六爻反本能偏转" },
-  { code: "07", key: "migration", path: "/migration", title: "Repair Card 行为沙漏沉积" },
-  { code: "08", key: "archive", path: "/archive", title: "Archive 行为修复资产库" },
+  { code: "05", key: "choice", path: "/choice", title: "Choice 第六爻反本能偏转" },
+  { code: "06", key: "migration", path: "/migration", title: "Repair Card 行为沙漏沉积" },
+  { code: "07", key: "archive", path: "/archive", title: "Archive 行为修复资产库" },
 ];
