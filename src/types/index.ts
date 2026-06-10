@@ -415,3 +415,107 @@ export interface ArchiveItem extends MigrationCard {
   causalContext?: CausalContextPackage;
   repairTarget?: RepairTargetResult | null;
 }
+
+export type MotherCodeTag = {
+  force: string;
+  exposure: string;
+  trait: string;
+};
+
+export type MotherCodeAsset = {
+  id: string;
+  index: string;
+  trigram: string;
+  name: string;
+  title: string;
+  englishName: string;
+  tags: MotherCodeTag;
+};
+
+export type PressureSeed = {
+  id: string;
+  text: string;
+  relationType?: string;
+  intensity?: 1 | 2 | 3 | 4 | 5;
+  isRecurring?: boolean;
+  createdAt: string;
+};
+
+export type PressureExposureOption = {
+  id: string;
+  label: string;
+  sentence: string;
+};
+
+export type PressureExposureResult = {
+  selectedOptionId: string;
+  selectedSentence: string;
+};
+
+export type DynamicsResult = {
+  id: string;
+  title: string;
+  summary: string;
+  oldReaction: string;
+  pressurePattern: string;
+  behaviorInertia: string;
+};
+
+export type BreachPoint = {
+  id: string;
+  name: string;
+  positionLabel: string;
+  intensity: "primary" | "secondary";
+  oldReaction: string;
+  breachSentence: string;
+  deviceId: string;
+};
+
+export type BreachScanResult = {
+  id: string;
+  mainBreachId: string;
+  breaches: BreachPoint[];
+};
+
+export type YaoDevice = {
+  id: string;
+  name: string;
+  shortDefinition: string;
+  breaksReaction: string;
+  notFor: string;
+};
+
+export type RepairMethod = {
+  id: string;
+  name: string;
+  firstAction: string;
+  forbiddenAction: string;
+  relapseReminder: string;
+};
+
+export type GuanyaoSessionState =
+  | "mother_code_ready"
+  | "pressure_seed_ready"
+  | "pressure_exposure_ready"
+  | "dynamics_ready"
+  | "breach_scanned"
+  | "sealed"
+  | "device_activated"
+  | "repair_ready"
+  | "archived";
+
+export type GuanyaoAsset = {
+  id: string;
+  motherCodeId: string;
+  pressureSeed: PressureSeed;
+  pressureExposure?: PressureExposureResult;
+  dynamicsResult?: DynamicsResult;
+  breachScan?: BreachScanResult;
+  selectedBreachId?: string;
+  isBroken: boolean;
+  yaoDevice?: YaoDevice;
+  repairMethod?: RepairMethod;
+  status: "sealed" | "activated" | "completed";
+  createdAt: string;
+  updatedAt: string;
+};
