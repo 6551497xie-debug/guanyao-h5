@@ -5,7 +5,7 @@ import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildFinalChoiceCode, setSixthYaoChoice } from "../services/trajectoryService";
 
-const gravityEchoes = ["01 身体", "02 旧习惯", "03 关系牵引", "04 高风险窗口", "05 临界停留"];
+const breachEchoes = ["主破口｜沾泥处", "备选破口｜受伤处", "备选破口｜待机处"];
 
 export function ChoicePage() {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ export function ChoicePage() {
 
   return (
     <GuanyaoShell className="gy-choice-r1-shell" density="compact">
-      <section className="gy-choice-r1-screen gyFadeRise" aria-label="第六爻反本能偏转">
+      <section className="gy-choice-r1-screen gyFadeRise" aria-label="破口阵列扫描">
         {isSettling ? (
           <div className="gy-choice-r1-settle gyBreath">
             <GuanyaoText as="span" size="eyebrow" tone="gold">
@@ -41,10 +41,10 @@ export function ChoicePage() {
               器法生成中
             </GuanyaoText>
             <GuanyaoText as="h2" size="title">
-              第六爻偏转已提交
+              下刀位置已提交
             </GuanyaoText>
             <GuanyaoText size="body" tone="muted">
-              系统正在把本次反本能动作写入器法。
+              系统正在把本次破口选择写入爻器。
             </GuanyaoText>
           </div>
         ) : (
@@ -54,33 +54,33 @@ export function ChoicePage() {
                 GY / 06 / REPAIR_WINDOW
               </GuanyaoText>
               <GuanyaoText as="span" size="eyebrow" tone="faint">
-                前五爻已经走完。系统检测到：你正在回到同一套旧反应。
+                本局破口已扫描完成。系统建议你先从这里下刀。
               </GuanyaoText>
               <GuanyaoText as="span" size="eyebrow" tone="faint">
-                序列：0-0-0-0-0 ｜ 修复窗口已打开
+                主破口已显影 ｜ 备选破口待确认
               </GuanyaoText>
               <GuanyaoText as="h1" size="title">
-                第六爻 ／ 反本能偏转
+                破口阵列扫描
               </GuanyaoText>
               <GuanyaoText size="body" tone="muted">
-                前五爻已经走完。序列：0-0-0-0-0。
+                你不是在选择答案，而是在确认本局从哪里下刀。
               </GuanyaoText>
               <GuanyaoText className="gy-choice-r2-assertion" size="body" tone="muted">
-                你不是在选择答案，而是在切断一次延续了几十年的旧反应。
+                破口不是你的失败。它是旧习惯最容易被切开的地方。
               </GuanyaoText>
             </header>
 
-            <div className="gy-choice-r1-echo" aria-label="前五爻残影">
-              {gravityEchoes.map((item) => (
+            <div className="gy-choice-r1-echo" aria-label="破口阵列">
+              {breachEchoes.map((item) => (
                 <span key={item}>{item}</span>
               ))}
             </div>
 
             <main className="gy-choice-r1-main">
               <button className="gy-choice-r1-path gy-choice-r1-path--inertia" type="button" onClick={() => handleChoice(1)}>
-                <span>0 · 照旧反应</span>
-                <strong>继续沿旧惯性滑落</strong>
-                <em>这不是错误，只是让熟悉路径继续全量接管。未来结局已由其写就。</em>
+                <span>0 · 暂不破局</span>
+                <strong>封存本局</strong>
+                <em>这不是失败，只是暂时不在这一刀上动手。</em>
               </button>
 
               <div className="gy-choice-r1-split" aria-hidden="true">
@@ -88,28 +88,28 @@ export function ChoicePage() {
               </div>
 
               <button className="gy-choice-r1-path gy-choice-r1-path--deflect" type="button" onClick={() => handleChoice(0)}>
-                <span>1 · 执行器法</span>
-                <strong>把最容易拖延的一步，缩到 10 分钟内完成</strong>
-                <em>不是改变整个人生，只是在这个窗口里让旧反应偏开一次。</em>
+                <span>1 · 从主破口下刀</span>
+                <strong>你已经陷入，却还在用“我能推进”维持体面</strong>
+                <em>不是改变整个人生，只是在这个破口上切开一次旧反应。</em>
               </button>
             </main>
 
-            <footer className="gy-choice-r2-console" aria-label="第六爻二元偏转操作台">
+            <footer className="gy-choice-r2-console" aria-label="破口二元操作台">
               <div className="gy-choice-r2-console-labels">
                 <button type="button" onClick={() => handleChoice(1)}>
-                  0 · 顺从本能下坠
+                  0 · 暂不破局，封存本局
                 </button>
                 <button type="button" onClick={() => handleChoice(0)}>
-                  1 · 使用本局爻器
+                  1 · 从主破口下刀
                 </button>
               </div>
               <div className="gy-choice-r2-rail">
-                <button className="gy-choice-r2-rail-hit gy-choice-r2-rail-hit--left" type="button" aria-label="顺从本能下坠" onClick={() => handleChoice(1)} />
+                <button className="gy-choice-r2-rail-hit gy-choice-r2-rail-hit--left" type="button" aria-label="暂不破局，封存本局" onClick={() => handleChoice(1)} />
                 <span className="gy-choice-r2-pointer" aria-hidden="true" />
-                <button className="gy-choice-r2-rail-hit gy-choice-r2-rail-hit--right" type="button" aria-label="使用本局爻器" onClick={() => handleChoice(0)} />
+                <button className="gy-choice-r2-rail-hit gy-choice-r2-rail-hit--right" type="button" aria-label="从主破口下刀" onClick={() => handleChoice(0)} />
               </div>
               <button className="gy-choice-r2-gesture" type="button" onClick={() => handleChoice(0)}>
-                🔒 ➔ 决绝向右拨动指针 · 强行拉断旧本能铁轨
+                🔒 ➔ 沿线右滑 · 从主破口下刀
               </button>
             </footer>
           </>

@@ -539,8 +539,8 @@ export function ChronoPage() {
         {chronoProfile && generatedCard && generatedYuanCode ? (
           <article className="gy-source-shell gyFadeRise" aria-label="观爻入局底色装填">
             <header className="gy-source-header">
-              <span>{yuanInstrument.sequence}</span>
-              <span>初始动作模式已识别</span>
+              <span>GY / 01 / MOTHER_CODE</span>
+              <span>母码显影</span>
               <strong>{formatYuanSectionName(yuanCodeName)}</strong>
             </header>
 
@@ -566,9 +566,9 @@ export function ChronoPage() {
 
               <div className="gy-source-assertion">
                 <p>
-                  你习惯在失重时高频动作，
+                  这不是性格标签，
                   <br />
-                  借由<span>「不断启动」</span>来维持心智安全感。
+                  这是你本次带压入局时，最先启动的<span>「人格原力」</span>。
                 </p>
                 <p>
                   你不是一直加速，
@@ -607,8 +607,8 @@ export function ChronoPage() {
             </GuanyaoButton>
           ) : (
             <>
-              <GuanyaoButton className="gy-source-gate-button" variant="ghost" onClick={() => navigate(GUANYAO_ROUTES.pressureExposure)}>
-                入局底色已装填，抓取卦码线索
+              <GuanyaoButton className="gy-source-gate-button" variant="ghost" onClick={() => navigate(GUANYAO_ROUTES.pressureSeed)}>
+                钉入现实压力种子
               </GuanyaoButton>
             </>
           )}

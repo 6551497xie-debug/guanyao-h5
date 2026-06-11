@@ -21,7 +21,7 @@ export function LaunchPage() {
   const navigate = useNavigate();
 
   function handleOpenSandbox() {
-    navigate(hasChronoPrototype() ? GUANYAO_ROUTES.pressureExposure : GUANYAO_ROUTES.motherCode);
+    navigate(GUANYAO_ROUTES.motherCode);
   }
 
   return (
@@ -39,10 +39,22 @@ export function LaunchPage() {
           </GuanyaoText>
           <div className="gy-front-lines gy-launch-verdict">
             <GuanyaoText size="body" tone="muted">
-              这里没有答案。
+              [嗒、嗒、嗒……]
             </GuanyaoText>
             <GuanyaoText size="body" tone="muted">
-              你只是进入一台行为因果仪器。
+              这里没有玄学预测。
+            </GuanyaoText>
+            <GuanyaoText size="body" tone="muted">
+              也没有心理安慰。
+            </GuanyaoText>
+            <GuanyaoText size="body" tone="muted">
+              它不安慰你。
+            </GuanyaoText>
+            <GuanyaoText size="body" tone="muted">
+              它只剥离你的借口。
+            </GuanyaoText>
+            <GuanyaoText size="body" tone="muted">
+              照出你正被哪一种旧习惯拖住。
             </GuanyaoText>
           </div>
           <div className="gy-front-actions">

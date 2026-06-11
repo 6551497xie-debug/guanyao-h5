@@ -114,12 +114,12 @@ function renderCausalSource(context: CausalContextPackage | undefined, item: Arc
     return (
       <div className="gy-causal-source-stack">
         <p>入局底色｜8：未记录</p>
-        <p>卦码线索：未记录</p>
-        <p>卦码驱动锁定：未记录</p>
+        <p>压力显影：未记录</p>
+        <p>母码驱动锁定：未记录</p>
         <p>现实触发证据：未记录</p>
-        <p>观爻卦码｜64：未记录</p>
-        <p>前五爻惯性链：{formatYaoPath(undefined)}</p>
-        <p>第六爻偏转：未记录</p>
+        <p>观爻母码｜64：未记录</p>
+        <p>旧惯性链：{formatYaoPath(undefined)}</p>
+        <p>破口选择：未记录</p>
         <p>观爻爻器｜384：未记录</p>
         <p>器法：{item.migrationDirection.code} {item.migrationDirection.traditionalName}{item.migrationDirection.scriptTitle}｜上爻</p>
         <p>90天复发观察：已生成</p>
@@ -132,12 +132,12 @@ function renderCausalSource(context: CausalContextPackage | undefined, item: Arc
     <div className="gy-causal-source-stack">
       <p>入局底色｜8：{readYuanCodeText(context)}</p>
       {renderYuanCodeDetail(context)}
-      <p>卦码线索：{readFragmentText(context.identityFragment)}</p>
-      <p>卦码驱动锁定：{readForceText(context.forceResult)}</p>
+      <p>压力显影：{readFragmentText(context.identityFragment)}</p>
+      <p>母码驱动锁定：{readForceText(context.forceResult)}</p>
       <p>现实触发证据：{readSceneText(context.sceneSeed)}</p>
-      <p>观爻卦码｜64：{readGuaFieldText(context)}</p>
-      <p>前五爻惯性链：{formatYaoPath(context.interactiveYaoPath && context.interactiveYaoPath.length >= 5 ? context.interactiveYaoPath : context.autoYaoPath)}</p>
-      <p>第六爻偏转：{formatYaoBit(context.sixthYaoChoice)}</p>
+      <p>观爻母码｜64：{readGuaFieldText(context)}</p>
+      <p>旧惯性链：{formatYaoPath(context.interactiveYaoPath && context.interactiveYaoPath.length >= 5 ? context.interactiveYaoPath : context.autoYaoPath)}</p>
+      <p>破口选择：{formatYaoBit(context.sixthYaoChoice)}</p>
       <p>观爻爻器｜384：{readYaoCodeText(context)}</p>
         <p>最终轨迹代码：{context.finalChoiceCode}</p>
         <p>器法：{context.yaoCodeCard.code}</p>
@@ -329,7 +329,7 @@ function readArchiveRepairLayer(item: ArchiveItem) {
 }
 
 function readArchiveRepairTarget(item: ArchiveItem) {
-  return item.repairTarget?.repairTargetName ?? item.causalContext?.repairTarget?.repairTargetName ?? "修复落点待生成";
+  return item.repairTarget?.repairTargetName ?? item.causalContext?.repairTarget?.repairTargetName ?? "器法落点待生成";
 }
 
 function readArchiveRiskWindow(item: ArchiveItem) {
@@ -340,9 +340,9 @@ const archiveVaultSlots = [
   {
     key: "yao",
     code: "ASSET_01",
-    label: "基础修复卡",
+    label: "基础器法卡",
     value: "等待沉积",
-    line: "完成一次行为修复后，本局基础修复卡会压入修复年轮轴。",
+    line: "完成一次一次观爻后，本局基础器法卡会压入人格资产年轮轴。",
   },
   {
     key: "defense",
@@ -379,30 +379,30 @@ export function ArchivePage() {
       <section className="gy-archive-vault gyFadeRise">
         <header className="gy-archive-vault-header">
           <span>GY / 08 / ARCHIVE_VAULT</span>
-          <em>{sortedArchives.length > 0 ? "本次沉积已入库" : "行为修复资产库待写入"}</em>
-          <h1>{sortedArchives.length > 0 ? "本次观爻已入库" : "行为修复资产库"}</h1>
-          <p>{sortedArchives.length > 0 ? "修复资产 +1 ｜ 深层记录待开封" : "修复资产 ｜ 复发冻结 ｜ 深层修复记录"}</p>
+          <em>{sortedArchives.length > 0 ? "本次沉积已入库" : "人格资产库待写入"}</em>
+          <h1>{sortedArchives.length > 0 ? "本次观爻已入库" : "人格资产库"}</h1>
+          <p>{sortedArchives.length > 0 ? "人格资产 +1 ｜ 深层记录待开封" : "人格资产 ｜ 复发冻结 ｜ 深层记录"}</p>
         </header>
 
         {sortedArchives.length === 0 ? (
           <section className="gy-archive-vault-empty">
             <div className="gy-archive-vault-empty-copy">
               <span>VAULT_EMPTY</span>
-              <h2>行为修复资产库尚未沉积</h2>
+              <h2>人格资产库尚未沉积</h2>
               <p>
-                完成一次行为修复后，
+                完成一次一次观爻后，
                 <br />
-                本次卦码、爻器与器法
+                本次母码、爻器与器法
                 <br />
-                将压入修复年轮轴。
+                将压入人格资产年轮轴。
               </p>
             </div>
 
-            <section className="gy-archive-vault-readout gy-archive-vault-readout--empty" aria-label="空仓修复资产读数">
-              <span>修复年轮</span>
+            <section className="gy-archive-vault-readout gy-archive-vault-readout--empty" aria-label="空仓人格资产读数">
+              <span>人格资产年轮</span>
               <div>
                 <strong>00</strong>
-                <em>修复资产</em>
+                <em>人格资产</em>
               </div>
               <div>
                 <strong>00</strong>
@@ -410,15 +410,15 @@ export function ArchivePage() {
               </div>
               <div>
                 <strong>00</strong>
-                <em>修复年轮</em>
+                <em>人格资产年轮</em>
               </div>
             </section>
 
-            <div className="gy-archive-vault-console" aria-label="行为修复资产库空仓校准台">
+            <div className="gy-archive-vault-console" aria-label="人格资产库空仓校准台">
               <div className="gy-archive-vault-console-axis" aria-hidden="true" />
               <div className="gy-archive-vault-slot-grid">
                 {[
-                  { code: "槽位 01", label: "卦码", value: "未写入" },
+                  { code: "槽位 01", label: "母码", value: "未写入" },
                   { code: "槽位 02", label: "爻器", value: "未压印" },
                   { code: "槽位 03", label: "器法", value: "未生成" },
                 ].map((slot) => (
@@ -439,36 +439,36 @@ export function ArchivePage() {
           <>
             <section className="gy-archive-vault-latest" aria-label="最近一次行为资产">
               <span>本次观爻已入库</span>
-              <strong>修复资产 +1</strong>
+              <strong>人格资产 +1</strong>
               <h2>{readArchiveAssetName(latestAsset)}</h2>
-              <p>卦码：{readMotherAssetText(latestAsset.causalContext)}</p>
+              <p>母码：{readMotherAssetText(latestAsset.causalContext)}</p>
               <p>爻器：{readArchiveYaoWeapon(latestAsset)}</p>
               <p>器法：{readArchiveAction(latestAsset)}</p>
-              <em><span className="gy-archive-label-en">Status｜</span>沉积状态：修复资产已沉积｜深层修复记录待开封</em>
+              <em><span className="gy-archive-label-en">Status｜</span>沉积状态：人格资产已沉积｜深层记录待开封</em>
               <button
                 className="gy-archive-vault-deep-toggle"
                 type="button"
                 onClick={() => setExpandedArchiveId(expandedArchiveId === latestAsset.archiveId ? null : latestAsset.archiveId)}
               >
-                {expandedArchiveId === latestAsset.archiveId ? "收起深层修复记录" : "展开深层修复记录"}
+                {expandedArchiveId === latestAsset.archiveId ? "收起深层记录" : "展开深层记录"}
               </button>
               {expandedArchiveId === latestAsset.archiveId ? (
                 <div className="gy-archive-vault-deep-record">
-                  <p><span className="gy-archive-label-en">卦码｜</span>系统卦码：{readMotherAssetText(latestAsset.causalContext)}</p>
+                  <p><span className="gy-archive-label-en">母码｜</span>系统母码：{readMotherAssetText(latestAsset.causalContext)}</p>
                   <p><span className="gy-archive-label-en">爻器｜</span>系统爻器：{readArchiveYaoWeapon(latestAsset)}</p>
-                  <p><span className="gy-archive-label-en">器法｜</span>修复落点：{readArchiveRepairTarget(latestAsset)}</p>
-                  <p><span className="gy-archive-label-en">修复层｜</span>修复层：{readArchiveRepairLayer(latestAsset)}</p>
+                  <p><span className="gy-archive-label-en">器法｜</span>器法落点：{readArchiveRepairTarget(latestAsset)}</p>
+                  <p><span className="gy-archive-label-en">器法层｜</span>器法层：{readArchiveRepairLayer(latestAsset)}</p>
                   <p><span className="gy-archive-label-en">复发窗口｜</span>复发观察窗口：{readArchiveRiskWindow(latestAsset)}</p>
                   <p>本局反本能节点：{readArchiveAntiNode(latestAsset)}</p>
                 </div>
               ) : null}
             </section>
 
-            <section className="gy-archive-vault-readout" aria-label="修复年轮总览">
-              <span>修复年轮</span>
+            <section className="gy-archive-vault-readout" aria-label="人格资产年轮总览">
+              <span>人格资产年轮</span>
               <div>
                 <strong>{settledCount}</strong>
-                <em>修复资产</em>
+                <em>人格资产</em>
               </div>
               <div>
                 <strong>{pendingRecordCount}</strong>
@@ -476,18 +476,18 @@ export function ArchivePage() {
               </div>
               <div>
                 <strong>{yaoCodeCount}</strong>
-                <em>修复年轮</em>
+                <em>人格资产年轮</em>
               </div>
             </section>
 
-            <section className="gy-archive-vault-axis" aria-label="修复年轮轴">
-              <span>修复年轮轴</span>
+            <section className="gy-archive-vault-axis" aria-label="人格资产年轮轴">
+              <span>人格资产年轮轴</span>
               <div>
                 {sortedArchives.map((item, index) => (
                   <article key={item.archiveId}>
-                    <i>{`修复年轮_${String(index + 1).padStart(2, "0")}`}</i>
+                    <i>{`人格资产年轮_${String(index + 1).padStart(2, "0")}`}</i>
                     <time>{formatArchiveTime(item.createdAt)}</time>
-                    <strong>卦码：{readMotherAssetText(item.causalContext)}</strong>
+                    <strong>母码：{readMotherAssetText(item.causalContext)}</strong>
                     <p>爻器：{readArchiveYaoWeapon(item)}</p>
                     <p>器法：{readArchiveAction(item)}</p>
                     <em><span className="gy-archive-label-en">Status｜</span>沉积状态：已沉积</em>
@@ -496,14 +496,14 @@ export function ArchivePage() {
                       type="button"
                       onClick={() => setExpandedArchiveId(expandedArchiveId === item.archiveId ? null : item.archiveId)}
                     >
-                      {expandedArchiveId === item.archiveId ? "收起深层修复记录" : "展开深层修复记录"}
+                      {expandedArchiveId === item.archiveId ? "收起深层记录" : "展开深层记录"}
                     </button>
                     {expandedArchiveId === item.archiveId ? (
                       <div className="gy-archive-vault-deep-record">
-                        <p><span className="gy-archive-label-en">卦码｜</span>系统卦码：{readMotherAssetText(item.causalContext)}</p>
+                        <p><span className="gy-archive-label-en">母码｜</span>系统母码：{readMotherAssetText(item.causalContext)}</p>
                         <p><span className="gy-archive-label-en">爻器｜</span>系统爻器：{readArchiveYaoWeapon(item)}</p>
-                        <p><span className="gy-archive-label-en">器法｜</span>修复落点：{readArchiveRepairTarget(item)}</p>
-                        <p><span className="gy-archive-label-en">修复层｜</span>修复层：{readArchiveRepairLayer(item)}</p>
+                        <p><span className="gy-archive-label-en">器法｜</span>器法落点：{readArchiveRepairTarget(item)}</p>
+                        <p><span className="gy-archive-label-en">器法层｜</span>器法层：{readArchiveRepairLayer(item)}</p>
                         <p><span className="gy-archive-label-en">复发窗口｜</span>复发观察窗口：{readArchiveRiskWindow(item)}</p>
                         <p>本局反本能节点：{readArchiveAntiNode(item)}</p>
                       </div>
@@ -513,8 +513,8 @@ export function ArchivePage() {
               </div>
             </section>
 
-            <section className="gy-archive-vault-pending" aria-label="深层修复记录待开封">
-              <span>深层修复记录待开封</span>
+            <section className="gy-archive-vault-pending" aria-label="深层记录待开封">
+              <span>深层记录待开封</span>
               {archiveVaultSlots.slice(1).map((slot) => (
                 <button
                   className={`gy-archive-vault-pending-slot${activeVaultSlot === slot.key ? " gy-archive-vault-pending-slot--active" : ""}`}
@@ -531,7 +531,7 @@ export function ArchivePage() {
                 <p>{activeSlot.line}</p>
               </div>
               <button className="gy-archive-vault-unseal" type="button" onClick={() => setActiveVaultSlot("defense")}>
-                开封深层修复记录
+                开封深层记录
               </button>
             </section>
 

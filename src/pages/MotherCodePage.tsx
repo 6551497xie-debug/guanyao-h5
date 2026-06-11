@@ -38,7 +38,7 @@ function getMotherSignature(motherCode: any) {
       hotzones: [
         ["时序惯性", "临界", "时间不再给你缓冲，所有拖延都在逼近一个必须表态的点。"],
         ["行为反应", "决口", "你不是突然爆发，而是已经忍到再退一步就会失守。"],
-        ["卦码驱动", "表态", "你的行动力不再用于维持局面，而是在逼你切开局面。"],
+        ["母码驱动", "表态", "你的行动力不再用于维持局面，而是在逼你切开局面。"],
         ["现实触发", "破裂", "现实不是在提醒你，而是在把边界直接撕开。"],
       ],
     };
@@ -57,7 +57,7 @@ function getMotherSignature(motherCode: any) {
       hotzones: [
         ["时序惯性", "停顿", "时间没有真的停下，只是你先把自己按在原地。"],
         ["行为反应", "冻结", "你不是没有反应，而是不敢让下一步变成事实。"],
-        ["卦码驱动", "收紧", "你的力正在把所有动作压回身体里。"],
+        ["母码驱动", "收紧", "你的力正在把所有动作压回身体里。"],
         ["现实触发", "逼近", "现实越靠近，你越想让它先停在门外。"],
       ],
     };
@@ -76,7 +76,7 @@ function getMotherSignature(motherCode: any) {
       hotzones: [
         ["时序惯性", "下沉", "压力一出现，时间就开始往低处坠。"],
         ["行为反应", "沉默", "你把不开口当成保护，把隔绝当成清醒。"],
-        ["卦码驱动", "确认", "你反复确认危险，却迟迟没有真正打开它。"],
+        ["母码驱动", "确认", "你反复确认危险，却迟迟没有真正打开它。"],
         ["现实触发", "暗涌", "现实没有爆开，但它一直在暗处逼近。"],
       ],
     };
@@ -95,7 +95,7 @@ function getMotherSignature(motherCode: any) {
       hotzones: [
         ["时序惯性", "硬点", "时间把问题压成硬块，不再允许你绕过去。"],
         ["行为反应", "回避", "你一直绕开那一口，直到它开始反过来咬住你。"],
-        ["卦码驱动", "处理", "你的力不再适合维持表面，只适合处理硬点。"],
+        ["母码驱动", "处理", "你的力不再适合维持表面，只适合处理硬点。"],
         ["现实触发", "咬合", "现实已经咬住缺口，拖延只会加深阻力。"],
       ],
     };
@@ -104,16 +104,16 @@ function getMotherSignature(motherCode: any) {
   return {
     sequence: "00000",
     stateName: "行为母型已结晶",
-    field: "本局卦码已经显影，惯性正在等待展开。",
-    dimensions: ["时序压迫", "惯性接管", "卦码驱动", "现实逼近"],
+    field: "本局母码已经显影，惯性正在等待展开。",
+    dimensions: ["时序压迫", "惯性接管", "母码驱动", "现实逼近"],
     assertion: [
-      motherCode?.shortSeal ?? "本局卦码已经压印。",
+      motherCode?.shortSeal ?? "本局母码已经压印。",
       "它还没有展开成六爻，只是先把当前惯性固定下来。",
     ],
     hotzones: [
       ["时序惯性", "收束", "时间已经把这次惯性收束成一个固定入口。"],
       ["行为反应", "压印", "你的反应已经留下痕迹，等待被推进。"],
-        ["卦码驱动", "锁定", "背后的驱动已经定住，下一步会进入爻器生成轴。"],
+        ["母码驱动", "锁定", "背后的驱动已经定住，下一步会进入爻器生成轴。"],
       ["现实触发", "逼近", "现实压力已经靠近，不再只是背景。"],
     ],
   };
@@ -149,14 +149,14 @@ const paidDiagnostic = {
   guaName: "夬｜决口",
   archetype: "风险决口态",
   status: "已付费解锁",
-  label: "观爻卦码｜全景读数",
+  label: "观爻母码｜全景读数",
   sections: [
     {
       id: "matrix",
       title: "01 状态矩阵解密",
       subtitle: "原始源点 × 内部解释 × 外部压力",
       lines: [
-        "系统读取你的根资产、卦码线索与现实触发证据后，生成当前变化结构：风险决口态。",
+        "系统读取你的根资产、母码线索与现实触发证据后，生成当前变化结构：风险决口态。",
         "你带着先发动作、强占主控的源点驱动，撞上了一枚持续加压的现实触发证据。",
         "两股力在盘面里交汇后，没有形成缓冲，而是把你推向一次必须表态的决口。",
       ],
@@ -185,12 +185,12 @@ const paidDiagnostic = {
     {
       id: "gate",
       title: "04 因果飞轮闸门",
-      subtitle: "启动前五爻自动推进",
+      subtitle: "启动人格行为动力学演化",
       lines: [
         "系统不给你命运的判词。",
         "观爻只把改写结局的执笔权交还给你。",
-        "当前卦码已经显影。接下来，按住底部 1px 因果闸门。",
-        "你将看到这条行为惯性如何生成爻器，并在第六爻出现一次反本能偏转。",
+        "当前母码已经显影。接下来，按住底部 1px 因果闸门。",
+        "你将看到这条行为惯性如何生成爻器，并在破口阵列里出现一次下刀位置。",
       ],
     },
   ],
@@ -256,10 +256,10 @@ export function MotherCodePage() {
             {!isUnlocked ? (
               <>
                 <GuanyaoText className="gy-text-instrument" as="span" size="eyebrow" tone="gold">
-                  观爻卦码｜64
+                  观爻母码｜64
                 </GuanyaoText>
                 <GuanyaoText className="gy-mother-system-status" as="span" size="eyebrow" tone="faint">
-                  状态：本局卦码已显影
+                  状态：本局母码已显影
                 </GuanyaoText>
 
                 <div className="gy-mother-state-code">
@@ -306,7 +306,7 @@ export function MotherCodePage() {
                   <GuanyaoText as="span" size="eyebrow" tone="faint">
                     现实触发证据已钉入。
                     <br />
-                    卦码显影开始成形。
+                    母码显影开始成形。
                   </GuanyaoText>
                   {injectedSceneLine ? (
                     <GuanyaoText as="span" size="eyebrow" tone="faint">
@@ -371,13 +371,13 @@ export function MotherCodePage() {
                 🔒 支付 9.9 元 · 生成本局爻器与器法
               </GuanyaoButton>
               <GuanyaoText className="gy-mother-unlock-note" size="eyebrow" tone="faint">
-                含：卦码全景读数 / 爻器生成轴 / 基础器法 / 行为修复资产沉积
+                含：母码全景读数 / 爻器生成轴 / 基础器法 / 行为修复资产沉积
               </GuanyaoText>
             </>
           ) : (
             <>
               <GuanyaoText className="gy-mother-record-status" size="body" tone="muted">
-                卦码全景读数已展开。
+                母码全景读数已展开。
                 <br />
                 长按底部因果闸门，启动爻器生成轴。
               </GuanyaoText>
@@ -396,7 +396,7 @@ export function MotherCodePage() {
                 onTouchEnd={releaseCausalGate}
                 onTouchStart={holdCausalGate}
               >
-                <span>⚡ 爻器生成轴已复活 · 长按启动前五爻惯性链</span>
+                <span>⚡ 爻器生成轴已复活 · 长按启动人格行为动力学演化</span>
                 <i />
               </button>
             </>

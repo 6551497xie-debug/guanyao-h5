@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { migrations } from "../data/migrations";
 import { yaoCodes } from "../data/yaoCodes";
+import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { saveArchive } from "../services/archiveService";
 import { buildYaoCodeCard, buildYaoCodeResult, normalizeGuaFieldFromLegacy } from "../services/codeContractService";
 import { getSession, updateSession } from "../services/sessionService";
@@ -110,7 +111,7 @@ function buildRepairTarget(session: GuanyaoSession, card: MigrationCard, yaoCode
     damagePattern: yaoCodeCard.coreSeal || card.shortReading.join(""),
     antiInstinctAction: card.antiInstinctNode || registryYaoCode?.action || "把今天最容易拖延的一步，缩小到十分钟内完成。",
     riskWindow: "15 / 45 / 90 天观察节点",
-    archiveStatus: "待压入行为修复资产库",
+    archiveStatus: "待压入人格资产库",
   };
 }
 
@@ -145,7 +146,7 @@ function buildCausalContextPackage(
     repairTarget,
     defenseBook90d: yaoCodeCard.defenseBook90d ?? {
       title: "90天复发观察",
-      sections: ["90天复发观察雷达", "3张反本能防线记录", "90天修复年轮"],
+      sections: ["90天复发观察雷达", "3张反本能防线记录", "90天人格资产年轮"],
     },
     timeSandglass: session.timeSandglass ?? session.energyState ?? getTimeSandglassState(),
     energyState: session.energyState ?? session.timeSandglass ?? getTimeSandglassState(),
@@ -245,6 +246,7 @@ function BehaviorDefenseKit() {
 
 export function MigrationPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [systemReadoutOpen, setSystemReadoutOpen] = useState(false);
   const session = getSession();
   const { card, finalChoiceCode } = useMemo(() => {
@@ -262,7 +264,7 @@ export function MigrationPage() {
   const repairTarget = useMemo(() => buildRepairTarget(session, card, yaoCodeCard), [card, session, yaoCodeCard]);
 
   function handleSave() {
-    const timeSandglass = consumeEnergy("archive_save", 0, "压入修复年轮");
+    const timeSandglass = consumeEnergy("archive_save", 0, "压入人格资产年轮");
     updateSession({
       yaoCode,
       yaoCodeResult: yaoCode,
@@ -287,35 +289,47 @@ export function MigrationPage() {
   const motherAssetLabel = readMotherAssetLabel(session);
   const yaoWeaponName = buildYaoWeaponName(yaoCodeCard.title, yaoCodeCard.coreSeal, card.antiInstinctNode);
   const yaoImplementLabel = `${card.migrationDirection.code}-5｜${yaoWeaponName}`;
+  const isRepairMethod = location.pathname === GUANYAO_ROUTES.repairMethod;
 
   return (
     <GuanyaoShell className="gy-migration-r1-shell" density="compact">
-      <section className="gy-migration-r1-screen gyFadeRise" aria-label="本次修复卡">
+      <section className="gy-migration-r1-screen gyFadeRise" aria-label={isRepairMethod ? "器法落地" : "爻器激活"}>
         <header className="gy-migration-r1-header">
           <GuanyaoText as="span" size="eyebrow" tone="gold">
-            GY / 07 / YAO_IMPLEMENT
+            {isRepairMethod ? "GY / 08 / REPAIR_METHOD" : "GY / 07 / YAO_DEVICE"}
           </GuanyaoText>
           <GuanyaoText as="span" size="eyebrow" tone="faint">
-            ⏳ 基础修复卡已生成 ｜ 本次行为轨迹已冻结
+            {isRepairMethod ? "器法已生成 ｜ 第一刀等待落地" : "爻器已激活 ｜ 本次破口已写入"}
           </GuanyaoText>
           <span className="gy-migration-r1-hourglass">修复权限：基础层</span>
           <h1 className="gy-migration-r1-title">
             <span>{yaoCodeNo}</span>
-            <strong>{yaoCodeTitle}</strong>
+            <strong>{isRepairMethod ? "器法落地" : yaoCodeTitle}</strong>
           </h1>
           <div className="gy-migration-r1-meta">
             <span>轨迹代码 // {finalChoiceCode}</span>
-            <span>9.9 基础修复闭环已完成</span>
+            <span>{isRepairMethod ? "本次可执行动作已生成" : "基础观爻闭环已完成"}</span>
           </div>
         </header>
 
         <main className="gy-migration-r1-panel">
-          <section className="gy-migration-r1-delivery" aria-label="本局爻器与器法生成">
+          <section className="gy-migration-r1-delivery" aria-label={isRepairMethod ? "本局器法生成" : "本局爻器生成"}>
             <div className="gy-migration-r1-verdict">
-              <p>本局爻器已生成。</p>
-              <p>{yaoImplementLabel}</p>
-              <p>它不负责安慰你。它只负责切断旧反应。</p>
-              <p>器法：{repairTarget.antiInstinctAction}</p>
+              {isRepairMethod ? (
+                <>
+                  <p>器法已生成。</p>
+                  <p>这是你今天可以执行的第一刀。</p>
+                  <p>器法｜{repairTarget.antiInstinctAction}</p>
+                  <p>禁止动作：不要继续用“我能处理”掩盖你已经陷进去。</p>
+                </>
+              ) : (
+                <>
+                  <p>爻器已激活。</p>
+                  <p>{yaoImplementLabel}</p>
+                  <p>它不是安慰你的东西。它只负责打断你最容易复发的旧动作。</p>
+                  <p>止进锚：在你再次想硬推时，把你钉回一个可等待的位置。</p>
+                </>
+              )}
             </div>
             <button className="gy-migration-r1-system-toggle" type="button" onClick={() => setSystemReadoutOpen((value) => !value)}>
               {systemReadoutOpen ? "收起系统读数" : "展开系统读数"}
@@ -323,7 +337,7 @@ export function MigrationPage() {
             {systemReadoutOpen ? (
               <div className="gy-migration-r1-grid" aria-label="系统读数">
                 <div>
-                  <span>卦码</span>
+                  <span>母码</span>
                   <strong>{motherAssetLabel}</strong>
                 </div>
                 <div>
@@ -331,7 +345,7 @@ export function MigrationPage() {
                   <strong>{yaoImplementLabel}</strong>
                 </div>
                 <div>
-                  <span>修复落点</span>
+                  <span>器法落点</span>
                   <strong>{repairTarget.repairTargetName}</strong>
                 </div>
                 <div>
@@ -349,14 +363,14 @@ export function MigrationPage() {
           <section className="gy-migration-r1-settlement" aria-label="观察冻结主轨">
             <div className="gy-migration-r1-settlement-line" aria-hidden="true" />
             <span>观察冻结</span>
-            <em>本次基础修复卡已生成。更深层修复记录已生成，尚未开封。</em>
+            <em>{isRepairMethod ? "器法已生成。执行后可沉积为人格资产。" : "爻器已激活。下一步生成本局器法。"}</em>
           </section>
 
           <section className="gy-migration-r1-gear" aria-label="已生成记录区">
             <div className="gy-migration-r1-gear-head">
-              <span>深层修复记录已生成，尚未开封</span>
-              <strong>深层修复记录已冻结</strong>
-              <em>稍后可在行为修复资产库继续开封</em>
+              <span>深层记录已生成，尚未开封</span>
+              <strong>{isRepairMethod ? "人格资产沉积待命" : "器法生成待命"}</strong>
+              <em>{isRepairMethod ? "本局可沉积入人格资产库" : "爻器激活后，需要生成本局器法"}</em>
             </div>
             <div className="gy-migration-r1-gear-slots">
               <article>
@@ -376,17 +390,17 @@ export function MigrationPage() {
               </article>
             </div>
             <p className="gy-migration-r1-warning">
-              本次修复卡可先沉积入修复年轮。深层修复记录可稍后从行为修复资产库继续开封。
+              {isRepairMethod ? "本次压力没有白白消耗你。它已经沉积为一份人格资产。" : "爻器不是报告。它只负责把本局破口压成可执行的器法。"}
             </p>
-            <span className="gy-migration-r1-archive">深层修复记录已生成，稍后可在行为修复资产库开封</span>
+            <span className="gy-migration-r1-archive">{isRepairMethod ? "深层记录已生成，稍后可在人格资产库开封" : "器法尚未落地，等待生成第一刀"}</span>
           </section>
         </main>
 
-        <footer className="gy-migration-r1-profit-lock" aria-label="行为修复资产沉积闸门">
-          <button className="gy-migration-r1-primary-deposit" type="button" onClick={handleSave}>
-            沿线右滑，压入资产库
+        <footer className="gy-migration-r1-profit-lock" aria-label={isRepairMethod ? "人格资产沉积闸门" : "爻器转入器法闸门"}>
+          <button className="gy-migration-r1-primary-deposit" type="button" onClick={isRepairMethod ? handleSave : () => navigate(GUANYAO_ROUTES.repairMethod)}>
+            {isRepairMethod ? "沉积为人格资产" : "生成本局器法"}
           </button>
-          <span>修复资产先沉积入库 · 深层修复记录留待开封</span>
+          <span>{isRepairMethod ? "人格资产先沉积入库 · 深层记录留待开封" : "爻器已激活 · 器法等待落地"}</span>
         </footer>
       </section>
     </GuanyaoShell>

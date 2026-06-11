@@ -206,34 +206,34 @@ export function GravityPage() {
   const currentScene = ritualScenes[activeScene];
   const currentYaoLabel = yaoIndexReadouts[activeScene] ?? yaoIndexReadouts[4];
   const currentFallback = gravityFallbackReadouts[activeScene] ?? gravityFallbackReadouts[2];
-  const gateCopy = isComplete ? "进入第六爻偏转" : activeScene === 3 ? "高风险窗口已捕获" : "前五爻惯性链运行中";
+  const gateCopy = isComplete ? "扫描本局破口" : activeScene === 3 ? "高风险窗口已捕获" : "人格行为动力学演化中";
 
   return (
     <GuanyaoShell className="gy-gravity-shell" density="compact">
       <div className="gy-gravity-screen gy-gravity-r1-screen" data-intensity="gravity">
         <header className="gy-gravity-r1-header">
           <GuanyaoText as="span" size="eyebrow" tone="gold">
-            GY / 05 / YAOCODE_AXIS
+            GY / 05 / DYNAMICS
           </GuanyaoText>
           <GuanyaoText as="span" size="eyebrow" tone="faint">
-            基础修复已解锁｜爻器生成轴已接入
+            现实压力已钉入｜人格行为动力场正在展开
           </GuanyaoText>
           <GuanyaoText as="span" size="eyebrow" tone="faint">
-            旧惯性正在漏沙｜前五爻惯性链运行中
+            旧惯性正在漏沙｜人格行为动力学演化中
           </GuanyaoText>
           <GuanyaoText as="h1" size="title">
-            爻器生成轴已启动
+            人格行为动力学演化
           </GuanyaoText>
         </header>
 
         <main className="gy-gravity-r1-main">
-          <aside className="gy-gravity-r2-ledger" aria-label="卦码因果账本摘要">
-            <div className="gy-gravity-r2-ledger-summary" aria-label="卦码账本折叠读数">
-              <span>卦码账本 //</span>
+          <aside className="gy-gravity-r2-ledger" aria-label="母码因果账本摘要">
+            <div className="gy-gravity-r2-ledger-summary" aria-label="母码账本折叠读数">
+              <span>母码账本 //</span>
               <strong>{motherLedger.motherName} · 现实触发证据已钉入 · 高风险窗口已显影</strong>
             </div>
             <GuanyaoText as="span" size="eyebrow" tone="gold">
-              卦码全景账本
+              母码全景账本
             </GuanyaoText>
             <div className="gy-gravity-r2-ledger-code">
               <span>母型断面</span>
@@ -264,7 +264,7 @@ export function GravityPage() {
             </div>
           </aside>
 
-          <section className="gy-gravity-r2-transmission" aria-label="前五爻惯性链纵向干预轴">
+          <section className="gy-gravity-r2-transmission" aria-label="旧惯性链纵向演化轴">
             <div className="gy-gravity-r1-axis">
               {Array.from({ length: 5 }, (_, index) => {
                 const lockedBit = interactivePath[index];
@@ -293,7 +293,7 @@ export function GravityPage() {
               {!isComplete && activeScene < 3 ? (
                 <>
                   <GuanyaoText as="span" size="eyebrow" tone="gold">
-                    当前爻：YAO_0{activeScene + 1} / {currentYaoLabel.label}
+                    当前节点：NODE_0{activeScene + 1} / {currentYaoLabel.label}
                   </GuanyaoText>
                   <GuanyaoText as="h2" size="title">
                     {currentScene.title}
@@ -318,7 +318,7 @@ export function GravityPage() {
               {!isComplete && activeScene === 3 ? (
                 <>
                   <GuanyaoText as="span" size="eyebrow" tone="gold">
-                    YAO_04 / 高压临界
+                    NODE_04 / 高压临界
                   </GuanyaoText>
                   <GuanyaoText className="gy-gravity-r2-overheat-tag" as="span" size="eyebrow" tone="gold">
                     CRITICAL OVERHEAT
@@ -355,10 +355,10 @@ export function GravityPage() {
               {!isComplete && activeScene >= 4 ? (
                 <>
                   <GuanyaoText as="span" size="eyebrow" tone="gold">
-                    YAO_05 / 本能暴露
+                    NODE_05 / 本能暴露
                   </GuanyaoText>
                   <GuanyaoText as="h2" size="title">
-                    前五爻已走完
+                    旧惯性链已走完
                   </GuanyaoText>
                   <div className="gy-gravity-r2-binary-readouts">
                     <div>
@@ -375,7 +375,7 @@ export function GravityPage() {
                     </div>
                   </div>
                   <GuanyaoText className="gy-gravity-r2-threshold" size="body" tone="muted">
-                    下一步，只剩第六爻偏转。
+                    下一步，只剩破口阵列扫描。
                   </GuanyaoText>
                 </>
               ) : null}
@@ -383,10 +383,10 @@ export function GravityPage() {
               {isComplete ? (
                 <>
                   <GuanyaoText as="span" size="eyebrow" tone="gold">
-                    YAO_05 / 本能暴露
+                    NODE_05 / 本能暴露
                   </GuanyaoText>
                   <GuanyaoText as="h2" size="title">
-                    前五爻已走完
+                    旧惯性链已走完
                   </GuanyaoText>
                   <div className="gy-gravity-r2-binary-readouts">
                     <div>
@@ -403,10 +403,10 @@ export function GravityPage() {
                     </div>
                   </div>
                   <GuanyaoText className="gy-gravity-r2-threshold" size="body" tone="muted">
-                    下一步，只剩第六爻偏转。
+                    下一步，只剩破口阵列扫描。
                   </GuanyaoText>
                   <GuanyaoText className="gy-gravity-r1-muted" size="eyebrow" tone="faint">
-                    前五爻传动完成，等待反本能选择。
+                    本局结构已经形成，等待用户选择下刀。
                   </GuanyaoText>
                 </>
               ) : null}
@@ -416,7 +416,7 @@ export function GravityPage() {
 
         <footer className="gy-gravity-r1-gate">
           <GuanyaoText size="eyebrow" tone="faint">
-            {activeScene === 3 && !isComplete ? "高风险窗口已显影，但基础干预继续。" : isComplete ? "第六爻偏转闸门待命。" : "前五爻惯性链运行中。"}
+            {activeScene === 3 && !isComplete ? "高风险窗口已显影，但动力演化继续。" : isComplete ? "破口阵列扫描待命。" : "人格行为动力学演化中。"}
           </GuanyaoText>
           <button className="gy-gravity-r1-gate-button" type="button" disabled={!isComplete && !isGateVisible} onClick={advanceTransmission}>
             <span>{gateCopy}</span>
