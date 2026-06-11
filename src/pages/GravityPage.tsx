@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
-import { getDemoDynamicsResult } from "../services/guanyaoInteractionService";
+import { getDemoDynamicsResult, getDemoHexagramFieldReading } from "../services/guanyaoInteractionService";
 import { getSession } from "../services/sessionService";
 import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getCollapseYaoTexts, getGravityYaoTexts } from "../services/yaoTextService";
 import { appendInteractiveYaoChoice, generateMockAutoYaoPath, getAutoYaoPath, getInteractiveYaoPath, resetInteractiveYaoPath } from "../services/trajectoryService";
-import type { GuanyaoSession, MotherCodeResult, SceneSlice, YaoBit } from "../types";
+import type { GuanyaoSession, HexagramFieldReading, MotherCodeResult, SceneSlice, YaoBit } from "../types";
+
+const USE_HEXAGRAM_DELIVERY_SHELL = true;
 
 const yaoIndexReadouts = [
   { label: "身体先动", shortLabel: "身体", value: "20% 触发" },
@@ -136,7 +138,276 @@ function YaoTextBlock({ kicker, title, lines, muted }: YaoTextBlockProps) {
   );
 }
 
+function HexagramCodeDeliveryShell() {
+  const navigate = useNavigate();
+  const [stage, setStage] = useState<"ritual" | "card" | "reading">("ritual");
+  const [fieldReading] = useState(() => getDemoHexagramFieldReading());
+  const [expandedReading, setExpandedReading] = useState<HexagramFieldReading["fieldReadings"][number]["dimension"] | "">(
+    fieldReading.fieldReadings[0]?.dimension ?? "母码惯性",
+  );
+
+  return (
+    <main
+      style={{
+        minHeight: "100dvh",
+        width: "100%",
+        boxSizing: "border-box",
+        padding: "48px 20px calc(42px + env(safe-area-inset-bottom))",
+        display: "flex",
+        flexDirection: "column",
+        gap: 18,
+        background: "#050607",
+        color: "#f5f5f5",
+        overflowX: "hidden",
+      }}
+    >
+      <span
+        style={{
+          color: "rgba(199,169,107,0.72)",
+          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          fontSize: 12,
+          letterSpacing: "0.16em",
+        }}
+      >
+        05｜本局卦码生成
+      </span>
+
+      {stage === "ritual" ? (
+        <>
+          <section
+            style={{
+              display: "grid",
+              gap: 12,
+              padding: "16px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.46)",
+            }}
+          >
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 17, lineHeight: 1.72 }}>
+              下卦，已入底。
+              <br />
+              上卦，已压顶。
+            </p>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 15, lineHeight: 1.72 }}>
+              母码与压力场，
+              <br />
+              正在发生对撞。
+            </p>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.62 }}>
+              卦场正在闭合。
+            </p>
+          </section>
+          <span
+            style={{
+              color: "rgba(245,245,245,0.34)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 11,
+              letterSpacing: "0.13em",
+            }}
+          >
+            HEXAGRAM_FIELD_COLLIDING
+          </span>
+          <button
+            type="button"
+            onClick={() => setStage("card")}
+            style={{
+              width: "100%",
+              minHeight: 52,
+              marginTop: "auto",
+              border: "1px solid rgba(199,169,107,0.52)",
+              borderRadius: 0,
+              background: "transparent",
+              color: "rgba(245,245,245,0.9)",
+              fontSize: 15,
+              letterSpacing: "0.04em",
+            }}
+          >
+            立即查看本局卦码
+          </button>
+        </>
+      ) : null}
+
+      {stage === "card" ? (
+        <>
+          <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 17, lineHeight: 1.68 }}>
+            本局卦码已生成。
+          </p>
+          <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.72 }}>
+            卦码不是答案。
+            <br />
+            这是你当前所处的人格行为场域。
+          </p>
+          <section
+            aria-label="本局卦码卡"
+            style={{
+              display: "grid",
+              gap: 12,
+              padding: "22px 18px",
+              border: "1px solid rgba(199,169,107,0.42)",
+              background:
+                "linear-gradient(180deg, rgba(199,169,107,0.07), rgba(199,169,107,0.014)), radial-gradient(circle at 50% 45%, rgba(199,169,107,0.09), transparent 60%)",
+            }}
+          >
+            <span
+              style={{
+                color: "rgba(199,169,107,0.78)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 11,
+                letterSpacing: "0.16em",
+              }}
+            >
+              [ 本局卦码卡 ]
+            </span>
+            <span style={{ color: "rgba(245,245,245,0.38)", fontSize: 12, lineHeight: 1.4 }}>
+              No.{fieldReading.identity.hexagramNo}
+            </span>
+            <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 30, fontWeight: 380, lineHeight: 1.15 }}>
+              {fieldReading.identity.hexagramName}
+            </strong>
+            <span style={{ color: "rgba(199,169,107,0.76)", fontSize: 17, lineHeight: 1.4 }}>
+              《{fieldReading.identity.fieldTitle}》
+            </span>
+            <span
+              style={{
+                color: "rgba(245,245,245,0.64)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 12,
+                letterSpacing: "0.1em",
+              }}
+            >
+              {fieldReading.scriptState.scriptName}
+            </span>
+            <span
+              style={{
+                color: "rgba(245,245,245,0.34)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 11,
+                letterSpacing: "0.13em",
+              }}
+            >
+              {fieldReading.identity.renderStatus}
+            </span>
+          </section>
+          <button
+            type="button"
+            onClick={() => setStage("reading")}
+            style={{
+              width: "100%",
+              minHeight: 52,
+              marginTop: "auto",
+              border: "1px solid rgba(199,169,107,0.52)",
+              borderRadius: 0,
+              background: "transparent",
+              color: "rgba(245,245,245,0.9)",
+              fontSize: 15,
+              letterSpacing: "0.04em",
+            }}
+          >
+            向下查看本局现场读数
+          </button>
+        </>
+      ) : null}
+
+      {stage === "reading" ? (
+        <>
+          <h1 style={{ margin: 0, color: "rgba(245,245,245,0.88)", fontSize: "clamp(26px, 8vw, 38px)", lineHeight: 1.12, fontWeight: 420 }}>
+            本局现场读数
+          </h1>
+          <section
+            style={{
+              display: "grid",
+              gap: 8,
+              padding: "14px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.42)",
+            }}
+          >
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.62 }}>
+              {fieldReading.hitText.line1}
+              <br />
+              {fieldReading.hitText.line2}
+              {fieldReading.hitText.line3 ? (
+                <>
+                  <br />
+                  {fieldReading.hitText.line3}
+                </>
+              ) : null}
+            </p>
+          </section>
+          <section style={{ display: "grid", gap: 10 }}>
+            {fieldReading.fieldReadings.map((reading) => (
+              <article
+                key={reading.dimension}
+                style={{
+                  display: "grid",
+                  gap: expandedReading === reading.dimension ? 8 : 0,
+                  padding: "10px 0",
+                  borderBottom: "1px solid rgba(85,85,85,0.34)",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setExpandedReading((current) => (current === reading.dimension ? "" : reading.dimension))}
+                  style={{
+                    width: "100%",
+                    minHeight: 42,
+                    border: 0,
+                    background: "transparent",
+                    color: "rgba(199,169,107,0.72)",
+                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                    fontSize: 11,
+                    letterSpacing: "0.12em",
+                    textAlign: "left",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 12,
+                  }}
+                >
+                  <span>
+                    {reading.dimension} // {reading.tag}
+                  </span>
+                  <span style={{ color: "rgba(245,245,245,0.32)" }}>{expandedReading === reading.dimension ? "COLLAPSE" : "OPEN"}</span>
+                </button>
+                {expandedReading === reading.dimension ? (
+                  <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 14, lineHeight: 1.6 }}>
+                    {reading.text}
+                  </p>
+                ) : null}
+              </article>
+            ))}
+          </section>
+          <p style={{ margin: "4px 0 0", color: "rgba(245,245,245,0.72)", fontSize: 15, lineHeight: 1.68 }}>
+            {fieldReading.next.prompt}
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate(GUANYAO_ROUTES.breachScan)}
+            style={{
+              width: "100%",
+              minHeight: 52,
+              marginTop: "auto",
+              border: "1px solid rgba(199,169,107,0.52)",
+              borderRadius: 0,
+              background: "transparent",
+              color: "rgba(245,245,245,0.9)",
+              fontSize: 15,
+              letterSpacing: "0.04em",
+            }}
+          >
+            {fieldReading.next.cta}
+          </button>
+        </>
+      ) : null}
+    </main>
+  );
+}
+
 export function GravityPage() {
+  if (USE_HEXAGRAM_DELIVERY_SHELL) {
+    return <HexagramCodeDeliveryShell />;
+  }
+
   const navigate = useNavigate();
   const [autoYaoPath] = useState<YaoBit[]>(() => {
     const session = getSession();
@@ -190,26 +461,13 @@ export function GravityPage() {
   }, [activeScene, isComplete]);
 
   function advanceTransmission() {
-    if (isComplete) {
-      navigate(GUANYAO_ROUTES.breachScan);
-      return;
-    }
-
-    const bit = autoYaoPath[activeScene] ?? ((activeScene % 2) as YaoBit);
-    const nextPath = appendInteractiveYaoChoice(bit);
-    setInteractivePath(nextPath);
-    setCompletedScene(activeScene);
-    setIsGateVisible(false);
-
-    window.setTimeout(() => {
-      setCompletedScene(null);
-    }, 520);
+    navigate(GUANYAO_ROUTES.breachScan);
   }
 
   const currentScene = ritualScenes[activeScene];
   const currentYaoLabel = yaoIndexReadouts[activeScene] ?? yaoIndexReadouts[4];
   const currentFallback = gravityFallbackReadouts[activeScene] ?? gravityFallbackReadouts[2];
-  const gateCopy = isComplete ? "扫描本局破口" : activeScene === 3 ? "高风险窗口已捕获" : "人格行为动力学演化中";
+  const gateCopy = "扫描本局破口";
 
   return (
     <GuanyaoShell className="gy-gravity-shell" density="compact">
@@ -424,7 +682,7 @@ export function GravityPage() {
           <GuanyaoText size="eyebrow" tone="faint">
             {activeScene === 3 && !isComplete ? "高风险窗口已显影，但动力演化继续。" : isComplete ? "破口阵列扫描待命。" : "人格行为动力学演化中。"}
           </GuanyaoText>
-          <button className="gy-gravity-r1-gate-button" type="button" disabled={!isComplete && !isGateVisible} onClick={advanceTransmission}>
+          <button className="gy-gravity-r1-gate-button" type="button" onClick={advanceTransmission}>
             <span>{gateCopy}</span>
           </button>
         </footer>

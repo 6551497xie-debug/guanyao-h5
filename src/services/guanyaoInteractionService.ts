@@ -10,6 +10,7 @@ import {
 import type {
   BreachScanResult,
   GuanyaoAsset,
+  HexagramFieldReading,
   InitialCoordinates,
   MotherCodeAsset,
   MotherCodeCard,
@@ -73,6 +74,60 @@ export function getDemoPressureExposureOptions(): PressureExposureOption[] {
 
 export function getDemoDynamicsResult() {
   return demoDynamicsResult;
+}
+
+export function getDemoHexagramFieldReading(): HexagramFieldReading {
+  return {
+    identity: {
+      hexagramNo: "047",
+      hexagramName: "泽水困",
+      fieldTitle: "围墙里的沉默者",
+      lowerGuaLabel: "母码底盘",
+      upperGuaLabel: "压力场",
+      hexagramCode: "10101",
+      renderStatus: "HEXAGRAM_CODE_RENDERED",
+    },
+    formation: {
+      lowerSource: "母码惯性",
+      upperSource: "压力牵引",
+      collisionLine: "母码与压力场正在发生对撞。",
+    },
+    scriptState: {
+      scriptName: "围墙困锁态",
+      stateTag: "困锁",
+      shareableTitle: "你不是没有路。你是在一个已经失去氧气的系统里，继续逼自己撑住。",
+    },
+    hitText: {
+      line1: "你不是没有路。",
+      line2: "你是在一个已经失去氧气的系统里，继续逼自己撑住。",
+    },
+    fieldReadings: [
+      {
+        dimension: "母码惯性",
+        tag: "扛住",
+        text: "你会先把压力压进身体，而不是立刻承认自己已经被卡住。",
+      },
+      {
+        dimension: "压力牵引",
+        tag: "困锁",
+        text: "这个外部场正在反复制造一种“动也不是，不动也不是”的牵制感。",
+      },
+      {
+        dimension: "现实切片",
+        tag: "沉默",
+        text: "那一幕真正触发你的，不是冲突本身，而是你发现自己又一次说不出口。",
+      },
+      {
+        dimension: "行为反应",
+        tag: "硬撑",
+        text: "你会继续表现得还能处理，直到系统把你压到没有余量。",
+      },
+    ],
+    next: {
+      prompt: "场域已经显影。开始启动人格行为动力引擎。",
+      cta: "启动人格行为动力引擎",
+    },
+  };
 }
 
 export function getDemoBreachScan(): BreachScanResult {

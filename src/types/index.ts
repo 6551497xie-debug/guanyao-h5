@@ -474,6 +474,42 @@ export type DynamicsResult = {
   behaviorInertia: string;
 };
 
+export type HexagramFieldReading = {
+  identity: {
+    hexagramNo: string;
+    hexagramName: string;
+    fieldTitle: string;
+    lowerGuaLabel: string;
+    upperGuaLabel: string;
+    hexagramCode: string;
+    renderStatus: "HEXAGRAM_CODE_RENDERED";
+  };
+  formation: {
+    lowerSource: string;
+    upperSource: string;
+    collisionLine: string;
+  };
+  scriptState: {
+    scriptName: string;
+    stateTag: string;
+    shareableTitle: string;
+  };
+  hitText: {
+    line1: string;
+    line2: string;
+    line3?: string;
+  };
+  fieldReadings: Array<{
+    dimension: "母码惯性" | "压力牵引" | "现实切片" | "行为反应";
+    tag: string;
+    text: string;
+  }>;
+  next: {
+    prompt: string;
+    cta: "启动人格行为动力引擎";
+  };
+};
+
 export type BreachPoint = {
   id: string;
   name: string;

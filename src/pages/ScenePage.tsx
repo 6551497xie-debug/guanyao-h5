@@ -109,9 +109,8 @@ function dedupeSceneMomentGroups(groups: SceneMomentGroup[]): SceneMomentGroup[]
 function PressureSliceEntry() {
   const navigate = useNavigate();
   const fallbackPressureSeed = getDemoPressureSeed();
-  const sliceCandidates = sceneSeeds.slice(0, 3).map((seed, index) => ({
+  const sliceCandidates = sceneSeeds.slice(0, 3).map((seed) => ({
     id: seed.id,
-    label: ["A", "B", "C"][index] ?? String(index + 1),
     title: seed.title,
     line: seed.seedLine,
     sceneSeed: seed,
@@ -122,29 +121,55 @@ function PressureSliceEntry() {
       : [
           {
             id: "pressure-slice-a",
-            label: "A",
             title: "合作项目压力",
             line: fallbackPressureSeed.text,
             sceneSeed: null,
           },
           {
             id: "pressure-slice-b",
-            label: "B",
             title: "关系责任回流",
             line: "别人还没有开口，你已经开始替整件事寻找出口。",
             sceneSeed: null,
           },
           {
             id: "pressure-slice-c",
-            label: "C",
             title: "评价场逼近",
             line: "你知道自己很吃力，但更怕别人看出你正在撑不住。",
             sceneSeed: null,
           },
         ];
-  const [selectedSliceId, setSelectedSliceId] = useState(slices[0].id);
+  const [flowState, setFlowState] = useState<"flowing" | "frozen" | "selected">("flowing");
+  const [selectedSliceId, setSelectedSliceId] = useState<string | null>(null);
+  const [rollingSeedOffset, setRollingSeedOffset] = useState(0);
+  const visibleSlices =
+    flowState === "flowing"
+      ? slices.map((_, index) => slices[(index + rollingSeedOffset) % slices.length]).filter(Boolean)
+      : slices;
+
+  useEffect(() => {
+    if (flowState !== "flowing" || slices.length <= 1) {
+      return undefined;
+    }
+
+    const rollingTimer = window.setInterval(() => {
+      setRollingSeedOffset((currentOffset) => (currentOffset + 1) % slices.length);
+    }, 1500);
+
+    return () => {
+      window.clearInterval(rollingTimer);
+    };
+  }, [flowState, slices.length]);
 
   function handleConfirmSlice() {
+    if (flowState === "flowing") {
+      setFlowState("frozen");
+      return;
+    }
+
+    if (!selectedSliceId) {
+      return;
+    }
+
     const selectedSlice = slices.find((slice) => slice.id === selectedSliceId) ?? slices[0];
 
     if (selectedSlice.sceneSeed) {
@@ -155,6 +180,15 @@ function PressureSliceEntry() {
     window.localStorage.setItem("guanyao:selectedPressureSliceText", selectedSlice.line);
     setMotherCodeResult(buildMotherCodeResult(getSession()));
     navigate(GUANYAO_ROUTES.pressureExposure);
+  }
+
+  function handleSelectSlice(sliceId: string) {
+    if (flowState === "flowing") {
+      return;
+    }
+
+    setSelectedSliceId(sliceId);
+    setFlowState("selected");
   }
 
   return (
@@ -208,66 +242,96 @@ function PressureSliceEntry() {
         aria-label="现实压力切片"
         style={{
           display: "grid",
-          gap: 10,
+          gap: 12,
           marginTop: 6,
-          padding: "12px 0",
+          padding: "14px 0",
           borderTop: "1px solid rgba(85,85,85,0.58)",
           borderBottom: "1px solid rgba(85,85,85,0.36)",
         }}
       >
-        {slices.map((slice) => {
-          const isSelected = slice.id === selectedSliceId;
+        <div
+          style={{
+            display: "grid",
+            gap: 10,
+            maxHeight: 370,
+            overflowY: "auto",
+            padding: "12px 0",
+            borderTop: "1px solid rgba(199,169,107,0.42)",
+            borderBottom: "1px solid rgba(199,169,107,0.26)",
+            background: "linear-gradient(90deg, rgba(199,169,107,0.055), transparent 68%)",
+          }}
+        >
+          <span
+            style={{
+              color: flowState === "flowing" ? "rgba(199,169,107,0.58)" : "rgba(199,169,107,0.78)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              padding: "0 2px",
+            }}
+          >
+            {flowState === "flowing" ? "现实压力切片｜滚动中" : "现实压力切片｜已拦截"}
+          </span>
 
-          return (
-            <button
-              key={slice.id}
-              type="button"
-              onClick={() => setSelectedSliceId(slice.id)}
-              style={{
-                width: "100%",
-                padding: "14px 0",
-                border: 0,
-                borderTop: "1px solid rgba(85,85,85,0.38)",
-                borderBottom: isSelected ? "1px solid rgba(199,169,107,0.48)" : "1px solid rgba(85,85,85,0.24)",
-                background: isSelected ? "rgba(199,169,107,0.055)" : "transparent",
-                color: "inherit",
-                textAlign: "left",
-                display: "grid",
-                gap: 8,
-              }}
-            >
-              <span
+          {visibleSlices.map((slice) => {
+            const isSelected = selectedSliceId === slice.id;
+            const canSelect = flowState !== "flowing";
+
+            return (
+              <button
+                key={slice.id}
+                type="button"
+                disabled={!canSelect}
+                onClick={() => handleSelectSlice(slice.id)}
                 style={{
-                  color: isSelected ? "rgba(199,169,107,0.78)" : "rgba(245,245,245,0.34)",
-                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.12em",
+                  width: "100%",
+                  minHeight: 112,
+                  padding: "14px 2px 14px 0",
+                  border: 0,
+                  borderTop: "1px solid rgba(85,85,85,0.34)",
+                  borderBottom: isSelected ? "1px solid rgba(199,169,107,0.72)" : "1px solid rgba(85,85,85,0.22)",
+                  background: isSelected ? "rgba(199,169,107,0.075)" : "transparent",
+                  color: "inherit",
+                  display: "grid",
+                  gap: 8,
+                  textAlign: "left",
+                  opacity: flowState === "flowing" ? 0.56 : isSelected ? 1 : 0.74,
+                  cursor: canSelect ? "pointer" : "default",
                 }}
               >
-                现实压力切片 {slice.label}
-              </span>
-              <strong
-                style={{
-                  color: isSelected ? "rgba(245,245,245,0.86)" : "rgba(245,245,245,0.62)",
-                  fontSize: 16,
-                  lineHeight: 1.35,
-                  fontWeight: 380,
-                }}
-              >
-                {slice.title}
-              </strong>
-              <span
-                style={{
-                  color: isSelected ? "rgba(245,245,245,0.72)" : "rgba(245,245,245,0.48)",
-                  fontSize: 14,
-                  lineHeight: 1.58,
-                }}
-              >
-                {slice.line}
-              </span>
-            </button>
-          );
-        })}
+                <span
+                  style={{
+                    color: isSelected ? "rgba(199,169,107,0.86)" : "rgba(245,245,245,0.42)",
+                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                    fontSize: 11,
+                    letterSpacing: "0.12em",
+                  }}
+                >
+                  现实压力种子
+                </span>
+                <strong
+                  style={{
+                    color: isSelected ? "rgba(245,245,245,0.92)" : "rgba(245,245,245,0.76)",
+                    fontSize: 18,
+                    lineHeight: 1.25,
+                    fontWeight: 360,
+                  }}
+                >
+                  {slice.title}
+                </strong>
+                <span
+                  style={{
+                    color: "rgba(245,245,245,0.62)",
+                    fontSize: 14,
+                    lineHeight: 1.58,
+                  }}
+                >
+                  {slice.line}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </section>
 
       <button
@@ -283,9 +347,10 @@ function PressureSliceEntry() {
           color: "rgba(245,245,245,0.9)",
           fontSize: 15,
           letterSpacing: "0.04em",
+          opacity: flowState !== "flowing" && !selectedSliceId ? 0.5 : 1,
         }}
       >
-        拦截这一幕，选择现实压力种子
+        {flowState === "flowing" ? "拦截这一幕" : "填装这枚现实压力种子"}
       </button>
     </main>
   );
