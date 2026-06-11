@@ -128,10 +128,10 @@ function renderCausalSource(context: CausalContextPackage | undefined, item: Arc
         <p>入局底色｜8：未记录</p>
         <p>压力显影：未记录</p>
         <p>母码驱动锁定：未记录</p>
-        <p>现实触发证据：未记录</p>
+        <p>现实压力种子：未记录</p>
         <p>观爻母码｜64：未记录</p>
-        <p>旧惯性链：{formatYaoPath(undefined)}</p>
-        <p>破口选择：未记录</p>
+        <p>人格行为动力链：{formatYaoPath(undefined)}</p>
+        <p>破口下刀：未记录</p>
         <p>观爻爻器｜384：未记录</p>
         <p>器法：{item.migrationDirection.code} {item.migrationDirection.traditionalName}{item.migrationDirection.scriptTitle}｜上爻</p>
         <p>90天复发观察：已生成</p>
@@ -146,10 +146,10 @@ function renderCausalSource(context: CausalContextPackage | undefined, item: Arc
       {renderYuanCodeDetail(context)}
       <p>压力显影：{readFragmentText(context.identityFragment)}</p>
       <p>母码驱动锁定：{readForceText(context.forceResult)}</p>
-      <p>现实触发证据：{readSceneText(context.sceneSeed)}</p>
+      <p>现实压力种子：{readSceneText(context.sceneSeed)}</p>
       <p>观爻母码｜64：{readGuaFieldText(context)}</p>
-      <p>旧惯性链：{formatYaoPath(context.interactiveYaoPath && context.interactiveYaoPath.length >= 5 ? context.interactiveYaoPath : context.autoYaoPath)}</p>
-      <p>破口选择：{formatYaoBit(context.sixthYaoChoice)}</p>
+      <p>人格行为动力链：{formatYaoPath(context.interactiveYaoPath && context.interactiveYaoPath.length >= 5 ? context.interactiveYaoPath : context.autoYaoPath)}</p>
+      <p>破口下刀：{formatYaoBit(context.sixthYaoChoice)}</p>
       <p>观爻爻器｜384：{readYaoCodeText(context)}</p>
         <p>最终轨迹代码：{context.finalChoiceCode}</p>
         <p>器法：{context.yaoCodeCard.code}</p>
@@ -214,7 +214,7 @@ function ArchiveBehaviorDefenseKit() {
   return (
     <div className="gy-defense-kit">
       <div className="gy-defense-verdict">
-        {["系统不吓唬你。", "它只用你走完的六爻轨迹，把未来90天里最容易复发的惯性节点摊开。", "你真正要防的，不是外面的事。", "是你在压力出现时，那个太熟练的旧反应。"].map((line) => (
+        {["系统不吓唬你。", "它只用你走完的行为轨迹，把未来90天里最容易复发的惯性节点摊开。", "你真正要防的，不是外面的事。", "是你在压力出现时，那个太熟练的旧反应。"].map((line) => (
           <GuanyaoText key={line} size="body" tone="muted">
             {line}
           </GuanyaoText>

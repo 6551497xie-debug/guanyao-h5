@@ -108,7 +108,7 @@ function getMotherSignature(motherCode: any) {
     dimensions: ["时序压迫", "惯性接管", "母码驱动", "现实逼近"],
     assertion: [
       motherCode?.shortSeal ?? "本局母码已经压印。",
-      "它还没有展开成六爻，只是先把当前惯性固定下来。",
+      "它还没有展开成完整干预链，只是先把当前惯性固定下来。",
     ],
     hotzones: [
       ["时序惯性", "收束", "时间已经把这次惯性收束成一个固定入口。"],

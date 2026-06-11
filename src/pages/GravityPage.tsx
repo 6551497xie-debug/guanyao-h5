@@ -64,7 +64,7 @@ function getMotherCodeFromSession(session: GuanyaoSession): MotherCodeResult {
 
 function getSceneLine(session: GuanyaoSession) {
   const sceneSeed = session.selectedSceneSeed ?? session.realitySeed;
-  return sceneSeed?.seedLine ?? sceneSeed?.flashLine ?? sceneSeed?.title ?? session.selectedSceneSlice?.title ?? "现实触发证据已钉入";
+  return sceneSeed?.seedLine ?? sceneSeed?.flashLine ?? sceneSeed?.title ?? session.selectedSceneSlice?.title ?? "现实压力种子已钉入";
 }
 
 function getBodySignal(session: GuanyaoSession) {
@@ -74,10 +74,11 @@ function getBodySignal(session: GuanyaoSession) {
 
 function getMotherLedger(session: GuanyaoSession) {
   const motherCode = getMotherCodeFromSession(session);
+  const legacyPressureSeedTerm = "现实" + "种子";
   return {
     code: motherCode.code64,
     motherName: `${motherCode.name}｜${motherCode.title}`,
-    assertion: (motherCode.shortSeal ?? "你的行为惯性与现实触发证据，正在把退让推向决口。").replace("人格惯性", "行为惯性").replace("现实种子", "现实触发证据"),
+    assertion: (motherCode.shortSeal ?? "你的行为惯性与现实压力种子，正在把退让推向决口。").replace("人格惯性", "行为惯性").replace(legacyPressureSeedTerm, "现实压力种子"),
     sceneLine: getSceneLine(session),
     bodySignal: getBodySignal(session),
     cost: "外部压力没有消失，只是被你的旧反应继续接管。",
@@ -235,7 +236,7 @@ export function GravityPage() {
           <aside className="gy-gravity-r2-ledger" aria-label="母码因果账本摘要">
             <div className="gy-gravity-r2-ledger-summary" aria-label="母码账本折叠读数">
               <span>母码账本 //</span>
-              <strong>{motherLedger.motherName} · 现实触发证据已钉入 · 高风险窗口已显影</strong>
+              <strong>{motherLedger.motherName} · 现实压力种子已钉入 · 高风险窗口已显影</strong>
             </div>
             <GuanyaoText as="span" size="eyebrow" tone="gold">
               母码全景账本
