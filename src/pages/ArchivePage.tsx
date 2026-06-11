@@ -7,6 +7,7 @@ import {
   activateYaoDeviceByBreachId,
   getDemoBreachScan,
   getDemoMotherCode,
+  getDemoPressureExposureOptions,
   getDemoPressureSeed,
   getRepairMethodByDeviceId,
 } from "../services/guanyaoInteractionService";
@@ -15,6 +16,7 @@ import type { ArchiveItem, CausalContextPackage, YaoBit } from "../types";
 
 const SELECTED_BREACH_KEY = "guanyao:selectedBreachId";
 const ASSET_STATUS_KEY = "guanyao:assetStatus";
+const SELECTED_PRESSURE_EXPOSURE_KEY = "guanyao:selectedPressureExposureId";
 
 function formatArchiveTime(createdAt: string) {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -379,8 +381,14 @@ export function ArchivePage() {
   const archives = getArchives();
   const demoMother = getDemoMotherCode();
   const demoPressure = getDemoPressureSeed();
+  const demoPressureExposureOptions = getDemoPressureExposureOptions();
   const demoBreachScan = getDemoBreachScan();
-  const demoAssetStatus = window.localStorage.getItem(ASSET_STATUS_KEY) ?? "activated";
+  const demoAssetStatus = window.localStorage.getItem(ASSET_STATUS_KEY) === "sealed" ? "sealed" : "activated";
+  const demoPressureExposureId = window.localStorage.getItem(SELECTED_PRESSURE_EXPOSURE_KEY) ?? "hide-collapse";
+  const demoPressureExposure =
+    demoPressureExposureOptions.find((option) => option.id === demoPressureExposureId) ??
+    demoPressureExposureOptions.find((option) => option.id === "hide-collapse") ??
+    demoPressureExposureOptions[0];
   const demoBreachId = window.localStorage.getItem(SELECTED_BREACH_KEY) ?? demoBreachScan.mainBreachId;
   const demoBreach =
     demoBreachScan.breaches.find((breach) => breach.id === demoBreachId) ??
@@ -403,23 +411,38 @@ export function ArchivePage() {
         <header className="gy-archive-vault-header">
           <span>GY / 08 / ARCHIVE_VAULT</span>
           <em>{sortedArchives.length > 0 ? "本次沉积已入库" : "人格资产库待写入"}</em>
-          <h1>{sortedArchives.length > 0 ? "本次观爻已入库" : "人格资产库"}</h1>
+          <h1>人格资产库</h1>
           <p>{sortedArchives.length > 0 ? "人格资产 +1 ｜ 深层记录待开封" : "人格资产 ｜ 复发冻结 ｜ 深层记录"}</p>
         </header>
 
-        {sortedArchives.length === 0 ? (
-          <section className="gy-archive-vault-latest" aria-label="本次观爻 demo 入库摘要">
-            <span>{demoAssetStatus === "sealed" ? "本局已封存" : "本次观爻已入库"}</span>
-            <strong>{demoAssetStatus === "sealed" ? "破口已保留" : "人格资产 +1"}</strong>
-            <h2>{demoAssetStatus === "sealed" ? "爻器未激活" : demoRepairMethod?.name ?? "撤回一个过早承诺"}</h2>
-            <p>母码：{demoMother.title}</p>
-            <p>压力：{demoPressure.text}</p>
-            <p>破口：{demoBreach?.name ?? "沾泥处"}</p>
-            <p>爻器：{demoAssetStatus === "sealed" ? "未激活" : demoDevice?.name ?? "止进锚"}</p>
-            <p>器法：{demoAssetStatus === "sealed" ? "待生成" : demoRepairMethod?.name ?? "撤回一个过早承诺"}</p>
-            <em><span className="gy-archive-label-en">Status｜</span>{demoAssetStatus === "sealed" ? "本局封存｜等待下次下刀" : "人格资产已沉积｜深层记录待开封"}</em>
-          </section>
-        ) : null}
+        <section className="gy-archive-vault-latest" aria-label={demoAssetStatus === "sealed" ? "封存资产" : "已破局资产"}>
+          <span>{demoAssetStatus === "sealed" ? "封存资产" : "已破局资产"}</span>
+          <strong>{demoAssetStatus === "sealed" ? "本局已封存" : "本次观爻已入库"}</strong>
+          <h2>{demoAssetStatus === "sealed" ? "爻器未激活" : demoRepairMethod?.name ?? "撤回一个过早承诺"}</h2>
+          <p>{demoAssetStatus === "sealed" ? "你已经看见破口，但选择暂不下刀。" : "压力没有白白消耗你，它已经沉积为一份人格资产。"}</p>
+          <p>母码：{demoMother.title}</p>
+          <p>现实压力：{demoPressure.text}</p>
+          <p>压力显影：{demoPressureExposure?.sentence ?? "我不想让别人看出我撑不住。"}</p>
+          <p>{demoAssetStatus === "sealed" ? "主破口" : "破口"}：{demoBreach?.name ?? "沾泥处"}</p>
+          <p>爻器：{demoAssetStatus === "sealed" ? "未激活" : demoDevice?.name ?? "止进锚"}</p>
+          {demoAssetStatus === "sealed" ? (
+            <>
+              <p>状态：暂不破局</p>
+              <p>破口已保留，爻器未激活。</p>
+              <button className="gy-archive-vault-deep-toggle" type="button" onClick={() => navigate("/yao-device")}>
+                回来启用爻器
+              </button>
+            </>
+          ) : (
+            <>
+              <p>器法：{demoRepairMethod?.name ?? "撤回一个过早承诺"}</p>
+              <p>第一动作：{demoRepairMethod?.firstAction ?? "今天暂停一个你已经答应、但其实风险未明的推进动作。"}</p>
+              <p>禁止动作：{demoRepairMethod?.forbiddenAction ?? "不要继续用“我能处理”掩盖你已经陷进去。"}</p>
+              <p>复发提醒：{demoRepairMethod?.relapseReminder ?? "你最容易在别人质疑你能力时，重新启动强行推进。"}</p>
+            </>
+          )}
+          <em><span className="gy-archive-label-en">Status｜</span>{demoAssetStatus === "sealed" ? "本局封存｜爻器未激活" : "人格资产已沉积｜深层记录待开封"}</em>
+        </section>
 
         {sortedArchives.length === 0 ? (
           <section className="gy-archive-vault-empty">
