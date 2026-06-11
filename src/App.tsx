@@ -4,7 +4,6 @@ import { ArchivePage } from "./pages/ArchivePage";
 import { ChoicePage } from "./pages/ChoicePage";
 import { ChronoPage } from "./pages/ChronoPage";
 import { GravityPage } from "./pages/GravityPage";
-import { GuanyaoIpModule } from "./pages/GuanyaoIpModule";
 import { IdentityPage } from "./pages/IdentityPage";
 import { LaunchPage } from "./pages/LaunchPage";
 import { MigrationPage } from "./pages/MigrationPage";
@@ -30,7 +29,6 @@ export default function App() {
         <Route path={GUANYAO_ROUTES.yaoDevice} element={<MigrationPage />} />
         <Route path={GUANYAO_ROUTES.repairMethod} element={<MigrationPage />} />
         <Route path={GUANYAO_ROUTES.archive} element={<ArchivePage />} />
-        <Route path="/guanyao-ip/*" element={<GuanyaoIpModule />} />
         <Route path="/chrono" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/chrono"]} />} />
         <Route path="/identity" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/identity"]} />} />
         <Route path="/force" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/force"]} />} />
