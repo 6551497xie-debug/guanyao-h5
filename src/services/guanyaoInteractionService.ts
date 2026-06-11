@@ -10,6 +10,7 @@ import {
 import type {
   BreachScanResult,
   BreachScanReading,
+  ArchiveAssetSnapshot,
   GuanyaoAsset,
   HexagramFieldReading,
   InitialCoordinates,
@@ -19,7 +20,9 @@ import type {
   PressureExposureResult,
   PressureSeed,
   RepairMethod,
+  RepairMethodDelivery,
   YaoDevice,
+  YaoDeviceDelivery,
 } from "../types";
 
 export function getDemoInitialCoordinates(): InitialCoordinates {
@@ -188,6 +191,97 @@ export function getRepairMethodByDeviceId(deviceId: string): RepairMethod | unde
   }
 
   return undefined;
+}
+
+export function getDemoYaoDeviceDelivery(selectedBreachId = "mud-point"): YaoDeviceDelivery {
+  const sourceBreach = getDemoBreachScanReading().primaryBreach.id === selectedBreachId
+    ? getDemoBreachScanReading().primaryBreach
+    : getDemoBreachScanReading().secondaryBreaches.find((breach) => breach.id === selectedBreachId) ??
+      getDemoBreachScanReading().primaryBreach;
+
+  return {
+    deviceId: "yao-device-001",
+    deviceName: "止进锚",
+    deviceCode: "021-5",
+    sourceBreachId: sourceBreach.id,
+    sourceBreachTitle: sourceBreach.title,
+    deviceStatus: "YAO_DEVICE_ACTIVATED",
+    coreFunction: "把你从继续硬撑的自动反应里钉住。",
+    deviceLine: "它不是让你更强，而是在你再次想硬推时，把你钉回一个可等待的位置。",
+  };
+}
+
+export function getDemoRepairMethodDelivery(deviceId = "yao-device-001"): RepairMethodDelivery {
+  return {
+    methodId: "repair-method-001",
+    methodName: "撤回一个过早承诺",
+    methodStatus: "REPAIR_METHOD_RENDERED",
+    sourceDeviceId: deviceId,
+    firstAction: "今天暂停一个你已经答应、但其实风险未明的推进动作。",
+    forbiddenAction: "不要继续用“我能处理”掩盖你已经陷进去。",
+    relapseWarning: "你最容易在别人质疑你能力时，重新启动强行推进。",
+    executionWindow: "24小时内",
+  };
+}
+
+export function getDemoArchiveAssetSnapshot(): ArchiveAssetSnapshot {
+  return {
+    assetId: "archive-asset-001",
+    archiveStatus: "PERSONALITY_ASSET_ARCHIVED",
+    title: "撤回一个过早承诺",
+    motherCodeRef: "母码已嵌入",
+    pressureSeedRef: "现实压力种子已填装",
+    hexagramRef: "本局卦码已生成",
+    breachRef: "硬撑切口",
+    yaoDeviceRef: "止进锚",
+    repairMethodRef: "撤回一个过早承诺",
+    assetLine: "压力没有白白消耗你，它已经沉积为一份人格资产。",
+    package: {
+      title: "本局人格行为资产包",
+      scriptName: "围墙困锁态",
+      primaryBreach: "硬撑切口",
+      yaoDevice: "止进锚",
+      firstCut: "撤回一个过早承诺",
+    },
+    todayFirstCut: {
+      methodName: "撤回一个过早承诺",
+      firstAction: "今天暂停一个你已经答应、但其实风险未明的推进动作。",
+      forbiddenAction: "不要继续用“我能处理”掩盖你已经陷进去。",
+      executionWindow: "24小时内",
+      relapseWarning: "你最容易在别人质疑你能力时，重新启动强行推进。",
+    },
+    defense90d: {
+      title: "90天行为防御本已生成",
+      intro: "这不是一次性结果。它会在未来90天里，成为你识别复发、拦截旧反应、重写行为路径的防御资产。",
+      phases: [
+        {
+          range: "第1—7天",
+          name: "止血期",
+          goal: "先停止旧反应扩大损失。",
+        },
+        {
+          range: "第8—30天",
+          name: "复发识别期",
+          goal: "识别旧习惯回潮的触发器。",
+        },
+        {
+          range: "第31—90天",
+          name: "行为重写期",
+          goal: "把本局器法沉积成新的行为路径。",
+        },
+      ],
+    },
+    deposit: [
+      { label: "母码", value: "已嵌入" },
+      { label: "现实压力", value: "已填装" },
+      { label: "本局卦码", value: "已生成" },
+      { label: "切口", value: "已下刀" },
+      { label: "爻器", value: "已激活" },
+      { label: "器法", value: "已落地" },
+      { label: "90天防御本", value: "已生成" },
+      { label: "状态", value: "PERSONALITY_ASSET_ARCHIVED" },
+    ],
+  };
 }
 
 type CreateSealedAssetInput = {

@@ -5,6 +5,7 @@ import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import {
   activateYaoDeviceByBreachId,
+  getDemoArchiveAssetSnapshot,
   getDemoBreachScan,
   getDemoMotherCode,
   getDemoPressureExposureOptions,
@@ -17,6 +18,7 @@ import type { ArchiveItem, CausalContextPackage, YaoBit } from "../types";
 const SELECTED_BREACH_KEY = "guanyao:selectedBreachId";
 const ASSET_STATUS_KEY = "guanyao:assetStatus";
 const SELECTED_PRESSURE_EXPOSURE_KEY = "guanyao:selectedPressureExposureId";
+const USE_R7_ARCHIVE_SHELL = true;
 
 function formatArchiveTime(createdAt: string) {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -374,8 +376,242 @@ const archiveVaultSlots = [
 
 type ArchiveVaultSlotKey = (typeof archiveVaultSlots)[number]["key"];
 
+function R7ArchiveAssetShell() {
+  const snapshot = getDemoArchiveAssetSnapshot();
+
+  return (
+    <main
+      style={{
+        minHeight: "100dvh",
+        width: "100%",
+        boxSizing: "border-box",
+        padding: "44px 20px calc(36px + env(safe-area-inset-bottom))",
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+        background: "#050607",
+        color: "#f5f5f5",
+        overflowX: "hidden",
+      }}
+    >
+      <span
+        style={{
+          color: "rgba(199,169,107,0.72)",
+          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          fontSize: 12,
+          letterSpacing: "0.16em",
+        }}
+      >
+        09｜人格资产库
+      </span>
+      <span
+        style={{
+          color: "rgba(245,245,245,0.42)",
+          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          fontSize: 11,
+          letterSpacing: "0.12em",
+        }}
+      >
+        {snapshot.archiveStatus}
+      </span>
+
+      <header style={{ display: "grid", gap: 10 }}>
+        <h1
+          style={{
+            margin: 0,
+            color: "rgba(245,245,245,0.88)",
+            fontSize: "clamp(28px, 8vw, 40px)",
+            lineHeight: 1.12,
+            fontWeight: 420,
+          }}
+        >
+          本局人格行为资产包已生成。
+        </h1>
+        <p
+          style={{
+            margin: 0,
+            color: "rgba(245,245,245,0.64)",
+            fontSize: 16,
+            lineHeight: 1.72,
+          }}
+        >
+          你完成的不是一次分析。
+          <br />
+          你完成了一次旧反应的切断记录。
+        </p>
+      </header>
+
+      <section
+        aria-label="本局人格行为资产包"
+        style={{
+          display: "grid",
+          gap: 12,
+          padding: "18px 0",
+          borderTop: "1px solid rgba(199,169,107,0.48)",
+          borderBottom: "1px solid rgba(199,169,107,0.3)",
+          background: "linear-gradient(90deg, rgba(199,169,107,0.06), transparent 68%)",
+        }}
+      >
+        <span
+          style={{
+            color: "rgba(199,169,107,0.82)",
+            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            fontSize: 11,
+            letterSpacing: "0.13em",
+          }}
+        >
+          {snapshot.package.title}
+        </span>
+        {[
+          ["本局剧本", snapshot.package.scriptName],
+          ["主切口", snapshot.package.primaryBreach],
+          ["本局爻器", snapshot.package.yaoDevice],
+          ["今日第一刀", snapshot.package.firstCut],
+        ].map(([label, value]) => (
+          <div key={label} style={{ display: "grid", gap: 5, borderTop: "1px solid rgba(85,85,85,0.28)", paddingTop: 9 }}>
+            <span
+              style={{
+                color: "rgba(245,245,245,0.42)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 11,
+                letterSpacing: "0.12em",
+              }}
+            >
+              {label}
+            </span>
+            <strong style={{ color: "rgba(245,245,245,0.78)", fontSize: 15, lineHeight: 1.48, fontWeight: 340 }}>
+              {value}
+            </strong>
+          </div>
+        ))}
+      </section>
+
+      <section
+        aria-label="今日第一刀"
+        style={{
+          display: "grid",
+          gap: 12,
+          padding: "16px 0",
+          borderTop: "1px solid rgba(85,85,85,0.46)",
+          borderBottom: "1px solid rgba(85,85,85,0.28)",
+        }}
+      >
+        <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 22, lineHeight: 1.18, fontWeight: 390 }}>
+          今日第一刀
+        </strong>
+        {[
+          ["器法", snapshot.todayFirstCut.methodName],
+          ["第一动作", snapshot.todayFirstCut.firstAction],
+          ["禁止动作", snapshot.todayFirstCut.forbiddenAction],
+          ["执行窗口", snapshot.todayFirstCut.executionWindow],
+          ["复发提醒", snapshot.todayFirstCut.relapseWarning],
+        ].map(([label, value]) => (
+          <div key={label} style={{ display: "grid", gap: 5, borderTop: "1px solid rgba(85,85,85,0.22)", paddingTop: 9 }}>
+            <span
+              style={{
+                color: "rgba(199,169,107,0.72)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 11,
+                letterSpacing: "0.12em",
+              }}
+            >
+              {label}
+            </span>
+            <strong style={{ color: "rgba(245,245,245,0.78)", fontSize: 15, lineHeight: 1.55, fontWeight: 340 }}>
+              {value}
+            </strong>
+          </div>
+        ))}
+      </section>
+
+      <section
+        aria-label="90天行为防御本"
+        style={{
+          display: "grid",
+          gap: 12,
+          padding: "16px 0",
+          borderTop: "1px solid rgba(199,169,107,0.34)",
+          borderBottom: "1px solid rgba(85,85,85,0.28)",
+        }}
+      >
+        <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 22, lineHeight: 1.18, fontWeight: 390 }}>
+          {snapshot.defense90d.title}
+        </strong>
+        <p style={{ margin: 0, color: "rgba(245,245,245,0.62)", fontSize: 14, lineHeight: 1.64 }}>
+          {snapshot.defense90d.intro}
+        </p>
+        {snapshot.defense90d.phases.map((phase) => (
+          <div key={phase.range} style={{ display: "grid", gap: 5, borderTop: "1px solid rgba(85,85,85,0.22)", paddingTop: 9 }}>
+            <span
+              style={{
+                color: "rgba(199,169,107,0.7)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 11,
+                letterSpacing: "0.12em",
+              }}
+            >
+              {phase.range}｜{phase.name}
+            </span>
+            <strong style={{ color: "rgba(245,245,245,0.76)", fontSize: 15, lineHeight: 1.48, fontWeight: 330 }}>
+              {phase.goal}
+            </strong>
+          </div>
+        ))}
+      </section>
+
+      <section
+        aria-label="人格资产沉积"
+        style={{
+          display: "grid",
+          gap: 10,
+          padding: "16px 0",
+          borderTop: "1px solid rgba(85,85,85,0.46)",
+          borderBottom: "1px solid rgba(199,169,107,0.28)",
+        }}
+      >
+        <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 22, lineHeight: 1.18, fontWeight: 390 }}>
+          人格资产沉积
+        </strong>
+        {snapshot.deposit.map((item) => (
+          <div
+            key={item.label}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 0.8fr) minmax(0, 1fr)",
+              gap: 12,
+              alignItems: "baseline",
+              borderTop: "1px solid rgba(85,85,85,0.2)",
+              paddingTop: 8,
+            }}
+          >
+            <span
+              style={{
+                color: "rgba(245,245,245,0.42)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 11,
+                letterSpacing: "0.12em",
+              }}
+            >
+              {item.label}
+            </span>
+            <strong style={{ color: "rgba(245,245,245,0.76)", fontSize: 14, lineHeight: 1.44, fontWeight: 330 }}>
+              {item.value}
+            </strong>
+          </div>
+        ))}
+      </section>
+    </main>
+  );
+}
+
 export function ArchivePage() {
+  return <R7ArchiveAssetShell />;
+
   const navigate = useNavigate();
+  if (USE_R7_ARCHIVE_SHELL) {
+    return <R7ArchiveAssetShell />;
+  }
+
   const [activeVaultSlot, setActiveVaultSlot] = useState<ArchiveVaultSlotKey>("yao");
   const [expandedArchiveId, setExpandedArchiveId] = useState<string | null>(null);
   const archives = getArchives();
@@ -397,7 +633,7 @@ export function ArchivePage() {
   const demoDevice =
     activateYaoDeviceByBreachId(demoBreach?.id ?? demoBreachScan.mainBreachId) ??
     activateYaoDeviceByBreachId(demoBreachScan.mainBreachId);
-  const demoRepairMethod = demoDevice ? getRepairMethodByDeviceId(demoDevice.id) : undefined;
+  const demoRepairMethod = demoDevice ? getRepairMethodByDeviceId(demoDevice?.id ?? "") : undefined;
   const sortedArchives = [...archives].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const latestAsset = sortedArchives[0];
   const settledCount = sortedArchives.length;

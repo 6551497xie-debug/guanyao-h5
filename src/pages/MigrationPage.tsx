@@ -10,6 +10,8 @@ import { buildYaoCodeCard, buildYaoCodeResult, normalizeGuaFieldFromLegacy } fro
 import {
   activateYaoDeviceByBreachId,
   getDemoBreachScan,
+  getDemoRepairMethodDelivery,
+  getDemoYaoDeviceDelivery,
   getDemoPressureSeed,
   getRepairMethodByDeviceId,
 } from "../services/guanyaoInteractionService";
@@ -20,6 +22,7 @@ import type { CausalContextPackage, GuanyaoSession, MigrationCard, RepairTargetR
 
 const SELECTED_BREACH_KEY = "guanyao:selectedBreachId";
 const ASSET_STATUS_KEY = "guanyao:assetStatus";
+const USE_R7_DELIVERY_SHELL = true;
 
 const ninetyDayScriptBills = [
   {
@@ -253,9 +256,194 @@ function BehaviorDefenseKit() {
   );
 }
 
+function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
+  const navigate = useNavigate();
+  const selectedBreachId = window.localStorage.getItem(SELECTED_BREACH_KEY) ?? "mud-point";
+  const deviceDelivery = getDemoYaoDeviceDelivery(selectedBreachId);
+  const repairDelivery = getDemoRepairMethodDelivery(deviceDelivery.deviceId);
+  const isRepair = mode === "repair";
+
+  function handleNext() {
+    if (isRepair) {
+      window.localStorage.setItem(ASSET_STATUS_KEY, "activated");
+      window.localStorage.setItem(SELECTED_BREACH_KEY, deviceDelivery.sourceBreachId);
+      navigate(GUANYAO_ROUTES.archive);
+      return;
+    }
+
+    navigate(GUANYAO_ROUTES.repairMethod);
+  }
+
+  return (
+    <main
+      style={{
+        minHeight: "100dvh",
+        width: "100%",
+        boxSizing: "border-box",
+        padding: "44px 20px calc(36px + env(safe-area-inset-bottom))",
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+        background: "#050607",
+        color: "#f5f5f5",
+        overflowX: "hidden",
+      }}
+    >
+      <span
+        style={{
+          color: "rgba(199,169,107,0.72)",
+          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          fontSize: 12,
+          letterSpacing: "0.16em",
+        }}
+      >
+        {isRepair ? "08｜器法落地" : "07｜爻器激活"}
+      </span>
+      <span
+        style={{
+          color: "rgba(245,245,245,0.42)",
+          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          fontSize: 11,
+          letterSpacing: "0.12em",
+        }}
+      >
+        {isRepair ? repairDelivery.methodStatus : deviceDelivery.deviceStatus}
+      </span>
+
+      <header style={{ display: "grid", gap: 10 }}>
+        <h1
+          style={{
+            margin: 0,
+            color: "rgba(245,245,245,0.88)",
+            fontSize: "clamp(28px, 8vw, 40px)",
+            lineHeight: 1.12,
+            fontWeight: 420,
+          }}
+        >
+          {isRepair ? "器法已生成。" : "你选择的切口，已经转译为本局爻器。"}
+        </h1>
+        <p
+          style={{
+            margin: 0,
+            color: "rgba(245,245,245,0.62)",
+            fontSize: 15,
+            lineHeight: 1.72,
+          }}
+        >
+          {isRepair ? "这是你今天可以执行的第一刀。" : "它不是解释，而是一个可以介入旧反应的装置。"}
+        </p>
+      </header>
+
+      <section
+        aria-label={isRepair ? "器法卡" : "爻器卡"}
+        style={{
+          display: "grid",
+          gap: 14,
+          padding: "18px 0",
+          borderTop: "1px solid rgba(199,169,107,0.48)",
+          borderBottom: "1px solid rgba(199,169,107,0.3)",
+          background: "linear-gradient(90deg, rgba(199,169,107,0.06), transparent 68%)",
+        }}
+      >
+        {isRepair ? (
+          <>
+            <span
+              style={{
+                color: "rgba(199,169,107,0.82)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 11,
+                letterSpacing: "0.13em",
+              }}
+            >
+              器法｜{repairDelivery.methodName}
+            </span>
+            {[
+              ["第一动作", repairDelivery.firstAction],
+              ["禁止动作", repairDelivery.forbiddenAction],
+              ["复发提醒", repairDelivery.relapseWarning],
+              ["执行窗口", repairDelivery.executionWindow],
+            ].map(([label, value]) => (
+              <div key={label} style={{ display: "grid", gap: 6, borderTop: "1px solid rgba(85,85,85,0.28)", paddingTop: 10 }}>
+                <span
+                  style={{
+                    color: "rgba(245,245,245,0.42)",
+                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                    fontSize: 11,
+                    letterSpacing: "0.12em",
+                  }}
+                >
+                  {label}
+                </span>
+                <strong style={{ color: "rgba(245,245,245,0.82)", fontSize: 16, lineHeight: 1.55, fontWeight: 360 }}>
+                  {value}
+                </strong>
+              </div>
+            ))}
+          </>
+        ) : (
+          <>
+            <span
+              style={{
+                color: "rgba(199,169,107,0.82)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 11,
+                letterSpacing: "0.13em",
+              }}
+            >
+              来源切口｜{deviceDelivery.sourceBreachTitle}
+            </span>
+            <strong style={{ color: "rgba(245,245,245,0.92)", fontSize: 30, lineHeight: 1.1, fontWeight: 400 }}>
+              {deviceDelivery.deviceName}
+            </strong>
+            <span style={{ color: "rgba(199,169,107,0.7)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12 }}>
+              {deviceDelivery.deviceCode}
+            </span>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.72 }}>
+              它不是让你更强。
+              <br />
+              而是在你再次想硬推时，
+              <br />
+              把你钉回一个可等待的位置。
+            </p>
+            <p style={{ margin: 0, color: "rgba(199,169,107,0.68)", fontSize: 13, lineHeight: 1.56 }}>
+              {deviceDelivery.coreFunction}
+            </p>
+          </>
+        )}
+      </section>
+
+      <button
+        type="button"
+        onClick={handleNext}
+        style={{
+          width: "100%",
+          minHeight: 52,
+          marginTop: "auto",
+          border: "1px solid rgba(199,169,107,0.54)",
+          borderRadius: 0,
+          background: "transparent",
+          color: "rgba(245,245,245,0.9)",
+          fontSize: 15,
+          letterSpacing: "0.04em",
+        }}
+      >
+        {isRepair ? "沉积为人格资产" : "生成本局器法"}
+      </button>
+    </main>
+  );
+}
+
 export function MigrationPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  if (USE_R7_DELIVERY_SHELL && location.pathname === GUANYAO_ROUTES.yaoDevice) {
+    return <R7DeliveryShell mode="device" />;
+  }
+
+  if (USE_R7_DELIVERY_SHELL && location.pathname === GUANYAO_ROUTES.repairMethod) {
+    return <R7DeliveryShell mode="repair" />;
+  }
+
   const [systemReadoutOpen, setSystemReadoutOpen] = useState(false);
   const session = getSession();
   const { card, finalChoiceCode } = useMemo(() => {

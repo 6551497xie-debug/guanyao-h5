@@ -563,6 +563,68 @@ export type RepairMethod = {
   relapseReminder: string;
 };
 
+export type YaoDeviceDelivery = {
+  deviceId: string;
+  deviceName: string;
+  deviceCode: string;
+  sourceBreachId: string;
+  sourceBreachTitle: string;
+  deviceStatus: "YAO_DEVICE_ACTIVATED";
+  coreFunction: string;
+  deviceLine: string;
+};
+
+export type RepairMethodDelivery = {
+  methodId: string;
+  methodName: string;
+  methodStatus: "REPAIR_METHOD_RENDERED";
+  sourceDeviceId: string;
+  firstAction: string;
+  forbiddenAction: string;
+  relapseWarning: string;
+  executionWindow: string;
+};
+
+export type ArchiveAssetSnapshot = {
+  assetId: string;
+  archiveStatus: "PERSONALITY_ASSET_ARCHIVED";
+  title: string;
+  motherCodeRef: string;
+  pressureSeedRef: string;
+  hexagramRef: string;
+  breachRef: string;
+  yaoDeviceRef: string;
+  repairMethodRef: string;
+  assetLine: string;
+  package: {
+    title: string;
+    scriptName: string;
+    primaryBreach: string;
+    yaoDevice: string;
+    firstCut: string;
+  };
+  todayFirstCut: {
+    methodName: string;
+    firstAction: string;
+    forbiddenAction: string;
+    executionWindow: string;
+    relapseWarning: string;
+  };
+  defense90d: {
+    title: string;
+    intro: string;
+    phases: Array<{
+      range: string;
+      name: string;
+      goal: string;
+    }>;
+  };
+  deposit: Array<{
+    label: string;
+    value: string;
+  }>;
+};
+
 export type GuanyaoSessionState =
   | "mother_code_ready"
   | "pressure_seed_ready"
