@@ -9,6 +9,7 @@ import {
 } from "../data/guanyaoInteractionMock";
 import type {
   BreachScanResult,
+  BreachScanReading,
   GuanyaoAsset,
   HexagramFieldReading,
   InitialCoordinates,
@@ -132,6 +133,44 @@ export function getDemoHexagramFieldReading(): HexagramFieldReading {
 
 export function getDemoBreachScan(): BreachScanResult {
   return demoBreachScan;
+}
+
+export function getDemoBreachScanReading(): BreachScanReading {
+  return {
+    engineStatus: "BEHAVIOR_ENGINE_ACTIVATED",
+    headline: "人格行为动力引擎已启动。",
+    intro: "系统正在从本局人格行为场域中，扫描真正卡住你的切口。",
+    primaryBreach: {
+      id: "mud-point",
+      type: "primary",
+      title: "硬撑切口",
+      tag: "主切口",
+      description: "你真正卡住的地方，不是事情太多，而是你太快把所有压力都接到自己身上。",
+      riskLine: "继续硬撑，会让你越来越难开口求助。",
+    },
+    secondaryBreaches: [
+      {
+        id: "wound-point",
+        type: "secondary",
+        title: "沉默切口",
+        tag: "副切口",
+        description: "你已经感觉不舒服，但仍然选择先不说。",
+        riskLine: "沉默会让别人默认你还能承受。",
+      },
+      {
+        id: "standby-point",
+        type: "secondary",
+        title: "补位切口",
+        tag: "副切口",
+        description: "当局面出现缺口时，你会本能地先去补位。",
+        riskLine: "补位越快，别人越难意识到这不是你的责任。",
+      },
+    ],
+    next: {
+      prompt: "选择一个切口，作为本局下刀位置。",
+      cta: "从这里下刀",
+    },
+  };
 }
 
 export function getYaoDevices(): YaoDevice[] {

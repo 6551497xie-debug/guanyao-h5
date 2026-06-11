@@ -526,6 +526,27 @@ export type BreachScanResult = {
   breaches: BreachPoint[];
 };
 
+export type BreachCutPoint = {
+  id: string;
+  type: "primary" | "secondary";
+  title: string;
+  tag: string;
+  description: string;
+  riskLine: string;
+};
+
+export type BreachScanReading = {
+  engineStatus: "BEHAVIOR_ENGINE_ACTIVATED";
+  headline: string;
+  intro: string;
+  primaryBreach: BreachCutPoint;
+  secondaryBreaches: BreachCutPoint[];
+  next: {
+    prompt: string;
+    cta: "从这里下刀";
+  };
+};
+
 export type YaoDevice = {
   id: string;
   name: string;
