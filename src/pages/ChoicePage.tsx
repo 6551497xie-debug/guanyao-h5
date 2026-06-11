@@ -3,13 +3,23 @@ import { useNavigate } from "react-router-dom";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
+import { getDemoBreachScan } from "../services/guanyaoInteractionService";
 import { buildFinalChoiceCode, setSixthYaoChoice } from "../services/trajectoryService";
 
-const breachEchoes = ["主破口｜沾泥处", "备选破口｜受伤处", "备选破口｜待机处"];
+const SELECTED_BREACH_KEY = "guanyao:selectedBreachId";
+const ASSET_STATUS_KEY = "guanyao:assetStatus";
 
 export function ChoicePage() {
   const navigate = useNavigate();
   const [isSettling, setIsSettling] = useState(false);
+  const [breachScan] = useState(() => getDemoBreachScan());
+  const [selectedBreachId, setSelectedBreachId] = useState(() => {
+    return window.localStorage.getItem(SELECTED_BREACH_KEY) ?? getDemoBreachScan().mainBreachId;
+  });
+  const selectedBreach =
+    breachScan.breaches.find((breach) => breach.id === selectedBreachId) ??
+    breachScan.breaches.find((breach) => breach.id === breachScan.mainBreachId) ??
+    breachScan.breaches[0];
 
   useEffect(() => {
     if (!isSettling) {
@@ -23,10 +33,23 @@ export function ChoicePage() {
     return () => window.clearTimeout(settleTimer);
   }, [isSettling, navigate]);
 
-  function handleChoice(choice: 0 | 1) {
+  function handleChoice(choice: 0 | 1, breachId = selectedBreach?.id ?? breachScan.mainBreachId) {
+    window.localStorage.setItem(SELECTED_BREACH_KEY, breachId);
+    window.localStorage.setItem(ASSET_STATUS_KEY, "activated");
     setSixthYaoChoice(choice);
     buildFinalChoiceCode();
     setIsSettling(true);
+  }
+
+  function handleSelectBreach(breachId: string) {
+    setSelectedBreachId(breachId);
+    window.localStorage.setItem(SELECTED_BREACH_KEY, breachId);
+  }
+
+  function handleSeal() {
+    window.localStorage.setItem(SELECTED_BREACH_KEY, selectedBreach?.id ?? breachScan.mainBreachId);
+    window.localStorage.setItem(ASSET_STATUS_KEY, "sealed");
+    navigate(GUANYAO_ROUTES.archive);
   }
 
   return (
@@ -71,13 +94,22 @@ export function ChoicePage() {
             </header>
 
             <div className="gy-choice-r1-echo" aria-label="破口阵列">
-              {breachEchoes.map((item) => (
-                <span key={item}>{item}</span>
+              {breachScan.breaches.map((breach) => (
+                <button
+                  key={breach.id}
+                  type="button"
+                  data-active={breach.id === selectedBreach?.id}
+                  onClick={() => handleSelectBreach(breach.id)}
+                >
+                  <span>{breach.positionLabel}｜{breach.name}</span>
+                  <strong>{breach.oldReaction}</strong>
+                  <em>{breach.breachSentence}</em>
+                </button>
               ))}
             </div>
 
             <main className="gy-choice-r1-main">
-              <button className="gy-choice-r1-path gy-choice-r1-path--inertia" type="button" onClick={() => handleChoice(1)}>
+              <button className="gy-choice-r1-path gy-choice-r1-path--inertia" type="button" onClick={handleSeal}>
                 <span>0 · 暂不破局</span>
                 <strong>封存本局</strong>
                 <em>这不是失败，只是暂时不在这一刀上动手。</em>
@@ -89,14 +121,14 @@ export function ChoicePage() {
 
               <button className="gy-choice-r1-path gy-choice-r1-path--deflect" type="button" onClick={() => handleChoice(0)}>
                 <span>1 · 从主破口下刀</span>
-                <strong>你已经陷入，却还在用“我能推进”维持体面</strong>
-                <em>不是改变整个人生，只是在这个破口上切开一次旧反应。</em>
+                <strong>{selectedBreach?.oldReaction}</strong>
+                <em>{selectedBreach?.breachSentence}</em>
               </button>
             </main>
 
             <footer className="gy-choice-r2-console" aria-label="破口二元操作台">
               <div className="gy-choice-r2-console-labels">
-                <button type="button" onClick={() => handleChoice(1)}>
+                <button type="button" onClick={handleSeal}>
                   0 · 暂不破局，封存本局
                 </button>
                 <button type="button" onClick={() => handleChoice(0)}>
@@ -104,7 +136,7 @@ export function ChoicePage() {
                 </button>
               </div>
               <div className="gy-choice-r2-rail">
-                <button className="gy-choice-r2-rail-hit gy-choice-r2-rail-hit--left" type="button" aria-label="暂不破局，封存本局" onClick={() => handleChoice(1)} />
+                <button className="gy-choice-r2-rail-hit gy-choice-r2-rail-hit--left" type="button" aria-label="暂不破局，封存本局" onClick={handleSeal} />
                 <span className="gy-choice-r2-pointer" aria-hidden="true" />
                 <button className="gy-choice-r2-rail-hit gy-choice-r2-rail-hit--right" type="button" aria-label="从主破口下刀" onClick={() => handleChoice(0)} />
               </div>

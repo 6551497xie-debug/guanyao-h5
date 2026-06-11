@@ -3,8 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { TextLines } from "../components/TextLines";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
+import {
+  activateYaoDeviceByBreachId,
+  getDemoBreachScan,
+  getDemoMotherCode,
+  getDemoPressureSeed,
+  getRepairMethodByDeviceId,
+} from "../services/guanyaoInteractionService";
 import { getArchives } from "../services/archiveService";
 import type { ArchiveItem, CausalContextPackage, YaoBit } from "../types";
+
+const SELECTED_BREACH_KEY = "guanyao:selectedBreachId";
+const ASSET_STATUS_KEY = "guanyao:assetStatus";
 
 function formatArchiveTime(createdAt: string) {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -367,6 +377,19 @@ export function ArchivePage() {
   const [activeVaultSlot, setActiveVaultSlot] = useState<ArchiveVaultSlotKey>("yao");
   const [expandedArchiveId, setExpandedArchiveId] = useState<string | null>(null);
   const archives = getArchives();
+  const demoMother = getDemoMotherCode();
+  const demoPressure = getDemoPressureSeed();
+  const demoBreachScan = getDemoBreachScan();
+  const demoAssetStatus = window.localStorage.getItem(ASSET_STATUS_KEY) ?? "activated";
+  const demoBreachId = window.localStorage.getItem(SELECTED_BREACH_KEY) ?? demoBreachScan.mainBreachId;
+  const demoBreach =
+    demoBreachScan.breaches.find((breach) => breach.id === demoBreachId) ??
+    demoBreachScan.breaches.find((breach) => breach.id === demoBreachScan.mainBreachId) ??
+    demoBreachScan.breaches[0];
+  const demoDevice =
+    activateYaoDeviceByBreachId(demoBreach?.id ?? demoBreachScan.mainBreachId) ??
+    activateYaoDeviceByBreachId(demoBreachScan.mainBreachId);
+  const demoRepairMethod = demoDevice ? getRepairMethodByDeviceId(demoDevice.id) : undefined;
   const sortedArchives = [...archives].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const latestAsset = sortedArchives[0];
   const settledCount = sortedArchives.length;
@@ -383,6 +406,20 @@ export function ArchivePage() {
           <h1>{sortedArchives.length > 0 ? "本次观爻已入库" : "人格资产库"}</h1>
           <p>{sortedArchives.length > 0 ? "人格资产 +1 ｜ 深层记录待开封" : "人格资产 ｜ 复发冻结 ｜ 深层记录"}</p>
         </header>
+
+        {sortedArchives.length === 0 ? (
+          <section className="gy-archive-vault-latest" aria-label="本次观爻 demo 入库摘要">
+            <span>{demoAssetStatus === "sealed" ? "本局已封存" : "本次观爻已入库"}</span>
+            <strong>{demoAssetStatus === "sealed" ? "破口已保留" : "人格资产 +1"}</strong>
+            <h2>{demoAssetStatus === "sealed" ? "爻器未激活" : demoRepairMethod?.name ?? "撤回一个过早承诺"}</h2>
+            <p>母码：{demoMother.title}</p>
+            <p>压力：{demoPressure.text}</p>
+            <p>破口：{demoBreach?.name ?? "沾泥处"}</p>
+            <p>爻器：{demoAssetStatus === "sealed" ? "未激活" : demoDevice?.name ?? "止进锚"}</p>
+            <p>器法：{demoAssetStatus === "sealed" ? "待生成" : demoRepairMethod?.name ?? "撤回一个过早承诺"}</p>
+            <em><span className="gy-archive-label-en">Status｜</span>{demoAssetStatus === "sealed" ? "本局封存｜等待下次下刀" : "人格资产已沉积｜深层记录待开封"}</em>
+          </section>
+        ) : null}
 
         {sortedArchives.length === 0 ? (
           <section className="gy-archive-vault-empty">

@@ -7,10 +7,19 @@ import { yaoCodes } from "../data/yaoCodes";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { saveArchive } from "../services/archiveService";
 import { buildYaoCodeCard, buildYaoCodeResult, normalizeGuaFieldFromLegacy } from "../services/codeContractService";
+import {
+  activateYaoDeviceByBreachId,
+  getDemoBreachScan,
+  getDemoPressureSeed,
+  getRepairMethodByDeviceId,
+} from "../services/guanyaoInteractionService";
 import { getSession, updateSession } from "../services/sessionService";
 import { consumeEnergy, getTimeSandglassState } from "../services/timeSandglassService";
 import { buildFinalChoiceCode } from "../services/trajectoryService";
 import type { CausalContextPackage, GuanyaoSession, MigrationCard, RepairTargetResult, YaoCodeCard, YaoCodeResult } from "../types";
+
+const SELECTED_BREACH_KEY = "guanyao:selectedBreachId";
+const ASSET_STATUS_KEY = "guanyao:assetStatus";
 
 const ninetyDayScriptBills = [
   {
@@ -262,8 +271,21 @@ export function MigrationPage() {
   const yaoCode = useMemo(() => buildYaoCodeResult(session, card, finalChoiceCode), [card, finalChoiceCode, session]);
   const yaoCodeCard = useMemo(() => buildYaoCodeCard(session, card, finalChoiceCode, yaoCode), [card, finalChoiceCode, session, yaoCode]);
   const repairTarget = useMemo(() => buildRepairTarget(session, card, yaoCodeCard), [card, session, yaoCodeCard]);
+  const breachScan = getDemoBreachScan();
+  const selectedBreachId = window.localStorage.getItem(SELECTED_BREACH_KEY) ?? breachScan.mainBreachId;
+  const selectedBreach =
+    breachScan.breaches.find((breach) => breach.id === selectedBreachId) ??
+    breachScan.breaches.find((breach) => breach.id === breachScan.mainBreachId) ??
+    breachScan.breaches[0];
+  const activatedDevice =
+    activateYaoDeviceByBreachId(selectedBreach?.id ?? breachScan.mainBreachId) ??
+    activateYaoDeviceByBreachId(breachScan.mainBreachId);
+  const repairMethod = activatedDevice ? getRepairMethodByDeviceId(activatedDevice.id) : undefined;
+  const demoPressureSeed = getDemoPressureSeed();
 
   function handleSave() {
+    window.localStorage.setItem(ASSET_STATUS_KEY, "activated");
+    window.localStorage.setItem(SELECTED_BREACH_KEY, selectedBreach?.id ?? breachScan.mainBreachId);
     const timeSandglass = consumeEnergy("archive_save", 0, "压入人格资产年轮");
     updateSession({
       yaoCode,
@@ -288,7 +310,9 @@ export function MigrationPage() {
   const yaoCodeTitle = `${card.migrationDirection.traditionalName}【${cleanScriptTitle}】`;
   const motherAssetLabel = readMotherAssetLabel(session);
   const yaoWeaponName = buildYaoWeaponName(yaoCodeCard.title, yaoCodeCard.coreSeal, card.antiInstinctNode);
-  const yaoImplementLabel = `${card.migrationDirection.code}-5｜${yaoWeaponName}`;
+  const yaoImplementLabel = activatedDevice
+    ? `${card.migrationDirection.code}-5｜${activatedDevice.name}`
+    : `${card.migrationDirection.code}-5｜${yaoWeaponName}`;
   const isRepairMethod = location.pathname === GUANYAO_ROUTES.repairMethod;
 
   return (
@@ -319,15 +343,18 @@ export function MigrationPage() {
                 <>
                   <p>器法已生成。</p>
                   <p>这是你今天可以执行的第一刀。</p>
-                  <p>器法｜{repairTarget.antiInstinctAction}</p>
-                  <p>禁止动作：不要继续用“我能处理”掩盖你已经陷进去。</p>
+                  <p>器法｜{repairMethod?.name ?? repairTarget.antiInstinctAction}</p>
+                  <p>第一动作：{repairMethod?.firstAction ?? repairTarget.antiInstinctAction}</p>
+                  <p>禁止动作：{repairMethod?.forbiddenAction ?? "不要继续用“我能处理”掩盖你已经陷进去。"}</p>
+                  <p>复发提醒：{repairMethod?.relapseReminder ?? "你最容易在别人质疑你能力时，重新启动强行推进。"}</p>
                 </>
               ) : (
                 <>
                   <p>爻器已激活。</p>
                   <p>{yaoImplementLabel}</p>
-                  <p>它不是安慰你的东西。它只负责打断你最容易复发的旧动作。</p>
-                  <p>止进锚：在你再次想硬推时，把你钉回一个可等待的位置。</p>
+                  <p>{activatedDevice?.shortDefinition ?? "它不是安慰你的东西。它只负责打断你最容易复发的旧动作。"}</p>
+                  <p>它打断：{activatedDevice?.breaksReaction ?? "继续主导、继续推进、继续证明自己还能处理。"}</p>
+                  <p>它不是：{activatedDevice?.notFor ?? "不是逃避，也不是认输。"}</p>
                 </>
               )}
             </div>
@@ -336,6 +363,14 @@ export function MigrationPage() {
             </button>
             {systemReadoutOpen ? (
               <div className="gy-migration-r1-grid" aria-label="系统读数">
+                <div>
+                  <span>压力</span>
+                  <strong>{demoPressureSeed.text}</strong>
+                </div>
+                <div>
+                  <span>破口</span>
+                  <strong>{selectedBreach?.name ?? "沾泥处"}｜{selectedBreach?.breachSentence ?? "从这里破，就是暂停一个过早推进的动作。"}</strong>
+                </div>
                 <div>
                   <span>母码</span>
                   <strong>{motherAssetLabel}</strong>

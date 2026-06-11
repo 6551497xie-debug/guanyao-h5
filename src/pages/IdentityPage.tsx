@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { identityFragments } from "../data/identityFragments";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
+import { getDemoPressureExposureOptions } from "../services/guanyaoInteractionService";
 import { getSession, updateSession } from "../services/sessionService";
 import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId } from "../types";
+
+const SELECTED_PRESSURE_EXPOSURE_KEY = "guanyao:selectedPressureExposureId";
 
 const yuanCodeKeys: IdentityFragment["yuanCodeKey"][] = ["qian", "kun", "zhen", "xun", "kan", "li", "gen", "dui"];
 
@@ -61,13 +64,22 @@ function readIdentityPool(session: GuanyaoSession) {
 }
 
 export function IdentityPage() {
+  const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isShifting, setIsShifting] = useState(false);
   const [motionPhase, setMotionPhase] = useState<"idle" | "exit" | "enter">("idle");
+  const [selectedExposureId, setSelectedExposureId] = useState(() => {
+    return window.localStorage.getItem(SELECTED_PRESSURE_EXPOSURE_KEY) ?? "hide-collapse";
+  });
   const shiftTimerRef = useRef<number | null>(null);
   const motionTimerRef = useRef<number | null>(null);
   const enterTimerRef = useRef<number | null>(null);
   const session = getSession();
+  const pressureExposureOptions = useMemo(() => getDemoPressureExposureOptions(), []);
+  const selectedExposure =
+    pressureExposureOptions.find((option) => option.id === selectedExposureId) ??
+    pressureExposureOptions.find((option) => option.id === "hide-collapse") ??
+    pressureExposureOptions[0];
   const fragmentPool = useMemo(() => readIdentityPool(session), [session]);
   const currentFragment = fragmentPool[activeIndex % fragmentPool.length] ?? identityFragments[0];
   const sliceIndex = (activeIndex % fragmentPool.length) + 1;
@@ -123,6 +135,7 @@ export function IdentityPage() {
   }
 
   function handleConfirm() {
+    window.localStorage.setItem(SELECTED_PRESSURE_EXPOSURE_KEY, selectedExposure?.id ?? "hide-collapse");
     updateSession({
       identityFragment: currentFragment,
       selectedFragment: currentFragment,
@@ -131,6 +144,14 @@ export function IdentityPage() {
       finalChoiceCode: "",
       choiceHistory: [],
     });
+  }
+
+  function handleSelectExposure(optionId: string, shouldContinue = false) {
+    setSelectedExposureId(optionId);
+    window.localStorage.setItem(SELECTED_PRESSURE_EXPOSURE_KEY, optionId);
+    if (shouldContinue) {
+      navigate(GUANYAO_ROUTES.dynamics);
+    }
   }
 
   return (
@@ -173,13 +194,29 @@ export function IdentityPage() {
                 压力显影候选
               </GuanyaoText>
               <GuanyaoText className="gy-identity-r2-fragment" as="h2" size="title">
-                {fragmentCopy.title}
+                {selectedExposure?.sentence ?? fragmentCopy.title}
               </GuanyaoText>
             </div>
 
             <div className="gy-identity-r2-void" aria-hidden="true" />
 
             <div className="gy-identity-r2-dissection">
+              <GuanyaoText as="p" size="body" tone="muted">
+                这个压力正在把你照向哪一种旧反应？
+              </GuanyaoText>
+              <div className="gy-identity-exposure-options" aria-label="压力显影候选">
+                {pressureExposureOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    data-active={option.id === selectedExposure?.id}
+                    onClick={() => handleSelectExposure(option.id, true)}
+                  >
+                    <span>{option.label}</span>
+                    <strong>{option.sentence}</strong>
+                  </button>
+                ))}
+              </div>
               {dissectionLines.map((line) => (
                 <GuanyaoText key={line} as="p" size="body" tone="muted">
                   {line}

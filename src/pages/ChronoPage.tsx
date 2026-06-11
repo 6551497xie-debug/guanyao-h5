@@ -6,6 +6,7 @@ import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildYuanCodeResult } from "../services/codeContractService";
+import { getDemoMotherCode } from "../services/guanyaoInteractionService";
 import { setChronoProfile } from "../services/sessionService";
 import type { ChronoAgeRange, ChronoProfile, ChronoPrototypeCard } from "../types";
 
@@ -434,6 +435,7 @@ export function ChronoPage() {
   const currentTimeRange = birthTimeRanges[timeIndex];
   const generatedCard = chronoProfile?.chronoPrototypeCard;
   const generatedYuanCode = chronoProfile ? buildYuanCodeResult(chronoProfile) : null;
+  const demoMotherCode = getDemoMotherCode();
   const yuanInstrument = getYuanInstrumentProfile(generatedYuanCode?.trigramKey ?? generatedCard?.trigramId);
   const activeYuanHotzoneIndex = yuanInstrument.hotzones.findIndex((hotzone) => hotzone.label === activeYuanHotzone);
   const yuanCodeName =
@@ -541,7 +543,8 @@ export function ChronoPage() {
             <header className="gy-source-header">
               <span>GY / 01 / MOTHER_CODE</span>
               <span>母码显影</span>
-              <strong>{formatYuanSectionName(yuanCodeName)}</strong>
+              <strong>{demoMotherCode.title}</strong>
+              <em>{demoMotherCode.englishName}</em>
             </header>
 
             <main className="gy-source-main">
@@ -569,6 +572,9 @@ export function ChronoPage() {
                   这不是性格标签，
                   <br />
                   这是你本次带压入局时，最先启动的<span>「人格原力」</span>。
+                </p>
+                <p>
+                  原力[{demoMotherCode.tags.force}]　显影[{demoMotherCode.tags.exposure}]　特质[{demoMotherCode.tags.trait}]
                 </p>
                 <p>
                   你不是一直加速，

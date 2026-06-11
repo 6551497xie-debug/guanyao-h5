@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
+import { getDemoDynamicsResult } from "../services/guanyaoInteractionService";
 import { getSession } from "../services/sessionService";
 import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getCollapseYaoTexts, getGravityYaoTexts } from "../services/yaoTextService";
@@ -144,6 +145,7 @@ export function GravityPage() {
   const [interactivePath, setInteractivePath] = useState<YaoBit[]>(() => getInteractiveYaoPath());
   const [isGateVisible, setIsGateVisible] = useState(false);
   const [completedScene, setCompletedScene] = useState<number | null>(null);
+  const [demoDynamics] = useState(() => getDemoDynamicsResult());
   const [motherLedger] = useState(() => getMotherLedger(getSession()));
   const [ritualScenes] = useState(() => {
     const session = getSession();
@@ -222,7 +224,10 @@ export function GravityPage() {
             旧惯性正在漏沙｜人格行为动力学演化中
           </GuanyaoText>
           <GuanyaoText as="h1" size="title">
-            人格行为动力学演化
+            {demoDynamics.title}
+          </GuanyaoText>
+          <GuanyaoText size="body" tone="muted">
+            {demoDynamics.summary}
           </GuanyaoText>
         </header>
 
@@ -300,16 +305,16 @@ export function GravityPage() {
                   </GuanyaoText>
                   <div className="gy-gravity-r2-binary-readouts">
                     <div>
-                      <span>惯性注入 //</span>
-                      <strong>{currentFallback.inertiaInjection}</strong>
+                      <span>旧反应显影 //</span>
+                      <strong>{demoDynamics.oldReaction}</strong>
                     </div>
                     <div>
-                      <span>反向缺口 //</span>
-                      <strong>{currentFallback.reverseGap}</strong>
+                      <span>压力模式 //</span>
+                      <strong>{demoDynamics.pressurePattern}</strong>
                     </div>
                     <div>
-                      <span>代价读数 //</span>
-                      <strong>{currentFallback.cost}</strong>
+                      <span>行为惯性 //</span>
+                      <strong>{demoDynamics.behaviorInertia}</strong>
                     </div>
                   </div>
                 </>

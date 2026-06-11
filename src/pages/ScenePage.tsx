@@ -4,6 +4,7 @@ import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { sceneSeeds } from "../data/sceneSeeds";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
+import { getDemoPressureSeed } from "../services/guanyaoInteractionService";
 import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getSceneSeedGroup } from "../services/sceneSeedService";
 import { getSession, setMotherCodeResult, setSelectedSceneSeed, updateSession } from "../services/sessionService";
@@ -106,6 +107,7 @@ function dedupeSceneMomentGroups(groups: SceneMomentGroup[]): SceneMomentGroup[]
 export function ScenePage() {
   const navigate = useNavigate();
   const session = getSession();
+  const demoPressureSeed = getDemoPressureSeed();
   const forceName =
     session.forceReading?.archetype ?? session.forceProfile?.archetype ?? session.selectedForceName?.split("·").pop()?.trim() ?? "创世者";
   const yuanCodeKey = readYuanCodeKey(session);
@@ -159,7 +161,7 @@ export function ScenePage() {
     flowState === "flowing" ? "暴停当前信号流" : flowState === "frozen" ? "锁定撞击点" : "确认压力显影";
   const sceneGateNote =
     flowState === "flowing"
-      ? "把这次让你卡住的现实压力钉进来。"
+      ? demoPressureSeed.text
       : flowState === "frozen"
         ? "点击一条压力信号，锁定撞击点。"
         : "现实信号已入沙，等待母码压印。";
