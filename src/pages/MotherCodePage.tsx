@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
+import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getSession, setMotherCodeResult } from "../services/sessionService";
 
@@ -228,7 +229,7 @@ export function MotherCodePage() {
     holdTimerRef.current = window.setTimeout(() => {
       holdTimerRef.current = null;
       setIsHoldingGate(false);
-      navigate("/gravity");
+      navigate(GUANYAO_ROUTES.dynamics);
     }, 1500);
   };
 

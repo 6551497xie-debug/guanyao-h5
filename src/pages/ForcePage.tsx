@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { getForceReading } from "../data/forceReadings";
+import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { normalizeSceneForceId } from "../services/sceneService";
 import { getSession, updateSession } from "../services/sessionService";
 
@@ -196,7 +197,7 @@ export function ForcePage() {
           <GuanyaoText className="gy-force-r1-gate-note" as="p" size="eyebrow" tone="faint">
             现实触发证据待接入。
           </GuanyaoText>
-          <Link className="gy-force-r1-gate-link" to="/scene" onClick={persistForceReading}>
+          <Link className="gy-force-r1-gate-link" to={GUANYAO_ROUTES.pressureSeed} onClick={persistForceReading}>
             <GuanyaoText as="span" size="body" tone="default">
               接入现实触发证据
             </GuanyaoText>

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { identityFragments } from "../data/identityFragments";
+import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getSession, updateSession } from "../services/sessionService";
 import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId } from "../types";
 
@@ -194,7 +195,7 @@ export function IdentityPage() {
               <span>0 · 排除此线索</span>
             </button>
             <span className="gy-identity-binary-pointer" aria-hidden="true" />
-            <Link className="gy-identity-binary-action gy-identity-binary-action--claim" to="/force" onClick={handleConfirm}>
+            <Link className="gy-identity-binary-action gy-identity-binary-action--claim" to={GUANYAO_ROUTES.dynamics} onClick={handleConfirm}>
               <span>1 · 锁定卦码线索</span>
             </Link>
           </div>

@@ -3,6 +3,7 @@ import { GravityWave } from "../components/GravityWave";
 import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
+import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getSession } from "../services/sessionService";
 
 function hasChronoPrototype() {
@@ -20,7 +21,7 @@ export function LaunchPage() {
   const navigate = useNavigate();
 
   function handleOpenSandbox() {
-    navigate(hasChronoPrototype() ? "/identity" : "/chrono");
+    navigate(hasChronoPrototype() ? GUANYAO_ROUTES.pressureExposure : GUANYAO_ROUTES.motherCode);
   }
 
   return (

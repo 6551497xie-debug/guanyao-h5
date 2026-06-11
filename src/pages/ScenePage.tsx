@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { sceneSeeds } from "../data/sceneSeeds";
+import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getSceneSeedGroup } from "../services/sceneSeedService";
 import { getSession, setMotherCodeResult, setSelectedSceneSeed, updateSession } from "../services/sessionService";
@@ -207,7 +208,7 @@ export function ScenePage() {
 
   function handleStartYao() {
     setMotherCodeResult(buildMotherCodeResult(getSession()));
-    navigate("/gua-field");
+    navigate(GUANYAO_ROUTES.pressureExposure);
   }
 
   return (

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { GuanyaoButton } from "../components/visual/GuanyaoButton";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
+import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildYuanCodeResult } from "../services/codeContractService";
 import { setChronoProfile } from "../services/sessionService";
 import type { ChronoAgeRange, ChronoProfile, ChronoPrototypeCard } from "../types";
@@ -606,7 +607,7 @@ export function ChronoPage() {
             </GuanyaoButton>
           ) : (
             <>
-              <GuanyaoButton className="gy-source-gate-button" variant="ghost" onClick={() => navigate("/identity")}>
+              <GuanyaoButton className="gy-source-gate-button" variant="ghost" onClick={() => navigate(GUANYAO_ROUTES.pressureExposure)}>
                 入局底色已装填，抓取卦码线索
               </GuanyaoButton>
             </>

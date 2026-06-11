@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
+import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildFinalChoiceCode, setSixthYaoChoice } from "../services/trajectoryService";
 
 const gravityEchoes = ["01 身体", "02 旧习惯", "03 关系牵引", "04 高风险窗口", "05 临界停留"];
@@ -16,7 +17,7 @@ export function ChoicePage() {
     }
 
     const settleTimer = window.setTimeout(() => {
-      navigate("/migration");
+      navigate(GUANYAO_ROUTES.yaoDevice);
     }, 1200);
 
     return () => window.clearTimeout(settleTimer);

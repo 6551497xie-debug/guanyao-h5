@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
+import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getSession } from "../services/sessionService";
 import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getCollapseYaoTexts, getGravityYaoTexts } from "../services/yaoTextService";
@@ -187,7 +188,7 @@ export function GravityPage() {
 
   function advanceTransmission() {
     if (isComplete) {
-      navigate("/choice");
+      navigate(GUANYAO_ROUTES.breachScan);
       return;
     }
 
