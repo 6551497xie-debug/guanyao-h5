@@ -6,15 +6,16 @@ import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildYuanCodeResult } from "../services/codeContractService";
-import { getDemoMotherCode } from "../services/guanyaoInteractionService";
+import { generateMotherCodeFromInitialCoordinates, getDemoInitialCoordinates, getDemoMotherCode } from "../services/guanyaoInteractionService";
 import { setChronoProfile } from "../services/sessionService";
-import type { ChronoAgeRange, ChronoProfile, ChronoPrototypeCard } from "../types";
+import type { ChronoAgeRange, ChronoProfile, ChronoPrototypeCard, InitialCoordinates, MotherCodeCard } from "../types";
 
 const minBirthYear = 1955;
 const maxBirthYear = 2008;
 const defaultBirthYear = 1995;
 const defaultBirthMonth = 6;
 const defaultBirthDay = 2;
+const USE_INITIAL_COORDINATES_FLOW = true;
 
 type ChronoAxis = "year" | "month" | "day" | "time";
 type YuanHotzone = {
@@ -359,7 +360,268 @@ function buildChronoProfile(birthYear: number, birthMonth: number, birthDay: num
   };
 }
 
+function persistInitialCoordinates(initialCoordinates: InitialCoordinates, motherCodeCard: MotherCodeCard) {
+  window.localStorage.setItem("guanyao:initialCoordinates", JSON.stringify(initialCoordinates));
+  window.localStorage.setItem("guanyao:motherCodeCard", JSON.stringify(motherCodeCard));
+}
+
+function InitialCoordinatesEntry() {
+  const navigate = useNavigate();
+  const initialCoordinates = getDemoInitialCoordinates();
+  const [stage, setStage] = useState<"coordinates" | "mother">("coordinates");
+  const [motherCodeCard, setMotherCodeCard] = useState<MotherCodeCard>(() =>
+    generateMotherCodeFromInitialCoordinates(initialCoordinates, "embedding"),
+  );
+  const isMotherStage = stage === "mother";
+  const coordinateRows = [
+    ["出生时序", initialCoordinates.birthChrono, "TIME"],
+    ["年龄阶段", initialCoordinates.agePhase, "AGE"],
+    ["行为年轮", initialCoordinates.behaviorRing, "RING"],
+    ["地利锚点", initialCoordinates.geoAnchor, "GEO"],
+  ];
+
+  function handleEmbedMotherCode() {
+    const embeddedCard = generateMotherCodeFromInitialCoordinates(initialCoordinates, "embedded");
+    persistInitialCoordinates(initialCoordinates, embeddedCard);
+    setMotherCodeCard(embeddedCard);
+    setStage("mother");
+  }
+
+  function handleEnterPressureSeed() {
+    persistInitialCoordinates(initialCoordinates, motherCodeCard);
+    navigate(GUANYAO_ROUTES.pressureSeed);
+  }
+
+  return (
+    <main
+      style={{
+        minHeight: "100dvh",
+        width: "100%",
+        boxSizing: "border-box",
+        padding: "54px 20px calc(42px + env(safe-area-inset-bottom))",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        gap: 18,
+        background: "#050607",
+        color: "#f5f5f5",
+        overflowX: "hidden",
+      }}
+    >
+      <span
+        style={{
+          color: "rgba(199,169,107,0.7)",
+          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          fontSize: 12,
+          letterSpacing: "0.16em",
+        }}
+      >
+        {isMotherStage ? "02｜母码显影" : "01｜初始坐标填装"}
+      </span>
+
+      {!isMotherStage ? (
+        <>
+          <section
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+              gap: 10,
+              padding: "16px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.56)",
+            }}
+          >
+            {coordinateRows.map(([label, value, code]) => (
+              <div
+                key={label}
+                style={{
+                  display: "grid",
+                  gap: 8,
+                  minHeight: 96,
+                  padding: "13px 12px",
+                  border: "1px solid rgba(85,85,85,0.54)",
+                  background: "rgba(255,255,255,0.018)",
+                  alignContent: "space-between",
+                }}
+              >
+                <span
+                  style={{
+                    color: "rgba(199,169,107,0.58)",
+                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                    fontSize: 11,
+                    letterSpacing: "0.12em",
+                  }}
+                >
+                  {code}
+                </span>
+                <strong
+                  style={{
+                    color: "rgba(245,245,245,0.8)",
+                    fontSize: 15,
+                    lineHeight: 1.3,
+                    fontWeight: 360,
+                  }}
+                >
+                  {label}
+                </strong>
+                <em
+                  style={{
+                    color: "rgba(245,245,245,0.28)",
+                    fontSize: 11,
+                    lineHeight: 1.35,
+                    fontStyle: "normal",
+                  }}
+                >
+                  {value}
+                </em>
+              </div>
+            ))}
+          </section>
+          <p style={{ margin: 0, color: "rgba(245,245,245,0.74)", fontSize: 16, lineHeight: 1.72 }}>
+            出生时序。
+            <br />
+            年龄阶段。
+            <br />
+            行为年轮。
+            <br />
+            地利锚点。
+          </p>
+          <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.72 }}>
+            四组坐标正在进入沙盒。
+            <br />
+            其中，时序坐标正在压入母码底盘。
+          </p>
+          <span
+            style={{
+              color: "rgba(245,245,245,0.34)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 11,
+              letterSpacing: "0.13em",
+            }}
+          >
+            INITIAL_COORDINATES_LOADING
+          </span>
+          <button
+            type="button"
+            onClick={handleEmbedMotherCode}
+            style={{
+              width: "100%",
+              minHeight: 52,
+              marginTop: 4,
+              border: "1px solid rgba(199,169,107,0.42)",
+              borderRadius: 0,
+              background: "transparent",
+              color: "rgba(245,245,245,0.9)",
+              fontSize: 15,
+              letterSpacing: "0.04em",
+            }}
+          >
+            确认填装，显影母码
+          </button>
+        </>
+      ) : (
+        <>
+          <span
+            style={{
+              color: "rgba(245,245,245,0.34)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 11,
+              letterSpacing: "0.13em",
+            }}
+          >
+            INITIAL_COORDINATES_LOCKED
+          </span>
+          <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 17, lineHeight: 1.6 }}>母码卡正在嵌入。</p>
+          <section
+            aria-label="母码卡嵌入区"
+            style={{
+              display: "grid",
+              placeItems: "center",
+              gap: 12,
+              minHeight: 180,
+              padding: "22px 18px",
+              border: "1px solid rgba(199,169,107,0.42)",
+              background:
+                "linear-gradient(180deg, rgba(199,169,107,0.08), rgba(199,169,107,0.015)), radial-gradient(circle at 50% 50%, rgba(199,169,107,0.08), transparent 58%)",
+            }}
+          >
+            <span
+              style={{
+                color: "rgba(199,169,107,0.76)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 11,
+                letterSpacing: "0.16em",
+              }}
+            >
+              [ 母码卡嵌入区 ]
+            </span>
+            <strong style={{ color: "rgba(245,245,245,0.82)", fontSize: 26, fontWeight: 360, letterSpacing: "0.16em" }}>
+              母码卡
+            </strong>
+            <span
+              style={{
+                width: "min(220px, 72vw)",
+                height: 1,
+                background: "rgba(199,169,107,0.62)",
+                boxShadow: "0 0 18px rgba(199,169,107,0.18)",
+              }}
+            />
+            <span
+              style={{
+                color: "rgba(245,245,245,0.34)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 11,
+                letterSpacing: "0.16em",
+              }}
+            >
+              CARD EMBEDDING
+            </span>
+          </section>
+          <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.72 }}>
+            它不是你的性格标签。
+            <br />
+            它是你在压力来临前，
+            <br />
+            最先启动的行为源代码。
+          </p>
+          <span
+            style={{
+              color: "rgba(245,245,245,0.34)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 11,
+              letterSpacing: "0.13em",
+            }}
+          >
+            MOTHER_CODE_EMBEDDED
+          </span>
+          <button
+            type="button"
+            onClick={handleEnterPressureSeed}
+            style={{
+              width: "100%",
+              minHeight: 52,
+              marginTop: 4,
+              border: "1px solid rgba(199,169,107,0.52)",
+              borderRadius: 0,
+              background: "transparent",
+              color: "rgba(245,245,245,0.9)",
+              fontSize: 15,
+              letterSpacing: "0.04em",
+            }}
+          >
+            钉入现实压力种子
+          </button>
+        </>
+      )}
+    </main>
+  );
+}
+
 export function ChronoPage() {
+  if (USE_INITIAL_COORDINATES_FLOW) {
+    return <InitialCoordinatesEntry />;
+  }
+
   const navigate = useNavigate();
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [birthYear, setBirthYear] = useState(defaultBirthYear);
@@ -368,7 +630,9 @@ export function ChronoPage() {
   const [timeIndex, setTimeIndex] = useState(0);
   const [activeAxis, setActiveAxis] = useState<ChronoAxis>("year");
   const [isDragging, setIsDragging] = useState(false);
-  const [chronoProfile, setGeneratedChronoProfile] = useState<ChronoProfile | null>(null);
+  const [chronoProfile, setGeneratedChronoProfile] = useState<ChronoProfile | null>(() =>
+    buildChronoProfile(defaultBirthYear, defaultBirthMonth, defaultBirthDay, 0),
+  );
   const [activeYuanHotzone, setActiveYuanHotzone] = useState<string | null>(null);
   const activeMeta = chronoAxisMeta[activeAxis];
   const activeValue = activeAxis === "year" ? birthYear : activeAxis === "month" ? birthMonth : activeAxis === "day" ? birthDay : timeIndex;

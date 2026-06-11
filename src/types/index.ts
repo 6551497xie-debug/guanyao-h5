@@ -432,6 +432,19 @@ export type MotherCodeAsset = {
   tags: MotherCodeTag;
 };
 
+export type InitialCoordinates = {
+  birthChrono: string;
+  agePhase: string;
+  behaviorRing: string;
+  geoAnchor: string;
+};
+
+export type MotherCodeCard = {
+  id: string;
+  source: "initial_coordinates_mock";
+  cardStatus: "embedding" | "embedded";
+};
+
 export type PressureSeed = {
   id: string;
   text: string;

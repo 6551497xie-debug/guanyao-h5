@@ -10,6 +10,7 @@ import { getSession, updateSession } from "../services/sessionService";
 import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId } from "../types";
 
 const SELECTED_PRESSURE_EXPOSURE_KEY = "guanyao:selectedPressureExposureId";
+const USE_PRESSURE_EXPOSURE_SAFE_SHELL = true;
 
 const yuanCodeKeys: IdentityFragment["yuanCodeKey"][] = ["qian", "kun", "zhen", "xun", "kan", "li", "gen", "dui"];
 
@@ -63,7 +64,131 @@ function readIdentityPool(session: GuanyaoSession) {
   );
 }
 
+function PressureExposureSafeShell() {
+  const navigate = useNavigate();
+
+  return (
+    <main
+      style={{
+        minHeight: "100dvh",
+        width: "100%",
+        boxSizing: "border-box",
+        padding: "50px 20px calc(42px + env(safe-area-inset-bottom))",
+        display: "flex",
+        flexDirection: "column",
+        gap: 18,
+        background: "#050607",
+        color: "#f5f5f5",
+        overflowX: "hidden",
+      }}
+    >
+      <span
+        style={{
+          color: "rgba(199,169,107,0.72)",
+          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          fontSize: 12,
+          letterSpacing: "0.16em",
+        }}
+      >
+        04｜压力显影
+      </span>
+      <section
+        style={{
+          display: "grid",
+          gap: 12,
+          padding: "16px 0",
+          borderTop: "1px solid rgba(199,169,107,0.34)",
+          borderBottom: "1px solid rgba(85,85,85,0.46)",
+        }}
+      >
+        <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 17, lineHeight: 1.65 }}>
+          压力种子，装填完毕。
+        </p>
+        <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.72 }}>
+          它不是一个事件。
+          <br />
+          它是一股正在牵引你的现实压力。
+        </p>
+        <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.65 }}>
+          压力场正在显影。
+        </p>
+      </section>
+
+      <section
+        aria-label="压力显影区"
+        style={{
+          display: "grid",
+          placeItems: "center",
+          gap: 12,
+          minHeight: 190,
+          padding: "24px 18px",
+          border: "1px solid rgba(199,169,107,0.38)",
+          background:
+            "linear-gradient(180deg, rgba(199,169,107,0.06), rgba(199,169,107,0.012)), radial-gradient(circle at 50% 50%, rgba(199,169,107,0.08), transparent 60%)",
+        }}
+      >
+        <span
+          style={{
+            color: "rgba(199,169,107,0.78)",
+            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            fontSize: 11,
+            letterSpacing: "0.16em",
+          }}
+        >
+          [ 压力显影区 ]
+        </span>
+        <span
+          style={{
+            width: "min(230px, 74vw)",
+            height: 1,
+            background: "rgba(199,169,107,0.58)",
+            boxShadow: "0 0 18px rgba(199,169,107,0.16)",
+          }}
+        />
+        <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 15, lineHeight: 1.72, textAlign: "center" }}>
+          你的外部处境，
+          <br />
+          正在形成上卦。
+        </p>
+      </section>
+
+      <span
+        style={{
+          color: "rgba(245,245,245,0.34)",
+          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          fontSize: 11,
+          letterSpacing: "0.13em",
+        }}
+      >
+        PRESSURE_FIELD_RENDERING
+      </span>
+
+      <button
+        type="button"
+        onClick={() => navigate(GUANYAO_ROUTES.dynamics)}
+        style={{
+          width: "100%",
+          minHeight: 52,
+          marginTop: "auto",
+          border: "1px solid rgba(199,169,107,0.52)",
+          borderRadius: 0,
+          background: "transparent",
+          color: "rgba(245,245,245,0.9)",
+          fontSize: 15,
+          letterSpacing: "0.04em",
+        }}
+      >
+        压力已显影，生成本局卦码
+      </button>
+    </main>
+  );
+}
+
 export function IdentityPage() {
+  if (USE_PRESSURE_EXPOSURE_SAFE_SHELL) {
+    return <PressureExposureSafeShell />;
+  }
+
   const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isShifting, setIsShifting] = useState(false);
