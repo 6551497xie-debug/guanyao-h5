@@ -1,6 +1,7 @@
 import {
   mockChronoCoordinate,
   mockDynamicFieldModifiers,
+  mockHexagramFormationCases,
   mockLocationAnchors,
   mockMotherCodeProfiles,
   mockPressureSeeds,
@@ -12,19 +13,24 @@ import type {
   BreachPoint,
   CausalTraceEntry,
   ChronoCoordinate,
+  CurrentHexagramProfile,
   DynamicFieldModifiers,
   EmotionalIntensity,
+  ExternalEnvironmentType,
   GuanyaoCausalPipelineResult,
   HexagramField,
+  HexagramLayerClassification,
   HourBranch,
   LocationAnchor,
   MotherCodeProfile,
   PersonalityAsset,
+  PersonalityGravityValue,
   PressureField,
   PressureDuration,
   PressureIntensity,
   PressureSeed,
   RepairMethod,
+  Trigram,
   YaoDevice,
 } from "../types/guanyaoCausalEngine";
 
@@ -72,6 +78,104 @@ const pressureDepthByDuration: Record<PressureDuration, string> = {
   long_running: "长期复发",
 };
 
+const externalEnvironmentProfiles: Record<
+  ExternalEnvironmentType,
+  {
+    name: string;
+    upperTrigram: Trigram;
+    keywords: string[];
+    personalityDynamics: string;
+    systemMechanism: string;
+    lifecycleStage: string;
+    externalPressureReading: string;
+  }
+> = {
+  qian_control_decision: {
+    name: "乾型环境｜控制权 / 决策权压力",
+    upperTrigram: "乾",
+    keywords: ["控制权", "决策", "掌控", "规则", "权责", "拍板"],
+    personalityDynamics: "控制反应被迫上提，个体试图用决断感压住不确定。",
+    systemMechanism: "权责结构收紧，外部要求你给出明确判断。",
+    lifecycleStage: "进入需要定向、承担选择后果的阶段。",
+    externalPressureReading: "外部压力来自控制权和决策权的集中。",
+  },
+  kun_responsibility_support: {
+    name: "坤型环境｜责任 / 承载 / 家庭托底压力",
+    upperTrigram: "坤",
+    keywords: ["家庭", "财务", "责任", "承载", "托底", "照顾", "家里", "支出"],
+    personalityDynamics: "承担惯性被放大，个体倾向先接住别人再处理自己。",
+    systemMechanism: "责任和资源需求向你聚拢，形成承载型外压。",
+    lifecycleStage: "进入被要求托底、补位或维持稳定的阶段。",
+    externalPressureReading: "外部压力来自家庭、责任与承载结构。",
+  },
+  zhen_change_push: {
+    name: "震型环境｜推进 / 变化 / 突发压力",
+    upperTrigram: "震",
+    keywords: ["突发", "变化", "推进", "打断", "加速", "启动", "变动"],
+    personalityDynamics: "应激推进被点燃，个体容易先动作后判断。",
+    systemMechanism: "外部变量突然上场，逼迫系统快速改轨。",
+    lifecycleStage: "进入变化启动、旧节奏被打断的阶段。",
+    externalPressureReading: "外部压力来自突发变化和推进要求。",
+  },
+  xun_uncertainty_choice: {
+    name: "巽型环境｜不确定 / 选择 / 渗透压力",
+    upperTrigram: "巽",
+    keywords: ["不确定", "选择", "摇摆", "渗透", "试探", "模糊", "犹豫"],
+    personalityDynamics: "判断被细小变量渗透，个体容易反复比较。",
+    systemMechanism: "多个选项持续进入，边界难以一次性确定。",
+    lifecycleStage: "进入选择分岔、信号未完全显形的阶段。",
+    externalPressureReading: "外部压力来自不确定性和选择渗透。",
+  },
+  kan_trapped_debt: {
+    name: "坎型环境｜深陷困局 / 债务 / 难以抽离压力",
+    upperTrigram: "坎",
+    keywords: ["负债", "债务", "困局", "深陷", "还款", "现金流", "难以抽离", "资源缺口"],
+    personalityDynamics: "风险感下沉，个体容易收缩、隐瞒或独自硬撑。",
+    systemMechanism: "资源缺口与抽离成本叠加，形成困局型外压。",
+    lifecycleStage: "进入低余量、难退出、必须面对风险窗口的阶段。",
+    externalPressureReading: "外部压力来自债务、困局与难以抽离的资源陷落。",
+  },
+  li_expression_truth: {
+    name: "离型环境｜表达 / 误解 / 真相不被重视压力",
+    upperTrigram: "离",
+    keywords: ["表达", "误解", "真相", "被看见", "解释", "评价", "公开"],
+    personalityDynamics: "表达需求被点亮，同时害怕真实信号不被接住。",
+    systemMechanism: "信息可见度升高，误读和评价开始制造外压。",
+    lifecycleStage: "进入需要显影、说明或被公开读取的阶段。",
+    externalPressureReading: "外部压力来自表达、误解与真相显影。",
+  },
+  gen_boundary_stop: {
+    name: "艮型环境｜边界 / 停滞 / 止损压力",
+    upperTrigram: "艮",
+    keywords: ["边界", "停滞", "止损", "暂停", "卡住", "拒绝", "终止"],
+    personalityDynamics: "停止动作被迫出现，个体需要从惯性里切出边界。",
+    systemMechanism: "外部结构不再允许继续推进，要求止损或设限。",
+    lifecycleStage: "进入收束、暂停和重定边界的阶段。",
+    externalPressureReading: "外部压力来自边界、停滞和止损要求。",
+  },
+  dui_relationship_exchange: {
+    name: "兑型环境｜关系 / 冲突 / 沟通 / 交换压力",
+    upperTrigram: "兑",
+    keywords: ["关系", "冲突", "沟通", "交换", "回应", "谈判", "互动"],
+    personalityDynamics: "关系反馈变成主压力，个体倾向通过沟通换取稳定。",
+    systemMechanism: "交换结构发生摩擦，沟通成本开始上升。",
+    lifecycleStage: "进入关系协商、冲突处理或交换重估的阶段。",
+    externalPressureReading: "外部压力来自关系、沟通与交换摩擦。",
+  },
+};
+
+const knownHexagramMatrix: Record<string, { code: string; name: string; title: string }> = {
+  "坤-兑": { code: "019", name: "临", title: "悬崖边" },
+  "坎-兑": { code: "047", name: "困", title: "围墙里的沉默者" },
+};
+
+const fallbackTrigramByMotherCode: Record<string, Trigram> = {
+  硬撑底盘: "坤",
+  控制防线: "乾",
+  后撤惯性: "艮",
+  转化者: "兑",
+};
+
 const executionWindowByDuration: Record<PressureDuration, string> = {
   just_happened: "第一秒截断",
   within_one_week: "下一次触发时立刻截断",
@@ -84,6 +188,7 @@ const requiredTraceSteps = [
   "mother_code_to_pressure_seed",
   "dynamic_modifiers_to_pressure_field",
   "pressure_seed_to_pressure_field",
+  "pressure_field_to_current_hexagram_profile",
   "pressure_field_to_hexagram_field",
   "hexagram_field_to_behavior_scan",
   "behavior_scan_to_breach_points",
@@ -247,16 +352,173 @@ export const buildPressureField = (
   };
 };
 
+const getHexagramClassifierText = (pressureSeed: PressureSeed): string =>
+  [
+    pressureSeed.sceneText,
+    pressureSeed.pressureType,
+    pressureSeed.relationshipRole,
+    pressureSeed.triggerMoment,
+    pressureSeed.costHint,
+    pressureSeed.fieldBias,
+    ...(pressureSeed.locationTags ?? []),
+  ].join(" ");
+
+const scoreEnvironmentProfile = (profile: { keywords: string[] }, text: string): number =>
+  profile.keywords.reduce((score, keyword) => score + (text.includes(keyword) ? 1 : 0), 0);
+
+const resolveDominantLayer = (
+  pressureSeed: PressureSeed,
+  externalEnvironmentType: ExternalEnvironmentType,
+): HexagramLayerClassification["dominantLayer"] => {
+  const text = getHexagramClassifierText(pressureSeed);
+  const personalityScore = ["反应", "表达", "沉默", "控制", "隐瞒", "硬撑", "需求"].reduce(
+    (score, keyword) => score + (text.includes(keyword) ? 1 : 0),
+    0,
+  );
+  const systemScore = ["家庭", "财务", "债务", "责任", "资源", "现金流", "关系", "工作"].reduce(
+    (score, keyword) => score + (text.includes(keyword) ? 1 : 0),
+    0,
+  );
+  const lifecycleScore = ["窗口", "逼近", "阶段", "长期", "突然", "还款", "支出"].reduce(
+    (score, keyword) => score + (text.includes(keyword) ? 1 : 0),
+    0,
+  );
+  const layerScores = [
+    ["personality", personalityScore],
+    ["system", systemScore],
+    ["lifecycle", lifecycleScore],
+  ] as const;
+  const sortedScores = [...layerScores].sort((left, right) => right[1] - left[1]);
+
+  if (sortedScores[0][1] === sortedScores[1][1]) {
+    return "mixed";
+  }
+
+  if (
+    externalEnvironmentType === "kun_responsibility_support" ||
+    externalEnvironmentType === "kan_trapped_debt"
+  ) {
+    return "system";
+  }
+
+  return sortedScores[0][0];
+};
+
+export const classifyPressureSeedForHexagram = (
+  pressureSeed: PressureSeed,
+): HexagramLayerClassification => {
+  const text = getHexagramClassifierText(pressureSeed);
+  const selectedEnvironmentType = (Object.keys(externalEnvironmentProfiles) as ExternalEnvironmentType[]).sort(
+    (left, right) => {
+      const scoreDelta =
+        scoreEnvironmentProfile(externalEnvironmentProfiles[right], text) -
+        scoreEnvironmentProfile(externalEnvironmentProfiles[left], text);
+
+      if (scoreDelta !== 0) {
+        return scoreDelta;
+      }
+
+      return stableHash(left) - stableHash(right);
+    },
+  )[0];
+  const profile = externalEnvironmentProfiles[selectedEnvironmentType];
+
+  return {
+    personalityDynamics: profile.personalityDynamics,
+    systemMechanism: profile.systemMechanism,
+    lifecycleStage: profile.lifecycleStage,
+    dominantLayer: resolveDominantLayer(pressureSeed, selectedEnvironmentType),
+    externalEnvironmentType: selectedEnvironmentType,
+    externalEnvironmentName: profile.name,
+    upperTrigram: profile.upperTrigram,
+    externalPressureReading: profile.externalPressureReading,
+    classificationReason: `压力种子「${pressureSeed.seedId}」命中「${profile.name}」的关键词轨道，因此上卦取「${profile.upperTrigram}」。`,
+  };
+};
+
+export const resolveMotherCodeLowerTrigram = (motherCodeProfile: MotherCodeProfile): Trigram => {
+  if (motherCodeProfile.lowerTrigram) {
+    return motherCodeProfile.lowerTrigram;
+  }
+
+  const matchedName = Object.keys(fallbackTrigramByMotherCode).find((keyword) =>
+    motherCodeProfile.motherCodeName.includes(keyword),
+  );
+
+  return matchedName ? fallbackTrigramByMotherCode[matchedName] : "坤";
+};
+
+export const resolvePersonalityGravityValue = (
+  pressureField: PressureField,
+): PersonalityGravityValue => {
+  const weight = pressureField.upperFieldWeight;
+
+  if (weight < 25) return "P1";
+  if (weight < 45) return "P2";
+  if (weight < 65) return "P3";
+  if (weight < 80) return "P4";
+  if (weight < 92) return "P5";
+  return "P6";
+};
+
+const gravityReading: Record<PersonalityGravityValue, string> = {
+  P1: "P1 轻微牵引",
+  P2: "P2 局部承压",
+  P3: "P3 冲突放大",
+  P4: "P4 结构承压",
+  P5: "P5 临界暴露",
+  P6: "P6 重组关口",
+};
+
+export const formCurrentHexagramProfile = (
+  motherCodeProfile: MotherCodeProfile,
+  pressureSeed: PressureSeed,
+  pressureField: PressureField,
+): CurrentHexagramProfile => {
+  const lowerTrigram = resolveMotherCodeLowerTrigram(motherCodeProfile);
+  const layerClassification = classifyPressureSeedForHexagram(pressureSeed);
+  const upperTrigram = layerClassification.upperTrigram;
+  const matrixKey = `${upperTrigram}-${lowerTrigram}`;
+  const knownHexagram = knownHexagramMatrix[matrixKey];
+  const gravityValue = resolvePersonalityGravityValue(pressureField);
+  const hexagramName = knownHexagram?.name ?? `${upperTrigram}${lowerTrigram}未命名局`;
+  const hexagramCode = knownHexagram?.code ?? `V1-${upperTrigram}${lowerTrigram}`;
+  const hexagramTitle = knownHexagram?.title ?? `${layerClassification.externalEnvironmentName}压入${motherCodeProfile.motherCodeName}`;
+
+  return {
+    lowerTrigram,
+    lowerSource: "mother_code",
+    upperTrigram,
+    upperSource: "pressure_field",
+    hexagramCode,
+    hexagramName,
+    hexagramTitle,
+    layerClassification,
+    gravityValue,
+    innerForceReading: `下卦「${lowerTrigram}」来自母码「${motherCodeProfile.motherCodeName}」，代表本局内在反应底盘。`,
+    externalPressureReading: `${layerClassification.externalPressureReading}上卦取「${upperTrigram}」。`,
+    interactionReading: `上卦「${upperTrigram}」压入下卦「${lowerTrigram}」，形成本局卦码「${hexagramCode}｜${hexagramName}｜${hexagramTitle}」。`,
+    currentSandboxReading: `${gravityReading[gravityValue]}。人格重力值不改变卦名，只决定本局风险窗口、六爻传导语气与器法干预强度。`,
+  };
+};
+
 export const buildHexagramField = (
   motherCodeProfile: MotherCodeProfile,
   pressureField: PressureField,
+  currentHexagramProfile?: CurrentHexagramProfile,
 ): HexagramField => {
   const pressureLevelName = getPressureLevelName(pressureField.upperFieldWeight);
 
   return {
-    hexagramId: `HEX-${motherCodeProfile.motherCodeId}-${pressureField.fieldId}`,
-    hexagramName: `${pressureLevelName} / ${motherCodeProfile.motherCodeName}`,
-    behaviorFieldName: `${pressureLevelName}${motherCodeProfile.motherCodeName}`,
+    hexagramId: currentHexagramProfile
+      ? `HEX-${currentHexagramProfile.hexagramCode}-${motherCodeProfile.motherCodeId}-${pressureField.fieldId}`
+      : `HEX-${motherCodeProfile.motherCodeId}-${pressureField.fieldId}`,
+    hexagramName: currentHexagramProfile
+      ? `${currentHexagramProfile.hexagramCode}｜${currentHexagramProfile.hexagramName}｜${currentHexagramProfile.hexagramTitle}`
+      : `${pressureLevelName} / ${motherCodeProfile.motherCodeName}`,
+    behaviorFieldName: currentHexagramProfile
+      ? `${currentHexagramProfile.hexagramName}${currentHexagramProfile.hexagramTitle}`
+      : `${pressureLevelName}${motherCodeProfile.motherCodeName}`,
     currentTrack: `${motherCodeProfile.defaultReactionPattern}${pressureField.activatedPressureZone}`,
     inertiaPattern: `${motherCodeProfile.behaviorBias}正在接管当前反应`,
     conflictStructure: `想保持掌控，但${pressureField.activatedPressureZone}正在逼近代价`,
@@ -429,6 +691,10 @@ const buildCausalTrace = (result: Omit<GuanyaoCausalPipelineResult, "causalTrace
       reason: `压力场「${result.pressureField.fieldName}」撞击「${result.motherCodeProfile.motherCodeName}」，坍缩为「${result.hexagramField.behaviorFieldName}」。`,
     },
     {
+      step: "pressure_field_to_current_hexagram_profile",
+      reason: `三层分类器判定外在环境为「${result.currentHexagramProfile.layerClassification.externalEnvironmentName}」，上卦「${result.currentHexagramProfile.upperTrigram}」与母码下卦「${result.currentHexagramProfile.lowerTrigram}」成局为「${result.currentHexagramProfile.hexagramCode}｜${result.currentHexagramProfile.hexagramName}」。人格重力值为「${result.currentHexagramProfile.gravityValue}」。`,
+    },
+    {
       step: "hexagram_field_to_behavior_scan",
       reason: `本局惯性为「${result.hexagramField.inertiaPattern}」，扫描锁定「${result.behaviorEngineScan.primaryBreachCandidate}」。`,
     },
@@ -464,7 +730,8 @@ export const runGuanyaoCausalPipeline = (
     chronoCoordinate.locationAnchor,
     resolvedDynamicModifiers,
   );
-  const hexagramField = buildHexagramField(motherCodeProfile, pressureField);
+  const currentHexagramProfile = formCurrentHexagramProfile(motherCodeProfile, pressureSeed, pressureField);
+  const hexagramField = buildHexagramField(motherCodeProfile, pressureField, currentHexagramProfile);
   const behaviorEngineScan = runBehaviorEngineScan(hexagramField);
   const breachPoints = resolveBreachPoints(behaviorEngineScan);
   const selectedBreachPoint = breachPoints[0];
@@ -485,6 +752,7 @@ export const runGuanyaoCausalPipeline = (
     motherCodeProfile,
     pressureSeed,
     pressureField,
+    currentHexagramProfile,
     hexagramField,
     behaviorEngineScan,
     breachPoints,
@@ -526,6 +794,10 @@ export function auditGuanyaoCausalPipeline(): {
     ["pressureField has emotionalIntensity", Boolean(result.pressureField.emotionalIntensity)],
     ["pressureField has pressureDuration", Boolean(result.pressureField.pressureDuration)],
     ["pressureField has dynamicWeight", typeof result.pressureField.dynamicWeight === "number"],
+    ["has currentHexagramProfile", Boolean(result.currentHexagramProfile)],
+    ["currentHexagramProfile lowerSource mother_code", result.currentHexagramProfile.lowerSource === "mother_code"],
+    ["currentHexagramProfile upperSource pressure_field", result.currentHexagramProfile.upperSource === "pressure_field"],
+    ["currentHexagramProfile has gravityValue", Boolean(result.currentHexagramProfile.gravityValue)],
     ["has hexagramField", Boolean(result.hexagramField)],
     ["has behaviorEngineScan", Boolean(result.behaviorEngineScan)],
     ["has breachPoints >= 3", result.breachPoints.length >= 3],
@@ -540,6 +812,7 @@ export function auditGuanyaoCausalPipeline(): {
       requiredTraceSteps.every((step) => traceSteps.has(step)),
     ],
     ["causalTrace includes dynamic_modifiers_to_pressure_field", traceSteps.has("dynamic_modifiers_to_pressure_field")],
+    ["causalTrace includes pressure_field_to_current_hexagram_profile", traceSteps.has("pressure_field_to_current_hexagram_profile")],
     ["pipeline works without locationAnchor", Boolean(resultWithoutLocation.personalityAsset)],
     ["dynamic modifiers can change field weight", result.pressureField.upperFieldWeight !== lightDynamicResult.pressureField.upperFieldWeight],
   ] satisfies [string, boolean][];
@@ -548,5 +821,63 @@ export function auditGuanyaoCausalPipeline(): {
     result,
     passed: checkResults.every(([, passed]) => passed),
     checks: checkResults.map(([label, passed]) => `${label}: ${passed ? "passed" : "failed"}`),
+  };
+}
+
+export function auditGuanyaoHexagramFormation(): {
+  passed: boolean;
+  checks: string[];
+  samples: CurrentHexagramProfile[];
+} {
+  const cases = Object.values(mockHexagramFormationCases);
+  const samples = cases.map((formationCase) => {
+    const pressureField = buildPressureField(
+      formationCase.motherCodeProfile,
+      formationCase.pressureSeed,
+      undefined,
+      mockDynamicFieldModifiers,
+    );
+
+    return formCurrentHexagramProfile(
+      formationCase.motherCodeProfile,
+      formationCase.pressureSeed,
+      pressureField,
+    );
+  });
+  const checkResults = cases.flatMap((formationCase, index) => {
+    const sample = samples[index];
+
+    return [
+      [
+        `${formationCase.caseId} upperTrigram ${formationCase.expectedUpperTrigram}`,
+        sample.upperTrigram === formationCase.expectedUpperTrigram,
+      ],
+      [
+        `${formationCase.caseId} lowerTrigram ${formationCase.expectedLowerTrigram}`,
+        sample.lowerTrigram === formationCase.expectedLowerTrigram,
+      ],
+      [
+        `${formationCase.caseId} hexagramCode ${formationCase.expectedHexagramCode}`,
+        sample.hexagramCode === formationCase.expectedHexagramCode,
+      ],
+      [
+        `${formationCase.caseId} hexagramName ${formationCase.expectedHexagramName}`,
+        sample.hexagramName === formationCase.expectedHexagramName,
+      ],
+      [
+        `${formationCase.caseId} hexagramTitle ${formationCase.expectedHexagramTitle}`,
+        sample.hexagramTitle === formationCase.expectedHexagramTitle,
+      ],
+      [
+        `${formationCase.caseId} gravity does not choose trigram`,
+        Boolean(sample.gravityValue) && sample.upperSource === "pressure_field" && sample.lowerSource === "mother_code",
+      ],
+    ] satisfies [string, boolean][];
+  });
+
+  return {
+    passed: checkResults.every(([, passed]) => passed),
+    checks: checkResults.map(([label, passed]) => `${label}: ${passed ? "passed" : "failed"}`),
+    samples,
   };
 }

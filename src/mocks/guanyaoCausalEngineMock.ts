@@ -5,6 +5,7 @@ import type {
   MotherCodeProfile,
   PressureSeed,
   RepairMethod,
+  Trigram,
   YaoDevice,
 } from "../types/guanyaoCausalEngine";
 
@@ -91,6 +92,7 @@ export const mockMotherCodeProfiles = [
   {
     motherCodeId: "mother-hard-hold",
     motherCodeName: "硬撑底盘",
+    lowerTrigram: "坤",
     baseForce: "用持续承压维持局面不散。",
     defaultReactionPattern: "压力升高时先压住自己，再替局面补缺口。",
     pressureSensitiveZones: ["工作压力", "自我证明压力", "家庭压力"],
@@ -100,6 +102,7 @@ export const mockMotherCodeProfiles = [
   {
     motherCodeId: "mother-control-line",
     motherCodeName: "控制防线",
+    lowerTrigram: "乾",
     baseForce: "通过预判和校准降低不确定性。",
     defaultReactionPattern: "先收紧规则，再收紧关系里的变量。",
     pressureSensitiveZones: ["失控压力", "关系压力", "金钱压力"],
@@ -109,6 +112,7 @@ export const mockMotherCodeProfiles = [
   {
     motherCodeId: "mother-retreat-loop",
     motherCodeName: "后撤惯性",
+    lowerTrigram: "艮",
     baseForce: "通过后退保存反应余地。",
     defaultReactionPattern: "先撤出现场，再在脑内反复复盘。",
     pressureSensitiveZones: ["关系压力", "家庭压力", "自我证明压力"],
@@ -255,3 +259,69 @@ export const mockRepairMethods = [
     relapseWarning: "你不命名代价，旧反应就会把它算到你身上。",
   },
 ] satisfies RepairMethod[];
+
+export const mockHexagramFormationMotherCode = {
+  motherCodeId: "mother-dui-transformer",
+  motherCodeName: "兑｜转化者",
+  lowerTrigram: "兑",
+  baseForce: "把关系、交换与表达中的压力转化为下一步行动。",
+  defaultReactionPattern: "压力升高时先读取关系反馈，再决定是否继续交换。",
+  pressureSensitiveZones: ["家庭压力", "金钱压力", "关系压力"],
+  defenseTendency: "把资源压力和关系评价混在一起处理。",
+  behaviorBias: "用沟通、缓和或转译来维持关系可交换性。",
+} satisfies MotherCodeProfile;
+
+export const mockHexagramFormationCases = {
+  familyFinance: {
+    caseId: "hexagram-sample-a-family-finance",
+    motherCodeProfile: mockHexagramFormationMotherCode,
+    pressureSeed: {
+      seedId: "seed-family-finance-pressure",
+      sceneText: "家庭财务压力逼近，你开始替整个家庭托底。",
+      pressureType: "家庭财务压力",
+      relationshipRole: "家庭关系",
+      triggerMoment: "家里的支出和责任同时压到你身上。",
+      intensityLevel: "high",
+      costHint: "你会先扛住责任，再延后处理自己的边界。",
+      fieldBias: "家庭托底",
+      locationTags: ["家庭牵引压力", "责任吞咽", "金钱安全压力"],
+    },
+    expectedUpperTrigram: "坤",
+    expectedLowerTrigram: "兑",
+    expectedHexagramCode: "019",
+    expectedHexagramName: "临",
+    expectedHexagramTitle: "悬崖边",
+  },
+  debt: {
+    caseId: "hexagram-sample-b-debt",
+    motherCodeProfile: mockHexagramFormationMotherCode,
+    pressureSeed: {
+      seedId: "seed-debt-pressure",
+      sceneText: "负债压力把你困在原地，你很难从资源缺口里抽离。",
+      pressureType: "负债压力",
+      relationshipRole: "资源关系",
+      triggerMoment: "还款窗口逼近，现金流无法覆盖。",
+      intensityLevel: "critical",
+      costHint: "你会压低需求、隐瞒困局，并试图独自撑住。",
+      fieldBias: "债务困局",
+      locationTags: ["金钱安全压力", "深陷困局", "难以抽离压力"],
+    },
+    expectedUpperTrigram: "坎",
+    expectedLowerTrigram: "兑",
+    expectedHexagramCode: "047",
+    expectedHexagramName: "困",
+    expectedHexagramTitle: "围墙里的沉默者",
+  },
+} satisfies Record<
+  string,
+  {
+    caseId: string;
+    motherCodeProfile: MotherCodeProfile & { lowerTrigram: Trigram };
+    pressureSeed: PressureSeed;
+    expectedUpperTrigram: Trigram;
+    expectedLowerTrigram: Trigram;
+    expectedHexagramCode: string;
+    expectedHexagramName: string;
+    expectedHexagramTitle: string;
+  }
+>;

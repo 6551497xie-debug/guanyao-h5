@@ -42,6 +42,7 @@ export interface ChronoCoordinate {
 export interface MotherCodeProfile {
   motherCodeId: string;
   motherCodeName: string;
+  lowerTrigram?: Trigram;
   baseForce: string;
   defaultReactionPattern: string;
   pressureSensitiveZones: string[];
@@ -103,6 +104,52 @@ export interface HexagramField {
   costPattern: string;
   engineEntrySignal: string;
   pressureDepth?: string;
+}
+
+export type Trigram = "乾" | "坤" | "震" | "巽" | "坎" | "离" | "艮" | "兑";
+
+export type HexagramLayerKey = "personality" | "system" | "lifecycle";
+
+export type HexagramDominantLayer = HexagramLayerKey | "mixed";
+
+export type ExternalEnvironmentType =
+  | "qian_control_decision"
+  | "kun_responsibility_support"
+  | "zhen_change_push"
+  | "xun_uncertainty_choice"
+  | "kan_trapped_debt"
+  | "li_expression_truth"
+  | "gen_boundary_stop"
+  | "dui_relationship_exchange";
+
+export type PersonalityGravityValue = "P1" | "P2" | "P3" | "P4" | "P5" | "P6";
+
+export interface HexagramLayerClassification {
+  personalityDynamics: string;
+  systemMechanism: string;
+  lifecycleStage: string;
+  dominantLayer: HexagramDominantLayer;
+  externalEnvironmentType: ExternalEnvironmentType;
+  externalEnvironmentName: string;
+  upperTrigram: Trigram;
+  externalPressureReading: string;
+  classificationReason: string;
+}
+
+export interface CurrentHexagramProfile {
+  lowerTrigram: Trigram;
+  lowerSource: "mother_code";
+  upperTrigram: Trigram;
+  upperSource: "pressure_field";
+  hexagramCode: string;
+  hexagramName: string;
+  hexagramTitle: string;
+  layerClassification: HexagramLayerClassification;
+  gravityValue: PersonalityGravityValue;
+  innerForceReading: string;
+  externalPressureReading: string;
+  interactionReading: string;
+  currentSandboxReading: string;
 }
 
 export interface BehaviorEngineScan {
@@ -169,6 +216,7 @@ export interface GuanyaoCausalPipelineResult {
   motherCodeProfile: MotherCodeProfile;
   pressureSeed: PressureSeed;
   pressureField: PressureField;
+  currentHexagramProfile: CurrentHexagramProfile;
   hexagramField: HexagramField;
   behaviorEngineScan: BehaviorEngineScan;
   breachPoints: BreachPoint[];
