@@ -34,9 +34,14 @@ export type GuanyaoR8ReadModel = {
     transmissions: {
       yaoPosition: number;
       yaoName: string;
+      yaoLayer: string;
+      spaceName: string;
+      spaceCode: string;
+      spaceSubtitle: string;
       layerLabel: string;
       transmissionReading: string;
       inertiaSignal: string;
+      interventionPotential: number;
       pauseSignal: string;
       pauseReason: string;
       userFacingPausePrompt: string;
@@ -93,15 +98,58 @@ const gravityLabels: Record<PersonalityGravityValue, string> = {
 const toReadModelCut = (cut: CutCandidate | undefined): ReadModelCut => ({
   yaoPosition: cut?.yaoPosition ?? 0,
   yaoLayer: cut?.yaoLayer ?? "unknown",
-  userFacingReason: cut?.userFacingReason ?? "本局切口待显影。",
+  userFacingReason: cut?.userFacingReason ?? "本局行动点待显影。",
 });
+
+const spaceMetaByLayer: Record<
+  YaoTransmissionProfile["yaoLayer"],
+  {
+    spaceName: string;
+    spaceCode: string;
+    spaceSubtitle: string;
+  }
+> = {
+  body: {
+    spaceName: "身体空间",
+    spaceCode: "BODY",
+    spaceSubtitle: "压力最先进入身体的位置。",
+  },
+  emotion: {
+    spaceName: "情绪空间",
+    spaceCode: "EMOTION",
+    spaceSubtitle: "身体信号被快速评价成情绪。",
+  },
+  thought: {
+    spaceName: "思想空间",
+    spaceCode: "THOUGHT",
+    spaceSubtitle: "情绪正在生成解释和理由。",
+  },
+  behavior: {
+    spaceName: "行为空间",
+    spaceCode: "BEHAVIOR",
+    spaceSubtitle: "思想开始转化为可观察动作。",
+  },
+  memory: {
+    spaceName: "记忆空间",
+    spaceCode: "MEMORY",
+    spaceSubtitle: "旧经验正在参与当前判断。",
+  },
+  motivation: {
+    spaceName: "动机空间",
+    spaceCode: "MOTIVE",
+    spaceSubtitle: "系统正在识别行为背后的真实保护对象。",
+  },
+};
 
 const toReadModelTransmission = (transmission: YaoTransmissionProfile) => ({
   yaoPosition: transmission.yaoPosition,
   yaoName: transmission.yaoName,
+  yaoLayer: transmission.yaoLayer,
+  ...spaceMetaByLayer[transmission.yaoLayer],
   layerLabel: transmission.layerLabel,
   transmissionReading: transmission.transmissionReading,
   inertiaSignal: transmission.inertiaSignal,
+  interventionPotential: transmission.interventionPotential,
   pauseSignal: transmission.pauseSignal,
   pauseReason: transmission.pauseReason,
   userFacingPausePrompt: transmission.userFacingPausePrompt,
@@ -130,22 +178,22 @@ export function buildGuanyaoR8ReadModel(result: GuanyaoCausalPipelineResult): Gu
       dominantLine: upperCodeFormation.dominantLine,
     },
     yaoStage: {
-      chainSummary: yaoTransmissionChain?.chainSummary ?? "六爻传导链待显影。",
+      chainSummary: yaoTransmissionChain?.chainSummary ?? "六维人格空间待显影。",
       transmissions: yaoTransmissionChain?.transmissions.map(toReadModelTransmission) ?? [],
       mainCut: toReadModelCut(yaoTransmissionChain?.mainCut),
       secondaryCut: toReadModelCut(yaoTransmissionChain?.secondaryCut),
       rootCut: toReadModelCut(yaoTransmissionChain?.rootCut),
     },
     deviceStage: {
-      deviceName: mainDeviceMethod?.deviceName ?? "器法待生成",
-      methodSummary: mainDeviceMethod?.methodSummary ?? "本局器法待生成。",
+      deviceName: mainDeviceMethod?.deviceName ?? "处置方案待生成",
+      methodSummary: mainDeviceMethod?.methodSummary ?? "本局处置方案待生成。",
       antiInstinctAction: mainDeviceMethod?.antiInstinctAction ?? "反本能动作待生成。",
       firstAction: mainDeviceMethod?.firstAction ?? "第一动作待生成。",
       next72HoursAction: mainDeviceMethod?.next72HoursAction ?? "72小时动作待生成。",
       thirtyDayAction: mainDeviceMethod?.thirtyDayAction ?? "30天动作待生成。",
       doNotDo: mainDeviceMethod?.doNotDo ?? [],
       realityCheck: mainDeviceMethod?.realityCheck ?? [],
-      userFacingMethodPrompt: mainDeviceMethod?.userFacingMethodPrompt ?? "这里可以先停一下，等待器法显影。",
+      userFacingMethodPrompt: mainDeviceMethod?.userFacingMethodPrompt ?? "这里可以先停一下，等待处置方案显影。",
     },
     assetStage: {
       assetName: personalityAssetDeposition?.assetName ?? "人格资产待沉积",

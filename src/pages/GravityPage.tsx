@@ -141,7 +141,15 @@ function YaoTextBlock({ kicker, title, lines, muted }: YaoTextBlockProps) {
 
 function HexagramCodeDeliveryShell() {
   const navigate = useNavigate();
-  const [stage, setStage] = useState<"ritual" | "card" | "reading">("ritual");
+  const [sixDimensionStep, setSixDimensionStep] = useState(0);
+  const [selectedSpaceAction, setSelectedSpaceAction] = useState<{
+    spaceIndex: number;
+    spaceName: string;
+    yaoLayer: string;
+    pauseSignal: string;
+    pauseReason: string;
+    transmissionReading: string;
+  } | null>(null);
   const [readModel] = useState(() => getGuanyaoR8ReadModel());
   const fieldReadings = [
     {
@@ -160,12 +168,37 @@ function HexagramCodeDeliveryShell() {
       text: readModel.hexagramStage.interactionReading,
     },
     {
-      dimension: "六爻传导摘要",
-      tag: "YAO_CHAIN",
+      dimension: "观变空间摘要",
+      tag: "SPACE_CHAIN",
       text: readModel.yaoStage.chainSummary,
     },
   ];
   const [expandedReading, setExpandedReading] = useState<string>(fieldReadings[0]?.dimension ?? "上码显影");
+  const currentSpace = sixDimensionStep >= 1 && sixDimensionStep <= 6 ? readModel.yaoStage.transmissions[sixDimensionStep - 1] : null;
+  const currentSpaceSignal =
+    currentSpace?.pauseSignal === "clear" || currentSpace?.pauseSignal === "strong"
+      ? "本局已出现行动信号。左滑进行处置，右滑进入下一空间。"
+      : currentSpace?.pauseSignal === "soft"
+        ? "本局出现轻微信号。右滑进入下一空间。"
+        : "继续进入下一空间。";
+
+  function handleNextSpace() {
+    setSelectedSpaceAction(null);
+    setSixDimensionStep((currentStep) => Math.min(currentStep + 1, 7));
+  }
+
+  function handleSelectSpaceAction() {
+    if (!currentSpace) return;
+
+    setSelectedSpaceAction({
+      spaceIndex: sixDimensionStep,
+      spaceName: currentSpace.spaceName,
+      yaoLayer: currentSpace.yaoLayer,
+      pauseSignal: currentSpace.pauseSignal,
+      pauseReason: currentSpace.pauseReason,
+      transmissionReading: currentSpace.transmissionReading,
+    });
+  }
 
   return (
     <main
@@ -190,74 +223,11 @@ function HexagramCodeDeliveryShell() {
           letterSpacing: "0.16em",
         }}
       >
-        05｜本局卦码生成
+        {sixDimensionStep === 0 ? "05｜本局卦码生成" : sixDimensionStep === 7 ? "05｜六维观变完成" : `GY / SPACE-0${sixDimensionStep} / ${currentSpace?.spaceCode ?? "SPACE"}`}
       </span>
 
-      {stage === "ritual" ? (
+      {sixDimensionStep === 0 ? (
         <>
-          <section
-            style={{
-              display: "grid",
-              gap: 12,
-              padding: "16px 0",
-              borderTop: "1px solid rgba(199,169,107,0.34)",
-              borderBottom: "1px solid rgba(85,85,85,0.46)",
-            }}
-          >
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 17, lineHeight: 1.72 }}>
-              下卦，已入底。
-              <br />
-              上卦，已压顶。
-            </p>
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 15, lineHeight: 1.72 }}>
-              母码与压力场，
-              <br />
-              正在发生对撞。
-            </p>
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.62 }}>
-              卦场正在闭合。
-            </p>
-          </section>
-          <span
-            style={{
-              color: "rgba(245,245,245,0.34)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 11,
-              letterSpacing: "0.13em",
-            }}
-          >
-            HEXAGRAM_FIELD_COLLIDING
-          </span>
-          <button
-            type="button"
-            onClick={() => setStage("card")}
-            style={{
-              width: "100%",
-              minHeight: 52,
-              marginTop: "auto",
-              border: "1px solid rgba(199,169,107,0.52)",
-              borderRadius: 0,
-              background: "transparent",
-              color: "rgba(245,245,245,0.9)",
-              fontSize: 15,
-              letterSpacing: "0.04em",
-            }}
-          >
-            立即查看本局卦码
-          </button>
-        </>
-      ) : null}
-
-      {stage === "card" ? (
-        <>
-          <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 17, lineHeight: 1.68 }}>
-            本局卦码已生成。
-          </p>
-          <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.72 }}>
-            卦码不是答案。
-            <br />
-            这是你当前所处的人格行为场域。
-          </p>
           <section
             aria-label="本局卦码卡"
             style={{
@@ -309,28 +279,6 @@ function HexagramCodeDeliveryShell() {
               HEXAGRAM_CODE_RENDERED
             </span>
           </section>
-          <button
-            type="button"
-            onClick={() => setStage("reading")}
-            style={{
-              width: "100%",
-              minHeight: 52,
-              marginTop: "auto",
-              border: "1px solid rgba(199,169,107,0.52)",
-              borderRadius: 0,
-              background: "transparent",
-              color: "rgba(245,245,245,0.9)",
-              fontSize: 15,
-              letterSpacing: "0.04em",
-            }}
-          >
-            向下查看本局现场读数
-          </button>
-        </>
-      ) : null}
-
-      {stage === "reading" ? (
-        <>
           <h1 style={{ margin: 0, color: "rgba(245,245,245,0.88)", fontSize: "clamp(26px, 8vw, 38px)", lineHeight: 1.12, fontWeight: 420 }}>
             本局现场读数
           </h1>
@@ -393,11 +341,11 @@ function HexagramCodeDeliveryShell() {
             ))}
           </section>
           <p style={{ margin: "4px 0 0", color: "rgba(245,245,245,0.72)", fontSize: 15, lineHeight: 1.68 }}>
-            六爻传导已经显影，下一步读取本局主切口。
+            六维人格空间已经打开。下一步进入逐屏观变。
           </p>
           <button
             type="button"
-            onClick={() => navigate(GUANYAO_ROUTES.breachScan)}
+            onClick={handleNextSpace}
             style={{
               width: "100%",
               minHeight: 52,
@@ -410,7 +358,194 @@ function HexagramCodeDeliveryShell() {
               letterSpacing: "0.04em",
             }}
           >
-            进入人格行为动力引擎
+            进入六维人格空间
+          </button>
+        </>
+      ) : null}
+
+      {currentSpace ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
+              {currentSpace.spaceName}
+            </h1>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 15, lineHeight: 1.68 }}>
+              {currentSpace.spaceSubtitle}
+            </p>
+          </header>
+
+          <section
+            aria-label={`${currentSpace.spaceName}读数`}
+            style={{
+              display: "grid",
+              gap: 14,
+              padding: "16px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.38)",
+            }}
+          >
+            <div style={{ display: "grid", gap: 6 }}>
+              <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+                主读数
+              </span>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.68 }}>
+                {currentSpace.transmissionReading}
+              </p>
+            </div>
+            <div style={{ display: "grid", gap: 6 }}>
+              <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+                惯性信号
+              </span>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 15, lineHeight: 1.62 }}>
+                {currentSpace.inertiaSignal}
+              </p>
+            </div>
+            <div style={{ display: "grid", gap: 6 }}>
+              <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+                如果—那么模式
+              </span>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.6)", fontSize: 14, lineHeight: 1.6 }}>
+                当这个信号再次出现，你的旧反应会更容易沿着这里启动。
+              </p>
+            </div>
+          </section>
+
+          <section
+            aria-label="行动信号"
+            style={{
+              display: "grid",
+              gap: 8,
+              padding: "14px 0",
+              borderBottom: "1px solid rgba(85,85,85,0.28)",
+            }}
+          >
+            <span style={{ color: "rgba(245,245,245,0.4)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+              ACTION_SIGNAL // {currentSpace.pauseSignal.toUpperCase()} // {currentSpace.interventionPotential}
+            </span>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 15, lineHeight: 1.62 }}>
+              {currentSpaceSignal}
+            </p>
+            {currentSpace.pauseSignal !== "none" ? (
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 14, lineHeight: 1.56 }}>
+                {currentSpace.pauseReason}
+              </p>
+            ) : null}
+          </section>
+
+          {selectedSpaceAction ? (
+            <section
+              aria-label="处置确认"
+              style={{
+                display: "grid",
+                gap: 8,
+                padding: "14px 0",
+                borderTop: "1px solid rgba(0,184,212,0.34)",
+                borderBottom: "1px solid rgba(0,184,212,0.2)",
+              }}
+            >
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 16, lineHeight: 1.62 }}>
+                你选择停在：
+                <br />
+                {selectedSpaceAction.spaceName}
+              </p>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 14, lineHeight: 1.56 }}>
+                系统将把这一空间作为后续处置入口。
+              </p>
+            </section>
+          ) : null}
+
+          <div style={{ display: "grid", gap: 10, marginTop: "auto" }}>
+            {!selectedSpaceAction && currentSpace.pauseSignal !== "none" ? (
+              <button
+                type="button"
+                onClick={handleSelectSpaceAction}
+                style={{
+                  width: "100%",
+                  minHeight: 52,
+                  border: "1px solid rgba(0,184,212,0.5)",
+                  borderRadius: 0,
+                  background: "transparent",
+                  color: "rgba(245,245,245,0.9)",
+                  fontSize: 15,
+                  letterSpacing: "0.04em",
+                }}
+              >
+                进行处置
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={handleNextSpace}
+              style={{
+                width: "100%",
+                minHeight: 52,
+                border: "1px solid rgba(199,169,107,0.52)",
+                borderRadius: 0,
+                background: "transparent",
+                color: "rgba(245,245,245,0.9)",
+                fontSize: 15,
+                letterSpacing: "0.04em",
+              }}
+            >
+              进入下一空间
+            </button>
+          </div>
+        </>
+      ) : null}
+
+      {sixDimensionStep === 7 ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
+              六维观变完成。
+            </h1>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 15, lineHeight: 1.68 }}>
+              系统已捕获本局行动信号。
+            </p>
+          </header>
+
+          <section
+            aria-label="行动信号总览"
+            style={{
+              display: "grid",
+              gap: 12,
+              padding: "16px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.38)",
+            }}
+          >
+            {[
+              ["主要行动点", readModel.yaoStage.mainCut.userFacingReason],
+              ["辅助行动点", readModel.yaoStage.secondaryCut.userFacingReason],
+              ["深层保护点", readModel.yaoStage.rootCut.userFacingReason],
+            ].map(([label, value]) => (
+              <div key={label} style={{ display: "grid", gap: 6, borderTop: "1px solid rgba(85,85,85,0.22)", paddingTop: 10 }}>
+                <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+                  {label}
+                </span>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 14, lineHeight: 1.6 }}>
+                  {value}
+                </p>
+              </div>
+            ))}
+          </section>
+
+          <button
+            type="button"
+            onClick={() => navigate(GUANYAO_ROUTES.breachScan)}
+            style={{
+              width: "100%",
+              minHeight: 52,
+              marginTop: "auto",
+              border: "1px solid rgba(0,184,212,0.5)",
+              borderRadius: 0,
+              background: "transparent",
+              color: "rgba(245,245,245,0.9)",
+              fontSize: 15,
+              letterSpacing: "0.04em",
+            }}
+          >
+            进入处置页
           </button>
         </>
       ) : null}
@@ -685,7 +820,7 @@ export function GravityPage() {
                     下一步，只剩破口阵列扫描。
                   </GuanyaoText>
                   <GuanyaoText className="gy-gravity-r1-muted" size="eyebrow" tone="faint">
-                    本局结构已经形成，等待用户选择下刀。
+                    本局结构已经形成，等待用户选择处置入口。
                   </GuanyaoText>
                 </>
               ) : null}

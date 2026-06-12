@@ -13,7 +13,7 @@ export function ChoicePage() {
     {
       id: "main-cut",
       type: "primary",
-      tag: `主切口｜${readModel.yaoStage.mainCut.yaoPosition}`,
+      tag: `主要行动点｜${readModel.yaoStage.mainCut.yaoPosition}`,
       title: `${readModel.yaoStage.mainCut.yaoLayer}`,
       description: readModel.yaoStage.mainCut.userFacingReason,
       riskLine: readModel.yaoStage.chainSummary,
@@ -21,7 +21,7 @@ export function ChoicePage() {
     {
       id: "secondary-cut",
       type: "secondary",
-      tag: `副切口｜${readModel.yaoStage.secondaryCut.yaoPosition}`,
+      tag: `辅助行动点｜${readModel.yaoStage.secondaryCut.yaoPosition}`,
       title: `${readModel.yaoStage.secondaryCut.yaoLayer}`,
       description: readModel.yaoStage.secondaryCut.userFacingReason,
       riskLine: "这一层不是终点，但已经出现明显信号。",
@@ -29,7 +29,7 @@ export function ChoicePage() {
     {
       id: "root-cut",
       type: "secondary",
-      tag: `根切口｜${readModel.yaoStage.rootCut.yaoPosition}`,
+      tag: `深层保护点｜${readModel.yaoStage.rootCut.yaoPosition}`,
       title: `${readModel.yaoStage.rootCut.yaoLayer}`,
       description: readModel.yaoStage.rootCut.userFacingReason,
       riskLine: "这里记录本局真正想保护的东西。",
@@ -85,7 +85,7 @@ export function ChoicePage() {
           letterSpacing: "0.12em",
         }}
       >
-        YAO_TRANSMISSION_CHAIN_RENDERED
+        SIX_DIMENSION_SPACE_RENDERED
       </span>
 
       <header style={{ display: "grid", gap: 10 }}>
@@ -113,7 +113,7 @@ export function ChoicePage() {
       </header>
 
       <section
-        aria-label="切口显影"
+        aria-label="行动点显影"
         style={{
           display: "grid",
           gap: 12,
@@ -196,7 +196,7 @@ export function ChoicePage() {
           lineHeight: 1.6,
         }}
       >
-        主切口、副切口、根切口已从六爻传导链中显影。
+        主要行动点、辅助行动点、深层保护点已从六维人格空间中显影。
       </p>
 
       <button
@@ -214,7 +214,7 @@ export function ChoicePage() {
           letterSpacing: "0.04em",
         }}
       >
-        确认下刀位置 / 激活爻器
+        进入处置页
       </button>
     </main>
   );
