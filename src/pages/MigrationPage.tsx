@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { migrations } from "../data/migrations";
@@ -10,8 +11,6 @@ import { buildYaoCodeCard, buildYaoCodeResult, normalizeGuaFieldFromLegacy } fro
 import {
   activateYaoDeviceByBreachId,
   getDemoBreachScan,
-  getDemoRepairMethodDelivery,
-  getDemoYaoDeviceDelivery,
   getDemoPressureSeed,
   getRepairMethodByDeviceId,
 } from "../services/guanyaoInteractionService";
@@ -259,14 +258,13 @@ function BehaviorDefenseKit() {
 function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
   const navigate = useNavigate();
   const selectedBreachId = window.localStorage.getItem(SELECTED_BREACH_KEY) ?? "mud-point";
-  const deviceDelivery = getDemoYaoDeviceDelivery(selectedBreachId);
-  const repairDelivery = getDemoRepairMethodDelivery(deviceDelivery.deviceId);
+  const readModel = getGuanyaoR8ReadModel();
   const isRepair = mode === "repair";
 
   function handleNext() {
     if (isRepair) {
       window.localStorage.setItem(ASSET_STATUS_KEY, "activated");
-      window.localStorage.setItem(SELECTED_BREACH_KEY, deviceDelivery.sourceBreachId);
+      window.localStorage.setItem(SELECTED_BREACH_KEY, selectedBreachId);
       navigate(GUANYAO_ROUTES.archive);
       return;
     }
@@ -307,7 +305,7 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
           letterSpacing: "0.12em",
         }}
       >
-        {isRepair ? repairDelivery.methodStatus : deviceDelivery.deviceStatus}
+        {isRepair ? "DEVICE_METHOD_RENDERED" : "CUT_TO_DEVICE_METHOD_READY"}
       </span>
 
       <header style={{ display: "grid", gap: 10 }}>
@@ -330,7 +328,7 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
             lineHeight: 1.72,
           }}
         >
-          {isRepair ? "这是你今天可以执行的第一刀。" : "它不是解释，而是一个可以介入旧反应的装置。"}
+          {isRepair ? readModel.deviceStage.userFacingMethodPrompt : readModel.deviceStage.methodSummary}
         </p>
       </header>
 
@@ -355,13 +353,15 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
                 letterSpacing: "0.13em",
               }}
             >
-              器法｜{repairDelivery.methodName}
+              器法｜{readModel.deviceStage.deviceName}
             </span>
             {[
-              ["第一动作", repairDelivery.firstAction],
-              ["禁止动作", repairDelivery.forbiddenAction],
-              ["复发提醒", repairDelivery.relapseWarning],
-              ["执行窗口", repairDelivery.executionWindow],
+              ["反本能动作", readModel.deviceStage.antiInstinctAction],
+              ["第一动作", readModel.deviceStage.firstAction],
+              ["72小时动作", readModel.deviceStage.next72HoursAction],
+              ["30天动作", readModel.deviceStage.thirtyDayAction],
+              ["暂时不要", readModel.deviceStage.doNotDo.join(" / ")],
+              ["现实检查", readModel.deviceStage.realityCheck.join(" / ")],
             ].map(([label, value]) => (
               <div key={label} style={{ display: "grid", gap: 6, borderTop: "1px solid rgba(85,85,85,0.28)", paddingTop: 10 }}>
                 <span
@@ -390,23 +390,19 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
                 letterSpacing: "0.13em",
               }}
             >
-              来源切口｜{deviceDelivery.sourceBreachTitle}
+              来源切口｜{readModel.yaoStage.mainCut.yaoPosition} / {readModel.yaoStage.mainCut.yaoLayer}
             </span>
             <strong style={{ color: "rgba(245,245,245,0.92)", fontSize: 30, lineHeight: 1.1, fontWeight: 400 }}>
-              {deviceDelivery.deviceName}
+              {readModel.deviceStage.deviceName}
             </strong>
             <span style={{ color: "rgba(199,169,107,0.7)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12 }}>
-              {deviceDelivery.deviceCode}
+              {readModel.hexagramStage.hexagramCode}｜{readModel.hexagramStage.hexagramName}
             </span>
             <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.72 }}>
-              它不是让你更强。
-              <br />
-              而是在你再次想硬推时，
-              <br />
-              把你钉回一个可等待的位置。
+              {readModel.deviceStage.methodSummary}
             </p>
             <p style={{ margin: 0, color: "rgba(199,169,107,0.68)", fontSize: 13, lineHeight: 1.56 }}>
-              {deviceDelivery.coreFunction}
+              {readModel.yaoStage.mainCut.userFacingReason}
             </p>
           </>
         )}

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TextLines } from "../components/TextLines";
+import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import {
   activateYaoDeviceByBreachId,
-  getDemoArchiveAssetSnapshot,
   getDemoBreachScan,
   getDemoMotherCode,
   getDemoPressureExposureOptions,
@@ -377,7 +377,7 @@ const archiveVaultSlots = [
 type ArchiveVaultSlotKey = (typeof archiveVaultSlots)[number]["key"];
 
 function R7ArchiveAssetShell() {
-  const snapshot = getDemoArchiveAssetSnapshot();
+  const readModel = getGuanyaoR8ReadModel();
 
   return (
     <main
@@ -412,7 +412,7 @@ function R7ArchiveAssetShell() {
           letterSpacing: "0.12em",
         }}
       >
-        {snapshot.archiveStatus}
+        PERSONALITY_ASSET_DEPOSITION_RENDERED
       </span>
 
       <header style={{ display: "grid", gap: 10 }}>
@@ -435,9 +435,9 @@ function R7ArchiveAssetShell() {
             lineHeight: 1.72,
           }}
         >
-          你完成的不是一次分析。
+          {readModel.assetStage.assetSummary}
           <br />
-          你完成了一次旧反应的切断记录。
+          {readModel.assetStage.archiveSummary}
         </p>
       </header>
 
@@ -460,13 +460,13 @@ function R7ArchiveAssetShell() {
             letterSpacing: "0.13em",
           }}
         >
-          {snapshot.package.title}
+          {readModel.assetStage.assetName}
         </span>
         {[
-          ["本局剧本", snapshot.package.scriptName],
-          ["主切口", snapshot.package.primaryBreach],
-          ["本局爻器", snapshot.package.yaoDevice],
-          ["今日第一刀", snapshot.package.firstCut],
+          ["本局卦码", `${readModel.hexagramStage.hexagramCode}｜${readModel.hexagramStage.hexagramName}｜${readModel.hexagramStage.hexagramTitle}`],
+          ["主切口", readModel.yaoStage.mainCut.userFacingReason],
+          ["本局器法", readModel.deviceStage.deviceName],
+          ["今日第一步", readModel.deviceStage.firstAction],
         ].map(([label, value]) => (
           <div key={label} style={{ display: "grid", gap: 5, borderTop: "1px solid rgba(85,85,85,0.28)", paddingTop: 9 }}>
             <span
@@ -500,12 +500,12 @@ function R7ArchiveAssetShell() {
           今日第一刀
         </strong>
         {[
-          ["器法", snapshot.todayFirstCut.methodName],
-          ["第一动作", snapshot.todayFirstCut.firstAction],
-          ["禁止动作", snapshot.todayFirstCut.forbiddenAction],
-          ["执行窗口", snapshot.todayFirstCut.executionWindow],
-          ["复发提醒", snapshot.todayFirstCut.relapseWarning],
-        ].map(([label, value]) => (
+              ["器法", readModel.deviceStage.deviceName],
+              ["反本能动作", readModel.deviceStage.antiInstinctAction],
+              ["第一动作", readModel.deviceStage.firstAction],
+              ["72小时动作", readModel.deviceStage.next72HoursAction],
+              ["30天动作", readModel.deviceStage.thirtyDayAction],
+            ].map(([label, value]) => (
           <div key={label} style={{ display: "grid", gap: 5, borderTop: "1px solid rgba(85,85,85,0.22)", paddingTop: 9 }}>
             <span
               style={{
@@ -535,13 +535,13 @@ function R7ArchiveAssetShell() {
         }}
       >
         <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 22, lineHeight: 1.18, fontWeight: 390 }}>
-          {snapshot.defense90d.title}
+          {readModel.assetStage.defensePath90d.pathName}
         </strong>
         <p style={{ margin: 0, color: "rgba(245,245,245,0.62)", fontSize: 14, lineHeight: 1.64 }}>
-          {snapshot.defense90d.intro}
+          {readModel.assetStage.defensePath90d.antiInstinctReminder}
         </p>
-        {snapshot.defense90d.phases.map((phase) => (
-          <div key={phase.range} style={{ display: "grid", gap: 5, borderTop: "1px solid rgba(85,85,85,0.22)", paddingTop: 9 }}>
+        {readModel.assetStage.defensePath90d.phases.map((phase) => (
+          <div key={phase.phaseId} style={{ display: "grid", gap: 5, borderTop: "1px solid rgba(85,85,85,0.22)", paddingTop: 9 }}>
             <span
               style={{
                 color: "rgba(199,169,107,0.7)",
@@ -550,12 +550,20 @@ function R7ArchiveAssetShell() {
                 letterSpacing: "0.12em",
               }}
             >
-              {phase.range}｜{phase.name}
+              {phase.phaseId}｜{phase.phaseName}
             </span>
             <strong style={{ color: "rgba(245,245,245,0.76)", fontSize: 15, lineHeight: 1.48, fontWeight: 330 }}>
-              {phase.goal}
+              {phase.phaseGoal}｜{phase.keyAction}
+            </strong>
+            <strong style={{ color: "rgba(245,245,245,0.56)", fontSize: 13, lineHeight: 1.48, fontWeight: 300 }}>
+              {phase.riskSignal}｜{phase.defenseInstruction}
             </strong>
           </div>
+        ))}
+        {readModel.assetStage.defensePath90d.relapseWarning.map((warning) => (
+          <p key={warning} style={{ margin: 0, color: "rgba(245,245,245,0.52)", fontSize: 13, lineHeight: 1.5 }}>
+            {warning}
+          </p>
         ))}
       </section>
 
@@ -572,9 +580,15 @@ function R7ArchiveAssetShell() {
         <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 22, lineHeight: 1.18, fontWeight: 390 }}>
           人格资产沉积
         </strong>
-        {snapshot.deposit.map((item) => (
+        {[
+          ["资产类型", readModel.assetStage.assetType],
+          ["旧模式", readModel.assetStage.beforePattern],
+          ["新能力", readModel.assetStage.afterCapability],
+          ["沉积摘要", readModel.assetStage.archiveSummary],
+          ["迁移轨迹", readModel.assetStage.migrationTrace.join(" / ")],
+        ].map(([label, value]) => (
           <div
-            key={item.label}
+            key={label}
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(0, 0.8fr) minmax(0, 1fr)",
@@ -592,10 +606,10 @@ function R7ArchiveAssetShell() {
                 letterSpacing: "0.12em",
               }}
             >
-              {item.label}
+              {label}
             </span>
             <strong style={{ color: "rgba(245,245,245,0.76)", fontSize: 14, lineHeight: 1.44, fontWeight: 330 }}>
-              {item.value}
+              {value}
             </strong>
           </div>
         ))}
@@ -654,7 +668,7 @@ export function ArchivePage() {
         <section className="gy-archive-vault-latest" aria-label={demoAssetStatus === "sealed" ? "封存资产" : "已破局资产"}>
           <span>{demoAssetStatus === "sealed" ? "封存资产" : "已破局资产"}</span>
           <strong>{demoAssetStatus === "sealed" ? "本局已封存" : "本次观爻已入库"}</strong>
-          <h2>{demoAssetStatus === "sealed" ? "爻器未激活" : demoRepairMethod?.name ?? "撤回一个过早承诺"}</h2>
+          <h2>{demoAssetStatus === "sealed" ? "爻器未激活" : demoRepairMethod?.name ?? "器法待生成"}</h2>
           <p>{demoAssetStatus === "sealed" ? "你已经看见破口，但选择暂不下刀。" : "压力没有白白消耗你，它已经沉积为一份人格资产。"}</p>
           <p>母码：{demoMother.title}</p>
           <p>现实压力：{demoPressure.text}</p>
@@ -671,7 +685,7 @@ export function ArchivePage() {
             </>
           ) : (
             <>
-              <p>器法：{demoRepairMethod?.name ?? "撤回一个过早承诺"}</p>
+              <p>器法：{demoRepairMethod?.name ?? "器法待生成"}</p>
               <p>第一动作：{demoRepairMethod?.firstAction ?? "今天暂停一个你已经答应、但其实风险未明的推进动作。"}</p>
               <p>禁止动作：{demoRepairMethod?.forbiddenAction ?? "不要继续用“我能处理”掩盖你已经陷进去。"}</p>
               <p>复发提醒：{demoRepairMethod?.relapseReminder ?? "你最容易在别人质疑你能力时，重新启动强行推进。"}</p>

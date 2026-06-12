@@ -1,20 +1,45 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
-import { getDemoBreachScanReading } from "../services/guanyaoInteractionService";
 
 const SELECTED_BREACH_KEY = "guanyao:selectedBreachId";
 const ASSET_STATUS_KEY = "guanyao:assetStatus";
 
 export function ChoicePage() {
   const navigate = useNavigate();
-  const [breachReading] = useState(() => getDemoBreachScanReading());
-  const breaches = [breachReading.primaryBreach, ...breachReading.secondaryBreaches];
+  const [readModel] = useState(() => getGuanyaoR8ReadModel());
+  const breaches = [
+    {
+      id: "main-cut",
+      type: "primary",
+      tag: `主切口｜${readModel.yaoStage.mainCut.yaoPosition}`,
+      title: `${readModel.yaoStage.mainCut.yaoLayer}`,
+      description: readModel.yaoStage.mainCut.userFacingReason,
+      riskLine: readModel.yaoStage.chainSummary,
+    },
+    {
+      id: "secondary-cut",
+      type: "secondary",
+      tag: `副切口｜${readModel.yaoStage.secondaryCut.yaoPosition}`,
+      title: `${readModel.yaoStage.secondaryCut.yaoLayer}`,
+      description: readModel.yaoStage.secondaryCut.userFacingReason,
+      riskLine: "这一层不是终点，但已经出现明显信号。",
+    },
+    {
+      id: "root-cut",
+      type: "secondary",
+      tag: `根切口｜${readModel.yaoStage.rootCut.yaoPosition}`,
+      title: `${readModel.yaoStage.rootCut.yaoLayer}`,
+      description: readModel.yaoStage.rootCut.userFacingReason,
+      riskLine: "这里记录本局真正想保护的东西。",
+    },
+  ] as const;
   const [selectedBreachId, setSelectedBreachId] = useState(() => {
-    return window.localStorage.getItem(SELECTED_BREACH_KEY) ?? breachReading.primaryBreach.id;
+    return window.localStorage.getItem(SELECTED_BREACH_KEY) ?? breaches[0].id;
   });
 
-  const selectedBreach = breaches.find((breach) => breach.id === selectedBreachId) ?? breachReading.primaryBreach;
+  const selectedBreach = breaches.find((breach) => breach.id === selectedBreachId) ?? breaches[0];
 
   function handleSelectBreach(breachId: string) {
     setSelectedBreachId(breachId);
@@ -60,7 +85,7 @@ export function ChoicePage() {
           letterSpacing: "0.12em",
         }}
       >
-        {breachReading.engineStatus}
+        YAO_TRANSMISSION_CHAIN_RENDERED
       </span>
 
       <header style={{ display: "grid", gap: 10 }}>
@@ -73,7 +98,7 @@ export function ChoicePage() {
             fontWeight: 420,
           }}
         >
-          {breachReading.headline}
+          人格行为动力引擎启动
         </h1>
         <p
           style={{
@@ -83,9 +108,7 @@ export function ChoicePage() {
             lineHeight: 1.72,
           }}
         >
-          系统正在从本局人格行为场域中，
-          <br />
-          扫描真正卡住你的切口。
+          {readModel.yaoStage.chainSummary}
         </p>
       </header>
 
@@ -173,7 +196,7 @@ export function ChoicePage() {
           lineHeight: 1.6,
         }}
       >
-        {breachReading.next.prompt}
+        主切口、副切口、根切口已从六爻传导链中显影。
       </p>
 
       <button
@@ -191,7 +214,7 @@ export function ChoicePage() {
           letterSpacing: "0.04em",
         }}
       >
-        {breachReading.next.cta}
+        确认下刀位置 / 激活爻器
       </button>
     </main>
   );

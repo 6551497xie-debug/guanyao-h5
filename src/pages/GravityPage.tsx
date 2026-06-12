@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
+import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
-import { getDemoDynamicsResult, getDemoHexagramFieldReading } from "../services/guanyaoInteractionService";
+import { getDemoDynamicsResult } from "../services/guanyaoInteractionService";
 import { getSession } from "../services/sessionService";
 import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getCollapseYaoTexts, getGravityYaoTexts } from "../services/yaoTextService";
 import { appendInteractiveYaoChoice, generateMockAutoYaoPath, getAutoYaoPath, getInteractiveYaoPath, resetInteractiveYaoPath } from "../services/trajectoryService";
-import type { GuanyaoSession, HexagramFieldReading, MotherCodeResult, SceneSlice, YaoBit } from "../types";
+import type { GuanyaoSession, MotherCodeResult, SceneSlice, YaoBit } from "../types";
 
 const USE_HEXAGRAM_DELIVERY_SHELL = true;
 
@@ -141,10 +142,30 @@ function YaoTextBlock({ kicker, title, lines, muted }: YaoTextBlockProps) {
 function HexagramCodeDeliveryShell() {
   const navigate = useNavigate();
   const [stage, setStage] = useState<"ritual" | "card" | "reading">("ritual");
-  const [fieldReading] = useState(() => getDemoHexagramFieldReading());
-  const [expandedReading, setExpandedReading] = useState<HexagramFieldReading["fieldReadings"][number]["dimension"] | "">(
-    fieldReading.fieldReadings[0]?.dimension ?? "母码惯性",
-  );
+  const [readModel] = useState(() => getGuanyaoR8ReadModel());
+  const fieldReadings = [
+    {
+      dimension: "上码显影",
+      tag: readModel.hexagramStage.upperTrigram,
+      text: readModel.hexagramStage.upperCodeReading,
+    },
+    {
+      dimension: "三线撞击",
+      tag: readModel.hexagramStage.dominantLine,
+      text: `人格动力线 ${readModel.hexagramStage.lineImpact.personalityDynamicsLine} / 系统机制线 ${readModel.hexagramStage.lineImpact.systemMechanismLine} / 生命周期线 ${readModel.hexagramStage.lineImpact.lifecycleStageLine}`,
+    },
+    {
+      dimension: "人格重力",
+      tag: readModel.hexagramStage.gravityLabel,
+      text: readModel.hexagramStage.interactionReading,
+    },
+    {
+      dimension: "六爻传导摘要",
+      tag: "YAO_CHAIN",
+      text: readModel.yaoStage.chainSummary,
+    },
+  ];
+  const [expandedReading, setExpandedReading] = useState<string>(fieldReadings[0]?.dimension ?? "上码显影");
 
   return (
     <main
@@ -259,13 +280,13 @@ function HexagramCodeDeliveryShell() {
               [ 本局卦码卡 ]
             </span>
             <span style={{ color: "rgba(245,245,245,0.38)", fontSize: 12, lineHeight: 1.4 }}>
-              No.{fieldReading.identity.hexagramNo}
+              No.{readModel.hexagramStage.hexagramCode}
             </span>
             <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 30, fontWeight: 380, lineHeight: 1.15 }}>
-              {fieldReading.identity.hexagramName}
+              {readModel.hexagramStage.lowerTrigram}{readModel.hexagramStage.upperTrigram}{readModel.hexagramStage.hexagramName}
             </strong>
             <span style={{ color: "rgba(199,169,107,0.76)", fontSize: 17, lineHeight: 1.4 }}>
-              《{fieldReading.identity.fieldTitle}》
+              《{readModel.hexagramStage.hexagramTitle}》
             </span>
             <span
               style={{
@@ -275,7 +296,7 @@ function HexagramCodeDeliveryShell() {
                 letterSpacing: "0.1em",
               }}
             >
-              {fieldReading.scriptState.scriptName}
+              上{readModel.hexagramStage.upperTrigram} 下{readModel.hexagramStage.lowerTrigram}｜{readModel.hexagramStage.gravityLabel}
             </span>
             <span
               style={{
@@ -285,7 +306,7 @@ function HexagramCodeDeliveryShell() {
                 letterSpacing: "0.13em",
               }}
             >
-              {fieldReading.identity.renderStatus}
+              HEXAGRAM_CODE_RENDERED
             </span>
           </section>
           <button
@@ -323,19 +344,13 @@ function HexagramCodeDeliveryShell() {
             }}
           >
             <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.62 }}>
-              {fieldReading.hitText.line1}
+              {readModel.hexagramStage.upperCodeReading}
               <br />
-              {fieldReading.hitText.line2}
-              {fieldReading.hitText.line3 ? (
-                <>
-                  <br />
-                  {fieldReading.hitText.line3}
-                </>
-              ) : null}
+              {readModel.yaoStage.chainSummary}
             </p>
           </section>
           <section style={{ display: "grid", gap: 10 }}>
-            {fieldReading.fieldReadings.map((reading) => (
+            {fieldReadings.map((reading) => (
               <article
                 key={reading.dimension}
                 style={{
@@ -378,7 +393,7 @@ function HexagramCodeDeliveryShell() {
             ))}
           </section>
           <p style={{ margin: "4px 0 0", color: "rgba(245,245,245,0.72)", fontSize: 15, lineHeight: 1.68 }}>
-            {fieldReading.next.prompt}
+            六爻传导已经显影，下一步读取本局主切口。
           </p>
           <button
             type="button"
@@ -395,7 +410,7 @@ function HexagramCodeDeliveryShell() {
               letterSpacing: "0.04em",
             }}
           >
-            {fieldReading.next.cta}
+            进入人格行为动力引擎
           </button>
         </>
       ) : null}
