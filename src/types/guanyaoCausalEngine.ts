@@ -257,6 +257,54 @@ export interface DeviceMethodPackage {
   methodPackageSummary: string;
 }
 
+export interface DefensePhase {
+  phaseId: "first_72_hours" | "day_1_to_30" | "day_31_to_90";
+  phaseName: string;
+  phaseGoal: string;
+  keyAction: string;
+  riskSignal: string;
+  defenseInstruction: string;
+}
+
+export interface DefensePath90d {
+  pathName: string;
+  sourceDeviceMethod: DeviceMethod;
+  phases: DefensePhase[];
+  relapseWarning: string[];
+  antiInstinctReminder: string;
+}
+
+export type PersonalityAssetType =
+  | "clarity"
+  | "boundary"
+  | "rebuild"
+  | "communication"
+  | "risk_control"
+  | "responsibility"
+  | "self_regulation";
+
+export interface PersonalityAssetDeposition {
+  assetId: string;
+  sourceHexagramCode: string;
+  sourceHexagramName: string;
+  sourceHexagramTitle: string;
+  motherCode: string;
+  upperTrigram: Trigram;
+  lowerTrigram: Trigram;
+  sourcePressureLabel: string;
+  sourceGravityValue: PersonalityGravityValue;
+  sourceMainCut: CutCandidate;
+  sourceDeviceMethod: DeviceMethod;
+  assetName: string;
+  assetType: PersonalityAssetType;
+  assetSummary: string;
+  beforePattern: string;
+  afterCapability: string;
+  defensePath90d: DefensePath90d;
+  archiveSummary: string;
+  migrationTrace: string[];
+}
+
 export interface BehaviorEngineScan {
   scanId: string;
   primaryBreachCandidate: string;
@@ -324,6 +372,7 @@ export interface GuanyaoCausalPipelineResult {
   currentHexagramProfile: CurrentHexagramProfile;
   yaoTransmissionChain?: YaoTransmissionChain;
   deviceMethodPackage?: DeviceMethodPackage;
+  personalityAssetDeposition?: PersonalityAssetDeposition;
   hexagramField: HexagramField;
   behaviorEngineScan: BehaviorEngineScan;
   breachPoints: BreachPoint[];

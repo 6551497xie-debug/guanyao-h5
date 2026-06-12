@@ -18,6 +18,9 @@ import type {
   DeviceMethod,
   DeviceMethodPackage,
   DeviceMethodType,
+  DefensePath90d,
+  PersonalityAssetDeposition,
+  PersonalityAssetType,
   DynamicFieldModifiers,
   EmotionalIntensity,
   ExternalEnvironmentType,
@@ -228,6 +231,7 @@ const requiredTraceSteps = [
   "pressure_field_to_current_hexagram_profile",
   "current_hexagram_profile_to_yao_transmission_chain",
   "yao_transmission_chain_to_device_method_package",
+  "device_method_package_to_personality_asset_deposition",
   "pressure_field_to_hexagram_field",
   "hexagram_field_to_behavior_scan",
   "behavior_scan_to_breach_points",
@@ -1027,6 +1031,211 @@ export const buildDeviceMethodPackage = (
   };
 };
 
+type PersonalityAssetDepositionTemplate = {
+  assetName: string;
+  assetType: PersonalityAssetType;
+  assetSummary: string;
+  beforePattern: string;
+  afterCapability: string;
+  defensePath90d: Omit<DefensePath90d, "sourceDeviceMethod">;
+  archiveSummary: string;
+  migrationTrace: string[];
+};
+
+const personalityAssetDepositionByHexagramCode: Record<string, PersonalityAssetDepositionTemplate> = {
+  "019": {
+    assetName: "家庭压力中的清晰沟通资产",
+    assetType: "communication",
+    assetSummary: "把家庭财务压力从模糊焦虑，沉积为清账、定界、分责的沟通能力。",
+    beforePattern: "用缓和、转开和腾挪暂时稳住气氛，但真实财务压力继续模糊。",
+    afterCapability: "能把家庭财务压力拆成真实账目、责任边界和下一步顺序。",
+    defensePath90d: {
+      pathName: "清账定界 90 天防御路径",
+      phases: [
+        {
+          phaseId: "first_72_hours",
+          phaseName: "前 72 小时｜停止模糊焦虑",
+          phaseGoal: "先停止模糊焦虑",
+          keyAction: "列出三项真实财务压力：金额、期限、责任人",
+          riskSignal: "又想说“先缓一缓”",
+          defenseInstruction: "只处理事实和数字，不讨论谁对谁错",
+        },
+        {
+          phaseId: "day_1_to_30",
+          phaseName: "第 1-30 天｜建立家庭财务优先级",
+          phaseGoal: "建立家庭财务优先级",
+          keyAction: "把必要支出、可延后支出、必须协商支出分开",
+          riskSignal: "重新把所有责任揽回自己身上",
+          defenseInstruction: "每一项支出都要对应责任边界",
+        },
+        {
+          phaseId: "day_31_to_90",
+          phaseName: "第 31-90 天｜防止重新模糊承压",
+          phaseGoal: "防止重新回到模糊承压",
+          keyAction: "每周复盘一次财务压力是否又被说轻或拖后",
+          riskSignal: "只处理气氛，不处理数字",
+          defenseInstruction: "用清晰账本替代表面缓和",
+        },
+      ],
+      relapseWarning: [
+        "又开始说“先缓一缓”",
+        "又把真实数字藏起来",
+        "又只想稳住气氛，不想定责任",
+      ],
+      antiInstinctReminder: "缓和不是问题，问题是用缓和替代清晰。",
+    },
+    archiveSummary: "家庭财务压力已沉积为清账、定界、分责的沟通资产。",
+    migrationTrace: [
+      "家庭财务压力显影为 019｜临｜悬崖边。",
+      "主切口落在四爻 behavior：缓和、转开、延后关键对话。",
+      "器法进入清账定界法。",
+      "资产沉积为家庭压力中的清晰沟通资产。",
+    ],
+  },
+  "047": {
+    assetName: "债务困局中的止滚重组资产",
+    assetType: "risk_control",
+    assetSummary: "把负债压力从反复周转，沉积为止滚、清债、分层重组的风险控制能力。",
+    beforePattern: "用拆东补西、短期周转和延后沟通维持表面缓和，但债务结构继续滚动。",
+    afterCapability: "能先停止债务继续滚大，再拆开债务结构，按风险优先级处理。",
+    defensePath90d: {
+      pathName: "止滚清债 90 天防御路径",
+      phases: [
+        {
+          phaseId: "first_72_hours",
+          phaseName: "前 72 小时｜先停止继续滚大",
+          phaseGoal: "先停止继续滚大",
+          keyAction: "列出全部债务：本金、利息、期限、逾期风险、关系风险",
+          riskSignal: "又想找一个新周转先顶过去",
+          defenseInstruction: "新增周转前，必须先看旧债是否继续滚大",
+        },
+        {
+          phaseId: "day_1_to_30",
+          phaseName: "第 1-30 天｜完成债务分层",
+          phaseGoal: "完成债务分层",
+          keyAction: "区分高息债、逾期风险债、人情债、家庭债、经营债",
+          riskSignal: "把“还能撑一下”当成解决方案",
+          defenseInstruction: "只按风险优先级处理，不按情绪压力处理",
+        },
+        {
+          phaseId: "day_31_to_90",
+          phaseName: "第 31-90 天｜建立复发防御",
+          phaseGoal: "建立复发防御",
+          keyAction: "每周检查是否出现新债补旧债、关系安抚替代结构处理",
+          riskSignal: "为了体面继续不说穿",
+          defenseInstruction: "体面不能靠拖延维持，只能靠结构重组恢复",
+        },
+      ],
+      relapseWarning: [
+        "又开始拆东补西",
+        "又把周转当解决",
+        "又为了关系和体面延后真实沟通",
+      ],
+      antiInstinctReminder: "能周转不等于能解决；止滚才是第一步。",
+    },
+    archiveSummary: "负债压力已沉积为止滚、清债、分层重组的风险控制资产。",
+    migrationTrace: [
+      "负债压力显影为 047｜困｜围墙里的沉默者。",
+      "主切口落在四爻 behavior：继续周转、拆东补西、延后沟通。",
+      "器法进入止滚清债法。",
+      "资产沉积为债务困局中的止滚重组资产。",
+    ],
+  },
+};
+
+const buildFallbackPersonalityAssetTemplate = (
+  deviceMethodPackage: DeviceMethodPackage,
+): PersonalityAssetDepositionTemplate => ({
+  assetName: `${deviceMethodPackage.mainDeviceMethod.deviceName}沉积资产`,
+  assetType: deviceMethodPackage.mainDeviceMethod.deviceType === "rebuild" ? "rebuild" : "self_regulation",
+  assetSummary: `把「${deviceMethodPackage.sourceHexagramName}」中的旧反应沉积为可复盘的反本能处理能力。`,
+  beforePattern: `旧反应顺着 ${deviceMethodPackage.selectedCut.yaoPosition} / ${deviceMethodPackage.selectedCut.yaoLayer} 自动展开。`,
+  afterCapability: deviceMethodPackage.mainDeviceMethod.methodSummary,
+  defensePath90d: {
+    pathName: `${deviceMethodPackage.mainDeviceMethod.deviceName} 90 天防御路径`,
+    phases: [
+      {
+        phaseId: "first_72_hours",
+        phaseName: "前 72 小时｜停止旧惯性",
+        phaseGoal: "先停止旧惯性",
+        keyAction: deviceMethodPackage.mainDeviceMethod.firstAction,
+        riskSignal: "又想照旧反应继续处理",
+        defenseInstruction: deviceMethodPackage.mainDeviceMethod.antiInstinctAction,
+      },
+      {
+        phaseId: "day_1_to_30",
+        phaseName: "第 1-30 天｜稳定新动作",
+        phaseGoal: "结构重建 / 新动作稳定",
+        keyAction: deviceMethodPackage.mainDeviceMethod.next72HoursAction,
+        riskSignal: "只做一次动作后又回到旧链路",
+        defenseInstruction: "把新动作拆成可重复的小步骤。",
+      },
+      {
+        phaseId: "day_31_to_90",
+        phaseName: "第 31-90 天｜复发防御",
+        phaseGoal: "复发防御 / 人格资产沉积",
+        keyAction: deviceMethodPackage.mainDeviceMethod.thirtyDayAction,
+        riskSignal: "压力回升时重新相信旧反应",
+        defenseInstruction: "每周复盘一次触发、动作和现实反馈。",
+      },
+    ],
+    relapseWarning: [
+      "又把旧反应解释成唯一选择",
+      "又跳过现实检查",
+      "又试图一次性解决所有层级",
+    ],
+    antiInstinctReminder: deviceMethodPackage.mainDeviceMethod.antiInstinctAction,
+  },
+  archiveSummary: `${deviceMethodPackage.mainDeviceMethod.deviceName}已沉积为可复盘行为资产。`,
+  migrationTrace: [
+    `${deviceMethodPackage.sourceHexagramCode}｜${deviceMethodPackage.sourceHexagramName}形成当前局。`,
+    `主切口落在 ${deviceMethodPackage.selectedCut.yaoPosition} / ${deviceMethodPackage.selectedCut.yaoLayer}。`,
+    `器法进入${deviceMethodPackage.mainDeviceMethod.deviceName}。`,
+    "反本能动作沉积为人格资产。",
+  ],
+});
+
+export const buildPersonalityAssetDeposition = (args: {
+  motherCodeProfile: MotherCodeProfile;
+  pressureSeed: PressureSeed;
+  currentHexagramProfile: CurrentHexagramProfile;
+  deviceMethodPackage: DeviceMethodPackage;
+}): PersonalityAssetDeposition => {
+  const template =
+    personalityAssetDepositionByHexagramCode[args.deviceMethodPackage.sourceHexagramCode] ??
+    buildFallbackPersonalityAssetTemplate(args.deviceMethodPackage);
+  const sourceDeviceMethod = args.deviceMethodPackage.mainDeviceMethod;
+
+  return {
+    assetId: `asset-deposition-${args.deviceMethodPackage.sourceHexagramCode}-${stableHash([
+      args.motherCodeProfile.motherCodeId,
+      args.pressureSeed.seedId,
+      sourceDeviceMethod.deviceName,
+    ].join(":"))}`,
+    sourceHexagramCode: args.deviceMethodPackage.sourceHexagramCode,
+    sourceHexagramName: args.deviceMethodPackage.sourceHexagramName,
+    sourceHexagramTitle: args.deviceMethodPackage.sourceHexagramTitle,
+    motherCode: args.motherCodeProfile.motherCodeName,
+    upperTrigram: args.currentHexagramProfile.upperTrigram,
+    lowerTrigram: args.currentHexagramProfile.lowerTrigram,
+    sourcePressureLabel: `${args.pressureSeed.pressureType}｜${args.pressureSeed.fieldBias}`,
+    sourceGravityValue: args.currentHexagramProfile.gravityValue,
+    sourceMainCut: args.deviceMethodPackage.selectedCut,
+    sourceDeviceMethod,
+    assetName: template.assetName,
+    assetType: template.assetType,
+    assetSummary: template.assetSummary,
+    beforePattern: template.beforePattern,
+    afterCapability: template.afterCapability,
+    defensePath90d: {
+      ...template.defensePath90d,
+      sourceDeviceMethod,
+    },
+    archiveSummary: template.archiveSummary,
+    migrationTrace: template.migrationTrace,
+  };
+};
+
 export const buildHexagramField = (
   motherCodeProfile: MotherCodeProfile,
   pressureField: PressureField,
@@ -1232,6 +1441,12 @@ const buildCausalTrace = (result: Omit<GuanyaoCausalPipelineResult, "causalTrace
         : "本局尚未生成器法包。",
     },
     {
+      step: "device_method_package_to_personality_asset_deposition",
+      reason: result.personalityAssetDeposition
+        ? `器法「${result.personalityAssetDeposition.sourceDeviceMethod.deviceName}」执行后，沉积为「${result.personalityAssetDeposition.assetName}」。`
+        : "本局尚未沉积人格资产。",
+    },
+    {
       step: "hexagram_field_to_behavior_scan",
       reason: `本局惯性为「${result.hexagramField.inertiaPattern}」，扫描锁定「${result.behaviorEngineScan.primaryBreachCandidate}」。`,
     },
@@ -1270,6 +1485,12 @@ export const runGuanyaoCausalPipeline = (
   const currentHexagramProfile = formCurrentHexagramProfile(motherCodeProfile, pressureSeed, pressureField);
   const yaoTransmissionChain = buildYaoTransmissionChain(motherCodeProfile, pressureSeed, currentHexagramProfile);
   const deviceMethodPackage = buildDeviceMethodPackage(yaoTransmissionChain);
+  const personalityAssetDeposition = buildPersonalityAssetDeposition({
+    motherCodeProfile,
+    pressureSeed,
+    currentHexagramProfile,
+    deviceMethodPackage,
+  });
   const hexagramField = buildHexagramField(motherCodeProfile, pressureField, currentHexagramProfile);
   const behaviorEngineScan = runBehaviorEngineScan(hexagramField);
   const breachPoints = resolveBreachPoints(behaviorEngineScan);
@@ -1294,6 +1515,7 @@ export const runGuanyaoCausalPipeline = (
     currentHexagramProfile,
     yaoTransmissionChain,
     deviceMethodPackage,
+    personalityAssetDeposition,
     hexagramField,
     behaviorEngineScan,
     breachPoints,
@@ -1345,6 +1567,8 @@ export function auditGuanyaoCausalPipeline(): {
     ["yaoTransmissionChain has 6 transmissions", result.yaoTransmissionChain?.transmissions.length === 6],
     ["has deviceMethodPackage", Boolean(result.deviceMethodPackage)],
     ["deviceMethodPackage has mainDeviceMethod", Boolean(result.deviceMethodPackage?.mainDeviceMethod)],
+    ["has personalityAssetDeposition", Boolean(result.personalityAssetDeposition)],
+    ["personalityAssetDeposition has 90d path", result.personalityAssetDeposition?.defensePath90d.phases.length === 3],
     ["has hexagramField", Boolean(result.hexagramField)],
     ["has behaviorEngineScan", Boolean(result.behaviorEngineScan)],
     ["has breachPoints >= 3", result.breachPoints.length >= 3],
@@ -1362,6 +1586,7 @@ export function auditGuanyaoCausalPipeline(): {
     ["causalTrace includes pressure_field_to_current_hexagram_profile", traceSteps.has("pressure_field_to_current_hexagram_profile")],
     ["causalTrace includes current_hexagram_profile_to_yao_transmission_chain", traceSteps.has("current_hexagram_profile_to_yao_transmission_chain")],
     ["causalTrace includes yao_transmission_chain_to_device_method_package", traceSteps.has("yao_transmission_chain_to_device_method_package")],
+    ["causalTrace includes device_method_package_to_personality_asset_deposition", traceSteps.has("device_method_package_to_personality_asset_deposition")],
     ["pipeline works without locationAnchor", Boolean(resultWithoutLocation.personalityAsset)],
     ["dynamic modifiers can change field weight", result.pressureField.upperFieldWeight !== lightDynamicResult.pressureField.upperFieldWeight],
   ] satisfies [string, boolean][];
@@ -1649,6 +1874,92 @@ export function auditGuanyaoDeviceMethod(): {
       [
         `${formationCase.caseId} has secondary and root methods`,
         Boolean(sample.secondaryDeviceMethod && sample.rootDeviceMethod),
+      ],
+    ] satisfies [string, boolean][];
+  });
+
+  return {
+    passed: checkResults.every(([, passed]) => passed),
+    checks: checkResults.map(([label, passed]) => `${label}: ${passed ? "passed" : "failed"}`),
+    samples,
+  };
+}
+
+export function auditGuanyaoPersonalityAssetDeposition(): {
+  passed: boolean;
+  checks: string[];
+  samples: PersonalityAssetDeposition[];
+} {
+  const cases = Object.values(mockHexagramFormationCases);
+  const samples = cases.map((formationCase) => {
+    const pressureField = buildPressureField(
+      formationCase.motherCodeProfile,
+      formationCase.pressureSeed,
+      undefined,
+      mockDynamicFieldModifiers,
+    );
+    const currentHexagramProfile = formCurrentHexagramProfile(
+      formationCase.motherCodeProfile,
+      formationCase.pressureSeed,
+      pressureField,
+    );
+    const yaoTransmissionChain = buildYaoTransmissionChain(
+      formationCase.motherCodeProfile,
+      formationCase.pressureSeed,
+      currentHexagramProfile,
+    );
+    const deviceMethodPackage = buildDeviceMethodPackage(yaoTransmissionChain);
+
+    return buildPersonalityAssetDeposition({
+      motherCodeProfile: formationCase.motherCodeProfile,
+      pressureSeed: formationCase.pressureSeed,
+      currentHexagramProfile,
+      deviceMethodPackage,
+    });
+  });
+  const requiredPhaseIds = ["first_72_hours", "day_1_to_30", "day_31_to_90"] as const;
+  const hasRequiredPhases = (deposition: PersonalityAssetDeposition): boolean => {
+    const phaseIds = new Set(deposition.defensePath90d.phases.map((phase) => phase.phaseId));
+
+    return requiredPhaseIds.every((phaseId) => phaseIds.has(phaseId));
+  };
+  const checkResults = cases.flatMap((formationCase, index) => {
+    const sample = samples[index];
+
+    return [
+      [
+        `${formationCase.caseId} has PersonalityAssetDeposition`,
+        Boolean(sample),
+      ],
+      [
+        `${formationCase.caseId} assetName ${formationCase.expectedAssetName}`,
+        sample.assetName === formationCase.expectedAssetName,
+      ],
+      [
+        `${formationCase.caseId} defensePath90d has 3 phases`,
+        sample.defensePath90d.phases.length === 3,
+      ],
+      [
+        `${formationCase.caseId} defensePath90d has required phase ids`,
+        hasRequiredPhases(sample),
+      ],
+      [
+        `${formationCase.caseId} relapseWarning >= 3`,
+        sample.defensePath90d.relapseWarning.length >= 3,
+      ],
+      [
+        `${formationCase.caseId} antiInstinctReminder present`,
+        Boolean(sample.defensePath90d.antiInstinctReminder),
+      ],
+      [
+        `${formationCase.caseId} source method matches main device`,
+        sample.sourceDeviceMethod.deviceName === formationCase.expectedMainDeviceName,
+      ],
+      [
+        `${formationCase.caseId} source hexagram matches`,
+        sample.sourceHexagramCode === formationCase.expectedHexagramCode &&
+          sample.sourceHexagramName === formationCase.expectedHexagramName &&
+          sample.sourceHexagramTitle === formationCase.expectedHexagramTitle,
       ],
     ] satisfies [string, boolean][];
   });
