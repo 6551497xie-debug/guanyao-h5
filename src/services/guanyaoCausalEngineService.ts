@@ -13,6 +13,7 @@ import type {
   BreachPoint,
   CausalTraceEntry,
   ChronoCoordinate,
+  CutCandidate,
   CurrentHexagramProfile,
   DynamicFieldModifiers,
   EmotionalIntensity,
@@ -25,6 +26,7 @@ import type {
   MotherCodeProfile,
   PersonalityAsset,
   PersonalityGravityValue,
+  PauseSignal,
   PressureField,
   PressureDuration,
   PressureIntensity,
@@ -32,6 +34,10 @@ import type {
   RepairMethod,
   Trigram,
   UpperCodeFormation,
+  YaoLayer,
+  YaoPosition,
+  YaoTransmissionChain,
+  YaoTransmissionProfile,
   YaoDevice,
 } from "../types/guanyaoCausalEngine";
 
@@ -217,6 +223,7 @@ const requiredTraceSteps = [
   "dynamic_modifiers_to_pressure_field",
   "pressure_seed_to_pressure_field",
   "pressure_field_to_current_hexagram_profile",
+  "current_hexagram_profile_to_yao_transmission_chain",
   "pressure_field_to_hexagram_field",
   "hexagram_field_to_behavior_scan",
   "behavior_scan_to_breach_points",
@@ -503,6 +510,304 @@ const gravityReading: Record<PersonalityGravityValue, string> = {
   P6: "P6 重组关口",
 };
 
+const yaoLayerDefinitions = [
+  { yaoPosition: 1, yaoName: "初爻", yaoLayer: "body", layerLabel: "身体", layerQuestion: "身体先在哪里收紧？" },
+  { yaoPosition: 2, yaoName: "二爻", yaoLayer: "emotion", layerLabel: "情绪", layerQuestion: "哪一种情绪先接管？" },
+  { yaoPosition: 3, yaoName: "三爻", yaoLayer: "thought", layerLabel: "思想", layerQuestion: "脑内叙事如何解释压力？" },
+  { yaoPosition: 4, yaoName: "四爻", yaoLayer: "behavior", layerLabel: "行为", layerQuestion: "旧反应正在做什么？" },
+  { yaoPosition: 5, yaoName: "五爻", yaoLayer: "memory", layerLabel: "记忆", layerQuestion: "哪段旧经验正在回放？" },
+  { yaoPosition: 6, yaoName: "上爻", yaoLayer: "motivation", layerLabel: "目标 / 动机", layerQuestion: "真正想保护的是什么？" },
+] satisfies Array<{
+  yaoPosition: YaoPosition;
+  yaoName: string;
+  yaoLayer: YaoLayer;
+  layerLabel: string;
+  layerQuestion: string;
+}>;
+
+type YaoTransmissionDraft = Pick<
+  YaoTransmissionProfile,
+  "pressureReading" | "transmissionReading" | "inertiaSignal" | "antiInstinctHint" | "cutPotential"
+>;
+
+type YaoTransmissionScenario = {
+  transmissions: Record<YaoLayer, YaoTransmissionDraft>;
+  chainSummary: string;
+};
+
+const yaoTransmissionScenarios: Record<string, YaoTransmissionScenario> = {
+  "019": {
+    transmissions: {
+      body: {
+        pressureReading: "家庭财务压力一出现，身体先进入紧绷状态；开始算账、盘资源、想缺口。",
+        transmissionReading: "身体层先把家庭财务压力翻译成资源缺口和即时紧绷。",
+        inertiaSignal: "自动算账、盘资源、想缺口。",
+        antiInstinctHint: "先标记身体紧绷，不急着立刻补位。",
+        cutPotential: 2,
+      },
+      emotion: {
+        pressureReading: "担心、亏欠、焦虑，怕家庭不稳，也怕关系因为钱变僵。",
+        transmissionReading: "情绪层把财务压力推成家庭稳定和关系僵硬的双重担心。",
+        inertiaSignal: "亏欠感和焦虑感同时升高。",
+        antiInstinctHint: "把担心和责任分开，不把所有不稳都算成自己的错。",
+        cutPotential: 3,
+      },
+      thought: {
+        pressureReading: "先别说太重，先缓一缓，我再想办法周转，可能还有别的办法。",
+        transmissionReading: "思想层开始用“先缓一缓”降低冲突感，同时把关键对话后移。",
+        inertiaSignal: "先别说太重，先缓一缓。",
+        antiInstinctHint: "把真实数字和责任边界列出来，不继续只在脑内周转。",
+        cutPotential: 5,
+      },
+      behavior: {
+        pressureReading: "缓和、转开、腾挪、延后关键对话；先稳住气氛，而不是立刻摊开真实数字和责任边界。",
+        transmissionReading: "行为层用缓和、转开和延后关键对话来暂时稳住局面。",
+        inertiaSignal: "转开关键对话，用腾挪替代边界确认。",
+        antiInstinctHint: "停止转开，先把一段真实数字和责任边界摊开。",
+        cutPotential: 6,
+      },
+      memory: {
+        pressureReading: "过去钱一旦摊开就容易伤关系；话说重了，家里会更紧张。",
+        transmissionReading: "记忆层调用“钱会伤关系”的旧经验，让当前对话继续变轻。",
+        inertiaSignal: "怕说穿以后关系更紧张。",
+        antiInstinctHint: "识别旧经验，不把过去的紧张直接套到当前。",
+        cutPotential: 4,
+      },
+      motivation: {
+        pressureReading: "真正想保护的是家庭稳定、关系不破、局面还能继续转动。",
+        transmissionReading: "目标 / 动机层不是只想解决钱，而是想保住家庭稳定和关系转动。",
+        inertiaSignal: "用稳定关系压过真实压力处理。",
+        antiInstinctHint: "允许稳定和真实同时出现，不用隐去压力换稳定。",
+        cutPotential: 3,
+      },
+    },
+    chainSummary:
+      "家庭财务压力压在兑的沟通转化底盘上，六爻传导表现为：身体紧绷 → 情绪担心 → 思想缓一缓 → 行为转开 → 记忆怕伤关系 → 动机保护家庭稳定。",
+  },
+  "047": {
+    transmissions: {
+      body: {
+        pressureReading: "一想到债务，身体先紧；胸口压、脑子自动算还款，睡眠被期限感打断。",
+        transmissionReading: "身体层先把负债压力翻译成胸口压、还款计算和睡眠打断。",
+        inertiaSignal: "胸口压，脑子自动算还款。",
+        antiInstinctHint: "先承认身体进入债务警报，不立刻用新周转压下警报。",
+        cutPotential: 3,
+      },
+      emotion: {
+        pressureReading: "焦虑、羞耻、担心，怕拖累家人，也怕债务问题被摊开后关系失控。",
+        transmissionReading: "情绪层让焦虑和羞耻叠加，债务被感知成关系失控风险。",
+        inertiaSignal: "羞耻感让问题更难摊开。",
+        antiInstinctHint: "把债务事实和羞耻感拆开，不让羞耻决定是否沟通。",
+        cutPotential: 4,
+      },
+      thought: {
+        pressureReading: "先别让大家太紧张，我再想办法周转一下；只要这关过去，后面应该能缓过来。",
+        transmissionReading: "思想层用“再周转一下”解释当前困局，让真实重组继续后移。",
+        inertiaSignal: "我再周转一下，这关先过去。",
+        antiInstinctHint: "停止把周转当成解决，先命名债务结构。",
+        cutPotential: 5,
+      },
+      behavior: {
+        pressureReading: "继续周转、拆东补西、延后关键沟通，用短期缓和替代真实重组。",
+        transmissionReading: "行为层用继续周转、拆东补西和延后沟通维持表面缓和。",
+        inertiaSignal: "拆东补西，用短期缓和替代真实重组。",
+        antiInstinctHint: "停止新增周转动作，先做一次完整债务摊开。",
+        cutPotential: 6,
+      },
+      memory: {
+        pressureReading: "过去靠腾挪也撑过去过；债务一旦说穿，关系和体面都会受损。",
+        transmissionReading: "记忆层调用“腾挪曾经撑过去”的经验，继续保护体面。",
+        inertiaSignal: "过去撑过去过，所以这次也许还能撑。",
+        antiInstinctHint: "区分过去过关和当前结构性滚动，不用旧成功遮住新风险。",
+        cutPotential: 4,
+      },
+      motivation: {
+        pressureReading: "真正想保护的不是钱本身，而是家庭稳定、关系不破、自己还能维持体面和控制感。",
+        transmissionReading: "目标 / 动机层想保护家庭、关系、体面和控制感，而不只是钱。",
+        inertiaSignal: "为了体面和控制感继续隐住债务。",
+        antiInstinctHint: "把体面从债务事实里分离出来，先保护结构安全。",
+        cutPotential: 3,
+      },
+    },
+    chainSummary:
+      "负债压力压在兑的沟通转化底盘上，六爻传导表现为：身体紧绷 → 情绪羞耻焦虑 → 思想再周转一下 → 行为拆东补西 → 记忆害怕说穿 → 动机保护家庭、关系和体面。",
+  },
+};
+
+const buildFallbackYaoScenario = (
+  motherCodeProfile: MotherCodeProfile,
+  pressureSeed: PressureSeed,
+  currentHexagramProfile: CurrentHexagramProfile,
+): YaoTransmissionScenario => ({
+  transmissions: {
+    body: {
+      pressureReading: `${pressureSeed.pressureType}出现时，身体先读取到「${pressureSeed.triggerMoment}」带来的紧绷。`,
+      transmissionReading: "身体层先把现实压力转成可感知的警报。",
+      inertiaSignal: "身体先紧，行动还没有校准。",
+      antiInstinctHint: "先标记身体信号，不急着进入旧反应。",
+      cutPotential: 2,
+    },
+    emotion: {
+      pressureReading: `${pressureSeed.pressureType}触发情绪波动，关系角色为「${pressureSeed.relationshipRole}」。`,
+      transmissionReading: "情绪层开始放大关系风险和自我成本。",
+      inertiaSignal: "情绪先替压力定性。",
+      antiInstinctHint: "先命名情绪，不让情绪替代判断。",
+      cutPotential: 3,
+    },
+    thought: {
+      pressureReading: `脑内开始解释「${pressureSeed.fieldBias}」，试图维持${motherCodeProfile.motherCodeName}的旧稳定。`,
+      transmissionReading: "思想层形成一条自我说服叙事。",
+      inertiaSignal: motherCodeProfile.defenseTendency,
+      antiInstinctHint: "把脑内叙事写出来，检查它是否推迟真实动作。",
+      cutPotential: 4,
+    },
+    behavior: {
+      pressureReading: `${motherCodeProfile.defaultReactionPattern}${pressureSeed.costHint}`,
+      transmissionReading: "行为层最接近真实切口，旧反应开始落地。",
+      inertiaSignal: motherCodeProfile.behaviorBias,
+      antiInstinctHint: "在行为落地前切出一个反本能动作。",
+      cutPotential: 5,
+    },
+    memory: {
+      pressureReading: "旧经验开始回放，并给当前压力附加熟悉的风险解释。",
+      transmissionReading: "记忆层让当前局面看起来像过去某次危险。",
+      inertiaSignal: "过去经验正在覆盖当前事实。",
+      antiInstinctHint: "区分旧经验和当前证据。",
+      cutPotential: 3,
+    },
+    motivation: {
+      pressureReading: `真正想保护的是「${motherCodeProfile.baseForce}」背后的稳定感。`,
+      transmissionReading: `目标 / 动机层把本局导向「${currentHexagramProfile.hexagramName}」。`,
+      inertiaSignal: "动机在保护旧稳定。",
+      antiInstinctHint: "允许目标被重新校准，而不是只保护旧反应。",
+      cutPotential: 2,
+    },
+  },
+  chainSummary: `${pressureSeed.pressureType}压在${motherCodeProfile.motherCodeName}上，六爻传导表现为：身体警报 → 情绪放大 → 思想解释 → 行为落地 → 记忆回放 → 动机护住旧稳定。`,
+});
+
+const resolvePauseSignal = (interventionPotential: number): PauseSignal => {
+  if (interventionPotential <= 0) return "none";
+  if (interventionPotential <= 2) return "soft";
+  if (interventionPotential <= 4) return "clear";
+  return "strong";
+};
+
+const pausePromptBySignal: Record<PauseSignal, string> = {
+  none: "继续看下一层。",
+  soft: "如果这里很像你，可以先停在这一层。",
+  clear: "这一层，已经值得先处理。",
+  strong: "这里可以先停一下。",
+};
+
+const continuePromptBySignal: Record<PauseSignal, string> = {
+  none: "继续看下一层。",
+  soft: "继续向后看。",
+  clear: "继续观下一爻。",
+  strong: "继续看下一层。",
+};
+
+const rootReasonByHexagramCode: Record<string, string> = {
+  "019": "上爻显示真正想保护的是家庭稳定、关系不破、局面还能继续转动，这是本局反应链的根部保护对象。",
+  "047": "上爻显示真正想保护的是家庭稳定、关系不破、体面和控制感，这是债务困局持续滚动的根部保护对象。",
+};
+
+const layerScoreProfile: Record<
+  YaoLayer,
+  Pick<
+    CutCandidate,
+    "activationIntensity" | "inertiaTakeover" | "consequenceAmplification" | "interventionLeverage" | "userAgency"
+  >
+> = {
+  body: {
+    activationIntensity: 4,
+    inertiaTakeover: 2,
+    consequenceAmplification: 2,
+    interventionLeverage: 2,
+    userAgency: 3,
+  },
+  emotion: {
+    activationIntensity: 4,
+    inertiaTakeover: 3,
+    consequenceAmplification: 3,
+    interventionLeverage: 3,
+    userAgency: 3,
+  },
+  thought: {
+    activationIntensity: 5,
+    inertiaTakeover: 5,
+    consequenceAmplification: 4,
+    interventionLeverage: 5,
+    userAgency: 5,
+  },
+  behavior: {
+    activationIntensity: 6,
+    inertiaTakeover: 6,
+    consequenceAmplification: 6,
+    interventionLeverage: 6,
+    userAgency: 6,
+  },
+  memory: {
+    activationIntensity: 4,
+    inertiaTakeover: 5,
+    consequenceAmplification: 4,
+    interventionLeverage: 3,
+    userAgency: 3,
+  },
+  motivation: {
+    activationIntensity: 5,
+    inertiaTakeover: 5,
+    consequenceAmplification: 5,
+    interventionLeverage: 4,
+    userAgency: 2,
+  },
+};
+
+const buildCutCandidates = (
+  transmissions: YaoTransmissionProfile[],
+  hexagramCode: string,
+): CutCandidate[] =>
+  transmissions.map((transmission) => {
+    const scoreProfile = layerScoreProfile[transmission.yaoLayer];
+    const totalScore =
+      scoreProfile.activationIntensity +
+      scoreProfile.inertiaTakeover +
+      scoreProfile.consequenceAmplification +
+      scoreProfile.interventionLeverage +
+      scoreProfile.userAgency;
+
+    return {
+      yaoPosition: transmission.yaoPosition,
+      yaoLayer: transmission.yaoLayer,
+      ...scoreProfile,
+      totalScore,
+      cutRole: "candidate",
+      internalCutReason:
+        transmission.yaoLayer === "motivation"
+          ? rootReasonByHexagramCode[hexagramCode] ?? "上爻显示本局真正想保护的对象，是反应链的根部。"
+          : `${transmission.layerLabel}层出现「${transmission.inertiaSignal}」，干预潜力为 ${transmission.interventionPotential}。`,
+      userFacingReason:
+        transmission.yaoLayer === "motivation"
+          ? "这一层显示你真正想保护的东西。"
+          : transmission.pauseReason,
+    } satisfies CutCandidate;
+  });
+
+const selectCutCandidate = (
+  cutCandidates: CutCandidate[],
+  preferredLayer: YaoLayer,
+  cutRole: CutCandidate["cutRole"],
+): CutCandidate => {
+  const selected =
+    cutCandidates.find((candidate) => candidate.yaoLayer === preferredLayer) ??
+    [...cutCandidates].sort((left, right) => right.totalScore - left.totalScore)[0];
+
+  return {
+    ...selected,
+    cutRole,
+  };
+};
+
 export const formCurrentHexagramProfile = (
   motherCodeProfile: MotherCodeProfile,
   pressureSeed: PressureSeed,
@@ -534,6 +839,65 @@ export const formCurrentHexagramProfile = (
     externalPressureReading: `${upperCodeFormation.upperCodeReading}上卦取「${upperTrigram}」。`,
     interactionReading: `上卦「${upperTrigram}」压入下卦「${lowerTrigram}」，形成本局卦码「${hexagramCode}｜${hexagramName}｜${hexagramTitle}」。`,
     currentSandboxReading: `${gravityReading[gravityValue]}。人格重力值不改变卦名，只决定本局风险窗口、六爻传导语气与器法干预强度。`,
+  };
+};
+
+export const buildYaoTransmissionChain = (
+  motherCodeProfile: MotherCodeProfile,
+  pressureSeed: PressureSeed,
+  currentHexagramProfile: CurrentHexagramProfile,
+): YaoTransmissionChain => {
+  const scenario =
+    yaoTransmissionScenarios[currentHexagramProfile.hexagramCode] ??
+    buildFallbackYaoScenario(motherCodeProfile, pressureSeed, currentHexagramProfile);
+  const transmissions = yaoLayerDefinitions.map((definition): YaoTransmissionProfile => {
+    const draft = scenario.transmissions[definition.yaoLayer];
+    const interventionPotential = Math.min(6, Math.max(0, draft.cutPotential));
+    const pauseSignal = resolvePauseSignal(interventionPotential);
+
+    return {
+      ...definition,
+      pressureReading: draft.pressureReading,
+      motherCodeInfluence: `母码「${motherCodeProfile.motherCodeName}」使这一层倾向于：${motherCodeProfile.defaultReactionPattern}`,
+      hexagramInfluence: `本局「${currentHexagramProfile.hexagramCode}｜${currentHexagramProfile.hexagramName}｜${currentHexagramProfile.hexagramTitle}」把上码「${currentHexagramProfile.upperTrigram}」的外压传入下码「${currentHexagramProfile.lowerTrigram}」的反应底盘。`,
+      transmissionReading: draft.transmissionReading,
+      inertiaSignal: draft.inertiaSignal,
+      antiInstinctHint: draft.antiInstinctHint,
+      cutPotential: interventionPotential,
+      interventionPotential,
+      pauseSignal,
+      pauseReason:
+        pauseSignal === "none"
+          ? `${definition.layerLabel}层当前只作为传导展示。`
+          : `${definition.layerLabel}层出现「${draft.inertiaSignal}」，可以作为本局停留点。`,
+      userFacingPausePrompt: pausePromptBySignal[pauseSignal],
+      userFacingContinuePrompt: continuePromptBySignal[pauseSignal],
+    };
+  });
+  const cutCandidates = buildCutCandidates(transmissions, currentHexagramProfile.hexagramCode);
+  const mainCut = selectCutCandidate(cutCandidates, "behavior", "main");
+  const secondaryCut = selectCutCandidate(cutCandidates, "thought", "secondary");
+  const rootCut = selectCutCandidate(cutCandidates, "motivation", "root");
+
+  return {
+    sourceHexagramCode: currentHexagramProfile.hexagramCode,
+    sourceHexagramName: currentHexagramProfile.hexagramName,
+    sourceHexagramTitle: currentHexagramProfile.hexagramTitle,
+    motherCode: motherCodeProfile.motherCodeName,
+    lowerTrigram: currentHexagramProfile.lowerTrigram,
+    upperTrigram: currentHexagramProfile.upperTrigram,
+    gravityValue: currentHexagramProfile.gravityValue,
+    transmissions,
+    cutCandidates: cutCandidates.map((candidate) => {
+      if (candidate.yaoLayer === mainCut.yaoLayer) return mainCut;
+      if (candidate.yaoLayer === secondaryCut.yaoLayer) return secondaryCut;
+      if (candidate.yaoLayer === rootCut.yaoLayer) return rootCut;
+      return candidate;
+    }),
+    mainCut,
+    secondaryCut,
+    rootCut,
+    chainSummary: scenario.chainSummary,
   };
 };
 
@@ -730,6 +1094,12 @@ const buildCausalTrace = (result: Omit<GuanyaoCausalPipelineResult, "causalTrace
       reason: `${result.currentHexagramProfile.upperCodeFormation.formationReason}${result.currentHexagramProfile.upperCodeFormation.upperCodeReading}上码「${result.currentHexagramProfile.upperTrigram}」与母码下码「${result.currentHexagramProfile.lowerTrigram}」成局为「${result.currentHexagramProfile.hexagramCode}｜${result.currentHexagramProfile.hexagramName}」。人格重力值为「${result.currentHexagramProfile.gravityValue}」。`,
     },
     {
+      step: "current_hexagram_profile_to_yao_transmission_chain",
+      reason: result.yaoTransmissionChain
+        ? `卦码「${result.yaoTransmissionChain.sourceHexagramCode}｜${result.yaoTransmissionChain.sourceHexagramName}」定局后展开六爻人格传导，主切口落在「${result.yaoTransmissionChain.mainCut.yaoPosition}｜${result.yaoTransmissionChain.mainCut.yaoLayer}」。`
+        : "本局尚未展开六爻人格传导。",
+    },
+    {
       step: "hexagram_field_to_behavior_scan",
       reason: `本局惯性为「${result.hexagramField.inertiaPattern}」，扫描锁定「${result.behaviorEngineScan.primaryBreachCandidate}」。`,
     },
@@ -766,6 +1136,7 @@ export const runGuanyaoCausalPipeline = (
     resolvedDynamicModifiers,
   );
   const currentHexagramProfile = formCurrentHexagramProfile(motherCodeProfile, pressureSeed, pressureField);
+  const yaoTransmissionChain = buildYaoTransmissionChain(motherCodeProfile, pressureSeed, currentHexagramProfile);
   const hexagramField = buildHexagramField(motherCodeProfile, pressureField, currentHexagramProfile);
   const behaviorEngineScan = runBehaviorEngineScan(hexagramField);
   const breachPoints = resolveBreachPoints(behaviorEngineScan);
@@ -788,6 +1159,7 @@ export const runGuanyaoCausalPipeline = (
     pressureSeed,
     pressureField,
     currentHexagramProfile,
+    yaoTransmissionChain,
     hexagramField,
     behaviorEngineScan,
     breachPoints,
@@ -835,6 +1207,8 @@ export function auditGuanyaoCausalPipeline(): {
     ["currentHexagramProfile has upperCodeFormation", Boolean(result.currentHexagramProfile.upperCodeFormation)],
     ["upperCodeFormation reads three line impact", typeof result.currentHexagramProfile.upperCodeFormation.lineImpact.systemMechanismLine === "number"],
     ["currentHexagramProfile has gravityValue", Boolean(result.currentHexagramProfile.gravityValue)],
+    ["has yaoTransmissionChain", Boolean(result.yaoTransmissionChain)],
+    ["yaoTransmissionChain has 6 transmissions", result.yaoTransmissionChain?.transmissions.length === 6],
     ["has hexagramField", Boolean(result.hexagramField)],
     ["has behaviorEngineScan", Boolean(result.behaviorEngineScan)],
     ["has breachPoints >= 3", result.breachPoints.length >= 3],
@@ -850,6 +1224,7 @@ export function auditGuanyaoCausalPipeline(): {
     ],
     ["causalTrace includes dynamic_modifiers_to_pressure_field", traceSteps.has("dynamic_modifiers_to_pressure_field")],
     ["causalTrace includes pressure_field_to_current_hexagram_profile", traceSteps.has("pressure_field_to_current_hexagram_profile")],
+    ["causalTrace includes current_hexagram_profile_to_yao_transmission_chain", traceSteps.has("current_hexagram_profile_to_yao_transmission_chain")],
     ["pipeline works without locationAnchor", Boolean(resultWithoutLocation.personalityAsset)],
     ["dynamic modifiers can change field weight", result.pressureField.upperFieldWeight !== lightDynamicResult.pressureField.upperFieldWeight],
   ] satisfies [string, boolean][];
@@ -939,6 +1314,128 @@ export function auditGuanyaoHexagramFormation(): {
       [
         `${formationCase.caseId} gravity does not choose trigram`,
         Boolean(sample.gravityValue) && sample.upperSource === "pressure_field" && sample.lowerSource === "mother_code",
+      ],
+    ] satisfies [string, boolean][];
+  });
+
+  return {
+    passed: checkResults.every(([, passed]) => passed),
+    checks: checkResults.map(([label, passed]) => `${label}: ${passed ? "passed" : "failed"}`),
+    samples,
+  };
+}
+
+export function auditGuanyaoYaoTransmission(): {
+  passed: boolean;
+  checks: string[];
+  samples: YaoTransmissionChain[];
+} {
+  const forbiddenUserPromptTerms = ["购买", "付费", "生成器法", "长按下刀", "本爻器法"];
+  const cases = Object.values(mockHexagramFormationCases);
+  const samples = cases.map((formationCase) => {
+    const pressureField = buildPressureField(
+      formationCase.motherCodeProfile,
+      formationCase.pressureSeed,
+      undefined,
+      mockDynamicFieldModifiers,
+    );
+    const currentHexagramProfile = formCurrentHexagramProfile(
+      formationCase.motherCodeProfile,
+      formationCase.pressureSeed,
+      pressureField,
+    );
+
+    return buildYaoTransmissionChain(
+      formationCase.motherCodeProfile,
+      formationCase.pressureSeed,
+      currentHexagramProfile,
+    );
+  });
+  const checkTransmissionFields = (transmission: YaoTransmissionProfile): boolean =>
+    Boolean(
+      transmission.yaoPosition &&
+        transmission.yaoLayer &&
+        transmission.pressureReading &&
+        transmission.transmissionReading &&
+        transmission.inertiaSignal &&
+        transmission.antiInstinctHint &&
+        typeof transmission.cutPotential === "number" &&
+        typeof transmission.interventionPotential === "number" &&
+        transmission.pauseSignal &&
+        transmission.pauseReason &&
+        transmission.userFacingPausePrompt &&
+        transmission.userFacingContinuePrompt,
+    );
+  const promptsAreClean = (sample: YaoTransmissionChain): boolean =>
+    sample.transmissions.every((transmission) =>
+      forbiddenUserPromptTerms.every(
+        (term) =>
+          !transmission.userFacingPausePrompt.includes(term) &&
+          !transmission.userFacingContinuePrompt.includes(term),
+      ),
+    );
+  const checkResults = cases.flatMap((formationCase, index) => {
+    const sample = samples[index];
+    const maxInterventionPotential = Math.max(
+      ...sample.transmissions.map((transmission) => transmission.interventionPotential),
+    );
+    const behaviorTransmission = sample.transmissions.find((transmission) => transmission.yaoLayer === "behavior");
+    const thoughtCandidate = sample.cutCandidates.find((candidate) => candidate.yaoLayer === "thought");
+
+    return [
+      [
+        `${formationCase.caseId} has 6 transmissions`,
+        sample.transmissions.length === 6,
+      ],
+      [
+        `${formationCase.caseId} all transmissions expose required fields`,
+        sample.transmissions.every(checkTransmissionFields),
+      ],
+      [
+        `${formationCase.caseId} all user prompts avoid forbidden commercial terms`,
+        promptsAreClean(sample),
+      ],
+      [
+        `${formationCase.caseId} has cutCandidates >= 6`,
+        sample.cutCandidates.length >= 6,
+      ],
+      [
+        `${formationCase.caseId} mainCut ${formationCase.expectedMainCut.yaoPosition} / ${formationCase.expectedMainCut.yaoLayer}`,
+        sample.mainCut.yaoPosition === formationCase.expectedMainCut.yaoPosition &&
+          sample.mainCut.yaoLayer === formationCase.expectedMainCut.yaoLayer,
+      ],
+      [
+        `${formationCase.caseId} secondaryCut ${formationCase.expectedSecondaryCut.yaoPosition} / ${formationCase.expectedSecondaryCut.yaoLayer}`,
+        sample.secondaryCut.yaoPosition === formationCase.expectedSecondaryCut.yaoPosition &&
+          sample.secondaryCut.yaoLayer === formationCase.expectedSecondaryCut.yaoLayer,
+      ],
+      [
+        `${formationCase.caseId} rootCut 6 / motivation`,
+        sample.rootCut.yaoPosition === 6 && sample.rootCut.yaoLayer === "motivation",
+      ],
+      [
+        `${formationCase.caseId} behavior interventionPotential highest or tied`,
+        Boolean(behaviorTransmission) &&
+          behaviorTransmission?.interventionPotential === maxInterventionPotential,
+      ],
+      [
+        `${formationCase.caseId} thought is secondary candidate`,
+        thoughtCandidate?.cutRole === "secondary",
+      ],
+      [
+        `${formationCase.caseId} chain source hexagram`,
+        sample.sourceHexagramCode === formationCase.expectedHexagramCode &&
+          sample.sourceHexagramName === formationCase.expectedHexagramName &&
+          sample.sourceHexagramTitle === formationCase.expectedHexagramTitle,
+      ],
+      [
+        `${formationCase.caseId} fixed yao layer order`,
+        sample.transmissions.map((transmission) => transmission.yaoLayer).join("/") ===
+          "body/emotion/thought/behavior/memory/motivation",
+      ],
+      [
+        `${formationCase.caseId} chainSummary present`,
+        Boolean(sample.chainSummary),
       ],
     ] satisfies [string, boolean][];
   });

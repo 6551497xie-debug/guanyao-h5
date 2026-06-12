@@ -7,6 +7,8 @@ import type {
   PressureSeed,
   RepairMethod,
   Trigram,
+  YaoLayer,
+  YaoPosition,
   YaoDevice,
 } from "../types/guanyaoCausalEngine";
 
@@ -293,6 +295,8 @@ export const mockHexagramFormationCases = {
     expectedHexagramCode: "019",
     expectedHexagramName: "临",
     expectedHexagramTitle: "悬崖边",
+    expectedMainCut: { yaoPosition: 4, yaoLayer: "behavior" },
+    expectedSecondaryCut: { yaoPosition: 3, yaoLayer: "thought" },
   },
   debt: {
     caseId: "hexagram-sample-b-debt",
@@ -314,6 +318,8 @@ export const mockHexagramFormationCases = {
     expectedHexagramCode: "047",
     expectedHexagramName: "困",
     expectedHexagramTitle: "围墙里的沉默者",
+    expectedMainCut: { yaoPosition: 4, yaoLayer: "behavior" },
+    expectedSecondaryCut: { yaoPosition: 3, yaoLayer: "thought" },
   },
 } satisfies Record<
   string,
@@ -327,5 +333,7 @@ export const mockHexagramFormationCases = {
     expectedHexagramCode: string;
     expectedHexagramName: string;
     expectedHexagramTitle: string;
+    expectedMainCut: { yaoPosition: YaoPosition; yaoLayer: YaoLayer };
+    expectedSecondaryCut: { yaoPosition: YaoPosition; yaoLayer: YaoLayer };
   }
 >;

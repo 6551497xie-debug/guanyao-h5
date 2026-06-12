@@ -167,6 +167,62 @@ export interface CurrentHexagramProfile {
   currentSandboxReading: string;
 }
 
+export type YaoPosition = 1 | 2 | 3 | 4 | 5 | 6;
+
+export type YaoLayer = "body" | "emotion" | "thought" | "behavior" | "memory" | "motivation";
+
+export type PauseSignal = "none" | "soft" | "clear" | "strong";
+
+export interface YaoTransmissionProfile {
+  yaoPosition: YaoPosition;
+  yaoName: string;
+  yaoLayer: YaoLayer;
+  layerLabel: string;
+  layerQuestion: string;
+  pressureReading: string;
+  motherCodeInfluence: string;
+  hexagramInfluence: string;
+  transmissionReading: string;
+  inertiaSignal: string;
+  antiInstinctHint: string;
+  cutPotential: number;
+  interventionPotential: number;
+  pauseSignal: PauseSignal;
+  pauseReason: string;
+  userFacingPausePrompt: string;
+  userFacingContinuePrompt: string;
+}
+
+export interface CutCandidate {
+  yaoPosition: YaoPosition;
+  yaoLayer: YaoLayer;
+  activationIntensity: number;
+  inertiaTakeover: number;
+  consequenceAmplification: number;
+  interventionLeverage: number;
+  userAgency: number;
+  totalScore: number;
+  cutRole: "main" | "secondary" | "root" | "candidate";
+  internalCutReason: string;
+  userFacingReason: string;
+}
+
+export interface YaoTransmissionChain {
+  sourceHexagramCode: string;
+  sourceHexagramName: string;
+  sourceHexagramTitle: string;
+  motherCode: string;
+  lowerTrigram: Trigram;
+  upperTrigram: Trigram;
+  gravityValue: PersonalityGravityValue;
+  transmissions: YaoTransmissionProfile[];
+  cutCandidates: CutCandidate[];
+  mainCut: CutCandidate;
+  secondaryCut: CutCandidate;
+  rootCut: CutCandidate;
+  chainSummary: string;
+}
+
 export interface BehaviorEngineScan {
   scanId: string;
   primaryBreachCandidate: string;
@@ -232,6 +288,7 @@ export interface GuanyaoCausalPipelineResult {
   pressureSeed: PressureSeed;
   pressureField: PressureField;
   currentHexagramProfile: CurrentHexagramProfile;
+  yaoTransmissionChain?: YaoTransmissionChain;
   hexagramField: HexagramField;
   behaviorEngineScan: BehaviorEngineScan;
   breachPoints: BreachPoint[];
