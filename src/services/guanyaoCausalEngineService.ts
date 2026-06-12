@@ -31,6 +31,7 @@ import type {
   PressureSeed,
   RepairMethod,
   Trigram,
+  UpperCodeFormation,
   YaoDevice,
 } from "../types/guanyaoCausalEngine";
 
@@ -83,84 +84,111 @@ const externalEnvironmentProfiles: Record<
   {
     name: string;
     upperTrigram: Trigram;
-    keywords: string[];
+    personalityKeywords: string[];
+    systemKeywords: string[];
+    lifecycleKeywords: string[];
     personalityDynamics: string;
     systemMechanism: string;
     lifecycleStage: string;
     externalPressureReading: string;
+    upperCodeReading: string;
   }
 > = {
   qian_control_decision: {
     name: "乾型环境｜控制权 / 决策权压力",
     upperTrigram: "乾",
-    keywords: ["控制权", "决策", "掌控", "规则", "权责", "拍板"],
+    personalityKeywords: ["掌控", "主导权", "方向", "判断", "必须拍板"],
+    systemKeywords: ["控制权", "决策权", "权力", "权责", "规则", "谁说了算"],
+    lifecycleKeywords: ["被迫", "必须", "拍板", "挑战", "夺走"],
     personalityDynamics: "控制反应被迫上提，个体试图用决断感压住不确定。",
     systemMechanism: "权责结构收紧，外部要求你给出明确判断。",
     lifecycleStage: "进入需要定向、承担选择后果的阶段。",
     externalPressureReading: "外部压力来自控制权和决策权的集中。",
+    upperCodeReading: "现实种子撞击后，控制权与决策权成为主导压力，上码显影为乾。",
   },
   kun_responsibility_support: {
     name: "坤型环境｜责任 / 承载 / 家庭托底压力",
     upperTrigram: "坤",
-    keywords: ["家庭", "财务", "责任", "承载", "托底", "照顾", "家里", "支出"],
+    personalityKeywords: ["接住", "扛住", "补位", "让位", "顺从"],
+    systemKeywords: ["家庭", "财务", "责任", "承载", "托底", "供养", "团队", "家里"],
+    lifecycleKeywords: ["长期", "不能塌", "稳定", "支出", "同时压到"],
     personalityDynamics: "承担惯性被放大，个体倾向先接住别人再处理自己。",
     systemMechanism: "责任和资源需求向你聚拢，形成承载型外压。",
     lifecycleStage: "进入被要求托底、补位或维持稳定的阶段。",
     externalPressureReading: "外部压力来自家庭、责任与承载结构。",
+    upperCodeReading: "现实种子撞击后，责任与承载成为主导压力，上码显影为坤。",
   },
   zhen_change_push: {
     name: "震型环境｜推进 / 变化 / 突发压力",
     upperTrigram: "震",
-    keywords: ["突发", "变化", "推进", "打断", "加速", "启动", "变动"],
+    personalityKeywords: ["行动", "应激", "马上", "推进", "启动"],
+    systemKeywords: ["项目", "外部催促", "局面", "安排", "任务"],
+    lifecycleKeywords: ["突然", "变化", "打断", "不能再拖", "加速", "临时"],
     personalityDynamics: "应激推进被点燃，个体容易先动作后判断。",
     systemMechanism: "外部变量突然上场，逼迫系统快速改轨。",
     lifecycleStage: "进入变化启动、旧节奏被打断的阶段。",
     externalPressureReading: "外部压力来自突发变化和推进要求。",
+    upperCodeReading: "现实种子撞击后，变化与推进成为主导压力，上码显影为震。",
   },
   xun_uncertainty_choice: {
     name: "巽型环境｜不确定 / 选择 / 渗透压力",
     upperTrigram: "巽",
-    keywords: ["不确定", "选择", "摇摆", "渗透", "试探", "模糊", "犹豫"],
+    personalityKeywords: ["犹豫", "试探", "摇摆", "比较", "不知道"],
+    systemKeywords: ["信息不清", "规则模糊", "局面暧昧", "入口", "路径"],
+    lifecycleKeywords: ["选择太多", "进入", "从哪里", "分岔", "未显形"],
     personalityDynamics: "判断被细小变量渗透，个体容易反复比较。",
     systemMechanism: "多个选项持续进入，边界难以一次性确定。",
     lifecycleStage: "进入选择分岔、信号未完全显形的阶段。",
     externalPressureReading: "外部压力来自不确定性和选择渗透。",
+    upperCodeReading: "现实种子撞击后，不确定性与进入路径成为主导压力，上码显影为巽。",
   },
   kan_trapped_debt: {
     name: "坎型环境｜深陷困局 / 债务 / 难以抽离压力",
     upperTrigram: "坎",
-    keywords: ["负债", "债务", "困局", "深陷", "还款", "现金流", "难以抽离", "资源缺口"],
+    personalityKeywords: ["隐瞒", "硬撑", "独自", "收缩", "压低需求"],
+    systemKeywords: ["负债", "债务", "现金流", "资源缺口", "周转", "还款"],
+    lifecycleKeywords: ["困局", "深陷", "难以抽离", "滚动", "一环扣一环", "越想解决越难"],
     personalityDynamics: "风险感下沉，个体容易收缩、隐瞒或独自硬撑。",
     systemMechanism: "资源缺口与抽离成本叠加，形成困局型外压。",
     lifecycleStage: "进入低余量、难退出、必须面对风险窗口的阶段。",
     externalPressureReading: "外部压力来自债务、困局与难以抽离的资源陷落。",
+    upperCodeReading: "现实种子撞击后，困局与难以抽离成为主导压力，上码显影为坎。",
   },
   li_expression_truth: {
     name: "离型环境｜表达 / 误解 / 真相不被重视压力",
     upperTrigram: "离",
-    keywords: ["表达", "误解", "真相", "被看见", "解释", "评价", "公开"],
+    personalityKeywords: ["表达", "证明", "解释", "说不清", "被看见"],
+    systemKeywords: ["误解", "真相", "信息", "曲解", "遮蔽"],
+    lifecycleKeywords: ["需要证明", "没人看见", "不被重视", "公开", "显影"],
     personalityDynamics: "表达需求被点亮，同时害怕真实信号不被接住。",
     systemMechanism: "信息可见度升高，误读和评价开始制造外压。",
     lifecycleStage: "进入需要显影、说明或被公开读取的阶段。",
     externalPressureReading: "外部压力来自表达、误解与真相显影。",
+    upperCodeReading: "现实种子撞击后，表达与真相显影成为主导压力，上码显影为离。",
   },
   gen_boundary_stop: {
     name: "艮型环境｜边界 / 停滞 / 止损压力",
     upperTrigram: "艮",
-    keywords: ["边界", "停滞", "止损", "暂停", "卡住", "拒绝", "终止"],
+    personalityKeywords: ["拒绝", "挡住", "设限", "停下", "不能再"],
+    systemKeywords: ["边界", "止损", "消耗", "突破", "继续做"],
+    lifecycleKeywords: ["停滞", "暂停", "卡住", "终止", "该挡住了"],
     personalityDynamics: "停止动作被迫出现，个体需要从惯性里切出边界。",
     systemMechanism: "外部结构不再允许继续推进，要求止损或设限。",
     lifecycleStage: "进入收束、暂停和重定边界的阶段。",
     externalPressureReading: "外部压力来自边界、停滞和止损要求。",
+    upperCodeReading: "现实种子撞击后，边界与止损成为主导压力，上码显影为艮。",
   },
   dui_relationship_exchange: {
     name: "兑型环境｜关系 / 冲突 / 沟通 / 交换压力",
     upperTrigram: "兑",
-    keywords: ["关系", "冲突", "沟通", "交换", "回应", "谈判", "互动"],
+    personalityKeywords: ["沟通", "回应", "缓和", "转译", "表达"],
+    systemKeywords: ["关系", "冲突", "交换", "合作", "谈判"],
+    lifecycleKeywords: ["紧张", "搁置", "不平衡", "卡住", "僵硬", "失真"],
     personalityDynamics: "关系反馈变成主压力，个体倾向通过沟通换取稳定。",
     systemMechanism: "交换结构发生摩擦，沟通成本开始上升。",
     lifecycleStage: "进入关系协商、冲突处理或交换重估的阶段。",
     externalPressureReading: "外部压力来自关系、沟通与交换摩擦。",
+    upperCodeReading: "现实种子撞击后，关系与交换成为主导压力，上码显影为兑。",
   },
 };
 
@@ -363,76 +391,81 @@ const getHexagramClassifierText = (pressureSeed: PressureSeed): string =>
     ...(pressureSeed.locationTags ?? []),
   ].join(" ");
 
-const scoreEnvironmentProfile = (profile: { keywords: string[] }, text: string): number =>
-  profile.keywords.reduce((score, keyword) => score + (text.includes(keyword) ? 1 : 0), 0);
+const scoreLineImpact = (keywords: string[], text: string): number => {
+  const hitCount = keywords.reduce((score, keyword) => score + (text.includes(keyword) ? 1 : 0), 0);
 
-const resolveDominantLayer = (
-  pressureSeed: PressureSeed,
-  externalEnvironmentType: ExternalEnvironmentType,
-): HexagramLayerClassification["dominantLayer"] => {
-  const text = getHexagramClassifierText(pressureSeed);
-  const personalityScore = ["反应", "表达", "沉默", "控制", "隐瞒", "硬撑", "需求"].reduce(
-    (score, keyword) => score + (text.includes(keyword) ? 1 : 0),
-    0,
-  );
-  const systemScore = ["家庭", "财务", "债务", "责任", "资源", "现金流", "关系", "工作"].reduce(
-    (score, keyword) => score + (text.includes(keyword) ? 1 : 0),
-    0,
-  );
-  const lifecycleScore = ["窗口", "逼近", "阶段", "长期", "突然", "还款", "支出"].reduce(
-    (score, keyword) => score + (text.includes(keyword) ? 1 : 0),
-    0,
-  );
-  const layerScores = [
-    ["personality", personalityScore],
-    ["system", systemScore],
-    ["lifecycle", lifecycleScore],
+  if (hitCount <= 0) return 0;
+  if (hitCount <= 1) return 2;
+  if (hitCount <= 2) return 4;
+  return 6;
+};
+
+const resolveDominantLine = (lineImpact: UpperCodeFormation["lineImpact"]): HexagramLayerClassification["dominantLayer"] => {
+  const lineScores = [
+    ["personality", lineImpact.personalityDynamicsLine],
+    ["system", lineImpact.systemMechanismLine],
+    ["lifecycle", lineImpact.lifecycleStageLine],
   ] as const;
-  const sortedScores = [...layerScores].sort((left, right) => right[1] - left[1]);
+  const sortedScores = [...lineScores].sort((left, right) => right[1] - left[1]);
 
-  if (sortedScores[0][1] === sortedScores[1][1]) {
-    return "mixed";
-  }
+  return sortedScores[0][1] === sortedScores[1][1] ? "mixed" : sortedScores[0][0];
+};
 
-  if (
-    externalEnvironmentType === "kun_responsibility_support" ||
-    externalEnvironmentType === "kan_trapped_debt"
-  ) {
-    return "system";
-  }
+const scoreUpperCodeFormation = (
+  formation: Pick<UpperCodeFormation, "lineImpact">,
+): number =>
+  formation.lineImpact.personalityDynamicsLine +
+  formation.lineImpact.systemMechanismLine +
+  formation.lineImpact.lifecycleStageLine;
 
-  return sortedScores[0][0];
+export const formUpperCodeFromPressureSeed = (pressureSeed: PressureSeed): UpperCodeFormation => {
+  const text = getHexagramClassifierText(pressureSeed);
+  const formationCandidates = (Object.keys(externalEnvironmentProfiles) as ExternalEnvironmentType[]).map((environmentType) => {
+    const profile = externalEnvironmentProfiles[environmentType];
+    const lineImpact = {
+      personalityDynamicsLine: scoreLineImpact(profile.personalityKeywords, text),
+      systemMechanismLine: scoreLineImpact(profile.systemKeywords, text),
+      lifecycleStageLine: scoreLineImpact(profile.lifecycleKeywords, text),
+    };
+
+    return {
+      pressureSeedLabel: `${pressureSeed.pressureType}｜${pressureSeed.fieldBias}`,
+      lineImpact,
+      dominantLine: resolveDominantLine(lineImpact),
+      externalEnvironmentType: environmentType,
+      upperTrigram: profile.upperTrigram,
+      formationReason: `现实种子「${pressureSeed.seedId}」撞击人格动力线 ${lineImpact.personalityDynamicsLine}、系统机制线 ${lineImpact.systemMechanismLine}、生命周期线 ${lineImpact.lifecycleStageLine}，因此显影为「${profile.name}」。`,
+      upperCodeReading: profile.upperCodeReading,
+    } satisfies UpperCodeFormation;
+  });
+
+  return [...formationCandidates].sort((left, right) => {
+    const scoreDelta = scoreUpperCodeFormation(right) - scoreUpperCodeFormation(left);
+
+    if (scoreDelta !== 0) {
+      return scoreDelta;
+    }
+
+    return stableHash(left.externalEnvironmentType) - stableHash(right.externalEnvironmentType);
+  })[0];
 };
 
 export const classifyPressureSeedForHexagram = (
   pressureSeed: PressureSeed,
 ): HexagramLayerClassification => {
-  const text = getHexagramClassifierText(pressureSeed);
-  const selectedEnvironmentType = (Object.keys(externalEnvironmentProfiles) as ExternalEnvironmentType[]).sort(
-    (left, right) => {
-      const scoreDelta =
-        scoreEnvironmentProfile(externalEnvironmentProfiles[right], text) -
-        scoreEnvironmentProfile(externalEnvironmentProfiles[left], text);
-
-      if (scoreDelta !== 0) {
-        return scoreDelta;
-      }
-
-      return stableHash(left) - stableHash(right);
-    },
-  )[0];
-  const profile = externalEnvironmentProfiles[selectedEnvironmentType];
+  const upperCodeFormation = formUpperCodeFromPressureSeed(pressureSeed);
+  const profile = externalEnvironmentProfiles[upperCodeFormation.externalEnvironmentType];
 
   return {
     personalityDynamics: profile.personalityDynamics,
     systemMechanism: profile.systemMechanism,
     lifecycleStage: profile.lifecycleStage,
-    dominantLayer: resolveDominantLayer(pressureSeed, selectedEnvironmentType),
-    externalEnvironmentType: selectedEnvironmentType,
+    dominantLayer: upperCodeFormation.dominantLine,
+    externalEnvironmentType: upperCodeFormation.externalEnvironmentType,
     externalEnvironmentName: profile.name,
-    upperTrigram: profile.upperTrigram,
+    upperTrigram: upperCodeFormation.upperTrigram,
     externalPressureReading: profile.externalPressureReading,
-    classificationReason: `压力种子「${pressureSeed.seedId}」命中「${profile.name}」的关键词轨道，因此上卦取「${profile.upperTrigram}」。`,
+    classificationReason: upperCodeFormation.formationReason,
   };
 };
 
@@ -476,8 +509,9 @@ export const formCurrentHexagramProfile = (
   pressureField: PressureField,
 ): CurrentHexagramProfile => {
   const lowerTrigram = resolveMotherCodeLowerTrigram(motherCodeProfile);
+  const upperCodeFormation = formUpperCodeFromPressureSeed(pressureSeed);
   const layerClassification = classifyPressureSeedForHexagram(pressureSeed);
-  const upperTrigram = layerClassification.upperTrigram;
+  const upperTrigram = upperCodeFormation.upperTrigram;
   const matrixKey = `${upperTrigram}-${lowerTrigram}`;
   const knownHexagram = knownHexagramMatrix[matrixKey];
   const gravityValue = resolvePersonalityGravityValue(pressureField);
@@ -493,10 +527,11 @@ export const formCurrentHexagramProfile = (
     hexagramCode,
     hexagramName,
     hexagramTitle,
+    upperCodeFormation,
     layerClassification,
     gravityValue,
     innerForceReading: `下卦「${lowerTrigram}」来自母码「${motherCodeProfile.motherCodeName}」，代表本局内在反应底盘。`,
-    externalPressureReading: `${layerClassification.externalPressureReading}上卦取「${upperTrigram}」。`,
+    externalPressureReading: `${upperCodeFormation.upperCodeReading}上卦取「${upperTrigram}」。`,
     interactionReading: `上卦「${upperTrigram}」压入下卦「${lowerTrigram}」，形成本局卦码「${hexagramCode}｜${hexagramName}｜${hexagramTitle}」。`,
     currentSandboxReading: `${gravityReading[gravityValue]}。人格重力值不改变卦名，只决定本局风险窗口、六爻传导语气与器法干预强度。`,
   };
@@ -692,7 +727,7 @@ const buildCausalTrace = (result: Omit<GuanyaoCausalPipelineResult, "causalTrace
     },
     {
       step: "pressure_field_to_current_hexagram_profile",
-      reason: `三层分类器判定外在环境为「${result.currentHexagramProfile.layerClassification.externalEnvironmentName}」，上卦「${result.currentHexagramProfile.upperTrigram}」与母码下卦「${result.currentHexagramProfile.lowerTrigram}」成局为「${result.currentHexagramProfile.hexagramCode}｜${result.currentHexagramProfile.hexagramName}」。人格重力值为「${result.currentHexagramProfile.gravityValue}」。`,
+      reason: `${result.currentHexagramProfile.upperCodeFormation.formationReason}${result.currentHexagramProfile.upperCodeFormation.upperCodeReading}上码「${result.currentHexagramProfile.upperTrigram}」与母码下码「${result.currentHexagramProfile.lowerTrigram}」成局为「${result.currentHexagramProfile.hexagramCode}｜${result.currentHexagramProfile.hexagramName}」。人格重力值为「${result.currentHexagramProfile.gravityValue}」。`,
     },
     {
       step: "hexagram_field_to_behavior_scan",
@@ -797,6 +832,8 @@ export function auditGuanyaoCausalPipeline(): {
     ["has currentHexagramProfile", Boolean(result.currentHexagramProfile)],
     ["currentHexagramProfile lowerSource mother_code", result.currentHexagramProfile.lowerSource === "mother_code"],
     ["currentHexagramProfile upperSource pressure_field", result.currentHexagramProfile.upperSource === "pressure_field"],
+    ["currentHexagramProfile has upperCodeFormation", Boolean(result.currentHexagramProfile.upperCodeFormation)],
+    ["upperCodeFormation reads three line impact", typeof result.currentHexagramProfile.upperCodeFormation.lineImpact.systemMechanismLine === "number"],
     ["currentHexagramProfile has gravityValue", Boolean(result.currentHexagramProfile.gravityValue)],
     ["has hexagramField", Boolean(result.hexagramField)],
     ["has behaviorEngineScan", Boolean(result.behaviorEngineScan)],
@@ -853,6 +890,29 @@ export function auditGuanyaoHexagramFormation(): {
         sample.upperTrigram === formationCase.expectedUpperTrigram,
       ],
       [
+        `${formationCase.caseId} upperCodeFormation upperTrigram ${formationCase.expectedUpperTrigram}`,
+        sample.upperCodeFormation.upperTrigram === formationCase.expectedUpperTrigram,
+      ],
+      [
+        `${formationCase.caseId} externalEnvironmentType ${formationCase.expectedExternalEnvironmentType}`,
+        sample.upperCodeFormation.externalEnvironmentType === formationCase.expectedExternalEnvironmentType &&
+          sample.layerClassification.externalEnvironmentType === formationCase.expectedExternalEnvironmentType,
+      ],
+      [
+        `${formationCase.caseId} systemMechanismLine is high`,
+        sample.upperCodeFormation.lineImpact.systemMechanismLine >= 4,
+      ],
+      [
+        `${formationCase.caseId} lifecycleStageLine is present when trapped debt`,
+        formationCase.expectedExternalEnvironmentType === "kan_trapped_debt"
+          ? sample.upperCodeFormation.lineImpact.lifecycleStageLine >= 3
+          : true,
+      ],
+      [
+        `${formationCase.caseId} system line dominates or mixes`,
+        sample.upperCodeFormation.dominantLine === "system" || sample.upperCodeFormation.dominantLine === "mixed",
+      ],
+      [
         `${formationCase.caseId} lowerTrigram ${formationCase.expectedLowerTrigram}`,
         sample.lowerTrigram === formationCase.expectedLowerTrigram,
       ],
@@ -867,6 +927,14 @@ export function auditGuanyaoHexagramFormation(): {
       [
         `${formationCase.caseId} hexagramTitle ${formationCase.expectedHexagramTitle}`,
         sample.hexagramTitle === formationCase.expectedHexagramTitle,
+      ],
+      [
+        `${formationCase.caseId} upperCodeReading contains expected phrase`,
+        sample.upperCodeFormation.upperCodeReading.includes(
+          formationCase.expectedUpperTrigram === "坤"
+            ? "责任与承载成为主导压力，上码显影为坤"
+            : "困局与难以抽离成为主导压力，上码显影为坎",
+        ),
       ],
       [
         `${formationCase.caseId} gravity does not choose trigram`,

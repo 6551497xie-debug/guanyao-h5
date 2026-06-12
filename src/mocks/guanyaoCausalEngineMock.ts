@@ -1,6 +1,7 @@
 import type {
   ChronoCoordinate,
   DynamicFieldModifiers,
+  ExternalEnvironmentType,
   LocationAnchor,
   MotherCodeProfile,
   PressureSeed,
@@ -287,6 +288,7 @@ export const mockHexagramFormationCases = {
       locationTags: ["家庭牵引压力", "责任吞咽", "金钱安全压力"],
     },
     expectedUpperTrigram: "坤",
+    expectedExternalEnvironmentType: "kun_responsibility_support",
     expectedLowerTrigram: "兑",
     expectedHexagramCode: "019",
     expectedHexagramName: "临",
@@ -307,6 +309,7 @@ export const mockHexagramFormationCases = {
       locationTags: ["金钱安全压力", "深陷困局", "难以抽离压力"],
     },
     expectedUpperTrigram: "坎",
+    expectedExternalEnvironmentType: "kan_trapped_debt",
     expectedLowerTrigram: "兑",
     expectedHexagramCode: "047",
     expectedHexagramName: "困",
@@ -319,6 +322,7 @@ export const mockHexagramFormationCases = {
     motherCodeProfile: MotherCodeProfile & { lowerTrigram: Trigram };
     pressureSeed: PressureSeed;
     expectedUpperTrigram: Trigram;
+    expectedExternalEnvironmentType: ExternalEnvironmentType;
     expectedLowerTrigram: Trigram;
     expectedHexagramCode: string;
     expectedHexagramName: string;

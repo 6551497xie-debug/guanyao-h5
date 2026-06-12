@@ -124,6 +124,20 @@ export type ExternalEnvironmentType =
 
 export type PersonalityGravityValue = "P1" | "P2" | "P3" | "P4" | "P5" | "P6";
 
+export interface UpperCodeFormation {
+  pressureSeedLabel: string;
+  lineImpact: {
+    personalityDynamicsLine: number;
+    systemMechanismLine: number;
+    lifecycleStageLine: number;
+  };
+  dominantLine: HexagramDominantLayer;
+  externalEnvironmentType: ExternalEnvironmentType;
+  upperTrigram: Trigram;
+  formationReason: string;
+  upperCodeReading: string;
+}
+
 export interface HexagramLayerClassification {
   personalityDynamics: string;
   systemMechanism: string;
@@ -144,6 +158,7 @@ export interface CurrentHexagramProfile {
   hexagramCode: string;
   hexagramName: string;
   hexagramTitle: string;
+  upperCodeFormation: UpperCodeFormation;
   layerClassification: HexagramLayerClassification;
   gravityValue: PersonalityGravityValue;
   innerForceReading: string;
