@@ -223,6 +223,40 @@ export interface YaoTransmissionChain {
   chainSummary: string;
 }
 
+export type DeviceMethodType =
+  | "stop"
+  | "clarify"
+  | "separate"
+  | "reframe"
+  | "boundary"
+  | "rebuild"
+  | "communicate";
+
+export interface DeviceMethod {
+  sourceCut: CutCandidate;
+  deviceName: string;
+  deviceType: DeviceMethodType;
+  methodSummary: string;
+  antiInstinctAction: string;
+  firstAction: string;
+  next72HoursAction: string;
+  thirtyDayAction: string;
+  doNotDo: string[];
+  realityCheck: string[];
+  userFacingMethodPrompt: string;
+}
+
+export interface DeviceMethodPackage {
+  sourceHexagramCode: string;
+  sourceHexagramName: string;
+  sourceHexagramTitle: string;
+  selectedCut: CutCandidate;
+  mainDeviceMethod: DeviceMethod;
+  secondaryDeviceMethod?: DeviceMethod;
+  rootDeviceMethod?: DeviceMethod;
+  methodPackageSummary: string;
+}
+
 export interface BehaviorEngineScan {
   scanId: string;
   primaryBreachCandidate: string;
@@ -289,6 +323,7 @@ export interface GuanyaoCausalPipelineResult {
   pressureField: PressureField;
   currentHexagramProfile: CurrentHexagramProfile;
   yaoTransmissionChain?: YaoTransmissionChain;
+  deviceMethodPackage?: DeviceMethodPackage;
   hexagramField: HexagramField;
   behaviorEngineScan: BehaviorEngineScan;
   breachPoints: BreachPoint[];

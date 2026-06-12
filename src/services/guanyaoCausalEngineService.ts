@@ -15,6 +15,9 @@ import type {
   ChronoCoordinate,
   CutCandidate,
   CurrentHexagramProfile,
+  DeviceMethod,
+  DeviceMethodPackage,
+  DeviceMethodType,
   DynamicFieldModifiers,
   EmotionalIntensity,
   ExternalEnvironmentType,
@@ -224,6 +227,7 @@ const requiredTraceSteps = [
   "pressure_seed_to_pressure_field",
   "pressure_field_to_current_hexagram_profile",
   "current_hexagram_profile_to_yao_transmission_chain",
+  "yao_transmission_chain_to_device_method_package",
   "pressure_field_to_hexagram_field",
   "hexagram_field_to_behavior_scan",
   "behavior_scan_to_breach_points",
@@ -901,6 +905,128 @@ export const buildYaoTransmissionChain = (
   };
 };
 
+type DeviceMethodTemplate = Omit<DeviceMethod, "sourceCut">;
+
+const deviceMethodByHexagramCode: Record<string, DeviceMethodTemplate> = {
+  "019": {
+    deviceName: "清账定界法",
+    deviceType: "clarify",
+    methodSummary: "把家庭财务压力从模糊焦虑，拆成真实账目、责任边界和下一步顺序。",
+    antiInstinctAction: "不要继续只用缓和与腾挪稳住气氛，而是先把真实数字和责任边界摊开。",
+    firstAction: "列出当前必须处理的三项真实财务压力：金额、期限、责任人。",
+    next72HoursAction: "完成一次不超过30分钟的家庭财务沟通，只讨论事实、数字、期限，不讨论情绪对错。",
+    thirtyDayAction: "建立一张家庭财务优先级表，把必要支出、可延后支出、必须协商支出分开。",
+    doNotDo: [
+      "不要继续用“先缓一缓”替代真实沟通",
+      "不要把所有责任都默默揽到自己身上",
+      "不要只处理气氛，不处理数字",
+    ],
+    realityCheck: [
+      "哪一笔压力已经不能再靠缓和解决？",
+      "哪一项责任其实需要重新分配？",
+      "哪一个期限最先逼近？",
+    ],
+    userFacingMethodPrompt:
+      "这一层可以先从“把账说清”开始。不是为了制造冲突，而是为了让家庭压力不再继续模糊下去。",
+  },
+  "047": {
+    deviceName: "止滚清债法",
+    deviceType: "rebuild",
+    methodSummary: "停止用短期周转维持表面缓和，先拆开债务结构，阻止困局继续滚大。",
+    antiInstinctAction: "不要再用拆东补西替代真实重组，先停止新增滚动压力。",
+    firstAction: "列出全部债务：本金、利息、期限、逾期风险、关系风险。",
+    next72HoursAction: "标记最高风险的三项债务，并确定哪一项必须优先止滚。",
+    thirtyDayAction: "建立债务分层表：高息债、逾期风险债、人情债、家庭债、经营债，分别制定处理顺序。",
+    doNotDo: [
+      "不要继续用新周转掩盖旧问题",
+      "不要只安抚关系而不拆债务结构",
+      "不要把“还能撑一下”当成解决方案",
+    ],
+    realityCheck: [
+      "哪一笔债务正在滚大？",
+      "哪一笔不能再拖？",
+      "哪一笔只是关系压力，不是真正的优先债务？",
+    ],
+    userFacingMethodPrompt:
+      "这一层可以先从“停止继续滚大”开始。你不是没有想办法，而是需要把周转从本能反应，改成有顺序的债务重组。",
+  },
+};
+
+const deviceTypeByLayer: Record<YaoLayer, DeviceMethodType> = {
+  body: "stop",
+  emotion: "separate",
+  thought: "reframe",
+  behavior: "clarify",
+  memory: "separate",
+  motivation: "rebuild",
+};
+
+const methodDirectionByLayer: Record<YaoLayer, string> = {
+  body: "先稳住身体反应，降低压力对身体的即时接管。",
+  emotion: "先区分情绪与事实，避免情绪直接决定后续行为。",
+  thought: "替换接管叙事，找到一句新的判断语。",
+  behavior: "停止正在放大代价的动作，替换成一个具体反本能动作。",
+  memory: "识别旧经验是否正在替当前现实做决定。",
+  motivation: "看清真正想保护的东西，并重新选择保护方式。",
+};
+
+const buildFallbackDeviceMethod = (
+  sourceCut: CutCandidate,
+  yaoTransmissionChain: YaoTransmissionChain,
+): DeviceMethod => {
+  const direction = methodDirectionByLayer[sourceCut.yaoLayer];
+
+  return {
+    sourceCut,
+    deviceName: `${sourceCut.yaoLayer.toUpperCase()}层反本能器法`,
+    deviceType: deviceTypeByLayer[sourceCut.yaoLayer],
+    methodSummary: `${direction}本局切口来自 ${sourceCut.yaoPosition} / ${sourceCut.yaoLayer}。`,
+    antiInstinctAction: `不要继续顺着「${sourceCut.userFacingReason}」往下走，先做一个反向确认。`,
+    firstAction: "写下这一层正在自动发生的旧反应，并圈出一个可以暂停的动作。",
+    next72HoursAction: "在下一次同类压力出现时，只替换一个最小动作，不追求一次性解决全局。",
+    thirtyDayAction: "记录三次触发、三次替换动作和三次现实反馈，形成新的处理顺序。",
+    doNotDo: [
+      "不要把旧反应解释成唯一选择",
+      "不要同时处理所有层级",
+      "不要跳过现实检查直接下结论",
+    ],
+    realityCheck: [
+      "哪一个动作正在放大代价？",
+      "哪一个判断只是旧反应的解释？",
+      "哪一步是现在就能做的小动作？",
+    ],
+    userFacingMethodPrompt: `这一层可以先从一个小动作开始。先处理「${yaoTransmissionChain.sourceHexagramName}」里最具体的一步。`,
+  };
+};
+
+const attachSourceCut = (sourceCut: CutCandidate, template: DeviceMethodTemplate): DeviceMethod => ({
+  sourceCut,
+  ...template,
+});
+
+export const buildDeviceMethodPackage = (
+  yaoTransmissionChain: YaoTransmissionChain,
+): DeviceMethodPackage => {
+  const selectedCut = yaoTransmissionChain.mainCut;
+  const mainTemplate = deviceMethodByHexagramCode[yaoTransmissionChain.sourceHexagramCode];
+  const mainDeviceMethod = mainTemplate
+    ? attachSourceCut(selectedCut, mainTemplate)
+    : buildFallbackDeviceMethod(selectedCut, yaoTransmissionChain);
+  const secondaryDeviceMethod = buildFallbackDeviceMethod(yaoTransmissionChain.secondaryCut, yaoTransmissionChain);
+  const rootDeviceMethod = buildFallbackDeviceMethod(yaoTransmissionChain.rootCut, yaoTransmissionChain);
+
+  return {
+    sourceHexagramCode: yaoTransmissionChain.sourceHexagramCode,
+    sourceHexagramName: yaoTransmissionChain.sourceHexagramName,
+    sourceHexagramTitle: yaoTransmissionChain.sourceHexagramTitle,
+    selectedCut,
+    mainDeviceMethod,
+    secondaryDeviceMethod,
+    rootDeviceMethod,
+    methodPackageSummary: `切口定点，器法成形。本局从 ${selectedCut.yaoPosition} / ${selectedCut.yaoLayer} 进入「${mainDeviceMethod.deviceName}」。`,
+  };
+};
+
 export const buildHexagramField = (
   motherCodeProfile: MotherCodeProfile,
   pressureField: PressureField,
@@ -1100,6 +1226,12 @@ const buildCausalTrace = (result: Omit<GuanyaoCausalPipelineResult, "causalTrace
         : "本局尚未展开六爻人格传导。",
     },
     {
+      step: "yao_transmission_chain_to_device_method_package",
+      reason: result.deviceMethodPackage
+        ? `切口「${result.deviceMethodPackage.selectedCut.yaoPosition}｜${result.deviceMethodPackage.selectedCut.yaoLayer}」定点，生成器法「${result.deviceMethodPackage.mainDeviceMethod.deviceName}」。`
+        : "本局尚未生成器法包。",
+    },
+    {
       step: "hexagram_field_to_behavior_scan",
       reason: `本局惯性为「${result.hexagramField.inertiaPattern}」，扫描锁定「${result.behaviorEngineScan.primaryBreachCandidate}」。`,
     },
@@ -1137,6 +1269,7 @@ export const runGuanyaoCausalPipeline = (
   );
   const currentHexagramProfile = formCurrentHexagramProfile(motherCodeProfile, pressureSeed, pressureField);
   const yaoTransmissionChain = buildYaoTransmissionChain(motherCodeProfile, pressureSeed, currentHexagramProfile);
+  const deviceMethodPackage = buildDeviceMethodPackage(yaoTransmissionChain);
   const hexagramField = buildHexagramField(motherCodeProfile, pressureField, currentHexagramProfile);
   const behaviorEngineScan = runBehaviorEngineScan(hexagramField);
   const breachPoints = resolveBreachPoints(behaviorEngineScan);
@@ -1160,6 +1293,7 @@ export const runGuanyaoCausalPipeline = (
     pressureField,
     currentHexagramProfile,
     yaoTransmissionChain,
+    deviceMethodPackage,
     hexagramField,
     behaviorEngineScan,
     breachPoints,
@@ -1209,6 +1343,8 @@ export function auditGuanyaoCausalPipeline(): {
     ["currentHexagramProfile has gravityValue", Boolean(result.currentHexagramProfile.gravityValue)],
     ["has yaoTransmissionChain", Boolean(result.yaoTransmissionChain)],
     ["yaoTransmissionChain has 6 transmissions", result.yaoTransmissionChain?.transmissions.length === 6],
+    ["has deviceMethodPackage", Boolean(result.deviceMethodPackage)],
+    ["deviceMethodPackage has mainDeviceMethod", Boolean(result.deviceMethodPackage?.mainDeviceMethod)],
     ["has hexagramField", Boolean(result.hexagramField)],
     ["has behaviorEngineScan", Boolean(result.behaviorEngineScan)],
     ["has breachPoints >= 3", result.breachPoints.length >= 3],
@@ -1225,6 +1361,7 @@ export function auditGuanyaoCausalPipeline(): {
     ["causalTrace includes dynamic_modifiers_to_pressure_field", traceSteps.has("dynamic_modifiers_to_pressure_field")],
     ["causalTrace includes pressure_field_to_current_hexagram_profile", traceSteps.has("pressure_field_to_current_hexagram_profile")],
     ["causalTrace includes current_hexagram_profile_to_yao_transmission_chain", traceSteps.has("current_hexagram_profile_to_yao_transmission_chain")],
+    ["causalTrace includes yao_transmission_chain_to_device_method_package", traceSteps.has("yao_transmission_chain_to_device_method_package")],
     ["pipeline works without locationAnchor", Boolean(resultWithoutLocation.personalityAsset)],
     ["dynamic modifiers can change field weight", result.pressureField.upperFieldWeight !== lightDynamicResult.pressureField.upperFieldWeight],
   ] satisfies [string, boolean][];
@@ -1436,6 +1573,82 @@ export function auditGuanyaoYaoTransmission(): {
       [
         `${formationCase.caseId} chainSummary present`,
         Boolean(sample.chainSummary),
+      ],
+    ] satisfies [string, boolean][];
+  });
+
+  return {
+    passed: checkResults.every(([, passed]) => passed),
+    checks: checkResults.map(([label, passed]) => `${label}: ${passed ? "passed" : "failed"}`),
+    samples,
+  };
+}
+
+export function auditGuanyaoDeviceMethod(): {
+  passed: boolean;
+  checks: string[];
+  samples: DeviceMethodPackage[];
+} {
+  const forbiddenUserPromptTerms = ["购买", "付费", "长按下刀", "本爻器法"];
+  const cases = Object.values(mockHexagramFormationCases);
+  const samples = cases.map((formationCase) => {
+    const pressureField = buildPressureField(
+      formationCase.motherCodeProfile,
+      formationCase.pressureSeed,
+      undefined,
+      mockDynamicFieldModifiers,
+    );
+    const currentHexagramProfile = formCurrentHexagramProfile(
+      formationCase.motherCodeProfile,
+      formationCase.pressureSeed,
+      pressureField,
+    );
+    const yaoTransmissionChain = buildYaoTransmissionChain(
+      formationCase.motherCodeProfile,
+      formationCase.pressureSeed,
+      currentHexagramProfile,
+    );
+
+    return buildDeviceMethodPackage(yaoTransmissionChain);
+  });
+  const methodHasRequiredActions = (method: DeviceMethod): boolean =>
+    Boolean(method.firstAction && method.next72HoursAction && method.thirtyDayAction);
+  const methodPromptIsClean = (method: DeviceMethod): boolean =>
+    forbiddenUserPromptTerms.every((term) => !method.userFacingMethodPrompt.includes(term));
+  const checkResults = cases.flatMap((formationCase, index) => {
+    const sample = samples[index];
+
+    return [
+      [
+        `${formationCase.caseId} has DeviceMethodPackage`,
+        Boolean(sample),
+      ],
+      [
+        `${formationCase.caseId} mainDeviceMethod sourceCut ${formationCase.expectedMainCut.yaoPosition} / ${formationCase.expectedMainCut.yaoLayer}`,
+        sample.mainDeviceMethod.sourceCut.yaoPosition === formationCase.expectedMainCut.yaoPosition &&
+          sample.mainDeviceMethod.sourceCut.yaoLayer === formationCase.expectedMainCut.yaoLayer,
+      ],
+      [
+        `${formationCase.caseId} deviceName ${formationCase.expectedMainDeviceName}`,
+        sample.mainDeviceMethod.deviceName === formationCase.expectedMainDeviceName,
+      ],
+      [
+        `${formationCase.caseId} mainDeviceMethod has first / 72h / 30d actions`,
+        methodHasRequiredActions(sample.mainDeviceMethod),
+      ],
+      [
+        `${formationCase.caseId} mainDeviceMethod prompt avoids forbidden commercial terms`,
+        methodPromptIsClean(sample.mainDeviceMethod),
+      ],
+      [
+        `${formationCase.caseId} source hexagram matches`,
+        sample.sourceHexagramCode === formationCase.expectedHexagramCode &&
+          sample.sourceHexagramName === formationCase.expectedHexagramName &&
+          sample.sourceHexagramTitle === formationCase.expectedHexagramTitle,
+      ],
+      [
+        `${formationCase.caseId} has secondary and root methods`,
+        Boolean(sample.secondaryDeviceMethod && sample.rootDeviceMethod),
       ],
     ] satisfies [string, boolean][];
   });

@@ -297,6 +297,7 @@ export const mockHexagramFormationCases = {
     expectedHexagramTitle: "悬崖边",
     expectedMainCut: { yaoPosition: 4, yaoLayer: "behavior" },
     expectedSecondaryCut: { yaoPosition: 3, yaoLayer: "thought" },
+    expectedMainDeviceName: "清账定界法",
   },
   debt: {
     caseId: "hexagram-sample-b-debt",
@@ -320,6 +321,7 @@ export const mockHexagramFormationCases = {
     expectedHexagramTitle: "围墙里的沉默者",
     expectedMainCut: { yaoPosition: 4, yaoLayer: "behavior" },
     expectedSecondaryCut: { yaoPosition: 3, yaoLayer: "thought" },
+    expectedMainDeviceName: "止滚清债法",
   },
 } satisfies Record<
   string,
@@ -335,5 +337,6 @@ export const mockHexagramFormationCases = {
     expectedHexagramTitle: string;
     expectedMainCut: { yaoPosition: YaoPosition; yaoLayer: YaoLayer };
     expectedSecondaryCut: { yaoPosition: YaoPosition; yaoLayer: YaoLayer };
+    expectedMainDeviceName: string;
   }
 >;
