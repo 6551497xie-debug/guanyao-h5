@@ -1236,6 +1236,44 @@ export const buildPersonalityAssetDeposition = (args: {
   };
 };
 
+const buildMockCaseFullPipeline = (formationCase: (typeof mockHexagramFormationCases)[keyof typeof mockHexagramFormationCases]) => {
+  const pressureField = buildPressureField(
+    formationCase.motherCodeProfile,
+    formationCase.pressureSeed,
+    undefined,
+    mockDynamicFieldModifiers,
+  );
+  const currentHexagramProfile = formCurrentHexagramProfile(
+    formationCase.motherCodeProfile,
+    formationCase.pressureSeed,
+    pressureField,
+  );
+  const yaoTransmissionChain = buildYaoTransmissionChain(
+    formationCase.motherCodeProfile,
+    formationCase.pressureSeed,
+    currentHexagramProfile,
+  );
+  const deviceMethodPackage = buildDeviceMethodPackage(yaoTransmissionChain);
+  const personalityAssetDeposition = buildPersonalityAssetDeposition({
+    motherCodeProfile: formationCase.motherCodeProfile,
+    pressureSeed: formationCase.pressureSeed,
+    currentHexagramProfile,
+    deviceMethodPackage,
+  });
+
+  return {
+    formationCase,
+    motherCodeProfile: formationCase.motherCodeProfile,
+    pressureSeed: formationCase.pressureSeed,
+    pressureField,
+    upperCodeFormation: currentHexagramProfile.upperCodeFormation,
+    currentHexagramProfile,
+    yaoTransmissionChain,
+    deviceMethodPackage,
+    personalityAssetDeposition,
+  };
+};
+
 export const buildHexagramField = (
   motherCodeProfile: MotherCodeProfile,
   pressureField: PressureField,
@@ -1960,6 +1998,159 @@ export function auditGuanyaoPersonalityAssetDeposition(): {
         sample.sourceHexagramCode === formationCase.expectedHexagramCode &&
           sample.sourceHexagramName === formationCase.expectedHexagramName &&
           sample.sourceHexagramTitle === formationCase.expectedHexagramTitle,
+      ],
+    ] satisfies [string, boolean][];
+  });
+
+  return {
+    passed: checkResults.every(([, passed]) => passed),
+    checks: checkResults.map(([label, passed]) => `${label}: ${passed ? "passed" : "failed"}`),
+    samples,
+  };
+}
+
+export function auditGuanyaoFullPipeline(): {
+  passed: boolean;
+  checks: string[];
+  samples: ReturnType<typeof buildMockCaseFullPipeline>[];
+} {
+  const forbiddenUserPromptTerms = ["购买", "付费", "长按下刀", "本爻器法"];
+  const requiredYaoLayerOrder = "body/emotion/thought/behavior/memory/motivation";
+  const requiredPhaseIds = ["first_72_hours", "day_1_to_30", "day_31_to_90"] as const;
+  const cases = Object.values(mockHexagramFormationCases);
+  const samples = cases.map(buildMockCaseFullPipeline);
+  const allTransmissionPromptsAreClean = (sample: ReturnType<typeof buildMockCaseFullPipeline>): boolean =>
+    sample.yaoTransmissionChain.transmissions.every((transmission) =>
+      forbiddenUserPromptTerms.every(
+        (term) =>
+          !transmission.userFacingPausePrompt.includes(term) &&
+          !transmission.userFacingContinuePrompt.includes(term),
+      ),
+    );
+  const userMethodPromptIsClean = (sample: ReturnType<typeof buildMockCaseFullPipeline>): boolean =>
+    forbiddenUserPromptTerms.every(
+      (term) => !sample.deviceMethodPackage.mainDeviceMethod.userFacingMethodPrompt.includes(term),
+    );
+  const assetTextIsClean = (sample: ReturnType<typeof buildMockCaseFullPipeline>): boolean =>
+    forbiddenUserPromptTerms.every(
+      (term) =>
+        !sample.personalityAssetDeposition.assetSummary.includes(term) &&
+        !sample.personalityAssetDeposition.archiveSummary.includes(term),
+    );
+  const everyTransmissionHasPauseFields = (sample: ReturnType<typeof buildMockCaseFullPipeline>): boolean =>
+    sample.yaoTransmissionChain.transmissions.every(
+      (transmission) =>
+        typeof transmission.interventionPotential === "number" &&
+        Boolean(
+          transmission.pauseSignal &&
+            transmission.pauseReason &&
+            transmission.userFacingPausePrompt &&
+            transmission.userFacingContinuePrompt,
+        ),
+    );
+  const hasRequiredPhases = (sample: ReturnType<typeof buildMockCaseFullPipeline>): boolean => {
+    const phaseIds = new Set(sample.personalityAssetDeposition.defensePath90d.phases.map((phase) => phase.phaseId));
+
+    return requiredPhaseIds.every((phaseId) => phaseIds.has(phaseId));
+  };
+  const checkResults = samples.flatMap((sample) => {
+    const formationCase = sample.formationCase;
+    const isDebtCase = formationCase.expectedHexagramCode === "047";
+    const expectedUpperCodePhrase = isDebtCase
+      ? "困局与难以抽离成为主导压力，上码显影为坎"
+      : "责任与承载成为主导压力，上码显影为坤";
+    const expectedLineImpact = isDebtCase
+      ? { personalityDynamicsLine: 6, systemMechanismLine: 6, lifecycleStageLine: 6 }
+      : { personalityDynamicsLine: 2, systemMechanismLine: 6, lifecycleStageLine: 4 };
+    const expectedDominantLine = isDebtCase ? "mixed" : "system";
+
+    return [
+      [`${formationCase.caseId} has motherCodeProfile`, Boolean(sample.motherCodeProfile)],
+      [`${formationCase.caseId} has pressureSeed`, Boolean(sample.pressureSeed)],
+      [`${formationCase.caseId} has pressureField`, Boolean(sample.pressureField)],
+      [`${formationCase.caseId} has UpperCodeFormation`, Boolean(sample.upperCodeFormation)],
+      [`${formationCase.caseId} has CurrentHexagramProfile`, Boolean(sample.currentHexagramProfile)],
+      [`${formationCase.caseId} has YaoTransmissionChain`, Boolean(sample.yaoTransmissionChain)],
+      [`${formationCase.caseId} has DeviceMethodPackage`, Boolean(sample.deviceMethodPackage)],
+      [`${formationCase.caseId} has PersonalityAssetDeposition`, Boolean(sample.personalityAssetDeposition)],
+      [
+        `${formationCase.caseId} upperCode lineImpact stable`,
+        sample.upperCodeFormation.lineImpact.personalityDynamicsLine === expectedLineImpact.personalityDynamicsLine &&
+          sample.upperCodeFormation.lineImpact.systemMechanismLine === expectedLineImpact.systemMechanismLine &&
+          sample.upperCodeFormation.lineImpact.lifecycleStageLine === expectedLineImpact.lifecycleStageLine,
+      ],
+      [
+        `${formationCase.caseId} upperCode dominantLine ${expectedDominantLine}`,
+        sample.upperCodeFormation.dominantLine === expectedDominantLine,
+      ],
+      [
+        `${formationCase.caseId} upperCode externalEnvironmentType ${formationCase.expectedExternalEnvironmentType}`,
+        sample.upperCodeFormation.externalEnvironmentType === formationCase.expectedExternalEnvironmentType,
+      ],
+      [
+        `${formationCase.caseId} upperCode upperTrigram ${formationCase.expectedUpperTrigram}`,
+        sample.upperCodeFormation.upperTrigram === formationCase.expectedUpperTrigram,
+      ],
+      [
+        `${formationCase.caseId} upperCodeReading contains expected phrase`,
+        sample.upperCodeFormation.upperCodeReading.includes(expectedUpperCodePhrase),
+      ],
+      [
+        `${formationCase.caseId} currentHexagramProfile stable`,
+        sample.currentHexagramProfile.lowerTrigram === formationCase.expectedLowerTrigram &&
+          sample.currentHexagramProfile.upperTrigram === formationCase.expectedUpperTrigram &&
+          sample.currentHexagramProfile.hexagramCode === formationCase.expectedHexagramCode &&
+          sample.currentHexagramProfile.hexagramName === formationCase.expectedHexagramName &&
+          sample.currentHexagramProfile.hexagramTitle === formationCase.expectedHexagramTitle,
+      ],
+      [
+        `${formationCase.caseId} yao transmissions length 6`,
+        sample.yaoTransmissionChain.transmissions.length === 6,
+      ],
+      [
+        `${formationCase.caseId} yao layer order stable`,
+        sample.yaoTransmissionChain.transmissions.map((transmission) => transmission.yaoLayer).join("/") ===
+          requiredYaoLayerOrder,
+      ],
+      [
+        `${formationCase.caseId} main / secondary / root cuts stable`,
+        sample.yaoTransmissionChain.mainCut.yaoPosition === 4 &&
+          sample.yaoTransmissionChain.mainCut.yaoLayer === "behavior" &&
+          sample.yaoTransmissionChain.secondaryCut.yaoPosition === 3 &&
+          sample.yaoTransmissionChain.secondaryCut.yaoLayer === "thought" &&
+          sample.yaoTransmissionChain.rootCut.yaoPosition === 6 &&
+          sample.yaoTransmissionChain.rootCut.yaoLayer === "motivation",
+      ],
+      [
+        `${formationCase.caseId} cutCandidates >= 6`,
+        sample.yaoTransmissionChain.cutCandidates.length >= 6,
+      ],
+      [
+        `${formationCase.caseId} transmissions include pause fields`,
+        everyTransmissionHasPauseFields(sample),
+      ],
+      [
+        `${formationCase.caseId} device method stable`,
+        sample.deviceMethodPackage.mainDeviceMethod.sourceCut.yaoPosition === 4 &&
+          sample.deviceMethodPackage.mainDeviceMethod.sourceCut.yaoLayer === "behavior" &&
+          sample.deviceMethodPackage.mainDeviceMethod.deviceName === formationCase.expectedMainDeviceName &&
+          Boolean(
+            sample.deviceMethodPackage.mainDeviceMethod.firstAction &&
+              sample.deviceMethodPackage.mainDeviceMethod.next72HoursAction &&
+              sample.deviceMethodPackage.mainDeviceMethod.thirtyDayAction,
+          ),
+      ],
+      [
+        `${formationCase.caseId} asset deposition stable`,
+        sample.personalityAssetDeposition.assetName === formationCase.expectedAssetName &&
+          sample.personalityAssetDeposition.defensePath90d.phases.length === 3 &&
+          hasRequiredPhases(sample) &&
+          sample.personalityAssetDeposition.defensePath90d.relapseWarning.length >= 3 &&
+          Boolean(sample.personalityAssetDeposition.defensePath90d.antiInstinctReminder),
+      ],
+      [
+        `${formationCase.caseId} forbidden user prompt terms absent`,
+        allTransmissionPromptsAreClean(sample) && userMethodPromptIsClean(sample) && assetTextIsClean(sample),
       ],
     ] satisfies [string, boolean][];
   });
