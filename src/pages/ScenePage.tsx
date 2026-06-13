@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CausalRail } from "../components/causal/CausalRail";
 import { sceneSeeds } from "../data/sceneSeeds";
@@ -106,7 +106,16 @@ function dedupeSceneMomentGroups(groups: SceneMomentGroup[]): SceneMomentGroup[]
   });
 }
 
-function buildPressureSeedCandidates(session: GuanyaoSession): PressureSeedCandidate[] {
+function toPressureSeedCandidates(group: SceneMomentGroup): PressureSeedCandidate[] {
+  return group.seeds.map((seed) => ({
+    id: seed.id,
+    title: seed.title,
+    line: seed.seedLine,
+    sceneSeed: seed,
+  }));
+}
+
+function buildPressureSeedCandidateGroups(session: GuanyaoSession): PressureSeedCandidate[][] {
   const yuanCodeKey = readYuanCodeKey(session);
   const lifeStageId = readLifeStageId(session);
   const identityFragmentId = session.identityFragment?.id ?? session.selectedFragment?.id;
@@ -127,38 +136,52 @@ function buildPressureSeedCandidates(session: GuanyaoSession): PressureSeedCandi
     ? collectSceneMomentGroups(sceneSeeds.filter((seed) => seed.yuanCodeKey === yuanCodeKey))
     : [];
   const fallbackGroups = collectSceneMomentGroups(sceneSeeds);
-  const [visibleGroup] = dedupeSceneMomentGroups([
+  const visibleGroups = dedupeSceneMomentGroups([
     ...(primaryGroup ? [primaryGroup] : []),
     ...exactGroups,
     ...yuanLifeStageGroups,
     ...yuanGroups,
     ...fallbackGroups,
   ]);
-  const visibleSeeds = visibleGroup?.seeds ?? seedGroupResult.seeds;
 
-  return visibleSeeds.map((seed) => ({
-    id: seed.id,
-    title: seed.title,
-    line: seed.seedLine,
-    sceneSeed: seed,
-  }));
+  if (visibleGroups.length > 0) {
+    return visibleGroups.map(toPressureSeedCandidates);
+  }
+
+  return [
+    seedGroupResult.seeds.map((seed) => ({
+      id: seed.id,
+      title: seed.title,
+      line: seed.seedLine,
+      sceneSeed: seed,
+    })),
+  ];
 }
 
 export function ScenePage() {
   const navigate = useNavigate();
   const session = getSession();
-  const pressureSeedCandidates = useMemo(() => buildPressureSeedCandidates(session), [session]);
-  const [selectedSeedId, setSelectedSeedId] = useState<string | null>(null);
-  const selectedCandidate = pressureSeedCandidates.find((candidate) => candidate.id === selectedSeedId) ?? null;
+  const pressureSeedCandidateGroups = useMemo(() => buildPressureSeedCandidateGroups(session), [session]);
+  const [activeGroupIndex, setActiveGroupIndex] = useState(0);
+  const [isIntercepted, setIsIntercepted] = useState(false);
+  const pressureSeedCandidates = pressureSeedCandidateGroups[activeGroupIndex] ?? pressureSeedCandidateGroups[0] ?? [];
 
-  function handlePressurizeSeed() {
-    if (!selectedCandidate) {
-      return;
+  useEffect(() => {
+    if (isIntercepted || pressureSeedCandidateGroups.length <= 1) {
+      return undefined;
     }
 
-    setSelectedSceneSeed(selectedCandidate.sceneSeed);
-    window.localStorage.setItem("guanyao:selectedPressureSliceId", selectedCandidate.id);
-    window.localStorage.setItem("guanyao:selectedPressureSliceText", selectedCandidate.line);
+    const timer = window.setInterval(() => {
+      setActiveGroupIndex((currentIndex) => (currentIndex + 1) % pressureSeedCandidateGroups.length);
+    }, 2200);
+
+    return () => window.clearInterval(timer);
+  }, [isIntercepted, pressureSeedCandidateGroups.length]);
+
+  function handlePressurizeSeed(candidate: PressureSeedCandidate) {
+    setSelectedSceneSeed(candidate.sceneSeed);
+    window.localStorage.setItem("guanyao:selectedPressureSliceId", candidate.id);
+    window.localStorage.setItem("guanyao:selectedPressureSliceText", candidate.line);
     setMotherCodeResult(buildMotherCodeResult(getSession()));
     navigate(GUANYAO_ROUTES.pressureExposure);
   }
@@ -232,13 +255,13 @@ export function ScenePage() {
       >
         <span
           style={{
-            color: selectedCandidate ? "rgba(0,184,212,0.68)" : "rgba(246,243,236,0.38)",
+            color: isIntercepted ? "rgba(0,184,212,0.68)" : "rgba(246,243,236,0.38)",
             fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
             fontSize: 11,
             letterSpacing: "0.13em",
           }}
         >
-          {selectedCandidate ? "现实压力种子已选中，等待压入压力场。" : "现实压力种子待压入。"}
+          {isIntercepted ? "点击种子，直接填装。" : "现实压力种子池扫描中。"}
         </span>
 
         <div
@@ -249,32 +272,32 @@ export function ScenePage() {
           }}
         >
           {pressureSeedCandidates.map((candidate) => {
-            const isSelected = selectedSeedId === candidate.id;
-
             return (
               <button
                 key={candidate.id}
                 type="button"
-                onClick={() => setSelectedSeedId(candidate.id)}
+                disabled={!isIntercepted}
+                onClick={() => handlePressurizeSeed(candidate)}
                 style={{
                   width: "100%",
                   minHeight: 118,
                   padding: "15px 2px 15px 0",
                   border: 0,
                   borderTop: "1px solid rgba(246,243,236,0.08)",
-                  borderBottom: isSelected ? "1px solid rgba(0,184,212,0.56)" : "1px solid rgba(246,243,236,0.07)",
-                  background: isSelected ? "linear-gradient(90deg, rgba(0,184,212,0.08), transparent 68%)" : "transparent",
+                  borderBottom: isIntercepted ? "1px solid rgba(0,184,212,0.18)" : "1px solid rgba(246,243,236,0.07)",
+                  background: isIntercepted ? "linear-gradient(90deg, rgba(0,184,212,0.045), transparent 68%)" : "transparent",
                   color: "inherit",
                   display: "grid",
                   gap: 8,
                   textAlign: "left",
-                  opacity: isSelected ? 1 : 0.68,
-                  cursor: "pointer",
+                  opacity: isIntercepted ? 1 : 0.58,
+                  cursor: isIntercepted ? "pointer" : "default",
+                  transition: "border-color 180ms ease, background 180ms ease, opacity 180ms ease",
                 }}
               >
                 <span
                   style={{
-                    color: isSelected ? "rgba(0,184,212,0.78)" : "rgba(246,243,236,0.4)",
+                    color: isIntercepted ? "rgba(0,184,212,0.78)" : "rgba(246,243,236,0.4)",
                     fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                     fontSize: 11,
                     letterSpacing: "0.12em",
@@ -284,7 +307,7 @@ export function ScenePage() {
                 </span>
                 <strong
                   style={{
-                    color: isSelected ? "rgba(246,243,236,0.92)" : "rgba(246,243,236,0.74)",
+                    color: isIntercepted ? "rgba(246,243,236,0.92)" : "rgba(246,243,236,0.74)",
                     fontSize: 19,
                     lineHeight: 1.28,
                     fontWeight: 360,
@@ -307,12 +330,26 @@ export function ScenePage() {
         </div>
       </section>
 
-      <CausalRail
-        statusLabel={selectedCandidate ? "现实压力种子已选中，等待压入压力场。" : "请选择一个现实压力种子"}
-        rightHint="右滑压入现实压力种子"
-        onRight={handlePressurizeSeed}
-        disabled={!selectedCandidate}
-      />
+      {isIntercepted ? (
+        <p
+          style={{
+            margin: 0,
+            color: "rgba(246,243,236,0.46)",
+            fontSize: 13,
+            lineHeight: 1.6,
+            textAlign: "center",
+            letterSpacing: "0.06em",
+          }}
+        >
+          点击种子，直接填装。
+        </p>
+      ) : (
+        <CausalRail
+          statusLabel="拦截这一幕"
+          rightHint="右滑拦截现实压力切片"
+          onRight={() => setIsIntercepted(true)}
+        />
+      )}
     </main>
   );
 }
