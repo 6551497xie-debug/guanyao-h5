@@ -186,6 +186,42 @@ export const PRESSURE_SEED_POWER_EVALUATION_BOSS: GuanyaoPressureSeed[] = [
     tags: ["人格化评价", "成熟规训", "自我压制"],
     mappingHint: "优先激活山泽损卦（削减），加重自我压制与标准驯化叙事",
   },
+  {
+    id: "POWER_EVALUATION_BOSS_11",
+    matrixCode: "POWER_EVALUATION",
+    pressureField: "POWER",
+    pressureNature: "EVALUATION",
+    primaryAge: "ESTABLISHING",
+    ageBias: ["YOUTH", "ESTABLISHING", "MID_LIFE"],
+    primaryRelation: "BOSS",
+    relationBias: ["BOSS", "COLLEAGUE", "SYSTEM"],
+    surface: "群里他只回了一个问号，你手心一下凉了。",
+    core: {
+      mechanism: "用户在公开工作群中接收到上级的极简否定信号，将一个模糊符号迅速放大为能力质疑与公开失分。",
+      engineHint: "识别为权力场中的评价威胁，核心触发来自公开群聊、符号化否定、即时压迫，容易引发身体警觉与表达冻结。",
+    },
+    shell: "一个问号，就把你钉住了。",
+    tags: ["群聊压迫", "符号否定", "表达冻结"],
+    mappingHint: "优先激活雷水解卦（松动），加重即时惊吓、公开失分与身体冻结叙事",
+  },
+  {
+    id: "POWER_EVALUATION_BOSS_12",
+    matrixCode: "POWER_EVALUATION",
+    pressureField: "POWER",
+    pressureNature: "EVALUATION",
+    primaryAge: "MID_LIFE",
+    ageBias: ["ESTABLISHING", "MID_LIFE", "RESTRUCTURING"],
+    primaryRelation: "BOSS",
+    relationBias: ["BOSS", "SYSTEM", "COLLEAGUE"],
+    surface: "绩效面谈前，你已经在心里替自己判完了。",
+    core: {
+      mechanism: "用户在正式评价到来前提前内化权力判断，通过预演失败与自我判决来降低被否定时的冲击。",
+      engineHint: "识别为权力场中的评价威胁，核心触发来自绩效面谈、等级评定、正式反馈，容易引发提前认输与自我审判。",
+    },
+    shell: "评价还没来，你先输了。",
+    tags: ["绩效焦虑", "自我审判", "提前认输"],
+    mappingHint: "优先激活山地剥卦（剥落），加重自我削弱、提前认输与评价前溃败叙事",
+  },
 ];
 
 export const PRESSURE_SEED_RELATION_ATTACHMENT_PARTNER: GuanyaoPressureSeed[] = [
@@ -470,11 +506,11 @@ export function auditGuanyaoPressureSeedDraftPool(): {
     if (frontStageKeys !== "shell,surface") errors.push(`${seed.id} frontStage exposes extra fields`);
   });
 
-  if (GUANYAO_PRESSURE_SEED_DRAFT_POOL.length !== 22) {
-    errors.push(`total expected 22, got ${GUANYAO_PRESSURE_SEED_DRAFT_POOL.length}`);
+  if (GUANYAO_PRESSURE_SEED_DRAFT_POOL.length !== 24) {
+    errors.push(`total expected 24, got ${GUANYAO_PRESSURE_SEED_DRAFT_POOL.length}`);
   }
-  if (matrixCoverage.POWER_EVALUATION !== 10) {
-    errors.push(`POWER_EVALUATION expected 10, got ${matrixCoverage.POWER_EVALUATION ?? 0}`);
+  if (matrixCoverage.POWER_EVALUATION !== 12) {
+    errors.push(`POWER_EVALUATION expected 12, got ${matrixCoverage.POWER_EVALUATION ?? 0}`);
   }
   if (matrixCoverage.RELATION_ATTACHMENT !== 12) {
     errors.push(`RELATION_ATTACHMENT expected 12, got ${matrixCoverage.RELATION_ATTACHMENT ?? 0}`);
