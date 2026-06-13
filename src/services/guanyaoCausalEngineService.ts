@@ -1670,6 +1670,7 @@ export function auditGuanyaoMotherCodeRegistry(): {
     "personalityAsset",
     "assetSummary",
     "visualAssetKey",
+    "visualAssetCode",
     "visualAssetStatus",
     "visualAssetPackage",
     "visualTags",
@@ -1691,6 +1692,7 @@ export function auditGuanyaoMotherCodeRegistry(): {
       definition.personalityAsset === result.motherCodeProfile.personalityAsset &&
       definition.assetSummary === result.motherCodeProfile.assetSummary &&
       definition.visualAssetKey === result.motherCodeProfile.visualAssetKey &&
+      definition.visualAssetCode === result.motherCodeProfile.visualAssetCode &&
       definition.visualAssetStatus === result.motherCodeProfile.visualAssetStatus &&
       definition.visualAssetPackage === result.motherCodeProfile.visualAssetPackage &&
       definition.visualTags.force === result.motherCodeProfile.visualTags?.force &&
@@ -1708,6 +1710,41 @@ export function auditGuanyaoMotherCodeRegistry(): {
         Boolean(definition.visualTags.force) &&
         Boolean(definition.visualTags.mirror) &&
         Boolean(definition.visualTags.unlock),
+      ),
+    ],
+    [
+      "every mother code has visual asset key",
+      guanyaoMotherCodeRegistry.every((definition) => Boolean(definition.visualAssetKey)),
+    ],
+    [
+      "every mother code has visual asset code",
+      guanyaoMotherCodeRegistry.every((definition) => Boolean(definition.visualAssetCode)),
+    ],
+    [
+      "every mother code has existing visual asset status",
+      guanyaoMotherCodeRegistry.every((definition) => definition.visualAssetStatus === "existing"),
+    ],
+    [
+      "every mother code has mother-code visual package",
+      guanyaoMotherCodeRegistry.every(
+        (definition) => definition.visualAssetPackage === "mother-code-visual-pack-v1",
+      ),
+    ],
+    [
+      "visual asset codes match MC-01 to MC-08",
+      guanyaoMotherCodeRegistry.every(
+        (definition, index) =>
+          definition.visualAssetCode ===
+          [
+            "MC-01-QIAN",
+            "MC-02-KUN",
+            "MC-03-ZHEN",
+            "MC-04-XUN",
+            "MC-05-KAN",
+            "MC-06-LI",
+            "MC-07-GEN",
+            "MC-08-DUI",
+          ][index],
       ),
     ],
     [

@@ -56,6 +56,7 @@ export interface MotherCodeDefinition {
   personalityAsset: string;
   assetSummary: string;
   visualAssetKey: string;
+  visualAssetCode: string;
   visualAssetStatus: "existing";
   visualAssetPackage: string;
   visualTags: {
@@ -87,6 +88,7 @@ export interface MotherCodeProfile {
   personalityAsset?: string;
   assetSummary?: string;
   visualAssetKey?: string;
+  visualAssetCode?: string;
   visualAssetStatus?: "existing";
   visualAssetPackage?: string;
   visualTags?: {

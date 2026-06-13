@@ -16,7 +16,7 @@ const motherCodeProfileIds: Record<MotherCodeId, string> = {
   8: "mother-dui-transformer",
 };
 
-const motherCodeVisualAssetPackage = "guanyao-mother-code-assets-v1";
+const motherCodeVisualAssetPackage = "mother-code-visual-pack-v1";
 const motherCodeUiBindingStatus = "existing";
 const motherCodeUiSurface = "MotherCodePage";
 const motherCodeCausalPosition = "母码底盘 / 下码 / 内在原力";
@@ -48,6 +48,7 @@ export const guanyaoMotherCodeRegistry = [
     personalityAsset: "在混乱中建立方向、边界和推进秩序的能力。",
     assetSummary: "把控制欲升级为控制能力。",
     visualAssetKey: "mother-code-qian-creator",
+    visualAssetCode: "MC-01-QIAN",
     visualAssetStatus: "existing",
     visualAssetPackage: motherCodeVisualAssetPackage,
     visualTags: {
@@ -72,7 +73,8 @@ export const guanyaoMotherCodeRegistry = [
     unlockPotential: "坤的解封，不是不再承受，而是把无边界的承受升级为有边界的托底能力。",
     personalityAsset: "在压力中稳定局面，同时守住自身边界的能力。",
     assetSummary: "把无边界承受升级为有边界托底。",
-    visualAssetKey: "mother-code-kun-carrier",
+    visualAssetKey: "mother-code-kun-bearer",
+    visualAssetCode: "MC-02-KUN",
     visualAssetStatus: "existing",
     visualAssetPackage: motherCodeVisualAssetPackage,
     visualTags: {
@@ -97,7 +99,8 @@ export const guanyaoMotherCodeRegistry = [
     unlockPotential: "震的解封，不是不再行动，而是把行动冲动升级为行动前的判断力。",
     personalityAsset: "在停滞中启动行动，同时掌握节奏和方向的能力。",
     assetSummary: "把行动冲动升级为行动前的判断力。",
-    visualAssetKey: "mother-code-zhen-actor",
+    visualAssetKey: "mother-code-zhen-action-engine",
+    visualAssetCode: "MC-03-ZHEN",
     visualAssetStatus: "existing",
     visualAssetPackage: motherCodeVisualAssetPackage,
     visualTags: {
@@ -122,7 +125,8 @@ export const guanyaoMotherCodeRegistry = [
     unlockPotential: "巽的解封，不是不再观察，而是把反复权衡升级为谋而后动的判断力。",
     personalityAsset: "在复杂局面中识别缝隙、选择路径并及时进入的能力。",
     assetSummary: "把反复权衡升级为谋而后动的判断力。",
-    visualAssetKey: "mother-code-xun-infiltrator",
+    visualAssetKey: "mother-code-xun-penetrator",
+    visualAssetCode: "MC-04-XUN",
     visualAssetStatus: "existing",
     visualAssetPackage: motherCodeVisualAssetPackage,
     visualTags: {
@@ -149,7 +153,8 @@ export const guanyaoMotherCodeRegistry = [
     unlockPotential: "坎的解封，不是不再深入，而是把反复深陷升级为穿越困局的能力。",
     personalityAsset: "在困局中看清结构、保留判断，并找到出口的能力。",
     assetSummary: "把反复深陷升级为穿越困局的能力。",
-    visualAssetKey: "mother-code-kan-deep-diver",
+    visualAssetKey: "mother-code-kan-sinker",
+    visualAssetCode: "MC-05-KAN",
     visualAssetStatus: "existing",
     visualAssetPackage: motherCodeVisualAssetPackage,
     visualTags: {
@@ -174,7 +179,8 @@ export const guanyaoMotherCodeRegistry = [
     unlockPotential: "离的解封，不是不再表达，而是把证明欲升级为抓住本质问题的表达能力。",
     personalityAsset: "在混乱信息中照见关键问题，并清晰表达本质的能力。",
     assetSummary: "把证明欲升级为抓住本质问题的表达能力。",
-    visualAssetKey: "mother-code-li-illuminator",
+    visualAssetKey: "mother-code-li-seer",
+    visualAssetCode: "MC-06-LI",
     visualAssetStatus: "existing",
     visualAssetPackage: motherCodeVisualAssetPackage,
     visualTags: {
@@ -201,6 +207,7 @@ export const guanyaoMotherCodeRegistry = [
     personalityAsset: "在推进失控前识别风险、建立边界并保留行动机会的能力。",
     assetSummary: "把过度防御性升级为及时止损的预见性。",
     visualAssetKey: "mother-code-gen-stopper",
+    visualAssetCode: "MC-07-GEN",
     visualAssetStatus: "existing",
     visualAssetPackage: motherCodeVisualAssetPackage,
     visualTags: {
@@ -226,6 +233,7 @@ export const guanyaoMotherCodeRegistry = [
     personalityAsset: "在冲突中保持关系流动，同时把真实问题说清楚的能力。",
     assetSummary: "把回避冲突升级为化解僵局的沟通能力。",
     visualAssetKey: "mother-code-dui-transformer",
+    visualAssetCode: "MC-08-DUI",
     visualAssetStatus: "existing",
     visualAssetPackage: motherCodeVisualAssetPackage,
     visualTags: {
@@ -276,6 +284,7 @@ export const toMotherCodeProfile = (definition: MotherCodeDefinition): MotherCod
   personalityAsset: definition.personalityAsset,
   assetSummary: definition.assetSummary,
   visualAssetKey: definition.visualAssetKey,
+  visualAssetCode: definition.visualAssetCode,
   visualAssetStatus: definition.visualAssetStatus,
   visualAssetPackage: definition.visualAssetPackage,
   visualTags: definition.visualTags,

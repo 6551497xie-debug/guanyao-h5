@@ -4,12 +4,17 @@ import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { CausalRail } from "../components/causal/CausalRail";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 
-const assetReadoutLabels = [
+const causalReadoutLabels = [
+  ["因果位置", "causalPosition"],
   ["基础原力", "baseDrive"],
-  ["阴影惯性", "shadowInertia"],
-  ["受压方式", "pressureMode"],
+  ["压力入口", "pressureEntry"],
   ["默认反应链", "defaultReactionChain"],
+] as const;
+
+const assetReadoutLabels = [
+  ["阴影惯性", "shadowInertia"],
   ["解封潜能", "unlockPotential"],
+  ["人格资产", "personalityAsset"],
 ] as const;
 
 export function MotherCodePage() {
@@ -92,7 +97,7 @@ export function MotherCodePage() {
             letterSpacing: "0.04em",
           }}
         >
-          它不是你的性格标签。
+          它不是一枚静态标签。
           <br />
           它是你在压力来临前，最先启动的行为源代码。
         </p>
@@ -136,6 +141,46 @@ export function MotherCodePage() {
           >
             {motherCode.motherCodeName}
           </strong>
+          <span
+            style={{
+              color: "rgba(246,243,236,0.42)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 11,
+              letterSpacing: "0.12em",
+            }}
+          >
+            {motherCode.visualAssetCode}
+          </span>
+          <span
+            style={{
+              color: "rgba(246,243,236,0.34)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 10,
+              letterSpacing: "0.1em",
+            }}
+          >
+            asset: {motherCode.visualAssetKey}
+          </span>
+          <span
+            style={{
+              color: "rgba(246,243,236,0.5)",
+              fontSize: 13,
+              lineHeight: 1.5,
+              letterSpacing: "0.04em",
+            }}
+          >
+            原力：{motherCode.visualTags.force} / 映照：{motherCode.visualTags.mirror} / 解封：{motherCode.visualTags.unlock}
+          </span>
+          <span
+            style={{
+              color: "rgba(0,184,212,0.58)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 10,
+              letterSpacing: "0.12em",
+            }}
+          >
+            {motherCode.visualAssetStatus} / {motherCode.visualAssetPackage} / {motherCode.uiBindingStatus} / {motherCode.uiSurface}
+          </span>
         </div>
 
         <div
@@ -144,7 +189,18 @@ export function MotherCodePage() {
             gap: 12,
           }}
         >
-          {assetReadoutLabels.map(([label, key]) => (
+          <span
+            style={{
+              color: "rgba(246,243,236,0.44)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 11,
+              letterSpacing: "0.14em",
+              marginTop: 6,
+            }}
+          >
+            因果读数
+          </span>
+          {causalReadoutLabels.map(([label, key]) => (
             <article
               key={label}
               style={{
@@ -171,6 +227,51 @@ export function MotherCodePage() {
                   fontSize: key === "defaultReactionChain" ? 18 : 14,
                   lineHeight: key === "defaultReactionChain" ? 1.45 : 1.68,
                   fontWeight: key === "defaultReactionChain" ? 380 : 300,
+                  letterSpacing: "0.04em",
+                }}
+              >
+                {motherCode[key]}
+              </p>
+            </article>
+          ))}
+          <span
+            style={{
+              color: "rgba(246,243,236,0.44)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 11,
+              letterSpacing: "0.14em",
+              marginTop: 6,
+            }}
+          >
+            资产沉积
+          </span>
+          {assetReadoutLabels.map(([label, key]) => (
+            <article
+              key={label}
+              style={{
+                display: "grid",
+                gap: 7,
+                padding: "12px 0",
+                borderTop: "1px solid rgba(246,243,236,0.075)",
+              }}
+            >
+              <span
+                style={{
+                  color: "rgba(0,184,212,0.68)",
+                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  fontSize: 11,
+                  letterSpacing: "0.13em",
+                }}
+              >
+                {label}
+              </span>
+              <p
+                style={{
+                  margin: 0,
+                  color: "rgba(246,243,236,0.68)",
+                  fontSize: 14,
+                  lineHeight: 1.68,
+                  fontWeight: 300,
                   letterSpacing: "0.04em",
                 }}
               >
