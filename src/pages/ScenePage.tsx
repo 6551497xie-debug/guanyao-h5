@@ -1,28 +1,28 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CausalRail } from "../components/causal/CausalRail";
-import { sceneSeeds } from "../data/sceneSeeds";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildMotherCodeResult } from "../services/motherCodeService";
-import { getSceneSeedGroup } from "../services/sceneSeedService";
 import { getSession, setMotherCodeResult, setSelectedSceneSeed } from "../services/sessionService";
+import {
+  buildSelectedPressureSeedContext,
+  getPressureSeedSceneTriplet,
+} from "../services/guanyaoPressureSeedSceneBindingService";
+import {
+  buildTripleForceLandingResult,
+  getTripleForceFrontStage,
+} from "../services/guanyaoTripleForceLandingService";
 import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId, SceneSeed } from "../types";
+import type { GuanyaoPressureSeed } from "../types/guanyaoPressureSeed";
 
 const yuanCodeKeys: IdentityFragment["yuanCodeKey"][] = ["qian", "kun", "zhen", "xun", "kan", "li", "gen", "dui"];
-const requiredSceneSeedIndexes: SceneSeed["seedIndex"][] = [1, 2, 3];
 
 type PressureSeedCandidate = {
   id: string;
-  title: string;
-  line: string;
-  sceneSeed: SceneSeed;
-};
-
-type SceneMomentGroup = {
-  seedGroupId: string;
-  pressureLayerId: string;
-  pressureLayerLabel: string;
-  seeds: SceneSeed[];
+  surface: string;
+  shell: string;
+  seed: GuanyaoPressureSeed;
+  seedIndex: SceneSeed["seedIndex"];
 };
 
 function readYuanCodeKey(session: GuanyaoSession): IdentityFragment["yuanCodeKey"] | undefined {
@@ -59,129 +59,82 @@ function readLifeStageId(session: GuanyaoSession): IdentityLifeStageId | undefin
   }
 }
 
-function normalizeSceneMomentGroup(seeds: SceneSeed[]): SceneMomentGroup | null {
-  const orderedSeeds = [...seeds].sort((a, b) => a.seedIndex - b.seedIndex).slice(0, 3);
-  const [firstSeed] = orderedSeeds;
-
-  if (!firstSeed || orderedSeeds.length !== 3) {
-    return null;
-  }
-
-  const hasRequiredIndexes = requiredSceneSeedIndexes.every((index) =>
-    orderedSeeds.some((seed) => seed.seedIndex === index),
-  );
-  const hasOneGroup = orderedSeeds.every((seed) => seed.seedGroupId === firstSeed.seedGroupId);
-  const hasOnePressureLayer = orderedSeeds.every((seed) => seed.pressureLayerId === firstSeed.pressureLayerId);
-
-  if (!hasRequiredIndexes || !hasOneGroup || !hasOnePressureLayer) {
-    return null;
-  }
-
-  return {
-    seedGroupId: firstSeed.seedGroupId,
-    pressureLayerId: firstSeed.pressureLayerId,
-    pressureLayerLabel: firstSeed.pressureLayerLabel,
-    seeds: orderedSeeds,
-  };
-}
-
-function collectSceneMomentGroups(candidates: SceneSeed[]): SceneMomentGroup[] {
-  const groupIds = [...new Set(candidates.map((seed) => seed.seedGroupId))];
-
-  return groupIds
-    .map((groupId) => normalizeSceneMomentGroup(candidates.filter((seed) => seed.seedGroupId === groupId)))
-    .filter((group): group is SceneMomentGroup => Boolean(group));
-}
-
-function dedupeSceneMomentGroups(groups: SceneMomentGroup[]): SceneMomentGroup[] {
-  const seenGroupIds = new Set<string>();
-
-  return groups.filter((group) => {
-    if (seenGroupIds.has(group.seedGroupId)) {
-      return false;
-    }
-
-    seenGroupIds.add(group.seedGroupId);
-    return true;
-  });
-}
-
-function toPressureSeedCandidates(group: SceneMomentGroup): PressureSeedCandidate[] {
-  return group.seeds.map((seed) => ({
-    id: seed.id,
-    title: seed.title,
-    line: seed.seedLine,
-    sceneSeed: seed,
-  }));
-}
-
-function buildPressureSeedCandidateGroups(session: GuanyaoSession): PressureSeedCandidate[][] {
-  const yuanCodeKey = readYuanCodeKey(session);
+function buildPressureSeedCandidates(session: GuanyaoSession): PressureSeedCandidate[] {
   const lifeStageId = readLifeStageId(session);
-  const identityFragmentId = session.identityFragment?.id ?? session.selectedFragment?.id;
-  const seedGroupResult = getSceneSeedGroup({
-    yuanCodeKey,
-    lifeStageId,
-    identityFragmentId,
+  const pressureSeedTriplet = getPressureSeedSceneTriplet({
+    ageSegment:
+      lifeStageId === "18_22"
+        ? "YOUTH"
+        : lifeStageId === "23_31"
+          ? "ESTABLISHING"
+          : lifeStageId === "32_42"
+            ? "MID_LIFE"
+            : lifeStageId === "43_55"
+              ? "RESTRUCTURING"
+              : undefined,
   });
-  const primaryGroup = normalizeSceneMomentGroup(seedGroupResult.seeds);
-  const exactGroups = identityFragmentId
-    ? collectSceneMomentGroups(sceneSeeds.filter((seed) => seed.sourceIdentityFragmentId === identityFragmentId))
-    : [];
-  const yuanLifeStageGroups =
-    yuanCodeKey && lifeStageId
-      ? collectSceneMomentGroups(sceneSeeds.filter((seed) => seed.yuanCodeKey === yuanCodeKey && seed.lifeStageId === lifeStageId))
-      : [];
-  const yuanGroups = yuanCodeKey
-    ? collectSceneMomentGroups(sceneSeeds.filter((seed) => seed.yuanCodeKey === yuanCodeKey))
-    : [];
-  const fallbackGroups = collectSceneMomentGroups(sceneSeeds);
-  const visibleGroups = dedupeSceneMomentGroups([
-    ...(primaryGroup ? [primaryGroup] : []),
-    ...exactGroups,
-    ...yuanLifeStageGroups,
-    ...yuanGroups,
-    ...fallbackGroups,
-  ]);
 
-  if (visibleGroups.length > 0) {
-    return visibleGroups.map(toPressureSeedCandidates);
-  }
+  return pressureSeedTriplet.frontStage.map((frontStageSeed, index) => {
+    const seed = pressureSeedTriplet.seeds.find((candidate) => candidate.id === frontStageSeed.id) ?? pressureSeedTriplet.seeds[index];
 
-  return [
-    seedGroupResult.seeds.map((seed) => ({
-      id: seed.id,
-      title: seed.title,
-      line: seed.seedLine,
-      sceneSeed: seed,
-    })),
-  ];
+    return {
+      id: frontStageSeed.id,
+      surface: frontStageSeed.surface,
+      shell: frontStageSeed.shell,
+      seed,
+      seedIndex: (index + 1) as SceneSeed["seedIndex"],
+    };
+  }).filter((candidate): candidate is PressureSeedCandidate => Boolean(candidate.seed));
+}
+
+function toLegacySceneSeed(
+  seed: GuanyaoPressureSeed,
+  session: GuanyaoSession,
+  seedIndex: SceneSeed["seedIndex"],
+): SceneSeed {
+  return {
+    id: seed.id,
+    sourceYuanCodeId: session.yuanCode?.id ?? "r8-pressure-seed",
+    yuanCodeKey: readYuanCodeKey(session) ?? "dui",
+    lifeStageId: readLifeStageId(session) ?? "32_42",
+    sourceIdentityFragmentId: session.identityFragment?.id ?? session.selectedFragment?.id ?? "r8-pressure-seed",
+    pressureLayerId: seed.pressureField.toLowerCase(),
+    pressureLayerLabel: "现实压力种子",
+    seedGroupId: seed.matrixCode,
+    seedIndex,
+    title: seed.surface,
+    seedLine: seed.shell,
+    realitySnapshot: seed.surface,
+    behaviorInertia: seed.shell,
+    gravityHook: seed.mappingHint,
+    bodySignalHint: seed.shell,
+    thematicField: seed.tags,
+    motherCodeBiasTags: [seed.matrixCode],
+    yaoCodeBiasTags: [seed.pressureNature],
+    intensity: 3,
+    forbiddenToneTags: [],
+  };
 }
 
 export function ScenePage() {
   const navigate = useNavigate();
   const session = getSession();
-  const pressureSeedCandidateGroups = useMemo(() => buildPressureSeedCandidateGroups(session), [session]);
-  const [activeGroupIndex, setActiveGroupIndex] = useState(0);
+  const pressureSeedCandidates = useMemo(() => buildPressureSeedCandidates(session), [session]);
   const [isIntercepted, setIsIntercepted] = useState(false);
-  const pressureSeedCandidates = pressureSeedCandidateGroups[activeGroupIndex] ?? pressureSeedCandidateGroups[0] ?? [];
-
-  useEffect(() => {
-    if (isIntercepted || pressureSeedCandidateGroups.length <= 1) {
-      return undefined;
-    }
-
-    const timer = window.setInterval(() => {
-      setActiveGroupIndex((currentIndex) => (currentIndex + 1) % pressureSeedCandidateGroups.length);
-    }, 2200);
-
-    return () => window.clearInterval(timer);
-  }, [isIntercepted, pressureSeedCandidateGroups.length]);
 
   function handlePressurizeSeed(candidate: PressureSeedCandidate) {
-    setSelectedSceneSeed(candidate.sceneSeed);
-    window.localStorage.setItem("guanyao:selectedPressureSliceId", candidate.id);
-    window.localStorage.setItem("guanyao:selectedPressureSliceText", candidate.line);
+    const selectedPressureSeedContext = buildSelectedPressureSeedContext(candidate.seed);
+    const tripleForceLandingResult = buildTripleForceLandingResult(selectedPressureSeedContext);
+    const tripleForceFrontStage = getTripleForceFrontStage(tripleForceLandingResult);
+    const legacySceneSeed = toLegacySceneSeed(candidate.seed, getSession(), candidate.seedIndex);
+
+    window.localStorage.setItem("guanyao:selectedPressureSeedContext", JSON.stringify(selectedPressureSeedContext));
+    window.localStorage.setItem("guanyao:tripleForceLandingResult", JSON.stringify(tripleForceLandingResult));
+    window.localStorage.setItem("guanyao:tripleForceFrontStage", JSON.stringify(tripleForceFrontStage));
+    window.localStorage.setItem("guanyao:selectedPressureSeedId", candidate.seed.id);
+    window.localStorage.setItem("guanyao:selectedPressureSliceId", candidate.seed.id);
+    window.localStorage.setItem("guanyao:selectedPressureSliceText", candidate.seed.surface);
+    setSelectedSceneSeed(legacySceneSeed);
     setMotherCodeResult(buildMotherCodeResult(getSession()));
     navigate(GUANYAO_ROUTES.pressureExposure);
   }
@@ -313,7 +266,7 @@ export function ScenePage() {
                     fontWeight: 360,
                   }}
                 >
-                  {candidate.title}
+                  {candidate.surface}
                 </strong>
                 <span
                   style={{
@@ -322,7 +275,7 @@ export function ScenePage() {
                     lineHeight: 1.58,
                   }}
                 >
-                  {candidate.line}
+                  {candidate.shell}
                 </span>
               </button>
             );
