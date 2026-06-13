@@ -11,6 +11,11 @@ import type {
   YaoPosition,
   YaoDevice,
 } from "../types/guanyaoCausalEngine";
+import {
+  getMotherCodeDefinitionByTrigram,
+  guanyaoMotherCodeRegistry,
+  toMotherCodeProfile,
+} from "../data/guanyaoMotherCodeRegistry";
 
 export const mockLocationAnchors = [
   {
@@ -91,38 +96,7 @@ export const mockDynamicFieldModifierCases = {
   },
 } satisfies Record<string, DynamicFieldModifiers>;
 
-export const mockMotherCodeProfiles = [
-  {
-    motherCodeId: "mother-hard-hold",
-    motherCodeName: "硬撑底盘",
-    lowerTrigram: "坤",
-    baseForce: "用持续承压维持局面不散。",
-    defaultReactionPattern: "压力升高时先压住自己，再替局面补缺口。",
-    pressureSensitiveZones: ["工作压力", "自我证明压力", "家庭压力"],
-    defenseTendency: "把停顿误判为失控。",
-    behaviorBias: "用过量承担换取短暂掌控。",
-  },
-  {
-    motherCodeId: "mother-control-line",
-    motherCodeName: "控制防线",
-    lowerTrigram: "乾",
-    baseForce: "通过预判和校准降低不确定性。",
-    defaultReactionPattern: "先收紧规则，再收紧关系里的变量。",
-    pressureSensitiveZones: ["失控压力", "关系压力", "金钱压力"],
-    defenseTendency: "把未确认的变化视为风险入口。",
-    behaviorBias: "用控制替代真实确认。",
-  },
-  {
-    motherCodeId: "mother-retreat-loop",
-    motherCodeName: "后撤惯性",
-    lowerTrigram: "艮",
-    baseForce: "通过后退保存反应余地。",
-    defaultReactionPattern: "先撤出现场，再在脑内反复复盘。",
-    pressureSensitiveZones: ["关系压力", "家庭压力", "自我证明压力"],
-    defenseTendency: "把暴露需求等同于失去位置。",
-    behaviorBias: "用沉默保留表面稳定。",
-  },
-] satisfies MotherCodeProfile[];
+export const mockMotherCodeProfiles = guanyaoMotherCodeRegistry.map(toMotherCodeProfile) satisfies MotherCodeProfile[];
 
 export const mockPressureSeeds = [
   {
@@ -264,15 +238,9 @@ export const mockRepairMethods = [
 ] satisfies RepairMethod[];
 
 export const mockHexagramFormationMotherCode = {
-  motherCodeId: "mother-dui-transformer",
-  motherCodeName: "兑｜转化者",
+  ...toMotherCodeProfile(getMotherCodeDefinitionByTrigram("兑") ?? guanyaoMotherCodeRegistry[7]),
   lowerTrigram: "兑",
-  baseForce: "把关系、交换与表达中的压力转化为下一步行动。",
-  defaultReactionPattern: "压力升高时先读取关系反馈，再决定是否继续交换。",
-  pressureSensitiveZones: ["家庭压力", "金钱压力", "关系压力"],
-  defenseTendency: "把资源压力和关系评价混在一起处理。",
-  behaviorBias: "用沟通、缓和或转译来维持关系可交换性。",
-} satisfies MotherCodeProfile;
+} satisfies MotherCodeProfile & { lowerTrigram: Trigram };
 
 export const mockHexagramFormationCases = {
   familyFinance: {

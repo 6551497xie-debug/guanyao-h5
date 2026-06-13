@@ -8,6 +8,7 @@ import {
   mockRepairMethods,
   mockYaoDevices,
 } from "../mocks/guanyaoCausalEngineMock";
+import { guanyaoMotherCodeRegistry } from "../data/guanyaoMotherCodeRegistry";
 import type {
   BehaviorEngineScan,
   BreachPoint,
@@ -29,6 +30,7 @@ import type {
   HexagramLayerClassification,
   HourBranch,
   LocationAnchor,
+  MotherCodeDefinition,
   MotherCodeProfile,
   PersonalityAsset,
   PersonalityGravityValue,
@@ -1633,6 +1635,132 @@ export function auditGuanyaoCausalPipeline(): {
     result,
     passed: checkResults.every(([, passed]) => passed),
     checks: checkResults.map(([label, passed]) => `${label}: ${passed ? "passed" : "failed"}`),
+  };
+}
+
+export function auditGuanyaoMotherCodeRegistry(): {
+  passed: boolean;
+  checks: string[];
+  registry: MotherCodeDefinition[];
+  defaultMotherCodeProfile: MotherCodeProfile;
+} {
+  const result = runGuanyaoCausalPipeline();
+  const expectedMotherCodes = [
+    { motherCodeId: 1, trigram: "乾", motherCodeName: "乾｜创世者", motherCodeTitle: "创世者" },
+    { motherCodeId: 2, trigram: "坤", motherCodeName: "坤｜承载者", motherCodeTitle: "承载者" },
+    { motherCodeId: 3, trigram: "震", motherCodeName: "震｜行动者", motherCodeTitle: "行动者" },
+    { motherCodeId: 4, trigram: "巽", motherCodeName: "巽｜渗透者", motherCodeTitle: "渗透者" },
+    { motherCodeId: 5, trigram: "坎", motherCodeName: "坎｜深陷者", motherCodeTitle: "深陷者" },
+    { motherCodeId: 6, trigram: "离", motherCodeName: "离｜照见者", motherCodeTitle: "照见者" },
+    { motherCodeId: 7, trigram: "艮", motherCodeName: "艮｜停滞者", motherCodeTitle: "停滞者" },
+    { motherCodeId: 8, trigram: "兑", motherCodeName: "兑｜转化者", motherCodeTitle: "转化者" },
+  ] as const;
+  const requiredDefinitionFields: (keyof MotherCodeDefinition)[] = [
+    "motherCodeId",
+    "trigram",
+    "motherCodeName",
+    "motherCodeTitle",
+    "baseDrive",
+    "causalPosition",
+    "pressureEntry",
+    "shadowInertia",
+    "pressureMode",
+    "defaultReactionChain",
+    "unlockPotential",
+    "personalityAsset",
+    "assetSummary",
+    "visualAssetKey",
+    "visualAssetStatus",
+    "visualAssetPackage",
+    "visualTags",
+    "uiBindingStatus",
+    "uiSurface",
+  ];
+  const registryMatchesDefaultProfile = guanyaoMotherCodeRegistry.some(
+    (definition) =>
+      definition.motherCodeId === result.motherCodeProfile.motherCodeDefinitionId &&
+      definition.trigram === result.motherCodeProfile.lowerTrigram &&
+      definition.motherCodeName === result.motherCodeProfile.motherCodeName &&
+      definition.baseDrive === result.motherCodeProfile.baseForce &&
+      definition.causalPosition === result.motherCodeProfile.causalPosition &&
+      definition.pressureEntry === result.motherCodeProfile.pressureEntry &&
+      definition.shadowInertia === result.motherCodeProfile.shadowInertia &&
+      definition.pressureMode === result.motherCodeProfile.pressureMode &&
+      definition.defaultReactionChain === result.motherCodeProfile.defaultReactionChain &&
+      definition.unlockPotential === result.motherCodeProfile.unlockPotential &&
+      definition.personalityAsset === result.motherCodeProfile.personalityAsset &&
+      definition.assetSummary === result.motherCodeProfile.assetSummary &&
+      definition.visualAssetKey === result.motherCodeProfile.visualAssetKey &&
+      definition.visualAssetStatus === result.motherCodeProfile.visualAssetStatus &&
+      definition.visualAssetPackage === result.motherCodeProfile.visualAssetPackage &&
+      definition.visualTags.force === result.motherCodeProfile.visualTags?.force &&
+      definition.visualTags.mirror === result.motherCodeProfile.visualTags?.mirror &&
+      definition.visualTags.unlock === result.motherCodeProfile.visualTags?.unlock &&
+      definition.uiBindingStatus === result.motherCodeProfile.uiBindingStatus &&
+      definition.uiSurface === result.motherCodeProfile.uiSurface,
+  );
+  const checkResults = [
+    ["registry has 8 mother codes", guanyaoMotherCodeRegistry.length === 8],
+    [
+      "every mother code has required fields",
+      guanyaoMotherCodeRegistry.every((definition) =>
+        requiredDefinitionFields.every((field) => Boolean(definition[field])) &&
+        Boolean(definition.visualTags.force) &&
+        Boolean(definition.visualTags.mirror) &&
+        Boolean(definition.visualTags.unlock),
+      ),
+    ],
+    [
+      "registry order and identity match 1-8 mother codes",
+      expectedMotherCodes.every((expected, index) => {
+        const definition = guanyaoMotherCodeRegistry[index];
+
+        return (
+          definition?.motherCodeId === expected.motherCodeId &&
+          definition.trigram === expected.trigram &&
+          definition.motherCodeName === expected.motherCodeName &&
+          definition.motherCodeTitle === expected.motherCodeTitle
+        );
+      }),
+    ],
+    ["1 = 乾｜创世者", guanyaoMotherCodeRegistry[0]?.motherCodeName === "乾｜创世者"],
+    ["2 = 坤｜承载者", guanyaoMotherCodeRegistry[1]?.motherCodeName === "坤｜承载者"],
+    ["3 = 震｜行动者", guanyaoMotherCodeRegistry[2]?.motherCodeName === "震｜行动者"],
+    ["4 = 巽｜渗透者", guanyaoMotherCodeRegistry[3]?.motherCodeName === "巽｜渗透者"],
+    ["5 = 坎｜深陷者", guanyaoMotherCodeRegistry[4]?.motherCodeName === "坎｜深陷者"],
+    ["6 = 离｜照见者", guanyaoMotherCodeRegistry[5]?.motherCodeName === "离｜照见者"],
+    ["7 = 艮｜停滞者", guanyaoMotherCodeRegistry[6]?.motherCodeName === "艮｜停滞者"],
+    ["8 = 兑｜转化者", guanyaoMotherCodeRegistry[7]?.motherCodeName === "兑｜转化者"],
+    [
+      "every mother code has causal position",
+      guanyaoMotherCodeRegistry.every(
+        (definition) => definition.causalPosition === "母码底盘 / 下码 / 内在原力",
+      ),
+    ],
+    [
+      "every mother code has pressure entry",
+      guanyaoMotherCodeRegistry.every((definition) => Boolean(definition.pressureEntry)),
+    ],
+    [
+      "every mother code has personality asset",
+      guanyaoMotherCodeRegistry.every((definition) => Boolean(definition.personalityAsset)),
+    ],
+    [
+      "every mother code has existing UI binding",
+      guanyaoMotherCodeRegistry.every((definition) => definition.uiBindingStatus === "existing"),
+    ],
+    [
+      "every mother code binds to MotherCodePage",
+      guanyaoMotherCodeRegistry.every((definition) => definition.uiSurface === "MotherCodePage"),
+    ],
+    ["default motherCodeProfile reads registry content", registryMatchesDefaultProfile],
+  ] satisfies [string, boolean][];
+
+  return {
+    passed: checkResults.every(([, passed]) => passed),
+    checks: checkResults.map(([label, passed]) => `${label}: ${passed ? "passed" : "failed"}`),
+    registry: guanyaoMotherCodeRegistry,
+    defaultMotherCodeProfile: result.motherCodeProfile,
   };
 }
 

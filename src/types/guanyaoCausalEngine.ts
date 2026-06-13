@@ -39,15 +39,63 @@ export interface ChronoCoordinate {
   existingUserState?: string;
 }
 
+export type MotherCodeId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+export interface MotherCodeDefinition {
+  motherCodeId: MotherCodeId;
+  trigram: Trigram;
+  motherCodeName: string;
+  motherCodeTitle: string;
+  baseDrive: string;
+  causalPosition: string;
+  pressureEntry: string;
+  shadowInertia: string;
+  pressureMode: string;
+  defaultReactionChain: string;
+  unlockPotential: string;
+  personalityAsset: string;
+  assetSummary: string;
+  visualAssetKey: string;
+  visualAssetStatus: "existing";
+  visualAssetPackage: string;
+  visualTags: {
+    force: string;
+    mirror: string;
+    unlock: string;
+  };
+  uiBindingStatus: "existing";
+  uiSurface: "MotherCodePage";
+}
+
 export interface MotherCodeProfile {
   motherCodeId: string;
+  motherCodeDefinitionId?: MotherCodeId;
   motherCodeName: string;
+  motherCodeTitle?: string;
   lowerTrigram?: Trigram;
   baseForce: string;
+  causalPosition?: string;
+  pressureEntry?: string;
   defaultReactionPattern: string;
   pressureSensitiveZones: string[];
   defenseTendency: string;
   behaviorBias: string;
+  shadowInertia?: string;
+  pressureMode?: string;
+  defaultReactionChain?: string;
+  unlockPotential?: string;
+  personalityAsset?: string;
+  assetSummary?: string;
+  visualAssetKey?: string;
+  visualAssetStatus?: "existing";
+  visualAssetPackage?: string;
+  visualTags?: {
+    force: string;
+    mirror: string;
+    unlock: string;
+  };
+  uiBindingStatus?: "existing";
+  uiSurface?: "MotherCodePage";
 }
 
 export type PressureIntensity = "low" | "medium" | "high" | "critical";
