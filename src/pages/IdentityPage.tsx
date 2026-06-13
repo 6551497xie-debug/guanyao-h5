@@ -4,10 +4,17 @@ import { Link, useNavigate } from "react-router-dom";
 import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
-import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { identityFragments } from "../data/identityFragments";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getDemoPressureExposureOptions } from "../services/guanyaoInteractionService";
+import {
+  buildSelectedPressureSeedContext,
+  getPressureSeedSceneTriplet,
+} from "../services/guanyaoPressureSeedSceneBindingService";
+import {
+  buildTripleForceLandingResult,
+  getTripleForceFrontStage,
+} from "../services/guanyaoTripleForceLandingService";
 import { getSession, updateSession } from "../services/sessionService";
 import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId } from "../types";
 
@@ -68,12 +75,27 @@ function readIdentityPool(session: GuanyaoSession) {
 
 function PressureExposureSafeShell() {
   const navigate = useNavigate();
-  const readModel = getGuanyaoR8ReadModel();
-  const impactLines = [
-    ["人格动力线", readModel.hexagramStage.lineImpact.personalityDynamicsLine],
-    ["系统机制线", readModel.hexagramStage.lineImpact.systemMechanismLine],
-    ["生命周期线", readModel.hexagramStage.lineImpact.lifecycleStageLine],
-  ];
+  const tripleForceFrontStage = useMemo(() => {
+    const triplet = getPressureSeedSceneTriplet();
+    const seed = triplet.seeds[0];
+
+    if (!seed) {
+      return {
+        ritualLines: ["现实种子已冻结。", "压力读数正在成形。", "卦场落位中。", "因果入口已打开。"],
+        readouts: [
+          { label: "现实种子", frontStageLine: "现实种子已冻结。" },
+          { label: "压力读数", frontStageLine: "压力读数正在成形。" },
+          { label: "卦场落位", frontStageLine: "卦场落位中，因果入口正在打开。" },
+        ],
+      };
+    }
+
+    // Temporary fallback until ScenePage writes selected pressure seed context.
+    const selectedContext = buildSelectedPressureSeedContext(seed);
+    const tripleForceResult = buildTripleForceLandingResult(selectedContext);
+
+    return getTripleForceFrontStage(tripleForceResult);
+  }, []);
 
   return (
     <main
@@ -118,7 +140,7 @@ function PressureExposureSafeShell() {
           它是一股正在牵引你的现实压力。
         </p>
         <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.65 }}>
-          现实种子正在撞击三条一字线。
+          三力碰撞正在显影。
         </p>
       </section>
 
@@ -146,8 +168,8 @@ function PressureExposureSafeShell() {
         </span>
 
         <div style={{ display: "grid", gap: 14 }}>
-          {impactLines.map(([label, value]) => (
-            <div key={label} style={{ display: "grid", gap: 7 }}>
+          {tripleForceFrontStage.readouts.map((readout, index) => (
+            <div key={readout.label} style={{ display: "grid", gap: 7 }}>
               <div
                 style={{
                   display: "flex",
@@ -158,15 +180,15 @@ function PressureExposureSafeShell() {
                   letterSpacing: "0.11em",
                 }}
               >
-                <span>{label}</span>
-                <span>{String(value).padStart(2, "0")} / 06</span>
+                <span>{readout.label}</span>
+                <span>{String(index + 1).padStart(2, "0")} / 03</span>
               </div>
               <div style={{ position: "relative", height: 1, background: "rgba(246,243,236,0.18)" }}>
                 <span
                   style={{
                     position: "absolute",
                     inset: "0 auto 0 0",
-                    width: `${(Number(value) / 6) * 100}%`,
+                    width: `${((index + 1) / tripleForceFrontStage.readouts.length) * 100}%`,
                     background: "rgba(0,184,212,0.82)",
                     boxShadow: "0 0 12px rgba(0,184,212,0.35)",
                   }}
@@ -175,7 +197,7 @@ function PressureExposureSafeShell() {
                   style={{
                     position: "absolute",
                     top: "50%",
-                    left: `${(Number(value) / 6) * 100}%`,
+                    left: `${((index + 1) / tripleForceFrontStage.readouts.length) * 100}%`,
                     width: 7,
                     height: 7,
                     transform: "translate(-50%, -50%) rotate(45deg)",
@@ -184,6 +206,9 @@ function PressureExposureSafeShell() {
                   }}
                 />
               </div>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 13, lineHeight: 1.62 }}>
+                {readout.frontStageLine}
+              </p>
             </div>
           ))}
         </div>
@@ -197,14 +222,13 @@ function PressureExposureSafeShell() {
               letterSpacing: "0.12em",
             }}
           >
-            上码显影｜{readModel.hexagramStage.upperTrigram} / {readModel.hexagramStage.dominantLine}
+            三力碰撞仪式行
           </span>
-          <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 15, lineHeight: 1.72 }}>
-            {readModel.hexagramStage.upperCodeReading}
-          </p>
-          <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 13, lineHeight: 1.62 }}>
-            人格重力：{readModel.hexagramStage.gravityLabel}
-          </p>
+          {tripleForceFrontStage.ritualLines.map((line) => (
+            <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 15, lineHeight: 1.72 }}>
+              {line}
+            </p>
+          ))}
         </div>
       </section>
 
@@ -216,12 +240,12 @@ function PressureExposureSafeShell() {
           letterSpacing: "0.13em",
         }}
       >
-        PRESSURE_FIELD_RENDERING
+        TRIPLE_FORCE_LANDING
       </span>
 
       <CausalRail
-        statusLabel="压力已显影，生成本局卦码"
-        rightHint="右滑生成本局卦码"
+        statusLabel="三力已显影，因果入口已打开"
+        rightHint="右滑进入五爻传动"
         onRight={() => navigate(GUANYAO_ROUTES.dynamics)}
       />
     </main>
