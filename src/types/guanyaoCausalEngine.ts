@@ -42,6 +42,47 @@ export interface ChronoCoordinate {
 export type MotherCodeId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 export type XiantianNumber = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export type Wuxing = "金" | "木" | "水" | "火" | "土";
+export type NumericProtocolRole = "field" | "change";
+
+export type EightDivisionFieldMapping = {
+  remainder: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  display: string;
+  trigram: Trigram;
+  trigramSymbol: string;
+  trigramImage: string;
+  wuxing: Wuxing;
+  protocolRole: "field";
+  protocolName: "卦以八除";
+  userFacingMeaning: string;
+};
+
+export type SixDivisionChangeMapping = {
+  remainder: 0 | 1 | 2 | 3 | 4 | 5;
+  display: string;
+  changeNode: 1 | 2 | 3 | 4 | 5 | 6;
+  dimensionKey: "body" | "emotion" | "thought" | "behavior" | "memory" | "motivation";
+  dimensionName: "身体空间" | "情绪空间" | "思想空间" | "行为空间" | "记忆空间" | "动机空间";
+  protocolRole: "change";
+  protocolName: "爻以六分";
+  userFacingMeaning: string;
+};
+
+export type GuanyaoNumericProtocol = {
+  fieldProtocol: {
+    name: "卦以八除";
+    moduloBase: 8;
+    role: "field";
+    explanation: string;
+  };
+  changeProtocol: {
+    name: "爻以六分";
+    moduloBase: 6;
+    role: "change";
+    explanation: string;
+  };
+  fieldMappings: EightDivisionFieldMapping[];
+  changeMappings: SixDivisionChangeMapping[];
+};
 
 export interface MotherCodeDefinition {
   motherCodeId: MotherCodeId;

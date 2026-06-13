@@ -1,4 +1,11 @@
 import {
+  getEightDivisionFieldMapping,
+  getSixDivisionChangeMapping,
+  guanyaoNumericProtocol,
+  normalizeEightRemainder,
+  normalizeSixRemainder,
+} from "../data/guanyaoNumericProtocol";
+import {
   mockChronoCoordinate,
   mockDynamicFieldModifiers,
   mockHexagramFormationCases,
@@ -2376,5 +2383,86 @@ export function auditGuanyaoFullPipeline(): {
     passed: checkResults.every(([, passed]) => passed),
     checks: checkResults.map(([label, passed]) => `${label}: ${passed ? "passed" : "failed"}`),
     samples,
+  };
+}
+
+export function auditGuanyaoNumericProtocol(): {
+  passed: boolean;
+  checks: string[];
+  protocol: typeof guanyaoNumericProtocol;
+} {
+  const expectedFieldMappings = [
+    { remainder: 1, display: "1", trigram: "乾", trigramSymbol: "☰", trigramImage: "天", wuxing: "金" },
+    { remainder: 2, display: "2", trigram: "兑", trigramSymbol: "☱", trigramImage: "泽", wuxing: "金" },
+    { remainder: 3, display: "3", trigram: "离", trigramSymbol: "☲", trigramImage: "火", wuxing: "火" },
+    { remainder: 4, display: "4", trigram: "震", trigramSymbol: "☳", trigramImage: "雷", wuxing: "木" },
+    { remainder: 5, display: "5", trigram: "巽", trigramSymbol: "☴", trigramImage: "风", wuxing: "木" },
+    { remainder: 6, display: "6", trigram: "坎", trigramSymbol: "☵", trigramImage: "水", wuxing: "水" },
+    { remainder: 7, display: "7", trigram: "艮", trigramSymbol: "☶", trigramImage: "山", wuxing: "土" },
+    { remainder: 0, display: "0/8", trigram: "坤", trigramSymbol: "☷", trigramImage: "地", wuxing: "土" },
+  ] as const;
+  const expectedChangeMappings = [
+    { remainder: 1, display: "1", changeNode: 1, dimensionName: "身体空间" },
+    { remainder: 2, display: "2", changeNode: 2, dimensionName: "情绪空间" },
+    { remainder: 3, display: "3", changeNode: 3, dimensionName: "思想空间" },
+    { remainder: 4, display: "4", changeNode: 4, dimensionName: "行为空间" },
+    { remainder: 5, display: "5", changeNode: 5, dimensionName: "记忆空间" },
+    { remainder: 0, display: "0/6", changeNode: 6, dimensionName: "动机空间" },
+  ] as const;
+  const fieldMappingMatches = expectedFieldMappings.every((expected) => {
+    const mapping = guanyaoNumericProtocol.fieldMappings.find((item) => item.remainder === expected.remainder);
+
+    return (
+      mapping?.display === expected.display &&
+      mapping.trigram === expected.trigram &&
+      mapping.trigramSymbol === expected.trigramSymbol &&
+      mapping.trigramImage === expected.trigramImage &&
+      mapping.wuxing === expected.wuxing &&
+      mapping.protocolRole === "field" &&
+      mapping.protocolName === "卦以八除"
+    );
+  });
+  const changeMappingMatches = expectedChangeMappings.every((expected) => {
+    const mapping = guanyaoNumericProtocol.changeMappings.find((item) => item.remainder === expected.remainder);
+
+    return (
+      mapping?.display === expected.display &&
+      mapping.changeNode === expected.changeNode &&
+      mapping.dimensionName === expected.dimensionName &&
+      mapping.protocolRole === "change" &&
+      mapping.protocolName === "爻以六分"
+    );
+  });
+  const checkResults = [
+    [
+      "fieldProtocol is 卦以八除 / 8 / field",
+      guanyaoNumericProtocol.fieldProtocol.name === "卦以八除" &&
+        guanyaoNumericProtocol.fieldProtocol.moduloBase === 8 &&
+        guanyaoNumericProtocol.fieldProtocol.role === "field",
+    ],
+    [
+      "changeProtocol is 爻以六分 / 6 / change",
+      guanyaoNumericProtocol.changeProtocol.name === "爻以六分" &&
+        guanyaoNumericProtocol.changeProtocol.moduloBase === 6 &&
+        guanyaoNumericProtocol.changeProtocol.role === "change",
+    ],
+    ["eight-division mappings length is 8", guanyaoNumericProtocol.fieldMappings.length === 8],
+    ["eight-division mappings match xiantian contract", fieldMappingMatches],
+    ["six-division mappings length is 6", guanyaoNumericProtocol.changeMappings.length === 6],
+    ["six-division mappings match dimension contract", changeMappingMatches],
+    ["normalizeEightRemainder(8) returns 0", normalizeEightRemainder(8) === 0],
+    ["normalizeEightRemainder(10) returns 2", normalizeEightRemainder(10) === 2],
+    ["normalizeSixRemainder(6) returns 0", normalizeSixRemainder(6) === 0],
+    ["normalizeSixRemainder(8) returns 2", normalizeSixRemainder(8) === 2],
+    ["getEightDivisionFieldMapping(8) returns 坤", getEightDivisionFieldMapping(8).trigram === "坤"],
+    ["getEightDivisionFieldMapping(10) returns 兑", getEightDivisionFieldMapping(10).trigram === "兑"],
+    ["getSixDivisionChangeMapping(6) returns 动机空间", getSixDivisionChangeMapping(6).dimensionName === "动机空间"],
+    ["getSixDivisionChangeMapping(8) returns 情绪空间", getSixDivisionChangeMapping(8).dimensionName === "情绪空间"],
+  ] satisfies [string, boolean][];
+
+  return {
+    passed: checkResults.every(([, passed]) => passed),
+    checks: checkResults.map(([label, passed]) => `${label}: ${passed ? "passed" : "failed"}`),
+    protocol: guanyaoNumericProtocol,
   };
 }
