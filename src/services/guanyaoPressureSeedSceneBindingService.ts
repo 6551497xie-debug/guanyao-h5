@@ -43,6 +43,14 @@ export interface GuanyaoPressureSeedTriplet {
     source: "DRAFT_POOL_V1";
     totalCandidates: number;
     selectionMode: "CONTEXTUAL_TRIPLET";
+    compositionMode: "ANCHOR_STRONG_ADJACENT";
+    anchorSeedId?: string;
+    strongNeighborSeedId?: string;
+    adjacentSeedId?: string;
+    relation?: {
+      strongAxisReason: string[];
+      adjacentAxisReason: string[];
+    };
   };
 }
 
@@ -66,6 +74,10 @@ export interface GuanyaoPressureSeedSceneBindingAuditResult {
   totalSeeds: number;
   errors: string[];
   sampleTripletSize: number;
+  compositionMode?: string;
+  anchorSeedId?: string;
+  strongNeighborSeedId?: string;
+  adjacentSeedId?: string;
   sampleIntensity: number;
   sampleConfidence: number;
 }
@@ -74,6 +86,70 @@ const clamp = (value: number, min: number, max: number): number => Math.min(max,
 
 const hasIntersection = <T>(left: T[] | undefined, right: T[]): boolean =>
   Boolean(left?.some((item) => right.includes(item)));
+
+function hasAgeOverlap(a: GuanyaoPressureSeed, b: GuanyaoPressureSeed): boolean {
+  return hasIntersection(a.ageBias, b.ageBias);
+}
+
+function hasRelationOverlap(a: GuanyaoPressureSeed, b: GuanyaoPressureSeed): boolean {
+  return hasIntersection(a.relationBias, b.relationBias);
+}
+
+function getStrongAxisReasons(seed: GuanyaoPressureSeed, anchor: GuanyaoPressureSeed): string[] {
+  const reasons: string[] = [];
+
+  if (seed.pressureNature === anchor.pressureNature) reasons.push("same pressureNature");
+  if (seed.pressureField === anchor.pressureField) reasons.push("same pressureField");
+  if (seed.primaryRelation === anchor.primaryRelation) reasons.push("same primaryRelation");
+  if (hasRelationOverlap(seed, anchor)) reasons.push("relationBias overlap");
+  if (hasAgeOverlap(seed, anchor)) reasons.push("ageBias overlap");
+  if (seed.primaryAge === anchor.primaryAge) reasons.push("same primaryAge");
+
+  return reasons;
+}
+
+function getAdjacentAxisReasons(
+  seed: GuanyaoPressureSeed,
+  anchor: GuanyaoPressureSeed,
+  neighbor?: GuanyaoPressureSeed,
+): string[] {
+  const reasons: string[] = [];
+
+  if (seed.pressureNature === anchor.pressureNature) reasons.push("same pressureNature as anchor");
+  if (seed.pressureField === anchor.pressureField) reasons.push("same pressureField as anchor");
+  if (hasRelationOverlap(seed, anchor)) reasons.push("relationBias overlap with anchor");
+  if (hasAgeOverlap(seed, anchor)) reasons.push("ageBias overlap with anchor");
+  if (neighbor && seed.pressureNature === neighbor.pressureNature) reasons.push("same pressureNature as neighbor");
+  if (neighbor && seed.pressureField === neighbor.pressureField) reasons.push("same pressureField as neighbor");
+
+  return reasons;
+}
+
+function getStrongAxisScore(seed: GuanyaoPressureSeed, anchor: GuanyaoPressureSeed): number {
+  return (
+    (seed.pressureNature === anchor.pressureNature ? 40 : 0) +
+    (seed.pressureField === anchor.pressureField ? 30 : 0) +
+    (seed.primaryRelation === anchor.primaryRelation ? 24 : 0) +
+    (hasRelationOverlap(seed, anchor) ? 16 : 0) +
+    (hasAgeOverlap(seed, anchor) ? 12 : 0) +
+    (seed.primaryAge === anchor.primaryAge ? 8 : 0)
+  );
+}
+
+function getAdjacentAxisScore(
+  seed: GuanyaoPressureSeed,
+  anchor: GuanyaoPressureSeed,
+  neighbor?: GuanyaoPressureSeed,
+): number {
+  return (
+    (seed.pressureNature === anchor.pressureNature ? 24 : 0) +
+    (seed.pressureField === anchor.pressureField ? 20 : 0) +
+    (hasRelationOverlap(seed, anchor) ? 14 : 0) +
+    (hasAgeOverlap(seed, anchor) ? 12 : 0) +
+    (neighbor && seed.pressureNature === neighbor.pressureNature ? 12 : 0) +
+    (neighbor && seed.pressureField === neighbor.pressureField ? 10 : 0)
+  );
+}
 
 export function getPressureSeedSceneFrontStage(seed: GuanyaoPressureSeed): {
   surface: string;
@@ -121,23 +197,37 @@ export function getPressureSeedSceneTriplet(
     .filter((candidate) => !(context.excludeSeedIds?.includes(candidate.seed.id) ?? false))
     .sort((a, b) => b.score - a.score || a.seed.id.localeCompare(b.seed.id));
 
-  const selected: GuanyaoPressureSeed[] = [];
-  const selectedMatrixCodes = new Set<string>();
-
-  for (const candidate of candidates) {
-    if (selected.length >= 3) break;
-    if (!selectedMatrixCodes.has(candidate.seed.matrixCode)) {
-      selected.push(candidate.seed);
-      selectedMatrixCodes.add(candidate.seed.matrixCode);
-    }
-  }
-
-  for (const candidate of candidates) {
-    if (selected.length >= 3) break;
-    if (!selected.some((seed) => seed.id === candidate.seed.id)) {
-      selected.push(candidate.seed);
-    }
-  }
+  const anchorCandidate = candidates[0];
+  const anchor = anchorCandidate?.seed;
+  const remainingCandidates = anchor
+    ? candidates.filter((candidate) => candidate.seed.id !== anchor.id)
+    : [];
+  const strongNeighborCandidate = anchor
+    ? [...remainingCandidates]
+        .map((candidate) => ({
+          ...candidate,
+          axisScore: getStrongAxisScore(candidate.seed, anchor),
+        }))
+        .filter((candidate) => candidate.axisScore > 0)
+        .sort((a, b) => b.axisScore + b.score - (a.axisScore + a.score) || a.seed.id.localeCompare(b.seed.id))[0] ??
+      remainingCandidates[0]
+    : undefined;
+  const strongNeighbor = strongNeighborCandidate?.seed;
+  const adjacentCandidates = remainingCandidates.filter((candidate) => candidate.seed.id !== strongNeighbor?.id);
+  const adjacentCandidate = anchor
+    ? [...adjacentCandidates]
+        .map((candidate) => ({
+          ...candidate,
+          axisScore: getAdjacentAxisScore(candidate.seed, anchor, strongNeighbor),
+        }))
+        .filter((candidate) => candidate.axisScore > 0)
+        .sort((a, b) => b.axisScore + b.score - (a.axisScore + a.score) || a.seed.id.localeCompare(b.seed.id))[0] ??
+      adjacentCandidates[0]
+    : undefined;
+  const adjacentSeed = adjacentCandidate?.seed;
+  const selected = [anchor, strongNeighbor, adjacentSeed].filter((seed): seed is GuanyaoPressureSeed => Boolean(seed));
+  const strongAxisReason = anchor && strongNeighbor ? getStrongAxisReasons(strongNeighbor, anchor) : [];
+  const adjacentAxisReason = anchor && adjacentSeed ? getAdjacentAxisReasons(adjacentSeed, anchor, strongNeighbor) : [];
 
   return {
     seeds: selected,
@@ -149,6 +239,14 @@ export function getPressureSeedSceneTriplet(
       source: "DRAFT_POOL_V1",
       totalCandidates: candidates.length,
       selectionMode: "CONTEXTUAL_TRIPLET",
+      compositionMode: "ANCHOR_STRONG_ADJACENT",
+      anchorSeedId: anchor?.id,
+      strongNeighborSeedId: strongNeighbor?.id,
+      adjacentSeedId: adjacentSeed?.id,
+      relation: {
+        strongAxisReason,
+        adjacentAxisReason,
+      },
     },
   };
 }
@@ -228,6 +326,26 @@ export function auditGuanyaoPressureSeedSceneBindingStrategy(): GuanyaoPressureS
   if (sampleTriplet.seeds.length === 0) {
     errors.push("sample triplet seeds empty");
   }
+  if (new Set(sampleTriplet.seeds.map((seed) => seed.id)).size !== sampleTriplet.seeds.length) {
+    errors.push("sample triplet contains duplicate seed ids");
+  }
+  if (sampleTriplet.strategy.selectionMode !== "CONTEXTUAL_TRIPLET") {
+    errors.push(`selectionMode expected CONTEXTUAL_TRIPLET, got ${sampleTriplet.strategy.selectionMode}`);
+  }
+  if (sampleTriplet.strategy.compositionMode !== "ANCHOR_STRONG_ADJACENT") {
+    errors.push(`compositionMode expected ANCHOR_STRONG_ADJACENT, got ${sampleTriplet.strategy.compositionMode}`);
+  }
+  const [anchorSeed, strongNeighborSeed, adjacentSeed] = sampleTriplet.seeds;
+  if (anchorSeed && strongNeighborSeed && getStrongAxisScore(strongNeighborSeed, anchorSeed) <= 0) {
+    errors.push(`${strongNeighborSeed.id} does not share a strong axis with ${anchorSeed.id}`);
+  }
+  if (
+    anchorSeed &&
+    adjacentSeed &&
+    getAdjacentAxisScore(adjacentSeed, anchorSeed, strongNeighborSeed) <= 0
+  ) {
+    errors.push(`${adjacentSeed.id} does not share an adjacent axis with ${anchorSeed.id}`);
+  }
 
   sampleTriplet.frontStage.forEach((frontSeed) => {
     const keys = Object.keys(frontSeed).sort().join(",");
@@ -276,6 +394,10 @@ export function auditGuanyaoPressureSeedSceneBindingStrategy(): GuanyaoPressureS
     totalSeeds: GUANYAO_PRESSURE_SEED_DRAFT_POOL.length,
     errors,
     sampleTripletSize: sampleTriplet.seeds.length,
+    compositionMode: sampleTriplet.strategy.compositionMode,
+    anchorSeedId: sampleTriplet.strategy.anchorSeedId,
+    strongNeighborSeedId: sampleTriplet.strategy.strongNeighborSeedId,
+    adjacentSeedId: sampleTriplet.strategy.adjacentSeedId,
     sampleIntensity: sampleSelectedContext?.pressureIntensity ?? 0,
     sampleConfidence: sampleSelectedContext?.pressureConfidence ?? 0,
   };

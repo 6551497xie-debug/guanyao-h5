@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CausalRail } from "../components/causal/CausalRail";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
@@ -7,13 +7,14 @@ import { getSession, setMotherCodeResult, setSelectedSceneSeed } from "../servic
 import {
   buildSelectedPressureSeedContext,
   getPressureSeedSceneTriplet,
+  type GuanyaoPressureSeedTriplet,
 } from "../services/guanyaoPressureSeedSceneBindingService";
 import {
   buildTripleForceLandingResult,
   getTripleForceFrontStage,
 } from "../services/guanyaoTripleForceLandingService";
 import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId, SceneSeed } from "../types";
-import type { GuanyaoPressureSeed } from "../types/guanyaoPressureSeed";
+import type { GuanyaoAgeSegment, GuanyaoPressureSeed } from "../types/guanyaoPressureSeed";
 
 const yuanCodeKeys: IdentityFragment["yuanCodeKey"][] = ["qian", "kun", "zhen", "xun", "kan", "li", "gen", "dui"];
 
@@ -59,22 +60,19 @@ function readLifeStageId(session: GuanyaoSession): IdentityLifeStageId | undefin
   }
 }
 
-function buildPressureSeedCandidates(session: GuanyaoSession): PressureSeedCandidate[] {
+function readPressureSeedAgeSegment(session: GuanyaoSession): GuanyaoAgeSegment | undefined {
   const lifeStageId = readLifeStageId(session);
-  const pressureSeedTriplet = getPressureSeedSceneTriplet({
-    ageSegment:
-      lifeStageId === "18_22"
-        ? "YOUTH"
-        : lifeStageId === "23_31"
-          ? "ESTABLISHING"
-          : lifeStageId === "32_42"
-            ? "MID_LIFE"
-            : lifeStageId === "43_55"
-              ? "RESTRUCTURING"
-              : undefined,
-  });
 
-  return pressureSeedTriplet.frontStage.map((frontStageSeed, index) => {
+  if (lifeStageId === "18_22") return "YOUTH";
+  if (lifeStageId === "23_31") return "ESTABLISHING";
+  if (lifeStageId === "32_42") return "MID_LIFE";
+  if (lifeStageId === "43_55") return "RESTRUCTURING";
+  return undefined;
+}
+
+function buildPressureSeedCandidatesFromTriplet(pressureSeedTriplet: GuanyaoPressureSeedTriplet): PressureSeedCandidate[] {
+  return pressureSeedTriplet.frontStage
+    .map((frontStageSeed, index) => {
     const seed = pressureSeedTriplet.seeds.find((candidate) => candidate.id === frontStageSeed.id) ?? pressureSeedTriplet.seeds[index];
 
     return {
@@ -84,7 +82,45 @@ function buildPressureSeedCandidates(session: GuanyaoSession): PressureSeedCandi
       seed,
       seedIndex: (index + 1) as SceneSeed["seedIndex"],
     };
-  }).filter((candidate): candidate is PressureSeedCandidate => Boolean(candidate.seed));
+  })
+    .filter((candidate): candidate is PressureSeedCandidate => Boolean(candidate.seed));
+}
+
+function buildPressureSeedCandidateGroups(session: GuanyaoSession): PressureSeedCandidate[][] {
+  const ageSegment = readPressureSeedAgeSegment(session);
+  const groups: PressureSeedCandidate[][] = [];
+  const excludeSeedIds: string[] = [];
+  const recentMatrixCodes: string[] = [];
+
+  for (let groupIndex = 0; groupIndex < 8; groupIndex += 1) {
+    const pressureSeedTriplet = getPressureSeedSceneTriplet({
+      ageSegment,
+      excludeSeedIds,
+      recentMatrixCodes,
+    });
+    const candidates = buildPressureSeedCandidatesFromTriplet(pressureSeedTriplet);
+    if (candidates.length === 0) break;
+
+    groups.push(candidates);
+
+    const newSeedIds = candidates.map((candidate) => candidate.seed.id).filter((id) => !excludeSeedIds.includes(id));
+    if (newSeedIds.length === 0) break;
+
+    excludeSeedIds.push(...newSeedIds);
+    recentMatrixCodes.push(...candidates.map((candidate) => candidate.seed.matrixCode));
+  }
+
+  return groups;
+}
+
+function renderSeedScanDots(isIntercepted: boolean) {
+  const dots = isIntercepted ? ["●", "●", "●"] : ["●", "○", "○"];
+
+  return (
+    <span aria-hidden="true" style={{ color: isIntercepted ? "rgba(0,184,212,0.72)" : "rgba(246,243,236,0.34)" }}>
+      {dots.join(" ")}
+    </span>
+  );
 }
 
 function toLegacySceneSeed(
@@ -119,8 +155,25 @@ function toLegacySceneSeed(
 export function ScenePage() {
   const navigate = useNavigate();
   const session = getSession();
-  const pressureSeedCandidates = useMemo(() => buildPressureSeedCandidates(session), [session]);
+  const pressureSeedCandidateGroups = useMemo(() => buildPressureSeedCandidateGroups(session), [session]);
+  const [activeGroupIndex, setActiveGroupIndex] = useState(0);
   const [isIntercepted, setIsIntercepted] = useState(false);
+  const pressureSeedCandidates = pressureSeedCandidateGroups[activeGroupIndex] ?? pressureSeedCandidateGroups[0] ?? [];
+
+  useEffect(() => {
+    if (activeGroupIndex < pressureSeedCandidateGroups.length) return;
+    setActiveGroupIndex(0);
+  }, [activeGroupIndex, pressureSeedCandidateGroups.length]);
+
+  useEffect(() => {
+    if (isIntercepted || pressureSeedCandidateGroups.length <= 1) return undefined;
+
+    const timer = window.setInterval(() => {
+      setActiveGroupIndex((currentIndex) => (currentIndex + 1) % pressureSeedCandidateGroups.length);
+    }, 2200);
+
+    return () => window.clearInterval(timer);
+  }, [isIntercepted, pressureSeedCandidateGroups.length]);
 
   function handlePressurizeSeed(candidate: PressureSeedCandidate) {
     const selectedPressureSeedContext = buildSelectedPressureSeedContext(candidate.seed);
@@ -212,9 +265,13 @@ export function ScenePage() {
             fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
             fontSize: 11,
             letterSpacing: "0.13em",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
           }}
         >
-          {isIntercepted ? "点击种子，直接填装。" : "现实压力种子池扫描中。"}
+          <span>{isIntercepted ? "现实压力切片已拦截" : "现实压力种子池扫描中"}</span>
+          {renderSeedScanDots(isIntercepted)}
         </span>
 
         <div
@@ -224,7 +281,7 @@ export function ScenePage() {
             paddingBottom: 12,
           }}
         >
-          {pressureSeedCandidates.map((candidate) => {
+          {pressureSeedCandidates.map((candidate, index) => {
             return (
               <button
                 key={candidate.id}
@@ -256,12 +313,12 @@ export function ScenePage() {
                     letterSpacing: "0.12em",
                   }}
                 >
-                  现实压力种子
+                  SEED {String(index + 1).padStart(2, "0")}
                 </span>
                 <strong
                   style={{
                     color: isIntercepted ? "rgba(246,243,236,0.92)" : "rgba(246,243,236,0.74)",
-                    fontSize: 19,
+                    fontSize: 20,
                     lineHeight: 1.28,
                     fontWeight: 360,
                   }}
@@ -270,12 +327,12 @@ export function ScenePage() {
                 </strong>
                 <span
                   style={{
-                    color: "rgba(246,243,236,0.6)",
-                    fontSize: 14,
+                    color: "rgba(246,243,236,0.48)",
+                    fontSize: 13,
                     lineHeight: 1.58,
                   }}
                 >
-                  {candidate.shell}
+                  — {candidate.shell}
                 </span>
               </button>
             );
@@ -294,7 +351,7 @@ export function ScenePage() {
             letterSpacing: "0.06em",
           }}
         >
-          点击种子，直接填装。
+          点击种子，直接填装
         </p>
       ) : (
         <CausalRail

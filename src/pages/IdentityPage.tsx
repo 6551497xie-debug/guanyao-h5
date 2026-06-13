@@ -122,6 +122,12 @@ function buildFallbackTripleForceFrontStage(): GuanyaoTripleForceFrontStage {
   return getTripleForceFrontStage(tripleForceResult);
 }
 
+function formatTripleForceReadout(line: string): string {
+  if (line.includes("压力读数正在成形")) return "压力读数已捕获。";
+  if (line.includes("卦场落位中")) return "卦场开始落位。";
+  return line;
+}
+
 function PressureExposureSafeShell() {
   const navigate = useNavigate();
   const tripleForceFrontStage = useMemo(() => {
@@ -186,7 +192,7 @@ function PressureExposureSafeShell() {
           它是一股正在牵引你的现实压力。
         </p>
         <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.65 }}>
-          三力碰撞正在显影。
+          三力已落位，因果链正在收紧。
         </p>
       </section>
 
@@ -210,7 +216,7 @@ function PressureExposureSafeShell() {
             letterSpacing: "0.16em",
           }}
         >
-          [ 三力碰撞 ]
+          [ 三力落位 ]
         </span>
 
         <div style={{ display: "grid", gap: 14 }}>
@@ -253,29 +259,15 @@ function PressureExposureSafeShell() {
                 />
               </div>
               <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 13, lineHeight: 1.62 }}>
-                {readout.frontStageLine}
+                {formatTripleForceReadout(readout.frontStageLine)}
               </p>
             </div>
           ))}
         </div>
 
-        <div style={{ display: "grid", gap: 8, paddingTop: 4 }}>
-          <span
-            style={{
-              color: "rgba(246,243,236,0.44)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 11,
-              letterSpacing: "0.12em",
-            }}
-          >
-            三力碰撞仪式行
-          </span>
-          {tripleForceFrontStage.ritualLines.map((line) => (
-            <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 15, lineHeight: 1.72 }}>
-              {line}
-            </p>
-          ))}
-        </div>
+        <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 14, lineHeight: 1.62 }}>
+          三力已落位，因果链正在收紧。
+        </p>
       </section>
 
       <span
@@ -290,7 +282,7 @@ function PressureExposureSafeShell() {
       </span>
 
       <CausalRail
-        statusLabel="三力已显影，因果入口已打开"
+        statusLabel="三力已落位，因果链正在收紧"
         rightHint="右滑进入五爻传动"
         onRight={() => navigate(GUANYAO_ROUTES.dynamics)}
       />

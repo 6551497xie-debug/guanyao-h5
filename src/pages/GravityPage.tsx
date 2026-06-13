@@ -73,6 +73,44 @@ type YaoRitualScene = {
   lines: string[];
 };
 
+type GravitySelectedPressureSeedContext = {
+  selectedPressureSeedId?: string;
+  matrixCode?: string;
+  pressureField?: string;
+  pressureNature?: string;
+  primaryRelation?: string;
+  surface?: string;
+  shell?: string;
+  pressureIntensity?: number;
+  pressureConfidence?: number;
+};
+
+type GravityTripleForceLandingResult = {
+  selectedPressureSeedId?: string;
+};
+
+type GravityTripleForceFrontStage = {
+  selectedPressureSeedId?: string;
+  ritualLines?: string[];
+  readouts?: Array<{
+    label: string;
+    frontStageLine: string;
+  }>;
+};
+
+function readJsonFromStorage<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
 function getMotherCodeFromSession(session: GuanyaoSession): MotherCodeResult {
   return session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode ?? buildMotherCodeResult(session);
 }
@@ -163,9 +201,21 @@ function HexagramCodeDeliveryShell() {
     transmissionReading: string;
   } | null>(null);
   const [readModel] = useState(() => getGuanyaoR8ReadModel());
+  const [selectedPressureSeedContext] = useState(() =>
+    readJsonFromStorage<GravitySelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
+  );
+  const [tripleForceLandingResult] = useState(() =>
+    readJsonFromStorage<GravityTripleForceLandingResult>("guanyao:tripleForceLandingResult"),
+  );
+  const [tripleForceFrontStage] = useState(() =>
+    readJsonFromStorage<GravityTripleForceFrontStage>("guanyao:tripleForceFrontStage"),
+  );
   const hexagramDisplay = readModel.hexagramStage;
   const dominantLineLabel = readModel.hexagramStage.dominantLineLabel;
   const trajectorySummary = toFrontendTrajectory(readModel.yaoStage.chainSummary);
+  const hasSelectedPressureSeedContext = Boolean(
+    selectedPressureSeedContext?.selectedPressureSeedId ?? tripleForceFrontStage?.selectedPressureSeedId ?? tripleForceLandingResult?.selectedPressureSeedId,
+  );
   const fieldReadings = [
     {
       dimension: "上码显影",
@@ -299,6 +349,62 @@ function HexagramCodeDeliveryShell() {
               HEXAGRAM_CODE_RENDERED
             </span>
           </section>
+          {hasSelectedPressureSeedContext ? (
+            <section
+              aria-label="真实压力入口"
+              style={{
+                display: "grid",
+                gap: 10,
+                padding: "14px 0",
+                borderTop: "1px solid rgba(0,184,212,0.24)",
+                borderBottom: "1px solid rgba(85,85,85,0.32)",
+                background: "linear-gradient(90deg, rgba(0,184,212,0.045), transparent 70%)",
+              }}
+            >
+              <span
+                style={{
+                  color: "rgba(0,184,212,0.74)",
+                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  fontSize: 11,
+                  letterSpacing: "0.13em",
+                }}
+              >
+                本局压力入口已接入
+              </span>
+              {selectedPressureSeedContext?.surface ? (
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 15, lineHeight: 1.6 }}>
+                  现实种子：{selectedPressureSeedContext.surface}
+                </p>
+              ) : null}
+              {selectedPressureSeedContext?.shell ? (
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 13, lineHeight: 1.58 }}>
+                  {selectedPressureSeedContext.shell}
+                </p>
+              ) : null}
+              {tripleForceFrontStage?.readouts?.map((readout) => (
+                <div key={readout.label} style={{ display: "grid", gap: 4 }}>
+                  <span
+                    style={{
+                      color: "rgba(0,184,212,0.64)",
+                      fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                      fontSize: 10,
+                      letterSpacing: "0.12em",
+                    }}
+                  >
+                    {readout.label}
+                  </span>
+                  <p style={{ margin: 0, color: "rgba(245,245,245,0.6)", fontSize: 13, lineHeight: 1.52 }}>
+                    {readout.frontStageLine}
+                  </p>
+                </div>
+              ))}
+              {tripleForceFrontStage?.ritualLines?.length ? (
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.46)", fontSize: 12, lineHeight: 1.55 }}>
+                  {tripleForceFrontStage.ritualLines.join(" ")}
+                </p>
+              ) : null}
+            </section>
+          ) : null}
           <h1 style={{ margin: 0, color: "rgba(245,245,245,0.88)", fontSize: "clamp(26px, 8vw, 38px)", lineHeight: 1.12, fontWeight: 420 }}>
             本局现场读数
           </h1>
