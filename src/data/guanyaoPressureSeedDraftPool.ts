@@ -96,6 +96,96 @@ export const PRESSURE_SEED_POWER_EVALUATION_BOSS: GuanyaoPressureSeed[] = [
     tags: ["任务转移", "信息隔离", "权力丧失"],
     mappingHint: "优先激活天地否卦（隔阂），加重信息隔离与被动退出的叙事比重",
   },
+  {
+    id: "POWER_EVALUATION_BOSS_06",
+    matrixCode: "POWER_EVALUATION",
+    pressureField: "POWER",
+    pressureNature: "EVALUATION",
+    primaryAge: "ESTABLISHING",
+    ageBias: ["YOUTH", "ESTABLISHING", "MID_LIFE"],
+    primaryRelation: "BOSS",
+    relationBias: ["BOSS", "COLLEAGUE", "SYSTEM"],
+    surface: "他只夸了别人一句，你却记了一整天。",
+    core: {
+      mechanism: "用户在权力评价场景中通过比较性反馈确认自身位置，上级对他人的肯定被转化为对自己的否定。",
+      engineHint: "识别为权力场中的评价威胁，核心触发来自比较性评价、隐性排名、被忽略感，容易引发自我贬低与位置焦虑。",
+    },
+    shell: "别人被看见，你就开始消失。",
+    tags: ["比较评价", "被忽略感", "位置焦虑"],
+    mappingHint: "优先激活风地观卦（旁观者），加重旁观、比较与自我消隐叙事",
+  },
+  {
+    id: "POWER_EVALUATION_BOSS_07",
+    matrixCode: "POWER_EVALUATION",
+    pressureField: "POWER",
+    pressureNature: "EVALUATION",
+    primaryAge: "ESTABLISHING",
+    ageBias: ["YOUTH", "ESTABLISHING", "MID_LIFE"],
+    primaryRelation: "BOSS",
+    relationBias: ["BOSS", "COLLEAGUE", "SYSTEM"],
+    surface: "他说“这个先放放”，你听懂了，但还想再解释。",
+    core: {
+      mechanism: "用户面对权力上位者的低成本搁置，将其理解为否定，却仍试图通过补充说明挽回评价。",
+      engineHint: "识别为权力场中的评价威胁，核心触发来自搁置、冷处理、低优先级反馈，容易引发解释冲动与自我消耗。",
+    },
+    shell: "你越解释，越像在求通过。",
+    tags: ["搁置反馈", "解释冲动", "低优先级"],
+    mappingHint: "优先激活水天需卦（等待），加重搁置、等待与求通过叙事",
+  },
+  {
+    id: "POWER_EVALUATION_BOSS_08",
+    matrixCode: "POWER_EVALUATION",
+    pressureField: "POWER",
+    pressureNature: "EVALUATION",
+    primaryAge: "MID_LIFE",
+    ageBias: ["ESTABLISHING", "MID_LIFE", "RESTRUCTURING"],
+    primaryRelation: "BOSS",
+    relationBias: ["BOSS", "COLLEAGUE", "SYSTEM"],
+    surface: "复盘会上他没点名，你却知道那句话是在说你。",
+    core: {
+      mechanism: "用户在公开但不点名的评价场景中主动代入负面指向，用含混批评完成自我定位。",
+      engineHint: "识别为权力场中的评价威胁，核心触发来自不点名批评、公开复盘、含混指责，容易引发自我代入与防御收缩。",
+    },
+    shell: "他没点名，你已经认领了。",
+    tags: ["不点名批评", "自我代入", "防御收缩"],
+    mappingHint: "优先激活天水讼卦（争讼），加重含混指责与内在争辩叙事",
+  },
+  {
+    id: "POWER_EVALUATION_BOSS_09",
+    matrixCode: "POWER_EVALUATION",
+    pressureField: "POWER",
+    pressureNature: "EVALUATION",
+    primaryAge: "YOUTH",
+    ageBias: ["YOUTH", "ESTABLISHING"],
+    primaryRelation: "BOSS",
+    relationBias: ["BOSS", "COLLEAGUE"],
+    surface: "你发完那段汇报，又撤回重写了一遍。",
+    core: {
+      mechanism: "用户在提交表达前预先内化上级评价，用反复修正降低被否定的风险，行动被评价恐惧拖慢。",
+      engineHint: "识别为权力场中的评价威胁，核心触发来自汇报、表达、提交前审查，容易引发反复修改与行动迟滞。",
+    },
+    shell: "你改的不是字，是胆量。",
+    tags: ["汇报焦虑", "反复修改", "行动迟滞"],
+    mappingHint: "优先激活山地剥卦（剥落），加重自我削弱与表达迟滞叙事",
+  },
+  {
+    id: "POWER_EVALUATION_BOSS_10",
+    matrixCode: "POWER_EVALUATION",
+    pressureField: "POWER",
+    pressureNature: "EVALUATION",
+    primaryAge: "MID_LIFE",
+    ageBias: ["ESTABLISHING", "MID_LIFE", "RESTRUCTURING"],
+    primaryRelation: "BOSS",
+    relationBias: ["BOSS", "SYSTEM", "COLLEAGUE"],
+    surface: "他让你“再成熟一点”，你突然不知道该怎么做自己。",
+    core: {
+      mechanism: "用户被权力上位者用模糊成熟标准进行评价，原有表达和判断被压回自我审查。",
+      engineHint: "识别为权力场中的评价威胁，核心触发来自人格化评价、模糊标准、成熟规训，容易引发自我压制与身份摇晃。",
+    },
+    shell: "模糊的标准，最容易驯服你。",
+    tags: ["人格化评价", "成熟规训", "自我压制"],
+    mappingHint: "优先激活山泽损卦（削减），加重自我压制与标准驯化叙事",
+  },
 ];
 
 export const PRESSURE_SEED_RELATION_ATTACHMENT_PARTNER: GuanyaoPressureSeed[] = [
@@ -380,11 +470,11 @@ export function auditGuanyaoPressureSeedDraftPool(): {
     if (frontStageKeys !== "shell,surface") errors.push(`${seed.id} frontStage exposes extra fields`);
   });
 
-  if (GUANYAO_PRESSURE_SEED_DRAFT_POOL.length !== 17) {
-    errors.push(`total expected 17, got ${GUANYAO_PRESSURE_SEED_DRAFT_POOL.length}`);
+  if (GUANYAO_PRESSURE_SEED_DRAFT_POOL.length !== 22) {
+    errors.push(`total expected 22, got ${GUANYAO_PRESSURE_SEED_DRAFT_POOL.length}`);
   }
-  if (matrixCoverage.POWER_EVALUATION !== 5) {
-    errors.push(`POWER_EVALUATION expected 5, got ${matrixCoverage.POWER_EVALUATION ?? 0}`);
+  if (matrixCoverage.POWER_EVALUATION !== 10) {
+    errors.push(`POWER_EVALUATION expected 10, got ${matrixCoverage.POWER_EVALUATION ?? 0}`);
   }
   if (matrixCoverage.RELATION_ATTACHMENT !== 12) {
     errors.push(`RELATION_ATTACHMENT expected 12, got ${matrixCoverage.RELATION_ATTACHMENT ?? 0}`);
