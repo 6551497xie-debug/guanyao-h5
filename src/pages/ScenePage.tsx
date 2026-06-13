@@ -1,17 +1,29 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CausalRail } from "../components/causal/CausalRail";
-import { GuanyaoShell } from "../components/visual/GuanyaoShell";
-import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { sceneSeeds } from "../data/sceneSeeds";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
-import { getDemoPressureSeed } from "../services/guanyaoInteractionService";
 import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getSceneSeedGroup } from "../services/sceneSeedService";
-import { getSession, setMotherCodeResult, setSelectedSceneSeed, updateSession } from "../services/sessionService";
+import { getSession, setMotherCodeResult, setSelectedSceneSeed } from "../services/sessionService";
 import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId, SceneSeed } from "../types";
 
 const yuanCodeKeys: IdentityFragment["yuanCodeKey"][] = ["qian", "kun", "zhen", "xun", "kan", "li", "gen", "dui"];
+const requiredSceneSeedIndexes: SceneSeed["seedIndex"][] = [1, 2, 3];
+
+type PressureSeedCandidate = {
+  id: string;
+  title: string;
+  line: string;
+  sceneSeed: SceneSeed;
+};
+
+type SceneMomentGroup = {
+  seedGroupId: string;
+  pressureLayerId: string;
+  pressureLayerLabel: string;
+  seeds: SceneSeed[];
+};
 
 function readYuanCodeKey(session: GuanyaoSession): IdentityFragment["yuanCodeKey"] | undefined {
   const candidate =
@@ -46,19 +58,6 @@ function readLifeStageId(session: GuanyaoSession): IdentityLifeStageId | undefin
       return undefined;
   }
 }
-
-type SceneFlowState = "flowing" | "frozen" | "selected";
-
-type SceneMomentGroup = {
-  seedGroupId: string;
-  pressureLayerId: string;
-  pressureLayerLabel: string;
-  seeds: SceneSeed[];
-};
-
-const USE_PRESSURE_SLICE_ENTRY = true;
-
-const requiredSceneSeedIndexes: SceneSeed["seedIndex"][] = [1, 2, 3];
 
 function normalizeSceneMomentGroup(seeds: SceneSeed[]): SceneMomentGroup | null {
   const orderedSeeds = [...seeds].sort((a, b) => a.seedIndex - b.seedIndex).slice(0, 3);
@@ -107,202 +106,175 @@ function dedupeSceneMomentGroups(groups: SceneMomentGroup[]): SceneMomentGroup[]
   });
 }
 
-function PressureSliceEntry() {
-  const navigate = useNavigate();
-  const fallbackPressureSeed = getDemoPressureSeed();
-  const sliceCandidates = sceneSeeds.slice(0, 3).map((seed) => ({
+function buildPressureSeedCandidates(session: GuanyaoSession): PressureSeedCandidate[] {
+  const yuanCodeKey = readYuanCodeKey(session);
+  const lifeStageId = readLifeStageId(session);
+  const identityFragmentId = session.identityFragment?.id ?? session.selectedFragment?.id;
+  const seedGroupResult = getSceneSeedGroup({
+    yuanCodeKey,
+    lifeStageId,
+    identityFragmentId,
+  });
+  const primaryGroup = normalizeSceneMomentGroup(seedGroupResult.seeds);
+  const exactGroups = identityFragmentId
+    ? collectSceneMomentGroups(sceneSeeds.filter((seed) => seed.sourceIdentityFragmentId === identityFragmentId))
+    : [];
+  const yuanLifeStageGroups =
+    yuanCodeKey && lifeStageId
+      ? collectSceneMomentGroups(sceneSeeds.filter((seed) => seed.yuanCodeKey === yuanCodeKey && seed.lifeStageId === lifeStageId))
+      : [];
+  const yuanGroups = yuanCodeKey
+    ? collectSceneMomentGroups(sceneSeeds.filter((seed) => seed.yuanCodeKey === yuanCodeKey))
+    : [];
+  const fallbackGroups = collectSceneMomentGroups(sceneSeeds);
+  const [visibleGroup] = dedupeSceneMomentGroups([
+    ...(primaryGroup ? [primaryGroup] : []),
+    ...exactGroups,
+    ...yuanLifeStageGroups,
+    ...yuanGroups,
+    ...fallbackGroups,
+  ]);
+  const visibleSeeds = visibleGroup?.seeds ?? seedGroupResult.seeds;
+
+  return visibleSeeds.map((seed) => ({
     id: seed.id,
     title: seed.title,
     line: seed.seedLine,
     sceneSeed: seed,
   }));
-  const slices =
-    sliceCandidates.length === 3
-      ? sliceCandidates
-      : [
-          {
-            id: "pressure-slice-a",
-            title: "合作项目压力",
-            line: fallbackPressureSeed.text,
-            sceneSeed: null,
-          },
-          {
-            id: "pressure-slice-b",
-            title: "关系责任回流",
-            line: "别人还没有开口，你已经开始替整件事寻找出口。",
-            sceneSeed: null,
-          },
-          {
-            id: "pressure-slice-c",
-            title: "评价场逼近",
-            line: "你知道自己很吃力，但更怕别人看出你正在撑不住。",
-            sceneSeed: null,
-          },
-        ];
-  const [flowState, setFlowState] = useState<"flowing" | "frozen" | "selected">("flowing");
-  const [selectedSliceId, setSelectedSliceId] = useState<string | null>(null);
-  const [rollingSeedOffset, setRollingSeedOffset] = useState(0);
-  const visibleSlices =
-    flowState === "flowing"
-      ? slices.map((_, index) => slices[(index + rollingSeedOffset) % slices.length]).filter(Boolean)
-      : slices;
+}
 
-  useEffect(() => {
-    if (flowState !== "flowing" || slices.length <= 1) {
-      return undefined;
-    }
+export function ScenePage() {
+  const navigate = useNavigate();
+  const session = getSession();
+  const pressureSeedCandidates = useMemo(() => buildPressureSeedCandidates(session), [session]);
+  const [selectedSeedId, setSelectedSeedId] = useState<string | null>(null);
+  const selectedCandidate = pressureSeedCandidates.find((candidate) => candidate.id === selectedSeedId) ?? null;
 
-    const rollingTimer = window.setInterval(() => {
-      setRollingSeedOffset((currentOffset) => (currentOffset + 1) % slices.length);
-    }, 1500);
-
-    return () => {
-      window.clearInterval(rollingTimer);
-    };
-  }, [flowState, slices.length]);
-
-  function handleConfirmSlice() {
-    if (flowState === "flowing") {
-      setFlowState("frozen");
+  function handlePressurizeSeed() {
+    if (!selectedCandidate) {
       return;
     }
 
-    if (!selectedSliceId) {
-      return;
-    }
-
-    const selectedSlice = slices.find((slice) => slice.id === selectedSliceId) ?? slices[0];
-
-    if (selectedSlice.sceneSeed) {
-      setSelectedSceneSeed(selectedSlice.sceneSeed);
-    }
-
-    window.localStorage.setItem("guanyao:selectedPressureSliceId", selectedSlice.id);
-    window.localStorage.setItem("guanyao:selectedPressureSliceText", selectedSlice.line);
+    setSelectedSceneSeed(selectedCandidate.sceneSeed);
+    window.localStorage.setItem("guanyao:selectedPressureSliceId", selectedCandidate.id);
+    window.localStorage.setItem("guanyao:selectedPressureSliceText", selectedCandidate.line);
     setMotherCodeResult(buildMotherCodeResult(getSession()));
     navigate(GUANYAO_ROUTES.pressureExposure);
-  }
-
-  function handleSelectSlice(sliceId: string) {
-    if (flowState === "flowing") {
-      return;
-    }
-
-    setSelectedSliceId(sliceId);
-    setFlowState("selected");
   }
 
   return (
     <main
       style={{
         minHeight: "100dvh",
-        width: "100%",
+        width: "min(100%, 520px)",
+        margin: "0 auto",
         boxSizing: "border-box",
-        padding: "48px 20px calc(42px + env(safe-area-inset-bottom))",
+        padding: "48px 20px calc(44px + env(safe-area-inset-bottom))",
         display: "flex",
         flexDirection: "column",
-        gap: 16,
-        background: "#050607",
-        color: "#f5f5f5",
+        gap: 18,
+        background:
+          "radial-gradient(circle at 50% 20%, rgba(0,184,212,0.08), transparent 36%), linear-gradient(180deg, #050607 0%, #020303 100%)",
+        color: "rgba(246,243,236,0.88)",
         overflowX: "hidden",
+        overflowY: "auto",
+        WebkitOverflowScrolling: "touch",
       }}
     >
-      <span
-        style={{
-          color: "rgba(199,169,107,0.7)",
-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-          fontSize: 12,
-          letterSpacing: "0.16em",
-        }}
-      >
-        03｜现实压力切片
-      </span>
-      <span
-        style={{
-          color: "rgba(245,245,245,0.44)",
-          fontSize: 13,
-          lineHeight: 1.5,
-        }}
-      >
-        母码已嵌入。
-      </span>
-      <h1
-        style={{
-          margin: "2px 0 0",
-          color: "rgba(245,245,245,0.88)",
-          fontSize: "clamp(26px, 8vw, 38px)",
-          lineHeight: 1.15,
-          fontWeight: 420,
-          letterSpacing: "0.02em",
-        }}
-      >
-        哪一幕，正在发生？
-      </h1>
+      <header style={{ display: "grid", gap: 10 }}>
+        <span
+          style={{
+            color: "rgba(246,243,236,0.48)",
+            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            fontSize: 12,
+            letterSpacing: "0.16em",
+          }}
+        >
+          03｜现实压力种子
+        </span>
+        <h1
+          style={{
+            margin: 0,
+            color: "rgba(246,243,236,0.9)",
+            fontSize: "clamp(30px, 8vw, 42px)",
+            lineHeight: 1.12,
+            fontWeight: 380,
+            letterSpacing: "0.04em",
+          }}
+        >
+          现实压力种子
+        </h1>
+        <p
+          style={{
+            margin: 0,
+            color: "rgba(246,243,236,0.62)",
+            fontSize: 15,
+            lineHeight: 1.68,
+            letterSpacing: "0.04em",
+          }}
+        >
+          选择一个正在发生的现实压力。
+          <br />
+          系统会把它压入本局压力场。
+        </p>
+      </header>
 
       <section
-        aria-label="现实压力切片"
+        aria-label="现实压力种子候选"
         style={{
           display: "grid",
           gap: 12,
-          marginTop: 6,
           padding: "14px 0",
-          borderTop: "1px solid rgba(85,85,85,0.58)",
-          borderBottom: "1px solid rgba(85,85,85,0.36)",
+          borderTop: "1px solid rgba(246,243,236,0.12)",
+          borderBottom: "1px solid rgba(246,243,236,0.08)",
         }}
       >
+        <span
+          style={{
+            color: selectedCandidate ? "rgba(0,184,212,0.68)" : "rgba(246,243,236,0.38)",
+            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            fontSize: 11,
+            letterSpacing: "0.13em",
+          }}
+        >
+          {selectedCandidate ? "现实压力种子已选中，等待压入压力场。" : "现实压力种子待压入。"}
+        </span>
+
         <div
           style={{
             display: "grid",
             gap: 10,
-            maxHeight: 370,
-            overflowY: "auto",
-            padding: "12px 0",
-            borderTop: "1px solid rgba(199,169,107,0.42)",
-            borderBottom: "1px solid rgba(199,169,107,0.26)",
-            background: "linear-gradient(90deg, rgba(199,169,107,0.055), transparent 68%)",
+            paddingBottom: 12,
           }}
         >
-          <span
-            style={{
-              color: flowState === "flowing" ? "rgba(199,169,107,0.58)" : "rgba(199,169,107,0.78)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 11,
-              letterSpacing: "0.12em",
-              padding: "0 2px",
-            }}
-          >
-            {flowState === "flowing" ? "现实压力切片｜滚动中" : "现实压力切片｜已拦截"}
-          </span>
-
-          {visibleSlices.map((slice) => {
-            const isSelected = selectedSliceId === slice.id;
-            const canSelect = flowState !== "flowing";
+          {pressureSeedCandidates.map((candidate) => {
+            const isSelected = selectedSeedId === candidate.id;
 
             return (
               <button
-                key={slice.id}
+                key={candidate.id}
                 type="button"
-                disabled={!canSelect}
-                onClick={() => handleSelectSlice(slice.id)}
+                onClick={() => setSelectedSeedId(candidate.id)}
                 style={{
                   width: "100%",
-                  minHeight: 112,
-                  padding: "14px 2px 14px 0",
+                  minHeight: 118,
+                  padding: "15px 2px 15px 0",
                   border: 0,
-                  borderTop: "1px solid rgba(85,85,85,0.34)",
-                  borderBottom: isSelected ? "1px solid rgba(199,169,107,0.72)" : "1px solid rgba(85,85,85,0.22)",
-                  background: isSelected ? "rgba(199,169,107,0.075)" : "transparent",
+                  borderTop: "1px solid rgba(246,243,236,0.08)",
+                  borderBottom: isSelected ? "1px solid rgba(0,184,212,0.56)" : "1px solid rgba(246,243,236,0.07)",
+                  background: isSelected ? "linear-gradient(90deg, rgba(0,184,212,0.08), transparent 68%)" : "transparent",
                   color: "inherit",
                   display: "grid",
                   gap: 8,
                   textAlign: "left",
-                  opacity: flowState === "flowing" ? 0.56 : isSelected ? 1 : 0.74,
-                  cursor: canSelect ? "pointer" : "default",
+                  opacity: isSelected ? 1 : 0.68,
+                  cursor: "pointer",
                 }}
               >
                 <span
                   style={{
-                    color: isSelected ? "rgba(199,169,107,0.86)" : "rgba(245,245,245,0.42)",
+                    color: isSelected ? "rgba(0,184,212,0.78)" : "rgba(246,243,236,0.4)",
                     fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                     fontSize: 11,
                     letterSpacing: "0.12em",
@@ -312,22 +284,22 @@ function PressureSliceEntry() {
                 </span>
                 <strong
                   style={{
-                    color: isSelected ? "rgba(245,245,245,0.92)" : "rgba(245,245,245,0.76)",
-                    fontSize: 18,
-                    lineHeight: 1.25,
+                    color: isSelected ? "rgba(246,243,236,0.92)" : "rgba(246,243,236,0.74)",
+                    fontSize: 19,
+                    lineHeight: 1.28,
                     fontWeight: 360,
                   }}
                 >
-                  {slice.title}
+                  {candidate.title}
                 </strong>
                 <span
                   style={{
-                    color: "rgba(245,245,245,0.62)",
+                    color: "rgba(246,243,236,0.6)",
                     fontSize: 14,
                     lineHeight: 1.58,
                   }}
                 >
-                  {slice.line}
+                  {candidate.line}
                 </span>
               </button>
             );
@@ -336,193 +308,11 @@ function PressureSliceEntry() {
       </section>
 
       <CausalRail
-        statusLabel={flowState === "flowing" ? "拦截这一幕" : "填装这枚现实压力种子"}
-        rightHint={flowState === "flowing" ? "右滑拦截这一幕" : "右滑填装现实压力种子"}
-        onRight={handleConfirmSlice}
-        disabled={flowState !== "flowing" && !selectedSliceId}
+        statusLabel={selectedCandidate ? "现实压力种子已选中，等待压入压力场。" : "请选择一个现实压力种子"}
+        rightHint="右滑压入现实压力种子"
+        onRight={handlePressurizeSeed}
+        disabled={!selectedCandidate}
       />
     </main>
-  );
-}
-
-export function ScenePage() {
-  if (USE_PRESSURE_SLICE_ENTRY) {
-    return <PressureSliceEntry />;
-  }
-
-  const navigate = useNavigate();
-  const session = getSession();
-  const demoPressureSeed = getDemoPressureSeed();
-  const yuanCodeKey = readYuanCodeKey(session);
-  const lifeStageId = readLifeStageId(session);
-  const identityFragmentId = session.identityFragment?.id ?? session.selectedFragment?.id;
-  const seedGroupResult = useMemo(
-    () =>
-      getSceneSeedGroup({
-        yuanCodeKey,
-        lifeStageId,
-        identityFragmentId,
-      }),
-    [identityFragmentId, lifeStageId, yuanCodeKey],
-  );
-  const momentGroups = useMemo(() => {
-    const primaryGroup = normalizeSceneMomentGroup(seedGroupResult.seeds);
-    const exactGroups = identityFragmentId
-      ? collectSceneMomentGroups(sceneSeeds.filter((seed) => seed.sourceIdentityFragmentId === identityFragmentId))
-      : [];
-    const yuanLifeStageGroups =
-      yuanCodeKey && lifeStageId
-        ? collectSceneMomentGroups(sceneSeeds.filter((seed) => seed.yuanCodeKey === yuanCodeKey && seed.lifeStageId === lifeStageId))
-        : [];
-    const yuanGroups = yuanCodeKey
-      ? collectSceneMomentGroups(sceneSeeds.filter((seed) => seed.yuanCodeKey === yuanCodeKey))
-      : [];
-    const allGroups = collectSceneMomentGroups(sceneSeeds);
-    const orderedGroups = dedupeSceneMomentGroups([
-      ...(primaryGroup ? [primaryGroup] : []),
-      ...exactGroups,
-      ...yuanLifeStageGroups,
-      ...yuanGroups,
-      ...allGroups,
-    ]);
-
-    return orderedGroups.length > 0 ? orderedGroups : primaryGroup ? [primaryGroup] : [];
-  }, [identityFragmentId, lifeStageId, seedGroupResult.seeds, yuanCodeKey]);
-  const [currentMomentIndex, setCurrentMomentIndex] = useState(0);
-  const [flowState, setFlowState] = useState<SceneFlowState>("flowing");
-  const [selectedSeedId, setSelectedSeedId] = useState<string | null>(null);
-  const seedGroup = momentGroups[currentMomentIndex] ?? momentGroups[0] ?? seedGroupResult;
-  const sliceSource = `${seedGroupResult.matchedBy}:moment-${currentMomentIndex + 1}`;
-  const sceneTitle = "哪一幕，正在发生？";
-  const sceneStatus = "母码已嵌入。";
-  const sceneGateLabel = "拦截这一幕，选择现实压力种子";
-  const sceneGateNote = flowState === "selected" ? "当前切片已认领。" : demoPressureSeed.text;
-
-  useEffect(() => {
-    document.body.classList.add("gy-scene-r1-mode");
-    return () => document.body.classList.remove("gy-scene-r1-mode");
-  }, []);
-
-  useEffect(() => {
-    if (currentMomentIndex >= momentGroups.length) {
-      setCurrentMomentIndex(0);
-    }
-  }, [currentMomentIndex, momentGroups.length]);
-
-  useEffect(() => {
-    if (flowState !== "flowing" || momentGroups.length <= 1) {
-      return undefined;
-    }
-
-    const momentTimer = window.setInterval(() => {
-      setCurrentMomentIndex((currentIndex) => (currentIndex + 1) % momentGroups.length);
-    }, 4000);
-
-    return () => {
-      window.clearInterval(momentTimer);
-    };
-  }, [flowState, momentGroups.length]);
-
-  function handleSelectSeed(sceneSeed: SceneSeed) {
-    setSelectedSceneSeed(sceneSeed);
-    updateSession({
-      autoYaoPath: [],
-      interactiveYaoPath: [],
-      sixthYaoChoice: null,
-      finalChoiceCode: "",
-      choiceHistory: [],
-    });
-    setSelectedSeedId(sceneSeed.id);
-    setFlowState("selected");
-  }
-
-  function handleConfirmPressureSeed() {
-    const defaultSeed = seedGroup.seeds[0];
-    if (defaultSeed) {
-      handleSelectSeed(defaultSeed);
-    }
-    setMotherCodeResult(buildMotherCodeResult(getSession()));
-    navigate(GUANYAO_ROUTES.pressureExposure);
-  }
-
-  function handleStartYao() {
-    setMotherCodeResult(buildMotherCodeResult(getSession()));
-    navigate(GUANYAO_ROUTES.pressureExposure);
-  }
-
-  return (
-    <GuanyaoShell density="compact">
-      <section
-        className={`gy-front-screen gy-front-instrument gy-scene-screen gy-scene-screen--${flowState} gy-causal-line gy-causal-line-intercept`}
-        data-intensity="quiet"
-        style={{
-          overflowY: "auto",
-          WebkitOverflowScrolling: "touch",
-          paddingBottom: "calc(42px + env(safe-area-inset-bottom))",
-        }}
-      >
-        <div className="gy-front-copy gyFadeRise">
-          <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-            03｜现实压力切片
-          </GuanyaoText>
-          <GuanyaoText className="gy-scene-status-readout" as="span" size="eyebrow" tone="faint" data-slice-source={sliceSource}>
-            {sceneStatus}
-          </GuanyaoText>
-          <GuanyaoText className="gy-scene-title" as="h2" size="title">
-            {sceneTitle}
-          </GuanyaoText>
-        </div>
-        <article className="gy-scene-slice-panel gy-scene-capture-plane gyFadeRise">
-          <div className={`gy-scene-flashline-group gy-scene-seed-list gy-scene-seed-list--${flowState}`}>
-            <GuanyaoText className="gy-scene-seed-group-label" as="span" size="eyebrow" tone="faint">
-              {flowState === "selected" ? "现实压力切片｜已认领" : "现实压力切片｜滚动认领"}
-            </GuanyaoText>
-            {seedGroup.seeds.map((seed) => {
-              const isSelectedSeed = flowState === "selected" && seed.id === selectedSeedId;
-              const isMutedSeed = flowState === "selected" && seed.id !== selectedSeedId;
-              const sliceLabel = ["A", "B", "C"][seed.seedIndex - 1] ?? String(seed.seedIndex);
-
-              return (
-                <div
-                  className={[
-                    "gy-scene-seed-signal",
-                    isSelectedSeed ? "gy-scene-seed-signal--selected" : "",
-                    isMutedSeed ? "gy-scene-seed-signal--muted" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  key={seed.id}
-                  onClick={() => handleSelectSeed(seed)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      handleSelectSeed(seed);
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <GuanyaoText className="gy-scene-seed-index" as="span" size="eyebrow" tone="faint">
-                    现实压力切片 {sliceLabel}｜{seed.title}
-                  </GuanyaoText>
-                  <GuanyaoText className="gy-scene-flashline" as="span" size="body">
-                    {seed.seedLine}
-                  </GuanyaoText>
-                </div>
-              );
-            })}
-          </div>
-        </article>
-        <div className="gy-scene-actions gyFadeRise">
-          <GuanyaoText className="gy-scene-gate-note" size="body" tone="muted">
-            {sceneGateNote}
-          </GuanyaoText>
-          <CausalRail
-            statusLabel={sceneGateLabel}
-            rightHint={flowState === "selected" ? "右滑进入压力场" : "右滑压入现实种子"}
-            onRight={flowState === "selected" ? handleStartYao : handleConfirmPressureSeed}
-          />
-        </div>
-      </section>
-    </GuanyaoShell>
   );
 }
