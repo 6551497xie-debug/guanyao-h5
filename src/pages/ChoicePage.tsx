@@ -17,7 +17,7 @@ export function ChoicePage() {
       tag: "主要行动点",
       title: readModel.yaoStage.mainCut.spaceName,
       description: readModel.yaoStage.mainCut.userFacingReason,
-      riskLine: "系统不是在选择最严重的一层，而是在寻找最能改变整条旧反应的位置。",
+      riskLine: "系统已标记最能改写旧反应的位置。",
     },
     {
       id: "secondary-cut",

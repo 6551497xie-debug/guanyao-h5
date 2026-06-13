@@ -329,7 +329,7 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
             lineHeight: 1.72,
           }}
         >
-          {isRepair ? readModel.deviceStage.userFacingMethodPrompt : `你选择停在${readModel.yaoStage.mainCut.spaceName}。系统已围绕这一层整理出本局第一步行动。`}
+          {isRepair ? readModel.deviceStage.userFacingMethodPrompt : `你已停在${readModel.yaoStage.mainCut.spaceName}。系统已整理出本局第一步行动。`}
         </p>
       </header>
 
@@ -397,7 +397,7 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
               {readModel.deviceStage.deviceName}
             </strong>
             <span style={{ color: "rgba(199,169,107,0.7)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12 }}>
-              {readModel.hexagramStage.displayCode ? `No.${readModel.hexagramStage.displayCode}｜${readModel.hexagramStage.displayName}` : readModel.hexagramStage.displayName}
+              {readModel.hexagramStage.displayCode ? `No.${readModel.hexagramStage.displayCode}｜${readModel.hexagramStage.displayName}` : "本局场域｜已进入处置阶段"}
             </span>
             <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.72 }}>
               {readModel.deviceStage.methodSummary}
