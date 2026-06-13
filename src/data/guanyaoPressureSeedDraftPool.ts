@@ -443,9 +443,229 @@ export const PRESSURE_SEED_RELATION_ATTACHMENT_PARTNER: GuanyaoPressureSeed[] = 
   },
 ];
 
+export const PRESSURE_SEED_INTEREST_RESOURCE_PARTNER: GuanyaoPressureSeed[] = [
+  {
+    id: "INTEREST_RESOURCE_PARTNER_01",
+    matrixCode: "INTEREST_RESOURCE",
+    pressureField: "INTEREST",
+    pressureNature: "RESOURCE",
+    primaryAge: "MID_LIFE",
+    ageBias: ["ESTABLISHING", "MID_LIFE", "RESTRUCTURING"],
+    primaryRelation: "PARTNER_BUSINESS",
+    relationBias: ["PARTNER_BUSINESS", "CLIENT", "SYSTEM"],
+    surface: "账目你一直没细看，最近发现分成比例已经被悄悄改过。",
+    core: {
+      mechanism: "用户对核心利益分配的知情权与决策权被边缘化，利益边界正在被动后退。",
+      engineHint: "资源争夺，触发利益边界侵蚀与被动后退。",
+    },
+    shell: "你以为的合伙，其实只是被通知。",
+    tags: ["分成被改", "知情权丧失", "边界侵蚀"],
+    mappingHint: "优先激活天水讼卦（争鸣），加重利益边界冲突与知情权丧失叙事",
+  },
+  {
+    id: "INTEREST_RESOURCE_PARTNER_02",
+    matrixCode: "INTEREST_RESOURCE",
+    pressureField: "INTEREST",
+    pressureNature: "RESOURCE",
+    primaryAge: "ESTABLISHING",
+    ageBias: ["YOUTH", "ESTABLISHING", "MID_LIFE"],
+    primaryRelation: "PARTNER_BUSINESS",
+    relationBias: ["PARTNER_BUSINESS", "CLIENT", "SYSTEM"],
+    surface: "客户是你拉来的，他却绕过你单独对接。你问起来，他说帮你分担。",
+    core: {
+      mechanism: "用户的核心资源与客户关系正在被合作方架空，隐性替代已发生。",
+      engineHint: "资源争夺，触发客户架空与隐性替代。",
+    },
+    shell: "他替你分担的不是工作，是你的位置。",
+    tags: ["客户架空", "隐性替代", "资源流失"],
+    mappingHint: "优先激活山地剥卦（剥落），加重客户剥离与资源流失叙事",
+  },
+  {
+    id: "INTEREST_RESOURCE_PARTNER_03",
+    matrixCode: "INTEREST_RESOURCE",
+    pressureField: "INTEREST",
+    pressureNature: "RESOURCE",
+    primaryAge: "MID_LIFE",
+    ageBias: ["ESTABLISHING", "MID_LIFE", "RESTRUCTURING"],
+    primaryRelation: "PARTNER_BUSINESS",
+    relationBias: ["PARTNER_BUSINESS", "CLIENT", "SYSTEM"],
+    surface: "增资没叫你，分红没少你。你越来越像旁观者。",
+    core: {
+      mechanism: "用户在资本与决策层面的参与权被悬置，名义所有权与实际控制权分离。",
+      engineHint: "资源争夺，触发所有权悬置与控制权分离。",
+    },
+    shell: "你只是名义上的合伙人，决策时没人想起你。",
+    tags: ["增资被排除", "所有权悬置", "决策隔离"],
+    mappingHint: "优先激活风地观卦（旁观者），加重所有权悬置与决策隔离叙事",
+  },
+  {
+    id: "INTEREST_RESOURCE_PARTNER_04",
+    matrixCode: "INTEREST_RESOURCE",
+    pressureField: "INTEREST",
+    pressureNature: "RESOURCE",
+    primaryAge: "MID_LIFE",
+    ageBias: ["ESTABLISHING", "MID_LIFE", "RESTRUCTURING"],
+    primaryRelation: "PARTNER_BUSINESS",
+    relationBias: ["PARTNER_BUSINESS", "CLIENT", "SYSTEM"],
+    surface: "项目赚了钱，他说要先回本，分红的事再等等。你等了一轮又一轮。",
+    core: {
+      mechanism: "用户面对利益分配被无限期延后，回报权利被虚悬，信任被反复消耗。",
+      engineHint: "资源争夺，触发分配延迟与信任磨损。",
+    },
+    shell: "你越等，越像是你不该拿。",
+    tags: ["分红延迟", "分配虚悬", "信任磨损"],
+    mappingHint: "优先激活水天需卦（等待），加重分配延迟与被动等待叙事",
+  },
+  {
+    id: "INTEREST_RESOURCE_PARTNER_05",
+    matrixCode: "INTEREST_RESOURCE",
+    pressureField: "INTEREST",
+    pressureNature: "RESOURCE",
+    primaryAge: "ESTABLISHING",
+    ageBias: ["YOUTH", "ESTABLISHING", "MID_LIFE"],
+    primaryRelation: "PARTNER_BUSINESS",
+    relationBias: ["PARTNER_BUSINESS", "CLIENT", "SYSTEM"],
+    surface: "你提议按贡献分，他说生意不是这么算的。你想反驳，又怕撕破脸。",
+    core: {
+      mechanism: "用户提出公平分配原则被否定，利益诉求被道德化或关系化绑架。",
+      engineHint: "资源争夺，触发公平诉求被否定与利益羞耻。",
+    },
+    shell: "你越怕撕破脸，越拿不回应得的。",
+    tags: ["公平诉求被否", "利益羞耻", "关系绑架"],
+    mappingHint: "优先激活泽地萃卦（人潮），加重利益羞耻与关系绑架叙事",
+  },
+  {
+    id: "INTEREST_RESOURCE_PARTNER_06",
+    matrixCode: "INTEREST_RESOURCE",
+    pressureField: "INTEREST",
+    pressureNature: "RESOURCE",
+    primaryAge: "MID_LIFE",
+    ageBias: ["ESTABLISHING", "MID_LIFE", "RESTRUCTURING"],
+    primaryRelation: "PARTNER_BUSINESS",
+    relationBias: ["PARTNER_BUSINESS", "CLIENT", "SYSTEM"],
+    surface: "你要看合同，他说你不信任他。你不好意思再坚持，也只能先信了。",
+    core: {
+      mechanism: "用户行使知情权被质疑动机，制度性保障被情感绑架替代。",
+      engineHint: "资源争夺，触发知情权被质疑与制度缺位。",
+    },
+    shell: "你不敢查合同，就只能信口头承诺。",
+    tags: ["知情权被质疑", "情感绑架", "制度缺位"],
+    mappingHint: "优先激活风火家人卦（屋檐下），加重情感绑架与制度缺位叙事",
+  },
+  {
+    id: "INTEREST_RESOURCE_PARTNER_07",
+    matrixCode: "INTEREST_RESOURCE",
+    pressureField: "INTEREST",
+    pressureNature: "RESOURCE",
+    primaryAge: "RESTRUCTURING",
+    ageBias: ["MID_LIFE", "RESTRUCTURING", "SIXTY_PLUS"],
+    primaryRelation: "PARTNER_BUSINESS",
+    relationBias: ["PARTNER_BUSINESS", "CLIENT", "SYSTEM"],
+    surface: "公司估值涨了，你的股份却没变。你想谈，又怕被认为是趁火打劫。",
+    core: {
+      mechanism: "用户的价值贡献与股权比例脱节，利益增长被结构性排除。",
+      engineHint: "资源争夺，触发股权脱节与贡献被排除。",
+    },
+    shell: "公司越值钱，你越不值钱。",
+    tags: ["股权脱节", "贡献被排除", "利益增长排除"],
+    mappingHint: "优先激活火天大有卦（丰收者），加重贡献被排除与利益脱节叙事",
+  },
+  {
+    id: "INTEREST_RESOURCE_PARTNER_08",
+    matrixCode: "INTEREST_RESOURCE",
+    pressureField: "INTEREST",
+    pressureNature: "RESOURCE",
+    primaryAge: "MID_LIFE",
+    ageBias: ["ESTABLISHING", "MID_LIFE", "RESTRUCTURING"],
+    primaryRelation: "PARTNER_BUSINESS",
+    relationBias: ["PARTNER_BUSINESS", "CLIENT", "SYSTEM"],
+    surface: "他想引进新投资人，条件是稀释你的股份。你没说话，但心里已经开始算了。",
+    core: {
+      mechanism: "用户面临股权被动稀释，利益被外部资本挤压，话语权同步下降。",
+      engineHint: "资源争夺，触发股权稀释与话语权下降。",
+    },
+    shell: "你不争，你的位置就被别人占了。",
+    tags: ["股权稀释", "话语权下降", "外部挤压"],
+    mappingHint: "优先激活泽水困卦（困），加重股权稀释与话语权下降叙事",
+  },
+  {
+    id: "INTEREST_RESOURCE_PARTNER_09",
+    matrixCode: "INTEREST_RESOURCE",
+    pressureField: "INTEREST",
+    pressureNature: "RESOURCE",
+    primaryAge: "ESTABLISHING",
+    ageBias: ["YOUTH", "ESTABLISHING", "MID_LIFE"],
+    primaryRelation: "PARTNER_BUSINESS",
+    relationBias: ["PARTNER_BUSINESS", "CLIENT", "SYSTEM"],
+    surface: "你们一起扛过最难的时候，现在赚钱了，你却越来越像外人。",
+    core: {
+      mechanism: "用户在共患难后的利益分配中被边缘化，同甘阶段被排除出核心圈。",
+      engineHint: "资源争夺，触发共苦不同甘与利益边缘化。",
+    },
+    shell: "共苦的时候有你，同甘的时候没你。",
+    tags: ["共苦不同甘", "利益边缘化", "核心圈排除"],
+    mappingHint: "优先激活天地否卦（隔阂），加重利益边缘化与核心圈排除叙事",
+  },
+  {
+    id: "INTEREST_RESOURCE_PARTNER_10",
+    matrixCode: "INTEREST_RESOURCE",
+    pressureField: "INTEREST",
+    pressureNature: "RESOURCE",
+    primaryAge: "MID_LIFE",
+    ageBias: ["ESTABLISHING", "MID_LIFE", "RESTRUCTURING"],
+    primaryRelation: "PARTNER_BUSINESS",
+    relationBias: ["PARTNER_BUSINESS", "CLIENT", "SYSTEM"],
+    surface: "你想退出，他说按照合同你拿不到多少。你开始后悔当初没请律师。",
+    core: {
+      mechanism: "用户发现退出机制不公允，当初的信任换来了退出时的高额代价。",
+      engineHint: "资源争夺，触发退出代价过高与初始信任被利用。",
+    },
+    shell: "你签字的每一页，都在替今天的你认亏。",
+    tags: ["退出代价过高", "初始信任被利用", "合同陷阱"],
+    mappingHint: "优先激活山火贲卦（面具），加重退出代价过高与初始信任被利用叙事",
+  },
+  {
+    id: "INTEREST_RESOURCE_PARTNER_11",
+    matrixCode: "INTEREST_RESOURCE",
+    pressureField: "INTEREST",
+    pressureNature: "RESOURCE",
+    primaryAge: "ESTABLISHING",
+    ageBias: ["YOUTH", "ESTABLISHING", "MID_LIFE"],
+    primaryRelation: "PARTNER_BUSINESS",
+    relationBias: ["PARTNER_BUSINESS", "CLIENT", "SYSTEM"],
+    surface: "他说年底一起分，你信了三次。现在第四年了，你还在等。",
+    core: {
+      mechanism: "用户反复被口头承诺吊住预期，行动被延迟回报锁定，沉没成本持续累积。",
+      engineHint: "资源争夺，触发口头承诺依赖与沉没成本累积。",
+    },
+    shell: "你等了一年又一年，等成了习惯。",
+    tags: ["口头承诺", "延迟回报", "沉没成本累积"],
+    mappingHint: "优先激活雷地豫卦（狂欢之后），加重延迟回报与沉没成本叙事",
+  },
+  {
+    id: "INTEREST_RESOURCE_PARTNER_12",
+    matrixCode: "INTEREST_RESOURCE",
+    pressureField: "INTEREST",
+    pressureNature: "RESOURCE",
+    primaryAge: "MID_LIFE",
+    ageBias: ["ESTABLISHING", "MID_LIFE", "RESTRUCTURING"],
+    primaryRelation: "PARTNER_BUSINESS",
+    relationBias: ["PARTNER_BUSINESS", "CLIENT", "SYSTEM"],
+    surface: "公司另一条业务线赚钱了，你说想参与，他说术业有专攻。",
+    core: {
+      mechanism: "用户被固化在原有角色中，新增长机会被排除在参与权之外。",
+      engineHint: "资源争夺，触发机会排除与角色固化。",
+    },
+    shell: "你被定义成什么样，就只能拿什么。",
+    tags: ["机会排除", "角色固化", "增长排除"],
+    mappingHint: "优先激活山雷颐卦（养伤者），加重角色固化与机会排除叙事",
+  },
+];
+
 export const GUANYAO_PRESSURE_SEED_DRAFT_POOL: GuanyaoPressureSeed[] = [
   ...PRESSURE_SEED_POWER_EVALUATION_BOSS,
   ...PRESSURE_SEED_RELATION_ATTACHMENT_PARTNER,
+  ...PRESSURE_SEED_INTEREST_RESOURCE_PARTNER,
 ];
 
 export function getGuanyaoPressureSeedDraftPool(): GuanyaoPressureSeed[] {
@@ -506,14 +726,17 @@ export function auditGuanyaoPressureSeedDraftPool(): {
     if (frontStageKeys !== "shell,surface") errors.push(`${seed.id} frontStage exposes extra fields`);
   });
 
-  if (GUANYAO_PRESSURE_SEED_DRAFT_POOL.length !== 24) {
-    errors.push(`total expected 24, got ${GUANYAO_PRESSURE_SEED_DRAFT_POOL.length}`);
+  if (GUANYAO_PRESSURE_SEED_DRAFT_POOL.length !== 36) {
+    errors.push(`total expected 36, got ${GUANYAO_PRESSURE_SEED_DRAFT_POOL.length}`);
   }
   if (matrixCoverage.POWER_EVALUATION !== 12) {
     errors.push(`POWER_EVALUATION expected 12, got ${matrixCoverage.POWER_EVALUATION ?? 0}`);
   }
   if (matrixCoverage.RELATION_ATTACHMENT !== 12) {
     errors.push(`RELATION_ATTACHMENT expected 12, got ${matrixCoverage.RELATION_ATTACHMENT ?? 0}`);
+  }
+  if (matrixCoverage.INTEREST_RESOURCE !== 12) {
+    errors.push(`INTEREST_RESOURCE expected 12, got ${matrixCoverage.INTEREST_RESOURCE ?? 0}`);
   }
 
   return {
