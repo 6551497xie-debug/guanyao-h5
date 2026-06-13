@@ -10,10 +10,12 @@ import { getDemoPressureExposureOptions } from "../services/guanyaoInteractionSe
 import {
   buildSelectedPressureSeedContext,
   getPressureSeedSceneTriplet,
+  type GuanyaoSelectedPressureSeedContext,
 } from "../services/guanyaoPressureSeedSceneBindingService";
 import {
   buildTripleForceLandingResult,
   getTripleForceFrontStage,
+  type GuanyaoTripleForceFrontStage,
 } from "../services/guanyaoTripleForceLandingService";
 import { getSession, updateSession } from "../services/sessionService";
 import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId } from "../types";
@@ -73,28 +75,72 @@ function readIdentityPool(session: GuanyaoSession) {
   );
 }
 
+function readJsonFromStorage<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
+function isTripleForceFrontStage(value: GuanyaoTripleForceFrontStage | null): value is GuanyaoTripleForceFrontStage {
+  return Boolean(
+    value &&
+      Array.isArray(value.ritualLines) &&
+      value.ritualLines.length > 0 &&
+      Array.isArray(value.readouts) &&
+      value.readouts.length > 0 &&
+      value.readouts.every((readout) => readout.label && readout.frontStageLine),
+  );
+}
+
+function buildFallbackTripleForceFrontStage(): GuanyaoTripleForceFrontStage {
+  const triplet = getPressureSeedSceneTriplet();
+  const seed = triplet.seeds[0];
+
+  if (!seed) {
+    return {
+      selectedPressureSeedId: "pressure-seed-pending",
+      ritualLines: ["现实种子已冻结。", "压力读数正在成形。", "卦场落位中。", "因果入口已打开。"],
+      readouts: [
+        { label: "现实种子", frontStageLine: "现实种子已冻结。" },
+        { label: "压力读数", frontStageLine: "压力读数正在成形。" },
+        { label: "卦场落位", frontStageLine: "卦场落位中，因果入口正在打开。" },
+      ],
+    };
+  }
+
+  // Fallback only: used when the user enters pressure exposure without a selected pressure seed.
+  const selectedContext = buildSelectedPressureSeedContext(seed);
+  const tripleForceResult = buildTripleForceLandingResult(selectedContext);
+
+  return getTripleForceFrontStage(tripleForceResult);
+}
+
 function PressureExposureSafeShell() {
   const navigate = useNavigate();
   const tripleForceFrontStage = useMemo(() => {
-    const triplet = getPressureSeedSceneTriplet();
-    const seed = triplet.seeds[0];
-
-    if (!seed) {
-      return {
-        ritualLines: ["现实种子已冻结。", "压力读数正在成形。", "卦场落位中。", "因果入口已打开。"],
-        readouts: [
-          { label: "现实种子", frontStageLine: "现实种子已冻结。" },
-          { label: "压力读数", frontStageLine: "压力读数正在成形。" },
-          { label: "卦场落位", frontStageLine: "卦场落位中，因果入口正在打开。" },
-        ],
-      };
+    const storedFrontStage = readJsonFromStorage<GuanyaoTripleForceFrontStage>("guanyao:tripleForceFrontStage");
+    if (isTripleForceFrontStage(storedFrontStage)) {
+      return storedFrontStage;
     }
 
-    // Temporary fallback until ScenePage writes selected pressure seed context.
-    const selectedContext = buildSelectedPressureSeedContext(seed);
-    const tripleForceResult = buildTripleForceLandingResult(selectedContext);
+    const selectedContext = readJsonFromStorage<GuanyaoSelectedPressureSeedContext>("guanyao:selectedPressureSeedContext");
+    if (selectedContext) {
+      const tripleForceResult = buildTripleForceLandingResult(selectedContext);
+      const rebuiltFrontStage = getTripleForceFrontStage(tripleForceResult);
 
-    return getTripleForceFrontStage(tripleForceResult);
+      if (isTripleForceFrontStage(rebuiltFrontStage)) {
+        return rebuiltFrontStage;
+      }
+    }
+
+    return buildFallbackTripleForceFrontStage();
   }, []);
 
   return (
