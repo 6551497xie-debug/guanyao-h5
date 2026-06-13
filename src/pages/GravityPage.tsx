@@ -190,8 +190,9 @@ function HexagramCodeDeliveryShell() {
   ];
   const [expandedReading, setExpandedReading] = useState<string>(fieldReadings[0]?.dimension ?? "上码显影");
   const currentSpace = sixDimensionStep >= 1 && sixDimensionStep <= 6 ? readModel.yaoStage.transmissions[sixDimensionStep - 1] : null;
+  const canTreatCurrentSpace = currentSpace?.pauseSignal === "clear" || currentSpace?.pauseSignal === "strong";
   const currentSpaceSignal =
-    currentSpace?.pauseSignal === "clear" || currentSpace?.pauseSignal === "strong"
+    canTreatCurrentSpace
       ? "本局已出现行动信号。左滑进行处置，右滑进入下一空间。"
       : currentSpace?.pauseSignal === "soft"
         ? "本局出现轻微信号。右滑进入下一空间。"
@@ -472,9 +473,9 @@ function HexagramCodeDeliveryShell() {
 
           <CausalRail
             statusLabel={currentSpaceSignal}
-            leftHint={!selectedSpaceAction && currentSpace.pauseSignal !== "none" ? "左滑进行处置" : undefined}
+            leftHint={!selectedSpaceAction && canTreatCurrentSpace ? "左滑进行处置" : undefined}
             rightHint="右滑进入下一空间"
-            onLeft={!selectedSpaceAction && currentSpace.pauseSignal !== "none" ? handleSelectSpaceAction : undefined}
+            onLeft={!selectedSpaceAction && canTreatCurrentSpace ? handleSelectSpaceAction : undefined}
             onRight={handleNextSpace}
           />
         </>
@@ -487,7 +488,7 @@ function HexagramCodeDeliveryShell() {
               六维观变完成。
             </h1>
             <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 15, lineHeight: 1.68 }}>
-              系统已捕获本局行动信号。
+              系统已标记最能改写旧反应的位置。
             </p>
           </header>
 
@@ -502,14 +503,17 @@ function HexagramCodeDeliveryShell() {
             }}
           >
             {[
-              ["主要行动点", readModel.yaoStage.mainCut.userFacingReason],
-              ["辅助行动点", readModel.yaoStage.secondaryCut.userFacingReason],
-              ["深层保护点", readModel.yaoStage.rootCut.userFacingReason],
-            ].map(([label, value]) => (
+              ["主要行动点", readModel.yaoStage.mainCut.spaceName, readModel.yaoStage.mainCut.completionReason],
+              ["辅助行动点", readModel.yaoStage.secondaryCut.spaceName, readModel.yaoStage.secondaryCut.completionReason],
+              ["深层保护点", readModel.yaoStage.rootCut.spaceName, readModel.yaoStage.rootCut.completionReason],
+            ].map(([label, spaceName, value]) => (
               <div key={label} style={{ display: "grid", gap: 6, borderTop: "1px solid rgba(85,85,85,0.22)", paddingTop: 10 }}>
                 <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
                   {label}
                 </span>
+                <strong style={{ color: "rgba(245,245,245,0.82)", fontSize: 17, lineHeight: 1.35, fontWeight: 360 }}>
+                  {spaceName}
+                </strong>
                 <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 14, lineHeight: 1.6 }}>
                   {value}
                 </p>

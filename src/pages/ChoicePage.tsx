@@ -16,7 +16,7 @@ export function ChoicePage() {
       type: "primary",
       tag: "主要行动点",
       title: readModel.yaoStage.mainCut.spaceName,
-      description: readModel.yaoStage.mainCut.userFacingReason,
+      description: readModel.yaoStage.mainCut.completionReason,
       riskLine: "系统已标记最能改写旧反应的位置。",
     },
     {
@@ -24,7 +24,7 @@ export function ChoicePage() {
       type: "secondary",
       tag: "辅助行动点",
       title: readModel.yaoStage.secondaryCut.spaceName,
-      description: readModel.yaoStage.secondaryCut.userFacingReason,
+      description: readModel.yaoStage.secondaryCut.completionReason,
       riskLine: "这一层不是终点，但已经出现明显信号。",
     },
     {
@@ -32,7 +32,7 @@ export function ChoicePage() {
       type: "secondary",
       tag: "深层保护点",
       title: readModel.yaoStage.rootCut.spaceName,
-      description: readModel.yaoStage.rootCut.userFacingReason,
+      description: readModel.yaoStage.rootCut.completionReason,
       riskLine: "这里记录本局真正想保护的东西。",
     },
   ] as const;

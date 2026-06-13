@@ -11,6 +11,7 @@ type ReadModelCut = {
   yaoLayer: string;
   spaceName: string;
   userFacingReason: string;
+  completionReason: string;
 };
 
 export type GuanyaoR8ReadModel = {
@@ -120,7 +121,7 @@ function formatHexagramDisplay(hexagram: GuanyaoCausalPipelineResult["currentHex
     return knownHexagramDisplays["047"];
   }
 
-  return { code: "", name: "本局卦码显影中", title: "" };
+  return { code: "", name: "本局场域", title: "已进入处置阶段" };
 }
 
 function formatPressureTarget(hexagram: GuanyaoCausalPipelineResult["currentHexagramProfile"]) {
@@ -168,6 +169,10 @@ function sanitizeFrontendText(text: string | undefined, fallback: string) {
     .split("behavior").join("行为空间")
     .split("thought").join("思想空间")
     .split("motivation").join("动机空间")
+    .split("personality").join("人格动力线")
+    .split("system").join("系统机制线")
+    .split("lifecycle").join("生命周期线")
+    .split("mixed").join("混合判局")
     .split(backendBehavior).join("行为空间")
     .split(backendThought).join("思想空间")
     .split(backendMotivation).join("动机空间")
@@ -178,9 +183,9 @@ function sanitizeFrontendText(text: string | undefined, fallback: string) {
     .split(backendCutTerm).join("行动点")
     .split(backendKnifeTerm).join("处置")
     .split(`金钱压力压在${backendControlLine}`).join("责任与承载正在成为本局主导压力")
-    .split(backendV1 + "坤乾").join("本局卦码显影中")
-    .split("坤乾" + backendUnnamed).join("本局卦码显影中")
-    .split(backendUnnamed).join("本局卦码显影中");
+    .split(backendV1 + "坤乾").join("本局场域")
+    .split("坤乾" + backendUnnamed).join("本局场域")
+    .split(backendUnnamed).join("本局场域");
 }
 
 const spaceMetaByLayer: Record<
@@ -239,11 +244,19 @@ const spaceMetaByLayer: Record<
 
 const toReadModelCut = (cut: CutCandidate | undefined): ReadModelCut => {
   const layer = cut?.yaoLayer;
+  const spaceName = layer ? spaceMetaByLayer[layer].spaceName : "行动空间待显影";
+  const completionReasons: Partial<Record<YaoTransmissionProfile["yaoLayer"], string>> = {
+    thought: "思想空间正在生成支撑旧动作的解释，它会让当前反应继续成立。",
+    behavior: "行为空间正在让旧反应变成具体动作，这里最适合先处理。",
+    motivation: "动机空间显示你真正想保护的东西，它会牵引整条旧反应。",
+  };
+
   return {
     yaoPosition: cut?.yaoPosition ?? 0,
     yaoLayer: layer ?? "unknown",
-    spaceName: layer ? spaceMetaByLayer[layer].spaceName : "行动空间待显影",
+    spaceName,
     userFacingReason: sanitizeFrontendText(cut?.userFacingReason, "本局行动点待显影。"),
+    completionReason: layer ? completionReasons[layer] ?? sanitizeFrontendText(cut?.userFacingReason, `${spaceName}已经出现行动信号。`) : "行动空间正在显影。",
   };
 };
 
@@ -277,7 +290,7 @@ export function buildGuanyaoR8ReadModel(result: GuanyaoCausalPipelineResult): Gu
       hexagramName: hexagram.hexagramName,
       hexagramTitle: hexagram.hexagramTitle,
       displayCode: hexagramDisplay.code,
-      displayName: hexagramDisplay.name,
+      displayName: sanitizeFrontendText(hexagramDisplay.name, "本局场域"),
       displayTitle: hexagramDisplay.title,
       upperTrigram: hexagram.upperTrigram,
       lowerTrigram: hexagram.lowerTrigram,
@@ -286,7 +299,7 @@ export function buildGuanyaoR8ReadModel(result: GuanyaoCausalPipelineResult): Gu
       gravityLabel: gravityLabels[hexagram.gravityValue] ?? hexagram.gravityValue,
       pressureTargetReading: formatPressureTarget(hexagram),
       lineImpact: upperCodeFormation.lineImpact,
-      dominantLine: upperCodeFormation.dominantLine,
+      dominantLine: formatDominantLine(upperCodeFormation.dominantLine),
       dominantLineLabel: formatDominantLine(upperCodeFormation.dominantLine),
     },
     yaoStage: {
