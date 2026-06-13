@@ -1671,6 +1671,10 @@ export function auditGuanyaoMotherCodeRegistry(): {
     "assetSummary",
     "visualAssetKey",
     "visualAssetCode",
+    "xiantianDisplay",
+    "trigramSymbol",
+    "trigramImage",
+    "wuxing",
     "visualAssetStatus",
     "visualAssetPackage",
     "visualTags",
@@ -1693,6 +1697,11 @@ export function auditGuanyaoMotherCodeRegistry(): {
       definition.assetSummary === result.motherCodeProfile.assetSummary &&
       definition.visualAssetKey === result.motherCodeProfile.visualAssetKey &&
       definition.visualAssetCode === result.motherCodeProfile.visualAssetCode &&
+      definition.xiantianNumber === result.motherCodeProfile.xiantianNumber &&
+      definition.xiantianDisplay === result.motherCodeProfile.xiantianDisplay &&
+      definition.trigramSymbol === result.motherCodeProfile.trigramSymbol &&
+      definition.trigramImage === result.motherCodeProfile.trigramImage &&
+      definition.wuxing === result.motherCodeProfile.wuxing &&
       definition.visualAssetStatus === result.motherCodeProfile.visualAssetStatus &&
       definition.visualAssetPackage === result.motherCodeProfile.visualAssetPackage &&
       definition.visualTags.force === result.motherCodeProfile.visualTags?.force &&
@@ -1746,6 +1755,49 @@ export function auditGuanyaoMotherCodeRegistry(): {
             "MC-08-DUI",
           ][index],
       ),
+    ],
+    [
+      "every mother code has xiantian mapping fields",
+      guanyaoMotherCodeRegistry.every(
+        (definition) =>
+          typeof definition.xiantianNumber === "number" &&
+          Boolean(definition.xiantianDisplay) &&
+          Boolean(definition.trigramSymbol) &&
+          Boolean(definition.trigramImage) &&
+          Boolean(definition.wuxing),
+      ),
+    ],
+    [
+      "xiantian mapping matches trigram contract",
+      [
+        { trigram: "乾", xiantianNumber: 1, xiantianDisplay: "1", trigramSymbol: "☰", trigramImage: "天", wuxing: "金" },
+        { trigram: "兑", xiantianNumber: 2, xiantianDisplay: "2", trigramSymbol: "☱", trigramImage: "泽", wuxing: "金" },
+        { trigram: "离", xiantianNumber: 3, xiantianDisplay: "3", trigramSymbol: "☲", trigramImage: "火", wuxing: "火" },
+        { trigram: "震", xiantianNumber: 4, xiantianDisplay: "4", trigramSymbol: "☳", trigramImage: "雷", wuxing: "木" },
+        { trigram: "巽", xiantianNumber: 5, xiantianDisplay: "5", trigramSymbol: "☴", trigramImage: "风", wuxing: "木" },
+        { trigram: "坎", xiantianNumber: 6, xiantianDisplay: "6", trigramSymbol: "☵", trigramImage: "水", wuxing: "水" },
+        { trigram: "艮", xiantianNumber: 7, xiantianDisplay: "7", trigramSymbol: "☶", trigramImage: "山", wuxing: "土" },
+        { trigram: "坤", xiantianNumber: 0, xiantianDisplay: "0/8", trigramSymbol: "☷", trigramImage: "地", wuxing: "土" },
+      ].every((expected) => {
+        const definition = guanyaoMotherCodeRegistry.find((item) => item.trigram === expected.trigram);
+
+        return (
+          definition?.xiantianNumber === expected.xiantianNumber &&
+          definition.xiantianDisplay === expected.xiantianDisplay &&
+          definition.trigramSymbol === expected.trigramSymbol &&
+          definition.trigramImage === expected.trigramImage &&
+          definition.wuxing === expected.wuxing
+        );
+      }),
+    ],
+    [
+      "default dui keeps asset code and xiantian mapping separated",
+      result.motherCodeProfile.motherCodeName === "兑｜转化者" &&
+        result.motherCodeProfile.visualAssetCode === "MC-08-DUI" &&
+        result.motherCodeProfile.xiantianDisplay === "2" &&
+        result.motherCodeProfile.trigramSymbol === "☱" &&
+        result.motherCodeProfile.trigramImage === "泽" &&
+        result.motherCodeProfile.wuxing === "金",
     ],
     [
       "registry order and identity match 1-8 mother codes",

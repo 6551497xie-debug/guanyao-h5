@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, PointerEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
@@ -367,6 +368,8 @@ function persistInitialCoordinates(initialCoordinates: InitialCoordinates, mothe
 
 function InitialCoordinatesEntry() {
   const navigate = useNavigate();
+  const readModel = useMemo(() => getGuanyaoR8ReadModel(), []);
+  const motherCode = readModel.motherCodeStage;
   const initialCoordinates: InitialCoordinates = {
     ...getDemoInitialCoordinates(),
     birthChrono: "1995 / 06 / 02 · 17:00—19:00",
@@ -535,17 +538,14 @@ function InitialCoordinatesEntry() {
               letterSpacing: "0.13em",
             }}
           >
-            INITIAL_COORDINATES_LOCKED
+            MOTHER_CODE_ASSET_REVEALED
           </span>
-          <p style={{ margin: 0, color: "rgba(246,243,236,0.74)", fontSize: 17, lineHeight: 1.6 }}>母码卡正在嵌入。</p>
           <section
-            aria-label="母码卡嵌入区"
+            aria-label="母码资产显影区"
             style={{
               display: "grid",
-              placeItems: "center",
-              gap: 12,
-              minHeight: 180,
-              padding: "22px 18px",
+              gap: 16,
+              padding: "22px 0",
               borderTop: "1px solid rgba(246,243,236,0.1)",
               borderBottom: "1px solid rgba(246,243,236,0.08)",
               background: "radial-gradient(circle at 50% 50%, rgba(0,184,212,0.08), transparent 58%)",
@@ -559,26 +559,100 @@ function InitialCoordinatesEntry() {
                 letterSpacing: "0.16em",
               }}
             >
-              MOTHER_CODE_EMBEDDING
+              {motherCode.visualAssetCode}
             </span>
-            <strong style={{ color: "rgba(246,243,236,0.82)", fontSize: 26, fontWeight: 340, letterSpacing: "0.16em" }}>
-              母码卡
+            <strong style={{ color: "rgba(246,243,236,0.88)", fontSize: "clamp(28px, 7vw, 38px)", fontWeight: 340, lineHeight: 1.16, letterSpacing: "0.1em" }}>
+              {motherCode.motherCodeName}
             </strong>
             <span
               style={{
-                width: "min(220px, 72vw)",
+                color: "rgba(246,243,236,0.36)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 10,
+                letterSpacing: "0.1em",
+              }}
+            >
+              asset: {motherCode.visualAssetKey}
+            </span>
+            <span
+              style={{
+                color: "rgba(246,243,236,0.48)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 11,
+                letterSpacing: "0.1em",
+              }}
+            >
+              先天数：{motherCode.xiantianDisplay}｜{motherCode.trigramSymbol}｜{motherCode.trigramImage}｜{motherCode.wuxing}
+            </span>
+            <p style={{ margin: 0, color: "rgba(246,243,236,0.58)", fontSize: 13, lineHeight: 1.6, letterSpacing: "0.04em" }}>
+              原力：{motherCode.visualTags.force}
+              <br />
+              映照：{motherCode.visualTags.mirror}
+              <br />
+              解封：{motherCode.visualTags.unlock}
+            </p>
+            <span
+              style={{
+                width: "100%",
                 height: 1,
                 background: "rgba(0,184,212,0.46)",
                 boxShadow: "0 0 18px rgba(0,184,212,0.18)",
               }}
             />
+            <div style={{ display: "grid", gap: 12 }}>
+              {[
+                ["因果位置", motherCode.causalPosition],
+                ["基础原力", motherCode.baseDrive],
+                ["受压入口", motherCode.pressureEntry],
+                ["默认反应链", motherCode.defaultReactionChain],
+              ].map(([label, value]) => (
+                <article key={label} style={{ display: "grid", gap: 5 }}>
+                  <span
+                    style={{
+                      color: "rgba(0,184,212,0.64)",
+                      fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                      fontSize: 10,
+                      letterSpacing: "0.12em",
+                    }}
+                  >
+                    {label}
+                  </span>
+                  <p style={{ margin: 0, color: "rgba(246,243,236,0.68)", fontSize: label === "默认反应链" ? 17 : 13, lineHeight: 1.58, letterSpacing: "0.04em" }}>
+                    {value}
+                  </p>
+                </article>
+              ))}
+            </div>
+            <div style={{ display: "grid", gap: 12, paddingTop: 6, borderTop: "1px solid rgba(246,243,236,0.075)" }}>
+              {[
+                ["阴影惯性", motherCode.shadowInertia],
+                ["解封潜能", motherCode.unlockPotential],
+                ["人格资产", motherCode.personalityAsset],
+              ].map(([label, value]) => (
+                <article key={label} style={{ display: "grid", gap: 5 }}>
+                  <span
+                    style={{
+                      color: "rgba(0,184,212,0.64)",
+                      fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                      fontSize: 10,
+                      letterSpacing: "0.12em",
+                    }}
+                  >
+                    {label}
+                  </span>
+                  <p style={{ margin: 0, color: "rgba(246,243,236,0.64)", fontSize: 13, lineHeight: 1.62, letterSpacing: "0.04em" }}>
+                    {value}
+                  </p>
+                </article>
+              ))}
+            </div>
           </section>
           <p style={{ margin: 0, color: "rgba(246,243,236,0.68)", fontSize: 16, lineHeight: 1.72 }}>
-            它不是你的性格标签。
+            它不是一枚静态标签。
             <br />
             它是你在压力来临前，最先启动的行为源代码。
           </p>
-          <CausalRail statusLabel="钉入现实压力种子" rightHint="右滑进入现实压力场" onRight={handleEnterPressureSeed} />
+          <CausalRail statusLabel="压入现实压力种子" rightHint="右滑进入现实压力场" onRight={handleEnterPressureSeed} />
         </>
       )}
     </main>
@@ -801,7 +875,7 @@ export function ChronoPage() {
 
               <div className="gy-source-assertion">
                 <p>
-                  这不是性格标签，
+                  这不是静态标签，
                   <br />
                   这是你本次带压入局时，最先启动的<span>「人格原力」</span>。
                 </p>

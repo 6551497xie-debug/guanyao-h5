@@ -163,6 +163,16 @@ export function MotherCodePage() {
           </span>
           <span
             style={{
+              color: "rgba(246,243,236,0.48)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 11,
+              letterSpacing: "0.1em",
+            }}
+          >
+            先天数：{motherCode.xiantianDisplay}｜{motherCode.trigramSymbol}｜{motherCode.trigramImage}｜{motherCode.wuxing}
+          </span>
+          <span
+            style={{
               color: "rgba(246,243,236,0.5)",
               fontSize: 13,
               lineHeight: 1.5,

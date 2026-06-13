@@ -31,6 +31,11 @@ export type GuanyaoR8ReadModel = {
     assetSummary: string;
     visualAssetKey: string;
     visualAssetCode: string;
+    xiantianNumber?: number;
+    xiantianDisplay: string;
+    trigramSymbol: string;
+    trigramImage: string;
+    wuxing: string;
     visualAssetStatus: string;
     visualAssetPackage: string;
     visualTags: {
@@ -154,6 +159,11 @@ function resolveMotherCodeStage(result: GuanyaoCausalPipelineResult): GuanyaoR8R
     assetSummary: motherCodeProfile.assetSummary ?? "母码资产待沉积。",
     visualAssetKey: motherCodeProfile.visualAssetKey ?? "mother-code-asset-pending",
     visualAssetCode: motherCodeProfile.visualAssetCode ?? "MC-00-PENDING",
+    xiantianNumber: motherCodeProfile.xiantianNumber,
+    xiantianDisplay: motherCodeProfile.xiantianDisplay ?? "先天数待读取",
+    trigramSymbol: motherCodeProfile.trigramSymbol ?? motherCodeProfile.lowerTrigram ?? "卦符待显影",
+    trigramImage: motherCodeProfile.trigramImage ?? "卦象待读取",
+    wuxing: motherCodeProfile.wuxing ?? "五行待读取",
     visualAssetStatus: motherCodeProfile.visualAssetStatus ?? "existing",
     visualAssetPackage: motherCodeProfile.visualAssetPackage ?? "mother-code-visual-pack-v1",
     visualTags: {

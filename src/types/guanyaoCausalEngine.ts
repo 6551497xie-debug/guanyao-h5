@@ -40,6 +40,8 @@ export interface ChronoCoordinate {
 }
 
 export type MotherCodeId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+export type XiantianNumber = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type Wuxing = "金" | "木" | "水" | "火" | "土";
 
 export interface MotherCodeDefinition {
   motherCodeId: MotherCodeId;
@@ -57,6 +59,11 @@ export interface MotherCodeDefinition {
   assetSummary: string;
   visualAssetKey: string;
   visualAssetCode: string;
+  xiantianNumber: XiantianNumber;
+  xiantianDisplay: string;
+  trigramSymbol: string;
+  trigramImage: string;
+  wuxing: Wuxing;
   visualAssetStatus: "existing";
   visualAssetPackage: string;
   visualTags: {
@@ -89,6 +96,11 @@ export interface MotherCodeProfile {
   assetSummary?: string;
   visualAssetKey?: string;
   visualAssetCode?: string;
+  xiantianNumber?: XiantianNumber;
+  xiantianDisplay?: string;
+  trigramSymbol?: string;
+  trigramImage?: string;
+  wuxing?: Wuxing;
   visualAssetStatus?: "existing";
   visualAssetPackage?: string;
   visualTags?: {
