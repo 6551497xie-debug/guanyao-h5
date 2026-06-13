@@ -43,6 +43,7 @@ export type MotherCodeId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 export type XiantianNumber = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export type Wuxing = "金" | "木" | "水" | "火" | "土";
 export type NumericProtocolRole = "field" | "change";
+export type RealityPressureFieldCode = "POWER" | "INTEREST" | "RELATION" | "FAMILY" | "SOCIAL" | "EXISTENTIAL";
 
 export type EightDivisionFieldMapping = {
   remainder: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
@@ -82,6 +83,74 @@ export type GuanyaoNumericProtocol = {
   };
   fieldMappings: EightDivisionFieldMapping[];
   changeMappings: SixDivisionChangeMapping[];
+};
+
+export type RealityPressureFieldDefinition = {
+  fieldCode: RealityPressureFieldCode;
+  fieldName: string;
+  englishName: string;
+  coreRelations: string[];
+  pressureNature: string;
+  userFacingQuestion: string;
+  typicalPressureSlices: string[];
+  engineRole: string;
+  distinctionFromSixDimensions: string;
+};
+
+export type PressureNatureCode =
+  | "EVALUATION"
+  | "CONTROL"
+  | "ATTACHMENT"
+  | "RESOURCE_CONFLICT"
+  | "RESPONSIBILITY"
+  | "SOCIAL_EXCLUSION"
+  | "EXISTENTIAL_SECURITY";
+
+export type RelationshipRoleCode =
+  | "BOSS"
+  | "CLIENT"
+  | "PARTNER_BUSINESS"
+  | "PARTNER_ROMANTIC"
+  | "PARENT"
+  | "CHILD"
+  | "SIBLING"
+  | "FRIEND"
+  | "COWORKER"
+  | "SELF";
+
+export type AgeStageCode =
+  | "early_adult"
+  | "career_building"
+  | "responsibility_pressure"
+  | "midlife_rebuild"
+  | "late_life_settlement"
+  | "unspecified";
+
+export type PressureSeedDimensionKey = "body" | "emotion" | "thought" | "behavior" | "memory" | "motivation";
+
+export type PressureSeedCore = {
+  fieldBias: string;
+  pressureNatureBias: string;
+  relationshipRoleBias: string;
+  sixDimensionEntryBias: PressureSeedDimensionKey[];
+};
+
+export type PressureSeedShell = {
+  costHint: string;
+  oldReactionHint: string;
+  primaryDimension: PressureSeedDimensionKey;
+};
+
+export type PressureSeedMatrixNode = {
+  seedNodeId: string;
+  ageStage: AgeStageCode;
+  pressureField: RealityPressureFieldCode;
+  pressureNature: PressureNatureCode;
+  relationshipRole: RelationshipRoleCode;
+  surface: string;
+  core: PressureSeedCore;
+  shell: PressureSeedShell;
+  userFacingSeedPrompt: string;
 };
 
 export interface MotherCodeDefinition {

@@ -6,6 +6,16 @@ import {
   normalizeSixRemainder,
 } from "../data/guanyaoNumericProtocol";
 import {
+  getRealityPressureFieldDefinition,
+  guanyaoRealityPressureFields,
+  listRealityPressureFields,
+} from "../data/guanyaoRealityPressureFields";
+import {
+  composePressureSeedUserPrompt,
+  listPressureSeedLanguageExamples,
+  pressureSeedLanguageProtocol,
+} from "../data/guanyaoPressureSeedLanguageProtocol";
+import {
   mockChronoCoordinate,
   mockDynamicFieldModifiers,
   mockHexagramFormationCases,
@@ -2464,5 +2474,155 @@ export function auditGuanyaoNumericProtocol(): {
     passed: checkResults.every(([, passed]) => passed),
     checks: checkResults.map(([label, passed]) => `${label}: ${passed ? "passed" : "failed"}`),
     protocol: guanyaoNumericProtocol,
+  };
+}
+
+export function auditGuanyaoRealityPressureFields(): {
+  passed: boolean;
+  checks: string[];
+  fields: typeof guanyaoRealityPressureFields;
+} {
+  const requiredFieldCodes = ["POWER", "INTEREST", "RELATION", "FAMILY", "SOCIAL", "EXISTENTIAL"] as const;
+  const forbiddenTerms = [
+    `命中${"注定"}`,
+    `天命${"已定"}`,
+    `注定${"如此"}`,
+    `算${"命"}`,
+    `断${"命"}`,
+    `吉${"凶"}${"断语"}`,
+  ];
+  const fields = listRealityPressureFields();
+  const fieldCodes = new Set(fields.map((field) => field.fieldCode));
+  const everyFieldHasRequiredShape = fields.every(
+    (field) =>
+      Boolean(
+        field.fieldCode &&
+          field.fieldName &&
+          field.englishName &&
+          field.pressureNature &&
+          field.userFacingQuestion &&
+          field.engineRole &&
+          field.distinctionFromSixDimensions,
+      ) &&
+      field.coreRelations.length > 0 &&
+      field.typicalPressureSlices.length >= 3,
+  );
+  const everyFieldSeparatesExternalAndInternal = fields.every(
+    (field) =>
+      field.distinctionFromSixDimensions.includes("外部") &&
+      field.distinctionFromSixDimensions.includes("六维人格空间"),
+  );
+  const fieldTextsAreClean = fields.every((field) => {
+    const joinedText = [
+      field.fieldName,
+      field.englishName,
+      ...field.coreRelations,
+      field.pressureNature,
+      field.userFacingQuestion,
+      ...field.typicalPressureSlices,
+      field.engineRole,
+      field.distinctionFromSixDimensions,
+    ].join("\n");
+
+    return forbiddenTerms.every((term) => !joinedText.includes(term));
+  });
+  const checkResults = [
+    ["reality pressure field registry length is 6", fields.length === 6],
+    [
+      "reality pressure field registry contains all required codes",
+      requiredFieldCodes.every((fieldCode) => fieldCodes.has(fieldCode)),
+    ],
+    ["every reality pressure field has required fields", everyFieldHasRequiredShape],
+    ["every reality pressure field has at least 3 pressure slices", fields.every((field) => field.typicalPressureSlices.length >= 3)],
+    ["every reality pressure field distinguishes external pressure from six dimensions", everyFieldSeparatesExternalAndInternal],
+    ["getRealityPressureFieldDefinition(POWER) returns 权力场", getRealityPressureFieldDefinition("POWER").fieldName === "权力场"],
+    [
+      "getRealityPressureFieldDefinition(EXISTENTIAL) returns 存在场",
+      getRealityPressureFieldDefinition("EXISTENTIAL").fieldName === "存在场",
+    ],
+    ["forbidden fatalistic terms absent from reality pressure fields", fieldTextsAreClean],
+  ] satisfies [string, boolean][];
+
+  return {
+    passed: checkResults.every(([, passed]) => passed),
+    checks: checkResults.map(([label, passed]) => `${label}: ${passed ? "passed" : "failed"}`),
+    fields,
+  };
+}
+
+export function auditGuanyaoPressureSeedLanguageProtocol(): {
+  passed: boolean;
+  checks: string[];
+  examples: ReturnType<typeof listPressureSeedLanguageExamples>;
+} {
+  const examples = listPressureSeedLanguageExamples();
+  const requiredLayerNames = ["Surface", "Core", "Shell"] as const;
+  const forbiddenSurfaceFragments = ["人格模式", "系统逻辑", "控制课题", "正在被激活"];
+  const forbiddenShellFragments = ["你应该", "解决方案", "完整分析", "安慰"];
+  const hasAllLayers = requiredLayerNames.every((layerName) =>
+    pressureSeedLanguageProtocol.layers.some((layer) => layer.layer === layerName),
+  );
+  const userPromptsUseOnlySurfaceAndShell = examples.every(
+    (example) => example.userFacingSeedPrompt === composePressureSeedUserPrompt(example),
+  );
+  const everyExampleHasThreeLayers = examples.every(
+    (example) =>
+      Boolean(example.surface) &&
+      Boolean(example.core.fieldBias) &&
+      Boolean(example.core.pressureNatureBias) &&
+      Boolean(example.core.relationshipRoleBias) &&
+      example.core.sixDimensionEntryBias.length > 0 &&
+      Boolean(example.shell.costHint) &&
+      Boolean(example.shell.oldReactionHint) &&
+      Boolean(example.shell.primaryDimension) &&
+      Boolean(example.userFacingSeedPrompt),
+  );
+  const surfacesAreConcrete = examples.every((example) => {
+    const hasSubjectAction = /你|他|她|对方|父母|客户|老板/.test(example.surface);
+    const hasPunctuation = /。|？|！/.test(example.surface);
+
+    return hasSubjectAction && hasPunctuation && forbiddenSurfaceFragments.every((fragment) => !example.surface.includes(fragment));
+  });
+  const shellTextsAreShortAndBounded = examples.every(
+    (example) =>
+      example.shell.costHint.length <= 32 &&
+      example.shell.oldReactionHint.length <= 32 &&
+      forbiddenShellFragments.every(
+        (fragment) => !example.shell.costHint.includes(fragment) && !example.shell.oldReactionHint.includes(fragment),
+      ),
+  );
+  const coreIsNotDirectlyDisplayed = examples.every((example) => {
+    const coreValues = [
+      example.pressureField,
+      example.pressureNature,
+      example.relationshipRole,
+      example.core.fieldBias,
+      example.core.pressureNatureBias,
+      example.core.relationshipRoleBias,
+      ...example.core.sixDimensionEntryBias,
+    ];
+
+    return coreValues.every((value) => !example.userFacingSeedPrompt.includes(value));
+  });
+  const checkResults = [
+    ["pressure seed language protocol has Surface / Core / Shell", hasAllLayers],
+    ["pressure seed examples length is 3", examples.length === 3],
+    ["every pressure seed example has Surface / Core / Shell fields", everyExampleHasThreeLayers],
+    ["userFacingSeedPrompt uses Surface + Shell only", userPromptsUseOnlySurfaceAndShell],
+    ["Core fields are not directly displayed in userFacingSeedPrompt", coreIsNotDirectlyDisplayed],
+    ["Surface examples stay concrete and non-abstract", surfacesAreConcrete],
+    ["Shell examples stay short and bounded", shellTextsAreShortAndBounded],
+    ["POWER example maps evaluation pressure", examples.some((example) => example.pressureField === "POWER" && example.pressureNature === "EVALUATION")],
+    [
+      "RELATION example maps attachment pressure",
+      examples.some((example) => example.pressureField === "RELATION" && example.pressureNature === "ATTACHMENT"),
+    ],
+    ["FAMILY example maps control pressure", examples.some((example) => example.pressureField === "FAMILY" && example.pressureNature === "CONTROL")],
+  ] satisfies [string, boolean][];
+
+  return {
+    passed: checkResults.every(([, passed]) => passed),
+    checks: checkResults.map(([label, passed]) => `${label}: ${passed ? "passed" : "failed"}`),
+    examples,
   };
 }
