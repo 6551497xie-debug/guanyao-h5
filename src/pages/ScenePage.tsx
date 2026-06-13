@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { sceneSeeds } from "../data/sceneSeeds";
@@ -334,24 +335,12 @@ function PressureSliceEntry() {
         </div>
       </section>
 
-      <button
-        type="button"
-        onClick={handleConfirmSlice}
-        style={{
-          width: "100%",
-          minHeight: 52,
-          marginTop: "auto",
-          border: "1px solid rgba(199,169,107,0.52)",
-          borderRadius: 0,
-          background: "transparent",
-          color: "rgba(245,245,245,0.9)",
-          fontSize: 15,
-          letterSpacing: "0.04em",
-          opacity: flowState !== "flowing" && !selectedSliceId ? 0.5 : 1,
-        }}
-      >
-        {flowState === "flowing" ? "拦截这一幕" : "填装这枚现实压力种子"}
-      </button>
+      <CausalRail
+        statusLabel={flowState === "flowing" ? "拦截这一幕" : "填装这枚现实压力种子"}
+        rightHint={flowState === "flowing" ? "右滑拦截这一幕" : "右滑填装现实压力种子"}
+        onRight={handleConfirmSlice}
+        disabled={flowState !== "flowing" && !selectedSliceId}
+      />
     </main>
   );
 }
@@ -466,6 +455,11 @@ export function ScenePage() {
       <section
         className={`gy-front-screen gy-front-instrument gy-scene-screen gy-scene-screen--${flowState} gy-causal-line gy-causal-line-intercept`}
         data-intensity="quiet"
+        style={{
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
+          paddingBottom: "calc(42px + env(safe-area-inset-bottom))",
+        }}
       >
         <div className="gy-front-copy gyFadeRise">
           <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
@@ -522,13 +516,11 @@ export function ScenePage() {
           <GuanyaoText className="gy-scene-gate-note" size="body" tone="muted">
             {sceneGateNote}
           </GuanyaoText>
-          <button
-            className={`gy-scene-rail-action${flowState === "selected" ? " gy-scene-rail-action--locked" : ""}`}
-            type="button"
-            onClick={flowState === "selected" ? handleStartYao : handleConfirmPressureSeed}
-          >
-            {sceneGateLabel}
-          </button>
+          <CausalRail
+            statusLabel={sceneGateLabel}
+            rightHint={flowState === "selected" ? "右滑进入压力场" : "右滑压入现实种子"}
+            onRight={flowState === "selected" ? handleStartYao : handleConfirmPressureSeed}
+          />
         </div>
       </section>
     </GuanyaoShell>

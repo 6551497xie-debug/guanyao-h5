@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, PointerEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { GuanyaoButton } from "../components/visual/GuanyaoButton";
+import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
@@ -367,18 +367,19 @@ function persistInitialCoordinates(initialCoordinates: InitialCoordinates, mothe
 
 function InitialCoordinatesEntry() {
   const navigate = useNavigate();
-  const initialCoordinates = getDemoInitialCoordinates();
+  const initialCoordinates: InitialCoordinates = {
+    ...getDemoInitialCoordinates(),
+    birthChrono: "1995 / 06 / 02 · 17:00—19:00",
+    geoAnchor: "中国 / 广东省 / 广州市",
+  };
   const [stage, setStage] = useState<"coordinates" | "mother">("coordinates");
   const [motherCodeCard, setMotherCodeCard] = useState<MotherCodeCard>(() =>
     generateMotherCodeFromInitialCoordinates(initialCoordinates, "embedding"),
   );
   const isMotherStage = stage === "mother";
-  const coordinateRows = [
-    ["出生时序", initialCoordinates.birthChrono, "TIME"],
-    ["年龄阶段", initialCoordinates.agePhase, "AGE"],
-    ["行为年轮", initialCoordinates.behaviorRing, "RING"],
-    ["地利锚点", initialCoordinates.geoAnchor, "GEO"],
-  ];
+  const coordinateDate = "1995 / 06 / 02";
+  const coordinateTime = "17:00—19:00｜酉时断面";
+  const coordinatePlace = initialCoordinates.geoAnchor;
 
   function handleEmbedMotherCode() {
     const embeddedCard = generateMotherCodeFromInitialCoordinates(initialCoordinates, "embedded");
@@ -396,104 +397,125 @@ function InitialCoordinatesEntry() {
     <main
       style={{
         minHeight: "100dvh",
-        width: "100%",
+        width: "min(100%, 520px)",
         boxSizing: "border-box",
-        padding: "54px 20px calc(42px + env(safe-area-inset-bottom))",
+        margin: "0 auto",
+        padding: "7dvh 28px calc(5dvh + env(safe-area-inset-bottom))",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
-        gap: 18,
-        background: "#050607",
+        gap: 24,
+        background: "radial-gradient(circle at 50% 24%, rgba(0,184,212,0.06), transparent 42%), #020303",
         color: "#f5f5f5",
         overflowX: "hidden",
+        overflowY: "auto",
+        WebkitOverflowScrolling: "touch",
       }}
     >
       <span
         style={{
-          color: "rgba(199,169,107,0.7)",
+          color: "rgba(0,184,212,0.72)",
           fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
           fontSize: 12,
           letterSpacing: "0.16em",
         }}
       >
-        {isMotherStage ? "02｜母码显影" : "01｜初始坐标填装"}
+        {isMotherStage ? "02｜母码显影" : "GY / 00-FIX / CHRONO"}
       </span>
 
       {!isMotherStage ? (
         <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(246,243,236,0.86)", fontSize: "clamp(28px, 8vw, 38px)", lineHeight: 1.12, fontWeight: 360, letterSpacing: "0.16em" }}>
+              原 始 坐 标 装 填
+            </h1>
+            <p style={{ margin: 0, color: "rgba(246,243,236,0.54)", fontSize: 14, lineHeight: 1.6, letterSpacing: "0.06em" }}>
+              进入观爻，请校准时序和方位
+            </p>
+          </header>
           <section
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-              gap: 10,
-              padding: "16px 0",
-              borderTop: "1px solid rgba(199,169,107,0.34)",
-              borderBottom: "1px solid rgba(85,85,85,0.56)",
+              gap: 18,
+              padding: "7dvh 0 5dvh",
+              borderTop: "1px solid rgba(246,243,236,0.08)",
+              borderBottom: "1px solid rgba(246,243,236,0.08)",
             }}
           >
-            {coordinateRows.map(([label, value, code]) => (
-              <div
-                key={label}
+            <button
+              type="button"
+              aria-label="出生日期"
+              style={{
+                border: 0,
+                background: "transparent",
+                color: "rgba(246,243,236,0.9)",
+                padding: 0,
+                textAlign: "left",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: "clamp(30px, 8vw, 42px)",
+                lineHeight: 1.15,
+                letterSpacing: "0.08em",
+                cursor: "pointer",
+              }}
+            >
+              {coordinateDate}
+            </button>
+            <button
+              type="button"
+              aria-label="现代时间段与时辰断面"
+              style={{
+                border: 0,
+                borderTop: "1px solid rgba(246,243,236,0.07)",
+                background: "transparent",
+                color: "rgba(246,243,236,0.7)",
+                padding: "14px 0 0",
+                textAlign: "left",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: "clamp(18px, 4.8vw, 24px)",
+                lineHeight: 1.45,
+                letterSpacing: "0.06em",
+                cursor: "pointer",
+              }}
+            >
+              {coordinateTime}
+            </button>
+            <div style={{ display: "grid", gap: 8, paddingTop: 18 }}>
+              <span
                 style={{
-                  display: "grid",
-                  gap: 8,
-                  minHeight: 96,
-                  padding: "13px 12px",
-                  border: "1px solid rgba(85,85,85,0.54)",
-                  background: "rgba(255,255,255,0.018)",
-                  alignContent: "space-between",
+                  color: "rgba(0,184,212,0.72)",
+                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  fontSize: 12,
+                  letterSpacing: "0.13em",
                 }}
               >
-                <span
-                  style={{
-                    color: "rgba(199,169,107,0.58)",
-                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                    fontSize: 11,
-                    letterSpacing: "0.12em",
-                  }}
-                >
-                  {code}
-                </span>
-                <strong
-                  style={{
-                    color: "rgba(245,245,245,0.8)",
-                    fontSize: 15,
-                    lineHeight: 1.3,
-                    fontWeight: 360,
-                  }}
-                >
-                  {label}
-                </strong>
-                <em
-                  style={{
-                    color: "rgba(245,245,245,0.28)",
-                    fontSize: 11,
-                    lineHeight: 1.35,
-                    fontStyle: "normal",
-                  }}
-                >
-                  {value}
-                </em>
-              </div>
-            ))}
+                常驻地
+              </span>
+              <button
+                type="button"
+                aria-label="常驻地与方位锚点"
+                style={{
+                  border: 0,
+                  background: "transparent",
+                  color: "rgba(246,243,236,0.78)",
+                  padding: 0,
+                  textAlign: "left",
+                  fontSize: "clamp(17px, 4.5vw, 23px)",
+                  lineHeight: 1.5,
+                  letterSpacing: "0.04em",
+                  cursor: "pointer",
+                }}
+              >
+                {coordinatePlace}
+              </button>
+            </div>
           </section>
-          <p style={{ margin: 0, color: "rgba(245,245,245,0.74)", fontSize: 16, lineHeight: 1.72 }}>
-            出生时序。
+          <p style={{ margin: 0, color: "rgba(246,243,236,0.62)", fontSize: 15, lineHeight: 1.68, letterSpacing: "0.04em" }}>
+            原始坐标正在进入沙盒。
             <br />
-            年龄阶段。
-            <br />
-            行为年轮。
-            <br />
-            地利锚点。
-          </p>
-          <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.72 }}>
-            四组坐标正在进入沙盒。
-            <br />
-            其中，时序坐标正在压入母码底盘。
+            时序与方位锚点正在压入原始坐标包。
           </p>
           <span
             style={{
-              color: "rgba(245,245,245,0.34)",
+              color: "rgba(246,243,236,0.34)",
               fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
               fontSize: 11,
               letterSpacing: "0.13em",
@@ -501,29 +523,13 @@ function InitialCoordinatesEntry() {
           >
             INITIAL_COORDINATES_LOADING
           </span>
-          <button
-            type="button"
-            onClick={handleEmbedMotherCode}
-            style={{
-              width: "100%",
-              minHeight: 52,
-              marginTop: 4,
-              border: "1px solid rgba(199,169,107,0.42)",
-              borderRadius: 0,
-              background: "transparent",
-              color: "rgba(245,245,245,0.9)",
-              fontSize: 15,
-              letterSpacing: "0.04em",
-            }}
-          >
-            确认填装，显影母码
-          </button>
+          <CausalRail statusLabel="沿线右滑，压入原始坐标。" rightHint="沿线右滑，压入原始坐标。" onRight={handleEmbedMotherCode} />
         </>
       ) : (
         <>
           <span
             style={{
-              color: "rgba(245,245,245,0.34)",
+              color: "rgba(246,243,236,0.34)",
               fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
               fontSize: 11,
               letterSpacing: "0.13em",
@@ -531,7 +537,7 @@ function InitialCoordinatesEntry() {
           >
             INITIAL_COORDINATES_LOCKED
           </span>
-          <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 17, lineHeight: 1.6 }}>母码卡正在嵌入。</p>
+          <p style={{ margin: 0, color: "rgba(246,243,236,0.74)", fontSize: 17, lineHeight: 1.6 }}>母码卡正在嵌入。</p>
           <section
             aria-label="母码卡嵌入区"
             style={{
@@ -540,77 +546,39 @@ function InitialCoordinatesEntry() {
               gap: 12,
               minHeight: 180,
               padding: "22px 18px",
-              border: "1px solid rgba(199,169,107,0.42)",
-              background:
-                "linear-gradient(180deg, rgba(199,169,107,0.08), rgba(199,169,107,0.015)), radial-gradient(circle at 50% 50%, rgba(199,169,107,0.08), transparent 58%)",
+              borderTop: "1px solid rgba(246,243,236,0.1)",
+              borderBottom: "1px solid rgba(246,243,236,0.08)",
+              background: "radial-gradient(circle at 50% 50%, rgba(0,184,212,0.08), transparent 58%)",
             }}
           >
             <span
               style={{
-                color: "rgba(199,169,107,0.76)",
+                color: "rgba(0,184,212,0.74)",
                 fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                 fontSize: 11,
                 letterSpacing: "0.16em",
               }}
             >
-              [ 母码卡嵌入区 ]
+              MOTHER_CODE_EMBEDDING
             </span>
-            <strong style={{ color: "rgba(245,245,245,0.82)", fontSize: 26, fontWeight: 360, letterSpacing: "0.16em" }}>
+            <strong style={{ color: "rgba(246,243,236,0.82)", fontSize: 26, fontWeight: 340, letterSpacing: "0.16em" }}>
               母码卡
             </strong>
             <span
               style={{
                 width: "min(220px, 72vw)",
                 height: 1,
-                background: "rgba(199,169,107,0.62)",
-                boxShadow: "0 0 18px rgba(199,169,107,0.18)",
+                background: "rgba(0,184,212,0.46)",
+                boxShadow: "0 0 18px rgba(0,184,212,0.18)",
               }}
             />
-            <span
-              style={{
-                color: "rgba(245,245,245,0.34)",
-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                fontSize: 11,
-                letterSpacing: "0.16em",
-              }}
-            >
-              CARD EMBEDDING
-            </span>
           </section>
-          <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.72 }}>
+          <p style={{ margin: 0, color: "rgba(246,243,236,0.68)", fontSize: 16, lineHeight: 1.72 }}>
             它不是你的性格标签。
             <br />
-            它是你在压力来临前，
-            <br />
-            最先启动的行为源代码。
+            它是你在压力来临前，最先启动的行为源代码。
           </p>
-          <span
-            style={{
-              color: "rgba(245,245,245,0.34)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 11,
-              letterSpacing: "0.13em",
-            }}
-          >
-            MOTHER_CODE_EMBEDDED
-          </span>
-          <button
-            type="button"
-            onClick={handleEnterPressureSeed}
-            style={{
-              width: "100%",
-              minHeight: 52,
-              marginTop: 4,
-              border: "1px solid rgba(199,169,107,0.52)",
-              borderRadius: 0,
-              background: "transparent",
-              color: "rgba(245,245,245,0.9)",
-              fontSize: 15,
-              letterSpacing: "0.04em",
-            }}
-          >
-            钉入现实压力种子
-          </button>
+          <CausalRail statusLabel="钉入现实压力种子" rightHint="右滑进入现实压力场" onRight={handleEnterPressureSeed} />
         </>
       )}
     </main>
@@ -872,14 +840,10 @@ export function ChronoPage() {
 
         <div className={chronoProfile ? "gy-source-gate" : "gy-chrono-r1-gate"}>
           {!chronoProfile ? (
-            <GuanyaoButton className="gy-chrono-r1-gate-button" variant="ghost" onClick={handleGenerate}>
-              <span>装填时序，开始一次观爻</span>
-            </GuanyaoButton>
+            <CausalRail statusLabel="装填时序，开始一次观爻" rightHint="右滑装填时序" onRight={handleGenerate} />
           ) : (
             <>
-              <GuanyaoButton className="gy-source-gate-button" variant="ghost" onClick={() => navigate(GUANYAO_ROUTES.pressureSeed)}>
-                钉入现实压力种子
-              </GuanyaoButton>
+              <CausalRail statusLabel="钉入现实压力种子" rightHint="右滑进入现实压力场" onRight={() => navigate(GUANYAO_ROUTES.pressureSeed)} />
             </>
           )}
         </div>

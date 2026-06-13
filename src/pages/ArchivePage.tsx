@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TextLines } from "../components/TextLines";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
+import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import {
@@ -133,9 +134,9 @@ function renderCausalSource(context: CausalContextPackage | undefined, item: Arc
         <p>现实压力种子：未记录</p>
         <p>观爻母码｜64：未记录</p>
         <p>人格行为动力链：{formatYaoPath(undefined)}</p>
-        <p>破口下刀：未记录</p>
-        <p>观爻爻器｜384：未记录</p>
-        <p>器法：{item.migrationDirection.code} {item.migrationDirection.traditionalName}{item.migrationDirection.scriptTitle}｜上爻</p>
+        <p>行动停留：未记录</p>
+        <p>观爻行动装置｜384：未记录</p>
+        <p>处置方案：{item.migrationDirection.code} {item.migrationDirection.traditionalName}{item.migrationDirection.scriptTitle}｜动机层</p>
         <p>90天复发观察：已生成</p>
         <p>时间沙漏状态：未记录</p>
       </div>
@@ -151,10 +152,10 @@ function renderCausalSource(context: CausalContextPackage | undefined, item: Arc
       <p>现实压力种子：{readSceneText(context.sceneSeed)}</p>
       <p>观爻母码｜64：{readGuaFieldText(context)}</p>
       <p>人格行为动力链：{formatYaoPath(context.interactiveYaoPath && context.interactiveYaoPath.length >= 5 ? context.interactiveYaoPath : context.autoYaoPath)}</p>
-      <p>破口下刀：{formatYaoBit(context.sixthYaoChoice)}</p>
-      <p>观爻爻器｜384：{readYaoCodeText(context)}</p>
+      <p>行动停留：{formatYaoBit(context.sixthYaoChoice)}</p>
+      <p>观爻行动装置｜384：{readYaoCodeText(context)}</p>
         <p>最终轨迹代码：{context.finalChoiceCode}</p>
-        <p>器法：{context.yaoCodeCard.code}</p>
+        <p>处置方案：{context.yaoCodeCard.code}</p>
         <p>90天复发观察：{context.defenseBook90d.sections.join(" / ")}</p>
         <p>时间沙漏状态：{readTimeSandglassText(context)}</p>
     </div>
@@ -343,7 +344,7 @@ function readArchiveRepairLayer(item: ArchiveItem) {
 }
 
 function readArchiveRepairTarget(item: ArchiveItem) {
-  return item.repairTarget?.repairTargetName ?? item.causalContext?.repairTarget?.repairTargetName ?? "器法落点待生成";
+  return item.repairTarget?.repairTargetName ?? item.causalContext?.repairTarget?.repairTargetName ?? "处置落点待生成";
 }
 
 function readArchiveRiskWindow(item: ArchiveItem) {
@@ -354,9 +355,9 @@ const archiveVaultSlots = [
   {
     key: "yao",
     code: "ASSET_01",
-    label: "基础器法卡",
+    label: "基础处置卡",
     value: "等待沉积",
-    line: "完成一次一次观爻后，本局基础器法卡会压入人格资产年轮轴。",
+    line: "完成一次观爻后，本局基础处置卡会压入人格资产年轮轴。",
   },
   {
     key: "defense",
@@ -378,6 +379,7 @@ type ArchiveVaultSlotKey = (typeof archiveVaultSlots)[number]["key"];
 
 function R7ArchiveAssetShell() {
   const readModel = getGuanyaoR8ReadModel();
+  const navigate = useNavigate();
 
   return (
     <main
@@ -464,8 +466,8 @@ function R7ArchiveAssetShell() {
         </span>
         {[
           ["本局卦码", `${readModel.hexagramStage.hexagramCode}｜${readModel.hexagramStage.hexagramName}｜${readModel.hexagramStage.hexagramTitle}`],
-          ["主切口", readModel.yaoStage.mainCut.userFacingReason],
-          ["本局器法", readModel.deviceStage.deviceName],
+          ["主要行动点", readModel.yaoStage.mainCut.userFacingReason],
+          ["本局处置方案", readModel.deviceStage.deviceName],
           ["今日第一步", readModel.deviceStage.firstAction],
         ].map(([label, value]) => (
           <div key={label} style={{ display: "grid", gap: 5, borderTop: "1px solid rgba(85,85,85,0.28)", paddingTop: 9 }}>
@@ -487,7 +489,7 @@ function R7ArchiveAssetShell() {
       </section>
 
       <section
-        aria-label="今日第一刀"
+        aria-label="今日第一步"
         style={{
           display: "grid",
           gap: 12,
@@ -497,10 +499,10 @@ function R7ArchiveAssetShell() {
         }}
       >
         <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 22, lineHeight: 1.18, fontWeight: 390 }}>
-          今日第一刀
+          今日第一步
         </strong>
         {[
-              ["器法", readModel.deviceStage.deviceName],
+              ["处置方案", readModel.deviceStage.deviceName],
               ["反本能动作", readModel.deviceStage.antiInstinctAction],
               ["第一动作", readModel.deviceStage.firstAction],
               ["72小时动作", readModel.deviceStage.next72HoursAction],
@@ -614,6 +616,7 @@ function R7ArchiveAssetShell() {
           </div>
         ))}
       </section>
+      <CausalRail statusLabel="归档完成" rightHint="右滑返回档案入口" onRight={() => navigate("/launch")} />
     </main>
   );
 }
@@ -668,30 +671,30 @@ export function ArchivePage() {
         <section className="gy-archive-vault-latest" aria-label={demoAssetStatus === "sealed" ? "封存资产" : "已破局资产"}>
           <span>{demoAssetStatus === "sealed" ? "封存资产" : "已破局资产"}</span>
           <strong>{demoAssetStatus === "sealed" ? "本局已封存" : "本次观爻已入库"}</strong>
-          <h2>{demoAssetStatus === "sealed" ? "爻器未激活" : demoRepairMethod?.name ?? "器法待生成"}</h2>
-          <p>{demoAssetStatus === "sealed" ? "你已经看见破口，但选择暂不下刀。" : "压力没有白白消耗你，它已经沉积为一份人格资产。"}</p>
+          <h2>{demoAssetStatus === "sealed" ? "行动装置未激活" : demoRepairMethod?.name ?? "处置方案待生成"}</h2>
+          <p>{demoAssetStatus === "sealed" ? "你已经看见行动点，但选择暂时停留。" : "压力没有白白消耗你，它已经沉积为一份人格资产。"}</p>
           <p>母码：{demoMother.title}</p>
           <p>现实压力：{demoPressure.text}</p>
           <p>压力显影：{demoPressureExposure?.sentence ?? "我不想让别人看出我撑不住。"}</p>
-          <p>{demoAssetStatus === "sealed" ? "主破口" : "破口"}：{demoBreach?.name ?? "沾泥处"}</p>
-          <p>爻器：{demoAssetStatus === "sealed" ? "未激活" : demoDevice?.name ?? "止进锚"}</p>
+          <p>{demoAssetStatus === "sealed" ? "主要行动点" : "行动点"}：{demoBreach?.name ?? "沾泥处"}</p>
+          <p>行动装置：{demoAssetStatus === "sealed" ? "未激活" : demoDevice?.name ?? "止进锚"}</p>
           {demoAssetStatus === "sealed" ? (
             <>
               <p>状态：暂不破局</p>
-              <p>破口已保留，爻器未激活。</p>
+              <p>行动点已保留，行动装置未激活。</p>
               <button className="gy-archive-vault-deep-toggle" type="button" onClick={() => navigate("/yao-device")}>
-                回来启用爻器
+                回来启用行动装置
               </button>
             </>
           ) : (
             <>
-              <p>器法：{demoRepairMethod?.name ?? "器法待生成"}</p>
+              <p>处置方案：{demoRepairMethod?.name ?? "处置方案待生成"}</p>
               <p>第一动作：{demoRepairMethod?.firstAction ?? "今天暂停一个你已经答应、但其实风险未明的推进动作。"}</p>
               <p>禁止动作：{demoRepairMethod?.forbiddenAction ?? "不要继续用“我能处理”掩盖你已经陷进去。"}</p>
               <p>复发提醒：{demoRepairMethod?.relapseReminder ?? "你最容易在别人质疑你能力时，重新启动强行推进。"}</p>
             </>
           )}
-          <em><span className="gy-archive-label-en">Status｜</span>{demoAssetStatus === "sealed" ? "本局封存｜爻器未激活" : "人格资产已沉积｜深层记录待开封"}</em>
+          <em><span className="gy-archive-label-en">Status｜</span>{demoAssetStatus === "sealed" ? "本局封存｜行动装置未激活" : "人格资产已沉积｜深层记录待开封"}</em>
         </section>
 
         {sortedArchives.length === 0 ? (
@@ -702,7 +705,7 @@ export function ArchivePage() {
               <p>
                 完成一次一次观爻后，
                 <br />
-                本次母码、爻器与器法
+                本次母码、行动装置与处置方案
                 <br />
                 将压入人格资产年轮轴。
               </p>
@@ -729,8 +732,8 @@ export function ArchivePage() {
               <div className="gy-archive-vault-slot-grid">
                 {[
                   { code: "槽位 01", label: "母码", value: "未写入" },
-                  { code: "槽位 02", label: "爻器", value: "未压印" },
-                  { code: "槽位 03", label: "器法", value: "未生成" },
+                  { code: "槽位 02", label: "行动装置", value: "未压印" },
+                  { code: "槽位 03", label: "处置方案", value: "未生成" },
                 ].map((slot) => (
                   <button className="gy-archive-vault-slot" key={slot.code} type="button">
                     <span>{slot.code}</span>
@@ -741,9 +744,7 @@ export function ArchivePage() {
               </div>
             </div>
 
-            <button type="button" onClick={() => navigate("/")}>
-              沿线右滑，捕获第一枚行为种子
-            </button>
+            <CausalRail statusLabel="捕获第一枚行为种子" rightHint="右滑返回启动入口" onRight={() => navigate("/")} />
           </section>
         ) : (
           <>
@@ -752,8 +753,8 @@ export function ArchivePage() {
               <strong>人格资产 +1</strong>
               <h2>{readArchiveAssetName(latestAsset)}</h2>
               <p>母码：{readMotherAssetText(latestAsset.causalContext)}</p>
-              <p>爻器：{readArchiveYaoWeapon(latestAsset)}</p>
-              <p>器法：{readArchiveAction(latestAsset)}</p>
+              <p>行动装置：{readArchiveYaoWeapon(latestAsset)}</p>
+              <p>处置方案：{readArchiveAction(latestAsset)}</p>
               <em><span className="gy-archive-label-en">Status｜</span>沉积状态：人格资产已沉积｜深层记录待开封</em>
               <button
                 className="gy-archive-vault-deep-toggle"
@@ -765,9 +766,9 @@ export function ArchivePage() {
               {expandedArchiveId === latestAsset.archiveId ? (
                 <div className="gy-archive-vault-deep-record">
                   <p><span className="gy-archive-label-en">母码｜</span>系统母码：{readMotherAssetText(latestAsset.causalContext)}</p>
-                  <p><span className="gy-archive-label-en">爻器｜</span>系统爻器：{readArchiveYaoWeapon(latestAsset)}</p>
-                  <p><span className="gy-archive-label-en">器法｜</span>器法落点：{readArchiveRepairTarget(latestAsset)}</p>
-                  <p><span className="gy-archive-label-en">器法层｜</span>器法层：{readArchiveRepairLayer(latestAsset)}</p>
+                  <p><span className="gy-archive-label-en">行动装置｜</span>系统行动装置：{readArchiveYaoWeapon(latestAsset)}</p>
+                  <p><span className="gy-archive-label-en">处置方案｜</span>处置落点：{readArchiveRepairTarget(latestAsset)}</p>
+                  <p><span className="gy-archive-label-en">处置层｜</span>处置层：{readArchiveRepairLayer(latestAsset)}</p>
                   <p><span className="gy-archive-label-en">复发窗口｜</span>复发观察窗口：{readArchiveRiskWindow(latestAsset)}</p>
                   <p>本局反本能节点：{readArchiveAntiNode(latestAsset)}</p>
                 </div>
@@ -798,8 +799,8 @@ export function ArchivePage() {
                     <i>{`人格资产年轮_${String(index + 1).padStart(2, "0")}`}</i>
                     <time>{formatArchiveTime(item.createdAt)}</time>
                     <strong>母码：{readMotherAssetText(item.causalContext)}</strong>
-                    <p>爻器：{readArchiveYaoWeapon(item)}</p>
-                    <p>器法：{readArchiveAction(item)}</p>
+                    <p>行动装置：{readArchiveYaoWeapon(item)}</p>
+                    <p>处置方案：{readArchiveAction(item)}</p>
                     <em><span className="gy-archive-label-en">Status｜</span>沉积状态：已沉积</em>
                     <button
                       className="gy-archive-vault-deep-toggle"
@@ -811,9 +812,9 @@ export function ArchivePage() {
                     {expandedArchiveId === item.archiveId ? (
                       <div className="gy-archive-vault-deep-record">
                         <p><span className="gy-archive-label-en">母码｜</span>系统母码：{readMotherAssetText(item.causalContext)}</p>
-                        <p><span className="gy-archive-label-en">爻器｜</span>系统爻器：{readArchiveYaoWeapon(item)}</p>
-                        <p><span className="gy-archive-label-en">器法｜</span>器法落点：{readArchiveRepairTarget(item)}</p>
-                        <p><span className="gy-archive-label-en">器法层｜</span>器法层：{readArchiveRepairLayer(item)}</p>
+                        <p><span className="gy-archive-label-en">行动装置｜</span>系统行动装置：{readArchiveYaoWeapon(item)}</p>
+                        <p><span className="gy-archive-label-en">处置方案｜</span>处置落点：{readArchiveRepairTarget(item)}</p>
+                        <p><span className="gy-archive-label-en">处置层｜</span>处置层：{readArchiveRepairLayer(item)}</p>
                         <p><span className="gy-archive-label-en">复发窗口｜</span>复发观察窗口：{readArchiveRiskWindow(item)}</p>
                         <p>本局反本能节点：{readArchiveAntiNode(item)}</p>
                       </div>
@@ -845,9 +846,7 @@ export function ArchivePage() {
               </button>
             </section>
 
-            <button className="gy-archive-vault-return" type="button" onClick={() => navigate("/")}>
-              返回沙盒
-            </button>
+            <CausalRail statusLabel="返回沙盒" rightHint="右滑返回沙盒" onRight={() => navigate("/")} />
           </>
         )}
       </section>

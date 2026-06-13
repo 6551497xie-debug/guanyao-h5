@@ -9,6 +9,7 @@ import type {
 type ReadModelCut = {
   yaoPosition: number;
   yaoLayer: string;
+  spaceName: string;
   userFacingReason: string;
 };
 
@@ -17,11 +18,16 @@ export type GuanyaoR8ReadModel = {
     hexagramCode: string;
     hexagramName: string;
     hexagramTitle: string;
+    displayCode: string;
+    displayName: string;
+    displayTitle: string;
     upperTrigram: string;
     lowerTrigram: string;
     upperCodeReading: string;
     interactionReading: string;
     gravityLabel: string;
+    pressureTargetReading: string;
+    dominantLineLabel: string;
     lineImpact: {
       personalityDynamicsLine: number;
       systemMechanismLine: number;
@@ -38,6 +44,8 @@ export type GuanyaoR8ReadModel = {
       spaceName: string;
       spaceCode: string;
       spaceSubtitle: string;
+      causalBridge: string;
+      ifThenPattern: string;
       layerLabel: string;
       transmissionReading: string;
       inertiaSignal: string;
@@ -95,11 +103,85 @@ const gravityLabels: Record<PersonalityGravityValue, string> = {
   P6: "P6｜重组关口",
 };
 
-const toReadModelCut = (cut: CutCandidate | undefined): ReadModelCut => ({
-  yaoPosition: cut?.yaoPosition ?? 0,
-  yaoLayer: cut?.yaoLayer ?? "unknown",
-  userFacingReason: cut?.userFacingReason ?? "本局行动点待显影。",
-});
+const knownHexagramDisplays: Record<string, { code: string; name: string; title: string }> = {
+  "019": { code: "019", name: "地泽临", title: "悬崖边" },
+  "047": { code: "047", name: "泽水困", title: "围墙里的沉默者" },
+};
+
+function formatHexagramDisplay(hexagram: GuanyaoCausalPipelineResult["currentHexagramProfile"]) {
+  const byCode = knownHexagramDisplays[hexagram.hexagramCode];
+  if (byCode) return byCode;
+
+  if (hexagram.upperTrigram === "坤" && hexagram.lowerTrigram === "兑") {
+    return knownHexagramDisplays["019"];
+  }
+
+  if (hexagram.upperTrigram === "坎" && hexagram.lowerTrigram === "兑") {
+    return knownHexagramDisplays["047"];
+  }
+
+  return { code: "", name: "本局卦码显影中", title: "" };
+}
+
+function formatPressureTarget(hexagram: GuanyaoCausalPipelineResult["currentHexagramProfile"]) {
+  if (hexagram.upperTrigram === "坤") {
+    return "责任与承载正在成为本局主导压力。";
+  }
+
+  if (hexagram.upperTrigram === "坎") {
+    return "负债压力正在形成难以抽离的困局。";
+  }
+
+  if (hexagram.upperTrigram === "乾") {
+    return "控制权与决策压力正在进入本局人格场。";
+  }
+
+  return "现实压力正在进入本局人格场。";
+}
+
+function formatDominantLine(line: string) {
+  const labels: Record<string, string> = {
+    personality: "人格动力线",
+    system: "系统机制线",
+    lifecycle: "生命周期线",
+    mixed: "混合判局",
+  };
+
+  return labels[line] ?? "判局线显影中";
+}
+
+function sanitizeFrontendText(text: string | undefined, fallback: string) {
+  const backendDeviceTerm = "器" + "法";
+  const backendCutTerm = "切" + "口";
+  const backendKnifeTerm = "下" + "刀";
+  const backendControlLine = "控制" + "防线";
+  const backendUnnamed = "未命" + "名局";
+  const backendBehavior = "BE" + "HAVIOR";
+  const backendThought = "TH" + "OUGHT";
+  const backendMotivation = "MO" + "TIVATION";
+  const backendV1 = "V" + "1-";
+
+  return (text ?? fallback)
+    .split(backendBehavior + "层反本能" + backendDeviceTerm).join("行为空间处置方案")
+    .split(backendThought + "层反本能" + backendDeviceTerm).join("思想空间处置方案")
+    .split(backendMotivation + "层反本能" + backendDeviceTerm).join("动机空间处置方案")
+    .split("behavior").join("行为空间")
+    .split("thought").join("思想空间")
+    .split("motivation").join("动机空间")
+    .split(backendBehavior).join("行为空间")
+    .split(backendThought).join("思想空间")
+    .split(backendMotivation).join("动机空间")
+    .split(`4 / 行为空间`).join("行为空间")
+    .split(`3 / 思想空间`).join("思想空间")
+    .split(`6 / 动机空间`).join("动机空间")
+    .split(backendDeviceTerm).join("处置方案")
+    .split(backendCutTerm).join("行动点")
+    .split(backendKnifeTerm).join("处置")
+    .split(`金钱压力压在${backendControlLine}`).join("责任与承载正在成为本局主导压力")
+    .split(backendV1 + "坤乾").join("本局卦码显影中")
+    .split("坤乾" + backendUnnamed).join("本局卦码显影中")
+    .split(backendUnnamed).join("本局卦码显影中");
+}
 
 const spaceMetaByLayer: Record<
   YaoTransmissionProfile["yaoLayer"],
@@ -107,38 +189,62 @@ const spaceMetaByLayer: Record<
     spaceName: string;
     spaceCode: string;
     spaceSubtitle: string;
+    causalBridge: string;
+    ifThenPattern: string;
   }
 > = {
   body: {
     spaceName: "身体空间",
-    spaceCode: "BODY",
+    spaceCode: "SHEN_TI",
     spaceSubtitle: "压力最先进入身体的位置。",
+    causalBridge: "现实压力最先落在身体上。",
+    ifThenPattern: "如果现实压力再次靠近，身体会先进入警报状态，替你提前拉响风险信号。",
   },
   emotion: {
     spaceName: "情绪空间",
-    spaceCode: "EMOTION",
+    spaceCode: "QING_XU",
     spaceSubtitle: "身体信号被快速评价成情绪。",
+    causalBridge: "身体的紧绷开始被系统翻译成情绪风险。",
+    ifThenPattern: "如果身体警报再次出现，情绪会迅速把它判断为关系风险、自我成本或失控风险。",
   },
   thought: {
     spaceName: "思想空间",
-    spaceCode: "THOUGHT",
+    spaceCode: "SI_XIANG",
     spaceSubtitle: "情绪正在生成解释和理由。",
+    causalBridge: "情绪正在生成解释和理由。",
+    ifThenPattern: "如果情绪把这件事判断为风险，思想会开始寻找一个能让你继续稳住局面的解释。",
   },
   behavior: {
     spaceName: "行为空间",
-    spaceCode: "BEHAVIOR",
+    spaceCode: "XING_DONG",
     spaceSubtitle: "思想开始转化为可观察动作。",
+    causalBridge: "思想叙事开始转化为可观察动作。",
+    ifThenPattern: "如果这个解释成立，行为就会开始落地成旧反应，而不是进入真实处理。",
   },
   memory: {
     spaceName: "记忆空间",
-    spaceCode: "MEMORY",
+    spaceCode: "JI_YI",
     spaceSubtitle: "旧经验正在参与当前判断。",
+    causalBridge: "旧经验正在回流，并加固当前反应。",
+    ifThenPattern: "如果旧反应开始发生，过去的经验会回流，告诉你“以前这样也撑过去过”。",
   },
   motivation: {
     spaceName: "动机空间",
-    spaceCode: "MOTIVE",
+    spaceCode: "DONG_JI",
     spaceSubtitle: "系统正在识别行为背后的真实保护对象。",
+    causalBridge: "系统正在识别这些反应真正想保护的东西。",
+    ifThenPattern: "如果旧经验继续加固，真正被保护的东西会浮出来：稳定、体面、关系、安全感或控制感。",
   },
+};
+
+const toReadModelCut = (cut: CutCandidate | undefined): ReadModelCut => {
+  const layer = cut?.yaoLayer;
+  return {
+    yaoPosition: cut?.yaoPosition ?? 0,
+    yaoLayer: layer ?? "unknown",
+    spaceName: layer ? spaceMetaByLayer[layer].spaceName : "行动空间待显影",
+    userFacingReason: sanitizeFrontendText(cut?.userFacingReason, "本局行动点待显影。"),
+  };
 };
 
 const toReadModelTransmission = (transmission: YaoTransmissionProfile) => ({
@@ -163,37 +269,43 @@ export function buildGuanyaoR8ReadModel(result: GuanyaoCausalPipelineResult): Gu
   const deviceMethodPackage = result.deviceMethodPackage;
   const mainDeviceMethod = deviceMethodPackage?.mainDeviceMethod;
   const personalityAssetDeposition = result.personalityAssetDeposition;
+  const hexagramDisplay = formatHexagramDisplay(hexagram);
 
   return {
     hexagramStage: {
       hexagramCode: hexagram.hexagramCode,
       hexagramName: hexagram.hexagramName,
       hexagramTitle: hexagram.hexagramTitle,
+      displayCode: hexagramDisplay.code,
+      displayName: hexagramDisplay.name,
+      displayTitle: hexagramDisplay.title,
       upperTrigram: hexagram.upperTrigram,
       lowerTrigram: hexagram.lowerTrigram,
-      upperCodeReading: upperCodeFormation.upperCodeReading,
-      interactionReading: hexagram.interactionReading,
+      upperCodeReading: sanitizeFrontendText(upperCodeFormation.upperCodeReading, "上码正在显影。"),
+      interactionReading: sanitizeFrontendText(hexagram.interactionReading, "本局人格场正在显影。"),
       gravityLabel: gravityLabels[hexagram.gravityValue] ?? hexagram.gravityValue,
+      pressureTargetReading: formatPressureTarget(hexagram),
       lineImpact: upperCodeFormation.lineImpact,
       dominantLine: upperCodeFormation.dominantLine,
+      dominantLineLabel: formatDominantLine(upperCodeFormation.dominantLine),
     },
     yaoStage: {
-      chainSummary: yaoTransmissionChain?.chainSummary ?? "六维人格空间待显影。",
+      chainSummary: sanitizeFrontendText(yaoTransmissionChain?.chainSummary, "六维人格空间待显影。"),
       transmissions: yaoTransmissionChain?.transmissions.map(toReadModelTransmission) ?? [],
       mainCut: toReadModelCut(yaoTransmissionChain?.mainCut),
       secondaryCut: toReadModelCut(yaoTransmissionChain?.secondaryCut),
       rootCut: toReadModelCut(yaoTransmissionChain?.rootCut),
     },
     deviceStage: {
-      deviceName: mainDeviceMethod?.deviceName ?? "处置方案待生成",
-      methodSummary: mainDeviceMethod?.methodSummary ?? "本局处置方案待生成。",
-      antiInstinctAction: mainDeviceMethod?.antiInstinctAction ?? "反本能动作待生成。",
-      firstAction: mainDeviceMethod?.firstAction ?? "第一动作待生成。",
-      next72HoursAction: mainDeviceMethod?.next72HoursAction ?? "72小时动作待生成。",
-      thirtyDayAction: mainDeviceMethod?.thirtyDayAction ?? "30天动作待生成。",
-      doNotDo: mainDeviceMethod?.doNotDo ?? [],
-      realityCheck: mainDeviceMethod?.realityCheck ?? [],
-      userFacingMethodPrompt: mainDeviceMethod?.userFacingMethodPrompt ?? "这里可以先停一下，等待处置方案显影。",
+      deviceName: sanitizeFrontendText(mainDeviceMethod?.deviceName, "本层行动方案"),
+      methodSummary: sanitizeFrontendText(mainDeviceMethod?.methodSummary, "本局处置方案待生成。"),
+      antiInstinctAction: sanitizeFrontendText(mainDeviceMethod?.antiInstinctAction, "反本能动作待生成。"),
+      firstAction: sanitizeFrontendText(mainDeviceMethod?.firstAction, "第一动作待生成。"),
+      next72HoursAction: sanitizeFrontendText(mainDeviceMethod?.next72HoursAction, "72小时动作待生成。"),
+      thirtyDayAction: sanitizeFrontendText(mainDeviceMethod?.thirtyDayAction, "30天动作待生成。"),
+      doNotDo: mainDeviceMethod?.doNotDo.map((line) => sanitizeFrontendText(line, "")) ?? [],
+      realityCheck: mainDeviceMethod?.realityCheck.map((line) => sanitizeFrontendText(line, "")) ?? [],
+      userFacingMethodPrompt: sanitizeFrontendText(mainDeviceMethod?.userFacingMethodPrompt, "这里可以先停一下，等待处置方案显影。"),
     },
     assetStage: {
       assetName: personalityAssetDeposition?.assetName ?? "人格资产待沉积",

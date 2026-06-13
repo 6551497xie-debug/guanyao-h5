@@ -1,20 +1,32 @@
 import { useNavigate } from "react-router-dom";
-import { GuanyaoButton } from "../components/visual/GuanyaoButton";
-import { GuanyaoShell } from "../components/visual/GuanyaoShell";
-import { GuanyaoText } from "../components/visual/GuanyaoText";
-import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
-import { getSession } from "../services/sessionService";
+import { CausalRail } from "../components/causal/CausalRail";
 
-const USE_R7_SAFE_LAUNCH = true;
-
-function hasChronoPrototype() {
-  const session = getSession();
-  const profile = session.chronoProfile;
-
-  return Boolean(
-    profile &&
-      (session.chronoHash || profile.chronoHash) &&
-      (session.chronoPrototypeCard || profile.chronoPrototypeCard),
+function LaunchLogoMark() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 180 96" style={{ width: 142, height: 76, overflow: "visible" }}>
+      {[
+        [58, 18, 86, 42],
+        [122, 18, 94, 42],
+        [42, 78, 84, 44],
+        [138, 78, 96, 44],
+        [76, 36, 84, 43],
+        [104, 36, 96, 43],
+        [76, 54, 84, 47],
+        [104, 54, 96, 47],
+      ].map(([x1, y1, x2, y2], index) => (
+        <line
+          key={`${x1}-${y1}-${x2}-${y2}`}
+          x1={x1}
+          y1={y1}
+          x2={x2}
+          y2={y2}
+          stroke={index < 4 ? "rgba(246,243,236,0.86)" : "rgba(246,243,236,0.68)"}
+          strokeWidth="1.45"
+          strokeLinecap="butt"
+          vectorEffect="non-scaling-stroke"
+        />
+      ))}
+    </svg>
   );
 }
 
@@ -25,16 +37,18 @@ function LaunchSafeEntry() {
     <main
       style={{
         minHeight: "100dvh",
-        width: "100%",
+        width: "min(100%, 520px)",
         boxSizing: "border-box",
-        padding: "72px 20px calc(40px + env(safe-area-inset-bottom))",
+        margin: "0 auto",
+        padding: "7dvh 28px calc(5dvh + env(safe-area-inset-bottom))",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
-        gap: 18,
-        background: "radial-gradient(circle at 50% 0%, rgba(70, 120, 255, 0.14), transparent 42%), #050607",
+        gap: 26,
+        background: "radial-gradient(circle at 50% 28%, rgba(0, 184, 212, 0.08), transparent 44%), #020303",
         color: "#f5f5f5",
         overflowX: "hidden",
+        overflowY: "auto",
+        WebkitOverflowScrolling: "touch",
       }}
     >
       <span
@@ -47,64 +61,47 @@ function LaunchSafeEntry() {
       >
         00｜带压入局
       </span>
-      <h1
-        style={{
-          margin: 0,
-          fontSize: "clamp(32px, 9vw, 48px)",
-          lineHeight: 1.08,
-          letterSpacing: "-0.04em",
-          fontWeight: 500,
-        }}
-      >
-        观爻 SANDBOX
-      </h1>
-      <p
-        style={{
-          margin: "0 0 2px",
-          maxWidth: 360,
-          color: "rgba(245, 245, 245, 0.46)",
-          fontSize: 14,
-          lineHeight: 1.6,
-          letterSpacing: "0.08em",
-        }}
-      >
-        「咔、咔、咔……」
-      </p>
+      <div style={{ display: "grid", placeItems: "center", minHeight: "18dvh" }}>
+        <LaunchLogoMark />
+      </div>
       <div
         style={{
-          width: "100%",
-          maxWidth: 360,
-          margin: "2px 0 4px",
-          padding: "15px 0",
-          borderTop: "1px solid rgba(199, 169, 107, 0.38)",
-          borderBottom: "1px solid rgba(85, 85, 85, 0.58)",
+          width: "min(84%, 360px)",
+          margin: "0 auto",
+          padding: "16px 0",
+          borderTop: "1px solid rgba(246, 243, 236, 0.14)",
+          borderBottom: "1px solid rgba(246, 243, 236, 0.08)",
           display: "grid",
-          gap: 8,
+          gap: 10,
         }}
       >
         <p
           style={{
             margin: 0,
-            color: "rgba(245, 245, 245, 0.72)",
-            fontSize: 15,
-            lineHeight: 1.7,
+            color: "rgba(246, 243, 236, 0.74)",
+            fontSize: "clamp(18px, 3.7vw, 22px)",
+            lineHeight: 1.68,
+            letterSpacing: "0.06em",
+            fontWeight: 300,
           }}
         >
-          这里没有玄学预测。
+          这里没有命运解释。
           <br />
           也没有心理安慰。
         </p>
         <p
           style={{
             margin: 0,
-            color: "rgba(245, 245, 245, 0.76)",
-            fontSize: 15,
-            lineHeight: 1.7,
+            color: "rgba(246, 243, 236, 0.76)",
+            fontSize: "clamp(18px, 3.7vw, 22px)",
+            lineHeight: 1.68,
+            letterSpacing: "0.06em",
+            fontWeight: 300,
           }}
         >
-          它只剥离你的借口。
+          它只接入现实压力，
           <br />
-          照出你正被哪一种旧习惯卡住。
+          让一条旧反应显形。
         </p>
         <span
           style={{
@@ -118,81 +115,11 @@ function LaunchSafeEntry() {
           GY_SANDBOX_PROTOCOL_INITIALIZED
         </span>
       </div>
-      <button
-        type="button"
-        onClick={() => navigate("/mother-code")}
-        style={{
-          width: "100%",
-          minHeight: 52,
-          marginTop: 14,
-          border: "1px solid rgba(120, 220, 255, 0.38)",
-          borderRadius: 999,
-          background: "rgba(120, 220, 255, 0.12)",
-          color: "#ffffff",
-          fontSize: 15,
-          letterSpacing: "0.04em",
-        }}
-      >
-        沿线右滑，填装初始坐标
-      </button>
+      <CausalRail statusLabel="沿线右滑 · 进入沙盒" rightHint="右滑进入沙盒" onRight={() => navigate("/mother-code")} />
     </main>
   );
 }
 
 export function LaunchPage() {
-  if (USE_R7_SAFE_LAUNCH) {
-    return <LaunchSafeEntry />;
-  }
-
-  const navigate = useNavigate();
-
-  function handleOpenSandbox() {
-    navigate(GUANYAO_ROUTES.motherCode);
-  }
-
-  return (
-    <GuanyaoShell density="compact">
-      <section className="gy-front-screen gy-front-instrument gy-launch-screen" data-intensity="quiet">
-        <div className="gy-front-copy gyFadeRise">
-          <GuanyaoText className="gy-text-muted-coord" as="span" size="eyebrow" tone="faint">
-            GY / 00 / LAUNCH
-          </GuanyaoText>
-          <GuanyaoText className="gy-launch-nameplate" as="h2" size="title">
-            观爻 SANDBOX
-          </GuanyaoText>
-          <div className="gy-front-lines gy-launch-verdict">
-            <GuanyaoText size="body" tone="muted">
-              [嗒、嗒、嗒……]
-            </GuanyaoText>
-            <GuanyaoText size="body" tone="muted">
-              这里没有玄学预测。
-            </GuanyaoText>
-            <GuanyaoText size="body" tone="muted">
-              也没有心理安慰。
-            </GuanyaoText>
-            <GuanyaoText size="body" tone="muted">
-              它不安慰你。
-            </GuanyaoText>
-            <GuanyaoText size="body" tone="muted">
-              它只剥离你的借口。
-            </GuanyaoText>
-            <GuanyaoText size="body" tone="muted">
-              照出你正被哪一种旧习惯拖住。
-            </GuanyaoText>
-          </div>
-          <div className="gy-front-actions">
-            <GuanyaoButton className="gy-front-gate" variant="ghost" onClick={handleOpenSandbox}>
-              <span>沿线右滑，开始一次观爻。</span>
-            </GuanyaoButton>
-          </div>
-          <GuanyaoText className="gy-launch-subgate-note" size="eyebrow" tone="faint">
-            {hasChronoPrototype() ? "时序底色已存在。本次观爻可以直接开始。" : "首次进入，需要先完成时序装填。系统将用它校准你的入局底色。"}
-          </GuanyaoText>
-          <GuanyaoText className="gy-launch-subgate-note" size="eyebrow" tone="faint">
-            GY_SANDBOX_PROTOCOL_INITIALIZED
-          </GuanyaoText>
-        </div>
-      </section>
-    </GuanyaoShell>
-  );
+  return <LaunchSafeEntry />;
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
@@ -12,6 +13,17 @@ import { appendInteractiveYaoChoice, generateMockAutoYaoPath, getAutoYaoPath, ge
 import type { GuanyaoSession, MotherCodeResult, SceneSlice, YaoBit } from "../types";
 
 const USE_HEXAGRAM_DELIVERY_SHELL = true;
+
+function toFrontendTrajectory(text: string) {
+  const backendYaoTerm = "六" + "爻";
+  const backendControlLine = "控制" + "防线";
+  return text
+    .split(`${backendYaoTerm}传导表现为：`).join("")
+    .split(`${backendYaoTerm}传导表现为:`).join("")
+    .split(backendYaoTerm).join("六维")
+    .split(`金钱压力压在${backendControlLine}`).join("责任与承载正在成为本局主导压力")
+    .trim();
+}
 
 const yaoIndexReadouts = [
   { label: "身体先动", shortLabel: "身体", value: "20% 触发" },
@@ -151,6 +163,9 @@ function HexagramCodeDeliveryShell() {
     transmissionReading: string;
   } | null>(null);
   const [readModel] = useState(() => getGuanyaoR8ReadModel());
+  const hexagramDisplay = readModel.hexagramStage;
+  const dominantLineLabel = readModel.hexagramStage.dominantLineLabel;
+  const trajectorySummary = toFrontendTrajectory(readModel.yaoStage.chainSummary);
   const fieldReadings = [
     {
       dimension: "上码显影",
@@ -159,18 +174,18 @@ function HexagramCodeDeliveryShell() {
     },
     {
       dimension: "三线撞击",
-      tag: readModel.hexagramStage.dominantLine,
-      text: `人格动力线 ${readModel.hexagramStage.lineImpact.personalityDynamicsLine} / 系统机制线 ${readModel.hexagramStage.lineImpact.systemMechanismLine} / 生命周期线 ${readModel.hexagramStage.lineImpact.lifecycleStageLine}`,
+      tag: dominantLineLabel,
+      text: `主导判局线：${dominantLineLabel}。人格动力线 ${readModel.hexagramStage.lineImpact.personalityDynamicsLine} / 系统机制线 ${readModel.hexagramStage.lineImpact.systemMechanismLine} / 生命周期线 ${readModel.hexagramStage.lineImpact.lifecycleStageLine}`,
     },
     {
       dimension: "人格重力",
       tag: readModel.hexagramStage.gravityLabel,
-      text: readModel.hexagramStage.interactionReading,
+      text: readModel.hexagramStage.pressureTargetReading,
     },
     {
-      dimension: "观变空间摘要",
+      dimension: "观变轨迹",
       tag: "SPACE_CHAIN",
-      text: readModel.yaoStage.chainSummary,
+      text: trajectorySummary,
     },
   ];
   const [expandedReading, setExpandedReading] = useState<string>(fieldReadings[0]?.dimension ?? "上码显影");
@@ -213,6 +228,8 @@ function HexagramCodeDeliveryShell() {
         background: "#050607",
         color: "#f5f5f5",
         overflowX: "hidden",
+        overflowY: "auto",
+        WebkitOverflowScrolling: "touch",
       }}
     >
       <span
@@ -250,14 +267,16 @@ function HexagramCodeDeliveryShell() {
               [ 本局卦码卡 ]
             </span>
             <span style={{ color: "rgba(245,245,245,0.38)", fontSize: 12, lineHeight: 1.4 }}>
-              No.{readModel.hexagramStage.hexagramCode}
+              {hexagramDisplay.displayCode ? `No.${hexagramDisplay.displayCode}` : "CODE_RENDERING"}
             </span>
             <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 30, fontWeight: 380, lineHeight: 1.15 }}>
-              {readModel.hexagramStage.lowerTrigram}{readModel.hexagramStage.upperTrigram}{readModel.hexagramStage.hexagramName}
+              {hexagramDisplay.displayName}
             </strong>
-            <span style={{ color: "rgba(199,169,107,0.76)", fontSize: 17, lineHeight: 1.4 }}>
-              《{readModel.hexagramStage.hexagramTitle}》
-            </span>
+            {hexagramDisplay.displayTitle ? (
+              <span style={{ color: "rgba(199,169,107,0.76)", fontSize: 17, lineHeight: 1.4 }}>
+                《{hexagramDisplay.displayTitle}》
+              </span>
+            ) : null}
             <span
               style={{
                 color: "rgba(245,245,245,0.64)",
@@ -285,17 +304,27 @@ function HexagramCodeDeliveryShell() {
           <section
             style={{
               display: "grid",
-              gap: 8,
+              gap: 12,
               padding: "14px 0",
               borderTop: "1px solid rgba(199,169,107,0.34)",
               borderBottom: "1px solid rgba(85,85,85,0.42)",
             }}
           >
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.62 }}>
-              {readModel.hexagramStage.upperCodeReading}
-              <br />
-              {readModel.yaoStage.chainSummary}
-            </p>
+            {[
+              ["上码显影", readModel.hexagramStage.upperCodeReading],
+              ["三线撞击", `主导判局线：${dominantLineLabel}`],
+              ["人格重力", readModel.hexagramStage.gravityLabel],
+              ["观变轨迹", trajectorySummary],
+            ].map(([label, value]) => (
+              <div key={label} style={{ display: "grid", gap: 5 }}>
+                <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.12em" }}>
+                  {label}
+                </span>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 15, lineHeight: 1.62 }}>
+                  {value}
+                </p>
+              </div>
+            ))}
           </section>
           <section style={{ display: "grid", gap: 10 }}>
             {fieldReadings.map((reading) => (
@@ -343,23 +372,7 @@ function HexagramCodeDeliveryShell() {
           <p style={{ margin: "4px 0 0", color: "rgba(245,245,245,0.72)", fontSize: 15, lineHeight: 1.68 }}>
             六维人格空间已经打开。下一步进入逐屏观变。
           </p>
-          <button
-            type="button"
-            onClick={handleNextSpace}
-            style={{
-              width: "100%",
-              minHeight: 52,
-              marginTop: "auto",
-              border: "1px solid rgba(199,169,107,0.52)",
-              borderRadius: 0,
-              background: "transparent",
-              color: "rgba(245,245,245,0.9)",
-              fontSize: 15,
-              letterSpacing: "0.04em",
-            }}
-          >
-            进入六维人格空间
-          </button>
+          <CausalRail statusLabel="进入六维人格空间" rightHint="右滑进入六维人格空间" onRight={handleNextSpace} />
         </>
       ) : null}
 
@@ -371,6 +384,9 @@ function HexagramCodeDeliveryShell() {
             </h1>
             <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 15, lineHeight: 1.68 }}>
               {currentSpace.spaceSubtitle}
+            </p>
+            <p style={{ margin: 0, color: "rgba(0,184,212,0.68)", fontSize: 14, lineHeight: 1.62 }}>
+              {currentSpace.causalBridge}
             </p>
           </header>
 
@@ -405,7 +421,7 @@ function HexagramCodeDeliveryShell() {
                 如果—那么模式
               </span>
               <p style={{ margin: 0, color: "rgba(245,245,245,0.6)", fontSize: 14, lineHeight: 1.6 }}>
-                当这个信号再次出现，你的旧反应会更容易沿着这里启动。
+                {currentSpace.ifThenPattern}
               </p>
             </div>
           </section>
@@ -454,42 +470,13 @@ function HexagramCodeDeliveryShell() {
             </section>
           ) : null}
 
-          <div style={{ display: "grid", gap: 10, marginTop: "auto" }}>
-            {!selectedSpaceAction && currentSpace.pauseSignal !== "none" ? (
-              <button
-                type="button"
-                onClick={handleSelectSpaceAction}
-                style={{
-                  width: "100%",
-                  minHeight: 52,
-                  border: "1px solid rgba(0,184,212,0.5)",
-                  borderRadius: 0,
-                  background: "transparent",
-                  color: "rgba(245,245,245,0.9)",
-                  fontSize: 15,
-                  letterSpacing: "0.04em",
-                }}
-              >
-                进行处置
-              </button>
-            ) : null}
-            <button
-              type="button"
-              onClick={handleNextSpace}
-              style={{
-                width: "100%",
-                minHeight: 52,
-                border: "1px solid rgba(199,169,107,0.52)",
-                borderRadius: 0,
-                background: "transparent",
-                color: "rgba(245,245,245,0.9)",
-                fontSize: 15,
-                letterSpacing: "0.04em",
-              }}
-            >
-              进入下一空间
-            </button>
-          </div>
+          <CausalRail
+            statusLabel={currentSpaceSignal}
+            leftHint={!selectedSpaceAction && currentSpace.pauseSignal !== "none" ? "左滑进行处置" : undefined}
+            rightHint="右滑进入下一空间"
+            onLeft={!selectedSpaceAction && currentSpace.pauseSignal !== "none" ? handleSelectSpaceAction : undefined}
+            onRight={handleNextSpace}
+          />
         </>
       ) : null}
 
@@ -530,23 +517,7 @@ function HexagramCodeDeliveryShell() {
             ))}
           </section>
 
-          <button
-            type="button"
-            onClick={() => navigate(GUANYAO_ROUTES.breachScan)}
-            style={{
-              width: "100%",
-              minHeight: 52,
-              marginTop: "auto",
-              border: "1px solid rgba(0,184,212,0.5)",
-              borderRadius: 0,
-              background: "transparent",
-              color: "rgba(245,245,245,0.9)",
-              fontSize: 15,
-              letterSpacing: "0.04em",
-            }}
-          >
-            进入处置页
-          </button>
+          <CausalRail statusLabel="进入处置页" rightHint="右滑进入处置页" onRight={() => navigate(GUANYAO_ROUTES.breachScan)} />
         </>
       ) : null}
     </main>

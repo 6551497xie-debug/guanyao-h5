@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
+import { CausalRail } from "../components/causal/CausalRail";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 
 const SELECTED_BREACH_KEY = "guanyao:selectedBreachId";
@@ -13,24 +14,24 @@ export function ChoicePage() {
     {
       id: "main-cut",
       type: "primary",
-      tag: `主要行动点｜${readModel.yaoStage.mainCut.yaoPosition}`,
-      title: `${readModel.yaoStage.mainCut.yaoLayer}`,
+      tag: "主要行动点",
+      title: readModel.yaoStage.mainCut.spaceName,
       description: readModel.yaoStage.mainCut.userFacingReason,
-      riskLine: readModel.yaoStage.chainSummary,
+      riskLine: "系统不是在选择最严重的一层，而是在寻找最能改变整条旧反应的位置。",
     },
     {
       id: "secondary-cut",
       type: "secondary",
-      tag: `辅助行动点｜${readModel.yaoStage.secondaryCut.yaoPosition}`,
-      title: `${readModel.yaoStage.secondaryCut.yaoLayer}`,
+      tag: "辅助行动点",
+      title: readModel.yaoStage.secondaryCut.spaceName,
       description: readModel.yaoStage.secondaryCut.userFacingReason,
       riskLine: "这一层不是终点，但已经出现明显信号。",
     },
     {
       id: "root-cut",
       type: "secondary",
-      tag: `深层保护点｜${readModel.yaoStage.rootCut.yaoPosition}`,
-      title: `${readModel.yaoStage.rootCut.yaoLayer}`,
+      tag: "深层保护点",
+      title: readModel.yaoStage.rootCut.spaceName,
       description: readModel.yaoStage.rootCut.userFacingReason,
       riskLine: "这里记录本局真正想保护的东西。",
     },
@@ -65,6 +66,8 @@ export function ChoicePage() {
         background: "#050607",
         color: "#f5f5f5",
         overflowX: "hidden",
+        overflowY: "auto",
+        WebkitOverflowScrolling: "touch",
       }}
     >
       <span
@@ -199,23 +202,7 @@ export function ChoicePage() {
         主要行动点、辅助行动点、深层保护点已从六维人格空间中显影。
       </p>
 
-      <button
-        type="button"
-        onClick={handleCommitCut}
-        style={{
-          width: "100%",
-          minHeight: 52,
-          marginTop: "auto",
-          border: "1px solid rgba(199,169,107,0.54)",
-          borderRadius: 0,
-          background: "transparent",
-          color: "rgba(245,245,245,0.9)",
-          fontSize: 15,
-          letterSpacing: "0.04em",
-        }}
-      >
-        进入处置页
-      </button>
+      <CausalRail statusLabel="进入处置页" rightHint="右滑进入处置页" onRight={handleCommitCut} />
     </main>
   );
 }

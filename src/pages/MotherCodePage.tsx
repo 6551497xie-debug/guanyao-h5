@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GuanyaoButton } from "../components/visual/GuanyaoButton";
+import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
@@ -148,7 +148,7 @@ const paidDiagnostic = {
   code: "043",
   guaName: "夬｜决口",
   archetype: "风险决口态",
-  status: "已付费解锁",
+  status: "已解锁",
   label: "观爻母码｜全景读数",
   sections: [
     {
@@ -190,7 +190,7 @@ const paidDiagnostic = {
         "系统不给你命运的判词。",
         "观爻只把改写结局的执笔权交还给你。",
         "当前母码已经显影。接下来，按住底部 1px 因果闸门。",
-        "你将看到这条行为惯性如何生成爻器，并在破口阵列里出现一次下刀位置。",
+        "你将看到这条行为惯性如何生成行动装置，并在行动点阵列里出现一次停留位置。",
       ],
     },
   ],
@@ -360,47 +360,12 @@ export function MotherCodePage() {
 
         <div className="gy-mother-lockwall">
           <div className="gy-mother-lockline" />
-          {!isUnlocked ? (
-            <>
-              <GuanyaoText className="gy-mother-record-status" size="body" tone="muted">
-                因果沙盘已锁定。
-                <br />
-                  爻器生成轴处于断路状态。
-              </GuanyaoText>
-              <GuanyaoButton className="gy-behavior-gate gy-behavior-gate-primary gy-mother-unlock-button" variant="gate" onClick={() => setIsUnlocked(true)}>
-                🔒 支付 9.9 元 · 生成本局爻器与器法
-              </GuanyaoButton>
-              <GuanyaoText className="gy-mother-unlock-note" size="eyebrow" tone="faint">
-                含：母码全景读数 / 爻器生成轴 / 基础器法 / 行为修复资产沉积
-              </GuanyaoText>
-            </>
-          ) : (
-            <>
-              <GuanyaoText className="gy-mother-record-status" size="body" tone="muted">
-                母码全景读数已展开。
-                <br />
-                长按底部因果闸门，启动爻器生成轴。
-              </GuanyaoText>
-              <button
-                className={`gy-mother-causal-hold ${isHoldingGate ? "gy-mother-causal-hold--charging" : ""}`}
-                type="button"
-                onContextMenu={(event) => event.preventDefault()}
-                onMouseDown={holdCausalGate}
-                onMouseLeave={releaseCausalGate}
-                onMouseUp={releaseCausalGate}
-                onPointerCancel={releaseCausalGate}
-                onPointerDown={holdCausalGate}
-                onPointerLeave={releaseCausalGate}
-                onPointerUp={releaseCausalGate}
-                onTouchCancel={releaseCausalGate}
-                onTouchEnd={releaseCausalGate}
-                onTouchStart={holdCausalGate}
-              >
-                <span>⚡ 爻器生成轴已复活 · 长按启动人格行为动力学演化</span>
-                <i />
-              </button>
-            </>
-          )}
+          <GuanyaoText className="gy-mother-record-status" size="body" tone="muted">
+            母码读数已显影。
+            <br />
+            右滑进入现实压力场。
+          </GuanyaoText>
+          <CausalRail statusLabel="进入现实压力场" rightHint="右滑进入现实压力场" onRight={() => navigate(GUANYAO_ROUTES.pressureSeed)} />
         </div>
       </section>
     </GuanyaoShell>

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
+import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { migrations } from "../data/migrations";
@@ -295,7 +296,7 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
           letterSpacing: "0.16em",
         }}
       >
-        {isRepair ? "08｜器法落地" : "07｜爻器激活"}
+        {isRepair ? "08｜处置方案" : "07｜行动装置"}
       </span>
       <span
         style={{
@@ -305,7 +306,7 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
           letterSpacing: "0.12em",
         }}
       >
-        {isRepair ? "DEVICE_METHOD_RENDERED" : "CUT_TO_DEVICE_METHOD_READY"}
+        {isRepair ? "ACTION_METHOD_RENDERED" : "ACTION_POINT_READY"}
       </span>
 
       <header style={{ display: "grid", gap: 10 }}>
@@ -318,7 +319,7 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
             fontWeight: 420,
           }}
         >
-          {isRepair ? "器法已生成。" : "你选择的切口，已经转译为本局爻器。"}
+          {isRepair ? "处置方案已生成。" : "本层行动已生成。"}
         </h1>
         <p
           style={{
@@ -328,12 +329,12 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
             lineHeight: 1.72,
           }}
         >
-          {isRepair ? readModel.deviceStage.userFacingMethodPrompt : readModel.deviceStage.methodSummary}
+          {isRepair ? readModel.deviceStage.userFacingMethodPrompt : `你选择停在${readModel.yaoStage.mainCut.spaceName}。系统已围绕这一层整理出本局第一步行动。`}
         </p>
       </header>
 
       <section
-        aria-label={isRepair ? "器法卡" : "爻器卡"}
+        aria-label={isRepair ? "处置方案卡" : "行动装置卡"}
         style={{
           display: "grid",
           gap: 14,
@@ -353,7 +354,7 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
                 letterSpacing: "0.13em",
               }}
             >
-              器法｜{readModel.deviceStage.deviceName}
+              处置方案｜{readModel.deviceStage.deviceName}
             </span>
             {[
               ["反本能动作", readModel.deviceStage.antiInstinctAction],
@@ -390,13 +391,13 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
                 letterSpacing: "0.13em",
               }}
             >
-              来源切口｜{readModel.yaoStage.mainCut.yaoPosition} / {readModel.yaoStage.mainCut.yaoLayer}
+              来源空间｜{readModel.yaoStage.mainCut.spaceName}
             </span>
             <strong style={{ color: "rgba(245,245,245,0.92)", fontSize: 30, lineHeight: 1.1, fontWeight: 400 }}>
               {readModel.deviceStage.deviceName}
             </strong>
             <span style={{ color: "rgba(199,169,107,0.7)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12 }}>
-              {readModel.hexagramStage.hexagramCode}｜{readModel.hexagramStage.hexagramName}
+              {readModel.hexagramStage.displayCode ? `No.${readModel.hexagramStage.displayCode}｜${readModel.hexagramStage.displayName}` : readModel.hexagramStage.displayName}
             </span>
             <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.72 }}>
               {readModel.deviceStage.methodSummary}
@@ -408,23 +409,11 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
         )}
       </section>
 
-      <button
-        type="button"
-        onClick={handleNext}
-        style={{
-          width: "100%",
-          minHeight: 52,
-          marginTop: "auto",
-          border: "1px solid rgba(199,169,107,0.54)",
-          borderRadius: 0,
-          background: "transparent",
-          color: "rgba(245,245,245,0.9)",
-          fontSize: 15,
-          letterSpacing: "0.04em",
-        }}
-      >
-        {isRepair ? "沉积为人格资产" : "生成本局器法"}
-      </button>
+      <CausalRail
+        statusLabel={isRepair ? "沉积为人格资产" : "进入处置方案"}
+        rightHint={isRepair ? "右滑沉积人格资产" : "右滑进入处置方案"}
+        onRight={handleNext}
+      />
     </main>
   );
 }
@@ -501,18 +490,18 @@ export function MigrationPage() {
 
   return (
     <GuanyaoShell className="gy-migration-r1-shell" density="compact">
-      <section className="gy-migration-r1-screen gyFadeRise" aria-label={isRepairMethod ? "器法落地" : "爻器激活"}>
+      <section className="gy-migration-r1-screen gyFadeRise" aria-label={isRepairMethod ? "处置方案落地" : "行动装置激活"}>
         <header className="gy-migration-r1-header">
           <GuanyaoText as="span" size="eyebrow" tone="gold">
-            {isRepairMethod ? "GY / 08 / REPAIR_METHOD" : "GY / 07 / YAO_DEVICE"}
+            {isRepairMethod ? "GY / 08 / ACTION_METHOD" : "GY / 07 / ACTION_DEVICE"}
           </GuanyaoText>
           <GuanyaoText as="span" size="eyebrow" tone="faint">
-            {isRepairMethod ? "器法已生成 ｜ 第一刀等待落地" : "爻器已激活 ｜ 本次破口已写入"}
+            {isRepairMethod ? "处置方案已生成 ｜ 第一步等待落地" : "行动装置已激活 ｜ 本次行动点已写入"}
           </GuanyaoText>
           <span className="gy-migration-r1-hourglass">修复权限：基础层</span>
           <h1 className="gy-migration-r1-title">
             <span>{yaoCodeNo}</span>
-            <strong>{isRepairMethod ? "器法落地" : yaoCodeTitle}</strong>
+            <strong>{isRepairMethod ? "处置方案落地" : yaoCodeTitle}</strong>
           </h1>
           <div className="gy-migration-r1-meta">
             <span>轨迹代码 // {finalChoiceCode}</span>
@@ -521,20 +510,20 @@ export function MigrationPage() {
         </header>
 
         <main className="gy-migration-r1-panel">
-          <section className="gy-migration-r1-delivery" aria-label={isRepairMethod ? "本局器法生成" : "本局爻器生成"}>
+          <section className="gy-migration-r1-delivery" aria-label={isRepairMethod ? "本局处置方案生成" : "本局行动装置生成"}>
             <div className="gy-migration-r1-verdict">
               {isRepairMethod ? (
                 <>
-                  <p>器法已生成。</p>
-                  <p>这是你今天可以执行的第一刀。</p>
-                  <p>器法｜{repairMethod?.name ?? repairTarget.antiInstinctAction}</p>
+                  <p>处置方案已生成。</p>
+                  <p>这是你今天可以执行的第一步。</p>
+                  <p>处置方案｜{repairMethod?.name ?? repairTarget.antiInstinctAction}</p>
                   <p>第一动作：{repairMethod?.firstAction ?? repairTarget.antiInstinctAction}</p>
                   <p>禁止动作：{repairMethod?.forbiddenAction ?? "不要继续用“我能处理”掩盖你已经陷进去。"}</p>
                   <p>复发提醒：{repairMethod?.relapseReminder ?? "你最容易在别人质疑你能力时，重新启动强行推进。"}</p>
                 </>
               ) : (
                 <>
-                  <p>爻器已激活。</p>
+                  <p>行动装置已激活。</p>
                   <p>{yaoImplementLabel}</p>
                   <p>{activatedDevice?.shortDefinition ?? "它不是安慰你的东西。它只负责打断你最容易复发的旧动作。"}</p>
                   <p>它打断：{activatedDevice?.breaksReaction ?? "继续主导、继续推进、继续证明自己还能处理。"}</p>
@@ -552,7 +541,7 @@ export function MigrationPage() {
                   <strong>{demoPressureSeed.text}</strong>
                 </div>
                 <div>
-                  <span>破口</span>
+                  <span>行动点</span>
                   <strong>{selectedBreach?.name ?? "沾泥处"}｜{selectedBreach?.breachSentence ?? "从这里破，就是暂停一个过早推进的动作。"}</strong>
                 </div>
                 <div>
@@ -560,11 +549,11 @@ export function MigrationPage() {
                   <strong>{motherAssetLabel}</strong>
                 </div>
                 <div>
-                  <span>爻器</span>
+                  <span>行动装置</span>
                   <strong>{yaoImplementLabel}</strong>
                 </div>
                 <div>
-                  <span>器法落点</span>
+                  <span>处置落点</span>
                   <strong>{repairTarget.repairTargetName}</strong>
                 </div>
                 <div>
@@ -582,14 +571,14 @@ export function MigrationPage() {
           <section className="gy-migration-r1-settlement" aria-label="观察冻结主轨">
             <div className="gy-migration-r1-settlement-line" aria-hidden="true" />
             <span>观察冻结</span>
-            <em>{isRepairMethod ? "器法已生成。执行后可沉积为人格资产。" : "爻器已激活。下一步生成本局器法。"}</em>
+            <em>{isRepairMethod ? "处置方案已生成。执行后可沉积为人格资产。" : "行动装置已激活。下一步进入处置方案。"}</em>
           </section>
 
           <section className="gy-migration-r1-gear" aria-label="已生成记录区">
             <div className="gy-migration-r1-gear-head">
               <span>深层记录已生成，尚未开封</span>
-              <strong>{isRepairMethod ? "人格资产沉积待命" : "器法生成待命"}</strong>
-              <em>{isRepairMethod ? "本局可沉积入人格资产库" : "爻器激活后，需要生成本局器法"}</em>
+              <strong>{isRepairMethod ? "人格资产沉积待命" : "处置方案待命"}</strong>
+              <em>{isRepairMethod ? "本局可沉积入人格资产库" : "行动装置激活后，需要进入处置方案"}</em>
             </div>
             <div className="gy-migration-r1-gear-slots">
               <article>
@@ -609,17 +598,19 @@ export function MigrationPage() {
               </article>
             </div>
             <p className="gy-migration-r1-warning">
-              {isRepairMethod ? "本次压力没有白白消耗你。它已经沉积为一份人格资产。" : "爻器不是报告。它只负责把本局破口压成可执行的器法。"}
+              {isRepairMethod ? "本次压力没有白白消耗你。它已经沉积为一份人格资产。" : "行动装置不是报告。它只负责把本局行动点压成可执行的处置方案。"}
             </p>
-            <span className="gy-migration-r1-archive">{isRepairMethod ? "深层记录已生成，稍后可在人格资产库开封" : "器法尚未落地，等待生成第一刀"}</span>
+            <span className="gy-migration-r1-archive">{isRepairMethod ? "深层记录已生成，稍后可在人格资产库开封" : "处置方案尚未落地，等待生成第一步"}</span>
           </section>
         </main>
 
-        <footer className="gy-migration-r1-profit-lock" aria-label={isRepairMethod ? "人格资产沉积闸门" : "爻器转入器法闸门"}>
-          <button className="gy-migration-r1-primary-deposit" type="button" onClick={isRepairMethod ? handleSave : () => navigate(GUANYAO_ROUTES.repairMethod)}>
-            {isRepairMethod ? "沉积为人格资产" : "生成本局器法"}
-          </button>
-          <span>{isRepairMethod ? "人格资产先沉积入库 · 深层记录留待开封" : "爻器已激活 · 器法等待落地"}</span>
+        <footer className="gy-migration-r1-profit-lock" aria-label={isRepairMethod ? "人格资产沉积闸门" : "行动装置转入处置闸门"}>
+          <CausalRail
+            statusLabel={isRepairMethod ? "沉积为人格资产" : "进入处置方案"}
+            rightHint={isRepairMethod ? "右滑沉积人格资产" : "右滑进入处置方案"}
+            onRight={isRepairMethod ? handleSave : () => navigate(GUANYAO_ROUTES.repairMethod)}
+          />
+          <span>{isRepairMethod ? "人格资产先沉积入库 · 深层记录留待开封" : "行动装置已激活 · 处置方案等待落地"}</span>
         </footer>
       </section>
     </GuanyaoShell>

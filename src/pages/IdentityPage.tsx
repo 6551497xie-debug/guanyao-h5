@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
+import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { identityFragments } from "../data/identityFragments";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getDemoPressureExposureOptions } from "../services/guanyaoInteractionService";
@@ -66,6 +68,12 @@ function readIdentityPool(session: GuanyaoSession) {
 
 function PressureExposureSafeShell() {
   const navigate = useNavigate();
+  const readModel = getGuanyaoR8ReadModel();
+  const impactLines = [
+    ["人格动力线", readModel.hexagramStage.lineImpact.personalityDynamicsLine],
+    ["系统机制线", readModel.hexagramStage.lineImpact.systemMechanismLine],
+    ["生命周期线", readModel.hexagramStage.lineImpact.lifecycleStageLine],
+  ];
 
   return (
     <main
@@ -84,7 +92,7 @@ function PressureExposureSafeShell() {
     >
       <span
         style={{
-          color: "rgba(199,169,107,0.72)",
+          color: "rgba(0, 184, 212, 0.78)",
           fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
           fontSize: 12,
           letterSpacing: "0.16em",
@@ -97,7 +105,7 @@ function PressureExposureSafeShell() {
           display: "grid",
           gap: 12,
           padding: "16px 0",
-          borderTop: "1px solid rgba(199,169,107,0.34)",
+          borderTop: "1px solid rgba(0,184,212,0.2)",
           borderBottom: "1px solid rgba(85,85,85,0.46)",
         }}
       >
@@ -110,46 +118,94 @@ function PressureExposureSafeShell() {
           它是一股正在牵引你的现实压力。
         </p>
         <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.65 }}>
-          压力场正在显影。
+          现实种子正在撞击三条一字线。
         </p>
       </section>
 
       <section
-        aria-label="压力显影区"
+        aria-label="三力碰撞显影区"
         style={{
           display: "grid",
-          placeItems: "center",
-          gap: 12,
-          minHeight: 190,
-          padding: "24px 18px",
-          border: "1px solid rgba(199,169,107,0.38)",
+          gap: 18,
+          padding: "20px 0",
+          borderTop: "1px solid rgba(85,85,85,0.42)",
+          borderBottom: "1px solid rgba(85,85,85,0.3)",
           background:
-            "linear-gradient(180deg, rgba(199,169,107,0.06), rgba(199,169,107,0.012)), radial-gradient(circle at 50% 50%, rgba(199,169,107,0.08), transparent 60%)",
+            "linear-gradient(90deg, rgba(0,184,212,0.055), transparent 72%), radial-gradient(circle at 50% 28%, rgba(0,184,212,0.075), transparent 58%)",
         }}
       >
         <span
           style={{
-            color: "rgba(199,169,107,0.78)",
+            color: "rgba(0,184,212,0.78)",
             fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
             fontSize: 11,
             letterSpacing: "0.16em",
           }}
         >
-          [ 压力显影区 ]
+          [ 三力碰撞 ]
         </span>
-        <span
-          style={{
-            width: "min(230px, 74vw)",
-            height: 1,
-            background: "rgba(199,169,107,0.58)",
-            boxShadow: "0 0 18px rgba(199,169,107,0.16)",
-          }}
-        />
-        <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 15, lineHeight: 1.72, textAlign: "center" }}>
-          你的外部处境，
-          <br />
-          正在形成上卦。
-        </p>
+
+        <div style={{ display: "grid", gap: 14 }}>
+          {impactLines.map(([label, value]) => (
+            <div key={label} style={{ display: "grid", gap: 7 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  color: "rgba(245,245,245,0.48)",
+                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  fontSize: 11,
+                  letterSpacing: "0.11em",
+                }}
+              >
+                <span>{label}</span>
+                <span>{String(value).padStart(2, "0")} / 06</span>
+              </div>
+              <div style={{ position: "relative", height: 1, background: "rgba(246,243,236,0.18)" }}>
+                <span
+                  style={{
+                    position: "absolute",
+                    inset: "0 auto 0 0",
+                    width: `${(Number(value) / 6) * 100}%`,
+                    background: "rgba(0,184,212,0.82)",
+                    boxShadow: "0 0 12px rgba(0,184,212,0.35)",
+                  }}
+                />
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: `${(Number(value) / 6) * 100}%`,
+                    width: 7,
+                    height: 7,
+                    transform: "translate(-50%, -50%) rotate(45deg)",
+                    background: "rgba(0,184,212,0.95)",
+                    boxShadow: "0 0 14px rgba(0,184,212,0.45)",
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: "grid", gap: 8, paddingTop: 4 }}>
+          <span
+            style={{
+              color: "rgba(246,243,236,0.44)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 11,
+              letterSpacing: "0.12em",
+            }}
+          >
+            上码显影｜{readModel.hexagramStage.upperTrigram} / {readModel.hexagramStage.dominantLine}
+          </span>
+          <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 15, lineHeight: 1.72 }}>
+            {readModel.hexagramStage.upperCodeReading}
+          </p>
+          <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 13, lineHeight: 1.62 }}>
+            人格重力：{readModel.hexagramStage.gravityLabel}
+          </p>
+        </div>
       </section>
 
       <span
@@ -163,23 +219,11 @@ function PressureExposureSafeShell() {
         PRESSURE_FIELD_RENDERING
       </span>
 
-      <button
-        type="button"
-        onClick={() => navigate(GUANYAO_ROUTES.dynamics)}
-        style={{
-          width: "100%",
-          minHeight: 52,
-          marginTop: "auto",
-          border: "1px solid rgba(199,169,107,0.52)",
-          borderRadius: 0,
-          background: "transparent",
-          color: "rgba(245,245,245,0.9)",
-          fontSize: 15,
-          letterSpacing: "0.04em",
-        }}
-      >
-        压力已显影，生成本局卦码
-      </button>
+      <CausalRail
+        statusLabel="压力已显影，生成本局卦码"
+        rightHint="右滑生成本局卦码"
+        onRight={() => navigate(GUANYAO_ROUTES.dynamics)}
+      />
     </main>
   );
 }
