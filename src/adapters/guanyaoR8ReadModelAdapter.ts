@@ -15,6 +15,16 @@ type ReadModelCut = {
 };
 
 export type GuanyaoR8ReadModel = {
+  motherCodeStage: {
+    motherCodeId: string;
+    motherCodeName: string;
+    motherCodeTitle: string;
+    baseDrive: string;
+    shadowInertia: string;
+    pressureMode: string;
+    defaultReactionChain: string;
+    unlockPotential: string;
+  };
   hexagramStage: {
     hexagramCode: string;
     hexagramName: string;
@@ -108,6 +118,114 @@ const knownHexagramDisplays: Record<string, { code: string; name: string; title:
   "019": { code: "019", name: "地泽临", title: "悬崖边" },
   "047": { code: "047", name: "泽水困", title: "围墙里的沉默者" },
 };
+
+const motherCodeAssets: Record<
+  string,
+  {
+    motherCodeName: string;
+    motherCodeTitle: string;
+    baseDrive: string;
+    shadowInertia: string;
+    pressureMode: string;
+    defaultReactionChain: string;
+    unlockPotential: string;
+  }
+> = {
+  乾: {
+    motherCodeName: "乾｜创世者",
+    motherCodeTitle: "创世者",
+    baseDrive: "你最容易在混乱中站出来，替局面定方向、开第一步，把事情推起来。",
+    shadowInertia: "别人越慢，你越想亲自下场；局面越乱，你越难放手，最后变成一个人硬撑。",
+    pressureMode: "压力最先压中的，是你的掌控感、决策权和对局面失序的敏感。",
+    defaultReactionChain: "接管 → 收紧 → 硬扛",
+    unlockPotential: "乾的解封，不是放弃掌控，而是把控制欲升级为控制能力。",
+  },
+  坤: {
+    motherCodeName: "坤｜承载者",
+    motherCodeTitle: "承载者",
+    baseDrive: "你最容易先把事情接住，让人、关系和局面先稳定下来。",
+    shadowInertia: "凡事习惯先往自己身上揽；局面一不稳，你就习惯先让步，最后把自己耗空。",
+    pressureMode: "压力最先压中的，是你的责任边界、承载能力和被需要感。",
+    defaultReactionChain: "接住 → 让步 → 耗空",
+    unlockPotential: "坤的解封，不是不再承受，而是把无边界的承受升级为有边界的托底能力。",
+  },
+  震: {
+    motherCodeName: "震｜行动者",
+    motherCodeTitle: "行动者",
+    baseDrive: "你最容易先动起来，用行动破局，把停滞的事情尽快推动。",
+    shadowInertia: "别人越犹豫，你越想加速推进，最后容易把节奏推乱。",
+    pressureMode: "压力最先压中的，是你的行动通道、推进速度和对停滞的忍耐度。",
+    defaultReactionChain: "启动 → 加速 → 推乱",
+    unlockPotential: "震的解封，不是不再行动，而是提升行动前的思考力。",
+  },
+  巽: {
+    motherCodeName: "巽｜渗透者",
+    motherCodeTitle: "渗透者",
+    baseDrive: "你最容易用旁观者的视角找到缝隙，再用迂回、绕行的方式解决问题。",
+    shadowInertia: "局面越复杂，选择越多，你越容易反复权衡，最后错过该进入的最佳时机。",
+    pressureMode: "压力最先压中的，是你的判断确定性、进入时机和对变化的敏感度。",
+    defaultReactionChain: "观察 → 权衡 → 错过",
+    unlockPotential: "巽的解封，不是不再观察，而是把反复权衡升级为谋而后动的判断力。",
+  },
+  坎: {
+    motherCodeName: "坎｜深陷者",
+    motherCodeTitle: "深陷者",
+    baseDrive: "你最容易陷入问题内部，反复复盘、承压和寻找出口，直到真正看清困局的底层结构。",
+    shadowInertia: "一旦陷入某个局面，你就容易反复琢磨；越想弄清楚，越难抽离，最后困在同一个问题里消耗自己。",
+    pressureMode: "压力最先压中的，是你对困局的沉浸感、反复复盘的惯性，以及从问题里抽身的能力。",
+    defaultReactionChain: "陷入 → 复盘 → 难拔",
+    unlockPotential: "坎的解封，不是不再深入，而是把反复深陷升级为穿越困局的能力。",
+  },
+  离: {
+    motherCodeName: "离｜照见者",
+    motherCodeTitle: "照见者",
+    baseDrive: "你最容易把看见的问题说出来，让模糊、隐藏的信息浮到台前。",
+    shadowInertia: "别人越误解你，你越想解释清楚，最后容易陷入反复证明自己。",
+    pressureMode: "压力最先压中的，是你表达时容易被误解的挫败感，以及对真相不被重视的敏感度。",
+    defaultReactionChain: "看见 → 表达 → 证明",
+    unlockPotential: "离的解封，不是不再表达，而是把证明欲升级为抓住本质问题的表达能力。",
+  },
+  艮: {
+    motherCodeName: "艮｜停滞者",
+    motherCodeTitle: "停滞者",
+    baseDrive: "你最容易在局面失控前刹车，用及时止损和边界感，阻止事情被无效推进。",
+    shadowInertia: "事情越急，你越想先停住；别人越想推动你，你越容易把边界收紧，最后把该动的机会也挡在外面。",
+    pressureMode: "压力最先压中的，是你的边界感、止损判断和对无效消耗的敏感度。",
+    defaultReactionChain: "停住 → 收紧 → 挡住",
+    unlockPotential: "艮的解封，不是不再停下，而是把过度的防御性升级为及时止损的预见性。",
+  },
+  兑: {
+    motherCodeName: "兑｜转化者",
+    motherCodeTitle: "转化者",
+    baseDrive: "你最容易在紧张关系中找到松动点，用沟通、交换和转化，让僵住的局面重新流动起来。",
+    shadowInertia: "气氛越僵，冲突越明显，你越容易避重就轻，看似局面缓解了，但实际上只是问题被搁置。",
+    pressureMode: "压力最先压中的，是你对维持关系的过度关注和对冲突失控的担心。",
+    defaultReactionChain: "缓和 → 转开 → 失真",
+    unlockPotential: "兑的解封，不是不再缓和，而是把回避冲突升级为化解僵局的沟通能力。",
+  },
+};
+
+function resolveMotherCodeAsset(result: GuanyaoCausalPipelineResult) {
+  const motherCodeProfile = result.motherCodeProfile;
+  const profileText = `${motherCodeProfile.motherCodeName}${motherCodeProfile.motherCodeId}`;
+  const trigram =
+    motherCodeProfile.lowerTrigram ??
+    (profileText.includes("乾") || profileText.includes("control") ? "乾" : undefined) ??
+    (profileText.includes("坤") || profileText.includes("hard") ? "坤" : undefined) ??
+    (profileText.includes("震") ? "震" : undefined) ??
+    (profileText.includes("巽") ? "巽" : undefined) ??
+    (profileText.includes("坎") ? "坎" : undefined) ??
+    (profileText.includes("离") ? "离" : undefined) ??
+    (profileText.includes("艮") || profileText.includes("retreat") ? "艮" : undefined) ??
+    (profileText.includes("兑") || profileText.includes("transform") ? "兑" : undefined) ??
+    result.currentHexagramProfile.lowerTrigram;
+  const asset = motherCodeAssets[trigram] ?? motherCodeAssets.兑;
+
+  return {
+    motherCodeId: motherCodeProfile.motherCodeId,
+    ...asset,
+  };
+}
 
 function formatHexagramDisplay(hexagram: GuanyaoCausalPipelineResult["currentHexagramProfile"]) {
   const byCode = knownHexagramDisplays[hexagram.hexagramCode];
@@ -283,8 +401,10 @@ export function buildGuanyaoR8ReadModel(result: GuanyaoCausalPipelineResult): Gu
   const mainDeviceMethod = deviceMethodPackage?.mainDeviceMethod;
   const personalityAssetDeposition = result.personalityAssetDeposition;
   const hexagramDisplay = formatHexagramDisplay(hexagram);
+  const motherCodeStage = resolveMotherCodeAsset(result);
 
   return {
+    motherCodeStage,
     hexagramStage: {
       hexagramCode: hexagram.hexagramCode,
       hexagramName: hexagram.hexagramName,
