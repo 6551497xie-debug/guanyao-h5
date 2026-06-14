@@ -549,7 +549,7 @@ function InitialCoordinatesEntry() {
           letterSpacing: "0.16em",
         }}
       >
-        {isMotherStage ? (isMotherRuntimeView ? "02B｜母码装填" : "02｜母码显影") : "GY / 00-FIX / CHRONO"}
+        {isMotherStage ? (isMotherRuntimeView ? "02B｜母码读取" : "02｜母码卡") : "GY / 00-FIX / CHRONO"}
       </span>
 
       {!isMotherStage ? (
@@ -904,15 +904,24 @@ function InitialCoordinatesEntry() {
                 >
                   先天数：{motherCode.xiantianDisplay}｜{motherCode.trigramSymbol}｜{motherCode.trigramImage}｜{motherCode.wuxing}
                 </span>
-                <p style={{ margin: 0, color: "rgba(246,243,236,0.58)", fontSize: 13, lineHeight: 1.6, letterSpacing: "0.04em" }}>
-                  原力：{motherVisualTags.force}
-                  <br />
-                  惯性：{motherVisualTags.mirror}
-                  <br />
-                  解封：{motherVisualTags.unlock}
-                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
+                  {[
+                    ["原力", motherVisualTags.force],
+                    ["惯性", motherVisualTags.mirror],
+                    ["解封", motherVisualTags.unlock],
+                  ].map(([label, value]) => (
+                    <div key={label} style={{ display: "grid", gap: 5, padding: "10px 8px", borderTop: "1px solid rgba(0,184,212,0.28)", background: "rgba(246,243,236,0.018)" }}>
+                      <span style={{ color: "rgba(0,184,212,0.62)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, letterSpacing: "0.12em" }}>
+                        {label}
+                      </span>
+                      <strong style={{ color: "rgba(246,243,236,0.68)", fontSize: 12, lineHeight: 1.42, fontWeight: 360 }}>
+                        {value}
+                      </strong>
+                    </div>
+                  ))}
+                </div>
               </section>
-              <CausalRail statusLabel="母码资产已显影" rightHint="右滑进入母码装填" onRight={() => setMotherCodeStageView("runtime")} />
+              <CausalRail statusLabel="母码资产已显影" rightHint="右滑进入母码读取" onRight={() => setMotherCodeStageView("runtime")} />
             </>
           ) : (
             <>
@@ -936,9 +945,22 @@ function InitialCoordinatesEntry() {
                 >
                   {motherCode.visualAssetCode}｜{motherCode.motherCodeName}
                 </span>
-                <span style={{ color: "rgba(246,243,236,0.42)", fontSize: 12, lineHeight: 1.45, letterSpacing: "0.04em" }}>
-                  原力 {motherVisualTags.force}｜惯性 {motherVisualTags.mirror}｜解封 {motherVisualTags.unlock}
-                </span>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
+                  {[
+                    ["原力", motherVisualTags.force],
+                    ["惯性", motherVisualTags.mirror],
+                    ["解封", motherVisualTags.unlock],
+                  ].map(([label, value]) => (
+                    <div key={label} style={{ display: "grid", gap: 4, padding: "8px 0", borderTop: "1px solid rgba(0,184,212,0.18)" }}>
+                      <span style={{ color: "rgba(0,184,212,0.5)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 9, letterSpacing: "0.12em" }}>
+                        {label}
+                      </span>
+                      <strong style={{ color: "rgba(246,243,236,0.62)", fontSize: 12, lineHeight: 1.38, fontWeight: 340 }}>
+                        {value}
+                      </strong>
+                    </div>
+                  ))}
+                </div>
               </section>
               <section aria-label="母码核心读数" style={{ display: "grid", gap: 12 }}>
                 <span
@@ -952,10 +974,21 @@ function InitialCoordinatesEntry() {
                   因果读数
                 </span>
                 {[
-                  ["出厂设置", "压力进入后，系统会先调用这枚母码。"],
+                  ["人格源代码", "压力进入后，系统会先调用这枚母码。"],
                   ["默认反应链", motherCode.defaultReactionChain],
                 ].map(([label, value]) => (
-                  <article key={label} style={{ display: "grid", gap: 6, padding: "10px 0", borderTop: "1px solid rgba(246,243,236,0.075)" }}>
+                  <article
+                    key={label}
+                    style={{
+                      display: "grid",
+                      gap: label === "默认反应链" ? 10 : 6,
+                      padding: label === "默认反应链" ? "15px 14px" : "10px 0",
+                      borderTop: "1px solid rgba(246,243,236,0.075)",
+                      border: label === "默认反应链" ? "1px solid rgba(0,184,212,0.18)" : undefined,
+                      background: label === "默认反应链" ? "linear-gradient(90deg, rgba(0,184,212,0.055), rgba(246,243,236,0.018))" : undefined,
+                      boxShadow: label === "默认反应链" ? "inset 0 0 24px rgba(0,184,212,0.035)" : undefined,
+                    }}
+                  >
                     <span
                       style={{
                         color: "rgba(0,184,212,0.68)",
@@ -966,7 +999,7 @@ function InitialCoordinatesEntry() {
                     >
                       {label}
                     </span>
-                    <p style={{ margin: 0, color: label === "默认反应链" ? "rgba(246,243,236,0.88)" : "rgba(246,243,236,0.66)", fontSize: label === "默认反应链" ? 20 : 13, lineHeight: label === "默认反应链" ? 1.34 : 1.54, fontWeight: label === "默认反应链" ? 400 : 300, letterSpacing: "0.04em" }}>
+                    <p style={{ margin: 0, color: label === "默认反应链" ? "rgba(246,243,236,0.9)" : "rgba(246,243,236,0.66)", fontSize: label === "默认反应链" ? 22 : 13, lineHeight: label === "默认反应链" ? 1.34 : 1.54, fontWeight: label === "默认反应链" ? 420 : 300, letterSpacing: label === "默认反应链" ? "0.06em" : "0.04em" }}>
                       {value || "尚未显影"}
                     </p>
                   </article>
@@ -1079,7 +1112,7 @@ function InitialCoordinatesEntry() {
                   );
                 })}
               </section>
-              <CausalRail statusLabel="母码已装填" rightHint="右滑进入现实压力种子" onRight={handleEnterPressureSeed} />
+              <CausalRail statusLabel="母码已读取" rightHint="右滑进入现实压力种子" onRight={handleEnterPressureSeed} />
             </>
           )}
         </>
@@ -1277,7 +1310,7 @@ export function ChronoPage() {
           <article className="gy-source-shell gyFadeRise" aria-label="观爻入局底色装填">
             <header className="gy-source-header">
               <span>GY / 01 / MOTHER_CODE</span>
-              <span>母码显影</span>
+              <span>母码卡</span>
               <strong>{demoMotherCode.title}</strong>
               <em>{demoMotherCode.englishName}</em>
             </header>
