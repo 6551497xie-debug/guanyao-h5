@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, PointerEvent } from "react";
+import type { CSSProperties, MouseEvent, PointerEvent, TouchEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { CausalRail } from "../components/causal/CausalRail";
@@ -19,11 +19,28 @@ const defaultBirthDay = 2;
 const USE_INITIAL_COORDINATES_FLOW = true;
 
 type ChronoAxis = "year" | "month" | "day" | "time";
+type ChronoAxisSegment = "year" | "month" | "day" | "period";
 type YuanHotzone = {
   label: string;
   value: string;
   note: string;
 };
+
+const chronoAxisSegments: ChronoAxisSegment[] = ["year", "month", "day", "period"];
+const chronoPeriodOptions = [
+  { label: "子时", range: "23:00—01:00" },
+  { label: "丑时", range: "01:00—03:00" },
+  { label: "寅时", range: "03:00—05:00" },
+  { label: "卯时", range: "05:00—07:00" },
+  { label: "辰时", range: "07:00—09:00" },
+  { label: "巳时", range: "09:00—11:00" },
+  { label: "午时", range: "11:00—13:00" },
+  { label: "未时", range: "13:00—15:00" },
+  { label: "申时", range: "15:00—17:00" },
+  { label: "酉时", range: "17:00—19:00" },
+  { label: "戌时", range: "19:00—21:00" },
+  { label: "亥时", range: "21:00—23:00" },
+] as const;
 
 const sourceDrawerItems: YuanHotzone[] = [
   {
@@ -378,14 +395,84 @@ function InitialCoordinatesEntry() {
   const [stage, setStage] = useState<"coordinates" | "mother">("coordinates");
   const [motherCodeStageView, setMotherCodeStageView] = useState<"asset" | "runtime">("asset");
   const [openMotherRuntimeDrawer, setOpenMotherRuntimeDrawer] = useState<"force" | "pressure" | "asset" | null>(null);
+  const [activeChronoAxisSegment, setActiveChronoAxisSegment] = useState<ChronoAxisSegment>("period");
+  const [axisValue, setAxisValue] = useState(9 / 11);
+  const [displayYear, setDisplayYear] = useState(1995);
+  const [displayMonth, setDisplayMonth] = useState(6);
+  const [displayDay, setDisplayDay] = useState(2);
+  const [displayPeriodIndex, setDisplayPeriodIndex] = useState(9);
   const [motherCodeCard, setMotherCodeCard] = useState<MotherCodeCard>(() =>
     generateMotherCodeFromInitialCoordinates(initialCoordinates, "embedding"),
   );
   const isMotherStage = stage === "mother";
   const isMotherRuntimeView = motherCodeStageView === "runtime";
-  const coordinateDate = "1995 / 06 / 02";
-  const coordinateTime = "17:00—19:00｜酉时断面";
-  const coordinatePlace = initialCoordinates.geoAnchor;
+  const displayPeriod = chronoPeriodOptions[displayPeriodIndex] ?? chronoPeriodOptions[9];
+  const coordinateDate = `${displayYear} / ${padDateUnit(displayMonth)} / ${padDateUnit(displayDay)}`;
+  const coordinateAnchor = `${displayPeriod.label}｜广州`;
+  const coordinateTimeRange = displayPeriod.range;
+  const axisLeft = `${axisValue * 100}%`;
+  const activeTextColor = "rgba(0,184,212,0.94)";
+  const inactiveTextColor = "rgba(246,243,236,0.34)";
+
+  function getAxisValueForSegment(segment: ChronoAxisSegment) {
+    if (segment === "year") return (displayYear - 1985) / 20;
+    if (segment === "month") return (displayMonth - 1) / 11;
+    if (segment === "day") return (displayDay - 1) / 30;
+    return displayPeriodIndex / 11;
+  }
+
+  function applyAxisValueToSegment(segment: ChronoAxisSegment, nextValue: number) {
+    if (segment === "year") {
+      setDisplayYear(Math.round(1985 + nextValue * 20));
+      return;
+    }
+
+    if (segment === "month") {
+      setDisplayMonth(Math.round(1 + nextValue * 11));
+      return;
+    }
+
+    if (segment === "day") {
+      setDisplayDay(Math.round(1 + nextValue * 30));
+      return;
+    }
+
+    setDisplayPeriodIndex(Math.round(nextValue * 11));
+  }
+
+  function selectChronoAxisSegment(segment: ChronoAxisSegment) {
+    setActiveChronoAxisSegment(segment);
+    setAxisValue(clamp(getAxisValueForSegment(segment), 0, 1));
+  }
+
+  function updateAxisValue(clientX: number, element: HTMLElement) {
+    const rect = element.getBoundingClientRect();
+    const nextValue = rect.width > 0 ? (clientX - rect.left) / rect.width : 0.5;
+    const safeValue = clamp(nextValue, 0, 1);
+    setAxisValue(safeValue);
+    applyAxisValueToSegment(activeChronoAxisSegment, safeValue);
+  }
+
+  function handleAxisMouseDown(event: MouseEvent<HTMLDivElement>) {
+    updateAxisValue(event.clientX, event.currentTarget);
+  }
+
+  function handleAxisMouseMove(event: MouseEvent<HTMLDivElement>) {
+    if (event.buttons !== 1) return;
+    updateAxisValue(event.clientX, event.currentTarget);
+  }
+
+  function handleAxisTouchStart(event: TouchEvent<HTMLDivElement>) {
+    const touch = event.touches[0];
+    if (!touch) return;
+    updateAxisValue(touch.clientX, event.currentTarget);
+  }
+
+  function handleAxisTouchMove(event: TouchEvent<HTMLDivElement>) {
+    const touch = event.touches[0];
+    if (!touch) return;
+    updateAxisValue(touch.clientX, event.currentTarget);
+  }
 
   function handleEmbedMotherCode() {
     const embeddedCard = generateMotherCodeFromInitialCoordinates(initialCoordinates, "embedded");
@@ -408,10 +495,10 @@ function InitialCoordinatesEntry() {
         width: "min(100%, 520px)",
         boxSizing: "border-box",
         margin: "0 auto",
-        padding: "7dvh 28px calc(5dvh + env(safe-area-inset-bottom))",
+        padding: "6dvh 28px calc(5dvh + env(safe-area-inset-bottom))",
         display: "flex",
         flexDirection: "column",
-        gap: 24,
+        gap: 18,
         background: "radial-gradient(circle at 50% 24%, rgba(0,184,212,0.06), transparent 42%), #020303",
         color: "#f5f5f5",
         overflowX: "hidden",
@@ -432,21 +519,17 @@ function InitialCoordinatesEntry() {
 
       {!isMotherStage ? (
         <>
-          <header style={{ display: "grid", gap: 10 }}>
-            <h1 style={{ margin: 0, color: "rgba(246,243,236,0.86)", fontSize: "clamp(28px, 8vw, 38px)", lineHeight: 1.12, fontWeight: 360, letterSpacing: "0.16em" }}>
-              原 始 坐 标 装 填
+          <header style={{ display: "grid", gap: 8 }}>
+            <h1 style={{ margin: 0, color: "rgba(246,243,236,0.78)", fontSize: "clamp(22px, 6vw, 30px)", lineHeight: 1.15, fontWeight: 360, letterSpacing: "0.08em" }}>
+              原始坐标
             </h1>
-            <p style={{ margin: 0, color: "rgba(246,243,236,0.54)", fontSize: 14, lineHeight: 1.6, letterSpacing: "0.06em" }}>
-              进入观爻，请校准时序和方位
-            </p>
           </header>
           <section
+            aria-label="原始坐标落位结果"
             style={{
               display: "grid",
-              gap: 18,
-              padding: "7dvh 0 5dvh",
-              borderTop: "1px solid rgba(246,243,236,0.08)",
-              borderBottom: "1px solid rgba(246,243,236,0.08)",
+              gap: 6,
+              padding: "2dvh 0 1dvh",
             }}
           >
             <button
@@ -459,8 +542,8 @@ function InitialCoordinatesEntry() {
                 padding: 0,
                 textAlign: "left",
                 fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                fontSize: "clamp(30px, 8vw, 42px)",
-                lineHeight: 1.15,
+                fontSize: "clamp(18px, 5vw, 24px)",
+                lineHeight: 1.3,
                 letterSpacing: "0.08em",
                 cursor: "pointer",
               }}
@@ -469,58 +552,201 @@ function InitialCoordinatesEntry() {
             </button>
             <button
               type="button"
-              aria-label="现代时间段与时辰断面"
+              aria-label="系统落位结果"
               style={{
                 border: 0,
-                borderTop: "1px solid rgba(246,243,236,0.07)",
                 background: "transparent",
-                color: "rgba(246,243,236,0.7)",
-                padding: "14px 0 0",
+                color: "rgba(246,243,236,0.72)",
+                padding: 0,
                 textAlign: "left",
-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                fontSize: "clamp(18px, 4.8vw, 24px)",
+                fontSize: "clamp(17px, 4.6vw, 22px)",
                 lineHeight: 1.45,
                 letterSpacing: "0.06em",
                 cursor: "pointer",
               }}
             >
-              {coordinateTime}
+              {coordinateAnchor}
             </button>
-            <div style={{ display: "grid", gap: 8, paddingTop: 18 }}>
-              <span
-                style={{
-                  color: "rgba(0,184,212,0.72)",
-                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                  fontSize: 12,
-                  letterSpacing: "0.13em",
-                }}
-              >
-                常驻地
-              </span>
+          </section>
+          <section
+            aria-label="时序轴仪器盒"
+            style={{
+              display: "grid",
+              gap: 18,
+              padding: "26px 18px",
+              border: "1px solid rgba(0,184,212,0.18)",
+              background: "linear-gradient(180deg, rgba(0,184,212,0.055), rgba(246,243,236,0.018))",
+              boxShadow: "inset 0 0 0 1px rgba(0,184,212,0.055), 0 18px 48px rgba(0,0,0,0.18)",
+            }}
+          >
+            <p style={{ margin: 0, color: "rgba(246,243,236,0.58)", fontSize: 14, lineHeight: 1.6, letterSpacing: "0.06em" }}>
+              请校准时序锚点
+            </p>
+            <div
+              aria-label="时序校准读数"
+              style={{
+                display: "grid",
+                gap: 10,
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                letterSpacing: "0.08em",
+              }}
+            >
+              <div style={{ color: inactiveTextColor, fontSize: "clamp(24px, 6.4vw, 32px)", lineHeight: 1.2 }}>
+                <button
+                  type="button"
+                  aria-pressed={activeChronoAxisSegment === "year"}
+                  onClick={() => selectChronoAxisSegment("year")}
+                  style={{
+                    border: 0,
+                    background: "transparent",
+                    color: activeChronoAxisSegment === "year" ? activeTextColor : inactiveTextColor,
+                    padding: 0,
+                    font: "inherit",
+                    letterSpacing: "inherit",
+                    cursor: "pointer",
+                  }}
+                >
+                  {displayYear}
+                </button>
+                <span> / </span>
+                <button
+                  type="button"
+                  aria-pressed={activeChronoAxisSegment === "month"}
+                  onClick={() => selectChronoAxisSegment("month")}
+                  style={{
+                    border: 0,
+                    background: "transparent",
+                    color: activeChronoAxisSegment === "month" ? activeTextColor : inactiveTextColor,
+                    padding: 0,
+                    font: "inherit",
+                    letterSpacing: "inherit",
+                    cursor: "pointer",
+                  }}
+                >
+                  {padDateUnit(displayMonth)}
+                </button>
+                <span> / </span>
+                <button
+                  type="button"
+                  aria-pressed={activeChronoAxisSegment === "day"}
+                  onClick={() => selectChronoAxisSegment("day")}
+                  style={{
+                    border: 0,
+                    background: "transparent",
+                    color: activeChronoAxisSegment === "day" ? activeTextColor : inactiveTextColor,
+                    padding: 0,
+                    font: "inherit",
+                    letterSpacing: "inherit",
+                    cursor: "pointer",
+                  }}
+                >
+                  {padDateUnit(displayDay)}
+                </button>
+              </div>
               <button
                 type="button"
-                aria-label="常驻地与方位锚点"
+                aria-pressed={activeChronoAxisSegment === "period"}
+                onClick={() => selectChronoAxisSegment("period")}
                 style={{
                   border: 0,
                   background: "transparent",
-                  color: "rgba(246,243,236,0.78)",
+                  color: activeChronoAxisSegment === "period" ? activeTextColor : inactiveTextColor,
                   padding: 0,
                   textAlign: "left",
-                  fontSize: "clamp(17px, 4.5vw, 23px)",
-                  lineHeight: 1.5,
-                  letterSpacing: "0.04em",
+                  font: "inherit",
+                  fontSize: "clamp(20px, 5.2vw, 27px)",
+                  lineHeight: 1.35,
+                  letterSpacing: "inherit",
                   cursor: "pointer",
                 }}
               >
-                {coordinatePlace}
+                {coordinateTimeRange}
               </button>
             </div>
+            <div style={{ display: "grid", gap: 12, paddingTop: 4 }}>
+              <div
+                role="slider"
+                aria-label="时序校准轴"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(axisValue * 100)}
+                tabIndex={0}
+                onMouseDown={handleAxisMouseDown}
+                onMouseMove={handleAxisMouseMove}
+                onTouchStart={handleAxisTouchStart}
+                onTouchMove={handleAxisTouchMove}
+                style={{
+                  position: "relative",
+                  height: 28,
+                  touchAction: "none",
+                  cursor: "pointer",
+                }}
+              >
+                <span
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    top: "50%",
+                    height: 1,
+                    background: "rgba(246,243,236,0.36)",
+                  }}
+                />
+                <span
+                  style={{
+                    position: "absolute",
+                    left: axisLeft,
+                    top: "50%",
+                    width: 9,
+                    height: 9,
+                    borderRadius: "50%",
+                    background: "#00b8d4",
+                    boxShadow: "0 0 14px rgba(0,184,212,0.58)",
+                    transform: "translate(-50%, -50%)",
+                    pointerEvents: "none",
+                  }}
+                />
+              </div>
+              <div
+                aria-label="时序轴分段"
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                  gap: 8,
+                }}
+              >
+                {chronoAxisSegments.map((segment) => {
+                  const labels: Record<ChronoAxisSegment, string> = {
+                    year: "年",
+                    month: "月",
+                    day: "日",
+                    period: "时段",
+                  };
+                  const isActive = activeChronoAxisSegment === segment;
+                  return (
+                    <button
+                      key={segment}
+                      type="button"
+                      aria-pressed={isActive}
+                      onClick={() => selectChronoAxisSegment(segment)}
+                      style={{
+                        border: 0,
+                        background: "transparent",
+                        color: isActive ? activeTextColor : "rgba(246,243,236,0.42)",
+                        padding: "2px 0",
+                        fontSize: 12,
+                        lineHeight: 1.4,
+                        letterSpacing: "0.16em",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {labels[segment]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </section>
-          <p style={{ margin: 0, color: "rgba(246,243,236,0.62)", fontSize: 15, lineHeight: 1.68, letterSpacing: "0.04em" }}>
-            原始坐标正在进入沙盒。
-            <br />
-            时序与方位锚点正在压入原始坐标包。
-          </p>
           <span
             style={{
               color: "rgba(246,243,236,0.34)",
@@ -531,7 +757,7 @@ function InitialCoordinatesEntry() {
           >
             INITIAL_COORDINATES_LOADING
           </span>
-          <CausalRail statusLabel="沿线右滑，压入原始坐标。" rightHint="沿线右滑，压入原始坐标。" onRight={handleEmbedMotherCode} />
+          <CausalRail statusLabel="右滑压入原始坐标" rightHint="右滑压入原始坐标" onRight={handleEmbedMotherCode} />
         </>
       ) : (
         <>
