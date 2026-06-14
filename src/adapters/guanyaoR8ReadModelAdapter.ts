@@ -350,7 +350,7 @@ function formatHexagramDisplay(hexagram: GuanyaoCausalPipelineResult["currentHex
     return knownHexagramDisplays["047"];
   }
 
-  return { code: "", name: "本局场域", title: "已进入处置阶段" };
+  return { code: "", name: "本局卦码", title: "本局读取" };
 }
 
 function formatPressureTarget(hexagram: GuanyaoCausalPipelineResult["currentHexagramProfile"]) {
