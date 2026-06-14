@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CausalRail } from "../components/causal/CausalRail";
 
@@ -32,90 +33,137 @@ function LaunchLogoMark() {
 
 function LaunchSafeEntry() {
   const navigate = useNavigate();
+  const firstLine = useMemo(() => "让你停在原地的，\n不是现实，\n是你的惯性反应。", []);
+  const secondLine = "进舱，解构你的行为惯性。";
+  const [typedText, setTypedText] = useState("");
+  const [showSecondLine, setShowSecondLine] = useState(false);
+  const [showRail, setShowRail] = useState(false);
+  const [transitionPhase, setTransitionPhase] = useState<"idle" | "collapse" | "black" | "logo">("idle");
+
+  useEffect(() => {
+    const timers: number[] = [];
+    timers.push(window.setTimeout(() => {
+      let index = 0;
+      const typingTimer = window.setInterval(() => {
+        index += 1;
+        setTypedText(firstLine.slice(0, index));
+
+        if (index >= firstLine.length) {
+          window.clearInterval(typingTimer);
+          timers.push(window.setTimeout(() => setShowSecondLine(true), 500));
+          timers.push(window.setTimeout(() => setShowRail(true), 680));
+        }
+      }, 46);
+      timers.push(typingTimer);
+    }, 300));
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, [firstLine]);
+
+  function handleEnterCabin() {
+    window.navigator.vibrate?.(18);
+    setTransitionPhase("collapse");
+    window.setTimeout(() => setTransitionPhase("black"), 260);
+    window.setTimeout(() => setTransitionPhase("logo"), 560);
+    window.setTimeout(() => navigate("/mother-code"), 1060);
+  }
 
   return (
     <main
       style={{
+        position: "relative",
         minHeight: "100dvh",
         width: "min(100%, 520px)",
         boxSizing: "border-box",
         margin: "0 auto",
-        padding: "7dvh 28px calc(5dvh + env(safe-area-inset-bottom))",
+        padding: "10dvh 28px calc(5dvh + env(safe-area-inset-bottom))",
         display: "flex",
         flexDirection: "column",
         gap: 26,
-        background: "radial-gradient(circle at 50% 28%, rgba(0, 184, 212, 0.08), transparent 44%), #020303",
+        background: "#000",
         color: "#f5f5f5",
-        overflowX: "hidden",
-        overflowY: "auto",
-        WebkitOverflowScrolling: "touch",
+        overflow: "hidden",
+        opacity: transitionPhase === "collapse" ? 0.72 : 1,
+        transform: transitionPhase === "collapse" ? "scale(0.985)" : "scale(1)",
+        filter: transitionPhase === "collapse" ? "contrast(1.35) brightness(0.72)" : "none",
+        transition: "opacity 260ms ease, transform 260ms ease, filter 260ms ease",
       }}
     >
-      <span
+      <div
         style={{
-          fontSize: 11,
-          letterSpacing: "0.26em",
-          color: "rgba(120, 220, 255, 0.78)",
-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          display: "grid",
+          alignContent: "center",
+          minHeight: "58dvh",
+          gap: 28,
         }}
       >
-        00｜带压入局
-      </span>
-      <div style={{ display: "grid", placeItems: "center", minHeight: "18dvh" }}>
-        <LaunchLogoMark />
+        <p
+          style={{
+            margin: 0,
+            minHeight: "8.4em",
+            whiteSpace: "pre-line",
+            color: "rgba(246, 243, 236, 0.86)",
+            fontSize: "clamp(24px, 6vw, 34px)",
+            lineHeight: 1.62,
+            letterSpacing: "0.06em",
+            fontWeight: 300,
+          }}
+        >
+          {typedText}
+          {typedText && typedText.length < firstLine.length ? (
+            <span style={{ color: "rgba(0,184,212,0.82)" }}>｜</span>
+          ) : null}
+        </p>
+        <p
+          style={{
+            margin: 0,
+            color: "rgba(246, 243, 236, 0.7)",
+            fontSize: "clamp(16px, 4.1vw, 22px)",
+            lineHeight: 1.5,
+            letterSpacing: "0.06em",
+            fontWeight: 300,
+            opacity: showSecondLine ? 1 : 0,
+            transform: showSecondLine ? "translateY(0)" : "translateY(8px)",
+            transition: "opacity 500ms ease, transform 500ms ease",
+          }}
+        >
+          {secondLine}
+        </p>
       </div>
       <div
         style={{
-          width: "min(84%, 360px)",
-          margin: "0 auto",
-          padding: "16px 0",
-          borderTop: "1px solid rgba(246, 243, 236, 0.14)",
-          borderBottom: "1px solid rgba(246, 243, 236, 0.08)",
-          display: "grid",
-          gap: 10,
+          opacity: showRail && transitionPhase === "idle" ? 1 : 0,
+          transform: showRail && transitionPhase === "idle" ? "translateY(0)" : "translateY(10px)",
+          transition: "opacity 520ms ease, transform 520ms ease",
         }}
       >
-        <p
-          style={{
-            margin: 0,
-            color: "rgba(246, 243, 236, 0.74)",
-            fontSize: "clamp(18px, 3.7vw, 22px)",
-            lineHeight: 1.68,
-            letterSpacing: "0.06em",
-            fontWeight: 300,
-          }}
-        >
-          这里没有命运解释。
-          <br />
-          也没有心理安慰。
-        </p>
-        <p
-          style={{
-            margin: 0,
-            color: "rgba(246, 243, 236, 0.76)",
-            fontSize: "clamp(18px, 3.7vw, 22px)",
-            lineHeight: 1.68,
-            letterSpacing: "0.06em",
-            fontWeight: 300,
-          }}
-        >
-          它只接入现实压力，
-          <br />
-          让一条旧反应显形。
-        </p>
-        <span
-          style={{
-            color: "rgba(245, 245, 245, 0.42)",
-            fontSize: 11,
-            lineHeight: 1.5,
-            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            letterSpacing: "0.13em",
-          }}
-        >
-          GY_SANDBOX_PROTOCOL_INITIALIZED
-        </span>
+        <CausalRail rightHint="右滑进舱" onRight={handleEnterCabin} disabled={!showRail || transitionPhase !== "idle"} />
       </div>
-      <CausalRail statusLabel="沿线右滑 · 进入沙盒" rightHint="右滑进入沙盒" onRight={() => navigate("/mother-code")} />
+      {transitionPhase === "black" || transitionPhase === "logo" ? (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "grid",
+            placeItems: "center",
+            background: "#000",
+            zIndex: 20,
+          }}
+        >
+          <div
+            style={{
+              opacity: transitionPhase === "logo" ? 1 : 0,
+              filter: "drop-shadow(0 0 22px rgba(0,184,212,0.55))",
+              transition: "opacity 500ms ease",
+            }}
+          >
+            <LaunchLogoMark />
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

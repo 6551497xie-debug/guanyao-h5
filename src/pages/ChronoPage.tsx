@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, MouseEvent, PointerEvent, TouchEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
-import { runMotherCodeLandingEngine } from "../data/guanyaoNumericProtocol";
+import { runMotherCodeLandingEngine, type MotherCodeLandingEngineResult } from "../data/guanyaoNumericProtocol";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildYuanCodeResult } from "../services/codeContractService";
-import { generateMotherCodeFromInitialCoordinates, getDemoInitialCoordinates, getDemoMotherCode } from "../services/guanyaoInteractionService";
+import { getDemoInitialCoordinates, getDemoMotherCode } from "../services/guanyaoInteractionService";
 import { setChronoProfile } from "../services/sessionService";
 import type { ChronoAgeRange, ChronoProfile, ChronoPrototypeCard, InitialCoordinates, MotherCodeCard } from "../types";
+import type { MotherCodeProfile } from "../types/guanyaoCausalEngine";
 
 const minBirthYear = 1955;
 const maxBirthYear = 2008;
@@ -379,15 +379,29 @@ function buildChronoProfile(birthYear: number, birthMonth: number, birthDay: num
   };
 }
 
-function persistInitialCoordinates(initialCoordinates: InitialCoordinates, motherCodeCard: MotherCodeCard) {
+function buildMotherCodeCardFromLanding(
+  motherCodeLanding: MotherCodeLandingEngineResult,
+  cardStatus: MotherCodeCard["cardStatus"],
+): MotherCodeCard {
+  return {
+    id: `MOTHER_CARD_${motherCodeLanding.motherCodeProfile.visualAssetCode}`,
+    source: "mother_code_landing_engine",
+    cardStatus,
+  };
+}
+
+function persistInitialCoordinates(
+  initialCoordinates: InitialCoordinates,
+  motherCodeCard: MotherCodeCard,
+  motherCodeProfile: MotherCodeProfile,
+) {
   window.localStorage.setItem("guanyao:initialCoordinates", JSON.stringify(initialCoordinates));
   window.localStorage.setItem("guanyao:motherCodeCard", JSON.stringify(motherCodeCard));
+  window.localStorage.setItem("guanyao:motherCodeProfile", JSON.stringify(motherCodeProfile));
 }
 
 function InitialCoordinatesEntry() {
   const navigate = useNavigate();
-  const readModel = useMemo(() => getGuanyaoR8ReadModel(), []);
-  const motherCode = readModel.motherCodeStage;
   const initialCoordinates: InitialCoordinates = {
     ...getDemoInitialCoordinates(),
     birthChrono: "1995 / 06 / 02 · 17:00—19:00",
@@ -402,9 +416,16 @@ function InitialCoordinatesEntry() {
   const [displayMonth, setDisplayMonth] = useState(6);
   const [displayDay, setDisplayDay] = useState(2);
   const [displayPeriodIndex, setDisplayPeriodIndex] = useState(9);
-  const [motherCodeCard, setMotherCodeCard] = useState<MotherCodeCard>(() =>
-    generateMotherCodeFromInitialCoordinates(initialCoordinates, "embedding"),
-  );
+  const [motherCodeCard, setMotherCodeCard] = useState<MotherCodeCard>(() => {
+    const initialMotherCodeLanding = runMotherCodeLandingEngine({
+      year: 1995,
+      month: 6,
+      day: 2,
+      hourBranch: "酉时",
+    });
+
+    return buildMotherCodeCardFromLanding(initialMotherCodeLanding, "embedding");
+  });
   const isMotherStage = stage === "mother";
   const isMotherRuntimeView = motherCodeStageView === "runtime";
   const displayPeriod = chronoPeriodOptions[displayPeriodIndex] ?? chronoPeriodOptions[9];
@@ -417,6 +438,12 @@ function InitialCoordinatesEntry() {
     day: displayDay,
     hourBranch: displayPeriod.label,
   });
+  const motherCode = motherCodeLanding.motherCodeProfile;
+  const motherVisualTags = motherCode.visualTags ?? {
+    force: "尚未显影",
+    mirror: "尚未显影",
+    unlock: "尚未显影",
+  };
   const axisLeft = `${axisValue * 100}%`;
   const activeTextColor = "rgba(0,184,212,0.94)";
   const inactiveTextColor = "rgba(246,243,236,0.34)";
@@ -482,8 +509,8 @@ function InitialCoordinatesEntry() {
   }
 
   function handleEmbedMotherCode() {
-    const embeddedCard = generateMotherCodeFromInitialCoordinates(initialCoordinates, "embedded");
-    persistInitialCoordinates(initialCoordinates, embeddedCard);
+    const embeddedCard = buildMotherCodeCardFromLanding(motherCodeLanding, "embedded");
+    persistInitialCoordinates(initialCoordinates, embeddedCard, motherCodeLanding.motherCodeProfile);
     setMotherCodeCard(embeddedCard);
     setMotherCodeStageView("asset");
     setOpenMotherRuntimeDrawer(null);
@@ -491,7 +518,7 @@ function InitialCoordinatesEntry() {
   }
 
   function handleEnterPressureSeed() {
-    persistInitialCoordinates(initialCoordinates, motherCodeCard);
+    persistInitialCoordinates(initialCoordinates, motherCodeCard, motherCodeLanding.motherCodeProfile);
     navigate(GUANYAO_ROUTES.pressureSeed);
   }
 
@@ -877,11 +904,11 @@ function InitialCoordinatesEntry() {
                   先天数：{motherCode.xiantianDisplay}｜{motherCode.trigramSymbol}｜{motherCode.trigramImage}｜{motherCode.wuxing}
                 </span>
                 <p style={{ margin: 0, color: "rgba(246,243,236,0.58)", fontSize: 13, lineHeight: 1.6, letterSpacing: "0.04em" }}>
-                  原力：{motherCode.visualTags.force}
+                  原力：{motherVisualTags.force}
                   <br />
-                  惯性：{motherCode.visualTags.mirror}
+                  惯性：{motherVisualTags.mirror}
                   <br />
-                  解封：{motherCode.visualTags.unlock}
+                  解封：{motherVisualTags.unlock}
                 </p>
               </section>
               <CausalRail statusLabel="母码资产已显影" rightHint="右滑进入母码装填" onRight={() => setMotherCodeStageView("runtime")} />
@@ -909,7 +936,7 @@ function InitialCoordinatesEntry() {
                   {motherCode.visualAssetCode}｜{motherCode.motherCodeName}
                 </span>
                 <span style={{ color: "rgba(246,243,236,0.42)", fontSize: 12, lineHeight: 1.45, letterSpacing: "0.04em" }}>
-                  原力 {motherCode.visualTags.force}｜惯性 {motherCode.visualTags.mirror}｜解封 {motherCode.visualTags.unlock}
+                  原力 {motherVisualTags.force}｜惯性 {motherVisualTags.mirror}｜解封 {motherVisualTags.unlock}
                 </span>
               </section>
               <section aria-label="母码核心读数" style={{ display: "grid", gap: 12 }}>
@@ -958,7 +985,7 @@ function InitialCoordinatesEntry() {
                   仪器抽屉盒
                 </span>
                 {[
-                  { id: "force" as const, label: "基础原力", value: motherCode.baseDrive },
+                  { id: "force" as const, label: "基础原力", value: motherCode.baseForce },
                   { id: "pressure" as const, label: "压力入口", value: motherCode.pressureEntry },
                   {
                     id: "asset" as const,

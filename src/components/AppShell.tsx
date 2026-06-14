@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { flowSteps } from "../data/mockFlow";
 import type { ReactNode } from "react";
 import { TimeSandglassReadout } from "./visual/TimeSandglassReadout";
@@ -8,6 +9,13 @@ type AppShellProps = {
 };
 
 export function AppShell({ children }: AppShellProps) {
+  const location = useLocation();
+  const isLaunchEntry = location.pathname === "/" || location.pathname === "/launch";
+
+  if (isLaunchEntry) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="app-shell guanyao-shell">
       <header className="app-header">

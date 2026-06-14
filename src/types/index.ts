@@ -441,7 +441,7 @@ export type InitialCoordinates = {
 
 export type MotherCodeCard = {
   id: string;
-  source: "initial_coordinates_mock";
+  source: "initial_coordinates_mock" | "mother_code_landing_engine";
   cardStatus: "embedding" | "embedded";
 };
 
