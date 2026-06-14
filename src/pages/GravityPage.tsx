@@ -98,6 +98,8 @@ type GravityTripleForceFrontStage = {
   }>;
 };
 
+type HexagramPageStage = "card" | "read";
+
 function readJsonFromStorage<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
 
@@ -191,6 +193,7 @@ function YaoTextBlock({ kicker, title, lines, muted }: YaoTextBlockProps) {
 
 function HexagramCodeDeliveryShell() {
   const navigate = useNavigate();
+  const [hexagramPageStage, setHexagramPageStage] = useState<HexagramPageStage>("card");
   const [sixDimensionStep, setSixDimensionStep] = useState(0);
   const [selectedSpaceAction, setSelectedSpaceAction] = useState<{
     spaceIndex: number;
@@ -211,34 +214,30 @@ function HexagramCodeDeliveryShell() {
     readJsonFromStorage<GravityTripleForceFrontStage>("guanyao:tripleForceFrontStage"),
   );
   const hexagramDisplay = readModel.hexagramStage;
-  const dominantLineLabel = readModel.hexagramStage.dominantLineLabel;
-  const trajectorySummary = toFrontendTrajectory(readModel.yaoStage.chainSummary);
+  const selectedSeedIndex = getSession().selectedSceneSeed?.seedIndex;
+  const selectedSeedLabel = [1, 2, 3].includes(selectedSeedIndex ?? 0)
+    ? `SEED ${String(selectedSeedIndex).padStart(2, "0")}`
+    : null;
+  const hexagramReadAnchor =
+    hexagramDisplay.displayCode && hexagramDisplay.displayName && hexagramDisplay.displayTitle
+      ? `NO.${hexagramDisplay.displayCode} · ${hexagramDisplay.displayName}《${hexagramDisplay.displayTitle}》`
+      : "本局卦码读取中";
+  const hexagramReadTension = "这一局，正在照见你此刻被压住的位置。";
+  const motherCodeNarrative = readModel.motherCodeStage.motherCodeName
+    ? `你的${readModel.motherCodeStage.motherCodeName}\n${readModel.motherCodeStage.baseDrive || "该项读数正在生成。"}`
+    : "该项读数正在生成。";
+  const pressureSeedNarrative = selectedPressureSeedContext?.surface
+    ? `但${selectedPressureSeedContext.surface}\n${readModel.hexagramStage.upperCodeReading || "该项读数正在生成。"}`
+    : readModel.hexagramStage.upperCodeReading || "该项读数正在生成。";
+  const hexagramFieldNarrative =
+    readModel.hexagramStage.interactionReading
+      ? readModel.hexagramStage.displayTitle && !readModel.hexagramStage.interactionReading.includes(readModel.hexagramStage.displayTitle)
+        ? `${readModel.hexagramStage.interactionReading}\n这就是《${readModel.hexagramStage.displayTitle}》。`
+        : readModel.hexagramStage.interactionReading
+      : "该项读数正在生成。";
   const hasSelectedPressureSeedContext = Boolean(
     selectedPressureSeedContext?.selectedPressureSeedId ?? tripleForceFrontStage?.selectedPressureSeedId ?? tripleForceLandingResult?.selectedPressureSeedId,
   );
-  const fieldReadings = [
-    {
-      dimension: "上码显影",
-      tag: readModel.hexagramStage.upperTrigram,
-      text: readModel.hexagramStage.upperCodeReading,
-    },
-    {
-      dimension: "三线撞击",
-      tag: dominantLineLabel,
-      text: `主导判局线：${dominantLineLabel}。人格动力线 ${readModel.hexagramStage.lineImpact.personalityDynamicsLine} / 系统机制线 ${readModel.hexagramStage.lineImpact.systemMechanismLine} / 生命周期线 ${readModel.hexagramStage.lineImpact.lifecycleStageLine}`,
-    },
-    {
-      dimension: "人格重力",
-      tag: readModel.hexagramStage.gravityLabel,
-      text: readModel.hexagramStage.pressureTargetReading,
-    },
-    {
-      dimension: "观变轨迹",
-      tag: "SPACE_CHAIN",
-      text: trajectorySummary,
-    },
-  ];
-  const [expandedReading, setExpandedReading] = useState<string>(fieldReadings[0]?.dimension ?? "上码显影");
   const currentSpace = sixDimensionStep >= 1 && sixDimensionStep <= 6 ? readModel.yaoStage.transmissions[sixDimensionStep - 1] : null;
   const canTreatCurrentSpace = currentSpace?.pauseSignal === "clear" || currentSpace?.pauseSignal === "strong";
   const currentSpaceSignal =
@@ -291,10 +290,16 @@ function HexagramCodeDeliveryShell() {
           letterSpacing: "0.16em",
         }}
       >
-        {sixDimensionStep === 0 ? "05｜本局卦码生成" : sixDimensionStep === 7 ? "05｜六维观变完成" : `GY / SPACE-0${sixDimensionStep} / ${currentSpace?.spaceCode ?? "SPACE"}`}
+        {sixDimensionStep === 0
+          ? hexagramPageStage === "card"
+            ? "05｜本局卦码卡"
+            : "卦码读取"
+          : sixDimensionStep === 7
+            ? "05｜六维观变完成"
+            : `GY / SPACE-0${sixDimensionStep} / ${currentSpace?.spaceCode ?? "SPACE"}`}
       </span>
 
-      {sixDimensionStep === 0 ? (
+      {sixDimensionStep === 0 && hexagramPageStage === "card" ? (
         <>
           <section
             aria-label="本局卦码卡"
@@ -349,136 +354,74 @@ function HexagramCodeDeliveryShell() {
               HEXAGRAM_CODE_RENDERED
             </span>
           </section>
-          {hasSelectedPressureSeedContext ? (
-            <section
-              aria-label="真实压力入口"
-              style={{
-                display: "grid",
-                gap: 10,
-                padding: "14px 0",
-                borderTop: "1px solid rgba(0,184,212,0.24)",
-                borderBottom: "1px solid rgba(85,85,85,0.32)",
-                background: "linear-gradient(90deg, rgba(0,184,212,0.045), transparent 70%)",
-              }}
-            >
-              <span
-                style={{
-                  color: "rgba(0,184,212,0.74)",
-                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.13em",
-                }}
-              >
-                本局压力入口已接入
-              </span>
-              {selectedPressureSeedContext?.surface ? (
-                <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 15, lineHeight: 1.6 }}>
-                  现实种子：{selectedPressureSeedContext.surface}
-                </p>
-              ) : null}
-              {selectedPressureSeedContext?.shell ? (
-                <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 13, lineHeight: 1.58 }}>
-                  {selectedPressureSeedContext.shell}
-                </p>
-              ) : null}
-              {tripleForceFrontStage?.readouts?.map((readout) => (
-                <div key={readout.label} style={{ display: "grid", gap: 4 }}>
-                  <span
-                    style={{
-                      color: "rgba(0,184,212,0.64)",
-                      fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                      fontSize: 10,
-                      letterSpacing: "0.12em",
-                    }}
-                  >
-                    {readout.label}
-                  </span>
-                  <p style={{ margin: 0, color: "rgba(245,245,245,0.6)", fontSize: 13, lineHeight: 1.52 }}>
-                    {readout.frontStageLine}
-                  </p>
-                </div>
-              ))}
-              {tripleForceFrontStage?.ritualLines?.length ? (
-                <p style={{ margin: 0, color: "rgba(245,245,245,0.46)", fontSize: 12, lineHeight: 1.55 }}>
-                  {tripleForceFrontStage.ritualLines.join(" ")}
-                </p>
-              ) : null}
-            </section>
-          ) : null}
-          <h1 style={{ margin: 0, color: "rgba(245,245,245,0.88)", fontSize: "clamp(26px, 8vw, 38px)", lineHeight: 1.12, fontWeight: 420 }}>
-            本局现场读数
+          <CausalRail statusLabel="卦码卡已生成" rightHint="右滑进入卦码读取" onRight={() => setHexagramPageStage("read")} />
+        </>
+      ) : null}
+
+      {sixDimensionStep === 0 && hexagramPageStage === "read" ? (
+        <>
+          <h1 style={{ margin: 0, color: "rgba(245,245,245,0.88)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
+            卦码读取
           </h1>
           <section
+            aria-label="本局卦码读取卡"
             style={{
               display: "grid",
-              gap: 12,
-              padding: "14px 0",
+              gap: 18,
+              padding: "18px 0 20px",
               borderTop: "1px solid rgba(199,169,107,0.34)",
-              borderBottom: "1px solid rgba(85,85,85,0.42)",
+              borderBottom: "1px solid rgba(85,85,85,0.38)",
+              background:
+                "linear-gradient(90deg, rgba(199,169,107,0.05), transparent 74%), radial-gradient(circle at 50% 24%, rgba(199,169,107,0.07), transparent 58%)",
             }}
           >
-            {[
-              ["上码显影", readModel.hexagramStage.upperCodeReading],
-              ["三线撞击", `主导判局线：${dominantLineLabel}`],
-              ["人格重力", readModel.hexagramStage.gravityLabel],
-              ["观变轨迹", trajectorySummary],
-            ].map(([label, value]) => (
-              <div key={label} style={{ display: "grid", gap: 5 }}>
-                <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.12em" }}>
-                  {label}
-                </span>
-                <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 15, lineHeight: 1.62 }}>
-                  {value}
-                </p>
-              </div>
-            ))}
-          </section>
-          <section style={{ display: "grid", gap: 10 }}>
-            {fieldReadings.map((reading) => (
-              <article
-                key={reading.dimension}
+            <span
+              style={{
+                color: "rgba(199,169,107,0.72)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 11,
+                letterSpacing: "0.16em",
+              }}
+            >
+              [ 本局卦码读取卡 ]
+            </span>
+            <div style={{ display: "grid", gap: 8 }}>
+              <p
                 style={{
-                  display: "grid",
-                  gap: expandedReading === reading.dimension ? 8 : 0,
-                  padding: "10px 0",
-                  borderBottom: "1px solid rgba(85,85,85,0.34)",
+                  margin: 0,
+                  color: "rgba(245,245,245,0.88)",
+                  fontSize: "clamp(18px, 5vw, 24px)",
+                  lineHeight: 1.34,
+                  fontWeight: 390,
+                  overflowWrap: "anywhere",
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => setExpandedReading((current) => (current === reading.dimension ? "" : reading.dimension))}
-                  style={{
-                    width: "100%",
-                    minHeight: 42,
-                    border: 0,
-                    background: "transparent",
-                    color: "rgba(199,169,107,0.72)",
-                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                    fontSize: 11,
-                    letterSpacing: "0.12em",
-                    textAlign: "left",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 12,
-                  }}
-                >
-                  <span>
-                    {reading.dimension} // {reading.tag}
-                  </span>
-                  <span style={{ color: "rgba(245,245,245,0.32)" }}>{expandedReading === reading.dimension ? "COLLAPSE" : "OPEN"}</span>
-                </button>
-                {expandedReading === reading.dimension ? (
-                  <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 14, lineHeight: 1.6 }}>
-                    {reading.text}
-                  </p>
-                ) : null}
-              </article>
+                {hexagramReadAnchor}
+              </p>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.52)", fontSize: 14, lineHeight: 1.62 }}>
+                {hexagramReadTension}
+              </p>
+            </div>
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.36), transparent)" }} />
+            {[motherCodeNarrative, pressureSeedNarrative, hexagramFieldNarrative].map((paragraph, index) => (
+              <p
+                key={`${index}-${paragraph}`}
+                style={{
+                  margin: 0,
+                  color: "rgba(245,245,245,0.7)",
+                  fontSize: 15,
+                  lineHeight: 1.7,
+                  maxWidth: "100%",
+                  whiteSpace: "pre-line",
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
+                }}
+              >
+                {paragraph}
+              </p>
             ))}
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.24), transparent)" }} />
           </section>
-          <p style={{ margin: "4px 0 0", color: "rgba(245,245,245,0.72)", fontSize: 15, lineHeight: 1.68 }}>
-            六维人格空间已经打开。下一步进入逐屏观变。
-          </p>
           <CausalRail statusLabel="进入六维人格空间" rightHint="右滑进入六维人格空间" onRight={handleNextSpace} />
         </>
       ) : null}

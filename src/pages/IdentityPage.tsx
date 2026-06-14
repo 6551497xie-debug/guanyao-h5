@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
+import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { identityFragments } from "../data/identityFragments";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getDemoPressureExposureOptions } from "../services/guanyaoInteractionService";
@@ -106,11 +107,11 @@ function buildFallbackTripleForceFrontStage(): GuanyaoTripleForceFrontStage {
   if (!seed) {
     return {
       selectedPressureSeedId: "pressure-seed-pending",
-      ritualLines: ["现实种子已冻结。", "压力读数正在成形。", "卦场落位中。", "因果入口已打开。"],
+      ritualLines: ["现实种子已冻结。", "压力读数正在成形。", "卦局成形中。", "因果入口已打开。"],
       readouts: [
         { label: "现实种子", frontStageLine: "现实种子已冻结。" },
         { label: "压力读数", frontStageLine: "压力读数正在成形。" },
-        { label: "卦场落位", frontStageLine: "卦场落位中，因果入口正在打开。" },
+        { label: "卦局成形", frontStageLine: "本局卦局已成形。" },
       ],
     };
   }
@@ -123,13 +124,38 @@ function buildFallbackTripleForceFrontStage(): GuanyaoTripleForceFrontStage {
 }
 
 function formatTripleForceReadout(line: string): string {
-  if (line.includes("压力读数正在成形")) return "压力读数已捕获。";
-  if (line.includes("卦场落位中")) return "卦场开始落位。";
+  if (line.includes("现实种子")) return "现实种子 · 已冻结";
+  if (line.includes("压力读数")) return "压力读数 · 已捕获";
   return line;
+}
+
+function formatSelectedSeedNumber(): string | null {
+  const seedIndex = getSession().selectedSceneSeed?.seedIndex;
+  if (![1, 2, 3].includes(seedIndex ?? 0)) return null;
+
+  return `SEED ${String(seedIndex).padStart(2, "0")}`;
+}
+
+function buildHexagramFormationPreviewLine() {
+  try {
+    const readModel = getGuanyaoR8ReadModel();
+    const lowerTrigram = readModel.hexagramStage.lowerTrigram;
+    const upperTrigram = readModel.hexagramStage.upperTrigram;
+
+    if (!lowerTrigram || !upperTrigram) {
+      throw new Error("Missing trigram");
+    }
+
+    return `${lowerTrigram}被${upperTrigram}压住`;
+  } catch {
+    return "本局卦局已成形";
+  }
 }
 
 function PressureExposureSafeShell() {
   const navigate = useNavigate();
+  const selectedSeedNumber = useMemo(() => formatSelectedSeedNumber(), []);
+  const hexagramFormationPreviewLine = useMemo(() => buildHexagramFormationPreviewLine(), []);
   const tripleForceFrontStage = useMemo(() => {
     const storedFrontStage = readJsonFromStorage<GuanyaoTripleForceFrontStage>("guanyao:tripleForceFrontStage");
     if (isTripleForceFrontStage(storedFrontStage)) {
@@ -184,7 +210,7 @@ function PressureExposureSafeShell() {
         }}
       >
         <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 17, lineHeight: 1.65 }}>
-          压力种子，装填完毕。
+          {selectedSeedNumber ? `${selectedSeedNumber} 压力种子，装填完毕。` : "压力种子，装填完毕。"}
         </p>
         <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.72 }}>
           它不是一个事件。
@@ -220,7 +246,14 @@ function PressureExposureSafeShell() {
         </span>
 
         <div style={{ display: "grid", gap: 14 }}>
-          {tripleForceFrontStage.readouts.map((readout, index) => (
+          {tripleForceFrontStage.readouts.map((readout, index) => {
+            const isHexagramFormationPreview = index === 2;
+            const displayLabel = isHexagramFormationPreview ? "卦局成形" : readout.label;
+            const displayLines = isHexagramFormationPreview
+              ? [hexagramFormationPreviewLine]
+              : [formatTripleForceReadout(readout.frontStageLine)];
+
+            return (
             <div key={readout.label} style={{ display: "grid", gap: 7 }}>
               <div
                 style={{
@@ -232,7 +265,7 @@ function PressureExposureSafeShell() {
                   letterSpacing: "0.11em",
                 }}
               >
-                <span>{readout.label}</span>
+                <span>{displayLabel}</span>
                 <span>{String(index + 1).padStart(2, "0")} / 03</span>
               </div>
               <div style={{ position: "relative", height: 1, background: "rgba(246,243,236,0.18)" }}>
@@ -258,16 +291,17 @@ function PressureExposureSafeShell() {
                   }}
                 />
               </div>
-              <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 13, lineHeight: 1.62 }}>
-                {formatTripleForceReadout(readout.frontStageLine)}
-              </p>
+              <div aria-label={isHexagramFormationPreview ? "卦局已成形" : undefined} style={{ display: "grid", gap: 4 }}>
+                {displayLines.map((line) => (
+                  <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 13, lineHeight: 1.62 }}>
+                    {line}
+                  </p>
+                ))}
+              </div>
             </div>
-          ))}
+            );
+          })}
         </div>
-
-        <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 14, lineHeight: 1.62 }}>
-          三力已落位，因果链正在收紧。
-        </p>
       </section>
 
       <span
@@ -282,8 +316,7 @@ function PressureExposureSafeShell() {
       </span>
 
       <CausalRail
-        statusLabel="三力已落位，因果链正在收紧"
-        rightHint="右滑生成本局卦码"
+        rightHint="右滑，揭晓你的本局卦码"
         onRight={() => navigate(GUANYAO_ROUTES.dynamics)}
       />
     </main>
