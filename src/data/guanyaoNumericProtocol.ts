@@ -1,8 +1,15 @@
 import type {
+  ChronoCoordinate,
   EightDivisionFieldMapping,
   GuanyaoNumericProtocol,
+  MotherCodeDefinition,
+  MotherCodeProfile,
   SixDivisionChangeMapping,
 } from "../types/guanyaoCausalEngine";
+import {
+  getMotherCodeDefinitionByTrigram,
+  toMotherCodeProfile,
+} from "./guanyaoMotherCodeRegistry";
 
 export const guanyaoNumericProtocol: GuanyaoNumericProtocol = {
   fieldProtocol: {
@@ -199,4 +206,68 @@ export function getSixDivisionChangeMapping(input: number): SixDivisionChangeMap
   }
 
   return mapping;
+}
+
+const hourBranchOrdinals: Record<ChronoCoordinate["hourBranch"], number> = {
+  子时: 1,
+  丑时: 2,
+  寅时: 3,
+  卯时: 4,
+  辰时: 5,
+  巳时: 6,
+  午时: 7,
+  未时: 8,
+  申时: 9,
+  酉时: 10,
+  戌时: 11,
+  亥时: 12,
+};
+
+export type MotherCodeLandingEngineResult = {
+  input: ChronoCoordinate;
+  digitSum: number;
+  hourBranchOrdinal: number;
+  fieldSeed: number;
+  fieldRemainder: EightDivisionFieldMapping["remainder"];
+  fieldMapping: EightDivisionFieldMapping;
+  motherCodeDefinition: MotherCodeDefinition;
+  motherCodeProfile: MotherCodeProfile;
+  formulaLines: string[];
+};
+
+function sumDigits(value: number): number {
+  return String(Math.abs(value))
+    .split("")
+    .reduce((total, digit) => total + Number(digit), 0);
+}
+
+export function runMotherCodeLandingEngine(input: ChronoCoordinate): MotherCodeLandingEngineResult {
+  const digitSum = sumDigits(input.year) + sumDigits(input.month) + sumDigits(input.day);
+  const hourBranchOrdinal = hourBranchOrdinals[input.hourBranch];
+  const fieldSeed = digitSum + hourBranchOrdinal;
+  const fieldMapping = getEightDivisionFieldMapping(fieldSeed);
+  const motherCodeDefinition = getMotherCodeDefinitionByTrigram(fieldMapping.trigram);
+
+  if (!motherCodeDefinition) {
+    throw new Error(`Missing mother code definition for trigram ${fieldMapping.trigram}`);
+  }
+
+  return {
+    input,
+    digitSum,
+    hourBranchOrdinal,
+    fieldSeed,
+    fieldRemainder: fieldMapping.remainder,
+    fieldMapping,
+    motherCodeDefinition,
+    motherCodeProfile: toMotherCodeProfile(motherCodeDefinition),
+    formulaLines: [
+      "原始坐标 ChronoCoordinate",
+      "→ 年月日数字和 + 时辰序号",
+      "→ 卦以八除",
+      `→ ${fieldSeed} mod 8 = ${fieldMapping.display}`,
+      "→ 映射到 8 母码 registry",
+      "→ 输出 MotherCodeProfile",
+    ],
+  };
 }

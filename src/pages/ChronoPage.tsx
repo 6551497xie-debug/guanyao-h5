@@ -5,6 +5,7 @@ import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
+import { runMotherCodeLandingEngine } from "../data/guanyaoNumericProtocol";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildYuanCodeResult } from "../services/codeContractService";
 import { generateMotherCodeFromInitialCoordinates, getDemoInitialCoordinates, getDemoMotherCode } from "../services/guanyaoInteractionService";
@@ -410,6 +411,12 @@ function InitialCoordinatesEntry() {
   const coordinateDate = `${displayYear} / ${padDateUnit(displayMonth)} / ${padDateUnit(displayDay)}`;
   const coordinateAnchor = `${displayPeriod.label}｜广州`;
   const coordinateTimeRange = displayPeriod.range;
+  const motherCodeLanding = runMotherCodeLandingEngine({
+    year: displayYear,
+    month: displayMonth,
+    day: displayDay,
+    hourBranch: displayPeriod.label,
+  });
   const axisLeft = `${axisValue * 100}%`;
   const activeTextColor = "rgba(0,184,212,0.94)";
   const inactiveTextColor = "rgba(246,243,236,0.34)";
@@ -746,6 +753,33 @@ function InitialCoordinatesEntry() {
                 })}
               </div>
             </div>
+          </section>
+          <section
+            aria-label="母码落位引擎"
+            style={{
+              display: "grid",
+              gap: 8,
+              padding: "14px 0 2px",
+              color: "rgba(246,243,236,0.42)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 11,
+              lineHeight: 1.7,
+              letterSpacing: "0.08em",
+            }}
+          >
+            {motherCodeLanding.formulaLines.map((line) => (
+              <span key={line}>{line}</span>
+            ))}
+            <strong
+              style={{
+                color: "rgba(0,184,212,0.86)",
+                fontSize: 12,
+                fontWeight: 500,
+                letterSpacing: "0.12em",
+              }}
+            >
+              {motherCodeLanding.motherCodeProfile.motherCodeName}
+            </strong>
           </section>
           <span
             style={{
