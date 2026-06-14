@@ -283,7 +283,7 @@ function PressureExposureSafeShell() {
 
       <CausalRail
         statusLabel="三力已落位，因果链正在收紧"
-        rightHint="右滑进入五爻传动"
+        rightHint="右滑生成本局卦码"
         onRight={() => navigate(GUANYAO_ROUTES.dynamics)}
       />
     </main>

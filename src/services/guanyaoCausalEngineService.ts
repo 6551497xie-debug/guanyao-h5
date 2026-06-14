@@ -873,10 +873,12 @@ export const buildYaoTransmissionChain = (
   motherCodeProfile: MotherCodeProfile,
   pressureSeed: PressureSeed,
   currentHexagramProfile: CurrentHexagramProfile,
+  options?: { preferRuntimePressureSeed?: boolean },
 ): YaoTransmissionChain => {
-  const scenario =
-    yaoTransmissionScenarios[currentHexagramProfile.hexagramCode] ??
-    buildFallbackYaoScenario(motherCodeProfile, pressureSeed, currentHexagramProfile);
+  const fallbackScenario = buildFallbackYaoScenario(motherCodeProfile, pressureSeed, currentHexagramProfile);
+  const scenario = options?.preferRuntimePressureSeed
+    ? fallbackScenario
+    : yaoTransmissionScenarios[currentHexagramProfile.hexagramCode] ?? fallbackScenario;
   const transmissions = yaoLayerDefinitions.map((definition): YaoTransmissionProfile => {
     const draft = scenario.transmissions[definition.yaoLayer];
     const interventionPotential = Math.min(6, Math.max(0, draft.cutPotential));

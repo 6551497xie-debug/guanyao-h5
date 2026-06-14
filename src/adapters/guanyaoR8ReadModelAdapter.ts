@@ -1,8 +1,19 @@
-import { runGuanyaoCausalPipeline } from "../services/guanyaoCausalEngineService";
+import {
+  buildDeviceMethodPackage,
+  buildPersonalityAssetDeposition,
+  buildPressureField,
+  buildYaoTransmissionChain,
+  formCurrentHexagramProfile,
+  runGuanyaoCausalPipeline,
+} from "../services/guanyaoCausalEngineService";
+import type { GuanyaoSelectedPressureSeedContext } from "../services/guanyaoPressureSeedSceneBindingService";
 import type {
   CutCandidate,
   GuanyaoCausalPipelineResult,
+  MotherCodeProfile,
   PersonalityGravityValue,
+  PressureIntensity,
+  PressureSeed,
   YaoTransmissionProfile,
 } from "../types/guanyaoCausalEngine";
 
@@ -139,6 +150,157 @@ const knownHexagramDisplays: Record<string, { code: string; name: string; title:
   "019": { code: "019", name: "地泽临", title: "悬崖边" },
   "047": { code: "047", name: "泽水困", title: "围墙里的沉默者" },
 };
+
+const selectedPressureSeedContextSource = "selected_pressure_seed_context";
+
+function readJsonFromStorage<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
+function resolveRuntimePressureIntensity(pressureIntensity: number | undefined): PressureIntensity {
+  if ((pressureIntensity ?? 0) >= 88) return "critical";
+  if ((pressureIntensity ?? 0) >= 72) return "high";
+  if ((pressureIntensity ?? 0) >= 42) return "medium";
+  return "low";
+}
+
+function formatRuntimePressureField(field: GuanyaoSelectedPressureSeedContext["pressureField"]): string {
+  const labels: Record<GuanyaoSelectedPressureSeedContext["pressureField"], string> = {
+    POWER: "权力压力",
+    INTEREST: "利益压力",
+    RELATION: "关系压力",
+    FAMILY: "家庭压力",
+    SOCIAL: "社会压力",
+    EXISTENCE: "存在压力",
+  };
+
+  return labels[field] ?? "现实压力";
+}
+
+function formatRuntimePressureNature(nature: GuanyaoSelectedPressureSeedContext["pressureNature"]): string {
+  const labels: Record<GuanyaoSelectedPressureSeedContext["pressureNature"], string> = {
+    EVALUATION: "评价威胁",
+    RESOURCE: "资源冲突",
+    ATTACHMENT: "依恋断裂",
+    CONTROL: "控制压迫",
+    OBLIGATION: "责任义务",
+    BELONGING: "归属压力",
+    IDENTITY: "身份压力",
+    SURVIVAL: "生存压力",
+  };
+
+  return labels[nature] ?? "现实压力";
+}
+
+function formatRuntimeRelation(role: GuanyaoSelectedPressureSeedContext["primaryRelation"]): string {
+  const labels: Record<GuanyaoSelectedPressureSeedContext["primaryRelation"], string> = {
+    BOSS: "上级 / 权力关系",
+    CLIENT: "客户关系",
+    PARTNER_BUSINESS: "合作关系",
+    PARTNER_ROMANTIC: "亲密关系",
+    PARENT: "父母关系",
+    CHILD: "子女关系",
+    FRIEND: "朋友关系",
+    COLLEAGUE: "同事关系",
+    SELF: "自我关系",
+    SYSTEM: "系统结构",
+  };
+
+  return labels[role] ?? "关系结构";
+}
+
+function buildRuntimePressureSeedFromSelectedContext(
+  selectedPressureSeedContext: GuanyaoSelectedPressureSeedContext,
+): PressureSeed {
+  const pressureType = formatRuntimePressureField(selectedPressureSeedContext.pressureField);
+  const pressureNature = formatRuntimePressureNature(selectedPressureSeedContext.pressureNature);
+  const relationshipRole = formatRuntimeRelation(selectedPressureSeedContext.primaryRelation);
+  const semanticTags = [
+    selectedPressureSeedContext.matrixCode,
+    selectedPressureSeedContext.pressureField,
+    selectedPressureSeedContext.pressureNature,
+    selectedPressureSeedContext.primaryRelation,
+    pressureType,
+    pressureNature,
+    relationshipRole,
+    selectedPressureSeedContext.mappingHint,
+    selectedPressureSeedContext.core.mechanism,
+    selectedPressureSeedContext.core.engineHint,
+    ...selectedPressureSeedContext.tags,
+  ].filter(Boolean);
+
+  return {
+    seedId: selectedPressureSeedContext.selectedPressureSeedId,
+    sceneText: `${selectedPressureSeedContext.surface} ${selectedPressureSeedContext.shell}`,
+    pressureType,
+    relationshipRole,
+    triggerMoment: selectedPressureSeedContext.surface,
+    intensityLevel: resolveRuntimePressureIntensity(selectedPressureSeedContext.pressureIntensity),
+    costHint: selectedPressureSeedContext.shell,
+    fieldBias: `${pressureNature}｜${relationshipRole}`,
+    locationTags: semanticTags,
+  };
+}
+
+function buildPipelineResultWithSelectedPressureSeed(
+  baseResult: GuanyaoCausalPipelineResult,
+): GuanyaoCausalPipelineResult {
+  const selectedPressureSeedContext = readJsonFromStorage<GuanyaoSelectedPressureSeedContext>(
+    "guanyao:selectedPressureSeedContext",
+  );
+
+  if (!selectedPressureSeedContext?.selectedPressureSeedId) {
+    return baseResult;
+  }
+
+  const storedMotherCodeProfile = readJsonFromStorage<MotherCodeProfile>("guanyao:motherCodeProfile");
+  const motherCodeProfile = storedMotherCodeProfile ?? baseResult.motherCodeProfile;
+  const pressureSeed = buildRuntimePressureSeedFromSelectedContext(selectedPressureSeedContext);
+  const pressureField = buildPressureField(
+    motherCodeProfile,
+    pressureSeed,
+    baseResult.chronoCoordinate.locationAnchor,
+    baseResult.dynamicModifiers,
+  );
+  const currentHexagramProfile = formCurrentHexagramProfile(motherCodeProfile, pressureSeed, pressureField);
+  const yaoTransmissionChain = buildYaoTransmissionChain(motherCodeProfile, pressureSeed, currentHexagramProfile, {
+    preferRuntimePressureSeed: true,
+  });
+  const deviceMethodPackage = buildDeviceMethodPackage(yaoTransmissionChain);
+  const personalityAssetDeposition = buildPersonalityAssetDeposition({
+    motherCodeProfile,
+    pressureSeed,
+    currentHexagramProfile,
+    deviceMethodPackage,
+  });
+
+  return {
+    ...baseResult,
+    motherCodeProfile,
+    pressureSeed,
+    pressureField,
+    currentHexagramProfile,
+    yaoTransmissionChain,
+    deviceMethodPackage,
+    personalityAssetDeposition,
+    causalTrace: [
+      ...baseResult.causalTrace,
+      {
+        step: selectedPressureSeedContextSource,
+        reason: `当前卦码由用户选择的现实种子「${selectedPressureSeedContext.selectedPressureSeedId}」驱动。`,
+      },
+    ],
+  };
+}
 
 function resolveMotherCodeStage(result: GuanyaoCausalPipelineResult): GuanyaoR8ReadModel["motherCodeStage"] {
   const motherCodeProfile = result.motherCodeProfile;
@@ -416,5 +578,5 @@ export function buildGuanyaoR8ReadModel(result: GuanyaoCausalPipelineResult): Gu
 }
 
 export function getGuanyaoR8ReadModel(): GuanyaoR8ReadModel {
-  return buildGuanyaoR8ReadModel(runGuanyaoCausalPipeline());
+  return buildGuanyaoR8ReadModel(buildPipelineResultWithSelectedPressureSeed(runGuanyaoCausalPipeline()));
 }
