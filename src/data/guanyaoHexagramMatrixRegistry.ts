@@ -114,6 +114,8 @@ export function auditGuanyaoHexagramMatrixRegistry(): {
   ok: boolean;
   total: number;
   errors: string[];
+  lockedTitleCount: number;
+  lockedTitleMismatches: Array<{ code: string; expected: string; actual: string }>;
   pendingTitleCount: number;
   pendingTitles: Array<{ key: string; code: string; name: string }>;
 } {
@@ -149,11 +151,27 @@ export function auditGuanyaoHexagramMatrixRegistry(): {
   const pendingTitles = entries
     .filter(([, entry]) => entry.titleStatus === "pending")
     .map(([key, entry]) => ({ key, code: entry.code, name: entry.name }));
+  const lockedTitleMismatches = Object.entries(lockedHexagramTitles).flatMap(([code, expected]) => {
+    const entry = entries.find(([, candidate]) => candidate.code === code)?.[1];
+
+    if (!entry) return [{ code, expected, actual: "" }];
+    if (entry.title !== expected || entry.titleStatus !== "locked") {
+      return [{ code, expected, actual: entry.title }];
+    }
+
+    return [];
+  });
+
+  if (lockedTitleMismatches.length > 0) {
+    errors.push(`${lockedTitleMismatches.length} locked title mismatch`);
+  }
 
   return {
     ok: errors.length === 0,
     total: entries.length,
     errors,
+    lockedTitleCount: entries.filter(([, entry]) => entry.titleStatus === "locked").length,
+    lockedTitleMismatches,
     pendingTitleCount: pendingTitles.length,
     pendingTitles,
   };
