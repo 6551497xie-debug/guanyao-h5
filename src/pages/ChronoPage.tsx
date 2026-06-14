@@ -12,8 +12,9 @@ import { setChronoProfile } from "../services/sessionService";
 import type { ChronoAgeRange, ChronoProfile, ChronoPrototypeCard, InitialCoordinates, MotherCodeCard } from "../types";
 import type { MotherCodeProfile } from "../types/guanyaoCausalEngine";
 
-const minBirthYear = 1955;
+const minBirthYear = 1950;
 const maxBirthYear = 2008;
+const birthYearSpan = maxBirthYear - minBirthYear;
 const defaultBirthYear = 1995;
 const defaultBirthMonth = 6;
 const defaultBirthDay = 2;
@@ -449,7 +450,7 @@ function InitialCoordinatesEntry() {
   const inactiveTextColor = "rgba(246,243,236,0.34)";
 
   function getAxisValueForSegment(segment: ChronoAxisSegment) {
-    if (segment === "year") return (displayYear - 1985) / 20;
+    if (segment === "year") return (displayYear - minBirthYear) / birthYearSpan;
     if (segment === "month") return (displayMonth - 1) / 11;
     if (segment === "day") return (displayDay - 1) / 30;
     return displayPeriodIndex / 11;
@@ -457,7 +458,7 @@ function InitialCoordinatesEntry() {
 
   function applyAxisValueToSegment(segment: ChronoAxisSegment, nextValue: number) {
     if (segment === "year") {
-      setDisplayYear(Math.round(1985 + nextValue * 20));
+      setDisplayYear(Math.round(minBirthYear + nextValue * birthYearSpan));
       return;
     }
 
