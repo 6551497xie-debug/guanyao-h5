@@ -6,23 +6,74 @@ export type HexagramMatrixEntry = {
   code: string;
   name: string;
   title: string;
-  titleStatus?: "locked" | "pending";
+  titleStatus?: "locked";
 };
 
 const lockedHexagramTitles: Record<string, string> = {
   "001": "高空",
   "002": "大地",
   "003": "破土",
+  "004": "迷雾",
+  "005": "等待",
   "006": "争鸣",
+  "007": "孤军",
+  "008": "靠岸",
+  "009": "密云",
+  "010": "冰上",
+  "011": "回暖",
   "012": "隔阂",
+  "013": "异类",
+  "014": "丰收者",
+  "015": "隐藏者",
+  "016": "狂欢之后",
+  "017": "顺流",
   "018": "腐根",
   "019": "悬崖边",
+  "020": "旁观者",
+  "021": "硬骨",
+  "022": "面具",
   "023": "剥落",
+  "024": "回环",
+  "025": "脱轨",
+  "026": "深藏者",
+  "027": "养伤者",
   "028": "最后一根",
+  "029": "长期踩不到底的人",
+  "030": "一直在燃烧的人",
+  "031": "触电",
+  "032": "磨损者",
+  "033": "退场者",
+  "034": "巨兽",
+  "035": "更高处",
+  "036": "暗行者",
+  "037": "屋檐下",
+  "038": "背对背",
+  "039": "上坡",
+  "040": "松绑",
+  "041": "割舍",
+  "042": "寸进",
+  "043": "决裂",
+  "044": "闯入者",
+  "045": "人潮",
+  "046": "向光",
   "047": "围墙里的沉默者",
+  "048": "深井",
+  "049": "焚毁者",
+  "050": "炉心",
+  "051": "惊醒",
+  "052": "停住",
+  "053": "迁徙者",
+  "054": "错位者",
+  "055": "盛宴之后",
+  "056": "异乡者",
+  "057": "风里的人",
   "058": "静湖",
-  "059": "消融",
+  "059": "散落者",
   "060": "绳索",
+  "061": "最后的相信",
+  "062": "越界者",
+  "063": "灰烬",
+  "064": "黎明之前",
 };
 
 const createHexagramMatrixEntry = (
@@ -38,8 +89,8 @@ const createHexagramMatrixEntry = (
     lowerTrigram,
     code,
     name,
-    title: lockedTitle ?? "待定",
-    titleStatus: lockedTitle ? "locked" : "pending",
+    title: lockedTitle ?? "",
+    titleStatus: "locked",
   };
 };
 
@@ -149,7 +200,7 @@ export function auditGuanyaoHexagramMatrixRegistry(): {
   });
 
   const pendingTitles = entries
-    .filter(([, entry]) => entry.titleStatus === "pending")
+    .filter(([, entry]) => entry.titleStatus !== "locked")
     .map(([key, entry]) => ({ key, code: entry.code, name: entry.name }));
   const lockedTitleMismatches = Object.entries(lockedHexagramTitles).flatMap(([code, expected]) => {
     const entry = entries.find(([, candidate]) => candidate.code === code)?.[1];
