@@ -10,6 +10,7 @@ import {
   guanyaoRealityPressureFields,
   listRealityPressureFields,
 } from "../data/guanyaoRealityPressureFields";
+import { GUANYAO_HEXAGRAM_MATRIX_REGISTRY } from "../data/guanyaoHexagramMatrixRegistry";
 import {
   composePressureSeedUserPrompt,
   listPressureSeedLanguageExamples,
@@ -223,10 +224,7 @@ const externalEnvironmentProfiles: Record<
   },
 };
 
-const knownHexagramMatrix: Record<string, { code: string; name: string; title: string }> = {
-  "坤-兑": { code: "019", name: "临", title: "悬崖边" },
-  "坎-兑": { code: "047", name: "困", title: "围墙里的沉默者" },
-};
+const knownHexagramMatrix = GUANYAO_HEXAGRAM_MATRIX_REGISTRY;
 
 const fallbackTrigramByMotherCode: Record<string, Trigram> = {
   硬撑底盘: "坤",
@@ -847,9 +845,9 @@ export const formCurrentHexagramProfile = (
   const matrixKey = `${upperTrigram}-${lowerTrigram}`;
   const knownHexagram = knownHexagramMatrix[matrixKey];
   const gravityValue = resolvePersonalityGravityValue(pressureField);
-  const hexagramName = knownHexagram?.name ?? `${upperTrigram}${lowerTrigram}未命名局`;
-  const hexagramCode = knownHexagram?.code ?? `V1-${upperTrigram}${lowerTrigram}`;
-  const hexagramTitle = knownHexagram?.title ?? `${layerClassification.externalEnvironmentName}压入${motherCodeProfile.motherCodeName}`;
+  const hexagramName = knownHexagram?.name ?? "本局卦码";
+  const hexagramCode = knownHexagram?.code ?? "000";
+  const hexagramTitle = knownHexagram?.title ?? "读取中";
 
   return {
     lowerTrigram,
