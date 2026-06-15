@@ -216,6 +216,10 @@ function findMatrixNode(ageGroup: PressureSeedAgeGroup, pressureField: PressureS
   );
 }
 
+function hasAvailableSeed(node: PressureSeedMatrixNode | undefined, context: GuanyaoPressureSeedSceneContext = {}): node is PressureSeedMatrixNode {
+  return Boolean(node && node.seeds.some((seed) => !context.excludeSeedIds?.includes(seed.id)));
+}
+
 function resolvePressureFieldForTriplet(
   ageGroup: PressureSeedAgeGroup,
   context: GuanyaoPressureSeedSceneContext = {},
@@ -237,10 +241,10 @@ function resolveMatrixNodeForTriplet(context: GuanyaoPressureSeedSceneContext = 
   for (let index = 0; index < rotation.length; index += 1) {
     const pressureField = rotation[(startIndex + index) % rotation.length];
     const node = findMatrixNode(ageGroup, pressureField);
-    if (!node) continue;
+    if (hasAvailableSeed(node, context)) return node;
 
-    const allExcluded = node.seeds.every((seed) => context.excludeSeedIds?.includes(seed.id));
-    if (!allExcluded) return node;
+    const fallbackNode = findMatrixNode(defaultAgeGroup, pressureField);
+    if (hasAvailableSeed(fallbackNode, context)) return fallbackNode;
   }
 
   return findMatrixNode(defaultAgeGroup, defaultPressureField);
