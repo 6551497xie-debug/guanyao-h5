@@ -1,13 +1,14 @@
-import {
-  GUANYAO_PRESSURE_SEED_DRAFT_POOL,
-  getPressureSeedFrontStage,
-} from "../data/guanyaoPressureSeedDraftPool";
+import { GUANYAO_PRESSURE_SEED_MATRIX_V2 } from "../data/guanyaoPressureSeedMatrix";
 import type {
   GuanyaoAgeSegment,
   GuanyaoCoreRelation,
   GuanyaoPressureField,
   GuanyaoPressureNature,
   GuanyaoPressureSeed,
+  PressureSeedAgeGroup,
+  PressureSeedField,
+  PressureSeedMatrixNode,
+  PressureSeedMatrixSeed,
 } from "../types/guanyaoPressureSeed";
 
 export interface GuanyaoPressureSeedSceneContext {
@@ -40,10 +41,12 @@ export interface GuanyaoPressureSeedTriplet {
     shell: string;
   }>;
   strategy: {
-    source: "DRAFT_POOL_V1";
+    source: "SEED_MATRIX_V2";
     totalCandidates: number;
-    selectionMode: "CONTEXTUAL_TRIPLET";
-    compositionMode: "ANCHOR_STRONG_ADJACENT";
+    selectionMode: "AGE_FIELD_NODE";
+    compositionMode: "SAME_NODE_TRIPLET";
+    ageGroup?: PressureSeedAgeGroup;
+    pressureField?: PressureSeedField;
     anchorSeedId?: string;
     strongNeighborSeedId?: string;
     adjacentSeedId?: string;
@@ -57,6 +60,7 @@ export interface GuanyaoPressureSeedTriplet {
 export interface GuanyaoSelectedPressureSeedContext {
   selectedPressureSeedId: string;
   matrixCode: string;
+  ageGroup?: PressureSeedAgeGroup;
   pressureField: GuanyaoPressureField;
   pressureNature: GuanyaoPressureNature;
   primaryRelation: GuanyaoCoreRelation;
@@ -86,6 +90,188 @@ const clamp = (value: number, min: number, max: number): number => Math.min(max,
 
 const hasIntersection = <T>(left: T[] | undefined, right: T[]): boolean =>
   Boolean(left?.some((item) => right.includes(item)));
+
+const pressureFieldRotationByAgeGroup: Record<PressureSeedAgeGroup, PressureSeedField[]> = {
+  YOUTH: ["EXISTENCE", "POWER", "SOCIAL", "FAMILY", "RELATION", "INTEREST"],
+  ESTABLISHING: ["POWER", "RELATION", "FAMILY", "EXISTENCE", "INTEREST", "SOCIAL"],
+  MID_LIFE: ["POWER", "INTEREST", "FAMILY", "RELATION", "EXISTENCE", "SOCIAL"],
+  RESTRUCTURING: ["POWER", "FAMILY", "EXISTENCE", "SOCIAL", "INTEREST", "RELATION"],
+  SIXTY_PLUS: ["EXISTENCE", "FAMILY", "SOCIAL", "POWER", "INTEREST", "RELATION"],
+};
+
+const defaultAgeGroup: PressureSeedAgeGroup = "ESTABLISHING";
+const defaultPressureField: PressureSeedField = "POWER";
+
+const primaryRelationByPressureField: Record<PressureSeedField, GuanyaoCoreRelation> = {
+  POWER: "BOSS",
+  INTEREST: "PARTNER_BUSINESS",
+  RELATION: "PARTNER_ROMANTIC",
+  FAMILY: "PARENT",
+  SOCIAL: "COLLEAGUE",
+  EXISTENCE: "SELF",
+};
+
+const relationBiasByPressureField: Record<PressureSeedField, GuanyaoCoreRelation[]> = {
+  POWER: ["BOSS", "SYSTEM"],
+  INTEREST: ["PARTNER_BUSINESS", "CLIENT", "SYSTEM"],
+  RELATION: ["PARTNER_ROMANTIC", "FRIEND"],
+  FAMILY: ["PARENT", "CHILD"],
+  SOCIAL: ["COLLEAGUE", "FRIEND", "SYSTEM"],
+  EXISTENCE: ["SELF", "SYSTEM"],
+};
+
+const matrixSemanticHintsByPressureField: Record<PressureSeedField, { mechanism: string; engineHint: string; mappingHint: string; tags: string[] }> = {
+  POWER: {
+    mechanism: "权力、评价与控制权压力正在进入现实场。",
+    engineHint: "控制权 决策权 权力 评价 规则 谁说了算",
+    mappingHint: "权力结构与评价场压住用户位置。",
+    tags: ["权力", "评价", "控制权", "决策权", "规则"],
+  },
+  INTEREST: {
+    mechanism: "资源、利益与交换结构正在进入现实场。",
+    engineHint: "关系 冲突 交换 合作 谈判 资源 分成",
+    mappingHint: "资源交换与利益分配正在制造外部压力。",
+    tags: ["利益", "资源", "交换", "合作", "谈判"],
+  },
+  RELATION: {
+    mechanism: "关系回应、亲密连接与沟通成本正在进入现实场。",
+    engineHint: "关系 冲突 沟通 回应 缓和 交换",
+    mappingHint: "关系反馈与沟通摩擦正在牵引用户。",
+    tags: ["关系", "回应", "沟通", "冲突", "交换"],
+  },
+  FAMILY: {
+    mechanism: "家庭责任、控制与托底需求正在进入现实场。",
+    engineHint: "家庭 财务 责任 承载 托底 供养 家里",
+    mappingHint: "家庭承载与责任结构压向用户。",
+    tags: ["家庭", "责任", "承载", "托底", "供养"],
+  },
+  SOCIAL: {
+    mechanism: "归属、人群位置与外部评价正在进入现实场。",
+    engineHint: "关系 冲突 沟通 圈子 归属 合作",
+    mappingHint: "社会归属与群体关系正在制造压力。",
+    tags: ["归属", "圈子", "关系", "人群", "评价"],
+  },
+  EXISTENCE: {
+    mechanism: "身份、存在感与阶段位置正在进入现实场。",
+    engineHint: "不知道 选择 分岔 未显形 身份 位置",
+    mappingHint: "身份位置与人生阶段的不确定正在压住用户。",
+    tags: ["身份", "存在", "位置", "不确定", "阶段"],
+  },
+};
+
+type StoredInitialCoordinates = {
+  birthYear?: number;
+  year?: number;
+  chronoCoordinate?: {
+    birthYear?: number;
+    year?: number;
+  };
+  birthChrono?: string;
+};
+
+function readJsonFromStorage<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
+function resolveAgeGroupFromAge(age: number): PressureSeedAgeGroup {
+  if (age >= 60) return "SIXTY_PLUS";
+  if (age >= 45) return "RESTRUCTURING";
+  if (age >= 35) return "MID_LIFE";
+  if (age >= 25) return "ESTABLISHING";
+  return "YOUTH";
+}
+
+function parseBirthYearFromStoredCoordinates(coordinates: StoredInitialCoordinates | null): number | null {
+  if (!coordinates) return null;
+
+  const directYear = coordinates.birthYear ?? coordinates.year ?? coordinates.chronoCoordinate?.birthYear ?? coordinates.chronoCoordinate?.year;
+  if (typeof directYear === "number" && Number.isFinite(directYear)) return directYear;
+
+  const chronoYear = coordinates.birthChrono?.match(/\b(19|20)\d{2}\b/)?.[0];
+  return chronoYear ? Number(chronoYear) : null;
+}
+
+function resolveRuntimeAgeGroup(context: GuanyaoPressureSeedSceneContext = {}): PressureSeedAgeGroup {
+  if (context.ageSegment) return context.ageSegment;
+
+  const birthYear = parseBirthYearFromStoredCoordinates(
+    readJsonFromStorage<StoredInitialCoordinates>("guanyao:initialCoordinates"),
+  );
+  if (!birthYear) return defaultAgeGroup;
+
+  return resolveAgeGroupFromAge(new Date().getFullYear() - birthYear);
+}
+
+function findMatrixNode(ageGroup: PressureSeedAgeGroup, pressureField: PressureSeedField): PressureSeedMatrixNode | undefined {
+  return GUANYAO_PRESSURE_SEED_MATRIX_V2.find(
+    (node) => node.ageGroup === ageGroup && node.pressureField === pressureField,
+  );
+}
+
+function resolvePressureFieldForTriplet(
+  ageGroup: PressureSeedAgeGroup,
+  context: GuanyaoPressureSeedSceneContext = {},
+): PressureSeedField {
+  const rotation = pressureFieldRotationByAgeGroup[ageGroup] ?? pressureFieldRotationByAgeGroup[defaultAgeGroup];
+  const preferredField = context.preferredFields?.find((field): field is PressureSeedField => rotation.includes(field));
+  if (preferredField) return preferredField;
+
+  const tripletOffset = Math.floor((context.excludeSeedIds?.length ?? 0) / 3);
+  return rotation[tripletOffset % rotation.length] ?? defaultPressureField;
+}
+
+function resolveMatrixNodeForTriplet(context: GuanyaoPressureSeedSceneContext = {}): PressureSeedMatrixNode | undefined {
+  const ageGroup = resolveRuntimeAgeGroup(context);
+  const rotation = pressureFieldRotationByAgeGroup[ageGroup] ?? pressureFieldRotationByAgeGroup[defaultAgeGroup];
+  const startField = resolvePressureFieldForTriplet(ageGroup, context);
+  const startIndex = Math.max(rotation.indexOf(startField), 0);
+
+  for (let index = 0; index < rotation.length; index += 1) {
+    const pressureField = rotation[(startIndex + index) % rotation.length];
+    const node = findMatrixNode(ageGroup, pressureField);
+    if (!node) continue;
+
+    const allExcluded = node.seeds.every((seed) => context.excludeSeedIds?.includes(seed.id));
+    if (!allExcluded) return node;
+  }
+
+  return findMatrixNode(defaultAgeGroup, defaultPressureField);
+}
+
+function toPressureSeedCandidateFromMatrixSeed(
+  node: PressureSeedMatrixNode,
+  matrixSeed: PressureSeedMatrixSeed,
+): GuanyaoPressureSeed {
+  const semanticHint = matrixSemanticHintsByPressureField[node.pressureField];
+  const pressureNature = matrixSeed.pressureNature as GuanyaoPressureNature;
+
+  return {
+    id: matrixSeed.id,
+    matrixCode: `MATRIX_V2_${node.ageGroup}_${node.pressureField}`,
+    pressureField: node.pressureField,
+    pressureNature,
+    primaryAge: node.ageGroup,
+    ageBias: [node.ageGroup],
+    primaryRelation: primaryRelationByPressureField[node.pressureField],
+    relationBias: relationBiasByPressureField[node.pressureField],
+    surface: matrixSeed.surface,
+    core: {
+      mechanism: semanticHint.mechanism,
+      engineHint: semanticHint.engineHint,
+    },
+    shell: matrixSeed.shell,
+    tags: [node.ageGroup, node.pressureField, matrixSeed.pressureNature, ...semanticHint.tags],
+    mappingHint: semanticHint.mappingHint,
+  };
+}
 
 function hasAgeOverlap(a: GuanyaoPressureSeed, b: GuanyaoPressureSeed): boolean {
   return hasIntersection(a.ageBias, b.ageBias);
@@ -155,7 +341,10 @@ export function getPressureSeedSceneFrontStage(seed: GuanyaoPressureSeed): {
   surface: string;
   shell: string;
 } {
-  return getPressureSeedFrontStage(seed);
+  return {
+    surface: seed.surface,
+    shell: seed.shell,
+  };
 }
 
 export function scorePressureSeedForScene(
@@ -193,41 +382,28 @@ export function scorePressureSeedForScene(
 export function getPressureSeedSceneTriplet(
   context: GuanyaoPressureSeedSceneContext = {},
 ): GuanyaoPressureSeedTriplet {
-  const candidates = GUANYAO_PRESSURE_SEED_DRAFT_POOL.map((seed) => scorePressureSeedForScene(seed, context))
-    .filter((candidate) => !(context.excludeSeedIds?.includes(candidate.seed.id) ?? false))
-    .sort((a, b) => b.score - a.score || a.seed.id.localeCompare(b.seed.id));
+  const node = resolveMatrixNodeForTriplet(context);
+  if (!node) {
+    console.warn("[guanyao] pressure seed matrix V2 node missing; triplet empty");
+  }
 
-  const anchorCandidate = candidates[0];
-  const anchor = anchorCandidate?.seed;
-  const remainingCandidates = anchor
-    ? candidates.filter((candidate) => candidate.seed.id !== anchor.id)
+  const selected = node
+    ? node.seeds
+        .filter((seed) => !(context.excludeSeedIds?.includes(seed.id) ?? false))
+        .slice(0, 3)
+        .map((seed) => toPressureSeedCandidateFromMatrixSeed(node, seed))
     : [];
-  const strongNeighborCandidate = anchor
-    ? [...remainingCandidates]
-        .map((candidate) => ({
-          ...candidate,
-          axisScore: getStrongAxisScore(candidate.seed, anchor),
-        }))
-        .filter((candidate) => candidate.axisScore > 0)
-        .sort((a, b) => b.axisScore + b.score - (a.axisScore + a.score) || a.seed.id.localeCompare(b.seed.id))[0] ??
-      remainingCandidates[0]
-    : undefined;
-  const strongNeighbor = strongNeighborCandidate?.seed;
-  const adjacentCandidates = remainingCandidates.filter((candidate) => candidate.seed.id !== strongNeighbor?.id);
-  const adjacentCandidate = anchor
-    ? [...adjacentCandidates]
-        .map((candidate) => ({
-          ...candidate,
-          axisScore: getAdjacentAxisScore(candidate.seed, anchor, strongNeighbor),
-        }))
-        .filter((candidate) => candidate.axisScore > 0)
-        .sort((a, b) => b.axisScore + b.score - (a.axisScore + a.score) || a.seed.id.localeCompare(b.seed.id))[0] ??
-      adjacentCandidates[0]
-    : undefined;
-  const adjacentSeed = adjacentCandidate?.seed;
-  const selected = [anchor, strongNeighbor, adjacentSeed].filter((seed): seed is GuanyaoPressureSeed => Boolean(seed));
-  const strongAxisReason = anchor && strongNeighbor ? getStrongAxisReasons(strongNeighbor, anchor) : [];
-  const adjacentAxisReason = anchor && adjacentSeed ? getAdjacentAxisReasons(adjacentSeed, anchor, strongNeighbor) : [];
+
+  if (node && selected.length < 3) {
+    selected.push(
+      ...node.seeds
+        .filter((seed) => !selected.some((selectedSeed) => selectedSeed.id === seed.id))
+        .slice(0, 3 - selected.length)
+        .map((seed) => toPressureSeedCandidateFromMatrixSeed(node, seed)),
+    );
+  }
+
+  const [anchor, strongNeighbor, adjacentSeed] = selected;
 
   return {
     seeds: selected,
@@ -236,16 +412,18 @@ export function getPressureSeedSceneTriplet(
       ...getPressureSeedSceneFrontStage(seed),
     })),
     strategy: {
-      source: "DRAFT_POOL_V1",
-      totalCandidates: candidates.length,
-      selectionMode: "CONTEXTUAL_TRIPLET",
-      compositionMode: "ANCHOR_STRONG_ADJACENT",
+      source: "SEED_MATRIX_V2",
+      totalCandidates: node?.seeds.length ?? 0,
+      selectionMode: "AGE_FIELD_NODE",
+      compositionMode: "SAME_NODE_TRIPLET",
+      ageGroup: node?.ageGroup,
+      pressureField: node?.pressureField,
       anchorSeedId: anchor?.id,
       strongNeighborSeedId: strongNeighbor?.id,
       adjacentSeedId: adjacentSeed?.id,
       relation: {
-        strongAxisReason,
-        adjacentAxisReason,
+        strongAxisReason: node ? [`same matrix node: ${node.ageGroup}_${node.pressureField}`] : [],
+        adjacentAxisReason: node ? [`same matrix node: ${node.ageGroup}_${node.pressureField}`] : [],
       },
     },
   };
@@ -286,6 +464,7 @@ export function buildSelectedPressureSeedContext(
   return {
     selectedPressureSeedId: seed.id,
     matrixCode: seed.matrixCode,
+    ageGroup: seed.primaryAge,
     pressureField: seed.pressureField,
     pressureNature: seed.pressureNature,
     primaryRelation: seed.primaryRelation,
@@ -317,8 +496,10 @@ export function auditGuanyaoPressureSeedSceneBindingStrategy(): GuanyaoPressureS
     "matrixCode",
   ];
 
-  if (GUANYAO_PRESSURE_SEED_DRAFT_POOL.length !== 72) {
-    errors.push(`total seeds expected 72, got ${GUANYAO_PRESSURE_SEED_DRAFT_POOL.length}`);
+  const totalMatrixSeeds = GUANYAO_PRESSURE_SEED_MATRIX_V2.reduce((sum, node) => sum + node.seeds.length, 0);
+
+  if (totalMatrixSeeds !== 90) {
+    errors.push(`total matrix seeds expected 90, got ${totalMatrixSeeds}`);
   }
   if (sampleTriplet.seeds.length !== 3) {
     errors.push(`sample triplet expected 3, got ${sampleTriplet.seeds.length}`);
@@ -329,22 +510,23 @@ export function auditGuanyaoPressureSeedSceneBindingStrategy(): GuanyaoPressureS
   if (new Set(sampleTriplet.seeds.map((seed) => seed.id)).size !== sampleTriplet.seeds.length) {
     errors.push("sample triplet contains duplicate seed ids");
   }
-  if (sampleTriplet.strategy.selectionMode !== "CONTEXTUAL_TRIPLET") {
-    errors.push(`selectionMode expected CONTEXTUAL_TRIPLET, got ${sampleTriplet.strategy.selectionMode}`);
+  if (sampleTriplet.strategy.source !== "SEED_MATRIX_V2") {
+    errors.push(`source expected SEED_MATRIX_V2, got ${sampleTriplet.strategy.source}`);
   }
-  if (sampleTriplet.strategy.compositionMode !== "ANCHOR_STRONG_ADJACENT") {
-    errors.push(`compositionMode expected ANCHOR_STRONG_ADJACENT, got ${sampleTriplet.strategy.compositionMode}`);
+  if (sampleTriplet.strategy.selectionMode !== "AGE_FIELD_NODE") {
+    errors.push(`selectionMode expected AGE_FIELD_NODE, got ${sampleTriplet.strategy.selectionMode}`);
   }
-  const [anchorSeed, strongNeighborSeed, adjacentSeed] = sampleTriplet.seeds;
-  if (anchorSeed && strongNeighborSeed && getStrongAxisScore(strongNeighborSeed, anchorSeed) <= 0) {
-    errors.push(`${strongNeighborSeed.id} does not share a strong axis with ${anchorSeed.id}`);
+  if (sampleTriplet.strategy.compositionMode !== "SAME_NODE_TRIPLET") {
+    errors.push(`compositionMode expected SAME_NODE_TRIPLET, got ${sampleTriplet.strategy.compositionMode}`);
   }
-  if (
-    anchorSeed &&
-    adjacentSeed &&
-    getAdjacentAxisScore(adjacentSeed, anchorSeed, strongNeighborSeed) <= 0
-  ) {
-    errors.push(`${adjacentSeed.id} does not share an adjacent axis with ${anchorSeed.id}`);
+  if (!sampleTriplet.strategy.ageGroup) {
+    errors.push("sample triplet missing ageGroup");
+  }
+  if (!sampleTriplet.strategy.pressureField) {
+    errors.push("sample triplet missing pressureField");
+  }
+  if (new Set(sampleTriplet.seeds.map((seed) => seed.matrixCode)).size !== 1) {
+    errors.push("sample triplet seeds expected same matrixCode");
   }
 
   sampleTriplet.frontStage.forEach((frontSeed) => {
@@ -365,6 +547,7 @@ export function auditGuanyaoPressureSeedSceneBindingStrategy(): GuanyaoPressureS
     const requiredContextKeys: Array<keyof GuanyaoSelectedPressureSeedContext> = [
       "selectedPressureSeedId",
       "matrixCode",
+      "ageGroup",
       "pressureField",
       "pressureNature",
       "primaryRelation",
@@ -391,7 +574,7 @@ export function auditGuanyaoPressureSeedSceneBindingStrategy(): GuanyaoPressureS
 
   return {
     ok: errors.length === 0,
-    totalSeeds: GUANYAO_PRESSURE_SEED_DRAFT_POOL.length,
+    totalSeeds: totalMatrixSeeds,
     errors,
     sampleTripletSize: sampleTriplet.seeds.length,
     compositionMode: sampleTriplet.strategy.compositionMode,
