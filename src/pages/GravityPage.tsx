@@ -4,6 +4,7 @@ import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
+import { getPressureSeedSixSpaceProjection } from "../data/guanyaoPressureSeedSixSpaceProjectionRegistry";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getDemoDynamicsResult } from "../services/guanyaoInteractionService";
 import { getSession } from "../services/sessionService";
@@ -11,6 +12,7 @@ import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getCollapseYaoTexts, getGravityYaoTexts } from "../services/yaoTextService";
 import { appendInteractiveYaoChoice, generateMockAutoYaoPath, getAutoYaoPath, getInteractiveYaoPath, resetInteractiveYaoPath } from "../services/trajectoryService";
 import type { GuanyaoSession, MotherCodeResult, SceneSlice, YaoBit } from "../types";
+import type { PressureSeedSixSpaceProjection, PressureSeedSpaceProjection } from "../types/guanyaoPressureSeed";
 
 const USE_HEXAGRAM_DELIVERY_SHELL = true;
 
@@ -76,29 +78,63 @@ type YaoRitualScene = {
 type GravitySelectedPressureSeedContext = {
   selectedPressureSeedId?: string;
   matrixCode?: string;
-  pressureField?: string;
-  pressureNature?: string;
-  primaryRelation?: string;
   surface?: string;
   shell?: string;
-  pressureIntensity?: number;
-  pressureConfidence?: number;
-};
-
-type GravityTripleForceLandingResult = {
-  selectedPressureSeedId?: string;
-};
-
-type GravityTripleForceFrontStage = {
-  selectedPressureSeedId?: string;
-  ritualLines?: string[];
-  readouts?: Array<{
-    label: string;
-    frontStageLine: string;
-  }>;
 };
 
 type HexagramPageStage = "card" | "read";
+type BodyIntensity = "yao1" | "yao2" | "yao3";
+type BodySpaceStep = "entry" | "breakthrough" | "weapon" | "completed";
+type BodyWeapon = "pause" | "breath";
+type EmotionIntensity = "yao1" | "yao2" | "yao3";
+type EmotionSpaceStep = "entry" | "breakthrough" | "weapon" | "completed";
+type EmotionWeapon = "pause" | "name";
+
+const bodyIntensityOptions: Array<{ value: BodyIntensity; label: string }> = [
+  { value: "yao1", label: "有一点，但不明显" },
+  { value: "yao2", label: "能感觉到，还能撑" },
+  { value: "yao3", label: "身体已经在反应了" },
+];
+
+const bodyWeaponOptions: Array<{ value: BodyWeapon; label: string; cost: number; line: string; completedLines: string[] }> = [
+  {
+    value: "pause",
+    label: "停一下",
+    cost: 1,
+    line: "在身体准备防御时，故意不绷紧。",
+    completedLines: ["下一次身体准备防御时，", "故意不绷紧。"],
+  },
+  {
+    value: "breath",
+    label: "松一口气，再开口",
+    cost: 2,
+    line: "下一次被质疑时，先松一口气，再开口。",
+    completedLines: ["下一次被质疑时，", "先松一口气，", "再开口。"],
+  },
+];
+
+const emotionIntensityOptions: Array<{ value: EmotionIntensity; label: string }> = [
+  { value: "yao1", label: "有一点，但不明显" },
+  { value: "yao2", label: "能感觉到，还能压" },
+  { value: "yao3", label: "情绪已经在接管了" },
+];
+
+const emotionWeaponOptions: Array<{ value: EmotionWeapon; label: string; cost: number; line: string; completedLines: string[] }> = [
+  {
+    value: "pause",
+    label: "停一下",
+    cost: 1,
+    line: "在情绪接管前，故意等三秒。",
+    completedLines: ["下一次情绪准备接管时，", "故意等三秒。", "先停住，", "再开口。"],
+  },
+  {
+    value: "name",
+    label: "命名它",
+    cost: 2,
+    line: "下一次恐惧来时，先说出它的名字。",
+    completedLines: ["下一次恐惧来时，", "先说出它的名字：", "这是恐惧，", "不是事实。"],
+  },
+];
 
 function readJsonFromStorage<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
@@ -115,6 +151,27 @@ function readJsonFromStorage<T>(key: string): T | null {
 
 function getMotherCodeFromSession(session: GuanyaoSession): MotherCodeResult {
   return session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode ?? buildMotherCodeResult(session);
+}
+
+function getProjectionForYaoLayer(
+  projection: PressureSeedSixSpaceProjection,
+  yaoLayer?: string,
+): PressureSeedSpaceProjection | undefined {
+  if (yaoLayer === "body") return projection.body;
+  if (yaoLayer === "emotion") return projection.emotion;
+  if (yaoLayer === "thought") return projection.thought;
+  if (yaoLayer === "behavior") return projection.action;
+  if (yaoLayer === "memory") return projection.memory;
+  if (yaoLayer === "motivation") return projection.motive;
+
+  return undefined;
+}
+
+function buildSpaceNarrativeLines(projection?: PressureSeedSpaceProjection) {
+  return [projection?.takeover, projection?.reaction]
+    .map((line) => line?.trim())
+    .filter((line): line is string => Boolean(line))
+    .slice(0, 3);
 }
 
 function getSceneLine(session: GuanyaoSession) {
@@ -203,21 +260,35 @@ function HexagramCodeDeliveryShell() {
     pauseReason: string;
     transmissionReading: string;
   } | null>(null);
+  const [bodyIntensity, setBodyIntensity] = useState<BodyIntensity | null>(() =>
+    readJsonFromStorage<BodyIntensity>("guanyao:sixSpace:bodyIntensity"),
+  );
+  const [bodySpaceStep, setBodySpaceStep] = useState<BodySpaceStep>("entry");
+  const [selectedBodyWeapon, setSelectedBodyWeapon] = useState<BodyWeapon | null>(() =>
+    readJsonFromStorage<BodyWeapon>("guanyao:selectedBodyWeapon"),
+  );
+  const [bodySpaceHint, setBodySpaceHint] = useState("");
+  const [emotionIntensity, setEmotionIntensity] = useState<EmotionIntensity | null>(() =>
+    readJsonFromStorage<EmotionIntensity>("guanyao:sixSpace:emotionIntensity"),
+  );
+  const [emotionSpaceStep, setEmotionSpaceStep] = useState<EmotionSpaceStep>("entry");
+  const [selectedEmotionWeapon, setSelectedEmotionWeapon] = useState<EmotionWeapon | null>(() =>
+    readJsonFromStorage<EmotionWeapon>("guanyao:selectedEmotionWeapon"),
+  );
+  const [emotionSpaceHint, setEmotionSpaceHint] = useState("");
   const [readModel] = useState(() => getGuanyaoR8ReadModel());
   const [selectedPressureSeedContext] = useState(() =>
     readJsonFromStorage<GravitySelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
   );
-  const [tripleForceLandingResult] = useState(() =>
-    readJsonFromStorage<GravityTripleForceLandingResult>("guanyao:tripleForceLandingResult"),
-  );
-  const [tripleForceFrontStage] = useState(() =>
-    readJsonFromStorage<GravityTripleForceFrontStage>("guanyao:tripleForceFrontStage"),
+  const [pressureSeedProjection] = useState(() =>
+    getPressureSeedSixSpaceProjection(selectedPressureSeedContext?.selectedPressureSeedId ?? "unknown-selected-pressure-seed"),
   );
   const hexagramDisplay = readModel.hexagramStage;
-  const selectedSeedIndex = getSession().selectedSceneSeed?.seedIndex;
-  const selectedSeedLabel = [1, 2, 3].includes(selectedSeedIndex ?? 0)
-    ? `SEED ${String(selectedSeedIndex).padStart(2, "0")}`
-    : null;
+  const displayCode = hexagramDisplay.displayCode || "019";
+  const displayName = hexagramDisplay.displayName || "地泽临";
+  const displayTitle = hexagramDisplay.displayTitle || "悬崖边";
+  const hexagramBoundaryLine = "你被架在责任与自我的边界上。";
+  const selectedPressureSeedSurface = selectedPressureSeedContext?.surface || "这件事刚刚发生过。";
   const hexagramReadAnchor =
     hexagramDisplay.displayCode && hexagramDisplay.displayName && hexagramDisplay.displayTitle
       ? `NO.${hexagramDisplay.displayCode} · ${hexagramDisplay.displayName}《${hexagramDisplay.displayTitle}》`
@@ -235,21 +306,151 @@ function HexagramCodeDeliveryShell() {
         ? `${readModel.hexagramStage.interactionReading}\n这就是《${readModel.hexagramStage.displayTitle}》。`
         : readModel.hexagramStage.interactionReading
       : "该项读数正在生成。";
-  const hasSelectedPressureSeedContext = Boolean(
-    selectedPressureSeedContext?.selectedPressureSeedId ?? tripleForceFrontStage?.selectedPressureSeedId ?? tripleForceLandingResult?.selectedPressureSeedId,
-  );
   const currentSpace = sixDimensionStep >= 1 && sixDimensionStep <= 6 ? readModel.yaoStage.transmissions[sixDimensionStep - 1] : null;
   const canTreatCurrentSpace = currentSpace?.pauseSignal === "clear" || currentSpace?.pauseSignal === "strong";
+  const currentProjection = getProjectionForYaoLayer(pressureSeedProjection, currentSpace?.yaoLayer);
+  const currentCutSignal = currentProjection?.hook ?? "这一层已经留下反应。";
+  const currentNarrativeLines = buildSpaceNarrativeLines(currentProjection);
   const currentSpaceSignal =
     canTreatCurrentSpace
-      ? "本局已出现行动信号。左滑进行处置，右滑进入下一空间。"
+      ? "切口信号已显影。"
       : currentSpace?.pauseSignal === "soft"
-        ? "本局出现轻微信号。右滑进入下一空间。"
+        ? "轻微信号已显影。"
         : "继续进入下一空间。";
 
   function handleNextSpace() {
     setSelectedSpaceAction(null);
     setSixDimensionStep((currentStep) => Math.min(currentStep + 1, 7));
+  }
+
+  function handleNextSpaceFromBody() {
+    setBodySpaceStep("entry");
+    setBodySpaceHint("");
+    handleNextSpace();
+  }
+
+  function handleNextSpaceFromEmotion() {
+    setEmotionSpaceStep("entry");
+    setEmotionSpaceHint("");
+    handleNextSpace();
+  }
+
+  function selectBodyIntensity(value: BodyIntensity) {
+    setBodyIntensity(value);
+    setBodySpaceHint("");
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("guanyao:sixSpace:bodyIntensity", value);
+    }
+  }
+
+  function requireBodyIntensity() {
+    setBodySpaceHint("先看见它到了什么程度。");
+  }
+
+  function handleBodyNextSpace() {
+    if (!bodyIntensity) {
+      requireBodyIntensity();
+      return;
+    }
+
+    handleNextSpace();
+  }
+
+  function handleBodyBreakSpace() {
+    if (!bodyIntensity) {
+      requireBodyIntensity();
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("guanyao:selectedBreakSpace", "body");
+    }
+    setBodySpaceHint("");
+    setBodySpaceStep("breakthrough");
+  }
+
+  function handleOpenBodyWeaponStep() {
+    setBodySpaceHint("");
+    setBodySpaceStep("weapon");
+  }
+
+  function handleCancelBodyWeapon() {
+    setBodySpaceHint("");
+    setBodySpaceStep("entry");
+  }
+
+  function handleWakeBodyWeapon() {
+    if (!selectedBodyWeapon) {
+      setBodySpaceHint("先选一件武器。");
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("guanyao:selectedBodyWeapon", selectedBodyWeapon);
+      window.localStorage.setItem("guanyao:selectedBreakSpace", "body");
+      window.localStorage.setItem("guanyao:bodyBreakthroughCompleted", "true");
+    }
+    setBodySpaceHint("");
+    setBodySpaceStep("completed");
+  }
+
+  function selectEmotionIntensity(value: EmotionIntensity) {
+    setEmotionIntensity(value);
+    setEmotionSpaceHint("");
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("guanyao:sixSpace:emotionIntensity", value);
+    }
+  }
+
+  function requireEmotionIntensity() {
+    setEmotionSpaceHint("先看见它到了什么程度。");
+  }
+
+  function handleEmotionNextSpace() {
+    if (!emotionIntensity) {
+      requireEmotionIntensity();
+      return;
+    }
+
+    handleNextSpace();
+  }
+
+  function handleEmotionBreakSpace() {
+    if (!emotionIntensity) {
+      requireEmotionIntensity();
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("guanyao:selectedBreakSpace", "emotion");
+    }
+    setEmotionSpaceHint("");
+    setEmotionSpaceStep("breakthrough");
+  }
+
+  function handleOpenEmotionWeaponStep() {
+    setEmotionSpaceHint("");
+    setEmotionSpaceStep("weapon");
+  }
+
+  function handleCancelEmotionWeapon() {
+    setEmotionSpaceHint("");
+    setEmotionSpaceStep("entry");
+  }
+
+  function handleWakeEmotionWeapon() {
+    if (!selectedEmotionWeapon) {
+      setEmotionSpaceHint("先选一件武器。");
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("guanyao:selectedBreakSpace", "emotion");
+      window.localStorage.setItem("guanyao:selectedEmotionWeapon", selectedEmotionWeapon);
+      window.localStorage.setItem("guanyao:emotionBreakthroughCompleted", "true");
+    }
+    setEmotionSpaceHint("");
+    setEmotionSpaceStep("completed");
   }
 
   function handleSelectSpaceAction() {
@@ -291,16 +492,28 @@ function HexagramCodeDeliveryShell() {
         }}
       >
         {sixDimensionStep === 0
-          ? hexagramPageStage === "card"
-            ? "05｜本局卦码卡"
-            : "卦码读取"
+          ? "05｜卦码生成"
           : sixDimensionStep === 7
-            ? "05｜六维观变完成"
+            ? "05｜看见卡住的位置"
             : `GY / SPACE-0${sixDimensionStep} / ${currentSpace?.spaceCode ?? "SPACE"}`}
       </span>
 
       {sixDimensionStep === 0 && hexagramPageStage === "card" ? (
         <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.52)", fontSize: 16, lineHeight: 1.6 }}>
+              它叫
+            </p>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(34px, 10vw, 52px)", lineHeight: 1.08, fontWeight: 390 }}>
+              「{displayName}」
+            </h1>
+            <p style={{ margin: 0, color: "rgba(199,169,107,0.78)", fontSize: 22, lineHeight: 1.35 }}>
+              《{displayTitle}》
+            </p>
+            <p style={{ margin: "4px 0 0", color: "rgba(245,245,245,0.64)", fontSize: 16, lineHeight: 1.7 }}>
+              {hexagramBoundaryLine}
+            </p>
+          </header>
           <section
             aria-label="本局卦码卡"
             style={{
@@ -323,48 +536,26 @@ function HexagramCodeDeliveryShell() {
               [ 本局卦码卡 ]
             </span>
             <span style={{ color: "rgba(245,245,245,0.38)", fontSize: 12, lineHeight: 1.4 }}>
-              {hexagramDisplay.displayCode ? `No.${hexagramDisplay.displayCode}` : "CODE_RENDERING"}
+              NO.{displayCode}
             </span>
             <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 30, fontWeight: 380, lineHeight: 1.15 }}>
-              {hexagramDisplay.displayName}
+              {displayName}
             </strong>
-            {hexagramDisplay.displayTitle ? (
-              <span style={{ color: "rgba(199,169,107,0.76)", fontSize: 17, lineHeight: 1.4 }}>
-                《{hexagramDisplay.displayTitle}》
-              </span>
-            ) : null}
-            <span
-              style={{
-                color: "rgba(245,245,245,0.64)",
-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                fontSize: 12,
-                letterSpacing: "0.1em",
-              }}
-            >
-              上{readModel.hexagramStage.upperTrigram} 下{readModel.hexagramStage.lowerTrigram}｜{readModel.hexagramStage.gravityLabel}
-            </span>
-            <span
-              style={{
-                color: "rgba(245,245,245,0.34)",
-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                fontSize: 11,
-                letterSpacing: "0.13em",
-              }}
-            >
-              HEXAGRAM_CODE_RENDERED
+            <span style={{ color: "rgba(199,169,107,0.76)", fontSize: 17, lineHeight: 1.4 }}>
+              《{displayTitle}》
             </span>
           </section>
-          <CausalRail statusLabel="卦码卡已生成" rightHint="右滑进入卦码读取" onRight={() => setHexagramPageStage("read")} />
+          <CausalRail statusLabel="这一局已成形" rightHint="右滑，看它卡在哪里？" onRight={handleNextSpace} />
         </>
       ) : null}
 
       {sixDimensionStep === 0 && hexagramPageStage === "read" ? (
         <>
           <h1 style={{ margin: 0, color: "rgba(245,245,245,0.88)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
-            卦码读取
+            这一局，为什么正在说你？
           </h1>
           <section
-            aria-label="本局卦码读取卡"
+            aria-label="本局说明卡"
             style={{
               display: "grid",
               gap: 18,
@@ -383,7 +574,7 @@ function HexagramCodeDeliveryShell() {
                 letterSpacing: "0.16em",
               }}
             >
-              [ 本局卦码读取卡 ]
+              [ 这一局正在说你 ]
             </span>
             <div style={{ display: "grid", gap: 8 }}>
               <p
@@ -422,80 +613,641 @@ function HexagramCodeDeliveryShell() {
             ))}
             <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.24), transparent)" }} />
           </section>
-          <CausalRail statusLabel="进入六维人格空间" rightHint="右滑进入六维人格空间" onRight={handleNextSpace} />
+          <CausalRail statusLabel="看它卡在哪里" rightHint="右滑，看它卡在哪里" onRight={handleNextSpace} />
         </>
       ) : null}
 
-      {currentSpace ? (
+      {currentSpace && sixDimensionStep === 1 && bodySpaceStep === "entry" ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(34px, 10vw, 52px)", lineHeight: 1.08, fontWeight: 390 }}>
+              身体空间
+            </h1>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 18, lineHeight: 1.65 }}>
+              “你的身体，比你先认输了。”
+            </p>
+          </header>
+
+          <section
+            aria-label="身体空间感知层"
+            style={{
+              display: "grid",
+              gap: 18,
+              padding: "18px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.38)",
+            }}
+          >
+            <div style={{ display: "grid", gap: 8 }}>
+              <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+                现实之刺：
+              </span>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.7 }}>
+                {selectedPressureSeedSurface}
+              </p>
+            </div>
+
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 16, lineHeight: 1.74 }}>
+              它一进身体，
+              <br />
+              最先变成了肩背收紧、呼吸变浅、还没开口就开始紧张。
+            </p>
+
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
+
+            <div style={{ display: "grid", gap: 10 }}>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.6 }}>
+                它到了什么程度？
+              </p>
+              <div style={{ display: "grid", gap: 8 }}>
+                {bodyIntensityOptions.map((option) => {
+                  const isSelected = bodyIntensity === option.value;
+
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => selectBodyIntensity(option.value)}
+                      style={{
+                        appearance: "none",
+                        border: `1px solid ${isSelected ? "rgba(0,184,212,0.78)" : "rgba(245,245,245,0.18)"}`,
+                        background: isSelected ? "rgba(0,184,212,0.08)" : "rgba(245,245,245,0.02)",
+                        color: isSelected ? "rgba(245,245,245,0.88)" : "rgba(245,245,245,0.62)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        minHeight: 42,
+                        padding: "10px 12px",
+                        textAlign: "left",
+                        font: "inherit",
+                      }}
+                    >
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          width: 9,
+                          height: 9,
+                          borderRadius: "50%",
+                          border: `1px solid ${isSelected ? "rgba(0,184,212,0.95)" : "rgba(245,245,245,0.42)"}`,
+                          background: isSelected ? "rgba(0,184,212,0.9)" : "transparent",
+                          boxShadow: isSelected ? "0 0 12px rgba(0,184,212,0.36)" : "none",
+                          flex: "0 0 auto",
+                        }}
+                      />
+                      <span>{option.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
+
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.7 }}>
+              你的旧反应是：撑着，假装没事。
+            </p>
+            {bodySpaceHint ? (
+              <p style={{ margin: 0, color: "rgba(0,184,212,0.78)", fontSize: 14, lineHeight: 1.58 }}>
+                {bodySpaceHint}
+              </p>
+            ) : null}
+          </section>
+
+          <CausalRail
+            statusLabel={bodySpaceHint || "先看见它到了什么程度。"}
+            leftHint="左滑，选择破局点"
+            rightHint="右滑，进入下一空间"
+            onLeft={handleBodyBreakSpace}
+            onRight={handleBodyNextSpace}
+          />
+        </>
+      ) : null}
+
+      {currentSpace && sixDimensionStep === 1 && bodySpaceStep === "breakthrough" ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(30px, 8vw, 42px)", lineHeight: 1.1, fontWeight: 390 }}>
+              身体空间 · 破局推演
+            </h1>
+          </header>
+
+          <section
+            aria-label="身体空间破局推演"
+            style={{
+              display: "grid",
+              gap: 18,
+              padding: "18px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.38)",
+            }}
+          >
+            {[
+              ["它开始应激了。", "一道命令、一个眼神，\n身体瞬间绷直，\n准备好防御。"],
+              ["它认输了。", "你的身体，比你先认输了。\n不是不够强，\n是它替你撑了太久。"],
+              ["它问你：", "这口气，\n还要顶到什么时候？"],
+            ].map(([title, body]) => (
+              <div key={title} style={{ display: "grid", gap: 8 }}>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 18, lineHeight: 1.6 }}>
+                  {title}
+                </p>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 16, lineHeight: 1.72, whiteSpace: "pre-line" }}>
+                  {body}
+                </p>
+                <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.24), transparent)" }} />
+              </div>
+            ))}
+          </section>
+
+          <CausalRail
+            statusLabel="身体空间正在打开破局点"
+            leftHint="左滑，选择武器"
+            rightHint="右滑，停在这里"
+            onLeft={handleOpenBodyWeaponStep}
+            onRight={() => undefined}
+          />
+        </>
+      ) : null}
+
+      {currentSpace && sixDimensionStep === 1 && bodySpaceStep === "weapon" ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(30px, 8vw, 42px)", lineHeight: 1.1, fontWeight: 390 }}>
+              身体空间 · 破局点
+            </h1>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 18, lineHeight: 1.6 }}>
+              你需要什么武器？
+            </p>
+          </header>
+
+          <section
+            aria-label="身体空间武器选择"
+            style={{
+              display: "grid",
+              gap: 12,
+              padding: "18px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.38)",
+            }}
+          >
+            {bodyWeaponOptions.map((weapon) => {
+              const isSelected = selectedBodyWeapon === weapon.value;
+
+              return (
+                <button
+                  key={weapon.value}
+                  type="button"
+                  onClick={() => {
+                    setSelectedBodyWeapon(weapon.value);
+                    setBodySpaceHint("");
+                  }}
+                  style={{
+                    appearance: "none",
+                    border: `1px solid ${isSelected ? "rgba(0,184,212,0.78)" : "rgba(245,245,245,0.18)"}`,
+                    background: isSelected ? "rgba(0,184,212,0.08)" : "rgba(245,245,245,0.02)",
+                    color: "rgba(245,245,245,0.74)",
+                    display: "grid",
+                    gap: 7,
+                    padding: "14px 12px",
+                    textAlign: "left",
+                    font: "inherit",
+                  }}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: 10, color: isSelected ? "rgba(245,245,245,0.9)" : "rgba(245,245,245,0.72)" }}>
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        width: 9,
+                        height: 9,
+                        borderRadius: "50%",
+                        border: `1px solid ${isSelected ? "rgba(0,184,212,0.95)" : "rgba(245,245,245,0.42)"}`,
+                        background: isSelected ? "rgba(0,184,212,0.9)" : "transparent",
+                        boxShadow: isSelected ? "0 0 12px rgba(0,184,212,0.36)" : "none",
+                        flex: "0 0 auto",
+                      }}
+                    />
+                    {weapon.label}
+                  </span>
+                  <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12, letterSpacing: "0.08em" }}>
+                    消耗 ⌛ {weapon.cost}
+                  </span>
+                  <span style={{ color: "rgba(245,245,245,0.58)", fontSize: 14, lineHeight: 1.58 }}>
+                    “{weapon.line}”
+                  </span>
+                </button>
+              );
+            })}
+
+            {bodySpaceHint ? (
+              <p style={{ margin: 0, color: "rgba(0,184,212,0.78)", fontSize: 14, lineHeight: 1.58 }}>
+                {bodySpaceHint}
+              </p>
+            ) : null}
+
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, paddingTop: 6 }}>
+              <button
+                type="button"
+                onClick={handleCancelBodyWeapon}
+                style={{
+                  appearance: "none",
+                  border: "1px solid rgba(245,245,245,0.18)",
+                  background: "transparent",
+                  color: "rgba(245,245,245,0.58)",
+                  minHeight: 40,
+                  padding: "8px 18px",
+                  font: "inherit",
+                }}
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={handleWakeBodyWeapon}
+                style={{
+                  appearance: "none",
+                  border: "1px solid rgba(0,184,212,0.72)",
+                  background: "rgba(0,184,212,0.08)",
+                  color: "rgba(245,245,245,0.88)",
+                  minHeight: 40,
+                  padding: "8px 18px",
+                  font: "inherit",
+                }}
+              >
+                唤醒
+              </button>
+            </div>
+          </section>
+        </>
+      ) : null}
+
+      {currentSpace && sixDimensionStep === 1 && bodySpaceStep === "completed" ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(30px, 8vw, 42px)", lineHeight: 1.1, fontWeight: 390 }}>
+              器法已落成。
+            </h1>
+          </header>
+
+          <section
+            aria-label="身体空间器法落成"
+            style={{
+              display: "grid",
+              gap: 14,
+              padding: "18px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.38)",
+            }}
+          >
+            {(bodyWeaponOptions.find((weapon) => weapon.value === selectedBodyWeapon)?.completedLines ?? bodyWeaponOptions[0].completedLines).map((line) => (
+              <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 18, lineHeight: 1.62 }}>
+                {line}
+              </p>
+            ))}
+            <p style={{ margin: "4px 0 0", color: "rgba(199,169,107,0.76)", fontSize: 16, lineHeight: 1.62 }}>
+              已存入你的武器库。
+            </p>
+          </section>
+
+          <CausalRail
+            statusLabel="器法已落成"
+            rightHint="右滑，进入下一空间"
+            onRight={handleNextSpaceFromBody}
+          />
+        </>
+      ) : null}
+
+      {currentSpace && sixDimensionStep === 2 && emotionSpaceStep === "entry" ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(34px, 10vw, 52px)", lineHeight: 1.08, fontWeight: 390 }}>
+              情绪空间
+            </h1>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 18, lineHeight: 1.65 }}>
+              “你被不安接管了。”
+            </p>
+          </header>
+
+          <section
+            aria-label="情绪空间感知层"
+            style={{
+              display: "grid",
+              gap: 18,
+              padding: "18px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.38)",
+            }}
+          >
+            <div style={{ display: "grid", gap: 8 }}>
+              <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+                现实之刺：
+              </span>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.7 }}>
+                {selectedPressureSeedSurface}
+              </p>
+            </div>
+
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 16, lineHeight: 1.74 }}>
+              你还没反应过来，
+              <br />
+              情绪已经先到了。
+            </p>
+
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
+
+            <div style={{ display: "grid", gap: 10 }}>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.6 }}>
+                它到了什么程度？
+              </p>
+              <div style={{ display: "grid", gap: 8 }}>
+                {emotionIntensityOptions.map((option) => {
+                  const isSelected = emotionIntensity === option.value;
+
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => selectEmotionIntensity(option.value)}
+                      style={{
+                        appearance: "none",
+                        border: `1px solid ${isSelected ? "rgba(0,184,212,0.78)" : "rgba(245,245,245,0.18)"}`,
+                        background: isSelected ? "rgba(0,184,212,0.08)" : "rgba(245,245,245,0.02)",
+                        color: isSelected ? "rgba(245,245,245,0.88)" : "rgba(245,245,245,0.62)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        minHeight: 42,
+                        padding: "10px 12px",
+                        textAlign: "left",
+                        font: "inherit",
+                      }}
+                    >
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          width: 9,
+                          height: 9,
+                          borderRadius: "50%",
+                          border: `1px solid ${isSelected ? "rgba(0,184,212,0.95)" : "rgba(245,245,245,0.42)"}`,
+                          background: isSelected ? "rgba(0,184,212,0.9)" : "transparent",
+                          boxShadow: isSelected ? "0 0 12px rgba(0,184,212,0.36)" : "none",
+                          flex: "0 0 auto",
+                        }}
+                      />
+                      <span>{option.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
+
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.7 }}>
+              你的旧反应是：用解释换安全。
+            </p>
+            {emotionSpaceHint ? (
+              <p style={{ margin: 0, color: "rgba(0,184,212,0.78)", fontSize: 14, lineHeight: 1.58 }}>
+                {emotionSpaceHint}
+              </p>
+            ) : null}
+          </section>
+
+          <CausalRail
+            statusLabel={emotionSpaceHint || "先看见它到了什么程度。"}
+            leftHint="左滑，选择破局点"
+            rightHint="右滑，进入下一空间"
+            onLeft={handleEmotionBreakSpace}
+            onRight={handleEmotionNextSpace}
+          />
+        </>
+      ) : null}
+
+      {currentSpace && sixDimensionStep === 2 && emotionSpaceStep === "breakthrough" ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(30px, 8vw, 42px)", lineHeight: 1.1, fontWeight: 390 }}>
+              情绪空间 · 破局推演
+            </h1>
+          </header>
+
+          <section
+            aria-label="情绪空间破局推演"
+            style={{
+              display: "grid",
+              gap: 18,
+              padding: "18px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.38)",
+            }}
+          >
+            {[
+              ["它开始恐惧了。", "一句质疑，\n一个眼神，\n恐惧已经从胃底升上来。"],
+              ["它压不住了。", "你开始解释，\n开始讨好，\n开始把别人的评价当成安全感。"],
+              ["它问你：", "你怕的，\n到底是什么？\n如果不想再靠解释换安全，\n左滑，选一件武器。"],
+            ].map(([title, body]) => (
+              <div key={title} style={{ display: "grid", gap: 8 }}>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 18, lineHeight: 1.6 }}>
+                  {title}
+                </p>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 16, lineHeight: 1.72, whiteSpace: "pre-line" }}>
+                  {body}
+                </p>
+                <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.24), transparent)" }} />
+              </div>
+            ))}
+          </section>
+
+          <CausalRail
+            statusLabel="情绪空间正在打开破局点"
+            leftHint="左滑，选一件武器"
+            rightHint="右滑，停在这里"
+            onLeft={handleOpenEmotionWeaponStep}
+            onRight={() => undefined}
+          />
+        </>
+      ) : null}
+
+      {currentSpace && sixDimensionStep === 2 && emotionSpaceStep === "weapon" ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(30px, 8vw, 42px)", lineHeight: 1.1, fontWeight: 390 }}>
+              情绪空间 · 破局点
+            </h1>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 18, lineHeight: 1.6 }}>
+              你需要什么武器？
+            </p>
+          </header>
+
+          <section
+            aria-label="情绪空间武器选择"
+            style={{
+              display: "grid",
+              gap: 12,
+              padding: "18px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.38)",
+            }}
+          >
+            {emotionWeaponOptions.map((weapon) => {
+              const isSelected = selectedEmotionWeapon === weapon.value;
+
+              return (
+                <button
+                  key={weapon.value}
+                  type="button"
+                  onClick={() => {
+                    setSelectedEmotionWeapon(weapon.value);
+                    setEmotionSpaceHint("");
+                  }}
+                  style={{
+                    appearance: "none",
+                    border: `1px solid ${isSelected ? "rgba(0,184,212,0.78)" : "rgba(245,245,245,0.18)"}`,
+                    background: isSelected ? "rgba(0,184,212,0.08)" : "rgba(245,245,245,0.02)",
+                    color: "rgba(245,245,245,0.74)",
+                    display: "grid",
+                    gap: 7,
+                    padding: "14px 12px",
+                    textAlign: "left",
+                    font: "inherit",
+                  }}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: 10, color: isSelected ? "rgba(245,245,245,0.9)" : "rgba(245,245,245,0.72)" }}>
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        width: 9,
+                        height: 9,
+                        borderRadius: "50%",
+                        border: `1px solid ${isSelected ? "rgba(0,184,212,0.95)" : "rgba(245,245,245,0.42)"}`,
+                        background: isSelected ? "rgba(0,184,212,0.9)" : "transparent",
+                        boxShadow: isSelected ? "0 0 12px rgba(0,184,212,0.36)" : "none",
+                        flex: "0 0 auto",
+                      }}
+                    />
+                    {weapon.label}
+                  </span>
+                  <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12, letterSpacing: "0.08em" }}>
+                    消耗 ⌛ {weapon.cost}
+                  </span>
+                  <span style={{ color: "rgba(245,245,245,0.58)", fontSize: 14, lineHeight: 1.58 }}>
+                    “{weapon.line}”
+                  </span>
+                </button>
+              );
+            })}
+
+            {emotionSpaceHint ? (
+              <p style={{ margin: 0, color: "rgba(0,184,212,0.78)", fontSize: 14, lineHeight: 1.58 }}>
+                {emotionSpaceHint}
+              </p>
+            ) : null}
+
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, paddingTop: 6 }}>
+              <button
+                type="button"
+                onClick={handleCancelEmotionWeapon}
+                style={{
+                  appearance: "none",
+                  border: "1px solid rgba(245,245,245,0.18)",
+                  background: "transparent",
+                  color: "rgba(245,245,245,0.58)",
+                  minHeight: 40,
+                  padding: "8px 18px",
+                  font: "inherit",
+                }}
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={handleWakeEmotionWeapon}
+                style={{
+                  appearance: "none",
+                  border: "1px solid rgba(0,184,212,0.72)",
+                  background: "rgba(0,184,212,0.08)",
+                  color: "rgba(245,245,245,0.88)",
+                  minHeight: 40,
+                  padding: "8px 18px",
+                  font: "inherit",
+                }}
+              >
+                唤醒
+              </button>
+            </div>
+          </section>
+        </>
+      ) : null}
+
+      {currentSpace && sixDimensionStep === 2 && emotionSpaceStep === "completed" ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(30px, 8vw, 42px)", lineHeight: 1.1, fontWeight: 390 }}>
+              器法已落成。
+            </h1>
+          </header>
+
+          <section
+            aria-label="情绪空间器法落成"
+            style={{
+              display: "grid",
+              gap: 14,
+              padding: "18px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.38)",
+            }}
+          >
+            {(emotionWeaponOptions.find((weapon) => weapon.value === selectedEmotionWeapon)?.completedLines ?? emotionWeaponOptions[0].completedLines).map((line) => (
+              <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 18, lineHeight: 1.62 }}>
+                {line}
+              </p>
+            ))}
+            <p style={{ margin: "4px 0 0", color: "rgba(199,169,107,0.76)", fontSize: 16, lineHeight: 1.62 }}>
+              已存入你的武器库。
+            </p>
+          </section>
+
+          <CausalRail
+            statusLabel="器法已落成"
+            rightHint="右滑，进入下一空间"
+            onRight={handleNextSpaceFromEmotion}
+          />
+        </>
+      ) : null}
+
+      {currentSpace && sixDimensionStep !== 1 && sixDimensionStep !== 2 ? (
         <>
           <header style={{ display: "grid", gap: 10 }}>
             <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
               {currentSpace.spaceName}
             </h1>
             <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 15, lineHeight: 1.68 }}>
-              {currentSpace.spaceSubtitle}
-            </p>
-            <p style={{ margin: 0, color: "rgba(0,184,212,0.68)", fontSize: 14, lineHeight: 1.62 }}>
-              {currentSpace.causalBridge}
+              {currentCutSignal}
             </p>
           </header>
 
           <section
-            aria-label={`${currentSpace.spaceName}读数`}
+            aria-label={`${currentSpace.spaceName}切口叙事`}
             style={{
               display: "grid",
-              gap: 14,
-              padding: "16px 0",
+              gap: 12,
+              padding: "18px 0",
               borderTop: "1px solid rgba(199,169,107,0.34)",
               borderBottom: "1px solid rgba(85,85,85,0.38)",
             }}
           >
-            <div style={{ display: "grid", gap: 6 }}>
-              <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
-                主读数
-              </span>
-              <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.68 }}>
-                {currentSpace.transmissionReading}
+            {currentNarrativeLines.map((line) => (
+              <p
+                key={line}
+                style={{
+                  margin: 0,
+                  color: "rgba(245,245,245,0.68)",
+                  fontSize: 16,
+                  lineHeight: 1.72,
+                  overflowWrap: "anywhere",
+                }}
+              >
+                {line}
               </p>
-            </div>
-            <div style={{ display: "grid", gap: 6 }}>
-              <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
-                惯性信号
-              </span>
-              <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 15, lineHeight: 1.62 }}>
-                {currentSpace.inertiaSignal}
-              </p>
-            </div>
-            <div style={{ display: "grid", gap: 6 }}>
-              <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
-                如果—那么模式
-              </span>
-              <p style={{ margin: 0, color: "rgba(245,245,245,0.6)", fontSize: 14, lineHeight: 1.6 }}>
-                {currentSpace.ifThenPattern}
-              </p>
-            </div>
-          </section>
-
-          <section
-            aria-label="行动信号"
-            style={{
-              display: "grid",
-              gap: 8,
-              padding: "14px 0",
-              borderBottom: "1px solid rgba(85,85,85,0.28)",
-            }}
-          >
-            <span style={{ color: "rgba(245,245,245,0.4)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
-              ACTION_SIGNAL // {currentSpace.pauseSignal.toUpperCase()} // {currentSpace.interventionPotential}
-            </span>
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 15, lineHeight: 1.62 }}>
-              {currentSpaceSignal}
-            </p>
-            {currentSpace.pauseSignal !== "none" ? (
-              <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 14, lineHeight: 1.56 }}>
-                {currentSpace.pauseReason}
-              </p>
-            ) : null}
+            ))}
           </section>
 
           {selectedSpaceAction ? (
@@ -522,8 +1274,8 @@ function HexagramCodeDeliveryShell() {
 
           <CausalRail
             statusLabel={currentSpaceSignal}
-            leftHint={!selectedSpaceAction && canTreatCurrentSpace ? "左滑进行处置" : undefined}
-            rightHint="右滑进入下一空间"
+            leftHint={!selectedSpaceAction && canTreatCurrentSpace ? "左滑，选择破局点" : undefined}
+            rightHint={sixDimensionStep === 6 ? "右滑，完成六维观变" : "右滑，跳过此空间"}
             onLeft={!selectedSpaceAction && canTreatCurrentSpace ? handleSelectSpaceAction : undefined}
             onRight={handleNextSpace}
           />
@@ -534,10 +1286,10 @@ function HexagramCodeDeliveryShell() {
         <>
           <header style={{ display: "grid", gap: 10 }}>
             <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
-              六维观变完成。
+              你已经看见它卡在哪里。
             </h1>
             <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 15, lineHeight: 1.68 }}>
-              系统已标记最能改写旧反应的位置。
+              最该下刀的位置已经浮出来。
             </p>
           </header>
 

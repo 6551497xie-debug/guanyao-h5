@@ -131,31 +131,43 @@ function formatTripleForceReadout(line: string): string {
 
 function formatSelectedSeedNumber(): string | null {
   const seedIndex = getSession().selectedSceneSeed?.seedIndex;
-  if (![1, 2, 3].includes(seedIndex ?? 0)) return null;
+  if ([1, 2, 3].includes(seedIndex ?? 0)) {
+    return `SEED ${String(seedIndex).padStart(2, "0")}`;
+  }
 
-  return `SEED ${String(seedIndex).padStart(2, "0")}`;
+  const selectedContext = readJsonFromStorage<GuanyaoSelectedPressureSeedContext>("guanyao:selectedPressureSeedContext");
+  const seedTail = selectedContext?.selectedPressureSeedId.match(/_(0[1-3])$/)?.[1];
+  if (!seedTail) return null;
+
+  return `SEED ${seedTail}`;
 }
 
-function buildHexagramFormationPreviewLine() {
+function buildPressureExposureFormationLine() {
   try {
     const readModel = getGuanyaoR8ReadModel();
-    const lowerTrigram = readModel.hexagramStage.lowerTrigram;
+    const lowerForce = readModel.motherCodeStage.motherCodeName || readModel.hexagramStage.lowerTrigram;
     const upperTrigram = readModel.hexagramStage.upperTrigram;
 
-    if (!lowerTrigram || !upperTrigram) {
+    if (!lowerForce || !upperTrigram) {
       throw new Error("Missing trigram");
     }
 
-    return `${lowerTrigram}被${upperTrigram}压住`;
+    return {
+      lowerForce,
+      upperTrigram,
+    };
   } catch {
-    return "本局卦局已成形";
+    return {
+      lowerForce: "你的原力",
+      upperTrigram: "现实压力",
+    };
   }
 }
 
 function PressureExposureSafeShell() {
   const navigate = useNavigate();
   const selectedSeedNumber = useMemo(() => formatSelectedSeedNumber(), []);
-  const hexagramFormationPreviewLine = useMemo(() => buildHexagramFormationPreviewLine(), []);
+  const pressureExposureFormation = useMemo(() => buildPressureExposureFormationLine(), []);
   const tripleForceFrontStage = useMemo(() => {
     const storedFrontStage = readJsonFromStorage<GuanyaoTripleForceFrontStage>("guanyao:tripleForceFrontStage");
     if (isTripleForceFrontStage(storedFrontStage)) {
@@ -210,113 +222,49 @@ function PressureExposureSafeShell() {
         }}
       >
         <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 17, lineHeight: 1.65 }}>
-          {selectedSeedNumber ? `${selectedSeedNumber} 压力种子，装填完毕。` : "压力种子，装填完毕。"}
+          {selectedSeedNumber ? `${selectedSeedNumber}，已接住。` : "SEED，已接住。"}
         </p>
         <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.72 }}>
-          它不是一个事件。
+          它不是一个情绪。
           <br />
-          它是一股正在牵引你的现实压力。
+          它不是一个问题。
+          <br />
+          它只是刚刚发生过，
+          <br />
+          住在了你的身体里。
         </p>
         <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.65 }}>
-          三力已落位，因果链正在收紧。
+          现在，我们一起剥开它。
         </p>
       </section>
 
       <section
-        aria-label="三力碰撞显影区"
+        aria-label="压力成局"
         style={{
           display: "grid",
-          gap: 18,
-          padding: "20px 0",
+          gap: 14,
+          padding: "22px 0",
           borderTop: "1px solid rgba(85,85,85,0.42)",
           borderBottom: "1px solid rgba(85,85,85,0.3)",
           background:
             "linear-gradient(90deg, rgba(0,184,212,0.055), transparent 72%), radial-gradient(circle at 50% 28%, rgba(0,184,212,0.075), transparent 58%)",
         }}
       >
-        <span
-          style={{
-            color: "rgba(0,184,212,0.78)",
-            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            fontSize: 11,
-            letterSpacing: "0.16em",
-          }}
-        >
-          [ 三力落位 ]
-        </span>
-
-        <div style={{ display: "grid", gap: 14 }}>
-          {tripleForceFrontStage.readouts.map((readout, index) => {
-            const isHexagramFormationPreview = index === 2;
-            const displayLabel = isHexagramFormationPreview ? "卦局成形" : readout.label;
-            const displayLines = isHexagramFormationPreview
-              ? [hexagramFormationPreviewLine]
-              : [formatTripleForceReadout(readout.frontStageLine)];
-
-            return (
-            <div key={readout.label} style={{ display: "grid", gap: 7 }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  color: "rgba(245,245,245,0.48)",
-                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.11em",
-                }}
-              >
-                <span>{displayLabel}</span>
-                <span>{String(index + 1).padStart(2, "0")} / 03</span>
-              </div>
-              <div style={{ position: "relative", height: 1, background: "rgba(246,243,236,0.18)" }}>
-                <span
-                  style={{
-                    position: "absolute",
-                    inset: "0 auto 0 0",
-                    width: `${((index + 1) / tripleForceFrontStage.readouts.length) * 100}%`,
-                    background: "rgba(0,184,212,0.82)",
-                    boxShadow: "0 0 12px rgba(0,184,212,0.35)",
-                  }}
-                />
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: `${((index + 1) / tripleForceFrontStage.readouts.length) * 100}%`,
-                    width: 7,
-                    height: 7,
-                    transform: "translate(-50%, -50%) rotate(45deg)",
-                    background: "rgba(0,184,212,0.95)",
-                    boxShadow: "0 0 14px rgba(0,184,212,0.45)",
-                  }}
-                />
-              </div>
-              <div aria-label={isHexagramFormationPreview ? "卦局已成形" : undefined} style={{ display: "grid", gap: 4 }}>
-                {displayLines.map((line) => (
-                  <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 13, lineHeight: 1.62 }}>
-                    {line}
-                  </p>
-                ))}
-              </div>
-            </div>
-            );
-          })}
-        </div>
+        <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 18, lineHeight: 1.72 }}>
+          你的原力「{pressureExposureFormation.lowerForce}」，
+          <br />
+          被「{pressureExposureFormation.upperTrigram}」压住了。
+        </p>
+        <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.68 }}>
+          这一局，已经成形。
+          <br />
+          右滑，看它叫什么。
+        </p>
       </section>
 
-      <span
-        style={{
-          color: "rgba(245,245,245,0.34)",
-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-          fontSize: 11,
-          letterSpacing: "0.13em",
-        }}
-      >
-        TRIPLE_FORCE_LANDING
-      </span>
-
       <CausalRail
-        rightHint="右滑，揭晓你的本局卦码"
+        statusLabel="这一局，已经成形"
+        rightHint="右滑，看它叫什么"
         onRight={() => navigate(GUANYAO_ROUTES.dynamics)}
       />
     </main>
