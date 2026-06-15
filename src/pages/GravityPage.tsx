@@ -90,6 +90,30 @@ type EmotionIntensity = "yao1" | "yao2" | "yao3";
 type EmotionSpaceStep = "entry" | "breakthrough" | "weapon" | "completed";
 type EmotionWeapon = "pause" | "name";
 type BreakthroughStep = 0 | 1 | 2;
+type SixSpaceId = "body" | "emotion" | "thought" | "action" | "memory" | "goal";
+type SixSpaceRuntimeStep = "entry" | "breakthrough" | "weapon" | "completed";
+type SixSpaceIntensity = "yao1" | "yao2" | "yao3";
+type SixSpaceWeaponId = string;
+type SixSpaceWeapon = {
+  id: SixSpaceWeaponId;
+  name: string;
+  cost: 1 | 2;
+  description: string;
+  completionLines: string[];
+};
+type SixSpaceConfig = {
+  id: SixSpaceId;
+  no: number;
+  code: string;
+  name: string;
+  headline: string;
+  transformation: string;
+  intensityOptions: Array<{ value: SixSpaceIntensity; label: string }>;
+  oldReaction: string;
+  breakthroughSteps: Array<{ title: string; lines: string[]; rightHint: string }>;
+  weapons: SixSpaceWeapon[];
+  completedRightHint: string;
+};
 
 const bodyIntensityOptions: Array<{ value: BodyIntensity; label: string }> = [
   { value: "yao1", label: "有一点，但不明显" },
@@ -167,6 +191,245 @@ const emotionBreakthroughScenes: Array<{ title: string; lines: string[] }> = [
   },
 ];
 
+const sixSpaceConfigs: SixSpaceConfig[] = [
+  {
+    id: "body",
+    no: 1,
+    code: "BODY",
+    name: "身体空间",
+    headline: "你的身体，比你先认输了。",
+    transformation: "它一进身体，\n最先变成了肩背收紧、呼吸变浅、还没开口就开始紧张。",
+    intensityOptions: bodyIntensityOptions,
+    oldReaction: "你的旧反应是：撑着，假装没事。",
+    breakthroughSteps: bodyBreakthroughScenes.map((scene, index) => ({
+      ...scene,
+      rightHint: index === 0 ? "右滑，继续看它怎么接管你" : index === 1 ? "右滑，继续" : "右滑，停在这里",
+    })),
+    weapons: bodyWeaponOptions.map((weapon) => ({
+      id: weapon.value,
+      name: weapon.label,
+      cost: weapon.cost as 1 | 2,
+      description: weapon.line,
+      completionLines: weapon.completedLines,
+    })),
+    completedRightHint: "右滑，进入下一空间",
+  },
+  {
+    id: "emotion",
+    no: 2,
+    code: "EMOTION",
+    name: "情绪空间",
+    headline: "你被不安接管了。",
+    transformation: "你还没反应过来，\n情绪已经先到了。",
+    intensityOptions: emotionIntensityOptions,
+    oldReaction: "你的旧反应是：用解释换安全。",
+    breakthroughSteps: emotionBreakthroughScenes.map((scene, index) => ({
+      ...scene,
+      rightHint: index === 0 ? "右滑，继续看它怎么接管你" : index === 1 ? "右滑，继续" : "右滑，停在这里",
+    })),
+    weapons: emotionWeaponOptions.map((weapon) => ({
+      id: weapon.value,
+      name: weapon.label,
+      cost: weapon.cost as 1 | 2,
+      description: weapon.line,
+      completionLines: weapon.completedLines,
+    })),
+    completedRightHint: "右滑，进入下一空间",
+  },
+  {
+    id: "thought",
+    no: 3,
+    code: "THOUGHT",
+    name: "思维空间",
+    headline: "你又在反复解释了。",
+    transformation: "你还没说完，\n脑子里已经开始组织下一句解释了。",
+    intensityOptions: [
+      { value: "yao1", label: "有一点，但还能停" },
+      { value: "yao2", label: "一直在转，停不下来" },
+      { value: "yao3", label: "已经在替你回答问题了" },
+    ],
+    oldReaction: "你的旧反应是：把解释，当成了证明。",
+    breakthroughSteps: [
+      {
+        title: "它开始自动解释了。",
+        lines: ["对方还没开口，", "你的脑子已经把答案准备好了。"],
+        rightHint: "右滑，继续",
+      },
+      {
+        title: "它停不下来了。",
+        lines: ["你反复想：", "“如果当时这样说就好了。”", "把过去的事，", "重放了一遍又一遍。"],
+        rightHint: "右滑，继续",
+      },
+      {
+        title: "它问你：",
+        lines: ["你解释的，", "到底是谁的问题？", "如果不想再被思维拖着走，", "左滑，选择武器。"],
+        rightHint: "右滑，停在这里",
+      },
+    ],
+    weapons: [
+      {
+        id: "pause",
+        name: "停一下",
+        cost: 1,
+        description: "在解释之前，先问一句：他真的在听吗？",
+        completionLines: ["下一次想解释之前，", "先问一句：", "他真的在听吗？"],
+      },
+      {
+        id: "name",
+        name: "命名它",
+        cost: 2,
+        description: "认出‘我在解释’，然后停下来。",
+        completionLines: ["下一次开始反复解释时，", "先认出它：", "我在解释。", "然后停下来。"],
+      },
+    ],
+    completedRightHint: "右滑，进入下一空间",
+  },
+  {
+    id: "action",
+    no: 4,
+    code: "ACTION",
+    name: "行为空间",
+    headline: "你想做，但卡住了。",
+    transformation: "你脑子里想了无数遍，\n手还在原处。",
+    intensityOptions: [
+      { value: "yao1", label: "有一点犹豫" },
+      { value: "yao2", label: "想做，但不敢" },
+      { value: "yao3", label: "已经卡住很久了" },
+    ],
+    oldReaction: "你的旧反应是：把想法，卡成永远。",
+    breakthroughSteps: [
+      {
+        title: "它开始犹豫了。",
+        lines: ["你想动，", "但有一个声音说：", "再等等。"],
+        rightHint: "右滑，继续",
+      },
+      {
+        title: "它卡住了。",
+        lines: ["你准备好了，", "但手按不下发送。"],
+        rightHint: "右滑，继续",
+      },
+      {
+        title: "它问你：",
+        lines: ["你在等的，", "到底是什么？", "如果不想再卡下去，", "左滑，选择武器。"],
+        rightHint: "右滑，停在这里",
+      },
+    ],
+    weapons: [
+      {
+        id: "small-step",
+        name: "先做最小的一步",
+        cost: 2,
+        description: "今天，只说一句话。",
+        completionLines: ["今天，只说一句话。", "不解释，", "不说服，", "只是说出来。"],
+      },
+      {
+        id: "name",
+        name: "命名它",
+        cost: 1,
+        description: "认出‘我在等’，然后按下去。",
+        completionLines: ["当你又开始等时，", "先认出它：", "我在等。", "然后按下去。"],
+      },
+    ],
+    completedRightHint: "右滑，进入下一空间",
+  },
+  {
+    id: "memory",
+    no: 5,
+    code: "MEMORY",
+    name: "记忆空间",
+    headline: "以前也这样过。",
+    transformation: "你还没反应，\n记忆已经先替你回答了。",
+    intensityOptions: [
+      { value: "yao1", label: "偶尔想起" },
+      { value: "yao2", label: "经常回来" },
+      { value: "yao3", label: "已经在替你判断了" },
+    ],
+    oldReaction: "你的旧反应是：用过去的失败，预判现在的结果。",
+    breakthroughSteps: [
+      {
+        title: "它开始回放了。",
+        lines: ["一个类似的场景，", "一种熟悉的难受。"],
+        rightHint: "右滑，继续",
+      },
+      {
+        title: "它替你回答了。",
+        lines: ["“上次也是这样，", "你不行。”"],
+        rightHint: "右滑，继续",
+      },
+      {
+        title: "它问你：",
+        lines: ["上次是上次，", "这次还是吗？", "如果不想再被记忆绑架，", "左滑，选择武器。"],
+        rightHint: "右滑，停在这里",
+      },
+    ],
+    weapons: [
+      {
+        id: "interrupt",
+        name: "打断它",
+        cost: 2,
+        description: "当‘以前也这样’出现时，说‘这次不一样’。",
+        completionLines: ["当“以前也这样”出现时，", "对自己说：", "这次不一样。"],
+      },
+      {
+        id: "name",
+        name: "命名它",
+        cost: 1,
+        description: "认出‘这是记忆，不是事实’。",
+        completionLines: ["当旧经验开始替你判断时，", "先认出它：", "这是记忆，", "不是事实。"],
+      },
+    ],
+    completedRightHint: "右滑，进入下一空间",
+  },
+  {
+    id: "goal",
+    no: 6,
+    code: "GOAL",
+    name: "目标空间",
+    headline: "你不知道该往哪走。",
+    transformation: "你停在原地，\n不是因为不想走。",
+    intensityOptions: [
+      { value: "yao1", label: "有一点模糊" },
+      { value: "yao2", label: "看不清，但还在动" },
+      { value: "yao3", label: "已经很久不知道了" },
+    ],
+    oldReaction: "你的旧反应是：假装不需要，就不怕得不到。",
+    breakthroughSteps: [
+      {
+        title: "它开始模糊了。",
+        lines: ["你以前知道想要什么，", "现在不确定了。"],
+        rightHint: "右滑，继续",
+      },
+      {
+        title: "它遮蔽了方向。",
+        lines: ["你停在原地，", "不是不想走，", "是不知道往哪走。"],
+        rightHint: "右滑，继续",
+      },
+      {
+        title: "它问你：",
+        lines: ["你真正在乎的，", "到底是什么？", "如果你想重新看清方向，", "左滑，选择武器。"],
+        rightHint: "右滑，停在这里",
+      },
+    ],
+    weapons: [
+      {
+        id: "look-back",
+        name: "往回看",
+        cost: 1,
+        description: "你曾经最在乎的是什么？",
+        completionLines: ["写下你曾经最在乎的一件事。", "不问对错，", "只写。"],
+      },
+      {
+        id: "look-forward",
+        name: "往前看",
+        cost: 2,
+        description: "你希望一年后的自己是什么样？",
+        completionLines: ["写下一年后的自己。", "不求完整，", "只写一句。"],
+      },
+    ],
+    completedRightHint: "右滑，完成本次推演",
+  },
+];
+
 function readJsonFromStorage<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
 
@@ -178,6 +441,21 @@ function readJsonFromStorage<T>(key: string): T | null {
   } catch {
     return null;
   }
+}
+
+function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
+  return {
+    body: value,
+    emotion: value,
+    thought: value,
+    action: value,
+    memory: value,
+    goal: value,
+  };
+}
+
+function getSelectedWeaponStorageKey(spaceId: SixSpaceId) {
+  return `guanyao:selected${spaceId[0].toUpperCase()}${spaceId.slice(1)}Weapon`;
 }
 
 function getMotherCodeFromSession(session: GuanyaoSession): MotherCodeResult {
@@ -309,6 +587,29 @@ function HexagramCodeDeliveryShell() {
     readJsonFromStorage<EmotionWeapon>("guanyao:selectedEmotionWeapon"),
   );
   const [emotionSpaceHint, setEmotionSpaceHint] = useState("");
+  const [spaceSteps, setSpaceSteps] = useState<Record<SixSpaceId, SixSpaceRuntimeStep>>(() =>
+    buildSpaceRecord<SixSpaceRuntimeStep>("entry"),
+  );
+  const [spaceBreakthroughSteps, setSpaceBreakthroughSteps] = useState<Record<SixSpaceId, BreakthroughStep>>(() =>
+    buildSpaceRecord<BreakthroughStep>(0),
+  );
+  const [spaceIntensities, setSpaceIntensities] = useState<Record<SixSpaceId, SixSpaceIntensity | null>>(() => ({
+    body: readJsonFromStorage<SixSpaceIntensity>("guanyao:sixSpace:body:intensity"),
+    emotion: readJsonFromStorage<SixSpaceIntensity>("guanyao:sixSpace:emotion:intensity"),
+    thought: readJsonFromStorage<SixSpaceIntensity>("guanyao:sixSpace:thought:intensity"),
+    action: readJsonFromStorage<SixSpaceIntensity>("guanyao:sixSpace:action:intensity"),
+    memory: readJsonFromStorage<SixSpaceIntensity>("guanyao:sixSpace:memory:intensity"),
+    goal: readJsonFromStorage<SixSpaceIntensity>("guanyao:sixSpace:goal:intensity"),
+  }));
+  const [selectedSpaceWeapons, setSelectedSpaceWeapons] = useState<Record<SixSpaceId, SixSpaceWeaponId | null>>(() => ({
+    body: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("body")),
+    emotion: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("emotion")),
+    thought: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("thought")),
+    action: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("action")),
+    memory: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("memory")),
+    goal: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("goal")),
+  }));
+  const [spaceHints, setSpaceHints] = useState<Record<SixSpaceId, string>>(() => buildSpaceRecord(""));
   const [readModel] = useState(() => getGuanyaoR8ReadModel());
   const [selectedPressureSeedContext] = useState(() =>
     readJsonFromStorage<GravitySelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
@@ -340,6 +641,7 @@ function HexagramCodeDeliveryShell() {
         : readModel.hexagramStage.interactionReading
       : "该项读数正在生成。";
   const currentSpace = sixDimensionStep >= 1 && sixDimensionStep <= 6 ? readModel.yaoStage.transmissions[sixDimensionStep - 1] : null;
+  const currentSixSpaceConfig = sixDimensionStep >= 1 && sixDimensionStep <= 6 ? sixSpaceConfigs[sixDimensionStep - 1] : null;
   const canTreatCurrentSpace = currentSpace?.pauseSignal === "clear" || currentSpace?.pauseSignal === "strong";
   const currentProjection = getProjectionForYaoLayer(pressureSeedProjection, currentSpace?.yaoLayer);
   const currentCutSignal = currentProjection?.hook ?? "这一层已经留下反应。";
@@ -551,6 +853,113 @@ function HexagramCodeDeliveryShell() {
     });
   }
 
+  function setGenericSpaceHint(spaceId: SixSpaceId, hint: string) {
+    setSpaceHints((current) => ({ ...current, [spaceId]: hint }));
+  }
+
+  function selectGenericIntensity(spaceId: SixSpaceId, value: SixSpaceIntensity) {
+    setSpaceIntensities((current) => ({ ...current, [spaceId]: value }));
+    setGenericSpaceHint(spaceId, "");
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(`guanyao:sixSpace:${spaceId}:intensity`, value);
+    }
+  }
+
+  function requireGenericIntensity(spaceId: SixSpaceId) {
+    setGenericSpaceHint(spaceId, "先看见它到了什么程度。");
+  }
+
+  function handleGenericNextSpace(spaceId: SixSpaceId) {
+    if (!spaceIntensities[spaceId]) {
+      requireGenericIntensity(spaceId);
+      return;
+    }
+
+    setSpaceSteps((current) => ({ ...current, [spaceId]: "entry" }));
+    setSpaceBreakthroughSteps((current) => ({ ...current, [spaceId]: 0 }));
+    setGenericSpaceHint(spaceId, "");
+    handleNextSpace();
+  }
+
+  function handleGenericBreakSpace(spaceId: SixSpaceId) {
+    if (!spaceIntensities[spaceId]) {
+      requireGenericIntensity(spaceId);
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("guanyao:selectedBreakSpace", spaceId);
+    }
+    setSpaceBreakthroughSteps((current) => ({ ...current, [spaceId]: 0 }));
+    setSpaceSteps((current) => ({ ...current, [spaceId]: "breakthrough" }));
+    setGenericSpaceHint(spaceId, "");
+  }
+
+  function handleGenericBreakthroughNext(spaceId: SixSpaceId) {
+    setGenericSpaceHint(spaceId, "");
+    const currentStep = spaceBreakthroughSteps[spaceId];
+
+    if (currentStep === 0) {
+      setSpaceBreakthroughSteps((current) => ({ ...current, [spaceId]: 1 }));
+      return;
+    }
+    if (currentStep === 1) {
+      setSpaceBreakthroughSteps((current) => ({ ...current, [spaceId]: 2 }));
+      return;
+    }
+
+    setGenericSpaceHint(spaceId, "左滑，选择武器。");
+  }
+
+  function handleOpenGenericWeaponStep(spaceId: SixSpaceId) {
+    if (spaceBreakthroughSteps[spaceId] !== 2) {
+      setGenericSpaceHint(spaceId, "先看完它怎么接管你。");
+      return;
+    }
+
+    setSelectedSpaceWeapons((current) => ({ ...current, [spaceId]: null }));
+    setSpaceSteps((current) => ({ ...current, [spaceId]: "weapon" }));
+    setGenericSpaceHint(spaceId, "");
+  }
+
+  function selectGenericWeapon(spaceId: SixSpaceId, weaponId: SixSpaceWeaponId) {
+    setSelectedSpaceWeapons((current) => ({ ...current, [spaceId]: weaponId }));
+    setGenericSpaceHint(spaceId, "");
+  }
+
+  function handleCancelGenericWeapon(spaceId: SixSpaceId) {
+    setSelectedSpaceWeapons((current) => ({ ...current, [spaceId]: null }));
+    setSpaceSteps((current) => ({ ...current, [spaceId]: "entry" }));
+    setGenericSpaceHint(spaceId, "");
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(getSelectedWeaponStorageKey(spaceId));
+    }
+  }
+
+  function handleWakeGenericWeapon(spaceId: SixSpaceId) {
+    const selectedWeapon = selectedSpaceWeapons[spaceId];
+
+    if (!selectedWeapon) {
+      setGenericSpaceHint(spaceId, "先选一件武器。");
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("guanyao:selectedBreakSpace", spaceId);
+      window.localStorage.setItem(getSelectedWeaponStorageKey(spaceId), selectedWeapon);
+      window.localStorage.setItem(`guanyao:${spaceId}BreakthroughCompleted`, "true");
+    }
+    setSpaceSteps((current) => ({ ...current, [spaceId]: "completed" }));
+    setGenericSpaceHint(spaceId, "");
+  }
+
+  function handleGenericCompletedNext(spaceId: SixSpaceId) {
+    setSpaceSteps((current) => ({ ...current, [spaceId]: "entry" }));
+    setSpaceBreakthroughSteps((current) => ({ ...current, [spaceId]: 0 }));
+    setGenericSpaceHint(spaceId, "");
+    handleNextSpace();
+  }
+
   return (
     <main
       style={{
@@ -580,7 +989,7 @@ function HexagramCodeDeliveryShell() {
           ? "05｜卦码生成"
           : sixDimensionStep === 7
             ? "05｜看见卡住的位置"
-            : `GY / SPACE-0${sixDimensionStep} / ${currentSpace?.spaceCode ?? "SPACE"}`}
+            : `GY / SPACE-0${sixDimensionStep} / ${currentSixSpaceConfig?.code ?? currentSpace?.spaceCode ?? "SPACE"}`}
       </span>
 
       {sixDimensionStep === 0 && hexagramPageStage === "card" ? (
@@ -1346,19 +1755,170 @@ function HexagramCodeDeliveryShell() {
         </>
       ) : null}
 
-      {currentSpace && sixDimensionStep !== 1 && sixDimensionStep !== 2 ? (
+      {currentSixSpaceConfig && sixDimensionStep >= 3 && sixDimensionStep <= 6 && spaceSteps[currentSixSpaceConfig.id] === "entry" ? (
         <>
           <header style={{ display: "grid", gap: 10 }}>
-            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
-              {currentSpace.spaceName}
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(34px, 10vw, 52px)", lineHeight: 1.08, fontWeight: 390 }}>
+              {currentSixSpaceConfig.name}
             </h1>
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 15, lineHeight: 1.68 }}>
-              {currentCutSignal}
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 18, lineHeight: 1.65 }}>
+              “{currentSixSpaceConfig.headline}”
             </p>
           </header>
 
           <section
-            aria-label={`${currentSpace.spaceName}切口叙事`}
+            aria-label={`${currentSixSpaceConfig.name}感知层`}
+            style={{
+              display: "grid",
+              gap: 18,
+              padding: "18px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.38)",
+            }}
+          >
+            <div style={{ display: "grid", gap: 8 }}>
+              <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+                现实之刺：
+              </span>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.7 }}>
+                {selectedPressureSeedSurface}
+              </p>
+            </div>
+
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 16, lineHeight: 1.74, whiteSpace: "pre-line" }}>
+              {currentSixSpaceConfig.transformation}
+            </p>
+
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
+
+            <div style={{ display: "grid", gap: 10 }}>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.6 }}>
+                它到了什么程度？
+              </p>
+              <div style={{ display: "grid", gap: 8 }}>
+                {currentSixSpaceConfig.intensityOptions.map((option) => {
+                  const isSelected = spaceIntensities[currentSixSpaceConfig.id] === option.value;
+
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => selectGenericIntensity(currentSixSpaceConfig.id, option.value)}
+                      style={{
+                        appearance: "none",
+                        border: `1px solid ${isSelected ? "rgba(0,184,212,0.78)" : "rgba(245,245,245,0.18)"}`,
+                        background: isSelected ? "rgba(0,184,212,0.08)" : "rgba(245,245,245,0.02)",
+                        color: isSelected ? "rgba(245,245,245,0.88)" : "rgba(245,245,245,0.62)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        minHeight: 42,
+                        padding: "10px 12px",
+                        textAlign: "left",
+                        font: "inherit",
+                      }}
+                    >
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          width: 9,
+                          height: 9,
+                          borderRadius: "50%",
+                          border: `1px solid ${isSelected ? "rgba(0,184,212,0.95)" : "rgba(245,245,245,0.42)"}`,
+                          background: isSelected ? "rgba(0,184,212,0.9)" : "transparent",
+                          boxShadow: isSelected ? "0 0 12px rgba(0,184,212,0.36)" : "none",
+                          flex: "0 0 auto",
+                        }}
+                      />
+                      <span>{option.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
+
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.7 }}>
+              {currentSixSpaceConfig.oldReaction}
+            </p>
+            {spaceHints[currentSixSpaceConfig.id] ? (
+              <p style={{ margin: 0, color: "rgba(0,184,212,0.78)", fontSize: 14, lineHeight: 1.58 }}>
+                {spaceHints[currentSixSpaceConfig.id]}
+              </p>
+            ) : null}
+          </section>
+
+          <CausalRail
+            statusLabel={spaceHints[currentSixSpaceConfig.id] || "先看见它到了什么程度。"}
+            leftHint="左滑，选择破局点"
+            rightHint={currentSixSpaceConfig.id === "goal" ? "右滑，完成本次推演" : "右滑，进入下一空间"}
+            onLeft={() => handleGenericBreakSpace(currentSixSpaceConfig.id)}
+            onRight={() => handleGenericNextSpace(currentSixSpaceConfig.id)}
+          />
+        </>
+      ) : null}
+
+      {currentSixSpaceConfig && sixDimensionStep >= 3 && sixDimensionStep <= 6 && spaceSteps[currentSixSpaceConfig.id] === "breakthrough" ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(30px, 8vw, 42px)", lineHeight: 1.1, fontWeight: 390 }}>
+              {currentSixSpaceConfig.name} · 破局推演
+            </h1>
+          </header>
+
+          <section
+            aria-label={`${currentSixSpaceConfig.name}破局推演`}
+            style={{
+              display: "grid",
+              gap: 18,
+              padding: "18px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.38)",
+            }}
+          >
+            <div style={{ display: "grid", gap: 10 }}>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 18, lineHeight: 1.6 }}>
+                {currentSixSpaceConfig.breakthroughSteps[spaceBreakthroughSteps[currentSixSpaceConfig.id]].title}
+              </p>
+              <div style={{ display: "grid", gap: 6 }}>
+                {currentSixSpaceConfig.breakthroughSteps[spaceBreakthroughSteps[currentSixSpaceConfig.id]].lines.map((line) => (
+                  <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 16, lineHeight: 1.72 }}>
+                    {line}
+                  </p>
+                ))}
+              </div>
+            </div>
+            {spaceHints[currentSixSpaceConfig.id] ? (
+              <p style={{ margin: 0, color: "rgba(0,184,212,0.78)", fontSize: 14, lineHeight: 1.58 }}>
+                {spaceHints[currentSixSpaceConfig.id]}
+              </p>
+            ) : null}
+          </section>
+
+          <CausalRail
+            statusLabel={spaceHints[currentSixSpaceConfig.id] || `${spaceBreakthroughSteps[currentSixSpaceConfig.id] + 1} / 3`}
+            leftHint={spaceBreakthroughSteps[currentSixSpaceConfig.id] === 2 ? "左滑，选择武器" : "左滑，暂不进入"}
+            rightHint={currentSixSpaceConfig.breakthroughSteps[spaceBreakthroughSteps[currentSixSpaceConfig.id]].rightHint}
+            onLeft={() => handleOpenGenericWeaponStep(currentSixSpaceConfig.id)}
+            onRight={() => handleGenericBreakthroughNext(currentSixSpaceConfig.id)}
+          />
+        </>
+      ) : null}
+
+      {currentSixSpaceConfig && sixDimensionStep >= 3 && sixDimensionStep <= 6 && spaceSteps[currentSixSpaceConfig.id] === "weapon" ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(30px, 8vw, 42px)", lineHeight: 1.1, fontWeight: 390 }}>
+              {currentSixSpaceConfig.name} · 破局点
+            </h1>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 18, lineHeight: 1.6 }}>
+              你需要什么武器？
+            </p>
+          </header>
+
+          <section
+            aria-label={`${currentSixSpaceConfig.name}武器选择`}
             style={{
               display: "grid",
               gap: 12,
@@ -1367,50 +1927,147 @@ function HexagramCodeDeliveryShell() {
               borderBottom: "1px solid rgba(85,85,85,0.38)",
             }}
           >
-            {currentNarrativeLines.map((line) => (
-              <p
-                key={line}
+            {currentSixSpaceConfig.weapons.map((weapon) => {
+              const isSelected = selectedSpaceWeapons[currentSixSpaceConfig.id] === weapon.id;
+
+              return (
+                <button
+                  key={weapon.id}
+                  type="button"
+                  onClick={() => selectGenericWeapon(currentSixSpaceConfig.id, weapon.id)}
+                  style={{
+                    appearance: "none",
+                    border: `1px solid ${isSelected ? "rgba(0,184,212,0.78)" : "rgba(245,245,245,0.18)"}`,
+                    background: isSelected ? "rgba(0,184,212,0.08)" : "rgba(245,245,245,0.02)",
+                    color: "rgba(245,245,245,0.74)",
+                    display: "grid",
+                    gap: 7,
+                    padding: "14px 12px",
+                    textAlign: "left",
+                    font: "inherit",
+                  }}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: 10, color: isSelected ? "rgba(245,245,245,0.9)" : "rgba(245,245,245,0.72)" }}>
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        width: 9,
+                        height: 9,
+                        borderRadius: "50%",
+                        border: `1px solid ${isSelected ? "rgba(0,184,212,0.95)" : "rgba(245,245,245,0.42)"}`,
+                        background: isSelected ? "rgba(0,184,212,0.9)" : "transparent",
+                        boxShadow: isSelected ? "0 0 12px rgba(0,184,212,0.36)" : "none",
+                        flex: "0 0 auto",
+                      }}
+                    />
+                    {weapon.name}
+                  </span>
+                  <span style={{ color: "rgba(245,245,245,0.58)", fontSize: 14, lineHeight: 1.58 }}>
+                    “{weapon.description}”
+                  </span>
+                </button>
+              );
+            })}
+
+            {currentSixSpaceConfig.weapons
+              .filter((weapon) => weapon.id === selectedSpaceWeapons[currentSixSpaceConfig.id])
+              .map((weapon) => (
+                <div
+                  key={`confirm-${weapon.id}`}
+                  style={{
+                    display: "grid",
+                    gap: 6,
+                    padding: "12px 12px",
+                    border: "1px solid rgba(199,169,107,0.28)",
+                    background: "rgba(199,169,107,0.045)",
+                  }}
+                >
+                  <span style={{ color: "rgba(199,169,107,0.78)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12, letterSpacing: "0.08em" }}>
+                    将消耗 ⌛ {weapon.cost}
+                  </span>
+                  <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 15, lineHeight: 1.58 }}>
+                    唤醒「{weapon.name}」。
+                  </p>
+                  <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 14, lineHeight: 1.58 }}>
+                    这是一次反本能动作。
+                  </p>
+                </div>
+              ))}
+
+            {spaceHints[currentSixSpaceConfig.id] ? (
+              <p style={{ margin: 0, color: "rgba(0,184,212,0.78)", fontSize: 14, lineHeight: 1.58 }}>
+                {spaceHints[currentSixSpaceConfig.id]}
+              </p>
+            ) : null}
+
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, paddingTop: 6 }}>
+              <button
+                type="button"
+                onClick={() => handleCancelGenericWeapon(currentSixSpaceConfig.id)}
                 style={{
-                  margin: 0,
-                  color: "rgba(245,245,245,0.68)",
-                  fontSize: 16,
-                  lineHeight: 1.72,
-                  overflowWrap: "anywhere",
+                  appearance: "none",
+                  border: "1px solid rgba(245,245,245,0.18)",
+                  background: "transparent",
+                  color: "rgba(245,245,245,0.58)",
+                  minHeight: 40,
+                  padding: "8px 18px",
+                  font: "inherit",
                 }}
               >
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={() => handleWakeGenericWeapon(currentSixSpaceConfig.id)}
+                style={{
+                  appearance: "none",
+                  border: "1px solid rgba(0,184,212,0.72)",
+                  background: "rgba(0,184,212,0.08)",
+                  color: "rgba(245,245,245,0.88)",
+                  minHeight: 40,
+                  padding: "8px 18px",
+                  font: "inherit",
+                }}
+              >
+                唤醒
+              </button>
+            </div>
+          </section>
+        </>
+      ) : null}
+
+      {currentSixSpaceConfig && sixDimensionStep >= 3 && sixDimensionStep <= 6 && spaceSteps[currentSixSpaceConfig.id] === "completed" ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(30px, 8vw, 42px)", lineHeight: 1.1, fontWeight: 390 }}>
+              器法已落成。
+            </h1>
+          </header>
+
+          <section
+            aria-label={`${currentSixSpaceConfig.name}器法落成`}
+            style={{
+              display: "grid",
+              gap: 14,
+              padding: "18px 0",
+              borderTop: "1px solid rgba(199,169,107,0.34)",
+              borderBottom: "1px solid rgba(85,85,85,0.38)",
+            }}
+          >
+            {(currentSixSpaceConfig.weapons.find((weapon) => weapon.id === selectedSpaceWeapons[currentSixSpaceConfig.id])?.completionLines ?? currentSixSpaceConfig.weapons[0].completionLines).map((line) => (
+              <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 18, lineHeight: 1.62 }}>
                 {line}
               </p>
             ))}
+            <p style={{ margin: "4px 0 0", color: "rgba(199,169,107,0.76)", fontSize: 16, lineHeight: 1.62 }}>
+              已存入你的武器库。
+            </p>
           </section>
 
-          {selectedSpaceAction ? (
-            <section
-              aria-label="处置确认"
-              style={{
-                display: "grid",
-                gap: 8,
-                padding: "14px 0",
-                borderTop: "1px solid rgba(0,184,212,0.34)",
-                borderBottom: "1px solid rgba(0,184,212,0.2)",
-              }}
-            >
-              <p style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 16, lineHeight: 1.62 }}>
-                你选择停在：
-                <br />
-                {selectedSpaceAction.spaceName}
-              </p>
-              <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 14, lineHeight: 1.56 }}>
-                系统将把这一空间作为后续处置入口。
-              </p>
-            </section>
-          ) : null}
-
           <CausalRail
-            statusLabel={currentSpaceSignal}
-            leftHint={!selectedSpaceAction && canTreatCurrentSpace ? "左滑，选择破局点" : undefined}
-            rightHint={sixDimensionStep === 6 ? "右滑，完成六维观变" : "右滑，跳过此空间"}
-            onLeft={!selectedSpaceAction && canTreatCurrentSpace ? handleSelectSpaceAction : undefined}
-            onRight={handleNextSpace}
+            statusLabel={currentSixSpaceConfig.id === "goal" ? "本次推演已完成" : "器法已落成"}
+            rightHint={currentSixSpaceConfig.completedRightHint}
+            onRight={() => handleGenericCompletedNext(currentSixSpaceConfig.id)}
           />
         </>
       ) : null}
