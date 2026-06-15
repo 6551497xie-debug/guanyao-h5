@@ -4,6 +4,7 @@ import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
+import { guanyaoMotherCodeAssetLibrary } from "../data/guanyaoMotherCodeAssetLibrary";
 import { getPressureSeedSixSpaceProjection } from "../data/guanyaoPressureSeedSixSpaceProjectionRegistry";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getDemoDynamicsResult } from "../services/guanyaoInteractionService";
@@ -15,6 +16,7 @@ import type { GuanyaoSession, MotherCodeResult, SceneSlice, YaoBit } from "../ty
 import type { PressureSeedSixSpaceProjection, PressureSeedSpaceProjection } from "../types/guanyaoPressureSeed";
 
 const USE_HEXAGRAM_DELIVERY_SHELL = true;
+type MotherCodeAssetCode = keyof typeof guanyaoMotherCodeAssetLibrary;
 
 function toFrontendTrajectory(text: string) {
   const backendYaoTerm = "六" + "爻";
@@ -472,20 +474,6 @@ const assetPackItems = [
   "年轮墙永久记录",
 ];
 
-const motherCodeAssetText = [
-  "你天生会在僵住的局面里，",
-  "寻找让事情重新流动的缝隙。",
-  "压力来临前，",
-  "你会先缓和，",
-  "再转开，",
-  "最后把真实感受藏起来。",
-  "这不是缺点。",
-  "这是你的原力在保护你。",
-  "但当它被压力压住时，",
-  "你会把“转开”",
-  "误用成“逃离自己”。",
-];
-
 const hexagramAssetText = [
   "这一局不是要你继续撑住，",
   "而是让你看见：",
@@ -527,6 +515,62 @@ function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
     memory: value,
     goal: value,
   };
+}
+
+function resolveMotherCodeAssetCode({
+  motherCodeDefinitionId,
+  motherCodeId,
+  motherCodeName,
+}: {
+  motherCodeDefinitionId?: number;
+  motherCodeId?: string;
+  motherCodeName?: string;
+}): MotherCodeAssetCode | null {
+  const definitionIdMap: Record<number, MotherCodeAssetCode> = {
+    1: "qian",
+    2: "kun",
+    3: "zhen",
+    4: "xun",
+    5: "kan",
+    6: "li",
+    7: "gen",
+    8: "dui",
+  };
+  const nameMap: Record<string, MotherCodeAssetCode> = {
+    乾: "qian",
+    坤: "kun",
+    震: "zhen",
+    巽: "xun",
+    坎: "kan",
+    离: "li",
+    艮: "gen",
+    兑: "dui",
+  };
+
+  if (motherCodeDefinitionId && definitionIdMap[motherCodeDefinitionId]) {
+    return definitionIdMap[motherCodeDefinitionId];
+  }
+
+  const normalizedId = motherCodeId?.toLowerCase() ?? "";
+  for (const code of Object.keys(guanyaoMotherCodeAssetLibrary) as MotherCodeAssetCode[]) {
+    if (normalizedId.includes(code)) return code;
+  }
+
+  const leadingName = motherCodeName?.trim().charAt(0);
+  return leadingName ? nameMap[leadingName] ?? null : null;
+}
+
+function buildMotherCodeAssetLines(asset: (typeof guanyaoMotherCodeAssetLibrary)[MotherCodeAssetCode] | null) {
+  if (!asset) {
+    return ["本局母码资产正在沉积，暂未完成读取。"];
+  }
+
+  return [
+    `你的原力：${asset.coreAsset}`,
+    `你的默认保护：${asset.defaultProtection}`,
+    `本局误用：${asset.misusePattern}`,
+    `资产回收：${asset.assetReturn}`,
+  ];
 }
 
 function cleanOldReaction(reaction: string) {
@@ -853,7 +897,10 @@ function HexagramCodeDeliveryShell() {
   const displayName = getUsableHexagramText([hexagramDisplay.hexagramName, hexagramDisplay.displayName], "本局");
   const displayTitle = getUsableHexagramText([hexagramDisplay.hexagramTitle, hexagramDisplay.displayTitle], "观变档案");
   const hexagramBoundaryLine = "你被架在责任与自我的边界上。";
-  const motherCodeAssetName = readModel.motherCodeStage.motherCodeName || "兑｜转化者";
+  const motherCodeAssetCode = resolveMotherCodeAssetCode(readModel.motherCodeStage);
+  const motherCodeAsset = motherCodeAssetCode ? guanyaoMotherCodeAssetLibrary[motherCodeAssetCode] : null;
+  const motherCodeAssetName = motherCodeAsset?.name ?? "";
+  const motherCodeAssetLines = buildMotherCodeAssetLines(motherCodeAsset);
   const selectedPressureSeedSurface = selectedPressureSeedContext?.surface || "这件事刚刚发生过。";
   const hexagramReadAnchor =
     displayCode && displayName && displayTitle
@@ -906,7 +953,7 @@ function HexagramCodeDeliveryShell() {
     createdAt: new Date().toISOString(),
     seedSurface: selectedPressureSeedSurface,
     motherCodeName: motherCodeAssetName,
-    motherCodeAssetText: motherCodeAssetText.join(""),
+    motherCodeAssetText: motherCodeAssetLines.join(""),
     hexagramName: displayName,
     hexagramTitle: displayTitle,
     hexagramCode: displayCode,
@@ -2573,7 +2620,7 @@ function HexagramCodeDeliveryShell() {
               </header>
 
               {[
-                ["一｜母码资产", `「${motherCodeAssetName}」`, motherCodeAssetText],
+                ["一｜母码资产", motherCodeAssetName ? `「${motherCodeAssetName}」` : "", motherCodeAssetLines],
                 ["二｜卦码资产", `「${displayName || "本局"}」\n《${displayTitle || "观变档案"}》`, [hexagramBoundaryLine, ...hexagramAssetText]],
                 ["三｜六维旧路径地图", "", [sixSpacePathMap.join("\n→ ")]],
                 [
