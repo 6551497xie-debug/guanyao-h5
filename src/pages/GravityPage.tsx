@@ -94,6 +94,7 @@ type SixSpaceId = "body" | "emotion" | "thought" | "action" | "memory" | "goal";
 type SixSpaceRuntimeStep = "entry" | "breakthrough" | "weapon" | "completed";
 type SixSpaceIntensity = "yao1" | "yao2" | "yao3";
 type SixSpaceWeaponId = string;
+type AssetStep = "preview" | "confirm" | "unlocked";
 type SixSpaceWeapon = {
   id: SixSpaceWeaponId;
   name: string;
@@ -430,6 +431,61 @@ const sixSpaceConfigs: SixSpaceConfig[] = [
   },
 ];
 
+const sixSpacePatternSummary = [
+  { space: "身体", pattern: "撑着，假装没事" },
+  { space: "情绪", pattern: "用解释换安全" },
+  { space: "思维", pattern: "把解释，当成了证明" },
+  { space: "行为", pattern: "把想法，卡成永远" },
+  { space: "记忆", pattern: "用过去的失败，预判现在的结果" },
+  { space: "目标", pattern: "假装不需要，就不怕得不到" },
+];
+
+const assetPackItems = [
+  "母码资产",
+  "卦码资产",
+  "六维旧路径地图",
+  "已唤醒武器卡",
+  "下次触发防御卡",
+  "72小时第一动作",
+  "年轮墙永久记录",
+];
+
+const motherCodeAssetText = [
+  "你天生会在僵住的局面里，",
+  "寻找让事情重新流动的缝隙。",
+  "压力来临前，",
+  "你会先缓和，",
+  "再转开，",
+  "最后把真实感受藏起来。",
+  "这不是缺点。",
+  "这是你的原力在保护你。",
+  "但当它被压力压住时，",
+  "你会把“转开”",
+  "误用成“逃离自己”。",
+];
+
+const hexagramAssetText = [
+  "这一局不是要你继续撑住，",
+  "而是让你看见：",
+  "你把太多“应该”",
+  "压在了自己身上。",
+  "你以为自己是在负责，",
+  "但身体、情绪、思维和行动，",
+  "已经开始替你承受代价。",
+];
+
+const sixSpacePathMap = [
+  "身体先紧张",
+  "情绪开始不安",
+  "思维开始解释",
+  "行动开始卡住",
+  "记忆拿过去做判断",
+  "目标变得模糊",
+];
+
+const triggerDefenseCard = "当别人质疑你、催促你、否定你时，你最容易先解释，再证明，最后卡住。你的第一信号不是情绪，而是身体先紧。";
+const firstAction72h = "72小时内，只做一件事：下一次你想解释时，先停三秒。然后问自己：他真的在听吗？";
+
 function readJsonFromStorage<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
 
@@ -610,6 +666,9 @@ function HexagramCodeDeliveryShell() {
     goal: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("goal")),
   }));
   const [spaceHints, setSpaceHints] = useState<Record<SixSpaceId, string>>(() => buildSpaceRecord(""));
+  const [assetStep, setAssetStep] = useState<AssetStep>("preview");
+  const [currentAssetId] = useState(() => `asset-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  const [isCurrentAssetSaved, setIsCurrentAssetSaved] = useState(false);
   const [readModel] = useState(() => getGuanyaoR8ReadModel());
   const [selectedPressureSeedContext] = useState(() =>
     readJsonFromStorage<GravitySelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
@@ -622,6 +681,7 @@ function HexagramCodeDeliveryShell() {
   const displayName = hexagramDisplay.displayName || "地泽临";
   const displayTitle = hexagramDisplay.displayTitle || "悬崖边";
   const hexagramBoundaryLine = "你被架在责任与自我的边界上。";
+  const motherCodeAssetName = readModel.motherCodeStage.motherCodeName || "兑｜转化者";
   const selectedPressureSeedSurface = selectedPressureSeedContext?.surface || "这件事刚刚发生过。";
   const hexagramReadAnchor =
     hexagramDisplay.displayCode && hexagramDisplay.displayName && hexagramDisplay.displayTitle
@@ -652,6 +712,51 @@ function HexagramCodeDeliveryShell() {
       : currentSpace?.pauseSignal === "soft"
         ? "轻微信号已显影。"
         : "继续进入下一空间。";
+  const awakenedWeapons = sixSpaceConfigs.flatMap((config) => {
+    const storedCompleted =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem(`guanyao:${config.id}BreakthroughCompleted`) === "true"
+        : false;
+    const isCompleted =
+      storedCompleted ||
+      (config.id === "body" && bodySpaceStep === "completed") ||
+      (config.id === "emotion" && emotionSpaceStep === "completed") ||
+      spaceSteps[config.id] === "completed";
+    const selectedWeaponId =
+      config.id === "body"
+        ? selectedBodyWeapon || selectedSpaceWeapons.body
+        : config.id === "emotion"
+          ? selectedEmotionWeapon || selectedSpaceWeapons.emotion
+          : selectedSpaceWeapons[config.id];
+    const weapon = config.weapons.find((candidate) => candidate.id === selectedWeaponId);
+
+    if (!isCompleted || !weapon) return [];
+
+    return [
+      {
+        space: config.name.replace("空间", ""),
+        weaponName: weapon.name,
+        actionText: weapon.completionLines.join(""),
+      },
+    ];
+  });
+  const currentAssetCard = {
+    id: currentAssetId,
+    createdAt: new Date().toISOString(),
+    seedSurface: selectedPressureSeedSurface,
+    motherCodeName: motherCodeAssetName,
+    motherCodeAssetText: motherCodeAssetText.join(""),
+    hexagramName: displayName,
+    hexagramTitle: displayTitle,
+    hexagramCode: displayCode,
+    hexagramAssetText: [hexagramBoundaryLine, ...hexagramAssetText].join(""),
+    sixSpacePathMap,
+    sixSpacePatterns: sixSpacePatternSummary,
+    awakenedWeapons,
+    triggerDefenseCard,
+    firstAction72h,
+    unlocked: assetStep === "unlocked",
+  };
 
   function handleNextSpace() {
     setSelectedSpaceAction(null);
@@ -960,6 +1065,23 @@ function HexagramCodeDeliveryShell() {
     handleNextSpace();
   }
 
+  function handleConfirmAssetUnlock() {
+    if (typeof window !== "undefined") {
+      const unlockedAssetCard = { ...currentAssetCard, unlocked: true };
+      window.localStorage.setItem("guanyao:currentAssetUnlocked", "true");
+      window.localStorage.setItem("guanyao:currentAssetCard", JSON.stringify(unlockedAssetCard));
+
+      const existingArchive = readJsonFromStorage<Array<typeof unlockedAssetCard>>("guanyao:assetArchive") ?? [];
+      const nextArchive = existingArchive.some((asset) => asset.id === unlockedAssetCard.id)
+        ? existingArchive.map((asset) => (asset.id === unlockedAssetCard.id ? unlockedAssetCard : asset))
+        : [...existingArchive, unlockedAssetCard];
+      window.localStorage.setItem("guanyao:assetArchive", JSON.stringify(nextArchive));
+    }
+
+    setIsCurrentAssetSaved(true);
+    setAssetStep("unlocked");
+  }
+
   return (
     <main
       style={{
@@ -988,7 +1110,7 @@ function HexagramCodeDeliveryShell() {
         {sixDimensionStep === 0
           ? "05｜卦码生成"
           : sixDimensionStep === 7
-            ? "05｜看见卡住的位置"
+            ? "GY / ASSET / CURRENT"
             : `GY / SPACE-0${sixDimensionStep} / ${currentSixSpaceConfig?.code ?? currentSpace?.spaceCode ?? "SPACE"}`}
       </span>
 
@@ -1415,11 +1537,19 @@ function HexagramCodeDeliveryShell() {
               borderBottom: "1px solid rgba(85,85,85,0.38)",
             }}
           >
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 18, lineHeight: 1.62 }}>
+              你唤醒了「{bodyWeaponOptions.find((weapon) => weapon.value === selectedBodyWeapon)?.label ?? "一件武器"}」。
+            </p>
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
+            <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+              今日可做的动作：
+            </span>
             {(bodyWeaponOptions.find((weapon) => weapon.value === selectedBodyWeapon)?.completedLines ?? bodyWeaponOptions[0].completedLines).map((line) => (
               <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 18, lineHeight: 1.62 }}>
                 {line}
               </p>
             ))}
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
             <p style={{ margin: "4px 0 0", color: "rgba(199,169,107,0.76)", fontSize: 16, lineHeight: 1.62 }}>
               已存入你的武器库。
             </p>
@@ -1737,11 +1867,19 @@ function HexagramCodeDeliveryShell() {
               borderBottom: "1px solid rgba(85,85,85,0.38)",
             }}
           >
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 18, lineHeight: 1.62 }}>
+              你唤醒了「{emotionWeaponOptions.find((weapon) => weapon.value === selectedEmotionWeapon)?.label ?? "一件武器"}」。
+            </p>
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
+            <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+              今日可做的动作：
+            </span>
             {(emotionWeaponOptions.find((weapon) => weapon.value === selectedEmotionWeapon)?.completedLines ?? emotionWeaponOptions[0].completedLines).map((line) => (
               <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 18, lineHeight: 1.62 }}>
                 {line}
               </p>
             ))}
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
             <p style={{ margin: "4px 0 0", color: "rgba(199,169,107,0.76)", fontSize: 16, lineHeight: 1.62 }}>
               已存入你的武器库。
             </p>
@@ -2054,11 +2192,19 @@ function HexagramCodeDeliveryShell() {
               borderBottom: "1px solid rgba(85,85,85,0.38)",
             }}
           >
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 18, lineHeight: 1.62 }}>
+              你唤醒了「{currentSixSpaceConfig.weapons.find((weapon) => weapon.id === selectedSpaceWeapons[currentSixSpaceConfig.id])?.name ?? "一件武器"}」。
+            </p>
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
+            <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+              今日可做的动作：
+            </span>
             {(currentSixSpaceConfig.weapons.find((weapon) => weapon.id === selectedSpaceWeapons[currentSixSpaceConfig.id])?.completionLines ?? currentSixSpaceConfig.weapons[0].completionLines).map((line) => (
               <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 18, lineHeight: 1.62 }}>
                 {line}
               </p>
             ))}
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
             <p style={{ margin: "4px 0 0", color: "rgba(199,169,107,0.76)", fontSize: 16, lineHeight: 1.62 }}>
               已存入你的武器库。
             </p>
@@ -2074,45 +2220,271 @@ function HexagramCodeDeliveryShell() {
 
       {sixDimensionStep === 7 ? (
         <>
-          <header style={{ display: "grid", gap: 10 }}>
-            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
-              你已经看见它卡在哪里。
-            </h1>
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 15, lineHeight: 1.68 }}>
-              最该下刀的位置已经浮出来。
-            </p>
-          </header>
-
-          <section
-            aria-label="行动信号总览"
-            style={{
-              display: "grid",
-              gap: 12,
-              padding: "16px 0",
-              borderTop: "1px solid rgba(199,169,107,0.34)",
-              borderBottom: "1px solid rgba(85,85,85,0.38)",
-            }}
-          >
-            {[
-              ["主要行动点", readModel.yaoStage.mainCut.spaceName, readModel.yaoStage.mainCut.completionReason],
-              ["辅助行动点", readModel.yaoStage.secondaryCut.spaceName, readModel.yaoStage.secondaryCut.completionReason],
-              ["深层保护点", readModel.yaoStage.rootCut.spaceName, readModel.yaoStage.rootCut.completionReason],
-            ].map(([label, spaceName, value]) => (
-              <div key={label} style={{ display: "grid", gap: 6, borderTop: "1px solid rgba(85,85,85,0.22)", paddingTop: 10 }}>
-                <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
-                  {label}
-                </span>
-                <strong style={{ color: "rgba(245,245,245,0.82)", fontSize: 17, lineHeight: 1.35, fontWeight: 360 }}>
-                  {spaceName}
-                </strong>
-                <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 14, lineHeight: 1.6 }}>
-                  {value}
+          {assetStep === "preview" ? (
+            <>
+              <header style={{ display: "grid", gap: 10 }}>
+                <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
+                  你走完了这一局。
+                </h1>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.7)", fontSize: 16, lineHeight: 1.74, whiteSpace: "pre-line" }}>
+                  这根刺，
+                  {"\n"}已经走完六个空间。
+                  {"\n"}你不是只看完了一段推演。
+                  {"\n"}你已经看见它如何接管你。
                 </p>
-              </div>
-            ))}
-          </section>
+              </header>
 
-          <CausalRail statusLabel="进入处置页" rightHint="右滑进入处置页" onRight={() => navigate(GUANYAO_ROUTES.breachScan)} />
+              <section
+                aria-label="资产包预览"
+                style={{
+                  display: "grid",
+                  gap: 12,
+                  padding: "16px 0",
+                  borderTop: "1px solid rgba(199,169,107,0.34)",
+                  borderBottom: "1px solid rgba(85,85,85,0.38)",
+                }}
+              >
+                <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+                  本局资产已生成
+                </span>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 16, lineHeight: 1.62 }}>
+                  可沉积为：
+                </p>
+                {assetPackItems.map((item) => (
+                  <p key={item} style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 15, lineHeight: 1.52 }}>
+                    ○ {item}
+                  </p>
+                ))}
+              </section>
+
+              <section
+                aria-label="已唤醒武器简表"
+                style={{
+                  display: "grid",
+                  gap: 12,
+                  padding: "16px 0",
+                  borderTop: "1px solid rgba(199,169,107,0.24)",
+                  borderBottom: "1px solid rgba(85,85,85,0.28)",
+                }}
+              >
+                <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+                  你这局已经唤醒：
+                </span>
+                {awakenedWeapons.length > 0 ? (
+                  awakenedWeapons.map((weapon) => (
+                    <p key={`${weapon.space}-${weapon.weaponName}`} style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 16, lineHeight: 1.58 }}>
+                      ○ {weapon.space}｜{weapon.weaponName}
+                    </p>
+                  ))
+                ) : (
+                  <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.72 }}>
+                    你这次没有唤醒武器。
+                    <br />
+                    但你已经看见这根刺，
+                    <br />
+                    如何穿过六个空间。
+                  </p>
+                )}
+              </section>
+
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                <button
+                  type="button"
+                  onClick={() => navigate("/")}
+                  style={{
+                    appearance: "none",
+                    border: "1px solid rgba(245,245,245,0.18)",
+                    background: "transparent",
+                    color: "rgba(245,245,245,0.58)",
+                    minHeight: 42,
+                    padding: "9px 14px",
+                    font: "inherit",
+                  }}
+                >
+                  暂不沉积
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAssetStep("confirm")}
+                  style={{
+                    appearance: "none",
+                    border: "1px solid rgba(0,184,212,0.72)",
+                    background: "rgba(0,184,212,0.08)",
+                    color: "rgba(245,245,245,0.88)",
+                    minHeight: 42,
+                    padding: "9px 14px",
+                    font: "inherit",
+                  }}
+                >
+                  沉积为年轮资产
+                </button>
+              </div>
+
+              <CausalRail statusLabel="本局资产已生成" leftHint="左滑，暂不沉积" rightHint="右滑，沉积为年轮资产" onLeft={() => navigate("/")} onRight={() => setAssetStep("confirm")} />
+            </>
+          ) : null}
+
+          {assetStep === "confirm" ? (
+            <>
+              <header style={{ display: "grid", gap: 10 }}>
+                <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
+                  沉积为年轮资产
+                </h1>
+              </header>
+
+              <section
+                aria-label="沉积确认"
+                style={{
+                  display: "grid",
+                  gap: 12,
+                  padding: "16px 0",
+                  borderTop: "1px solid rgba(199,169,107,0.34)",
+                  borderBottom: "1px solid rgba(85,85,85,0.38)",
+                }}
+              >
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 16, lineHeight: 1.62 }}>
+                  你将把这一局沉积为：
+                </p>
+                {assetPackItems.map((item) => (
+                  <p key={item} style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 15, lineHeight: 1.52 }}>
+                    ○ {item}
+                  </p>
+                ))}
+                <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
+                <span style={{ color: "rgba(199,169,107,0.78)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12, letterSpacing: "0.08em" }}>
+                  将消耗 ⌛ 3
+                </span>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 16, lineHeight: 1.7 }}>
+                  沉积这份本局资产包。
+                  <br />
+                  这不是一份报告。
+                  <br />
+                  这是你下次还能回来使用的观变资产。
+                </p>
+              </section>
+
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                <button
+                  type="button"
+                  onClick={() => setAssetStep("preview")}
+                  style={{
+                    appearance: "none",
+                    border: "1px solid rgba(245,245,245,0.18)",
+                    background: "transparent",
+                    color: "rgba(245,245,245,0.58)",
+                    minHeight: 42,
+                    padding: "9px 18px",
+                    font: "inherit",
+                  }}
+                >
+                  取消
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmAssetUnlock}
+                  style={{
+                    appearance: "none",
+                    border: "1px solid rgba(0,184,212,0.72)",
+                    background: "rgba(0,184,212,0.08)",
+                    color: "rgba(245,245,245,0.88)",
+                    minHeight: 42,
+                    padding: "9px 18px",
+                    font: "inherit",
+                  }}
+                >
+                  确认沉积
+                </button>
+              </div>
+            </>
+          ) : null}
+
+          {assetStep === "unlocked" ? (
+            <>
+              <header style={{ display: "grid", gap: 10 }}>
+                <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
+                  本局资产已沉积。
+                </h1>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.7)", fontSize: 16, lineHeight: 1.74 }}>
+                  你的母码、卦码、旧路径和武器，
+                  <br />
+                  已经存入年轮墙。
+                </p>
+              </header>
+
+              {[
+                ["一｜母码资产", `「${motherCodeAssetName}」`, motherCodeAssetText],
+                ["二｜卦码资产", `「${displayName || "本局"}」\n《${displayTitle || "观变档案"}》`, [hexagramBoundaryLine, ...hexagramAssetText]],
+                ["三｜六维旧路径地图", "", [sixSpacePathMap.join("\n→ ")]],
+                ["五｜下次触发防御卡", "", triggerDefenseCard.split("。").filter(Boolean).map((line) => `${line}。`)],
+                ["六｜72小时第一动作", "", firstAction72h.split("。").filter(Boolean).map((line) => `${line}。`)],
+              ].map(([label, title, lines]) => (
+                <section
+                  key={label as string}
+                  aria-label={label as string}
+                  style={{
+                    display: "grid",
+                    gap: 10,
+                    padding: "16px 0",
+                    borderTop: "1px solid rgba(199,169,107,0.34)",
+                    borderBottom: "1px solid rgba(85,85,85,0.3)",
+                  }}
+                >
+                  <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+                    {label as string}
+                  </span>
+                  {title ? (
+                    <p style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 18, lineHeight: 1.48, whiteSpace: "pre-line" }}>
+                      {title as string}
+                    </p>
+                  ) : null}
+                  {(lines as string[]).map((line) => (
+                    <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.68, whiteSpace: "pre-line" }}>
+                      {line}
+                    </p>
+                  ))}
+                </section>
+              ))}
+
+              <section
+                aria-label="已唤醒武器卡"
+                style={{
+                  display: "grid",
+                  gap: 12,
+                  padding: "16px 0",
+                  borderTop: "1px solid rgba(199,169,107,0.34)",
+                  borderBottom: "1px solid rgba(85,85,85,0.3)",
+                }}
+              >
+                <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
+                  四｜已唤醒武器
+                </span>
+                {awakenedWeapons.length > 0 ? (
+                  awakenedWeapons.map((weapon) => (
+                    <div key={`${weapon.space}-${weapon.weaponName}`} style={{ display: "grid", gap: 5 }}>
+                      <p style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 16, lineHeight: 1.5 }}>
+                        ○ {weapon.space}｜{weapon.weaponName}
+                      </p>
+                      <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 14, lineHeight: 1.58 }}>
+                        {weapon.actionText}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.68 }}>
+                    本局未唤醒武器。
+                    <br />
+                    但旧路径已经被记录。
+                  </p>
+                )}
+              </section>
+
+              <p style={{ margin: 0, color: "rgba(199,169,107,0.76)", fontSize: 16, lineHeight: 1.62 }}>
+                已存入你的年轮墙。
+              </p>
+
+              <CausalRail statusLabel="已存入你的年轮墙" rightHint="右滑，返回首页" onRight={() => navigate("/")} />
+            </>
+          ) : null}
         </>
       ) : null}
     </main>
