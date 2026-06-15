@@ -129,6 +129,14 @@ type TriggerDefenseCard = {
   defenseAction: string;
   awakenedWeaponName?: string;
 };
+type FirstAction72h = {
+  actionTitle: string;
+  actionTiming: string;
+  actionScene: string;
+  actionInstruction: string;
+  antiInstinctPoint: string;
+  linkedWeaponName?: string;
+};
 
 const bodyIntensityOptions: Array<{ value: BodyIntensity; label: string }> = [
   { value: "yao1", label: "有一点，但不明显" },
@@ -497,8 +505,6 @@ const sixSpacePathMap = [
   "目标变得模糊",
 ];
 
-const firstAction72h = "72小时内，只做一件事：下一次你想解释时，先停三秒。然后问自己：他真的在听吗？";
-
 function readJsonFromStorage<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
 
@@ -555,6 +561,35 @@ function buildTriggerDefenseCard({
     oldReaction,
     takeoverWarning: "旧反应会先接管。你可能会沿着熟悉路径继续反应。",
     defenseAction: "先停一秒，不立刻沿旧反应走下去。",
+  };
+}
+
+function buildFirstAction72h({
+  triggerDefenseCard,
+  awakenedWeapons,
+}: {
+  triggerDefenseCard: TriggerDefenseCard;
+  awakenedWeapons: AwakenedWeaponAsset[];
+}): FirstAction72h {
+  const lastAwakenedWeapon = awakenedWeapons[awakenedWeapons.length - 1];
+
+  if (lastAwakenedWeapon) {
+    return {
+      actionTitle: `先调用「${lastAwakenedWeapon.weaponName}」`,
+      actionTiming: "未来72小时内",
+      actionScene: triggerDefenseCard.triggerScene,
+      actionInstruction: lastAwakenedWeapon.actionText || triggerDefenseCard.defenseAction,
+      antiInstinctPoint: "不立刻解释、证明、撑住或退回熟悉的路，先让本局武器插进旧反应里。",
+      linkedWeaponName: lastAwakenedWeapon.weaponName,
+    };
+  }
+
+  return {
+    actionTitle: "先停一秒",
+    actionTiming: "未来72小时内",
+    actionScene: triggerDefenseCard.triggerScene,
+    actionInstruction: "当这根刺再次出现时，先停一秒，不立刻沿旧反应走下去。",
+    antiInstinctPoint: "不急着解释、证明、撑住或退回熟悉的路。",
   };
 }
 
@@ -860,6 +895,10 @@ function HexagramCodeDeliveryShell() {
   });
   const triggerDefenseCard = buildTriggerDefenseCard({
     seedSurface: selectedPressureSeedSurface,
+    awakenedWeapons,
+  });
+  const firstAction72h = buildFirstAction72h({
+    triggerDefenseCard,
     awakenedWeapons,
   });
   const currentAssetCard = {
@@ -2559,7 +2598,27 @@ function HexagramCodeDeliveryShell() {
                         `防御动作：${triggerDefenseCard.defenseAction}`,
                       ],
                 ],
-                ["六｜72小时第一动作", "", firstAction72h.split("。").filter(Boolean).map((line) => `${line}。`)],
+                [
+                  "六｜72小时第一动作",
+                  "",
+                  awakenedWeapons.length > 0
+                    ? [
+                        "这不是长期计划。",
+                        "这是你在未来72小时内，先打断旧反应的一次最小动作。",
+                        `执行时间：${firstAction72h.actionTiming}`,
+                        `适用场景：${firstAction72h.actionScene}`,
+                        `具体动作：${firstAction72h.actionInstruction}`,
+                        `反本能点：${firstAction72h.antiInstinctPoint}`,
+                        `关联武器：${firstAction72h.linkedWeaponName ?? "本局已唤醒武器"}`,
+                      ]
+                    : [
+                        "本局尚未唤醒武器。",
+                        `执行时间：${firstAction72h.actionTiming}`,
+                        `适用场景：${firstAction72h.actionScene}`,
+                        `具体动作：${firstAction72h.actionInstruction}`,
+                        `反本能点：${firstAction72h.antiInstinctPoint}`,
+                      ],
+                ],
               ].map(([label, title, lines]) => (
                 <section
                   key={label as string}
