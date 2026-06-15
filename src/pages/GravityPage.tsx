@@ -514,6 +514,17 @@ function getSelectedWeaponStorageKey(spaceId: SixSpaceId) {
   return `guanyao:selected${spaceId[0].toUpperCase()}${spaceId.slice(1)}Weapon`;
 }
 
+function getUsableHexagramText(values: Array<string | undefined>, fallback: string) {
+  for (const value of values) {
+    const trimmed = value?.trim();
+    if (!trimmed) continue;
+    if (trimmed === "本局卦码" || trimmed === "本局读取" || trimmed === "读取中") continue;
+    return trimmed;
+  }
+
+  return fallback;
+}
+
 function getMotherCodeFromSession(session: GuanyaoSession): MotherCodeResult {
   return session.currentMotherCode ?? session.motherCodeResult ?? session.motherCode ?? buildMotherCodeResult(session);
 }
@@ -677,15 +688,15 @@ function HexagramCodeDeliveryShell() {
     getPressureSeedSixSpaceProjection(selectedPressureSeedContext?.selectedPressureSeedId ?? "unknown-selected-pressure-seed"),
   );
   const hexagramDisplay = readModel.hexagramStage;
-  const displayCode = hexagramDisplay.displayCode || "019";
-  const displayName = hexagramDisplay.displayName || "地泽临";
-  const displayTitle = hexagramDisplay.displayTitle || "悬崖边";
+  const displayCode = getUsableHexagramText([hexagramDisplay.hexagramCode, hexagramDisplay.displayCode], "");
+  const displayName = getUsableHexagramText([hexagramDisplay.hexagramName, hexagramDisplay.displayName], "本局");
+  const displayTitle = getUsableHexagramText([hexagramDisplay.hexagramTitle, hexagramDisplay.displayTitle], "观变档案");
   const hexagramBoundaryLine = "你被架在责任与自我的边界上。";
   const motherCodeAssetName = readModel.motherCodeStage.motherCodeName || "兑｜转化者";
   const selectedPressureSeedSurface = selectedPressureSeedContext?.surface || "这件事刚刚发生过。";
   const hexagramReadAnchor =
-    hexagramDisplay.displayCode && hexagramDisplay.displayName && hexagramDisplay.displayTitle
-      ? `NO.${hexagramDisplay.displayCode} · ${hexagramDisplay.displayName}《${hexagramDisplay.displayTitle}》`
+    displayCode && displayName && displayTitle
+      ? `NO.${displayCode} · ${displayName}《${displayTitle}》`
       : "本局卦码读取中";
   const hexagramReadTension = "这一局，正在照见你此刻被压住的位置。";
   const motherCodeNarrative = readModel.motherCodeStage.motherCodeName
