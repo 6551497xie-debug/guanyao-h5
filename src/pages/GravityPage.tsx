@@ -115,6 +115,13 @@ type SixSpaceConfig = {
   weapons: SixSpaceWeapon[];
   completedRightHint: string;
 };
+type AwakenedWeaponAsset = {
+  space: string;
+  spaceId: SixSpaceId;
+  weaponId: string;
+  weaponName: string;
+  actionText: string;
+};
 
 const bodyIntensityOptions: Array<{ value: BodyIntensity; label: string }> = [
   { value: "yao1", label: "有一点，但不明显" },
@@ -514,6 +521,84 @@ function getSelectedWeaponStorageKey(spaceId: SixSpaceId) {
   return `guanyao:selected${spaceId[0].toUpperCase()}${spaceId.slice(1)}Weapon`;
 }
 
+function getLegacySelectedWeaponStorageKeys(spaceId: SixSpaceId) {
+  if (spaceId === "body") return ["guanyao:selectedBodyWeapon"];
+  if (spaceId === "emotion") return ["guanyao:selectedEmotionWeapon"];
+
+  return [getSelectedWeaponStorageKey(spaceId)];
+}
+
+function normalizeWeaponId(spaceId: SixSpaceId, weaponId: string | null | undefined) {
+  if (!weaponId) return null;
+
+  const aliases: Record<string, Record<string, string>> = {
+    action: {
+      smallStep: "small-step",
+    },
+    goal: {
+      lookBack: "look-back",
+      lookForward: "look-forward",
+    },
+  };
+
+  return aliases[spaceId]?.[weaponId] ?? weaponId;
+}
+
+function readStringFromStorage(keys: string[]) {
+  if (typeof window === "undefined") return null;
+
+  for (const key of keys) {
+    const value = window.localStorage.getItem(key);
+    if (value) return value;
+  }
+
+  return null;
+}
+
+function readBooleanFromStorage(keys: string[]) {
+  if (typeof window === "undefined") return false;
+
+  return keys.some((key) => window.localStorage.getItem(key) === "true");
+}
+
+function getAwakenedWeapons(args: {
+  configs: SixSpaceConfig[];
+  selectedBodyWeapon: BodyWeapon | null;
+  selectedEmotionWeapon: EmotionWeapon | null;
+  selectedSpaceWeapons: Record<SixSpaceId, SixSpaceWeaponId | null>;
+  bodySpaceStep: BodySpaceStep;
+  emotionSpaceStep: EmotionSpaceStep;
+  spaceSteps: Record<SixSpaceId, SixSpaceRuntimeStep>;
+}): AwakenedWeaponAsset[] {
+  return args.configs.flatMap((config) => {
+    const completed = readBooleanFromStorage([`guanyao:${config.id}BreakthroughCompleted`]) ||
+      (config.id === "body" && args.bodySpaceStep === "completed") ||
+      (config.id === "emotion" && args.emotionSpaceStep === "completed") ||
+      args.spaceSteps[config.id] === "completed";
+    const stateWeaponId =
+      config.id === "body"
+        ? args.selectedBodyWeapon || args.selectedSpaceWeapons.body
+        : config.id === "emotion"
+          ? args.selectedEmotionWeapon || args.selectedSpaceWeapons.emotion
+          : args.selectedSpaceWeapons[config.id];
+    const storedWeaponId = readStringFromStorage(getLegacySelectedWeaponStorageKeys(config.id));
+    const selectedWeaponId = normalizeWeaponId(config.id, stateWeaponId || storedWeaponId);
+    const weapon = config.weapons.find((candidate) => candidate.id === selectedWeaponId);
+
+    if (!completed || !weapon) return [];
+
+    return [
+      {
+        space: config.name.replace("空间", ""),
+        spaceId: config.id,
+        weaponId: weapon.id,
+        weaponName: weapon.name,
+        actionText: weapon.completionLines.join(""),
+      },
+    ];
+  });
+}
+
 function getUsableHexagramText(values: Array<string | undefined>, fallback: string) {
   for (const value of values) {
     const trimmed = value?.trim();
@@ -723,33 +808,14 @@ function HexagramCodeDeliveryShell() {
       : currentSpace?.pauseSignal === "soft"
         ? "轻微信号已显影。"
         : "继续进入下一空间。";
-  const awakenedWeapons = sixSpaceConfigs.flatMap((config) => {
-    const storedCompleted =
-      typeof window !== "undefined"
-        ? window.localStorage.getItem(`guanyao:${config.id}BreakthroughCompleted`) === "true"
-        : false;
-    const isCompleted =
-      storedCompleted ||
-      (config.id === "body" && bodySpaceStep === "completed") ||
-      (config.id === "emotion" && emotionSpaceStep === "completed") ||
-      spaceSteps[config.id] === "completed";
-    const selectedWeaponId =
-      config.id === "body"
-        ? selectedBodyWeapon || selectedSpaceWeapons.body
-        : config.id === "emotion"
-          ? selectedEmotionWeapon || selectedSpaceWeapons.emotion
-          : selectedSpaceWeapons[config.id];
-    const weapon = config.weapons.find((candidate) => candidate.id === selectedWeaponId);
-
-    if (!isCompleted || !weapon) return [];
-
-    return [
-      {
-        space: config.name.replace("空间", ""),
-        weaponName: weapon.name,
-        actionText: weapon.completionLines.join(""),
-      },
-    ];
+  const awakenedWeapons = getAwakenedWeapons({
+    configs: sixSpaceConfigs,
+    selectedBodyWeapon,
+    selectedEmotionWeapon,
+    selectedSpaceWeapons,
+    bodySpaceStep,
+    emotionSpaceStep,
+    spaceSteps,
   });
   const currentAssetCard = {
     id: currentAssetId,
