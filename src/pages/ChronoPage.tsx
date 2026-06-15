@@ -441,10 +441,18 @@ function InitialCoordinatesEntry() {
   });
   const motherCode = motherCodeLanding.motherCodeProfile;
   const motherVisualTags = motherCode.visualTags ?? {
-    force: "尚未显影",
-    mirror: "尚未显影",
-    unlock: "尚未显影",
+    force: "尚未浮现",
+    mirror: "尚未浮现",
+    unlock: "尚未浮现",
   };
+  const motherProtectionTags = motherCode.motherCodeName.includes("兑")
+    ? {
+        force: "流动",
+        mirror: "缓和",
+        unlock: "转身离开",
+      }
+    : motherVisualTags;
+  const motherReactionChain = (motherCode.defaultReactionChain || "").replace(/离开|转开/g, "转身");
   const axisLeft = `${axisValue * 100}%`;
   const activeTextColor = "rgba(0,184,212,0.94)";
   const inactiveTextColor = "rgba(246,243,236,0.34)";
@@ -549,18 +557,25 @@ function InitialCoordinatesEntry() {
           letterSpacing: "0.16em",
         }}
       >
-        {isMotherStage ? (isMotherRuntimeView ? "02B｜母码读取" : "02｜母码卡") : "GY / 00-FIX / CHRONO"}
+        {isMotherStage ? (isMotherRuntimeView ? "02B｜默认反应" : "02A｜母码卡") : "02｜生命起点"}
       </span>
 
       {!isMotherStage ? (
         <>
           <header style={{ display: "grid", gap: 8 }}>
-            <h1 style={{ margin: 0, color: "rgba(246,243,236,0.78)", fontSize: "clamp(22px, 6vw, 30px)", lineHeight: 1.15, fontWeight: 360, letterSpacing: "0.08em" }}>
-              原始坐标
+            <h1 style={{ margin: 0, color: "rgba(246,243,236,0.88)", fontSize: "clamp(27px, 7vw, 38px)", lineHeight: 1.18, fontWeight: 380, letterSpacing: "0.04em" }}>
+              有些行为，
+              <br />
+              不是这一刻才出现的。
             </h1>
+            <p style={{ margin: 0, color: "rgba(246,243,236,0.62)", fontSize: 15, lineHeight: 1.72, letterSpacing: "0.04em" }}>
+              它们早就藏在你面对世界的方式里。
+              <br />
+              请确认原始坐标。
+            </p>
           </header>
           <section
-            aria-label="原始坐标落位结果"
+            aria-label="原始坐标"
             style={{
               display: "grid",
               gap: 6,
@@ -587,7 +602,7 @@ function InitialCoordinatesEntry() {
             </button>
             <button
               type="button"
-              aria-label="系统落位结果"
+              aria-label="出生时辰"
               style={{
                 border: 0,
                 background: "transparent",
@@ -615,7 +630,7 @@ function InitialCoordinatesEntry() {
             }}
           >
             <p style={{ margin: 0, color: "rgba(246,243,236,0.58)", fontSize: 14, lineHeight: 1.6, letterSpacing: "0.06em" }}>
-              请校准时序锚点
+              你来自哪个时空？
             </p>
             <div
               aria-label="时序校准读数"
@@ -782,61 +797,14 @@ function InitialCoordinatesEntry() {
               </div>
             </div>
           </section>
-          <section
-            aria-label="母码落位引擎"
-            style={{
-              display: "grid",
-              gap: 8,
-              padding: "14px 0 2px",
-              color: "rgba(246,243,236,0.42)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 11,
-              lineHeight: 1.7,
-              letterSpacing: "0.08em",
-            }}
-          >
-            {motherCodeLanding.formulaLines.map((line) => (
-              <span key={line}>{line}</span>
-            ))}
-            <strong
-              style={{
-                color: "rgba(0,184,212,0.86)",
-                fontSize: 12,
-                fontWeight: 500,
-                letterSpacing: "0.12em",
-              }}
-            >
-              {motherCodeLanding.motherCodeProfile.motherCodeName}
-            </strong>
-          </section>
-          <span
-            style={{
-              color: "rgba(246,243,236,0.34)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 11,
-              letterSpacing: "0.13em",
-            }}
-          >
-            INITIAL_COORDINATES_LOADING
-          </span>
-          <CausalRail statusLabel="右滑压入原始坐标" rightHint="右滑压入原始坐标" onRight={handleEmbedMotherCode} />
+          <CausalRail statusLabel="原力待确认" rightHint="右滑，确认原力" onRight={handleEmbedMotherCode} />
         </>
       ) : (
         <>
-          <span
-            style={{
-              color: "rgba(246,243,236,0.34)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 11,
-              letterSpacing: "0.13em",
-            }}
-          >
-            {isMotherRuntimeView ? "MOTHER_CODE_RUNTIME_LOADING" : "MOTHER_CODE_ASSET_REVEALED"}
-          </span>
           {!isMotherRuntimeView ? (
             <>
               <section
-                aria-label="母码卡显影"
+                aria-label="母码卡"
                 style={{
                   display: "grid",
                   gap: 16,
@@ -854,11 +822,14 @@ function InitialCoordinatesEntry() {
                     letterSpacing: "0.16em",
                   }}
                 >
-                  {motherCode.visualAssetCode}
+                  它来自
                 </span>
                 <strong style={{ color: "rgba(246,243,236,0.88)", fontSize: "clamp(28px, 7vw, 38px)", fontWeight: 340, lineHeight: 1.16, letterSpacing: "0.1em" }}>
                   {motherCode.motherCodeName}
                 </strong>
+                <p style={{ margin: 0, color: "rgba(246,243,236,0.66)", fontSize: 15, lineHeight: 1.72, letterSpacing: "0.04em" }}>
+                  你习惯让僵住的东西重新流动。
+                </p>
                 <div
                   aria-label="母码视觉资产占位"
                   style={{
@@ -880,7 +851,7 @@ function InitialCoordinatesEntry() {
                       letterSpacing: "0.1em",
                     }}
                   >
-                    asset: {motherCode.visualAssetKey}
+                    母码卡
                   </span>
                   <span style={{ width: "100%", height: 1, background: "rgba(0,184,212,0.42)", boxShadow: "0 0 18px rgba(0,184,212,0.16)" }} />
                   <span
@@ -891,7 +862,7 @@ function InitialCoordinatesEntry() {
                       letterSpacing: "0.14em",
                     }}
                   >
-                    VISUAL_ASSET / EXISTING
+                    你的默认保护方式
                   </span>
                 </div>
                 <span
@@ -902,13 +873,13 @@ function InitialCoordinatesEntry() {
                     letterSpacing: "0.1em",
                   }}
                 >
-                  先天数：{motherCode.xiantianDisplay}｜{motherCode.trigramSymbol}｜{motherCode.trigramImage}｜{motherCode.wuxing}
+                  先天数：{motherCode.xiantianDisplay}
                 </span>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
                   {[
-                    ["原力", motherVisualTags.force],
-                    ["惯性", motherVisualTags.mirror],
-                    ["解封", motherVisualTags.unlock],
+                    ["原力", motherProtectionTags.force],
+                    ["保护", motherProtectionTags.mirror],
+                    ["误用", motherProtectionTags.unlock],
                   ].map(([label, value]) => (
                     <div key={label} style={{ display: "grid", gap: 5, padding: "10px 8px", borderTop: "1px solid rgba(0,184,212,0.28)", background: "rgba(246,243,236,0.018)" }}>
                       <span style={{ color: "rgba(0,184,212,0.62)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, letterSpacing: "0.12em" }}>
@@ -921,7 +892,7 @@ function InitialCoordinatesEntry() {
                   ))}
                 </div>
               </section>
-              <CausalRail statusLabel="母码资产已显影" rightHint="右滑进入母码读取" onRight={() => setMotherCodeStageView("runtime")} />
+              <CausalRail statusLabel="看见你的原力" rightHint="右滑，继续看原力变化" onRight={() => setMotherCodeStageView("runtime")} />
             </>
           ) : (
             <>
@@ -943,13 +914,13 @@ function InitialCoordinatesEntry() {
                     letterSpacing: "0.12em",
                   }}
                 >
-                  {motherCode.visualAssetCode}｜{motherCode.motherCodeName}
+                  {motherCode.motherCodeName}
                 </span>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
                   {[
-                    ["原力", motherVisualTags.force],
-                    ["惯性", motherVisualTags.mirror],
-                    ["解封", motherVisualTags.unlock],
+                    ["原力", motherProtectionTags.force],
+                    ["保护", motherProtectionTags.mirror],
+                    ["误用", motherProtectionTags.unlock],
                   ].map(([label, value]) => (
                     <div key={label} style={{ display: "grid", gap: 4, padding: "8px 0", borderTop: "1px solid rgba(0,184,212,0.18)" }}>
                       <span style={{ color: "rgba(0,184,212,0.5)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 9, letterSpacing: "0.12em" }}>
@@ -971,22 +942,36 @@ function InitialCoordinatesEntry() {
                     letterSpacing: "0.14em",
                   }}
                 >
-                  因果读数
+                  默认保护
                 </span>
+                <p style={{ margin: 0, color: "rgba(246,243,236,0.7)", fontSize: 15, lineHeight: 1.72, letterSpacing: "0.04em" }}>
+                  你的原力不是问题。
+                  <br />
+                  它原本是在保护你：
+                  <br />
+                  先缓和，
+                  <br />
+                  再转身，
+                  <br />
+                  让场面不要僵住。
+                  <br />
+                  但当压力进来，
+                  <br />
+                  这股力量可能会变成：
+                </p>
                 {[
-                  ["人格源代码", "压力进入后，系统会先调用这枚母码。"],
-                  ["默认反应链", motherCode.defaultReactionChain],
+                  ["默认反应", motherReactionChain],
                 ].map(([label, value]) => (
                   <article
                     key={label}
                     style={{
                       display: "grid",
-                      gap: label === "默认反应链" ? 10 : 6,
-                      padding: label === "默认反应链" ? "15px 14px" : "10px 0",
+                      gap: label === "默认反应" ? 10 : 6,
+                      padding: label === "默认反应" ? "15px 14px" : "10px 0",
                       borderTop: "1px solid rgba(246,243,236,0.075)",
-                      border: label === "默认反应链" ? "1px solid rgba(0,184,212,0.18)" : undefined,
-                      background: label === "默认反应链" ? "linear-gradient(90deg, rgba(0,184,212,0.055), rgba(246,243,236,0.018))" : undefined,
-                      boxShadow: label === "默认反应链" ? "inset 0 0 24px rgba(0,184,212,0.035)" : undefined,
+                      border: label === "默认反应" ? "1px solid rgba(0,184,212,0.18)" : undefined,
+                      background: label === "默认反应" ? "linear-gradient(90deg, rgba(0,184,212,0.055), rgba(246,243,236,0.018))" : undefined,
+                      boxShadow: label === "默认反应" ? "inset 0 0 24px rgba(0,184,212,0.035)" : undefined,
                     }}
                   >
                     <span
@@ -999,14 +984,14 @@ function InitialCoordinatesEntry() {
                     >
                       {label}
                     </span>
-                    <p style={{ margin: 0, color: label === "默认反应链" ? "rgba(246,243,236,0.9)" : "rgba(246,243,236,0.66)", fontSize: label === "默认反应链" ? 22 : 13, lineHeight: label === "默认反应链" ? 1.34 : 1.54, fontWeight: label === "默认反应链" ? 420 : 300, letterSpacing: label === "默认反应链" ? "0.06em" : "0.04em" }}>
-                      {value || "尚未显影"}
+                    <p style={{ margin: 0, color: label === "默认反应" ? "rgba(246,243,236,0.9)" : "rgba(246,243,236,0.66)", fontSize: label === "默认反应" ? 22 : 13, lineHeight: label === "默认反应" ? 1.34 : 1.54, fontWeight: label === "默认反应" ? 420 : 300, letterSpacing: label === "默认反应" ? "0.06em" : "0.04em" }}>
+                      {value || "尚未浮现"}
                     </p>
                   </article>
                 ))}
               </section>
 
-              <section aria-label="母码仪器抽屉盒" style={{ display: "grid", gap: 9, paddingTop: 2 }}>
+              <section aria-label="更深一层" style={{ display: "grid", gap: 9, paddingTop: 2 }}>
                 <span
                   style={{
                     color: "rgba(246,243,236,0.3)",
@@ -1016,19 +1001,19 @@ function InitialCoordinatesEntry() {
                     marginTop: 4,
                   }}
                 >
-                  仪器抽屉盒
+                  更深一层
                 </span>
                 {[
-                  { id: "force" as const, label: "基础原力", value: motherCode.baseForce },
-                  { id: "pressure" as const, label: "压力入口", value: motherCode.pressureEntry },
+                  { id: "force" as const, label: "原力从哪里来", value: motherCode.baseForce },
+                  { id: "pressure" as const, label: "压力进来后怎么变", value: motherCode.pressureEntry },
                   {
                     id: "asset" as const,
-                    label: "资产沉积",
+                    label: "这一局会留下什么",
                     value: "",
                     items: [
-                      ["阴影惯性", motherCode.shadowInertia],
-                      ["解封潜能", motherCode.unlockPotential],
-                      ["人格资产", motherCode.personalityAsset],
+                      ["旧反应", motherCode.shadowInertia],
+                      ["可以松开的地方", motherCode.unlockPotential],
+                      ["可以带走的资产", motherCode.personalityAsset],
                     ],
                   },
                 ].map((drawer) => {
@@ -1084,7 +1069,7 @@ function InitialCoordinatesEntry() {
                       </button>
                       {isOpen && drawer.id !== "asset" ? (
                         <p style={{ margin: 0, color: "rgba(246,243,236,0.58)", fontSize: 12, lineHeight: 1.56, letterSpacing: "0.04em" }}>
-                          {drawer.value || "尚未显影"}
+                          {drawer.value || "尚未浮现"}
                         </p>
                       ) : null}
                       {isOpen && drawer.id === "asset" && drawer.items ? (
@@ -1102,7 +1087,7 @@ function InitialCoordinatesEntry() {
                                 {label}
                               </span>
                               <p style={{ margin: 0, color: label === "人格资产" ? "rgba(246,243,236,0.7)" : "rgba(246,243,236,0.5)", fontSize: label === "人格资产" ? 13 : 12, lineHeight: 1.54, letterSpacing: "0.04em" }}>
-                                {value || "尚未显影"}
+                                {value || "尚未浮现"}
                               </p>
                             </div>
                           ))}
@@ -1112,7 +1097,7 @@ function InitialCoordinatesEntry() {
                   );
                 })}
               </section>
-              <CausalRail statusLabel="母码已读取" rightHint="右滑进入现实压力种子" onRight={handleEnterPressureSeed} />
+              <CausalRail statusLabel="默认反应已看见" rightHint="右滑，看看这次被什么困住" onRight={handleEnterPressureSeed} />
             </>
           )}
         </>

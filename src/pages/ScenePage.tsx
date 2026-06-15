@@ -220,7 +220,7 @@ export function ScenePage() {
             letterSpacing: "0.16em",
           }}
         >
-          03｜现实压力种子
+          03｜当前压力
         </span>
         <h1
           style={{
@@ -232,7 +232,7 @@ export function ScenePage() {
             letterSpacing: "0.04em",
           }}
         >
-          现实压力种子
+          此刻，什么正在压住你？
         </h1>
         <p
           style={{
@@ -243,14 +243,14 @@ export function ScenePage() {
             letterSpacing: "0.04em",
           }}
         >
-          选择一个正在发生的现实压力。
+          不用犹豫。
           <br />
-          系统会把它压入本局压力场。
+          只选那个让你停了一下的。
         </p>
       </header>
 
       <section
-        aria-label="现实压力种子候选"
+        aria-label="当前压力候选"
         style={{
           display: "grid",
           gap: 12,
@@ -270,7 +270,7 @@ export function ScenePage() {
             gap: 8,
           }}
         >
-          <span>{isIntercepted ? "现实压力切片已拦截" : "现实压力种子池扫描中"}</span>
+          <span>{isIntercepted ? "选择这一局" : "先看见这一刻"}</span>
           {renderSeedScanDots(isIntercepted)}
         </span>
 
@@ -313,7 +313,7 @@ export function ScenePage() {
                     letterSpacing: "0.12em",
                   }}
                 >
-                  SEED {String(index + 1).padStart(2, "0")}
+                  {String(index + 1).padStart(2, "0")}
                 </span>
                 <strong
                   style={{
@@ -351,12 +351,12 @@ export function ScenePage() {
             letterSpacing: "0.06em",
           }}
         >
-          点击种子，直接填装
+          点一下，确认这一局
         </p>
       ) : (
         <CausalRail
-          statusLabel="拦截这一幕"
-          rightHint="右滑拦截现实压力切片"
+          statusLabel="当前压力待确认"
+          rightHint="右滑，确认这一局"
           onRight={() => setIsIntercepted(true)}
         />
       )}

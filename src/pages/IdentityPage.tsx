@@ -4,20 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
-import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { identityFragments } from "../data/identityFragments";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getDemoPressureExposureOptions } from "../services/guanyaoInteractionService";
-import {
-  buildSelectedPressureSeedContext,
-  getPressureSeedSceneTriplet,
-  type GuanyaoSelectedPressureSeedContext,
-} from "../services/guanyaoPressureSeedSceneBindingService";
-import {
-  buildTripleForceLandingResult,
-  getTripleForceFrontStage,
-  type GuanyaoTripleForceFrontStage,
-} from "../services/guanyaoTripleForceLandingService";
 import { getSession, updateSession } from "../services/sessionService";
 import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId } from "../types";
 
@@ -76,116 +65,8 @@ function readIdentityPool(session: GuanyaoSession) {
   );
 }
 
-function readJsonFromStorage<T>(key: string): T | null {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return null;
-
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
-}
-
-function isTripleForceFrontStage(value: GuanyaoTripleForceFrontStage | null): value is GuanyaoTripleForceFrontStage {
-  return Boolean(
-    value &&
-      Array.isArray(value.ritualLines) &&
-      value.ritualLines.length > 0 &&
-      Array.isArray(value.readouts) &&
-      value.readouts.length > 0 &&
-      value.readouts.every((readout) => readout.label && readout.frontStageLine),
-  );
-}
-
-function buildFallbackTripleForceFrontStage(): GuanyaoTripleForceFrontStage {
-  const triplet = getPressureSeedSceneTriplet();
-  const seed = triplet.seeds[0];
-
-  if (!seed) {
-    return {
-      selectedPressureSeedId: "pressure-seed-pending",
-      ritualLines: ["现实种子已冻结。", "压力读数正在成形。", "卦局成形中。", "因果入口已打开。"],
-      readouts: [
-        { label: "现实种子", frontStageLine: "现实种子已冻结。" },
-        { label: "压力读数", frontStageLine: "压力读数正在成形。" },
-        { label: "卦局成形", frontStageLine: "本局卦局已成形。" },
-      ],
-    };
-  }
-
-  // Fallback only: used when the user enters pressure exposure without a selected pressure seed.
-  const selectedContext = buildSelectedPressureSeedContext(seed);
-  const tripleForceResult = buildTripleForceLandingResult(selectedContext);
-
-  return getTripleForceFrontStage(tripleForceResult);
-}
-
-function formatTripleForceReadout(line: string): string {
-  if (line.includes("现实种子")) return "现实种子 · 已冻结";
-  if (line.includes("压力读数")) return "压力读数 · 已捕获";
-  return line;
-}
-
-function formatSelectedSeedNumber(): string | null {
-  const seedIndex = getSession().selectedSceneSeed?.seedIndex;
-  if ([1, 2, 3].includes(seedIndex ?? 0)) {
-    return `SEED ${String(seedIndex).padStart(2, "0")}`;
-  }
-
-  const selectedContext = readJsonFromStorage<GuanyaoSelectedPressureSeedContext>("guanyao:selectedPressureSeedContext");
-  const seedTail = selectedContext?.selectedPressureSeedId.match(/_(0[1-3])$/)?.[1];
-  if (!seedTail) return null;
-
-  return `SEED ${seedTail}`;
-}
-
-function buildPressureExposureFormationLine() {
-  try {
-    const readModel = getGuanyaoR8ReadModel();
-    const lowerForce = readModel.motherCodeStage.motherCodeName || readModel.hexagramStage.lowerTrigram;
-    const upperTrigram = readModel.hexagramStage.upperTrigram;
-
-    if (!lowerForce || !upperTrigram) {
-      throw new Error("Missing trigram");
-    }
-
-    return {
-      lowerForce,
-      upperTrigram,
-    };
-  } catch {
-    return {
-      lowerForce: "你的原力",
-      upperTrigram: "现实压力",
-    };
-  }
-}
-
 function PressureExposureSafeShell() {
   const navigate = useNavigate();
-  const selectedSeedNumber = useMemo(() => formatSelectedSeedNumber(), []);
-  const pressureExposureFormation = useMemo(() => buildPressureExposureFormationLine(), []);
-  const tripleForceFrontStage = useMemo(() => {
-    const storedFrontStage = readJsonFromStorage<GuanyaoTripleForceFrontStage>("guanyao:tripleForceFrontStage");
-    if (isTripleForceFrontStage(storedFrontStage)) {
-      return storedFrontStage;
-    }
-
-    const selectedContext = readJsonFromStorage<GuanyaoSelectedPressureSeedContext>("guanyao:selectedPressureSeedContext");
-    if (selectedContext) {
-      const tripleForceResult = buildTripleForceLandingResult(selectedContext);
-      const rebuiltFrontStage = getTripleForceFrontStage(tripleForceResult);
-
-      if (isTripleForceFrontStage(rebuiltFrontStage)) {
-        return rebuiltFrontStage;
-      }
-    }
-
-    return buildFallbackTripleForceFrontStage();
-  }, []);
 
   return (
     <main
@@ -210,7 +91,7 @@ function PressureExposureSafeShell() {
           letterSpacing: "0.16em",
         }}
       >
-        04｜压力显影
+        04｜这一局开始了
       </span>
       <section
         style={{
@@ -222,19 +103,18 @@ function PressureExposureSafeShell() {
         }}
       >
         <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 17, lineHeight: 1.65 }}>
-          {selectedSeedNumber ? `${selectedSeedNumber}，已接住。` : "SEED，已接住。"}
-        </p>
-        <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.72 }}>
+          你刚刚选中的，
+          <br />
           它不是一个情绪。
           <br />
-          它不是一个问题。
+          也不是一个问题。
           <br />
-          它只是刚刚发生过，
-          <br />
-          住在了你的身体里。
+          它是一件已经发生的事。
         </p>
-        <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.65 }}>
-          现在，我们一起剥开它。
+        <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.72 }}>
+          你的默认保护，
+          <br />
+          正在被这件事牵动。
         </p>
       </section>
 
@@ -251,19 +131,25 @@ function PressureExposureSafeShell() {
         }}
       >
         <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 18, lineHeight: 1.72 }}>
-          你的原力「{pressureExposureFormation.lowerForce}」，
+          你习惯先缓和，
           <br />
-          被「{pressureExposureFormation.upperTrigram}」压住了。
+          再转身，
+          <br />
+          让事情继续。
+          <br />
+          但这一局，
+          <br />
+          它可能不再只是缓和。
         </p>
         <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.68 }}>
-          这一局，已经成形。
+          这一局，
           <br />
-          右滑，看它叫什么。
+          已经开始成形。
         </p>
       </section>
 
       <CausalRail
-        statusLabel="这一局，已经成形"
+        statusLabel="这一局，已经开始成形"
         rightHint="右滑，看它叫什么"
         onRight={() => navigate(GUANYAO_ROUTES.dynamics)}
       />

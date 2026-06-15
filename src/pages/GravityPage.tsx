@@ -1382,7 +1382,7 @@ function HexagramCodeDeliveryShell() {
                 letterSpacing: "0.16em",
               }}
             >
-              [ 本局卦码卡 ]
+              本局卦码卡
             </span>
             <span style={{ color: "rgba(245,245,245,0.38)", fontSize: 12, lineHeight: 1.4 }}>
               NO.{displayCode}
@@ -1394,7 +1394,7 @@ function HexagramCodeDeliveryShell() {
               《{displayTitle}》
             </span>
           </section>
-          <CausalRail statusLabel="这一局已成形" rightHint="右滑，看它卡在哪里？" onRight={handleNextSpace} />
+          <CausalRail statusLabel="这一局已经成形" rightHint="右滑，看它怎么变" onRight={handleNextSpace} />
         </>
       ) : null}
 
