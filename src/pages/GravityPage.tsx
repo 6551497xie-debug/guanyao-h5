@@ -122,6 +122,13 @@ type AwakenedWeaponAsset = {
   weaponName: string;
   actionText: string;
 };
+type TriggerDefenseCard = {
+  triggerScene: string;
+  oldReaction: string;
+  takeoverWarning: string;
+  defenseAction: string;
+  awakenedWeaponName?: string;
+};
 
 const bodyIntensityOptions: Array<{ value: BodyIntensity; label: string }> = [
   { value: "yao1", label: "有一点，但不明显" },
@@ -490,7 +497,6 @@ const sixSpacePathMap = [
   "目标变得模糊",
 ];
 
-const triggerDefenseCard = "当别人质疑你、催促你、否定你时，你最容易先解释，再证明，最后卡住。你的第一信号不是情绪，而是身体先紧。";
 const firstAction72h = "72小时内，只做一件事：下一次你想解释时，先停三秒。然后问自己：他真的在听吗？";
 
 function readJsonFromStorage<T>(key: string): T | null {
@@ -514,6 +520,41 @@ function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
     action: value,
     memory: value,
     goal: value,
+  };
+}
+
+function cleanOldReaction(reaction: string) {
+  return reaction.replace(/^你的旧反应是：/, "").replace(/。$/, "");
+}
+
+function buildTriggerDefenseCard({
+  seedSurface,
+  awakenedWeapons,
+}: {
+  seedSurface: string;
+  awakenedWeapons: AwakenedWeaponAsset[];
+}): TriggerDefenseCard {
+  const lastAwakenedWeapon = awakenedWeapons[awakenedWeapons.length - 1];
+  const oldReaction = sixSpaceConfigs
+    .map((space) => `${space.name.replace("空间", "")}：${cleanOldReaction(space.oldReaction)}`)
+    .join("；");
+  const triggerScene = `下次再遇到「${seedSurface}」这类刺时。`;
+
+  if (lastAwakenedWeapon) {
+    return {
+      triggerScene,
+      oldReaction,
+      takeoverWarning: "旧反应会先接管。你可能还没开口，就已经开始解释、证明、撑住或退回熟悉的路。",
+      defenseAction: lastAwakenedWeapon.actionText,
+      awakenedWeaponName: lastAwakenedWeapon.weaponName,
+    };
+  }
+
+  return {
+    triggerScene,
+    oldReaction,
+    takeoverWarning: "旧反应会先接管。你可能会沿着熟悉路径继续反应。",
+    defenseAction: "先停一秒，不立刻沿旧反应走下去。",
   };
 }
 
@@ -816,6 +857,10 @@ function HexagramCodeDeliveryShell() {
     bodySpaceStep,
     emotionSpaceStep,
     spaceSteps,
+  });
+  const triggerDefenseCard = buildTriggerDefenseCard({
+    seedSurface: selectedPressureSeedSurface,
+    awakenedWeapons,
   });
   const currentAssetCard = {
     id: currentAssetId,
@@ -2492,7 +2537,28 @@ function HexagramCodeDeliveryShell() {
                 ["一｜母码资产", `「${motherCodeAssetName}」`, motherCodeAssetText],
                 ["二｜卦码资产", `「${displayName || "本局"}」\n《${displayTitle || "观变档案"}》`, [hexagramBoundaryLine, ...hexagramAssetText]],
                 ["三｜六维旧路径地图", "", [sixSpacePathMap.join("\n→ ")]],
-                ["五｜下次触发防御卡", "", triggerDefenseCard.split("。").filter(Boolean).map((line) => `${line}。`)],
+                [
+                  "五｜下次触发防御卡",
+                  "",
+                  awakenedWeapons.length > 0
+                    ? [
+                        "下次你再次被这根刺击中时，旧反应会先接管。",
+                        "先识别它，再调用本局已唤醒武器。",
+                        `触发场景：${triggerDefenseCard.triggerScene}`,
+                        `旧反应：${triggerDefenseCard.oldReaction}`,
+                        `接管预警：${triggerDefenseCard.takeoverWarning}`,
+                        `防御动作：${triggerDefenseCard.defenseAction}`,
+                        `可调用武器：${triggerDefenseCard.awakenedWeaponName ?? "本局已唤醒武器"}`,
+                      ]
+                    : [
+                        "本局尚未唤醒武器。",
+                        "下次触发时，先停一秒，不立刻沿旧反应走下去。",
+                        `触发场景：${triggerDefenseCard.triggerScene}`,
+                        `旧反应：${triggerDefenseCard.oldReaction}`,
+                        `接管预警：${triggerDefenseCard.takeoverWarning}`,
+                        `防御动作：${triggerDefenseCard.defenseAction}`,
+                      ],
+                ],
                 ["六｜72小时第一动作", "", firstAction72h.split("。").filter(Boolean).map((line) => `${line}。`)],
               ].map(([label, title, lines]) => (
                 <section
