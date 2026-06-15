@@ -89,6 +89,7 @@ type BodyWeapon = "pause" | "breath";
 type EmotionIntensity = "yao1" | "yao2" | "yao3";
 type EmotionSpaceStep = "entry" | "breakthrough" | "weapon" | "completed";
 type EmotionWeapon = "pause" | "name";
+type BreakthroughStep = 0 | 1 | 2;
 
 const bodyIntensityOptions: Array<{ value: BodyIntensity; label: string }> = [
   { value: "yao1", label: "有一点，但不明显" },
@@ -113,6 +114,21 @@ const bodyWeaponOptions: Array<{ value: BodyWeapon; label: string; cost: number;
   },
 ];
 
+const bodyBreakthroughScenes: Array<{ title: string; lines: string[] }> = [
+  {
+    title: "它开始应激了。",
+    lines: ["一道命令，", "一个眼神，", "身体瞬间绷直，", "准备好防御。"],
+  },
+  {
+    title: "它认输了。",
+    lines: ["你的身体，比你先认输了。", "不是不够强，", "是它替你撑了太久。"],
+  },
+  {
+    title: "它问你：",
+    lines: ["这口气，", "还要顶到什么时候？", "如果不想再这样撑下去，", "左滑，选择武器。"],
+  },
+];
+
 const emotionIntensityOptions: Array<{ value: EmotionIntensity; label: string }> = [
   { value: "yao1", label: "有一点，但不明显" },
   { value: "yao2", label: "能感觉到，还能压" },
@@ -133,6 +149,21 @@ const emotionWeaponOptions: Array<{ value: EmotionWeapon; label: string; cost: n
     cost: 2,
     line: "下一次恐惧来时，先说出它的名字。",
     completedLines: ["下一次恐惧来时，", "先说出它的名字：", "这是恐惧，", "不是事实。"],
+  },
+];
+
+const emotionBreakthroughScenes: Array<{ title: string; lines: string[] }> = [
+  {
+    title: "它开始恐惧了。",
+    lines: ["一句质疑，", "一个眼神，", "恐惧已经从胃底升上来。"],
+  },
+  {
+    title: "它压不住了。",
+    lines: ["你开始解释，", "开始讨好，", "开始把别人的评价当成安全感。"],
+  },
+  {
+    title: "它问你：",
+    lines: ["你怕的，", "到底是什么？", "如果不想再靠解释换安全，", "左滑，选择武器。"],
   },
 ];
 
@@ -264,6 +295,7 @@ function HexagramCodeDeliveryShell() {
     readJsonFromStorage<BodyIntensity>("guanyao:sixSpace:bodyIntensity"),
   );
   const [bodySpaceStep, setBodySpaceStep] = useState<BodySpaceStep>("entry");
+  const [bodyBreakthroughStep, setBodyBreakthroughStep] = useState<BreakthroughStep>(0);
   const [selectedBodyWeapon, setSelectedBodyWeapon] = useState<BodyWeapon | null>(() =>
     readJsonFromStorage<BodyWeapon>("guanyao:selectedBodyWeapon"),
   );
@@ -272,6 +304,7 @@ function HexagramCodeDeliveryShell() {
     readJsonFromStorage<EmotionIntensity>("guanyao:sixSpace:emotionIntensity"),
   );
   const [emotionSpaceStep, setEmotionSpaceStep] = useState<EmotionSpaceStep>("entry");
+  const [emotionBreakthroughStep, setEmotionBreakthroughStep] = useState<BreakthroughStep>(0);
   const [selectedEmotionWeapon, setSelectedEmotionWeapon] = useState<EmotionWeapon | null>(() =>
     readJsonFromStorage<EmotionWeapon>("guanyao:selectedEmotionWeapon"),
   );
@@ -325,12 +358,14 @@ function HexagramCodeDeliveryShell() {
 
   function handleNextSpaceFromBody() {
     setBodySpaceStep("entry");
+    setBodyBreakthroughStep(0);
     setBodySpaceHint("");
     handleNextSpace();
   }
 
   function handleNextSpaceFromEmotion() {
     setEmotionSpaceStep("entry");
+    setEmotionBreakthroughStep(0);
     setEmotionSpaceHint("");
     handleNextSpace();
   }
@@ -366,16 +401,41 @@ function HexagramCodeDeliveryShell() {
       window.localStorage.setItem("guanyao:selectedBreakSpace", "body");
     }
     setBodySpaceHint("");
+    setBodyBreakthroughStep(0);
     setBodySpaceStep("breakthrough");
   }
 
   function handleOpenBodyWeaponStep() {
+    if (bodyBreakthroughStep !== 2) {
+      setBodySpaceHint("先看完它怎么接管你。");
+      return;
+    }
+
     setBodySpaceHint("");
+    setSelectedBodyWeapon(null);
     setBodySpaceStep("weapon");
+  }
+
+  function handleBodyBreakthroughNext() {
+    setBodySpaceHint("");
+    if (bodyBreakthroughStep === 0) {
+      setBodyBreakthroughStep(1);
+      return;
+    }
+    if (bodyBreakthroughStep === 1) {
+      setBodyBreakthroughStep(2);
+      return;
+    }
+
+    setBodySpaceHint("左滑，选择武器。");
   }
 
   function handleCancelBodyWeapon() {
     setBodySpaceHint("");
+    setSelectedBodyWeapon(null);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("guanyao:selectedBodyWeapon");
+    }
     setBodySpaceStep("entry");
   }
 
@@ -425,16 +485,41 @@ function HexagramCodeDeliveryShell() {
       window.localStorage.setItem("guanyao:selectedBreakSpace", "emotion");
     }
     setEmotionSpaceHint("");
+    setEmotionBreakthroughStep(0);
     setEmotionSpaceStep("breakthrough");
   }
 
   function handleOpenEmotionWeaponStep() {
+    if (emotionBreakthroughStep !== 2) {
+      setEmotionSpaceHint("先看完它怎么接管你。");
+      return;
+    }
+
     setEmotionSpaceHint("");
+    setSelectedEmotionWeapon(null);
     setEmotionSpaceStep("weapon");
+  }
+
+  function handleEmotionBreakthroughNext() {
+    setEmotionSpaceHint("");
+    if (emotionBreakthroughStep === 0) {
+      setEmotionBreakthroughStep(1);
+      return;
+    }
+    if (emotionBreakthroughStep === 1) {
+      setEmotionBreakthroughStep(2);
+      return;
+    }
+
+    setEmotionSpaceHint("左滑，选择武器。");
   }
 
   function handleCancelEmotionWeapon() {
     setEmotionSpaceHint("");
+    setSelectedEmotionWeapon(null);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("guanyao:selectedEmotionWeapon");
+    }
     setEmotionSpaceStep("entry");
   }
 
@@ -741,29 +826,31 @@ function HexagramCodeDeliveryShell() {
               borderBottom: "1px solid rgba(85,85,85,0.38)",
             }}
           >
-            {[
-              ["它开始应激了。", "一道命令、一个眼神，\n身体瞬间绷直，\n准备好防御。"],
-              ["它认输了。", "你的身体，比你先认输了。\n不是不够强，\n是它替你撑了太久。"],
-              ["它问你：", "这口气，\n还要顶到什么时候？"],
-            ].map(([title, body]) => (
-              <div key={title} style={{ display: "grid", gap: 8 }}>
-                <p style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 18, lineHeight: 1.6 }}>
-                  {title}
-                </p>
-                <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 16, lineHeight: 1.72, whiteSpace: "pre-line" }}>
-                  {body}
-                </p>
-                <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.24), transparent)" }} />
+            <div style={{ display: "grid", gap: 10 }}>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 18, lineHeight: 1.6 }}>
+                {bodyBreakthroughScenes[bodyBreakthroughStep].title}
+              </p>
+              <div style={{ display: "grid", gap: 6 }}>
+                {bodyBreakthroughScenes[bodyBreakthroughStep].lines.map((line) => (
+                  <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 16, lineHeight: 1.72 }}>
+                    {line}
+                  </p>
+                ))}
               </div>
-            ))}
+            </div>
+            {bodySpaceHint ? (
+              <p style={{ margin: 0, color: "rgba(0,184,212,0.78)", fontSize: 14, lineHeight: 1.58 }}>
+                {bodySpaceHint}
+              </p>
+            ) : null}
           </section>
 
           <CausalRail
-            statusLabel="身体空间正在打开破局点"
-            leftHint="左滑，选择武器"
-            rightHint="右滑，停在这里"
+            statusLabel={bodySpaceHint || `${bodyBreakthroughStep + 1} / 3`}
+            leftHint={bodyBreakthroughStep === 2 ? "左滑，选择武器" : "左滑，暂不进入"}
+            rightHint={bodyBreakthroughStep === 0 ? "右滑，继续看它怎么接管你" : bodyBreakthroughStep === 1 ? "右滑，继续" : "右滑，停在这里"}
             onLeft={handleOpenBodyWeaponStep}
-            onRight={() => undefined}
+            onRight={handleBodyBreakthroughNext}
           />
         </>
       ) : null}
@@ -827,15 +914,37 @@ function HexagramCodeDeliveryShell() {
                     />
                     {weapon.label}
                   </span>
-                  <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12, letterSpacing: "0.08em" }}>
-                    消耗 ⌛ {weapon.cost}
-                  </span>
                   <span style={{ color: "rgba(245,245,245,0.58)", fontSize: 14, lineHeight: 1.58 }}>
                     “{weapon.line}”
                   </span>
                 </button>
               );
             })}
+
+            {bodyWeaponOptions
+              .filter((weapon) => weapon.value === selectedBodyWeapon)
+              .map((weapon) => (
+                <div
+                  key={`confirm-${weapon.value}`}
+                  style={{
+                    display: "grid",
+                    gap: 6,
+                    padding: "12px 12px",
+                    border: "1px solid rgba(199,169,107,0.28)",
+                    background: "rgba(199,169,107,0.045)",
+                  }}
+                >
+                  <span style={{ color: "rgba(199,169,107,0.78)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12, letterSpacing: "0.08em" }}>
+                    将消耗 ⌛ {weapon.cost}
+                  </span>
+                  <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 15, lineHeight: 1.58 }}>
+                    唤醒「{weapon.label}」。
+                  </p>
+                  <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 14, lineHeight: 1.58 }}>
+                    这是一次反本能动作。
+                  </p>
+                </div>
+              ))}
 
             {bodySpaceHint ? (
               <p style={{ margin: 0, color: "rgba(0,184,212,0.78)", fontSize: 14, lineHeight: 1.58 }}>
@@ -1039,29 +1148,31 @@ function HexagramCodeDeliveryShell() {
               borderBottom: "1px solid rgba(85,85,85,0.38)",
             }}
           >
-            {[
-              ["它开始恐惧了。", "一句质疑，\n一个眼神，\n恐惧已经从胃底升上来。"],
-              ["它压不住了。", "你开始解释，\n开始讨好，\n开始把别人的评价当成安全感。"],
-              ["它问你：", "你怕的，\n到底是什么？\n如果不想再靠解释换安全，\n左滑，选一件武器。"],
-            ].map(([title, body]) => (
-              <div key={title} style={{ display: "grid", gap: 8 }}>
-                <p style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 18, lineHeight: 1.6 }}>
-                  {title}
-                </p>
-                <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 16, lineHeight: 1.72, whiteSpace: "pre-line" }}>
-                  {body}
-                </p>
-                <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.24), transparent)" }} />
+            <div style={{ display: "grid", gap: 10 }}>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 18, lineHeight: 1.6 }}>
+                {emotionBreakthroughScenes[emotionBreakthroughStep].title}
+              </p>
+              <div style={{ display: "grid", gap: 6 }}>
+                {emotionBreakthroughScenes[emotionBreakthroughStep].lines.map((line) => (
+                  <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 16, lineHeight: 1.72 }}>
+                    {line}
+                  </p>
+                ))}
               </div>
-            ))}
+            </div>
+            {emotionSpaceHint ? (
+              <p style={{ margin: 0, color: "rgba(0,184,212,0.78)", fontSize: 14, lineHeight: 1.58 }}>
+                {emotionSpaceHint}
+              </p>
+            ) : null}
           </section>
 
           <CausalRail
-            statusLabel="情绪空间正在打开破局点"
-            leftHint="左滑，选一件武器"
-            rightHint="右滑，停在这里"
+            statusLabel={emotionSpaceHint || `${emotionBreakthroughStep + 1} / 3`}
+            leftHint={emotionBreakthroughStep === 2 ? "左滑，选择武器" : "左滑，暂不进入"}
+            rightHint={emotionBreakthroughStep === 0 ? "右滑，继续看它怎么接管你" : emotionBreakthroughStep === 1 ? "右滑，继续" : "右滑，停在这里"}
             onLeft={handleOpenEmotionWeaponStep}
-            onRight={() => undefined}
+            onRight={handleEmotionBreakthroughNext}
           />
         </>
       ) : null}
@@ -1125,15 +1236,37 @@ function HexagramCodeDeliveryShell() {
                     />
                     {weapon.label}
                   </span>
-                  <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12, letterSpacing: "0.08em" }}>
-                    消耗 ⌛ {weapon.cost}
-                  </span>
                   <span style={{ color: "rgba(245,245,245,0.58)", fontSize: 14, lineHeight: 1.58 }}>
                     “{weapon.line}”
                   </span>
                 </button>
               );
             })}
+
+            {emotionWeaponOptions
+              .filter((weapon) => weapon.value === selectedEmotionWeapon)
+              .map((weapon) => (
+                <div
+                  key={`confirm-${weapon.value}`}
+                  style={{
+                    display: "grid",
+                    gap: 6,
+                    padding: "12px 12px",
+                    border: "1px solid rgba(199,169,107,0.28)",
+                    background: "rgba(199,169,107,0.045)",
+                  }}
+                >
+                  <span style={{ color: "rgba(199,169,107,0.78)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12, letterSpacing: "0.08em" }}>
+                    将消耗 ⌛ {weapon.cost}
+                  </span>
+                  <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 15, lineHeight: 1.58 }}>
+                    唤醒「{weapon.label}」。
+                  </p>
+                  <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 14, lineHeight: 1.58 }}>
+                    这是一次反本能动作。
+                  </p>
+                </div>
+              ))}
 
             {emotionSpaceHint ? (
               <p style={{ margin: 0, color: "rgba(0,184,212,0.78)", fontSize: 14, lineHeight: 1.58 }}>
