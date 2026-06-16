@@ -1,5 +1,6 @@
 import { guanyaoHexagramGlyphs } from "../../data/guanyaoHexagramGlyphs";
 import type { GuanyaoHexagramCardTemplate } from "../../data/guanyaoHexagramCardTemplateData";
+import { GuanyaoHexagramVisualPlaceholder } from "./GuanyaoHexagramVisualPlaceholder";
 
 type GuanyaoHexagramCardFrontProps = {
   card: GuanyaoHexagramCardTemplate;
@@ -82,52 +83,7 @@ export function GuanyaoHexagramCardFront({ card }: GuanyaoHexagramCardFrontProps
         </p>
       </section>
 
-      <div
-        aria-label={`${card.visualStructure} 无字主视觉占位`}
-        style={{
-          position: "relative",
-          minHeight: 0,
-          border: "1px solid rgba(229,196,126,0.16)",
-          background:
-            "radial-gradient(circle at 50% 28%, rgba(236,198,116,0.22), transparent 18%), radial-gradient(circle at 50% 70%, rgba(0,184,212,0.12), transparent 28%), linear-gradient(145deg, rgba(246,232,188,0.06), rgba(255,255,255,0.015))",
-          overflow: "hidden",
-        }}
-      >
-        <span
-          style={{
-            position: "absolute",
-            left: "16%",
-            right: "16%",
-            bottom: "26%",
-            height: 1,
-            background: "rgba(246,232,188,0.34)",
-            boxShadow: "0 0 28px rgba(229,196,126,0.32)",
-          }}
-        />
-        <span
-          style={{
-            position: "absolute",
-            left: "50%",
-            top: "15%",
-            bottom: "18%",
-            width: 1,
-            transform: "translateX(-50%)",
-            background: "linear-gradient(180deg, rgba(246,232,188,0.5), rgba(246,232,188,0.04))",
-          }}
-        />
-        <span
-          style={{
-            position: "absolute",
-            left: 14,
-            bottom: 12,
-            color: "rgba(246,232,188,0.32)",
-            fontSize: 10,
-            letterSpacing: "0.12em",
-          }}
-        >
-          {card.visualStructure}
-        </span>
-      </div>
+      <GuanyaoHexagramVisualPlaceholder code={card.code} visualStructure={card.visualStructure} />
 
       <p style={{ margin: 0, color: "rgba(246,240,221,0.86)", fontSize: 18, lineHeight: 1.45, fontWeight: 360, textAlign: "left", letterSpacing: "0.03em" }}>
         {card.quoteLines.map((line) => (

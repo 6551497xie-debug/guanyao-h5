@@ -53,6 +53,9 @@ export function GuanyaoHexagramCardSpread({ card }: GuanyaoHexagramCardSpreadPro
         <div style={{ display: "grid", gap: 8, paddingTop: 12, fontSize: 13, lineHeight: 1.7 }}>
           <p style={{ margin: 0 }}>结构：{card.visualStructure}</p>
           <p style={{ margin: 0 }}>提示词：{card.visualPrompt}</p>
+          {card.visualRiskNotes?.length ? (
+            <p style={{ margin: 0, color: "rgba(229,196,126,0.68)" }}>构图风险：{card.visualRiskNotes.join(" / ")}</p>
+          ) : null}
         </div>
       </details>
     </section>

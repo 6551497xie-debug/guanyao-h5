@@ -13,6 +13,7 @@ export type GuanyaoHexagramCardTemplate = {
   reviewQuestionLines: string[];
   visualStructure: string;
   visualPrompt: string;
+  visualRiskNotes?: string[];
   imageProvider?: "placeholder" | "generated";
   visualAssetUrl?: string;
 };
@@ -30,7 +31,8 @@ export const guanyaoHexagramCardTemplates: GuanyaoHexagramCardTemplate[] = [
     cardSoulLines: ["真正的开局，", "不是一个人扛住所有人，", "而是让力量开始流动。"],
     reviewQuestionLines: ["我是在定方向，", "还是在一个人硬撑？"],
     visualStructure: "高台 / 光柱",
-    visualPrompt: "无字主视觉，极高黑色高台，一束冷金光柱从上方落下，人物感极弱，强调孤高、方向、承压结构，禁止文字、LOGO、符号、卦形。",
+    visualPrompt: "Create a dark abstract structural visual without text: a minimal high platform in a vast black sky receives one vertical cold-gold beam from above, large negative space, isolated high-position pressure, no landscape, no people, no typography, no symbols, no logo.",
+    visualRiskNotes: ["避免风景化", "避免人物", "避免满屏光点"],
     imageProvider: "placeholder",
   },
   {
@@ -45,7 +47,8 @@ export const guanyaoHexagramCardTemplates: GuanyaoHexagramCardTemplate[] = [
     cardSoulLines: ["真正的承载，", "不是把一切都吞下，", "而是知道什么该接，什么该放回边界之外。"],
     reviewQuestionLines: ["我是在承载，", "还是在替所有人吞下压力？"],
     visualStructure: "厚重地层",
-    visualPrompt: "无字主视觉，厚重浅暗地层截面，一层层压力沉积，中心有可承载但清晰分界的地面结构，禁止文字、LOGO、符号、卦形。",
+    visualPrompt: "Create a dark abstract structural visual without text: broad black geological layers carry visible downward pressure, thin low cold-gold light leaks from layer seams, the boundary is stable but almost overloaded, large horizontal weight, no abyss fall, no typography, no symbols, no logo.",
+    visualRiskNotes: ["避免深渊坠落", "避免风景化", "避免人物"],
     imageProvider: "placeholder",
   },
   {
@@ -60,7 +63,8 @@ export const guanyaoHexagramCardTemplates: GuanyaoHexagramCardTemplate[] = [
     cardSoulLines: ["真正的开始，", "不是一路顺着长出来，", "而是在阻力里顶出第一道缝。"],
     reviewQuestionLines: ["我是在等待条件成熟，", "还是在害怕迈出第一步？"],
     visualStructure: "黑土裂缝",
-    visualPrompt: "无字主视觉，黑土裂开，一道细小生命或光从裂缝中顶出，周围潮湿沉重，有初生阻力，禁止文字、LOGO、符号、卦形。",
+    visualPrompt: "Create a dark abstract structural visual without text: black soil is split by a narrow upward crack, cold-blue and cold-gold pressure pushes from below but has not fully broken through, moist heavy ground, first emergence under resistance, no plants as characters, no typography, no symbols, no logo.",
+    visualRiskNotes: ["避免花草插画", "避免满屏碎光", "避免人物"],
     imageProvider: "placeholder",
   },
   {
@@ -75,7 +79,8 @@ export const guanyaoHexagramCardTemplates: GuanyaoHexagramCardTemplate[] = [
     cardSoulLines: ["真正的看见，", "不是立刻得到答案，", "而是先问对那个问题。"],
     reviewQuestionLines: ["我是在寻找答案，", "还是在逃避真正的问题？"],
     visualStructure: "雾中山体结构",
-    visualPrompt: "无字主视觉，山体藏在低雾和暗水之间，路径隐约但未显明，中心有一个问题般的空白，禁止文字、LOGO、符号、卦形。",
+    visualPrompt: "Create a dark abstract structural visual without text: a blurred mountain mass is partly covered by layered fog, dark water moves below, a faint light is broken into fragments by mist, the central question remains unclear, large soft negative space, no landscape postcard feeling, no people, no typography, no symbols, no logo.",
+    visualRiskNotes: ["避免风景明信片", "避免人物", "避免清晰答案感"],
     imageProvider: "placeholder",
   },
   {
@@ -90,7 +95,8 @@ export const guanyaoHexagramCardTemplates: GuanyaoHexagramCardTemplate[] = [
     cardSoulLines: ["真正的等待，", "不是停在原地不动，", "而是在不确定里保持准备。"],
     reviewQuestionLines: ["我是在等待时机，", "还是在用等待拖住自己？"],
     visualStructure: "未打开的水面通道",
-    visualPrompt: "无字主视觉，平静深水上有一条未完全打开的通道，远处有冷金微光，强调等待中的准备，禁止文字、LOGO、符号、卦形。",
+    visualPrompt: "Create a dark abstract structural visual without text: a black water surface blocks the foreground, a submerged corridor is barely visible beneath the water, distant cold-gold light is separated by vapor, prepared waiting under uncertainty, no open road yet, no people, no typography, no symbols, no logo.",
+    visualRiskNotes: ["避免道路完全打开", "避免风景化", "避免人物"],
     imageProvider: "placeholder",
   },
   {
@@ -105,7 +111,8 @@ export const guanyaoHexagramCardTemplates: GuanyaoHexagramCardTemplate[] = [
     cardSoulLines: ["真正的争鸣，", "不是为了压过别人，", "而是让自己的边界被听见。"],
     reviewQuestionLines: ["我是在表达立场，", "还是在忍到最后才爆发？"],
     visualStructure: "对峙裂缝",
-    visualPrompt: "无字主视觉，上方开阔冷光与下方深水裂缝对峙，中间像声音被撕开的边界线，禁止文字、LOGO、符号、卦形。",
+    visualPrompt: "Create a dark abstract structural visual without text: cold light presses down from above, deep dark water pushes upward from below, a thin bright vertical crack forms the only outlet between opposing forces, suppressed voice becoming audible, no battle scene, no people, no typography, no symbols, no logo.",
+    visualRiskNotes: ["避免战争场景", "避免人物", "避免金线网络"],
     imageProvider: "placeholder",
   },
   {
@@ -120,7 +127,8 @@ export const guanyaoHexagramCardTemplates: GuanyaoHexagramCardTemplate[] = [
     cardSoulLines: ["真正的带领，", "不是替所有人扛住位置，", "而是让每一份力量回到该在的地方。"],
     reviewQuestionLines: ["我是在组织力量，", "还是在替所有人承担？"],
     visualStructure: "阵列归位",
-    visualPrompt: "无字主视觉，多个低矮石阵或队列在大地上归位，中间留出指挥但不独扛的位置，禁止文字、LOGO、符号、卦形。",
+    visualPrompt: "Create a dark abstract structural visual without text: a few low geometric units on black ground and dark water move from scattered positions toward an ordered formation, one clear central command position remains open, organized force without one point carrying everything, no dense line network, no people, no typography, no symbols, no logo.",
+    visualRiskNotes: ["避免满屏金线网络", "避免军事插画", "避免人物"],
     imageProvider: "placeholder",
   },
   {
@@ -135,7 +143,8 @@ export const guanyaoHexagramCardTemplates: GuanyaoHexagramCardTemplate[] = [
     cardSoulLines: ["真正的靠近，", "不是把自己交出去，", "而是在边界清楚后选择站在一起。"],
     reviewQuestionLines: ["我是在选择靠近，", "还是在害怕被落下？"],
     visualStructure: "中心连接点",
-    visualPrompt: "无字主视觉，多个点向中心靠近但保留间距，水面与土地交界处形成连接核心，禁止文字、LOGO、符号、卦形。",
+    visualPrompt: "Create a dark abstract structural visual without text: sparse water ripples and paths approach a low glowing center while keeping visible distance, water and ground meet at the connection point without merging completely, closeness with boundaries, no crowd, no people, no typography, no symbols, no logo.",
+    visualRiskNotes: ["避免完全融合", "避免人群", "避免金线网络"],
     imageProvider: "placeholder",
   },
   {
@@ -150,7 +159,8 @@ export const guanyaoHexagramCardTemplates: GuanyaoHexagramCardTemplate[] = [
     cardSoulLines: ["真正的蓄势，", "不是一直忍住自己，", "而是让力量长到可以落下。"],
     reviewQuestionLines: ["我是在积累力量，", "还是在用克制拖住行动？"],
     visualStructure: "密云穹顶 / 未落光",
-    visualPrompt: "无字主视觉，厚密云层像穹顶压住一束未落下的光，内部力量积蓄到临界但尚未释放，禁止文字、LOGO、符号、卦形。",
+    visualPrompt: "Create a dark abstract structural visual without text: a heavy low-pressure cloud dome holds back a narrow vertical cold-gold beam of light, the light has not reached the lower circular receiving structure, large black negative space, minimal particles, no landscape, no people, no typography, no symbols, no logo.",
+    visualRiskNotes: ["避免满屏散点", "避免风景化", "避免光束落地"],
     imageProvider: "placeholder",
   },
   {
@@ -165,7 +175,8 @@ export const guanyaoHexagramCardTemplates: GuanyaoHexagramCardTemplate[] = [
     cardSoulLines: ["真正的分寸，", "不是退回原地，", "而是在危险里稳住下一步。"],
     reviewQuestionLines: ["我是在谨慎前进，", "还是在用小心掩盖害怕？"],
     visualStructure: "黑色冰面 / 极窄路径",
-    visualPrompt: "无字主视觉，黑色冰面上有一条极窄路径，脚步感很轻，远处冷光克制，强调风险与分寸，禁止文字、LOGO、符号、卦形。",
+    visualPrompt: "Create a dark abstract structural visual without text: a black ice surface contains one extremely narrow cold-gold path, subtle pressure cracks spread from both sides of the path, forward motion is necessary but every step must be measured, minimal cold light, no footprints as characters, no typography, no symbols, no logo.",
+    visualRiskNotes: ["避免大路感", "避免人物脚印", "避免风景化"],
     imageProvider: "placeholder",
   },
 ];
