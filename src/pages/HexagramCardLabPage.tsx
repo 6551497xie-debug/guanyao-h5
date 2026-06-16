@@ -6,7 +6,9 @@ export function HexagramCardLabPage() {
     <main
       style={{
         minHeight: "100dvh",
+        width: "100vw",
         boxSizing: "border-box",
+        marginLeft: "calc(50% - 50vw)",
         padding: "7dvh clamp(18px, 5vw, 52px) calc(8dvh + env(safe-area-inset-bottom))",
         background: "radial-gradient(circle at 50% 0%, rgba(229,196,126,0.08), transparent 34%), #050505",
         color: "#f6f0dd",
