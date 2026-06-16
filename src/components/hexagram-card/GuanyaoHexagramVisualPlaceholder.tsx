@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 type GuanyaoHexagramVisualPlaceholderProps = {
   code: string;
   visualStructure: string;
+  style?: CSSProperties;
 };
 
 const coldGold = "rgba(229,196,126,0.74)";
@@ -151,17 +152,19 @@ function VisualSkeleton({ code }: { code: string }) {
   }
 }
 
-export function GuanyaoHexagramVisualPlaceholder({ code, visualStructure }: GuanyaoHexagramVisualPlaceholderProps) {
+export function GuanyaoHexagramVisualPlaceholder({ code, visualStructure, style }: GuanyaoHexagramVisualPlaceholderProps) {
   return (
     <div
       aria-label={`${visualStructure} 无字主视觉占位`}
       style={{
         position: "relative",
         minHeight: 0,
+        height: "100%",
         border: "1px solid rgba(229,196,126,0.16)",
         background:
           `radial-gradient(circle at 50% 52%, ${coldBlue}, transparent 32%), radial-gradient(circle at 50% 18%, rgba(229,196,126,0.13), transparent 26%), linear-gradient(145deg, rgba(246,232,188,0.045), rgba(255,255,255,0.012)), #070706`,
         overflow: "hidden",
+        ...style,
       }}
     >
       <span

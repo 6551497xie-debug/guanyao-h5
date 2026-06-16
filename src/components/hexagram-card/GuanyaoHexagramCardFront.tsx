@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { guanyaoHexagramGlyphs } from "../../data/guanyaoHexagramGlyphs";
 import type { GuanyaoHexagramCardTemplate } from "../../data/guanyaoHexagramCardTemplateData";
 import { GuanyaoHexagramVisualPlaceholder } from "./GuanyaoHexagramVisualPlaceholder";
@@ -32,6 +33,43 @@ function HexagramGlyph({ code }: { code: string }) {
           )}
         </span>
       ))}
+    </div>
+  );
+}
+
+function HexagramVisualSlot({ card }: { card: GuanyaoHexagramCardTemplate }) {
+  const [imageStatus, setImageStatus] = useState<"idle" | "loading" | "loaded" | "failed">(
+    card.visualAssetUrl ? "loading" : "idle",
+  );
+
+  useEffect(() => {
+    setImageStatus(card.visualAssetUrl ? "loading" : "idle");
+  }, [card.visualAssetUrl]);
+
+  return (
+    <div style={{ position: "relative", minHeight: 0, height: "100%", overflow: "hidden" }}>
+      {imageStatus !== "loaded" ? (
+        <GuanyaoHexagramVisualPlaceholder code={card.code} visualStructure={card.visualStructure} style={{ position: "absolute", inset: 0 }} />
+      ) : null}
+      {card.visualAssetUrl ? (
+        <img
+          src={card.visualAssetUrl}
+          alt=""
+          aria-hidden="true"
+          onLoad={() => setImageStatus("loaded")}
+          onError={() => setImageStatus("failed")}
+          style={{
+            position: imageStatus === "loaded" ? "relative" : "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            display: "block",
+            objectFit: "cover",
+            opacity: imageStatus === "loaded" ? 1 : 0,
+            pointerEvents: "none",
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -83,7 +121,7 @@ export function GuanyaoHexagramCardFront({ card }: GuanyaoHexagramCardFrontProps
         </p>
       </section>
 
-      <GuanyaoHexagramVisualPlaceholder code={card.code} visualStructure={card.visualStructure} />
+      <HexagramVisualSlot card={card} />
 
       <p style={{ margin: 0, color: "rgba(246,240,221,0.86)", fontSize: 18, lineHeight: 1.45, fontWeight: 360, textAlign: "left", letterSpacing: "0.03em" }}>
         {card.quoteLines.map((line) => (

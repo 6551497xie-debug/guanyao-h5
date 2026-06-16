@@ -48,11 +48,16 @@ export function GuanyaoHexagramCardSpread({ card }: GuanyaoHexagramCardSpreadPro
         }}
       >
         <summary style={{ cursor: "pointer", color: "rgba(229,196,126,0.72)", fontSize: 13, letterSpacing: "0.08em" }}>
-          visualStructure / visualPrompt
+          visual asset slot / prompts
         </summary>
         <div style={{ display: "grid", gap: 8, paddingTop: 12, fontSize: 13, lineHeight: 1.7 }}>
+          <p style={{ margin: 0 }}>文件名：{card.visualFilename}</p>
+          <p style={{ margin: 0 }}>资产槽：{card.visualAssetUrl}</p>
+          <p style={{ margin: 0 }}>当前状态：{card.visualAssetUrl ? "image slot ready / fallback on missing image" : "using placeholder"}</p>
           <p style={{ margin: 0 }}>结构：{card.visualStructure}</p>
-          <p style={{ margin: 0 }}>提示词：{card.visualPrompt}</p>
+          <p style={{ margin: 0 }}>旧字段提示词：{card.visualPrompt}</p>
+          <p style={{ margin: 0 }}>positive prompt：{card.visualPositivePrompt}</p>
+          <p style={{ margin: 0 }}>negative prompt：{card.visualNegativePrompt}</p>
           {card.visualRiskNotes?.length ? (
             <p style={{ margin: 0, color: "rgba(229,196,126,0.68)" }}>构图风险：{card.visualRiskNotes.join(" / ")}</p>
           ) : null}
