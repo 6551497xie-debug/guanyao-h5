@@ -1,6 +1,7 @@
 import type { GuanyaoHexagramCardTemplate } from "../../data/guanyaoHexagramCardTemplateData";
 import { GuanyaoHexagramCardBack } from "./GuanyaoHexagramCardBack";
 import { GuanyaoHexagramCardFront } from "./GuanyaoHexagramCardFront";
+import { GuanyaoHexagramReferencePanel } from "./GuanyaoHexagramReferencePanel";
 
 type GuanyaoHexagramCardSpreadProps = {
   card: GuanyaoHexagramCardTemplate;
@@ -54,6 +55,7 @@ export function GuanyaoHexagramCardSpread({ card }: GuanyaoHexagramCardSpreadPro
           <p style={{ margin: 0 }}>文件名：{card.visualFilename}</p>
           <p style={{ margin: 0 }}>资产槽：{card.visualAssetUrl}</p>
           <p style={{ margin: 0 }}>当前状态：{card.visualAssetUrl ? "image slot ready / fallback on missing image" : "using placeholder"}</p>
+          <GuanyaoHexagramReferencePanel card={card} />
           <p style={{ margin: 0 }}>结构：{card.visualStructure}</p>
           <p style={{ margin: 0 }}>旧字段提示词：{card.visualPrompt}</p>
           <p style={{ margin: 0 }}>positive prompt：{card.visualPositivePrompt}</p>
