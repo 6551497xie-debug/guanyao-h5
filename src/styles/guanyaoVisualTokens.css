@@ -1,0 +1,68 @@
+/*
+ * 观爻 / GUANYAO SANDBOX —— 视觉系统基础变量（R8-VISUAL-SYSTEM-TOKENS-P1）
+ *
+ * 唯一视觉 token 来源。只定义 CSS 变量，不含任何业务值、组件逻辑或选择器副作用。
+ * P1 阶段本文件独立存在，不强制被任何页面引入；visual-system/ 下的组件壳
+ * 通过 var(--gy-*, fallback) 引用，未加载本文件时回退到 fallback，不报错。
+ *
+ * 红线：不含卦码/母码/压力种子/沙漏/支付/六维空间任何业务常量。
+ */
+
+:root {
+  /* —— 黑场 —— */
+  --gy-void: #000000;            /* 绝对黑场，主心流背景 */
+  --gy-field: #050505;           /* 近黑场，次级容器 */
+  --gy-field-soft: #0b0b0c;      /* 极轻提亮黑场 */
+
+  /* —— 线条色 —— */
+  --gy-line-base: rgba(228, 231, 234, 0.58);   /* 骨灰白 / 冷灰白：基础静止线 */
+  --gy-line-dim: rgba(228, 231, 234, 0.28);    /* 未激活态 */
+  --gy-active: #00b8d4;          /* 激活冷蓝 */
+  --gy-break: #c7a96b;           /* 破局冷金 */
+
+  /* —— 文本色 —— */
+  --gy-text-strong: rgba(246, 243, 236, 0.92);
+  --gy-text: rgba(246, 243, 236, 0.72);
+  --gy-text-dim: rgba(246, 243, 236, 0.46);
+
+  /* —— 线宽（1px 一字线即宇宙） —— */
+  --gy-hairline: 1px;            /* 严格 1px，不得模糊为 2px 或渐变宽度 */
+  --gy-logo-gap: 1.5px;          /* 双 X LOGO 中空缺口 */
+
+  /* —— 一字线几何 —— */
+  --gy-axis-width-pct: 84%;      /* 横贯屏幕约 84% */
+  --gy-axis-track-min: 46px;     /* 轨道交互最小热区高度 */
+
+  /* —— 字体层级 —— */
+  --gy-font-mono: "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+  --gy-size-display: clamp(26px, 6.8vw, 40px);
+  --gy-size-title: clamp(20px, 5vw, 26px);
+  --gy-size-body: 15px;
+  --gy-size-label: 11px;
+  --gy-size-micro: 10px;
+  --gy-tracking: 0.08em;         /* 常规字间距 */
+  --gy-tracking-wide: 0.15em;    /* 首页冷酷短句字间距 */
+  --gy-tracking-mono: 0.16em;
+
+  /* —— 间距 —— */
+  --gy-gap-xs: 6px;
+  --gy-gap-sm: 10px;
+  --gy-gap-md: 16px;
+  --gy-gap-lg: 22px;
+
+  /* —— 阻尼 / 时长（带物理阻尼感的过渡曲线） —— */
+  --gy-ease-damp: cubic-bezier(0.22, 1, 0.36, 1);   /* 完成后回弹阻尼 */
+  --gy-ease-ignite: cubic-bezier(0.5, 0, 0.75, 0);  /* 右滑点火聚拢 ease-in */
+  --gy-dur-fast: 170ms;          /* 旧轨完成动画基准 */
+  --gy-dur-rail: 360ms;
+  --gy-dur-break: 520ms;         /* 左滑崩断 */
+
+  /* —— 信号点 —— */
+  --gy-dot-size: 8px;
+  --gy-dot-glow: 0 0 16px rgba(0, 184, 212, 0.46);
+  --gy-dot-glow-break: 0 0 22px rgba(199, 169, 107, 0.5);
+
+  /* —— 卡片壳 —— */
+  --gy-card-aspect: 3 / 4;
+  --gy-card-edge: rgba(199, 169, 107, 0.32);
+}
