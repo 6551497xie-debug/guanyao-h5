@@ -48,3 +48,40 @@
 不建议进入人工审核。
 
 原因：本轮没有可落盘的 `001` reference-test PNG。后续如需继续验证，应使用能够稳定返回 reference-image-driven 输出文件的生图能力，并仍只生成单张 `001` 候选。
+
+## R8-HEXAGRAM-CARD-MANUAL-CANDIDATE-IMPORT-P0
+
+导入时间：2026-06-17 07:20 IST
+
+源文件检查：
+
+- `~/Downloads/001-qian-wei-tian-gaokong-reference-test-01.png`：未找到
+- `./tmp/001-qian-wei-tian-gaokong-reference-test-01.png`：未找到
+
+目标文件路径：
+
+- `public/hexagram-card-visuals/candidates/reference-test/001-qian-wei-tian-gaokong-reference-test-01.png`
+
+导入结果：
+
+- manual candidate image source missing，需要用户先将候选图保存到本地并提供路径。
+- 本轮未导入 candidate PNG。
+- 本轮未生成新图。
+- 本轮未调用 imagegen。
+- 本轮未复制任何文件到正式资产槽。
+
+候选状态：
+
+- candidate only
+- 当前审核等级：B+
+- 是否进入正式资产槽：否
+- 是否可作为下一轮 001 修正参考：是，但需先完成本地源图导入。
+
+视觉判断：
+
+- 优点：黑场够大、主结构孤立、中心承压点明确、悬空失稳感较强、没有明显文字/LOGO/人物/卦形。
+- 问题：中央竖向光束仍偏强，结构仍有平台被光柱击中的感觉，四周弧线略偏能量牵引/装置感，高位责任与支撑缺失还需更准。
+
+下一步建议：
+
+基于该候选图继续压弱光柱、去装置化、减少弧线牵引，强化高位承压与支撑缺失。
