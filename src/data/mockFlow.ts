@@ -2,7 +2,7 @@ import type { FlowStep } from "../types/session";
 
 export const flowSteps: FlowStep[] = [
   { code: "00", key: "launch", path: "/", title: "Launch 启动舱门" },
-  { code: "00-Fix", key: "chrono", path: "/chrono", title: "Chrono 时序装填" },
+  { code: "00-Fix", key: "chrono", path: "/chrono", title: "Chrono 时序确认" },
   { code: "01", key: "identity", path: "/identity", title: "Pressure Exposure 压力显影确认" },
   { code: "02", key: "force", path: "/force", title: "MotherCode 母码显影" },
   { code: "03", key: "scene", path: "/scene", title: "Pressure Seed 现实压力种子" },

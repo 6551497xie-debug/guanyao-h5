@@ -9,7 +9,7 @@ const statusLabel: Record<TimeSandglassState["status"], string> = {
   low: "低位",
   empty: "空置",
   recharging: "回充",
-  mock_paid: "已装填",
+  mock_paid: "已确认",
 };
 
 function readCurrentSandglass(): TimeSandglassState | null {

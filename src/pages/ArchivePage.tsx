@@ -14,6 +14,7 @@ import {
   getRepairMethodByDeviceId,
 } from "../services/guanyaoInteractionService";
 import { getArchives } from "../services/archiveService";
+import { getMotherCodeAsset } from "../services/guanyaoMotherCodeAssetService";
 import type { ArchiveItem, CausalContextPackage, YaoBit } from "../types";
 
 const SELECTED_BREACH_KEY = "guanyao:selectedBreachId";
@@ -112,6 +113,11 @@ function readYaoCodeText(context: CausalContextPackage | undefined) {
 function readMotherAssetText(context: CausalContextPackage | undefined) {
   const motherAsset = context?.motherCode ?? context?.guaField;
   if (!motherAsset) return "No.--｜母型待压印";
+
+  const libraryAsset = getMotherCodeAsset(motherAsset);
+  if (libraryAsset) {
+    return `No.${motherAsset.code64}｜${libraryAsset.name}`;
+  }
 
   const legacy = motherAsset as NonNullable<CausalContextPackage["motherCode"]>;
   const name = motherAsset.hexagramName ?? legacy.name ?? "母型";

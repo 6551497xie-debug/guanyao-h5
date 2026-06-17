@@ -9,6 +9,7 @@ import { yaoCodes } from "../data/yaoCodes";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { saveArchive } from "../services/archiveService";
 import { buildYaoCodeCard, buildYaoCodeResult, normalizeGuaFieldFromLegacy } from "../services/codeContractService";
+import { getMotherCodeAsset } from "../services/guanyaoMotherCodeAssetService";
 import {
   activateYaoDeviceByBreachId,
   getDemoBreachScan,
@@ -170,6 +171,11 @@ function readMotherAssetLabel(session: GuanyaoSession) {
 
   if (!motherAsset) {
     return "No.--｜母型待压印";
+  }
+
+  const libraryAsset = getMotherCodeAsset(motherAsset);
+  if (libraryAsset) {
+    return `No.${motherAsset.code64}｜${libraryAsset.name}`;
   }
 
   return `No.${motherAsset.code64}｜${motherAsset.hexagramName}｜${motherAsset.title}`;
@@ -532,10 +538,10 @@ export function MigrationPage() {
               )}
             </div>
             <button className="gy-migration-r1-system-toggle" type="button" onClick={() => setSystemReadoutOpen((value) => !value)}>
-              {systemReadoutOpen ? "收起系统读数" : "展开系统读数"}
+              {systemReadoutOpen ? "收起当前结果" : "展开当前结果"}
             </button>
             {systemReadoutOpen ? (
-              <div className="gy-migration-r1-grid" aria-label="系统读数">
+              <div className="gy-migration-r1-grid" aria-label="当前结果">
                 <div>
                   <span>压力</span>
                   <strong>{demoPressureSeed.text}</strong>

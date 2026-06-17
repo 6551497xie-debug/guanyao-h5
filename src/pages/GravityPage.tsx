@@ -5,10 +5,10 @@ import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { guanyaoHexagramAssetLibrary } from "../data/guanyaoHexagramAssetLibrary";
-import { guanyaoMotherCodeAssetLibrary } from "../data/guanyaoMotherCodeAssetLibrary";
 import { getPressureSeedSixSpaceProjection } from "../data/guanyaoPressureSeedSixSpaceProjectionRegistry";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getDemoDynamicsResult } from "../services/guanyaoInteractionService";
+import { buildMotherCodeAssetLines, getMotherCodeAsset } from "../services/guanyaoMotherCodeAssetService";
 import { getSession } from "../services/sessionService";
 import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getCollapseYaoTexts, getGravityYaoTexts } from "../services/yaoTextService";
@@ -17,7 +17,6 @@ import type { GuanyaoSession, MotherCodeResult, SceneSlice, YaoBit } from "../ty
 import type { PressureSeedSixSpaceProjection, PressureSeedSpaceProjection } from "../types/guanyaoPressureSeed";
 
 const USE_HEXAGRAM_DELIVERY_SHELL = true;
-type MotherCodeAssetCode = keyof typeof guanyaoMotherCodeAssetLibrary;
 type HexagramAssetCode = keyof typeof guanyaoHexagramAssetLibrary;
 
 function toFrontendTrajectory(text: string) {
@@ -57,7 +56,7 @@ const gravityFallbackReadouts = [
   },
   {
     inertiaInjection: "0 · 高压继续推进",
-    reverseGap: "1 · 防线尚未装填",
+    reverseGap: "1 · 防线尚未确认",
     cost: "高风险窗口已捕获，反本能防线卡槽已生成。",
   },
   {
@@ -509,62 +508,6 @@ function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
   };
 }
 
-function resolveMotherCodeAssetCode({
-  motherCodeDefinitionId,
-  motherCodeId,
-  motherCodeName,
-}: {
-  motherCodeDefinitionId?: number;
-  motherCodeId?: string;
-  motherCodeName?: string;
-}): MotherCodeAssetCode | null {
-  const definitionIdMap: Record<number, MotherCodeAssetCode> = {
-    1: "qian",
-    2: "kun",
-    3: "zhen",
-    4: "xun",
-    5: "kan",
-    6: "li",
-    7: "gen",
-    8: "dui",
-  };
-  const nameMap: Record<string, MotherCodeAssetCode> = {
-    乾: "qian",
-    坤: "kun",
-    震: "zhen",
-    巽: "xun",
-    坎: "kan",
-    离: "li",
-    艮: "gen",
-    兑: "dui",
-  };
-
-  if (motherCodeDefinitionId && definitionIdMap[motherCodeDefinitionId]) {
-    return definitionIdMap[motherCodeDefinitionId];
-  }
-
-  const normalizedId = motherCodeId?.toLowerCase() ?? "";
-  for (const code of Object.keys(guanyaoMotherCodeAssetLibrary) as MotherCodeAssetCode[]) {
-    if (normalizedId.includes(code)) return code;
-  }
-
-  const leadingName = motherCodeName?.trim().charAt(0);
-  return leadingName ? nameMap[leadingName] ?? null : null;
-}
-
-function buildMotherCodeAssetLines(asset: (typeof guanyaoMotherCodeAssetLibrary)[MotherCodeAssetCode] | null) {
-  if (!asset) {
-    return ["本局母码资产正在沉积，暂未完成读取。"];
-  }
-
-  return [
-    `你的原力：${asset.coreAsset}`,
-    `你的默认保护：${asset.defaultProtection}`,
-    `本局误用：${asset.misusePattern}`,
-    `资产回收：${asset.assetReturn}`,
-  ];
-}
-
 function resolveHexagramAssetCode({
   hexagramCode,
   hexagramName,
@@ -922,8 +865,7 @@ function HexagramCodeDeliveryShell() {
   const hexagramAsset = hexagramAssetCode ? guanyaoHexagramAssetLibrary[hexagramAssetCode] : null;
   const hexagramAssetTitle = hexagramAsset ? `「${hexagramAsset.name}」\n《${hexagramAsset.title}》` : "";
   const hexagramAssetLines = buildHexagramAssetLines(hexagramAsset);
-  const motherCodeAssetCode = resolveMotherCodeAssetCode(readModel.motherCodeStage);
-  const motherCodeAsset = motherCodeAssetCode ? guanyaoMotherCodeAssetLibrary[motherCodeAssetCode] : null;
+  const motherCodeAsset = getMotherCodeAsset(readModel.motherCodeStage);
   const motherCodeAssetName = motherCodeAsset?.name ?? "";
   const motherCodeAssetLines = buildMotherCodeAssetLines(motherCodeAsset);
   const selectedPressureSeedSurface = selectedPressureSeedContext?.surface || "这件事刚刚发生过。";

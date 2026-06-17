@@ -1292,7 +1292,7 @@ export function ChronoPage() {
         </div>
 
         {chronoProfile && generatedCard && generatedYuanCode ? (
-          <article className="gy-source-shell gyFadeRise" aria-label="观爻入局底色装填">
+          <article className="gy-source-shell gyFadeRise" aria-label="观爻入局底色确认">
             <header className="gy-source-header">
               <span>GY / 01 / MOTHER_CODE</span>
               <span>母码卡</span>
@@ -1324,7 +1324,7 @@ export function ChronoPage() {
                 <p>
                   这不是静态标签，
                   <br />
-                  这是你本次带压入局时，最先启动的<span>「人格原力」</span>。
+                  这是你本次带压入局时，最先启动的<span>「行为原力」</span>。
                 </p>
                 <p>
                   原力[{demoMotherCode.tags.force}]　显影[{demoMotherCode.tags.exposure}]　特质[{demoMotherCode.tags.trait}]
@@ -1337,7 +1337,7 @@ export function ChronoPage() {
               </div>
             </main>
 
-            <section className="gy-source-drawer-grid" aria-label="入局底色参数热区">
+            <section className="gy-source-drawer-grid" aria-label="入局底色线索热区">
               {sourceDrawerItems.map((hotzone) => {
                 const isActive = activeYuanHotzone === hotzone.label;
                 return (
@@ -1361,7 +1361,7 @@ export function ChronoPage() {
 
         <div className={chronoProfile ? "gy-source-gate" : "gy-chrono-r1-gate"}>
           {!chronoProfile ? (
-            <CausalRail statusLabel="装填时序，开始一次观爻" rightHint="右滑装填时序" onRight={handleGenerate} />
+            <CausalRail statusLabel="确认时序，开始一次观爻" rightHint="右滑确认时序" onRight={handleGenerate} />
           ) : (
             <>
               <CausalRail statusLabel="钉入现实压力种子" rightHint="右滑进入现实压力场" onRight={() => navigate(GUANYAO_ROUTES.pressureSeed)} />

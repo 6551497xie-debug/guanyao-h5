@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { CausalRail } from "../components/causal/CausalRail";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
+import { buildMotherCodeAssetLines, getMotherCodeAsset } from "../services/guanyaoMotherCodeAssetService";
 
 const causalReadoutLabels = [
   ["因果位置", "causalPosition"],
@@ -12,15 +13,17 @@ const causalReadoutLabels = [
 ] as const;
 
 const assetReadoutLabels = [
-  ["阴影惯性", "shadowInertia"],
-  ["解封潜能", "unlockPotential"],
-  ["人格资产", "personalityAsset"],
+  ["旧保护惯性", "shadowInertia"],
+  ["可松动位置", "unlockPotential"],
+  ["可带走资产", "personalityAsset"],
 ] as const;
 
 export function MotherCodePage() {
   const navigate = useNavigate();
   const readModel = useMemo(() => getGuanyaoR8ReadModel(), []);
   const motherCode = readModel.motherCodeStage;
+  const motherCodeAsset = useMemo(() => getMotherCodeAsset(motherCode), [motherCode]);
+  const motherCodeAssetLines = useMemo(() => buildMotherCodeAssetLines(motherCodeAsset), [motherCodeAsset]);
 
   return (
     <main
@@ -139,7 +142,7 @@ export function MotherCodePage() {
               letterSpacing: "0.08em",
             }}
           >
-            {motherCode.motherCodeName}
+            {motherCodeAsset?.name ?? motherCode.motherCodeName}
           </strong>
           <span
             style={{
@@ -208,7 +211,7 @@ export function MotherCodePage() {
               marginTop: 6,
             }}
           >
-            因果读数
+            当前呈现
           </span>
           {causalReadoutLabels.map(([label, key]) => (
             <article
@@ -253,7 +256,55 @@ export function MotherCodePage() {
               marginTop: 6,
             }}
           >
-            资产沉积
+            母码资产
+          </span>
+          {motherCodeAssetLines.map((line) => {
+            const [label, ...valueParts] = line.split("：");
+            return (
+              <article
+                key={line}
+                style={{
+                  display: "grid",
+                  gap: 7,
+                  padding: "12px 0",
+                  borderTop: "1px solid rgba(246,243,236,0.075)",
+                }}
+              >
+                <span
+                  style={{
+                    color: "rgba(0,184,212,0.68)",
+                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                    fontSize: 11,
+                    letterSpacing: "0.13em",
+                  }}
+                >
+                  {label}
+                </span>
+                <p
+                  style={{
+                    margin: 0,
+                    color: "rgba(246,243,236,0.72)",
+                    fontSize: label === "原力" ? 16 : 14,
+                    lineHeight: 1.68,
+                    fontWeight: label === "原力" ? 360 : 300,
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  {valueParts.join("：")}
+                </p>
+              </article>
+            );
+          })}
+          <span
+            style={{
+              color: "rgba(246,243,236,0.44)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 11,
+              letterSpacing: "0.14em",
+              marginTop: 6,
+            }}
+          >
+            资产沉积补充
           </span>
           {assetReadoutLabels.map(([label, key]) => (
             <article
