@@ -1,29 +1,38 @@
 # Hexagram Visual Candidates Report
 
-更新时间：2026-06-16
+更新时间：2026-06-17 06:52 IST
 
 ## 当前状态
 
-本轮只处理视觉参考体系，不继续生成新图。
+本轮执行 R8-HEXAGRAM-CARD-CANDIDATE-CLEAN-P0，只清理失败候选 PNG。
 
-原 001 纯 prompt 候选已判定 rejected。
+本轮不生成新图，不复制候选图到正式资产槽，不修改模板或卡片数据。
 
-拒收原因：
+原 001 纯 prompt 候选已判定 rejected，并已从 candidates 目录删除。
 
-- altar/device drift
-- 祭坛化
-- 装置化
-- 构图重复
-- 仍偏向高台 / 光柱 / 能量启动台
-
-## 当前候选文件
-
-以下文件为暂停前生成的 001 候选，仅作失败样本留存，不进入正式资产槽：
+## 已删除 rejected candidate
 
 - `001-qian-wei-tian-gaokong-a.png`
 - `001-qian-wei-tian-gaokong-b.png`
 - `001-qian-wei-tian-gaokong-c.png`
 - `001-qian-wei-tian-gaokong-d.png`
+
+删除原因：
+
+- altar/device drift
+- platform/light pillar drift
+- failed to express high-position pressure
+- not suitable for official asset slot
+
+## candidate PNG 残留
+
+截至本轮清理后，`public/hexagram-card-visuals/candidates/` 中无 candidate PNG 残留。
+
+本轮未发现 002 candidate PNG。
+
+## 待确认文件
+
+无不确定文件待用户确认。
 
 ## 后续方向
 
