@@ -10,6 +10,7 @@ import { LaunchPage } from "./pages/LaunchPage";
 import { MigrationPage } from "./pages/MigrationPage";
 import { MotherCodePage } from "./pages/MotherCodePage";
 import { ScenePage } from "./pages/ScenePage";
+import { VisualSystemLabPage } from "./pages/VisualSystemLabPage";
 import { GUANYAO_ROUTES, LEGACY_ROUTE_REDIRECTS } from "./routes/guanyaoRoutes";
 
 function LegacyRedirect({ to }: { to: string }) {
@@ -31,6 +32,7 @@ export default function App() {
         <Route path={GUANYAO_ROUTES.repairMethod} element={<MigrationPage />} />
         <Route path={GUANYAO_ROUTES.archive} element={<ArchivePage />} />
         <Route path="/hexagram-card-lab" element={<HexagramCardLabPage />} />
+        <Route path="/visual-system-lab" element={<VisualSystemLabPage />} />
         <Route path="/chrono" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/chrono"]} />} />
         <Route path="/identity" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/identity"]} />} />
         <Route path="/force" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/force"]} />} />
