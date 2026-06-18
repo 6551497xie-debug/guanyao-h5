@@ -1,0 +1,18 @@
+ M src/components/AppShell.tsx
+ M src/pages/ArchivePage.tsx
+ M src/pages/ChoicePage.tsx
+ M src/pages/ChronoPage.tsx
+ M src/pages/GravityPage.tsx
+ M src/pages/IdentityPage.tsx
+ M src/pages/LaunchPage.tsx
+ M src/pages/MigrationPage.tsx
+ M src/pages/MotherCodePage.tsx
+ M src/pages/ScenePage.tsx
+ M src/styles/guanyao-visual-system.css
+ M tsconfig.app.tsbuildinfo
+?? .backup/
+?? docs/R8_ENGINE_CAUSAL_LOCK.md
+?? src/components/visual/GyVisualChain.tsx
+?? src/mocks/
+?? src/services/guanyaoCausalEngineService.ts
+?? src/types/guanyaoCausalEngine.ts

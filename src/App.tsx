@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { ArchivePage } from "./pages/ArchivePage";
 import { ChoicePage } from "./pages/ChoicePage";
+import { ChronoAxisPage } from "./pages/ChronoAxisPage";
 import { ChronoPage } from "./pages/ChronoPage";
 import { GravityPage } from "./pages/GravityPage";
 import { HexagramCardLabPage } from "./pages/HexagramCardLabPage";
@@ -23,6 +24,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LaunchPage />} />
         <Route path={GUANYAO_ROUTES.launch} element={<LaunchPage />} />
+        <Route path="/chrono-axis" element={<ChronoAxisPage />} />
         <Route path={GUANYAO_ROUTES.motherCode} element={<ChronoPage />} />
         <Route path={GUANYAO_ROUTES.pressureSeed} element={<ScenePage />} />
         <Route path={GUANYAO_ROUTES.pressureExposure} element={<IdentityPage />} />

@@ -1,0 +1,4214 @@
+diff --git a/src/components/AppShell.tsx b/src/components/AppShell.tsx
+index 83027cb..2b7f7bd 100644
+--- a/src/components/AppShell.tsx
++++ b/src/components/AppShell.tsx
+@@ -1,4 +1,4 @@
+-import { NavLink } from "react-router-dom";
++import { NavLink, useLocation } from "react-router-dom";
+ import { flowSteps } from "../data/mockFlow";
+ import type { ReactNode } from "react";
+ import { TimeSandglassReadout } from "./visual/TimeSandglassReadout";
+@@ -8,22 +8,29 @@ type AppShellProps = {
+ };
+ 
+ export function AppShell({ children }: AppShellProps) {
++  const location = useLocation();
++  const hideDebugChrome = location.pathname === "/" || location.pathname === "/launch" || location.pathname === "/mother-code";
++
+   return (
+     <div className="app-shell guanyao-shell">
+-      <header className="app-header">
+-        <div>
+-          <p className="eyebrow">GUANYAO SANDBOX H5</p>
+-          <h1>观爻 1.0 体验母版</h1>
+-        </div>
+-        <nav className="flow-nav" aria-label="主链路">
+-          {flowSteps.map((step) => (
+-            <NavLink key={step.path} to={step.path}>
+-              {step.code}
+-            </NavLink>
+-          ))}
+-        </nav>
+-      </header>
+-      <TimeSandglassReadout />
++      {!hideDebugChrome ? (
++        <>
++          <header className="app-header">
++            <div>
++              <p className="eyebrow">GUANYAO SANDBOX H5</p>
++              <h1>观爻 1.0 体验母版</h1>
++            </div>
++            <nav className="flow-nav" aria-label="主链路">
++              {flowSteps.map((step) => (
++                <NavLink key={step.path} to={step.path}>
++                  {step.code}
++                </NavLink>
++              ))}
++            </nav>
++          </header>
++          <TimeSandglassReadout />
++        </>
++      ) : null}
+       <main>{children}</main>
+     </div>
+   );
+diff --git a/src/pages/ArchivePage.tsx b/src/pages/ArchivePage.tsx
+index f31b433..51d5cfe 100644
+--- a/src/pages/ArchivePage.tsx
++++ b/src/pages/ArchivePage.tsx
+@@ -381,6 +381,7 @@ function R7ArchiveAssetShell() {
+ 
+   return (
+     <main
++      className="gy-r7-page gy-r7-shell"
+       style={{
+         minHeight: "100dvh",
+         width: "100%",
+@@ -394,35 +395,64 @@ function R7ArchiveAssetShell() {
+         overflowX: "hidden",
+       }}
+     >
++      <header className="gy-r7-header">
+       <span
++        className="gy-r7-stage-code"
+         style={{
+-          color: "rgba(199,169,107,0.72)",
+-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-          fontSize: 12,
++          color: "var(--gy-text-muted)",
++          fontFamily: "var(--gy-font-mono)",
++          fontSize: "var(--gy-code-size)",
+           letterSpacing: "0.16em",
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         09｜人格资产库
+       </span>
++      <span className="gy-r7-brand-mark">
++        GUANYAO <strong>SANDBOX</strong>
++      </span>
++      </header>
+       <span
+         style={{
+-          color: "rgba(245,245,245,0.42)",
+-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-          fontSize: 11,
++          color: "var(--gy-text-ghost)",
++          fontFamily: "var(--gy-font-mono)",
++          fontSize: "var(--gy-code-size)",
+           letterSpacing: "0.12em",
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         {snapshot.archiveStatus}
+       </span>
++      <section className="gy-r7-causal-axis is-compact" aria-label="人格资产沉积一字线">
++        <div className="gy-r7-causal-axis__nodes">
++          {[
++            ["切口", "已下刀"],
++            ["爻器", "已激活"],
++            ["器法", "已落地"],
++            ["沉积", "ARCHIVED"],
++          ].map(([label, meta], index) => (
++            <div
++              key={label}
++              className="gy-r7-causal-node"
++              data-active={index < 3 ? "true" : undefined}
++              data-current={index === 3 ? "true" : undefined}
++            >
++              <span className="gy-r7-causal-node__label">{label}</span>
++              <span className="gy-r7-causal-node__meta">{meta}</span>
++            </div>
++          ))}
++        </div>
++      </section>
+ 
+       <header style={{ display: "grid", gap: 10 }}>
+         <h1
+           style={{
+             margin: 0,
+-            color: "rgba(245,245,245,0.88)",
+-            fontSize: "clamp(28px, 8vw, 40px)",
++            color: "var(--gy-text-bone)",
++            fontSize: "var(--gy-title-size)",
+             lineHeight: 1.12,
+-            fontWeight: 420,
++            fontWeight: "var(--gy-weight-regular)",
++            letterSpacing: "-0.04em",
+           }}
+         >
+           本局人格行为资产包已生成。
+@@ -430,9 +460,10 @@ function R7ArchiveAssetShell() {
+         <p
+           style={{
+             margin: 0,
+-            color: "rgba(245,245,245,0.64)",
+-            fontSize: 16,
++            color: "var(--gy-text-secondary)",
++            fontSize: "var(--gy-body-size)",
+             lineHeight: 1.72,
++            fontWeight: "var(--gy-weight-regular)",
+           }}
+         >
+           你完成的不是一次分析。
+@@ -444,59 +475,96 @@ function R7ArchiveAssetShell() {
+       <section
+         aria-label="本局人格行为资产包"
+         style={{
++          position: "relative",
+           display: "grid",
+-          gap: 12,
+-          padding: "18px 0",
++          gap: 14,
++          padding: "22px 0 18px",
+           borderTop: "1px solid rgba(199,169,107,0.48)",
+           borderBottom: "1px solid rgba(199,169,107,0.3)",
+-          background: "linear-gradient(90deg, rgba(199,169,107,0.06), transparent 68%)",
++          background:
++            "linear-gradient(90deg, rgba(199,169,107,0.08), transparent 72%), linear-gradient(180deg, rgba(245,245,245,0.025), transparent)",
+         }}
+       >
++        <i
++          aria-hidden="true"
++          style={{
++            position: "absolute",
++            top: 0,
++            left: 0,
++            width: "46%",
++            height: 1,
++            background: "linear-gradient(90deg, rgba(199,169,107,0.95), rgba(199,169,107,0.12), transparent)",
++            boxShadow: "0 0 10px rgba(199,169,107,0.18)",
++          }}
++        />
+         <span
+           style={{
+-            color: "rgba(199,169,107,0.82)",
+-            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-            fontSize: 11,
++            color: "var(--gy-signal-gold)",
++            fontFamily: "var(--gy-font-mono)",
++            fontSize: "var(--gy-code-size)",
+             letterSpacing: "0.13em",
++            fontWeight: "var(--gy-weight-regular)",
+           }}
+         >
+           {snapshot.package.title}
+         </span>
+-        {[
+-          ["本局剧本", snapshot.package.scriptName],
+-          ["主切口", snapshot.package.primaryBreach],
+-          ["本局爻器", snapshot.package.yaoDevice],
+-          ["今日第一刀", snapshot.package.firstCut],
+-        ].map(([label, value]) => (
++        <div
++          style={{
++            display: "grid",
++            gap: 12,
++            padding: "12px 14px",
++            borderLeft: "1px solid rgba(199,169,107,0.28)",
++            borderRight: "1px solid rgba(245,245,245,0.08)",
++            background: "rgba(0,0,0,0.22)",
++          }}
++        >
++          {[
++            ["本局剧本", snapshot.package.scriptName],
++            ["主切口", snapshot.package.primaryBreach],
++            ["本局爻器", snapshot.package.yaoDevice],
++            ["今日第一刀", snapshot.package.firstCut],
++          ].map(([label, value]) => (
+           <div key={label} style={{ display: "grid", gap: 5, borderTop: "1px solid rgba(85,85,85,0.28)", paddingTop: 9 }}>
+             <span
+               style={{
+-                color: "rgba(245,245,245,0.42)",
+-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                fontSize: 11,
++                color: "var(--gy-text-ghost)",
++                fontFamily: "var(--gy-font-mono)",
++                fontSize: "var(--gy-code-size)",
+                 letterSpacing: "0.12em",
++                fontWeight: "var(--gy-weight-regular)",
+               }}
+             >
+               {label}
+             </span>
+-            <strong style={{ color: "rgba(245,245,245,0.78)", fontSize: 15, lineHeight: 1.48, fontWeight: 340 }}>
++            <strong style={{ color: "var(--gy-text-secondary)", fontSize: "var(--gy-body-size)", lineHeight: 1.48, fontWeight: "var(--gy-weight-regular)" }}>
+               {value}
+             </strong>
+           </div>
+-        ))}
++          ))}
++        </div>
+       </section>
+ 
+       <section
+         aria-label="今日第一刀"
+         style={{
++          position: "relative",
+           display: "grid",
+           gap: 12,
+-          padding: "16px 0",
++          padding: "18px 0 16px",
+           borderTop: "1px solid rgba(85,85,85,0.46)",
+           borderBottom: "1px solid rgba(85,85,85,0.28)",
++          background: "linear-gradient(180deg, rgba(245,245,245,0.025), transparent 74%)",
+         }}
+       >
+-        <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 22, lineHeight: 1.18, fontWeight: 390 }}>
++        <i
++          aria-hidden="true"
++          style={{
++            width: "22%",
++            height: 1,
++            background: "rgba(199,169,107,0.6)",
++          }}
++        />
++        <strong style={{ color: "var(--gy-text-primary)", fontSize: 22, lineHeight: 1.18, fontWeight: "var(--gy-weight-regular)" }}>
+           今日第一刀
+         </strong>
+         {[
+@@ -506,18 +574,28 @@ function R7ArchiveAssetShell() {
+           ["执行窗口", snapshot.todayFirstCut.executionWindow],
+           ["复发提醒", snapshot.todayFirstCut.relapseWarning],
+         ].map(([label, value]) => (
+-          <div key={label} style={{ display: "grid", gap: 5, borderTop: "1px solid rgba(85,85,85,0.22)", paddingTop: 9 }}>
++          <div
++            key={label}
++            style={{
++              display: "grid",
++              gap: 5,
++              borderTop: "1px solid rgba(85,85,85,0.22)",
++              padding: "9px 0 0 10px",
++              borderLeft: label === "第一动作" || label === "禁止动作" ? "1px solid rgba(199,169,107,0.26)" : "1px solid transparent",
++            }}
++          >
+             <span
+               style={{
+-                color: "rgba(199,169,107,0.72)",
+-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                fontSize: 11,
++                color: "var(--gy-signal-gold)",
++                fontFamily: "var(--gy-font-mono)",
++                fontSize: "var(--gy-code-size)",
+                 letterSpacing: "0.12em",
++                fontWeight: "var(--gy-weight-regular)",
+               }}
+             >
+               {label}
+             </span>
+-            <strong style={{ color: "rgba(245,245,245,0.78)", fontSize: 15, lineHeight: 1.55, fontWeight: 340 }}>
++            <strong style={{ color: "var(--gy-text-secondary)", fontSize: "var(--gy-body-size)", lineHeight: 1.55, fontWeight: "var(--gy-weight-regular)" }}>
+               {value}
+             </strong>
+           </div>
+@@ -527,32 +605,55 @@ function R7ArchiveAssetShell() {
+       <section
+         aria-label="90天行为防御本"
+         style={{
++          position: "relative",
+           display: "grid",
+           gap: 12,
+-          padding: "16px 0",
++          padding: "18px 0 16px",
+           borderTop: "1px solid rgba(199,169,107,0.34)",
+           borderBottom: "1px solid rgba(85,85,85,0.28)",
++          background: "linear-gradient(90deg, rgba(199,169,107,0.04), transparent 64%)",
+         }}
+       >
+-        <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 22, lineHeight: 1.18, fontWeight: 390 }}>
++        <i
++          aria-hidden="true"
++          style={{
++            position: "absolute",
++            top: 0,
++            right: 0,
++            width: "34%",
++            height: 1,
++            background: "linear-gradient(90deg, transparent, rgba(199,169,107,0.58))",
++          }}
++        />
++        <strong style={{ color: "var(--gy-text-primary)", fontSize: 22, lineHeight: 1.18, fontWeight: "var(--gy-weight-regular)" }}>
+           {snapshot.defense90d.title}
+         </strong>
+-        <p style={{ margin: 0, color: "rgba(245,245,245,0.62)", fontSize: 14, lineHeight: 1.64 }}>
++        <p style={{ margin: 0, color: "var(--gy-text-secondary)", fontSize: 14, lineHeight: 1.64, fontWeight: "var(--gy-weight-regular)" }}>
+           {snapshot.defense90d.intro}
+         </p>
+         {snapshot.defense90d.phases.map((phase) => (
+-          <div key={phase.range} style={{ display: "grid", gap: 5, borderTop: "1px solid rgba(85,85,85,0.22)", paddingTop: 9 }}>
++          <div
++            key={phase.range}
++            style={{
++              display: "grid",
++              gap: 6,
++              borderTop: "1px solid rgba(85,85,85,0.22)",
++              borderLeft: "1px solid rgba(199,169,107,0.22)",
++              padding: "10px 0 0 12px",
++            }}
++          >
+             <span
+               style={{
+-                color: "rgba(199,169,107,0.7)",
+-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                fontSize: 11,
++                color: "var(--gy-signal-gold)",
++                fontFamily: "var(--gy-font-mono)",
++                fontSize: "var(--gy-code-size)",
+                 letterSpacing: "0.12em",
++                fontWeight: "var(--gy-weight-regular)",
+               }}
+             >
+               {phase.range}｜{phase.name}
+             </span>
+-            <strong style={{ color: "rgba(245,245,245,0.76)", fontSize: 15, lineHeight: 1.48, fontWeight: 330 }}>
++            <strong style={{ color: "var(--gy-text-secondary)", fontSize: "var(--gy-body-size)", lineHeight: 1.48, fontWeight: "var(--gy-weight-regular)" }}>
+               {phase.goal}
+             </strong>
+           </div>
+@@ -562,14 +663,27 @@ function R7ArchiveAssetShell() {
+       <section
+         aria-label="人格资产沉积"
+         style={{
++          position: "relative",
+           display: "grid",
+           gap: 10,
+-          padding: "16px 0",
++          padding: "20px 0 16px",
+           borderTop: "1px solid rgba(85,85,85,0.46)",
+           borderBottom: "1px solid rgba(199,169,107,0.28)",
++          background: "linear-gradient(180deg, rgba(0,0,0,0), rgba(199,169,107,0.035))",
+         }}
+       >
+-        <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 22, lineHeight: 1.18, fontWeight: 390 }}>
++        <i
++          aria-hidden="true"
++          style={{
++            position: "absolute",
++            top: 0,
++            left: 0,
++            right: 0,
++            height: 1,
++            background: "linear-gradient(90deg, transparent, rgba(245,245,245,0.22), rgba(199,169,107,0.48), transparent)",
++          }}
++        />
++        <strong style={{ color: "var(--gy-text-primary)", fontSize: 22, lineHeight: 1.18, fontWeight: "var(--gy-weight-regular)" }}>
+           人格资产沉积
+         </strong>
+         {snapshot.deposit.map((item) => (
+@@ -581,20 +695,22 @@ function R7ArchiveAssetShell() {
+               gap: 12,
+               alignItems: "baseline",
+               borderTop: "1px solid rgba(85,85,85,0.2)",
+-              paddingTop: 8,
++              padding: "8px 0 0 10px",
++              borderLeft: item.label === "状态" ? "1px solid rgba(199,169,107,0.38)" : "1px solid rgba(85,85,85,0.16)",
+             }}
+           >
+             <span
+               style={{
+-                color: "rgba(245,245,245,0.42)",
+-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                fontSize: 11,
++                color: "var(--gy-text-ghost)",
++                fontFamily: "var(--gy-font-mono)",
++                fontSize: "var(--gy-code-size)",
+                 letterSpacing: "0.12em",
++                fontWeight: "var(--gy-weight-regular)",
+               }}
+             >
+               {item.label}
+             </span>
+-            <strong style={{ color: "rgba(245,245,245,0.76)", fontSize: 14, lineHeight: 1.44, fontWeight: 330 }}>
++            <strong style={{ color: "var(--gy-text-secondary)", fontSize: 14, lineHeight: 1.44, fontWeight: "var(--gy-weight-regular)" }}>
+               {item.value}
+             </strong>
+           </div>
+diff --git a/src/pages/ChoicePage.tsx b/src/pages/ChoicePage.tsx
+index c4ccd67..729142e 100644
+--- a/src/pages/ChoicePage.tsx
++++ b/src/pages/ChoicePage.tsx
+@@ -29,6 +29,7 @@ export function ChoicePage() {
+ 
+   return (
+     <main
++      className="gy-r7-page gy-r7-shell"
+       style={{
+         minHeight: "100dvh",
+         width: "100%",
+@@ -42,22 +43,30 @@ export function ChoicePage() {
+         overflowX: "hidden",
+       }}
+     >
++      <header className="gy-r7-header">
+       <span
++        className="gy-r7-stage-code"
+         style={{
+-          color: "rgba(199,169,107,0.72)",
+-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-          fontSize: 12,
++          color: "var(--gy-text-muted)",
++          fontFamily: "var(--gy-font-mono)",
++          fontSize: "var(--gy-code-size)",
+           letterSpacing: "0.16em",
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         06｜人格行为动力引擎
+       </span>
++      <span className="gy-r7-brand-mark">
++        GUANYAO <strong>SANDBOX</strong>
++      </span>
++      </header>
+       <span
+         style={{
+-          color: "rgba(245,245,245,0.42)",
+-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-          fontSize: 11,
++          color: "var(--gy-text-ghost)",
++          fontFamily: "var(--gy-font-mono)",
++          fontSize: "var(--gy-code-size)",
+           letterSpacing: "0.12em",
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         {breachReading.engineStatus}
+@@ -67,10 +76,11 @@ export function ChoicePage() {
+         <h1
+           style={{
+             margin: 0,
+-            color: "rgba(245,245,245,0.88)",
+-            fontSize: "clamp(26px, 8vw, 38px)",
++            color: "var(--gy-text-bone)",
++            fontSize: "var(--gy-title-size)",
+             lineHeight: 1.14,
+-            fontWeight: 420,
++            fontWeight: "var(--gy-weight-regular)",
++            letterSpacing: "-0.04em",
+           }}
+         >
+           {breachReading.headline}
+@@ -78,9 +88,10 @@ export function ChoicePage() {
+         <p
+           style={{
+             margin: 0,
+-            color: "rgba(245,245,245,0.62)",
+-            fontSize: 15,
++            color: "var(--gy-text-secondary)",
++            fontSize: "var(--gy-body-size)",
+             lineHeight: 1.72,
++            fontWeight: "var(--gy-weight-regular)",
+           }}
+         >
+           系统正在从本局人格行为场域中，
+@@ -124,38 +135,41 @@ export function ChoicePage() {
+             >
+               <span
+                 style={{
+-                  color: isSelected ? "rgba(199,169,107,0.84)" : "rgba(245,245,245,0.4)",
+-                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                  fontSize: 11,
++                  color: isSelected ? "var(--gy-signal-gold)" : "var(--gy-text-muted)",
++                  fontFamily: "var(--gy-font-mono)",
++                  fontSize: "var(--gy-code-size)",
+                   letterSpacing: "0.14em",
++                  fontWeight: "var(--gy-weight-regular)",
+                 }}
+               >
+                 {breach.tag}
+               </span>
+               <strong
+                 style={{
+-                  color: isSelected ? "rgba(245,245,245,0.92)" : "rgba(245,245,245,0.72)",
++                  color: isSelected ? "var(--gy-text-primary)" : "var(--gy-text-secondary)",
+                   fontSize: isPrimary ? 21 : 18,
+                   lineHeight: 1.24,
+-                  fontWeight: 380,
++                  fontWeight: "var(--gy-weight-regular)",
+                 }}
+               >
+                 {breach.title}
+               </strong>
+               <span
+                 style={{
+-                  color: "rgba(245,245,245,0.66)",
++                  color: "var(--gy-text-secondary)",
+                   fontSize: 14,
+                   lineHeight: 1.62,
++                  fontWeight: "var(--gy-weight-regular)",
+                 }}
+               >
+                 {breach.description}
+               </span>
+               <span
+                 style={{
+-                  color: isSelected ? "rgba(199,169,107,0.72)" : "rgba(245,245,245,0.38)",
++                  color: isSelected ? "var(--gy-signal-gold)" : "var(--gy-text-ghost)",
+                   fontSize: 13,
+                   lineHeight: 1.56,
++                  fontWeight: "var(--gy-weight-regular)",
+                 }}
+               >
+                 {breach.riskLine}
+@@ -168,15 +182,17 @@ export function ChoicePage() {
+       <p
+         style={{
+           margin: 0,
+-          color: "rgba(245,245,245,0.48)",
++          color: "var(--gy-text-muted)",
+           fontSize: 13,
+           lineHeight: 1.6,
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         {breachReading.next.prompt}
+       </p>
+ 
+       <button
++        className="gy-r7-cta"
+         type="button"
+         onClick={handleCommitCut}
+         style={{
+@@ -186,9 +202,10 @@ export function ChoicePage() {
+           border: "1px solid rgba(199,169,107,0.54)",
+           borderRadius: 0,
+           background: "transparent",
+-          color: "rgba(245,245,245,0.9)",
++          color: "var(--gy-text-primary)",
+           fontSize: 15,
+           letterSpacing: "0.04em",
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         {breachReading.next.cta}
+diff --git a/src/pages/ChronoPage.tsx b/src/pages/ChronoPage.tsx
+index e429a01..757a114 100644
+--- a/src/pages/ChronoPage.tsx
++++ b/src/pages/ChronoPage.tsx
+@@ -17,7 +17,7 @@ const defaultBirthMonth = 6;
+ const defaultBirthDay = 2;
+ const USE_INITIAL_COORDINATES_FLOW = true;
+ 
+-type ChronoAxis = "year" | "month" | "day" | "time";
++type ChronoAxis = "year" | "month" | "day" | "hour";
+ type YuanHotzone = {
+   label: string;
+   value: string;
+@@ -51,7 +51,7 @@ const chronoAxisMeta: Record<ChronoAxis, { label: string; hint: string; min: num
+   year: { label: "年", hint: "轴向滑动 · 定位年份", min: minBirthYear, max: maxBirthYear },
+   month: { label: "月", hint: "轴向滑动 · 定位月份", min: 1, max: 12 },
+   day: { label: "日", hint: "轴向滑动 · 定位日期", min: 1, max: 31 },
+-  time: { label: "时段", hint: "轴向滑动 · 定位时段", min: 0, max: 11 },
++  hour: { label: "时段", hint: "轴向滑动 · 定位时段", min: 0, max: 11 },
+ };
+ 
+ const birthTimeRanges = [
+@@ -369,215 +369,311 @@ function InitialCoordinatesEntry() {
+   const navigate = useNavigate();
+   const initialCoordinates = getDemoInitialCoordinates();
+   const [stage, setStage] = useState<"coordinates" | "mother">("coordinates");
++  const [activeAxis, setActiveAxis] = useState<ChronoAxis>("year");
++  const [chronoValues, setChronoValues] = useState({
++    year: 1995,
++    month: 6,
++    day: 2,
++    hour: "子时",
++  });
++  const [lockedAxes, setLockedAxes] = useState<Record<ChronoAxis, boolean>>({
++    year: false,
++    month: false,
++    day: false,
++    hour: false,
++  });
+   const [motherCodeCard, setMotherCodeCard] = useState<MotherCodeCard>(() =>
+     generateMotherCodeFromInitialCoordinates(initialCoordinates, "embedding"),
+   );
+   const isMotherStage = stage === "mother";
+-  const coordinateRows = [
+-    ["出生时序", initialCoordinates.birthChrono, "TIME"],
+-    ["年龄阶段", initialCoordinates.agePhase, "AGE"],
+-    ["行为年轮", initialCoordinates.behaviorRing, "RING"],
+-    ["地利锚点", initialCoordinates.geoAnchor, "GEO"],
++  const chronoValves: Array<{ id: ChronoAxis; label: string; value: string; hint: string; range: string; min: number; max: number }> = [
++    { id: "year", label: "年", value: String(chronoValues.year), hint: "［轴向滑动 · 定位年份］", range: "1970—2008", min: 1970, max: 2008 },
++    { id: "month", label: "月", value: padDateUnit(chronoValues.month), hint: "［轴向滑动 · 锁定月份］", range: "01—12", min: 1, max: 12 },
++    { id: "day", label: "日", value: padDateUnit(chronoValues.day), hint: "［轴向滑动 · 定位日期］", range: "01—31", min: 1, max: 31 },
++    { id: "hour", label: "时", value: chronoValues.hour, hint: "［轴向滑动 · 锁定时辰］", range: "十二时辰", min: 0, max: 11 },
+   ];
++  const activeValveMeta = chronoValves.find((valve) => valve.id === activeAxis) ?? chronoValves[0];
++  const activeAxisValue = activeAxis === "hour" ? birthTimeRanges.findIndex((timeRange) => timeRange.label === chronoValues.hour) : chronoValues[activeAxis];
++  const activeRangeValue = activeAxisValue < 0 ? 0 : activeAxisValue;
++  const activeProgress = ((activeRangeValue - activeValveMeta.min) / (activeValveMeta.max - activeValveMeta.min)) * 100;
++  const isAllValvesLocked = lockedAxes.year && lockedAxes.month && lockedAxes.day && lockedAxes.hour;
++
++  function buildCurrentInitialCoordinates(): InitialCoordinates {
++    return {
++      ...initialCoordinates,
++      birthChrono: `${chronoValues.year} / ${padDateUnit(chronoValues.month)} / ${padDateUnit(chronoValues.day)} · ${chronoValues.hour}`,
++    };
++  }
++
++  function writeChronoLockKey() {
++    window.localStorage.setItem("GY_CHRONO_1995060200", "locked");
++    window.localStorage.setItem(
++      "GY_CHRONO_COORDINATES",
++      JSON.stringify({
++        year: chronoValues.year,
++        month: chronoValues.month,
++        day: chronoValues.day,
++        hour: chronoValues.hour,
++        lockedAt: new Date().toISOString(),
++      }),
++    );
++  }
++
++  function handleValveSelect(id: ChronoAxis) {
++    setActiveAxis(id);
++  }
++
++  function handleAxisInput(value: number) {
++    setChronoValues((current) => {
++      if (activeAxis === "year") {
++        return { ...current, year: value, day: clamp(current.day, 1, 31) };
++      }
++
++      if (activeAxis === "month") {
++        return { ...current, month: value };
++      }
++
++      if (activeAxis === "day") {
++        return { ...current, day: value };
++      }
++
++      return { ...current, hour: birthTimeRanges[value]?.label ?? current.hour };
++    });
++  }
++
++  function handleAxisCommit() {
++    setLockedAxes((current) => ({ ...current, [activeAxis]: true }));
++  }
+ 
+   function handleEmbedMotherCode() {
+-    const embeddedCard = generateMotherCodeFromInitialCoordinates(initialCoordinates, "embedded");
+-    persistInitialCoordinates(initialCoordinates, embeddedCard);
++    if (!isAllValvesLocked) return;
++
++    const currentInitialCoordinates = buildCurrentInitialCoordinates();
++    writeChronoLockKey();
++    const embeddedCard = generateMotherCodeFromInitialCoordinates(currentInitialCoordinates, "embedded");
++    persistInitialCoordinates(currentInitialCoordinates, embeddedCard);
+     setMotherCodeCard(embeddedCard);
+     setStage("mother");
+   }
+ 
+   function handleEnterPressureSeed() {
+-    persistInitialCoordinates(initialCoordinates, motherCodeCard);
++    persistInitialCoordinates(buildCurrentInitialCoordinates(), motherCodeCard);
+     navigate(GUANYAO_ROUTES.pressureSeed);
+   }
+ 
+   return (
+     <main
++      className={`gy-r7-page gy-r7-shell${isMotherStage ? "" : " gy-chrono-lock-page"}`}
+       style={{
+-        minHeight: "100dvh",
++        minHeight: isMotherStage ? "100dvh" : "100svh",
++        height: isMotherStage ? undefined : "100svh",
+         width: "100%",
+         boxSizing: "border-box",
+-        padding: "54px 20px calc(42px + env(safe-area-inset-bottom))",
++        padding: isMotherStage ? "54px 20px calc(42px + env(safe-area-inset-bottom))" : "34px 20px calc(28px + env(safe-area-inset-bottom))",
+         display: "flex",
+         flexDirection: "column",
+-        justifyContent: "center",
+-        gap: 18,
++        justifyContent: isMotherStage ? "center" : "initial",
++        gap: isMotherStage ? 18 : 16,
+         background: "#050607",
+         color: "#f5f5f5",
+-        overflowX: "hidden",
++        overflow: isMotherStage ? "hidden auto" : "hidden",
+       }}
+     >
++      <header className="gy-r7-header">
+       <span
++        className="gy-r7-stage-code"
+         style={{
+-          color: "rgba(199,169,107,0.7)",
+-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-          fontSize: 12,
++          color: "var(--gy-text-muted)",
++          fontFamily: "var(--gy-font-mono)",
++          fontSize: "var(--gy-code-size)",
+           letterSpacing: "0.16em",
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+-        {isMotherStage ? "02｜母码显影" : "01｜初始坐标填装"}
++        {isMotherStage ? "02｜母码显影" : "GY / 00-FIX / CHRONO"}
+       </span>
++      {isMotherStage ? (
++        <span className="gy-r7-brand-mark">
++          GUANYAO <strong>SANDBOX</strong>
++        </span>
++      ) : null}
++      </header>
+ 
+       {!isMotherStage ? (
+         <>
+-          <section
+-            style={{
+-              display: "grid",
+-              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+-              gap: 10,
+-              padding: "16px 0",
+-              borderTop: "1px solid rgba(199,169,107,0.34)",
+-              borderBottom: "1px solid rgba(85,85,85,0.56)",
+-            }}
+-          >
+-            {coordinateRows.map(([label, value, code]) => (
+-              <div
+-                key={label}
+-                style={{
+-                  display: "grid",
+-                  gap: 8,
+-                  minHeight: 96,
+-                  padding: "13px 12px",
+-                  border: "1px solid rgba(85,85,85,0.54)",
+-                  background: "rgba(255,255,255,0.018)",
+-                  alignContent: "space-between",
+-                }}
++          <h1 className="gy-chrono-rail-title">时 序 装 填</h1>
++          <section className="gy-chrono-valves" aria-label="初始坐标阀门">
++            {chronoValves.map((valve) => {
++              const isActive = activeAxis === valve.id;
++              const isLocked = lockedAxes[valve.id];
++
++              return (
++                <button
++                  key={valve.id}
++                  type="button"
++                  className="gy-chrono-valve"
++                  data-active={isActive ? "true" : undefined}
++                  data-locked={isLocked ? "true" : undefined}
++                  onClick={() => handleValveSelect(valve.id)}
++                  aria-label={`锁定${valve.label}${valve.value}`}
+               >
+-                <span
+-                  style={{
+-                    color: "rgba(199,169,107,0.58)",
+-                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                    fontSize: 11,
+-                    letterSpacing: "0.12em",
+-                  }}
+-                >
+-                  {code}
+-                </span>
+-                <strong
+-                  style={{
+-                    color: "rgba(245,245,245,0.8)",
+-                    fontSize: 15,
+-                    lineHeight: 1.3,
+-                    fontWeight: 360,
+-                  }}
+-                >
+-                  {label}
+-                </strong>
+-                <em
+-                  style={{
+-                    color: "rgba(245,245,245,0.28)",
+-                    fontSize: 11,
+-                    lineHeight: 1.35,
+-                    fontStyle: "normal",
+-                  }}
+-                >
+-                  {value}
+-                </em>
+-              </div>
+-            ))}
++                  <span>{valve.value}</span>
++                </button>
++              );
++            })}
+           </section>
+-          <p style={{ margin: 0, color: "rgba(245,245,245,0.74)", fontSize: 16, lineHeight: 1.72 }}>
+-            出生时序。
+-            <br />
+-            年龄阶段。
+-            <br />
+-            行为年轮。
+-            <br />
+-            地利锚点。
+-          </p>
+-          <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.72 }}>
+-            四组坐标正在进入沙盒。
+-            <br />
+-            其中，时序坐标正在压入母码底盘。
+-          </p>
++          <div
++            className={`gy-chrono-axis-lock${isAllValvesLocked ? " is-complete" : ""}`}
++            style={{ "--gy-chrono-progress": `${activeProgress}%` } as CSSProperties}
++          >
++            <span className="gy-chrono-axis-lock__range">{activeValveMeta.range}</span>
++            <span className="gy-chrono-axis-lock__track" />
++            <input
++              className="gy-chrono-axis-lock__input"
++              type="range"
++              min={activeValveMeta.min}
++              max={activeValveMeta.max}
++              step={1}
++              value={activeRangeValue}
++              aria-label={`${activeValveMeta.label}轴滑动`}
++              onChange={(event) => handleAxisInput(Number(event.currentTarget.value))}
++              onPointerUp={handleAxisCommit}
++              onMouseUp={handleAxisCommit}
++              onTouchEnd={handleAxisCommit}
++              onKeyUp={handleAxisCommit}
++            />
++            <span className="gy-chrono-axis-lock__hint">{activeValveMeta.hint}</span>
++          </div>
+           <span
++            className="gy-chrono-lock-status"
+             style={{
+-              color: "rgba(245,245,245,0.34)",
+-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-              fontSize: 11,
++              color: "var(--gy-text-ghost)",
++              fontFamily: "var(--gy-font-mono)",
++              fontSize: "var(--gy-code-size)",
+               letterSpacing: "0.13em",
++              fontWeight: "var(--gy-weight-regular)",
+             }}
+           >
+             INITIAL_COORDINATES_LOADING
+           </span>
+           <button
++            className={`gy-causal-rail${isAllValvesLocked ? " gy-causal-rail--active" : " gy-causal-rail--idle"}`}
+             type="button"
+             onClick={handleEmbedMotherCode}
++            disabled={!isAllValvesLocked}
+             style={{
+-              width: "100%",
+-              minHeight: 52,
+               marginTop: 4,
+-              border: "1px solid rgba(199,169,107,0.42)",
+-              borderRadius: 0,
+-              background: "transparent",
+-              color: "rgba(245,245,245,0.9)",
+-              fontSize: 15,
+-              letterSpacing: "0.04em",
+             }}
+           >
+-            确认填装，显影母码
++            <span className="gy-causal-rail__label">确认填装，显影母码</span>
++            <span className="gy-causal-rail__dot" />
++            <span className="gy-causal-rail__track" />
++            <span className="gy-causal-rail__hint">
++              {isAllValvesLocked ? "初始坐标已锁定" : "依次锁定四段坐标"}
++            </span>
+           </button>
+         </>
+       ) : (
+         <>
+           <span
+             style={{
+-              color: "rgba(245,245,245,0.34)",
+-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-              fontSize: 11,
++              color: "var(--gy-text-ghost)",
++              fontFamily: "var(--gy-font-mono)",
++              fontSize: "var(--gy-code-size)",
+               letterSpacing: "0.13em",
++              fontWeight: "var(--gy-weight-regular)",
+             }}
+           >
+             INITIAL_COORDINATES_LOCKED
+           </span>
+-          <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 17, lineHeight: 1.6 }}>母码卡正在嵌入。</p>
++          <p style={{ margin: 0, color: "var(--gy-text-primary)", fontSize: "var(--gy-body-large-size)", lineHeight: 1.6, fontWeight: "var(--gy-weight-regular)" }}>母码卡正在嵌入。</p>
+           <section
+             aria-label="母码卡嵌入区"
+             style={{
+               display: "grid",
+               placeItems: "center",
+-              gap: 12,
+-              minHeight: 180,
+-              padding: "22px 18px",
+-              border: "1px solid rgba(199,169,107,0.42)",
++              gap: 14,
++              minHeight: 210,
++              padding: "18px 16px",
++              borderTop: "1px solid rgba(199,169,107,0.46)",
++              borderBottom: "1px solid rgba(199,169,107,0.3)",
+               background:
+-                "linear-gradient(180deg, rgba(199,169,107,0.08), rgba(199,169,107,0.015)), radial-gradient(circle at 50% 50%, rgba(199,169,107,0.08), transparent 58%)",
++                "linear-gradient(180deg, rgba(199,169,107,0.065), rgba(199,169,107,0.012)), radial-gradient(circle at 50% 50%, rgba(199,169,107,0.08), transparent 58%)",
+             }}
+           >
+             <span
++              aria-hidden="true"
+               style={{
+-                color: "rgba(199,169,107,0.76)",
+-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                fontSize: 11,
++                width: "100%",
++                height: 1,
++                background: "linear-gradient(90deg, transparent, rgba(199,169,107,0.72), transparent)",
++                boxShadow: "0 0 14px rgba(199,169,107,0.18)",
++              }}
++            />
++            <span
++              style={{
++                color: "var(--gy-signal-gold)",
++                fontFamily: "var(--gy-font-mono)",
++                fontSize: "var(--gy-code-size)",
+                 letterSpacing: "0.16em",
++                fontWeight: "var(--gy-weight-regular)",
+               }}
+             >
+               [ 母码卡嵌入区 ]
+             </span>
+-            <strong style={{ color: "rgba(245,245,245,0.82)", fontSize: 26, fontWeight: 360, letterSpacing: "0.16em" }}>
+-              母码卡
+-            </strong>
++            <div
++              style={{
++                width: "min(248px, 76vw)",
++                minHeight: 112,
++                display: "grid",
++                placeItems: "center",
++                gap: 10,
++                border: "1px solid rgba(245,245,245,0.16)",
++                borderLeft: "1px solid rgba(199,169,107,0.48)",
++                borderRight: "1px solid rgba(199,169,107,0.28)",
++                background:
++                  "linear-gradient(180deg, rgba(245,245,245,0.035), rgba(0,0,0,0)), linear-gradient(90deg, rgba(199,169,107,0.06), transparent 72%)",
++              }}
++            >
++              <span
++                style={{
++                  width: "86%",
++                  height: 1,
++                  background: "rgba(245,245,245,0.2)",
++                }}
++              />
++              <strong style={{ color: "var(--gy-text-primary)", fontSize: 26, fontWeight: "var(--gy-weight-regular)", letterSpacing: "0.16em" }}>
++                母码卡
++              </strong>
++              <span
++                style={{
++                  width: "72%",
++                  height: 1,
++                  background: "rgba(199,169,107,0.62)",
++                  boxShadow: "0 0 18px rgba(199,169,107,0.18)",
++                }}
++              />
++            </div>
+             <span
+               style={{
+                 width: "min(220px, 72vw)",
+                 height: 1,
+-                background: "rgba(199,169,107,0.62)",
+-                boxShadow: "0 0 18px rgba(199,169,107,0.18)",
++                background: "linear-gradient(90deg, transparent, rgba(245,245,245,0.28), transparent)",
+               }}
+             />
+             <span
+               style={{
+-                color: "rgba(245,245,245,0.34)",
+-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                fontSize: 11,
++                color: "var(--gy-text-ghost)",
++                fontFamily: "var(--gy-font-mono)",
++                fontSize: "var(--gy-code-size)",
+                 letterSpacing: "0.16em",
++                fontWeight: "var(--gy-weight-regular)",
+               }}
+             >
+               CARD EMBEDDING
+             </span>
+           </section>
+-          <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.72 }}>
++          <p style={{ margin: 0, color: "var(--gy-text-secondary)", fontSize: "var(--gy-body-size)", lineHeight: 1.72, fontWeight: "var(--gy-weight-regular)" }}>
+             它不是你的性格标签。
+             <br />
+             它是你在压力来临前，
+@@ -586,15 +682,17 @@ function InitialCoordinatesEntry() {
+           </p>
+           <span
+             style={{
+-              color: "rgba(245,245,245,0.34)",
+-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-              fontSize: 11,
++              color: "var(--gy-text-ghost)",
++              fontFamily: "var(--gy-font-mono)",
++              fontSize: "var(--gy-code-size)",
+               letterSpacing: "0.13em",
++              fontWeight: "var(--gy-weight-regular)",
+             }}
+           >
+             MOTHER_CODE_EMBEDDED
+           </span>
+           <button
++            className="gy-r7-cta"
+             type="button"
+             onClick={handleEnterPressureSeed}
+             style={{
+@@ -604,9 +702,10 @@ function InitialCoordinatesEntry() {
+               border: "1px solid rgba(199,169,107,0.52)",
+               borderRadius: 0,
+               background: "transparent",
+-              color: "rgba(245,245,245,0.9)",
++              color: "var(--gy-text-primary)",
+               fontSize: 15,
+               letterSpacing: "0.04em",
++              fontWeight: "var(--gy-weight-regular)",
+             }}
+           >
+             钉入现实压力种子
+@@ -772,7 +871,7 @@ export function ChronoPage() {
+                   {padDateUnit(birthDay)}
+                 </button>
+               </div>
+-              <button className="gy-chrono-date-part gy-chrono-date-part--time" type="button" data-active={activeAxis === "time"} onClick={() => setActiveAxis("time")}>
++              <button className="gy-chrono-date-part gy-chrono-date-part--time" type="button" data-active={activeAxis === "hour"} onClick={() => setActiveAxis("hour")}>
+                 {currentTimeRange.range}
+                 <span>｜{currentTimeRange.label}断面</span>
+               </button>
+@@ -781,9 +880,9 @@ export function ChronoPage() {
+         </div>
+ 
+         <div className="gy-chrono-control-grid" aria-label="校准对象">
+-          {(["year", "month", "day", "time"] as ChronoAxis[]).map((axis) => (
++          {(["year", "month", "day", "hour"] as ChronoAxis[]).map((axis) => (
+             <button key={axis} type="button" data-active={activeAxis === axis} onClick={() => setActiveAxis(axis)}>
+-              {axis === "time" ? "时" : chronoAxisMeta[axis].label}轨.TRACK
++              {axis === "hour" ? "时" : chronoAxisMeta[axis].label}轨.TRACK
+             </button>
+           ))}
+         </div>
+diff --git a/src/pages/GravityPage.tsx b/src/pages/GravityPage.tsx
+index 8c1a33c..fb35f68 100644
+--- a/src/pages/GravityPage.tsx
++++ b/src/pages/GravityPage.tsx
+@@ -148,6 +148,7 @@ function HexagramCodeDeliveryShell() {
+ 
+   return (
+     <main
++      className="gy-r7-page gy-r7-shell"
+       style={{
+         minHeight: "100dvh",
+         width: "100%",
+@@ -161,19 +162,45 @@ function HexagramCodeDeliveryShell() {
+         overflowX: "hidden",
+       }}
+     >
++      <header className="gy-r7-header">
+       <span
++        className="gy-r7-stage-code"
+         style={{
+-          color: "rgba(199,169,107,0.72)",
+-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-          fontSize: 12,
++          color: "var(--gy-text-muted)",
++          fontFamily: "var(--gy-font-mono)",
++          fontSize: "var(--gy-code-size)",
+           letterSpacing: "0.16em",
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         05｜本局卦码生成
+       </span>
++      <span className="gy-r7-brand-mark">
++        GUANYAO <strong>SANDBOX</strong>
++      </span>
++      </header>
+ 
+       {stage === "ritual" ? (
+         <>
++          <section className="gy-r7-causal-axis is-three is-compact" aria-label="上下卦一字线对撞轨">
++            <div className="gy-r7-causal-axis__nodes">
++              {[
++                ["下卦", fieldReading.identity.lowerGuaLabel],
++                ["对撞", "COLLIDE"],
++                ["上卦", fieldReading.identity.upperGuaLabel],
++              ].map(([label, meta], index) => (
++                <div
++                  key={label}
++                  className="gy-r7-causal-node"
++                  data-active={index !== 1 ? "true" : undefined}
++                  data-current={index === 1 ? "true" : undefined}
++                >
++                  <span className="gy-r7-causal-node__label">{label}</span>
++                  <span className="gy-r7-causal-node__meta">{meta}</span>
++                </div>
++              ))}
++            </div>
++          </section>
+           <section
+             style={{
+               display: "grid",
+@@ -183,31 +210,33 @@ function HexagramCodeDeliveryShell() {
+               borderBottom: "1px solid rgba(85,85,85,0.46)",
+             }}
+           >
+-            <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 17, lineHeight: 1.72 }}>
++            <p style={{ margin: 0, color: "var(--gy-text-primary)", fontSize: "var(--gy-body-large-size)", lineHeight: 1.72, fontWeight: "var(--gy-weight-regular)" }}>
+               下卦，已入底。
+               <br />
+               上卦，已压顶。
+             </p>
+-            <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 15, lineHeight: 1.72 }}>
++            <p style={{ margin: 0, color: "var(--gy-text-secondary)", fontSize: "var(--gy-body-size)", lineHeight: 1.72, fontWeight: "var(--gy-weight-regular)" }}>
+               母码与压力场，
+               <br />
+               正在发生对撞。
+             </p>
+-            <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.62 }}>
++            <p style={{ margin: 0, color: "var(--gy-text-secondary)", fontSize: "var(--gy-body-size)", lineHeight: 1.62, fontWeight: "var(--gy-weight-regular)" }}>
+               卦场正在闭合。
+             </p>
+           </section>
+           <span
+             style={{
+-              color: "rgba(245,245,245,0.34)",
+-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-              fontSize: 11,
++              color: "var(--gy-text-ghost)",
++              fontFamily: "var(--gy-font-mono)",
++              fontSize: "var(--gy-code-size)",
+               letterSpacing: "0.13em",
++              fontWeight: "var(--gy-weight-regular)",
+             }}
+           >
+             HEXAGRAM_FIELD_COLLIDING
+           </span>
+           <button
++            className="gy-r7-cta"
+             type="button"
+             onClick={() => setStage("card")}
+             style={{
+@@ -217,9 +246,10 @@ function HexagramCodeDeliveryShell() {
+               border: "1px solid rgba(199,169,107,0.52)",
+               borderRadius: 0,
+               background: "transparent",
+-              color: "rgba(245,245,245,0.9)",
++              color: "var(--gy-text-primary)",
+               fontSize: 15,
+               letterSpacing: "0.04em",
++              fontWeight: "var(--gy-weight-regular)",
+             }}
+           >
+             立即查看本局卦码
+@@ -229,10 +259,10 @@ function HexagramCodeDeliveryShell() {
+ 
+       {stage === "card" ? (
+         <>
+-          <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 17, lineHeight: 1.68 }}>
++          <p style={{ margin: 0, color: "var(--gy-text-primary)", fontSize: "var(--gy-body-large-size)", lineHeight: 1.68, fontWeight: "var(--gy-weight-regular)" }}>
+             本局卦码已生成。
+           </p>
+-          <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.72 }}>
++          <p style={{ margin: 0, color: "var(--gy-text-secondary)", fontSize: "var(--gy-body-size)", lineHeight: 1.72, fontWeight: "var(--gy-weight-regular)" }}>
+             卦码不是答案。
+             <br />
+             这是你当前所处的人格行为场域。
+@@ -241,54 +271,87 @@ function HexagramCodeDeliveryShell() {
+             aria-label="本局卦码卡"
+             style={{
+               display: "grid",
+-              gap: 12,
+-              padding: "22px 18px",
+-              border: "1px solid rgba(199,169,107,0.42)",
++              gap: 14,
++              padding: "18px 16px",
++              borderTop: "1px solid rgba(199,169,107,0.5)",
++              borderBottom: "1px solid rgba(199,169,107,0.28)",
+               background:
+-                "linear-gradient(180deg, rgba(199,169,107,0.07), rgba(199,169,107,0.014)), radial-gradient(circle at 50% 45%, rgba(199,169,107,0.09), transparent 60%)",
++                "linear-gradient(180deg, rgba(199,169,107,0.065), rgba(199,169,107,0.014)), radial-gradient(circle at 50% 45%, rgba(199,169,107,0.09), transparent 60%)",
+             }}
+           >
+             <span
++              aria-hidden="true"
+               style={{
+-                color: "rgba(199,169,107,0.78)",
+-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                fontSize: 11,
++                width: "100%",
++                height: 1,
++                background: "linear-gradient(90deg, transparent, rgba(199,169,107,0.72), transparent)",
++                boxShadow: "0 0 16px rgba(199,169,107,0.2)",
++              }}
++            />
++            <span
++              style={{
++                color: "var(--gy-signal-gold)",
++                fontFamily: "var(--gy-font-mono)",
++                fontSize: "var(--gy-code-size)",
+                 letterSpacing: "0.16em",
++                fontWeight: "var(--gy-weight-regular)",
+               }}
+             >
+               [ 本局卦码卡 ]
+             </span>
+-            <span style={{ color: "rgba(245,245,245,0.38)", fontSize: 12, lineHeight: 1.4 }}>
+-              No.{fieldReading.identity.hexagramNo}
+-            </span>
+-            <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 30, fontWeight: 380, lineHeight: 1.15 }}>
+-              {fieldReading.identity.hexagramName}
+-            </strong>
+-            <span style={{ color: "rgba(199,169,107,0.76)", fontSize: 17, lineHeight: 1.4 }}>
+-              《{fieldReading.identity.fieldTitle}》
+-            </span>
+-            <span
++            <div
+               style={{
+-                color: "rgba(245,245,245,0.64)",
+-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                fontSize: 12,
+-                letterSpacing: "0.1em",
++                display: "grid",
++                gap: 10,
++                padding: "16px 0",
++                borderTop: "1px solid rgba(245,245,245,0.12)",
++                borderBottom: "1px solid rgba(245,245,245,0.1)",
+               }}
+             >
+-              {fieldReading.scriptState.scriptName}
+-            </span>
++              <span style={{ color: "var(--gy-text-ghost)", fontSize: "var(--gy-caption-size)", lineHeight: 1.4, fontWeight: "var(--gy-weight-regular)" }}>
++                No.{fieldReading.identity.hexagramNo}
++              </span>
++              <strong style={{ color: "var(--gy-text-bone)", fontSize: 31, fontWeight: "var(--gy-weight-regular)", lineHeight: 1.12 }}>
++                {fieldReading.identity.hexagramName}
++              </strong>
++              <span style={{ color: "var(--gy-signal-gold)", fontSize: "var(--gy-body-large-size)", lineHeight: 1.4, fontWeight: "var(--gy-weight-regular)" }}>
++                《{fieldReading.identity.fieldTitle}》
++              </span>
++              <span
++                style={{
++                  color: "var(--gy-text-secondary)",
++                  fontFamily: "var(--gy-font-mono)",
++                  fontSize: "var(--gy-caption-size)",
++                  letterSpacing: "0.1em",
++                  fontWeight: "var(--gy-weight-regular)",
++                }}
++              >
++                {fieldReading.scriptState.scriptName}
++              </span>
++            </div>
++            <span
++              aria-hidden="true"
++              style={{
++                width: "44%",
++                height: 1,
++                background: "rgba(199,169,107,0.62)",
++                boxShadow: "0 0 14px rgba(199,169,107,0.18)",
++              }}
++            />
+             <span
+               style={{
+-                color: "rgba(245,245,245,0.34)",
+-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                fontSize: 11,
++                color: "var(--gy-text-ghost)",
++                fontFamily: "var(--gy-font-mono)",
++                fontSize: "var(--gy-code-size)",
+                 letterSpacing: "0.13em",
++                fontWeight: "var(--gy-weight-regular)",
+               }}
+             >
+               {fieldReading.identity.renderStatus}
+             </span>
+           </section>
+           <button
++            className="gy-r7-cta"
+             type="button"
+             onClick={() => setStage("reading")}
+             style={{
+@@ -298,9 +361,10 @@ function HexagramCodeDeliveryShell() {
+               border: "1px solid rgba(199,169,107,0.52)",
+               borderRadius: 0,
+               background: "transparent",
+-              color: "rgba(245,245,245,0.9)",
++              color: "var(--gy-text-primary)",
+               fontSize: 15,
+               letterSpacing: "0.04em",
++              fontWeight: "var(--gy-weight-regular)",
+             }}
+           >
+             向下查看本局现场读数
+@@ -310,7 +374,7 @@ function HexagramCodeDeliveryShell() {
+ 
+       {stage === "reading" ? (
+         <>
+-          <h1 style={{ margin: 0, color: "rgba(245,245,245,0.88)", fontSize: "clamp(26px, 8vw, 38px)", lineHeight: 1.12, fontWeight: 420 }}>
++          <h1 style={{ margin: 0, color: "var(--gy-text-bone)", fontSize: "var(--gy-title-size)", lineHeight: 1.12, fontWeight: "var(--gy-weight-regular)", letterSpacing: "-0.04em" }}>
+             本局现场读数
+           </h1>
+           <section
+@@ -322,7 +386,7 @@ function HexagramCodeDeliveryShell() {
+               borderBottom: "1px solid rgba(85,85,85,0.42)",
+             }}
+           >
+-            <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.62 }}>
++            <p style={{ margin: 0, color: "var(--gy-text-primary)", fontSize: "var(--gy-body-size)", lineHeight: 1.62, fontWeight: "var(--gy-weight-regular)" }}>
+               {fieldReading.hitText.line1}
+               <br />
+               {fieldReading.hitText.line2}
+@@ -353,10 +417,11 @@ function HexagramCodeDeliveryShell() {
+                     minHeight: 42,
+                     border: 0,
+                     background: "transparent",
+-                    color: "rgba(199,169,107,0.72)",
+-                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                    fontSize: 11,
++                    color: "var(--gy-signal-gold)",
++                    fontFamily: "var(--gy-font-mono)",
++                    fontSize: "var(--gy-code-size)",
+                     letterSpacing: "0.12em",
++                    fontWeight: "var(--gy-weight-regular)",
+                     textAlign: "left",
+                     display: "flex",
+                     alignItems: "center",
+@@ -370,17 +435,18 @@ function HexagramCodeDeliveryShell() {
+                   <span style={{ color: "rgba(245,245,245,0.32)" }}>{expandedReading === reading.dimension ? "COLLAPSE" : "OPEN"}</span>
+                 </button>
+                 {expandedReading === reading.dimension ? (
+-                  <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 14, lineHeight: 1.6 }}>
++                  <p style={{ margin: 0, color: "var(--gy-text-secondary)", fontSize: 14, lineHeight: 1.6, fontWeight: "var(--gy-weight-regular)" }}>
+                     {reading.text}
+                   </p>
+                 ) : null}
+               </article>
+             ))}
+           </section>
+-          <p style={{ margin: "4px 0 0", color: "rgba(245,245,245,0.72)", fontSize: 15, lineHeight: 1.68 }}>
++          <p style={{ margin: "4px 0 0", color: "var(--gy-text-secondary)", fontSize: "var(--gy-body-size)", lineHeight: 1.68, fontWeight: "var(--gy-weight-regular)" }}>
+             {fieldReading.next.prompt}
+           </p>
+           <button
++            className="gy-r7-cta"
+             type="button"
+             onClick={() => navigate(GUANYAO_ROUTES.breachScan)}
+             style={{
+@@ -390,9 +456,10 @@ function HexagramCodeDeliveryShell() {
+               border: "1px solid rgba(199,169,107,0.52)",
+               borderRadius: 0,
+               background: "transparent",
+-              color: "rgba(245,245,245,0.9)",
++              color: "var(--gy-text-primary)",
+               fontSize: 15,
+               letterSpacing: "0.04em",
++              fontWeight: "var(--gy-weight-regular)",
+             }}
+           >
+             {fieldReading.next.cta}
+diff --git a/src/pages/IdentityPage.tsx b/src/pages/IdentityPage.tsx
+index bd57266..9051cb8 100644
+--- a/src/pages/IdentityPage.tsx
++++ b/src/pages/IdentityPage.tsx
+@@ -69,6 +69,7 @@ function PressureExposureSafeShell() {
+ 
+   return (
+     <main
++      className="gy-r7-page gy-r7-shell"
+       style={{
+         minHeight: "100dvh",
+         width: "100%",
+@@ -82,16 +83,23 @@ function PressureExposureSafeShell() {
+         overflowX: "hidden",
+       }}
+     >
++      <header className="gy-r7-header">
+       <span
++        className="gy-r7-stage-code"
+         style={{
+-          color: "rgba(199,169,107,0.72)",
+-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-          fontSize: 12,
++          color: "var(--gy-text-muted)",
++          fontFamily: "var(--gy-font-mono)",
++          fontSize: "var(--gy-code-size)",
+           letterSpacing: "0.16em",
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         04｜压力显影
+       </span>
++      <span className="gy-r7-brand-mark">
++        GUANYAO <strong>SANDBOX</strong>
++      </span>
++      </header>
+       <section
+         style={{
+           display: "grid",
+@@ -101,15 +109,15 @@ function PressureExposureSafeShell() {
+           borderBottom: "1px solid rgba(85,85,85,0.46)",
+         }}
+       >
+-        <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 17, lineHeight: 1.65 }}>
++        <p style={{ margin: 0, color: "var(--gy-text-primary)", fontSize: "var(--gy-body-large-size)", lineHeight: 1.65, fontWeight: "var(--gy-weight-regular)" }}>
+           压力种子，装填完毕。
+         </p>
+-        <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.72 }}>
++        <p style={{ margin: 0, color: "var(--gy-text-secondary)", fontSize: "var(--gy-body-size)", lineHeight: 1.72, fontWeight: "var(--gy-weight-regular)" }}>
+           它不是一个事件。
+           <br />
+           它是一股正在牵引你的现实压力。
+         </p>
+-        <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.65 }}>
++        <p style={{ margin: 0, color: "var(--gy-text-secondary)", fontSize: "var(--gy-body-size)", lineHeight: 1.65, fontWeight: "var(--gy-weight-regular)" }}>
+           压力场正在显影。
+         </p>
+       </section>
+@@ -129,10 +137,11 @@ function PressureExposureSafeShell() {
+       >
+         <span
+           style={{
+-            color: "rgba(199,169,107,0.78)",
+-            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-            fontSize: 11,
++            color: "var(--gy-signal-gold)",
++            fontFamily: "var(--gy-font-mono)",
++            fontSize: "var(--gy-code-size)",
+             letterSpacing: "0.16em",
++            fontWeight: "var(--gy-weight-regular)",
+           }}
+         >
+           [ 压力显影区 ]
+@@ -145,7 +154,7 @@ function PressureExposureSafeShell() {
+             boxShadow: "0 0 18px rgba(199,169,107,0.16)",
+           }}
+         />
+-        <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 15, lineHeight: 1.72, textAlign: "center" }}>
++        <p style={{ margin: 0, color: "var(--gy-text-secondary)", fontSize: "var(--gy-body-size)", lineHeight: 1.72, textAlign: "center", fontWeight: "var(--gy-weight-regular)" }}>
+           你的外部处境，
+           <br />
+           正在形成上卦。
+@@ -154,16 +163,18 @@ function PressureExposureSafeShell() {
+ 
+       <span
+         style={{
+-          color: "rgba(245,245,245,0.34)",
+-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-          fontSize: 11,
++          color: "var(--gy-text-ghost)",
++          fontFamily: "var(--gy-font-mono)",
++          fontSize: "var(--gy-code-size)",
+           letterSpacing: "0.13em",
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         PRESSURE_FIELD_RENDERING
+       </span>
+ 
+       <button
++        className="gy-r7-cta"
+         type="button"
+         onClick={() => navigate(GUANYAO_ROUTES.dynamics)}
+         style={{
+@@ -173,9 +184,10 @@ function PressureExposureSafeShell() {
+           border: "1px solid rgba(199,169,107,0.52)",
+           borderRadius: 0,
+           background: "transparent",
+-          color: "rgba(245,245,245,0.9)",
++          color: "var(--gy-text-primary)",
+           fontSize: 15,
+           letterSpacing: "0.04em",
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         压力已显影，生成本局卦码
+diff --git a/src/pages/LaunchPage.tsx b/src/pages/LaunchPage.tsx
+index c970861..9260f76 100644
+--- a/src/pages/LaunchPage.tsx
++++ b/src/pages/LaunchPage.tsx
+@@ -1,11 +1,33 @@
++import { useEffect, useRef, useState } from "react";
+ import { useNavigate } from "react-router-dom";
+ import { GuanyaoButton } from "../components/visual/GuanyaoButton";
+ import { GuanyaoShell } from "../components/visual/GuanyaoShell";
+ import { GuanyaoText } from "../components/visual/GuanyaoText";
++import { GyCausalRail, GyLogoMark, GyStage, GySystemReadout, GyTypewriterReadout } from "../components/visual/GyVisualChain";
+ import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
+ import { getSession } from "../services/sessionService";
+ 
+ const USE_R7_SAFE_LAUNCH = true;
++type LaunchIntroPhase =
++  | "lineIdle"
++  | "lineScanning"
++  | "lineCollapsing"
++  | "logoTyping"
++  | "logoLocked"
++  | "typingText"
++  | "ready"
++  | "exiting";
++const launchCopy = `这里没有命运解释。
++也没有情绪安慰。
++
++它只接入现实压力，
++让一条旧反应显形。`;
++
++const typingDelayFor = (char: string) => {
++  if (char === "\n") return 260;
++  if ("。，、".includes(char)) return 150;
++  return 58;
++};
+ 
+ function hasChronoPrototype() {
+   const session = getSession();
+@@ -20,122 +42,109 @@ function hasChronoPrototype() {
+ 
+ function LaunchSafeEntry() {
+   const navigate = useNavigate();
++  const [phase, setPhase] = useState<LaunchIntroPhase>("lineIdle");
++  const [visibleChars, setVisibleChars] = useState(0);
++  const launchTimerRef = useRef<number | null>(null);
++  const typingTimerRef = useRef<number | null>(null);
++
++  useEffect(() => {
++    const timers = [
++      window.setTimeout(() => setPhase("lineScanning"), 620),
++      window.setTimeout(() => setPhase("lineCollapsing"), 1620),
++      window.setTimeout(() => setPhase("logoTyping"), 1980),
++      window.setTimeout(() => setPhase("logoLocked"), 3000),
++      window.setTimeout(() => setPhase("typingText"), 3700),
++    ];
++
++    return () => {
++      timers.forEach((timer) => window.clearTimeout(timer));
++      if (launchTimerRef.current) {
++        window.clearTimeout(launchTimerRef.current);
++      }
++      if (typingTimerRef.current) {
++        window.clearTimeout(typingTimerRef.current);
++      }
++    };
++  }, []);
++
++  useEffect(() => {
++    if (phase !== "typingText") return;
++
++    setVisibleChars(0);
++    let nextIndex = 0;
++
++    const typeNext = () => {
++      nextIndex += 1;
++      setVisibleChars(nextIndex);
++
++      if (nextIndex >= launchCopy.length) {
++        typingTimerRef.current = window.setTimeout(() => setPhase("ready"), 260);
++        return;
++      }
++
++      typingTimerRef.current = window.setTimeout(typeNext, typingDelayFor(launchCopy[nextIndex - 1]));
++    };
++
++    typingTimerRef.current = window.setTimeout(typeNext, 120);
++
++    return () => {
++      if (typingTimerRef.current) {
++        window.clearTimeout(typingTimerRef.current);
++        typingTimerRef.current = null;
++      }
++    };
++  }, [phase]);
++
++  function handleIgnite() {
++    if (phase !== "ready") return;
++
++    setPhase("exiting");
++    launchTimerRef.current = window.setTimeout(() => {
++      navigate("/mother-code");
++    }, 460);
++  }
+ 
+   return (
+-    <main
+-      style={{
+-        minHeight: "100dvh",
+-        width: "100%",
+-        boxSizing: "border-box",
+-        padding: "72px 20px calc(40px + env(safe-area-inset-bottom))",
+-        display: "flex",
+-        flexDirection: "column",
+-        justifyContent: "center",
+-        gap: 18,
+-        background: "radial-gradient(circle at 50% 0%, rgba(70, 120, 255, 0.14), transparent 42%), #050607",
+-        color: "#f5f5f5",
+-        overflowX: "hidden",
+-      }}
+-    >
+-      <span
+-        style={{
+-          fontSize: 11,
+-          letterSpacing: "0.26em",
+-          color: "rgba(120, 220, 255, 0.78)",
+-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-        }}
+-      >
+-        00｜带压入局
+-      </span>
+-      <h1
+-        style={{
+-          margin: 0,
+-          fontSize: "clamp(32px, 9vw, 48px)",
+-          lineHeight: 1.08,
+-          letterSpacing: "-0.04em",
+-          fontWeight: 500,
+-        }}
+-      >
+-        观爻 SANDBOX
+-      </h1>
+-      <p
+-        style={{
+-          margin: "0 0 2px",
+-          maxWidth: 360,
+-          color: "rgba(245, 245, 245, 0.46)",
+-          fontSize: 14,
+-          lineHeight: 1.6,
+-          letterSpacing: "0.08em",
+-        }}
+-      >
+-        「咔、咔、咔……」
+-      </p>
++    <GyStage className={`gy-launch-stage is-${phase}`} variant="void">
++      <GySystemReadout code="00｜带压入局" status="GY_SANDBOX_PROTOCOL_INITIALIZED" />
++
++      <div className="gy-launch-line-mother" aria-hidden="true" />
++
+       <div
+-        style={{
+-          width: "100%",
+-          maxWidth: 360,
+-          margin: "2px 0 4px",
+-          padding: "15px 0",
+-          borderTop: "1px solid rgba(199, 169, 107, 0.38)",
+-          borderBottom: "1px solid rgba(85, 85, 85, 0.58)",
+-          display: "grid",
+-          gap: 8,
+-        }}
++        className={`gy-launch-logo-field${
++          phase === "logoTyping" || phase === "logoLocked" || phase === "typingText" || phase === "ready" || phase === "exiting"
++            ? " is-typing"
++            : ""
++        }`}
++        aria-hidden="true"
+       >
+-        <p
+-          style={{
+-            margin: 0,
+-            color: "rgba(245, 245, 245, 0.72)",
+-            fontSize: 15,
+-            lineHeight: 1.7,
+-          }}
+-        >
+-          这里没有玄学预测。
+-          <br />
+-          也没有心理安慰。
+-        </p>
+-        <p
+-          style={{
+-            margin: 0,
+-            color: "rgba(245, 245, 245, 0.76)",
+-            fontSize: 15,
+-            lineHeight: 1.7,
+-          }}
+-        >
+-          它只剥离你的借口。
+-          <br />
+-          照出你正被哪一种旧习惯卡住。
++        <GyLogoMark active={phase === "logoTyping" || phase === "logoLocked" || phase === "typingText" || phase === "ready" || phase === "exiting"} />
++      </div>
++
++      <GyTypewriterReadout className="gy-launch-assertion" aria-label="观爻沙盒启动断言">
++        <p>
++          {launchCopy.slice(0, visibleChars).split("\n").map((line, index, lines) => (
++            <span key={`${line}-${index}`}>
++              {line}
++              {index < lines.length - 1 ? <br /> : null}
++            </span>
++          ))}
++          {phase === "typingText" ? <i className="gy-launch-type-cursor" aria-hidden="true" /> : null}
+         </p>
+-        <span
+-          style={{
+-            color: "rgba(245, 245, 245, 0.42)",
+-            fontSize: 11,
+-            lineHeight: 1.5,
+-            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-            letterSpacing: "0.13em",
+-          }}
+-        >
+-          GY_SANDBOX_PROTOCOL_INITIALIZED
+-        </span>
++      </GyTypewriterReadout>
++
++      <div className={`gy-launch-bottom-rail${phase === "ready" || phase === "exiting" ? " is-unlocked" : ""}`}>
++        <GyCausalRail
++          active={phase === "exiting"}
++          disabled={phase !== "ready"}
++          hint={phase === "exiting" ? "进入时序装填" : "初始坐标待填装"}
++          label={phase === "exiting" ? "初始坐标接入中" : "沿线右滑 · 启动观爻沙盒"}
++          onClick={handleIgnite}
++        />
+       </div>
+-      <button
+-        type="button"
+-        onClick={() => navigate("/mother-code")}
+-        style={{
+-          width: "100%",
+-          minHeight: 52,
+-          marginTop: 14,
+-          border: "1px solid rgba(120, 220, 255, 0.38)",
+-          borderRadius: 999,
+-          background: "rgba(120, 220, 255, 0.12)",
+-          color: "#ffffff",
+-          fontSize: 15,
+-          letterSpacing: "0.04em",
+-        }}
+-      >
+-        沿线右滑，填装初始坐标
+-      </button>
+-    </main>
++
++      <span className="gy-launch-system-status">{phase === "exiting" ? "SANDBOX_AXIS_ACTIVE" : "SANDBOX_AXIS_STANDBY"}</span>
++    </GyStage>
+   );
+ }
+ 
+diff --git a/src/pages/MigrationPage.tsx b/src/pages/MigrationPage.tsx
+index 845b5b9..d591921 100644
+--- a/src/pages/MigrationPage.tsx
++++ b/src/pages/MigrationPage.tsx
+@@ -276,6 +276,7 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
+ 
+   return (
+     <main
++      className="gy-r7-page gy-r7-shell"
+       style={{
+         minHeight: "100dvh",
+         width: "100%",
+@@ -289,22 +290,30 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
+         overflowX: "hidden",
+       }}
+     >
++      <header className="gy-r7-header">
+       <span
++        className="gy-r7-stage-code"
+         style={{
+-          color: "rgba(199,169,107,0.72)",
+-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-          fontSize: 12,
++          color: "var(--gy-text-muted)",
++          fontFamily: "var(--gy-font-mono)",
++          fontSize: "var(--gy-code-size)",
+           letterSpacing: "0.16em",
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         {isRepair ? "08｜器法落地" : "07｜爻器激活"}
+       </span>
++      <span className="gy-r7-brand-mark">
++        GUANYAO <strong>SANDBOX</strong>
++      </span>
++      </header>
+       <span
+         style={{
+-          color: "rgba(245,245,245,0.42)",
+-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-          fontSize: 11,
++          color: "var(--gy-text-ghost)",
++          fontFamily: "var(--gy-font-mono)",
++          fontSize: "var(--gy-code-size)",
+           letterSpacing: "0.12em",
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         {isRepair ? repairDelivery.methodStatus : deviceDelivery.deviceStatus}
+@@ -314,10 +323,11 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
+         <h1
+           style={{
+             margin: 0,
+-            color: "rgba(245,245,245,0.88)",
+-            fontSize: "clamp(28px, 8vw, 40px)",
++            color: "var(--gy-text-bone)",
++            fontSize: "var(--gy-title-size)",
+             lineHeight: 1.12,
+-            fontWeight: 420,
++            fontWeight: "var(--gy-weight-regular)",
++            letterSpacing: "-0.04em",
+           }}
+         >
+           {isRepair ? "器法已生成。" : "你选择的切口，已经转译为本局爻器。"}
+@@ -325,9 +335,10 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
+         <p
+           style={{
+             margin: 0,
+-            color: "rgba(245,245,245,0.62)",
+-            fontSize: 15,
++            color: "var(--gy-text-secondary)",
++            fontSize: "var(--gy-body-size)",
+             lineHeight: 1.72,
++            fontWeight: "var(--gy-weight-regular)",
+           }}
+         >
+           {isRepair ? "这是你今天可以执行的第一刀。" : "它不是解释，而是一个可以介入旧反应的装置。"}
+@@ -349,10 +360,11 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
+           <>
+             <span
+               style={{
+-                color: "rgba(199,169,107,0.82)",
+-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                fontSize: 11,
++                color: "var(--gy-signal-gold)",
++                fontFamily: "var(--gy-font-mono)",
++                fontSize: "var(--gy-code-size)",
+                 letterSpacing: "0.13em",
++                fontWeight: "var(--gy-weight-regular)",
+               }}
+             >
+               器法｜{repairDelivery.methodName}
+@@ -366,15 +378,16 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
+               <div key={label} style={{ display: "grid", gap: 6, borderTop: "1px solid rgba(85,85,85,0.28)", paddingTop: 10 }}>
+                 <span
+                   style={{
+-                    color: "rgba(245,245,245,0.42)",
+-                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                    fontSize: 11,
++                    color: "var(--gy-text-ghost)",
++                    fontFamily: "var(--gy-font-mono)",
++                    fontSize: "var(--gy-code-size)",
+                     letterSpacing: "0.12em",
++                    fontWeight: "var(--gy-weight-regular)",
+                   }}
+                 >
+                   {label}
+                 </span>
+-                <strong style={{ color: "rgba(245,245,245,0.82)", fontSize: 16, lineHeight: 1.55, fontWeight: 360 }}>
++                <strong style={{ color: "var(--gy-text-primary)", fontSize: "var(--gy-body-size)", lineHeight: 1.55, fontWeight: "var(--gy-weight-regular)" }}>
+                   {value}
+                 </strong>
+               </div>
+@@ -384,28 +397,29 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
+           <>
+             <span
+               style={{
+-                color: "rgba(199,169,107,0.82)",
+-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                fontSize: 11,
++                color: "var(--gy-signal-gold)",
++                fontFamily: "var(--gy-font-mono)",
++                fontSize: "var(--gy-code-size)",
+                 letterSpacing: "0.13em",
++                fontWeight: "var(--gy-weight-regular)",
+               }}
+             >
+               来源切口｜{deviceDelivery.sourceBreachTitle}
+             </span>
+-            <strong style={{ color: "rgba(245,245,245,0.92)", fontSize: 30, lineHeight: 1.1, fontWeight: 400 }}>
++            <strong style={{ color: "var(--gy-text-bone)", fontSize: 30, lineHeight: 1.1, fontWeight: "var(--gy-weight-medium)" }}>
+               {deviceDelivery.deviceName}
+             </strong>
+-            <span style={{ color: "rgba(199,169,107,0.7)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12 }}>
++            <span style={{ color: "var(--gy-signal-gold)", fontFamily: "var(--gy-font-mono)", fontSize: "var(--gy-caption-size)", fontWeight: "var(--gy-weight-regular)" }}>
+               {deviceDelivery.deviceCode}
+             </span>
+-            <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.72 }}>
++            <p style={{ margin: 0, color: "var(--gy-text-secondary)", fontSize: "var(--gy-body-size)", lineHeight: 1.72, fontWeight: "var(--gy-weight-regular)" }}>
+               它不是让你更强。
+               <br />
+               而是在你再次想硬推时，
+               <br />
+               把你钉回一个可等待的位置。
+             </p>
+-            <p style={{ margin: 0, color: "rgba(199,169,107,0.68)", fontSize: 13, lineHeight: 1.56 }}>
++            <p style={{ margin: 0, color: "var(--gy-signal-gold)", fontSize: 13, lineHeight: 1.56, fontWeight: "var(--gy-weight-regular)" }}>
+               {deviceDelivery.coreFunction}
+             </p>
+           </>
+@@ -413,6 +427,7 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
+       </section>
+ 
+       <button
++        className="gy-r7-cta"
+         type="button"
+         onClick={handleNext}
+         style={{
+@@ -422,9 +437,10 @@ function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
+           border: "1px solid rgba(199,169,107,0.54)",
+           borderRadius: 0,
+           background: "transparent",
+-          color: "rgba(245,245,245,0.9)",
++          color: "var(--gy-text-primary)",
+           fontSize: 15,
+           letterSpacing: "0.04em",
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         {isRepair ? "沉积为人格资产" : "生成本局器法"}
+diff --git a/src/pages/MotherCodePage.tsx b/src/pages/MotherCodePage.tsx
+index 9628c87..4b192b3 100644
+--- a/src/pages/MotherCodePage.tsx
++++ b/src/pages/MotherCodePage.tsx
+@@ -1,12 +1,27 @@
+-import { useMemo, useRef, useState } from "react";
++import { useMemo, useRef, useState, type CSSProperties } from "react";
+ import { useNavigate } from "react-router-dom";
+ import { GuanyaoButton } from "../components/visual/GuanyaoButton";
+ import { GuanyaoShell } from "../components/visual/GuanyaoShell";
+ import { GuanyaoText } from "../components/visual/GuanyaoText";
++import { GyCausalRail, GyStage, GySystemReadout } from "../components/visual/GyVisualChain";
+ import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
+ import { buildMotherCodeResult } from "../services/motherCodeService";
+ import { getSession, setMotherCodeResult } from "../services/sessionService";
+ 
++type ChronoAxis = "year" | "month" | "day" | "hour";
++
++const hourBranches = ["子时", "丑时", "寅时", "卯时", "辰时", "巳时", "午时", "未时", "申时", "酉时", "戌时", "亥时"];
++const chronoAxisMeta: Record<ChronoAxis, { label: string; range: string; min: number; max: number }> = {
++  year: { label: "year", range: "1970—2008", min: 1970, max: 2008 },
++  month: { label: "month", range: "01—12", min: 1, max: 12 },
++  day: { label: "day", range: "01—31", min: 1, max: 31 },
++  hour: { label: "hour", range: "十二时辰", min: 0, max: 11 },
++};
++
++function padDateUnit(value: number) {
++  return String(value).padStart(2, "0");
++}
++
+ function getMotherTypeName(motherCode: any) {
+   const source = `${motherCode?.name ?? ""}${motherCode?.hexagramName ?? ""}${motherCode?.title ?? ""}`;
+   if (source.includes("艮") || source.includes("停")) return "惯性制动型";
+@@ -198,6 +213,20 @@ const paidDiagnostic = {
+ 
+ export function MotherCodePage() {
+   const navigate = useNavigate();
++  const [isChronoEmbedded, setIsChronoEmbedded] = useState(() => window.localStorage.getItem("GY_CHRONO_1995060200") === "locked");
++  const [activeAxis, setActiveAxis] = useState<ChronoAxis>("year");
++  const [chronoValues, setChronoValues] = useState({
++    year: 1995,
++    month: 6,
++    day: 2,
++    hourIndex: 0,
++  });
++  const [lockedAxes, setLockedAxes] = useState<Record<ChronoAxis, boolean>>({
++    year: false,
++    month: false,
++    day: false,
++    hour: false,
++  });
+   const [activeHotzone, setActiveHotzone] = useState<string | null>(null);
+   const [isUnlocked, setIsUnlocked] = useState(false);
+   const [activeDrawer, setActiveDrawer] = useState<string | null>(null);
+@@ -214,6 +243,51 @@ export function MotherCodePage() {
+   const motherTypeName = getMotherTypeName(motherCode);
+   const motherSignature = getMotherSignature(motherCode);
+   const activeHotzoneIndex = motherSignature.hotzones.findIndex(([label]) => label === activeHotzone);
++  const chronoValves = [
++    { id: "year" as const, value: String(chronoValues.year) },
++    { id: "month" as const, value: padDateUnit(chronoValues.month) },
++    { id: "day" as const, value: padDateUnit(chronoValues.day) },
++    { id: "hour" as const, value: hourBranches[chronoValues.hourIndex] },
++  ];
++  const activeMeta = chronoAxisMeta[activeAxis];
++  const activeValue = activeAxis === "hour" ? chronoValues.hourIndex : chronoValues[activeAxis];
++  const activeProgress = ((activeValue - activeMeta.min) / (activeMeta.max - activeMeta.min)) * 100;
++  const isAllAxesLocked = Object.values(lockedAxes).every(Boolean);
++
++  function updateActiveAxisValue(value: number) {
++    setChronoValues((current) => {
++      if (activeAxis === "year") return { ...current, year: value };
++      if (activeAxis === "month") return { ...current, month: value };
++      if (activeAxis === "day") return { ...current, day: value };
++      return { ...current, hourIndex: value };
++    });
++    setLockedAxes((current) => ({ ...current, [activeAxis]: false }));
++  }
++
++  function handleValveClick(axis: ChronoAxis) {
++    if (axis !== activeAxis) {
++      setActiveAxis(axis);
++      return;
++    }
++
++    setLockedAxes((current) => ({ ...current, [axis]: !current[axis] }));
++  }
++
++  function embedChronoCoordinates() {
++    if (!isAllAxesLocked) return;
++
++    window.localStorage.setItem("GY_CHRONO_1995060200", "locked");
++    window.localStorage.setItem(
++      "GY_CHRONO_COORDINATES",
++      JSON.stringify({
++        year: chronoValues.year,
++        month: chronoValues.month,
++        day: chronoValues.day,
++        hour: hourBranches[chronoValues.hourIndex],
++      }),
++    );
++    setIsChronoEmbedded(true);
++  }
+ 
+   const releaseCausalGate = () => {
+     if (holdTimerRef.current !== null) {
+@@ -233,6 +307,67 @@ export function MotherCodePage() {
+     }, 1500);
+   };
+ 
++  if (!isChronoEmbedded) {
++    return (
++      <GyStage className="gy-mother-chrono-stage" variant="instrument">
++        <GySystemReadout code="GY / 00-FIX / CHRONO" status="COORDINATE_VALVES_STANDBY" />
++
++        <h1 className="gy-mother-chrono-title">时 序 装 填</h1>
++
++        <section className="gy-mother-chrono-valves" aria-label="初始坐标阀门">
++          {chronoValves.map((valve) => {
++            const isActive = activeAxis === valve.id;
++            const isLocked = lockedAxes[valve.id];
++            return (
++              <button
++                className="gy-mother-chrono-valve"
++                data-active={isActive}
++                data-locked={isLocked}
++                key={valve.id}
++                type="button"
++                onClick={() => handleValveClick(valve.id)}
++              >
++                <span>{chronoAxisMeta[valve.id].label}</span>
++                <strong>{valve.value}</strong>
++              </button>
++            );
++          })}
++        </section>
++
++        <section
++          className={`gy-mother-chrono-axis${lockedAxes[activeAxis] ? " is-locked" : ""}`}
++          style={{ "--gy-axis-progress": `${activeProgress}%` } as CSSProperties}
++          aria-label={`${activeMeta.label} 坐标轨`}
++        >
++          <span className="gy-mother-chrono-axis__range">{activeMeta.range}</span>
++          <span className="gy-mother-chrono-axis__track" />
++          <input
++            className="gy-mother-chrono-axis__input"
++            type="range"
++            min={activeMeta.min}
++            max={activeMeta.max}
++            step={1}
++            value={activeValue}
++            onChange={(event) => updateActiveAxisValue(Number(event.target.value))}
++          />
++          <span className="gy-mother-chrono-axis__hint">{lockedAxes[activeAxis] ? "当前阀门已锁定" : "再次点击当前阀门完成锁定"}</span>
++        </section>
++
++        <div className="gy-mother-chrono-rail">
++          <GyCausalRail
++            active={isAllAxesLocked}
++            disabled={!isAllAxesLocked}
++            hint={isAllAxesLocked ? "进入 02 母码显影" : "四段坐标待锁定"}
++            label={isAllAxesLocked ? "确认填装 · 显影母码" : "等待坐标阀门锁定"}
++            onClick={embedChronoCoordinates}
++          />
++        </div>
++
++        <span className="gy-launch-system-status">INITIAL_COORDINATES_LOADING</span>
++      </GyStage>
++    );
++  }
++
+   return (
+     <GuanyaoShell className="gy-mother-reactor-shell" density="compact">
+       <section className={`gy-mother-reactor gyFadeRise ${isUnlocked ? "gy-mother-reactor--unlocked" : ""}`}>
+diff --git a/src/pages/ScenePage.tsx b/src/pages/ScenePage.tsx
+index a92219e..5e055cc 100644
+--- a/src/pages/ScenePage.tsx
++++ b/src/pages/ScenePage.tsx
+@@ -193,6 +193,7 @@ function PressureSliceEntry() {
+ 
+   return (
+     <main
++      className="gy-r7-page gy-r7-shell"
+       style={{
+         minHeight: "100dvh",
+         width: "100%",
+@@ -206,21 +207,29 @@ function PressureSliceEntry() {
+         overflowX: "hidden",
+       }}
+     >
++      <header className="gy-r7-header">
+       <span
++        className="gy-r7-stage-code"
+         style={{
+-          color: "rgba(199,169,107,0.7)",
+-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-          fontSize: 12,
++          color: "var(--gy-text-muted)",
++          fontFamily: "var(--gy-font-mono)",
++          fontSize: "var(--gy-code-size)",
+           letterSpacing: "0.16em",
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         03｜现实压力切片
+       </span>
++      <span className="gy-r7-brand-mark">
++        GUANYAO <strong>SANDBOX</strong>
++      </span>
++      </header>
+       <span
+         style={{
+-          color: "rgba(245,245,245,0.44)",
++          color: "var(--gy-text-muted)",
+           fontSize: 13,
+           lineHeight: 1.5,
++          fontWeight: "var(--gy-weight-regular)",
+         }}
+       >
+         母码已嵌入。
+@@ -228,11 +237,11 @@ function PressureSliceEntry() {
+       <h1
+         style={{
+           margin: "2px 0 0",
+-          color: "rgba(245,245,245,0.88)",
+-          fontSize: "clamp(26px, 8vw, 38px)",
++          color: "var(--gy-text-bone)",
++          fontSize: "var(--gy-title-size)",
+           lineHeight: 1.15,
+-          fontWeight: 420,
+-          letterSpacing: "0.02em",
++          fontWeight: "var(--gy-weight-regular)",
++          letterSpacing: "-0.04em",
+         }}
+       >
+         哪一幕，正在发生？
+@@ -263,10 +272,11 @@ function PressureSliceEntry() {
+         >
+           <span
+             style={{
+-              color: flowState === "flowing" ? "rgba(199,169,107,0.58)" : "rgba(199,169,107,0.78)",
+-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-              fontSize: 11,
++              color: flowState === "flowing" ? "var(--gy-text-muted)" : "var(--gy-signal-gold)",
++              fontFamily: "var(--gy-font-mono)",
++              fontSize: "var(--gy-code-size)",
+               letterSpacing: "0.12em",
++              fontWeight: "var(--gy-weight-regular)",
+               padding: "0 2px",
+             }}
+           >
+@@ -301,29 +311,31 @@ function PressureSliceEntry() {
+               >
+                 <span
+                   style={{
+-                    color: isSelected ? "rgba(199,169,107,0.86)" : "rgba(245,245,245,0.42)",
+-                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+-                    fontSize: 11,
++                    color: isSelected ? "var(--gy-signal-gold)" : "var(--gy-text-muted)",
++                    fontFamily: "var(--gy-font-mono)",
++                    fontSize: "var(--gy-code-size)",
+                     letterSpacing: "0.12em",
++                    fontWeight: "var(--gy-weight-regular)",
+                   }}
+                 >
+                   现实压力种子
+                 </span>
+                 <strong
+                   style={{
+-                    color: isSelected ? "rgba(245,245,245,0.92)" : "rgba(245,245,245,0.76)",
++                    color: isSelected ? "var(--gy-text-primary)" : "var(--gy-text-secondary)",
+                     fontSize: 18,
+                     lineHeight: 1.25,
+-                    fontWeight: 360,
++                    fontWeight: "var(--gy-weight-regular)",
+                   }}
+                 >
+                   {slice.title}
+                 </strong>
+                 <span
+                   style={{
+-                    color: "rgba(245,245,245,0.62)",
++                    color: "var(--gy-text-secondary)",
+                     fontSize: 14,
+                     lineHeight: 1.58,
++                    fontWeight: "var(--gy-weight-regular)",
+                   }}
+                 >
+                   {slice.line}
+@@ -335,6 +347,7 @@ function PressureSliceEntry() {
+       </section>
+ 
+       <button
++        className="gy-r7-cta"
+         type="button"
+         onClick={handleConfirmSlice}
+         style={{
+@@ -344,9 +357,10 @@ function PressureSliceEntry() {
+           border: "1px solid rgba(199,169,107,0.52)",
+           borderRadius: 0,
+           background: "transparent",
+-          color: "rgba(245,245,245,0.9)",
++          color: "var(--gy-text-primary)",
+           fontSize: 15,
+           letterSpacing: "0.04em",
++          fontWeight: "var(--gy-weight-regular)",
+           opacity: flowState !== "flowing" && !selectedSliceId ? 0.5 : 1,
+         }}
+       >
+diff --git a/src/styles/guanyao-visual-system.css b/src/styles/guanyao-visual-system.css
+index 8825731..68c670d 100644
+--- a/src/styles/guanyao-visual-system.css
++++ b/src/styles/guanyao-visual-system.css
+@@ -17,6 +17,1812 @@
+   --gy-rail-bottom-y: 92%;
+   --gy-grid-lower-y: 72%;
+   --gy-font-system: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
++  --gy-font-mono: "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
++  --gy-text-bone: #f6f3ec;
++  --gy-text-primary: rgba(246, 243, 236, 0.92);
++  --gy-text-secondary: rgba(246, 243, 236, 0.66);
++  --gy-text-muted: rgba(246, 243, 236, 0.42);
++  --gy-text-ghost: rgba(246, 243, 236, 0.28);
++  --gy-bg-deep: #050607;
++  --gy-bg-panel: rgba(255, 255, 255, 0.025);
++  --gy-bg-card: rgba(255, 255, 255, 0.035);
++  --gy-line-soft: rgba(246, 243, 236, 0.14);
++  --gy-line-mid: rgba(246, 243, 236, 0.22);
++  --gy-line-bright: rgba(246, 243, 236, 0.36);
++  --gy-signal-cyan: #00b8d4;
++  --gy-signal-cyan-soft: rgba(0, 184, 212, 0.42);
++  --gy-signal-gold: rgba(190, 162, 96, 0.88);
++  --gy-title-size: clamp(26px, 7vw, 34px);
++  --gy-title-large-size: clamp(34px, 9vw, 52px);
++  --gy-body-size: 15px;
++  --gy-body-large-size: 17px;
++  --gy-caption-size: 12px;
++  --gy-code-size: 11px;
++  --gy-weight-light: 300;
++  --gy-weight-regular: 360;
++  --gy-weight-medium: 400;
++}
++
++.gy-type-stage {
++  font-family: var(--gy-font-system);
++  font-size: 13px;
++  line-height: 1.2;
++  letter-spacing: 0.12em;
++  font-weight: var(--gy-weight-regular);
++  color: var(--gy-text-muted);
++}
++
++.gy-type-title {
++  font-family: var(--gy-font-system);
++  font-size: var(--gy-title-large-size);
++  line-height: 1.02;
++  letter-spacing: -0.055em;
++  font-weight: var(--gy-weight-regular);
++  color: var(--gy-text-bone);
++}
++
++.gy-type-title-compact {
++  font-family: var(--gy-font-system);
++  font-size: var(--gy-title-size);
++  line-height: 1.08;
++  letter-spacing: -0.04em;
++  font-weight: var(--gy-weight-regular);
++  color: var(--gy-text-bone);
++}
++
++.gy-type-body {
++  font-family: var(--gy-font-system);
++  font-size: var(--gy-body-size);
++  line-height: 1.72;
++  letter-spacing: -0.01em;
++  font-weight: var(--gy-weight-regular);
++  color: var(--gy-text-secondary);
++}
++
++.gy-type-body-strong {
++  font-family: var(--gy-font-system);
++  font-size: var(--gy-body-large-size);
++  line-height: 1.66;
++  letter-spacing: -0.015em;
++  font-weight: var(--gy-weight-regular);
++  color: var(--gy-text-primary);
++}
++
++.gy-type-code {
++  font-family: var(--gy-font-mono);
++  font-size: var(--gy-code-size);
++  line-height: 1.35;
++  letter-spacing: 0.16em;
++  font-weight: var(--gy-weight-regular);
++  color: var(--gy-text-ghost);
++}
++
++.gy-type-label {
++  font-family: var(--gy-font-system);
++  font-size: var(--gy-caption-size);
++  line-height: 1.2;
++  letter-spacing: 0.08em;
++  font-weight: var(--gy-weight-medium);
++  color: var(--gy-text-muted);
++}
++
++body:has(.gy-r7-page) .app-shell {
++  width: 100%;
++  min-height: 100svh;
++  padding: 0;
++}
++
++body:has(.gy-r7-page) main {
++  width: 100%;
++}
++
++.gy-r7-page {
++  min-height: 100dvh;
++  background:
++    radial-gradient(circle at 50% 0%, rgba(0, 184, 212, 0.026), transparent 30%),
++    var(--gy-bg-deep, #050607) !important;
++  background-size:
++    auto,
++    auto;
++  color: var(--gy-text-primary);
++  font-family: var(--gy-font-system);
++  overflow-x: hidden;
++}
++
++.gy-r7-shell {
++  width: min(100%, 760px);
++  max-width: 760px;
++  margin: 0 auto;
++  padding: 62px 24px calc(46px + env(safe-area-inset-bottom));
++  box-sizing: border-box;
++}
++
++.gy-r7-page.gy-r7-shell {
++  width: min(100%, 760px) !important;
++  max-width: 760px;
++  padding: 62px 24px calc(46px + env(safe-area-inset-bottom)) !important;
++}
++
++.gy-r7-page::before {
++  content: "";
++  position: fixed;
++  inset: 0;
++  pointer-events: none;
++  background:
++    linear-gradient(90deg, transparent calc(8.5% - 1px), rgba(246, 243, 236, 0.045) 8.5%, transparent calc(8.5% + 1px)),
++    linear-gradient(90deg, transparent calc(91.5% - 1px), rgba(246, 243, 236, 0.026) 91.5%, transparent calc(91.5% + 1px)),
++    linear-gradient(90deg, transparent 0, rgba(199, 169, 107, 0.12) 8.5%, rgba(246, 243, 236, 0.08) 50%, rgba(0, 184, 212, 0.12) 91.5%, transparent 100%);
++  background-size:
++    auto,
++    auto,
++    auto 1px;
++  background-position:
++    0 0,
++    0 0,
++    0 calc(100% - 28px);
++  background-repeat:
++    no-repeat,
++    no-repeat,
++    no-repeat;
++  z-index: 0;
++}
++
++.gy-r7-page::after {
++  content: "GY_CAUSAL_RAIL / INSTRUMENT_STANDBY";
++  position: fixed;
++  left: 24px;
++  right: 24px;
++  bottom: max(12px, env(safe-area-inset-bottom));
++  height: 18px;
++  border-top: 1px solid rgba(246, 243, 236, 0.08);
++  color: rgba(246, 243, 236, 0.18);
++  font-family: var(--gy-font-mono);
++  font-size: 9px;
++  line-height: 18px;
++  letter-spacing: 0.18em;
++  pointer-events: none;
++  z-index: 0;
++}
++
++.gy-r7-header {
++  display: flex;
++  align-items: baseline;
++  justify-content: space-between;
++  gap: 16px;
++  margin-bottom: 22px;
++  padding-bottom: 14px;
++  border-bottom: 1px solid var(--gy-line-soft, rgba(246, 243, 236, 0.14));
++  position: relative;
++  z-index: 1;
++}
++
++.gy-r7-header::before {
++  content: "";
++  position: absolute;
++  left: 0;
++  bottom: -18px;
++  width: 92px;
++  height: 1px;
++  background: linear-gradient(90deg, rgba(199, 169, 107, 0.34), rgba(246, 243, 236, 0.08), transparent);
++}
++
++.gy-r7-stage-code {
++  font-family: var(--gy-font-mono);
++  font-size: 12px;
++  letter-spacing: 0.16em;
++  font-weight: var(--gy-weight-regular);
++  color: var(--gy-text-muted) !important;
++}
++
++.gy-r7-brand-mark {
++  font-family: var(--gy-font-mono);
++  font-size: 11px;
++  letter-spacing: 0.24em;
++  font-weight: var(--gy-weight-regular);
++  color: var(--gy-text-ghost);
++  white-space: nowrap;
++  padding-left: 12px;
++  border-left: 1px solid rgba(0, 184, 212, 0.28);
++}
++
++.gy-r7-brand-mark strong {
++  color: var(--gy-signal-cyan);
++  font-weight: var(--gy-weight-medium);
++}
++
++.gy-r7-divider {
++  height: 1px;
++  width: 100%;
++  background: linear-gradient(90deg, rgba(199, 169, 107, 0.18), var(--gy-line-soft, rgba(246, 243, 236, 0.14)), transparent);
++}
++
++.gy-r7-divider.is-bright {
++  background: var(--gy-line-mid, rgba(246, 243, 236, 0.22));
++}
++
++.gy-r7-section {
++  padding: 28px 0;
++  border-top: 1px solid var(--gy-line-soft, rgba(246, 243, 236, 0.14));
++  position: relative;
++}
++
++.gy-r7-section::before {
++  content: "";
++  position: absolute;
++  top: -1px;
++  left: 0;
++  width: 32px;
++  height: 1px;
++  background: rgba(199, 169, 107, 0.24);
++}
++
++.gy-r7-cta-rail {
++  margin-top: 40px;
++  padding-top: 20px;
++  border-top: 1px solid var(--gy-line-soft, rgba(246, 243, 236, 0.14));
++  position: relative;
++}
++
++.gy-r7-cta-rail::before {
++  content: "";
++  position: absolute;
++  top: -1px;
++  left: 0;
++  width: 76px;
++  height: 1px;
++  background: rgba(199, 169, 107, 0.32);
++}
++
++.gy-r7-cta {
++  width: 100%;
++  min-height: 54px;
++  border: 1px solid var(--gy-line-mid, rgba(246, 243, 236, 0.22)) !important;
++  border-radius: 0 !important;
++  background:
++    linear-gradient(90deg, rgba(199, 169, 107, 0.035), transparent 36%),
++    rgba(255, 255, 255, 0.014) !important;
++  color: var(--gy-text-bone) !important;
++  font-family: var(--gy-font-system);
++  font-size: 16px;
++  font-weight: var(--gy-weight-regular);
++  letter-spacing: 0.02em;
++  box-shadow: inset 0 1px 0 rgba(246, 243, 236, 0.05);
++}
++
++.gy-r7-causal-axis {
++  position: relative;
++  display: grid;
++  gap: 16px;
++  padding: 28px 0 24px;
++}
++
++.gy-r7-causal-axis.is-compact {
++  padding: 18px 0 16px;
++}
++
++.gy-r7-causal-axis.is-three {
++  --gy-axis-count: 3;
++}
++
++.gy-r7-causal-axis::before {
++  content: "";
++  position: absolute;
++  left: 0;
++  right: 0;
++  top: 50%;
++  height: 1px;
++  transform: translateY(-50%);
++  background: linear-gradient(90deg, transparent, rgba(199, 169, 107, 0.48), rgba(246, 243, 236, 0.18), transparent);
++}
++
++.gy-r7-causal-axis__nodes {
++  position: relative;
++  z-index: 1;
++  display: grid;
++  grid-template-columns: repeat(var(--gy-axis-count, 4), minmax(0, 1fr));
++  gap: 8px;
++  align-items: start;
++}
++
++.gy-r7-causal-node {
++  display: grid;
++  gap: 8px;
++  justify-items: center;
++  text-align: center;
++  color: var(--gy-text-muted);
++}
++
++.gy-r7-causal-node::before {
++  content: "";
++  width: 7px;
++  height: 7px;
++  border: 1px solid rgba(199, 169, 107, 0.58);
++  background: var(--gy-bg-deep);
++  box-shadow: 0 0 0 3px rgba(5, 6, 7, 0.92);
++}
++
++.gy-r7-causal-node[data-active="true"]::before {
++  border-color: var(--gy-signal-gold);
++  box-shadow: 0 0 12px rgba(199, 169, 107, 0.18), 0 0 0 3px rgba(5, 6, 7, 0.92);
++}
++
++.gy-r7-causal-node__label {
++  font-family: var(--gy-font-system);
++  font-size: 13px;
++  line-height: 1.2;
++  letter-spacing: 0.08em;
++  font-weight: var(--gy-weight-regular);
++  color: var(--gy-text-secondary);
++}
++
++.gy-r7-causal-node__meta {
++  font-family: var(--gy-font-mono);
++  font-size: 10px;
++  line-height: 1.35;
++  letter-spacing: 0.1em;
++  font-weight: var(--gy-weight-regular);
++  color: var(--gy-text-ghost);
++}
++
++.gy-r7-causal-node__value {
++  max-width: 9em;
++  font-family: var(--gy-font-system);
++  font-size: 11px;
++  line-height: 1.35;
++  letter-spacing: 0.02em;
++  font-weight: var(--gy-weight-regular);
++  color: rgba(246, 243, 236, 0.26);
++}
++
++.gy-r7-causal-node[data-current="true"]::before {
++  border-color: rgba(0, 184, 212, 0.72);
++  box-shadow: 0 0 10px rgba(0, 184, 212, 0.14), 0 0 0 3px rgba(5, 6, 7, 0.92);
++}
++
++.gy-r7-page [style*="rgba(199,169,107,0.34)"],
++.gy-r7-page [style*="rgba(199,169,107,0.38)"],
++.gy-r7-page [style*="rgba(199,169,107,0.42)"] {
++  border-color: var(--gy-line-soft, rgba(246, 243, 236, 0.14));
++}
++
++.gy-launch-stage {
++  position: relative;
++  max-width: min(100%, 520px);
++  margin: 0 auto;
++}
++
++.gy-launch-stage > header {
++  top: 8svh !important;
++  left: 8.5% !important;
++  right: 8.5% !important;
++}
++
++.gy-launch-line-mother {
++  position: absolute;
++  left: 14%;
++  right: 14%;
++  top: 22%;
++  z-index: 2;
++  height: 1px;
++  background: rgba(246, 243, 236, 0.22);
++  transform-origin: 50% 50%;
++  overflow: hidden;
++}
++
++.gy-launch-line-mother::before {
++  content: "";
++  position: absolute;
++  top: 0;
++  bottom: 0;
++  left: -24%;
++  width: 24%;
++  background: linear-gradient(90deg, transparent, rgba(246, 243, 236, 0.72), rgba(0, 184, 212, 0.48), transparent);
++  opacity: 0;
++}
++
++.gy-launch-stage.is-lineScanning .gy-launch-line-mother::before {
++  opacity: 1;
++  animation: gyLaunchLineScan 820ms cubic-bezier(0.18, 0.82, 0.22, 1) forwards;
++}
++
++.gy-launch-stage.is-lineCollapsing .gy-launch-line-mother,
++.gy-launch-stage.is-logoLocked .gy-launch-line-mother,
++.gy-launch-stage.is-typingText .gy-launch-line-mother,
++.gy-launch-stage.is-ready .gy-launch-line-mother,
++.gy-launch-stage.is-exiting .gy-launch-line-mother {
++  transform: scaleX(0.16);
++  opacity: 0;
++  transition: transform 260ms cubic-bezier(0.2, 0.94, 0.24, 1), opacity 160ms ease 120ms;
++}
++
++@keyframes gyLaunchLineScan {
++  from {
++    transform: translateX(0);
++  }
++  to {
++    transform: translateX(520%);
++  }
++}
++
++.gy-launch-assertion {
++  position: absolute;
++  left: 8.5%;
++  right: 8.5%;
++  top: 49%;
++  z-index: 2;
++  display: grid;
++  min-height: 184px;
++  gap: 0;
++  justify-items: center;
++  text-align: center;
++  color: var(--gy-text-bone);
++  transform: translateY(-50%);
++  opacity: 0;
++  transition: opacity 180ms ease;
++}
++
++.gy-launch-stage.is-typingText .gy-launch-assertion,
++.gy-launch-stage.is-ready .gy-launch-assertion,
++.gy-launch-stage.is-exiting .gy-launch-assertion {
++  opacity: 1;
++}
++
++.gy-launch-assertion p {
++  margin: 0;
++  font-family: var(--gy-font-system);
++  font-size: clamp(18px, 5vw, 26px);
++  line-height: 1.68;
++  letter-spacing: 0.12em;
++  font-weight: var(--gy-weight-regular);
++  color: var(--gy-text-primary);
++  min-height: 9.5em;
++}
++
++.gy-launch-type-cursor {
++  display: inline-block;
++  width: 1px;
++  height: 1.08em;
++  margin-left: 4px;
++  background: rgba(0, 184, 212, 0.52);
++  vertical-align: -0.12em;
++  animation: gyTypeCursorBlink 720ms steps(2, end) infinite;
++}
++
++@keyframes gyTypeCursorBlink {
++  0%, 48% {
++    opacity: 1;
++  }
++  49%, 100% {
++    opacity: 0;
++  }
++}
++
++.gy-launch-logo-field {
++  position: absolute;
++  left: 50%;
++  top: 22%;
++  z-index: 2;
++  width: min(44vw, 180px);
++  height: 88px;
++  transform: translate(-50%, -50%);
++  display: grid;
++  place-items: center;
++  pointer-events: none;
++}
++
++.gy-launch-logo-field::before,
++.gy-launch-logo-field::after {
++  content: "";
++  position: absolute;
++  left: 50%;
++  width: 1px;
++  height: 34px;
++  background: linear-gradient(180deg, transparent, rgba(246, 243, 236, 0.14), transparent);
++  opacity: 0.64;
++  transform: translateX(-50%);
++}
++
++.gy-launch-logo-field::before {
++  bottom: calc(100% - 4px);
++}
++
++.gy-launch-logo-field::after {
++  top: calc(100% - 4px);
++}
++
++.gy-launch-logo-field.is-ignited::before,
++.gy-launch-logo-field.is-ignited::after {
++  background: linear-gradient(180deg, transparent, rgba(0, 184, 212, 0.28), transparent);
++}
++
++.gy-launch-x-logo {
++  position: relative;
++  width: 132px;
++  height: 62px;
++  margin: 0;
++  opacity: 0;
++}
++
++.gy-launch-stage.is-lineCollapsing .gy-launch-x-logo,
++.gy-launch-stage.is-logoLocked .gy-launch-x-logo,
++.gy-launch-stage.is-typingText .gy-launch-x-logo,
++.gy-launch-stage.is-ready .gy-launch-x-logo,
++.gy-launch-stage.is-exiting .gy-launch-x-logo {
++  opacity: 1;
++}
++
++.gy-launch-x-logo span {
++  position: absolute;
++  top: 50%;
++  left: 50%;
++  width: var(--seg-w, 34px);
++  height: 1px;
++  background: rgba(246, 243, 236, 0.82);
++  transform-origin: 50% 50%;
++  opacity: 0;
++  transform:
++    translate(calc(-50% + var(--seg-from-x, 0px)), calc(-50% + var(--seg-from-y, 16px)))
++    rotate(var(--seg-r, 42deg))
++    scaleX(0.35);
++  transition:
++    opacity 120ms ease,
++    transform 220ms cubic-bezier(0.16, 0.96, 0.22, 1);
++  transition-delay: var(--seg-delay, 0ms);
++}
++
++.gy-launch-x-logo.is-visible span {
++  opacity: 1;
++  transform:
++    translate(calc(-50% + var(--seg-x, 0px)), calc(-50% + var(--seg-y, 0px)))
++    rotate(var(--seg-r, 42deg))
++    scaleX(1);
++}
++
++.gy-launch-x-logo span:nth-child(1) {
++  --seg-x: -34px;
++  --seg-y: -17px;
++  --seg-from-x: -64px;
++  --seg-from-y: 30px;
++  --seg-r: 42deg;
++  --seg-w: 34px;
++  --seg-delay: 0ms;
++}
++
++.gy-launch-x-logo span:nth-child(2) {
++  --seg-x: -15px;
++  --seg-y: -17px;
++  --seg-from-x: -42px;
++  --seg-from-y: 34px;
++  --seg-r: -42deg;
++  --seg-w: 34px;
++  --seg-delay: 18ms;
++}
++
++.gy-launch-x-logo span:nth-child(3) {
++  --seg-x: 15px;
++  --seg-y: -17px;
++  --seg-from-x: 42px;
++  --seg-from-y: 34px;
++  --seg-r: 42deg;
++  --seg-w: 34px;
++  --seg-delay: 36ms;
++}
++
++.gy-launch-x-logo span:nth-child(4) {
++  --seg-x: 34px;
++  --seg-y: -17px;
++  --seg-from-x: 64px;
++  --seg-from-y: 30px;
++  --seg-r: -42deg;
++  --seg-w: 34px;
++  --seg-delay: 54ms;
++}
++
++.gy-launch-x-logo span:nth-child(5) {
++  --seg-x: -24px;
++  --seg-y: -2px;
++  --seg-from-x: -54px;
++  --seg-from-y: 20px;
++  --seg-r: 42deg;
++  --seg-w: 28px;
++  --seg-delay: 72ms;
++}
++
++.gy-launch-x-logo span:nth-child(6) {
++  --seg-x: 24px;
++  --seg-y: -2px;
++  --seg-from-x: 54px;
++  --seg-from-y: 20px;
++  --seg-r: -42deg;
++  --seg-w: 28px;
++  --seg-delay: 90ms;
++}
++
++.gy-launch-x-logo span:nth-child(7) {
++  --seg-x: -39px;
++  --seg-y: 17px;
++  --seg-from-x: -72px;
++  --seg-from-y: 36px;
++  --seg-r: -42deg;
++  --seg-w: 42px;
++  --seg-delay: 108ms;
++}
++
++.gy-launch-x-logo span:nth-child(8) {
++  --seg-x: -15px;
++  --seg-y: 17px;
++  --seg-from-x: -38px;
++  --seg-from-y: 40px;
++  --seg-r: 42deg;
++  --seg-w: 42px;
++  --seg-delay: 126ms;
++}
++
++.gy-launch-x-logo span:nth-child(9) {
++  --seg-x: 15px;
++  --seg-y: 17px;
++  --seg-from-x: 38px;
++  --seg-from-y: 40px;
++  --seg-r: -42deg;
++  --seg-w: 42px;
++  --seg-delay: 144ms;
++}
++
++.gy-launch-x-logo span:nth-child(10) {
++  --seg-x: 39px;
++  --seg-y: 17px;
++  --seg-from-x: 72px;
++  --seg-from-y: 36px;
++  --seg-r: 42deg;
++  --seg-w: 42px;
++  --seg-delay: 162ms;
++}
++
++.gy-launch-x-logo span:nth-child(11) {
++  --seg-x: -5px;
++  --seg-y: 0px;
++  --seg-from-x: -5px;
++  --seg-from-y: 26px;
++  --seg-r: 42deg;
++  --seg-w: 16px;
++  --seg-delay: 180ms;
++  background: rgba(0, 184, 212, 0.52);
++}
++
++.gy-launch-x-logo span:nth-child(12) {
++  --seg-x: 5px;
++  --seg-y: 0px;
++  --seg-from-x: 5px;
++  --seg-from-y: 26px;
++  --seg-r: -42deg;
++  --seg-w: 16px;
++  --seg-delay: 198ms;
++  background: rgba(0, 184, 212, 0.44);
++}
++
++.gy-launch-bottom-rail {
++  position: absolute;
++  left: 8vw;
++  right: 8vw;
++  top: 76%;
++  bottom: auto;
++  z-index: 3;
++  opacity: 0.16;
++  pointer-events: none;
++  transition: opacity 180ms ease;
++}
++
++.gy-launch-bottom-rail.is-unlocked {
++  opacity: 1;
++  pointer-events: auto;
++}
++
++.gy-launch-bottom-rail::before {
++  content: "";
++  position: absolute;
++  left: 50%;
++  bottom: calc(100% + 12px);
++  width: 1px;
++  height: min(17vh, 96px);
++  background: linear-gradient(180deg, transparent, rgba(246, 243, 236, 0.11), transparent);
++  transform: translateX(-50%);
++  pointer-events: none;
++}
++
++.gy-launch-system-status {
++  position: absolute;
++  left: 8.5%;
++  right: 8.5%;
++  bottom: max(4.8%, calc(18px + env(safe-area-inset-bottom)));
++  z-index: 2;
++  color: var(--gy-text-ghost);
++  font-family: var(--gy-font-mono);
++  font-size: 10px;
++  line-height: 1.3;
++  letter-spacing: 0.18em;
++  text-align: center;
++}
++
++.gy-causal-rail {
++  position: relative;
++  display: grid;
++  width: 100%;
++  min-height: 64px;
++  padding: 0;
++  border: 0;
++  border-radius: 0;
++  background: transparent;
++  color: var(--gy-text-secondary);
++  font-family: var(--gy-font-system);
++  text-align: left;
++  cursor: pointer;
++}
++
++.gy-causal-rail:disabled {
++  cursor: default;
++}
++
++.gy-causal-rail__label {
++  align-self: end;
++  margin-bottom: 7px;
++  font-size: 14px;
++  line-height: 1.3;
++  letter-spacing: 0.08em;
++  font-weight: var(--gy-weight-regular);
++  color: var(--gy-text-secondary);
++}
++
++.gy-causal-rail__track {
++  display: block;
++  width: 100%;
++  height: 1px;
++  background: rgba(246, 243, 236, 0.24);
++}
++
++.gy-causal-rail__dot {
++  position: absolute;
++  left: 0;
++  top: calc(50% - 1px);
++  width: 6px;
++  height: 6px;
++  border-radius: 999px;
++  background: rgba(246, 243, 236, 0.86);
++  transform: translateY(-50%);
++  box-shadow: 0 0 0 4px rgba(5, 6, 7, 0.94);
++  transition: left 260ms cubic-bezier(0.2, 0.9, 0.2, 1), background 160ms ease;
++}
++
++.gy-causal-rail__hint {
++  margin-top: 7px;
++  font-family: var(--gy-font-mono);
++  font-size: 10px;
++  line-height: 1.3;
++  letter-spacing: 0.16em;
++  color: var(--gy-text-ghost);
++}
++
++.gy-causal-rail--active .gy-causal-rail__track,
++.gy-causal-rail--locked .gy-causal-rail__track {
++  background: linear-gradient(90deg, var(--gy-signal-cyan-soft), rgba(246, 243, 236, 0.18));
++}
++
++.gy-causal-rail--save .gy-causal-rail__track,
++.gy-causal-rail--asset .gy-causal-rail__track {
++  background: linear-gradient(90deg, var(--gy-signal-gold), rgba(246, 243, 236, 0.18));
++}
++
++.gy-causal-rail--active .gy-causal-rail__dot,
++.gy-causal-rail--locked .gy-causal-rail__dot {
++  left: calc(100% - 6px);
++  background: var(--gy-signal-cyan);
++  box-shadow: 0 0 14px rgba(0, 184, 212, 0.2), 0 0 0 4px rgba(5, 6, 7, 0.94);
++}
++
++.gy-causal-rail--save .gy-causal-rail__dot,
++.gy-causal-rail--asset .gy-causal-rail__dot {
++  left: calc(100% - 6px);
++  background: var(--gy-signal-gold);
++  box-shadow: 0 0 14px rgba(190, 162, 96, 0.24), 0 0 0 4px rgba(5, 6, 7, 0.94);
++}
++
++.gy-causal-rail--active .gy-causal-rail__label,
++.gy-causal-rail--locked .gy-causal-rail__label,
++.gy-causal-rail--save .gy-causal-rail__label {
++  color: var(--gy-text-primary);
++}
++
++.gy-causal-rail--danger .gy-causal-rail__track {
++  background: rgba(93, 16, 16, 0.72);
++}
++
++/* R7 visual chain primitives. */
++.gy-stage {
++  position: relative;
++  width: min(100%, 520px);
++  min-width: min(100%, 430px);
++  height: 100svh;
++  min-height: 100svh;
++  margin: 0 auto;
++  overflow: hidden;
++  box-sizing: border-box;
++  background: #050607;
++  color: rgba(246, 243, 236, 0.9);
++  isolation: isolate;
++}
++
++.gy-stage::before,
++.gy-stage::after {
++  content: "";
++  position: absolute;
++  pointer-events: none;
++  z-index: 0;
++}
++
++.gy-stage--void,
++.gy-stage--instrument,
++.gy-stage--asset {
++  width: min(100%, 520px);
++  max-width: 520px;
++}
++
++.gy-stage--void {
++  background:
++    radial-gradient(circle at 50% 18%, rgba(0, 184, 212, 0.035), transparent 36%),
++    #050607;
++}
++
++.gy-stage--void::before {
++  inset: 0;
++  background:
++    linear-gradient(90deg, transparent calc(8.5% - 1px), rgba(166, 183, 190, 0.055) 8.5%, transparent calc(8.5% + 1px)),
++    linear-gradient(90deg, transparent calc(91.5% - 1px), rgba(166, 183, 190, 0.035) 91.5%, transparent calc(91.5% + 1px));
++}
++
++.gy-stage--void::after {
++  display: none;
++}
++
++.gy-stage--instrument {
++  background:
++    radial-gradient(circle at 50% 12%, rgba(0, 184, 212, 0.045), transparent 34%),
++    #050607;
++}
++
++.gy-stage--instrument::before {
++  inset: 0;
++  background:
++    linear-gradient(90deg, transparent calc(8% - 1px), rgba(166, 183, 190, 0.06) 8%, transparent calc(8% + 1px)),
++    linear-gradient(90deg, transparent calc(92% - 1px), rgba(166, 183, 190, 0.04) 92%, transparent calc(92% + 1px)),
++    linear-gradient(180deg, transparent 0, rgba(166, 183, 190, 0.06) 34%, transparent 70%);
++}
++
++.gy-stage--instrument::after {
++  left: 8%;
++  right: 8%;
++  bottom: max(4.5%, calc(16px + env(safe-area-inset-bottom)));
++  height: 1px;
++  background: rgba(166, 183, 190, 0.12);
++}
++
++.gy-stage--asset {
++  border-left: 1px solid rgba(190, 162, 96, 0.18);
++  border-right: 1px solid rgba(190, 162, 96, 0.14);
++  background:
++    radial-gradient(circle at 50% 12%, rgba(190, 162, 96, 0.04), transparent 36%),
++    #050607;
++}
++
++.gy-stage--asset::before {
++  inset: 0;
++  background: linear-gradient(180deg, rgba(190, 162, 96, 0.08), transparent 22%, transparent 78%, rgba(190, 162, 96, 0.05));
++}
++
++.gy-system-readout {
++  position: absolute;
++  top: 8%;
++  left: 8.5%;
++  right: 8.5%;
++  z-index: 3;
++  display: grid;
++  gap: 6px;
++  font-family: var(--gy-font-mono);
++  font-size: 11px;
++  line-height: 1.35;
++  font-weight: 300;
++  letter-spacing: 0.16em;
++  color: rgba(246, 243, 236, 0.34);
++}
++
++.gy-system-readout span + span {
++  color: rgba(246, 243, 236, 0.2);
++}
++
++.gy-logo-mark {
++  display: block;
++  width: 138px;
++  height: 74px;
++  overflow: visible;
++}
++
++.gy-logo-mark__stroke {
++  stroke: rgba(246, 243, 236, 0.86);
++  stroke-width: 1.45;
++  stroke-linecap: butt;
++  stroke-dasharray: 64;
++  stroke-dashoffset: 64;
++  opacity: 0;
++  vector-effect: non-scaling-stroke;
++}
++
++.gy-logo-mark__stroke--cut {
++  stroke: rgba(246, 243, 236, 0.74);
++}
++
++.gy-logo-mark.is-active .gy-logo-mark__stroke {
++  animation-name: gyLogoStrokeType;
++  animation-duration: 150ms;
++  animation-timing-function: steps(2, end);
++  animation-fill-mode: forwards;
++}
++
++.gy-logo-mark__stroke.s1 {
++  animation-delay: 0ms;
++}
++
++.gy-logo-mark__stroke.s2 {
++  animation-delay: 76ms;
++}
++
++.gy-logo-mark__stroke.s3 {
++  animation-delay: 152ms;
++}
++
++.gy-logo-mark__stroke.s4 {
++  animation-delay: 228ms;
++}
++
++.gy-logo-mark__stroke.s5 {
++  animation-delay: 340ms;
++}
++
++.gy-logo-mark__stroke.s6 {
++  animation-delay: 416ms;
++}
++
++.gy-logo-mark__stroke.s7 {
++  animation-delay: 492ms;
++}
++
++.gy-logo-mark__stroke.s8 {
++  animation-delay: 568ms;
++}
++
++.gy-typewriter-readout {
++  font-family: var(--gy-font-system);
++  font-size: clamp(18px, 3.4vw, 22px);
++  line-height: 1.64;
++  letter-spacing: 0.05em;
++  font-weight: 300;
++  color: rgba(246, 243, 236, 0.74);
++}
++
++.gy-typewriter-readout--left {
++  text-align: left;
++}
++
++.gy-typewriter-readout--center {
++  text-align: center;
++}
++
++.gy-causal-rail-vc {
++  appearance: none;
++  position: relative;
++  display: grid;
++  width: 100%;
++  min-height: 62px;
++  padding: 0;
++  border: 0;
++  border-radius: 0;
++  background: transparent;
++  color: rgba(246, 243, 236, 0.68);
++  font-family: var(--gy-font-system);
++  text-align: left;
++  cursor: pointer;
++}
++
++.gy-causal-rail-vc:disabled {
++  cursor: default;
++}
++
++.gy-causal-rail-vc__label {
++  align-self: end;
++  margin-bottom: 8px;
++  font-size: 13px;
++  line-height: 1.3;
++  letter-spacing: 0.1em;
++  font-weight: 300;
++  color: rgba(246, 243, 236, 0.68);
++}
++
++.gy-causal-rail-vc__track {
++  display: block;
++  width: 100%;
++  height: 1px;
++  background: rgba(166, 183, 190, 0.28);
++}
++
++.gy-causal-rail-vc__dot {
++  position: absolute;
++  left: 0;
++  top: calc(50% - 1px);
++  width: 5px;
++  height: 5px;
++  border-radius: 0;
++  background: rgba(246, 243, 236, 0.8);
++  transform: translateY(-50%);
++  box-shadow: 0 0 0 4px rgba(5, 6, 7, 0.96);
++  transition: left 260ms cubic-bezier(0.2, 0.9, 0.2, 1), background 160ms ease;
++}
++
++.gy-causal-rail-vc__hint {
++  margin-top: 8px;
++  font-family: var(--gy-font-mono);
++  font-size: 10px;
++  line-height: 1.3;
++  letter-spacing: 0.18em;
++  font-weight: 300;
++  color: rgba(246, 243, 236, 0.26);
++}
++
++.gy-causal-rail-vc.is-active .gy-causal-rail-vc__label,
++.gy-causal-rail-vc.is-active .gy-causal-rail-vc__hint {
++  color: rgba(0, 184, 212, 0.86);
++}
++
++.gy-causal-rail-vc.is-active .gy-causal-rail-vc__track {
++  background: linear-gradient(90deg, rgba(0, 184, 212, 0.78), rgba(246, 243, 236, 0.2));
++}
++
++.gy-causal-rail-vc.is-active .gy-causal-rail-vc__dot {
++  left: calc(100% - 5px);
++  background: rgba(0, 184, 212, 0.92);
++  box-shadow: 0 0 14px rgba(0, 184, 212, 0.2), 0 0 0 4px rgba(5, 6, 7, 0.96);
++}
++
++.gy-instrument-box-vc,
++.gy-glass-seed,
++.gy-asset-card-vc {
++  position: relative;
++  border: 1px solid rgba(246, 243, 236, 0.12);
++  border-radius: 0;
++  background: rgba(255, 255, 255, 0.018);
++  box-shadow: inset 0 1px 0 rgba(246, 243, 236, 0.04);
++}
++
++.gy-instrument-box-vc__status,
++.gy-glass-seed__status,
++.gy-asset-card-vc__status {
++  display: block;
++  font-family: var(--gy-font-mono);
++  font-size: 10px;
++  line-height: 1.35;
++  letter-spacing: 0.16em;
++  color: rgba(246, 243, 236, 0.28);
++}
++
++.gy-glass-seed {
++  background: rgba(246, 243, 236, 0.045);
++  backdrop-filter: blur(14px);
++}
++
++.gy-asset-card-vc {
++  border-color: rgba(190, 162, 96, 0.36);
++  background: linear-gradient(180deg, rgba(190, 162, 96, 0.06), rgba(255, 255, 255, 0.018));
++}
++
++/* Launch R7-VIS-P2H: one-line ignition stage. */
++.gy-launch-stage {
++  position: relative;
++  width: min(100%, 520px) !important;
++  max-width: 520px;
++  min-height: 100svh;
++  height: 100svh;
++  margin: 0 auto;
++  overflow: hidden;
++  background: #050607;
++  isolation: isolate;
++}
++
++.gy-launch-stage::before {
++  background:
++    linear-gradient(90deg, transparent calc(8.5% - 1px), rgba(166, 183, 190, 0.055) 8.5%, transparent calc(8.5% + 1px)),
++    linear-gradient(90deg, transparent calc(91.5% - 1px), rgba(166, 183, 190, 0.035) 91.5%, transparent calc(91.5% + 1px));
++}
++
++.gy-launch-stage::after {
++  display: none;
++}
++
++.gy-launch-stage > header {
++  top: 8% !important;
++  left: 8.5% !important;
++  right: 8.5% !important;
++  display: grid;
++  gap: 6px !important;
++}
++
++.gy-launch-stage .gy-r7-stage-code,
++.gy-launch-stage .gy-type-code {
++  font-family: var(--gy-font-mono);
++  font-size: 11px;
++  line-height: 1.35;
++  font-weight: 300;
++  letter-spacing: 0.16em;
++  color: rgba(246, 243, 236, 0.36);
++}
++
++.gy-launch-stage .gy-type-code {
++  color: rgba(246, 243, 236, 0.22);
++}
++
++.gy-launch-line-mother {
++  left: 50%;
++  right: auto;
++  top: 21%;
++  width: clamp(180px, 44vw, 224px);
++  height: 1px;
++  background: rgba(166, 183, 190, 0.46);
++  opacity: 1;
++  transform: translateX(-50%) scaleX(1);
++  transform-origin: 50% 50%;
++  overflow: hidden;
++}
++
++.gy-launch-line-mother::before {
++  left: -34%;
++  width: 34%;
++  background: linear-gradient(90deg, transparent, rgba(246, 243, 236, 0.76), rgba(0, 184, 212, 0.42), transparent);
++  opacity: 0;
++}
++
++.gy-launch-stage.is-lineScanning .gy-launch-line-mother::before {
++  opacity: 1;
++  animation: gyLaunchLineScan 1000ms cubic-bezier(0.18, 0.82, 0.22, 1) forwards;
++}
++
++.gy-launch-stage.is-lineCollapsing .gy-launch-line-mother {
++  transform: translateX(-50%) scaleX(0.02);
++  opacity: 0.2;
++  transition: transform 360ms cubic-bezier(0.2, 0.94, 0.24, 1), opacity 180ms ease 180ms;
++}
++
++.gy-launch-stage.is-logoTyping .gy-launch-line-mother,
++.gy-launch-stage.is-logoLocked .gy-launch-line-mother,
++.gy-launch-stage.is-typingText .gy-launch-line-mother,
++.gy-launch-stage.is-ready .gy-launch-line-mother,
++.gy-launch-stage.is-exiting .gy-launch-line-mother {
++  transform: translateX(-50%) scaleX(0.02);
++  opacity: 0;
++}
++
++@keyframes gyLaunchLineScan {
++  from {
++    transform: translateX(0);
++  }
++  to {
++    transform: translateX(395%);
++  }
++}
++
++.gy-launch-logo-field {
++  position: absolute;
++  left: 50%;
++  top: 20%;
++  z-index: 2;
++  display: grid;
++  justify-items: center;
++  width: 138px;
++  height: 74px;
++  transform: translateX(-50%);
++  pointer-events: none;
++}
++
++.gy-launch-logo-field::before,
++.gy-launch-logo-field::after {
++  display: none;
++}
++
++.gy-launch-logo-svg {
++  display: block;
++  width: 138px;
++  height: 74px;
++  overflow: visible;
++}
++
++.gy-logo-stroke {
++  stroke: rgba(246, 243, 236, 0.86);
++  stroke-width: 1.45;
++  stroke-linecap: butt;
++  stroke-dasharray: 64;
++  stroke-dashoffset: 64;
++  opacity: 0;
++  vector-effect: non-scaling-stroke;
++}
++
++.gy-logo-cut {
++  stroke: rgba(246, 243, 236, 0.74);
++}
++
++.gy-launch-logo-field.is-typing .gy-logo-stroke {
++  animation-name: gyLogoStrokeType;
++  animation-duration: 150ms;
++  animation-timing-function: steps(2, end);
++  animation-fill-mode: forwards;
++}
++
++.gy-logo-stroke.s1 {
++  animation-delay: 0ms;
++}
++
++.gy-logo-stroke.s2 {
++  animation-delay: 76ms;
++}
++
++.gy-logo-stroke.s3 {
++  animation-delay: 152ms;
++}
++
++.gy-logo-stroke.s4 {
++  animation-delay: 228ms;
++}
++
++.gy-logo-stroke.s5 {
++  animation-delay: 340ms;
++}
++
++.gy-logo-stroke.s6 {
++  animation-delay: 416ms;
++}
++
++.gy-logo-stroke.s7 {
++  animation-delay: 492ms;
++}
++
++.gy-logo-stroke.s8 {
++  animation-delay: 568ms;
++}
++
++@keyframes gyLogoStrokeType {
++  0% {
++    opacity: 0;
++    stroke-dashoffset: 64;
++  }
++  1% {
++    opacity: 1;
++  }
++  100% {
++    opacity: 1;
++    stroke-dashoffset: 0;
++  }
++}
++
++.gy-launch-assertion {
++  left: 7%;
++  right: 7%;
++  top: 46%;
++  min-height: 150px;
++  display: grid;
++  justify-items: center;
++  text-align: left;
++  transform: none;
++  opacity: 0;
++  transition: opacity 160ms ease;
++}
++
++.gy-launch-stage.is-typingText .gy-launch-assertion,
++.gy-launch-stage.is-ready .gy-launch-assertion,
++.gy-launch-stage.is-exiting .gy-launch-assertion {
++  opacity: 1;
++}
++
++.gy-launch-assertion p {
++  width: min(78%, 340px);
++  min-height: 7.4em;
++  margin: 0 auto;
++  font-family: var(--gy-font-system);
++  font-size: clamp(18px, 3.4vw, 22px);
++  line-height: 1.64;
++  letter-spacing: 0.05em;
++  font-weight: 300;
++  color: rgba(246, 243, 236, 0.74);
++}
++
++.gy-launch-type-cursor {
++  width: 1px;
++  height: 1.08em;
++  margin-left: 3px;
++  background: rgba(246, 243, 236, 0.68);
++}
++
++.gy-launch-bottom-rail {
++  left: 8%;
++  right: 8%;
++  top: 78%;
++  bottom: auto;
++  opacity: 0;
++  pointer-events: none;
++  transition: opacity 220ms ease;
++}
++
++.gy-launch-bottom-rail.is-unlocked {
++  opacity: 1;
++  pointer-events: auto;
++}
++
++.gy-launch-bottom-rail::before {
++  display: none;
++}
++
++.gy-launch-bottom-rail .gy-causal-rail {
++  min-height: 62px;
++  color: rgba(166, 183, 190, 0.72);
++}
++
++.gy-launch-bottom-rail .gy-causal-rail__label {
++  margin-bottom: 8px;
++  font-size: 13px;
++  font-weight: 300;
++  letter-spacing: 0.1em;
++  color: rgba(246, 243, 236, 0.68);
++  text-align: left;
++}
++
++.gy-launch-bottom-rail .gy-causal-rail__track {
++  background: rgba(166, 183, 190, 0.28);
++}
++
++.gy-launch-bottom-rail .gy-causal-rail__dot {
++  width: 5px;
++  height: 5px;
++  border-radius: 0;
++  background: rgba(246, 243, 236, 0.8);
++  box-shadow: 0 0 0 4px rgba(5, 6, 7, 0.96);
++}
++
++.gy-launch-bottom-rail .gy-causal-rail__hint {
++  margin-top: 8px;
++  color: rgba(246, 243, 236, 0.26);
++  font-size: 10px;
++  font-weight: 300;
++  letter-spacing: 0.18em;
++}
++
++.gy-launch-bottom-rail .gy-causal-rail--active .gy-causal-rail__label,
++.gy-launch-bottom-rail .gy-causal-rail--active .gy-causal-rail__hint {
++  color: rgba(0, 184, 212, 0.86);
++}
++
++.gy-launch-bottom-rail .gy-causal-rail--active .gy-causal-rail__track {
++  background: linear-gradient(90deg, rgba(0, 184, 212, 0.78), rgba(246, 243, 236, 0.2));
++}
++
++.gy-launch-bottom-rail .gy-causal-rail--active .gy-causal-rail__dot {
++  left: calc(100% - 5px);
++  background: rgba(0, 184, 212, 0.92);
++  box-shadow: 0 0 14px rgba(0, 184, 212, 0.2), 0 0 0 4px rgba(5, 6, 7, 0.96);
++}
++
++.gy-launch-system-status {
++  left: 8.5%;
++  right: 8.5%;
++  bottom: max(4.5%, calc(16px + env(safe-area-inset-bottom)));
++  color: rgba(246, 243, 236, 0.22);
++  font-size: 10px;
++  font-weight: 300;
++  letter-spacing: 0.18em;
++}
++
++.gy-mother-chrono-stage {
++  background: #050607;
++}
++
++.gy-mother-chrono-stage::before {
++  background:
++    linear-gradient(90deg, transparent calc(8% - 1px), rgba(166, 183, 190, 0.06) 8%, transparent calc(8% + 1px)),
++    linear-gradient(90deg, transparent calc(92% - 1px), rgba(166, 183, 190, 0.04) 92%, transparent calc(92% + 1px)),
++    linear-gradient(180deg, transparent 0, rgba(0, 184, 212, 0.035) 34%, transparent 70%);
++}
++
++.gy-mother-chrono-title {
++  position: absolute;
++  top: 20%;
++  left: 50%;
++  width: min(86%, 380px);
++  margin: 0;
++  transform: translateX(-50%);
++  color: rgba(246, 243, 236, 0.86);
++  font-family: var(--gy-font-system);
++  font-size: clamp(26px, 6vw, 34px);
++  line-height: 1.05;
++  letter-spacing: 0.28em;
++  text-indent: 0.28em;
++  font-weight: 300;
++  text-align: center;
++}
++
++.gy-mother-chrono-valves {
++  position: absolute;
++  top: 34%;
++  left: 8%;
++  right: 8%;
++  display: grid;
++  grid-template-columns: repeat(4, minmax(0, 1fr));
++  gap: 0;
++  padding: 20px 0 18px;
++  border-top: 1px solid rgba(246, 243, 236, 0.08);
++  border-bottom: 1px solid rgba(246, 243, 236, 0.08);
++}
++
++.gy-mother-chrono-valve {
++  appearance: none;
++  position: relative;
++  display: grid;
++  gap: 8px;
++  min-width: 0;
++  padding: 0 4px;
++  border: 0;
++  border-radius: 0;
++  background: transparent;
++  color: rgba(246, 243, 236, 0.34);
++  text-align: center;
++  cursor: pointer;
++}
++
++.gy-mother-chrono-valve span {
++  font-family: var(--gy-font-mono);
++  font-size: 9px;
++  line-height: 1.2;
++  letter-spacing: 0.14em;
++  font-weight: 300;
++  color: rgba(246, 243, 236, 0.24);
++}
++
++.gy-mother-chrono-valve strong {
++  overflow: hidden;
++  font-family: var(--gy-font-mono);
++  font-size: clamp(18px, 5vw, 30px);
++  line-height: 1;
++  letter-spacing: 0.04em;
++  font-weight: 300;
++  white-space: nowrap;
++  text-overflow: clip;
++}
++
++.gy-mother-chrono-valve[data-active="true"] {
++  color: rgba(246, 243, 236, 0.9);
++}
++
++.gy-mother-chrono-valve[data-active="true"]::before {
++  content: "";
++  position: absolute;
++  left: 50%;
++  bottom: -19px;
++  width: 13px;
++  height: 1px;
++  background: rgba(0, 184, 212, 0.72);
++  transform: translateX(-50%);
++}
++
++.gy-mother-chrono-valve[data-locked="true"]::after {
++  content: "";
++  position: absolute;
++  left: 50%;
++  top: -22px;
++  width: 5px;
++  height: 5px;
++  background: rgba(0, 184, 212, 0.64);
++  transform: translateX(-50%);
++  box-shadow: 0 0 10px rgba(0, 184, 212, 0.16);
++}
++
++.gy-mother-chrono-axis {
++  position: absolute;
++  top: 55%;
++  left: 8%;
++  right: 8%;
++  display: grid;
++  gap: 10px;
++}
++
++.gy-mother-chrono-axis__range,
++.gy-mother-chrono-axis__hint {
++  font-family: var(--gy-font-mono);
++  font-size: 10px;
++  line-height: 1.35;
++  letter-spacing: 0.16em;
++  font-weight: 300;
++  color: rgba(246, 243, 236, 0.26);
++}
++
++.gy-mother-chrono-axis__track {
++  position: relative;
++  display: block;
++  width: 100%;
++  height: 1px;
++  background: rgba(166, 183, 190, 0.28);
++}
++
++.gy-mother-chrono-axis__track::before {
++  content: "";
++  position: absolute;
++  left: var(--gy-axis-progress, 0%);
++  top: -4px;
++  width: 7px;
++  height: 7px;
++  background: rgba(246, 243, 236, 0.82);
++  transform: translateX(-50%);
++  box-shadow: 0 0 0 4px rgba(5, 6, 7, 0.96);
++}
++
++.gy-mother-chrono-axis.is-locked .gy-mother-chrono-axis__track {
++  background: linear-gradient(90deg, rgba(0, 184, 212, 0.72), rgba(246, 243, 236, 0.16));
++}
++
++.gy-mother-chrono-axis.is-locked .gy-mother-chrono-axis__track::before {
++  background: rgba(0, 184, 212, 0.9);
++  box-shadow: 0 0 12px rgba(0, 184, 212, 0.2), 0 0 0 4px rgba(5, 6, 7, 0.96);
++}
++
++.gy-mother-chrono-axis__input {
++  position: absolute;
++  left: 0;
++  right: 0;
++  top: 22px;
++  width: 100%;
++  height: 36px;
++  margin: 0;
++  opacity: 0.01;
++  cursor: ew-resize;
++}
++
++.gy-mother-chrono-rail {
++  position: absolute;
++  top: 76.5%;
++  left: 8%;
++  right: 8%;
++}
++
++@media (max-width: 430px) {
++  .gy-launch-logo-field {
++    top: 20%;
++    width: 136px;
++    height: 74px;
++  }
++
++  .gy-launch-logo-svg {
++    width: 136px;
++    height: 74px;
++  }
++
++  .gy-launch-assertion {
++    top: 46%;
++  }
++
++  .gy-launch-bottom-rail {
++    top: 78%;
++  }
++
++  .gy-launch-bottom-rail .gy-causal-rail__label {
++    font-size: 12px;
++    letter-spacing: 0.08em;
++  }
++
++  .gy-stage {
++    min-width: 100%;
++  }
++
++  .gy-mother-chrono-title {
++    top: 19%;
++    font-size: 26px;
++  }
++
++  .gy-mother-chrono-valves {
++    top: 33%;
++  }
++
++  .gy-mother-chrono-valve strong {
++    font-size: clamp(17px, 4.8vw, 24px);
++  }
++
++  .gy-mother-chrono-axis {
++    top: 55%;
++  }
++
++  .gy-mother-chrono-rail {
++    top: 76%;
++  }
++}
++
++.gy-chrono-rail-title {
++  margin: 0;
++  font-family: var(--gy-font-system);
++  font-size: clamp(40px, 11vw, 72px);
++  line-height: 1;
++  letter-spacing: 0.22em;
++  font-weight: var(--gy-weight-regular);
++  color: var(--gy-text-bone);
++  text-align: center;
++}
++
++.gy-chrono-valves {
++  display: grid;
++  grid-template-columns: repeat(4, minmax(0, 1fr));
++  align-items: end;
++  gap: 0;
++  width: 100%;
++  padding: 30px 0 20px;
++  border-top: 1px solid rgba(246, 243, 236, 0.08);
++  border-bottom: 1px solid rgba(246, 243, 236, 0.08);
++}
++
++.gy-chrono-valve {
++  position: relative;
++  min-width: 0;
++  padding: 0 4px;
++  border: 0;
++  background: transparent;
++  color: #555555;
++  font-family: var(--gy-font-mono);
++  font-size: clamp(34px, 9vw, 72px);
++  line-height: 1.1;
++  letter-spacing: 0.08em;
++  font-weight: var(--gy-weight-regular);
++  text-align: center;
++  cursor: pointer;
++  z-index: 2;
++}
++
++.gy-chrono-valve[data-active="true"] {
++  color: var(--gy-text-bone);
++}
++
++.gy-chrono-valve[data-locked="true"]:not([data-active="true"]) {
++  color: rgba(246, 243, 236, 0.38);
++}
++
++.gy-chrono-valve[data-locked="true"]:not([data-active="true"])::after {
++  content: "";
++  position: absolute;
++  left: 50%;
++  bottom: -12px;
++  width: 4px;
++  height: 4px;
++  border-radius: 999px;
++  background: rgba(0, 184, 212, 0.44);
++  transform: translateX(-50%);
++}
++
++.gy-chrono-axis-lock {
++  position: relative;
++  display: grid;
++  gap: 10px;
++  width: 100%;
++  padding: 0;
++  border: 0;
++  background: transparent;
++  text-align: left;
++  cursor: default;
++  z-index: 2;
++}
++
++.gy-chrono-axis-lock__range,
++.gy-chrono-axis-lock__hint {
++  font-family: var(--gy-font-mono);
++  font-size: 10px;
++  line-height: 1.3;
++  letter-spacing: 0.16em;
++  color: var(--gy-text-ghost);
++}
++
++.gy-chrono-axis-lock__track {
++  position: relative;
++  display: block;
++  width: 100%;
++  height: 1px;
++  background: rgba(246, 243, 236, 0.24);
++}
++
++.gy-chrono-axis-lock__track::before {
++  content: "";
++  position: absolute;
++  top: -3px;
++  left: var(--gy-chrono-progress, 0%);
++  width: 7px;
++  height: 7px;
++  border-radius: 999px;
++  background: var(--gy-text-bone);
++  box-shadow: 0 0 0 4px rgba(5, 6, 7, 0.94);
++  transform: translateX(-50%);
++}
++
++.gy-chrono-axis-lock.is-complete .gy-chrono-axis-lock__track {
++  background: linear-gradient(90deg, var(--gy-signal-cyan-soft), rgba(246, 243, 236, 0.16));
++}
++
++.gy-chrono-axis-lock__input {
++  position: absolute;
++  left: 0;
++  right: 0;
++  top: 22px;
++  width: 100%;
++  height: 34px;
++  margin: 0;
++  opacity: 0.01;
++  cursor: ew-resize;
++  z-index: 3;
++}
++
++.gy-chrono-axis-lock__input::-webkit-slider-thumb {
++  cursor: ew-resize;
++}
++
++.gy-chrono-lock-page {
++  position: relative;
++  max-width: 100% !important;
++  padding-left: 8.5vw !important;
++  padding-right: 8.5vw !important;
++}
++
++.gy-chrono-lock-page .gy-r7-header {
++  flex: 0 0 auto;
++  margin: 0 0 min(9vh, 72px);
++  padding-bottom: 12px;
++}
++
++.gy-chrono-lock-page .gy-r7-header::before {
++  background: linear-gradient(90deg, rgba(0, 184, 212, 0.26), rgba(246, 243, 236, 0.08), transparent);
++}
++
++.gy-chrono-lock-page .gy-chrono-rail-title {
++  margin-bottom: min(7vh, 58px);
++}
++
++.gy-chrono-lock-page .gy-chrono-valves {
++  margin-bottom: min(5vh, 42px);
++}
++
++.gy-chrono-lock-page .gy-chrono-axis-lock {
++  margin-bottom: min(5vh, 42px);
++}
++
++.gy-chrono-lock-page .gy-chrono-lock-status {
++  display: block;
++  text-align: center;
++  margin-top: auto;
++  margin-bottom: 14px;
++}
++
++.gy-chrono-lock-page > .gy-causal-rail {
++  flex: 0 0 auto;
++  margin-top: 0 !important;
++}
++
++.gy-chrono-lock-page::before {
++  content: "";
++  position: absolute;
++  left: 50%;
++  top: 17%;
++  bottom: max(18%, calc(104px + env(safe-area-inset-bottom)));
++  width: 1px;
++  background: linear-gradient(180deg, transparent, rgba(246, 243, 236, 0.1) 18%, rgba(0, 184, 212, 0.12) 50%, rgba(246, 243, 236, 0.08) 82%, transparent);
++  transform: translateX(-50%);
++  pointer-events: none;
++  z-index: 0;
++}
++
++.gy-chrono-lock-page > * {
++  position: relative;
++  z-index: 1;
+ }
+ 
+ /*
+@@ -126,6 +1932,101 @@
+   --gy-rail-text: rgba(255, 255, 255, 0.58);
+ }
+ 
++.gy-r7-page .gy-causal-rail {
++  display: grid;
++  width: 100%;
++  min-height: 64px;
++  place-items: initial;
++  padding: 0;
++  text-align: left;
++  color: var(--gy-text-secondary);
++  font-size: initial;
++  font-weight: var(--gy-weight-regular);
++  letter-spacing: initial;
++}
++
++.gy-r7-page .gy-causal-rail::before {
++  content: none;
++}
++
++.gy-r7-page .gy-causal-rail > span,
++.gy-r7-page .gy-causal-rail__label,
++.gy-r7-page .gy-causal-rail__track,
++.gy-r7-page .gy-causal-rail__dot,
++.gy-r7-page .gy-causal-rail__hint {
++  padding: 0;
++  background: transparent;
++}
++
++.gy-r7-page .gy-causal-rail__label {
++  align-self: end;
++  margin-bottom: 9px;
++  font-size: 14px;
++  line-height: 1.3;
++  letter-spacing: 0.08em;
++  color: var(--gy-text-secondary);
++}
++
++.gy-r7-page .gy-causal-rail__track {
++  display: block;
++  width: 100%;
++  height: 1px;
++  background: rgba(246, 243, 236, 0.24);
++}
++
++.gy-r7-page .gy-causal-rail__dot {
++  position: absolute;
++  left: 0;
++  top: calc(50% - 1px);
++  display: block;
++  width: 6px;
++  height: 6px;
++  border-radius: 999px;
++  background: rgba(246, 243, 236, 0.86);
++  transform: translateY(-50%);
++  box-shadow: 0 0 0 4px rgba(5, 6, 7, 0.94);
++  transition: left 260ms cubic-bezier(0.2, 0.9, 0.2, 1), background 160ms ease;
++}
++
++.gy-r7-page .gy-causal-rail__hint {
++  margin-top: 8px;
++  font-family: var(--gy-font-mono);
++  font-size: 10px;
++  line-height: 1.3;
++  letter-spacing: 0.16em;
++  color: var(--gy-text-ghost);
++}
++
++.gy-r7-page .gy-causal-rail--active .gy-causal-rail__track,
++.gy-r7-page .gy-causal-rail--locked .gy-causal-rail__track {
++  background: linear-gradient(90deg, var(--gy-signal-cyan-soft), rgba(246, 243, 236, 0.18));
++}
++
++.gy-r7-page .gy-causal-rail--save .gy-causal-rail__track,
++.gy-r7-page .gy-causal-rail--asset .gy-causal-rail__track {
++  background: linear-gradient(90deg, var(--gy-signal-gold), rgba(246, 243, 236, 0.18));
++}
++
++.gy-r7-page .gy-causal-rail--active .gy-causal-rail__dot,
++.gy-r7-page .gy-causal-rail--locked .gy-causal-rail__dot {
++  left: calc(100% - 6px);
++  background: var(--gy-signal-cyan);
++  box-shadow: 0 0 14px rgba(0, 184, 212, 0.2), 0 0 0 4px rgba(5, 6, 7, 0.94);
++}
++
++.gy-r7-page .gy-causal-rail--save .gy-causal-rail__dot,
++.gy-r7-page .gy-causal-rail--asset .gy-causal-rail__dot {
++  left: calc(100% - 6px);
++  background: var(--gy-signal-gold);
++  box-shadow: 0 0 14px rgba(190, 162, 96, 0.24), 0 0 0 4px rgba(5, 6, 7, 0.94);
++}
++
++.gy-r7-page .gy-causal-rail--active .gy-causal-rail__label,
++.gy-r7-page .gy-causal-rail--locked .gy-causal-rail__label,
++.gy-r7-page .gy-causal-rail--save .gy-causal-rail__label {
++  color: var(--gy-text-primary);
++}
++
+ .gy-instrument-box {
+   border: var(--gy-line-thin) solid var(--gy-color-line-muted);
+   background:
+@@ -199,6 +2100,35 @@
+   box-shadow: var(--gy-shadow-panel);
+ }
+ 
++.gy-stage.gy-launch-stage,
++.gy-stage--void.gy-launch-stage {
++  width: min(100%, 520px) !important;
++  max-width: 520px !important;
++  height: 100svh !important;
++  min-height: 100svh !important;
++  margin: 0 auto !important;
++  padding: 0 !important;
++  border: 0 !important;
++  border-radius: 0 !important;
++  outline: 0 !important;
++  background:
++    radial-gradient(circle at 50% 18%, rgba(0, 184, 212, 0.035), transparent 36%),
++    #050607 !important;
++  box-shadow: none !important;
++}
++
++.gy-stage.gy-launch-stage::before,
++.gy-stage--void.gy-launch-stage::before {
++  background:
++    linear-gradient(90deg, transparent calc(8.5% - 1px), rgba(166, 183, 190, 0.055) 8.5%, transparent calc(8.5% + 1px)),
++    linear-gradient(90deg, transparent calc(91.5% - 1px), rgba(166, 183, 190, 0.035) 91.5%, transparent calc(91.5% + 1px)) !important;
++}
++
++.gy-stage.gy-launch-stage::after,
++.gy-stage--void.gy-launch-stage::after {
++  display: none !important;
++}
++
+ .gy-stage[data-presence="enter"] {
+   animation: gy-presence-enter var(--gy-motion-duration-slow) var(--gy-motion-ease-presence) both;
+ }
