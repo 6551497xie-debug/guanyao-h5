@@ -3,6 +3,8 @@ import type { CSSProperties, PointerEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { CausalRail } from "../components/causal/CausalRail";
 import { ChronoAxisDualEngine, type ChronoCoords } from "./ChronoAxisDualEngine";
+import { MotherFieldEngine, type MotherField } from "./MotherFieldEngine";
+import { DefaultReactionScreen } from "./DefaultReactionScreen";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { runMotherCodeLandingEngine, type MotherCodeLandingEngineResult } from "../data/guanyaoNumericProtocol";
@@ -408,7 +410,7 @@ function InitialCoordinatesEntry() {
     birthChrono: "1995 / 06 / 02 · 17:00—19:00",
     geoAnchor: "中国 / 广东省 / 广州市",
   };
-  const [stage, setStage] = useState<"coordinates" | "mother">("coordinates");
+  const [stage, setStage] = useState<"coordinates" | "defaultReaction" | "mother">("coordinates");
   const [motherCodeStageView, setMotherCodeStageView] = useState<"asset" | "runtime">("asset");
   const [openMotherRuntimeDrawer, setOpenMotherRuntimeDrawer] = useState<"force" | "pressure" | "asset" | null>(null);
   const [displayYear, setDisplayYear] = useState(1995);
@@ -448,6 +450,25 @@ function InitialCoordinatesEntry() {
       }
     : motherVisualTags;
   const motherReactionChain = (motherCode.defaultReactionChain || "").replace(/离开|转开/g, "转身");
+  // 原力解构三阶（拖带换挡：原力→保护→误用），从真实读数压印
+  const motherTagline = "你习惯让僵住的东西重新流动。";
+  const motherFields: MotherField[] = [
+    {
+      tag: "原力",
+      title: `【 原力 ｜ ${motherProtectionTags.force} 】`,
+      body: `你的底色。${motherCode.baseForce || "当局面陷入死结，你总本能地试图寻找破局的活水。"}`,
+    },
+    {
+      tag: "保护",
+      title: `【 保护 ｜ ${motherProtectionTags.mirror} 】`,
+      body: `你的默认防御。${motherReactionChain || "你习惯用看似温和的妥协，去包裹内心深处的互不信任。"}`,
+    },
+    {
+      tag: "误用",
+      title: `【 误用 ｜ ${motherProtectionTags.unlock} 】`,
+      body: `你的惯性放弃。${motherCode.shadowInertia || "一旦流动失败，为了不面对终局的失控，你会抢先在现实崩塌前转身逃走。"}`,
+    },
+  ];
 
   // 双轴引擎 SANDIFY 完成 → 现实结晶为母码卡
   function handleChronoLock(coords: ChronoCoords) {
@@ -466,7 +487,7 @@ function InitialCoordinatesEntry() {
     setMotherCodeCard(embeddedCard);
     setMotherCodeStageView("asset");
     setOpenMotherRuntimeDrawer(null);
-    setStage("mother");
+    setStage("defaultReaction"); // Chrono 后必先经默认反应缓冲层，不直接进 MotherField
   }
 
   function handleEnterPressureSeed() {
@@ -503,313 +524,28 @@ function InitialCoordinatesEntry() {
         {isMotherStage ? (isMotherRuntimeView ? "02B｜默认反应" : "02A｜母码卡") : "02｜生命起点"}
       </span>
 
-      {!isMotherStage ? (
+      {stage === "coordinates" ? (
         <ChronoAxisDualEngine
           initialCoords={{ year: displayYear, month: displayMonth, day: displayDay, periodIndex: displayPeriodIndex }}
           onChronoLock={handleChronoLock}
         />
+      ) : stage === "defaultReaction" ? (
+        <DefaultReactionScreen
+          motherCode={motherCode.motherCodeName}
+          cognition={motherTagline}
+          reactionChain={motherReactionChain || "缓和 → 转身 → 失真"}
+          inertiaPattern={motherCode.shadowInertia || "惯性放弃"}
+          defenseMode={motherProtectionTags.mirror}
+          misusePath={motherProtectionTags.unlock}
+          onContinue={() => setStage("mother")}
+        />
       ) : (
-        <>
-          {!isMotherRuntimeView ? (
-            <>
-              <section
-                aria-label="母码卡"
-                style={{
-                  display: "grid",
-                  gap: 16,
-                  padding: "22px 0",
-                  borderTop: "1px solid rgba(246,243,236,0.1)",
-                  borderBottom: "1px solid rgba(246,243,236,0.08)",
-                  background: "radial-gradient(circle at 50% 50%, rgba(0,184,212,0.08), transparent 58%)",
-                }}
-              >
-                <span
-                  style={{
-                    color: "rgba(0,184,212,0.74)",
-                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                    fontSize: 11,
-                    letterSpacing: "0.16em",
-                  }}
-                >
-                  它来自
-                </span>
-                <strong style={{ color: "rgba(246,243,236,0.88)", fontSize: "clamp(28px, 7vw, 38px)", fontWeight: 340, lineHeight: 1.16, letterSpacing: "0.1em" }}>
-                  {motherCode.motherCodeName}
-                </strong>
-                <p style={{ margin: 0, color: "rgba(246,243,236,0.66)", fontSize: 15, lineHeight: 1.72, letterSpacing: "0.04em" }}>
-                  你习惯让僵住的东西重新流动。
-                </p>
-                <div
-                  aria-label="母码视觉资产占位"
-                  style={{
-                    display: "grid",
-                    gap: 10,
-                    minHeight: 160,
-                    alignContent: "center",
-                    padding: "20px 16px",
-                    border: "1px solid rgba(0,184,212,0.18)",
-                    background: "linear-gradient(180deg, rgba(246,243,236,0.035), rgba(246,243,236,0.01))",
-                    boxShadow: "inset 0 0 34px rgba(0,184,212,0.045)",
-                  }}
-                >
-                  <span
-                    style={{
-                      color: "rgba(246,243,236,0.36)",
-                      fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                      fontSize: 10,
-                      letterSpacing: "0.1em",
-                    }}
-                  >
-                    母码卡
-                  </span>
-                  <span style={{ width: "100%", height: 1, background: "rgba(0,184,212,0.42)", boxShadow: "0 0 18px rgba(0,184,212,0.16)" }} />
-                  <span
-                    style={{
-                      color: "rgba(246,243,236,0.64)",
-                      fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                      fontSize: 12,
-                      letterSpacing: "0.14em",
-                    }}
-                  >
-                    你的默认保护方式
-                  </span>
-                </div>
-                <span
-                  style={{
-                    color: "rgba(246,243,236,0.48)",
-                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                    fontSize: 11,
-                    letterSpacing: "0.1em",
-                  }}
-                >
-                  先天数：{motherCode.xiantianDisplay}
-                </span>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
-                  {[
-                    ["原力", motherProtectionTags.force],
-                    ["保护", motherProtectionTags.mirror],
-                    ["误用", motherProtectionTags.unlock],
-                  ].map(([label, value]) => (
-                    <div key={label} style={{ display: "grid", gap: 5, padding: "10px 8px", borderTop: "1px solid rgba(0,184,212,0.28)", background: "rgba(246,243,236,0.018)" }}>
-                      <span style={{ color: "rgba(0,184,212,0.62)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, letterSpacing: "0.12em" }}>
-                        {label}
-                      </span>
-                      <strong style={{ color: "rgba(246,243,236,0.68)", fontSize: 12, lineHeight: 1.42, fontWeight: 360 }}>
-                        {value}
-                      </strong>
-                    </div>
-                  ))}
-                </div>
-              </section>
-              <CausalRail statusLabel="看见你的原力" rightHint="右滑，继续看原力变化" onRight={() => setMotherCodeStageView("runtime")} />
-            </>
-          ) : (
-            <>
-              <section
-                aria-label="母码身份条"
-                style={{
-                  display: "grid",
-                  gap: 7,
-                  padding: "12px 0",
-                  borderTop: "1px solid rgba(246,243,236,0.1)",
-                  borderBottom: "1px solid rgba(246,243,236,0.06)",
-                }}
-              >
-                <span
-                  style={{
-                    color: "rgba(0,184,212,0.66)",
-                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                    fontSize: 10,
-                    letterSpacing: "0.12em",
-                  }}
-                >
-                  {motherCode.motherCodeName}
-                </span>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
-                  {[
-                    ["原力", motherProtectionTags.force],
-                    ["保护", motherProtectionTags.mirror],
-                    ["误用", motherProtectionTags.unlock],
-                  ].map(([label, value]) => (
-                    <div key={label} style={{ display: "grid", gap: 4, padding: "8px 0", borderTop: "1px solid rgba(0,184,212,0.18)" }}>
-                      <span style={{ color: "rgba(0,184,212,0.5)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 9, letterSpacing: "0.12em" }}>
-                        {label}
-                      </span>
-                      <strong style={{ color: "rgba(246,243,236,0.62)", fontSize: 12, lineHeight: 1.38, fontWeight: 340 }}>
-                        {value}
-                      </strong>
-                    </div>
-                  ))}
-                </div>
-              </section>
-              <section aria-label="母码核心读数" style={{ display: "grid", gap: 12 }}>
-                <span
-                  style={{
-                    color: "rgba(246,243,236,0.44)",
-                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                    fontSize: 11,
-                    letterSpacing: "0.14em",
-                  }}
-                >
-                  默认保护
-                </span>
-                <p style={{ margin: 0, color: "rgba(246,243,236,0.7)", fontSize: 15, lineHeight: 1.72, letterSpacing: "0.04em" }}>
-                  你的原力不是问题。
-                  <br />
-                  它原本是在保护你：
-                  <br />
-                  先缓和，
-                  <br />
-                  再转身，
-                  <br />
-                  让场面不要僵住。
-                  <br />
-                  但当压力进来，
-                  <br />
-                  这股力量可能会变成：
-                </p>
-                {[
-                  ["默认反应", motherReactionChain],
-                ].map(([label, value]) => (
-                  <article
-                    key={label}
-                    style={{
-                      display: "grid",
-                      gap: label === "默认反应" ? 10 : 6,
-                      padding: label === "默认反应" ? "15px 14px" : "10px 0",
-                      borderTop: "1px solid rgba(246,243,236,0.075)",
-                      border: label === "默认反应" ? "1px solid rgba(0,184,212,0.18)" : undefined,
-                      background: label === "默认反应" ? "linear-gradient(90deg, rgba(0,184,212,0.055), rgba(246,243,236,0.018))" : undefined,
-                      boxShadow: label === "默认反应" ? "inset 0 0 24px rgba(0,184,212,0.035)" : undefined,
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "rgba(0,184,212,0.68)",
-                        fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                        fontSize: 10,
-                        letterSpacing: "0.13em",
-                      }}
-                    >
-                      {label}
-                    </span>
-                    <p style={{ margin: 0, color: label === "默认反应" ? "rgba(246,243,236,0.9)" : "rgba(246,243,236,0.66)", fontSize: label === "默认反应" ? 22 : 13, lineHeight: label === "默认反应" ? 1.34 : 1.54, fontWeight: label === "默认反应" ? 420 : 300, letterSpacing: label === "默认反应" ? "0.06em" : "0.04em" }}>
-                      {value || "尚未浮现"}
-                    </p>
-                  </article>
-                ))}
-              </section>
-
-              <section aria-label="更深一层" style={{ display: "grid", gap: 9, paddingTop: 2 }}>
-                <span
-                  style={{
-                    color: "rgba(246,243,236,0.3)",
-                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                    fontSize: 10,
-                    letterSpacing: "0.14em",
-                    marginTop: 4,
-                  }}
-                >
-                  更深一层
-                </span>
-                {[
-                  { id: "force" as const, label: "原力从哪里来", value: motherCode.baseForce },
-                  { id: "pressure" as const, label: "压力进来后怎么变", value: motherCode.pressureEntry },
-                  {
-                    id: "asset" as const,
-                    label: "这一局会留下什么",
-                    value: "",
-                    items: [
-                      ["旧反应", motherCode.shadowInertia],
-                      ["可以松开的地方", motherCode.unlockPotential],
-                      ["可以带走的资产", motherCode.personalityAsset],
-                    ],
-                  },
-                ].map((drawer) => {
-                  const isOpen = openMotherRuntimeDrawer === drawer.id;
-
-                  return (
-                    <article
-                      key={drawer.id}
-                      style={{
-                        display: "grid",
-                        gap: isOpen ? 8 : 0,
-                        padding: "10px 0",
-                        borderTop: "1px solid rgba(246,243,236,0.045)",
-                        opacity: drawer.id === "asset" ? 0.86 : 1,
-                      }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setOpenMotherRuntimeDrawer(isOpen ? null : drawer.id)}
-                        style={{
-                          border: 0,
-                          background: "transparent",
-                          padding: 0,
-                          color: "inherit",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 12,
-                          textAlign: "left",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <span
-                          style={{
-                            color: drawer.id === "asset" ? "rgba(0,184,212,0.46)" : "rgba(0,184,212,0.58)",
-                            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                            fontSize: 10,
-                            letterSpacing: "0.12em",
-                          }}
-                        >
-                          {drawer.label}
-                        </span>
-                        <span
-                          style={{
-                            color: "rgba(246,243,236,0.3)",
-                            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                            fontSize: 10,
-                            letterSpacing: "0.1em",
-                          }}
-                        >
-                          {isOpen ? "收起" : "展开"}
-                        </span>
-                      </button>
-                      {isOpen && drawer.id !== "asset" ? (
-                        <p style={{ margin: 0, color: "rgba(246,243,236,0.58)", fontSize: 12, lineHeight: 1.56, letterSpacing: "0.04em" }}>
-                          {drawer.value || "尚未浮现"}
-                        </p>
-                      ) : null}
-                      {isOpen && drawer.id === "asset" && drawer.items ? (
-                        <div style={{ display: "grid", gap: 7 }}>
-                          {drawer.items.map(([label, value]) => (
-                            <div key={label} style={{ display: "grid", gap: 4 }}>
-                              <span
-                                style={{
-                                  color: "rgba(0,184,212,0.42)",
-                                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                                  fontSize: 10,
-                                  letterSpacing: "0.11em",
-                                }}
-                              >
-                                {label}
-                              </span>
-                              <p style={{ margin: 0, color: label === "人格资产" ? "rgba(246,243,236,0.7)" : "rgba(246,243,236,0.5)", fontSize: label === "人格资产" ? 13 : 12, lineHeight: 1.54, letterSpacing: "0.04em" }}>
-                                {value || "尚未浮现"}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      ) : null}
-                    </article>
-                  );
-                })}
-              </section>
-              <CausalRail statusLabel="默认反应已看见" rightHint="右滑，看看这次被什么困住" onRight={handleEnterPressureSeed} />
-            </>
-          )}
-        </>
+        <MotherFieldEngine
+          motherCode={motherCode.motherCodeName}
+          tagline={motherTagline}
+          fields={motherFields}
+          onCausalLock={handleEnterPressureSeed}
+        />
       )}
     </main>
   );
