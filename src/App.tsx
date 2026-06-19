@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { ArchivePage } from "./pages/ArchivePage";
+import { AxisLinePage } from "./pages/AxisLinePage";
 import { ChoicePage } from "./pages/ChoicePage";
 import { ChronoAxisPage } from "./pages/ChronoAxisPage";
 import { ChronoPage } from "./pages/ChronoPage";
@@ -35,6 +36,7 @@ export default function App() {
         <Route path={GUANYAO_ROUTES.archive} element={<ArchivePage />} />
         <Route path="/hexagram-card-lab" element={<HexagramCardLabPage />} />
         <Route path="/visual-system-lab" element={<VisualSystemLabPage />} />
+        <Route path="/axis-lab" element={<AxisLinePage />} />
         <Route path="/chrono" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/chrono"]} />} />
         <Route path="/identity" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/identity"]} />} />
         <Route path="/force" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/force"]} />} />

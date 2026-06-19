@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, MouseEvent, PointerEvent, TouchEvent } from "react";
+import type { CSSProperties, PointerEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { CausalRail } from "../components/causal/CausalRail";
+import { ChronoAxisDualEngine, type ChronoCoords } from "./ChronoAxisDualEngine";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { runMotherCodeLandingEngine, type MotherCodeLandingEngineResult } from "../data/guanyaoNumericProtocol";
@@ -14,7 +15,6 @@ import type { MotherCodeProfile } from "../types/guanyaoCausalEngine";
 
 const minBirthYear = 1950;
 const maxBirthYear = 2008;
-const birthYearSpan = maxBirthYear - minBirthYear;
 const defaultBirthYear = 1995;
 const defaultBirthMonth = 6;
 const defaultBirthDay = 2;
@@ -411,8 +411,6 @@ function InitialCoordinatesEntry() {
   const [stage, setStage] = useState<"coordinates" | "mother">("coordinates");
   const [motherCodeStageView, setMotherCodeStageView] = useState<"asset" | "runtime">("asset");
   const [openMotherRuntimeDrawer, setOpenMotherRuntimeDrawer] = useState<"force" | "pressure" | "asset" | null>(null);
-  const [activeChronoAxisSegment, setActiveChronoAxisSegment] = useState<ChronoAxisSegment>("period");
-  const [axisValue, setAxisValue] = useState(9 / 11);
   const [displayYear, setDisplayYear] = useState(1995);
   const [displayMonth, setDisplayMonth] = useState(6);
   const [displayDay, setDisplayDay] = useState(2);
@@ -430,9 +428,6 @@ function InitialCoordinatesEntry() {
   const isMotherStage = stage === "mother";
   const isMotherRuntimeView = motherCodeStageView === "runtime";
   const displayPeriod = chronoPeriodOptions[displayPeriodIndex] ?? chronoPeriodOptions[9];
-  const coordinateDate = `${displayYear} / ${padDateUnit(displayMonth)} / ${padDateUnit(displayDay)}`;
-  const coordinateAnchor = `${displayPeriod.label}｜广州`;
-  const coordinateTimeRange = displayPeriod.range;
   const motherCodeLanding = runMotherCodeLandingEngine({
     year: displayYear,
     month: displayMonth,
@@ -453,73 +448,21 @@ function InitialCoordinatesEntry() {
       }
     : motherVisualTags;
   const motherReactionChain = (motherCode.defaultReactionChain || "").replace(/离开|转开/g, "转身");
-  const axisLeft = `${axisValue * 100}%`;
-  const activeTextColor = "rgba(0,184,212,0.94)";
-  const inactiveTextColor = "rgba(246,243,236,0.34)";
 
-  function getAxisValueForSegment(segment: ChronoAxisSegment) {
-    if (segment === "year") return (displayYear - minBirthYear) / birthYearSpan;
-    if (segment === "month") return (displayMonth - 1) / 11;
-    if (segment === "day") return (displayDay - 1) / 30;
-    return displayPeriodIndex / 11;
-  }
-
-  function applyAxisValueToSegment(segment: ChronoAxisSegment, nextValue: number) {
-    if (segment === "year") {
-      setDisplayYear(Math.round(minBirthYear + nextValue * birthYearSpan));
-      return;
-    }
-
-    if (segment === "month") {
-      setDisplayMonth(Math.round(1 + nextValue * 11));
-      return;
-    }
-
-    if (segment === "day") {
-      setDisplayDay(Math.round(1 + nextValue * 30));
-      return;
-    }
-
-    setDisplayPeriodIndex(Math.round(nextValue * 11));
-  }
-
-  function selectChronoAxisSegment(segment: ChronoAxisSegment) {
-    setActiveChronoAxisSegment(segment);
-    setAxisValue(clamp(getAxisValueForSegment(segment), 0, 1));
-  }
-
-  function updateAxisValue(clientX: number, element: HTMLElement) {
-    const rect = element.getBoundingClientRect();
-    const nextValue = rect.width > 0 ? (clientX - rect.left) / rect.width : 0.5;
-    const safeValue = clamp(nextValue, 0, 1);
-    setAxisValue(safeValue);
-    applyAxisValueToSegment(activeChronoAxisSegment, safeValue);
-  }
-
-  function handleAxisMouseDown(event: MouseEvent<HTMLDivElement>) {
-    updateAxisValue(event.clientX, event.currentTarget);
-  }
-
-  function handleAxisMouseMove(event: MouseEvent<HTMLDivElement>) {
-    if (event.buttons !== 1) return;
-    updateAxisValue(event.clientX, event.currentTarget);
-  }
-
-  function handleAxisTouchStart(event: TouchEvent<HTMLDivElement>) {
-    const touch = event.touches[0];
-    if (!touch) return;
-    updateAxisValue(touch.clientX, event.currentTarget);
-  }
-
-  function handleAxisTouchMove(event: TouchEvent<HTMLDivElement>) {
-    const touch = event.touches[0];
-    if (!touch) return;
-    updateAxisValue(touch.clientX, event.currentTarget);
-  }
-
-  function handleEmbedMotherCode() {
-    const embeddedCard = buildMotherCodeCardFromLanding(motherCodeLanding, "embedded");
-    persistInitialCoordinates(initialCoordinates, embeddedCard, motherCodeLanding.motherCodeProfile);
+  // 双轴引擎 SANDIFY 完成 → 现实结晶为母码卡
+  function handleChronoLock(coords: ChronoCoords) {
+    const landing = runMotherCodeLandingEngine({
+      year: coords.year,
+      month: coords.month,
+      day: coords.day,
+      hourBranch: chronoPeriodOptions[coords.periodIndex]?.label ?? "酉时",
+    });
+    const embeddedCard = buildMotherCodeCardFromLanding(landing, "embedded");
+    persistInitialCoordinates(initialCoordinates, embeddedCard, landing.motherCodeProfile);
+    setDisplayYear(coords.year);
+    setDisplayMonth(coords.month);
+    setDisplayDay(coords.day);
+    setDisplayPeriodIndex(coords.periodIndex);
     setMotherCodeCard(embeddedCard);
     setMotherCodeStageView("asset");
     setOpenMotherRuntimeDrawer(null);
@@ -561,244 +504,10 @@ function InitialCoordinatesEntry() {
       </span>
 
       {!isMotherStage ? (
-        <>
-          <header style={{ display: "grid", gap: 8 }}>
-            <h1 style={{ margin: 0, color: "rgba(246,243,236,0.88)", fontSize: "clamp(27px, 7vw, 38px)", lineHeight: 1.18, fontWeight: 380, letterSpacing: "0.04em" }}>
-              有些行为，
-              <br />
-              不是这一刻才出现的。
-            </h1>
-            <p style={{ margin: 0, color: "rgba(246,243,236,0.62)", fontSize: 15, lineHeight: 1.72, letterSpacing: "0.04em" }}>
-              它们早就藏在你面对世界的方式里。
-              <br />
-              请确认原始坐标。
-            </p>
-          </header>
-          <section
-            aria-label="原始坐标"
-            style={{
-              display: "grid",
-              gap: 6,
-              padding: "2dvh 0 1dvh",
-            }}
-          >
-            <button
-              type="button"
-              aria-label="出生日期"
-              style={{
-                border: 0,
-                background: "transparent",
-                color: "rgba(246,243,236,0.9)",
-                padding: 0,
-                textAlign: "left",
-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                fontSize: "clamp(18px, 5vw, 24px)",
-                lineHeight: 1.3,
-                letterSpacing: "0.08em",
-                cursor: "pointer",
-              }}
-            >
-              {coordinateDate}
-            </button>
-            <button
-              type="button"
-              aria-label="出生时辰"
-              style={{
-                border: 0,
-                background: "transparent",
-                color: "rgba(246,243,236,0.72)",
-                padding: 0,
-                textAlign: "left",
-                fontSize: "clamp(17px, 4.6vw, 22px)",
-                lineHeight: 1.45,
-                letterSpacing: "0.06em",
-                cursor: "pointer",
-              }}
-            >
-              {coordinateAnchor}
-            </button>
-          </section>
-          <section
-            aria-label="时序轴仪器盒"
-            style={{
-              display: "grid",
-              gap: 18,
-              padding: "26px 18px",
-              border: "1px solid rgba(0,184,212,0.18)",
-              background: "linear-gradient(180deg, rgba(0,184,212,0.055), rgba(246,243,236,0.018))",
-              boxShadow: "inset 0 0 0 1px rgba(0,184,212,0.055), 0 18px 48px rgba(0,0,0,0.18)",
-            }}
-          >
-            <p style={{ margin: 0, color: "rgba(246,243,236,0.58)", fontSize: 14, lineHeight: 1.6, letterSpacing: "0.06em" }}>
-              你来自哪个时空？
-            </p>
-            <div
-              aria-label="时序校准读数"
-              style={{
-                display: "grid",
-                gap: 10,
-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                letterSpacing: "0.08em",
-              }}
-            >
-              <div style={{ color: inactiveTextColor, fontSize: "clamp(24px, 6.4vw, 32px)", lineHeight: 1.2 }}>
-                <button
-                  type="button"
-                  aria-pressed={activeChronoAxisSegment === "year"}
-                  onClick={() => selectChronoAxisSegment("year")}
-                  style={{
-                    border: 0,
-                    background: "transparent",
-                    color: activeChronoAxisSegment === "year" ? activeTextColor : inactiveTextColor,
-                    padding: 0,
-                    font: "inherit",
-                    letterSpacing: "inherit",
-                    cursor: "pointer",
-                  }}
-                >
-                  {displayYear}
-                </button>
-                <span> / </span>
-                <button
-                  type="button"
-                  aria-pressed={activeChronoAxisSegment === "month"}
-                  onClick={() => selectChronoAxisSegment("month")}
-                  style={{
-                    border: 0,
-                    background: "transparent",
-                    color: activeChronoAxisSegment === "month" ? activeTextColor : inactiveTextColor,
-                    padding: 0,
-                    font: "inherit",
-                    letterSpacing: "inherit",
-                    cursor: "pointer",
-                  }}
-                >
-                  {padDateUnit(displayMonth)}
-                </button>
-                <span> / </span>
-                <button
-                  type="button"
-                  aria-pressed={activeChronoAxisSegment === "day"}
-                  onClick={() => selectChronoAxisSegment("day")}
-                  style={{
-                    border: 0,
-                    background: "transparent",
-                    color: activeChronoAxisSegment === "day" ? activeTextColor : inactiveTextColor,
-                    padding: 0,
-                    font: "inherit",
-                    letterSpacing: "inherit",
-                    cursor: "pointer",
-                  }}
-                >
-                  {padDateUnit(displayDay)}
-                </button>
-              </div>
-              <button
-                type="button"
-                aria-pressed={activeChronoAxisSegment === "period"}
-                onClick={() => selectChronoAxisSegment("period")}
-                style={{
-                  border: 0,
-                  background: "transparent",
-                  color: activeChronoAxisSegment === "period" ? activeTextColor : inactiveTextColor,
-                  padding: 0,
-                  textAlign: "left",
-                  font: "inherit",
-                  fontSize: "clamp(20px, 5.2vw, 27px)",
-                  lineHeight: 1.35,
-                  letterSpacing: "inherit",
-                  cursor: "pointer",
-                }}
-              >
-                {coordinateTimeRange}
-              </button>
-            </div>
-            <div style={{ display: "grid", gap: 12, paddingTop: 4 }}>
-              <div
-                role="slider"
-                aria-label="时序校准轴"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={Math.round(axisValue * 100)}
-                tabIndex={0}
-                onMouseDown={handleAxisMouseDown}
-                onMouseMove={handleAxisMouseMove}
-                onTouchStart={handleAxisTouchStart}
-                onTouchMove={handleAxisTouchMove}
-                style={{
-                  position: "relative",
-                  height: 28,
-                  touchAction: "none",
-                  cursor: "pointer",
-                }}
-              >
-                <span
-                  style={{
-                    position: "absolute",
-                    left: 0,
-                    right: 0,
-                    top: "50%",
-                    height: 1,
-                    background: "rgba(246,243,236,0.36)",
-                  }}
-                />
-                <span
-                  style={{
-                    position: "absolute",
-                    left: axisLeft,
-                    top: "50%",
-                    width: 9,
-                    height: 9,
-                    borderRadius: "50%",
-                    background: "#00b8d4",
-                    boxShadow: "0 0 14px rgba(0,184,212,0.58)",
-                    transform: "translate(-50%, -50%)",
-                    pointerEvents: "none",
-                  }}
-                />
-              </div>
-              <div
-                aria-label="时序轴分段"
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-                  gap: 8,
-                }}
-              >
-                {chronoAxisSegments.map((segment) => {
-                  const labels: Record<ChronoAxisSegment, string> = {
-                    year: "年",
-                    month: "月",
-                    day: "日",
-                    period: "时段",
-                  };
-                  const isActive = activeChronoAxisSegment === segment;
-                  return (
-                    <button
-                      key={segment}
-                      type="button"
-                      aria-pressed={isActive}
-                      onClick={() => selectChronoAxisSegment(segment)}
-                      style={{
-                        border: 0,
-                        background: "transparent",
-                        color: isActive ? activeTextColor : "rgba(246,243,236,0.42)",
-                        padding: "2px 0",
-                        fontSize: 12,
-                        lineHeight: 1.4,
-                        letterSpacing: "0.16em",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {labels[segment]}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-          <CausalRail statusLabel="原力待确认" rightHint="右滑，确认原力" onRight={handleEmbedMotherCode} />
-        </>
+        <ChronoAxisDualEngine
+          initialCoords={{ year: displayYear, month: displayMonth, day: displayDay, periodIndex: displayPeriodIndex }}
+          onChronoLock={handleChronoLock}
+        />
       ) : (
         <>
           {!isMotherRuntimeView ? (

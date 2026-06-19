@@ -294,7 +294,7 @@ export function LaunchPage() {
   const LERP_K   = 0.22;    // 固定收敛系数（不可变）
   const EPSILON_T = 0.004;  // 终态锁定阈值（t 域；(1−t)<此值 → 精确吸附 LOGO）
   const GESTURE_MIN_TIME = 400;   // 时间门控：按下后最短酝酿时间（ms）
-  const AXIS_MID_TRIGGER = 0.5;   // 距离门控：蓝点须滑到轴中点（progress≥0.5）才断裂
+  const AXIS_MID_TRIGGER = 0.98;  // 距离门控：闸门须拉到底（progress≥0.98，100% 死锁点）才断裂
 
   function convergeParticles() {
     particlesRef.current.forEach(p => {
@@ -454,8 +454,8 @@ export function LaunchPage() {
         // progress 仅用于视觉表现（拉伸/张力），不控制 collapse
         const resist = 0.30 - 0.10 * particleCoherence();
         progressDisplayRef.current += (progressRef.current - progressDisplayRef.current) * resist;
-        // 降敏：需「酝酿时间 ≥400ms」且「蓝点滑到轴中点（progress≥0.5）」才确认有效手势 →
-        // 一旦确认即立即断裂 + 进入 collapse 收敛（确认后不再依赖 progress 完成度）。
+        // 闸门拉到底：需「酝酿时间 ≥400ms」且「闸门推到底（progress≥0.98，100% 死锁点）」才确认有效手势 →
+        // 一旦推满即立即断裂（带压入局充能至死锁）+ 进入 collapse 收敛聚成 LOGO。
         const heldMs = pointerDownAtRef.current !== null ? now - pointerDownAtRef.current : 0;
         if (!gestureFiredRef.current && heldMs >= GESTURE_MIN_TIME && progressRef.current >= AXIS_MID_TRIGGER) {
           fractureAxis(cx, logoCenterY, logoSize, axisY); // 必须先于 triggerCollapse
