@@ -1,3 +1,8 @@
+// Axis System = causal line with discrete semantic markers used for progressive psychological
+//   state revelation and final event-driven transition（三标尺点 原力/保护/误用，100% 触发转场）。
+// GUANYAO 2.0 = single axis-based interaction grammar system. 本屏角色：axis rupture input only
+//   （唯一输入 = axis drag：横向拖动推进三阶 → 100% 推进转场；无 tap、无混合手势）。
+//
 // GUANYAO 2.0 —— 原力解构场（The Split · 1px 水平生命轴的细胞割裂形变）
 //
 // 物理本质：1px 水平生命轴在屏幕中部「向上下割裂 1px」拉开一条裂缝视窗（The Split），
@@ -5,14 +10,13 @@
 // 交互（物理阻尼滤网）：底部一根横贯全屏的 1px 骨灰色轨道，线上挂冷蓝行为标记准星（圆点）。
 //   用户按住圆点向右拖拽 —— 不点按钮。每滑过 33% 发生一次高压「因果切换」：
 //     0–33%  【 原力 】   34–66% 【 保护 】（咔哒齿轮微震）   67–100% 【 误用 】
-// 点火转场：推到 100% 锁止瞬间 → 马达强震 + 机芯死锁音 → 整轨与圆点褪冷蓝、转化为原力冷金 #C7A96B
-//   → 更替终极点火命令「认领此枚原力卡」→ 用户点击 → 冷金线与文本垂直沙化下坠 → 砸进压力种子。
-// 严格用户驱动 + 渲染门控：首帧未稳不可拖拽；锁止只改状态不跳转；认领点按才生成种子并转场。
+// 点火转场：推到 100% → 马达强震 + 冷金线与文本垂直沙化下坠 → 砸进压力种子。
+// 严格用户驱动 + 渲染门控：首帧未稳不可拖拽；单轴拖拽完成即生成种子并转场。
 //
 // ENTRY EVENT（入场即物理事件，内容必从裂缝浮现）：
 //   VOID(黑屏停顿~440ms + 低频马达脉冲) → OPENING(中部 1px 割裂开窗) → 内容从裂缝浮现 → SCRUB。
 //   100% 锁止：裂缝「闭合」凝成单条冷金轴（非单纯变色）。
-// System = entry rupture based causal field engine, where all content must emerge from physical split event.
+// MotherFieldEngine = isolated rupture scope; content emerges here and does not inherit adjacent screen labels.
 
 import { useEffect, useRef } from "react";
 
@@ -27,7 +31,7 @@ export type PressureSeedPacket = {
   inertiaSignature: string;
 };
 
-type Phase = "VOID" | "OPENING" | "SCRUB" | "LOCKED" | "SANDIFY";
+type Phase = "VOID" | "OPENING" | "SCRUB" | "SANDIFY";
 
 type Particle = { x: number; y: number; vx: number; vy: number; alpha: number };
 
@@ -50,8 +54,6 @@ type Model = {
   lastX: number;
   goldMix: number; // 锁止后 0→1 转冷金
   lockT: number;
-  awaitClaim: boolean; // 100% 锁止后等待「认领」点按
-  claimArmed: boolean; // 锁止后新起一次按下→抬起才认领
   particles: Particle[];
   fieldReady: boolean; // Render Gate：首帧 draw + rAF 活跃后才置 true
   fired: boolean;
@@ -119,8 +121,6 @@ export function MotherFieldEngine({
     lastX: 0,
     goldMix: 0,
     lockT: 0,
-    awaitClaim: false,
-    claimArmed: false,
     particles: [],
     fieldReady: false,
     fired: false,
@@ -195,7 +195,7 @@ export function MotherFieldEngine({
         });
       }
       m.particles = list;
-      // 生成压力种子（认领时固化）
+      // 生成压力种子（单轴完成时固化）
       const d = dataRef.current;
       const packet: PressureSeedPacket = {
         motherCode: d.motherCode,
@@ -234,14 +234,6 @@ export function MotherFieldEngine({
         return;
       }
 
-      if (m.phase === "LOCKED") {
-        m.lockT += dt;
-        m.goldMix += (1 - m.goldMix) * Math.min(1, dt * 4);
-        m.splitGap += (0 - m.splitGap) * Math.min(1, dt * 5); // 裂缝闭合 → 凝成单条冷金轴
-        if (!m.awaitClaim && m.goldMix > 0.8 && m.splitGap < 4 && m.lockT > 0.4) m.awaitClaim = true;
-        return;
-      }
-
       if (m.phase === "SANDIFY") {
         m.lockT += dt;
         m.goldMix = 1;
@@ -252,7 +244,7 @@ export function MotherFieldEngine({
           p.alpha -= dt * 0.85;
         }
         m.particles = m.particles.filter((p) => p.alpha > 0);
-        if (m.lockT > 0.95) lockRef.current(); // 认领→沙化完成→砸进压力种子
+        if (m.lockT > 0.95) lockRef.current(); // 单轴完成→沙化完成→砸进压力种子
         return;
       }
 
@@ -264,11 +256,9 @@ export function MotherFieldEngine({
         vibrate(14); // 咔哒 · 齿轮微震
       }
       if (m.progress >= 0.99 && m.phase === "SCRUB") {
-        m.phase = "LOCKED";
-        m.lockT = 0;
         m.dragging = false;
-        m.claimArmed = false;
         vibrate([0, 40, 26, 60]); // 机芯死锁
+        enterSandify();
       }
     }
 
@@ -309,7 +299,7 @@ export function MotherFieldEngine({
       ctx.globalAlpha = 0.6 * m.openT * contentFade;
       ctx.fillStyle = "rgba(246,243,236,0.82)";
       ctx.font = `${Math.min(15, m.w * 0.038)}px ${SANS}`;
-      wrap(ctx, d.tagline, m.w * 0.8).forEach((ln, i) => {
+      wrap(ctx, d.tagline.replace(/[。.]+$/, ""), m.w * 0.8).forEach((ln, i) => {
         ctx.fillText(ln, leftX, m.h * 0.26 + i * 22);
       });
       ctx.globalAlpha = 1;
@@ -328,17 +318,39 @@ export function MotherFieldEngine({
       ctx.globalAlpha = 1;
 
       // 裂缝内：当前阶段真相（title + body 从深渊浮现；裂缝闭合时随之淡出）
-      if (m.phase === "SCRUB" || m.phase === "LOCKED") {
+      if (m.phase === "SCRUB") {
         const field = d.fields[m.stage];
         if (field) {
           const sw = clamp(m.switchT, 0, 1);
           const gapFade = clamp(m.splitGap / OPEN_GAP, 0, 1); // 裂缝闭合 → 文字淡出
           const rise = (1 - sw) * 10;
           ctx.textAlign = "left";
-          ctx.globalAlpha = sw * gapFade;
-          ctx.fillStyle = lerpHex(BLUE, GOLD, m.goldMix);
           ctx.font = `${Math.min(18, m.w * 0.046)}px ${MONO}`;
-          ctx.fillText(field.title, leftX, m.cy - 22 + rise);
+          const titleY = m.cy - 22 + rise;
+          const hi = lerpHex(BLUE, GOLD, m.goldMix);
+          const dim = "rgba(246,243,236,0.4)";
+          const tagIdx = field.title.indexOf(field.tag);
+          if (tagIdx >= 0) {
+            // 仅「类别词（原力/保护/误用）」降权灰；括号【】与分隔符 ｜ 不降、特质词高亮
+            const pre = field.title.slice(0, tagIdx);
+            const post = field.title.slice(tagIdx + field.tag.length);
+            let tx = leftX;
+            ctx.globalAlpha = sw * gapFade;
+            ctx.fillStyle = hi;
+            ctx.fillText(pre, tx, titleY);
+            tx += ctx.measureText(pre).width;
+            ctx.globalAlpha = sw * gapFade * 0.6;
+            ctx.fillStyle = dim;
+            ctx.fillText(field.tag, tx, titleY);
+            tx += ctx.measureText(field.tag).width;
+            ctx.globalAlpha = sw * gapFade;
+            ctx.fillStyle = hi;
+            ctx.fillText(post, tx, titleY);
+          } else {
+            ctx.globalAlpha = sw * gapFade;
+            ctx.fillStyle = hi;
+            ctx.fillText(field.title, leftX, titleY);
+          }
           const fs = Math.min(16, m.w * 0.04);
           ctx.font = `${fs}px ${SANS}`;
           ctx.fillStyle = "rgba(246,243,236,0.95)";
@@ -378,17 +390,43 @@ export function MotherFieldEngine({
       ctx.moveTo(m.trackX0, m.trackY);
       ctx.lineTo(dotX, m.trackY);
       ctx.stroke();
-      // 准星圆点（呼吸高亮，引导拖拽）
-      const pulse = 0.6 + 0.4 * Math.sin(performance.now() / 360);
-      ctx.fillStyle = lineColor;
-      ctx.globalAlpha = m.phase === "SCRUB" ? pulse : 1;
+
+      // 三个语义标尺点：原力 → 保护 → 误用，权重/强度自左向右递增（无等量强调）
+      [1 / 6, 1 / 2, 5 / 6].forEach((f, i) => {
+        const mx = m.trackX0 + (m.trackX1 - m.trackX0) * f;
+        const active = i === m.stage;
+        const heat = i / 2; // 0 / 0.5 / 1 —— 越右越重（色温→金）
+        const mc = lerpHex(BLUE, GOLD, clamp(heat * 0.7 + m.goldMix * 0.3, 0, 1));
+        const rBase = 2 + i * 1.4; // 半径递增：2.0 / 3.4 / 4.8
+        const aBase = 0.3 + i * 0.16; // 透明度递增：0.30 / 0.46 / 0.62
+        if (active) {
+          const pulse = 0.6 + 0.4 * Math.sin(performance.now() / 360);
+          ctx.fillStyle = mc;
+          ctx.globalAlpha = Math.min(1, 0.7 + 0.3 * pulse);
+          ctx.beginPath();
+          ctx.arc(mx, m.trackY, rBase + 2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 0.32;
+          ctx.strokeStyle = mc;
+          ctx.beginPath();
+          ctx.arc(mx, m.trackY, rBase + 7, 0, Math.PI * 2);
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = mc;
+          ctx.globalAlpha = aBase;
+          ctx.beginPath();
+          ctx.arc(mx, m.trackY, rBase, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      });
+
+      // 单一蓝色 cursor：只表达交互位置，不承载阶段状态。
+      ctx.fillStyle = BLUE;
+      ctx.globalAlpha = m.phase === "SCRUB" ? 0.86 : 1;
       ctx.beginPath();
       ctx.arc(dotX, m.trackY, 6, 0, Math.PI * 2);
       ctx.fill();
-      ctx.globalAlpha = 0.4;
-      ctx.beginPath();
-      ctx.arc(dotX, m.trackY, 12, 0, Math.PI * 2);
-      ctx.stroke();
       ctx.globalAlpha = 1;
 
       // 机械铭牌钢印（贴轴靠左）
@@ -397,7 +435,7 @@ export function MotherFieldEngine({
       ctx.globalAlpha = 0.7;
       ctx.font = `${Math.min(11, m.w * 0.028)}px ${MONO}`;
       const tagName = d.fields[m.stage]?.tag ?? "原力";
-      ctx.fillText(`［ ${ROMAN[m.stage] ?? "Ⅰ"} · ${tagName}解构 ｜ 默认防御机制 ］`, leftX, m.trackY - 18);
+      ctx.fillText(`［ ${ROMAN[m.stage] ?? "Ⅰ"} · ${tagName}解构 ］`, leftX, m.trackY - 18);
       // 进度
       ctx.textAlign = "right";
       ctx.fillStyle = "rgba(0,184,212,0.6)";
@@ -407,19 +445,10 @@ export function MotherFieldEngine({
       if (m.phase === "SCRUB") {
         // 拖拽引导
         ctx.textAlign = "left";
-        ctx.globalAlpha = 0.4 + 0.3 * pulse;
+        ctx.globalAlpha = 0.48;
         ctx.fillStyle = "rgba(246,243,236,0.8)";
         ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
         ctx.fillText("按住圆点 · 向右拖拽解构原力", leftX, m.trackY + 26);
-        ctx.globalAlpha = 1;
-      } else if (m.awaitClaim) {
-        // 点火命令（冷金）
-        ctx.textAlign = "left";
-        const cp = 0.45 + 0.45 * Math.sin(performance.now() / 360);
-        ctx.globalAlpha = 0.6 + 0.4 * cp;
-        ctx.fillStyle = GOLD;
-        ctx.font = `${Math.min(14, m.w * 0.035)}px ${MONO}`;
-        ctx.fillText("［ ➔ 认领此枚原力卡 ｜ 获取当下压力种子 ］", leftX, m.trackY + 28);
         ctx.globalAlpha = 1;
       }
     }
@@ -452,8 +481,6 @@ export function MotherFieldEngine({
       if (m.phase === "SCRUB") {
         m.dragging = true;
         m.lastX = x;
-      } else if (m.awaitClaim) {
-        m.claimArmed = true; // 锁止后新起按下 → 武装认领
       }
     }
 
@@ -466,7 +493,6 @@ export function MotherFieldEngine({
     }
 
     function onPointerUp(e: PointerEvent) {
-      if (m.awaitClaim && m.claimArmed) enterSandify(); // 用户认领 → 唯一转场入口
       m.dragging = false;
       try {
         canvas!.releasePointerCapture(e.pointerId);

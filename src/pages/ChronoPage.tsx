@@ -1,3 +1,4 @@
+// System = multi-state field system with strict isolation boundaries between content, visual, and narrative layers.
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, PointerEvent } from "react";
 import { useNavigate } from "react-router-dom";
@@ -456,21 +457,21 @@ function InitialCoordinatesEntry() {
     {
       tag: "原力",
       title: `【 原力 ｜ ${motherProtectionTags.force} 】`,
-      body: `你的底色。${motherCode.baseForce || "当局面陷入死结，你总本能地试图寻找破局的活水。"}`,
+      body: `你的底色：${(motherCode.baseForce || "在压力关系中优先寻找松动点，用沟通与转化让僵住的局面重新流动").replace(/[。.]+$/, "")}`,
     },
     {
       tag: "保护",
       title: `【 保护 ｜ ${motherProtectionTags.mirror} 】`,
-      body: `你的默认防御。${motherReactionChain || "你习惯用看似温和的妥协，去包裹内心深处的互不信任。"}`,
+      body: `你的默认防御：${(motherReactionChain || "用看似温和的妥协包裹内心深处的互不信任").replace(/[。.]+$/, "")}`,
     },
     {
       tag: "误用",
       title: `【 误用 ｜ ${motherProtectionTags.unlock} 】`,
-      body: `你的惯性放弃。${motherCode.shadowInertia || "一旦流动失败，为了不面对终局的失控，你会抢先在现实崩塌前转身逃走。"}`,
+      body: `你的惯性放弃：${(motherCode.shadowInertia || "一旦流动失败，为了不面对终局的失控，抢先在现实崩塌前转身逃走").replace(/[。.]+$/, "")}`,
     },
   ];
 
-  // 双轴引擎 SANDIFY 完成 → 现实结晶为母码卡
+  // 双轴引擎 SANDIFY 完成 → 现实结晶为母码场
   function handleChronoLock(coords: ChronoCoords) {
     const landing = runMotherCodeLandingEngine({
       year: coords.year,
@@ -506,24 +507,14 @@ function InitialCoordinatesEntry() {
         display: "flex",
         flexDirection: "column",
         gap: 18,
-        background: "radial-gradient(circle at 50% 24%, rgba(0,184,212,0.06), transparent 42%), #020303",
+        position: "relative",
+        background: "radial-gradient(circle at 50% 24%, rgba(0,184,212,0.08), transparent 42%), #020303",
         color: "#f5f5f5",
         overflowX: "hidden",
         overflowY: "auto",
         WebkitOverflowScrolling: "touch",
       }}
     >
-      <span
-        style={{
-          color: "rgba(0,184,212,0.72)",
-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-          fontSize: 12,
-          letterSpacing: "0.16em",
-        }}
-      >
-        {isMotherStage ? (isMotherRuntimeView ? "02B｜默认反应" : "02A｜母码卡") : "02｜生命起点"}
-      </span>
-
       {stage === "coordinates" ? (
         <ChronoAxisDualEngine
           initialCoords={{ year: displayYear, month: displayMonth, day: displayDay, periodIndex: displayPeriodIndex }}
@@ -740,7 +731,7 @@ export function ChronoPage() {
           <article className="gy-source-shell gyFadeRise" aria-label="观爻入局底色确认">
             <header className="gy-source-header">
               <span>GY / 01 / MOTHER_CODE</span>
-              <span>母码卡</span>
+              <span>母码场</span>
               <strong>{demoMotherCode.title}</strong>
               <em>{demoMotherCode.englishName}</em>
             </header>

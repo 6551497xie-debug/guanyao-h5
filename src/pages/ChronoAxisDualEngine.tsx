@@ -1,3 +1,7 @@
+// GUANYAO 2.0 = single axis-based interaction grammar system —— all screens share one
+//   causal input language with role-based constraints. 本屏角色：axis ignition input only
+//   （axis drag：纵=state modulation / 横=causal progression；无 tap）。
+//
 // Axis System = dual 1px physical instruments converting human interaction into
 // temporal frequency lock + inertia generation.
 //

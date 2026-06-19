@@ -1,6 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+// GUANYAO 2.0 = single axis-based interaction grammar system. 本屏角色：tap confirmation only（UI 决策层）。
+//   场屏统一为 axis drag（纵=modulation / 横=progression）；tap 仅在本 UI 层用于选择/确认，不驱动场态。
+// GUANYAO 2.0 = multi-page decision system with independent UI states and explicit user-driven navigation.
+// Pressure Seed = simple decision interface for selecting one of three behavioral options and confirming selection.
+// 锁定：纯 UI 决策流（点选→高亮→确认→跳转）；无 field/inertia/collapse/物理；轴线仅为视觉进度/对齐装饰。
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CausalRail } from "../components/causal/CausalRail";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getSession, setMotherCodeResult, setSelectedSceneSeed } from "../services/sessionService";
@@ -17,6 +21,12 @@ import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId, SceneSeed }
 import type { GuanyaoAgeSegment, GuanyaoPressureSeed } from "../types/guanyaoPressureSeed";
 
 const yuanCodeKeys: IdentityFragment["yuanCodeKey"][] = ["qian", "kun", "zhen", "xun", "kan", "li", "gen", "dui"];
+
+const optionLabels = [
+  "Option 1｜原力（流动）",
+  "Option 2｜保护（缓和）",
+  "Option 3｜误用（转身离开）",
+] as const;
 
 type PressureSeedCandidate = {
   id: string;
@@ -73,54 +83,17 @@ function readPressureSeedAgeSegment(session: GuanyaoSession): GuanyaoAgeSegment 
 function buildPressureSeedCandidatesFromTriplet(pressureSeedTriplet: GuanyaoPressureSeedTriplet): PressureSeedCandidate[] {
   return pressureSeedTriplet.frontStage
     .map((frontStageSeed, index) => {
-    const seed = pressureSeedTriplet.seeds.find((candidate) => candidate.id === frontStageSeed.id) ?? pressureSeedTriplet.seeds[index];
+      const seed = pressureSeedTriplet.seeds.find((candidate) => candidate.id === frontStageSeed.id) ?? pressureSeedTriplet.seeds[index];
 
-    return {
-      id: frontStageSeed.id,
-      surface: frontStageSeed.surface,
-      shell: frontStageSeed.shell,
-      seed,
-      seedIndex: (index + 1) as SceneSeed["seedIndex"],
-    };
-  })
+      return {
+        id: frontStageSeed.id,
+        surface: frontStageSeed.surface,
+        shell: frontStageSeed.shell,
+        seed,
+        seedIndex: (index + 1) as SceneSeed["seedIndex"],
+      };
+    })
     .filter((candidate): candidate is PressureSeedCandidate => Boolean(candidate.seed));
-}
-
-function buildPressureSeedCandidateGroups(session: GuanyaoSession): PressureSeedCandidate[][] {
-  const ageSegment = readPressureSeedAgeSegment(session);
-  const groups: PressureSeedCandidate[][] = [];
-  const excludeSeedIds: string[] = [];
-  const recentMatrixCodes: string[] = [];
-
-  for (let groupIndex = 0; groupIndex < 8; groupIndex += 1) {
-    const pressureSeedTriplet = getPressureSeedSceneTriplet({
-      ageSegment,
-      excludeSeedIds,
-      recentMatrixCodes,
-    });
-    const candidates = buildPressureSeedCandidatesFromTriplet(pressureSeedTriplet);
-    if (candidates.length === 0) break;
-
-    groups.push(candidates);
-
-    const newSeedIds = candidates.map((candidate) => candidate.seed.id).filter((id) => !excludeSeedIds.includes(id));
-    if (newSeedIds.length === 0) break;
-
-    excludeSeedIds.push(...newSeedIds);
-    recentMatrixCodes.push(...candidates.map((candidate) => candidate.seed.matrixCode));
-  }
-
-  return groups;
-}
-
-function renderSeedScanDots(isIntercepted: boolean) {
-  const dots = isIntercepted ? ["●", "●", "●"] : ["●", "○", "○"];
-
-  return (
-    <span aria-hidden="true" style={{ color: isIntercepted ? "rgba(0,184,212,0.72)" : "rgba(246,243,236,0.34)" }}>
-      {dots.join(" ")}
-    </span>
-  );
 }
 
 function toLegacySceneSeed(
@@ -155,27 +128,25 @@ function toLegacySceneSeed(
 export function ScenePage() {
   const navigate = useNavigate();
   const session = getSession();
-  const pressureSeedCandidateGroups = useMemo(() => buildPressureSeedCandidateGroups(session), [session]);
-  const [activeGroupIndex, setActiveGroupIndex] = useState(0);
-  const [isIntercepted, setIsIntercepted] = useState(false);
-  const pressureSeedCandidates = pressureSeedCandidateGroups[activeGroupIndex] ?? pressureSeedCandidateGroups[0] ?? [];
+  const pressureSeedCandidates = useMemo(() => {
+    const pressureSeedTriplet = getPressureSeedSceneTriplet({
+      ageSegment: readPressureSeedAgeSegment(session),
+    });
 
-  useEffect(() => {
-    if (activeGroupIndex < pressureSeedCandidateGroups.length) return;
-    setActiveGroupIndex(0);
-  }, [activeGroupIndex, pressureSeedCandidateGroups.length]);
+    return buildPressureSeedCandidatesFromTriplet(pressureSeedTriplet);
+  }, [session]);
+  const visiblePressureSeeds = pressureSeedCandidates.slice(0, 3);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string | undefined>();
+  const selectedCandidate = visiblePressureSeeds.find((candidate) => candidate.id === selectedCandidateId);
+  const selectedIndex = visiblePressureSeeds.findIndex((candidate) => candidate.id === selectedCandidate?.id);
 
-  useEffect(() => {
-    if (isIntercepted || pressureSeedCandidateGroups.length <= 1) return undefined;
+  function onOptionClick(candidate: PressureSeedCandidate) {
+    setSelectedCandidateId(candidate.id);
+  }
 
-    const timer = window.setInterval(() => {
-      setActiveGroupIndex((currentIndex) => (currentIndex + 1) % pressureSeedCandidateGroups.length);
-    }, 2200);
+  function onConfirmClick(candidate: PressureSeedCandidate | undefined) {
+    if (!candidate) return;
 
-    return () => window.clearInterval(timer);
-  }, [isIntercepted, pressureSeedCandidateGroups.length]);
-
-  function handlePressurizeSeed(candidate: PressureSeedCandidate) {
     const selectedPressureSeedContext = buildSelectedPressureSeedContext(candidate.seed);
     const tripleForceLandingResult = buildTripleForceLandingResult(selectedPressureSeedContext);
     const tripleForceFrontStage = getTripleForceFrontStage(tripleForceLandingResult);
@@ -245,12 +216,12 @@ export function ScenePage() {
         >
           不用犹豫。
           <br />
-          只选那个让你停了一下的。
+          选那个让你停了一下的。
         </p>
       </header>
 
       <section
-        aria-label="当前压力候选"
+        aria-label="当前压力种子选项"
         style={{
           display: "grid",
           gap: 12,
@@ -259,107 +230,112 @@ export function ScenePage() {
           borderBottom: "1px solid rgba(246,243,236,0.08)",
         }}
       >
-        <span
-          style={{
-            color: isIntercepted ? "rgba(0,184,212,0.68)" : "rgba(246,243,236,0.38)",
-            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            fontSize: 11,
-            letterSpacing: "0.13em",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <span>{isIntercepted ? "选择这一局" : "先看见这一刻"}</span>
-          {renderSeedScanDots(isIntercepted)}
-        </span>
+        {visiblePressureSeeds.map((candidate, index) => {
+          const isSelected = candidate.id === selectedCandidate?.id;
 
-        <div
-          style={{
-            display: "grid",
-            gap: 10,
-            paddingBottom: 12,
-          }}
-        >
-          {pressureSeedCandidates.map((candidate, index) => {
-            return (
-              <button
-                key={candidate.id}
-                type="button"
-                disabled={!isIntercepted}
-                onClick={() => handlePressurizeSeed(candidate)}
+          return (
+            <button
+              key={candidate.id}
+              type="button"
+              onClick={() => onOptionClick(candidate)}
+              style={{
+                width: "100%",
+                minHeight: 118,
+                padding: "15px 2px 15px 0",
+                border: 0,
+                borderTop: "1px solid rgba(246,243,236,0.08)",
+                borderBottom: isSelected ? "1px solid rgba(0,184,212,0.34)" : "1px solid rgba(246,243,236,0.07)",
+                background: isSelected ? "linear-gradient(90deg, rgba(0,184,212,0.08), transparent 70%)" : "transparent",
+                color: "inherit",
+                display: "grid",
+                gap: 8,
+                textAlign: "left",
+                opacity: isSelected ? 1 : 0.62,
+                cursor: "pointer",
+                transition: "border-color 180ms ease, background 180ms ease, opacity 180ms ease",
+              }}
+            >
+              <span
                 style={{
-                  width: "100%",
-                  minHeight: 118,
-                  padding: "15px 2px 15px 0",
-                  border: 0,
-                  borderTop: "1px solid rgba(246,243,236,0.08)",
-                  borderBottom: isIntercepted ? "1px solid rgba(0,184,212,0.18)" : "1px solid rgba(246,243,236,0.07)",
-                  background: isIntercepted ? "linear-gradient(90deg, rgba(0,184,212,0.045), transparent 68%)" : "transparent",
-                  color: "inherit",
-                  display: "grid",
-                  gap: 8,
-                  textAlign: "left",
-                  opacity: isIntercepted ? 1 : 0.58,
-                  cursor: isIntercepted ? "pointer" : "default",
-                  transition: "border-color 180ms ease, background 180ms ease, opacity 180ms ease",
+                  color: isSelected ? "rgba(0,184,212,0.82)" : "rgba(246,243,236,0.42)",
+                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  fontSize: 11,
+                  letterSpacing: "0.12em",
                 }}
               >
-                <span
-                  style={{
-                    color: isIntercepted ? "rgba(0,184,212,0.78)" : "rgba(246,243,236,0.4)",
-                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                    fontSize: 11,
-                    letterSpacing: "0.12em",
-                  }}
-                >
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <strong
-                  style={{
-                    color: isIntercepted ? "rgba(246,243,236,0.92)" : "rgba(246,243,236,0.74)",
-                    fontSize: 20,
-                    lineHeight: 1.28,
-                    fontWeight: 360,
-                  }}
-                >
-                  {candidate.surface}
-                </strong>
-                <span
-                  style={{
-                    color: "rgba(246,243,236,0.48)",
-                    fontSize: 13,
-                    lineHeight: 1.58,
-                  }}
-                >
-                  — {candidate.shell}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                {optionLabels[index] ?? `Option ${index + 1}`}
+              </span>
+              <strong
+                style={{
+                  color: isSelected ? "rgba(246,243,236,0.94)" : "rgba(246,243,236,0.74)",
+                  fontSize: 20,
+                  lineHeight: 1.28,
+                  fontWeight: 360,
+                }}
+              >
+                {candidate.surface}
+              </strong>
+              <span
+                style={{
+                  color: "rgba(246,243,236,0.48)",
+                  fontSize: 13,
+                  lineHeight: 1.58,
+                }}
+              >
+                - {candidate.shell}
+              </span>
+            </button>
+          );
+        })}
       </section>
 
-      {isIntercepted ? (
-        <p
-          style={{
-            margin: 0,
-            color: "rgba(246,243,236,0.46)",
-            fontSize: 13,
-            lineHeight: 1.6,
-            textAlign: "center",
-            letterSpacing: "0.06em",
-          }}
-        >
-          点一下，确认这一局
-        </p>
-      ) : (
-        <CausalRail
-          statusLabel="当前压力待确认"
-          rightHint="右滑，确认这一局"
-          onRight={() => setIsIntercepted(true)}
-        />
-      )}
+      <div
+        aria-hidden="true"
+        style={{ position: "relative", height: 22, margin: "2px 0" }}
+      >
+        <span style={{ position: "absolute", left: 0, right: 0, top: "50%", height: 1, background: "rgba(246,243,236,0.16)" }} />
+        {visiblePressureSeeds.map((candidate, i) => {
+          const reached = selectedIndex >= 0 && i <= selectedIndex;
+          const isCurrent = i === selectedIndex;
+          const x = visiblePressureSeeds.length > 1 ? (i / (visiblePressureSeeds.length - 1)) * 100 : 50;
+          return (
+            <span
+              key={candidate.id}
+              style={{
+                position: "absolute",
+                left: `${x}%`,
+                top: "50%",
+                width: isCurrent ? 9 : 7,
+                height: isCurrent ? 9 : 7,
+                borderRadius: "50%",
+                transform: "translate(-50%, -50%)",
+                background: isCurrent ? "#00b8d4" : reached ? "rgba(0,184,212,0.5)" : "rgba(246,243,236,0.26)",
+                boxShadow: isCurrent ? "0 0 12px rgba(0,184,212,0.55)" : "none",
+                transition: "background 180ms ease",
+              }}
+            />
+          );
+        })}
+      </div>
+
+      <button
+        type="button"
+        disabled={!selectedCandidate}
+        onClick={() => onConfirmClick(selectedCandidate)}
+        style={{
+          width: "100%",
+          minHeight: 48,
+          border: "1px solid rgba(0,184,212,0.34)",
+          background: selectedCandidate ? "rgba(0,184,212,0.08)" : "rgba(246,243,236,0.04)",
+          color: selectedCandidate ? "rgba(246,243,236,0.86)" : "rgba(246,243,236,0.36)",
+          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          fontSize: 12,
+          letterSpacing: "0.12em",
+          cursor: selectedCandidate ? "pointer" : "default",
+        }}
+      >
+        确认这一粒压力种子
+      </button>
     </main>
   );
 }

@@ -1,12 +1,14 @@
-// This screen = a physical collapse system. 编排（承接上屏沙化 → 母码卡沙化进下屏）：
-//   ① 金色一字轴入场（承接上一页沙化）
+// GUANYAO 2.0 = single axis-based interaction grammar system. 本屏角色：axis buffering input only
+//   （唯一输入 = axis drag / 右滑，横=causal progression；无 tap、无混合手势）。
+// DefaultReactionScreen = isolated buffer scope; it never exports explanatory labels to adjacent states.
+//   ① 低亮度蓝青一字轴入场
 //   ② 一字轴裂开成两条线
 //   ③ 认知句出现（裂缝中）
 //   ④ 认知句坍缩「落入最上方」并定位
-//   ⑤ 两条线「沉积生成」母码卡
+//   ⑤ 两条线沉积生成缓冲读数
 //   ⑥ 一字轴下沉至底部，凝成灰色闸门线
-//   ⑦ 右滑蓝点，闸门一字轴逐渐变蓝
-//   ⑧ 母码卡沙化 → 进入下一屏（仅用户右滑触发）
+//   ⑦ 右滑单一蓝色 cursor，闸门一字轴保持稳定
+//   ⑧ 缓冲读数沙化 → 交互完成
 // 无 UI 卡片/盒子/按钮；信息全部从裂缝/轴线生成。
 
 import { useEffect, useRef } from "react";
@@ -14,6 +16,7 @@ import { useEffect, useRef } from "react";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
 const SANS = "-apple-system, system-ui, sans-serif";
 const BLUE = "#00B8D4";
+const BUFFER = "#2F8F99";
 const GOLD = "#C7A96B";
 const GRAY = "#555555";
 
@@ -26,7 +29,7 @@ const SENT_DONE = 2.0; // 认知句浮现
 const TOP_AT = 2.15;
 const TOP_DONE = 2.95; // 认知句坍缩落入最上方
 const CARD_AT = 3.0;
-const LINE_STEP = 0.3; // 母码卡逐行沉积
+const LINE_STEP = 0.3; // 缓冲读数逐行沉积
 const DROP_AT = 4.7;
 const DROP_DONE = 5.4; // 轴线下沉成灰闸门
 const IDLE_AT = 5.5;
@@ -152,7 +155,7 @@ export function DefaultReactionScreen({
       return out;
     }
 
-    // 母码卡沉积布局（返回每行 baseY 与字段）
+    // 缓冲读数沉积布局（返回每行 baseY 与字段）
     function cardRows() {
       const d = dataRef.current;
       return [
@@ -215,11 +218,11 @@ export function DefaultReactionScreen({
       const leftX = m.w * 0.1;
       const t = m.t;
 
-      // 深黑宇宙密度场
+      // 深黑缓冲密度场：只服务本屏语义，不外溢为全局说明。
       const splitY = m.h * 0.34;
       const bg = ctx.createRadialGradient(m.cx, splitY, 0, m.cx, splitY, Math.max(m.w, m.h) * 0.7);
-      bg.addColorStop(0, "rgba(0,86,116,0.12)");
-      bg.addColorStop(0.55, "rgba(0,36,64,0.05)");
+      bg.addColorStop(0, "rgba(47,143,153,0.075)");
+      bg.addColorStop(0.55, "rgba(0,86,116,0.035)");
       bg.addColorStop(1, "rgba(2,3,6,0)");
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, m.w, m.h);
@@ -235,7 +238,7 @@ export function DefaultReactionScreen({
       const drop = smooth(DROP_AT, DROP_DONE, t);
       const lineY = lerp(splitY, gateY, drop);
       const gap = 30 * split * (1 - drop);
-      const lineColor = lerpHex(GOLD, GRAY, drop);
+      const lineColor = BUFFER;
 
       ctx.textAlign = "left";
 
@@ -258,7 +261,7 @@ export function DefaultReactionScreen({
         ctx.globalAlpha = 1;
       }
 
-      // ⑤ 两条线沉积生成母码卡（吸收 sentence 落位后开始）
+      // ⑤ 两条线沉积生成缓冲读数（吸收 sentence 落位后开始）
       if (!m.sandifying) {
         let slot = cardY;
         cardRows().forEach((row, i) => {
@@ -284,7 +287,7 @@ export function DefaultReactionScreen({
         });
       }
 
-      // 母码卡沙化粒子
+      // 缓冲读数沙化粒子
       if (m.sandifying) {
         ctx.fillStyle = GOLD;
         for (const p of m.particles) {
@@ -294,9 +297,9 @@ export function DefaultReactionScreen({
         ctx.globalAlpha = 1;
       }
 
-      // ①②⑥ 一字轴：金轴入场 → 裂成两线 → 下沉成灰闸门
+      // ①②⑥ 一字轴：蓝青轴入场 → 裂成两线 → 收束成底部缓冲闸门
       ctx.strokeStyle = lineColor;
-      ctx.globalAlpha = (m.sandifying ? Math.max(0, 1 - m.sandT) : 0.85) * Math.max(enter, split);
+      ctx.globalAlpha = (m.sandifying ? Math.max(0, 1 - m.sandT) : 0.58) * Math.max(enter, split);
       [lineY - gap, lineY + gap].forEach((sy) => {
         ctx.beginPath();
         ctx.moveTo(trackX0, sy);
@@ -308,30 +311,24 @@ export function DefaultReactionScreen({
       // ⑦ 灰闸门 + 右滑蓝点（drop 完成后）
       if (drop > 0.92 && !m.sandifying) {
         const dotX = trackX0 + (trackX1 - trackX0) * m.swipe;
-        // 蓝色填充（随右滑渐变）
+        // 单一蓝色 cursor：只表达交互位置，不承载状态分支。
         ctx.strokeStyle = BLUE;
         ctx.globalAlpha = 1;
         ctx.beginPath();
         ctx.moveTo(trackX0, gateY);
         ctx.lineTo(dotX, gateY);
         ctx.stroke();
-        // 蓝点（呼吸引导）
-        const pulse = 0.6 + 0.4 * Math.sin(performance.now() / 360);
         ctx.fillStyle = BLUE;
-        ctx.globalAlpha = m.ready ? pulse : 0.5;
+        ctx.globalAlpha = m.ready ? 0.86 : 0.5;
         ctx.beginPath();
         ctx.arc(dotX, gateY, 6, 0, Math.PI * 2);
         ctx.fill();
-        ctx.globalAlpha = 0.4;
-        ctx.beginPath();
-        ctx.arc(dotX, gateY, 12, 0, Math.PI * 2);
-        ctx.stroke();
         ctx.globalAlpha = 1;
         // 提示
         if (m.ready) {
           ctx.textAlign = "left";
           ctx.fillStyle = "rgba(246,243,236,0.7)";
-          ctx.globalAlpha = 0.4 + 0.3 * pulse;
+          ctx.globalAlpha = 0.48;
           ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
           ctx.fillText(m.swipe > 0.05 ? `认领中 ${Math.round(m.swipe * 100)}%` : "右滑认领母码卡", leftX, gateY + 24);
           ctx.globalAlpha = 1;
