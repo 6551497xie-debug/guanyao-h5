@@ -15,6 +15,7 @@
 // System = discrete state machine with continuous physical transition layer between states.
 
 import { useEffect, useRef } from "react";
+import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import { axisLineSystem } from "../systems/axisLineSystem";
 
 export type ChronoCoords = { year: number; month: number; day: number; periodIndex: number };
@@ -733,11 +734,11 @@ export function ChronoAxisDualEngine({
   }, []);
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#020303", overflow: "hidden" }}>
+    <GyMobilePreviewFrame background="#020303">
       <canvas
         ref={canvasRef}
         style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }}
       />
-    </div>
+    </GyMobilePreviewFrame>
   );
 }

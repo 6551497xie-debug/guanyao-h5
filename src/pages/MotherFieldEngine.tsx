@@ -20,6 +20,7 @@
 // MotherFieldEngine = isolated rupture scope; content emerges here and does not inherit adjacent screen labels.
 
 import { useEffect, useRef } from "react";
+import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 
 export type MotherField = { tag: string; title: string; body: string };
 
@@ -530,11 +531,11 @@ export function MotherFieldEngine({
   }, []);
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#020306", overflow: "hidden" }}>
+    <GyMobilePreviewFrame background="#020306">
       <canvas
         ref={canvasRef}
         style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }}
       />
-    </div>
+    </GyMobilePreviewFrame>
   );
 }

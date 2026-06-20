@@ -2,6 +2,7 @@ export const GUANYAO_ROUTES = {
   launch: "/launch",
   motherCode: "/mother-code",
   pressureSeed: "/pressure-seed",
+  hexagramStamp: "/hexagram-stamp",
   pressureExposure: "/pressure-exposure",
   dynamics: "/dynamics",
   breachScan: "/breach-scan",

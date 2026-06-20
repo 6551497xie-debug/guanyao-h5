@@ -17,6 +17,7 @@
 
 import { useEffect } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 
 const AUTO_ADVANCE_MS = 2800; // 残留读取展示后自动进入业务层（无点击门）
 
@@ -57,24 +58,25 @@ export function ChronoAxisPage() {
   }
 
   return (
-    <div
-      onClick={handleContinue}
-      style={{
-        position:       "fixed",
-        inset:          0,
-        // 极低对比冷蓝静态背景（alpha ≤ 0.03），无动画、无呼吸场
-        background:     "radial-gradient(circle at 50% 42%, rgba(0,184,212,0.03), rgba(0,0,0,1) 60%), #000000",
-        color:          "#ECEFF2",
-        display:        "flex",
-        flexDirection:  "column",
-        alignItems:     "center",
-        justifyContent: "center",
-        gap:            18,
-        padding:        "0 24px",
-        cursor:         "pointer",
-        userSelect:     "none",
-      }}
-    >
+    <GyMobilePreviewFrame background="#000000">
+      <div
+        onClick={handleContinue}
+        style={{
+          position:       "absolute",
+          inset:          0,
+          // 极低对比冷蓝静态背景（alpha ≤ 0.03），无动画、无呼吸场
+          background:     "radial-gradient(circle at 50% 42%, rgba(0,184,212,0.03), rgba(0,0,0,1) 60%), #000000",
+          color:          "#ECEFF2",
+          display:        "flex",
+          flexDirection:  "column",
+          alignItems:     "center",
+          justifyContent: "center",
+          gap:            18,
+          padding:        "0 24px",
+          cursor:         "pointer",
+          userSelect:     "none",
+        }}
+      >
       {/* 顶部铭牌（静态结构行，承接首页） */}
       <span
         style={{
@@ -168,6 +170,7 @@ export function ChronoAxisPage() {
       >
 解码残留坐标 · 自动进入
       </span>
-    </div>
+      </div>
+    </GyMobilePreviewFrame>
   );
 }

@@ -112,7 +112,7 @@ export function ScenePage() {
     window.localStorage.setItem("guanyao:selectedPressureSliceText", candidate.seed.surface);
     setSelectedSceneSeed(legacySceneSeed);
     setMotherCodeResult(buildMotherCodeResult(getSession()));
-    navigate(GUANYAO_ROUTES.pressureExposure);
+    navigate(GUANYAO_ROUTES.hexagramStamp);
   }
 
   return <PressureSeedCrossAxisPage ageSegment={pressureSeedAgeSegment} onComplete={commitPressureSeed} />;

@@ -46,4 +46,8 @@ export const guanyaoHexagramGlyphs: Record<string, GuanyaoHexagramGlyph> = {
     code: "010",
     linesTopToBottom: ["yang", "yang", "yang", "yin", "yang", "yang"],
   },
+  "058": {
+    code: "058",
+    linesTopToBottom: ["yin", "yang", "yang", "yin", "yang", "yang"],
+  },
 };

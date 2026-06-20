@@ -13,6 +13,7 @@
 // 无 UI 卡片/盒子/按钮；信息全部从裂缝/轴线生成。
 
 import { useEffect, useRef } from "react";
+import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
 const SANS = "-apple-system, system-ui, sans-serif";
@@ -399,11 +400,11 @@ export function DefaultReactionScreen({
   }, []);
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#020306", overflow: "hidden" }}>
+    <GyMobilePreviewFrame background="#020306">
       <canvas
         ref={canvasRef}
         style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }}
       />
-    </div>
+    </GyMobilePreviewFrame>
   );
 }

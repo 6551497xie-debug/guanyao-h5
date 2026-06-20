@@ -3,16 +3,12 @@
 // 不读 LocalStorage · 不触发业务事件 · 不接主链路
 
 import "../styles/guanyaoVisualTokens.css";
+import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import { GyCanvasLab } from "../canvas/GyCanvasLab";
 
 export function VisualSystemLabPage() {
   return (
-    <div style={{
-      position: "fixed",
-      inset: 0,
-      background: "#000",
-      overflow: "hidden",
-    }}>
+    <GyMobilePreviewFrame background="#000">
       {/* Canvas 占满全屏 */}
       <GyCanvasLab
         height="100%"
@@ -47,6 +43,6 @@ export function VisualSystemLabPage() {
           行为的物理回声
         </span>
       </div>
-    </div>
+    </GyMobilePreviewFrame>
   );
 }

@@ -11,6 +11,7 @@
 
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import {
   axisLineSystem,
@@ -573,11 +574,11 @@ export function AxisLinePage({ onAxisEvent }: { onAxisEvent?: (e: AxisEvent) => 
   }, [navigate]);
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#000", overflow: "hidden" }}>
+    <GyMobilePreviewFrame background="#000">
       <canvas
         ref={canvasRef}
         style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }}
       />
-    </div>
+    </GyMobilePreviewFrame>
   );
 }

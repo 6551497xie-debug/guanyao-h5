@@ -7,6 +7,7 @@ import { ChronoAxisPage } from "./pages/ChronoAxisPage";
 import { ChronoPage } from "./pages/ChronoPage";
 import { GravityPage } from "./pages/GravityPage";
 import { HexagramCardLabPage } from "./pages/HexagramCardLabPage";
+import { HexagramStampPage } from "./pages/HexagramStampPage";
 import { IdentityPage } from "./pages/IdentityPage";
 import { LaunchPage } from "./pages/LaunchPage";
 import { MigrationPage } from "./pages/MigrationPage";
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/chrono-axis" element={<ChronoAxisPage />} />
         <Route path={GUANYAO_ROUTES.motherCode} element={<ChronoPage />} />
         <Route path={GUANYAO_ROUTES.pressureSeed} element={<ScenePage />} />
+        <Route path={GUANYAO_ROUTES.hexagramStamp} element={<HexagramStampPage />} />
         <Route path={GUANYAO_ROUTES.pressureExposure} element={<IdentityPage />} />
         <Route path={GUANYAO_ROUTES.dynamics} element={<GravityPage />} />
         <Route path={GUANYAO_ROUTES.breachScan} element={<ChoicePage />} />

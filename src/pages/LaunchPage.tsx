@@ -28,6 +28,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import { getXMatrixSegments } from "../components/visual-system/xMatrixModel";
 
 // ── 状态 ────────────────────────────────────────────────────────────
@@ -363,7 +364,9 @@ export function LaunchPage() {
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      const w = window.innerWidth, h = window.innerHeight;
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
       canvas.width  = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       canvas.style.width  = `${w}px`;
@@ -374,8 +377,9 @@ export function LaunchPage() {
     window.addEventListener("resize", resize);
 
     const loop = (now: number) => {
-      const w  = window.innerWidth;
-      const h  = window.innerHeight;
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
       const cx = w / 2;
 
       // 几何锚点（铭牌顶部 / 断言上部 / 中央压印 / 一字轴下方）
@@ -775,7 +779,8 @@ export function LaunchPage() {
   const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (stateRef.current !== "gesture" || startXRef.current === null) return;
     // 拖动行程 = 一字轴可见长度，滑块跟随手指，到右端即完成充能
-    const lineLen = Math.min(window.innerWidth * 0.72, 440);
+    const width = e.currentTarget.getBoundingClientRect().width;
+    const lineLen = Math.min(width * 0.72, 440);
     const prog = Math.max(0, Math.min(1, (e.clientX - startXRef.current) / lineLen));
     progressRef.current = prog;
     if (prog > 0.6) window.navigator.vibrate?.(4);
@@ -791,22 +796,23 @@ export function LaunchPage() {
   }, []);
 
   return (
-    <div
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
-      style={{
-        position:    "fixed",
-        inset:       0,
-        background:  "#000000",
-        overflow:    "hidden",
-        touchAction: "none",
-        userSelect:  "none",
-        cursor:      phase === "gesture" ? "grab" : "default",
-      }}
-    >
-      <canvas ref={canvasRef} aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
-    </div>
+    <GyMobilePreviewFrame background="#000000">
+      <div
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        style={{
+          position: "absolute",
+          inset: 0,
+          overflow: "hidden",
+          touchAction: "none",
+          userSelect: "none",
+          cursor: phase === "gesture" ? "grab" : "default",
+        }}
+      >
+        <canvas ref={canvasRef} aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
+      </div>
+    </GyMobilePreviewFrame>
   );
 }

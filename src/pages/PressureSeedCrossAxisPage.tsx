@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import {
   getPressureSeedSceneTriplet,
   type GuanyaoPressureSeedTriplet,
@@ -94,9 +95,12 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
     let currentLineIndex = 0;
     let currentCharIndex = 0;
     let typeTimer = 0;
+    let typeHoldTimer = 0;
     let displayedLines = ["", "", "", ""];
+    let weldLockPulseFired = false;
     const sandParticles: Particle[] = [];
-    const textLines = ["你刚刚拦住的，", "不是一个情绪。", "它是一件已经发生的事。", "这一局，已经开始成形。"];
+    const weldFixedLines = ["你刚刚拦住的，", "不是一个情绪。", "也不是一个问题。"];
+    const weldTypedLines = ["你习惯先缓和，", "再把自己从现场撤走。", "但这一次，", "它已经开始成形。"];
     const rail = {
       x: 0,
       y: 0,
@@ -116,27 +120,28 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
 
     function resize() {
       const ratio = window.devicePixelRatio || 1;
-      width = window.innerWidth;
-      height = window.innerHeight;
+      const rect = surface.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
       surface.width = Math.floor(width * ratio);
       surface.height = Math.floor(height * ratio);
       surface.style.width = `${width}px`;
       surface.style.height = `${height}px`;
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-      stage.w = Math.min(width, 430);
+      stage.w = width;
       stage.h = height;
       stage.x = (width - stage.w) / 2;
       stage.y = 0;
-      stage.pad = Math.max(28, stage.w * 0.09);
+      stage.pad = Math.max(28, stage.w * 0.08);
       rail.x = stage.x + stage.pad;
       rail.y = height * 0.68;
-      stage.axisX = rail.x + stage.w * 0.5;
+      stage.axisX = rail.x + stage.w * 0.52;
       rail.w = stage.axisX - rail.x + Math.max(10, stage.w * 0.032);
       if (appState === "SEED_SELECT") setRailToSelectedSeed();
     }
 
     function getSeedSelectionEndX() {
-      return stage.axisX - Math.max(36, stage.w * 0.095);
+      return stage.axisX - Math.max(34, stage.w * 0.085);
     }
 
     function getSeedSelectionWidth() {
@@ -188,6 +193,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       seedDragMode = "idle";
       loadProgress = 0;
       currentLoadProgress = 0;
+      weldLockPulseFired = false;
     }
 
     function setRailToSelectedSeed() {
@@ -221,8 +227,8 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
     }
 
     function getSeedHitIndex(x: number, y: number) {
-      const startY = height * 0.335;
-      const rowGap = Math.min(112, Math.max(92, height * 0.108));
+      const startY = height * 0.31;
+      const rowGap = Math.min(126, Math.max(104, height * 0.116));
       const maxTextWidth = Math.max(132, stage.axisX - rail.x - 16);
       if (x < rail.x - 18 || x > rail.x + maxTextWidth + 18) return -1;
 
@@ -291,11 +297,11 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
 
     function drawSeedStage() {
       ctx.fillStyle = color.bone;
-      ctx.font = "10px monospace";
+      ctx.font = `${Math.min(11, Math.max(10, width * 0.023))}px monospace`;
       ctx.fillText("SYSTEM: 04_SEED_INTERCEPT", rail.x, height * 0.06);
 
       ctx.fillStyle = color.white;
-      ctx.font = "bold 24px monospace";
+      ctx.font = `bold ${Math.min(28, Math.max(24, width * 0.06))}px monospace`;
       ctx.fillText("选择当前压力种子", rail.x, height * 0.12);
 
       if (appState === "SEED_SANDIFY") return;
@@ -327,66 +333,83 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       ctx.arc(axisX, verticalKnobY, 3.2, 0, Math.PI * 2);
       ctx.fill();
 
-      const startY = height * 0.335;
-      const rowGap = Math.min(112, Math.max(92, height * 0.108));
+      const startY = height * 0.31;
+      const rowGap = Math.min(126, Math.max(104, height * 0.116));
       const maxTextWidth = Math.max(132, stage.axisX - rail.x - 16);
       currentSeeds.forEach((seed, index) => {
         const seedY = startY + index * rowGap;
         const isSelected = index === selectedSeedIndex;
         ctx.globalAlpha = appState === "SEED_LOCKED" || isSelected ? 1 : 0.48;
         ctx.fillStyle = color.white;
-        ctx.font = isSelected ? "15px monospace" : "14px monospace";
+        ctx.font = isSelected ? "16px monospace" : "15px monospace";
         ctx.fillText(`SEED ${seed.num}`, rail.x, seedY - 22);
 
         const textLines = buildSeedTextLines(seed.main, seed.sub, maxTextWidth);
         let lineY = seedY;
         textLines.forEach((line, lineIndex) => {
           ctx.fillStyle = lineIndex === textLines.length - 1 ? color.blue : color.white;
-          ctx.font = lineIndex === textLines.length - 1 ? "600 12px monospace" : isSelected ? "15px monospace" : "14px monospace";
+          ctx.font = lineIndex === textLines.length - 1 ? "600 13px monospace" : isSelected ? "16px monospace" : "15px monospace";
           ctx.fillText(line, rail.x, lineY);
-          lineY += 18;
+          lineY += 19;
         });
         ctx.globalAlpha = 1;
       });
     }
 
     function drawWeldStage() {
+      const isLocked = appState === "WELD_LOCKED" || appState === "WELD_SANDIFY";
+      const weldTextColor = isLocked ? color.gold : color.white;
+      const weldMutedColor = isLocked ? "rgba(199,169,107,0.72)" : color.bone;
+
       ctx.fillStyle = color.bone;
       ctx.font = "10px monospace";
       ctx.fillText("SYSTEM: 04_WELDING", rail.x, height * 0.06);
 
-      ctx.fillStyle = color.bone;
-      ctx.font = "13px monospace";
-      ctx.fillText("你刚刚选中的，它不是一个情绪。也不是一个问题。", rail.x, height * 0.13);
-      ctx.fillText("你的默认保护，正在被这件事牵动。", rail.x, height * 0.16);
-
       if (appState === "WELD_TYPING") {
         typeTimer += 1;
-        if (typeTimer >= 5) {
+        if (typeHoldTimer > 0) {
+          typeHoldTimer -= 1;
+        } else if (typeTimer >= 9) {
           typeTimer = 0;
-          const targetText = textLines[currentLineIndex];
+          const targetText = weldTypedLines[currentLineIndex];
           if (targetText && currentCharIndex < targetText.length) {
             displayedLines[currentLineIndex] += targetText[currentCharIndex];
             currentCharIndex += 1;
-          } else if (currentLineIndex < textLines.length - 1) {
+            if (targetText[currentCharIndex - 1] === "，" || targetText[currentCharIndex - 1] === "。") {
+              typeHoldTimer = 7;
+            }
+          } else if (currentLineIndex < weldTypedLines.length - 1) {
             currentLineIndex += 1;
             currentCharIndex = 0;
+            typeHoldTimer = 12;
           } else {
             appState = "WELD_INTERACT";
           }
         }
       }
 
-      ctx.fillStyle = color.white;
-      ctx.font = "18px monospace";
-      displayedLines.forEach((line, index) => {
-        ctx.fillText(line, rail.x, height * (0.25 + index * 0.06));
+      ctx.fillStyle = isLocked ? weldTextColor : "rgba(246,243,236,0.52)";
+      ctx.font = "14px monospace";
+      weldFixedLines.forEach((line, index) => {
+        ctx.globalAlpha = isLocked ? 0.72 : 0.7;
+        ctx.fillText(line, rail.x, height * (0.18 + index * 0.047));
       });
 
+      ctx.fillStyle = weldTextColor;
+      ctx.font = "17px monospace";
+      displayedLines.forEach((line, index) => {
+        ctx.globalAlpha = line ? (isLocked ? 0.92 : 1) : 0;
+        ctx.fillText(line, rail.x, height * (0.39 + index * 0.056));
+      });
+      ctx.globalAlpha = 1;
+
       if (appState === "WELD_LOCKED") {
+        ctx.fillStyle = weldMutedColor;
+        ctx.font = "10px monospace";
+        ctx.fillText("CAUSAL_WELD_LOCKED // 0.3S", rail.x, height * 0.52);
         ctx.fillStyle = color.gold;
         ctx.font = "bold 20px monospace";
-        ctx.fillText("因果焊接完成", rail.x, height * 0.52);
+        ctx.fillText("本局因果已高压焊死", rail.x, height * 0.56);
       }
     }
 
@@ -398,12 +421,15 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       const isGoldMode = appState === "WELD_LOCKED" || (appState === "WELD_INTERACT" && rail.currentProgress >= 0.95);
       const sliderX = getSliderX();
       const visualRailStartX = rail.x - 8;
+      let sliderY = rail.y;
 
       ctx.lineWidth = 1;
       ctx.strokeStyle = isGoldMode ? color.gold : appState === "SEED_LOCKED" ? color.white : color.bone;
       ctx.beginPath();
       if (appState === "WELD_INTERACT" && rail.isDragging) {
-        const tensionY = Math.sin(rail.currentProgress * Math.PI) * -25;
+        const tensionY = Math.sin(rail.currentProgress * Math.PI) * -58;
+        const curveT = Math.max(0, Math.min(1, rail.currentProgress));
+        sliderY = rail.y + 2 * (1 - curveT) * curveT * tensionY;
         ctx.moveTo(visualRailStartX, rail.y);
         ctx.quadraticCurveTo(sliderX, rail.y + tensionY, rail.x + rail.w, rail.y);
       } else {
@@ -411,6 +437,18 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
         ctx.lineTo(rail.x + rail.w, rail.y);
       }
       ctx.stroke();
+
+      if (appState === "WELD_LOCKED") {
+        ctx.strokeStyle = "rgba(199,169,107,0.5)";
+        ctx.beginPath();
+        ctx.moveTo(visualRailStartX, rail.y - 1.5);
+        ctx.lineTo(rail.x + rail.w, rail.y - 1.5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(visualRailStartX, rail.y + 1.5);
+        ctx.lineTo(rail.x + rail.w, rail.y + 1.5);
+        ctx.stroke();
+      }
 
       if (appState === "SEED_SELECT" && (seedDragMode === "load" || currentLoadProgress > 0.01)) {
         const loadStartX = getSelectedSeedX();
@@ -440,17 +478,17 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       let labelText = "[ Ⅰ · 点击种子定点 ｜ 横轴右滑装填 ]";
       if (appState === "SEED_LOCKED") labelText = "[ 种子装填完成，正在进入因果焊接 ]";
       if (appState === "WELD_TYPING") labelText = "[ CAUSAL_WELDING_RESONATING ]";
-      if (appState === "WELD_INTERACT") labelText = isGoldMode ? "[ 焊接临界完成 ]" : "[ 右滑：将压力种子与默认保护焊接 ]";
-      if (appState === "WELD_LOCKED") labelText = "[ 点击任意区域进入母码场 ]";
+      if (appState === "WELD_INTERACT") labelText = isGoldMode ? "［ 高压焊接临界 ］" : "［ ➔ 右滑充能：高压焊接本局因果 ］";
+      if (appState === "WELD_LOCKED") labelText = "［ 冷金死锁：本局命盘因果已焊死 ］";
       ctx.fillText(labelText, rail.x, rail.y + 18);
 
       ctx.strokeStyle = isGoldMode ? "rgba(199,169,107,0.72)" : "rgba(0,184,212,0.7)";
       ctx.beginPath();
-      ctx.arc(sliderX, rail.y, 7, 0, Math.PI * 2);
+      ctx.arc(sliderX, sliderY, 7, 0, Math.PI * 2);
       ctx.stroke();
       ctx.fillStyle = isGoldMode ? color.gold : color.blue;
       ctx.beginPath();
-      ctx.arc(sliderX, rail.y, 2.4, 0, Math.PI * 2);
+      ctx.arc(sliderX, sliderY, 2.4, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -498,7 +536,25 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
         if (sandParticles.length === 0) {
           appState = "WELD_TYPING";
           resetRail();
+          displayedLines = ["", "", "", ""];
+          currentLineIndex = 0;
+          currentCharIndex = 0;
+          typeTimer = 0;
+          typeHoldTimer = 0;
           sandifyTimer = 0;
+        }
+      }
+
+      if (appState === "WELD_LOCKED") {
+        if (!weldLockPulseFired) {
+          weldLockPulseFired = true;
+          window.navigator.vibrate?.([24, 28, 24, 28, 42]);
+        }
+        sandifyTimer += 1;
+        if (sandifyTimer > 18) {
+          appState = "WELD_SANDIFY";
+          sandifyTimer = 0;
+          spawnSandParticles("gold");
         }
       }
 
@@ -512,11 +568,21 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
     }
 
     function getClientPoint(event: PointerEvent | TouchEvent) {
+      const rect = surface.getBoundingClientRect();
       if ("touches" in event) {
         const touch = event.touches[0] ?? event.changedTouches[0];
-        return { x: touch?.clientX ?? 0, y: touch?.clientY ?? 0 };
+        return { x: (touch?.clientX ?? 0) - rect.left, y: (touch?.clientY ?? 0) - rect.top };
       }
-      return { x: event.clientX, y: event.clientY };
+      return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    }
+
+    function lockSeedLoad() {
+      loadProgress = 1;
+      currentLoadProgress = 1;
+      rail.isDragging = false;
+      seedDragMode = "idle";
+      sandifyTimer = 0;
+      appState = "SEED_LOCKED";
     }
 
     function onStart(event: PointerEvent | TouchEvent) {
@@ -524,8 +590,6 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       const { x, y } = getClientPoint(event);
 
       if (appState === "WELD_LOCKED") {
-        appState = "WELD_SANDIFY";
-        spawnSandParticles("gold");
         return;
       }
 
@@ -547,13 +611,29 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       const isWeldRailHit = appState === "WELD_INTERACT" && Math.abs(x - sliderX) < 35 && Math.abs(y - rail.y) < 35;
       if (isSeedRailHit || isWeldRailHit) {
         if (appState === "SEED_SELECT") {
+          if ("pointerId" in event) {
+            try {
+              surface.setPointerCapture(event.pointerId);
+            } catch {
+              /* noop */
+            }
+          }
           rail.isDragging = true;
           seedDragMode = "load";
           loadProgress = 0;
           currentLoadProgress = 0;
           return;
         }
-        if (appState === "WELD_INTERACT") rail.isDragging = true;
+        if (appState === "WELD_INTERACT") {
+          if ("pointerId" in event) {
+            try {
+              surface.setPointerCapture(event.pointerId);
+            } catch {
+              /* noop */
+            }
+          }
+          rail.isDragging = true;
+        }
         return;
       }
 
@@ -573,10 +653,14 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
           const startX = getSelectedSeedX();
           const availableWidth = Math.max(1, rail.x + rail.w - startX);
           loadProgress = Math.max(0, Math.min(1, (x - startX) / availableWidth));
+          if (loadProgress >= 0.98) {
+            lockSeedLoad();
+          }
           return;
         }
 
-        rail.progress = Math.max(0, Math.min(1, (x - rail.x) / rail.w));
+        const rawProgress = Math.max(0, Math.min(1, (x - rail.x) / rail.w));
+        rail.progress = Math.pow(rawProgress, 1.35);
         return;
       }
 
@@ -594,15 +678,19 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       event.preventDefault();
       isSwitchingGroup = false;
       verticalKnobTargetY = getAxisTop();
+      if ("pointerId" in event) {
+        try {
+          surface.releasePointerCapture(event.pointerId);
+        } catch {
+          /* noop */
+        }
+      }
       if (!rail.isDragging) return;
       rail.isDragging = false;
 
       if (appState === "SEED_SELECT") {
         if (seedDragMode === "load" && loadProgress >= 0.92) {
-          loadProgress = 1;
-          currentLoadProgress = 1;
-          seedDragMode = "idle";
-          appState = "SEED_LOCKED";
+          lockSeedLoad();
           return;
         }
 
@@ -625,6 +713,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       rail.progress = 1;
       if (appState === "WELD_INTERACT") {
         appState = "WELD_LOCKED";
+        sandifyTimer = 0;
       }
     }
 
@@ -653,22 +742,11 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
   }, [ageSegment, onComplete, seeds]);
 
   return (
-    <main
-      style={{
-        position: "fixed",
-        inset: 0,
-        width: "100vw",
-        height: "100dvh",
-        overflow: "hidden",
-        background: "#000",
-      }}
-    >
+    <GyMobilePreviewFrame background="#000">
       <canvas
         ref={canvasRef}
-        aria-label="压力种子与因果焊接两屏整合实验页"
+        aria-label="压力种子十字轴界面"
         style={{
-          position: "absolute",
-          inset: 0,
           width: "100%",
           height: "100%",
           display: "block",
@@ -676,6 +754,6 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
           userSelect: "none",
         }}
       />
-    </main>
+    </GyMobilePreviewFrame>
   );
 }
