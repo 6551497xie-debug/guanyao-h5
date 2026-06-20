@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { CausalRail } from "../components/causal/CausalRail";
@@ -12,18 +12,20 @@ const causalReadoutLabels = [
   ["默认反应链", "defaultReactionChain"],
 ] as const;
 
-const assetReadoutLabels = [
-  ["旧保护惯性", "shadowInertia"],
-  ["可松动位置", "unlockPotential"],
-  ["可带走资产", "personalityAsset"],
-] as const;
-
 export function MotherCodePage() {
   const navigate = useNavigate();
+  const [isMotherCardFlipped, setIsMotherCardFlipped] = useState(false);
   const readModel = useMemo(() => getGuanyaoR8ReadModel(), []);
   const motherCode = readModel.motherCodeStage;
   const motherCodeAsset = useMemo(() => getMotherCodeAsset(motherCode), [motherCode]);
   const motherCodeAssetLines = useMemo(() => buildMotherCodeAssetLines(motherCodeAsset), [motherCodeAsset]);
+  const motherAssetMap = useMemo(() => {
+    return motherCodeAssetLines.reduce<Record<string, string>>((acc, line) => {
+      const [label, ...valueParts] = line.split("：");
+      acc[label] = valueParts.join("：");
+      return acc;
+    }, {});
+  }, [motherCodeAssetLines]);
 
   return (
     <main
@@ -110,117 +112,181 @@ export function MotherCodePage() {
         aria-label="母码资产卡"
         style={{
           display: "grid",
-          gap: 16,
+          gap: 18,
           marginTop: "1vh",
-          padding: "18px 0 6px",
-          borderTop: "1px solid rgba(246,243,236,0.12)",
-          borderBottom: "1px solid rgba(246,243,236,0.08)",
+          padding: "14px 0 2px",
         }}
       >
+        <button
+          type="button"
+          onClick={() => setIsMotherCardFlipped((value) => !value)}
+          aria-label="点击翻转母码卡"
+          style={{
+            appearance: "none",
+            border: 0,
+            background: "transparent",
+            padding: 0,
+            color: "inherit",
+            perspective: 980,
+            cursor: "pointer",
+            outline: "none",
+          }}
+        >
+          <div
+            style={{
+              width: "min(78vw, 326px)",
+              aspectRatio: "0.68",
+              margin: "0 auto",
+              position: "relative",
+              transformStyle: "preserve-3d",
+              transform: isMotherCardFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+              transition: "transform 560ms cubic-bezier(.16,1,.3,1)",
+            }}
+          >
+            <div
+              aria-hidden={isMotherCardFlipped}
+              style={{
+                position: "absolute",
+                inset: 0,
+                border: "1px solid rgba(0,184,212,0.72)",
+                background:
+                  "radial-gradient(circle at 50% 39%, rgba(0,184,212,0.14), rgba(0,0,0,0.94) 62%)",
+                boxShadow: "0 0 34px rgba(0,184,212,0.16), inset 0 0 30px rgba(0,184,212,0.055)",
+                backfaceVisibility: "hidden",
+                display: "grid",
+                alignContent: "space-between",
+                padding: "22px 20px",
+                textAlign: "left",
+              }}
+            >
+              <div style={{ display: "grid", gap: 7 }}>
+                <span
+                  style={{
+                    color: "rgba(0,184,212,0.72)",
+                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                    fontSize: 10,
+                    letterSpacing: "0.12em",
+                  }}
+                >
+                  MOTHER_CODE / {motherCode.visualAssetCode}
+                </span>
+                <strong
+                  style={{
+                    color: "rgba(246,243,236,0.94)",
+                    fontSize: "clamp(26px, 7vw, 34px)",
+                    lineHeight: 1.12,
+                    fontWeight: 760,
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  {motherCodeAsset?.name ?? motherCode.motherCodeName}
+                </strong>
+              </div>
+
+              <div style={{ display: "grid", placeItems: "center", gap: 13 }}>
+                <span
+                  aria-hidden="true"
+                  style={{
+                    color: "rgba(0,184,212,0.92)",
+                    fontSize: 78,
+                    lineHeight: 1,
+                    fontWeight: 280,
+                    textShadow: "0 0 20px rgba(0,184,212,0.28)",
+                  }}
+                >
+                  {motherCode.trigramSymbol}
+                </span>
+                <span
+                  style={{
+                    color: "rgba(246,243,236,0.62)",
+                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                    fontSize: 11,
+                    letterSpacing: "0.12em",
+                    textAlign: "center",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {motherCode.xiantianDisplay}｜{motherCode.trigramImage}｜{motherCode.wuxing}
+                </span>
+              </div>
+
+              <div style={{ display: "grid", gap: 8 }}>
+                <p style={{ margin: 0, color: "rgba(246,243,236,0.78)", fontSize: 14, lineHeight: 1.6, letterSpacing: "0.03em" }}>
+                  {motherAssetMap["原力"] ?? motherCode.baseDrive}
+                </p>
+                <span style={{ color: "rgba(246,243,236,0.34)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, letterSpacing: "0.1em" }}>
+                  轻触翻面
+                </span>
+              </div>
+            </div>
+
+            <div
+              aria-hidden={!isMotherCardFlipped}
+              style={{
+                position: "absolute",
+                inset: 0,
+                border: "1px solid rgba(246,243,236,0.66)",
+                background: "linear-gradient(180deg, rgba(0,184,212,0.1), rgba(0,0,0,0.95))",
+                boxShadow: "0 0 34px rgba(246,243,236,0.1), inset 0 0 28px rgba(0,184,212,0.07)",
+                backfaceVisibility: "hidden",
+                transform: "rotateY(180deg)",
+                display: "grid",
+                alignContent: "center",
+                gap: 14,
+                padding: "24px 22px",
+                textAlign: "left",
+              }}
+            >
+              <span
+                style={{
+                  color: "rgba(0,184,212,0.76)",
+                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  fontSize: 11,
+                  letterSpacing: "0.12em",
+                }}
+              >
+                母码资产｜背面读取
+              </span>
+              {[
+                ["原力", motherAssetMap["原力"] ?? motherCode.baseDrive],
+                ["默认保护", motherAssetMap["默认保护"] ?? motherCode.defaultReactionChain],
+                ["压力中的误用", motherAssetMap["压力中的误用"] ?? motherCode.shadowInertia],
+                ["资产回收", motherAssetMap["资产回收"] ?? motherCode.personalityAsset],
+              ].map(([label, value]) => (
+                <div key={label} style={{ display: "grid", gap: 5 }}>
+                  <span
+                    style={{
+                      color: "rgba(0,184,212,0.68)",
+                      fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                      fontSize: 10,
+                      letterSpacing: "0.12em",
+                    }}
+                  >
+                    {label}
+                  </span>
+                  <p style={{ margin: 0, color: "rgba(246,243,236,0.76)", fontSize: 13, lineHeight: 1.6, letterSpacing: "0.03em" }}>
+                    {value}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </button>
+
         <div
           style={{
             display: "grid",
             gap: 8,
           }}
         >
-          <span
-            style={{
-              color: "rgba(246,243,236,0.44)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 11,
-              letterSpacing: "0.14em",
-            }}
-          >
-            母码资产卡
-          </span>
-          <strong
-            style={{
-              color: "rgba(246,243,236,0.92)",
-              fontSize: "clamp(24px, 6vw, 32px)",
-              fontWeight: 360,
-              lineHeight: 1.15,
-              letterSpacing: "0.08em",
-            }}
-          >
-            {motherCodeAsset?.name ?? motherCode.motherCodeName}
-          </strong>
-          <span
-            style={{
-              color: "rgba(246,243,236,0.42)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 11,
-              letterSpacing: "0.12em",
-            }}
-          >
-            {motherCode.visualAssetCode}
-          </span>
-          <span
-            style={{
-              color: "rgba(246,243,236,0.34)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 10,
-              letterSpacing: "0.1em",
-            }}
-          >
-            asset: {motherCode.visualAssetKey}
-          </span>
-          <span
-            style={{
-              color: "rgba(246,243,236,0.48)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 11,
-              letterSpacing: "0.1em",
-            }}
-          >
-            先天数：{motherCode.xiantianDisplay}｜{motherCode.trigramSymbol}｜{motherCode.trigramImage}｜{motherCode.wuxing}
-          </span>
-          <span
-            style={{
-              color: "rgba(246,243,236,0.5)",
-              fontSize: 13,
-              lineHeight: 1.5,
-              letterSpacing: "0.04em",
-            }}
-          >
-            原力：{motherCode.visualTags.force} / 映照：{motherCode.visualTags.mirror} / 解封：{motherCode.visualTags.unlock}
-          </span>
-          <span
-            style={{
-              color: "rgba(0,184,212,0.58)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 10,
-              letterSpacing: "0.12em",
-            }}
-          >
-            {motherCode.visualAssetStatus} / {motherCode.visualAssetPackage} / {motherCode.uiBindingStatus} / {motherCode.uiSurface}
-          </span>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gap: 12,
-          }}
-        >
-          <span
-            style={{
-              color: "rgba(246,243,236,0.44)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 11,
-              letterSpacing: "0.14em",
-              marginTop: 6,
-            }}
-          >
-            当前呈现
-          </span>
           {causalReadoutLabels.map(([label, key]) => (
             <article
               key={label}
               style={{
                 display: "grid",
                 gap: 7,
-                padding: "12px 0",
-                borderTop: "1px solid rgba(246,243,236,0.075)",
+                padding: "8px 0",
+                borderTop: "1px solid rgba(246,243,236,0.055)",
               }}
             >
               <span
@@ -240,99 +306,6 @@ export function MotherCodePage() {
                   fontSize: key === "defaultReactionChain" ? 18 : 14,
                   lineHeight: key === "defaultReactionChain" ? 1.45 : 1.68,
                   fontWeight: key === "defaultReactionChain" ? 380 : 300,
-                  letterSpacing: "0.04em",
-                }}
-              >
-                {motherCode[key]}
-              </p>
-            </article>
-          ))}
-          <span
-            style={{
-              color: "rgba(246,243,236,0.44)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 11,
-              letterSpacing: "0.14em",
-              marginTop: 6,
-            }}
-          >
-            母码资产
-          </span>
-          {motherCodeAssetLines.map((line) => {
-            const [label, ...valueParts] = line.split("：");
-            return (
-              <article
-                key={line}
-                style={{
-                  display: "grid",
-                  gap: 7,
-                  padding: "12px 0",
-                  borderTop: "1px solid rgba(246,243,236,0.075)",
-                }}
-              >
-                <span
-                  style={{
-                    color: "rgba(0,184,212,0.68)",
-                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                    fontSize: 11,
-                    letterSpacing: "0.13em",
-                  }}
-                >
-                  {label}
-                </span>
-                <p
-                  style={{
-                    margin: 0,
-                    color: "rgba(246,243,236,0.72)",
-                    fontSize: label === "原力" ? 16 : 14,
-                    lineHeight: 1.68,
-                    fontWeight: label === "原力" ? 360 : 300,
-                    letterSpacing: "0.04em",
-                  }}
-                >
-                  {valueParts.join("：")}
-                </p>
-              </article>
-            );
-          })}
-          <span
-            style={{
-              color: "rgba(246,243,236,0.44)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 11,
-              letterSpacing: "0.14em",
-              marginTop: 6,
-            }}
-          >
-            资产沉积补充
-          </span>
-          {assetReadoutLabels.map(([label, key]) => (
-            <article
-              key={label}
-              style={{
-                display: "grid",
-                gap: 7,
-                padding: "12px 0",
-                borderTop: "1px solid rgba(246,243,236,0.075)",
-              }}
-            >
-              <span
-                style={{
-                  color: "rgba(0,184,212,0.68)",
-                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.13em",
-                }}
-              >
-                {label}
-              </span>
-              <p
-                style={{
-                  margin: 0,
-                  color: "rgba(246,243,236,0.68)",
-                  fontSize: 14,
-                  lineHeight: 1.68,
-                  fontWeight: 300,
                   letterSpacing: "0.04em",
                 }}
               >
