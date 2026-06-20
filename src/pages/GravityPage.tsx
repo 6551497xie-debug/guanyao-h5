@@ -97,6 +97,10 @@ type SixSpaceRuntimeStep = "entry" | "breakthrough" | "weapon" | "completed";
 type SixSpaceIntensity = "yao1" | "yao2" | "yao3";
 type SixSpaceWeaponId = string;
 type AssetStep = "preview" | "confirm" | "unlocked";
+type ActionArtifactStage = "interact" | "break" | "front" | "flipping" | "back" | "sandify";
+type MemoryArtifactStage = "interact" | "break" | "front" | "sandify";
+type GoalFinalStage = "interact" | "break" | "paywall" | "sandify";
+type AssetFuseStage = "interact" | "break" | "crystal";
 type SixSpaceWeapon = {
   id: SixSpaceWeaponId;
   name: string;
@@ -231,6 +235,19 @@ const thoughtRailSegments = [
 function getThoughtRailYOffset(progress: number) {
   const segment = thoughtRailSegments.find((item) => progress >= item.start && progress <= item.end);
   return segment?.y ?? thoughtRailSegments[thoughtRailSegments.length - 1].y;
+}
+
+function getActionGravityCurveX(progress: number) {
+  const controlX = 52 - progress * 76;
+  return (1 - progress) * (1 - progress) * 52 + 2 * (1 - progress) * progress * controlX + progress * progress * 52;
+}
+
+function getMemorySmokeRailY(progress: number) {
+  return 40 + Math.sin((1 - progress) * Math.PI) * 24;
+}
+
+function getGoalTearCurveY(progress: number) {
+  return 40 - Math.sin(progress * Math.PI) * 28;
 }
 
 const bodyWeaponOptions: Array<{ value: BodyWeapon; label: string; cost: number; line: string; completedLines: string[] }> = [
@@ -514,11 +531,11 @@ const sixSpaceConfigs: SixSpaceConfig[] = [
     ],
     weapons: [
       {
-        id: "interrupt",
-        name: "打断它",
+        id: "wind-cutter",
+        name: "听风刀",
         cost: 2,
-        description: "当‘以前也这样’出现时，说‘这次不一样’。",
-        completionLines: ["当“以前也这样”出现时，", "对自己说：", "这次不一样。"],
+        description: "把旧失败从眼前切开。",
+        completionLines: ["这一次，", "先听见现在的风，", "不要让过去替你回答。"],
       },
       {
         id: "name",
@@ -987,10 +1004,39 @@ function HexagramCodeDeliveryShell() {
   const actionGravityRailRef = useRef<HTMLDivElement | null>(null);
   const actionGravityLockTimerRef = useRef<number | null>(null);
   const actionGravityCompleteTimerRef = useRef<number | null>(null);
+  const actionArtifactFlipTimerRef = useRef<number | null>(null);
+  const actionArtifactExitTimerRef = useRef<number | null>(null);
+  const memorySmokeRailRef = useRef<HTMLDivElement | null>(null);
+  const memorySmokeLockTimerRef = useRef<number | null>(null);
+  const memorySmokeExitTimerRef = useRef<number | null>(null);
+  const memorySmokeProgressRef = useRef(1);
+  const memorySmokeDragStartRef = useRef<{ clientX: number; progress: number } | null>(null);
+  const goalTearRailRef = useRef<HTMLDivElement | null>(null);
+  const goalTearLockTimerRef = useRef<number | null>(null);
+  const goalTearExitTimerRef = useRef<number | null>(null);
+  const goalTearProgressRef = useRef(0);
+  const assetFuseRailRef = useRef<HTMLDivElement | null>(null);
+  const assetFuseTimerRef = useRef<number | null>(null);
+  const assetFuseProgressRef = useRef(0);
   const [actionGravityProgress, setActionGravityProgress] = useState(0);
   const [isActionGravityDragging, setIsActionGravityDragging] = useState(false);
   const [isActionGravityLocked, setIsActionGravityLocked] = useState(false);
   const [isActionGravitySandifying, setIsActionGravitySandifying] = useState(false);
+  const [actionArtifactStage, setActionArtifactStage] = useState<ActionArtifactStage>("interact");
+  const [memorySmokeProgress, setMemorySmokeProgress] = useState(1);
+  const [isMemorySmokeDragging, setIsMemorySmokeDragging] = useState(false);
+  const [isMemorySmokeLocked, setIsMemorySmokeLocked] = useState(false);
+  const [isMemorySmokeSandifying, setIsMemorySmokeSandifying] = useState(false);
+  const [memoryArtifactStage, setMemoryArtifactStage] = useState<MemoryArtifactStage>("interact");
+  const [goalTearProgress, setGoalTearProgress] = useState(0);
+  const [isGoalTearDragging, setIsGoalTearDragging] = useState(false);
+  const [isGoalTearLocked, setIsGoalTearLocked] = useState(false);
+  const [isGoalTearSandifying, setIsGoalTearSandifying] = useState(false);
+  const [goalFinalStage, setGoalFinalStage] = useState<GoalFinalStage>("interact");
+  const [assetFuseProgress, setAssetFuseProgress] = useState(0);
+  const [isAssetFuseDragging, setIsAssetFuseDragging] = useState(false);
+  const [isAssetFuseLocked, setIsAssetFuseLocked] = useState(false);
+  const [assetFuseStage, setAssetFuseStage] = useState<AssetFuseStage>("interact");
   const [selectedSpaceWeapons, setSelectedSpaceWeapons] = useState<Record<SixSpaceId, SixSpaceWeaponId | null>>(() => ({
     body: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("body")),
     emotion: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("emotion")),
@@ -1101,8 +1147,35 @@ function HexagramCodeDeliveryShell() {
       if (actionGravityCompleteTimerRef.current) {
         window.clearTimeout(actionGravityCompleteTimerRef.current);
       }
+      if (actionArtifactFlipTimerRef.current) {
+        window.clearTimeout(actionArtifactFlipTimerRef.current);
+      }
+      if (actionArtifactExitTimerRef.current) {
+        window.clearTimeout(actionArtifactExitTimerRef.current);
+      }
+      if (memorySmokeLockTimerRef.current) {
+        window.clearTimeout(memorySmokeLockTimerRef.current);
+      }
+      if (memorySmokeExitTimerRef.current) {
+        window.clearTimeout(memorySmokeExitTimerRef.current);
+      }
+      if (goalTearLockTimerRef.current) {
+        window.clearTimeout(goalTearLockTimerRef.current);
+      }
+      if (goalTearExitTimerRef.current) {
+        window.clearTimeout(goalTearExitTimerRef.current);
+      }
+      if (assetFuseTimerRef.current) {
+        window.clearTimeout(assetFuseTimerRef.current);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    if (sixDimensionStep !== 2 || emotionSpaceStep !== "entry" || !isEmotionCaliperSandifying) return;
+    const fallbackTimer = window.setTimeout(advanceFromEmotionCaliper, 900);
+    return () => window.clearTimeout(fallbackTimer);
+  }, [sixDimensionStep, emotionSpaceStep, isEmotionCaliperSandifying]);
 
   function handleNextSpace() {
     setSelectedSpaceAction(null);
@@ -1120,6 +1193,15 @@ function HexagramCodeDeliveryShell() {
     setEmotionSpaceStep("entry");
     setEmotionBreakthroughStep(0);
     setEmotionSpaceHint("");
+    handleNextSpace();
+  }
+
+  function advanceFromEmotionCaliper() {
+    setIsEmotionCaliperLocked(false);
+    setIsEmotionCaliperSandifying(false);
+    setEmotionSpaceHint("");
+    setEmotionCaliperProgress(0);
+    setEmotionCaliperPassedIndex(0);
     handleNextSpace();
   }
 
@@ -1333,14 +1415,7 @@ function HexagramCodeDeliveryShell() {
     }
     emotionCaliperLockTimerRef.current = window.setTimeout(() => {
       setIsEmotionCaliperSandifying(true);
-      emotionCaliperAdvanceTimerRef.current = window.setTimeout(() => {
-        setIsEmotionCaliperLocked(false);
-        setIsEmotionCaliperSandifying(false);
-        setEmotionSpaceHint("");
-        setEmotionCaliperProgress(0);
-        setEmotionCaliperPassedIndex(0);
-        handleNextSpace();
-      }, 780);
+      emotionCaliperAdvanceTimerRef.current = window.setTimeout(advanceFromEmotionCaliper, 780);
     }, 1200);
   }
 
@@ -1430,6 +1505,10 @@ function HexagramCodeDeliveryShell() {
         setGenericSpaceHint("thought", "");
         setThoughtCaliperProgress(0);
         setThoughtCaliperPassedIndex(0);
+        setSpaceSteps((current) => ({ ...current, action: "entry" }));
+        setSpaceBreakthroughSteps((current) => ({ ...current, action: 0 }));
+        setGenericSpaceHint("action", "");
+        setActionArtifactStage("interact");
         handleNextSpace();
       }, 820);
     }, 1200);
@@ -1443,7 +1522,7 @@ function HexagramCodeDeliveryShell() {
   }
 
   function handleActionGravityPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    if (isActionGravityLocked) return;
+    if (isActionGravityLocked || actionArtifactStage !== "interact") return;
     const rect = actionGravityRailRef.current?.getBoundingClientRect();
     if (!rect || rect.height <= 0) return;
     const knobY = rect.top + rect.height * actionGravityProgress;
@@ -1454,7 +1533,7 @@ function HexagramCodeDeliveryShell() {
   }
 
   function handleActionGravityPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!isActionGravityDragging || isActionGravityLocked) return;
+    if (!isActionGravityDragging || isActionGravityLocked || actionArtifactStage !== "interact") return;
     setActionGravityProgress(getActionGravityProgressFromPointer(event));
   }
 
@@ -1477,6 +1556,7 @@ function HexagramCodeDeliveryShell() {
     selectGenericIntensity("action", "yao3");
     setSelectedSpaceWeapons((current) => ({ ...current, action: "small-step" }));
     setIsActionGravityLocked(true);
+    setActionArtifactStage("break");
     setGenericSpaceHint("action", "止动盾已唤醒。");
     if (typeof window !== "undefined") {
       window.localStorage.setItem("guanyao:selectedBreakSpace", "action");
@@ -1487,15 +1567,272 @@ function HexagramCodeDeliveryShell() {
       navigator.vibrate([18, 24, 42]);
     }
     actionGravityLockTimerRef.current = window.setTimeout(() => {
-      setIsActionGravitySandifying(true);
-      actionGravityCompleteTimerRef.current = window.setTimeout(() => {
-        setIsActionGravityLocked(false);
-        setIsActionGravitySandifying(false);
-        setActionGravityProgress(0);
-        setGenericSpaceHint("action", "");
-        setSpaceSteps((current) => ({ ...current, action: "completed" }));
-      }, 820);
+      setActionArtifactStage("front");
+      setGenericSpaceHint("action", "");
+    }, 1400);
+  }
+
+  function handleActionArtifactFlip() {
+    if (actionArtifactStage !== "front") return;
+    setActionArtifactStage("flipping");
+    if ("vibrate" in navigator) {
+      navigator.vibrate(10);
+    }
+    actionArtifactFlipTimerRef.current = window.setTimeout(() => {
+      setActionArtifactStage("back");
+    }, 520);
+  }
+
+  function handleActionArtifactExit() {
+    if (actionArtifactStage !== "back") return;
+    setActionArtifactStage("sandify");
+    setIsActionGravitySandifying(true);
+    actionArtifactExitTimerRef.current = window.setTimeout(() => {
+      setIsActionGravityLocked(false);
+      setIsActionGravitySandifying(false);
+      setActionGravityProgress(0);
+      setGenericSpaceHint("action", "");
+      setSpaceSteps((current) => ({ ...current, action: "completed" }));
+      setSpaceSteps((current) => ({ ...current, memory: "entry" }));
+      setSpaceBreakthroughSteps((current) => ({ ...current, memory: 0 }));
+      setGenericSpaceHint("memory", "");
+      setMemoryArtifactStage("interact");
+      updateMemorySmokeProgress(1);
+      setIsMemorySmokeLocked(false);
+      setIsMemorySmokeSandifying(false);
+      handleNextSpace();
     }, 760);
+  }
+
+  function getMemorySmokeProgressFromPointer(event: ReactPointerEvent<HTMLDivElement>) {
+    const rect = memorySmokeRailRef.current?.getBoundingClientRect();
+    if (!rect || rect.width <= 0) return memorySmokeProgressRef.current;
+    return Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+  }
+
+  function updateMemorySmokeProgress(nextProgress: number) {
+    const clampedProgress = Math.max(0, Math.min(1, nextProgress));
+    memorySmokeProgressRef.current = clampedProgress;
+    setMemorySmokeProgress(clampedProgress);
+  }
+
+  function handleMemorySmokePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (isMemorySmokeLocked || memoryArtifactStage !== "interact") return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    memorySmokeDragStartRef.current = {
+      clientX: event.clientX,
+      progress: memorySmokeProgressRef.current,
+    };
+    setIsMemorySmokeDragging(true);
+    setGenericSpaceHint("memory", "");
+  }
+
+  function handleMemorySmokePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isMemorySmokeDragging || isMemorySmokeLocked || memoryArtifactStage !== "interact") return;
+    const rect = memorySmokeRailRef.current?.getBoundingClientRect();
+    const dragStart = memorySmokeDragStartRef.current;
+    if (!rect || rect.width <= 0 || !dragStart) return;
+    const dragDelta = (event.clientX - dragStart.clientX) / rect.width;
+    updateMemorySmokeProgress(dragStart.progress + dragDelta);
+  }
+
+  function handleMemorySmokePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isMemorySmokeDragging || isMemorySmokeLocked) return;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    setIsMemorySmokeDragging(false);
+    memorySmokeDragStartRef.current = null;
+    const finalProgress = memorySmokeProgressRef.current;
+
+    if (finalProgress > 0.18) {
+      updateMemorySmokeProgress(1);
+      setGenericSpaceHint("memory", "还没有切开。");
+      if ("vibrate" in navigator) {
+        navigator.vibrate(8);
+      }
+      return;
+    }
+
+    updateMemorySmokeProgress(0);
+    selectGenericIntensity("memory", "yao3");
+    setSelectedSpaceWeapons((current) => ({ ...current, memory: "wind-cutter" }));
+    setIsMemorySmokeLocked(true);
+    setMemoryArtifactStage("break");
+    setGenericSpaceHint("memory", "听风刀已唤醒。");
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("guanyao:selectedBreakSpace", "memory");
+      window.localStorage.setItem(getSelectedWeaponStorageKey("memory"), "wind-cutter");
+      window.localStorage.setItem("guanyao:memoryBreakthroughCompleted", "true");
+      window.localStorage.setItem("GY_SPACE_MEMORY_BREAK", "TRUE");
+    }
+    if ("vibrate" in navigator) {
+      navigator.vibrate([14, 22, 38]);
+    }
+    memorySmokeLockTimerRef.current = window.setTimeout(() => {
+      setMemoryArtifactStage("front");
+      setGenericSpaceHint("memory", "");
+    }, 1280);
+  }
+
+  function handleMemoryArtifactExit() {
+    if (memoryArtifactStage !== "front") return;
+    setMemoryArtifactStage("sandify");
+    setIsMemorySmokeSandifying(true);
+    memorySmokeExitTimerRef.current = window.setTimeout(() => {
+      setIsMemorySmokeLocked(false);
+      setIsMemorySmokeSandifying(false);
+      updateMemorySmokeProgress(1);
+      setGenericSpaceHint("memory", "");
+      setSpaceSteps((current) => ({ ...current, memory: "completed" }));
+      setSpaceSteps((current) => ({ ...current, goal: "entry" }));
+      setSpaceBreakthroughSteps((current) => ({ ...current, goal: 0 }));
+      setGenericSpaceHint("goal", "");
+      updateGoalTearProgress(0);
+      setGoalFinalStage("interact");
+      setIsGoalTearLocked(false);
+      setIsGoalTearSandifying(false);
+      handleNextSpace();
+    }, 760);
+  }
+
+  function updateGoalTearProgress(nextProgress: number) {
+    const clampedProgress = Math.max(0, Math.min(1, nextProgress));
+    goalTearProgressRef.current = clampedProgress;
+    setGoalTearProgress(clampedProgress);
+  }
+
+  function getGoalTearProgressFromPointer(event: ReactPointerEvent<HTMLDivElement>) {
+    const rect = goalTearRailRef.current?.getBoundingClientRect();
+    if (!rect || rect.width <= 0) return goalTearProgressRef.current;
+    const centerX = rect.left + rect.width * 0.5;
+    return Math.max(0, Math.min(1, Math.abs(event.clientX - centerX) / (rect.width * 0.5)));
+  }
+
+  function handleGoalTearPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (isGoalTearLocked || goalFinalStage !== "interact") return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsGoalTearDragging(true);
+    updateGoalTearProgress(getGoalTearProgressFromPointer(event));
+    setGenericSpaceHint("goal", "");
+  }
+
+  function handleGoalTearPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isGoalTearDragging || isGoalTearLocked || goalFinalStage !== "interact") return;
+    updateGoalTearProgress(getGoalTearProgressFromPointer(event));
+    if (goalTearProgressRef.current > 0.58 && "vibrate" in navigator) {
+      navigator.vibrate(4);
+    }
+  }
+
+  function handleGoalTearPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isGoalTearDragging || isGoalTearLocked) return;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    setIsGoalTearDragging(false);
+
+    if (goalTearProgressRef.current < 0.82) {
+      updateGoalTearProgress(0);
+      setGenericSpaceHint("goal", "还没有撕开。");
+      if ("vibrate" in navigator) {
+        navigator.vibrate(8);
+      }
+      return;
+    }
+
+    updateGoalTearProgress(1);
+    selectGenericIntensity("goal", "yao3");
+    setSelectedSpaceWeapons((current) => ({ ...current, goal: "look-forward" }));
+    setIsGoalTearLocked(true);
+    setGoalFinalStage("break");
+    setGenericSpaceHint("goal", "终局剧本已撕开。");
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("guanyao:selectedBreakSpace", "goal");
+      window.localStorage.setItem(getSelectedWeaponStorageKey("goal"), "look-forward");
+      window.localStorage.setItem("guanyao:goalBreakthroughCompleted", "true");
+    }
+    if ("vibrate" in navigator) {
+      navigator.vibrate([18, 28, 46]);
+    }
+    goalTearLockTimerRef.current = window.setTimeout(() => {
+      setGoalFinalStage("paywall");
+      setGenericSpaceHint("goal", "");
+    }, 1050);
+  }
+
+  function handleGoalFinalPaywall() {
+    if (goalFinalStage !== "paywall") return;
+    setGoalFinalStage("sandify");
+    setIsGoalTearSandifying(true);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("GY_TOTAL_CAUSAL_MATRIX_UNLOCKED", "TRUE");
+    }
+    goalTearExitTimerRef.current = window.setTimeout(() => {
+      setIsGoalTearLocked(false);
+      setIsGoalTearSandifying(false);
+      updateGoalTearProgress(0);
+      setGenericSpaceHint("goal", "");
+      setSpaceSteps((current) => ({ ...current, goal: "completed" }));
+      setAssetStep("preview");
+      setAssetFuseStage("interact");
+      setIsAssetFuseLocked(false);
+      updateAssetFuseProgress(0);
+      setSixDimensionStep(7);
+    }, 860);
+  }
+
+  function updateAssetFuseProgress(nextProgress: number) {
+    const clampedProgress = Math.max(0, Math.min(1, nextProgress));
+    assetFuseProgressRef.current = clampedProgress;
+    setAssetFuseProgress(clampedProgress);
+  }
+
+  function getAssetFuseProgressFromPointer(event: ReactPointerEvent<HTMLDivElement>) {
+    const rect = assetFuseRailRef.current?.getBoundingClientRect();
+    if (!rect || rect.width <= 0) return assetFuseProgressRef.current;
+    return Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+  }
+
+  function handleAssetFusePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (isAssetFuseLocked || assetStep !== "preview") return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsAssetFuseDragging(true);
+    updateAssetFuseProgress(getAssetFuseProgressFromPointer(event));
+  }
+
+  function handleAssetFusePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isAssetFuseDragging || isAssetFuseLocked || assetStep !== "preview") return;
+    const nextProgress = getAssetFuseProgressFromPointer(event);
+    updateAssetFuseProgress(nextProgress);
+    if (nextProgress > 0.14 && "vibrate" in navigator) {
+      navigator.vibrate(3);
+    }
+  }
+
+  function handleAssetFusePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isAssetFuseDragging || isAssetFuseLocked) return;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    setIsAssetFuseDragging(false);
+
+    if (assetFuseProgressRef.current < 0.94) {
+      updateAssetFuseProgress(0);
+      return;
+    }
+
+    updateAssetFuseProgress(1);
+    setIsAssetFuseLocked(true);
+    setAssetFuseStage("break");
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("GY_TOTAL_ASSET_STATUS", "CONDENSED_PERMANENT");
+    }
+    if ("vibrate" in navigator) {
+      navigator.vibrate([18, 22, 42]);
+    }
+    assetFuseTimerRef.current = window.setTimeout(() => {
+      setAssetFuseStage("crystal");
+      handleConfirmAssetUnlock();
+    }, 980);
+  }
+
+  function handleExitCondensedAsset() {
+    navigate("/");
   }
 
   function handleOpenEmotionWeaponStep() {
@@ -1711,6 +2048,8 @@ function HexagramCodeDeliveryShell() {
       >
         {sixDimensionStep === 7
             ? "GY / ASSET / CURRENT"
+            : sixDimensionStep === 4
+              ? "04｜行为空间｜破心魔"
             : `GY / SPACE-0${sixDimensionStep} / ${currentSixSpaceConfig?.code ?? currentSpace?.spaceCode ?? "SPACE"}`}
       </span>
 
@@ -2703,14 +3042,14 @@ function HexagramCodeDeliveryShell() {
         </>
       ) : null}
 
-      {currentSixSpaceConfig && sixDimensionStep === 4 && currentSixSpaceConfig.id === "action" && spaceSteps.action === "entry" ? (
+      {currentSixSpaceConfig && sixDimensionStep === 4 && currentSixSpaceConfig.id === "action" && spaceSteps.action !== "completed" ? (
         <>
-          <header style={{ display: "grid", gap: 10 }}>
+          <header style={{ display: actionArtifactStage === "front" || actionArtifactStage === "flipping" || actionArtifactStage === "back" ? "none" : "grid", gap: 10 }}>
             <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(34px, 10vw, 52px)", lineHeight: 1.08, fontWeight: 390 }}>
               行为空间
             </h1>
             <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 18, lineHeight: 1.65 }}>
-              “你想做，但卡住了。”
+              “{currentProjection?.hook ?? "你想做点什么，但卡住了。"}”
             </p>
           </header>
 
@@ -2719,39 +3058,28 @@ function HexagramCodeDeliveryShell() {
             style={{
               position: "relative",
               minHeight: "58dvh",
-              padding: "18px 0 4px",
+              padding: "10px 0 4px",
               opacity: isActionGravitySandifying ? 0 : 1,
               transform: isActionGravitySandifying ? "translateY(26px)" : "translateY(0)",
               filter: isActionGravitySandifying ? "blur(1.6px)" : "none",
               transition: "opacity 520ms ease, transform 520ms ease, filter 520ms ease",
             }}
           >
-            <div style={{ display: "grid", gap: 18, width: "72%", paddingTop: 8 }}>
-              <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.08em" }}>
-                SYSTEM: SPACE_04_ACTION // FIRST_BREAK_STRIKE
-              </span>
-              <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 16, lineHeight: 1.78 }}>
-                你脑子里想了无数遍，
-                <br />
-                手还在原处。
+            {actionArtifactStage === "interact" || actionArtifactStage === "break" ? (
+            <div style={{ display: "grid", gap: 22, width: "66%", paddingTop: 52 }}>
+              <p style={{ margin: 0, color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.65 }}>
+                当前承载压力之刺
               </p>
-              <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 18, lineHeight: 1.72, fontWeight: 740 }}>
-                把想法卡成永远的那一下，
-                <br />
-                现在从手里断开。
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 15, lineHeight: 1.78 }}>
+                {selectedPressureSeedSurface}
               </p>
-              <p
-                style={{
-                  margin: "8px 0 0",
-                  color: isActionGravityLocked ? "rgba(255,255,255,0.88)" : "rgba(199,169,107,0.78)",
-                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                  fontSize: 11,
-                  lineHeight: 1.7,
-                }}
-              >
-                {isActionGravityLocked
-                  ? "［ 止动盾正在打印 ｜ 行为魔咒已断裂 ］"
-                  : "［ 垂直向下狠狠拉断此线 · 偏转“把想法卡成永远”的行动魔咒 ］"}
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 15, lineHeight: 1.78 }}>
+                {currentNarrativeLines[0] ?? "你脑子里想了无数遍，手还在原处。"}
+              </p>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 19, lineHeight: 1.74, fontWeight: 760 }}>
+                {currentNarrativeLines[1] ?? "把想法，卡成永远。"}
+                <br />
+                现在从手里拉断。
               </p>
               {spaceHints.action ? (
                 <p style={{ margin: 0, color: isActionGravityLocked ? "rgba(199,169,107,0.9)" : "rgba(245,245,245,0.45)", fontSize: 13, lineHeight: 1.58 }}>
@@ -2759,7 +3087,9 @@ function HexagramCodeDeliveryShell() {
                 </p>
               ) : null}
             </div>
+            ) : null}
 
+            {actionArtifactStage === "interact" || actionArtifactStage === "break" ? (
             <div
               ref={actionGravityRailRef}
               role="slider"
@@ -2781,6 +3111,24 @@ function HexagramCodeDeliveryShell() {
                 cursor: isActionGravityLocked ? "default" : "grab",
               }}
             >
+              <span
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  right: 50,
+                  top: 0,
+                  writingMode: "vertical-rl",
+                  textOrientation: "mixed",
+                  color: isActionGravityLocked ? "rgba(255,255,255,0.82)" : "rgba(199,169,107,0.72)",
+                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  fontSize: 10,
+                  lineHeight: 1.45,
+                  letterSpacing: "0.08em",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {isActionGravityLocked ? "止动盾正在打印｜行动魔咒已断裂" : "向下拉断此线｜偏转行动卡死"}
+              </span>
               <svg
                 aria-hidden="true"
                 viewBox="0 0 78 360"
@@ -2791,39 +3139,53 @@ function HexagramCodeDeliveryShell() {
                   overflow: "visible",
                 }}
               >
-                <path
-                  d={`M52 0 C${52 - actionGravityProgress * 46} 126 ${52 - actionGravityProgress * 52} 232 52 360`}
-                  fill="none"
-                  stroke={isActionGravityLocked ? "rgba(255,255,255,0.86)" : "rgba(199,169,107,0.72)"}
-                  strokeWidth="1"
-                  strokeLinecap="round"
-                  style={{
-                    filter: isActionGravityLocked ? "drop-shadow(0 0 12px rgba(255,255,255,0.28))" : "drop-shadow(0 0 12px rgba(199,169,107,0.22))",
-                    transition: isActionGravityDragging ? "none" : "stroke 160ms ease, filter 160ms ease",
-                  }}
-                />
                 {isActionGravityLocked ? (
                   <>
-                    <path d="M30 178 L48 178" stroke="rgba(199,169,107,0.96)" strokeWidth="1" />
-                    <path d="M56 178 L72 178" stroke="rgba(199,169,107,0.96)" strokeWidth="1" />
+                    <path
+                      d="M52 0 Q-18 82 30 164"
+                      fill="none"
+                      stroke="rgba(255,255,255,0.86)"
+                      strokeWidth="1"
+                      strokeLinecap="round"
+                      style={{ filter: "drop-shadow(0 0 12px rgba(255,255,255,0.3))" }}
+                    />
+                    <path
+                      d="M72 196 Q-12 272 52 360"
+                      fill="none"
+                      stroke="rgba(199,169,107,0.92)"
+                      strokeWidth="1"
+                      strokeLinecap="round"
+                      style={{ filter: "drop-shadow(0 0 14px rgba(199,169,107,0.34))" }}
+                    />
+                    <path d="M28 177 L46 171" stroke="rgba(199,169,107,0.98)" strokeWidth="1" />
+                    <path d="M56 189 L74 183" stroke="rgba(199,169,107,0.98)" strokeWidth="1" />
                   </>
+                ) : (
+                  <path
+                    d={`M52 0 Q${52 - actionGravityProgress * 76} 180 52 360`}
+                    fill="none"
+                    stroke="rgba(199,169,107,0.72)"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                    style={{
+                      filter: "drop-shadow(0 0 12px rgba(199,169,107,0.22))",
+                      transition: isActionGravityDragging ? "none" : "stroke 160ms ease, filter 160ms ease",
+                    }}
+                  />
+                )}
+                {!isActionGravityLocked ? (
+                  <circle
+                    cx={getActionGravityCurveX(actionGravityProgress)}
+                    cy={actionGravityProgress * 360}
+                    r="4.8"
+                    fill="#C7A96B"
+                    style={{
+                      filter: "drop-shadow(0 0 16px rgba(199,169,107,0.48))",
+                      transition: isActionGravityDragging ? "none" : "cx 220ms cubic-bezier(.16,1,.3,1), cy 220ms cubic-bezier(.16,1,.3,1)",
+                    }}
+                  />
                 ) : null}
               </svg>
-              <span
-                aria-hidden="true"
-                style={{
-                  position: "absolute",
-                  left: `calc(52px - ${Math.sin(actionGravityProgress * Math.PI) * 40}px)`,
-                  top: `${actionGravityProgress * 100}%`,
-                  width: isActionGravityLocked ? 10 : 9,
-                  height: isActionGravityLocked ? 10 : 9,
-                  transform: "translate(-50%, -50%)",
-                  borderRadius: "50%",
-                  background: isActionGravityLocked ? "#fff" : "#C7A96B",
-                  boxShadow: isActionGravityLocked ? "0 0 18px rgba(255,255,255,0.4)" : "0 0 18px rgba(199,169,107,0.42)",
-                  transition: isActionGravityDragging ? "none" : "top 220ms cubic-bezier(.16,1,.3,1), left 220ms cubic-bezier(.16,1,.3,1), background 160ms ease",
-                }}
-              />
               <span
                 aria-hidden="true"
                 style={{
@@ -2837,11 +3199,614 @@ function HexagramCodeDeliveryShell() {
                 }}
               />
             </div>
+            ) : null}
+
+            {actionArtifactStage === "front" || actionArtifactStage === "flipping" || actionArtifactStage === "back" || actionArtifactStage === "sandify" ? (
+              <div
+                role={actionArtifactStage === "front" || actionArtifactStage === "back" ? "button" : undefined}
+                tabIndex={actionArtifactStage === "front" || actionArtifactStage === "back" ? 0 : -1}
+                onClick={actionArtifactStage === "front" ? handleActionArtifactFlip : actionArtifactStage === "back" ? handleActionArtifactExit : undefined}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter" && event.key !== " ") return;
+                  if (actionArtifactStage === "front") handleActionArtifactFlip();
+                  if (actionArtifactStage === "back") handleActionArtifactExit();
+                }}
+                style={{
+                  minHeight: "58dvh",
+                  display: "grid",
+                  placeItems: "center",
+                  perspective: 900,
+                  cursor: actionArtifactStage === "front" || actionArtifactStage === "back" ? "pointer" : "default",
+                  opacity: actionArtifactStage === "sandify" ? 0 : 1,
+                  transform: actionArtifactStage === "sandify" ? "translateY(28px)" : "translateY(0)",
+                  transition: "opacity 520ms ease, transform 520ms ease",
+                  outline: "none",
+                }}
+              >
+                <div
+                  style={{
+                    width: "min(74vw, 310px)",
+                    aspectRatio: "0.68",
+                    position: "relative",
+                    transformStyle: "preserve-3d",
+                    transform:
+                      actionArtifactStage === "back"
+                        ? "rotateY(180deg)"
+                        : actionArtifactStage === "flipping"
+                          ? "rotateY(92deg) scale(1.02)"
+                          : "rotateY(0deg)",
+                    transition: "transform 520ms cubic-bezier(.16,1,.3,1)",
+                  }}
+                >
+                  <div
+                    aria-hidden={actionArtifactStage === "back"}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      border: "1px solid rgba(199,169,107,0.82)",
+                      background: "radial-gradient(circle at 50% 42%, rgba(199,169,107,0.12), rgba(0,0,0,0.92) 58%)",
+                      boxShadow: "0 0 36px rgba(199,169,107,0.16), inset 0 0 30px rgba(199,169,107,0.06)",
+                      backfaceVisibility: "hidden",
+                      display: "grid",
+                      alignContent: "space-between",
+                      padding: "22px 20px",
+                    }}
+                  >
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
+                        ACTION WEAPON / 04
+                      </span>
+                      <strong style={{ color: "rgba(245,245,245,0.92)", fontSize: 28, lineHeight: 1.12, fontWeight: 760 }}>
+                        止动盾
+                      </strong>
+                    </div>
+
+                    <div style={{ display: "grid", placeItems: "center", gap: 14 }}>
+                      <svg width="126" height="126" viewBox="0 0 126 126" aria-hidden="true" style={{ filter: "drop-shadow(0 0 18px rgba(199,169,107,0.28))" }}>
+                        <path d="M63 12 L102 28 L96 70 C91 94 75 108 63 115 C51 108 35 94 30 70 L24 28 Z" fill="none" stroke="#C7A96B" strokeWidth="1" />
+                        <path d="M63 26 L88 37 L84 68 C80 84 70 94 63 99 C56 94 46 84 42 68 L38 37 Z" fill="none" stroke="rgba(245,245,245,0.74)" strokeWidth="1" />
+                        <path d="M43 63 H83 M63 31 V98 M47 46 L79 80 M79 46 L47 80" stroke="#C7A96B" strokeWidth="1" />
+                      </svg>
+                      <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, textAlign: "center", lineHeight: 1.55 }}>
+                        WEAPON_TYPE: ACTION_SHIELD
+                        <br />
+                        DEF_RATE: 99%
+                      </span>
+                    </div>
+
+                    <p style={{ margin: 0, color: "rgba(245,245,245,0.46)", fontSize: 12, lineHeight: 1.55 }}>
+                      轻触卡牌，翻面提取今日行动解药。
+                    </p>
+                  </div>
+
+                  <div
+                    aria-hidden={actionArtifactStage !== "back"}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      border: "1px solid rgba(245,245,245,0.72)",
+                      background: "linear-gradient(180deg, rgba(199,169,107,0.12), rgba(0,0,0,0.94))",
+                      boxShadow: "0 0 36px rgba(245,245,245,0.12), inset 0 0 28px rgba(199,169,107,0.08)",
+                      backfaceVisibility: "hidden",
+                      transform: "rotateY(180deg)",
+                      display: "grid",
+                      alignContent: "center",
+                      gap: 18,
+                      padding: "24px 22px",
+                      textAlign: "left",
+                    }}
+                  >
+                    <span style={{ color: "rgba(199,169,107,0.82)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11 }}>
+                      止动盾｜今日行动解药
+                    </span>
+                    <p style={{ margin: 0, color: "rgba(245,245,245,0.94)", fontSize: 20, lineHeight: 1.7, fontWeight: 740 }}>
+                      今天，只做最小的一步：
+                    </p>
+                    <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 17, lineHeight: 1.78 }}>
+                      不解释，
+                      <br />
+                      不说服，
+                      <br />
+                      让手先动起来。
+                    </p>
+                    <p style={{ margin: "14px 0 0", color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.65 }}>
+                      行为法器已封存入库
+                      <br />
+                      点击空白区域，突防 05 记忆空间
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </section>
         </>
       ) : null}
 
-      {currentSixSpaceConfig && sixDimensionStep >= 4 && sixDimensionStep <= 6 && currentSixSpaceConfig.id !== "action" && spaceSteps[currentSixSpaceConfig.id] === "entry" ? (
+      {currentSixSpaceConfig && sixDimensionStep === 5 && currentSixSpaceConfig.id === "memory" && spaceSteps.memory !== "completed" ? (
+        <>
+          {memoryArtifactStage === "interact" || memoryArtifactStage === "break" ? (
+            <header style={{ display: "grid", gap: 10 }}>
+              <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(34px, 10vw, 52px)", lineHeight: 1.08, fontWeight: 390 }}>
+                记忆空间
+              </h1>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 18, lineHeight: 1.65 }}>
+                “{currentProjection?.hook ?? "以前也这样过。"}”
+              </p>
+            </header>
+          ) : null}
+
+          <section
+            aria-label="记忆空间烟雾轴"
+            style={{
+              position: "relative",
+              minHeight: "58dvh",
+              padding: "12px 0 4px",
+              opacity: isMemorySmokeSandifying ? 0 : 1,
+              transform: isMemorySmokeSandifying ? "translateY(28px)" : "translateY(0)",
+              filter: isMemorySmokeSandifying ? "blur(1.8px)" : "none",
+              transition: "opacity 520ms ease, transform 520ms ease, filter 520ms ease",
+            }}
+          >
+            {memoryArtifactStage === "interact" || memoryArtifactStage === "break" ? (
+              <div style={{ display: "grid", gap: 20, width: "74%", paddingTop: 26 }}>
+                <p style={{ margin: 0, color: "rgba(199,169,107,0.58)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.65 }}>
+                  当前承载压力之刺
+                </p>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 15, lineHeight: 1.78 }}>
+                  {selectedPressureSeedSurface}
+                </p>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.7)", fontSize: 17, lineHeight: 1.76, fontWeight: 650 }}>
+                  {currentNarrativeLines[0] ?? "你还没反应，记忆已经先替你回答了。"}
+                </p>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.84)", fontSize: 18, lineHeight: 1.74, fontWeight: 760 }}>
+                  {currentNarrativeLines[1] ?? "用过去的失败，预判现在的结果。"}
+                  <br />
+                  现在向左切开。
+                </p>
+                {spaceHints.memory ? (
+                  <p style={{ margin: 0, color: isMemorySmokeLocked ? "rgba(199,169,107,0.9)" : "rgba(245,245,245,0.45)", fontSize: 13, lineHeight: 1.58 }}>
+                    {spaceHints.memory}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {memoryArtifactStage === "interact" || memoryArtifactStage === "break" ? (
+              <div
+                ref={memorySmokeRailRef}
+                role="slider"
+                aria-label="记忆空间像素烟雾轴"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(memorySmokeProgress * 100)}
+                onPointerDown={handleMemorySmokePointerDown}
+                onPointerMove={handleMemorySmokePointerMove}
+                onPointerUp={handleMemorySmokePointerUp}
+                onPointerCancel={handleMemorySmokePointerUp}
+                style={{
+                  position: "absolute",
+                  left: "8%",
+                  right: "8%",
+                  bottom: "11%",
+                  height: 112,
+                  touchAction: "none",
+                  cursor: isMemorySmokeLocked ? "default" : "grab",
+                }}
+              >
+                <p
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    bottom: 0,
+                    margin: 0,
+                    color: isMemorySmokeLocked ? "rgba(199,169,107,0.88)" : "rgba(199,169,107,0.56)",
+                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                    fontSize: 10,
+                    lineHeight: 1.45,
+                    letterSpacing: "0.06em",
+                  }}
+                >
+                  {isMemorySmokeLocked ? "［ 听风刀已封存 ］" : "［ 向左滑断 ］"}
+                </p>
+
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 320 70"
+                  preserveAspectRatio="none"
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    width: "100%",
+                    height: 70,
+                    overflow: "visible",
+                  }}
+                >
+                  {isMemorySmokeLocked ? (
+                    <>
+                      <path
+                        d="M0 40 Q68 16 154 36"
+                        fill="none"
+                        stroke="rgba(199,169,107,0.9)"
+                        strokeWidth="1"
+                        strokeLinecap="round"
+                        style={{ filter: "drop-shadow(0 0 12px rgba(199,169,107,0.25))" }}
+                      />
+                      <path
+                        d="M166 44 Q248 66 320 40"
+                        fill="none"
+                        stroke="rgba(245,245,245,0.72)"
+                        strokeWidth="1"
+                        strokeLinecap="round"
+                        style={{ filter: "drop-shadow(0 0 10px rgba(245,245,245,0.18))" }}
+                      />
+                      <path d="M154 37 L160 31 M166 43 L172 37" stroke="rgba(199,169,107,0.95)" strokeWidth="1" />
+                    </>
+                  ) : (
+                    <path
+                      d={`M0 40 Q${320 * memorySmokeProgress} ${40 + Math.sin((1 - memorySmokeProgress) * Math.PI) * 24} 320 40`}
+                      fill="none"
+                      stroke="rgba(199,169,107,0.72)"
+                      strokeWidth="1"
+                      strokeLinecap="round"
+                      style={{
+                        filter: "drop-shadow(0 0 10px rgba(199,169,107,0.2))",
+                        transition: isMemorySmokeDragging ? "none" : "d 220ms cubic-bezier(.16,1,.3,1)",
+                      }}
+                    />
+                  )}
+                </svg>
+
+                {Array.from({ length: 14 }).map((_, index) => {
+                  const dragAmount = 1 - memorySmokeProgress;
+                  const left = `${Math.max(0, Math.min(100, memorySmokeProgress * 100 + index * 2.8))}%`;
+                  const opacity = isMemorySmokeDragging ? Math.max(0, dragAmount - index * 0.035) : 0;
+                  return (
+                    <span
+                      key={`memory-smoke-${index}`}
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        left,
+                        bottom: 34 + ((index % 5) - 2) * 2,
+                        width: index % 3 === 0 ? 2 : 1,
+                        height: index % 4 === 0 ? 2 : 1,
+                        background: index % 5 === 0 ? "rgba(199,169,107,0.8)" : "rgba(245,245,245,0.52)",
+                        opacity,
+                        transform: `translateX(${index * 5}px)`,
+                        transition: "opacity 120ms ease",
+                      }}
+                    />
+                  );
+                })}
+
+                {!isMemorySmokeLocked ? (
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      position: "absolute",
+                      left: `${memorySmokeProgress * 100}%`,
+                      bottom: 70 - getMemorySmokeRailY(memorySmokeProgress),
+                      width: 9,
+                      height: 9,
+                      transform: "translate(-50%, -50%) rotate(45deg)",
+                      border: "1px solid rgba(199,169,107,0.86)",
+                      background: "#C7A96B",
+                      boxShadow: "0 0 14px rgba(199,169,107,0.38)",
+                      transition: isMemorySmokeDragging ? "none" : "left 260ms cubic-bezier(.16,1,.3,1)",
+                    }}
+                  />
+                ) : null}
+              </div>
+            ) : null}
+
+            {memoryArtifactStage === "front" || memoryArtifactStage === "sandify" ? (
+              <div
+                role={memoryArtifactStage === "front" ? "button" : undefined}
+                tabIndex={memoryArtifactStage === "front" ? 0 : -1}
+                onClick={handleMemoryArtifactExit}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") handleMemoryArtifactExit();
+                }}
+                style={{
+                  minHeight: "58dvh",
+                  display: "grid",
+                  placeItems: "center",
+                  cursor: memoryArtifactStage === "front" ? "pointer" : "default",
+                  opacity: memoryArtifactStage === "sandify" ? 0 : 1,
+                  transform: memoryArtifactStage === "sandify" ? "translateY(28px)" : "translateY(0)",
+                  transition: "opacity 520ms ease, transform 520ms ease",
+                  outline: "none",
+                }}
+              >
+                <div
+                  style={{
+                    width: "min(72vw, 300px)",
+                    aspectRatio: "0.68",
+                    border: "1px solid rgba(199,169,107,0.82)",
+                    background: "radial-gradient(circle at 50% 40%, rgba(199,169,107,0.11), rgba(0,0,0,0.94) 60%)",
+                    boxShadow: "0 0 36px rgba(199,169,107,0.16), inset 0 0 28px rgba(199,169,107,0.06)",
+                    display: "grid",
+                    alignContent: "space-between",
+                    padding: "22px 20px",
+                  }}
+                >
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
+                      MEMORY WEAPON / 05
+                    </span>
+                    <strong style={{ color: "rgba(245,245,245,0.92)", fontSize: 28, lineHeight: 1.12, fontWeight: 760 }}>
+                      听风刀
+                    </strong>
+                  </div>
+
+                  <div style={{ display: "grid", placeItems: "center", gap: 14 }}>
+                    <svg width="132" height="132" viewBox="0 0 132 132" aria-hidden="true" style={{ filter: "drop-shadow(0 0 18px rgba(199,169,107,0.26))" }}>
+                      <path d="M28 92 C48 68 62 42 104 24 C86 60 61 80 36 104 Z" fill="none" stroke="#C7A96B" strokeWidth="1" />
+                      <path d="M42 92 C60 80 78 62 94 38" fill="none" stroke="rgba(245,245,245,0.72)" strokeWidth="1" />
+                      <path d="M31 95 L20 106 M39 104 L28 116 M76 55 L104 24" stroke="#C7A96B" strokeWidth="1" />
+                      <path d="M28 70 H54 M72 40 H100 M46 55 H66" stroke="rgba(245,245,245,0.36)" strokeWidth="1" />
+                    </svg>
+                    <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, textAlign: "center", lineHeight: 1.55 }}>
+                      WEAPON_CODE: #MEM_CUTTER
+                      <br />
+                      MEMORY_BREAK: TRUE
+                    </span>
+                  </div>
+
+                  <p style={{ margin: 0, color: "rgba(245,245,245,0.46)", fontSize: 12, lineHeight: 1.55 }}>
+                    轻触卡牌，封存听风刀并进入 06 目标空间。
+                  </p>
+                </div>
+              </div>
+            ) : null}
+          </section>
+        </>
+      ) : null}
+
+      {currentSixSpaceConfig && sixDimensionStep === 6 && currentSixSpaceConfig.id === "goal" && spaceSteps.goal !== "completed" ? (
+        <>
+          {goalFinalStage === "interact" || goalFinalStage === "break" ? (
+            <header style={{ display: "grid", gap: 10 }}>
+              <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(32px, 9vw, 48px)", lineHeight: 1.08, fontWeight: 390 }}>
+                目标空间
+              </h1>
+              <p style={{ margin: 0, color: "rgba(199,169,107,0.82)", fontSize: 18, lineHeight: 1.65 }}>
+                “你不知道该往哪走。”
+              </p>
+            </header>
+          ) : null}
+
+          <section
+            aria-label="目标空间终局撕裂"
+            style={{
+              position: "relative",
+              minHeight: "58dvh",
+              padding: "12px 0 4px",
+              opacity: isGoalTearSandifying ? 0 : 1,
+              transform: isGoalTearSandifying ? "translateY(30px)" : "translateY(0)",
+              filter: isGoalTearSandifying ? "blur(1.8px)" : "none",
+              transition: "opacity 520ms ease, transform 520ms ease, filter 520ms ease",
+            }}
+          >
+            {goalFinalStage === "interact" || goalFinalStage === "break" ? (
+              <div style={{ display: "grid", gap: 20, width: "78%", paddingTop: 22 }}>
+                <p style={{ margin: 0, color: "rgba(199,169,107,0.64)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.65 }}>
+                  SYSTEM: SPACE_06_GOAL // TOTAL_CAUSAL_MATRIX
+                </p>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.6)", fontSize: 15, lineHeight: 1.78 }}>
+                  {selectedPressureSeedSurface}
+                </p>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 17, lineHeight: 1.74, fontWeight: 650 }}>
+                  你停在原地，不是因为不想走。
+                </p>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.88)", fontSize: 18, lineHeight: 1.74, fontWeight: 760 }}>
+                  你的旧反应是：
+                  <br />
+                  假装不需要，就不怕得不到。
+                </p>
+                {spaceHints.goal ? (
+                  <p style={{ margin: 0, color: isGoalTearLocked ? "rgba(199,169,107,0.92)" : "rgba(245,245,245,0.46)", fontSize: 13, lineHeight: 1.58 }}>
+                    {spaceHints.goal}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {goalFinalStage === "interact" || goalFinalStage === "break" ? (
+              <div
+                ref={goalTearRailRef}
+                role="slider"
+                aria-label="目标空间终局撕裂轴"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(goalTearProgress * 100)}
+                onPointerDown={handleGoalTearPointerDown}
+                onPointerMove={handleGoalTearPointerMove}
+                onPointerUp={handleGoalTearPointerUp}
+                onPointerCancel={handleGoalTearPointerUp}
+                style={{
+                  position: "absolute",
+                  left: "8%",
+                  right: "8%",
+                  bottom: "11%",
+                  height: 112,
+                  touchAction: "none",
+                  cursor: isGoalTearLocked ? "default" : "grab",
+                }}
+              >
+                <p
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    bottom: 0,
+                    margin: 0,
+                    color: isGoalTearLocked ? "rgba(199,169,107,0.9)" : "rgba(199,169,107,0.58)",
+                    fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                    fontSize: 10,
+                    lineHeight: 1.45,
+                    letterSpacing: "0.06em",
+                  }}
+                >
+                  {isGoalTearLocked ? "［ 终局剧本已撕开 ］" : "［ 向两端撕裂 ］"}
+                </p>
+
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 320 70"
+                  preserveAspectRatio="none"
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    width: "100%",
+                    height: 70,
+                    overflow: "visible",
+                  }}
+                >
+                  {isGoalTearLocked ? (
+                    <>
+                      <path d="M0 40 Q78 6 151 36" fill="none" stroke="rgba(199,169,107,0.95)" strokeWidth="1" strokeLinecap="round" style={{ filter: "drop-shadow(0 0 14px rgba(199,169,107,0.34))" }} />
+                      <path d="M169 44 Q242 74 320 40" fill="none" stroke="rgba(199,169,107,0.95)" strokeWidth="1" strokeLinecap="round" style={{ filter: "drop-shadow(0 0 14px rgba(199,169,107,0.34))" }} />
+                      <path d="M151 36 L158 29 M169 44 L176 37" stroke="rgba(245,245,245,0.78)" strokeWidth="1" />
+                    </>
+                  ) : (
+                    <path
+                      d={`M0 40 Q160 ${getGoalTearCurveY(goalTearProgress)} 320 40`}
+                      fill="none"
+                      stroke="rgba(199,169,107,0.82)"
+                      strokeWidth="1"
+                      strokeLinecap="round"
+                      style={{
+                        filter: `drop-shadow(0 0 ${10 + goalTearProgress * 12}px rgba(199,169,107,${0.18 + goalTearProgress * 0.16}))`,
+                        transition: isGoalTearDragging ? "none" : "d 240ms cubic-bezier(.16,1,.3,1)",
+                      }}
+                    />
+                  )}
+                </svg>
+
+                {!isGoalTearLocked ? (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        left: `${50 - goalTearProgress * 50}%`,
+                        bottom: 70 - getGoalTearCurveY(goalTearProgress),
+                        width: 8,
+                        height: 8,
+                        transform: "translate(-50%, -50%) rotate(45deg)",
+                        background: "#C7A96B",
+                        boxShadow: "0 0 14px rgba(199,169,107,0.42)",
+                        transition: isGoalTearDragging ? "none" : "left 240ms cubic-bezier(.16,1,.3,1), bottom 240ms cubic-bezier(.16,1,.3,1)",
+                      }}
+                    />
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        left: `${50 + goalTearProgress * 50}%`,
+                        bottom: 70 - getGoalTearCurveY(goalTearProgress),
+                        width: 8,
+                        height: 8,
+                        transform: "translate(-50%, -50%) rotate(45deg)",
+                        background: "#C7A96B",
+                        boxShadow: "0 0 14px rgba(199,169,107,0.42)",
+                        transition: isGoalTearDragging ? "none" : "left 240ms cubic-bezier(.16,1,.3,1), bottom 240ms cubic-bezier(.16,1,.3,1)",
+                      }}
+                    />
+                  </>
+                ) : null}
+              </div>
+            ) : null}
+
+            {goalFinalStage === "paywall" || goalFinalStage === "sandify" ? (
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={handleGoalFinalPaywall}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") handleGoalFinalPaywall();
+                }}
+                style={{
+                  minHeight: "58dvh",
+                  display: "grid",
+                  alignContent: "center",
+                  gap: 18,
+                  opacity: goalFinalStage === "sandify" ? 0 : 1,
+                  transform: goalFinalStage === "sandify" ? "translateY(30px)" : "translateY(0)",
+                  transition: "opacity 520ms ease, transform 520ms ease",
+                  outline: "none",
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{ display: "grid", gap: 10, textAlign: "center" }}>
+                  <span style={{ color: "rgba(199,169,107,0.76)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
+                    TOTAL CAUSAL MATRIX / 90 DAYS
+                  </span>
+                  <strong style={{ color: "rgba(245,245,245,0.92)", fontSize: 22, lineHeight: 1.42, fontWeight: 760 }}>
+                    观爻 2.0｜终局防线资产包
+                  </strong>
+                  <p style={{ margin: 0, color: "rgba(245,245,245,0.55)", fontSize: 13, lineHeight: 1.7 }}>
+                    384 分之一终局爻码｜90 天风险防御本｜反本能武器卡阵列
+                  </p>
+                </div>
+
+                <div
+                  aria-label="因果武器轴线阵列"
+                  style={{
+                    display: "grid",
+                    gap: 10,
+                    padding: "4px 0",
+                  }}
+                >
+                  {(awakenedWeapons.length > 0 ? awakenedWeapons : [{ space: "行为空间", weaponName: "止动盾" }, { space: "记忆空间", weaponName: "听风刀" }, { space: "目标空间", weaponName: "终局防线" }]).slice(0, 6).map((weapon, index) => (
+                    <div
+                      key={`${weapon.space}-${weapon.weaponName}-${index}`}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "34px 1fr",
+                        alignItems: "center",
+                        gap: 10,
+                        minHeight: 26,
+                      }}
+                    >
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          height: 1,
+                          background: "linear-gradient(90deg, rgba(199,169,107,0.92), rgba(199,169,107,0.12))",
+                          boxShadow: "0 0 10px rgba(199,169,107,0.2)",
+                        }}
+                      />
+                      <span style={{ color: "rgba(245,245,245,0.72)", fontSize: 13, lineHeight: 1.35 }}>
+                        <span style={{ color: "rgba(199,169,107,0.7)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
+                          {String(index + 1).padStart(2, "0")} /
+                        </span>{" "}
+                        {weapon.space}｜{weapon.weaponName}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ display: "grid", gap: 8, paddingTop: 8 }}>
+                  <div style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(199,169,107,0.86), transparent)" }} />
+                  <p style={{ margin: 0, color: "rgba(199,169,107,0.92)", fontSize: 16, lineHeight: 1.7, fontWeight: 760, textAlign: "center" }}>
+                    支付 99 元 · 拿走未来 90 天行为防线与通关解药
+                  </p>
+                  <p style={{ margin: 0, color: "rgba(245,245,245,0.42)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.55, textAlign: "center" }}>
+                    点击模拟解锁，沉积为年轮资产
+                  </p>
+                </div>
+              </div>
+            ) : null}
+          </section>
+        </>
+      ) : null}
+
+      {currentSixSpaceConfig && sixDimensionStep === 6 && currentSixSpaceConfig.id !== "goal" && spaceSteps[currentSixSpaceConfig.id] === "entry" ? (
         <>
           <header style={{ display: "grid", gap: 10 }}>
             <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(34px, 10vw, 52px)", lineHeight: 1.08, fontWeight: 390 }}>
@@ -2938,7 +3903,7 @@ function HexagramCodeDeliveryShell() {
           <CausalRail
             statusLabel={spaceHints[currentSixSpaceConfig.id] || "先看见它到了什么程度。"}
             leftHint="左滑，选择破局点"
-            rightHint={currentSixSpaceConfig.id === "goal" ? "右滑，完成本次推演" : "右滑，进入下一空间"}
+            rightHint="右滑，进入下一空间"
             onLeft={() => handleGenericBreakSpace(currentSixSpaceConfig.id)}
             onRight={() => handleGenericNextSpace(currentSixSpaceConfig.id)}
           />
@@ -3122,7 +4087,12 @@ function HexagramCodeDeliveryShell() {
         </>
       ) : null}
 
-      {currentSixSpaceConfig && sixDimensionStep >= 3 && sixDimensionStep <= 6 && spaceSteps[currentSixSpaceConfig.id] === "completed" ? (
+      {currentSixSpaceConfig &&
+      sixDimensionStep >= 3 &&
+      sixDimensionStep <= 6 &&
+      currentSixSpaceConfig.id !== "action" &&
+      currentSixSpaceConfig.id !== "memory" &&
+      spaceSteps[currentSixSpaceConfig.id] === "completed" ? (
         <>
           <header style={{ display: "grid", gap: 10 }}>
             <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(30px, 8vw, 42px)", lineHeight: 1.1, fontWeight: 390 }}>
@@ -3174,304 +4144,186 @@ function HexagramCodeDeliveryShell() {
                 <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
                   你走完了这一局。
                 </h1>
-                <p style={{ margin: 0, color: "rgba(245,245,245,0.7)", fontSize: 16, lineHeight: 1.74, whiteSpace: "pre-line" }}>
-                  这根刺，
-                  {"\n"}已经走完六个空间。
-                  {"\n"}你不是只看完了一段推演。
-                  {"\n"}你已经看见它如何接管你。
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 15, lineHeight: 1.72 }}>
+                  这根刺，已经走完六个空间。
+                  <br />
+                  你不是只看完了一段推演。
+                  <br />
+                  你已经看见它如何接管你。
                 </p>
               </header>
 
               <section
-                aria-label="资产包预览"
+                aria-label="资产熔断沉积"
                 style={{
-                  display: "grid",
-                  gap: 12,
-                  padding: "16px 0",
-                  borderTop: "1px solid rgba(199,169,107,0.34)",
-                  borderBottom: "1px solid rgba(85,85,85,0.38)",
+                  position: "relative",
+                  minHeight: "58dvh",
+                  padding: "12px 0 4px",
+                  opacity: assetFuseStage === "break" ? 0.5 : 1,
+                  transform: assetFuseStage === "break" ? "translateY(18px)" : "translateY(0)",
+                  filter: assetFuseStage === "break" ? "blur(1.2px)" : "none",
+                  transition: "opacity 420ms ease, transform 420ms ease, filter 420ms ease",
                 }}
               >
-                <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
-                  本局资产已生成
-                </span>
-                <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 16, lineHeight: 1.62 }}>
-                  可沉积为：
-                </p>
-                {assetPackItems.map((item) => (
-                  <p key={item} style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 15, lineHeight: 1.52 }}>
-                    ○ {item}
+                <div style={{ display: "grid", gap: 10, width: "82%", paddingTop: 8 }}>
+                  <span style={{ color: "rgba(199,169,107,0.66)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, letterSpacing: "0.12em" }}>
+                    SYSTEM: 07_ASSET_METRIC // FINAL_CAUSAL_ACCOUNT
+                  </span>
+                  <div style={{ display: "grid", gap: 10, paddingTop: 18 }}>
+                    {assetPackItems.map((item, index) => {
+                      const threshold = (index + 1) / assetPackItems.length;
+                      const isLocked = assetFuseProgress >= threshold || isAssetFuseLocked;
+                      return (
+                        <div key={item} style={{ display: "grid", gridTemplateColumns: "38px 1fr", alignItems: "center", gap: 10 }}>
+                          <span
+                            aria-hidden="true"
+                            style={{
+                              height: 1,
+                              background: isLocked ? "rgba(199,169,107,0.92)" : "rgba(245,245,245,0.14)",
+                              boxShadow: isLocked ? "0 0 10px rgba(199,169,107,0.3)" : "none",
+                              transform: isLocked ? "scaleX(1)" : "scaleX(0.45)",
+                              transformOrigin: "left center",
+                              transition: "background 140ms ease, transform 180ms ease, box-shadow 140ms ease",
+                            }}
+                          />
+                          <span style={{ color: isLocked ? "rgba(245,245,245,0.84)" : "rgba(245,245,245,0.28)", fontSize: 12, lineHeight: 1.45 }}>
+                            {item}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div
+                  ref={assetFuseRailRef}
+                  role="slider"
+                  aria-label="本局资产熔断器"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(assetFuseProgress * 100)}
+                  onPointerDown={handleAssetFusePointerDown}
+                  onPointerMove={handleAssetFusePointerMove}
+                  onPointerUp={handleAssetFusePointerUp}
+                  onPointerCancel={handleAssetFusePointerUp}
+                  style={{
+                    position: "absolute",
+                    left: "8%",
+                    right: "8%",
+                    bottom: "11%",
+                    height: 94,
+                    touchAction: "none",
+                    cursor: isAssetFuseLocked ? "default" : "grab",
+                  }}
+                >
+                  <svg aria-hidden="true" viewBox="0 0 320 62" preserveAspectRatio="none" style={{ position: "absolute", left: 0, right: 0, bottom: 0, width: "100%", height: 62, overflow: "visible" }}>
+                    {isAssetFuseLocked ? (
+                      <>
+                        <path d="M0 36 Q74 14 158 34" fill="none" stroke="rgba(199,169,107,0.96)" strokeWidth="1" strokeLinecap="round" />
+                        <path d="M162 38 Q246 58 320 36" fill="none" stroke="rgba(199,169,107,0.96)" strokeWidth="1" strokeLinecap="round" />
+                      </>
+                    ) : (
+                      <>
+                        <path d="M0 36 L320 36" fill="none" stroke="rgba(245,245,245,0.18)" strokeWidth="1" />
+                        <path d={`M0 36 L${320 * assetFuseProgress} 36`} fill="none" stroke="rgba(199,169,107,0.92)" strokeWidth="1" style={{ filter: "drop-shadow(0 0 12px rgba(199,169,107,0.32))" }} />
+                      </>
+                    )}
+                  </svg>
+                  {!isAssetFuseLocked ? (
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        left: `${assetFuseProgress * 100}%`,
+                        bottom: 31,
+                        width: 9,
+                        height: 9,
+                        transform: "translate(-50%, -50%) rotate(45deg)",
+                        background: "#C7A96B",
+                        boxShadow: "0 0 14px rgba(199,169,107,0.42)",
+                        transition: isAssetFuseDragging ? "none" : "left 220ms cubic-bezier(.16,1,.3,1)",
+                      }}
+                    />
+                  ) : null}
+                  <p style={{ position: "absolute", left: 0, bottom: 0, margin: 0, color: "rgba(199,169,107,0.62)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.45 }}>
+                    ［ 右滑充能｜熔断本局因果，沉淀为年轮资产 ］
                   </p>
-                ))}
+                </div>
               </section>
-
-              <section
-                aria-label="已唤醒武器简表"
-                style={{
-                  display: "grid",
-                  gap: 12,
-                  padding: "16px 0",
-                  borderTop: "1px solid rgba(199,169,107,0.24)",
-                  borderBottom: "1px solid rgba(85,85,85,0.28)",
-                }}
-              >
-                <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
-                  你这局已经唤醒：
-                </span>
-                {awakenedWeapons.length > 0 ? (
-                  awakenedWeapons.map((weapon) => (
-                    <p key={`${weapon.space}-${weapon.weaponName}`} style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 16, lineHeight: 1.58 }}>
-                      ○ {weapon.space}｜{weapon.weaponName}
-                    </p>
-                  ))
-                ) : (
-                  <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.72 }}>
-                    你这次没有唤醒武器。
-                    <br />
-                    但你已经看见这根刺，
-                    <br />
-                    如何穿过六个空间。
-                  </p>
-                )}
-              </section>
-
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                <button
-                  type="button"
-                  onClick={() => navigate("/")}
-                  style={{
-                    appearance: "none",
-                    border: "1px solid rgba(245,245,245,0.18)",
-                    background: "transparent",
-                    color: "rgba(245,245,245,0.58)",
-                    minHeight: 42,
-                    padding: "9px 14px",
-                    font: "inherit",
-                  }}
-                >
-                  暂不沉积
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAssetStep("confirm")}
-                  style={{
-                    appearance: "none",
-                    border: "1px solid rgba(0,184,212,0.72)",
-                    background: "rgba(0,184,212,0.08)",
-                    color: "rgba(245,245,245,0.88)",
-                    minHeight: 42,
-                    padding: "9px 14px",
-                    font: "inherit",
-                  }}
-                >
-                  沉积为年轮资产
-                </button>
-              </div>
-
-              <CausalRail statusLabel="本局资产已生成" leftHint="左滑，暂不沉积" rightHint="右滑，沉积为年轮资产" onLeft={() => navigate("/")} onRight={() => setAssetStep("confirm")} />
-            </>
-          ) : null}
-
-          {assetStep === "confirm" ? (
-            <>
-              <header style={{ display: "grid", gap: 10 }}>
-                <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
-                  沉积为年轮资产
-                </h1>
-              </header>
-
-              <section
-                aria-label="沉积确认"
-                style={{
-                  display: "grid",
-                  gap: 12,
-                  padding: "16px 0",
-                  borderTop: "1px solid rgba(199,169,107,0.34)",
-                  borderBottom: "1px solid rgba(85,85,85,0.38)",
-                }}
-              >
-                <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 16, lineHeight: 1.62 }}>
-                  你将把这一局沉积为：
-                </p>
-                {assetPackItems.map((item) => (
-                  <p key={item} style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 15, lineHeight: 1.52 }}>
-                    ○ {item}
-                  </p>
-                ))}
-                <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
-                <span style={{ color: "rgba(199,169,107,0.78)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12, letterSpacing: "0.08em" }}>
-                  将消耗 ⌛ 3
-                </span>
-                <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 16, lineHeight: 1.7 }}>
-                  沉积这份本局资产包。
-                  <br />
-                  这不是一份报告。
-                  <br />
-                  这是你下次还能回来使用的观变资产。
-                </p>
-              </section>
-
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                <button
-                  type="button"
-                  onClick={() => setAssetStep("preview")}
-                  style={{
-                    appearance: "none",
-                    border: "1px solid rgba(245,245,245,0.18)",
-                    background: "transparent",
-                    color: "rgba(245,245,245,0.58)",
-                    minHeight: 42,
-                    padding: "9px 18px",
-                    font: "inherit",
-                  }}
-                >
-                  取消
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmAssetUnlock}
-                  style={{
-                    appearance: "none",
-                    border: "1px solid rgba(0,184,212,0.72)",
-                    background: "rgba(0,184,212,0.08)",
-                    color: "rgba(245,245,245,0.88)",
-                    minHeight: 42,
-                    padding: "9px 18px",
-                    font: "inherit",
-                  }}
-                >
-                  确认沉积
-                </button>
-              </div>
             </>
           ) : null}
 
           {assetStep === "unlocked" ? (
             <>
-              <header style={{ display: "grid", gap: 10 }}>
-                <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
-                  本局资产已沉积。
-                </h1>
-                <p style={{ margin: 0, color: "rgba(245,245,245,0.7)", fontSize: 16, lineHeight: 1.74 }}>
-                  你的母码、卦码、旧路径和武器，
-                  <br />
-                  已经存入年轮墙。
-                </p>
-              </header>
-
-              {[
-                ["一｜母码资产", motherCodeAssetName ? `「${motherCodeAssetName}」` : "", motherCodeAssetLines],
-                ["二｜卦码资产", hexagramAssetTitle, hexagramAssetLines],
-                ["三｜六维旧路径地图", "", [sixSpacePathMap.join("\n→ ")]],
-                [
-                  "五｜下次触发防御卡",
-                  "",
-                  awakenedWeapons.length > 0
-                    ? [
-                        "下次你再次被这根刺击中时，旧反应会先接管。",
-                        "先识别它，再调用本局已唤醒武器。",
-                        `触发场景：${triggerDefenseCard.triggerScene}`,
-                        `旧反应：${triggerDefenseCard.oldReaction}`,
-                        `接管预警：${triggerDefenseCard.takeoverWarning}`,
-                        `防御动作：${triggerDefenseCard.defenseAction}`,
-                        `可调用武器：${triggerDefenseCard.awakenedWeaponName ?? "本局已唤醒武器"}`,
-                      ]
-                    : [
-                        "本局尚未唤醒武器。",
-                        "下次触发时，先停一秒，不立刻沿旧反应走下去。",
-                        `触发场景：${triggerDefenseCard.triggerScene}`,
-                        `旧反应：${triggerDefenseCard.oldReaction}`,
-                        `接管预警：${triggerDefenseCard.takeoverWarning}`,
-                        `防御动作：${triggerDefenseCard.defenseAction}`,
-                      ],
-                ],
-                [
-                  "六｜72小时第一动作",
-                  "",
-                  awakenedWeapons.length > 0
-                    ? [
-                        "这不是长期计划。",
-                        "这是你在未来72小时内，先打断旧反应的一次最小动作。",
-                        `执行时间：${firstAction72h.actionTiming}`,
-                        `适用场景：${firstAction72h.actionScene}`,
-                        `具体动作：${firstAction72h.actionInstruction}`,
-                        `反本能点：${firstAction72h.antiInstinctPoint}`,
-                        `关联武器：${firstAction72h.linkedWeaponName ?? "本局已唤醒武器"}`,
-                      ]
-                    : [
-                        "本局尚未唤醒武器。",
-                        `执行时间：${firstAction72h.actionTiming}`,
-                        `适用场景：${firstAction72h.actionScene}`,
-                        `具体动作：${firstAction72h.actionInstruction}`,
-                        `反本能点：${firstAction72h.antiInstinctPoint}`,
-                      ],
-                ],
-              ].map(([label, title, lines]) => (
-                <section
-                  key={label as string}
-                  aria-label={label as string}
-                  style={{
-                    display: "grid",
-                    gap: 10,
-                    padding: "16px 0",
-                    borderTop: "1px solid rgba(199,169,107,0.34)",
-                    borderBottom: "1px solid rgba(85,85,85,0.3)",
-                  }}
-                >
-                  <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
-                    {label as string}
-                  </span>
-                  {title ? (
-                    <p style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 18, lineHeight: 1.48, whiteSpace: "pre-line" }}>
-                      {title as string}
-                    </p>
-                  ) : null}
-                  {(lines as string[]).map((line) => (
-                    <p key={line} style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.68, whiteSpace: "pre-line" }}>
-                      {line}
-                    </p>
-                  ))}
-                </section>
-              ))}
-
               <section
-                aria-label="已唤醒武器卡"
+                aria-label="年轮资产卡"
                 style={{
+                  minHeight: "76dvh",
                   display: "grid",
-                  gap: 12,
-                  padding: "16px 0",
-                  borderTop: "1px solid rgba(199,169,107,0.34)",
-                  borderBottom: "1px solid rgba(85,85,85,0.3)",
+                  alignContent: "center",
+                  gap: 20,
+                  outline: "none",
                 }}
               >
-                <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
-                  四｜已唤醒武器
-                </span>
-                {awakenedWeapons.length > 0 ? (
-                  awakenedWeapons.map((weapon) => (
-                    <div key={`${weapon.space}-${weapon.weaponName}`} style={{ display: "grid", gap: 5 }}>
-                      <p style={{ margin: 0, color: "rgba(245,245,245,0.82)", fontSize: 16, lineHeight: 1.5 }}>
-                        ○ {weapon.space}｜{weapon.weaponName}
-                      </p>
-                      <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 14, lineHeight: 1.58 }}>
-                        {weapon.actionText}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <p style={{ margin: 0, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.68 }}>
-                    本局未唤醒武器。
+                <div
+                  style={{
+                    width: "min(76vw, 320px)",
+                    aspectRatio: "0.68",
+                    justifySelf: "center",
+                    border: "1px solid rgba(199,169,107,0.82)",
+                    background: "radial-gradient(circle at 50% 38%, rgba(199,169,107,0.12), rgba(0,0,0,0.94) 62%)",
+                    boxShadow: "0 0 38px rgba(199,169,107,0.16), inset 0 0 30px rgba(199,169,107,0.06)",
+                    display: "grid",
+                    alignContent: "center",
+                    gap: 16,
+                    padding: "24px 20px",
+                    textAlign: "center",
+                  }}
+                >
+                  <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, letterSpacing: "0.1em" }}>
+                    TOTAL_MATRIX_010
+                  </span>
+                  <strong style={{ color: "rgba(245,245,245,0.94)", fontSize: 24, lineHeight: 1.35, fontWeight: 760 }}>
+                    观爻 · 行为年轮
+                  </strong>
+                  <div style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(199,169,107,0.8), transparent)" }} />
+                  <p style={{ margin: 0, color: "rgba(245,245,245,0.62)", fontSize: 13, lineHeight: 1.7 }}>
+                    本局因果已沉积为永久年轮数据。
                     <br />
-                    但旧路径已经被记录。
+                    未来 90 天行为防线本已生成。
                   </p>
-                )}
+                  <p style={{ margin: 0, color: "rgba(199,169,107,0.7)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.65 }}>
+                    MOTHER: {motherCodeAssetName || "LOCKED"}
+                    <br />
+                    HEXAGRAM: {hexagramAsset?.name ?? displayName}
+                    <br />
+                    WEAPONS: {awakenedWeapons.length}
+                  </p>
+                </div>
+                <p style={{ margin: 0, color: "rgba(199,169,107,0.82)", fontSize: 14, lineHeight: 1.62, textAlign: "center", fontWeight: 700 }}>
+                  这一局已沉淀
+                </p>
+                <button
+                  type="button"
+                  onClick={handleExitCondensedAsset}
+                  style={{
+                    appearance: "none",
+                    border: 0,
+                    background: "transparent",
+                    color: "rgba(199,169,107,0.72)",
+                    display: "grid",
+                    gap: 8,
+                    padding: "6px 0 0",
+                    font: "inherit",
+                    cursor: "pointer",
+                  }}
+                >
+                  <span aria-hidden="true" style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.9), rgba(199,169,107,0.18))" }} />
+                  <span style={{ fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.55, textAlign: "left" }}>
+                    ［ 退出仪器 ］
+                  </span>
+                </button>
               </section>
-
-              <p style={{ margin: 0, color: "rgba(199,169,107,0.76)", fontSize: 16, lineHeight: 1.62 }}>
-                已存入你的年轮墙。
-              </p>
-
-              <CausalRail statusLabel="已存入你的年轮墙" rightHint="右滑，返回首页" onRight={() => navigate("/")} />
             </>
           ) : null}
         </>
