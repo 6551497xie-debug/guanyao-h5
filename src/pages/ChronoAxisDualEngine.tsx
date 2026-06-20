@@ -132,6 +132,7 @@ type EngineModel = {
   clutched: boolean;
   typeChars: number;
   particles: Particle[];
+  codeBox: { x: number; y: number; w: number; h: number } | null;
   goldMix: number;
   transitionPulse: number;
   fired: boolean;
@@ -197,6 +198,7 @@ export function ChronoAxisDualEngine({
     clutched: false,
     typeChars: 0,
     particles: [],
+    codeBox: null,
     goldMix: 0,
     transitionPulse: 0,
     fired: false,
@@ -716,6 +718,10 @@ export function ChronoAxisDualEngine({
     }
 
     resize();
+    // 统一入场物理脉冲（与 Reaction / MotherField 一致的「四拍」触感）
+    if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+      navigator.vibrate([0, 18, 90, 26, 70, 34]);
+    }
     window.addEventListener("resize", resize);
     canvas.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("pointermove", onPointerMove);

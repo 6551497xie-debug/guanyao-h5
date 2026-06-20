@@ -72,8 +72,13 @@ type Model = {
   sandifying: boolean;
   sandT: number;
   particles: Particle[];
+  voidT: number; // 进场四拍·第一拍：黑屏停顿
+  pulsed: boolean;
   advanced: boolean;
 };
+
+const VOID_MS = 0.44; // 进场黑屏停顿时长
+const ENTRY_PULSE = [0, 18, 90, 26, 70, 34]; // 统一入场物理脉冲（与 MotherField 一致）
 
 export function DefaultReactionScreen({
   motherCode,
@@ -111,6 +116,8 @@ export function DefaultReactionScreen({
     sandifying: false,
     sandT: 0,
     particles: [],
+    voidT: 0,
+    pulsed: false,
     advanced: false,
   });
 
@@ -214,6 +221,15 @@ export function DefaultReactionScreen({
         });
         if (incomingT > 0.7) incoming = [];
       }
+      // 进场四拍·第一/二拍：黑屏停顿 + 物理脉冲（期间主时间轴不前进）
+      if (m.voidT < VOID_MS && !m.sandifying) {
+        m.voidT += dt;
+        if (!m.pulsed && m.voidT > 0.16) {
+          m.pulsed = true;
+          vibrate(ENTRY_PULSE);
+        }
+        return;
+      }
       if (m.sandifying) {
         m.sandT += dt;
         for (const p of m.particles) {
@@ -263,6 +279,16 @@ export function DefaultReactionScreen({
           ctx.fillRect(p.x - 0.7, p.y - 0.7, 1.6, 1.6);
         });
         ctx.globalAlpha = 1;
+      }
+
+      // VOID：黑屏停顿，仅中部蓄势 1px 种子线（线尚未显影）
+      if (m.voidT < VOID_MS) {
+        const beat = Math.abs(Math.sin(m.voidT * 16));
+        ctx.fillStyle = BLUE;
+        ctx.globalAlpha = 0.1 + 0.2 * beat;
+        ctx.fillRect(m.cx - 8, m.h * 0.34 - 0.5, 16, 1);
+        ctx.globalAlpha = 1;
+        return;
       }
 
       const topY = m.h * 0.13;

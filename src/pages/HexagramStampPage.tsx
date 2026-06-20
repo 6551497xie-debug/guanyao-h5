@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
+import { setAxisHandoff, takeAxisHandoff } from "../systems/axisHandoff";
 import { guanyaoHexagramAssetLibrary } from "../data/guanyaoHexagramAssetLibrary";
 import { guanyaoHexagramGlyphs, type HexagramLineKind } from "../data/guanyaoHexagramGlyphs";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
@@ -29,6 +30,8 @@ type StampData = {
   glyphLines?: HexagramLineKind[];
 };
 
+const fallbackGlyphLines: HexagramLineKind[] = ["yin", "yang", "yin", "yin", "yang", "yang"];
+
 function normalizeCode(code: string | undefined) {
   const digits = (code ?? "").replace(/\D/g, "");
   if (!digits) return "058";
@@ -52,7 +55,7 @@ function getStampData(): StampData {
     name,
     title,
     stampLines: ["你被架在责任与自我的边界上。"],
-    glyphLines: guanyaoHexagramGlyphs[code]?.linesTopToBottom,
+    glyphLines: guanyaoHexagramGlyphs[code]?.linesTopToBottom ?? fallbackGlyphLines,
   };
 }
 
@@ -68,7 +71,7 @@ function vibrate(pattern: number | number[]) {
 
 function mixColdWhite(progress: number) {
   const value = clamp(progress, 0, 1);
-  const cold = { r: 2, g: 200, b: 223 };
+  const cold = { r: 0, g: 184, b: 212 };
   const white = { r: 248, g: 245, b: 234 };
   const r = Math.round(cold.r + (white.r - cold.r) * value);
   const g = Math.round(cold.g + (white.g - cold.g) * value);
@@ -78,7 +81,7 @@ function mixColdWhite(progress: number) {
 
 function mixColdGold(progress: number) {
   const value = clamp(progress, 0, 1);
-  const cold = { r: 2, g: 200, b: 223 };
+  const cold = { r: 0, g: 184, b: 212 };
   const gold = { r: 199, g: 169, b: 107 };
   const r = Math.round(cold.r + (gold.r - cold.r) * value);
   const g = Math.round(cold.g + (gold.g - cold.g) * value);
@@ -103,6 +106,13 @@ export function HexagramStampPage() {
     let width = 0;
     let height = 0;
     let state: StampState = "FORMING";
+
+    // 一线贯穿/粒子守恒：取上一屏(压力种子)沙化粒子，入场重凝至卦码成形区
+    const handoff = takeAxisHandoff();
+    let incoming: { x: number; y: number; vx: number; vy: number; color: string }[] = [];
+    let incomingSeeded = false;
+    let incomingT = 0;
+    let voidFrame = 0; // 进场四拍·第一/二拍：黑屏停顿 + 入场脉冲
     let frame = 0;
     let typedCount = 0;
     let emergeFrame = 0;
@@ -165,7 +175,7 @@ export function HexagramStampPage() {
           life: 68 + Math.random() * 44,
           alpha: 0.35 + Math.random() * 0.65,
           size: 0.7 + Math.random() * 1.7,
-          color: Math.random() > 0.35 ? "#02c8df" : "#f8f5ea",
+          color: Math.random() > 0.35 ? "#00B8D4" : "#f6f3ec",
         });
       }
     }
@@ -181,7 +191,7 @@ export function HexagramStampPage() {
           life: 46 + Math.random() * 58,
           alpha: 0.28 + Math.random() * 0.5,
           size: 0.7 + Math.random() * 1.6,
-          color: Math.random() > 0.18 ? "#02c8df" : "#f8f5ea",
+          color: Math.random() > 0.18 ? "#00B8D4" : "#f6f3ec",
         });
       }
     }
@@ -224,12 +234,12 @@ export function HexagramStampPage() {
       ctx.save();
       ctx.translate(cx, cy);
       const idleScale = 1 + Math.sin(frame * 0.025) * 0.006;
-      const glyphScale = idleScale * (0.82 - axisProgress * 0.7);
+	      const glyphScale = idleScale * (0.82 - axisProgress * 0.68);
       ctx.scale(glyphScale, glyphScale);
       ctx.translate(-cx, -cy);
 
       if (!lines) {
-        text("GLYPH_PENDING", cx, cy, 12, "#4d4d4d", "700", "center");
+        text("GLYPH_PENDING", cx, cy, 12, "#555555", "700", "center");
         ctx.restore();
         return;
       }
@@ -245,12 +255,12 @@ export function HexagramStampPage() {
 
       ctx.restore();
 
-      if (axisProgress > 0.01) {
+	      if (axisProgress > 0.01) {
         ctx.save();
         ctx.globalAlpha = axisProgress;
-        ctx.strokeStyle = "rgba(2,200,223,0.72)";
+        ctx.strokeStyle = "rgba(0,184,212,0.72)";
         ctx.lineWidth = 1;
-        ctx.shadowColor = "#02c8df";
+        ctx.shadowColor = "#00B8D4";
         ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.moveTo(rail.x, axisY);
@@ -284,7 +294,7 @@ export function HexagramStampPage() {
       const scaleX = Math.max(0.12, Math.abs(Math.cos(rotate))) * (0.72 + eased * 0.28) * flipScale * lockFlipScale * lockImpactScale;
       const scaleY = (0.76 + eased * 0.24) * (1 + lockProgress * 0.035);
       const showBack = cardFlipProgress > 0.5;
-      const cardTextColor = isCardLocked ? "#f8f5ea" : "rgba(255,255,255,0.46)";
+      const cardTextColor = isCardLocked ? "#f6f3ec" : "rgba(255,255,255,0.46)";
       const cardTitleColor = isCardLocked ? cardGold : "rgba(199,169,107,0.46)";
       const cardMutedColor = isCardLocked ? "rgba(199,169,107,0.62)" : "rgba(255,255,255,0.22)";
 
@@ -360,8 +370,8 @@ export function HexagramStampPage() {
       const progress = rail.currentProgress;
       const knobX = rail.x + rail.w * progress;
       const isLockedRail = state === "CARD_LOCKED" || state === "AXIS_BREAK" || state === "SANDIFY";
-      const railColor = "#02c8df";
-      const knobColor = isLockedRail ? "#02c8df" : "rgba(255,255,255,0.34)";
+      const railColor = "#00B8D4";
+      const knobColor = "#00B8D4";
       const breakProgress = state === "AXIS_BREAK" || state === "SANDIFY" ? easeOutCubic(clamp(axisBreakFrame / 30, 0, 1)) : 0;
       const fractureGap = width * 0.028 * breakProgress;
       const fractureLift = height * 0.012 * breakProgress;
@@ -371,7 +381,7 @@ export function HexagramStampPage() {
 
       ctx.save();
       ctx.lineWidth = 1;
-      ctx.strokeStyle = isLockedRail ? "rgba(2,200,223,0.32)" : "rgba(255,255,255,0.24)";
+      ctx.strokeStyle = isLockedRail ? "rgba(0,184,212,0.32)" : "rgba(255,255,255,0.24)";
       ctx.shadowColor = "transparent";
       ctx.shadowBlur = 0;
       ctx.beginPath();
@@ -383,7 +393,7 @@ export function HexagramStampPage() {
 
       ctx.strokeStyle = railColor;
       ctx.globalAlpha = isLockedRail ? 0.95 : progress > 0 ? 0.86 : 0;
-      ctx.shadowColor = isLockedRail ? "#02c8df" : "transparent";
+      ctx.shadowColor = isLockedRail ? "#00B8D4" : "transparent";
       ctx.shadowBlur = progress > 0 ? 8 : 0;
       ctx.beginPath();
       ctx.moveTo(rail.x, rail.y);
@@ -396,7 +406,7 @@ export function HexagramStampPage() {
 
       ctx.fillStyle = knobColor;
       ctx.shadowColor = knobColor;
-      ctx.shadowBlur = isLockedRail ? 10 : 0;
+      ctx.shadowBlur = isLockedRail ? 10 : 8;
       ctx.beginPath();
       ctx.arc(knobX, rail.y + fractureLift, 4.2 * (1 - breakProgress * 0.35), 0, Math.PI * 2);
       ctx.fill();
@@ -429,9 +439,9 @@ export function HexagramStampPage() {
       const pulse = 1 - clamp(lockFrame / 18, 0, 1);
       ctx.save();
       ctx.globalAlpha = pulse * 0.26;
-      ctx.strokeStyle = "#02c8df";
+      ctx.strokeStyle = "#00B8D4";
       ctx.lineWidth = 1;
-      ctx.shadowColor = "#02c8df";
+      ctx.shadowColor = "#00B8D4";
       ctx.shadowBlur = 16;
       ctx.beginPath();
       ctx.moveTo(width * 0.08, height * 0.5);
@@ -458,31 +468,83 @@ export function HexagramStampPage() {
         const colorProgress = clamp(frame / 84, 0, 1);
         ctx.save();
         ctx.globalAlpha = particle.alpha;
-        ctx.fillStyle = particle.color === "#02c8df" ? mixColdWhite(colorProgress * 0.62) : particle.color;
+        ctx.fillStyle = particle.color === "#00B8D4" ? mixColdWhite(colorProgress * 0.62) : particle.color;
         ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
         ctx.restore();
       });
     }
 
     function draw() {
+      // 进场四拍：VOID 黑屏停顿 + 入场脉冲 + 入场粒子重凝（期间主时序不前进）
+      if (voidFrame < 24) {
+        voidFrame += 1;
+        if (voidFrame === 8 && typeof navigator !== "undefined") navigator.vibrate?.([0, 18, 90, 26, 70, 34]);
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, width, height);
+        if (handoff && !incomingSeeded && width > 0) {
+          incomingSeeded = true;
+          incoming = handoff.map((p) => ({ x: p.fx * width, y: p.fy * height, vx: p.vx, vy: p.vy, color: p.color }));
+        }
+        if (incoming.length) {
+          incomingT += 1 / 60;
+          const ia = Math.max(0, 1 - incomingT / 0.7);
+          incoming.forEach((p) => {
+            p.x += (width * 0.5 - p.x) * 0.06;
+            p.y += (height * 0.49 - p.y) * 0.06;
+            ctx.globalAlpha = ia;
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x, p.y, 1.3, 1.3);
+          });
+          ctx.globalAlpha = 1;
+          if (incomingT > 0.7) incoming = [];
+        }
+        const beat = Math.abs(Math.sin(voidFrame * 0.4));
+        ctx.fillStyle = "#00B8D4";
+        ctx.globalAlpha = 0.1 + 0.2 * beat;
+        ctx.fillRect(width / 2 - 8, height * 0.49 - 0.5, 16, 1);
+        ctx.globalAlpha = 1;
+        animationId = requestAnimationFrame(draw);
+        return;
+      }
       frame += 1;
       ctx.clearRect(0, 0, width, height);
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, width, height);
       const density = ctx.createLinearGradient(0, height * 0.2, width, height * 0.78);
-      density.addColorStop(0, "rgba(2,200,223,0)");
-      density.addColorStop(0.5, "rgba(2,200,223,0.035)");
+      density.addColorStop(0, "rgba(0,184,212,0)");
+      density.addColorStop(0.5, "rgba(0,184,212,0.035)");
       density.addColorStop(1, "rgba(248,245,234,0)");
       ctx.fillStyle = density;
       ctx.fillRect(0, 0, width, height);
 
-      const cold = "#02c8df";
-      const fg = "#f8f5ea";
+      // 入场重凝粒子（来自上一屏沙化，向卦码成形区汇聚后隐没）
+      if (handoff && !incomingSeeded && width > 0) {
+        incomingSeeded = true;
+        incoming = handoff.map((p) => ({ x: p.fx * width, y: p.fy * height, vx: p.vx, vy: p.vy, color: p.color }));
+      }
+      if (incoming.length) {
+        incomingT += 1 / 60;
+        const tgtX = width * 0.5;
+        const tgtY = height * 0.49;
+        const ia = Math.max(0, 1 - incomingT / 0.7);
+        incoming.forEach((p) => {
+          p.x += (tgtX - p.x) * 0.06;
+          p.y += (tgtY - p.y) * 0.06;
+          ctx.globalAlpha = ia;
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x, p.y, 1.3, 1.3);
+        });
+        ctx.globalAlpha = 1;
+        if (incomingT > 0.7) incoming = [];
+      }
+
+      const cold = "#00B8D4";
+      const fg = "#f6f3ec";
       const muted = "rgba(255,255,255,0.34)";
       const isCardVisible = state === "CARD_EMERGE" || state === "CARD_LOCKED" || state === "AXIS_BREAK" || state === "SANDIFY";
       const isCardLocked = state === "CARD_LOCKED" || state === "AXIS_BREAK" || state === "SANDIFY";
-      const titleColor = isCardVisible ? fg : "rgba(255,255,255,0.24)";
-      const subtitleColor = isCardVisible ? cold : "rgba(255,255,255,0.28)";
+      const topLine = `NO.${stampData.code} ｜ ${stampData.name} ｜ ${stampData.title}`;
       cardFlipProgress += (cardFlipTarget - cardFlipProgress) * 0.18;
 
       if (state === "FORMING" && frame === 1) {
@@ -526,16 +588,13 @@ export function HexagramStampPage() {
         if (axisBreakFrame > 70) {
           state = "SANDIFY";
           makeParticles();
+          // 粒子守恒：把本屏卦码沙化粒子交给下一屏（动力学/六维）
+          setAxisHandoff(particles.map((p) => ({ fx: p.x / width, fy: p.y / height, vx: p.vx, vy: p.vy, color: p.color })));
         }
       }
 
-      text(`05_STAMP // NO.${stampData.code}`, width * 0.08, height * 0.07, 8, "rgba(255,255,255,0.16)", "700");
-      text(`它叫「${stampData.name}」`, width * 0.08, height * 0.15, 18, titleColor, "900");
-      text(`《${stampData.title}》`, width * 0.08, height * 0.205, 26, subtitleColor, "900");
-      if (!isCardVisible) {
-        text("时序、默认保护与压力种子三力对撞，", width * 0.08, height * 0.285, 12, "rgba(255,255,255,0.34)", "800");
-        text("在这里压出本局卦符。", width * 0.08, height * 0.325, 12, "rgba(255,255,255,0.28)", "800");
-      }
+      text(`05 ｜ STAMP · 卦码 NO.${stampData.code}`, width * 0.08, height * 0.07, 8, "rgba(255,255,255,0.28)", "700");
+      text(topLine, width * 0.08, height * 0.16, 16, isCardVisible ? "rgba(246,243,236,0.86)" : "rgba(246,243,236,0.72)", "900");
 
       const openProgress =
         state === "CARD_EMERGE" ? easeOutCubic(clamp(emergeFrame / 44, 0, 1)) : isCardLocked ? 1 : 0;
@@ -545,7 +604,7 @@ export function HexagramStampPage() {
         state === "CARD_EMERGE" ? easeOutCubic(clamp((emergeFrame - 8) / 66, 0, 1)) : isCardLocked ? 1 : 0;
       const glyphIntensity =
         state === "FORMING" ? clamp(frame / 62, 0, 1) : 1;
-      const glyphColor = state === "FORMING" ? mixColdGold(clamp(frame / 88, 0, 0.76)) : "rgba(199,169,107,0.42)";
+      const glyphColor = state === "FORMING" || state === "CARD_SETTLED" ? "#00B8D4" : "rgba(199,169,107,0.42)";
       if (state === "FORMING") {
         drawEntryParticles();
       }
@@ -573,7 +632,7 @@ export function HexagramStampPage() {
           text("卦码资产已沉积", rail.x, rail.y + 30, 11, "rgba(248,245,234,0.68)", "900");
           text("再次右滑，断裂进入身体空间", rail.x, rail.y + 47, 9, "rgba(255,255,255,0.42)", "800");
         } else {
-          text("右滑，裂开卦符并压出卦码卡", rail.x, rail.y + 30, 11, "rgba(255,255,255,0.36)", "800");
+          text("右滑，压出卦码卡", rail.x, rail.y + 30, 11, "rgba(255,255,255,0.48)", "800");
         }
       }
 
@@ -581,7 +640,7 @@ export function HexagramStampPage() {
         sandifyFrame += 1;
         drawParticles();
         if (sandifyFrame > 78 && particles.length < 12) {
-          navigate(GUANYAO_ROUTES.pressureExposure);
+          navigate(GUANYAO_ROUTES.dynamics);
           return;
         }
       }

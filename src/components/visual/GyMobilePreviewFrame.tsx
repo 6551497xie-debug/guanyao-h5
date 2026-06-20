@@ -23,10 +23,10 @@ export function GyMobilePreviewFrame({ background = "#000", children }: GyMobile
       <div
         style={{
           position: "relative",
+          // 自适应：高度永远铺满（手机无竖向黑边）；宽度 = min(满屏, 竖屏 9:16 列)
+          //   手机(竖屏比例 ≤ 9:16) → 宽度取满 = 满屏；桌面(横向) → 居中竖屏列、填满高度。
           width: "min(100vw, calc(100dvh * 9 / 16))",
-          height: "min(100dvh, calc(100vw * 16 / 9))",
-          maxWidth: "100vw",
-          maxHeight: "100dvh",
+          height: "100dvh",
           overflow: "hidden",
           background,
         }}

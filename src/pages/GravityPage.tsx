@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
@@ -85,7 +85,6 @@ type GravitySelectedPressureSeedContext = {
   shell?: string;
 };
 
-type HexagramPageStage = "card" | "read";
 type BodyIntensity = "yao1" | "yao2" | "yao3";
 type BodySpaceStep = "entry" | "breakthrough" | "weapon" | "completed";
 type BodyWeapon = "pause" | "breath";
@@ -147,6 +146,93 @@ const bodyIntensityOptions: Array<{ value: BodyIntensity; label: string }> = [
   { value: "yao3", label: "身体已经在反应了" },
 ];
 
+const bodyLoadCaliperLevels: Array<{
+  value: BodyIntensity;
+  mark: string;
+  title: string;
+  line: string;
+}> = [
+  {
+    value: "yao1",
+    mark: "Ⅰ",
+    title: "有一点，但不明显",
+    line: "你的身体在悄悄报警，但你的理智选择假装听不见。",
+  },
+  {
+    value: "yao2",
+    mark: "Ⅱ",
+    title: "能感觉到，还能撑",
+    line: "你的肩背已经开始收紧，正在靠意志力继续压住。",
+  },
+  {
+    value: "yao3",
+    mark: "Ⅲ",
+    title: "身体已经在反应了",
+    line: "你的旧反应是：撑着，假装没事。直到手心已经全是冷汗。",
+  },
+];
+
+function getBodyCaliperIndex(progress: number) {
+  if (progress < 0.34) return 0;
+  if (progress < 0.67) return 1;
+  return 2;
+}
+
+function getBodyCaliperProgress(value: BodyIntensity | null) {
+  if (value === "yao1") return 0.24;
+  if (value === "yao3") return 0.76;
+  return 0.5;
+}
+
+const bodyCaliperMarkProgress = [0.24, 0.5, 0.76] as const;
+
+const thoughtLoadCaliperLevels: Array<{
+  value: SixSpaceIntensity;
+  mark: string;
+  title: string;
+  line: string;
+}> = [
+  {
+    value: "yao1",
+    mark: "Ⅰ",
+    title: "有一点，但还能停",
+    line: "脑子里在隐蔽自证，但如果你强行闭嘴，空转还能被理智刹住。",
+  },
+  {
+    value: "yao2",
+    mark: "Ⅱ",
+    title: "一直在转，停不下来",
+    line: "逻辑黑洞开始吞噬现实。你表面沉默，内心已经大战了一百回合。",
+  },
+  {
+    value: "yao3",
+    mark: "Ⅲ",
+    title: "已经在替你回答问题了",
+    line: "你的旧反应是：把解释当成证明。还没开口，行为已经僵死。",
+  },
+];
+
+function getThoughtCaliperIndex(progress: number) {
+  if (progress < 0.36) return 0;
+  if (progress < 0.71) return 1;
+  return 2;
+}
+
+const thoughtRailSegments = [
+  { start: 0, end: 0.14, y: -4 },
+  { start: 0.14, end: 0.28, y: 4 },
+  { start: 0.28, end: 0.42, y: -2 },
+  { start: 0.42, end: 0.56, y: 5 },
+  { start: 0.56, end: 0.7, y: -5 },
+  { start: 0.7, end: 0.84, y: 3 },
+  { start: 0.84, end: 1, y: -3 },
+] as const;
+
+function getThoughtRailYOffset(progress: number) {
+  const segment = thoughtRailSegments.find((item) => progress >= item.start && progress <= item.end);
+  return segment?.y ?? thoughtRailSegments[thoughtRailSegments.length - 1].y;
+}
+
 const bodyWeaponOptions: Array<{ value: BodyWeapon; label: string; cost: number; line: string; completedLines: string[] }> = [
   {
     value: "pause",
@@ -184,6 +270,44 @@ const emotionIntensityOptions: Array<{ value: EmotionIntensity; label: string }>
   { value: "yao2", label: "能感觉到，还能压" },
   { value: "yao3", label: "情绪已经在接管了" },
 ];
+
+const emotionLoadCaliperLevels: Array<{
+  value: EmotionIntensity;
+  mark: string;
+  title: string;
+  line: string;
+}> = [
+  {
+    value: "yao1",
+    mark: "Ⅰ",
+    title: "有一点，但不明显",
+    line: "你的潜意识在压制，表面说挺好的，内核已经开始排异。",
+  },
+  {
+    value: "yao2",
+    mark: "Ⅱ",
+    title: "能感觉到，还能压",
+    line: "你在脑子里寻找解释来换安全，但无名火已经在胸口翻滚。",
+  },
+  {
+    value: "yao3",
+    mark: "Ⅲ",
+    title: "情绪已经在接管了",
+    line: "你的旧反应是：用解释换安全。一个眼神，就足够让内核破功。",
+  },
+];
+
+function getEmotionCaliperIndex(progress: number) {
+  if (progress < 0.36) return 0;
+  if (progress < 0.71) return 1;
+  return 2;
+}
+
+function getEmotionCaliperProgress(value: EmotionIntensity | null) {
+  if (value === "yao1") return 0.24;
+  if (value === "yao3") return 0.76;
+  return 0.5;
+}
 
 const emotionWeaponOptions: Array<{ value: EmotionWeapon; label: string; cost: number; line: string; completedLines: string[] }> = [
   {
@@ -343,10 +467,10 @@ const sixSpaceConfigs: SixSpaceConfig[] = [
     weapons: [
       {
         id: "small-step",
-        name: "先做最小的一步",
+        name: "止动盾",
         cost: 2,
-        description: "今天，只说一句话。",
-        completionLines: ["今天，只说一句话。", "不解释，", "不说服，", "只是说出来。"],
+        description: "把想法从脑内推出最小一步。",
+        completionLines: ["今天，只做最小的一步。", "不解释，", "不说服，", "让手先动起来。"],
       },
       {
         id: "name",
@@ -795,8 +919,7 @@ function YaoTextBlock({ kicker, title, lines, muted }: YaoTextBlockProps) {
 
 function HexagramCodeDeliveryShell() {
   const navigate = useNavigate();
-  const [hexagramPageStage, setHexagramPageStage] = useState<HexagramPageStage>("card");
-  const [sixDimensionStep, setSixDimensionStep] = useState(0);
+  const [sixDimensionStep, setSixDimensionStep] = useState(1);
   const [selectedSpaceAction, setSelectedSpaceAction] = useState<{
     spaceIndex: number;
     spaceName: string;
@@ -808,6 +931,14 @@ function HexagramCodeDeliveryShell() {
   const [bodyIntensity, setBodyIntensity] = useState<BodyIntensity | null>(() =>
     readJsonFromStorage<BodyIntensity>("guanyao:sixSpace:bodyIntensity"),
   );
+  const bodyCaliperRailRef = useRef<HTMLDivElement | null>(null);
+  const bodyCaliperLockTimerRef = useRef<number | null>(null);
+  const bodyCaliperAdvanceTimerRef = useRef<number | null>(null);
+  const [bodyCaliperProgress, setBodyCaliperProgress] = useState(0);
+  const [isBodyCaliperDragging, setIsBodyCaliperDragging] = useState(false);
+  const [isBodyCaliperLocked, setIsBodyCaliperLocked] = useState(false);
+  const [isBodyCaliperSandifying, setIsBodyCaliperSandifying] = useState(false);
+  const [bodyCaliperPassedIndex, setBodyCaliperPassedIndex] = useState(0);
   const [bodySpaceStep, setBodySpaceStep] = useState<BodySpaceStep>("entry");
   const [bodyBreakthroughStep, setBodyBreakthroughStep] = useState<BreakthroughStep>(0);
   const [selectedBodyWeapon, setSelectedBodyWeapon] = useState<BodyWeapon | null>(() =>
@@ -817,6 +948,14 @@ function HexagramCodeDeliveryShell() {
   const [emotionIntensity, setEmotionIntensity] = useState<EmotionIntensity | null>(() =>
     readJsonFromStorage<EmotionIntensity>("guanyao:sixSpace:emotionIntensity"),
   );
+  const emotionCaliperRailRef = useRef<HTMLDivElement | null>(null);
+  const emotionCaliperLockTimerRef = useRef<number | null>(null);
+  const emotionCaliperAdvanceTimerRef = useRef<number | null>(null);
+  const [emotionCaliperProgress, setEmotionCaliperProgress] = useState(0);
+  const [isEmotionCaliperDragging, setIsEmotionCaliperDragging] = useState(false);
+  const [isEmotionCaliperLocked, setIsEmotionCaliperLocked] = useState(false);
+  const [isEmotionCaliperSandifying, setIsEmotionCaliperSandifying] = useState(false);
+  const [emotionCaliperPassedIndex, setEmotionCaliperPassedIndex] = useState(0);
   const [emotionSpaceStep, setEmotionSpaceStep] = useState<EmotionSpaceStep>("entry");
   const [emotionBreakthroughStep, setEmotionBreakthroughStep] = useState<BreakthroughStep>(0);
   const [selectedEmotionWeapon, setSelectedEmotionWeapon] = useState<EmotionWeapon | null>(() =>
@@ -837,6 +976,21 @@ function HexagramCodeDeliveryShell() {
     memory: readJsonFromStorage<SixSpaceIntensity>("guanyao:sixSpace:memory:intensity"),
     goal: readJsonFromStorage<SixSpaceIntensity>("guanyao:sixSpace:goal:intensity"),
   }));
+  const thoughtCaliperRailRef = useRef<HTMLDivElement | null>(null);
+  const thoughtCaliperLockTimerRef = useRef<number | null>(null);
+  const thoughtCaliperAdvanceTimerRef = useRef<number | null>(null);
+  const [thoughtCaliperProgress, setThoughtCaliperProgress] = useState(0);
+  const [isThoughtCaliperDragging, setIsThoughtCaliperDragging] = useState(false);
+  const [isThoughtCaliperLocked, setIsThoughtCaliperLocked] = useState(false);
+  const [isThoughtCaliperSandifying, setIsThoughtCaliperSandifying] = useState(false);
+  const [thoughtCaliperPassedIndex, setThoughtCaliperPassedIndex] = useState(0);
+  const actionGravityRailRef = useRef<HTMLDivElement | null>(null);
+  const actionGravityLockTimerRef = useRef<number | null>(null);
+  const actionGravityCompleteTimerRef = useRef<number | null>(null);
+  const [actionGravityProgress, setActionGravityProgress] = useState(0);
+  const [isActionGravityDragging, setIsActionGravityDragging] = useState(false);
+  const [isActionGravityLocked, setIsActionGravityLocked] = useState(false);
+  const [isActionGravitySandifying, setIsActionGravitySandifying] = useState(false);
   const [selectedSpaceWeapons, setSelectedSpaceWeapons] = useState<Record<SixSpaceId, SixSpaceWeaponId | null>>(() => ({
     body: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("body")),
     emotion: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("emotion")),
@@ -859,8 +1013,6 @@ function HexagramCodeDeliveryShell() {
   const hexagramDisplay = readModel.hexagramStage;
   const displayCode = getUsableHexagramText([hexagramDisplay.hexagramCode, hexagramDisplay.displayCode], "");
   const displayName = getUsableHexagramText([hexagramDisplay.hexagramName, hexagramDisplay.displayName], "本局");
-  const displayTitle = getUsableHexagramText([hexagramDisplay.hexagramTitle, hexagramDisplay.displayTitle], "观变档案");
-  const hexagramBoundaryLine = "你被架在责任与自我的边界上。";
   const hexagramAssetCode = resolveHexagramAssetCode({ hexagramCode: displayCode, hexagramName: displayName });
   const hexagramAsset = hexagramAssetCode ? guanyaoHexagramAssetLibrary[hexagramAssetCode] : null;
   const hexagramAssetTitle = hexagramAsset ? `「${hexagramAsset.name}」\n《${hexagramAsset.title}》` : "";
@@ -869,23 +1021,6 @@ function HexagramCodeDeliveryShell() {
   const motherCodeAssetName = motherCodeAsset?.name ?? "";
   const motherCodeAssetLines = buildMotherCodeAssetLines(motherCodeAsset);
   const selectedPressureSeedSurface = selectedPressureSeedContext?.surface || "这件事刚刚发生过。";
-  const hexagramReadAnchor =
-    displayCode && displayName && displayTitle
-      ? `NO.${displayCode} · ${displayName}《${displayTitle}》`
-      : "本局卦码读取中";
-  const hexagramReadTension = "这一局，正在照见你此刻被压住的位置。";
-  const motherCodeNarrative = readModel.motherCodeStage.motherCodeName
-    ? `你的${readModel.motherCodeStage.motherCodeName}\n${readModel.motherCodeStage.baseDrive || "该项读数正在生成。"}`
-    : "该项读数正在生成。";
-  const pressureSeedNarrative = selectedPressureSeedContext?.surface
-    ? `但${selectedPressureSeedContext.surface}\n${readModel.hexagramStage.upperCodeReading || "该项读数正在生成。"}`
-    : readModel.hexagramStage.upperCodeReading || "该项读数正在生成。";
-  const hexagramFieldNarrative =
-    readModel.hexagramStage.interactionReading
-      ? readModel.hexagramStage.displayTitle && !readModel.hexagramStage.interactionReading.includes(readModel.hexagramStage.displayTitle)
-        ? `${readModel.hexagramStage.interactionReading}\n这就是《${readModel.hexagramStage.displayTitle}》。`
-        : readModel.hexagramStage.interactionReading
-      : "该项读数正在生成。";
   const currentSpace = sixDimensionStep >= 1 && sixDimensionStep <= 6 ? readModel.yaoStage.transmissions[sixDimensionStep - 1] : null;
   const currentSixSpaceConfig = sixDimensionStep >= 1 && sixDimensionStep <= 6 ? sixSpaceConfigs[sixDimensionStep - 1] : null;
   const canTreatCurrentSpace = currentSpace?.pauseSignal === "clear" || currentSpace?.pauseSignal === "strong";
@@ -933,6 +1068,42 @@ function HexagramCodeDeliveryShell() {
     unlocked: assetStep === "unlocked",
   };
 
+  const activeBodyCaliperIndex = getBodyCaliperIndex(bodyCaliperProgress);
+  const activeBodyCaliperLevel = bodyLoadCaliperLevels[activeBodyCaliperIndex];
+  const activeEmotionCaliperIndex = getEmotionCaliperIndex(emotionCaliperProgress);
+  const activeEmotionCaliperLevel = emotionLoadCaliperLevels[activeEmotionCaliperIndex];
+  const activeThoughtCaliperIndex = getThoughtCaliperIndex(thoughtCaliperProgress);
+  const activeThoughtCaliperLevel = thoughtLoadCaliperLevels[activeThoughtCaliperIndex];
+
+  useEffect(() => {
+    return () => {
+      if (bodyCaliperLockTimerRef.current) {
+        window.clearTimeout(bodyCaliperLockTimerRef.current);
+      }
+      if (bodyCaliperAdvanceTimerRef.current) {
+        window.clearTimeout(bodyCaliperAdvanceTimerRef.current);
+      }
+      if (emotionCaliperLockTimerRef.current) {
+        window.clearTimeout(emotionCaliperLockTimerRef.current);
+      }
+      if (emotionCaliperAdvanceTimerRef.current) {
+        window.clearTimeout(emotionCaliperAdvanceTimerRef.current);
+      }
+      if (thoughtCaliperLockTimerRef.current) {
+        window.clearTimeout(thoughtCaliperLockTimerRef.current);
+      }
+      if (thoughtCaliperAdvanceTimerRef.current) {
+        window.clearTimeout(thoughtCaliperAdvanceTimerRef.current);
+      }
+      if (actionGravityLockTimerRef.current) {
+        window.clearTimeout(actionGravityLockTimerRef.current);
+      }
+      if (actionGravityCompleteTimerRef.current) {
+        window.clearTimeout(actionGravityCompleteTimerRef.current);
+      }
+    };
+  }, []);
+
   function handleNextSpace() {
     setSelectedSpaceAction(null);
     setSixDimensionStep((currentStep) => Math.min(currentStep + 1, 7));
@@ -954,10 +1125,74 @@ function HexagramCodeDeliveryShell() {
 
   function selectBodyIntensity(value: BodyIntensity) {
     setBodyIntensity(value);
+    setBodyCaliperProgress(getBodyCaliperProgress(value));
     setBodySpaceHint("");
     if (typeof window !== "undefined") {
       window.localStorage.setItem("guanyao:sixSpace:bodyIntensity", value);
     }
+  }
+
+  function getBodyCaliperProgressFromPointer(event: ReactPointerEvent<HTMLDivElement>) {
+    const rect = bodyCaliperRailRef.current?.getBoundingClientRect();
+    if (!rect || rect.width <= 0) return bodyCaliperProgress;
+    return Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+  }
+
+  function updateBodyCaliperFromPointer(event: ReactPointerEvent<HTMLDivElement>) {
+    if (isBodyCaliperLocked) return;
+    const nextProgress = getBodyCaliperProgressFromPointer(event);
+    setBodyCaliperProgress(nextProgress);
+    const nextIndex = getBodyCaliperIndex(nextProgress);
+    if (nextIndex !== bodyCaliperPassedIndex) {
+      setBodyCaliperPassedIndex(nextIndex);
+      if ("vibrate" in navigator) {
+        navigator.vibrate(nextIndex === 2 ? [8, 12, 8] : 7);
+      }
+    }
+  }
+
+  function handleBodyCaliperPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (isBodyCaliperLocked) return;
+    const rect = bodyCaliperRailRef.current?.getBoundingClientRect();
+    if (!rect || rect.width <= 0) return;
+    const knobX = rect.left + rect.width * bodyCaliperProgress;
+    if (Math.abs(event.clientX - knobX) > 34) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsBodyCaliperDragging(true);
+    setBodySpaceHint("");
+  }
+
+  function handleBodyCaliperPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isBodyCaliperDragging) return;
+    updateBodyCaliperFromPointer(event);
+  }
+
+  function handleBodyCaliperPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isBodyCaliperDragging || isBodyCaliperLocked) return;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    setIsBodyCaliperDragging(false);
+    const finalProgress = getBodyCaliperProgressFromPointer(event);
+    const index = getBodyCaliperIndex(finalProgress);
+    const lockedLevel = bodyLoadCaliperLevels[index];
+    const lockedProgress = bodyCaliperMarkProgress[index];
+    setBodyCaliperProgress(lockedProgress);
+    selectBodyIntensity(lockedLevel.value);
+    setIsBodyCaliperLocked(true);
+    setBodySpaceHint("身体负荷代码已锁止。");
+    if ("vibrate" in navigator) {
+      navigator.vibrate([12, 18, 24]);
+    }
+    bodyCaliperLockTimerRef.current = window.setTimeout(() => {
+      setIsBodyCaliperSandifying(true);
+      bodyCaliperAdvanceTimerRef.current = window.setTimeout(() => {
+        setIsBodyCaliperLocked(false);
+        setIsBodyCaliperSandifying(false);
+        setBodySpaceHint("");
+        setBodyCaliperProgress(0);
+        setBodyCaliperPassedIndex(0);
+        handleNextSpace();
+      }, 780);
+    }, 1500);
   }
 
   function requireBodyIntensity() {
@@ -1038,10 +1273,75 @@ function HexagramCodeDeliveryShell() {
 
   function selectEmotionIntensity(value: EmotionIntensity) {
     setEmotionIntensity(value);
+    setEmotionCaliperProgress(getEmotionCaliperProgress(value));
     setEmotionSpaceHint("");
     if (typeof window !== "undefined") {
       window.localStorage.setItem("guanyao:sixSpace:emotionIntensity", value);
     }
+  }
+
+  function getEmotionCaliperProgressFromPointer(event: ReactPointerEvent<HTMLDivElement>) {
+    const rect = emotionCaliperRailRef.current?.getBoundingClientRect();
+    if (!rect || rect.width <= 0) return emotionCaliperProgress;
+    const linearProgress = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+    return Math.pow(linearProgress, 1.18);
+  }
+
+  function updateEmotionCaliperFromPointer(event: ReactPointerEvent<HTMLDivElement>) {
+    if (isEmotionCaliperLocked) return;
+    const nextProgress = getEmotionCaliperProgressFromPointer(event);
+    setEmotionCaliperProgress(nextProgress);
+    const nextIndex = getEmotionCaliperIndex(nextProgress);
+    if (nextIndex !== emotionCaliperPassedIndex) {
+      setEmotionCaliperPassedIndex(nextIndex);
+      if ("vibrate" in navigator) {
+        navigator.vibrate(nextIndex === 2 ? [10, 18, 10] : [6, 10]);
+      }
+    }
+  }
+
+  function handleEmotionCaliperPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (isEmotionCaliperLocked) return;
+    const rect = emotionCaliperRailRef.current?.getBoundingClientRect();
+    if (!rect || rect.width <= 0) return;
+    const knobX = rect.left + rect.width * emotionCaliperProgress;
+    if (Math.abs(event.clientX - knobX) > 36) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsEmotionCaliperDragging(true);
+    setEmotionSpaceHint("");
+  }
+
+  function handleEmotionCaliperPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isEmotionCaliperDragging) return;
+    updateEmotionCaliperFromPointer(event);
+  }
+
+  function handleEmotionCaliperPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isEmotionCaliperDragging || isEmotionCaliperLocked) return;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    setIsEmotionCaliperDragging(false);
+    const finalProgress = getEmotionCaliperProgressFromPointer(event);
+    const index = getEmotionCaliperIndex(finalProgress);
+    const lockedLevel = emotionLoadCaliperLevels[index];
+    const lockedProgress = bodyCaliperMarkProgress[index];
+    setEmotionCaliperProgress(lockedProgress);
+    selectEmotionIntensity(lockedLevel.value);
+    setIsEmotionCaliperLocked(true);
+    setEmotionSpaceHint("情绪负荷代码已锁止。");
+    if ("vibrate" in navigator) {
+      navigator.vibrate([10, 16, 28]);
+    }
+    emotionCaliperLockTimerRef.current = window.setTimeout(() => {
+      setIsEmotionCaliperSandifying(true);
+      emotionCaliperAdvanceTimerRef.current = window.setTimeout(() => {
+        setIsEmotionCaliperLocked(false);
+        setIsEmotionCaliperSandifying(false);
+        setEmotionSpaceHint("");
+        setEmotionCaliperProgress(0);
+        setEmotionCaliperPassedIndex(0);
+        handleNextSpace();
+      }, 780);
+    }, 1200);
   }
 
   function requireEmotionIntensity() {
@@ -1069,6 +1369,133 @@ function HexagramCodeDeliveryShell() {
     setEmotionSpaceHint("");
     setEmotionBreakthroughStep(0);
     setEmotionSpaceStep("breakthrough");
+  }
+
+  function getThoughtCaliperProgressFromPointer(event: ReactPointerEvent<HTMLDivElement>) {
+    const rect = thoughtCaliperRailRef.current?.getBoundingClientRect();
+    if (!rect || rect.width <= 0) return thoughtCaliperProgress;
+    const linearProgress = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+    return Math.round(linearProgress * 18) / 18;
+  }
+
+  function updateThoughtCaliperFromPointer(event: ReactPointerEvent<HTMLDivElement>) {
+    if (isThoughtCaliperLocked) return;
+    const nextProgress = getThoughtCaliperProgressFromPointer(event);
+    setThoughtCaliperProgress(nextProgress);
+    const nextIndex = getThoughtCaliperIndex(nextProgress);
+    if (nextIndex !== thoughtCaliperPassedIndex) {
+      setThoughtCaliperPassedIndex(nextIndex);
+      if ("vibrate" in navigator) {
+        navigator.vibrate(6);
+      }
+    }
+  }
+
+  function handleThoughtCaliperPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (isThoughtCaliperLocked) return;
+    const rect = thoughtCaliperRailRef.current?.getBoundingClientRect();
+    if (!rect || rect.width <= 0) return;
+    const knobX = rect.left + rect.width * thoughtCaliperProgress;
+    if (Math.abs(event.clientX - knobX) > 36) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsThoughtCaliperDragging(true);
+    setGenericSpaceHint("thought", "");
+  }
+
+  function handleThoughtCaliperPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isThoughtCaliperDragging) return;
+    updateThoughtCaliperFromPointer(event);
+  }
+
+  function handleThoughtCaliperPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isThoughtCaliperDragging || isThoughtCaliperLocked) return;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    setIsThoughtCaliperDragging(false);
+    const finalProgress = getThoughtCaliperProgressFromPointer(event);
+    const index = getThoughtCaliperIndex(finalProgress);
+    const lockedLevel = thoughtLoadCaliperLevels[index];
+    const lockedProgress = bodyCaliperMarkProgress[index];
+    setThoughtCaliperProgress(lockedProgress);
+    selectGenericIntensity("thought", lockedLevel.value);
+    setIsThoughtCaliperLocked(true);
+    setGenericSpaceHint("thought", "规律负荷已锁止。");
+    if ("vibrate" in navigator) {
+      navigator.vibrate([8, 16, 34]);
+    }
+    thoughtCaliperLockTimerRef.current = window.setTimeout(() => {
+      setIsThoughtCaliperSandifying(true);
+      thoughtCaliperAdvanceTimerRef.current = window.setTimeout(() => {
+        setIsThoughtCaliperLocked(false);
+        setIsThoughtCaliperSandifying(false);
+        setGenericSpaceHint("thought", "");
+        setThoughtCaliperProgress(0);
+        setThoughtCaliperPassedIndex(0);
+        handleNextSpace();
+      }, 820);
+    }, 1200);
+  }
+
+  function getActionGravityProgressFromPointer(event: ReactPointerEvent<HTMLDivElement>) {
+    const rect = actionGravityRailRef.current?.getBoundingClientRect();
+    if (!rect || rect.height <= 0) return actionGravityProgress;
+    const linearProgress = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+    return Math.pow(linearProgress, 1.24);
+  }
+
+  function handleActionGravityPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (isActionGravityLocked) return;
+    const rect = actionGravityRailRef.current?.getBoundingClientRect();
+    if (!rect || rect.height <= 0) return;
+    const knobY = rect.top + rect.height * actionGravityProgress;
+    if (Math.abs(event.clientY - knobY) > 42) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsActionGravityDragging(true);
+    setGenericSpaceHint("action", "");
+  }
+
+  function handleActionGravityPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isActionGravityDragging || isActionGravityLocked) return;
+    setActionGravityProgress(getActionGravityProgressFromPointer(event));
+  }
+
+  function handleActionGravityPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isActionGravityDragging || isActionGravityLocked) return;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    setIsActionGravityDragging(false);
+    const finalProgress = getActionGravityProgressFromPointer(event);
+
+    if (finalProgress < 0.92) {
+      setActionGravityProgress(0);
+      setGenericSpaceHint("action", "还没有拉断。");
+      if ("vibrate" in navigator) {
+        navigator.vibrate(8);
+      }
+      return;
+    }
+
+    setActionGravityProgress(1);
+    selectGenericIntensity("action", "yao3");
+    setSelectedSpaceWeapons((current) => ({ ...current, action: "small-step" }));
+    setIsActionGravityLocked(true);
+    setGenericSpaceHint("action", "止动盾已唤醒。");
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("guanyao:selectedBreakSpace", "action");
+      window.localStorage.setItem(getSelectedWeaponStorageKey("action"), "small-step");
+      window.localStorage.setItem("guanyao:actionBreakthroughCompleted", "true");
+    }
+    if ("vibrate" in navigator) {
+      navigator.vibrate([18, 24, 42]);
+    }
+    actionGravityLockTimerRef.current = window.setTimeout(() => {
+      setIsActionGravitySandifying(true);
+      actionGravityCompleteTimerRef.current = window.setTimeout(() => {
+        setIsActionGravityLocked(false);
+        setIsActionGravitySandifying(false);
+        setActionGravityProgress(0);
+        setGenericSpaceHint("action", "");
+        setSpaceSteps((current) => ({ ...current, action: "completed" }));
+      }, 820);
+    }, 760);
   }
 
   function handleOpenEmotionWeaponStep() {
@@ -1282,131 +1709,10 @@ function HexagramCodeDeliveryShell() {
           letterSpacing: "0.16em",
         }}
       >
-        {sixDimensionStep === 0
-          ? "05｜卦码生成"
-          : sixDimensionStep === 7
+        {sixDimensionStep === 7
             ? "GY / ASSET / CURRENT"
             : `GY / SPACE-0${sixDimensionStep} / ${currentSixSpaceConfig?.code ?? currentSpace?.spaceCode ?? "SPACE"}`}
       </span>
-
-      {sixDimensionStep === 0 && hexagramPageStage === "card" ? (
-        <>
-          <header style={{ display: "grid", gap: 10 }}>
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.52)", fontSize: 16, lineHeight: 1.6 }}>
-              它叫
-            </p>
-            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(34px, 10vw, 52px)", lineHeight: 1.08, fontWeight: 390 }}>
-              「{displayName}」
-            </h1>
-            <p style={{ margin: 0, color: "rgba(199,169,107,0.78)", fontSize: 22, lineHeight: 1.35 }}>
-              《{displayTitle}》
-            </p>
-            <p style={{ margin: "4px 0 0", color: "rgba(245,245,245,0.64)", fontSize: 16, lineHeight: 1.7 }}>
-              {hexagramBoundaryLine}
-            </p>
-          </header>
-          <section
-            aria-label="本局卦码卡"
-            style={{
-              display: "grid",
-              gap: 12,
-              padding: "22px 18px",
-              border: "1px solid rgba(199,169,107,0.42)",
-              background:
-                "linear-gradient(180deg, rgba(199,169,107,0.07), rgba(199,169,107,0.014)), radial-gradient(circle at 50% 45%, rgba(199,169,107,0.09), transparent 60%)",
-            }}
-          >
-            <span
-              style={{
-                color: "rgba(199,169,107,0.78)",
-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                fontSize: 11,
-                letterSpacing: "0.16em",
-              }}
-            >
-              本局卦码卡
-            </span>
-            <span style={{ color: "rgba(245,245,245,0.38)", fontSize: 12, lineHeight: 1.4 }}>
-              NO.{displayCode}
-            </span>
-            <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 30, fontWeight: 380, lineHeight: 1.15 }}>
-              {displayName}
-            </strong>
-            <span style={{ color: "rgba(199,169,107,0.76)", fontSize: 17, lineHeight: 1.4 }}>
-              《{displayTitle}》
-            </span>
-          </section>
-          <CausalRail statusLabel="这一局已经成形" rightHint="右滑，看它怎么变" onRight={handleNextSpace} />
-        </>
-      ) : null}
-
-      {sixDimensionStep === 0 && hexagramPageStage === "read" ? (
-        <>
-          <h1 style={{ margin: 0, color: "rgba(245,245,245,0.88)", fontSize: "clamp(28px, 8vw, 40px)", lineHeight: 1.12, fontWeight: 390 }}>
-            这一局，为什么正在说你？
-          </h1>
-          <section
-            aria-label="本局说明卡"
-            style={{
-              display: "grid",
-              gap: 18,
-              padding: "18px 0 20px",
-              borderTop: "1px solid rgba(199,169,107,0.34)",
-              borderBottom: "1px solid rgba(85,85,85,0.38)",
-              background:
-                "linear-gradient(90deg, rgba(199,169,107,0.05), transparent 74%), radial-gradient(circle at 50% 24%, rgba(199,169,107,0.07), transparent 58%)",
-            }}
-          >
-            <span
-              style={{
-                color: "rgba(199,169,107,0.72)",
-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                fontSize: 11,
-                letterSpacing: "0.16em",
-              }}
-            >
-              [ 这一局正在说你 ]
-            </span>
-            <div style={{ display: "grid", gap: 8 }}>
-              <p
-                style={{
-                  margin: 0,
-                  color: "rgba(245,245,245,0.88)",
-                  fontSize: "clamp(18px, 5vw, 24px)",
-                  lineHeight: 1.34,
-                  fontWeight: 390,
-                  overflowWrap: "anywhere",
-                }}
-              >
-                {hexagramReadAnchor}
-              </p>
-              <p style={{ margin: 0, color: "rgba(245,245,245,0.52)", fontSize: 14, lineHeight: 1.62 }}>
-                {hexagramReadTension}
-              </p>
-            </div>
-            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.36), transparent)" }} />
-            {[motherCodeNarrative, pressureSeedNarrative, hexagramFieldNarrative].map((paragraph, index) => (
-              <p
-                key={`${index}-${paragraph}`}
-                style={{
-                  margin: 0,
-                  color: "rgba(245,245,245,0.7)",
-                  fontSize: 15,
-                  lineHeight: 1.7,
-                  maxWidth: "100%",
-                  whiteSpace: "pre-line",
-                  overflowWrap: "anywhere",
-                  wordBreak: "break-word",
-                }}
-              >
-                {paragraph}
-              </p>
-            ))}
-            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.24), transparent)" }} />
-          </section>
-          <CausalRail statusLabel="看它卡在哪里" rightHint="右滑，看它卡在哪里" onRight={handleNextSpace} />
-        </>
-      ) : null}
 
       {currentSpace && sixDimensionStep === 1 && bodySpaceStep === "entry" ? (
         <>
@@ -1423,94 +1729,164 @@ function HexagramCodeDeliveryShell() {
             aria-label="身体空间感知层"
             style={{
               display: "grid",
-              gap: 18,
-              padding: "18px 0",
-              borderTop: "1px solid rgba(199,169,107,0.34)",
-              borderBottom: "1px solid rgba(85,85,85,0.38)",
+              gap: 20,
+              minHeight: "54dvh",
+              alignContent: "space-between",
+              padding: "18px 0 4px",
+              opacity: isBodyCaliperSandifying ? 0 : 1,
+              transform: isBodyCaliperSandifying ? "translateY(22px)" : "translateY(0)",
+              filter: isBodyCaliperSandifying ? "blur(1.5px)" : "none",
+              transition: "opacity 520ms ease, transform 520ms ease, filter 520ms ease",
             }}
           >
-            <div style={{ display: "grid", gap: 8 }}>
-              <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
-                现实之刺：
-              </span>
-              <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.7 }}>
-                {selectedPressureSeedSurface}
+            <div style={{ display: "grid", gap: 14 }}>
+              <div style={{ display: "grid", gap: 7 }}>
+                <span style={{ color: "rgba(245,245,245,0.28)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
+                  SYSTEM: SPACE_01_BODY // LOAD_CALIPER
+                </span>
+                <span style={{ color: "rgba(0,184,212,0.68)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11 }}>
+                  当前承载压力之刺
+                </span>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 15, lineHeight: 1.68 }}>
+                  {selectedPressureSeedSurface}
+                </p>
+              </div>
+
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.62)", fontSize: 15, lineHeight: 1.72 }}>
+                它一进身体，
+                <br />
+                最先变成肩背收紧、呼吸变浅，
+                <br />
+                还没开口就开始紧张。
               </p>
             </div>
 
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 16, lineHeight: 1.74 }}>
-              它一进身体，
-              <br />
-              最先变成了肩背收紧、呼吸变浅、还没开口就开始紧张。
-            </p>
-
-            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
-
-            <div style={{ display: "grid", gap: 10 }}>
-              <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.6 }}>
-                它到了什么程度？
-              </p>
-              <div style={{ display: "grid", gap: 8 }}>
-                {bodyIntensityOptions.map((option) => {
-                  const isSelected = bodyIntensity === option.value;
-
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => selectBodyIntensity(option.value)}
-                      style={{
-                        appearance: "none",
-                        border: `1px solid ${isSelected ? "rgba(0,184,212,0.78)" : "rgba(245,245,245,0.18)"}`,
-                        background: isSelected ? "rgba(0,184,212,0.08)" : "rgba(245,245,245,0.02)",
-                        color: isSelected ? "rgba(245,245,245,0.88)" : "rgba(245,245,245,0.62)",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        minHeight: 42,
-                        padding: "10px 12px",
-                        textAlign: "left",
-                        font: "inherit",
-                      }}
-                    >
-                      <span
-                        aria-hidden="true"
-                        style={{
-                          width: 9,
-                          height: 9,
-                          borderRadius: "50%",
-                          border: `1px solid ${isSelected ? "rgba(0,184,212,0.95)" : "rgba(245,245,245,0.42)"}`,
-                          background: isSelected ? "rgba(0,184,212,0.9)" : "transparent",
-                          boxShadow: isSelected ? "0 0 12px rgba(0,184,212,0.36)" : "none",
-                          flex: "0 0 auto",
-                        }}
-                      />
-                      <span>{option.label}</span>
-                    </button>
-                  );
-                })}
+            <div style={{ display: "grid", gap: 14 }}>
+              <div
+                style={{
+                  minHeight: 126,
+                  display: "grid",
+                  alignContent: "center",
+                  gap: 12,
+                  color: isBodyCaliperLocked ? "#fff" : bodyCaliperProgress > 0.02 ? "#00B8D4" : "rgba(245,245,245,0.34)",
+                  transition: "color 180ms ease",
+                }}
+              >
+                <p style={{ margin: 0, fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 13, lineHeight: 1.5, color: "currentColor" }}>
+                  【 {activeBodyCaliperLevel.mark} 档 ｜ {activeBodyCaliperLevel.title} 】
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    color: isBodyCaliperLocked ? "rgba(245,245,245,0.9)" : `rgba(245,245,245,${0.58 + bodyCaliperProgress * 0.22})`,
+                    fontSize: 16 + bodyCaliperProgress * 2,
+                    lineHeight: 1.72,
+                    fontWeight: 700,
+                    transition: isBodyCaliperDragging ? "none" : "color 160ms ease, font-size 160ms ease",
+                  }}
+                >
+                  {activeBodyCaliperLevel.line}
+                </p>
               </div>
             </div>
 
-            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
-
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.7 }}>
-              你的旧反应是：撑着，假装没事。
-            </p>
-            {bodySpaceHint ? (
-              <p style={{ margin: 0, color: "rgba(0,184,212,0.78)", fontSize: 14, lineHeight: 1.58 }}>
-                {bodySpaceHint}
+            <div style={{ display: "grid", gap: 10, paddingBottom: 4 }}>
+              <div
+                ref={bodyCaliperRailRef}
+                role="slider"
+                aria-label="身体负荷卡尺"
+                aria-valuemin={1}
+                aria-valuemax={3}
+                aria-valuenow={activeBodyCaliperIndex + 1}
+                onPointerDown={handleBodyCaliperPointerDown}
+                onPointerMove={handleBodyCaliperPointerMove}
+                onPointerUp={handleBodyCaliperPointerUp}
+                onPointerCancel={handleBodyCaliperPointerUp}
+                style={{
+                  position: "relative",
+                  height: 50,
+                  touchAction: "none",
+                  cursor: isBodyCaliperLocked ? "default" : "grab",
+                }}
+              >
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    top: 24,
+                    height: 1,
+                    background: isBodyCaliperLocked ? "rgba(255,255,255,0.92)" : "rgba(245,245,245,0.3)",
+                    boxShadow: isBodyCaliperLocked ? "0 0 18px rgba(255,255,255,0.36)" : "none",
+                    transform: isBodyCaliperDragging ? `translateY(${Math.sin(bodyCaliperProgress * Math.PI) * -8}px)` : "translateY(0)",
+                    transition: isBodyCaliperDragging ? "none" : "transform 220ms ease, background 180ms ease, box-shadow 180ms ease",
+                  }}
+                />
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    top: 24,
+                    width: `${bodyCaliperProgress * 100}%`,
+                    height: 1,
+                    background: isBodyCaliperLocked ? "#fff" : "#00B8D4",
+                    boxShadow: isBodyCaliperLocked ? "0 0 18px rgba(255,255,255,0.38)" : "0 0 14px rgba(0,184,212,0.32)",
+                    transform: isBodyCaliperDragging ? `translateY(${Math.sin(bodyCaliperProgress * Math.PI) * -8}px)` : "translateY(0)",
+                    transition: isBodyCaliperDragging ? "none" : "width 180ms ease, transform 220ms ease, background 180ms ease",
+                  }}
+                />
+                {bodyCaliperMarkProgress.map((markProgress, index) => {
+                  const isActive = activeBodyCaliperIndex === index;
+                  return (
+                    <span
+                      key={markProgress}
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        left: `${markProgress * 100}%`,
+                        top: 18,
+                        width: isActive ? 7 : 3,
+                        height: isActive ? 7 : 3,
+                        transform: "translateX(-50%)",
+                        border: isActive ? "1px solid rgba(0,184,212,0.92)" : "none",
+                        background: isActive ? "transparent" : "rgba(245,245,245,0.22)",
+                        boxShadow: isActive ? "0 0 12px rgba(0,184,212,0.35)" : "none",
+                      }}
+                    />
+                  );
+                })}
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    left: `${bodyCaliperProgress * 100}%`,
+                    top: 24,
+                    width: isBodyCaliperLocked ? 8 : 9,
+                    height: isBodyCaliperLocked ? 8 : 9,
+                    transform: "translate(-50%, -50%)",
+                    border: `1px solid ${isBodyCaliperLocked ? "#fff" : "#00B8D4"}`,
+                    background: isBodyCaliperLocked ? "#fff" : "#00B8D4",
+                    boxShadow: isBodyCaliperLocked ? "0 0 16px rgba(255,255,255,0.42)" : "0 0 14px rgba(0,184,212,0.42)",
+                    transition: isBodyCaliperDragging ? "none" : "left 220ms ease, border 180ms ease, background 180ms ease, box-shadow 180ms ease",
+                  }}
+                />
+              </div>
+              <p style={{ margin: 0, color: isBodyCaliperLocked ? "rgba(255,255,255,0.8)" : "rgba(245,245,245,0.34)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.5 }}>
+                {isBodyCaliperLocked
+                  ? "［ ➔ 身体负荷代码已锁止，正在突防进入 02 情绪空间 ］"
+                  : bodyCaliperProgress > 0.02
+                    ? `［ ${activeBodyCaliperLevel.mark} · 身体空间 ｜ 轴向滑动测量负荷程度 ］`
+                    : "［ 身体空间 ｜ 从左向右推动卡尺，测量负荷程度 ］"}
               </p>
-            ) : null}
+              {bodySpaceHint ? (
+                <p style={{ margin: 0, color: "rgba(0,184,212,0.76)", fontSize: 13, lineHeight: 1.55 }}>
+                  {bodySpaceHint}
+                </p>
+              ) : null}
+            </div>
           </section>
-
-          <CausalRail
-            statusLabel={bodySpaceHint || "先看见它到了什么程度。"}
-            leftHint="左滑，选择破局点"
-            rightHint="右滑，进入下一空间"
-            onLeft={handleBodyBreakSpace}
-            onRight={handleBodyNextSpace}
-          />
         </>
       ) : null}
 
@@ -1753,94 +2129,168 @@ function HexagramCodeDeliveryShell() {
             aria-label="情绪空间感知层"
             style={{
               display: "grid",
-              gap: 18,
-              padding: "18px 0",
-              borderTop: "1px solid rgba(199,169,107,0.34)",
-              borderBottom: "1px solid rgba(85,85,85,0.38)",
+              gap: 20,
+              minHeight: "54dvh",
+              alignContent: "space-between",
+              padding: "18px 0 4px",
+              opacity: isEmotionCaliperSandifying ? 0 : 1,
+              transform: isEmotionCaliperSandifying ? "translateY(22px)" : "translateY(0)",
+              filter: isEmotionCaliperSandifying ? "blur(1.5px)" : "none",
+              transition: "opacity 520ms ease, transform 520ms ease, filter 520ms ease",
             }}
           >
-            <div style={{ display: "grid", gap: 8 }}>
-              <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.13em" }}>
-                现实之刺：
-              </span>
-              <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.7 }}>
-                {selectedPressureSeedSurface}
+            <div style={{ display: "grid", gap: 14 }}>
+              <div style={{ display: "grid", gap: 7 }}>
+                <span style={{ color: "rgba(245,245,245,0.28)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
+                  SYSTEM: SPACE_02_EMOTION // FLUID_LOAD_WAVE
+                </span>
+                <span style={{ color: "rgba(0,184,212,0.68)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11 }}>
+                  当前承载压力之刺
+                </span>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 15, lineHeight: 1.68 }}>
+                  {selectedPressureSeedSurface}
+                </p>
+              </div>
+
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.62)", fontSize: 15, lineHeight: 1.72 }}>
+                你还没反应过来，
+                <br />
+                情绪已经先到了。
+                <br />
+                它正在试图用解释换安全。
               </p>
             </div>
 
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 16, lineHeight: 1.74 }}>
-              你还没反应过来，
-              <br />
-              情绪已经先到了。
-            </p>
-
-            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
-
-            <div style={{ display: "grid", gap: 10 }}>
-              <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 16, lineHeight: 1.6 }}>
-                它到了什么程度？
-              </p>
-              <div style={{ display: "grid", gap: 8 }}>
-                {emotionIntensityOptions.map((option) => {
-                  const isSelected = emotionIntensity === option.value;
-
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => selectEmotionIntensity(option.value)}
-                      style={{
-                        appearance: "none",
-                        border: `1px solid ${isSelected ? "rgba(0,184,212,0.78)" : "rgba(245,245,245,0.18)"}`,
-                        background: isSelected ? "rgba(0,184,212,0.08)" : "rgba(245,245,245,0.02)",
-                        color: isSelected ? "rgba(245,245,245,0.88)" : "rgba(245,245,245,0.62)",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        minHeight: 42,
-                        padding: "10px 12px",
-                        textAlign: "left",
-                        font: "inherit",
-                      }}
-                    >
-                      <span
-                        aria-hidden="true"
-                        style={{
-                          width: 9,
-                          height: 9,
-                          borderRadius: "50%",
-                          border: `1px solid ${isSelected ? "rgba(0,184,212,0.95)" : "rgba(245,245,245,0.42)"}`,
-                          background: isSelected ? "rgba(0,184,212,0.9)" : "transparent",
-                          boxShadow: isSelected ? "0 0 12px rgba(0,184,212,0.36)" : "none",
-                          flex: "0 0 auto",
-                        }}
-                      />
-                      <span>{option.label}</span>
-                    </button>
-                  );
-                })}
+            <div style={{ display: "grid", gap: 14 }}>
+              <div
+                style={{
+                  minHeight: 126,
+                  display: "grid",
+                  alignContent: "center",
+                  gap: 12,
+                  color: isEmotionCaliperLocked ? "#fff" : emotionCaliperProgress > 0.02 ? "#00B8D4" : "rgba(245,245,245,0.34)",
+                  transition: "color 180ms ease",
+                }}
+              >
+                <p style={{ margin: 0, fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 13, lineHeight: 1.5, color: "currentColor" }}>
+                  【 {activeEmotionCaliperLevel.mark} 档 ｜ {activeEmotionCaliperLevel.title} 】
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    color: isEmotionCaliperLocked ? "rgba(245,245,245,0.9)" : `rgba(245,245,245,${0.58 + emotionCaliperProgress * 0.22})`,
+                    fontSize: 16 + emotionCaliperProgress * 2,
+                    lineHeight: 1.72,
+                    fontWeight: 700,
+                    transition: isEmotionCaliperDragging ? "none" : "color 160ms ease, font-size 160ms ease",
+                  }}
+                >
+                  {activeEmotionCaliperLevel.line}
+                </p>
               </div>
             </div>
 
-            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(199,169,107,0.3), transparent)" }} />
-
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 16, lineHeight: 1.7 }}>
-              你的旧反应是：用解释换安全。
-            </p>
-            {emotionSpaceHint ? (
-              <p style={{ margin: 0, color: "rgba(0,184,212,0.78)", fontSize: 14, lineHeight: 1.58 }}>
-                {emotionSpaceHint}
+            <div style={{ display: "grid", gap: 10, paddingBottom: 4 }}>
+              <div
+                ref={emotionCaliperRailRef}
+                role="slider"
+                aria-label="情绪负荷流体线"
+                aria-valuemin={1}
+                aria-valuemax={3}
+                aria-valuenow={activeEmotionCaliperIndex + 1}
+                onPointerDown={handleEmotionCaliperPointerDown}
+                onPointerMove={handleEmotionCaliperPointerMove}
+                onPointerUp={handleEmotionCaliperPointerUp}
+                onPointerCancel={handleEmotionCaliperPointerUp}
+                style={{
+                  position: "relative",
+                  height: 58,
+                  touchAction: "none",
+                  cursor: isEmotionCaliperLocked ? "default" : "grab",
+                }}
+              >
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    top: 28,
+                    height: 1,
+                    background: isEmotionCaliperLocked
+                      ? "rgba(255,255,255,0.92)"
+                      : `linear-gradient(90deg, rgba(245,245,245,0.18), rgba(0,184,212,${0.16 + emotionCaliperProgress * 0.22}), rgba(245,245,245,0.18))`,
+                    boxShadow: isEmotionCaliperLocked ? "0 0 18px rgba(255,255,255,0.36)" : "0 0 14px rgba(0,184,212,0.16)",
+                    transform: isEmotionCaliperDragging
+                      ? `translateY(${Math.sin(emotionCaliperProgress * Math.PI) * -10}px) skewY(${Math.sin(emotionCaliperProgress * Math.PI) * -1.4}deg)`
+                      : `translateY(${Math.sin(Date.now() / 900) * 1.2}px)`,
+                    transition: isEmotionCaliperDragging ? "none" : "transform 260ms ease, background 180ms ease, box-shadow 180ms ease",
+                  }}
+                />
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    top: 28,
+                    width: `${emotionCaliperProgress * 100}%`,
+                    height: 1,
+                    background: isEmotionCaliperLocked ? "#fff" : "#00B8D4",
+                    boxShadow: isEmotionCaliperLocked ? "0 0 18px rgba(255,255,255,0.38)" : "0 0 16px rgba(0,184,212,0.34)",
+                    transform: isEmotionCaliperDragging ? `translateY(${Math.sin(emotionCaliperProgress * Math.PI) * -10}px)` : "translateY(0)",
+                    transition: isEmotionCaliperDragging ? "none" : "width 200ms ease, transform 260ms ease, background 180ms ease",
+                  }}
+                />
+                {bodyCaliperMarkProgress.map((markProgress, index) => {
+                  const isActive = activeEmotionCaliperIndex === index;
+                  return (
+                    <span
+                      key={markProgress}
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        left: `${markProgress * 100}%`,
+                        top: 22,
+                        width: isActive ? 7 : 3,
+                        height: isActive ? 7 : 3,
+                        transform: "translateX(-50%)",
+                        border: isActive ? "1px solid rgba(0,184,212,0.92)" : "none",
+                        background: isActive ? "transparent" : "rgba(245,245,245,0.22)",
+                        boxShadow: isActive ? "0 0 12px rgba(0,184,212,0.35)" : "none",
+                      }}
+                    />
+                  );
+                })}
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    left: `${emotionCaliperProgress * 100}%`,
+                    top: 28,
+                    width: isEmotionCaliperLocked ? 8 : 9,
+                    height: isEmotionCaliperLocked ? 8 : 9,
+                    transform: "translate(-50%, -50%)",
+                    border: `1px solid ${isEmotionCaliperLocked ? "#fff" : "#00B8D4"}`,
+                    background: isEmotionCaliperLocked ? "#fff" : "#00B8D4",
+                    boxShadow: isEmotionCaliperLocked ? "0 0 16px rgba(255,255,255,0.42)" : "0 0 16px rgba(0,184,212,0.46)",
+                    transition: isEmotionCaliperDragging ? "none" : "left 220ms ease, border 180ms ease, background 180ms ease, box-shadow 180ms ease",
+                  }}
+                />
+              </div>
+              <p style={{ margin: 0, color: isEmotionCaliperLocked ? "rgba(255,255,255,0.8)" : "rgba(245,245,245,0.34)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.5 }}>
+                {isEmotionCaliperLocked
+                  ? "［ ➔ 情绪负荷代码已锁止，正在突防进入 03 思维空间 ］"
+                  : emotionCaliperProgress > 0.02
+                    ? `［ ${activeEmotionCaliperLevel.mark} · 情绪空间 ｜ 轴向滑动测量负荷程度 ］`
+                    : "［ 情绪空间 ｜ 从左向右推动流体线，测量负荷程度 ］"}
               </p>
-            ) : null}
+              {emotionSpaceHint ? (
+                <p style={{ margin: 0, color: "rgba(0,184,212,0.76)", fontSize: 13, lineHeight: 1.55 }}>
+                  {emotionSpaceHint}
+                </p>
+              ) : null}
+            </div>
           </section>
-
-          <CausalRail
-            statusLabel={emotionSpaceHint || "先看见它到了什么程度。"}
-            leftHint="左滑，选择破局点"
-            rightHint="右滑，进入下一空间"
-            onLeft={handleEmotionBreakSpace}
-            onRight={handleEmotionNextSpace}
-          />
         </>
       ) : null}
 
@@ -2068,7 +2518,330 @@ function HexagramCodeDeliveryShell() {
         </>
       ) : null}
 
-      {currentSixSpaceConfig && sixDimensionStep >= 3 && sixDimensionStep <= 6 && spaceSteps[currentSixSpaceConfig.id] === "entry" ? (
+      {currentSixSpaceConfig && sixDimensionStep === 3 && currentSixSpaceConfig.id === "thought" && spaceSteps.thought === "entry" ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(34px, 10vw, 52px)", lineHeight: 1.08, fontWeight: 390 }}>
+              思维空间
+            </h1>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 18, lineHeight: 1.65 }}>
+              “你又在反复解释了。”
+            </p>
+          </header>
+
+          <section
+            aria-label="思维空间感知层"
+            style={{
+              display: "grid",
+              gap: 20,
+              minHeight: "54dvh",
+              alignContent: "space-between",
+              padding: "18px 0 4px",
+              opacity: isThoughtCaliperSandifying ? 0 : 1,
+              transform: isThoughtCaliperSandifying ? "translateY(22px)" : "translateY(0)",
+              filter: isThoughtCaliperSandifying ? "blur(1.5px)" : "none",
+              transition: "opacity 520ms ease, transform 520ms ease, filter 520ms ease",
+            }}
+          >
+            <div style={{ display: "grid", gap: 14 }}>
+              <div style={{ display: "grid", gap: 7 }}>
+                <span style={{ color: "rgba(245,245,245,0.28)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
+                  SYSTEM: SPACE_03_THOUGHT // BINARY_GLITCH_RAIL
+                </span>
+                <span style={{ color: "rgba(0,184,212,0.68)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11 }}>
+                  当前承载压力之刺
+                </span>
+                <p style={{ margin: 0, color: "rgba(245,245,245,0.66)", fontSize: 15, lineHeight: 1.68 }}>
+                  {selectedPressureSeedSurface}
+                </p>
+              </div>
+
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.62)", fontSize: 15, lineHeight: 1.72 }}>
+                你还没说完，
+                <br />
+                脑子里已经开始组织下一句解释。
+                <br />
+                你把解释，当成了证明。
+              </p>
+            </div>
+
+            <div style={{ display: "grid", gap: 14 }}>
+              <div
+                style={{
+                  minHeight: 126,
+                  display: "grid",
+                  alignContent: "center",
+                  gap: 12,
+                  color: isThoughtCaliperLocked ? "#C7A96B" : thoughtCaliperProgress > 0.02 ? "#00B8D4" : "rgba(245,245,245,0.34)",
+                  transition: "color 120ms steps(2, end)",
+                }}
+              >
+                <p style={{ margin: 0, fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 13, lineHeight: 1.5, color: "currentColor" }}>
+                  【 {activeThoughtCaliperLevel.mark} 档 ｜ {activeThoughtCaliperLevel.title} 】
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    color: isThoughtCaliperLocked ? "rgba(199,169,107,0.92)" : `rgba(245,245,245,${0.58 + thoughtCaliperProgress * 0.22})`,
+                    fontSize: 16 + thoughtCaliperProgress * 2,
+                    lineHeight: 1.72,
+                    fontWeight: 700,
+                    transition: isThoughtCaliperDragging ? "none" : "color 80ms steps(2, end), font-size 80ms steps(2, end)",
+                  }}
+                >
+                  {activeThoughtCaliperLevel.line}
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gap: 10, paddingBottom: 4 }}>
+              <div
+                ref={thoughtCaliperRailRef}
+                role="slider"
+                aria-label="思维负荷错位线"
+                aria-valuemin={1}
+                aria-valuemax={3}
+                aria-valuenow={activeThoughtCaliperIndex + 1}
+                onPointerDown={handleThoughtCaliperPointerDown}
+                onPointerMove={handleThoughtCaliperPointerMove}
+                onPointerUp={handleThoughtCaliperPointerUp}
+                onPointerCancel={handleThoughtCaliperPointerUp}
+                style={{
+                  position: "relative",
+                  height: 58,
+                  touchAction: "none",
+                  cursor: isThoughtCaliperLocked ? "default" : "grab",
+                }}
+              >
+                {thoughtRailSegments.map((segment, index) => (
+                  <span
+                    key={`${segment.start}-${segment.end}`}
+                    aria-hidden="true"
+                    style={{
+                      position: "absolute",
+                      left: `${segment.start * 100}%`,
+                      top: 28 + segment.y,
+                      width: `${(segment.end - segment.start) * 100}%`,
+                      height: 1,
+                      background: isThoughtCaliperLocked ? "rgba(199,169,107,0.92)" : "rgba(245,245,245,0.3)",
+                      boxShadow: isThoughtCaliperLocked ? "0 0 16px rgba(199,169,107,0.36)" : "none",
+                      transform: `skewY(${index % 2 === 0 ? -2 : 2}deg)`,
+                    }}
+                  />
+                ))}
+                {thoughtRailSegments.map((segment, index) => {
+                  const segmentProgress = Math.max(0, Math.min(1, (thoughtCaliperProgress - segment.start) / (segment.end - segment.start)));
+                  if (segmentProgress <= 0) return null;
+                  return (
+                    <span
+                      key={`active-${segment.start}-${segment.end}`}
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        left: `${segment.start * 100}%`,
+                        top: 28 + segment.y,
+                        width: `${(segment.end - segment.start) * segmentProgress * 100}%`,
+                        height: 1,
+                        background: isThoughtCaliperLocked ? "#C7A96B" : "#00B8D4",
+                        boxShadow: isThoughtCaliperLocked ? "0 0 18px rgba(199,169,107,0.38)" : "0 0 12px rgba(0,184,212,0.3)",
+                        transform: `skewY(${index % 2 === 0 ? -2 : 2}deg)`,
+                        transition: isThoughtCaliperDragging ? "none" : "width 70ms steps(2, end), background 120ms ease",
+                      }}
+                    />
+                  );
+                })}
+                {bodyCaliperMarkProgress.map((markProgress, index) => {
+                  const isActive = activeThoughtCaliperIndex === index;
+                  return (
+                    <span
+                      key={markProgress}
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        left: `${markProgress * 100}%`,
+                        top: 22 + getThoughtRailYOffset(markProgress),
+                        width: isActive ? 7 : 3,
+                        height: isActive ? 7 : 3,
+                        transform: "translateX(-50%) rotate(45deg)",
+                        border: isActive ? `1px solid ${isThoughtCaliperLocked ? "rgba(199,169,107,0.95)" : "rgba(0,184,212,0.92)"}` : "none",
+                        background: isActive ? "transparent" : "rgba(245,245,245,0.22)",
+                        boxShadow: isActive ? "0 0 12px rgba(0,184,212,0.35)" : "none",
+                      }}
+                    />
+                  );
+                })}
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    left: `${thoughtCaliperProgress * 100}%`,
+                    top: 28 + getThoughtRailYOffset(thoughtCaliperProgress),
+                    width: isThoughtCaliperLocked ? 8 : 9,
+                    height: isThoughtCaliperLocked ? 8 : 9,
+                    transform: "translate(-50%, -50%) rotate(45deg)",
+                    border: `1px solid ${isThoughtCaliperLocked ? "#C7A96B" : "#00B8D4"}`,
+                    background: isThoughtCaliperLocked ? "#C7A96B" : "#00B8D4",
+                    boxShadow: isThoughtCaliperLocked ? "0 0 16px rgba(199,169,107,0.42)" : "0 0 14px rgba(0,184,212,0.42)",
+                    transition: isThoughtCaliperDragging ? "none" : "left 70ms steps(2, end), border 120ms ease, background 120ms ease, box-shadow 120ms ease",
+                  }}
+                />
+              </div>
+              <p style={{ margin: 0, color: isThoughtCaliperLocked ? "rgba(199,169,107,0.86)" : "rgba(245,245,245,0.34)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.5 }}>
+                {isThoughtCaliperLocked
+                  ? "［ ⚡ 规律负荷已锁止 ｜ 观爻因果大盘换挡 ➔ 挺进 04 行为空间 ］"
+                  : thoughtCaliperProgress > 0.02
+                    ? `［ ${activeThoughtCaliperLevel.mark} · 思维空间 ｜ 轴向滑动测量负荷程度 ］`
+                    : "［ 思维空间 ｜ 从左向右推动错位栅栏，测量负荷程度 ］"}
+              </p>
+              {spaceHints.thought ? (
+                <p style={{ margin: 0, color: "rgba(0,184,212,0.76)", fontSize: 13, lineHeight: 1.55 }}>
+                  {spaceHints.thought}
+                </p>
+              ) : null}
+            </div>
+          </section>
+        </>
+      ) : null}
+
+      {currentSixSpaceConfig && sixDimensionStep === 4 && currentSixSpaceConfig.id === "action" && spaceSteps.action === "entry" ? (
+        <>
+          <header style={{ display: "grid", gap: 10 }}>
+            <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(34px, 10vw, 52px)", lineHeight: 1.08, fontWeight: 390 }}>
+              行为空间
+            </h1>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 18, lineHeight: 1.65 }}>
+              “你想做，但卡住了。”
+            </p>
+          </header>
+
+          <section
+            aria-label="行为空间破心魔拉杆"
+            style={{
+              position: "relative",
+              minHeight: "58dvh",
+              padding: "18px 0 4px",
+              opacity: isActionGravitySandifying ? 0 : 1,
+              transform: isActionGravitySandifying ? "translateY(26px)" : "translateY(0)",
+              filter: isActionGravitySandifying ? "blur(1.6px)" : "none",
+              transition: "opacity 520ms ease, transform 520ms ease, filter 520ms ease",
+            }}
+          >
+            <div style={{ display: "grid", gap: 18, width: "72%", paddingTop: 8 }}>
+              <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11, letterSpacing: "0.08em" }}>
+                SYSTEM: SPACE_04_ACTION // FIRST_BREAK_STRIKE
+              </span>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 16, lineHeight: 1.78 }}>
+                你脑子里想了无数遍，
+                <br />
+                手还在原处。
+              </p>
+              <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 18, lineHeight: 1.72, fontWeight: 740 }}>
+                把想法卡成永远的那一下，
+                <br />
+                现在从手里断开。
+              </p>
+              <p
+                style={{
+                  margin: "8px 0 0",
+                  color: isActionGravityLocked ? "rgba(255,255,255,0.88)" : "rgba(199,169,107,0.78)",
+                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  fontSize: 11,
+                  lineHeight: 1.7,
+                }}
+              >
+                {isActionGravityLocked
+                  ? "［ 止动盾正在打印 ｜ 行为魔咒已断裂 ］"
+                  : "［ 垂直向下狠狠拉断此线 · 偏转“把想法卡成永远”的行动魔咒 ］"}
+              </p>
+              {spaceHints.action ? (
+                <p style={{ margin: 0, color: isActionGravityLocked ? "rgba(199,169,107,0.9)" : "rgba(245,245,245,0.45)", fontSize: 13, lineHeight: 1.58 }}>
+                  {spaceHints.action}
+                </p>
+              ) : null}
+            </div>
+
+            <div
+              ref={actionGravityRailRef}
+              role="slider"
+              aria-label="行为空间垂直重力秤"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(actionGravityProgress * 100)}
+              onPointerDown={handleActionGravityPointerDown}
+              onPointerMove={handleActionGravityPointerMove}
+              onPointerUp={handleActionGravityPointerUp}
+              onPointerCancel={handleActionGravityPointerUp}
+              style={{
+                position: "absolute",
+                right: "7%",
+                top: "11%",
+                height: "68%",
+                width: 78,
+                touchAction: "none",
+                cursor: isActionGravityLocked ? "default" : "grab",
+              }}
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 78 360"
+                preserveAspectRatio="none"
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  overflow: "visible",
+                }}
+              >
+                <path
+                  d={`M52 0 C${52 - actionGravityProgress * 46} 126 ${52 - actionGravityProgress * 52} 232 52 360`}
+                  fill="none"
+                  stroke={isActionGravityLocked ? "rgba(255,255,255,0.86)" : "rgba(199,169,107,0.72)"}
+                  strokeWidth="1"
+                  strokeLinecap="round"
+                  style={{
+                    filter: isActionGravityLocked ? "drop-shadow(0 0 12px rgba(255,255,255,0.28))" : "drop-shadow(0 0 12px rgba(199,169,107,0.22))",
+                    transition: isActionGravityDragging ? "none" : "stroke 160ms ease, filter 160ms ease",
+                  }}
+                />
+                {isActionGravityLocked ? (
+                  <>
+                    <path d="M30 178 L48 178" stroke="rgba(199,169,107,0.96)" strokeWidth="1" />
+                    <path d="M56 178 L72 178" stroke="rgba(199,169,107,0.96)" strokeWidth="1" />
+                  </>
+                ) : null}
+              </svg>
+              <span
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  left: `calc(52px - ${Math.sin(actionGravityProgress * Math.PI) * 40}px)`,
+                  top: `${actionGravityProgress * 100}%`,
+                  width: isActionGravityLocked ? 10 : 9,
+                  height: isActionGravityLocked ? 10 : 9,
+                  transform: "translate(-50%, -50%)",
+                  borderRadius: "50%",
+                  background: isActionGravityLocked ? "#fff" : "#C7A96B",
+                  boxShadow: isActionGravityLocked ? "0 0 18px rgba(255,255,255,0.4)" : "0 0 18px rgba(199,169,107,0.42)",
+                  transition: isActionGravityDragging ? "none" : "top 220ms cubic-bezier(.16,1,.3,1), left 220ms cubic-bezier(.16,1,.3,1), background 160ms ease",
+                }}
+              />
+              <span
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  left: 52,
+                  bottom: -2,
+                  width: 18,
+                  height: 1,
+                  transform: "translateX(-50%)",
+                  background: isActionGravityLocked ? "rgba(255,255,255,0.78)" : "rgba(199,169,107,0.52)",
+                }}
+              />
+            </div>
+          </section>
+        </>
+      ) : null}
+
+      {currentSixSpaceConfig && sixDimensionStep >= 4 && sixDimensionStep <= 6 && currentSixSpaceConfig.id !== "action" && spaceSteps[currentSixSpaceConfig.id] === "entry" ? (
         <>
           <header style={{ display: "grid", gap: 10 }}>
             <h1 style={{ margin: 0, color: "rgba(245,245,245,0.9)", fontSize: "clamp(34px, 10vw, 52px)", lineHeight: 1.08, fontWeight: 390 }}>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
+import { setAxisHandoff, takeAxisHandoff } from "../systems/axisHandoff";
 import {
   getPressureSeedSceneTriplet,
   type GuanyaoPressureSeedTriplet,
@@ -99,6 +100,13 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
     let displayedLines = ["", "", "", ""];
     let weldLockPulseFired = false;
     const sandParticles: Particle[] = [];
+
+    // 一线贯穿/粒子守恒：取上一屏(MotherField)沙化粒子，入场重凝至轴线区
+    const handoff = takeAxisHandoff();
+    let incoming: { x: number; y: number; vx: number; vy: number; color: string }[] = [];
+    let incomingSeeded = false;
+    let incomingT = 0;
+    let voidFrame = 0; // 进场四拍·第一/二拍：黑屏停顿 + 入场脉冲
     const weldFixedLines = ["你刚刚拦住的，", "不是一个情绪。", "也不是一个问题。"];
     const weldTypedLines = ["你习惯先缓和，", "再把自己从现场撤走。", "但这一次，", "它已经开始成形。"];
     const rail = {
@@ -298,7 +306,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
     function drawSeedStage() {
       ctx.fillStyle = color.bone;
       ctx.font = `${Math.min(11, Math.max(10, width * 0.023))}px monospace`;
-      ctx.fillText("SYSTEM: 04_SEED_INTERCEPT", rail.x, height * 0.06);
+      ctx.fillText("04 ｜ SEED · 压力拦截", rail.x, height * 0.06);
 
       ctx.fillStyle = color.white;
       ctx.font = `bold ${Math.min(28, Math.max(24, width * 0.06))}px monospace`;
@@ -363,7 +371,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
 
       ctx.fillStyle = color.bone;
       ctx.font = "10px monospace";
-      ctx.fillText("SYSTEM: 04_WELDING", rail.x, height * 0.06);
+      ctx.fillText("04 ｜ WELD · 因果焊接", rail.x, height * 0.06);
 
       if (appState === "WELD_TYPING") {
         typeTimer += 1;
@@ -406,7 +414,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       if (appState === "WELD_LOCKED") {
         ctx.fillStyle = weldMutedColor;
         ctx.font = "10px monospace";
-        ctx.fillText("CAUSAL_WELD_LOCKED // 0.3S", rail.x, height * 0.52);
+        ctx.fillText("[ 冷金死锁 · 不可逆 ]", rail.x, height * 0.52);
         ctx.fillStyle = color.gold;
         ctx.font = "bold 20px monospace";
         ctx.fillText("本局因果已高压焊死", rail.x, height * 0.56);
@@ -475,9 +483,9 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
 
       ctx.fillStyle = isGoldMode ? color.gold : color.bone;
       ctx.font = "10px monospace";
-      let labelText = "[ Ⅰ · 点击种子定点 ｜ 横轴右滑装填 ]";
-      if (appState === "SEED_LOCKED") labelText = "[ 种子装填完成，正在进入因果焊接 ]";
-      if (appState === "WELD_TYPING") labelText = "[ CAUSAL_WELDING_RESONATING ]";
+      let labelText = "[ Ⅰ · 拖拽选种 → 点击定点 → 右滑装填 ]";
+      if (appState === "SEED_LOCKED") labelText = "[ 种子已装填 · 因果焊接 ]";
+      if (appState === "WELD_TYPING") labelText = "[ 因果共振 ]";
       if (appState === "WELD_INTERACT") labelText = isGoldMode ? "［ 高压焊接临界 ］" : "［ ➔ 右滑充能：高压焊接本局因果 ］";
       if (appState === "WELD_LOCKED") labelText = "［ 冷金死锁：本局命盘因果已焊死 ］";
       ctx.fillText(labelText, rail.x, rail.y + 18);
@@ -510,6 +518,37 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
     }
 
     function draw() {
+      // 进场四拍：VOID 黑屏停顿 + 入场脉冲 + 入场粒子重凝（期间主时序不前进）
+      if (voidFrame < 24) {
+        voidFrame += 1;
+        if (voidFrame === 8 && typeof navigator !== "undefined") navigator.vibrate?.([0, 18, 90, 26, 70, 34]);
+        ctx.fillStyle = color.bg;
+        ctx.fillRect(0, 0, width, height);
+        if (handoff && !incomingSeeded && width > 0) {
+          incomingSeeded = true;
+          incoming = handoff.map((p) => ({ x: p.fx * width, y: p.fy * height, vx: p.vx, vy: p.vy, color: p.color }));
+        }
+        if (incoming.length) {
+          incomingT += 1 / 60;
+          const ia = Math.max(0, 1 - incomingT / 0.7);
+          incoming.forEach((p) => {
+            p.x += (width / 2 - p.x) * 0.06;
+            p.y += (height * 0.42 - p.y) * 0.06;
+            ctx.globalAlpha = ia;
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x, p.y, 1.3, 1.3);
+          });
+          ctx.globalAlpha = 1;
+          if (incomingT > 0.7) incoming = [];
+        }
+        const beat = Math.abs(Math.sin(voidFrame * 0.4));
+        ctx.fillStyle = "#00B8D4";
+        ctx.globalAlpha = 0.1 + 0.2 * beat;
+        ctx.fillRect(width / 2 - 8, height * 0.42 - 0.5, 16, 1);
+        ctx.globalAlpha = 1;
+        animationFrame = window.requestAnimationFrame(draw);
+        return;
+      }
       ctx.fillStyle = color.bg;
       ctx.fillRect(0, 0, width, height);
       const gradient = ctx.createRadialGradient(width / 2, height * 0.4, 0, width / 2, height * 0.4, width * 0.45);
@@ -517,6 +556,27 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       gradient.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, width, height);
+
+      // 入场重凝粒子（来自上一屏沙化，向轴线区汇聚后隐没）
+      if (handoff && !incomingSeeded && width > 0) {
+        incomingSeeded = true;
+        incoming = handoff.map((p) => ({ x: p.fx * width, y: p.fy * height, vx: p.vx, vy: p.vy, color: p.color }));
+      }
+      if (incoming.length) {
+        incomingT += 1 / 60;
+        const tgtX = width / 2;
+        const tgtY = height * 0.42;
+        const ia = Math.max(0, 1 - incomingT / 0.7);
+        incoming.forEach((p) => {
+          p.x += (tgtX - p.x) * 0.06;
+          p.y += (tgtY - p.y) * 0.06;
+          ctx.globalAlpha = ia;
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x, p.y, 1.3, 1.3);
+        });
+        ctx.globalAlpha = 1;
+        if (incomingT > 0.7) incoming = [];
+      }
 
       if (appState.startsWith("SEED")) drawSeedStage();
       if (appState.startsWith("WELD")) drawWeldStage();
@@ -555,6 +615,8 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
           appState = "WELD_SANDIFY";
           sandifyTimer = 0;
           spawnSandParticles("gold");
+          // 粒子守恒：把本屏焊接沙化粒子交给下一屏（卦码生成）
+          setAxisHandoff(sandParticles.map((p) => ({ fx: p.x / width, fy: p.y / height, vx: 0, vy: p.vy, color: p.color })));
         }
       }
 
@@ -587,6 +649,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
 
     function onStart(event: PointerEvent | TouchEvent) {
       event.preventDefault();
+      if (voidFrame < 24) return; // 进场四拍未完成前不接受交互
       const { x, y } = getClientPoint(event);
 
       if (appState === "WELD_LOCKED") {
