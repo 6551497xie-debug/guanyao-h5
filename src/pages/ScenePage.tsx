@@ -1,18 +1,15 @@
-// GUANYAO 2.0 = single axis-based interaction grammar system. 本屏角色：tap confirmation only（UI 决策层）。
-//   场屏统一为 axis drag（纵=modulation / 横=progression）；tap 仅在本 UI 层用于选择/确认，不驱动场态。
-// GUANYAO 2.0 = multi-page decision system with independent UI states and explicit user-driven navigation.
-// Pressure Seed = simple decision interface for selecting one of three behavioral options and confirming selection.
-// 锁定：纯 UI 决策流（点选→高亮→确认→跳转）；无 field/inertia/collapse/物理；轴线仅为视觉进度/对齐装饰。
-import { useMemo, useState } from "react";
+// GUANYAO 2.0 = immutable causal engine with layered perceptual enhancement system that improves user understanding without modifying underlying logic.
+// GUANYAO 2.0 = closed deterministic causal system with irreversible upstream generation and passive downstream rendering only.
+// Data flow is one-way only: Chrono -> Default Reaction -> MotherField -> Behavioral Compression Engine -> Pressure Seed Output -> ScenePage Display.
+// Pressure Seed = result of behavioral inertia compression, not a selection outcome.
+// ScenePage = main-route pressure seed cross-axis loader: vertical axis switches engine-fed triplet groups; horizontal axis loads one seed into the downstream cache.
+// Visible seed labels are neutral presentation indexes only; no semantic category labels are shown on this screen.
 import { useNavigate } from "react-router-dom";
+import { PressureSeedCrossAxisPage, type PressureSeedCrossAxisSeed } from "./PressureSeedCrossAxisPage";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildMotherCodeResult } from "../services/motherCodeService";
 import { getSession, setMotherCodeResult, setSelectedSceneSeed } from "../services/sessionService";
-import {
-  buildSelectedPressureSeedContext,
-  getPressureSeedSceneTriplet,
-  type GuanyaoPressureSeedTriplet,
-} from "../services/guanyaoPressureSeedSceneBindingService";
+import { buildSelectedPressureSeedContext } from "../services/guanyaoPressureSeedSceneBindingService";
 import {
   buildTripleForceLandingResult,
   getTripleForceFrontStage,
@@ -21,20 +18,6 @@ import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId, SceneSeed }
 import type { GuanyaoAgeSegment, GuanyaoPressureSeed } from "../types/guanyaoPressureSeed";
 
 const yuanCodeKeys: IdentityFragment["yuanCodeKey"][] = ["qian", "kun", "zhen", "xun", "kan", "li", "gen", "dui"];
-
-const optionLabels = [
-  "Option 1｜原力（流动）",
-  "Option 2｜保护（缓和）",
-  "Option 3｜误用（转身离开）",
-] as const;
-
-type PressureSeedCandidate = {
-  id: string;
-  surface: string;
-  shell: string;
-  seed: GuanyaoPressureSeed;
-  seedIndex: SceneSeed["seedIndex"];
-};
 
 function readYuanCodeKey(session: GuanyaoSession): IdentityFragment["yuanCodeKey"] | undefined {
   const candidate =
@@ -80,22 +63,6 @@ function readPressureSeedAgeSegment(session: GuanyaoSession): GuanyaoAgeSegment 
   return undefined;
 }
 
-function buildPressureSeedCandidatesFromTriplet(pressureSeedTriplet: GuanyaoPressureSeedTriplet): PressureSeedCandidate[] {
-  return pressureSeedTriplet.frontStage
-    .map((frontStageSeed, index) => {
-      const seed = pressureSeedTriplet.seeds.find((candidate) => candidate.id === frontStageSeed.id) ?? pressureSeedTriplet.seeds[index];
-
-      return {
-        id: frontStageSeed.id,
-        surface: frontStageSeed.surface,
-        shell: frontStageSeed.shell,
-        seed,
-        seedIndex: (index + 1) as SceneSeed["seedIndex"],
-      };
-    })
-    .filter((candidate): candidate is PressureSeedCandidate => Boolean(candidate.seed));
-}
-
 function toLegacySceneSeed(
   seed: GuanyaoPressureSeed,
   session: GuanyaoSession,
@@ -127,30 +94,15 @@ function toLegacySceneSeed(
 
 export function ScenePage() {
   const navigate = useNavigate();
-  const session = getSession();
-  const pressureSeedCandidates = useMemo(() => {
-    const pressureSeedTriplet = getPressureSeedSceneTriplet({
-      ageSegment: readPressureSeedAgeSegment(session),
-    });
+  const pressureSeedAgeSegment = readPressureSeedAgeSegment(getSession());
 
-    return buildPressureSeedCandidatesFromTriplet(pressureSeedTriplet);
-  }, [session]);
-  const visiblePressureSeeds = pressureSeedCandidates.slice(0, 3);
-  const [selectedCandidateId, setSelectedCandidateId] = useState<string | undefined>();
-  const selectedCandidate = visiblePressureSeeds.find((candidate) => candidate.id === selectedCandidateId);
-  const selectedIndex = visiblePressureSeeds.findIndex((candidate) => candidate.id === selectedCandidate?.id);
-
-  function onOptionClick(candidate: PressureSeedCandidate) {
-    setSelectedCandidateId(candidate.id);
-  }
-
-  function onConfirmClick(candidate: PressureSeedCandidate | undefined) {
+  function commitPressureSeed(candidate: PressureSeedCrossAxisSeed | undefined) {
     if (!candidate) return;
-
+    const latestSession = getSession();
     const selectedPressureSeedContext = buildSelectedPressureSeedContext(candidate.seed);
     const tripleForceLandingResult = buildTripleForceLandingResult(selectedPressureSeedContext);
     const tripleForceFrontStage = getTripleForceFrontStage(tripleForceLandingResult);
-    const legacySceneSeed = toLegacySceneSeed(candidate.seed, getSession(), candidate.seedIndex);
+    const legacySceneSeed = toLegacySceneSeed(candidate.seed, latestSession, candidate.seedIndex);
 
     window.localStorage.setItem("guanyao:selectedPressureSeedContext", JSON.stringify(selectedPressureSeedContext));
     window.localStorage.setItem("guanyao:tripleForceLandingResult", JSON.stringify(tripleForceLandingResult));
@@ -163,179 +115,5 @@ export function ScenePage() {
     navigate(GUANYAO_ROUTES.pressureExposure);
   }
 
-  return (
-    <main
-      style={{
-        minHeight: "100dvh",
-        width: "min(100%, 520px)",
-        margin: "0 auto",
-        boxSizing: "border-box",
-        padding: "48px 20px calc(44px + env(safe-area-inset-bottom))",
-        display: "flex",
-        flexDirection: "column",
-        gap: 18,
-        background:
-          "radial-gradient(circle at 50% 20%, rgba(0,184,212,0.08), transparent 36%), linear-gradient(180deg, #050607 0%, #020303 100%)",
-        color: "rgba(246,243,236,0.88)",
-        overflowX: "hidden",
-        overflowY: "auto",
-        WebkitOverflowScrolling: "touch",
-      }}
-    >
-      <header style={{ display: "grid", gap: 10 }}>
-        <span
-          style={{
-            color: "rgba(246,243,236,0.48)",
-            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            fontSize: 12,
-            letterSpacing: "0.16em",
-          }}
-        >
-          03｜当前压力
-        </span>
-        <h1
-          style={{
-            margin: 0,
-            color: "rgba(246,243,236,0.9)",
-            fontSize: "clamp(30px, 8vw, 42px)",
-            lineHeight: 1.12,
-            fontWeight: 380,
-            letterSpacing: "0.04em",
-          }}
-        >
-          此刻，什么正在压住你？
-        </h1>
-        <p
-          style={{
-            margin: 0,
-            color: "rgba(246,243,236,0.62)",
-            fontSize: 15,
-            lineHeight: 1.68,
-            letterSpacing: "0.04em",
-          }}
-        >
-          不用犹豫。
-          <br />
-          选那个让你停了一下的。
-        </p>
-      </header>
-
-      <section
-        aria-label="当前压力种子选项"
-        style={{
-          display: "grid",
-          gap: 12,
-          padding: "14px 0",
-          borderTop: "1px solid rgba(246,243,236,0.12)",
-          borderBottom: "1px solid rgba(246,243,236,0.08)",
-        }}
-      >
-        {visiblePressureSeeds.map((candidate, index) => {
-          const isSelected = candidate.id === selectedCandidate?.id;
-
-          return (
-            <button
-              key={candidate.id}
-              type="button"
-              onClick={() => onOptionClick(candidate)}
-              style={{
-                width: "100%",
-                minHeight: 118,
-                padding: "15px 2px 15px 0",
-                border: 0,
-                borderTop: "1px solid rgba(246,243,236,0.08)",
-                borderBottom: isSelected ? "1px solid rgba(0,184,212,0.34)" : "1px solid rgba(246,243,236,0.07)",
-                background: isSelected ? "linear-gradient(90deg, rgba(0,184,212,0.08), transparent 70%)" : "transparent",
-                color: "inherit",
-                display: "grid",
-                gap: 8,
-                textAlign: "left",
-                opacity: isSelected ? 1 : 0.62,
-                cursor: "pointer",
-                transition: "border-color 180ms ease, background 180ms ease, opacity 180ms ease",
-              }}
-            >
-              <span
-                style={{
-                  color: isSelected ? "rgba(0,184,212,0.82)" : "rgba(246,243,236,0.42)",
-                  fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.12em",
-                }}
-              >
-                {optionLabels[index] ?? `Option ${index + 1}`}
-              </span>
-              <strong
-                style={{
-                  color: isSelected ? "rgba(246,243,236,0.94)" : "rgba(246,243,236,0.74)",
-                  fontSize: 20,
-                  lineHeight: 1.28,
-                  fontWeight: 360,
-                }}
-              >
-                {candidate.surface}
-              </strong>
-              <span
-                style={{
-                  color: "rgba(246,243,236,0.48)",
-                  fontSize: 13,
-                  lineHeight: 1.58,
-                }}
-              >
-                - {candidate.shell}
-              </span>
-            </button>
-          );
-        })}
-      </section>
-
-      <div
-        aria-hidden="true"
-        style={{ position: "relative", height: 22, margin: "2px 0" }}
-      >
-        <span style={{ position: "absolute", left: 0, right: 0, top: "50%", height: 1, background: "rgba(246,243,236,0.16)" }} />
-        {visiblePressureSeeds.map((candidate, i) => {
-          const reached = selectedIndex >= 0 && i <= selectedIndex;
-          const isCurrent = i === selectedIndex;
-          const x = visiblePressureSeeds.length > 1 ? (i / (visiblePressureSeeds.length - 1)) * 100 : 50;
-          return (
-            <span
-              key={candidate.id}
-              style={{
-                position: "absolute",
-                left: `${x}%`,
-                top: "50%",
-                width: isCurrent ? 9 : 7,
-                height: isCurrent ? 9 : 7,
-                borderRadius: "50%",
-                transform: "translate(-50%, -50%)",
-                background: isCurrent ? "#00b8d4" : reached ? "rgba(0,184,212,0.5)" : "rgba(246,243,236,0.26)",
-                boxShadow: isCurrent ? "0 0 12px rgba(0,184,212,0.55)" : "none",
-                transition: "background 180ms ease",
-              }}
-            />
-          );
-        })}
-      </div>
-
-      <button
-        type="button"
-        disabled={!selectedCandidate}
-        onClick={() => onConfirmClick(selectedCandidate)}
-        style={{
-          width: "100%",
-          minHeight: 48,
-          border: "1px solid rgba(0,184,212,0.34)",
-          background: selectedCandidate ? "rgba(0,184,212,0.08)" : "rgba(246,243,236,0.04)",
-          color: selectedCandidate ? "rgba(246,243,236,0.86)" : "rgba(246,243,236,0.36)",
-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-          fontSize: 12,
-          letterSpacing: "0.12em",
-          cursor: selectedCandidate ? "pointer" : "default",
-        }}
-      >
-        确认这一粒压力种子
-      </button>
-    </main>
-  );
+  return <PressureSeedCrossAxisPage ageSegment={pressureSeedAgeSegment} onComplete={commitPressureSeed} />;
 }

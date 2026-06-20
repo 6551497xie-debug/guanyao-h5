@@ -1,3 +1,4 @@
+// GUANYAO 2.0 = immutable causal engine with layered perceptual enhancement system that improves user understanding without modifying underlying logic.
 // GUANYAO 2.0 = single axis-based interaction grammar system. 本屏角色：axis buffering input only
 //   （唯一输入 = axis drag / 右滑，横=causal progression；无 tap、无混合手势）。
 // DefaultReactionScreen = isolated buffer scope; it never exports explanatory labels to adjacent states.
@@ -241,6 +242,16 @@ export function DefaultReactionScreen({
       const lineColor = BUFFER;
 
       ctx.textAlign = "left";
+      if (!m.sandifying) {
+        ctx.globalAlpha = 0.86;
+        ctx.fillStyle = BUFFER;
+        ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
+        ctx.fillText("02 ｜ REACTION · 缓冲层", leftX, m.h * 0.1);
+        ctx.globalAlpha = 0.4;
+        ctx.fillStyle = "rgba(246,243,236,0.7)";
+        ctx.fillText("Chrono 已落位 → 默认反应正在显影", leftX, m.h * 0.128);
+        ctx.globalAlpha = 1;
+      }
 
       // ④ 认知句：浮现 → 坍缩落入最上方
       const sentE = smooth(SENT_AT, SENT_DONE, t);
@@ -299,7 +310,7 @@ export function DefaultReactionScreen({
 
       // ①②⑥ 一字轴：蓝青轴入场 → 裂成两线 → 收束成底部缓冲闸门
       ctx.strokeStyle = lineColor;
-      ctx.globalAlpha = (m.sandifying ? Math.max(0, 1 - m.sandT) : 0.58) * Math.max(enter, split);
+      ctx.globalAlpha = (m.sandifying ? Math.max(0, 1 - m.sandT) : 0.72) * Math.max(enter, split);
       [lineY - gap, lineY + gap].forEach((sy) => {
         ctx.beginPath();
         ctx.moveTo(trackX0, sy);
@@ -330,7 +341,7 @@ export function DefaultReactionScreen({
           ctx.fillStyle = "rgba(246,243,236,0.7)";
           ctx.globalAlpha = 0.48;
           ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(m.swipe > 0.05 ? `认领中 ${Math.round(m.swipe * 100)}%` : "右滑认领母码卡", leftX, gateY + 24);
+          ctx.fillText(m.swipe > 0.05 ? `缓冲进入 MotherField ${Math.round(m.swipe * 100)}%` : "右滑进入惯性场", leftX, gateY + 24);
           ctx.globalAlpha = 1;
         }
       }

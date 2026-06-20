@@ -1,3 +1,4 @@
+// GUANYAO 2.0 = immutable causal engine with layered perceptual enhancement system that improves user understanding without modifying underlying logic.
 // Axis System = causal line with discrete semantic markers used for progressive psychological
 //   state revelation and final event-driven transition（三标尺点 原力/保护/误用，100% 触发转场）。
 // GUANYAO 2.0 = single axis-based interaction grammar system. 本屏角色：axis rupture input only
@@ -292,6 +293,14 @@ export function MotherFieldEngine({
 
       // 结构压印：母码名 // 标语（从裂缝鐫刻淡入）
       ctx.textAlign = "left";
+      ctx.globalAlpha = 0.86 * m.openT * contentFade;
+      ctx.fillStyle = lerpHex(BLUE, GOLD, m.goldMix);
+      ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
+      ctx.fillText("03 ｜ MOTHERFIELD · 惯性加压", leftX, m.h * 0.12);
+      ctx.globalAlpha = 0.42 * m.openT * contentFade;
+      ctx.fillStyle = "rgba(246,243,236,0.72)";
+      ctx.fillText("Reaction 已沉积 → 行为惯性正在升压", leftX, m.h * 0.148);
+
       ctx.globalAlpha = 0.9 * m.openT * contentFade;
       ctx.fillStyle = lerpHex(BLUE, GOLD, m.goldMix);
       ctx.font = `${Math.min(17, m.w * 0.044)}px ${MONO}`;
@@ -308,7 +317,7 @@ export function MotherFieldEngine({
       const s0 = m.cy - m.splitGap;
       const s1 = m.cy + m.splitGap;
       ctx.strokeStyle = lineColor;
-      ctx.globalAlpha = (sandifying ? contentFade : 0.8) * Math.min(1, m.openT * 1.4);
+      ctx.globalAlpha = (sandifying ? contentFade : 0.9) * Math.min(1, m.openT * 1.4);
       [s0, s1].forEach((sy) => {
         ctx.beginPath();
         ctx.moveTo(m.w * 0.08, sy);
@@ -448,7 +457,7 @@ export function MotherFieldEngine({
         ctx.globalAlpha = 0.48;
         ctx.fillStyle = "rgba(246,243,236,0.8)";
         ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
-        ctx.fillText("按住圆点 · 向右拖拽解构原力", leftX, m.trackY + 26);
+        ctx.fillText("按住圆点 · 向右压缩为压力种子", leftX, m.trackY + 26);
         ctx.globalAlpha = 1;
       }
     }

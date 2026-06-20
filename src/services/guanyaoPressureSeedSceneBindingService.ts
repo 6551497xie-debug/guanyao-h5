@@ -1,3 +1,6 @@
+// GUANYAO 2.0 = closed deterministic causal system with irreversible upstream generation and passive downstream rendering only.
+// Pressure Seed generation is one-way only: Chrono -> Default Reaction -> MotherField -> Behavioral Compression Engine -> Pressure Seed Output.
+// Semantic labels such as 原力 / 保护 / 误用 are downstream display tags and must never become causal inputs.
 import { GUANYAO_PRESSURE_SEED_MATRIX_V2 } from "../data/guanyaoPressureSeedMatrix";
 import type {
   GuanyaoAgeSegment,
@@ -41,10 +44,11 @@ export interface GuanyaoPressureSeedTriplet {
     shell: string;
   }>;
   strategy: {
-    source: "SEED_MATRIX_V2";
+    source: "BEHAVIORAL_INERTIA_COMPRESSION_ENGINE";
+    matrixSource: "SEED_MATRIX_V2";
     totalCandidates: number;
-    selectionMode: "AGE_FIELD_NODE";
-    compositionMode: "SAME_NODE_TRIPLET";
+    selectionMode: "BEHAVIORAL_STATE_COMPRESSION";
+    compositionMode: "POST_COMPRESSION_TRIPLET";
     ageGroup?: PressureSeedAgeGroup;
     pressureField?: PressureSeedField;
     anchorSeedId?: string;
@@ -59,6 +63,7 @@ export interface GuanyaoPressureSeedTriplet {
 
 export interface GuanyaoSelectedPressureSeedContext {
   selectedPressureSeedId: string;
+  engineSource: "BEHAVIORAL_INERTIA_COMPRESSION_ENGINE";
   matrixCode: string;
   ageGroup?: PressureSeedAgeGroup;
   pressureField: GuanyaoPressureField;
@@ -169,6 +174,29 @@ type StoredInitialCoordinates = {
   birthChrono?: string;
 };
 
+type StoredPressureSeedPacket = {
+  motherCode?: string;
+  defaultDefensePattern?: string;
+  flowState?: string;
+  protectionState?: string;
+  collapseState?: string;
+  inertiaSignature?: string;
+};
+
+type StoredMotherCodeProfile = {
+  motherCodeName?: string;
+  baseForce?: string;
+  defaultReactionChain?: string;
+  shadowInertia?: string;
+};
+
+type BehavioralCompressionContext = {
+  chrono: StoredInitialCoordinates | null;
+  defaultReaction: string;
+  motherField: string;
+  inertiaSignature?: string;
+};
+
 function readJsonFromStorage<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
 
@@ -179,6 +207,82 @@ function readJsonFromStorage<T>(key: string): T | null {
   } catch {
     return null;
   }
+}
+
+const includesAny = (text: string, words: string[]): boolean => words.some((word) => text.includes(word));
+
+function buildBehavioralCompressionContext(): BehavioralCompressionContext {
+  const chrono = readJsonFromStorage<StoredInitialCoordinates>("guanyao:initialCoordinates");
+  const packet = readJsonFromStorage<StoredPressureSeedPacket>("guanyao:pressureSeedPacket");
+  const motherProfile = readJsonFromStorage<StoredMotherCodeProfile>("guanyao:motherCodeProfile");
+
+  return {
+    chrono,
+    defaultReaction: [packet?.defaultDefensePattern, motherProfile?.defaultReactionChain].filter(Boolean).join(" / "),
+    motherField: [
+      packet?.flowState,
+      packet?.protectionState,
+      packet?.collapseState,
+      motherProfile?.baseForce,
+      motherProfile?.shadowInertia,
+    ]
+      .filter(Boolean)
+      .join(" / "),
+    inertiaSignature: packet?.inertiaSignature,
+  };
+}
+
+function deriveCompressionPreferences(compression: BehavioralCompressionContext): Pick<
+  GuanyaoPressureSeedSceneContext,
+  "preferredFields" | "preferredNatures" | "preferredRelations"
+> {
+  const text = `${compression.defaultReaction} ${compression.motherField}`;
+  const preferredFields: GuanyaoPressureField[] = [];
+  const preferredNatures: GuanyaoPressureNature[] = [];
+  const preferredRelations: GuanyaoCoreRelation[] = [];
+
+  if (includesAny(text, ["评价", "控制", "决策", "权力", "主控", "规则"])) preferredFields.push("POWER");
+  if (includesAny(text, ["钱", "资源", "利益", "交换", "债", "分成"])) preferredFields.push("INTEREST");
+  if (includesAny(text, ["关系", "回应", "沟通", "亲密", "缓和"])) preferredFields.push("RELATION");
+  if (includesAny(text, ["家庭", "责任", "供养", "托底", "父母", "孩子"])) preferredFields.push("FAMILY");
+  if (includesAny(text, ["圈子", "归属", "同事", "人群", "外部"])) preferredFields.push("SOCIAL");
+  if (includesAny(text, ["身份", "存在", "阶段", "位置", "不知道"])) preferredFields.push("EXISTENCE");
+
+  if (includesAny(text, ["控制", "主控", "决策", "必须"])) preferredNatures.push("CONTROL");
+  if (includesAny(text, ["生存", "危险", "风险", "吞没", "失控"])) preferredNatures.push("SURVIVAL");
+  if (includesAny(text, ["关系", "回应", "连接", "亲密"])) preferredNatures.push("ATTACHMENT");
+  if (includesAny(text, ["评价", "证明", "体面", "看见"])) preferredNatures.push("EVALUATION");
+  if (includesAny(text, ["责任", "承担", "托住", "供养"])) preferredNatures.push("OBLIGATION");
+  if (includesAny(text, ["归属", "圈子", "群体"])) preferredNatures.push("BELONGING");
+  if (includesAny(text, ["身份", "位置", "阶段"])) preferredNatures.push("IDENTITY");
+  if (includesAny(text, ["资源", "钱", "利益"])) preferredNatures.push("RESOURCE");
+
+  if (includesAny(text, ["上级", "老板", "规则", "系统"])) preferredRelations.push("BOSS", "SYSTEM");
+  if (includesAny(text, ["客户", "合作", "资源", "利益"])) preferredRelations.push("CLIENT", "PARTNER_BUSINESS");
+  if (includesAny(text, ["亲密", "伴侣", "关系"])) preferredRelations.push("PARTNER_ROMANTIC", "FRIEND");
+  if (includesAny(text, ["家庭", "父母", "孩子"])) preferredRelations.push("PARENT", "CHILD");
+  if (includesAny(text, ["同事", "圈子"])) preferredRelations.push("COLLEAGUE", "FRIEND");
+  if (includesAny(text, ["自己", "身份", "存在"])) preferredRelations.push("SELF");
+
+  return {
+    preferredFields: [...new Set(preferredFields)],
+    preferredNatures: [...new Set(preferredNatures)],
+    preferredRelations: [...new Set(preferredRelations)],
+  };
+}
+
+function withBehavioralCompressionContext(
+  context: GuanyaoPressureSeedSceneContext = {},
+): GuanyaoPressureSeedSceneContext {
+  const compression = buildBehavioralCompressionContext();
+  const preferences = deriveCompressionPreferences(compression);
+
+  return {
+    ...context,
+    preferredFields: context.preferredFields ?? preferences.preferredFields,
+    preferredNatures: context.preferredNatures ?? preferences.preferredNatures,
+    preferredRelations: context.preferredRelations ?? preferences.preferredRelations,
+  };
 }
 
 function resolveAgeGroupFromAge(age: number): PressureSeedAgeGroup {
@@ -386,14 +490,15 @@ export function scorePressureSeedForScene(
 export function getPressureSeedSceneTriplet(
   context: GuanyaoPressureSeedSceneContext = {},
 ): GuanyaoPressureSeedTriplet {
-  const node = resolveMatrixNodeForTriplet(context);
+  const compressionContext = withBehavioralCompressionContext(context);
+  const node = resolveMatrixNodeForTriplet(compressionContext);
   if (!node) {
     console.warn("[guanyao] pressure seed matrix V2 node missing; triplet empty");
   }
 
   const selected = node
     ? node.seeds
-        .filter((seed) => !(context.excludeSeedIds?.includes(seed.id) ?? false))
+        .filter((seed) => !(compressionContext.excludeSeedIds?.includes(seed.id) ?? false))
         .slice(0, 3)
         .map((seed) => toPressureSeedCandidateFromMatrixSeed(node, seed))
     : [];
@@ -416,10 +521,11 @@ export function getPressureSeedSceneTriplet(
       ...getPressureSeedSceneFrontStage(seed),
     })),
     strategy: {
-      source: "SEED_MATRIX_V2",
+      source: "BEHAVIORAL_INERTIA_COMPRESSION_ENGINE",
+      matrixSource: "SEED_MATRIX_V2",
       totalCandidates: node?.seeds.length ?? 0,
-      selectionMode: "AGE_FIELD_NODE",
-      compositionMode: "SAME_NODE_TRIPLET",
+      selectionMode: "BEHAVIORAL_STATE_COMPRESSION",
+      compositionMode: "POST_COMPRESSION_TRIPLET",
       ageGroup: node?.ageGroup,
       pressureField: node?.pressureField,
       anchorSeedId: anchor?.id,
@@ -465,8 +571,11 @@ export function buildSelectedPressureSeedContext(
   seed: GuanyaoPressureSeed,
   context: GuanyaoPressureSeedSceneContext = {},
 ): GuanyaoSelectedPressureSeedContext {
+  const compressionContext = withBehavioralCompressionContext(context);
+
   return {
     selectedPressureSeedId: seed.id,
+    engineSource: "BEHAVIORAL_INERTIA_COMPRESSION_ENGINE",
     matrixCode: seed.matrixCode,
     ageGroup: seed.primaryAge,
     pressureField: seed.pressureField,
@@ -477,8 +586,8 @@ export function buildSelectedPressureSeedContext(
     core: seed.core,
     tags: seed.tags,
     mappingHint: seed.mappingHint,
-    pressureIntensity: derivePressureSeedIntensity(seed, context),
-    pressureConfidence: derivePressureSeedConfidence(seed, context),
+    pressureIntensity: derivePressureSeedIntensity(seed, compressionContext),
+    pressureConfidence: derivePressureSeedConfidence(seed, compressionContext),
   };
 }
 
@@ -514,14 +623,17 @@ export function auditGuanyaoPressureSeedSceneBindingStrategy(): GuanyaoPressureS
   if (new Set(sampleTriplet.seeds.map((seed) => seed.id)).size !== sampleTriplet.seeds.length) {
     errors.push("sample triplet contains duplicate seed ids");
   }
-  if (sampleTriplet.strategy.source !== "SEED_MATRIX_V2") {
-    errors.push(`source expected SEED_MATRIX_V2, got ${sampleTriplet.strategy.source}`);
+  if (sampleTriplet.strategy.source !== "BEHAVIORAL_INERTIA_COMPRESSION_ENGINE") {
+    errors.push(`source expected BEHAVIORAL_INERTIA_COMPRESSION_ENGINE, got ${sampleTriplet.strategy.source}`);
   }
-  if (sampleTriplet.strategy.selectionMode !== "AGE_FIELD_NODE") {
-    errors.push(`selectionMode expected AGE_FIELD_NODE, got ${sampleTriplet.strategy.selectionMode}`);
+  if (sampleTriplet.strategy.matrixSource !== "SEED_MATRIX_V2") {
+    errors.push(`matrixSource expected SEED_MATRIX_V2, got ${sampleTriplet.strategy.matrixSource}`);
   }
-  if (sampleTriplet.strategy.compositionMode !== "SAME_NODE_TRIPLET") {
-    errors.push(`compositionMode expected SAME_NODE_TRIPLET, got ${sampleTriplet.strategy.compositionMode}`);
+  if (sampleTriplet.strategy.selectionMode !== "BEHAVIORAL_STATE_COMPRESSION") {
+    errors.push(`selectionMode expected BEHAVIORAL_STATE_COMPRESSION, got ${sampleTriplet.strategy.selectionMode}`);
+  }
+  if (sampleTriplet.strategy.compositionMode !== "POST_COMPRESSION_TRIPLET") {
+    errors.push(`compositionMode expected POST_COMPRESSION_TRIPLET, got ${sampleTriplet.strategy.compositionMode}`);
   }
   if (!sampleTriplet.strategy.ageGroup) {
     errors.push("sample triplet missing ageGroup");
@@ -550,6 +662,7 @@ export function auditGuanyaoPressureSeedSceneBindingStrategy(): GuanyaoPressureS
   } else {
     const requiredContextKeys: Array<keyof GuanyaoSelectedPressureSeedContext> = [
       "selectedPressureSeedId",
+      "engineSource",
       "matrixCode",
       "ageGroup",
       "pressureField",

@@ -1,3 +1,4 @@
+// GUANYAO 2.0 = immutable causal engine with layered perceptual enhancement system that improves user understanding without modifying underlying logic.
 // GUANYAO 2.0 = single axis-based interaction grammar system —— all screens share one
 //   causal input language with role-based constraints. 本屏角色：axis ignition input only
 //   （axis drag：纵=state modulation / 横=causal progression；无 tap）。
@@ -11,6 +12,7 @@
 // 文案层：顶部「02 ｜ 生命起点」+ 断言打字机（进入后落位常驻）+ 调频/滑动提示。
 // State machine: TYPING → TUNING → ALL_LOCKED → SANDIFY。
 // SANDIFY 完成 → emit ORIGIN_LOCKED + onChronoLock()（现实结晶）。
+// System = discrete state machine with continuous physical transition layer between states.
 
 import { useEffect, useRef } from "react";
 import { axisLineSystem } from "../systems/axisLineSystem";
@@ -64,6 +66,7 @@ const TYPE_HOLD_MS = 560;
 const ROW_H = 52;
 const RAIL_SNAP = 0.96;
 const COLOR = { gray: "#555555", blue: "#00B8D4", gold: "#C7A96B", bone: "rgba(246,243,236,0.5)", white: "#F6F3EC" };
+const GOLD_DENSE = "#D4B777";
 
 const DIMS = ["year", "month", "day", "hour"] as const;
 type Dim = (typeof DIMS)[number];
@@ -71,10 +74,10 @@ type Dim = (typeof DIMS)[number];
 const DIM_LABEL: Record<Dim, string> = { year: "年", month: "月", day: "日", hour: "时" };
 const STAGE_ROMAN = ["Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ"];
 const STAGE_NAME: Record<Dim, string> = {
-  year: "年份装填",
-  month: "月份装填",
-  day: "日期装填",
-  hour: "时辰装填",
+  year: "年份定位",
+  month: "月份定位",
+  day: "日期定位",
+  hour: "时段定位",
 };
 
 function pad2(v: number) {
@@ -87,6 +90,11 @@ function daysInMonth(year: number, month: number) {
 
 function clamp(v: number, min: number, max: number) {
   return Math.min(Math.max(v, min), max);
+}
+
+function smooth(e0: number, e1: number, x: number) {
+  const t = clamp((x - e0) / (e1 - e0), 0, 1);
+  return t * t * (3 - 2 * t);
 }
 
 function lerpHex(a: string, b: string, t: number): string {
@@ -123,6 +131,7 @@ type EngineModel = {
   typeChars: number;
   particles: Particle[];
   goldMix: number;
+  transitionPulse: number;
   fired: boolean;
 };
 
@@ -187,6 +196,7 @@ export function ChronoAxisDualEngine({
     typeChars: 0,
     particles: [],
     goldMix: 0,
+    transitionPulse: 0,
     fired: false,
   });
 
@@ -263,6 +273,7 @@ export function ChronoAxisDualEngine({
       axisLineSystem.emitAxisEvent({ type: "TIME_LOCK", payload: { dimension: dim, value: dimValue(m.coords, dim) } });
       vibrate([0, 22, 16, 30]); // 咔哒 — 机械闷音刚硬短震
       m.lockedCount += 1;
+      m.transitionPulse = 1;
       m.gesture = null; // 立刻松开线轨 → 由弹性复归（0.2s）拉回最左端
       if (m.lockedCount >= DIMS.length) {
         m.state = "ALL_LOCKED";
@@ -311,6 +322,7 @@ export function ChronoAxisDualEngine({
     function update(dt: number, now: number) {
       const targetGold = m.state === "ALL_LOCKED" || m.state === "SANDIFY" ? 1 : 0;
       m.goldMix += (targetGold - m.goldMix) * Math.min(1, dt * 4);
+      m.transitionPulse += (0 - m.transitionPulse) * Math.min(1, dt * 5);
 
       switch (m.state) {
         case "TYPING": {
@@ -352,10 +364,10 @@ export function ChronoAxisDualEngine({
         }
         case "SANDIFY": {
           for (const p of m.particles) {
-            p.vy += 240 * dt;
+            p.vy += 340 * dt;
             p.x += p.vx * dt;
             p.y += p.vy * dt;
-            p.alpha -= dt * 0.7;
+            p.alpha -= dt * 0.5;
           }
           m.particles = m.particles.filter((p) => p.alpha > 0);
           if (now - m.stateEnteredAt > 1150) finish();
@@ -416,18 +428,27 @@ export function ChronoAxisDualEngine({
 
       const leftX = m.cl + m.cw * 0.09; // 统一左对齐基线（较换挡轨左端右移一丢丢，整体更聚拢）
       const sandifying = m.state === "SANDIFY";
+      const stateAge = performance.now() - m.stateEnteredAt;
+      const typingDecay = m.state === "TUNING" ? 1 - smooth(0, 860, stateAge) : 0;
+      const tuningRise = m.state === "TUNING" ? smooth(120, 760, stateAge) : m.state === "TYPING" ? 0 : 1;
+      const lockConsolidation = m.state === "ALL_LOCKED" ? smooth(0, 760, stateAge) : m.state === "SANDIFY" ? 1 : 0;
+      const crystallization = m.state === "SANDIFY" ? smooth(0, 520, stateAge) : 0;
+      const tensionScale = 1 + Math.sin(stateAge / 80) * m.transitionPulse * 0.035;
       const dim = activeDim();
       const tuning = (m.state === "TUNING" || m.state === "ALL_LOCKED") && !sandifying;
       const axisColor = m.state === "TYPING" ? COLOR.gray : lerpHex(COLOR.blue, COLOR.gold, m.goldMix);
       const railColor = m.state === "TYPING" ? COLOR.bone : lerpHex(COLOR.blue, COLOR.gold, m.goldMix);
 
-      // 顶部：02 ｜ 生命起点
+      // 顶部：当前状态标签，帮助用户稳定识别所处阶段。
       if (!sandifying) {
-        ctx.globalAlpha = 0.72;
+        ctx.globalAlpha = 0.88;
         ctx.fillStyle = COLOR.blue;
         ctx.textAlign = "left";
         ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
-        ctx.fillText("02 ｜ 生命起点", leftX, m.h * 0.1);
+        ctx.fillText("01 ｜ CHRONO · 入口点火", leftX, m.h * 0.1);
+        ctx.globalAlpha = 0.42;
+        ctx.fillStyle = COLOR.bone;
+        ctx.fillText("轴线正在生成行为起点", leftX, m.h * 0.128);
         ctx.globalAlpha = 1;
       }
 
@@ -439,11 +460,13 @@ export function ChronoAxisDualEngine({
         ctx.textAlign = "left";
         ctx.fillStyle = COLOR.white;
         let remaining = m.typeChars;
-        const startY = m.h * 0.19;
+        const startY = m.h * (0.19 - typingDecay * 0.012);
         TYPING_LINES.forEach((line, li) => {
           const shown = line.slice(0, Math.max(0, remaining));
           remaining -= line.length;
-          ctx.globalAlpha = landed ? (li === 0 ? 0.5 : 0.34) : li === 0 ? 0.92 : 0.6;
+          const landedAlpha = li === 0 ? 0.5 : 0.34;
+          const typingAlpha = li === 0 ? 0.92 : 0.6;
+          ctx.globalAlpha = landed ? landedAlpha + typingDecay * (typingAlpha - landedAlpha) : typingAlpha;
           ctx.fillText(shown, leftX, startY + li * (fontPx * 1.7));
         });
         ctx.globalAlpha = 1;
@@ -455,7 +478,8 @@ export function ChronoAxisDualEngine({
         ctx.textAlign = "left";
         ctx.fillStyle = "rgba(0,184,212,0.72)";
         ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
-        ctx.fillText("时序锁定", leftX, m.h * 0.34);
+        ctx.globalAlpha = 0.28 + lockConsolidation * 0.72;
+        ctx.fillText("CHRONO LOCKED → REACTION BUFFER", leftX, m.h * 0.34);
         const code = `CODE: ${m.coords.year} // ${pad2(m.coords.month)} // ${pad2(m.coords.day)} // ${PERIOD_LABELS[m.coords.periodIndex] ?? "酉时"} // ${locationRef.current}`;
         let fp = Math.min(22, m.w * 0.052);
         ctx.font = `${fp}px ${MONO}`;
@@ -463,13 +487,15 @@ export function ChronoAxisDualEngine({
           fp -= 1;
           ctx.font = `${fp}px ${MONO}`;
         }
-        ctx.fillStyle = lerpHex(COLOR.white, COLOR.gold, m.goldMix);
+        ctx.fillStyle = lerpHex(COLOR.white, GOLD_DENSE, Math.min(1, m.goldMix + lockConsolidation * 0.18));
         ctx.fillText(code, leftX, m.h * 0.46);
+        ctx.globalAlpha = 1;
       } else if (tuning) {
         // 阶段标签：［ Ⅱ · 月份装填 ］
         ctx.textAlign = "left";
         ctx.fillStyle = "rgba(0,184,212,0.72)";
         ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
+        ctx.globalAlpha = 0.12 + tuningRise * 0.88;
         ctx.fillText(`［ ${STAGE_ROMAN[m.lockedCount] ?? "Ⅰ"} · ${STAGE_NAME[dim]} ］`, leftX, m.h * 0.34);
 
         // 巨型调频读数：时辰阶段显示「出生时段」（钟点），地支后台反算
@@ -478,32 +504,45 @@ export function ChronoAxisDualEngine({
             ? PERIOD_RANGES[clamp(Math.round(m.dialFloat), 0, 11)] ?? "17:00—19:00"
             : dimText(m.coords, dim, Math.round(m.dialFloat));
         const giantFont = dim === "hour" ? Math.min(38, m.w * 0.088) : Math.min(86, m.w * 0.166);
-        ctx.fillStyle = lerpHex(COLOR.white, COLOR.gold, m.goldMix);
+        ctx.fillStyle = lerpHex(COLOR.white, GOLD_DENSE, Math.min(1, m.goldMix + m.transitionPulse * 0.14));
         ctx.font = `${giantFont}px ${MONO}`;
         ctx.fillText(giant, leftX, m.h * 0.46);
+        ctx.globalAlpha = 1;
 
         if (dim === "hour") {
           ctx.fillStyle = "rgba(0,184,212,0.6)";
+          ctx.globalAlpha = 0.12 + tuningRise * 0.88;
           ctx.font = `${Math.min(14, m.w * 0.034)}px ${MONO}`;
           ctx.fillText(`→ ${PERIOD_LABELS[clamp(Math.round(m.dialFloat), 0, 11)] ?? "酉时"}`, leftX, m.h * 0.545);
+          ctx.globalAlpha = 1;
         }
 
+        ctx.globalAlpha = 0.12 + tuningRise * 0.88;
         drawReadout(ctx, leftX, m.h * 0.6);
+        ctx.globalAlpha = 1;
 
         ctx.fillStyle = "rgba(246,243,236,0.3)";
         ctx.textAlign = "left";
         ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
-        ctx.fillText("上下滑动 · 捕捉频率", leftX, m.h * 0.705);
+        ctx.globalAlpha = 0.1 + tuningRise * 0.9;
+        ctx.fillText("上下滑动 · 锁定当前坐标", leftX, m.h * 0.705);
+        ctx.globalAlpha = 1;
       }
 
       // ---- 十字轴：纵向调频天线（右）----
+      ctx.save();
       ctx.strokeStyle = axisColor;
-      ctx.globalAlpha = sandifying ? 0.12 : m.state === "TYPING" ? 0.4 : 0.9;
+      ctx.lineWidth = 1.45 * tensionScale;
+      ctx.shadowColor = m.state === "TYPING" ? "rgba(0,184,212,0.18)" : "rgba(0,184,212,0.48)";
+      ctx.shadowBlur = m.state === "TYPING" ? 4 : 8 + m.transitionPulse * 8;
+      ctx.globalAlpha = clamp(sandifying ? 0.22 + crystallization * 0.24 : m.state === "TYPING" ? 0.62 : 0.68 + tuningRise * 0.32 + m.transitionPulse * 0.22, 0, 1);
       ctx.beginPath();
       ctx.moveTo(m.axisX, m.axisTop);
       ctx.lineTo(m.axisX, m.axisBottom);
       ctx.stroke();
+      ctx.restore();
       ctx.globalAlpha = 1;
+      ctx.lineWidth = 1;
 
       if (tuning) {
         // 卡尺刻度（数理卡尺感，极淡，朝文字一侧）
@@ -524,37 +563,51 @@ export function ChronoAxisDualEngine({
         const { min, max } = dimRange(m.coords, dim);
         const frac = max > min ? (Math.round(m.dialFloat) - min) / (max - min) : 0;
         const nodeY = m.axisBottom - frac * (m.axisBottom - m.axisTop);
-        ctx.fillStyle = lerpHex(COLOR.blue, COLOR.gold, m.goldMix);
+        ctx.fillStyle = lerpHex(COLOR.blue, GOLD_DENSE, Math.min(1, m.goldMix + m.transitionPulse * 0.16));
+        ctx.shadowColor = "rgba(0,184,212,0.5)";
+        ctx.shadowBlur = 8 + m.transitionPulse * 8;
         ctx.beginPath();
-        ctx.arc(m.axisX, nodeY, 4.5, 0, Math.PI * 2);
+        ctx.arc(m.axisX, nodeY, 4.8 * tensionScale, 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = 0;
         ctx.globalAlpha = 0.5;
         ctx.beginPath();
-        ctx.arc(m.axisX, nodeY, 9, 0, Math.PI * 2);
+        ctx.arc(m.axisX, nodeY, 9.5 * tensionScale, 0, Math.PI * 2);
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
 
       // ---- 十字轴：横向换挡轨（底）----
+      ctx.save();
       ctx.strokeStyle = railColor;
-      ctx.globalAlpha = sandifying ? 0.12 : m.state === "TYPING" ? 0.4 : 0.9;
+      ctx.lineWidth = 1.45 * tensionScale;
+      ctx.shadowColor = m.state === "TYPING" ? "rgba(0,184,212,0.16)" : "rgba(0,184,212,0.46)";
+      ctx.shadowBlur = m.state === "TYPING" ? 4 : 8 + m.transitionPulse * 8;
+      ctx.globalAlpha = clamp(sandifying ? 0.22 + crystallization * 0.24 : m.state === "TYPING" ? 0.62 : 0.68 + tuningRise * 0.32 + m.transitionPulse * 0.22, 0, 1);
       ctx.beginPath();
       ctx.moveTo(m.railX0, m.railY);
       ctx.lineTo(m.railX1, m.railY);
       ctx.stroke();
+      ctx.restore();
       ctx.globalAlpha = 1;
+      ctx.lineWidth = 1;
 
       if (m.state === "TUNING") {
         const fillX = m.railX0 + (m.railX1 - m.railX0) * m.railProgress;
+        ctx.save();
         ctx.strokeStyle = COLOR.blue;
+        ctx.lineWidth = 1.3;
+        ctx.shadowColor = "rgba(0,184,212,0.42)";
+        ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.moveTo(m.railX0, m.railY);
         ctx.lineTo(fillX, m.railY);
         ctx.stroke();
         ctx.fillStyle = COLOR.blue;
         ctx.beginPath();
-        ctx.arc(fillX, m.railY, 4, 0, Math.PI * 2);
+        ctx.arc(fillX, m.railY, 4.8, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
         // 提示语：右滑卡扣 + 进度
         ctx.font = `${Math.min(11, m.w * 0.028)}px ${MONO}`;
         ctx.fillStyle = "rgba(246,243,236,0.4)";
@@ -567,21 +620,29 @@ export function ChronoAxisDualEngine({
 
       // 终局：最底部拉起 1px 暗金锁扣线
       if (m.lockedCount >= 4) {
-        ctx.strokeStyle = COLOR.gold;
-        ctx.globalAlpha = sandifying ? 0.25 : 0.8;
+        ctx.save();
+        ctx.strokeStyle = GOLD_DENSE;
+        ctx.lineWidth = 1.35;
+        ctx.shadowColor = "rgba(212,183,119,0.5)";
+        ctx.shadowBlur = 8 + lockConsolidation * 10;
+        ctx.globalAlpha = sandifying ? 0.36 + crystallization * 0.34 : 0.24 + lockConsolidation * 0.72;
         ctx.beginPath();
         ctx.moveTo(m.railX0, m.h * 0.87);
         ctx.lineTo(m.railX1, m.h * 0.87);
         ctx.stroke();
+        ctx.restore();
         ctx.globalAlpha = 1;
       }
 
       if (sandifying) {
-        ctx.fillStyle = lerpHex(COLOR.blue, COLOR.gold, 1);
+        ctx.fillStyle = GOLD_DENSE;
+        ctx.shadowColor = "rgba(212,183,119,0.36)";
+        ctx.shadowBlur = 5;
         for (const p of m.particles) {
-          ctx.globalAlpha = Math.max(0, p.alpha);
-          ctx.fillRect(p.x - 0.5, p.y - 0.5, 1.4, 1.4);
+          ctx.globalAlpha = Math.min(1, Math.max(0, p.alpha) * (0.34 + crystallization * 1.02));
+          ctx.fillRect(p.x - 0.7, p.y - 0.7, 1.9, 1.9);
         }
+        ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
       }
     }
