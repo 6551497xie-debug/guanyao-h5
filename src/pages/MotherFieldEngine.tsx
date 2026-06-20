@@ -21,6 +21,7 @@
 
 import { useEffect, useRef } from "react";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
+import { setAxisHandoff, takeAxisHandoff } from "../systems/axisHandoff";
 
 export type MotherField = { tag: string; title: string; body: string };
 
@@ -135,6 +136,17 @@ export function MotherFieldEngine({
     let raf = 0;
     let last = performance.now();
 
+    // 一线贯穿：上一屏沙化粒子入场重凝至本屏裂缝中轴（m.cy）
+    const handoff = takeAxisHandoff();
+    let incoming: { x: number; y: number; vx: number; vy: number; color: string }[] = [];
+    let incomingSeeded = false;
+    let incomingT = 0;
+    function seedIncoming() {
+      if (incomingSeeded || !handoff || m.w <= 0) return;
+      incomingSeeded = true;
+      incoming = handoff.map((p) => ({ x: p.fx * m.w, y: p.fy * m.h, vx: p.vx, vy: p.vy, color: p.color }));
+    }
+
     function vibrate(p: number | number[]) {
       if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") navigator.vibrate(p);
     }
@@ -197,6 +209,10 @@ export function MotherFieldEngine({
         });
       }
       m.particles = list;
+      // 粒子守恒：把本屏沙化粒子（金+蓝+灰）交给下一屏
+      setAxisHandoff(
+        list.map((p, i) => ({ fx: p.x / m.w, fy: p.y / m.h, vx: p.vx, vy: p.vy, color: ["#C7A96B", "#00B8D4", "#6b6b6b"][i % 3] ?? "#C7A96B" })),
+      );
       // 生成压力种子（单轴完成时固化）
       const d = dataRef.current;
       const packet: PressureSeedPacket = {
@@ -218,6 +234,18 @@ export function MotherFieldEngine({
     function update(dt: number, now: number) {
       void now;
       m.switchT = Math.min(1, m.switchT + dt * 5);
+
+      // 入场重凝：上一屏交接粒子汇聚至裂缝中轴
+      seedIncoming();
+      if (incoming.length) {
+        incomingT += dt;
+        const k = Math.min(1, dt * 3);
+        incoming.forEach((p) => {
+          p.x += (m.cx - p.x) * k;
+          p.y += (m.cy - p.y) * k;
+        });
+        if (incomingT > 0.7) incoming = [];
+      }
 
       if (m.phase === "VOID") {
         // 黑屏停顿 + 物理脉冲后，才割裂开窗
@@ -272,6 +300,17 @@ export function MotherFieldEngine({
       const sandifying = m.phase === "SANDIFY";
       const d = dataRef.current;
 
+      // 入场重凝粒子（来自上一屏沙化，向裂缝中轴汇聚后隐没；贯穿 VOID/OPENING）
+      if (incoming.length) {
+        const ia = Math.max(0, 1 - incomingT / 0.7);
+        incoming.forEach((p) => {
+          ctx.globalAlpha = ia;
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x - 0.7, p.y - 0.7, 1.6, 1.6);
+        });
+        ctx.globalAlpha = 1;
+      }
+
       // VOID：黑屏停顿 + 物理脉冲（裂缝尚未开，禁止任何内容渲染）
       if (m.phase === "VOID") {
         const beat = Math.abs(Math.sin(m.voidT * 14));
@@ -298,20 +337,12 @@ export function MotherFieldEngine({
       ctx.fillStyle = lerpHex(BLUE, GOLD, m.goldMix);
       ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
       ctx.fillText("03 ｜ MOTHERFIELD · 惯性加压", leftX, m.h * 0.12);
-      ctx.globalAlpha = 0.42 * m.openT * contentFade;
-      ctx.fillStyle = "rgba(246,243,236,0.72)";
-      ctx.fillText("Reaction 已沉积 → 行为惯性正在升压", leftX, m.h * 0.148);
 
+      // 母码名（认知句主场已归 Reaction，本屏不复读标语）
       ctx.globalAlpha = 0.9 * m.openT * contentFade;
       ctx.fillStyle = lerpHex(BLUE, GOLD, m.goldMix);
       ctx.font = `${Math.min(17, m.w * 0.044)}px ${MONO}`;
       ctx.fillText(d.motherCode, leftX, m.h * 0.2);
-      ctx.globalAlpha = 0.6 * m.openT * contentFade;
-      ctx.fillStyle = "rgba(246,243,236,0.82)";
-      ctx.font = `${Math.min(15, m.w * 0.038)}px ${SANS}`;
-      wrap(ctx, d.tagline.replace(/[。.]+$/, ""), m.w * 0.8).forEach((ln, i) => {
-        ctx.fillText(ln, leftX, m.h * 0.26 + i * 22);
-      });
       ctx.globalAlpha = 1;
 
       // 裂缝视窗：上下 1px 割裂
@@ -376,11 +407,12 @@ export function MotherFieldEngine({
 
       // 沙化粒子
       if (sandifying) {
-        ctx.fillStyle = GOLD;
-        for (const p of m.particles) {
+        const sandCols = [GOLD, BLUE, "#6b6b6b"]; // 金 + 蓝 + 灰 层次
+        m.particles.forEach((p, i) => {
           ctx.globalAlpha = Math.max(0, p.alpha);
+          ctx.fillStyle = sandCols[i % 3] ?? GOLD;
           ctx.fillRect(p.x - 0.6, p.y - 0.6, 1.6, 1.6);
-        }
+        });
         ctx.globalAlpha = 1;
       }
 

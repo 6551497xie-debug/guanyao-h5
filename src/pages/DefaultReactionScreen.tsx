@@ -14,11 +14,11 @@
 
 import { useEffect, useRef } from "react";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
+import { setAxisHandoff, takeAxisHandoff } from "../systems/axisHandoff";
 
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
 const SANS = "-apple-system, system-ui, sans-serif";
 const BLUE = "#00B8D4";
-const BUFFER = "#2F8F99";
 const GOLD = "#C7A96B";
 const GRAY = "#555555";
 
@@ -122,6 +122,17 @@ export function DefaultReactionScreen({
     let last = performance.now();
     let droppedBeat = false;
 
+    // 一线贯穿：取上一屏沙化粒子，入场时重新凝结进本屏入场轴线（splitY）
+    const handoff = takeAxisHandoff();
+    let incoming: { x: number; y: number; vx: number; vy: number; color: string }[] = [];
+    let incomingSeeded = false;
+    let incomingT = 0;
+    function seedIncoming() {
+      if (incomingSeeded || !handoff || m.w <= 0) return;
+      incomingSeeded = true;
+      incoming = handoff.map((p) => ({ x: p.fx * m.w, y: p.fy * m.h, vx: p.vx, vy: p.vy, color: p.color }));
+    }
+
     function vibrate(p: number | number[]) {
       if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") navigator.vibrate(p);
     }
@@ -160,12 +171,11 @@ export function DefaultReactionScreen({
     // 缓冲读数沉积布局（返回每行 baseY 与字段）
     function cardRows() {
       const d = dataRef.current;
+      // 防御/误用 三态解构主场归 MotherField，本屏只「看见默认反应」：母码 + 反应链 + 惯性
       return [
         { label: "母码", value: d.motherCode, head: true },
         { label: "默认反应链", value: d.reactionChain },
         { label: "惯性", value: d.inertiaPattern },
-        { label: "防御", value: d.defenseMode },
-        { label: "误用", value: d.misusePath },
       ];
     }
 
@@ -184,11 +194,26 @@ export function DefaultReactionScreen({
         });
       }
       m.particles = list;
+      // 粒子守恒：把本屏沙化粒子（金+蓝+灰）交给下一屏
+      setAxisHandoff(
+        list.map((p, i) => ({ fx: p.x / m.w, fy: p.y / m.h, vx: p.vx, vy: p.vy, color: ["#C7A96B", "#00B8D4", "#6b6b6b"][i % 3] ?? "#C7A96B" })),
+      );
       vibrate([0, 26, 18, 40]);
     }
 
     function update(dt: number) {
       m.frames += 1;
+      // 入场重凝：交接粒子向入场轴线汇聚
+      seedIncoming();
+      if (incoming.length) {
+        incomingT += dt;
+        const k = Math.min(1, dt * 3);
+        incoming.forEach((p) => {
+          p.x += (m.cx - p.x) * k;
+          p.y += (m.h * 0.34 - p.y) * k;
+        });
+        if (incomingT > 0.7) incoming = [];
+      }
       if (m.sandifying) {
         m.sandT += dt;
         for (const p of m.particles) {
@@ -223,11 +248,22 @@ export function DefaultReactionScreen({
       // 深黑缓冲密度场：只服务本屏语义，不外溢为全局说明。
       const splitY = m.h * 0.34;
       const bg = ctx.createRadialGradient(m.cx, splitY, 0, m.cx, splitY, Math.max(m.w, m.h) * 0.7);
-      bg.addColorStop(0, "rgba(47,143,153,0.075)");
+      bg.addColorStop(0, "rgba(0,80,116,0.075)");
       bg.addColorStop(0.55, "rgba(0,86,116,0.035)");
       bg.addColorStop(1, "rgba(2,3,6,0)");
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, m.w, m.h);
+
+      // 入场重凝粒子（来自上一屏沙化，向入场轴线汇聚后隐没）
+      if (incoming.length) {
+        const ia = Math.max(0, 1 - incomingT / 0.7);
+        incoming.forEach((p) => {
+          ctx.globalAlpha = ia;
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x - 0.7, p.y - 0.7, 1.6, 1.6);
+        });
+        ctx.globalAlpha = 1;
+      }
 
       const topY = m.h * 0.13;
       const cardY = m.h * 0.42;
@@ -240,17 +276,14 @@ export function DefaultReactionScreen({
       const drop = smooth(DROP_AT, DROP_DONE, t);
       const lineY = lerp(splitY, gateY, drop);
       const gap = 30 * split * (1 - drop);
-      const lineColor = BUFFER;
+      const lineColor = lerpHex(GOLD, GRAY, drop); // 承接上屏金色沙化 → 落底转灰闸门
 
       ctx.textAlign = "left";
       if (!m.sandifying) {
         ctx.globalAlpha = 0.86;
-        ctx.fillStyle = BUFFER;
+        ctx.fillStyle = BLUE;
         ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
         ctx.fillText("02 ｜ REACTION · 缓冲层", leftX, m.h * 0.1);
-        ctx.globalAlpha = 0.4;
-        ctx.fillStyle = "rgba(246,243,236,0.7)";
-        ctx.fillText("Chrono 已落位 → 默认反应正在显影", leftX, m.h * 0.128);
         ctx.globalAlpha = 1;
       }
 
@@ -262,7 +295,7 @@ export function DefaultReactionScreen({
         const fs = Math.min(21, m.w * 0.052) * (1 - 0.14 * sentTop);
         ctx.font = `${fs}px ${SANS}`;
         ctx.fillStyle = "rgba(246,243,236,0.96)";
-        const lines = wrap(ctx, dataRef.current.cognition, m.w * 0.8);
+        const lines = wrap(ctx, dataRef.current.cognition.replace(/[。.]+$/, ""), m.w * 0.8);
         const lh = fs * 1.45;
         let yy = sy - ((lines.length - 1) * lh) / 2;
         lines.forEach((ln) => {
@@ -299,13 +332,14 @@ export function DefaultReactionScreen({
         });
       }
 
-      // 缓冲读数沙化粒子
+      // 缓冲读数沙化粒子（金 + 蓝 + 灰 层次）
       if (m.sandifying) {
-        ctx.fillStyle = GOLD;
-        for (const p of m.particles) {
+        const sandCols = [GOLD, BLUE, "#6b6b6b"];
+        m.particles.forEach((p, i) => {
           ctx.globalAlpha = Math.max(0, p.alpha);
+          ctx.fillStyle = sandCols[i % 3] ?? GOLD;
           ctx.fillRect(p.x - 0.6, p.y - 0.6, 1.6, 1.6);
-        }
+        });
         ctx.globalAlpha = 1;
       }
 

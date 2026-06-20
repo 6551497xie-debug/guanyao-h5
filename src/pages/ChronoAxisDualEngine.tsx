@@ -9,13 +9,14 @@
 // GUANYAO 2.0 SECOND SCREEN —— 十字双轴：
 //   · TUNING AXIS（纵向调频天线，置于右侧便于右手滑动）：垂直拨动 → 年/月/日/时调频。
 //   · CLUTCH RAIL（横向换挡轨，底部）：右滑卡扣 → 锁止当前维度；两轴相交成十字。
-// 文案层：顶部「02 ｜ 生命起点」+ 断言打字机（进入后落位常驻）+ 调频/滑动提示。
+// 文案层：顶部「01 ｜ CHRONO · 入口点火」+ 断言打字机（进入后落位常驻）+ 调频/滑动提示。
 // State machine: TYPING → TUNING → ALL_LOCKED → SANDIFY。
 // SANDIFY 完成 → emit ORIGIN_LOCKED + onChronoLock()（现实结晶）。
 // System = discrete state machine with continuous physical transition layer between states.
 
 import { useEffect, useRef } from "react";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
+import { setAxisHandoff } from "../systems/axisHandoff";
 import { axisLineSystem } from "../systems/axisLineSystem";
 
 export type ChronoCoords = { year: number; month: number; day: number; periodIndex: number };
@@ -312,6 +313,8 @@ export function ChronoAxisDualEngine({
         });
       }
       m.particles = list;
+      // 粒子守恒：把沙化粒子快照交给下一屏（Chrono 末态金色）
+      setAxisHandoff(list.map((p) => ({ fx: p.x / m.w, fy: p.y / m.h, vx: p.vx, vy: p.vy, color: "#C7A96B" })));
     }
 
     function finish() {
@@ -440,16 +443,13 @@ export function ChronoAxisDualEngine({
       const axisColor = m.state === "TYPING" ? COLOR.gray : lerpHex(COLOR.blue, COLOR.gold, m.goldMix);
       const railColor = m.state === "TYPING" ? COLOR.bone : lerpHex(COLOR.blue, COLOR.gold, m.goldMix);
 
-      // 顶部：当前状态标签，帮助用户稳定识别所处阶段。
+      // 顶部：屏号标识（无解释字幕）
       if (!sandifying) {
         ctx.globalAlpha = 0.88;
         ctx.fillStyle = COLOR.blue;
         ctx.textAlign = "left";
         ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
         ctx.fillText("01 ｜ CHRONO · 入口点火", leftX, m.h * 0.1);
-        ctx.globalAlpha = 0.42;
-        ctx.fillStyle = COLOR.bone;
-        ctx.fillText("轴线正在生成行为起点", leftX, m.h * 0.128);
         ctx.globalAlpha = 1;
       }
 

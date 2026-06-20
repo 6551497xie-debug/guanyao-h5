@@ -8,7 +8,7 @@ import { guanyaoHexagramAssetLibrary } from "../data/guanyaoHexagramAssetLibrary
 import { guanyaoHexagramGlyphs, type HexagramLineKind } from "../data/guanyaoHexagramGlyphs";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 
-type StampState = "FORMING" | "CARD_EMERGE" | "CARD_SETTLED" | "AXIS_BREAK" | "SANDIFY";
+type StampState = "FORMING" | "CARD_EMERGE" | "CARD_SETTLED" | "CARD_LOCKED" | "AXIS_BREAK" | "SANDIFY";
 
 type StampParticle = {
   x: number;
@@ -76,6 +76,16 @@ function mixColdWhite(progress: number) {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
+function mixColdGold(progress: number) {
+  const value = clamp(progress, 0, 1);
+  const cold = { r: 2, g: 200, b: 223 };
+  const gold = { r: 199, g: 169, b: 107 };
+  const r = Math.round(cold.r + (gold.r - cold.r) * value);
+  const g = Math.round(cold.g + (gold.g - cold.g) * value);
+  const b = Math.round(cold.b + (gold.b - cold.b) * value);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 export function HexagramStampPage() {
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -97,6 +107,7 @@ export function HexagramStampPage() {
     let typedCount = 0;
     let emergeFrame = 0;
     let settledFrame = 0;
+    let lockFrame = 0;
     let axisBreakFrame = 0;
     let sandifyFrame = 0;
     let animationId = 0;
@@ -260,12 +271,26 @@ export function HexagramStampPage() {
       const rotate = (1 - eased) * Math.PI;
       const flipRotate = cardFlipProgress * Math.PI;
       const flipScale = Math.max(0.12, Math.abs(Math.cos(flipRotate)));
-      const scaleX = Math.max(0.12, Math.abs(Math.cos(rotate))) * (0.72 + eased * 0.28) * flipScale;
-      const scaleY = 0.76 + eased * 0.24;
+      const lockProgress =
+        state === "CARD_LOCKED"
+          ? easeOutCubic(clamp(lockFrame / 18, 0, 1))
+          : state === "AXIS_BREAK" || state === "SANDIFY"
+            ? 1
+            : 0;
+      const isCardLocked = state === "CARD_LOCKED" || state === "AXIS_BREAK" || state === "SANDIFY";
+      const lockFlipScale = Math.max(0.1, Math.abs(Math.cos(lockProgress * Math.PI)));
+      const lockImpactScale = 1 + Math.sin(lockProgress * Math.PI) * 0.08;
+      const preLockSpin = state === "CARD_SETTLED" ? Math.sin(frame * 0.018) * 0.08 : 0;
+      const scaleX = Math.max(0.12, Math.abs(Math.cos(rotate))) * (0.72 + eased * 0.28) * flipScale * lockFlipScale * lockImpactScale;
+      const scaleY = (0.76 + eased * 0.24) * (1 + lockProgress * 0.035);
       const showBack = cardFlipProgress > 0.5;
+      const cardTextColor = isCardLocked ? "#f8f5ea" : "rgba(255,255,255,0.46)";
+      const cardTitleColor = isCardLocked ? cardGold : "rgba(199,169,107,0.46)";
+      const cardMutedColor = isCardLocked ? "rgba(199,169,107,0.62)" : "rgba(255,255,255,0.22)";
 
       ctx.save();
-      ctx.translate(cx, y);
+      ctx.translate(cx, y - Math.sin(lockProgress * Math.PI) * height * 0.035);
+      ctx.rotate(preLockSpin);
       ctx.scale(scaleX, scaleY);
       ctx.globalAlpha = clamp(progress * 1.4, 0, 1);
 
@@ -280,15 +305,18 @@ export function HexagramStampPage() {
       ctx.stroke();
 
       ctx.shadowBlur = 0;
+      if (lockProgress > 0.04) {
+        text(`CODE: NO.${stampData.code}`, 0, -cardH * 0.48, 10, "rgba(199,169,107,0.78)", "900", "center");
+      }
       if (showBack) {
-        text(`${stampData.code}｜${stampData.name}`, 0, -cardH * 0.34, 10, "rgba(199,169,107,0.62)", "800", "center");
+        text(`${stampData.code}｜${stampData.name}`, 0, -cardH * 0.34, 10, cardMutedColor, "800", "center");
         drawMiniCardGlyph(0, -cardH * 0.08, cardW * 0.19, cardGold);
-        text("卦码已落位", 0, cardH * 0.2, 13, "#f8f5ea", "900", "center");
+        text("卦码已落位", 0, cardH * 0.2, 13, cardTextColor, "900", "center");
         text("轻点翻回", 0, cardH * 0.33, 8, "rgba(255,255,255,0.24)", "800", "center");
       } else {
-        text(`NO.${stampData.code}`, -cardW * 0.36, -cardH * 0.34, 10, "rgba(199,169,107,0.58)", "800");
-        text(stampData.name, 0, -cardH * 0.18, 26, "#f8f5ea", "900", "center");
-        text(`《${stampData.title}》`, 0, -cardH * 0.04, 18, cardGold, "900", "center");
+        text(`NO.${stampData.code}`, -cardW * 0.36, -cardH * 0.34, 10, cardMutedColor, "800");
+        text(stampData.name, 0, -cardH * 0.18, 26, cardTextColor, "900", "center");
+        text(`《${stampData.title}》`, 0, -cardH * 0.04, 18, cardTitleColor, "900", "center");
         text("GUANYAO", 0, cardH * 0.36, 9, "rgba(255,255,255,0.26)", "800", "center");
       }
       ctx.restore();
@@ -331,9 +359,10 @@ export function HexagramStampPage() {
     function drawAxisRail() {
       const progress = rail.currentProgress;
       const knobX = rail.x + rail.w * progress;
+      const isLockedRail = state === "CARD_LOCKED" || state === "AXIS_BREAK" || state === "SANDIFY";
       const railColor = "#02c8df";
-      const knobColor = "#02c8df";
-      const breakProgress = state === "AXIS_BREAK" || state === "SANDIFY" ? easeOutCubic(clamp(axisBreakFrame / 28, 0, 1)) : 0;
+      const knobColor = isLockedRail ? "#02c8df" : "rgba(255,255,255,0.34)";
+      const breakProgress = state === "AXIS_BREAK" || state === "SANDIFY" ? easeOutCubic(clamp(axisBreakFrame / 30, 0, 1)) : 0;
       const fractureGap = width * 0.028 * breakProgress;
       const fractureLift = height * 0.012 * breakProgress;
       const breakX = rail.x + rail.w * 0.5;
@@ -342,7 +371,7 @@ export function HexagramStampPage() {
 
       ctx.save();
       ctx.lineWidth = 1;
-      ctx.strokeStyle = "rgba(255,255,255,0.24)";
+      ctx.strokeStyle = isLockedRail ? "rgba(2,200,223,0.32)" : "rgba(255,255,255,0.24)";
       ctx.shadowColor = "transparent";
       ctx.shadowBlur = 0;
       ctx.beginPath();
@@ -353,8 +382,8 @@ export function HexagramStampPage() {
       ctx.stroke();
 
       ctx.strokeStyle = railColor;
-      ctx.globalAlpha = state === "CARD_SETTLED" || state === "AXIS_BREAK" ? 0.95 : 0;
-      ctx.shadowColor = "#02c8df";
+      ctx.globalAlpha = isLockedRail ? 0.95 : progress > 0 ? 0.86 : 0;
+      ctx.shadowColor = isLockedRail ? "#02c8df" : "transparent";
       ctx.shadowBlur = progress > 0 ? 8 : 0;
       ctx.beginPath();
       ctx.moveTo(rail.x, rail.y);
@@ -367,7 +396,7 @@ export function HexagramStampPage() {
 
       ctx.fillStyle = knobColor;
       ctx.shadowColor = knobColor;
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = isLockedRail ? 10 : 0;
       ctx.beginPath();
       ctx.arc(knobX, rail.y + fractureLift, 4.2 * (1 - breakProgress * 0.35), 0, Math.PI * 2);
       ctx.fill();
@@ -393,6 +422,24 @@ export function HexagramStampPage() {
         ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
         ctx.restore();
       });
+    }
+
+    function drawLockImpact() {
+      if (state !== "CARD_LOCKED" || lockFrame > 18) return;
+      const pulse = 1 - clamp(lockFrame / 18, 0, 1);
+      ctx.save();
+      ctx.globalAlpha = pulse * 0.26;
+      ctx.strokeStyle = "#02c8df";
+      ctx.lineWidth = 1;
+      ctx.shadowColor = "#02c8df";
+      ctx.shadowBlur = 16;
+      ctx.beginPath();
+      ctx.moveTo(width * 0.08, height * 0.5);
+      ctx.lineTo(width * 0.92, height * 0.5);
+      ctx.moveTo(width * 0.5, height * 0.18);
+      ctx.lineTo(width * 0.5, height * 0.82);
+      ctx.stroke();
+      ctx.restore();
     }
 
     function drawEntryParticles() {
@@ -432,7 +479,10 @@ export function HexagramStampPage() {
       const cold = "#02c8df";
       const fg = "#f8f5ea";
       const muted = "rgba(255,255,255,0.34)";
-      const activeColor = state === "CARD_EMERGE" || state === "CARD_SETTLED" || state === "SANDIFY" ? fg : cold;
+      const isCardVisible = state === "CARD_EMERGE" || state === "CARD_LOCKED" || state === "AXIS_BREAK" || state === "SANDIFY";
+      const isCardLocked = state === "CARD_LOCKED" || state === "AXIS_BREAK" || state === "SANDIFY";
+      const titleColor = isCardVisible ? fg : "rgba(255,255,255,0.24)";
+      const subtitleColor = isCardVisible ? cold : "rgba(255,255,255,0.28)";
       cardFlipProgress += (cardFlipTarget - cardFlipProgress) * 0.18;
 
       if (state === "FORMING" && frame === 1) {
@@ -440,8 +490,9 @@ export function HexagramStampPage() {
       }
 
       if (state === "FORMING" && frame > 98) {
-        state = "CARD_EMERGE";
-        emergeFrame = 0;
+        state = "CARD_SETTLED";
+        typedCount = 0;
+        settledFrame = 0;
       }
 
       if (state === "CARD_EMERGE") {
@@ -450,15 +501,21 @@ export function HexagramStampPage() {
           vibrate([22, 24, 40]);
         }
         if (emergeFrame > 78) {
-          state = "CARD_SETTLED";
+          state = "CARD_LOCKED";
           typedCount = 0;
-          settledFrame = 0;
+          lockFrame = 0;
+          rail.progress = 0;
+          rail.currentProgress = 0;
         }
       }
 
       if (state === "CARD_SETTLED") {
         settledFrame += 1;
-        if (settledFrame % 4 === 0) {
+      }
+
+      if (state === "CARD_LOCKED") {
+        lockFrame += 1;
+        if (lockFrame % 4 === 0) {
           typedCount += 1;
           vibrate(5);
         }
@@ -466,43 +523,58 @@ export function HexagramStampPage() {
 
       if (state === "AXIS_BREAK") {
         axisBreakFrame += 1;
-        if (axisBreakFrame > 30) {
+        if (axisBreakFrame > 70) {
           state = "SANDIFY";
           makeParticles();
         }
       }
 
       text(`05_STAMP // NO.${stampData.code}`, width * 0.08, height * 0.07, 8, "rgba(255,255,255,0.16)", "700");
-      text(`${stampData.code}｜${stampData.name}`, width * 0.08, height * 0.15, 18, muted, "800");
-      text(`《${stampData.title}》`, width * 0.08, height * 0.205, 26, activeColor, "900");
+      text(`它叫「${stampData.name}」`, width * 0.08, height * 0.15, 18, titleColor, "900");
+      text(`《${stampData.title}》`, width * 0.08, height * 0.205, 26, subtitleColor, "900");
+      if (!isCardVisible) {
+        text("时序、默认保护与压力种子三力对撞，", width * 0.08, height * 0.285, 12, "rgba(255,255,255,0.34)", "800");
+        text("在这里压出本局卦符。", width * 0.08, height * 0.325, 12, "rgba(255,255,255,0.28)", "800");
+      }
 
       const openProgress =
-        state === "CARD_EMERGE" ? easeOutCubic(clamp(emergeFrame / 44, 0, 1)) : state === "CARD_SETTLED" || state === "AXIS_BREAK" || state === "SANDIFY" ? 1 : 0;
+        state === "CARD_EMERGE" ? easeOutCubic(clamp(emergeFrame / 44, 0, 1)) : isCardLocked ? 1 : 0;
       const axisProgress =
-        state === "CARD_EMERGE" ? easeOutCubic(clamp((emergeFrame - 18) / 58, 0, 1)) : state === "CARD_SETTLED" || state === "AXIS_BREAK" || state === "SANDIFY" ? 1 : 0;
+        state === "CARD_EMERGE" ? easeOutCubic(clamp((emergeFrame - 18) / 58, 0, 1)) : isCardLocked ? 1 : 0;
       const cardProgress =
-        state === "CARD_EMERGE" ? easeOutCubic(clamp((emergeFrame - 8) / 66, 0, 1)) : state === "CARD_SETTLED" || state === "AXIS_BREAK" || state === "SANDIFY" ? 1 : 0;
+        state === "CARD_EMERGE" ? easeOutCubic(clamp((emergeFrame - 8) / 66, 0, 1)) : isCardLocked ? 1 : 0;
       const glyphIntensity =
         state === "FORMING" ? clamp(frame / 62, 0, 1) : 1;
-      const glyphColor = state === "FORMING" ? mixColdWhite(clamp(frame / 88, 0, 0.62)) : "rgba(248,245,234,0.72)";
+      const glyphColor = state === "FORMING" ? mixColdGold(clamp(frame / 88, 0, 0.76)) : "rgba(199,169,107,0.42)";
       if (state === "FORMING") {
         drawEntryParticles();
       }
       drawGlyph(glyphColor, glyphIntensity, openProgress, axisProgress);
       drawCard(cardProgress);
+      drawLockImpact();
 
-      if (state === "CARD_SETTLED" || state === "AXIS_BREAK" || state === "SANDIFY") {
+      if (state === "CARD_SETTLED" || state === "CARD_LOCKED" || state === "AXIS_BREAK" || state === "SANDIFY") {
         drawAxisRail();
         const { cardH, settledY } = getCardMetrics();
         const captionY = settledY + cardH / 2 + height * 0.036;
-        let consumed = 0;
-        stampData.stampLines.forEach((line, index) => {
-          const shownLength = clamp(typedCount - consumed, 0, line.length);
-          consumed += line.length;
-          const display = state === "CARD_SETTLED" ? line.slice(0, shownLength) : line;
-          text(display, width * 0.5, captionY + index * 20, 14, "rgba(248,245,234,0.86)", "900", "center");
-        });
-        text("右滑，压印本局人格代码", rail.x, rail.y + 30, 11, "rgba(255,255,255,0.36)", "800");
+        if (state !== "CARD_SETTLED") {
+          let consumed = 0;
+          stampData.stampLines.forEach((line, index) => {
+            const shownLength = clamp(typedCount - consumed, 0, line.length);
+            consumed += line.length;
+            const display = state === "CARD_LOCKED" ? line.slice(0, shownLength) : line;
+            text(display, width * 0.5, captionY + index * 20, 14, "rgba(248,245,234,0.9)", "900", "center");
+          });
+        }
+        if (state === "AXIS_BREAK" || state === "SANDIFY") {
+          text("卦码资产已沉积", rail.x, rail.y + 30, 11, "rgba(248,245,234,0.68)", "900");
+          text("全线突防六维空间深渊第一层 · 身体空间", rail.x, rail.y + 47, 9, "rgba(255,255,255,0.46)", "800");
+        } else if (state === "CARD_LOCKED") {
+          text("卦码资产已沉积", rail.x, rail.y + 30, 11, "rgba(248,245,234,0.68)", "900");
+          text("再次右滑，断裂进入身体空间", rail.x, rail.y + 47, 9, "rgba(255,255,255,0.42)", "800");
+        } else {
+          text("右滑，裂开卦符并压出卦码卡", rail.x, rail.y + 30, 11, "rgba(255,255,255,0.36)", "800");
+        }
       }
 
       if (state === "SANDIFY") {
@@ -526,7 +598,7 @@ export function HexagramStampPage() {
     }
 
     function handlePointerDown(event: PointerEvent) {
-      if (state !== "CARD_SETTLED") return;
+      if (state !== "CARD_SETTLED" && state !== "CARD_LOCKED") return;
       const { x, y } = pointerPosition(event);
       pointerStartX = x;
       pointerStartY = y;
@@ -542,7 +614,7 @@ export function HexagramStampPage() {
       const cardRight = width * 0.5 + cardW / 2;
       const cardTop = settledY - cardH / 2;
       const cardBottom = settledY + cardH / 2;
-      if (x >= cardLeft && x <= cardRight && y >= cardTop && y <= cardBottom) {
+      if (state === "CARD_LOCKED" && x >= cardLeft && x <= cardRight && y >= cardTop && y <= cardBottom) {
         isCardTapCandidate = true;
         canvas.setPointerCapture(event.pointerId);
       }
@@ -553,15 +625,25 @@ export function HexagramStampPage() {
       if (isCardTapCandidate && Math.hypot(x - pointerStartX, y - pointerStartY) > 10) {
         isCardTapCandidate = false;
       }
-      if (!isDraggingAxis || state !== "CARD_SETTLED") return;
+      if (!isDraggingAxis || (state !== "CARD_SETTLED" && state !== "CARD_LOCKED")) return;
       rail.progress = clamp((x - rail.x) / rail.w, 0, 1);
       if (rail.progress >= 0.985) {
         rail.progress = 1;
         rail.currentProgress = 1;
         isDraggingAxis = false;
-        state = "AXIS_BREAK";
-        axisBreakFrame = 0;
-        vibrate([18, 28, 36]);
+        if (state === "CARD_SETTLED") {
+          state = "CARD_EMERGE";
+          emergeFrame = 0;
+          typedCount = 0;
+          rail.progress = 0;
+          rail.currentProgress = 0;
+          cardFlipTarget = 0;
+          vibrate([18, 28, 36]);
+        } else {
+          state = "AXIS_BREAK";
+          axisBreakFrame = 0;
+          vibrate([18, 28, 36]);
+        }
       }
     }
 
