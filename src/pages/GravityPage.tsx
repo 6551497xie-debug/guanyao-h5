@@ -1,12 +1,14 @@
+/**
+ * GravityPage = passive UI visualization layer for presenting existing causal state transitions
+ * without any influence on engine or data flow.
+ */
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { useNavigate } from "react-router-dom";
 import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { guanyaoHexagramAssetLibrary } from "../data/guanyaoHexagramAssetLibrary";
 import { getPressureSeedSixSpaceProjection } from "../data/guanyaoPressureSeedSixSpaceProjectionRegistry";
-import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getDemoDynamicsResult } from "../services/guanyaoInteractionService";
 import { buildMotherCodeAssetLines, getMotherCodeAsset } from "../services/guanyaoMotherCodeAssetService";
 import { getSession } from "../services/sessionService";
@@ -98,8 +100,8 @@ type SixSpaceIntensity = "yao1" | "yao2" | "yao3";
 type SixSpaceWeaponId = string;
 type AssetStep = "preview" | "confirm" | "unlocked";
 type ActionArtifactStage = "interact" | "break" | "front" | "flipping" | "back" | "sandify";
-type MemoryArtifactStage = "interact" | "break" | "front" | "sandify";
-type GoalFinalStage = "interact" | "break" | "paywall" | "sandify";
+type MemoryArtifactStage = "interact" | "break" | "front" | "flipping" | "back" | "sandify";
+type GoalFinalStage = "interact" | "break" | "front" | "flipping" | "back" | "sandify";
 type AssetFuseStage = "interact" | "break" | "crystal";
 type SixSpaceWeapon = {
   id: SixSpaceWeaponId;
@@ -935,7 +937,6 @@ function YaoTextBlock({ kicker, title, lines, muted }: YaoTextBlockProps) {
 }
 
 function HexagramCodeDeliveryShell() {
-  const navigate = useNavigate();
   const [sixDimensionStep, setSixDimensionStep] = useState(1);
   const [selectedSpaceAction, setSelectedSpaceAction] = useState<{
     spaceIndex: number;
@@ -1209,9 +1210,6 @@ function HexagramCodeDeliveryShell() {
     setBodyIntensity(value);
     setBodyCaliperProgress(getBodyCaliperProgress(value));
     setBodySpaceHint("");
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("guanyao:sixSpace:bodyIntensity", value);
-    }
   }
 
   function getBodyCaliperProgressFromPointer(event: ReactPointerEvent<HTMLDivElement>) {
@@ -1296,9 +1294,6 @@ function HexagramCodeDeliveryShell() {
       return;
     }
 
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("guanyao:selectedBreakSpace", "body");
-    }
     setBodySpaceHint("");
     setBodyBreakthroughStep(0);
     setBodySpaceStep("breakthrough");
@@ -1332,9 +1327,6 @@ function HexagramCodeDeliveryShell() {
   function handleCancelBodyWeapon() {
     setBodySpaceHint("");
     setSelectedBodyWeapon(null);
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem("guanyao:selectedBodyWeapon");
-    }
     setBodySpaceStep("entry");
   }
 
@@ -1344,11 +1336,6 @@ function HexagramCodeDeliveryShell() {
       return;
     }
 
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("guanyao:selectedBodyWeapon", selectedBodyWeapon);
-      window.localStorage.setItem("guanyao:selectedBreakSpace", "body");
-      window.localStorage.setItem("guanyao:bodyBreakthroughCompleted", "true");
-    }
     setBodySpaceHint("");
     setBodySpaceStep("completed");
   }
@@ -1357,9 +1344,6 @@ function HexagramCodeDeliveryShell() {
     setEmotionIntensity(value);
     setEmotionCaliperProgress(getEmotionCaliperProgress(value));
     setEmotionSpaceHint("");
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("guanyao:sixSpace:emotionIntensity", value);
-    }
   }
 
   function getEmotionCaliperProgressFromPointer(event: ReactPointerEvent<HTMLDivElement>) {
@@ -1438,9 +1422,6 @@ function HexagramCodeDeliveryShell() {
       return;
     }
 
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("guanyao:selectedBreakSpace", "emotion");
-    }
     setEmotionSpaceHint("");
     setEmotionBreakthroughStep(0);
     setEmotionSpaceStep("breakthrough");
@@ -1558,11 +1539,6 @@ function HexagramCodeDeliveryShell() {
     setIsActionGravityLocked(true);
     setActionArtifactStage("break");
     setGenericSpaceHint("action", "止动盾已唤醒。");
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("guanyao:selectedBreakSpace", "action");
-      window.localStorage.setItem(getSelectedWeaponStorageKey("action"), "small-step");
-      window.localStorage.setItem("guanyao:actionBreakthroughCompleted", "true");
-    }
     if ("vibrate" in navigator) {
       navigator.vibrate([18, 24, 42]);
     }
@@ -1658,12 +1634,6 @@ function HexagramCodeDeliveryShell() {
     setIsMemorySmokeLocked(true);
     setMemoryArtifactStage("break");
     setGenericSpaceHint("memory", "听风刀已唤醒。");
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("guanyao:selectedBreakSpace", "memory");
-      window.localStorage.setItem(getSelectedWeaponStorageKey("memory"), "wind-cutter");
-      window.localStorage.setItem("guanyao:memoryBreakthroughCompleted", "true");
-      window.localStorage.setItem("GY_SPACE_MEMORY_BREAK", "TRUE");
-    }
     if ("vibrate" in navigator) {
       navigator.vibrate([14, 22, 38]);
     }
@@ -1674,7 +1644,17 @@ function HexagramCodeDeliveryShell() {
   }
 
   function handleMemoryArtifactExit() {
-    if (memoryArtifactStage !== "front") return;
+    if (memoryArtifactStage === "front") {
+      setMemoryArtifactStage("flipping");
+      if ("vibrate" in navigator) {
+        navigator.vibrate(10);
+      }
+      memorySmokeExitTimerRef.current = window.setTimeout(() => {
+        setMemoryArtifactStage("back");
+      }, 520);
+      return;
+    }
+    if (memoryArtifactStage !== "back") return;
     setMemoryArtifactStage("sandify");
     setIsMemorySmokeSandifying(true);
     memorySmokeExitTimerRef.current = window.setTimeout(() => {
@@ -1743,27 +1723,29 @@ function HexagramCodeDeliveryShell() {
     setIsGoalTearLocked(true);
     setGoalFinalStage("break");
     setGenericSpaceHint("goal", "终局剧本已撕开。");
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("guanyao:selectedBreakSpace", "goal");
-      window.localStorage.setItem(getSelectedWeaponStorageKey("goal"), "look-forward");
-      window.localStorage.setItem("guanyao:goalBreakthroughCompleted", "true");
-    }
     if ("vibrate" in navigator) {
       navigator.vibrate([18, 28, 46]);
     }
     goalTearLockTimerRef.current = window.setTimeout(() => {
-      setGoalFinalStage("paywall");
+      setGoalFinalStage("front");
       setGenericSpaceHint("goal", "");
     }, 1050);
   }
 
   function handleGoalFinalPaywall() {
-    if (goalFinalStage !== "paywall") return;
+    if (goalFinalStage === "front") {
+      setGoalFinalStage("flipping");
+      if ("vibrate" in navigator) {
+        navigator.vibrate(10);
+      }
+      goalTearExitTimerRef.current = window.setTimeout(() => {
+        setGoalFinalStage("back");
+      }, 520);
+      return;
+    }
+    if (goalFinalStage !== "back") return;
     setGoalFinalStage("sandify");
     setIsGoalTearSandifying(true);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("GY_TOTAL_CAUSAL_MATRIX_UNLOCKED", "TRUE");
-    }
     goalTearExitTimerRef.current = window.setTimeout(() => {
       setIsGoalTearLocked(false);
       setIsGoalTearSandifying(false);
@@ -1819,9 +1801,6 @@ function HexagramCodeDeliveryShell() {
     updateAssetFuseProgress(1);
     setIsAssetFuseLocked(true);
     setAssetFuseStage("break");
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("GY_TOTAL_ASSET_STATUS", "CONDENSED_PERMANENT");
-    }
     if ("vibrate" in navigator) {
       navigator.vibrate([18, 22, 42]);
     }
@@ -1832,7 +1811,7 @@ function HexagramCodeDeliveryShell() {
   }
 
   function handleExitCondensedAsset() {
-    navigate("/");
+    setIsCurrentAssetSaved(true);
   }
 
   function handleOpenEmotionWeaponStep() {
@@ -1863,9 +1842,6 @@ function HexagramCodeDeliveryShell() {
   function handleCancelEmotionWeapon() {
     setEmotionSpaceHint("");
     setSelectedEmotionWeapon(null);
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem("guanyao:selectedEmotionWeapon");
-    }
     setEmotionSpaceStep("entry");
   }
 
@@ -1875,11 +1851,6 @@ function HexagramCodeDeliveryShell() {
       return;
     }
 
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("guanyao:selectedBreakSpace", "emotion");
-      window.localStorage.setItem("guanyao:selectedEmotionWeapon", selectedEmotionWeapon);
-      window.localStorage.setItem("guanyao:emotionBreakthroughCompleted", "true");
-    }
     setEmotionSpaceHint("");
     setEmotionSpaceStep("completed");
   }
@@ -1904,9 +1875,6 @@ function HexagramCodeDeliveryShell() {
   function selectGenericIntensity(spaceId: SixSpaceId, value: SixSpaceIntensity) {
     setSpaceIntensities((current) => ({ ...current, [spaceId]: value }));
     setGenericSpaceHint(spaceId, "");
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(`guanyao:sixSpace:${spaceId}:intensity`, value);
-    }
   }
 
   function requireGenericIntensity(spaceId: SixSpaceId) {
@@ -1931,9 +1899,6 @@ function HexagramCodeDeliveryShell() {
       return;
     }
 
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("guanyao:selectedBreakSpace", spaceId);
-    }
     setSpaceBreakthroughSteps((current) => ({ ...current, [spaceId]: 0 }));
     setSpaceSteps((current) => ({ ...current, [spaceId]: "breakthrough" }));
     setGenericSpaceHint(spaceId, "");
@@ -1975,9 +1940,6 @@ function HexagramCodeDeliveryShell() {
     setSelectedSpaceWeapons((current) => ({ ...current, [spaceId]: null }));
     setSpaceSteps((current) => ({ ...current, [spaceId]: "entry" }));
     setGenericSpaceHint(spaceId, "");
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem(getSelectedWeaponStorageKey(spaceId));
-    }
   }
 
   function handleWakeGenericWeapon(spaceId: SixSpaceId) {
@@ -1988,11 +1950,6 @@ function HexagramCodeDeliveryShell() {
       return;
     }
 
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("guanyao:selectedBreakSpace", spaceId);
-      window.localStorage.setItem(getSelectedWeaponStorageKey(spaceId), selectedWeapon);
-      window.localStorage.setItem(`guanyao:${spaceId}BreakthroughCompleted`, "true");
-    }
     setSpaceSteps((current) => ({ ...current, [spaceId]: "completed" }));
     setGenericSpaceHint(spaceId, "");
   }
@@ -2005,18 +1962,6 @@ function HexagramCodeDeliveryShell() {
   }
 
   function handleConfirmAssetUnlock() {
-    if (typeof window !== "undefined") {
-      const unlockedAssetCard = { ...currentAssetCard, unlocked: true };
-      window.localStorage.setItem("guanyao:currentAssetUnlocked", "true");
-      window.localStorage.setItem("guanyao:currentAssetCard", JSON.stringify(unlockedAssetCard));
-
-      const existingArchive = readJsonFromStorage<Array<typeof unlockedAssetCard>>("guanyao:assetArchive") ?? [];
-      const nextArchive = existingArchive.some((asset) => asset.id === unlockedAssetCard.id)
-        ? existingArchive.map((asset) => (asset.id === unlockedAssetCard.id ? unlockedAssetCard : asset))
-        : [...existingArchive, unlockedAssetCard];
-      window.localStorage.setItem("guanyao:assetArchive", JSON.stringify(nextArchive));
-    }
-
     setIsCurrentAssetSaved(true);
     setAssetStep("unlocked");
   }
@@ -2081,7 +2026,7 @@ function HexagramCodeDeliveryShell() {
             <div style={{ display: "grid", gap: 14 }}>
               <div style={{ display: "grid", gap: 7 }}>
                 <span style={{ color: "rgba(245,245,245,0.28)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
-                  SYSTEM: SPACE_01_BODY // LOAD_CALIPER
+                  01 ｜ 身体空间 · 负荷卡尺
                 </span>
                 <span style={{ color: "rgba(0,184,212,0.68)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11 }}>
                   当前承载压力之刺
@@ -2481,7 +2426,7 @@ function HexagramCodeDeliveryShell() {
             <div style={{ display: "grid", gap: 14 }}>
               <div style={{ display: "grid", gap: 7 }}>
                 <span style={{ color: "rgba(245,245,245,0.28)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
-                  SYSTEM: SPACE_02_EMOTION // FLUID_LOAD_WAVE
+                  02 ｜ 情绪空间 · 流体线轨
                 </span>
                 <span style={{ color: "rgba(0,184,212,0.68)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11 }}>
                   当前承载压力之刺
@@ -2885,7 +2830,7 @@ function HexagramCodeDeliveryShell() {
             <div style={{ display: "grid", gap: 14 }}>
               <div style={{ display: "grid", gap: 7 }}>
                 <span style={{ color: "rgba(245,245,245,0.28)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
-                  SYSTEM: SPACE_03_THOUGHT // BINARY_GLITCH_RAIL
+                  03 ｜ 思维空间 · 错位栅栏
                 </span>
                 <span style={{ color: "rgba(0,184,212,0.68)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11 }}>
                   当前承载压力之刺
@@ -3254,7 +3199,7 @@ function HexagramCodeDeliveryShell() {
                   >
                     <div style={{ display: "grid", gap: 6 }}>
                       <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
-                        ACTION WEAPON / 04
+                        爻器卡 / 04
                       </span>
                       <strong style={{ color: "rgba(245,245,245,0.92)", fontSize: 28, lineHeight: 1.12, fontWeight: 760 }}>
                         止动盾
@@ -3275,7 +3220,7 @@ function HexagramCodeDeliveryShell() {
                     </div>
 
                     <p style={{ margin: 0, color: "rgba(245,245,245,0.46)", fontSize: 12, lineHeight: 1.55 }}>
-                      轻触卡牌，翻面提取今日行动解药。
+                      轻触爻器卡，翻面读取器法。
                     </p>
                   </div>
 
@@ -3297,7 +3242,7 @@ function HexagramCodeDeliveryShell() {
                     }}
                   >
                     <span style={{ color: "rgba(199,169,107,0.82)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11 }}>
-                      止动盾｜今日行动解药
+                      止动盾｜器法
                     </span>
                     <p style={{ margin: 0, color: "rgba(245,245,245,0.94)", fontSize: 20, lineHeight: 1.7, fontWeight: 740 }}>
                       今天，只做最小的一步：
@@ -3312,7 +3257,7 @@ function HexagramCodeDeliveryShell() {
                     <p style={{ margin: "14px 0 0", color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.65 }}>
                       行为法器已封存入库
                       <br />
-                      点击空白区域，突防 05 记忆空间
+                      再次轻触，进入 05 记忆空间
                     </p>
                   </div>
                 </div>
@@ -3501,10 +3446,10 @@ function HexagramCodeDeliveryShell() {
               </div>
             ) : null}
 
-            {memoryArtifactStage === "front" || memoryArtifactStage === "sandify" ? (
+            {memoryArtifactStage === "front" || memoryArtifactStage === "flipping" || memoryArtifactStage === "back" || memoryArtifactStage === "sandify" ? (
               <div
-                role={memoryArtifactStage === "front" ? "button" : undefined}
-                tabIndex={memoryArtifactStage === "front" ? 0 : -1}
+                role={memoryArtifactStage === "front" || memoryArtifactStage === "back" ? "button" : undefined}
+                tabIndex={memoryArtifactStage === "front" || memoryArtifactStage === "back" ? 0 : -1}
                 onClick={handleMemoryArtifactExit}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") handleMemoryArtifactExit();
@@ -3513,7 +3458,8 @@ function HexagramCodeDeliveryShell() {
                   minHeight: "58dvh",
                   display: "grid",
                   placeItems: "center",
-                  cursor: memoryArtifactStage === "front" ? "pointer" : "default",
+                  perspective: 900,
+                  cursor: memoryArtifactStage === "front" || memoryArtifactStage === "back" ? "pointer" : "default",
                   opacity: memoryArtifactStage === "sandify" ? 0 : 1,
                   transform: memoryArtifactStage === "sandify" ? "translateY(28px)" : "translateY(0)",
                   transition: "opacity 520ms ease, transform 520ms ease",
@@ -3524,40 +3470,95 @@ function HexagramCodeDeliveryShell() {
                   style={{
                     width: "min(72vw, 300px)",
                     aspectRatio: "0.68",
-                    border: "1px solid rgba(199,169,107,0.82)",
-                    background: "radial-gradient(circle at 50% 40%, rgba(199,169,107,0.11), rgba(0,0,0,0.94) 60%)",
-                    boxShadow: "0 0 36px rgba(199,169,107,0.16), inset 0 0 28px rgba(199,169,107,0.06)",
-                    display: "grid",
-                    alignContent: "space-between",
-                    padding: "22px 20px",
+                    position: "relative",
+                    transformStyle: "preserve-3d",
+                    transform:
+                      memoryArtifactStage === "back"
+                        ? "rotateY(180deg)"
+                        : memoryArtifactStage === "flipping"
+                          ? "rotateY(92deg) scale(1.02)"
+                          : "rotateY(0deg)",
+                    transition: "transform 520ms cubic-bezier(.16,1,.3,1)",
                   }}
                 >
-                  <div style={{ display: "grid", gap: 6 }}>
-                    <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
-                      MEMORY WEAPON / 05
-                    </span>
-                    <strong style={{ color: "rgba(245,245,245,0.92)", fontSize: 28, lineHeight: 1.12, fontWeight: 760 }}>
-                      听风刀
-                    </strong>
+                  <div
+                    aria-hidden={memoryArtifactStage === "back"}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      border: "1px solid rgba(199,169,107,0.82)",
+                      background: "radial-gradient(circle at 50% 40%, rgba(199,169,107,0.11), rgba(0,0,0,0.94) 60%)",
+                      boxShadow: "0 0 36px rgba(199,169,107,0.16), inset 0 0 28px rgba(199,169,107,0.06)",
+                      backfaceVisibility: "hidden",
+                      display: "grid",
+                      alignContent: "space-between",
+                      padding: "22px 20px",
+                    }}
+                  >
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
+                        爻器卡 / 05
+                      </span>
+                      <strong style={{ color: "rgba(245,245,245,0.92)", fontSize: 28, lineHeight: 1.12, fontWeight: 760 }}>
+                        听风刀
+                      </strong>
+                    </div>
+
+                    <div style={{ display: "grid", placeItems: "center", gap: 14 }}>
+                      <svg width="132" height="132" viewBox="0 0 132 132" aria-hidden="true" style={{ filter: "drop-shadow(0 0 18px rgba(199,169,107,0.26))" }}>
+                        <path d="M28 92 C48 68 62 42 104 24 C86 60 61 80 36 104 Z" fill="none" stroke="#C7A96B" strokeWidth="1" />
+                        <path d="M42 92 C60 80 78 62 94 38" fill="none" stroke="rgba(245,245,245,0.72)" strokeWidth="1" />
+                        <path d="M31 95 L20 106 M39 104 L28 116 M76 55 L104 24" stroke="#C7A96B" strokeWidth="1" />
+                        <path d="M28 70 H54 M72 40 H100 M46 55 H66" stroke="rgba(245,245,245,0.36)" strokeWidth="1" />
+                      </svg>
+                      <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, textAlign: "center", lineHeight: 1.55 }}>
+                        WEAPON_CODE: #MEM_CUTTER
+                        <br />
+                        MEMORY_BREAK: TRUE
+                      </span>
+                    </div>
+
+                    <p style={{ margin: 0, color: "rgba(245,245,245,0.46)", fontSize: 12, lineHeight: 1.55 }}>
+                      轻触爻器卡，翻面读取器法。
+                    </p>
                   </div>
 
-                  <div style={{ display: "grid", placeItems: "center", gap: 14 }}>
-                    <svg width="132" height="132" viewBox="0 0 132 132" aria-hidden="true" style={{ filter: "drop-shadow(0 0 18px rgba(199,169,107,0.26))" }}>
-                      <path d="M28 92 C48 68 62 42 104 24 C86 60 61 80 36 104 Z" fill="none" stroke="#C7A96B" strokeWidth="1" />
-                      <path d="M42 92 C60 80 78 62 94 38" fill="none" stroke="rgba(245,245,245,0.72)" strokeWidth="1" />
-                      <path d="M31 95 L20 106 M39 104 L28 116 M76 55 L104 24" stroke="#C7A96B" strokeWidth="1" />
-                      <path d="M28 70 H54 M72 40 H100 M46 55 H66" stroke="rgba(245,245,245,0.36)" strokeWidth="1" />
-                    </svg>
-                    <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, textAlign: "center", lineHeight: 1.55 }}>
-                      WEAPON_CODE: #MEM_CUTTER
+                  <div
+                    aria-hidden={memoryArtifactStage !== "back"}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      border: "1px solid rgba(245,245,245,0.72)",
+                      background: "linear-gradient(180deg, rgba(199,169,107,0.12), rgba(0,0,0,0.94))",
+                      boxShadow: "0 0 36px rgba(245,245,245,0.12), inset 0 0 28px rgba(199,169,107,0.08)",
+                      backfaceVisibility: "hidden",
+                      transform: "rotateY(180deg)",
+                      display: "grid",
+                      alignContent: "center",
+                      gap: 18,
+                      padding: "24px 22px",
+                      textAlign: "left",
+                    }}
+                  >
+                    <span style={{ color: "rgba(199,169,107,0.82)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11 }}>
+                      听风刀｜器法
+                    </span>
+                    <p style={{ margin: 0, color: "rgba(245,245,245,0.94)", fontSize: 20, lineHeight: 1.7, fontWeight: 740 }}>
+                      这一次，先听见风向：
+                    </p>
+                    <p style={{ margin: 0, color: "rgba(245,245,245,0.78)", fontSize: 17, lineHeight: 1.78 }}>
+                      不用过去的失败，
                       <br />
-                      MEMORY_BREAK: TRUE
-                    </span>
+                      预判现在的结果。
+                      <br />
+                      先让眼前发生一次。
+                    </p>
+                    <p style={{ margin: "14px 0 0", color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.65 }}>
+                      记忆法器已封存入库
+                      <br />
+                      再次轻触，进入 06 目标空间
+                    </p>
                   </div>
-
-                  <p style={{ margin: 0, color: "rgba(245,245,245,0.46)", fontSize: 12, lineHeight: 1.55 }}>
-                    轻触卡牌，封存听风刀并进入 06 目标空间。
-                  </p>
                 </div>
               </div>
             ) : null}
@@ -3593,7 +3594,7 @@ function HexagramCodeDeliveryShell() {
             {goalFinalStage === "interact" || goalFinalStage === "break" ? (
               <div style={{ display: "grid", gap: 20, width: "78%", paddingTop: 22 }}>
                 <p style={{ margin: 0, color: "rgba(199,169,107,0.64)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.65 }}>
-                  SYSTEM: SPACE_06_GOAL // TOTAL_CAUSAL_MATRIX
+                  06 ｜ 目标空间 · 终局撕裂
                 </p>
                 <p style={{ margin: 0, color: "rgba(245,245,245,0.6)", fontSize: 15, lineHeight: 1.78 }}>
                   {selectedPressureSeedSurface}
@@ -3722,7 +3723,7 @@ function HexagramCodeDeliveryShell() {
               </div>
             ) : null}
 
-            {goalFinalStage === "paywall" || goalFinalStage === "sandify" ? (
+            {goalFinalStage === "front" || goalFinalStage === "flipping" || goalFinalStage === "back" || goalFinalStage === "sandify" ? (
               <div
                 role="button"
                 tabIndex={0}
@@ -3733,8 +3734,8 @@ function HexagramCodeDeliveryShell() {
                 style={{
                   minHeight: "58dvh",
                   display: "grid",
-                  alignContent: "center",
-                  gap: 18,
+                  placeItems: "center",
+                  perspective: 900,
                   opacity: goalFinalStage === "sandify" ? 0 : 1,
                   transform: goalFinalStage === "sandify" ? "translateY(30px)" : "translateY(0)",
                   transition: "opacity 520ms ease, transform 520ms ease",
@@ -3742,63 +3743,115 @@ function HexagramCodeDeliveryShell() {
                   cursor: "pointer",
                 }}
               >
-                <div style={{ display: "grid", gap: 10, textAlign: "center" }}>
-                  <span style={{ color: "rgba(199,169,107,0.76)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
-                    TOTAL CAUSAL MATRIX / 90 DAYS
-                  </span>
-                  <strong style={{ color: "rgba(245,245,245,0.92)", fontSize: 22, lineHeight: 1.42, fontWeight: 760 }}>
-                    观爻 2.0｜终局防线资产包
-                  </strong>
-                  <p style={{ margin: 0, color: "rgba(245,245,245,0.55)", fontSize: 13, lineHeight: 1.7 }}>
-                    384 分之一终局爻码｜90 天风险防御本｜反本能武器卡阵列
-                  </p>
-                </div>
-
                 <div
-                  aria-label="因果武器轴线阵列"
                   style={{
-                    display: "grid",
-                    gap: 10,
-                    padding: "4px 0",
+                    width: "min(74vw, 310px)",
+                    aspectRatio: "0.68",
+                    position: "relative",
+                    transformStyle: "preserve-3d",
+                    transform:
+                      goalFinalStage === "back"
+                        ? "rotateY(180deg)"
+                        : goalFinalStage === "flipping"
+                          ? "rotateY(92deg) scale(1.02)"
+                          : "rotateY(0deg)",
+                    transition: "transform 520ms cubic-bezier(.16,1,.3,1)",
                   }}
                 >
-                  {(awakenedWeapons.length > 0 ? awakenedWeapons : [{ space: "行为空间", weaponName: "止动盾" }, { space: "记忆空间", weaponName: "听风刀" }, { space: "目标空间", weaponName: "终局防线" }]).slice(0, 6).map((weapon, index) => (
-                    <div
-                      key={`${weapon.space}-${weapon.weaponName}-${index}`}
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "34px 1fr",
-                        alignItems: "center",
-                        gap: 10,
-                        minHeight: 26,
-                      }}
-                    >
-                      <span
-                        aria-hidden="true"
-                        style={{
-                          height: 1,
-                          background: "linear-gradient(90deg, rgba(199,169,107,0.92), rgba(199,169,107,0.12))",
-                          boxShadow: "0 0 10px rgba(199,169,107,0.2)",
-                        }}
-                      />
-                      <span style={{ color: "rgba(245,245,245,0.72)", fontSize: 13, lineHeight: 1.35 }}>
-                        <span style={{ color: "rgba(199,169,107,0.7)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
-                          {String(index + 1).padStart(2, "0")} /
-                        </span>{" "}
-                        {weapon.space}｜{weapon.weaponName}
+                  <div
+                    aria-hidden={goalFinalStage === "back"}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      border: "1px solid rgba(199,169,107,0.86)",
+                      background: "radial-gradient(circle at 50% 40%, rgba(199,169,107,0.14), rgba(0,0,0,0.94) 62%)",
+                      boxShadow: "0 0 40px rgba(199,169,107,0.2), inset 0 0 32px rgba(199,169,107,0.07)",
+                      backfaceVisibility: "hidden",
+                      display: "grid",
+                      alignContent: "space-between",
+                      padding: "22px 20px",
+                    }}
+                  >
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <span style={{ color: "rgba(199,169,107,0.76)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
+                        爻器卡 / 06
                       </span>
+                      <strong style={{ color: "rgba(245,245,245,0.92)", fontSize: 27, lineHeight: 1.18, fontWeight: 760 }}>
+                        终局防线
+                      </strong>
                     </div>
-                  ))}
-                </div>
 
-                <div style={{ display: "grid", gap: 8, paddingTop: 8 }}>
-                  <div style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(199,169,107,0.86), transparent)" }} />
-                  <p style={{ margin: 0, color: "rgba(199,169,107,0.92)", fontSize: 16, lineHeight: 1.7, fontWeight: 760, textAlign: "center" }}>
-                    支付 99 元 · 拿走未来 90 天行为防线与通关解药
-                  </p>
-                  <p style={{ margin: 0, color: "rgba(245,245,245,0.42)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.55, textAlign: "center" }}>
-                    点击模拟解锁，沉积为年轮资产
-                  </p>
+                    <div aria-label="因果武器轴线阵列" style={{ display: "grid", gap: 10 }}>
+                      {(awakenedWeapons.length > 0 ? awakenedWeapons : [{ space: "行为空间", weaponName: "止动盾" }, { space: "记忆空间", weaponName: "听风刀" }, { space: "目标空间", weaponName: "终局防线" }]).slice(0, 4).map((weapon, index) => (
+                        <div
+                          key={`${weapon.space}-${weapon.weaponName}-${index}`}
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "30px 1fr",
+                            alignItems: "center",
+                            gap: 9,
+                            minHeight: 25,
+                          }}
+                        >
+                          <span
+                            aria-hidden="true"
+                            style={{
+                              height: 1,
+                              background: "linear-gradient(90deg, rgba(199,169,107,0.92), rgba(199,169,107,0.12))",
+                              boxShadow: "0 0 10px rgba(199,169,107,0.2)",
+                            }}
+                          />
+                          <span style={{ color: "rgba(245,245,245,0.72)", fontSize: 12, lineHeight: 1.35 }}>
+                            <span style={{ color: "rgba(199,169,107,0.7)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10 }}>
+                              {String(index + 1).padStart(2, "0")} /
+                            </span>{" "}
+                            {weapon.space}｜{weapon.weaponName}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <p style={{ margin: 0, color: "rgba(245,245,245,0.46)", fontSize: 12, lineHeight: 1.55 }}>
+                      轻触爻器卡，翻面读取终局器法。
+                    </p>
+                  </div>
+
+                  <div
+                    aria-hidden={goalFinalStage !== "back"}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      border: "1px solid rgba(245,245,245,0.72)",
+                      background: "linear-gradient(180deg, rgba(199,169,107,0.13), rgba(0,0,0,0.95))",
+                      boxShadow: "0 0 38px rgba(245,245,245,0.12), inset 0 0 30px rgba(199,169,107,0.08)",
+                      backfaceVisibility: "hidden",
+                      transform: "rotateY(180deg)",
+                      display: "grid",
+                      alignContent: "center",
+                      gap: 16,
+                      padding: "24px 22px",
+                      textAlign: "left",
+                    }}
+                  >
+                    <span style={{ color: "rgba(199,169,107,0.82)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 11 }}>
+                      终局防线｜器法
+                    </span>
+                    <p style={{ margin: 0, color: "rgba(245,245,245,0.94)", fontSize: 20, lineHeight: 1.68, fontWeight: 740 }}>
+                      未来 90 天，
+                      <br />
+                      先守住一个方向。
+                    </p>
+                    <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 15, lineHeight: 1.72 }}>
+                      384 分之一终局爻码
+                      <br />
+                      90 天风险防御本
+                      <br />
+                      反本能武器卡阵列
+                    </p>
+                    <p style={{ margin: "12px 0 0", color: "rgba(199,169,107,0.78)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, lineHeight: 1.65 }}>
+                      再次轻触，沉积为年轮资产
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -4167,7 +4220,7 @@ function HexagramCodeDeliveryShell() {
               >
                 <div style={{ display: "grid", gap: 10, width: "82%", paddingTop: 8 }}>
                   <span style={{ color: "rgba(199,169,107,0.66)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, letterSpacing: "0.12em" }}>
-                    SYSTEM: 07_ASSET_METRIC // FINAL_CAUSAL_ACCOUNT
+                    07 ｜ 年轮资产 · 因果清算
                   </span>
                   <div style={{ display: "grid", gap: 10, paddingTop: 18 }}>
                     {assetPackItems.map((item, index) => {
@@ -4281,7 +4334,7 @@ function HexagramCodeDeliveryShell() {
                   }}
                 >
                   <span style={{ color: "rgba(199,169,107,0.72)", fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 10, letterSpacing: "0.1em" }}>
-                    TOTAL_MATRIX_010
+                    年轮资产
                   </span>
                   <strong style={{ color: "rgba(245,245,245,0.94)", fontSize: 24, lineHeight: 1.35, fontWeight: 760 }}>
                     观爻 · 行为年轮
@@ -4337,7 +4390,6 @@ export function GravityPage() {
     return <HexagramCodeDeliveryShell />;
   }
 
-  const navigate = useNavigate();
   const [autoYaoPath] = useState<YaoBit[]>(() => {
     const session = getSession();
     const currentPath = getAutoYaoPath();
@@ -4390,7 +4442,7 @@ export function GravityPage() {
   }, [activeScene, isComplete]);
 
   function advanceTransmission() {
-    navigate(GUANYAO_ROUTES.breachScan);
+    setIsGateVisible(false);
   }
 
   const currentScene = ritualScenes[activeScene];

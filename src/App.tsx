@@ -44,7 +44,7 @@ export default function App() {
         <Route path={GUANYAO_ROUTES.launch} element={<EntryRouter />} />
         <Route path="/launch-legacy" element={<LaunchPage />} />
         <Route path="/chrono-axis" element={<ChronoAxisPage />} />
-        <Route path={GUANYAO_ROUTES.motherCode} element={<MotherLab />} />
+        <Route path={GUANYAO_ROUTES.motherCode} element={<MotherCodePage />} />
         <Route path={GUANYAO_ROUTES.pressureSeed} element={<ScenePage />} />
         <Route path={GUANYAO_ROUTES.hexagramStamp} element={<HexagramStampPage />} />
         <Route path={GUANYAO_ROUTES.dynamics} element={<GravityPage />} />
