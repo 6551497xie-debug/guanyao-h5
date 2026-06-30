@@ -69,6 +69,11 @@ const GOLD = "#C7A96B";
 const BONE = "rgba(246,243,236,0.42)";
 const ROMAN = ["Ⅰ", "Ⅱ", "Ⅲ"];
 const OPEN_GAP = 74;
+const FIELD_DISPLAY_TITLES: Record<string, string> = {
+  原力: "你的底色",
+  保护: "你的默认保护",
+  误用: "你的惯性放弃",
+};
 
 function clamp(v: number, min: number, max: number) {
   return Math.min(Math.max(v, min), max);
@@ -336,7 +341,7 @@ export function MotherFieldEngine({
       ctx.globalAlpha = 0.86 * m.openT * contentFade;
       ctx.fillStyle = lerpHex(BLUE, GOLD, m.goldMix);
       ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
-      ctx.fillText("03 ｜ MOTHERFIELD · 惯性加压", leftX, m.h * 0.12);
+      ctx.fillText("03 ｜ 原力解构", leftX, m.h * 0.12);
 
       // 母码名（认知句主场已归 Reaction，本屏不复读标语）
       ctx.globalAlpha = 0.9 * m.openT * contentFade;
@@ -369,34 +374,19 @@ export function MotherFieldEngine({
           ctx.font = `${Math.min(18, m.w * 0.046)}px ${MONO}`;
           const titleY = m.cy - 22 + rise;
           const hi = lerpHex(BLUE, GOLD, m.goldMix);
-          const dim = "rgba(246,243,236,0.4)";
-          const tagIdx = field.title.indexOf(field.tag);
-          if (tagIdx >= 0) {
-            // 仅「类别词（原力/保护/误用）」降权灰；括号【】与分隔符 ｜ 不降、特质词高亮
-            const pre = field.title.slice(0, tagIdx);
-            const post = field.title.slice(tagIdx + field.tag.length);
-            let tx = leftX;
-            ctx.globalAlpha = sw * gapFade;
-            ctx.fillStyle = hi;
-            ctx.fillText(pre, tx, titleY);
-            tx += ctx.measureText(pre).width;
-            ctx.globalAlpha = sw * gapFade * 0.6;
-            ctx.fillStyle = dim;
-            ctx.fillText(field.tag, tx, titleY);
-            tx += ctx.measureText(field.tag).width;
-            ctx.globalAlpha = sw * gapFade;
-            ctx.fillStyle = hi;
-            ctx.fillText(post, tx, titleY);
-          } else {
-            ctx.globalAlpha = sw * gapFade;
-            ctx.fillStyle = hi;
-            ctx.fillText(field.title, leftX, titleY);
-          }
+          const displayTitle = FIELD_DISPLAY_TITLES[field.tag] ?? field.title;
+          ctx.globalAlpha = sw * gapFade;
+          ctx.fillStyle = hi;
+          ctx.fillText(displayTitle, leftX, titleY);
           const fs = Math.min(16, m.w * 0.04);
           ctx.font = `${fs}px ${SANS}`;
           ctx.fillStyle = "rgba(246,243,236,0.95)";
           let ty = m.cy + 8 + rise;
-          wrap(ctx, field.body, m.w * 0.8).forEach((ln) => {
+          const fieldBody =
+            field.tag === "保护"
+              ? "压力还没来之前，你会先缓和，再转开，尽量让场面不要僵住。"
+              : field.body.replace(/^你的(?:底色|原力流动|默认防御|默认保护|惯性放弃)：?/, "");
+          wrap(ctx, fieldBody, m.w * 0.8).forEach((ln) => {
             ctx.globalAlpha = sw * gapFade * 0.95;
             ctx.fillText(ln, leftX, ty);
             ty += fs * 1.5;

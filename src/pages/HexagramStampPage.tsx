@@ -26,11 +26,14 @@ type StampData = {
   code: string;
   name: string;
   title: string;
+  upperTrigram: string;
+  lowerTrigram: string;
+  collisionLine: string;
   stampLines: string[];
   glyphLines?: HexagramLineKind[];
 };
 
-const fallbackGlyphLines: HexagramLineKind[] = ["yin", "yang", "yin", "yin", "yang", "yang"];
+const fallbackGlyphLines: HexagramLineKind[] = ["yin", "yang", "yang", "yin", "yang", "yang"];
 
 function normalizeCode(code: string | undefined) {
   const digits = (code ?? "").replace(/\D/g, "");
@@ -49,11 +52,20 @@ function getStampData(): StampData {
   const isGenericTitle = !displayTitle || displayTitle.includes("本局") || displayTitle.includes("读取");
   const name = isGenericName ? asset?.name || displayName || "本局卦码" : displayName;
   const title = isGenericTitle ? asset?.title || displayTitle || "显影" : displayTitle;
+  const upperTrigram = hexagram.upperTrigram || "";
+  const lowerTrigram = hexagram.lowerTrigram || "";
+  const collisionLine =
+    upperTrigram && lowerTrigram
+      ? `原力与压力对撞，${upperTrigram}压住了${lowerTrigram}。`
+      : "原力与压力对撞，本局卦符正在成形。";
 
   return {
     code,
     name,
     title,
+    upperTrigram,
+    lowerTrigram,
+    collisionLine,
     stampLines: ["你被架在责任与自我的边界上。"],
     glyphLines: guanyaoHexagramGlyphs[code]?.linesTopToBottom ?? fallbackGlyphLines,
   };
@@ -115,6 +127,7 @@ export function HexagramStampPage() {
     let voidFrame = 0; // 进场四拍·第一/二拍：黑屏停顿 + 入场脉冲
     let frame = 0;
     let typedCount = 0;
+    let settledTypedCount = 0;
     let emergeFrame = 0;
     let settledFrame = 0;
     let lockFrame = 0;
@@ -244,12 +257,18 @@ export function HexagramStampPage() {
         return;
       }
 
-      const gap = height * 0.027;
-      const groupGap = height * 0.018;
-      const baseHalfLen = width * 0.16;
+      const gap = height * 0.023;
+      const groupGap = height * 0.015;
+      const baseHalfLen = width * 0.13;
+      const trigramJoin = clamp(intensity, 0, 1);
+      const trigramStackOffset = height * 0.038 * (1 - trigramJoin) * (1 - axisProgress);
       lines.forEach((line, index) => {
-        const localProgress = clamp(intensity * 1.25 - index * 0.08, 0, 1);
-        const y = cy + (index - 2.5) * gap + (index >= 3 ? groupGap : -groupGap);
+        const inUpperTrigram = index < 3;
+        const trigramDelay = inUpperTrigram ? 0 : 0.08;
+        const lineDelay = (index % 3) * 0.025;
+        const localProgress = clamp(intensity * 1.18 - trigramDelay - lineDelay, 0, 1);
+        const stackY = inUpperTrigram ? -trigramStackOffset : trigramStackOffset;
+        const y = cy + (index - 2.5) * gap + (inUpperTrigram ? -groupGap : groupGap) + stackY;
         drawHexagramLine(y, line, cx, baseHalfLen * localProgress, color, (0.35 + localProgress * 0.65) * (1 - axisProgress * 0.75), splitProgress);
       });
 
@@ -322,11 +341,10 @@ export function HexagramStampPage() {
         text(`${stampData.code}｜${stampData.name}`, 0, -cardH * 0.34, 10, cardMutedColor, "800", "center");
         drawMiniCardGlyph(0, -cardH * 0.08, cardW * 0.19, cardGold);
         text("卦码已落位", 0, cardH * 0.2, 13, cardTextColor, "900", "center");
-        text("轻点翻回", 0, cardH * 0.33, 8, "rgba(255,255,255,0.24)", "800", "center");
       } else {
-        text(`NO.${stampData.code}`, -cardW * 0.36, -cardH * 0.34, 10, cardMutedColor, "800");
-        text(stampData.name, 0, -cardH * 0.18, 26, cardTextColor, "900", "center");
-        text(`《${stampData.title}》`, 0, -cardH * 0.04, 18, cardTitleColor, "900", "center");
+        text(`NO.${stampData.code}`, 0, -cardH * 0.3, 11, cardMutedColor, "900", "center");
+        text(stampData.name, 0, -cardH * 0.16, 26, cardTextColor, "900", "center");
+        text(`《${stampData.title}》`, 0, -cardH * 0.02, 18, cardTitleColor, "900", "center");
         text("GUANYAO", 0, cardH * 0.36, 9, "rgba(255,255,255,0.26)", "800", "center");
       }
       ctx.restore();
@@ -362,7 +380,7 @@ export function HexagramStampPage() {
     function getCardMetrics() {
       const cardW = width * 0.58;
       const cardH = cardW * 1.34;
-      const settledY = height * 0.49;
+      const settledY = height * 0.455;
       return { cardW, cardH, settledY };
     }
 
@@ -544,7 +562,14 @@ export function HexagramStampPage() {
       const muted = "rgba(255,255,255,0.34)";
       const isCardVisible = state === "CARD_EMERGE" || state === "CARD_LOCKED" || state === "AXIS_BREAK" || state === "SANDIFY";
       const isCardLocked = state === "CARD_LOCKED" || state === "AXIS_BREAK" || state === "SANDIFY";
-      const topLine = `NO.${stampData.code} ｜ ${stampData.name} ｜ ${stampData.title}`;
+      const identityLine = `NO.${stampData.code} ｜ ${stampData.name} ｜ ${stampData.title}`;
+      const collisionLine = stampData.collisionLine;
+      const topLine =
+        state === "CARD_SETTLED"
+          ? collisionLine.slice(0, clamp(settledTypedCount, 0, collisionLine.length))
+          : isCardVisible
+            ? identityLine
+            : collisionLine;
       cardFlipProgress += (cardFlipTarget - cardFlipProgress) * 0.18;
 
       if (state === "FORMING" && frame === 1) {
@@ -554,6 +579,7 @@ export function HexagramStampPage() {
       if (state === "FORMING" && frame > 98) {
         state = "CARD_SETTLED";
         typedCount = 0;
+        settledTypedCount = 0;
         settledFrame = 0;
       }
 
@@ -573,6 +599,10 @@ export function HexagramStampPage() {
 
       if (state === "CARD_SETTLED") {
         settledFrame += 1;
+        if (settledFrame % 4 === 0) {
+          settledTypedCount += 1;
+          vibrate(4);
+        }
       }
 
       if (state === "CARD_LOCKED") {
@@ -616,7 +646,12 @@ export function HexagramStampPage() {
         drawAxisRail();
         const { cardH, settledY } = getCardMetrics();
         const captionY = settledY + cardH / 2 + height * 0.036;
-        if (state !== "CARD_SETTLED") {
+        if (state === "CARD_SETTLED") {
+          const settledLine = "这一局已经成形。";
+          const settledLineStart = collisionLine.length;
+          const shownLength = clamp(settledTypedCount - settledLineStart, 0, settledLine.length);
+          text(settledLine.slice(0, shownLength), width * 0.5, captionY, 14, "rgba(248,245,234,0.9)", "900", "center");
+        } else {
           let consumed = 0;
           stampData.stampLines.forEach((line, index) => {
             const shownLength = clamp(typedCount - consumed, 0, line.length);
@@ -624,15 +659,17 @@ export function HexagramStampPage() {
             const display = state === "CARD_LOCKED" ? line.slice(0, shownLength) : line;
             text(display, width * 0.5, captionY + index * 20, 14, "rgba(248,245,234,0.9)", "900", "center");
           });
+          if (state === "CARD_LOCKED") {
+            text(cardFlipTarget > 0.5 ? "轻点翻回" : "轻点翻转", width * 0.5, captionY + stampData.stampLines.length * 20 + 14, 9, "rgba(255,255,255,0.38)", "800", "center");
+          }
         }
         if (state === "AXIS_BREAK" || state === "SANDIFY") {
           text("卦码资产已沉积", rail.x, rail.y + 30, 11, "rgba(248,245,234,0.68)", "900");
           text("全线突防六维空间深渊第一层 · 身体空间", rail.x, rail.y + 47, 9, "rgba(255,255,255,0.46)", "800");
         } else if (state === "CARD_LOCKED") {
-          text("卦码资产已沉积", rail.x, rail.y + 30, 11, "rgba(248,245,234,0.68)", "900");
-          text("再次右滑，断裂进入身体空间", rail.x, rail.y + 47, 9, "rgba(255,255,255,0.42)", "800");
+          text("右滑，进入身体空间", rail.x, rail.y + 30, 11, "rgba(248,245,234,0.68)", "900");
         } else {
-          text("右滑，压出卦码卡", rail.x, rail.y + 30, 11, "rgba(255,255,255,0.48)", "800");
+          text("右滑，揭晓卦码", rail.x, rail.y + 30, 11, "rgba(255,255,255,0.48)", "800");
         }
       }
 

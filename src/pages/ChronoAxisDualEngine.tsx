@@ -9,7 +9,7 @@
 // GUANYAO 2.0 SECOND SCREEN —— 十字双轴：
 //   · TUNING AXIS（纵向调频天线，置于右侧便于右手滑动）：垂直拨动 → 年/月/日/时调频。
 //   · CLUTCH RAIL（横向换挡轨，底部）：右滑卡扣 → 锁止当前维度；两轴相交成十字。
-// 文案层：顶部「01 ｜ CHRONO · 入口点火」+ 断言打字机（进入后落位常驻）+ 调频/滑动提示。
+// 文案层：顶部「01 ｜ CHRONO · 确认坐标」+ 断言打字机（进入后落位常驻）+ 调频/滑动提示。
 // State machine: TYPING → TUNING → ALL_LOCKED → SANDIFY。
 // SANDIFY 完成 → emit ORIGIN_LOCKED + onChronoLock()（现实结晶）。
 // System = discrete state machine with continuous physical transition layer between states.
@@ -302,7 +302,21 @@ export function ChronoAxisDualEngine({
 
     function spawnSandify() {
       const list: Particle[] = [];
-      for (let i = 0; i < 120; i++) {
+      // 主体：被锁定的 CODE 结果行本体沿字带均匀碎落（轻纵抖 → 像一行字塌成沙）
+      const box = m.codeBox;
+      if (box) {
+        for (let i = 0; i < 104; i++) {
+          list.push({
+            x: box.x + Math.random() * box.w,
+            y: box.y + (Math.random() - 0.5) * box.h * 1.05,
+            vx: (Math.random() - 0.5) * 46,
+            vy: Math.random() * 70 + 26,
+            alpha: 0.78 + Math.random() * 0.22,
+          });
+        }
+      }
+      // 陪衬：两根轴 + 横轨这套支架也跟着掉渣（数量减半）
+      for (let i = 0; i < 56; i++) {
         const onAxis = i % 2 === 0;
         const x = onAxis ? m.axisX : m.railX0 + Math.random() * (m.railX1 - m.railX0);
         const y = onAxis ? m.axisTop + Math.random() * (m.axisBottom - m.axisTop) : m.railY;
@@ -311,7 +325,7 @@ export function ChronoAxisDualEngine({
           y,
           vx: (Math.random() - 0.5) * 60,
           vy: Math.random() * 80 + 20,
-          alpha: 0.7 + Math.random() * 0.3,
+          alpha: 0.6 + Math.random() * 0.3,
         });
       }
       m.particles = list;
@@ -451,7 +465,7 @@ export function ChronoAxisDualEngine({
         ctx.fillStyle = COLOR.blue;
         ctx.textAlign = "left";
         ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
-        ctx.fillText("01 ｜ CHRONO · 入口点火", leftX, m.h * 0.1);
+        ctx.fillText("01 ｜ CHRONO · 确认坐标", leftX, m.h * 0.1);
         ctx.globalAlpha = 1;
       }
 
@@ -482,7 +496,7 @@ export function ChronoAxisDualEngine({
         ctx.fillStyle = "rgba(0,184,212,0.72)";
         ctx.font = `${Math.min(12, m.w * 0.03)}px ${MONO}`;
         ctx.globalAlpha = 0.28 + lockConsolidation * 0.72;
-        ctx.fillText("CHRONO LOCKED → REACTION BUFFER", leftX, m.h * 0.34);
+        ctx.fillText("坐标已锁定，正在进入缓冲层", leftX, m.h * 0.34);
         const code = `CODE: ${m.coords.year} // ${pad2(m.coords.month)} // ${pad2(m.coords.day)} // ${PERIOD_LABELS[m.coords.periodIndex] ?? "酉时"} // ${locationRef.current}`;
         let fp = Math.min(22, m.w * 0.052);
         ctx.font = `${fp}px ${MONO}`;
@@ -492,6 +506,8 @@ export function ChronoAxisDualEngine({
         }
         ctx.fillStyle = lerpHex(COLOR.white, GOLD_DENSE, Math.min(1, m.goldMix + lockConsolidation * 0.18));
         ctx.fillText(code, leftX, m.h * 0.46);
+        // 快照结晶结果行的包围盒：沙化时让这行 CODE 本体碎成沙
+        m.codeBox = { x: leftX, y: m.h * 0.46, w: ctx.measureText(code).width, h: fp };
         ctx.globalAlpha = 1;
       } else if (tuning) {
         // 阶段标签：［ Ⅱ · 月份装填 ］

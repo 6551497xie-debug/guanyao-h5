@@ -108,7 +108,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
     let incomingT = 0;
     let voidFrame = 0; // 进场四拍·第一/二拍：黑屏停顿 + 入场脉冲
     const weldFixedLines = ["你刚刚拦住的，", "不是一个情绪。", "也不是一个问题。"];
-    const weldTypedLines = ["你习惯先缓和，", "再把自己从现场撤走。", "但这一次，", "它已经开始成形。"];
+    const weldTypedLines = ["你习惯先缓和，", "再把自己从现场撤走。", "但这一次，", "它正在变成一个局。"];
     const rail = {
       x: 0,
       y: 0,
@@ -306,11 +306,12 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
     function drawSeedStage() {
       ctx.fillStyle = color.bone;
       ctx.font = `${Math.min(11, Math.max(10, width * 0.023))}px monospace`;
-      ctx.fillText("04 ｜ SEED · 压力拦截", rail.x, height * 0.06);
+      ctx.fillText("04 ｜ 压力种子 · 拦截", rail.x, height * 0.06);
 
       ctx.fillStyle = color.white;
-      ctx.font = `bold ${Math.min(28, Math.max(24, width * 0.06))}px monospace`;
-      ctx.fillText("选择当前压力种子", rail.x, height * 0.12);
+      ctx.font = `bold ${Math.min(25, Math.max(22, width * 0.054))}px monospace`;
+      ctx.fillText("此刻，", rail.x, height * 0.115);
+      ctx.fillText("是什么压住了你？", rail.x, height * 0.157);
 
       if (appState === "SEED_SANDIFY") return;
 
@@ -371,7 +372,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
 
       ctx.fillStyle = color.bone;
       ctx.font = "10px monospace";
-      ctx.fillText("04 ｜ WELD · 因果焊接", rail.x, height * 0.06);
+      ctx.fillText("04 ｜ 焊接 · 因果锁止", rail.x, height * 0.06);
 
       if (appState === "WELD_TYPING") {
         typeTimer += 1;
@@ -483,7 +484,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
 
       ctx.fillStyle = isGoldMode ? color.gold : color.bone;
       ctx.font = "10px monospace";
-      let labelText = "[ Ⅰ · 拖拽选种 → 点击定点 → 右滑装填 ]";
+      let labelText = "［ 上下换组｜点选定点｜右滑装填 ］";
       if (appState === "SEED_LOCKED") labelText = "[ 种子已装填 · 因果焊接 ]";
       if (appState === "WELD_TYPING") labelText = "[ 因果共振 ]";
       if (appState === "WELD_INTERACT") labelText = isGoldMode ? "［ 高压焊接临界 ］" : "［ ➔ 右滑充能：高压焊接本局因果 ］";

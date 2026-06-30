@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, PointerEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { CausalRail } from "../components/causal/CausalRail";
-import { ChronoAxisDualEngine, type ChronoCoords } from "./ChronoAxisDualEngine";
+import { type ChronoCoords } from "./ChronoAxisDualEngine";
+import { ChronoLab } from "./ChronoLab";
 import { MotherFieldEngine, type MotherField } from "./MotherFieldEngine";
 import { DefaultReactionScreen } from "./DefaultReactionScreen";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
@@ -394,6 +395,22 @@ function buildMotherCodeCardFromLanding(
   };
 }
 
+// 老用户回流：读取上次锁定的数值生辰坐标，只用于回填坐标确认页，不跳过时序填装。
+function readNumericChronoCoords(): ChronoCoords | null {
+  try {
+    const raw = window.localStorage.getItem("guanyao:chronoNumeric");
+    if (raw) {
+      const c = JSON.parse(raw);
+      if (c && typeof c.year === "number" && typeof c.month === "number" && typeof c.day === "number" && typeof c.periodIndex === "number") {
+        return { year: c.year, month: c.month, day: c.day, periodIndex: c.periodIndex };
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
 function persistInitialCoordinates(
   initialCoordinates: InitialCoordinates,
   motherCodeCard: MotherCodeCard,
@@ -411,13 +428,15 @@ function InitialCoordinatesEntry() {
     birthChrono: "1995 / 06 / 02 · 17:00—19:00",
     geoAnchor: "中国 / 广东省 / 广州市",
   };
+  // 老用户回流：只预置上次坐标，不跳过时序填装；首页预览必须能完整进入坐标确认。
+  const seededCoords = useMemo(() => readNumericChronoCoords(), []);
   const [stage, setStage] = useState<"coordinates" | "defaultReaction" | "mother">("coordinates");
   const [motherCodeStageView, setMotherCodeStageView] = useState<"asset" | "runtime">("asset");
   const [openMotherRuntimeDrawer, setOpenMotherRuntimeDrawer] = useState<"force" | "pressure" | "asset" | null>(null);
-  const [displayYear, setDisplayYear] = useState(1995);
-  const [displayMonth, setDisplayMonth] = useState(6);
-  const [displayDay, setDisplayDay] = useState(2);
-  const [displayPeriodIndex, setDisplayPeriodIndex] = useState(9);
+  const [displayYear, setDisplayYear] = useState(seededCoords?.year ?? 1995);
+  const [displayMonth, setDisplayMonth] = useState(seededCoords?.month ?? 6);
+  const [displayDay, setDisplayDay] = useState(seededCoords?.day ?? 2);
+  const [displayPeriodIndex, setDisplayPeriodIndex] = useState(seededCoords?.periodIndex ?? 9);
   const [motherCodeCard, setMotherCodeCard] = useState<MotherCodeCard>(() => {
     const initialMotherCodeLanding = runMotherCodeLandingEngine({
       year: 1995,
@@ -481,6 +500,11 @@ function InitialCoordinatesEntry() {
     });
     const embeddedCard = buildMotherCodeCardFromLanding(landing, "embedded");
     persistInitialCoordinates(initialCoordinates, embeddedCard, landing.motherCodeProfile);
+    try {
+      window.localStorage.setItem("guanyao:chronoNumeric", JSON.stringify(coords)); // 供老用户回流时回填坐标
+    } catch {
+      /* ignore */
+    }
     setDisplayYear(coords.year);
     setDisplayMonth(coords.month);
     setDisplayDay(coords.day);
@@ -494,6 +518,15 @@ function InitialCoordinatesEntry() {
   function handleEnterPressureSeed() {
     persistInitialCoordinates(initialCoordinates, motherCodeCard, motherCodeLanding.motherCodeProfile);
     navigate(GUANYAO_ROUTES.pressureSeed);
+  }
+
+  if (stage === "coordinates") {
+    return (
+      <ChronoLab
+        initialCoords={{ year: displayYear, month: displayMonth, day: displayDay, periodIndex: displayPeriodIndex }}
+        onChronoLock={handleChronoLock}
+      />
+    );
   }
 
   return (
@@ -515,12 +548,7 @@ function InitialCoordinatesEntry() {
         WebkitOverflowScrolling: "touch",
       }}
     >
-      {stage === "coordinates" ? (
-        <ChronoAxisDualEngine
-          initialCoords={{ year: displayYear, month: displayMonth, day: displayDay, periodIndex: displayPeriodIndex }}
-          onChronoLock={handleChronoLock}
-        />
-      ) : stage === "defaultReaction" ? (
+      {stage === "defaultReaction" ? (
         <DefaultReactionScreen
           motherCode={motherCode.motherCodeName}
           cognition={motherTagline}
@@ -730,7 +758,7 @@ export function ChronoPage() {
         {chronoProfile && generatedCard && generatedYuanCode ? (
           <article className="gy-source-shell gyFadeRise" aria-label="观爻入局底色确认">
             <header className="gy-source-header">
-              <span>GY / 01 / MOTHER_CODE</span>
+              <span>GY / 01 / 母码场</span>
               <span>母码场</span>
               <strong>{demoMotherCode.title}</strong>
               <em>{demoMotherCode.englishName}</em>

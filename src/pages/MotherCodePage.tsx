@@ -168,7 +168,7 @@ export function MotherCodePage() {
                     letterSpacing: "0.12em",
                   }}
                 >
-                  MOTHER_CODE / {motherCode.visualAssetCode}
+                  母码卡 / {motherCode.visualAssetCode}
                 </span>
                 <strong
                   style={{
@@ -331,7 +331,7 @@ export function MotherCodePage() {
             letterSpacing: "0.12em",
           }}
         >
-          MOTHER_CODE_ASSET_RENDERED
+          母码资产已显影
         </span>
         <CausalRail statusLabel="进入现实压力场" rightHint="右滑进入现实压力场" onRight={() => navigate(GUANYAO_ROUTES.pressureSeed)} />
       </div>

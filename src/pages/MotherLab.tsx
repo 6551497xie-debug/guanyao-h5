@@ -16,28 +16,52 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
+import type { GeoChronoMotherFusionResult } from "../services/guanyaoGeoChronoMotherFusionEngine";
+import type { Trigram } from "../types/guanyaoCausalEngine";
 
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
 const SANS = "-apple-system, system-ui, sans-serif";
 const SERIF = "Songti SC, SimSun, serif";
 
-// 占位母码（真实由引擎/插件提供）
-const CARD = {
-  no: "NO.051",
-  guaName: "震为雷",
-  pinyin: "ZHEN WEI LEI",
-  archetype: "《行动者》",
-  archetypeEn: "THE ACTIVATOR",
-  // 背面铭牌
-  verse1: "洊雷震，君子以恐惧修省。",
-  verse2: "一阳发动，惊起万物。",
-  keywords: "震动 · 启动 · 破滞",
+const MOTHER_CARD_META: Record<Trigram, {
+  no: string;
+  guaName: string;
+  archetype: string;
+  archetypeEn: string;
+  verse1: string;
+  verse2: string;
+  keywords: string;
+}> = {
+  乾: { no: "NO.001", guaName: "乾为天", archetype: "《创世者》", archetypeEn: "THE CREATOR", verse1: "天行刚健，自强不息。", verse2: "主动开创，统御全局。", keywords: "刚健 · 开创 · 统御" },
+  坤: { no: "NO.002", guaName: "坤为地", archetype: "《承载者》", archetypeEn: "THE CARRIER", verse1: "地势柔顺，厚德载物。", verse2: "包容承托，滋养万物。", keywords: "柔顺 · 包容 · 承载" },
+  震: { no: "NO.051", guaName: "震为雷", archetype: "《行动者》", archetypeEn: "THE ACTIVATOR", verse1: "雷震百里，万物始生。", verse2: "破局而出，主动冲击。", keywords: "奋动 · 破局 · 冲击" },
+  巽: { no: "NO.057", guaName: "巽为风", archetype: "《渗透者》", archetypeEn: "THE PENETRATOR", verse1: "风无孔不入，渗透万物。", verse2: "顺势变通，润物无声。", keywords: "渗透 · 变通 · 入微" },
+  坎: { no: "NO.029", guaName: "坎为水", archetype: "《深潜者》", archetypeEn: "THE DEEP DIVER", verse1: "水行险陷，深不可测。", verse2: "处险不惊，隐伏流动。", keywords: "险陷 · 深沉 · 流动" },
+  离: { no: "NO.030", guaName: "离为火", archetype: "《照见者》", archetypeEn: "THE ILLUMINATOR", verse1: "火附丽光明，温暖万物。", verse2: "向外发散，明亮照人。", keywords: "明亮 · 附着 · 扩散" },
+  艮: { no: "NO.052", guaName: "艮为山", archetype: "《守望者》", archetypeEn: "THE WATCHER", verse1: "山为稳固之基，知止而定。", verse2: "守其边界，不动如山。", keywords: "稳固 · 止息 · 边界" },
+  兑: { no: "NO.058", guaName: "兑为泽", archetype: "《连接者》", archetypeEn: "THE CONNECTOR", verse1: "泽水汇聚，滋养喜悦。", verse2: "交流开放，和悦待人。", keywords: "喜悦 · 交流 · 开放" },
 };
-// 屏级读数（卡外，禁入卡面）
-const READOUT = {
-  base: "你最容易把看见的问题说出来，让模糊、隐藏的信息浮到台前",
-  chain: "看见 → 表达 → 证明",
+
+const TRIGRAM_LINES: Record<Trigram, [boolean, boolean, boolean]> = {
+  乾: [true, true, true],
+  兑: [false, true, true],
+  离: [true, false, true],
+  震: [false, false, true],
+  巽: [true, true, false],
+  坎: [false, true, false],
+  艮: [true, false, false],
+  坤: [false, false, false],
 };
+
+function readFusionSeed(): GeoChronoMotherFusionResult | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem("guanyao:motherFusionSeed");
+    return raw ? JSON.parse(raw) as GeoChronoMotherFusionResult : null;
+  } catch {
+    return null;
+  }
+}
 
 const CFG = {
   cardTopFrac: 0.26,
@@ -120,11 +144,19 @@ export function MotherLab() {
   const navigate = useNavigate();
   const navRef = useRef(navigate);
   navRef.current = navigate;
+  const fusionRef = useRef<GeoChronoMotherFusionResult | null>(readFusionSeed());
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const audio = makeAudio();
+    const fusion = fusionRef.current;
+    const trigram = fusion?.mother.trigram ?? "震";
+    const card = MOTHER_CARD_META[trigram];
+    const readout = {
+      base: fusion?.mother.definition.baseDrive ?? "你最容易把看见的问题说出来，让模糊、隐藏的信息浮到台前",
+      chain: fusion?.mother.definition.defaultReactionChain ?? "看见 → 表达 → 证明",
+    };
 
     const m = {
       w: 0,
@@ -260,18 +292,21 @@ export function MotherLab() {
       ctx.lineCap = "round";
       const half = s * 0.5;
       const gap = s * 0.16;
-      // 震：上断 中断 下连
+      const lines = TRIGRAM_LINES[trigram] ?? TRIGRAM_LINES.震;
+      const yy = [y - s * 0.4, y, y + s * 0.4];
       ctx.beginPath();
-      ctx.moveTo(cx - half, y - s * 0.4);
-      ctx.lineTo(cx - gap, y - s * 0.4);
-      ctx.moveTo(cx + gap, y - s * 0.4);
-      ctx.lineTo(cx + half, y - s * 0.4);
-      ctx.moveTo(cx - half, y);
-      ctx.lineTo(cx - gap, y);
-      ctx.moveTo(cx + gap, y);
-      ctx.lineTo(cx + half, y);
-      ctx.moveTo(cx - half, y + s * 0.4);
-      ctx.lineTo(cx + half, y + s * 0.4);
+      lines.forEach((solid, index) => {
+        const lineY = yy[index]!;
+        if (solid) {
+          ctx.moveTo(cx - half, lineY);
+          ctx.lineTo(cx + half, lineY);
+        } else {
+          ctx.moveTo(cx - half, lineY);
+          ctx.lineTo(cx - gap, lineY);
+          ctx.moveTo(cx + gap, lineY);
+          ctx.lineTo(cx + half, lineY);
+        }
+      });
       ctx.stroke();
     }
 
@@ -311,20 +346,20 @@ export function MotherLab() {
       ctx.fillStyle = COLOR.gold;
       ctx.textAlign = "left";
       ctx.font = `${Math.min(13, r.w * 0.045)}px ${MONO}`;
-      ctx.fillText(CARD.no, r.x + 22, r.y + 38);
+      ctx.fillText(card.no, r.x + 22, r.y + 38);
       trigramMark(ctx, r.x + r.w / 2, r.y + 30, Math.min(26, r.w * 0.09), COLOR.brightGold);
       ctx.textAlign = "right";
       ctx.fillStyle = COLOR.brightGold;
       ctx.font = `${Math.min(14, r.w * 0.048)}px ${SERIF}`;
-      ctx.fillText(CARD.guaName, r.x + r.w - 22, r.y + 36);
+      ctx.fillText(card.guaName, r.x + r.w - 22, r.y + 36);
       // 标题
       ctx.textAlign = "center";
       ctx.fillStyle = COLOR.brightGold;
       ctx.font = `${Math.min(28, r.w * 0.1)}px ${SERIF}`;
-      ctx.fillText(CARD.archetype, r.x + r.w / 2, r.y + r.h * 0.22);
+      ctx.fillText(card.archetype, r.x + r.w / 2, r.y + r.h * 0.22);
       ctx.fillStyle = COLOR.dimGold;
       ctx.font = `${Math.min(11, r.w * 0.038)}px ${MONO}`;
-      ctx.fillText(CARD.archetypeEn.split("").join(" "), r.x + r.w / 2, r.y + r.h * 0.27);
+      ctx.fillText(card.archetypeEn.split("").join(" "), r.x + r.w / 2, r.y + r.h * 0.27);
       // 美术插槽（几何震卦占位；上线替换为插件生成图）
       const cx = r.x + r.w / 2;
       const baseY = r.y + r.h * 0.72;
@@ -378,13 +413,13 @@ export function MotherLab() {
       ctx.textAlign = "center";
       ctx.fillStyle = COLOR.gold;
       ctx.font = `${Math.min(13, r.w * 0.044)}px ${MONO}`;
-      ctx.fillText(`${CARD.no}   ${CARD.guaName}`, cx, r.y + 40);
+      ctx.fillText(`${card.no}   ${card.guaName}`, cx, r.y + 40);
       trigramMark(ctx, cx, r.y + r.h * 0.28, Math.min(22, r.w * 0.08), "rgba(110,90,48,0.7)");
       ctx.fillStyle = COLOR.white;
       ctx.font = `${Math.min(15, r.w * 0.05)}px ${SERIF}`;
-      ctx.fillText(CARD.verse1, cx, r.y + r.h * 0.46);
+      ctx.fillText(card.verse1, cx, r.y + r.h * 0.46);
       ctx.fillStyle = COLOR.off;
-      ctx.fillText(CARD.verse2, cx, r.y + r.h * 0.52);
+      ctx.fillText(card.verse2, cx, r.y + r.h * 0.52);
       ctx.strokeStyle = "rgba(90,74,38,0.6)";
       ctx.lineWidth = 0.5;
       ctx.beginPath();
@@ -393,7 +428,7 @@ export function MotherLab() {
       ctx.stroke();
       ctx.fillStyle = COLOR.brightGold;
       ctx.font = `${Math.min(16, r.w * 0.055)}px ${SERIF}`;
-      ctx.fillText(CARD.keywords, cx, r.y + r.h * 0.68);
+      ctx.fillText(card.keywords, cx, r.y + r.h * 0.68);
       ctx.fillStyle = COLOR.gold;
       ctx.font = `${Math.min(12, r.w * 0.04)}px ${SERIF}`;
       ctx.fillText("观爻 · GUANYAO", cx, r.y + r.h - 18);
@@ -436,7 +471,7 @@ export function MotherLab() {
       ctx.font = `${Math.min(14, m.w * 0.037)}px ${SANS}`;
       // 简单换行
       const maxW = m.w * 0.8;
-      const words = READOUT.base.split("");
+      const words = readout.base.split("");
       let line = "";
       let yy = m.h * 0.17;
       for (const ch of words) {
@@ -449,7 +484,7 @@ export function MotherLab() {
       if (line) ctx.fillText(line, leftX, yy);
       ctx.fillStyle = "rgba(199,160,90,0.85)";
       ctx.font = `${Math.min(13, m.w * 0.034)}px ${SANS}`;
-      ctx.fillText(`默认反应链　${READOUT.chain}`, leftX, yy + Math.min(30, m.w * 0.075));
+      ctx.fillText(`默认反应链　${readout.chain}`, leftX, yy + Math.min(30, m.w * 0.075));
       ctx.globalAlpha = 1;
 
       // 母码卡（CARD/SANDIFY）
