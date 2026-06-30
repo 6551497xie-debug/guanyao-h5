@@ -1,17 +1,25 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { ArchivePage } from "./pages/ArchivePage";
 import { AxisLinePage } from "./pages/AxisLinePage";
 import { ChoicePage } from "./pages/ChoicePage";
 import { ChronoAxisPage } from "./pages/ChronoAxisPage";
+import { ChronoLab } from "./pages/ChronoLab";
+import { BreachLab } from "./pages/BreachLab";
 import { ChronoPage } from "./pages/ChronoPage";
+import { GenesisLab } from "./pages/GenesisLab";
+import { GoldenCaliperLab } from "./pages/GoldenCaliperLab";
 import { GravityPage } from "./pages/GravityPage";
 import { HexagramCardLabPage } from "./pages/HexagramCardLabPage";
 import { HexagramStampPage } from "./pages/HexagramStampPage";
+import { LaunchLab } from "./pages/LaunchLab";
 import { LaunchPage } from "./pages/LaunchPage";
 import { MigrationPage } from "./pages/MigrationPage";
 import { MotherCodePage } from "./pages/MotherCodePage";
+import { MotherLab } from "./pages/MotherLab";
+import { ReturnLab } from "./pages/ReturnLab";
 import { ScenePage } from "./pages/ScenePage";
+import { StarbeastLab } from "./pages/StarbeastLab";
 import { VisualSystemLabPage } from "./pages/VisualSystemLabPage";
 import { GUANYAO_ROUTES, LEGACY_ROUTE_REDIRECTS } from "./routes/guanyaoRoutes";
 
@@ -19,12 +27,37 @@ function LegacyRedirect({ to }: { to: string }) {
   return <Navigate to={to} replace />;
 }
 
+// 创世序幕（00）作为正式首屏：序幕完成 → 进入母码生成流程（/mother-code）
+function GenesisLaunchPage() {
+  const navigate = useNavigate();
+  return <GenesisLab onComplete={() => navigate(GUANYAO_ROUTES.motherCode)} />;
+}
+
+// 二次进入首屏：短门厅（LOGO 已生，显影 + 呼吸 + 署名）→ 续写（/return-lab）
+function ReturnEntryPage() {
+  const navigate = useNavigate();
+  return <GenesisLab mode="threshold" onComplete={() => navigate("/return-lab")} />;
+}
+
+// 入口分流：有母码资产 = 老用户走「短门厅 → 续写」；无 = 新用户走「完整创世 → 母码生成」
+function isReturningUser() {
+  try {
+    return !!window.localStorage.getItem("guanyao:motherCodeProfile");
+  } catch {
+    return false;
+  }
+}
+function EntryRouter() {
+  return isReturningUser() ? <ReturnEntryPage /> : <GenesisLaunchPage />;
+}
+
 export default function App() {
   return (
     <AppShell>
       <Routes>
-        <Route path="/" element={<LaunchPage />} />
-        <Route path={GUANYAO_ROUTES.launch} element={<LaunchPage />} />
+        <Route path="/" element={<EntryRouter />} />
+        <Route path={GUANYAO_ROUTES.launch} element={<EntryRouter />} />
+        <Route path="/launch-legacy" element={<LaunchPage />} />
         <Route path="/chrono-axis" element={<ChronoAxisPage />} />
         <Route path={GUANYAO_ROUTES.motherCode} element={<ChronoPage />} />
         <Route path={GUANYAO_ROUTES.pressureSeed} element={<ScenePage />} />
@@ -37,6 +70,16 @@ export default function App() {
         <Route path="/hexagram-card-lab" element={<HexagramCardLabPage />} />
         <Route path="/visual-system-lab" element={<VisualSystemLabPage />} />
         <Route path="/axis-lab" element={<AxisLinePage />} />
+        <Route path="/golden-lab" element={<GoldenCaliperLab />} />
+        <Route path="/genesis-lab" element={<GenesisLab />} />
+        <Route path="/chrono-lab" element={<ChronoLab />} />
+        <Route path="/return-lab" element={<ReturnLab />} />
+        <Route path="/return-entry" element={<ReturnEntryPage />} />
+        <Route path="/new-entry" element={<GenesisLaunchPage />} />
+        <Route path="/mother-lab" element={<MotherLab />} />
+        <Route path="/breach-lab" element={<BreachLab />} />
+        <Route path="/starbeast-lab" element={<StarbeastLab />} />
+        <Route path="/launch-lab" element={<LaunchLab />} />
         <Route path="/chrono" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/chrono"]} />} />
         <Route path="/identity" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/identity"]} />} />
         <Route path="/force" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/force"]} />} />
