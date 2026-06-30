@@ -300,9 +300,9 @@ export function AxisLinePage({ onAxisEvent }: { onAxisEvent?: (e: AxisEvent) => 
       // ① 系统事件输出
       emit("REBOUND_COMPLETE", payload);
       // 行为结构体固化（现实沉积）
-      const motherCode = axisLineSystem.generateMotherCode(m.run);
+      const axisBehaviorAsset = axisLineSystem.crystallizeAxisBehaviorAsset(m.run);
       try {
-        window.localStorage.setItem("guanyao:axisMotherCode", JSON.stringify(motherCode));
+        window.localStorage.setItem("guanyao:axisBehaviorAsset", JSON.stringify(axisBehaviorAsset));
       } catch {
         /* storage unavailable — event channel already fired */
       }

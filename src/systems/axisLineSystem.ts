@@ -4,7 +4,7 @@
 //
 // V2 CAUSAL CORE —— 纯逻辑层（无 DOM / 无 UI / 无独立视觉对象）。
 // 仅承载：事件协议(emitAxisEvent) + 状态机生命周期 hooks(enter/exit/transitionState)
-//        + 轻耦合订阅总线(subscribe) + MotherCode 行为结构体生成器。
+//        + 轻耦合订阅总线(subscribe) + AxisBehaviorAsset 行为结构体生成器。
 // 唯一视觉现实层仍是 1px Axis Line（渲染在 AxisLinePage.tsx），本模块不渲染任何东西。
 
 export type AxisState = "IDLE" | "TENSION" | "OVERRIDE" | "BREAK" | "REBOUND";
@@ -39,7 +39,7 @@ export type AxisMessage =
 
 export type AxisSubscriber = (message: AxisMessage) => void;
 
-// ---- 行为采样（MotherCode 生成输入）----
+// ---- 行为采样（AxisBehaviorAsset 生成输入）----
 export type AxisTrajectorySample = { t: number; offset: number };
 
 export type AxisRunState = {
@@ -54,7 +54,7 @@ export type AxisRunState = {
 };
 
 // ---- 行为结构体（现实沉积）----
-export type MotherCode = {
+export type AxisBehaviorAsset = {
   behaviorTrajectory: AxisTrajectorySample[];
   inertiaPattern: {
     dominantDirection: "down" | "up" | "flat";
@@ -124,7 +124,7 @@ export const axisLineSystem = {
   },
 
   // 将 REBOUND 终态结构化为行为资产
-  generateMotherCode(axisState: AxisRunState): MotherCode {
+  crystallizeAxisBehaviorAsset(axisState: AxisRunState): AxisBehaviorAsset {
     const endedAt = axisState.endedAt ?? Date.now();
     const dwellMs = Math.max(0, endedAt - axisState.startedAt);
     const dominantDirection =

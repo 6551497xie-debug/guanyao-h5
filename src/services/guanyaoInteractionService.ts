@@ -49,7 +49,7 @@ function buildMotherCardId(initialCoordinates: InitialCoordinates) {
   return `MOTHER_CARD_${String(hash).padStart(5, "0")}`;
 }
 
-export function generateMotherCodeFromInitialCoordinates(
+export function buildMotherCodeCardFromInitialCoordinates(
   initialCoordinates: InitialCoordinates,
   cardStatus: MotherCodeCard["cardStatus"] = "embedded",
 ): MotherCodeCard {
