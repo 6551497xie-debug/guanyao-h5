@@ -6,7 +6,6 @@ import { ChoicePage } from "./pages/ChoicePage";
 import { ChronoAxisPage } from "./pages/ChronoAxisPage";
 import { ChronoLab } from "./pages/ChronoLab";
 import { BreachLab } from "./pages/BreachLab";
-import { ChronoPage } from "./pages/ChronoPage";
 import { GenesisLab } from "./pages/GenesisLab";
 import { GoldenCaliperLab } from "./pages/GoldenCaliperLab";
 import { GravityPage } from "./pages/GravityPage";
@@ -17,7 +16,6 @@ import { LaunchPage } from "./pages/LaunchPage";
 import { MigrationPage } from "./pages/MigrationPage";
 import { MotherCodePage } from "./pages/MotherCodePage";
 import { MotherLab } from "./pages/MotherLab";
-import { ReturnLab } from "./pages/ReturnLab";
 import { ScenePage } from "./pages/ScenePage";
 import { StarbeastLab } from "./pages/StarbeastLab";
 import { VisualSystemLabPage } from "./pages/VisualSystemLabPage";
@@ -33,22 +31,9 @@ function GenesisLaunchPage() {
   return <GenesisLab onComplete={() => navigate(GUANYAO_ROUTES.motherCode)} />;
 }
 
-// 二次进入首屏：短门厅（LOGO 已生，显影 + 呼吸 + 署名）→ 续写（/return-lab）
-function ReturnEntryPage() {
-  const navigate = useNavigate();
-  return <GenesisLab mode="threshold" onComplete={() => navigate("/return-lab")} />;
-}
-
-// 入口分流：有母码资产 = 老用户走「短门厅 → 续写」；无 = 新用户走「完整创世 → 母码生成」
-function isReturningUser() {
-  try {
-    return !!window.localStorage.getItem("guanyao:motherCodeProfile");
-  } catch {
-    return false;
-  }
-}
+// 入口统一走星宿首屏；旧的回访坡道不再进入主链路。
 function EntryRouter() {
-  return isReturningUser() ? <ReturnEntryPage /> : <GenesisLaunchPage />;
+  return <GenesisLaunchPage />;
 }
 
 export default function App() {
@@ -59,7 +44,7 @@ export default function App() {
         <Route path={GUANYAO_ROUTES.launch} element={<EntryRouter />} />
         <Route path="/launch-legacy" element={<LaunchPage />} />
         <Route path="/chrono-axis" element={<ChronoAxisPage />} />
-        <Route path={GUANYAO_ROUTES.motherCode} element={<ChronoPage />} />
+        <Route path={GUANYAO_ROUTES.motherCode} element={<MotherLab />} />
         <Route path={GUANYAO_ROUTES.pressureSeed} element={<ScenePage />} />
         <Route path={GUANYAO_ROUTES.hexagramStamp} element={<HexagramStampPage />} />
         <Route path={GUANYAO_ROUTES.dynamics} element={<GravityPage />} />
@@ -73,8 +58,8 @@ export default function App() {
         <Route path="/golden-lab" element={<GoldenCaliperLab />} />
         <Route path="/genesis-lab" element={<GenesisLab />} />
         <Route path="/chrono-lab" element={<ChronoLab />} />
-        <Route path="/return-lab" element={<ReturnLab />} />
-        <Route path="/return-entry" element={<ReturnEntryPage />} />
+        <Route path="/return-lab" element={<LegacyRedirect to="/launch-lab" />} />
+        <Route path="/return-entry" element={<LegacyRedirect to="/launch-lab" />} />
         <Route path="/new-entry" element={<GenesisLaunchPage />} />
         <Route path="/mother-lab" element={<MotherLab />} />
         <Route path="/breach-lab" element={<BreachLab />} />
