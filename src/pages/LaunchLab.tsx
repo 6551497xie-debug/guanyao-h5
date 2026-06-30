@@ -4,6 +4,7 @@
 // 星兽 = 人格坐标显影前的结构生命体
 // Chrono = 星兽收束后的原始时间坐标层
 // 28宿 = 结构路径系统，不是装饰
+// Chrono minimal loop = Province + City + Time displayed together; GEO stays static and never drives inference.
 //
 // 定稿方向：星兽 = 28 颗星（= 28 宿 = 四象 × 7）连成的星座生命，奔跑姿态。
 //   开场：整片星河由混沌 → 汇聚清晰 → 28 颗星连接起来，星兽显形（未定形、不属任何一象）。
@@ -121,9 +122,10 @@ type LaunchState =
   | "beast_approach"
   | "recognition_ready"
   | "starbeast_sandify"
-  | "grid_emergence"
-  | "axis_formation"
-  | "chrono_interactive";
+  | "axis_emergence"
+  | "time_calibration"
+  | "geo_bind"
+  | "display_lock";
 
 const STATE = {
   STARFIELD_IDLE: "starfield_idle",
@@ -132,13 +134,34 @@ const STATE = {
   APPROACH: "beast_approach",
   READY: "recognition_ready",
   STARBEAST_SANDIFY: "starbeast_sandify",
-  GRID_EMERGENCE: "grid_emergence",
-  AXIS_FORMATION: "axis_formation",
-  CHRONO_INTERACTIVE: "chrono_interactive",
+  AXIS_EMERGENCE: "axis_emergence",
+  TIME_CALIBRATION: "time_calibration",
+  GEO_BIND: "geo_bind",
+  DISPLAY_LOCK: "display_lock",
 } as const;
 
 const TOP_LINES = ["每一个穿过黑夜的人，", "都会留下一点光。"];
 const CTA_LINE = "这一局，我来照亮你。";
+const PERIOD_LABELS = ["子时", "丑时", "寅时", "卯时", "辰时", "巳时", "午时", "未时", "申时", "酉时", "戌时", "亥时"];
+type ChronoDim = "hour";
+type ChronoCoords = { year: number; month: number; day: number; periodIndex: number };
+const DIM_LABEL: Record<ChronoDim, string> = { hour: "时辰" };
+const GEO_INPUT = { province: "广东", city: "广州" };
+
+function pad2(v: number) {
+  return String(v).padStart(2, "0");
+}
+
+function dimRange(coords: ChronoCoords, dim: ChronoDim) {
+  void coords;
+  void dim;
+  return { min: 0, max: PERIOD_LABELS.length - 1 };
+}
+
+function dimValue(coords: ChronoCoords, dim: ChronoDim) {
+  void dim;
+  return coords.periodIndex;
+}
 
 function makeAudio() {
   let ctx: AudioContext | null = null;
@@ -203,8 +226,13 @@ export function LaunchLab() {
       textStars: [] as TextStar[],
       afterForm: 0,
       formed: false,
-      gridX: 3,
-      gridY: 10,
+      phaseX: 3,
+      precisionY: 10,
+      dwellT: 0,
+      coords: { year: 1995, month: 6, day: 2, periodIndex: 9 } as ChronoCoords,
+      dialFloat: 9,
+      railProgress: 0,
+      clutched: false,
       dragging: false,
       dragAxis: null as null | "x" | "y",
       lastX: 0,
@@ -292,26 +320,72 @@ export function LaunchLab() {
       const start = (i / NODES.length) * (CFG.convergeMs * 0.55);
       return smooth(start, start + 1.2, m.t);
     }
-    function isGridState() {
-      return m.state === STATE.GRID_EMERGENCE ||
-        m.state === STATE.AXIS_FORMATION ||
-        m.state === STATE.CHRONO_INTERACTIVE;
+    function isAxisState() {
+      return m.state === STATE.AXIS_EMERGENCE ||
+        m.state === STATE.TIME_CALIBRATION ||
+        m.state === STATE.GEO_BIND ||
+        m.state === STATE.DISPLAY_LOCK;
     }
-    function gridMetrics() {
+    function axisMetrics() {
       const cols = 7;
       const rows = 21;
-      const x0 = m.w * 0.16;
-      const x1 = m.w * 0.84;
-      const y0 = m.h * 0.25;
-      const y1 = m.h * 0.72;
-      return { cols, rows, x0, x1, y0, y1 };
+      const cw = Math.min(m.w, 440);
+      const cl = (m.w - cw) / 2;
+      const railX0 = cl + cw * 0.06;
+      const railX1 = cl + cw * 0.92;
+      const axisX = cl + cw * 0.74;
+      const axisTop = m.h * 0.3;
+      const axisBottom = m.h * 0.84;
+      const railY = m.h * 0.78;
+      return { cols, rows, cl, cw, railX0, railX1, axisX, axisTop, axisBottom, railY };
     }
-    function gridPoint(col: number, row: number) {
-      const g = gridMetrics();
+    function axisPoint(col: number, row: number) {
+      const g = axisMetrics();
       return {
-        x: lerp(g.x0, g.x1, col / (g.cols - 1)),
-        y: lerp(g.y0, g.y1, row / (g.rows - 1)),
+        x: lerp(g.railX0, g.railX1, col / (g.cols - 1)),
+        y: lerp(g.axisTop, g.axisBottom, row / (g.rows - 1)),
       };
+    }
+    function railPoint(col: number) {
+      const g = axisMetrics();
+      return { x: lerp(g.railX0, g.railX1, col / (g.cols - 1)), y: g.railY };
+    }
+    function tunePoint(row: number) {
+      const g = axisMetrics();
+      return { x: g.axisX, y: lerp(g.axisTop, g.axisBottom, row / (g.rows - 1)) };
+    }
+    function activeDim(): ChronoDim {
+      return "hour";
+    }
+    function setDimValue(dim: ChronoDim, value: number) {
+      void dim;
+      const { min, max } = dimRange(m.coords, dim);
+      const v = Math.round(clamp(value, min, max));
+      m.coords.periodIndex = v;
+    }
+    function dimText(dim: ChronoDim, value: number) {
+      void dim;
+      const v = Math.round(value);
+      return PERIOD_LABELS[clamp(v, 0, 11)] ?? "酉时";
+    }
+    function syncDialToCurrent() {
+      const dim = activeDim();
+      m.dialFloat = dimValue(m.coords, dim);
+      const { min, max } = dimRange(m.coords, dim);
+      const frac = max > min ? (m.dialFloat - min) / (max - min) : 0;
+      m.precisionY = Math.round((1 - frac) * 20);
+    }
+    function commitCurrentDim() {
+      if (m.clutched) return;
+      const dim = activeDim();
+      setDimValue(dim, m.dialFloat);
+      m.railProgress = 1;
+      m.phaseX = 6;
+      m.clutched = true;
+      m.state = STATE.DISPLAY_LOCK;
+      m.t = 0;
+      audio.form();
+      vibrate([0, 18, 24]);
     }
     function headAngle(tp: number) {
       const settle = smooth(0.6, 2.6, tp) * 0.05; // 缓缓侧头看你
@@ -329,12 +403,12 @@ export function LaunchLab() {
         m.state === STATE.APPROACH ||
         m.state === STATE.READY ||
         m.state === STATE.STARBEAST_SANDIFY ||
-        isGridState();
+        isAxisState();
       const present =
         m.state === STATE.APPROACH ||
         m.state === STATE.READY ||
         m.state === STATE.STARBEAST_SANDIFY ||
-        isGridState();
+        isAxisState();
       const conv = formedLike ? 1 : nodeConv(i);
       const n = NODES[i]!;
       const t = performance.now() / 1000;
@@ -342,7 +416,7 @@ export function LaunchLab() {
       const approachDepth =
         m.state === STATE.APPROACH || m.state === STATE.READY
           ? smooth(0.3, 4.6, m.t)
-          : m.state === STATE.STARBEAST_SANDIFY || isGridState()
+          : m.state === STATE.STARBEAST_SANDIFY || isAxisState()
             ? 1
             : 0;
       const zApproach = lerp(CFG.zMid, CFG.zNear, approachDepth);
@@ -460,27 +534,27 @@ export function LaunchLab() {
         }
         case STATE.STARBEAST_SANDIFY: {
           if (m.t >= 1.25) {
-            m.state = STATE.GRID_EMERGENCE;
+            m.state = STATE.AXIS_EMERGENCE;
             m.t = 0;
           }
           break;
         }
-        case STATE.GRID_EMERGENCE: {
-          if (m.t >= 2.0) {
-            m.state = STATE.AXIS_FORMATION;
+        case STATE.AXIS_EMERGENCE: {
+          if (m.t >= 1.35) {
+            syncDialToCurrent();
+            m.state = STATE.TIME_CALIBRATION;
             m.t = 0;
+            m.dwellT = 0;
           }
           break;
         }
-        case STATE.AXIS_FORMATION: {
-          if (m.t >= 1.2) {
-            m.state = STATE.CHRONO_INTERACTIVE;
-            m.t = 0;
-            m.presentDone = true;
-          }
+        case STATE.TIME_CALIBRATION: {
+          if (!m.dragging && m.railProgress > 0) m.railProgress += (0 - m.railProgress) * Math.min(1, dt * 12);
+          if (!m.dragging) m.clutched = false;
           break;
         }
-        case STATE.CHRONO_INTERACTIVE: {
+        case STATE.GEO_BIND:
+        case STATE.DISPLAY_LOCK: {
           break;
         }
       }
@@ -498,12 +572,12 @@ export function LaunchLab() {
       ctx.fillStyle = neb;
       ctx.fillRect(0, 0, m.w, m.h);
       const now = performance.now() / 1000;
-      const gridActive = m.state === STATE.STARBEAST_SANDIFY || isGridState();
+      const axisActive = m.state === STATE.STARBEAST_SANDIFY || isAxisState();
 
       // 星河散点先完整铺满；随后其中 28 颗汇聚成星兽，其他星再生成文字。
       const enter = m.state === STATE.STARBEAST_SANDIFY
         ? smooth(0.1, 1.25, m.t)
-        : isGridState()
+        : isAxisState()
           ? 1
           : 0;
       const assemblyFade =
@@ -547,7 +621,9 @@ export function LaunchLab() {
         const p = nodePos(i);
         if (m.state !== STATE.STARBEAST_SANDIFY) return p;
         const k = smooth(0.05, 1.15, m.t);
-        const gp = gridPoint(i % 7, Math.min(20, 2 + Math.floor(i / 7) * 5));
+        const gp = i % 2 === 0
+          ? railPoint(i % 7)
+          : tunePoint(Math.min(20, 2 + Math.floor(i / 7) * 5));
         return {
           ...p,
           x: lerp(p.x, gp.x, k),
@@ -557,7 +633,7 @@ export function LaunchLab() {
       });
       const beastAlpha = m.state === STATE.STARBEAST_SANDIFY
         ? 1 - smooth(0.25, 1.18, m.t)
-        : isGridState()
+        : isAxisState()
           ? 0
           : 1;
 
@@ -599,65 +675,128 @@ export function LaunchLab() {
         ctx.globalAlpha = 1;
       });
 
-      if (gridActive) {
-        const gridGrow =
+      if (axisActive) {
+        const axisSeed =
           m.state === STATE.STARBEAST_SANDIFY
             ? smooth(0.35, 1.2, m.t) * 0.45
-            : m.state === STATE.GRID_EMERGENCE
-              ? smooth(0, 1.85, m.t)
+            : m.state === STATE.AXIS_EMERGENCE
+              ? smooth(0, 1.25, m.t)
               : 1;
         const axisGrow =
-          m.state === STATE.AXIS_FORMATION
-            ? smooth(0, 1.1, m.t)
-            : m.state === STATE.CHRONO_INTERACTIVE
+          m.state === STATE.AXIS_EMERGENCE
+            ? smooth(0.25, 1.25, m.t)
+            : isAxisState()
               ? 1
               : 0;
-        const g = gridMetrics();
+        const warmAxisRgb = "232,200,138";
+        const starWhiteRgb = "255,247,228";
+        const g = axisMetrics();
+        const dim = activeDim();
+        const range = dimRange(m.coords, dim);
+        const dialFrac = range.max > range.min ? (m.dialFloat - range.min) / (range.max - range.min) : 0;
+        m.precisionY = Math.round((1 - clamp(dialFrac, 0, 1)) * 20);
+        const railCursor = { x: lerp(g.railX0, g.railX1, m.railProgress), y: g.railY };
+        const tuneCursor = tunePoint(m.precisionY);
+        const guideCycle = (now * 0.34) % 1;
+        const guideStage = guideCycle < 0.54 ? "y" : "x";
+        const guideProgress = guideStage === "y"
+          ? guideCycle / 0.54
+          : (guideCycle - 0.54) / 0.46;
+        const comet = (pos: number, head: number, width = 0.12) => {
+          const d = Math.abs(pos - head);
+          return Math.max(0, 1 - d / width);
+        };
         ctx.save();
-        ctx.globalAlpha = gridGrow;
-        for (let row = 0; row < g.rows; row++) {
-          for (let col = 0; col < g.cols; col++) {
-            const gp = gridPoint(col, row);
-            const source = pos[(row * g.cols + col) % pos.length]!;
-            const settle = smooth(((row + col) / (g.rows + g.cols)) * 0.8, 1.15, gridGrow);
-            const x = lerp(source.x, gp.x, settle);
-            const y = lerp(source.y, gp.y, settle);
-            const isCursor = row === m.gridY && col === m.gridX;
-            const isAxis = row === m.gridY || col === m.gridX;
-            ctx.fillStyle = isCursor
-              ? "rgba(255,247,228,0.95)"
-              : isAxis
-                ? "rgba(232,200,138,0.52)"
-                : "rgba(232,200,138,0.18)";
-            ctx.shadowColor = isCursor ? "rgba(232,200,138,0.72)" : "rgba(232,200,138,0.18)";
-            ctx.shadowBlur = isCursor ? 12 : 3;
-            ctx.beginPath();
-            ctx.arc(x, y, isCursor ? 3.2 : 1.15, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
+        ctx.globalAlpha = axisSeed;
+        pos.forEach((p, i) => {
+          const residueTarget = i % 2 === 0
+            ? railPoint(i % 7)
+            : tunePoint(i % 21);
+          const settle = smooth(0.1 + (i / pos.length) * 0.45, 1.0, axisSeed);
+          const x = lerp(p.x, residueTarget.x, settle);
+          const y = lerp(p.y, residueTarget.y, settle);
+          ctx.fillStyle = `rgba(232,200,138,${(0.18 + axisSeed * 0.38).toFixed(3)})`;
+          ctx.shadowColor = "rgba(232,200,138,0.32)";
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.arc(x, y, i % 9 === 0 ? 2.2 : 1.25, 0, Math.PI * 2);
+          ctx.fill();
+        });
         ctx.shadowBlur = 0;
         ctx.globalAlpha = axisGrow;
-        ctx.strokeStyle = `rgba(232,200,138,${0.16 + axisGrow * 0.54})`;
+        ctx.strokeStyle = `rgba(${warmAxisRgb},${0.18 + axisGrow * 0.58})`;
         ctx.lineWidth = 1;
-        const cursor = gridPoint(m.gridX, m.gridY);
         ctx.beginPath();
-        ctx.moveTo(g.x0, cursor.y);
-        ctx.lineTo(g.x1, cursor.y);
+        ctx.moveTo(g.railX0, g.railY);
+        ctx.lineTo(g.railX1, g.railY);
         ctx.stroke();
         ctx.beginPath();
-        ctx.moveTo(cursor.x, g.y0);
-        ctx.lineTo(cursor.x, g.y1);
+        ctx.moveTo(g.axisX, g.axisTop);
+        ctx.lineTo(g.axisX, g.axisBottom);
         ctx.stroke();
-        if (m.state === STATE.CHRONO_INTERACTIVE) {
-          ctx.fillStyle = "rgba(255,247,228,0.9)";
-          ctx.font = `600 ${Math.min(13, m.w * 0.033)}px ${MONO}`;
+        for (let col = 0; col < g.cols; col++) {
+          const p = railPoint(col);
+          const lit = col <= m.phaseX || Math.abs(p.x - railCursor.x) < 5;
+          const posOnAxis = col / (g.cols - 1);
+          const sweep = guideStage === "x" ? comet(posOnAxis, guideProgress, 0.16) : 0;
+          const dragGlow = m.dragAxis === "x" ? comet(posOnAxis, m.railProgress, 0.18) : 0;
+          const flow = Math.max(sweep, dragGlow);
+          ctx.fillStyle = `rgba(${starWhiteRgb},${(lit ? 0.58 + flow * 0.38 : 0.2 + flow * 0.48).toFixed(3)})`;
+          ctx.shadowColor = `rgba(${starWhiteRgb},${(0.14 + flow * 0.62).toFixed(3)})`;
+          ctx.shadowBlur = lit ? 7 + flow * 12 : 2 + flow * 12;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, lit ? 2.35 + flow * 1.2 : 1.25 + flow * 1.25, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+        for (let row = 0; row < g.rows; row++) {
+          const p = tunePoint(row);
+          if (row % 2 !== 0 && row !== m.precisionY) continue;
+          const posOnAxis = row / (g.rows - 1);
+          const sweep = guideStage === "y" ? comet(posOnAxis, guideProgress, 0.11) : 0;
+          const dragGlow = m.dragAxis === "y" ? comet(posOnAxis, m.precisionY / (g.rows - 1), 0.13) : 0;
+          const flow = Math.max(sweep, dragGlow);
+          const selected = row === m.precisionY;
+          ctx.fillStyle = `rgba(${starWhiteRgb},${(selected ? 0.72 + flow * 0.26 : 0.16 + flow * 0.58).toFixed(3)})`;
+          ctx.shadowColor = `rgba(${starWhiteRgb},${(0.1 + flow * 0.68).toFixed(3)})`;
+          ctx.shadowBlur = selected ? 10 + flow * 12 : 2 + flow * 12;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, row === m.precisionY ? 3.1 + flow * 1.1 : 1.0 + flow * 1.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.shadowColor = `rgba(${starWhiteRgb},0.92)`;
+        ctx.shadowBlur = 18;
+        ctx.fillStyle = `rgba(${starWhiteRgb},0.98)`;
+        ctx.beginPath();
+        ctx.arc(tuneCursor.x, tuneCursor.y, m.state === STATE.DISPLAY_LOCK ? 5.2 : 4.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(railCursor.x, railCursor.y, m.state === STATE.DISPLAY_LOCK ? 5.2 : 4.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        if (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND || m.state === STATE.DISPLAY_LOCK) {
           ctx.textAlign = "left";
-          ctx.fillText("07 横轴时间推进", g.x0, g.y1 + 32);
-          ctx.fillText("21 纵轴时间校准", g.x0, g.y1 + 52);
-          ctx.textAlign = "right";
+          ctx.fillStyle = "rgba(232,200,138,0.82)";
+          ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
+          ctx.fillText("01 ｜ CHRONO · 确认坐标", g.railX0, m.h * 0.1);
+          ctx.fillText("［ 时辰调频 ］", g.railX0, m.h * 0.34);
+          ctx.fillStyle = "rgba(255,247,228,0.96)";
+          ctx.font = `700 ${Math.min(48, m.w * 0.11)}px ${MONO}`;
+          ctx.fillText(dimText(dim, m.dialFloat), g.railX0, m.h * 0.47);
+          ctx.font = `700 ${Math.min(16, m.w * 0.04)}px ${MONO}`;
+          ctx.fillStyle = "rgba(232,200,138,0.82)";
+          ctx.fillText(`${m.coords.year} / ${pad2(m.coords.month)} / ${pad2(m.coords.day)}`, g.railX0, m.h * 0.58);
           ctx.fillStyle = "rgba(232,200,138,0.74)";
-          ctx.fillText(`${m.gridX + 1}/7 · ${m.gridY + 1}/21`, g.x1, g.y1 + 32);
+          ctx.fillText(`${PERIOD_LABELS[m.coords.periodIndex] ?? "酉时"} · ${GEO_INPUT.province} · ${GEO_INPUT.city}`, g.railX0, m.h * 0.63);
+          ctx.fillStyle = "rgba(232,200,138,0.46)";
+          ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
+          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "坐标已确认" : "上下滑动 · 只调时辰", g.railX0, m.h * 0.705);
+          ctx.fillStyle = "rgba(232,200,138,0.58)";
+          ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
+          ctx.fillText(`右滑卡扣 · 锁定${DIM_LABEL[dim]}`, g.railX0, g.railY + 30);
+          ctx.textAlign = "right";
+          ctx.fillStyle = "rgba(232,200,138,0.82)";
+          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "LOCK" : "TIME", g.railX1, g.railY - 18);
         }
         ctx.restore();
       }
@@ -745,6 +884,7 @@ export function LaunchLab() {
     let dbl = 0;
     function onDown(e: PointerEvent) {
       audio.ensure();
+      canvasRef.current?.setPointerCapture?.(e.pointerId);
       const r = canvas!.getBoundingClientRect();
       const x = e.clientX - r.left;
       const y = e.clientY - r.top;
@@ -756,19 +896,36 @@ export function LaunchLab() {
       if (m.state === STATE.READY && m.presentDone) {
         m.state = STATE.STARBEAST_SANDIFY;
         m.t = 0;
+        m.dwellT = 0;
         audio.form();
         vibrate([0, 18, 28]);
         return;
       }
-      if (m.state === STATE.CHRONO_INTERACTIVE) {
+      if (m.state === STATE.TIME_CALIBRATION) {
         m.dragging = true;
-        m.dragAxis = null;
+        const g = axisMetrics();
+        const onVertical = Math.abs(x - g.axisX) < 52 && y >= g.axisTop - 18 && y <= g.axisBottom + 18;
+        const onHorizontal = Math.abs(y - g.railY) < 42 && x >= g.railX0 - 12 && x <= g.railX1 + 12;
+        m.dragAxis = onVertical ? "y" : onHorizontal ? "x" : null;
         m.lastX = x;
         m.lastY = y;
+        if (m.dragAxis === "x") {
+          m.railProgress = clamp((x - g.railX0) / (g.railX1 - g.railX0), 0, 1);
+          m.phaseX = Math.round(m.railProgress * 6);
+        }
+        if (m.dragAxis === "y") {
+          const dim = activeDim();
+          const { min, max } = dimRange(m.coords, dim);
+          const frac = 1 - clamp((y - g.axisTop) / (g.axisBottom - g.axisTop), 0, 1);
+          m.dialFloat = min + frac * (max - min);
+          setDimValue(dim, m.dialFloat);
+          m.precisionY = Math.round((1 - frac) * 20);
+        }
+        m.dwellT = 0;
       }
     }
     function onMove(e: PointerEvent) {
-      if (!m.dragging || m.state !== STATE.CHRONO_INTERACTIVE) return;
+      if (!m.dragging || m.state !== STATE.TIME_CALIBRATION) return;
       const r = canvas!.getBoundingClientRect();
       const x = e.clientX - r.left;
       const y = e.clientY - r.top;
@@ -777,22 +934,48 @@ export function LaunchLab() {
       if (m.dragAxis === null && Math.hypot(dx, dy) > 10) {
         m.dragAxis = Math.abs(dx) >= Math.abs(dy) ? "x" : "y";
       }
-      if (m.dragAxis === "x" && Math.abs(dx) > 24) {
-        m.gridX = clamp(m.gridX + (dx > 0 ? 1 : -1), 0, 6);
+      if (m.dragAxis === "x") {
+        const g = axisMetrics();
+        m.railProgress = clamp((x - g.railX0) / (g.railX1 - g.railX0), 0, 1);
+        m.phaseX = Math.round(m.railProgress * 6);
         m.lastX = x;
+        m.dwellT = 0;
+        if (m.railProgress >= 0.96) {
+          commitCurrentDim();
+          m.dragging = false;
+          m.dragAxis = null;
+        }
         audio.tick();
         vibrate(6);
       }
-      if (m.dragAxis === "y" && Math.abs(dy) > 18) {
-        m.gridY = clamp(m.gridY + (dy > 0 ? 1 : -1), 0, 20);
+      if (m.dragAxis === "y") {
+        const dim = activeDim();
+        const { min, max } = dimRange(m.coords, dim);
+        const g = axisMetrics();
+        const frac = 1 - clamp((y - g.axisTop) / (g.axisBottom - g.axisTop), 0, 1);
+        m.dialFloat = min + frac * (max - min);
+        setDimValue(dim, m.dialFloat);
+        m.precisionY = Math.round((1 - frac) * 20);
         m.lastY = y;
+        m.dwellT = 0;
         audio.tick();
         vibrate(4);
       }
     }
-    function onUp() {
+    function onUp(e?: PointerEvent) {
+      try {
+        if (e) canvasRef.current?.releasePointerCapture?.(e.pointerId);
+      } catch {
+        // ignore pointer capture release differences across browsers
+      }
       m.dragging = false;
       m.dragAxis = null;
+      m.dwellT = 0;
+      if (m.state === STATE.TIME_CALIBRATION && !m.clutched) {
+        m.railProgress = 0;
+        m.phaseX = 0;
+      }
+      m.clutched = false;
     }
 
     resize();
