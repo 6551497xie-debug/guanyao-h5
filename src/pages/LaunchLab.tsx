@@ -1,7 +1,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// 观爻 2.0 ·「新首屏 · 28 星混沌星兽」隔离原型 LAUNCH LAB —— /launch-lab
+// 观爻 2.0 ·「新首屏 · 28 星宿光兽」隔离原型 LAUNCH LAB —— /launch-lab
 //
-// 隔离原型：独立路由/文件；不碰主链路 / 引擎。
+// 星兽 = 人格坐标显影前的结构生命体
+// Chrono = 星兽收束后的原始时间坐标层
+// 28宿 = 结构路径系统，不是装饰
 //
 // 定稿方向：星兽 = 28 颗星（= 28 宿 = 四象 × 7）连成的星座生命，奔跑姿态。
 //   开场：整片星河由混沌 → 汇聚清晰 → 28 颗星连接起来，星兽显形（未定形、不属任何一象）。
@@ -60,11 +62,11 @@ const EDGES: [number, number][] = [
 ];
 
 const CFG = {
-  voidMs: 0.9,
+  voidMs: 2.4,
   convergeMs: 6.0,
   cyFrac: 0.46,
   scaleFrac: 0.62,
-  starfield: 240,
+  starfield: 420,
   focal: 2.4, // 透视焦距（越小纵深越夸张）
   zMid: 2.6, // 汇聚成形时的景深（在宇宙深处）
   zNear: 0.35, // 走到你面前的景深
@@ -113,6 +115,25 @@ function smooth(e0: number, e1: number, x: number) {
 
 type FieldStar = { x: number; y: number; r: number; ph: number; sp: number; vx: number; vy: number };
 type TextStar = { tx: number; ty: number; ox: number; oy: number; ph: number; sp: number; line: number };
+type LaunchState =
+  | "starfield_idle"
+  | "28_lunar_assembly"
+  | "beast_formation"
+  | "beast_approach"
+  | "recognition_ready"
+  | "coordinate_entry";
+
+const STATE = {
+  STARFIELD_IDLE: "starfield_idle",
+  ASSEMBLY: "28_lunar_assembly",
+  FORMATION: "beast_formation",
+  APPROACH: "beast_approach",
+  READY: "recognition_ready",
+  ENTER: "coordinate_entry",
+} as const;
+
+const TOP_LINES = ["每一个穿过黑夜的人，", "都会留下一点光。"];
+const CTA_LINE = "这一局，我来照亮你。";
 
 function makeAudio() {
   let ctx: AudioContext | null = null;
@@ -168,7 +189,7 @@ export function LaunchLab() {
     const m = {
       w: 0,
       h: 0,
-      state: "VOID" as "VOID" | "CONVERGE" | "PRESENT",
+      state: STATE.STARFIELD_IDLE as LaunchState,
       t: 0,
       pulsed: false,
       chaos: NODES.map(() => ({ ox: (Math.random() - 0.5) * 2.4, oy: (Math.random() - 0.5) * 2.4, oz: (Math.random() - 0.5) * 3.0, ph: Math.random() * 6.28, sp: 0.6 + Math.random() * 0.8 })),
@@ -178,13 +199,26 @@ export function LaunchLab() {
       walk: 0,
       field: [] as FieldStar[],
       textStars: [] as TextStar[],
+      afterForm: 0,
       formed: false,
+      entryStarted: false,
       debug: false,
       fps: 0,
       fpsAcc: 0,
       fpsN: 0,
     };
-    for (let i = 0; i < CFG.starfield; i++) m.field.push({ x: Math.random(), y: Math.random(), r: 0.4 + Math.random() * 1.1, ph: Math.random() * 6.28, sp: 0.5 + Math.random(), vx: 0, vy: 0 });
+    for (let i = 0; i < CFG.starfield; i++) {
+      const isLunarMansion = i < NODES.length;
+      m.field.push({
+        x: Math.random(),
+        y: Math.random(),
+        r: isLunarMansion ? 1.35 + Math.random() * 0.65 : 0.45 + Math.random() * 1.0,
+        ph: Math.random() * 6.28,
+        sp: isLunarMansion ? 0.75 + Math.random() * 0.45 : 0.5 + Math.random(),
+        vx: 0,
+        vy: 0,
+      });
+    }
 
     function vibrate(p: number | number[]) {
       if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") navigator.vibrate(p);
@@ -200,17 +234,16 @@ export function LaunchLab() {
       if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       m.w = rect.width;
       m.h = rect.height;
-      buildText();
+      buildTextStars();
     }
 
-    // 把诗句采样成星点（星河中的星汇聚成字）
-    function buildText() {
+    function buildTextStars() {
       if (!m.w || !m.h) return;
       const size = Math.min(18, m.w * 0.046);
       const lines = [
-        { text: "每一个走过黑夜的人，", y: m.h * 0.18 },
-        { text: "都会留下一点光。", y: m.h * 0.23 },
-        { text: "这一局，我陪你走。", y: m.h * 0.82 },
+        { text: TOP_LINES[0], y: m.h * 0.18, weight: 600 },
+        { text: TOP_LINES[1], y: m.h * 0.23, weight: 600 },
+        { text: CTA_LINE, y: m.h * 0.82, weight: 700 },
       ];
       const off = document.createElement("canvas");
       off.width = Math.max(1, Math.floor(m.w));
@@ -219,18 +252,27 @@ export function LaunchLab() {
       if (!o) return;
       o.textAlign = "center";
       o.textBaseline = "middle";
-      o.font = `600 ${size}px ${SANS}`;
       const gap = 5;
       const stars: TextStar[] = [];
-      lines.forEach((L, li) => {
+      lines.forEach((line, li) => {
         o.clearRect(0, 0, off.width, off.height);
         o.fillStyle = "#fff";
-        o.fillText(L.text, m.w / 2, L.y);
+        o.font = `${line.weight} ${size}px ${SANS}`;
+        o.fillText(line.text, m.w / 2, line.y);
         const data = o.getImageData(0, 0, off.width, off.height).data;
         for (let y = 0; y < off.height; y += gap) {
           for (let x = 0; x < off.width; x += gap) {
             if (data[(y * off.width + x) * 4 + 3]! > 128) {
-              stars.push({ tx: x, ty: y, ox: Math.random() * m.w, oy: Math.random() * m.h, ph: Math.random() * 6.28, sp: 0.6 + Math.random(), line: li });
+              const source = m.field[NODES.length + (stars.length % Math.max(1, m.field.length - NODES.length))] ?? m.field[stars.length % m.field.length];
+              stars.push({
+                tx: x,
+                ty: y,
+                ox: source ? source.x * m.w : Math.random() * m.w,
+                oy: source ? source.y * m.h : Math.random() * m.h,
+                ph: Math.random() * 6.28,
+                sp: 0.6 + Math.random(),
+                line: li,
+              });
             }
           }
         }
@@ -254,13 +296,26 @@ export function LaunchLab() {
       return settle + nod;
     }
     function nodePos(i: number) {
-      const present = m.state === "PRESENT";
-      const conv = present ? 1 : nodeConv(i);
+      const formedLike =
+        m.state === STATE.FORMATION ||
+        m.state === STATE.APPROACH ||
+        m.state === STATE.READY ||
+        m.state === STATE.ENTER;
+      const present =
+        m.state === STATE.APPROACH ||
+        m.state === STATE.READY ||
+        m.state === STATE.ENTER;
+      const conv = formedLike ? 1 : nodeConv(i);
       const n = NODES[i]!;
-      const ch = m.chaos[i]!;
       const t = performance.now() / 1000;
       // 全局景深：宇宙深处(zMid) → 缓缓推近你面前(zNear)
-      const zApproach = present ? lerp(CFG.zMid, CFG.zNear, smooth(0.3, 4.6, m.t)) : CFG.zMid;
+      const approachDepth =
+        m.state === STATE.APPROACH || m.state === STATE.READY
+          ? smooth(0.3, 4.6, m.t)
+          : m.state === STATE.ENTER
+            ? 1
+            : 0;
+      const zApproach = lerp(CFG.zMid, CFG.zNear, approachDepth);
       let X = n.x;
       let Y = n.y;
       let Z = n.z;
@@ -294,11 +349,6 @@ export function LaunchLab() {
       const Zr = -X * Math.sin(yaw) + zc * Math.cos(yaw) + 0.55;
       X = Xr;
       Z = Zr;
-      // 混沌：汇聚前从四面八方 / 不同深处飞入
-      const k = 1 - conv;
-      X += ch.ox * k;
-      Y += ch.oy * k;
-      Z += ch.oz * k;
       // 透视投影
       Z = Math.max(0.05, Z + zApproach);
       const p = CFG.focal / (CFG.focal + Z);
@@ -306,29 +356,43 @@ export function LaunchLab() {
       const cx = m.w / 2;
       const cy = m.h * CFG.cyFrac;
       const breathe = present ? Math.sin(performance.now() / 1100 + i * 0.3) * 0.004 : 0;
-      return { x: cx + X * p * scale, y: cy + (Y + breathe) * p * scale, conv, p };
+      const targetX = cx + X * p * scale;
+      const targetY = cy + (Y + breathe) * p * scale;
+      const origin = m.field[i];
+      if (!formedLike && origin) {
+        return {
+          x: lerp(origin.x * m.w, targetX, conv),
+          y: lerp(origin.y * m.h, targetY, conv),
+          conv,
+          p,
+        };
+      }
+      return { x: targetX, y: targetY, conv, p };
     }
 
     function step(dt: number) {
       m.t += dt;
+      if (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY) {
+        m.afterForm += dt;
+      }
       // 步态时钟一直走（慢步 ~0.4Hz）；只在成形后逐渐"起步"
       m.gaitPhase += dt * 2.6;
-      const targetWalk = m.state === "PRESENT" ? 1 : 0;
+      const targetWalk = m.state === STATE.APPROACH || m.state === STATE.READY ? 1 : 0;
       m.walk += (targetWalk - m.walk) * Math.min(1, dt * 1.4);
       switch (m.state) {
-        case "VOID": {
+        case STATE.STARFIELD_IDLE: {
           if (!m.pulsed && m.t > 0.16) {
             m.pulsed = true;
             vibrate([0, 12, 60]);
           }
           if (m.t >= CFG.voidMs) {
-            m.state = "CONVERGE";
+            m.state = STATE.ASSEMBLY;
             m.t = 0;
             audio.gather();
           }
           break;
         }
-        case "CONVERGE": {
+        case STATE.ASSEMBLY: {
           NODES.forEach((_, i) => {
             if (!m.arrived[i] && nodeConv(i) > 0.6) {
               m.arrived[i] = true;
@@ -336,7 +400,7 @@ export function LaunchLab() {
             }
           });
           if (m.t >= CFG.convergeMs) {
-            m.state = "PRESENT";
+            m.state = STATE.FORMATION;
             m.t = 0;
             if (!m.formed) {
               m.formed = true;
@@ -346,8 +410,29 @@ export function LaunchLab() {
           }
           break;
         }
-        case "PRESENT": {
-          if (!m.presentDone && m.t > 8.0) m.presentDone = true;
+        case STATE.FORMATION: {
+          if (m.t >= 1.4) {
+            m.state = STATE.APPROACH;
+            m.t = 0;
+          }
+          break;
+        }
+        case STATE.APPROACH: {
+          if (m.t >= 5.0) {
+            m.state = STATE.READY;
+            m.t = 0;
+            m.presentDone = true;
+          }
+          break;
+        }
+        case STATE.READY: {
+          break;
+        }
+        case STATE.ENTER: {
+          if (m.t >= 1.45 && !m.entryStarted) {
+            m.entryStarted = true;
+            navRef.current("/chrono-lab");
+          }
           break;
         }
       }
@@ -366,26 +451,58 @@ export function LaunchLab() {
       ctx.fillRect(0, 0, m.w, m.h);
       const now = performance.now() / 1000;
 
-      // 星河散点（混沌时多、汇聚后渐隐，让"清晰"出来）
-      const fieldA = m.state === "PRESENT" ? 0.5 : 1 - smooth(CFG.convergeMs * 0.4, CFG.convergeMs, m.t) * 0.5;
-      m.field.forEach((s) => {
-        const a = (0.1 + 0.16 * (0.5 + 0.5 * Math.sin(now * s.sp + s.ph))) * fieldA;
+      // 星河散点先完整铺满；随后其中 28 颗汇聚成星兽，其他星再生成文字。
+      const enter = m.state === STATE.ENTER ? smooth(0, 1.2, m.t) : 0;
+      const assemblyFade =
+        m.state === STATE.ASSEMBLY
+          ? 1 - smooth(CFG.convergeMs * 0.2, CFG.convergeMs, m.t) * 0.78
+          : m.state === STATE.STARFIELD_IDLE
+            ? 1
+            : m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY
+              ? 0.2 * (1 - smooth(0.2, 3.0, m.afterForm)) + 0.035
+              : 0.12;
+      const fieldA = assemblyFade * (1 - enter * 0.55);
+      m.field.forEach((s, i) => {
+        const isLunarMansion = i < NODES.length;
+        if (isLunarMansion && m.state !== STATE.STARFIELD_IDLE) return;
+        if (m.state !== STATE.STARFIELD_IDLE && !isLunarMansion) {
+          const thinning = m.state === STATE.ASSEMBLY
+            ? smooth(CFG.convergeMs * 0.25, CFG.convergeMs, m.t)
+            : smooth(0.2, 3.0, m.afterForm);
+          const keepEvery = m.state === STATE.ASSEMBLY ? 1 + Math.floor(thinning * 2) : 4 + Math.floor(thinning * 8);
+          if ((i - NODES.length) % keepEvery !== 0) return;
+        }
+        const blink = Math.pow(0.5 + 0.5 * Math.sin(now * (2.2 + s.sp * 1.8) + s.ph), 2.2);
+        const flare = Math.pow(Math.max(0, Math.sin(now * (0.9 + s.sp) + s.ph * 1.7)), 18);
+        const base = isLunarMansion ? 0.34 : 0.16;
+        const pulse = isLunarMansion ? 0.48 : 0.34;
+        const a = Math.min(0.95, base + pulse * blink + flare * 0.38) * fieldA;
         ctx.fillStyle = `rgba(${COLOR.field},${a.toFixed(3)})`;
+        ctx.shadowColor = isLunarMansion ? "rgba(255,243,208,0.72)" : "rgba(230,236,255,0.34)";
+        ctx.shadowBlur = (isLunarMansion ? 8 : 2.5) + flare * (isLunarMansion ? 12 : 6);
         ctx.beginPath();
-        ctx.arc(s.x * m.w, s.y * m.h, s.r, 0, Math.PI * 2);
+        ctx.arc(s.x * m.w, s.y * m.h, s.r * (0.78 + blink * 0.42 + flare * 0.55), 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = 0;
       });
 
-      if (m.state === "VOID") {
-        const beat = Math.abs(Math.sin(m.t * 14));
-        ctx.fillStyle = `rgba(232,200,138,${(0.15 + 0.2 * beat).toFixed(3)})`;
-        ctx.beginPath();
-        ctx.arc(m.w / 2, m.h * CFG.cyFrac, 2 + beat * 1.5, 0, Math.PI * 2);
-        ctx.fill();
+      if (m.state === STATE.STARFIELD_IDLE) {
         return;
       }
 
-      const pos = NODES.map((_, i) => nodePos(i));
+      const pos = NODES.map((_, i) => {
+        const p = nodePos(i);
+        if (m.state !== STATE.ENTER) return p;
+        const k = smooth(0, 1.1, m.t);
+        const gridX = m.w * (0.22 + (i % 4) * 0.185);
+        const gridY = m.h * (0.36 + Math.floor(i / 4) * 0.05);
+        return {
+          ...p,
+          x: lerp(p.x, gridX, k),
+          y: lerp(p.y, gridY, k),
+          conv: 1,
+        };
+      });
 
       // 连线（两端都汇聚到位才显，亮度随汇聚）
       ctx.lineCap = "round";
@@ -396,8 +513,8 @@ export function LaunchLab() {
         const pb = pos[b]!;
         const la = Math.min(pa.conv, pb.conv);
         if (la < 0.5) return;
-        const warm = clamp((la - 0.55) / 0.45, 0, 1) * (m.state === "PRESENT" ? 1 : 0.6);
-        ctx.strokeStyle = `rgba(${mixRGB(PAL.coolWhite, PAL.gold, warm)},${((la - 0.5) * 0.9).toFixed(3)})`;
+        const warm = clamp((la - 0.55) / 0.45, 0, 1) * (m.state === STATE.APPROACH || m.state === STATE.READY ? 1 : 0.6);
+        ctx.strokeStyle = `rgba(${mixRGB(PAL.coolWhite, PAL.gold, warm)},${(((la - 0.5) * 0.9) * (1 - enter * 0.25)).toFixed(3)})`;
         ctx.lineWidth = 1.3 * (0.5 + ((pa.p + pb.p) / 2) * 1.2);
         ctx.beginPath();
         ctx.moveTo(pa.x, pa.y);
@@ -411,7 +528,7 @@ export function LaunchLab() {
         const n = NODES[i]!;
         const ch = m.chaos[i]!;
         const tw = 0.7 + 0.3 * Math.sin(now * (1 + ch.sp) + ch.ph);
-        const warmth = clamp((p.conv - 0.55) / 0.45, 0, 1) * (m.state === "PRESENT" ? 1 : 0.55);
+        const warmth = clamp((p.conv - 0.55) / 0.45, 0, 1) * (m.state === STATE.APPROACH || m.state === STATE.READY ? 1 : 0.55);
         const depth = 0.35 + p.p * 1.5; // 近大远小
         const r = (n.big ? 3.2 : 2.0) * (0.5 + 0.5 * p.conv) * depth;
         ctx.globalAlpha = clamp(p.conv * tw, 0, 1);
@@ -425,52 +542,72 @@ export function LaunchLab() {
         ctx.globalAlpha = 1;
       });
 
-      // 暖核心句（PRESENT）：星河里的星点飞来汇聚成字，同一种光
-      if (m.state === "PRESENT") {
+      if (m.state === STATE.ENTER) {
+        const k = smooth(0.55, 1.35, m.t);
+        ctx.save();
+        ctx.globalAlpha = k;
+        ctx.strokeStyle = `rgba(232,200,138,${0.12 + k * 0.34})`;
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 4; i++) {
+          const x = m.w * (0.22 + i * 0.185);
+          ctx.beginPath();
+          ctx.moveTo(x, m.h * 0.32);
+          ctx.lineTo(x, m.h * 0.72);
+          ctx.stroke();
+        }
+        for (let i = 0; i < 7; i++) {
+          const y = m.h * (0.36 + i * 0.05);
+          ctx.beginPath();
+          ctx.moveTo(m.w * 0.16, y);
+          ctx.lineTo(m.w * 0.84, y);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // 文字也来自满屏星河，但必须在星兽成形之后再生成。
+      if (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY) {
         const cx = m.w / 2;
-        // 逐句来：一句落定，下一句才起；末句停得久（不急·有我在）
-        const GATHER = 2.6;
-        const T0 = [0.8, 2.8, 5.0];
-        // 1) 星点汇聚成字
+        const lineStarts = [0.2, 0.55, 3.1];
+        const gather = 1.35;
         m.textStars.forEach((s, i) => {
-          const t0 = T0[s.line]!;
-          const stagger = ((i % 17) / 17) * 0.6;
-          const e = smooth(t0 + stagger, t0 + GATHER + stagger, m.t);
+          const t0 = lineStarts[s.line]!;
+          const stagger = ((i % 19) / 19) * 0.38;
+          const e = smooth(t0 + stagger, t0 + gather + stagger, m.afterForm);
           if (e <= 0.001) return;
           const x = lerp(s.ox, s.tx, e);
           const y = lerp(s.oy, s.ty, e);
-          const tw = 0.6 + 0.4 * Math.sin(now * s.sp + s.ph);
-          const solidL = smooth(t0 + GATHER - 0.2, t0 + GATHER + 1.2, m.t);
-          const a = e * 0.9 * tw * (1 - solidL * 0.55);
+          const tw = 0.65 + 0.35 * Math.sin(now * s.sp + s.ph);
+          const solid = smooth(t0 + gather - 0.1, t0 + gather + 0.8, m.afterForm);
+          const a = e * 0.85 * tw * (1 - solid * 0.55) * (1 - enter);
           ctx.fillStyle = `rgba(${mixRGB(PAL.coolWhite, PAL.cream, e)},${a.toFixed(3)})`;
           ctx.beginPath();
-          ctx.arc(x, y, 1.15, 0, Math.PI * 2);
+          ctx.arc(x, y, 1.1, 0, Math.PI * 2);
           ctx.fill();
         });
-        // 2) 每句汇聚完成后清晰字浮出（可读）
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.font = `600 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
-        const POEM = [
-          { t: "每一个走过黑夜的人，", y: 0.18, t0: T0[0]! },
-          { t: "都会留下一点光。", y: 0.23, t0: T0[1]! },
-          { t: "这一局，我陪你走。", y: 0.82, t0: T0[2]! },
-        ];
-        POEM.forEach((ln) => {
-          const s = smooth(ln.t0 + GATHER - 0.2, ln.t0 + GATHER + 1.2, m.t);
-          if (s <= 0.001) return;
-          ctx.fillStyle = `rgba(255,247,228,${(s * 0.95).toFixed(3)})`;
-          ctx.fillText(ln.t, cx, m.h * ln.y);
+        const textSize = Math.min(18, m.w * 0.046);
+        [
+          { text: TOP_LINES[0], y: 0.18, start: lineStarts[0]!, weight: 600 },
+          { text: TOP_LINES[1], y: 0.23, start: lineStarts[1]!, weight: 600 },
+          { text: CTA_LINE, y: 0.82, start: lineStarts[2]!, weight: 700 },
+        ].forEach((line) => {
+          const solid = smooth(line.start + gather - 0.1, line.start + gather + 0.8, m.afterForm);
+          if (solid <= 0.001) return;
+          ctx.font = `${line.weight} ${textSize}px ${SANS}`;
+          ctx.fillStyle = `rgba(255,247,228,${(solid * 0.95 * (1 - enter)).toFixed(3)})`;
+          ctx.fillText(line.text, cx, m.h * line.y);
         });
-        // 3) UI 标签
-        if (m.presentDone) {
-          ctx.fillStyle = "rgba(232,200,138,0.7)";
+        const ctaSolid = smooth(lineStarts[2]! + gather - 0.1, lineStarts[2]! + gather + 0.8, m.afterForm);
+        if (ctaSolid > 0.001) {
           ctx.font = `${Math.min(13, m.w * 0.033)}px ${MONO}`;
+          ctx.fillStyle = `rgba(232,200,138,${(ctaSolid * 0.7 * (1 - enter)).toFixed(3)})`;
           ctx.fillText("轻触 · 开始", cx, m.h * 0.88);
+          ctx.font = `${Math.min(11, m.w * 0.028)}px ${MONO}`;
+          ctx.fillStyle = `rgba(232,200,138,${(ctaSolid * 0.42 * (1 - enter)).toFixed(3)})`;
+          ctx.fillText("观爻 · GUANYAO", cx, m.h * 0.94);
         }
-        ctx.fillStyle = "rgba(232,200,138,0.42)";
-        ctx.font = `${Math.min(11, m.w * 0.028)}px ${MONO}`;
-        ctx.fillText("观爻 · GUANYAO", cx, m.h * 0.94);
         ctx.textBaseline = "alphabetic";
       }
 
@@ -519,7 +656,13 @@ export function LaunchLab() {
         if (t - dbl < 350) m.debug = !m.debug;
         dbl = t;
       }
-      if (m.state === "PRESENT" && m.presentDone) navRef.current("/chrono-lab");
+      if (m.state === STATE.READY && m.presentDone) {
+        m.state = STATE.ENTER;
+        m.t = 0;
+        m.entryStarted = false;
+        audio.form();
+        vibrate([0, 18, 28]);
+      }
     }
 
     resize();
