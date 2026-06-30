@@ -12,7 +12,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 
 const SANS = "-apple-system, system-ui, sans-serif";
@@ -121,7 +120,10 @@ type LaunchState =
   | "beast_formation"
   | "beast_approach"
   | "recognition_ready"
-  | "coordinate_entry";
+  | "starbeast_sandify"
+  | "grid_emergence"
+  | "axis_formation"
+  | "chrono_interactive";
 
 const STATE = {
   STARFIELD_IDLE: "starfield_idle",
@@ -129,7 +131,10 @@ const STATE = {
   FORMATION: "beast_formation",
   APPROACH: "beast_approach",
   READY: "recognition_ready",
-  ENTER: "coordinate_entry",
+  STARBEAST_SANDIFY: "starbeast_sandify",
+  GRID_EMERGENCE: "grid_emergence",
+  AXIS_FORMATION: "axis_formation",
+  CHRONO_INTERACTIVE: "chrono_interactive",
 } as const;
 
 const TOP_LINES = ["每一个穿过黑夜的人，", "都会留下一点光。"];
@@ -177,9 +182,6 @@ function makeAudio() {
 
 export function LaunchLab() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const navigate = useNavigate();
-  const navRef = useRef(navigate);
-  navRef.current = navigate;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -201,7 +203,12 @@ export function LaunchLab() {
       textStars: [] as TextStar[],
       afterForm: 0,
       formed: false,
-      entryStarted: false,
+      gridX: 3,
+      gridY: 10,
+      dragging: false,
+      dragAxis: null as null | "x" | "y",
+      lastX: 0,
+      lastY: 0,
       debug: false,
       fps: 0,
       fpsAcc: 0,
@@ -285,6 +292,27 @@ export function LaunchLab() {
       const start = (i / NODES.length) * (CFG.convergeMs * 0.55);
       return smooth(start, start + 1.2, m.t);
     }
+    function isGridState() {
+      return m.state === STATE.GRID_EMERGENCE ||
+        m.state === STATE.AXIS_FORMATION ||
+        m.state === STATE.CHRONO_INTERACTIVE;
+    }
+    function gridMetrics() {
+      const cols = 7;
+      const rows = 21;
+      const x0 = m.w * 0.16;
+      const x1 = m.w * 0.84;
+      const y0 = m.h * 0.25;
+      const y1 = m.h * 0.72;
+      return { cols, rows, x0, x1, y0, y1 };
+    }
+    function gridPoint(col: number, row: number) {
+      const g = gridMetrics();
+      return {
+        x: lerp(g.x0, g.x1, col / (g.cols - 1)),
+        y: lerp(g.y0, g.y1, row / (g.rows - 1)),
+      };
+    }
     function headAngle(tp: number) {
       const settle = smooth(0.6, 2.6, tp) * 0.05; // 缓缓侧头看你
       let nod = 0;
@@ -300,11 +328,13 @@ export function LaunchLab() {
         m.state === STATE.FORMATION ||
         m.state === STATE.APPROACH ||
         m.state === STATE.READY ||
-        m.state === STATE.ENTER;
+        m.state === STATE.STARBEAST_SANDIFY ||
+        isGridState();
       const present =
         m.state === STATE.APPROACH ||
         m.state === STATE.READY ||
-        m.state === STATE.ENTER;
+        m.state === STATE.STARBEAST_SANDIFY ||
+        isGridState();
       const conv = formedLike ? 1 : nodeConv(i);
       const n = NODES[i]!;
       const t = performance.now() / 1000;
@@ -312,7 +342,7 @@ export function LaunchLab() {
       const approachDepth =
         m.state === STATE.APPROACH || m.state === STATE.READY
           ? smooth(0.3, 4.6, m.t)
-          : m.state === STATE.ENTER
+          : m.state === STATE.STARBEAST_SANDIFY || isGridState()
             ? 1
             : 0;
       const zApproach = lerp(CFG.zMid, CFG.zNear, approachDepth);
@@ -428,11 +458,29 @@ export function LaunchLab() {
         case STATE.READY: {
           break;
         }
-        case STATE.ENTER: {
-          if (m.t >= 1.45 && !m.entryStarted) {
-            m.entryStarted = true;
-            navRef.current("/chrono-lab");
+        case STATE.STARBEAST_SANDIFY: {
+          if (m.t >= 1.25) {
+            m.state = STATE.GRID_EMERGENCE;
+            m.t = 0;
           }
+          break;
+        }
+        case STATE.GRID_EMERGENCE: {
+          if (m.t >= 2.0) {
+            m.state = STATE.AXIS_FORMATION;
+            m.t = 0;
+          }
+          break;
+        }
+        case STATE.AXIS_FORMATION: {
+          if (m.t >= 1.2) {
+            m.state = STATE.CHRONO_INTERACTIVE;
+            m.t = 0;
+            m.presentDone = true;
+          }
+          break;
+        }
+        case STATE.CHRONO_INTERACTIVE: {
           break;
         }
       }
@@ -450,9 +498,14 @@ export function LaunchLab() {
       ctx.fillStyle = neb;
       ctx.fillRect(0, 0, m.w, m.h);
       const now = performance.now() / 1000;
+      const gridActive = m.state === STATE.STARBEAST_SANDIFY || isGridState();
 
       // 星河散点先完整铺满；随后其中 28 颗汇聚成星兽，其他星再生成文字。
-      const enter = m.state === STATE.ENTER ? smooth(0, 1.2, m.t) : 0;
+      const enter = m.state === STATE.STARBEAST_SANDIFY
+        ? smooth(0.1, 1.25, m.t)
+        : isGridState()
+          ? 1
+          : 0;
       const assemblyFade =
         m.state === STATE.ASSEMBLY
           ? 1 - smooth(CFG.convergeMs * 0.2, CFG.convergeMs, m.t) * 0.78
@@ -492,29 +545,33 @@ export function LaunchLab() {
 
       const pos = NODES.map((_, i) => {
         const p = nodePos(i);
-        if (m.state !== STATE.ENTER) return p;
-        const k = smooth(0, 1.1, m.t);
-        const gridX = m.w * (0.22 + (i % 4) * 0.185);
-        const gridY = m.h * (0.36 + Math.floor(i / 4) * 0.05);
+        if (m.state !== STATE.STARBEAST_SANDIFY) return p;
+        const k = smooth(0.05, 1.15, m.t);
+        const gp = gridPoint(i % 7, Math.min(20, 2 + Math.floor(i / 7) * 5));
         return {
           ...p,
-          x: lerp(p.x, gridX, k),
-          y: lerp(p.y, gridY, k),
+          x: lerp(p.x, gp.x, k),
+          y: lerp(p.y, gp.y, k),
           conv: 1,
         };
       });
+      const beastAlpha = m.state === STATE.STARBEAST_SANDIFY
+        ? 1 - smooth(0.25, 1.18, m.t)
+        : isGridState()
+          ? 0
+          : 1;
 
       // 连线（两端都汇聚到位才显，亮度随汇聚）
       ctx.lineCap = "round";
       ctx.shadowColor = "rgba(232,200,138,0.35)";
       ctx.shadowBlur = 5;
-      EDGES.forEach(([a, b]) => {
+      if (beastAlpha > 0.001) EDGES.forEach(([a, b]) => {
         const pa = pos[a]!;
         const pb = pos[b]!;
         const la = Math.min(pa.conv, pb.conv);
         if (la < 0.5) return;
         const warm = clamp((la - 0.55) / 0.45, 0, 1) * (m.state === STATE.APPROACH || m.state === STATE.READY ? 1 : 0.6);
-        ctx.strokeStyle = `rgba(${mixRGB(PAL.coolWhite, PAL.gold, warm)},${(((la - 0.5) * 0.9) * (1 - enter * 0.25)).toFixed(3)})`;
+        ctx.strokeStyle = `rgba(${mixRGB(PAL.coolWhite, PAL.gold, warm)},${(((la - 0.5) * 0.9) * beastAlpha).toFixed(3)})`;
         ctx.lineWidth = 1.3 * (0.5 + ((pa.p + pb.p) / 2) * 1.2);
         ctx.beginPath();
         ctx.moveTo(pa.x, pa.y);
@@ -524,14 +581,14 @@ export function LaunchLab() {
       ctx.shadowBlur = 0;
 
       // 28 颗星
-      pos.forEach((p, i) => {
+      if (beastAlpha > 0.001) pos.forEach((p, i) => {
         const n = NODES[i]!;
         const ch = m.chaos[i]!;
         const tw = 0.7 + 0.3 * Math.sin(now * (1 + ch.sp) + ch.ph);
         const warmth = clamp((p.conv - 0.55) / 0.45, 0, 1) * (m.state === STATE.APPROACH || m.state === STATE.READY ? 1 : 0.55);
         const depth = 0.35 + p.p * 1.5; // 近大远小
         const r = (n.big ? 3.2 : 2.0) * (0.5 + 0.5 * p.conv) * depth;
-        ctx.globalAlpha = clamp(p.conv * tw, 0, 1);
+        ctx.globalAlpha = clamp(p.conv * tw * beastAlpha, 0, 1);
         ctx.fillStyle = `rgb(${mixRGB(PAL.coolWhite, PAL.cream, warmth)})`;
         ctx.shadowColor = `rgba(${mixRGB([255, 255, 255], PAL.gold, warmth)},0.75)`;
         ctx.shadowBlur = (n.big ? 12 : 7) * depth;
@@ -542,31 +599,71 @@ export function LaunchLab() {
         ctx.globalAlpha = 1;
       });
 
-      if (m.state === STATE.ENTER) {
-        const k = smooth(0.55, 1.35, m.t);
+      if (gridActive) {
+        const gridGrow =
+          m.state === STATE.STARBEAST_SANDIFY
+            ? smooth(0.35, 1.2, m.t) * 0.45
+            : m.state === STATE.GRID_EMERGENCE
+              ? smooth(0, 1.85, m.t)
+              : 1;
+        const axisGrow =
+          m.state === STATE.AXIS_FORMATION
+            ? smooth(0, 1.1, m.t)
+            : m.state === STATE.CHRONO_INTERACTIVE
+              ? 1
+              : 0;
+        const g = gridMetrics();
         ctx.save();
-        ctx.globalAlpha = k;
-        ctx.strokeStyle = `rgba(232,200,138,${0.12 + k * 0.34})`;
-        ctx.lineWidth = 1;
-        for (let i = 0; i < 4; i++) {
-          const x = m.w * (0.22 + i * 0.185);
-          ctx.beginPath();
-          ctx.moveTo(x, m.h * 0.32);
-          ctx.lineTo(x, m.h * 0.72);
-          ctx.stroke();
+        ctx.globalAlpha = gridGrow;
+        for (let row = 0; row < g.rows; row++) {
+          for (let col = 0; col < g.cols; col++) {
+            const gp = gridPoint(col, row);
+            const source = pos[(row * g.cols + col) % pos.length]!;
+            const settle = smooth(((row + col) / (g.rows + g.cols)) * 0.8, 1.15, gridGrow);
+            const x = lerp(source.x, gp.x, settle);
+            const y = lerp(source.y, gp.y, settle);
+            const isCursor = row === m.gridY && col === m.gridX;
+            const isAxis = row === m.gridY || col === m.gridX;
+            ctx.fillStyle = isCursor
+              ? "rgba(255,247,228,0.95)"
+              : isAxis
+                ? "rgba(232,200,138,0.52)"
+                : "rgba(232,200,138,0.18)";
+            ctx.shadowColor = isCursor ? "rgba(232,200,138,0.72)" : "rgba(232,200,138,0.18)";
+            ctx.shadowBlur = isCursor ? 12 : 3;
+            ctx.beginPath();
+            ctx.arc(x, y, isCursor ? 3.2 : 1.15, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
-        for (let i = 0; i < 7; i++) {
-          const y = m.h * (0.36 + i * 0.05);
-          ctx.beginPath();
-          ctx.moveTo(m.w * 0.16, y);
-          ctx.lineTo(m.w * 0.84, y);
-          ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = axisGrow;
+        ctx.strokeStyle = `rgba(232,200,138,${0.16 + axisGrow * 0.54})`;
+        ctx.lineWidth = 1;
+        const cursor = gridPoint(m.gridX, m.gridY);
+        ctx.beginPath();
+        ctx.moveTo(g.x0, cursor.y);
+        ctx.lineTo(g.x1, cursor.y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(cursor.x, g.y0);
+        ctx.lineTo(cursor.x, g.y1);
+        ctx.stroke();
+        if (m.state === STATE.CHRONO_INTERACTIVE) {
+          ctx.fillStyle = "rgba(255,247,228,0.9)";
+          ctx.font = `600 ${Math.min(13, m.w * 0.033)}px ${MONO}`;
+          ctx.textAlign = "left";
+          ctx.fillText("07 横轴时间推进", g.x0, g.y1 + 32);
+          ctx.fillText("21 纵轴时间校准", g.x0, g.y1 + 52);
+          ctx.textAlign = "right";
+          ctx.fillStyle = "rgba(232,200,138,0.74)";
+          ctx.fillText(`${m.gridX + 1}/7 · ${m.gridY + 1}/21`, g.x1, g.y1 + 32);
         }
         ctx.restore();
       }
 
       // 文字也来自满屏星河，但必须在星兽成形之后再生成。
-      if (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY) {
+      if (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY) {
         const cx = m.w / 2;
         const lineStarts = [0.2, 0.55, 3.1];
         const gather = 1.35;
@@ -657,23 +754,62 @@ export function LaunchLab() {
         dbl = t;
       }
       if (m.state === STATE.READY && m.presentDone) {
-        m.state = STATE.ENTER;
+        m.state = STATE.STARBEAST_SANDIFY;
         m.t = 0;
-        m.entryStarted = false;
         audio.form();
         vibrate([0, 18, 28]);
+        return;
       }
+      if (m.state === STATE.CHRONO_INTERACTIVE) {
+        m.dragging = true;
+        m.dragAxis = null;
+        m.lastX = x;
+        m.lastY = y;
+      }
+    }
+    function onMove(e: PointerEvent) {
+      if (!m.dragging || m.state !== STATE.CHRONO_INTERACTIVE) return;
+      const r = canvas!.getBoundingClientRect();
+      const x = e.clientX - r.left;
+      const y = e.clientY - r.top;
+      const dx = x - m.lastX;
+      const dy = y - m.lastY;
+      if (m.dragAxis === null && Math.hypot(dx, dy) > 10) {
+        m.dragAxis = Math.abs(dx) >= Math.abs(dy) ? "x" : "y";
+      }
+      if (m.dragAxis === "x" && Math.abs(dx) > 24) {
+        m.gridX = clamp(m.gridX + (dx > 0 ? 1 : -1), 0, 6);
+        m.lastX = x;
+        audio.tick();
+        vibrate(6);
+      }
+      if (m.dragAxis === "y" && Math.abs(dy) > 18) {
+        m.gridY = clamp(m.gridY + (dy > 0 ? 1 : -1), 0, 20);
+        m.lastY = y;
+        audio.tick();
+        vibrate(4);
+      }
+    }
+    function onUp() {
+      m.dragging = false;
+      m.dragAxis = null;
     }
 
     resize();
     window.addEventListener("resize", resize);
     canvas.addEventListener("pointerdown", onDown);
+    canvas.addEventListener("pointermove", onMove);
+    canvas.addEventListener("pointerup", onUp);
+    canvas.addEventListener("pointercancel", onUp);
     raf = requestAnimationFrame(frame);
 
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
       canvas.removeEventListener("pointerdown", onDown);
+      canvas.removeEventListener("pointermove", onMove);
+      canvas.removeEventListener("pointerup", onUp);
+      canvas.removeEventListener("pointercancel", onUp);
     };
   }, []);
 
