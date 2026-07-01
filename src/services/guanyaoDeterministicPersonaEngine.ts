@@ -16,6 +16,8 @@
  * - Mother is final aggregation only.
  */
 
+import { serializeMotherCodeCard, type MotherCodeCard } from "./guanyaoMotherCodeCardProtocol";
+
 export type ChronoInput = {
   year: number;
   month: number;
@@ -80,6 +82,7 @@ export type PersonaOutputSnapshot = {
   direction: Direction;
   starOrigin: StarNode;
   trigram: string;
+  motherCodeCard: MotherCodeCard;
   writer: "deterministicPersonaEngine";
   lockedAt: string;
 };
@@ -230,6 +233,7 @@ function sameSnapshotIdentity(a: PersonaOutputSnapshot, b: PersonaOutputSnapshot
 
 export function buildPersonaOutputSnapshot(result: PersonaGenerationResult): PersonaOutputSnapshot {
   const geoAnchor = result.geo.anchor.split("-").join(" · ");
+  const motherCodeCard = serializeMotherCodeCard(result);
 
   return Object.freeze({
     chrono: `${result.chrono.phase} · ${geoAnchor}`,
@@ -237,6 +241,7 @@ export function buildPersonaOutputSnapshot(result: PersonaGenerationResult): Per
     direction: result.direction,
     starOrigin: Object.freeze({ ...result.mother.starOrigin }),
     trigram: result.mother.trigram,
+    motherCodeCard,
     writer: DETERMINISTIC_PERSONA_WRITER,
     lockedAt: new Date(0).toISOString(),
   });
