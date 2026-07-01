@@ -11,18 +11,33 @@ import type { MotherCardReadonlySnapshot } from "../../services/guanyaoPersonaSn
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+const SERIF = "Songti SC, SimSun, serif";
 
-const CORE_POINTS = [
-  [0, -0.32, 1.6],
-  [-0.18, -0.18, 1.1],
-  [0.18, -0.18, 1.1],
-  [-0.28, 0.02, 1.0],
-  [0, 0, 1.8],
-  [0.28, 0.02, 1.0],
-  [-0.16, 0.2, 1.0],
-  [0.16, 0.2, 1.0],
-  [0, 0.34, 1.4],
-] as const;
+const CARD_COPY: Record<string, { title: string; structure: string; summary: string; tags: string }> = {
+  "乾": { title: "《创世者》", structure: "垂直上升结构", summary: "天行刚健，自强不息。主动开创，统御全局。", tags: "刚健 · 开创 · 统御" },
+  "坤": { title: "《承载者》", structure: "水平承托结构", summary: "地势柔顺，厚德载物。包容承托，滋养万物。", tags: "柔顺 · 包容 · 承载" },
+  "震": { title: "《行动者》", structure: "斜向冲击结构", summary: "雷震百里，万物始生。破局而出，主动冲击。", tags: "奋动 · 破局 · 冲击" },
+  "巽": { title: "《渗透者》", structure: "曲线渗透结构", summary: "风无孔不入，渗透万物。顺势变通，润物无声。", tags: "渗透 · 变通 · 入微" },
+  "坎": { title: "《深潜者》", structure: "纵深下探结构", summary: "水行险陷，深不可测。处险不惊，隐伏流动。", tags: "险陷 · 深沉 · 流动" },
+  "离": { title: "《照见者》", structure: "中心辐射结构", summary: "火附丽光明，温暖万物。向外发散，明亮照人。", tags: "明亮 · 附着 · 扩散" },
+  "艮": { title: "《守望者》", structure: "横向阻断结构", summary: "山为稳固之基，知止而定。守其边界，不动如山。", tags: "稳固 · 止息 · 边界" },
+  "兑": { title: "《连接者》", structure: "水平流动结构", summary: "泽水汇聚，滋养喜悦。交流开放，和悦待人。", tags: "喜悦 · 交流 · 开放" },
+  CACHE_PENDING: { title: "《母码待定》", structure: "收束结构待显影", summary: "坐标锁定后，母码快照会在这里呈现。", tags: "只读 · 快照 · 待定" },
+};
+
+const TRIGRAM_LINES: Record<string, [boolean, boolean, boolean]> = {
+  "乾": [true, true, true],
+  "兑": [false, true, true],
+  "离": [true, false, true],
+  "震": [false, false, true],
+  "巽": [true, true, false],
+  "坎": [false, true, false],
+  "艮": [true, false, false],
+  "坤": [false, false, false],
+  CACHE_PENDING: [true, false, true],
+};
+
+export type MotherCardSide = "front" | "back";
 
 export type MotherCardRendererOptions = {
   ctx: CanvasRenderingContext2D;
@@ -30,7 +45,20 @@ export type MotherCardRendererOptions = {
   width: number;
   height: number;
   alpha?: number;
+  side?: MotherCardSide;
+  flipProgress?: number;
 };
+
+export function getMotherCardRendererRect(width: number, height: number) {
+  const cardW = Math.min(330, width * 0.76);
+  const cardH = Math.min(430, height * 0.54);
+  return {
+    x: (width - cardW) / 2,
+    y: height * 0.23,
+    w: cardW,
+    h: cardH,
+  };
+}
 
 function roundedRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   const radius = Math.min(r, w / 2, h / 2);
@@ -46,78 +74,189 @@ function roundedRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w:
   ctx.quadraticCurveTo(x, y, x + radius, y);
 }
 
-export function drawMotherCardRenderer({ ctx, snapshot, width, height, alpha = 1 }: MotherCardRendererOptions) {
+function normalizeTrigram(trigram: string) {
+  const key = trigram?.trim()?.[0] ?? "CACHE_PENDING";
+  return key in CARD_COPY ? key : "CACHE_PENDING";
+}
+
+function drawWrappedText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
+  let line = "";
+  let yy = y;
+  for (const ch of text) {
+    const test = line + ch;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      ctx.fillText(line, x, yy);
+      line = ch;
+      yy += lineHeight;
+    } else {
+      line = test;
+    }
+  }
+  if (line) ctx.fillText(line, x, yy);
+}
+
+function drawFrame(ctx: CanvasRenderingContext2D, rect: { x: number; y: number; w: number; h: number }) {
+  const fill = ctx.createLinearGradient(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h);
+  fill.addColorStop(0, "rgba(5,10,12,0.96)");
+  fill.addColorStop(0.56, "rgba(3,4,5,0.98)");
+  fill.addColorStop(1, "rgba(12,10,6,0.96)");
+  ctx.fillStyle = fill;
+  roundedRectPath(ctx, rect.x, rect.y, rect.w, rect.h, 18);
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(232,200,138,0.72)";
+  ctx.lineWidth = 1;
+  ctx.shadowColor = "rgba(232,200,138,0.26)";
+  ctx.shadowBlur = 18;
+  roundedRectPath(ctx, rect.x, rect.y, rect.w, rect.h, 18);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  ctx.strokeStyle = "rgba(232,200,138,0.22)";
+  ctx.lineWidth = 0.5;
+  roundedRectPath(ctx, rect.x + 10, rect.y + 10, rect.w - 20, rect.h - 20, 14);
+  ctx.stroke();
+}
+
+function drawTrigram(ctx: CanvasRenderingContext2D, trigram: string, cx: number, cy: number, w: number, color: string) {
+  const lines = TRIGRAM_LINES[normalizeTrigram(trigram)] ?? TRIGRAM_LINES.CACHE_PENDING;
+  const gap = w * 0.14;
+  const half = w / 2;
+  const rowGap = w * 0.18;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.2;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  lines.forEach((solid, i) => {
+    const y = cy + (i - 1) * rowGap;
+    if (solid) {
+      ctx.moveTo(cx - half, y);
+      ctx.lineTo(cx + half, y);
+    } else {
+      ctx.moveTo(cx - half, y);
+      ctx.lineTo(cx - gap, y);
+      ctx.moveTo(cx + gap, y);
+      ctx.lineTo(cx + half, y);
+    }
+  });
+  ctx.stroke();
+}
+
+function drawFront(ctx: CanvasRenderingContext2D, snapshot: MotherCardReadonlySnapshot, rect: { x: number; y: number; w: number; h: number }) {
+  const trigram = normalizeTrigram(snapshot.trigram);
+  const copy = CARD_COPY[trigram] ?? CARD_COPY.CACHE_PENDING;
+  const pad = Math.max(22, rect.w * 0.08);
+  drawFrame(ctx, rect);
+
+  ctx.textBaseline = "top";
+  ctx.textAlign = "left";
+  ctx.fillStyle = "rgba(232,200,138,0.72)";
+  ctx.font = `650 ${Math.min(11, rect.w * 0.036)}px ${MONO}`;
+  ctx.fillText("MOTHER CARD", rect.x + pad, rect.y + pad);
+
+  ctx.fillStyle = "rgba(255,247,228,0.96)";
+  ctx.font = `800 ${Math.min(30, rect.w * 0.092)}px ${SANS}`;
+  ctx.fillText(`${snapshot.motherCode}`, rect.x + pad, rect.y + pad + 50);
+
+  ctx.fillStyle = "rgba(232,200,138,0.86)";
+  ctx.font = `700 ${Math.min(17, rect.w * 0.052)}px ${SERIF}`;
+  ctx.fillText(copy.title, rect.x + pad, rect.y + pad + 92);
+
+  drawTrigram(ctx, trigram, rect.x + rect.w / 2, rect.y + rect.h * 0.48, rect.w * 0.26, "rgba(232,200,138,0.92)");
+
+  ctx.fillStyle = "rgba(255,247,228,0.76)";
+  ctx.font = `650 ${Math.min(13, rect.w * 0.04)}px ${SANS}`;
+  ctx.fillText(`四象｜${snapshot.direction}`, rect.x + pad, rect.y + rect.h - 122);
+  ctx.fillStyle = "rgba(255,247,228,0.62)";
+  ctx.font = `600 ${Math.min(11, rect.w * 0.034)}px ${SANS}`;
+  drawWrappedText(ctx, `星源｜${snapshot.starOrigin}`, rect.x + pad, rect.y + rect.h - 92, rect.w - pad * 2, Math.min(17, rect.w * 0.052));
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "rgba(232,200,138,0.52)";
+  ctx.font = `650 ${Math.min(11, rect.w * 0.034)}px ${MONO}`;
+  ctx.fillText("轻触翻面", rect.x + rect.w / 2, rect.y + rect.h - 34);
+}
+
+function drawBack(ctx: CanvasRenderingContext2D, snapshot: MotherCardReadonlySnapshot, rect: { x: number; y: number; w: number; h: number }) {
+  const trigram = normalizeTrigram(snapshot.trigram);
+  const copy = CARD_COPY[trigram] ?? CARD_COPY.CACHE_PENDING;
+  const pad = Math.max(22, rect.w * 0.08);
+  drawFrame(ctx, rect);
+
+  ctx.textBaseline = "top";
+  ctx.textAlign = "left";
+  ctx.fillStyle = "rgba(232,200,138,0.72)";
+  ctx.font = `650 ${Math.min(11, rect.w * 0.036)}px ${MONO}`;
+  ctx.fillText("READ ONLY SNAPSHOT", rect.x + pad, rect.y + pad);
+
+  ctx.fillStyle = "rgba(255,247,228,0.96)";
+  ctx.font = `800 ${Math.min(24, rect.w * 0.074)}px ${SANS}`;
+  ctx.fillText(`${trigram}｜${snapshot.motherCode}`, rect.x + pad, rect.y + pad + 48);
+
+  ctx.fillStyle = "rgba(232,200,138,0.86)";
+  ctx.font = `700 ${Math.min(15, rect.w * 0.048)}px ${SANS}`;
+  ctx.fillText(copy.structure, rect.x + pad, rect.y + pad + 92);
+
+  ctx.strokeStyle = "rgba(232,200,138,0.32)";
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(rect.x + pad, rect.y + pad + 130);
+  ctx.lineTo(rect.x + rect.w - pad, rect.y + pad + 130);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(255,247,228,0.84)";
+  ctx.font = `650 ${Math.min(15, rect.w * 0.046)}px ${SERIF}`;
+  drawWrappedText(ctx, copy.summary, rect.x + pad, rect.y + pad + 158, rect.w - pad * 2, Math.min(25, rect.w * 0.074));
+
+  ctx.fillStyle = "rgba(232,200,138,0.82)";
+  ctx.font = `700 ${Math.min(15, rect.w * 0.046)}px ${SERIF}`;
+  ctx.fillText(copy.tags, rect.x + pad, rect.y + rect.h - 126);
+
+  ctx.fillStyle = "rgba(255,247,228,0.58)";
+  ctx.font = `600 ${Math.min(11, rect.w * 0.034)}px ${SANS}`;
+  ctx.fillText(snapshot.chrono, rect.x + pad, rect.y + rect.h - 88);
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "rgba(232,200,138,0.52)";
+  ctx.font = `650 ${Math.min(11, rect.w * 0.034)}px ${MONO}`;
+  ctx.fillText("观爻 · GUANYAO", rect.x + rect.w / 2, rect.y + rect.h - 34);
+}
+
+export function drawMotherCardRenderer({
+  ctx,
+  snapshot,
+  width,
+  height,
+  alpha = 1,
+  side = "front",
+  flipProgress = 1,
+}: MotherCardRendererOptions) {
   const cx = width / 2;
-  const cy = height * 0.45;
+  const cy = height * 0.47;
+  const rect = getMotherCardRendererRect(width, height);
+  const flipScale = Math.max(0.06, Math.abs(Math.cos(Math.min(1, Math.max(0, flipProgress)) * Math.PI)));
 
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.fillStyle = "rgba(3,4,8,0.94)";
   ctx.fillRect(0, 0, width, height);
 
-  ctx.fillStyle = "rgba(255,247,228,0.2)";
-  for (const [px, py, radius] of CORE_POINTS) {
-    ctx.beginPath();
-    ctx.arc(cx + px * width * 0.52, cy + py * height * 0.34, radius, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 74);
-  core.addColorStop(0, "rgba(255,247,228,0.34)");
-  core.addColorStop(0.34, "rgba(232,200,138,0.16)");
+  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 130);
+  core.addColorStop(0, "rgba(255,247,228,0.16)");
+  core.addColorStop(0.42, "rgba(232,200,138,0.08)");
   core.addColorStop(1, "rgba(232,200,138,0)");
   ctx.fillStyle = core;
   ctx.beginPath();
-  ctx.arc(cx, cy, 74, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 130, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = "rgba(255,247,228,0.96)";
-  ctx.beginPath();
-  ctx.arc(cx, cy, 4.2, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.save();
+  ctx.translate(rect.x + rect.w / 2, rect.y + rect.h / 2);
+  ctx.scale(flipScale, 1);
+  ctx.translate(-(rect.x + rect.w / 2), -(rect.y + rect.h / 2));
+  if (side === "back") drawBack(ctx, snapshot, rect);
+  else drawFront(ctx, snapshot, rect);
+  ctx.restore();
 
-  const cardW = Math.min(330, width * 0.76);
-  const cardH = Math.min(390, height * 0.46);
-  const cardX = cx - cardW / 2;
-  const cardY = height * 0.29;
-  ctx.strokeStyle = "rgba(232,200,138,0.7)";
-  ctx.lineWidth = 1;
-  ctx.shadowColor = "rgba(232,200,138,0.24)";
-  ctx.shadowBlur = 18;
-  roundedRectPath(ctx, cardX, cardY, cardW, cardH, 18);
-  ctx.stroke();
-  ctx.shadowBlur = 0;
-
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-  ctx.font = `650 ${Math.min(11, width * 0.03)}px ${MONO}`;
-  ctx.fillStyle = "rgba(232,200,138,0.68)";
-  ctx.fillText("MOTHER STATIC SNAPSHOT", cardX + 24, cardY + 24);
-
-  ctx.font = `800 ${Math.min(30, width * 0.075)}px ${SANS}`;
-  ctx.fillStyle = "rgba(255,247,228,0.96)";
-  ctx.fillText(`${snapshot.trigram}｜${snapshot.motherCode}`, cardX + 24, cardY + 70);
-
-  ctx.font = `650 ${Math.min(15, width * 0.04)}px ${SANS}`;
-  ctx.fillStyle = "rgba(232,200,138,0.78)";
-  ctx.fillText(`四象｜${snapshot.direction}`, cardX + 24, cardY + 124);
-
-  ctx.fillStyle = "rgba(255,247,228,0.82)";
-  ctx.fillText(`坐标｜${snapshot.chrono}`, cardX + 24, cardY + 156);
-
-  ctx.fillStyle = "rgba(255,247,228,0.62)";
-  ctx.font = `600 ${Math.min(12, width * 0.033)}px ${SANS}`;
-  ctx.fillText(`星源｜${snapshot.starOrigin}`, cardX + 24, cardY + 188);
-
-  ctx.fillStyle = "rgba(255,247,228,0.54)";
-  ctx.font = `600 ${Math.min(12, width * 0.033)}px ${SANS}`;
-  ctx.fillText("COLLAPSE_COMPLETE", cardX + 24, cardY + cardH - 76);
-  ctx.fillText("MOTHER_STATIC_RENDER", cardX + 24, cardY + cardH - 52);
-  ctx.fillText(snapshot.cacheStatus === "hit" ? "CACHE_LOCKED" : "CACHE_PENDING", cardX + 24, cardY + cardH - 28);
-
-  ctx.textAlign = "center";
-  ctx.font = `650 ${Math.min(13, width * 0.034)}px ${SANS}`;
-  ctx.fillStyle = "rgba(255,247,228,0.66)";
-  ctx.fillText("结果已固定。", cx, cardY + cardH + 36);
   ctx.restore();
 }
