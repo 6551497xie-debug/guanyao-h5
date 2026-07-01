@@ -16,7 +16,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
-import type { GeoChronoMotherFusionResult } from "../services/guanyaoGeoChronoMotherFusionEngine";
+import { readCachedPersonaOutput, type CachedStarOrigin } from "../services/guanyaoPersonaSnapshotCache";
 import type { Trigram } from "../types/guanyaoCausalEngine";
 
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
@@ -53,14 +53,16 @@ const TRIGRAM_LINES: Record<Trigram, [boolean, boolean, boolean]> = {
   坤: [false, false, false],
 };
 
-function readFusionSeed(): GeoChronoMotherFusionResult | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem("guanyao:motherFusionSeed");
-    return raw ? JSON.parse(raw) as GeoChronoMotherFusionResult : null;
-  } catch {
-    return null;
-  }
+function normalizeTrigram(value: string | undefined): Trigram | null {
+  if (!value) return null;
+  const trigram = value.trim()[0] as Trigram | undefined;
+  return trigram && trigram in MOTHER_CARD_META ? trigram : null;
+}
+
+function formatStarOrigin(starOrigin: CachedStarOrigin | undefined) {
+  if (!starOrigin) return "CACHE_PENDING";
+  if (typeof starOrigin === "string") return starOrigin;
+  return `28宿节点-${String((starOrigin.index ?? 0) + 1).padStart(2, "0")} / I${starOrigin.intensity ?? "-"} / R${starOrigin.resonance ?? "-"}`;
 }
 
 const CFG = {
@@ -144,18 +146,18 @@ export function MotherLab() {
   const navigate = useNavigate();
   const navRef = useRef(navigate);
   navRef.current = navigate;
-  const fusionRef = useRef<GeoChronoMotherFusionResult | null>(readFusionSeed());
+  const snapshotRef = useRef(readCachedPersonaOutput());
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const audio = makeAudio();
-    const fusion = fusionRef.current;
-    const trigram = fusion?.mother.trigram ?? "震";
+    const snapshot = snapshotRef.current;
+    const trigram = normalizeTrigram(snapshot?.trigram) ?? "兑";
     const card = MOTHER_CARD_META[trigram];
     const readout = {
-      base: fusion?.mother.definition.baseDrive ?? "你最容易把看见的问题说出来，让模糊、隐藏的信息浮到台前",
-      chain: fusion?.mother.definition.defaultReactionChain ?? "看见 → 表达 → 证明",
+      base: snapshot ? `四象｜${snapshot.direction}` : "CACHE_PENDING",
+      chain: snapshot ? `星源｜${formatStarOrigin(snapshot.starOrigin)}` : "等待 guanyao:personaOutputSnapshot",
     };
 
     const m = {
