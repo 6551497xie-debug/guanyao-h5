@@ -4,7 +4,8 @@
 // 星兽 = 人格坐标显影前的结构生命体
 // Chrono = 星兽收束后的原始时间坐标层
 // 28宿 = 结构路径系统，不是装饰
-// Chrono minimal loop = Province + City + Time displayed together; GEO stays static and never drives inference.
+// Chrono input loop = Gregorian birth date/time first, then province/city.
+// Lunar birth date and mother trigram are derived downstream, not displayed in this UI layer.
 //
 // 定稿方向：星兽 = 28 颗星（= 28 宿 = 四象 × 7）连成的星座生命，奔跑姿态。
 //   开场：整片星河由混沌 → 汇聚清晰 → 28 颗星连接起来，星兽显形（未定形、不属任何一象）。
@@ -14,6 +15,11 @@
 
 import { useEffect, useRef } from "react";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
+import {
+  createMotherCardReadonlySnapshot,
+  type MotherCardReadonlySnapshot,
+} from "../services/guanyaoPersonaSnapshotCache";
+import { triggerPersonaGeneration } from "../services/guanyaoPersonaGenerationTrigger";
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
@@ -113,6 +119,19 @@ function smooth(e0: number, e1: number, x: number) {
   return t * t * (3 - 2 * t);
 }
 
+function roundedRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+  ctx.lineTo(x + w, y + h - radius);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+  ctx.lineTo(x + radius, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+}
+
 type FieldStar = { x: number; y: number; r: number; ph: number; sp: number; vx: number; vy: number };
 type TextStar = { tx: number; ty: number; ox: number; oy: number; ph: number; sp: number; line: number };
 type LaunchState =
@@ -125,7 +144,10 @@ type LaunchState =
   | "axis_emergence"
   | "time_calibration"
   | "geo_bind"
-  | "display_lock";
+  | "display_lock"
+  | "mother_pre_collapse"
+  | "mother_light_convergence"
+  | "mother_static_render";
 
 const STATE = {
   STARFIELD_IDLE: "starfield_idle",
@@ -138,29 +160,89 @@ const STATE = {
   TIME_CALIBRATION: "time_calibration",
   GEO_BIND: "geo_bind",
   DISPLAY_LOCK: "display_lock",
+  MOTHER_PRE_COLLAPSE: "mother_pre_collapse",
+  MOTHER_LIGHT_CONVERGENCE: "mother_light_convergence",
+  MOTHER_STATIC_RENDER: "mother_static_render",
 } as const;
 
 const TOP_LINES = ["每一个穿过黑夜的人，", "都会留下一点光。"];
 const CTA_LINE = "这一局，我来照亮你。";
 const PERIOD_LABELS = ["子时", "丑时", "寅时", "卯时", "辰时", "巳时", "午时", "未时", "申时", "酉时", "戌时", "亥时"];
-type ChronoDim = "hour";
-type ChronoCoords = { year: number; month: number; day: number; periodIndex: number };
-const DIM_LABEL: Record<ChronoDim, string> = { hour: "时辰" };
-const GEO_INPUT = { province: "广东", city: "广州" };
+const CHRONO_DIMS = ["year", "month", "day", "hour"] as const;
+type ChronoDim = (typeof CHRONO_DIMS)[number];
+type GeoDim = "province" | "city";
+type ChronoCoords = { year: number; month: number; day: number; hour: number };
+const DIM_LABEL: Record<ChronoDim, string> = { year: "年份", month: "月份", day: "日期", hour: "出生时间" };
+const DIM_STAGE_LABEL: Record<ChronoDim, string> = { year: "公历年份", month: "公历月份", day: "公历日期", hour: "出生时段" };
+const GEO_DIMS = ["province", "city"] as const;
+const GEO_LABEL: Record<GeoDim, string> = { province: "出生省份", city: "出生城市" };
+const PROVINCE_OPTIONS = [
+  "北京", "天津", "河北", "山西", "内蒙古", "辽宁", "吉林", "黑龙江", "上海", "江苏", "浙江", "安徽", "福建", "江西", "山东", "河南", "湖北",
+  "湖南", "广东", "广西", "海南", "重庆", "四川", "贵州", "云南", "西藏", "陕西", "甘肃", "青海", "宁夏", "新疆", "香港", "澳门", "台湾",
+];
+const CITY_OPTIONS_BY_PROVINCE: Record<string, string[]> = {
+  北京: ["东城区", "西城区", "朝阳区", "海淀区", "丰台区", "石景山区", "通州区", "昌平区", "大兴区", "顺义区"],
+  天津: ["和平区", "河西区", "南开区", "河北区", "河东区", "红桥区", "滨海新区", "西青区", "津南区", "北辰区"],
+  河北: ["石家庄", "唐山", "秦皇岛", "邯郸", "邢台", "保定", "张家口", "承德", "沧州", "廊坊", "衡水"],
+  山西: ["太原", "大同", "阳泉", "长治", "晋城", "朔州", "晋中", "运城", "忻州", "临汾", "吕梁"],
+  内蒙古: ["呼和浩特", "包头", "乌海", "赤峰", "通辽", "鄂尔多斯", "呼伦贝尔", "巴彦淖尔", "乌兰察布", "兴安盟"],
+  辽宁: ["沈阳", "大连", "鞍山", "抚顺", "本溪", "丹东", "锦州", "营口", "阜新", "辽阳", "盘锦"],
+  吉林: ["长春", "吉林", "四平", "辽源", "通化", "白山", "松原", "白城", "延边"],
+  黑龙江: ["哈尔滨", "齐齐哈尔", "牡丹江", "佳木斯", "大庆", "鸡西", "双鸭山", "伊春", "七台河", "黑河"],
+  上海: ["黄浦区", "徐汇区", "长宁区", "静安区", "普陀区", "虹口区", "杨浦区", "浦东新区", "闵行区", "宝山区"],
+  江苏: ["南京", "无锡", "徐州", "常州", "苏州", "南通", "连云港", "淮安", "盐城", "扬州", "镇江"],
+  浙江: ["杭州", "宁波", "温州", "嘉兴", "湖州", "绍兴", "金华", "衢州", "舟山", "台州", "丽水"],
+  安徽: ["合肥", "芜湖", "蚌埠", "淮南", "马鞍山", "淮北", "铜陵", "安庆", "黄山", "滁州", "阜阳"],
+  福建: ["福州", "厦门", "莆田", "三明", "泉州", "漳州", "南平", "龙岩", "宁德"],
+  江西: ["南昌", "景德镇", "萍乡", "九江", "新余", "鹰潭", "赣州", "吉安", "宜春", "抚州", "上饶"],
+  山东: ["济南", "青岛", "淄博", "枣庄", "东营", "烟台", "潍坊", "济宁", "泰安", "威海", "临沂"],
+  河南: ["郑州", "开封", "洛阳", "平顶山", "安阳", "鹤壁", "新乡", "焦作", "濮阳", "许昌", "南阳"],
+  湖北: ["武汉", "黄石", "十堰", "宜昌", "襄阳", "鄂州", "荆门", "孝感", "荆州", "黄冈", "咸宁"],
+  湖南: ["长沙", "株洲", "湘潭", "衡阳", "邵阳", "岳阳", "常德", "张家界", "益阳", "郴州", "永州"],
+  广东: ["广州", "深圳", "珠海", "汕头", "佛山", "韶关", "湛江", "肇庆", "江门", "茂名", "惠州", "东莞"],
+  广西: ["南宁", "柳州", "桂林", "梧州", "北海", "防城港", "钦州", "贵港", "玉林", "百色", "贺州"],
+  海南: ["海口", "三亚", "三沙", "儋州", "五指山", "琼海", "文昌", "万宁", "东方"],
+  重庆: ["渝中区", "江北区", "南岸区", "沙坪坝区", "九龙坡区", "渝北区", "巴南区", "北碚区", "涪陵区", "万州区"],
+  四川: ["成都", "自贡", "攀枝花", "泸州", "德阳", "绵阳", "广元", "遂宁", "内江", "乐山", "宜宾"],
+  贵州: ["贵阳", "六盘水", "遵义", "安顺", "毕节", "铜仁", "黔西南", "黔东南", "黔南"],
+  云南: ["昆明", "曲靖", "玉溪", "保山", "昭通", "丽江", "普洱", "临沧", "楚雄", "红河", "大理"],
+  西藏: ["拉萨", "日喀则", "昌都", "林芝", "山南", "那曲", "阿里"],
+  陕西: ["西安", "铜川", "宝鸡", "咸阳", "渭南", "延安", "汉中", "榆林", "安康", "商洛"],
+  甘肃: ["兰州", "嘉峪关", "金昌", "白银", "天水", "武威", "张掖", "平凉", "酒泉", "庆阳"],
+  青海: ["西宁", "海东", "海北", "黄南", "海南州", "果洛", "玉树", "海西"],
+  宁夏: ["银川", "石嘴山", "吴忠", "固原", "中卫"],
+  新疆: ["乌鲁木齐", "克拉玛依", "吐鲁番", "哈密", "昌吉", "博尔塔拉", "巴音郭楞", "阿克苏", "喀什", "伊犁"],
+  香港: ["中西区", "湾仔区", "东区", "南区", "油尖旺区", "深水埗区", "九龙城区", "观塘区", "荃湾区", "元朗区"],
+  澳门: ["花地玛堂区", "圣安多尼堂区", "大堂区", "望德堂区", "风顺堂区", "嘉模堂区", "路氹填海区"],
+  台湾: ["台北", "新北", "桃园", "台中", "台南", "高雄", "基隆", "新竹", "嘉义", "宜兰", "花莲", "台东"],
+};
+const DEFAULT_PROVINCE_INDEX = PROVINCE_OPTIONS.indexOf("广东");
+const DEFAULT_CITY_INDEX = CITY_OPTIONS_BY_PROVINCE["广东"]?.indexOf("广州") ?? 0;
 
 function pad2(v: number) {
   return String(v).padStart(2, "0");
 }
 
+function hourToPeriodIndex(hour: number) {
+  return Math.floor((((hour + 1) % 24) + 24) % 24 / 2);
+}
+
+function hourToPeriodRange(hour: number) {
+  const periodIndex = hourToPeriodIndex(hour);
+  const start = (periodIndex * 2 + 23) % 24;
+  const end = (start + 2) % 24;
+  return `${pad2(start)}:00-${pad2(end)}:00`;
+}
+
 function dimRange(coords: ChronoCoords, dim: ChronoDim) {
-  void coords;
-  void dim;
-  return { min: 0, max: PERIOD_LABELS.length - 1 };
+  if (dim === "year") return { min: 1940, max: 2026 };
+  if (dim === "month") return { min: 1, max: 12 };
+  if (dim === "day") return { min: 1, max: new Date(coords.year, coords.month, 0).getDate() };
+  return { min: 0, max: 23 };
 }
 
 function dimValue(coords: ChronoCoords, dim: ChronoDim) {
-  void dim;
-  return coords.periodIndex;
+  return coords[dim];
 }
 
 function makeAudio() {
@@ -224,15 +306,22 @@ export function LaunchLab() {
       walk: 0,
       field: [] as FieldStar[],
       textStars: [] as TextStar[],
+      motherSnapshot: null as MotherCardReadonlySnapshot | null,
       afterForm: 0,
       formed: false,
       phaseX: 3,
       precisionY: 10,
       dwellT: 0,
-      coords: { year: 1995, month: 6, day: 2, periodIndex: 9 } as ChronoCoords,
-      dialFloat: 9,
+      coords: { year: 1995, month: 6, day: 2, hour: 17 } as ChronoCoords,
+      chronoStep: 0,
+      geo: { provinceIndex: DEFAULT_PROVINCE_INDEX >= 0 ? DEFAULT_PROVINCE_INDEX : 0, cityIndex: DEFAULT_CITY_INDEX >= 0 ? DEFAULT_CITY_INDEX : 0 },
+      geoStep: 0,
+      dialFloat: 1995,
       railProgress: 0,
       clutched: false,
+      handoffStarted: false,
+      verticalTuned: false,
+      verticalDragMoved: false,
       dragging: false,
       dragAxis: null as null | "x" | "y",
       lastX: 0,
@@ -326,6 +415,12 @@ export function LaunchLab() {
         m.state === STATE.GEO_BIND ||
         m.state === STATE.DISPLAY_LOCK;
     }
+    function isConvergenceState() {
+      return m.state === STATE.MOTHER_PRE_COLLAPSE || m.state === STATE.MOTHER_LIGHT_CONVERGENCE;
+    }
+    function isMotherStaticState() {
+      return m.state === STATE.MOTHER_STATIC_RENDER;
+    }
     function axisMetrics() {
       const cols = 7;
       const rows = 21;
@@ -355,34 +450,147 @@ export function LaunchLab() {
       return { x: g.axisX, y: lerp(g.axisTop, g.axisBottom, row / (g.rows - 1)) };
     }
     function activeDim(): ChronoDim {
-      return "hour";
+      return CHRONO_DIMS[m.chronoStep] ?? "hour";
     }
     function setDimValue(dim: ChronoDim, value: number) {
       void dim;
       const { min, max } = dimRange(m.coords, dim);
       const v = Math.round(clamp(value, min, max));
-      m.coords.periodIndex = v;
+      m.coords[dim] = v;
+      if (dim === "month") {
+        const dayMax = dimRange(m.coords, "day").max;
+        m.coords.day = Math.min(m.coords.day, dayMax);
+      }
     }
     function dimText(dim: ChronoDim, value: number) {
-      void dim;
       const v = Math.round(value);
-      return PERIOD_LABELS[clamp(v, 0, 11)] ?? "酉时";
+      if (dim === "year") return String(v);
+      if (dim === "month" || dim === "day") return pad2(v);
+      return hourToPeriodRange(clamp(v, 0, 23));
+    }
+    function activeGeoDim(): GeoDim {
+      return GEO_DIMS[m.geoStep] ?? "city";
+    }
+    function geoOptions(dim: GeoDim) {
+      if (dim === "province") return PROVINCE_OPTIONS;
+      const province = PROVINCE_OPTIONS[m.geo.provinceIndex] ?? "广东";
+      return CITY_OPTIONS_BY_PROVINCE[province] ?? ["广州"];
+    }
+    function geoRange(dim: GeoDim) {
+      return { min: 0, max: Math.max(0, geoOptions(dim).length - 1) };
+    }
+    function geoValue(dim: GeoDim) {
+      return dim === "province" ? m.geo.provinceIndex : m.geo.cityIndex;
+    }
+    function setGeoValue(dim: GeoDim, value: number) {
+      const { min, max } = geoRange(dim);
+      const v = Math.round(clamp(value, min, max));
+      if (dim === "province") {
+        const changed = m.geo.provinceIndex !== v;
+        m.geo.provinceIndex = v;
+        if (changed) m.geo.cityIndex = 0;
+      } else {
+        m.geo.cityIndex = v;
+      }
+    }
+    function geoText(dim: GeoDim, value: number) {
+      const options = geoOptions(dim);
+      return options[Math.round(clamp(value, 0, Math.max(0, options.length - 1)))] ?? options[0] ?? "";
+    }
+    function periodText() {
+      return PERIOD_LABELS[hourToPeriodIndex(m.coords.hour)] ?? "酉时";
+    }
+    function buildFinalStateText() {
+      const provinceText = geoText("province", m.geo.provinceIndex);
+      const cityText = geoText("city", m.geo.cityIndex);
+      return `${periodText()} · ${provinceText} · ${cityText}`;
+    }
+    function dispatchPersonaInput() {
+      void triggerPersonaGeneration({
+        chrono: {
+          year: m.coords.year,
+          month: m.coords.month,
+          day: m.coords.day,
+          hour: periodText(),
+        },
+        geo: {
+          province: geoText("province", m.geo.provinceIndex),
+          city: geoText("city", m.geo.cityIndex),
+        },
+      }).catch((error: unknown) => {
+        console.error(error);
+      });
     }
     function syncDialToCurrent() {
-      const dim = activeDim();
-      m.dialFloat = dimValue(m.coords, dim);
-      const { min, max } = dimRange(m.coords, dim);
+      const rangeOwner = m.state === STATE.GEO_BIND ? activeGeoDim() : activeDim();
+      m.dialFloat = m.state === STATE.GEO_BIND
+        ? geoValue(rangeOwner as GeoDim)
+        : dimValue(m.coords, rangeOwner as ChronoDim);
+      const { min, max } = m.state === STATE.GEO_BIND
+        ? geoRange(rangeOwner as GeoDim)
+        : dimRange(m.coords, rangeOwner as ChronoDim);
       const frac = max > min ? (m.dialFloat - min) / (max - min) : 0;
-      m.precisionY = Math.round((1 - frac) * 20);
+      m.precisionY = max > min ? Math.round((1 - frac) * 20) : 10;
+    }
+    function triggerMotherCodeRevelation() {
+      if (m.handoffStarted) return;
+      m.handoffStarted = true;
     }
     function commitCurrentDim() {
       if (m.clutched) return;
+      if (m.state === STATE.GEO_BIND) {
+        const geoDim = activeGeoDim();
+        setGeoValue(geoDim, m.dialFloat);
+        m.railProgress = 1;
+        m.phaseX = 6;
+        m.clutched = true;
+        if (m.geoStep < GEO_DIMS.length - 1) {
+          m.geoStep += 1;
+          m.railProgress = 0;
+          m.phaseX = 0;
+          m.verticalTuned = false;
+          m.verticalDragMoved = false;
+          m.t = 0;
+          syncDialToCurrent();
+          audio.tick();
+          vibrate(10);
+          return;
+        }
+        m.dialFloat = m.coords.hour;
+        m.precisionY = Math.round((1 - (m.coords.hour / 23)) * 20);
+        m.state = STATE.DISPLAY_LOCK;
+        m.t = 0;
+        audio.form();
+        vibrate([0, 18, 24]);
+        dispatchPersonaInput();
+        triggerMotherCodeRevelation();
+        return;
+      }
+
       const dim = activeDim();
       setDimValue(dim, m.dialFloat);
       m.railProgress = 1;
       m.phaseX = 6;
       m.clutched = true;
-      m.state = STATE.DISPLAY_LOCK;
+      if (m.chronoStep < CHRONO_DIMS.length - 1) {
+        m.chronoStep += 1;
+        m.railProgress = 0;
+        m.phaseX = 0;
+        m.verticalTuned = false;
+        m.verticalDragMoved = false;
+        m.t = 0;
+        syncDialToCurrent();
+        audio.tick();
+        vibrate(10);
+        return;
+      }
+      m.state = STATE.GEO_BIND;
+      m.geoStep = 0;
+      m.railProgress = 0;
+      m.phaseX = 0;
+      m.verticalTuned = false;
+      m.verticalDragMoved = false;
+      syncDialToCurrent();
       m.t = 0;
       audio.form();
       vibrate([0, 18, 24]);
@@ -554,7 +762,34 @@ export function LaunchLab() {
           break;
         }
         case STATE.GEO_BIND:
+          break;
         case STATE.DISPLAY_LOCK: {
+          if (m.handoffStarted && m.t >= 0.82) {
+            m.state = STATE.MOTHER_PRE_COLLAPSE;
+            m.t = 0;
+          }
+          break;
+        }
+        case STATE.MOTHER_PRE_COLLAPSE: {
+          if (m.t >= 0.55) {
+            m.state = STATE.MOTHER_LIGHT_CONVERGENCE;
+            m.t = 0;
+            audio.form();
+            vibrate([0, 12, 18]);
+          }
+          break;
+        }
+        case STATE.MOTHER_LIGHT_CONVERGENCE: {
+          if (m.t >= 1.05) {
+            if (!m.motherSnapshot) {
+              m.motherSnapshot = createMotherCardReadonlySnapshot(buildFinalStateText());
+            }
+            m.state = STATE.MOTHER_STATIC_RENDER;
+            m.t = 0;
+          }
+          break;
+        }
+        case STATE.MOTHER_STATIC_RENDER: {
           break;
         }
       }
@@ -572,13 +807,19 @@ export function LaunchLab() {
       ctx.fillStyle = neb;
       ctx.fillRect(0, 0, m.w, m.h);
       const now = performance.now() / 1000;
-      const axisActive = m.state === STATE.STARBEAST_SANDIFY || isAxisState();
+      const convergenceActive = isConvergenceState();
+      const motherStaticActive = isMotherStaticState();
+      const axisActive = m.state === STATE.STARBEAST_SANDIFY || isAxisState() || convergenceActive;
 
       // 星河散点先完整铺满；随后其中 28 颗汇聚成星兽，其他星再生成文字。
       const enter = m.state === STATE.STARBEAST_SANDIFY
         ? smooth(0.1, 1.25, m.t)
         : isAxisState()
           ? 1
+          : convergenceActive
+            ? 1
+            : motherStaticActive
+              ? 1
           : 0;
       const assemblyFade =
         m.state === STATE.ASSEMBLY
@@ -685,16 +926,18 @@ export function LaunchLab() {
         const axisGrow =
           m.state === STATE.AXIS_EMERGENCE
             ? smooth(0.25, 1.25, m.t)
-            : isAxisState()
+            : isAxisState() || convergenceActive
               ? 1
               : 0;
         const warmAxisRgb = "232,200,138";
         const starWhiteRgb = "255,247,228";
         const g = axisMetrics();
+        const isGeoStage = m.state === STATE.GEO_BIND;
         const dim = activeDim();
-        const range = dimRange(m.coords, dim);
+        const geoDim = activeGeoDim();
+        const range = isGeoStage ? geoRange(geoDim) : dimRange(m.coords, dim);
         const dialFrac = range.max > range.min ? (m.dialFloat - range.min) / (range.max - range.min) : 0;
-        m.precisionY = Math.round((1 - clamp(dialFrac, 0, 1)) * 20);
+        m.precisionY = range.max > range.min ? Math.round((1 - clamp(dialFrac, 0, 1)) * 20) : 10;
         const railCursor = { x: lerp(g.railX0, g.railX1, m.railProgress), y: g.railY };
         const tuneCursor = tunePoint(m.precisionY);
         const guideCycle = (now * 0.34) % 1;
@@ -776,29 +1019,175 @@ export function LaunchLab() {
         ctx.shadowBlur = 0;
         if (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND || m.state === STATE.DISPLAY_LOCK) {
           ctx.textAlign = "left";
+          const periodText = PERIOD_LABELS[hourToPeriodIndex(m.coords.hour)] ?? "酉时";
+          const provinceText = geoText("province", m.geo.provinceIndex);
+          const cityText = geoText("city", m.geo.cityIndex);
+          const finalLocked = m.state === STATE.DISPLAY_LOCK;
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
           ctx.fillText("01 ｜ CHRONO · 确认坐标", g.railX0, m.h * 0.1);
-          ctx.fillText("［ 时辰调频 ］", g.railX0, m.h * 0.34);
+          ctx.fillStyle = "rgba(255,247,228,0.78)";
+          ctx.font = `650 ${Math.min(15, m.w * 0.038)}px ${SANS}`;
+          ctx.fillText("你来自哪里？", g.railX0, m.h * 0.145);
+          ctx.fillText("让我照见你的原力人格。", g.railX0, m.h * 0.18);
+          ctx.fillStyle = "rgba(232,200,138,0.82)";
+          ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
+          ctx.fillText(finalLocked ? "［ 坐标确认 ］" : isGeoStage ? `［ ${GEO_LABEL[geoDim]} ］` : `［ ${DIM_STAGE_LABEL[dim]} ］`, g.railX0, m.h * 0.34);
           ctx.fillStyle = "rgba(255,247,228,0.96)";
-          ctx.font = `700 ${Math.min(48, m.w * 0.11)}px ${MONO}`;
-          ctx.fillText(dimText(dim, m.dialFloat), g.railX0, m.h * 0.47);
+          const valueSize = finalLocked
+            ? Math.min(28, m.w * 0.062)
+            : !isGeoStage && dim === "hour"
+              ? Math.min(36, m.w * 0.082)
+              : Math.min(48, m.w * 0.11);
+          ctx.font = `700 ${valueSize}px ${MONO}`;
+          ctx.fillText(finalLocked ? `${periodText} · ${provinceText} · ${cityText}` : isGeoStage ? geoText(geoDim, m.dialFloat) : dimText(dim, m.dialFloat), g.railX0, m.h * 0.47);
           ctx.font = `700 ${Math.min(16, m.w * 0.04)}px ${MONO}`;
           ctx.fillStyle = "rgba(232,200,138,0.82)";
-          ctx.fillText(`${m.coords.year} / ${pad2(m.coords.month)} / ${pad2(m.coords.day)}`, g.railX0, m.h * 0.58);
+          ctx.fillText(`${m.coords.year} / ${pad2(m.coords.month)} / ${pad2(m.coords.day)} / ${hourToPeriodRange(m.coords.hour)}`, g.railX0, m.h * 0.58);
           ctx.fillStyle = "rgba(232,200,138,0.74)";
-          ctx.fillText(`${PERIOD_LABELS[m.coords.periodIndex] ?? "酉时"} · ${GEO_INPUT.province} · ${GEO_INPUT.city}`, g.railX0, m.h * 0.63);
+          ctx.fillText(`${periodText} · ${provinceText} · ${cityText}`, g.railX0, m.h * 0.63);
           ctx.fillStyle = "rgba(232,200,138,0.46)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "坐标已确认" : "上下滑动 · 只调时辰", g.railX0, m.h * 0.705);
+          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "坐标已确认" : isGeoStage ? "先上下调频 · 再右滑锁定出生地" : "先上下调频 · 再右滑锁定坐标", g.railX0, m.h * 0.705);
           ctx.fillStyle = "rgba(232,200,138,0.58)";
           ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
-          ctx.fillText(`右滑卡扣 · 锁定${DIM_LABEL[dim]}`, g.railX0, g.railY + 30);
+          const railHint = finalLocked
+            ? "坐标已确认"
+            : m.verticalTuned && isGeoStage && geoDim === "city"
+              ? "右滑 · 原力人格显形"
+              : m.verticalTuned
+                ? `右滑卡扣 · 锁定${isGeoStage ? GEO_LABEL[geoDim] : DIM_LABEL[dim]}`
+                : "纵轴调频后 · 横轴解锁";
+          ctx.fillText(railHint, g.railX0, g.railY + 30);
           ctx.textAlign = "right";
           ctx.fillStyle = "rgba(232,200,138,0.82)";
-          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "LOCK" : "TIME", g.railX1, g.railY - 18);
+          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "LOCK" : isGeoStage ? "GEO" : "TIME", g.railX1, g.railY - 18);
+        }
+
+        if (convergenceActive) {
+          const freeze = m.state === STATE.MOTHER_PRE_COLLAPSE ? smooth(0, 0.55, m.t) : 1;
+          const converge = m.state === STATE.MOTHER_LIGHT_CONVERGENCE ? smooth(0, 0.95, m.t) : 0;
+          const centerX = m.w / 2;
+          const centerY = m.h * 0.48;
+          ctx.fillStyle = `rgba(0,0,0,${(0.1 + freeze * 0.18 + converge * 0.22).toFixed(3)})`;
+          ctx.fillRect(0, 0, m.w, m.h);
+          const pulse = 0.72 + Math.sin(now * 5.4) * 0.1;
+          for (let i = 0; i < NODES.length; i++) {
+            const from = i % 2 === 0
+              ? railPoint(i % 7)
+              : tunePoint(Math.min(20, 2 + Math.floor(i / 7) * 5));
+            const ring = (i % 7) / 7;
+            const targetX = centerX + Math.cos(ring * Math.PI * 2 + i * 0.47) * (8 + (i % 3) * 4);
+            const targetY = centerY + Math.sin(ring * Math.PI * 2 + i * 0.47) * (8 + (i % 4) * 3);
+            const x = lerp(from.x, targetX, converge);
+            const y = lerp(from.y, targetY, converge);
+            const alpha = 0.2 + freeze * 0.32 + converge * 0.42;
+            ctx.fillStyle = `rgba(${starWhiteRgb},${alpha.toFixed(3)})`;
+            ctx.shadowColor = `rgba(${starWhiteRgb},${(0.18 + converge * 0.55).toFixed(3)})`;
+            ctx.shadowBlur = 5 + converge * 16;
+            ctx.beginPath();
+            ctx.arc(x, y, 1.2 + converge * 1.7, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          const coreGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 58);
+          coreGradient.addColorStop(0, `rgba(${starWhiteRgb},${(0.08 + converge * 0.42 * pulse).toFixed(3)})`);
+          coreGradient.addColorStop(0.46, `rgba(${warmAxisRgb},${(0.06 + converge * 0.18).toFixed(3)})`);
+          coreGradient.addColorStop(1, "rgba(232,200,138,0)");
+          ctx.fillStyle = coreGradient;
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, 58, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.textAlign = "center";
+          ctx.fillStyle = `rgba(255,247,228,${(0.18 + converge * 0.55).toFixed(3)})`;
+          ctx.font = `650 ${Math.min(14, m.w * 0.036)}px ${SANS}`;
+          ctx.fillText("坐标正在收束。", centerX, centerY + 82);
         }
         ctx.restore();
+      }
+
+      if (motherStaticActive) {
+        const cx = m.w / 2;
+        const cy = m.h * 0.45;
+        const snapshot = m.motherSnapshot ?? {
+          chrono: buildFinalStateText(),
+          motherCode: "CACHE_PENDING",
+          direction: "CACHE_PENDING",
+          starOrigin: "CACHE_PENDING",
+          trigram: "CACHE_PENDING",
+          cacheStatus: "missing" as const,
+        };
+        const starOriginText = typeof snapshot.starOrigin === "string"
+          ? snapshot.starOrigin
+          : `28宿节点-${String((snapshot.starOrigin.index ?? 0) + 1).padStart(2, "0")} / I${snapshot.starOrigin.intensity ?? "-"} / R${snapshot.starOrigin.resonance ?? "-"}`;
+        ctx.save();
+        ctx.fillStyle = "rgba(3,4,8,0.92)";
+        ctx.fillRect(0, 0, m.w, m.h);
+
+        // MotherCard = read-only rendered snapshot. It consumes cached output only.
+        ctx.fillStyle = "rgba(255,247,228,0.2)";
+        for (let i = 0; i < NODES.length; i++) {
+          const p = NODES[i]!;
+          const x = cx + (p.x - 0.5) * m.w * 0.5;
+          const y = cy + (p.y - 0.5) * m.h * 0.32;
+          ctx.beginPath();
+          ctx.arc(x, y, i % 6 === 0 ? 1.6 : 1.05, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 74);
+        core.addColorStop(0, "rgba(255,247,228,0.34)");
+        core.addColorStop(0.34, "rgba(232,200,138,0.16)");
+        core.addColorStop(1, "rgba(232,200,138,0)");
+        ctx.fillStyle = core;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 74, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "rgba(255,247,228,0.96)";
+        ctx.beginPath();
+        ctx.arc(cx, cy, 4.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        const cardW = Math.min(330, m.w * 0.76);
+        const cardH = Math.min(390, m.h * 0.46);
+        const cardX = cx - cardW / 2;
+        const cardY = m.h * 0.29;
+        ctx.strokeStyle = "rgba(232,200,138,0.7)";
+        ctx.lineWidth = 1;
+        ctx.shadowColor = "rgba(232,200,138,0.24)";
+        ctx.shadowBlur = 18;
+        roundedRectPath(ctx, cardX, cardY, cardW, cardH, 18);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.font = `650 ${Math.min(11, m.w * 0.03)}px ${MONO}`;
+        ctx.fillStyle = "rgba(232,200,138,0.68)";
+        ctx.fillText("MOTHER STATIC SNAPSHOT", cardX + 24, cardY + 24);
+        ctx.font = `800 ${Math.min(30, m.w * 0.075)}px ${SANS}`;
+        ctx.fillStyle = "rgba(255,247,228,0.96)";
+        ctx.fillText(`${snapshot.trigram}｜${snapshot.motherCode}`, cardX + 24, cardY + 70);
+        ctx.font = `650 ${Math.min(15, m.w * 0.04)}px ${SANS}`;
+        ctx.fillStyle = "rgba(232,200,138,0.78)";
+        ctx.fillText(`四象｜${snapshot.direction}`, cardX + 24, cardY + 124);
+        ctx.fillStyle = "rgba(255,247,228,0.82)";
+        ctx.fillText(`坐标｜${snapshot.chrono}`, cardX + 24, cardY + 156);
+        ctx.fillStyle = "rgba(255,247,228,0.62)";
+        ctx.font = `600 ${Math.min(12, m.w * 0.033)}px ${SANS}`;
+        ctx.fillText(`星源｜${starOriginText}`, cardX + 24, cardY + 188);
+        ctx.fillStyle = "rgba(255,247,228,0.54)";
+        ctx.font = `600 ${Math.min(12, m.w * 0.033)}px ${SANS}`;
+        ctx.fillText("COLLAPSE_COMPLETE", cardX + 24, cardY + cardH - 76);
+        ctx.fillText("MOTHER_STATIC_RENDER", cardX + 24, cardY + cardH - 52);
+        ctx.fillText(snapshot.cacheStatus === "hit" ? "CACHE_LOCKED" : "CACHE_PENDING", cardX + 24, cardY + cardH - 28);
+
+        ctx.textAlign = "center";
+        ctx.font = `650 ${Math.min(13, m.w * 0.034)}px ${SANS}`;
+        ctx.fillStyle = "rgba(255,247,228,0.66)";
+        ctx.fillText("结果已固定。", cx, cardY + cardH + 36);
+        ctx.restore();
+        return;
       }
 
       // 文字也来自满屏星河，但必须在星兽成形之后再生成。
@@ -901,12 +1290,12 @@ export function LaunchLab() {
         vibrate([0, 18, 28]);
         return;
       }
-      if (m.state === STATE.TIME_CALIBRATION) {
+      if (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND) {
         m.dragging = true;
         const g = axisMetrics();
         const onVertical = Math.abs(x - g.axisX) < 52 && y >= g.axisTop - 18 && y <= g.axisBottom + 18;
         const onHorizontal = Math.abs(y - g.railY) < 42 && x >= g.railX0 - 12 && x <= g.railX1 + 12;
-        m.dragAxis = onVertical ? "y" : onHorizontal ? "x" : null;
+        m.dragAxis = onVertical ? "y" : onHorizontal && m.verticalTuned ? "x" : null;
         m.lastX = x;
         m.lastY = y;
         if (m.dragAxis === "x") {
@@ -914,25 +1303,29 @@ export function LaunchLab() {
           m.phaseX = Math.round(m.railProgress * 6);
         }
         if (m.dragAxis === "y") {
+          m.verticalDragMoved = false;
+          const isGeoStage = m.state === STATE.GEO_BIND;
           const dim = activeDim();
-          const { min, max } = dimRange(m.coords, dim);
+          const geoDim = activeGeoDim();
+          const { min, max } = isGeoStage ? geoRange(geoDim) : dimRange(m.coords, dim);
           const frac = 1 - clamp((y - g.axisTop) / (g.axisBottom - g.axisTop), 0, 1);
           m.dialFloat = min + frac * (max - min);
-          setDimValue(dim, m.dialFloat);
-          m.precisionY = Math.round((1 - frac) * 20);
+          if (isGeoStage) setGeoValue(geoDim, m.dialFloat);
+          else setDimValue(dim, m.dialFloat);
+          m.precisionY = max > min ? Math.round((1 - frac) * 20) : 10;
         }
         m.dwellT = 0;
       }
     }
     function onMove(e: PointerEvent) {
-      if (!m.dragging || m.state !== STATE.TIME_CALIBRATION) return;
+      if (!m.dragging || (m.state !== STATE.TIME_CALIBRATION && m.state !== STATE.GEO_BIND)) return;
       const r = canvas!.getBoundingClientRect();
       const x = e.clientX - r.left;
       const y = e.clientY - r.top;
       const dx = x - m.lastX;
       const dy = y - m.lastY;
       if (m.dragAxis === null && Math.hypot(dx, dy) > 10) {
-        m.dragAxis = Math.abs(dx) >= Math.abs(dy) ? "x" : "y";
+        m.dragAxis = Math.abs(dx) >= Math.abs(dy) && m.verticalTuned ? "x" : "y";
       }
       if (m.dragAxis === "x") {
         const g = axisMetrics();
@@ -949,13 +1342,20 @@ export function LaunchLab() {
         vibrate(6);
       }
       if (m.dragAxis === "y") {
+        const isGeoStage = m.state === STATE.GEO_BIND;
         const dim = activeDim();
-        const { min, max } = dimRange(m.coords, dim);
+        const geoDim = activeGeoDim();
+        const { min, max } = isGeoStage ? geoRange(geoDim) : dimRange(m.coords, dim);
         const g = axisMetrics();
         const frac = 1 - clamp((y - g.axisTop) / (g.axisBottom - g.axisTop), 0, 1);
         m.dialFloat = min + frac * (max - min);
-        setDimValue(dim, m.dialFloat);
-        m.precisionY = Math.round((1 - frac) * 20);
+        if (isGeoStage) setGeoValue(geoDim, m.dialFloat);
+        else setDimValue(dim, m.dialFloat);
+        m.precisionY = max > min ? Math.round((1 - frac) * 20) : 10;
+        if (Math.abs(y - m.lastY) > 2) {
+          m.verticalDragMoved = true;
+          m.verticalTuned = true;
+        }
         m.lastY = y;
         m.dwellT = 0;
         audio.tick();
@@ -968,10 +1368,18 @@ export function LaunchLab() {
       } catch {
         // ignore pointer capture release differences across browsers
       }
+      const shouldCommitOnRelease =
+        m.dragAxis === "x" &&
+        m.verticalTuned &&
+        m.railProgress >= 0.9 &&
+        (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND) &&
+        !m.clutched;
+      if (shouldCommitOnRelease) commitCurrentDim();
       m.dragging = false;
+      if (m.dragAxis === "y" && m.verticalDragMoved) m.verticalTuned = true;
       m.dragAxis = null;
       m.dwellT = 0;
-      if (m.state === STATE.TIME_CALIBRATION && !m.clutched) {
+      if ((m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND) && !m.clutched) {
         m.railProgress = 0;
         m.phaseX = 0;
       }

@@ -74,6 +74,16 @@ export type PersonaGenerationResult = {
   mother: MotherCode;
 };
 
+export type PersonaOutputSnapshot = {
+  chrono: string;
+  motherCode: string;
+  direction: Direction;
+  starOrigin: StarNode;
+  trigram: string;
+  writer: "deterministicPersonaEngine";
+  lockedAt: string;
+};
+
 export const PERSONA_ENGINE_STATE = {
   INIT: "init",
   CHRONO_RESOLVED: "chrono_resolved",
@@ -85,6 +95,8 @@ export const PERSONA_ENGINE_STATE = {
 } as const;
 
 const TRIGRAMS = ["乾", "坤", "震", "巽", "坎", "离", "艮", "兑"] as const;
+const PERSONA_SNAPSHOT_KEY = "guanyao:personaOutputSnapshot";
+const DETERMINISTIC_PERSONA_WRITER = "deterministicPersonaEngine" as const;
 
 function stableHash(input: string): number {
   let hash = 2166136261;
@@ -152,7 +164,7 @@ export function buildBeast(star: StarNode, direction: Direction): BeastForm {
   };
 }
 
-export function generateMotherCode(
+function generateMotherCode(
   chrono: ChronoResolution,
   geo: GeoResolution,
   star: StarNode,
@@ -185,4 +197,68 @@ export function generatePersona(input: PersonaGenerationInput): PersonaGeneratio
     beast,
     mother,
   };
+}
+
+function assertPersonaWriteAuthority(engine: string): asserts engine is typeof DETERMINISTIC_PERSONA_WRITER {
+  if (engine !== DETERMINISTIC_PERSONA_WRITER) {
+    throw new Error("WRITE_AUTHORITY_VIOLATION");
+  }
+}
+
+function readExistingSnapshot(): PersonaOutputSnapshot | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.localStorage.getItem(PERSONA_SNAPSHOT_KEY);
+    return raw ? JSON.parse(raw) as PersonaOutputSnapshot : null;
+  } catch {
+    return null;
+  }
+}
+
+function sameSnapshotIdentity(a: PersonaOutputSnapshot, b: PersonaOutputSnapshot) {
+  return (
+    a.chrono === b.chrono &&
+    a.motherCode === b.motherCode &&
+    a.direction === b.direction &&
+    a.trigram === b.trigram &&
+    a.starOrigin.index === b.starOrigin.index &&
+    a.starOrigin.intensity === b.starOrigin.intensity &&
+    a.starOrigin.resonance === b.starOrigin.resonance
+  );
+}
+
+export function buildPersonaOutputSnapshot(result: PersonaGenerationResult): PersonaOutputSnapshot {
+  const geoAnchor = result.geo.anchor.split("-").join(" · ");
+
+  return Object.freeze({
+    chrono: `${result.chrono.phase} · ${geoAnchor}`,
+    motherCode: result.mother.trigram,
+    direction: result.direction,
+    starOrigin: Object.freeze({ ...result.mother.starOrigin }),
+    trigram: result.mother.trigram,
+    writer: DETERMINISTIC_PERSONA_WRITER,
+    lockedAt: new Date(0).toISOString(),
+  });
+}
+
+export function writePersonaOutputSnapshotFromDeterministicEngine(result: PersonaGenerationResult): PersonaOutputSnapshot {
+  assertPersonaWriteAuthority(DETERMINISTIC_PERSONA_WRITER);
+
+  const snapshot = buildPersonaOutputSnapshot(result);
+  const existing = readExistingSnapshot();
+
+  if (existing) {
+    if (!sameSnapshotIdentity(existing, snapshot)) {
+      throw new Error("PERSONA_SNAPSHOT_IMMUTABLE");
+    }
+
+    return existing;
+  }
+
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(PERSONA_SNAPSHOT_KEY, JSON.stringify(snapshot));
+  }
+
+  return snapshot;
 }
