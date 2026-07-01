@@ -52,46 +52,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function normalizeCachedPersonaOutput(value: unknown): CachedPersonaOutput | null {
   if (!isRecord(value)) return null;
 
-  const directMother = isRecord(value.mother) ? value.mother : null;
-  const fusionMother = isRecord(directMother?.profile) ? directMother.profile : null;
-  const fusionGeo = isRecord(value.geo) ? value.geo : null;
-  const fusionStarbeast = isRecord(value.starbeast) ? value.starbeast : null;
-
-  const trigram =
-    typeof value.trigram === "string"
-      ? value.trigram
-      : typeof directMother?.trigram === "string"
-        ? directMother.trigram
-        : typeof fusionMother?.lowerTrigram === "string"
-          ? fusionMother.lowerTrigram
-          : "";
-
-  const motherCode =
-    typeof value.motherCode === "string"
-      ? value.motherCode
-      : typeof directMother?.trigram === "string"
-        ? directMother.trigram
-        : typeof fusionMother?.motherCodeName === "string"
-          ? fusionMother.motherCodeName
-          : trigram;
-
-  const direction =
-    typeof value.direction === "string"
-      ? value.direction
-      : typeof directMother?.direction === "string"
-        ? directMother.direction
-        : typeof fusionGeo?.symbol === "string"
-          ? fusionGeo.symbol
-          : "";
-
-  const starOrigin =
-    isRecord(value.starOrigin)
-      ? value.starOrigin
-      : isRecord(directMother?.starOrigin)
-        ? directMother.starOrigin
-        : typeof fusionStarbeast?.primaryNode === "string"
-          ? fusionStarbeast.primaryNode
-          : "";
+  const trigram = typeof value.trigram === "string" ? value.trigram : "";
+  const motherCode = typeof value.motherCode === "string" ? value.motherCode : "";
+  const direction = typeof value.direction === "string" ? value.direction : "";
+  const starOrigin = isRecord(value.starOrigin) ? value.starOrigin : "";
 
   if (!motherCode || !direction || !trigram) return null;
 
