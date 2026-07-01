@@ -9,12 +9,12 @@ import { MotherFieldEngine, type MotherField } from "./MotherFieldEngine";
 import { DefaultReactionScreen } from "./DefaultReactionScreen";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
-import { runMotherCodeLandingEngine, type MotherCodeLandingEngineResult } from "../data/guanyaoNumericProtocol";
+import { runMotherCodeLandingEngine } from "../data/guanyaoNumericProtocol";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildYuanCodeResult } from "../services/codeContractService";
 import { getDemoInitialCoordinates, getDemoMotherCode } from "../services/guanyaoInteractionService";
 import { setChronoProfile } from "../services/sessionService";
-import type { ChronoAgeRange, ChronoProfile, ChronoPrototypeCard, InitialCoordinates, MotherCodeCard } from "../types";
+import type { ChronoAgeRange, ChronoProfile, ChronoPrototypeCard, InitialCoordinates } from "../types";
 import type { MotherCodeProfile } from "../types/guanyaoCausalEngine";
 
 const minBirthYear = 1950;
@@ -384,17 +384,6 @@ function buildChronoProfile(birthYear: number, birthMonth: number, birthDay: num
   };
 }
 
-function buildMotherCodeCardFromLanding(
-  motherCodeLanding: MotherCodeLandingEngineResult,
-  cardStatus: MotherCodeCard["cardStatus"],
-): MotherCodeCard {
-  return {
-    id: `MOTHER_CARD_${motherCodeLanding.motherCodeProfile.visualAssetCode}`,
-    source: "mother_code_landing_engine",
-    cardStatus,
-  };
-}
-
 // 老用户回流：读取上次锁定的数值生辰坐标，只用于回填坐标确认页，不跳过时序填装。
 function readNumericChronoCoords(): ChronoCoords | null {
   try {
@@ -413,11 +402,9 @@ function readNumericChronoCoords(): ChronoCoords | null {
 
 function persistInitialCoordinates(
   initialCoordinates: InitialCoordinates,
-  motherCodeCard: MotherCodeCard,
   motherCodeProfile: MotherCodeProfile,
 ) {
   window.localStorage.setItem("guanyao:initialCoordinates", JSON.stringify(initialCoordinates));
-  window.localStorage.setItem("guanyao:motherCodeCard", JSON.stringify(motherCodeCard));
   window.localStorage.setItem("guanyao:motherCodeProfile", JSON.stringify(motherCodeProfile));
 }
 
@@ -431,24 +418,10 @@ function InitialCoordinatesEntry() {
   // 老用户回流：只预置上次坐标，不跳过时序填装；首页预览必须能完整进入坐标确认。
   const seededCoords = useMemo(() => readNumericChronoCoords(), []);
   const [stage, setStage] = useState<"coordinates" | "defaultReaction" | "mother">("coordinates");
-  const [motherCodeStageView, setMotherCodeStageView] = useState<"asset" | "runtime">("asset");
-  const [openMotherRuntimeDrawer, setOpenMotherRuntimeDrawer] = useState<"force" | "pressure" | "asset" | null>(null);
   const [displayYear, setDisplayYear] = useState(seededCoords?.year ?? 1995);
   const [displayMonth, setDisplayMonth] = useState(seededCoords?.month ?? 6);
   const [displayDay, setDisplayDay] = useState(seededCoords?.day ?? 2);
   const [displayPeriodIndex, setDisplayPeriodIndex] = useState(seededCoords?.periodIndex ?? 9);
-  const [motherCodeCard, setMotherCodeCard] = useState<MotherCodeCard>(() => {
-    const initialMotherCodeLanding = runMotherCodeLandingEngine({
-      year: 1995,
-      month: 6,
-      day: 2,
-      hourBranch: "酉时",
-    });
-
-    return buildMotherCodeCardFromLanding(initialMotherCodeLanding, "embedding");
-  });
-  const isMotherStage = stage === "mother";
-  const isMotherRuntimeView = motherCodeStageView === "runtime";
   const displayPeriod = chronoPeriodOptions[displayPeriodIndex] ?? chronoPeriodOptions[9];
   const motherCodeLanding = runMotherCodeLandingEngine({
     year: displayYear,
@@ -498,8 +471,7 @@ function InitialCoordinatesEntry() {
       day: coords.day,
       hourBranch: chronoPeriodOptions[coords.periodIndex]?.label ?? "酉时",
     });
-    const embeddedCard = buildMotherCodeCardFromLanding(landing, "embedded");
-    persistInitialCoordinates(initialCoordinates, embeddedCard, landing.motherCodeProfile);
+    persistInitialCoordinates(initialCoordinates, landing.motherCodeProfile);
     try {
       window.localStorage.setItem("guanyao:chronoNumeric", JSON.stringify(coords)); // 供老用户回流时回填坐标
     } catch {
@@ -509,14 +481,11 @@ function InitialCoordinatesEntry() {
     setDisplayMonth(coords.month);
     setDisplayDay(coords.day);
     setDisplayPeriodIndex(coords.periodIndex);
-    setMotherCodeCard(embeddedCard);
-    setMotherCodeStageView("asset");
-    setOpenMotherRuntimeDrawer(null);
     setStage("defaultReaction"); // Chrono 后必先经默认反应缓冲层，不直接进 MotherField
   }
 
   function handleEnterPressureSeed() {
-    persistInitialCoordinates(initialCoordinates, motherCodeCard, motherCodeLanding.motherCodeProfile);
+    persistInitialCoordinates(initialCoordinates, motherCodeLanding.motherCodeProfile);
     navigate(GUANYAO_ROUTES.pressureSeed);
   }
 

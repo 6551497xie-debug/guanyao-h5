@@ -439,12 +439,6 @@ export type InitialCoordinates = {
   geoAnchor: string;
 };
 
-export type MotherCodeCard = {
-  id: string;
-  source: "initial_coordinates_mock" | "mother_code_landing_engine";
-  cardStatus: "embedding" | "embedded";
-};
-
 export type PressureSeed = {
   id: string;
   text: string;

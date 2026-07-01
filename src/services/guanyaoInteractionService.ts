@@ -15,7 +15,6 @@ import type {
   HexagramFieldReading,
   InitialCoordinates,
   MotherCodeAsset,
-  MotherCodeCard,
   PressureExposureOption,
   PressureExposureResult,
   PressureSeed,
@@ -31,32 +30,6 @@ export function getDemoInitialCoordinates(): InitialCoordinates {
     agePhase: "责任叠压期",
     behaviorRing: "硬撑轨道 · 最近一轮",
     geoAnchor: "当前常驻地 · 地利锚点",
-  };
-}
-
-function buildMotherCardId(initialCoordinates: InitialCoordinates) {
-  const sourceText = [
-    initialCoordinates.birthChrono,
-    initialCoordinates.agePhase,
-    initialCoordinates.behaviorRing,
-  ].join("|");
-  let hash = 0;
-
-  for (let index = 0; index < sourceText.length; index += 1) {
-    hash = (hash * 31 + sourceText.charCodeAt(index)) % 100000;
-  }
-
-  return `MOTHER_CARD_${String(hash).padStart(5, "0")}`;
-}
-
-export function buildMotherCodeCardFromInitialCoordinates(
-  initialCoordinates: InitialCoordinates,
-  cardStatus: MotherCodeCard["cardStatus"] = "embedded",
-): MotherCodeCard {
-  return {
-    id: buildMotherCardId(initialCoordinates),
-    source: "initial_coordinates_mock",
-    cardStatus,
   };
 }
 
