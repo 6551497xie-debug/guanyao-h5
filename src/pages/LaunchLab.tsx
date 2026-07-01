@@ -14,6 +14,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useRef } from "react";
+import { drawMotherCardRenderer } from "../components/mother/MotherCardRenderer";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import {
   createMotherCardReadonlySnapshot,
@@ -117,19 +118,6 @@ function lerp(a: number, b: number, t: number) {
 function smooth(e0: number, e1: number, x: number) {
   const t = clamp((x - e0) / (e1 - e0), 0, 1);
   return t * t * (3 - 2 * t);
-}
-
-function roundedRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  const radius = Math.min(r, w / 2, h / 2);
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + w - radius, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
-  ctx.lineTo(x + w, y + h - radius);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-  ctx.lineTo(x + radius, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
 }
 
 type FieldStar = { x: number; y: number; r: number; ph: number; sp: number; vx: number; vy: number };
@@ -1107,8 +1095,6 @@ export function LaunchLab() {
       }
 
       if (motherStaticActive) {
-        const cx = m.w / 2;
-        const cy = m.h * 0.45;
         const snapshot = m.motherSnapshot ?? {
           chrono: buildFinalStateText(),
           motherCode: "CACHE_PENDING",
@@ -1117,76 +1103,7 @@ export function LaunchLab() {
           trigram: "CACHE_PENDING",
           cacheStatus: "missing" as const,
         };
-        const starOriginText = typeof snapshot.starOrigin === "string"
-          ? snapshot.starOrigin
-          : `28宿节点-${String((snapshot.starOrigin.index ?? 0) + 1).padStart(2, "0")} / I${snapshot.starOrigin.intensity ?? "-"} / R${snapshot.starOrigin.resonance ?? "-"}`;
-        ctx.save();
-        ctx.fillStyle = "rgba(3,4,8,0.92)";
-        ctx.fillRect(0, 0, m.w, m.h);
-
-        // MotherCard = read-only rendered snapshot. It consumes cached output only.
-        ctx.fillStyle = "rgba(255,247,228,0.2)";
-        for (let i = 0; i < NODES.length; i++) {
-          const p = NODES[i]!;
-          const x = cx + (p.x - 0.5) * m.w * 0.5;
-          const y = cy + (p.y - 0.5) * m.h * 0.32;
-          ctx.beginPath();
-          ctx.arc(x, y, i % 6 === 0 ? 1.6 : 1.05, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 74);
-        core.addColorStop(0, "rgba(255,247,228,0.34)");
-        core.addColorStop(0.34, "rgba(232,200,138,0.16)");
-        core.addColorStop(1, "rgba(232,200,138,0)");
-        ctx.fillStyle = core;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 74, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "rgba(255,247,228,0.96)";
-        ctx.beginPath();
-        ctx.arc(cx, cy, 4.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        const cardW = Math.min(330, m.w * 0.76);
-        const cardH = Math.min(390, m.h * 0.46);
-        const cardX = cx - cardW / 2;
-        const cardY = m.h * 0.29;
-        ctx.strokeStyle = "rgba(232,200,138,0.7)";
-        ctx.lineWidth = 1;
-        ctx.shadowColor = "rgba(232,200,138,0.24)";
-        ctx.shadowBlur = 18;
-        roundedRectPath(ctx, cardX, cardY, cardW, cardH, 18);
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-
-        ctx.textAlign = "left";
-        ctx.textBaseline = "top";
-        ctx.font = `650 ${Math.min(11, m.w * 0.03)}px ${MONO}`;
-        ctx.fillStyle = "rgba(232,200,138,0.68)";
-        ctx.fillText("MOTHER STATIC SNAPSHOT", cardX + 24, cardY + 24);
-        ctx.font = `800 ${Math.min(30, m.w * 0.075)}px ${SANS}`;
-        ctx.fillStyle = "rgba(255,247,228,0.96)";
-        ctx.fillText(`${snapshot.trigram}｜${snapshot.motherCode}`, cardX + 24, cardY + 70);
-        ctx.font = `650 ${Math.min(15, m.w * 0.04)}px ${SANS}`;
-        ctx.fillStyle = "rgba(232,200,138,0.78)";
-        ctx.fillText(`四象｜${snapshot.direction}`, cardX + 24, cardY + 124);
-        ctx.fillStyle = "rgba(255,247,228,0.82)";
-        ctx.fillText(`坐标｜${snapshot.chrono}`, cardX + 24, cardY + 156);
-        ctx.fillStyle = "rgba(255,247,228,0.62)";
-        ctx.font = `600 ${Math.min(12, m.w * 0.033)}px ${SANS}`;
-        ctx.fillText(`星源｜${starOriginText}`, cardX + 24, cardY + 188);
-        ctx.fillStyle = "rgba(255,247,228,0.54)";
-        ctx.font = `600 ${Math.min(12, m.w * 0.033)}px ${SANS}`;
-        ctx.fillText("COLLAPSE_COMPLETE", cardX + 24, cardY + cardH - 76);
-        ctx.fillText("MOTHER_STATIC_RENDER", cardX + 24, cardY + cardH - 52);
-        ctx.fillText(snapshot.cacheStatus === "hit" ? "CACHE_LOCKED" : "CACHE_PENDING", cardX + 24, cardY + cardH - 28);
-
-        ctx.textAlign = "center";
-        ctx.font = `650 ${Math.min(13, m.w * 0.034)}px ${SANS}`;
-        ctx.fillStyle = "rgba(255,247,228,0.66)";
-        ctx.fillText("结果已固定。", cx, cardY + cardH + 36);
-        ctx.restore();
+        drawMotherCardRenderer({ ctx, snapshot, width: m.w, height: m.h });
         return;
       }
 

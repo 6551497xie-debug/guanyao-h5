@@ -27,7 +27,7 @@ export type MotherCardReadonlySnapshot = {
   chrono: string;
   motherCode: string;
   direction: string;
-  starOrigin: CachedStarOrigin;
+  starOrigin: string;
   trigram: string;
   cacheStatus: "hit" | "missing";
 };
@@ -107,6 +107,11 @@ export function readCachedPersonaOutput(): CachedPersonaOutput | null {
   return normalizeCachedPersonaOutput(readJson(PERSONA_SNAPSHOT_KEY));
 }
 
+function formatStarOrigin(starOrigin: CachedStarOrigin) {
+  if (typeof starOrigin === "string") return starOrigin;
+  return `28宿节点-${String((starOrigin.index ?? 0) + 1).padStart(2, "0")} / I${starOrigin.intensity ?? "-"} / R${starOrigin.resonance ?? "-"}`;
+}
+
 export function createMotherCardReadonlySnapshot(chrono: string): MotherCardReadonlySnapshot {
   const cachedPersonaOutput = readCachedPersonaOutput();
 
@@ -125,7 +130,7 @@ export function createMotherCardReadonlySnapshot(chrono: string): MotherCardRead
     chrono,
     motherCode: cachedPersonaOutput.motherCode,
     direction: cachedPersonaOutput.direction,
-    starOrigin: cachedPersonaOutput.starOrigin,
+    starOrigin: formatStarOrigin(cachedPersonaOutput.starOrigin),
     trigram: cachedPersonaOutput.trigram,
     cacheStatus: "hit",
   };

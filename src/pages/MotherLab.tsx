@@ -15,55 +15,12 @@
 
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { drawMotherCardRenderer } from "../components/mother/MotherCardRenderer";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
-import { readCachedPersonaOutput, type CachedStarOrigin } from "../services/guanyaoPersonaSnapshotCache";
-import type { Trigram } from "../types/guanyaoCausalEngine";
+import { createMotherCardReadonlySnapshot } from "../services/guanyaoPersonaSnapshotCache";
 
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
 const SANS = "-apple-system, system-ui, sans-serif";
-const SERIF = "Songti SC, SimSun, serif";
-
-const MOTHER_CARD_META: Record<Trigram, {
-  no: string;
-  guaName: string;
-  archetype: string;
-  archetypeEn: string;
-  verse1: string;
-  verse2: string;
-  keywords: string;
-}> = {
-  乾: { no: "NO.001", guaName: "乾为天", archetype: "《创世者》", archetypeEn: "THE CREATOR", verse1: "天行刚健，自强不息。", verse2: "主动开创，统御全局。", keywords: "刚健 · 开创 · 统御" },
-  坤: { no: "NO.002", guaName: "坤为地", archetype: "《承载者》", archetypeEn: "THE CARRIER", verse1: "地势柔顺，厚德载物。", verse2: "包容承托，滋养万物。", keywords: "柔顺 · 包容 · 承载" },
-  震: { no: "NO.051", guaName: "震为雷", archetype: "《行动者》", archetypeEn: "THE ACTIVATOR", verse1: "雷震百里，万物始生。", verse2: "破局而出，主动冲击。", keywords: "奋动 · 破局 · 冲击" },
-  巽: { no: "NO.057", guaName: "巽为风", archetype: "《渗透者》", archetypeEn: "THE PENETRATOR", verse1: "风无孔不入，渗透万物。", verse2: "顺势变通，润物无声。", keywords: "渗透 · 变通 · 入微" },
-  坎: { no: "NO.029", guaName: "坎为水", archetype: "《深潜者》", archetypeEn: "THE DEEP DIVER", verse1: "水行险陷，深不可测。", verse2: "处险不惊，隐伏流动。", keywords: "险陷 · 深沉 · 流动" },
-  离: { no: "NO.030", guaName: "离为火", archetype: "《照见者》", archetypeEn: "THE ILLUMINATOR", verse1: "火附丽光明，温暖万物。", verse2: "向外发散，明亮照人。", keywords: "明亮 · 附着 · 扩散" },
-  艮: { no: "NO.052", guaName: "艮为山", archetype: "《守望者》", archetypeEn: "THE WATCHER", verse1: "山为稳固之基，知止而定。", verse2: "守其边界，不动如山。", keywords: "稳固 · 止息 · 边界" },
-  兑: { no: "NO.058", guaName: "兑为泽", archetype: "《连接者》", archetypeEn: "THE CONNECTOR", verse1: "泽水汇聚，滋养喜悦。", verse2: "交流开放，和悦待人。", keywords: "喜悦 · 交流 · 开放" },
-};
-
-const TRIGRAM_LINES: Record<Trigram, [boolean, boolean, boolean]> = {
-  乾: [true, true, true],
-  兑: [false, true, true],
-  离: [true, false, true],
-  震: [false, false, true],
-  巽: [true, true, false],
-  坎: [false, true, false],
-  艮: [true, false, false],
-  坤: [false, false, false],
-};
-
-function normalizeTrigram(value: string | undefined): Trigram | null {
-  if (!value) return null;
-  const trigram = value.trim()[0] as Trigram | undefined;
-  return trigram && trigram in MOTHER_CARD_META ? trigram : null;
-}
-
-function formatStarOrigin(starOrigin: CachedStarOrigin | undefined) {
-  if (!starOrigin) return "CACHE_PENDING";
-  if (typeof starOrigin === "string") return starOrigin;
-  return `28宿节点-${String((starOrigin.index ?? 0) + 1).padStart(2, "0")} / I${starOrigin.intensity ?? "-"} / R${starOrigin.resonance ?? "-"}`;
-}
 
 const CFG = {
   cardTopFrac: 0.26,
@@ -146,18 +103,16 @@ export function MotherLab() {
   const navigate = useNavigate();
   const navRef = useRef(navigate);
   navRef.current = navigate;
-  const snapshotRef = useRef(readCachedPersonaOutput());
+  const snapshotRef = useRef(createMotherCardReadonlySnapshot("CACHE_PENDING"));
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const audio = makeAudio();
     const snapshot = snapshotRef.current;
-    const trigram = normalizeTrigram(snapshot?.trigram) ?? "兑";
-    const card = MOTHER_CARD_META[trigram];
     const readout = {
-      base: snapshot ? `四象｜${snapshot.direction}` : "CACHE_PENDING",
-      chain: snapshot ? `星源｜${formatStarOrigin(snapshot.starOrigin)}` : "等待 guanyao:personaOutputSnapshot",
+      base: `四象｜${snapshot.direction}`,
+      chain: `星源｜${snapshot.starOrigin}`,
     };
 
     const m = {
@@ -288,154 +243,6 @@ export function MotherLab() {
       }
     }
 
-    function trigramMark(ctx: CanvasRenderingContext2D, cx: number, y: number, s: number, col: string) {
-      ctx.strokeStyle = col;
-      ctx.lineWidth = 2;
-      ctx.lineCap = "round";
-      const half = s * 0.5;
-      const gap = s * 0.16;
-      const lines = TRIGRAM_LINES[trigram] ?? TRIGRAM_LINES.震;
-      const yy = [y - s * 0.4, y, y + s * 0.4];
-      ctx.beginPath();
-      lines.forEach((solid, index) => {
-        const lineY = yy[index]!;
-        if (solid) {
-          ctx.moveTo(cx - half, lineY);
-          ctx.lineTo(cx + half, lineY);
-        } else {
-          ctx.moveTo(cx - half, lineY);
-          ctx.lineTo(cx - gap, lineY);
-          ctx.moveTo(cx + gap, lineY);
-          ctx.lineTo(cx + half, lineY);
-        }
-      });
-      ctx.stroke();
-    }
-
-    function drawFrame(ctx: CanvasRenderingContext2D, r: { x: number; y: number; w: number; h: number }) {
-      ctx.fillStyle = COLOR.bg;
-      ctx.strokeStyle = COLOR.frame;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.rect(r.x, r.y, r.w, r.h);
-      ctx.fill();
-      ctx.stroke();
-      ctx.strokeStyle = "rgba(90,74,38,0.7)";
-      ctx.lineWidth = 0.5;
-      ctx.strokeRect(r.x + 8, r.y + 8, r.w - 16, r.h - 16);
-      // 边角
-      ctx.strokeStyle = COLOR.gold;
-      ctx.lineWidth = 1;
-      const c = 12;
-      [
-        [r.x + 5, r.y + 5, 1, 1],
-        [r.x + r.w - 5, r.y + 5, -1, 1],
-        [r.x + 5, r.y + r.h - 5, 1, -1],
-        [r.x + r.w - 5, r.y + r.h - 5, -1, -1],
-      ].forEach(([px, py, sx, sy]) => {
-        ctx.beginPath();
-        ctx.moveTo(px! + sx! * c, py!);
-        ctx.lineTo(px!, py!);
-        ctx.lineTo(px!, py! + sy! * c);
-        ctx.stroke();
-      });
-    }
-
-    function drawCardFront(ctx: CanvasRenderingContext2D, r: { x: number; y: number; w: number; h: number }) {
-      drawFrame(ctx, r);
-      ctx.textBaseline = "alphabetic";
-      // 顶行
-      ctx.fillStyle = COLOR.gold;
-      ctx.textAlign = "left";
-      ctx.font = `${Math.min(13, r.w * 0.045)}px ${MONO}`;
-      ctx.fillText(card.no, r.x + 22, r.y + 38);
-      trigramMark(ctx, r.x + r.w / 2, r.y + 30, Math.min(26, r.w * 0.09), COLOR.brightGold);
-      ctx.textAlign = "right";
-      ctx.fillStyle = COLOR.brightGold;
-      ctx.font = `${Math.min(14, r.w * 0.048)}px ${SERIF}`;
-      ctx.fillText(card.guaName, r.x + r.w - 22, r.y + 36);
-      // 标题
-      ctx.textAlign = "center";
-      ctx.fillStyle = COLOR.brightGold;
-      ctx.font = `${Math.min(28, r.w * 0.1)}px ${SERIF}`;
-      ctx.fillText(card.archetype, r.x + r.w / 2, r.y + r.h * 0.22);
-      ctx.fillStyle = COLOR.dimGold;
-      ctx.font = `${Math.min(11, r.w * 0.038)}px ${MONO}`;
-      ctx.fillText(card.archetypeEn.split("").join(" "), r.x + r.w / 2, r.y + r.h * 0.27);
-      // 美术插槽（几何震卦占位；上线替换为插件生成图）
-      const cx = r.x + r.w / 2;
-      const baseY = r.y + r.h * 0.72;
-      ctx.strokeStyle = COLOR.gold;
-      ctx.lineWidth = 2;
-      ctx.lineCap = "round";
-      const seg = r.w * 0.28;
-      const gap = r.w * 0.07;
-      // 上二阴（断）
-      [0.48, 0.58].forEach((f) => {
-        const yy = r.y + r.h * f;
-        ctx.beginPath();
-        ctx.moveTo(cx - seg, yy);
-        ctx.lineTo(cx - gap, yy);
-        ctx.moveTo(cx + gap, yy);
-        ctx.lineTo(cx + seg, yy);
-        ctx.stroke();
-      });
-      // 底阳（连）+ 启动点
-      ctx.strokeStyle = COLOR.brightGold;
-      ctx.lineWidth = 2.4;
-      ctx.beginPath();
-      ctx.moveTo(cx - seg, baseY);
-      ctx.lineTo(cx + seg, baseY);
-      ctx.stroke();
-      ctx.fillStyle = "#f6ecc4";
-      ctx.beginPath();
-      ctx.arc(cx - seg * 0.5, baseY, 2.4, 0, Math.PI * 2);
-      ctx.fill();
-      // 斜向行动轴
-      ctx.strokeStyle = COLOR.gold;
-      ctx.lineWidth = 1.3;
-      ctx.beginPath();
-      ctx.moveTo(cx - seg * 0.5, baseY);
-      ctx.lineTo(cx + seg * 0.7, r.y + r.h * 0.44);
-      ctx.stroke();
-      // 插槽标注（开发期提示，上线删）
-      ctx.fillStyle = "rgba(110,90,48,0.5)";
-      ctx.font = `${Math.min(9, r.w * 0.03)}px ${MONO}`;
-      ctx.textAlign = "center";
-      ctx.fillText("[ 主视觉插槽 · 插件生成 ]", cx, r.y + r.h * 0.85);
-      // 署名
-      ctx.fillStyle = COLOR.gold;
-      ctx.font = `${Math.min(12, r.w * 0.04)}px ${SERIF}`;
-      ctx.fillText("观爻 · GUANYAO", cx, r.y + r.h - 18);
-    }
-
-    function drawCardBack(ctx: CanvasRenderingContext2D, r: { x: number; y: number; w: number; h: number }) {
-      drawFrame(ctx, r);
-      const cx = r.x + r.w / 2;
-      ctx.textAlign = "center";
-      ctx.fillStyle = COLOR.gold;
-      ctx.font = `${Math.min(13, r.w * 0.044)}px ${MONO}`;
-      ctx.fillText(`${card.no}   ${card.guaName}`, cx, r.y + 40);
-      trigramMark(ctx, cx, r.y + r.h * 0.28, Math.min(22, r.w * 0.08), "rgba(110,90,48,0.7)");
-      ctx.fillStyle = COLOR.white;
-      ctx.font = `${Math.min(15, r.w * 0.05)}px ${SERIF}`;
-      ctx.fillText(card.verse1, cx, r.y + r.h * 0.46);
-      ctx.fillStyle = COLOR.off;
-      ctx.fillText(card.verse2, cx, r.y + r.h * 0.52);
-      ctx.strokeStyle = "rgba(90,74,38,0.6)";
-      ctx.lineWidth = 0.5;
-      ctx.beginPath();
-      ctx.moveTo(cx - r.w * 0.18, r.y + r.h * 0.6);
-      ctx.lineTo(cx + r.w * 0.18, r.y + r.h * 0.6);
-      ctx.stroke();
-      ctx.fillStyle = COLOR.brightGold;
-      ctx.font = `${Math.min(16, r.w * 0.055)}px ${SERIF}`;
-      ctx.fillText(card.keywords, cx, r.y + r.h * 0.68);
-      ctx.fillStyle = COLOR.gold;
-      ctx.font = `${Math.min(12, r.w * 0.04)}px ${SERIF}`;
-      ctx.fillText("观爻 · GUANYAO", cx, r.y + r.h - 18);
-    }
-
     function draw(ctx: CanvasRenderingContext2D) {
       ctx.save();
       if (m.shake > 0.1) ctx.translate((Math.random() - 0.5) * m.shake, (Math.random() - 0.5) * m.shake);
@@ -491,19 +298,9 @@ export function MotherLab() {
 
       // 母码卡（CARD/SANDIFY）
       if (m.state === "CARD" || m.state === "SANDIFY") {
-        const r = cardRect();
         const appear = m.state === "CARD" ? smooth(0, 0.6, m.cardT) : Math.max(0, 1 - m.sandT * 1.6);
         if (appear > 0.01) {
-          const flipP = clamp(m.flipT / CFG.flipDur, 0, 1);
-          const flipScale = Math.abs(Math.cos(flipP * Math.PI));
-          ctx.save();
-          ctx.globalAlpha = appear;
-          ctx.translate(r.x + r.w / 2, r.y + r.h / 2);
-          ctx.scale(flipScale, appear < 1 && m.state === "SANDIFY" ? appear : 1);
-          ctx.translate(-(r.x + r.w / 2), -(r.y + r.h / 2));
-          if (m.side === "front") drawCardFront(ctx, r);
-          else drawCardBack(ctx, r);
-          ctx.restore();
+          drawMotherCardRenderer({ ctx, snapshot, width: m.w, height: m.h, alpha: appear });
         }
       }
 
