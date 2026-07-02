@@ -989,35 +989,39 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }:
   const bodyAlpha = narrativePhase === "beast_guide" || narrativePhase === "node_active" || narrativePhase === "node_complete" ? 0.82 : 0.2;
   const nodeCharge = Math.min(1, Math.max(0, activeNodeIndex / 6));
   const coreGlow = 0.26 + reveal * 0.24 + nodeCharge * 0.22;
+  const coreLineAlpha = 0.08 + reveal * 0.24 + nodeCharge * 0.1;
   const coreStars = [
-    [24, 39, 6.2],
-    [36, 34, 5.2],
-    [48, 31, 5.4],
-    [60, 30, 6.8],
-    [70, 34, 5.4],
-    [79, 41, 5.8],
-    [86, 31, 5.1],
+    [22, 41, 6.2],
+    [34, 34, 5.2],
+    [47, 28, 5.6],
+    [59, 26, 6.8],
+    [70, 31, 5.4],
+    [80, 39, 5.8],
+    [88, 25, 5.2],
   ] as const;
-  const headDust = Array.from({ length: 16 }).map((_, index) => {
-    const angle = (index / 16) * Math.PI * 2;
-    const radiusX = 7 + (index % 3) * 1.4;
-    const radiusY = 8 + (index % 4) * 0.9;
-    return {
-      left: 16 + Math.cos(angle) * radiusX + (index % 5) * 0.4,
-      top: 45 + Math.sin(angle) * radiusY - (index % 2) * 1.2,
-      size: index === 3 ? 2.8 : 1.8 + (index % 3) * 0.35,
-      delay: (index % 8) * 130,
-      alpha: index === 3 ? 0.52 : 0.22 + ((index * 5) % 9) / 80,
-    };
-  });
-  const backDust = Array.from({ length: 28 }).map((_, index) => {
-    const t = index / 27;
+  const headShape = [
+    [7, 44, 1.7], [9, 39, 1.6], [12, 35, 1.7], [15, 32, 1.8], [19, 33, 1.6],
+    [22, 36, 1.8], [24, 40, 1.7], [23, 44, 1.5], [20, 48, 1.5], [17, 51, 1.7],
+    [13, 52, 1.6], [9, 50, 1.8], [5, 48, 1.4], [4, 43, 1.2], [6, 38, 1.3],
+    [10, 34, 1.4], [13, 29, 1.5], [17, 29, 1.4], [21, 31, 1.3], [26, 37, 1.2],
+    [6, 53, 1.2], [10, 56, 1.4], [15, 56, 1.5], [20, 53, 1.3], [20, 42, 3.3],
+    [12, 41, 1.7], [14, 45, 1.6], [16, 39, 1.4], [18, 36, 1.3],
+  ] as const;
+  const headDust = headShape.map(([left, top, size], index) => ({
+    left,
+    top,
+    size,
+    delay: (index % 8) * 115,
+    alpha: index === headShape.length - 1 ? 0.68 : 0.26 + ((index * 5) % 9) / 78,
+  }));
+  const backDust = Array.from({ length: 38 }).map((_, index) => {
+    const t = index / 37;
     return {
       left: 24 + t * 59,
-      top: 40 - Math.sin(t * Math.PI) * 11 + Math.sin(t * 15) * 1.5,
+      top: 42 - Math.sin(t * Math.PI) * 16 + Math.sin(t * 14) * 1.2,
       size: 1.4 + (index % 4) * 0.25,
       delay: (index % 10) * 110,
-      alpha: 0.18 + ((index * 7) % 8) / 90,
+      alpha: 0.2 + ((index * 7) % 8) / 86,
     };
   });
   const bellyDust = Array.from({ length: 18 }).map((_, index) => {
@@ -1031,26 +1035,26 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }:
     };
   });
   const legDust = [
-    ...Array.from({ length: 9 }).map((_, index) => ({ left: 31 + index * 0.9, top: 56 + index * 3.6, group: 0 })),
-    ...Array.from({ length: 8 }).map((_, index) => ({ left: 42 + index * 0.9, top: 55 + index * 3.2, group: 1 })),
-    ...Array.from({ length: 10 }).map((_, index) => ({ left: 61 + index * 0.8, top: 55 + index * 3.7, group: 2 })),
-    ...Array.from({ length: 8 }).map((_, index) => ({ left: 72 + index * 1.2, top: 54 + index * 3.1, group: 3 })),
+    ...Array.from({ length: 9 }).map((_, index) => ({ left: 29 + index * 0.35 + Math.sin(index * 0.8) * 2, top: 56 + index * 3.4, group: 0 })),
+    ...Array.from({ length: 8 }).map((_, index) => ({ left: 42 + index * 0.75 - Math.sin(index * 0.7) * 1.7, top: 55 + index * 3.3, group: 1 })),
+    ...Array.from({ length: 10 }).map((_, index) => ({ left: 60 + index * 0.45 + Math.sin(index * 0.65) * 2.2, top: 55 + index * 3.6, group: 2 })),
+    ...Array.from({ length: 8 }).map((_, index) => ({ left: 75 + index * 0.92 - Math.sin(index * 0.75) * 1.6, top: 53 + index * 3.2, group: 3 })),
   ].map((particle, index) => ({
     left: particle.left,
     top: particle.top,
-    size: 1.15 + (particle.group % 2) * 0.3,
+    size: 1.25 + (particle.group % 2) * 0.34,
     delay: (index % 12) * 95,
-    alpha: 0.16 + ((index * 4) % 8) / 100,
+    alpha: 0.18 + ((index * 4) % 8) / 96,
   }));
-  const tailDust = Array.from({ length: 20 }).map((_, index) => {
-    const t = index / 19;
-    const angle = t * Math.PI * 1.35;
+  const tailDust = Array.from({ length: 38 }).map((_, index) => {
+    const t = index / 37;
+    const angle = t * Math.PI * 1.92;
     return {
-      left: 79 + Math.sin(angle) * 12 + t * 8,
-      top: 42 - Math.sin(t * Math.PI) * 26 + Math.cos(angle) * 5,
+      left: 78 + Math.sin(angle) * 13 + t * 12,
+      top: 42 - Math.sin(t * Math.PI) * 39 + Math.cos(angle) * 5,
       size: 1.1 + (index % 4) * 0.25,
       delay: (index % 10) * 105,
-      alpha: 0.14 + ((index * 6) % 8) / 110,
+      alpha: 0.16 + ((index * 6) % 8) / 100,
     };
   });
   const silhouetteDust = [...headDust, ...backDust, ...bellyDust, ...legDust, ...tailDust];
@@ -1089,8 +1093,8 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }:
         <path
           d={coreStars.map(([x, y], index) => `${index === 0 ? "M" : "L"} ${x} ${y}`).join(" ")}
           fill="none"
-          stroke={`rgba(${toneColor},${0.16 + reveal * 0.42 + nodeCharge * 0.18})`}
-          strokeWidth="0.86"
+          stroke={`rgba(${toneColor},${coreLineAlpha})`}
+          strokeWidth="0.58"
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeDasharray="220"
@@ -1101,21 +1105,6 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }:
                 : "none",
             }}
           />
-        <path
-          d="M9 47 C13 34, 25 32, 33 42 C46 30, 66 27, 80 39 C72 58, 42 63, 24 56 C17 58, 11 55, 9 47"
-          fill="none"
-          stroke={`rgba(${toneColor},${bodyAlpha * 0.14})`}
-          strokeWidth="0.55"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M78 40 C91 28, 89 12, 78 14 M78 14 C92 6, 100 14, 94 25 M30 56 C26 66, 26 75, 20 81 M43 57 C41 67, 45 75, 38 81 M61 57 C58 68, 62 76, 55 82 M73 54 C75 64, 82 69, 77 78 M12 43 C5 41, 3 35, 8 31"
-          fill="none"
-          stroke={`rgba(${toneColor},${bodyAlpha * 0.13})`}
-          strokeWidth="0.5"
-          strokeLinecap="round"
-        />
       </svg>
 
       {silhouetteDust.map((particle, index) => (
