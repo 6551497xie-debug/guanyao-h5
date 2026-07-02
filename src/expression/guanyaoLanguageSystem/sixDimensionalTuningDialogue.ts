@@ -16,9 +16,14 @@ export type SixDimensionalDialogueNode = {
 export type SixDimensionalDialogueOutput = {
   fieldTitle: string;
   pressureText: string;
+  blackholeStatus: string;
   beastIntro: string;
   nodes: SixDimensionalDialogueNode[];
+  idleStatus: string;
+  activeStatus: string;
+  bloomStatus: string;
   completionText: string;
+  footerIdleText: string;
 };
 
 const beastIntroTone: Record<GuanyaoStarBeastName, Record<GuanyaoLanguageDimension, string>> = {
@@ -139,11 +144,16 @@ export function generateSixDimensionalTuningDialogue(
   const pressureSeedText = input.pressureSeedText.trim() || "这件事刚刚发生过。";
 
   return {
-    fieldTitle: "当前时空坐标遭遇风暴。",
+    fieldTitle: "当前时空坐标遭遇风暴。\n先别急着判断，我们一起把光送回去。",
     pressureText: `『${pressureSeedText}』`,
+    blackholeStatus: "这颗种子正在影响你。",
     beastIntro: beastIntroTone[input.starBeastName]?.[input.dimension] ?? beastIntroTone.白虎.body,
     nodes: dimensionTemplates[input.dimension] ?? dimensionTemplates.body,
-    completionText: `这片行为花冠已替你亮起。\n你的${input.starBeastName}，为你衔回了一枚今日的时空能量资产。`,
+    idleStatus: `${input.starBeastName}正在接住它`,
+    activeStatus: "它正在慢慢开花",
+    bloomStatus: "它正在开成一束光",
+    completionText: "这一局，已经开始结晶。",
+    footerIdleText: "轻触星点，慢慢点亮这片花。",
   };
 }
 

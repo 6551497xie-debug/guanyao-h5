@@ -1015,10 +1015,10 @@ function CosmicBotanicsField({
   const activeNode = nodeFlow[Math.min(activeNodeIndex, nodeFlow.length - 1)];
   const readinessTone =
     hexagramReadiness >= 0.98
-      ? "它正在开成一束光"
+      ? narrative.bloomStatus
       : activeNodeIndex > 0
-        ? "它正在慢慢开花"
-        : "星兽正在接住它";
+        ? narrative.activeStatus
+        : narrative.idleStatus;
   const shortPetalNames = ["身体", "情绪", "思维", "行为", "记忆", "目标"];
   const starFlowerComponentProps = {
     toneColor,
@@ -1113,9 +1113,9 @@ function CosmicBotanicsField({
         style={{
           position: "absolute",
           left: "50%",
-          top: "22%",
+          top: "20%",
           width: "78%",
-          minHeight: 120,
+          minHeight: 108,
           transform: "translateX(-50%)",
           display: "grid",
           placeItems: "center",
@@ -1129,8 +1129,8 @@ function CosmicBotanicsField({
             position: "absolute",
             left: "50%",
             top: "50%",
-            width: 142,
-            height: 142,
+            width: 124,
+            height: 124,
             borderRadius: "50%",
             transform: "translate(-50%, -50%)",
             background:
@@ -1143,8 +1143,8 @@ function CosmicBotanicsField({
             position: "absolute",
             left: "50%",
             top: "50%",
-            width: 168,
-            height: 168,
+            width: 148,
+            height: 148,
             borderRadius: "50%",
             transform: "translate(-50%, -50%)",
             border: "1px solid rgba(199,169,107,0.12)",
@@ -1160,7 +1160,7 @@ function CosmicBotanicsField({
             placeItems: "center",
             gap: 6,
             width: "100%",
-            maxWidth: 246,
+            maxWidth: 188,
             color: "rgba(245,245,245,0.82)",
             fontSize: 12,
             lineHeight: 1.46,
@@ -1169,12 +1169,28 @@ function CosmicBotanicsField({
             animation: "gy-stardust-drift 4s ease-in-out infinite",
           }}
         >
-          <span style={{ color: `rgba(${toneColor},0.76)`, fontSize: 10, letterSpacing: "0.08em" }}>
-            {narrative.fieldTitle}
-          </span>
-          <span>{narrative.pressureText}</span>
+          <span>{narrative.blackholeStatus}</span>
         </span>
       </div>
+
+      <p
+        style={{
+          position: "absolute",
+          left: 28,
+          right: 28,
+          top: "33%",
+          zIndex: 1,
+          margin: 0,
+          color: "rgba(245,245,245,0.78)",
+          fontSize: 13,
+          lineHeight: 1.52,
+          fontWeight: 560,
+          textAlign: "center",
+          pointerEvents: "none",
+        }}
+      >
+        {narrative.pressureText}
+      </p>
 
       <div
         style={{
@@ -1208,13 +1224,13 @@ function CosmicBotanicsField({
           position: "absolute",
           left: 22,
           right: 22,
-          top: "39%",
+          top: "42%",
           zIndex: 1,
           margin: 0,
           whiteSpace: "pre-line",
-          color: "rgba(245,245,245,0.62)",
-          fontSize: 12,
-          lineHeight: 1.55,
+          color: `rgba(${toneColor},0.72)`,
+          fontSize: 11,
+          lineHeight: 1.5,
           pointerEvents: "none",
         }}
       >
@@ -2477,6 +2493,13 @@ function HexagramCodeDeliveryShell() {
   }
 
   if (USE_COSMIC_BOTANICS_SIX_SPACE) {
+    const activeCosmicConfig = sixSpaceConfigs[Math.max(0, Math.min(sixSpaceConfigs.length - 1, sixDimensionStep - 1))] ?? sixSpaceConfigs[0];
+    const cosmicPageCopy = generateSixDimensionalTuningDialogue({
+      pressureSeedText: selectedPressureSeedSurface,
+      starBeastName: resolveCosmicStarBeastName(cosmicBotanicsRuntime.starFlower.form),
+      dimension: resolveCosmicNarrativeDimension(activeCosmicConfig?.id),
+    });
+
     return (
       <main
         style={{
@@ -2526,7 +2549,7 @@ function HexagramCodeDeliveryShell() {
           </span>
 
           <p style={{ margin: 0, maxWidth: 292, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.6 }}>
-            当前时空坐标遭遇风暴。先别急着判断，我们一起把光送回去。
+            {cosmicPageCopy.fieldTitle}
           </p>
         </section>
 
@@ -2557,26 +2580,13 @@ function HexagramCodeDeliveryShell() {
           style={{
             position: "relative",
             zIndex: 1,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "end",
-            gap: 16,
+            display: "block",
             color: "rgba(245,245,245,0.5)",
             fontSize: 12,
             lineHeight: 1.55,
           }}
         >
-          <span>
-            {cosmicNodeStep >= 6 ? "这一局，已经开始结晶。" : "轻触星点，慢慢点亮这片花。"}
-          </span>
-          <span
-            style={{
-              color: cosmicNodeStep > 0 ? "rgba(199,169,107,0.82)" : "rgba(245,245,245,0.42)",
-              letterSpacing: "0.04em",
-            }}
-          >
-            {cosmicNodeStep >= 6 ? "这片花冠已替你亮起。" : "一点点往前。"}
-          </span>
+          {cosmicNodeStep >= 6 ? cosmicPageCopy.completionText : cosmicPageCopy.footerIdleText}
         </footer>
       </main>
     );
