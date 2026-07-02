@@ -978,6 +978,204 @@ function resolveCosmicNarrativeDimension(spaceId: SixSpaceId | undefined): Guany
 
 type CosmicNarrativePhase = "field_intro" | "seed_visible" | "beast_guide" | "node_active" | "node_complete";
 
+type BaiHuConstellationLayerProps = {
+  toneColor: string;
+  narrativePhase: CosmicNarrativePhase;
+  activeNodeIndex: number;
+};
+
+function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }: BaiHuConstellationLayerProps) {
+  const reveal = narrativePhase === "field_intro" ? 0.34 : narrativePhase === "seed_visible" ? 0.66 : 1;
+  const bodyAlpha = narrativePhase === "beast_guide" || narrativePhase === "node_active" || narrativePhase === "node_complete" ? 0.82 : 0.2;
+  const nodeCharge = Math.min(1, Math.max(0, activeNodeIndex / 6));
+  const coreGlow = 0.26 + reveal * 0.24 + nodeCharge * 0.22;
+  const coreStars = [
+    [16, 58, 5.8],
+    [28, 42, 4.4],
+    [42, 48, 5.2],
+    [52, 28, 6.6],
+    [66, 40, 4.6],
+    [82, 32, 5.6],
+    [76, 64, 4.8],
+  ] as const;
+  const silhouetteDust = Array.from({ length: 58 }).map((_, index) => {
+    const lane = index % 4;
+    const t = index / 57;
+    const curveX =
+      lane === 0
+        ? 12 + t * 72
+        : lane === 1
+          ? 18 + t * 62
+          : lane === 2
+            ? 24 + t * 52
+            : 30 + t * 44;
+    const curveY =
+      lane === 0
+        ? 60 - Math.sin(t * Math.PI) * 30 + Math.sin(t * 12) * 2.4
+        : lane === 1
+          ? 52 + Math.sin(t * Math.PI * 1.2) * 20 + Math.cos(t * 14) * 2
+          : lane === 2
+            ? 36 + Math.sin(t * Math.PI * 1.4) * 16
+            : 67 - Math.sin(t * Math.PI) * 13;
+    return {
+      left: curveX,
+      top: curveY,
+      size: lane === 0 ? 1.8 : 1.3,
+      delay: (index % 11) * 120,
+      alpha: 0.12 + ((index * 7) % 10) / 80,
+    };
+  });
+  const innerDust = Array.from({ length: 34 }).map((_, index) => ({
+    left: 24 + ((index * 19) % 54),
+    top: 34 + ((index * 23) % 30),
+    size: 1.2 + (index % 3) * 0.45,
+    delay: (index % 9) * 170,
+    alpha: 0.1 + nodeCharge * 0.18 + ((index * 5) % 8) / 90,
+  }));
+
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        left: "50%",
+        top: "18%",
+        width: 218,
+        height: 142,
+        transform: "translate(-50%, -50%)",
+        opacity: 0.62 + reveal * 0.3,
+        pointerEvents: "none",
+        zIndex: 1,
+      }}
+    >
+      <svg
+        viewBox="0 0 100 82"
+        style={{
+          position: "absolute",
+          inset: 0,
+          overflow: "visible",
+          filter: `drop-shadow(0 0 ${10 + nodeCharge * 14}px rgba(${toneColor},${coreGlow}))`,
+        }}
+      >
+        <path
+          d={coreStars.map(([x, y], index) => `${index === 0 ? "M" : "L"} ${x} ${y}`).join(" ")}
+          fill="none"
+          stroke={`rgba(${toneColor},${0.16 + reveal * 0.42 + nodeCharge * 0.18})`}
+          strokeWidth="0.86"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray="220"
+          style={{
+            animation:
+              narrativePhase === "seed_visible" || narrativePhase === "beast_guide"
+                ? "gy-starbeast-line 680ms ease-out both"
+                : "none",
+          }}
+        />
+        <path
+          d="M10 61 C19 72, 45 72, 64 64 C76 60, 84 49, 90 34 C78 38, 68 30, 54 28 C42 26, 30 36, 19 51"
+          fill="none"
+          stroke={`rgba(${toneColor},${bodyAlpha * 0.24})`}
+          strokeWidth="0.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M55 29 C62 18, 74 15, 84 22 M81 33 C89 35, 94 39, 96 48 M17 60 C10 66, 7 73, 10 78 M63 64 C68 73, 75 76, 86 72"
+          fill="none"
+          stroke={`rgba(${toneColor},${bodyAlpha * 0.2})`}
+          strokeWidth="0.6"
+          strokeLinecap="round"
+        />
+      </svg>
+
+      {silhouetteDust.map((particle, index) => (
+        <span
+          key={`silhouette-${index}`}
+          style={{
+            position: "absolute",
+            left: `${particle.left}%`,
+            top: `${particle.top}%`,
+            width: particle.size,
+            height: particle.size,
+            borderRadius: 999,
+            transform: "translate(-50%, -50%)",
+            background: `rgba(255,248,224,${particle.alpha + bodyAlpha * 0.34})`,
+            boxShadow: `0 0 ${5 + nodeCharge * 5}px rgba(${toneColor},${0.14 + bodyAlpha * 0.16})`,
+            animation: `gy-starbeast-dust 3.4s ease-in-out infinite ${particle.delay}ms`,
+          }}
+        />
+      ))}
+
+      {innerDust.map((particle, index) => (
+        <span
+          key={`inner-${index}`}
+          style={{
+            position: "absolute",
+            left: `${particle.left}%`,
+            top: `${particle.top}%`,
+            width: particle.size,
+            height: particle.size,
+            borderRadius: 999,
+            transform: "translate(-50%, -50%)",
+            background: `rgba(${toneColor},${particle.alpha + reveal * 0.08})`,
+            boxShadow: `0 0 ${4 + nodeCharge * 8}px rgba(${toneColor},${0.12 + nodeCharge * 0.16})`,
+            animation: `gy-starbeast-inner-breathe 4.2s ease-in-out infinite ${particle.delay}ms`,
+          }}
+        />
+      ))}
+
+      {coreStars.map(([left, top, size], index) => (
+        <span
+          key={`core-${index}`}
+          style={{
+            position: "absolute",
+            left: `${left}%`,
+            top: `${top}%`,
+            width: size + nodeCharge * 1.8,
+            height: size + nodeCharge * 1.8,
+            borderRadius: 999,
+            transform: "translate(-50%, -50%)",
+            background: `rgba(255,247,220,${0.54 + reveal * 0.36})`,
+            boxShadow: `0 0 ${10 + reveal * 14 + nodeCharge * 16}px rgba(${toneColor},${coreGlow})`,
+            animation: `gy-starbeast-ignite 760ms ease both ${index * 90}ms`,
+          }}
+        />
+      ))}
+
+      <span
+        style={{
+          position: "absolute",
+          left: "55%",
+          top: "49%",
+          width: 116 + nodeCharge * 18,
+          height: 58 + nodeCharge * 12,
+          borderRadius: "50%",
+          transform: "translate(-50%, -50%)",
+          background: `radial-gradient(ellipse, rgba(${toneColor},${0.08 + bodyAlpha * 0.12}), transparent 68%)`,
+          filter: "blur(3px)",
+          animation: "gy-starbeast-breathe 4.8s ease-in-out infinite",
+        }}
+      />
+
+      {narrativePhase === "node_active" || narrativePhase === "node_complete" ? (
+        <span
+          style={{
+            position: "absolute",
+            left: "55%",
+            top: "50%",
+            width: 126 + nodeCharge * 18,
+            height: 70 + nodeCharge * 10,
+            borderRadius: "50%",
+            border: `1px solid rgba(${toneColor},${0.18 + nodeCharge * 0.14})`,
+            animation: "gy-starbeast-ripple 1.8s ease-out infinite",
+          }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
 function CosmicBotanicsField({
   configs,
   currentStep,
@@ -1076,6 +1274,31 @@ function CosmicBotanicsField({
           0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.82; }
           50% { transform: translate(-50%, -50%) scale(1.16); opacity: 1; }
         }
+        @keyframes gy-starbeast-ignite {
+          0% { opacity: 0.18; transform: translate(-50%, -50%) scale(0.72); }
+          55% { opacity: 1; transform: translate(-50%, -50%) scale(1.18); }
+          100% { opacity: 0.86; transform: translate(-50%, -50%) scale(1); }
+        }
+        @keyframes gy-starbeast-line {
+          0% { stroke-dashoffset: 220; opacity: 0; }
+          100% { stroke-dashoffset: 0; opacity: 1; }
+        }
+        @keyframes gy-starbeast-breathe {
+          0%, 100% { transform: translate(-50%, -50%) scale(0.98); opacity: 0.72; }
+          50% { transform: translate(-50%, calc(-50% - 3px)) scale(1.03); opacity: 0.92; }
+        }
+        @keyframes gy-starbeast-ripple {
+          0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.34; }
+          100% { transform: translate(-50%, -50%) scale(1.32); opacity: 0; }
+        }
+        @keyframes gy-starbeast-dust {
+          0%, 100% { transform: translate(-50%, -50%) scale(0.82); opacity: 0.36; }
+          50% { transform: translate(calc(-50% + 2px), calc(-50% - 2px)) scale(1.08); opacity: 0.86; }
+        }
+        @keyframes gy-starbeast-inner-breathe {
+          0%, 100% { transform: translate(-50%, -50%) scale(0.72); opacity: 0.24; }
+          50% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.72; }
+        }
         @keyframes gy-copy-fade-in {
           from { opacity: 0; transform: translateY(6px); }
           to { opacity: 1; transform: translateY(0); }
@@ -1116,11 +1339,13 @@ function CosmicBotanicsField({
         })}
       </div>
 
+      <BaiHuConstellationLayer toneColor={toneColor} narrativePhase={narrativePhase} activeNodeIndex={activeNodeIndex} />
+
       <div
         style={{
           position: "absolute",
           left: "50%",
-          top: "20%",
+          top: "32%",
           width: "78%",
           minHeight: 108,
           transform: "translateX(-50%)",
@@ -1186,7 +1411,7 @@ function CosmicBotanicsField({
           position: "absolute",
           left: 28,
           right: 28,
-          top: "33%",
+          top: "43%",
           zIndex: 1,
           margin: 0,
           color: "rgba(245,245,245,0.78)",
@@ -1207,12 +1432,12 @@ function CosmicBotanicsField({
           position: "absolute",
           left: 22,
           right: 22,
-          bottom: 40,
-          gap: 8,
+          bottom: 18,
+          gap: 6,
           pointerEvents: "none",
-          padding: "14px 14px 13px",
-          borderRadius: 16,
-          background: "linear-gradient(180deg, rgba(5,6,7,0.54), rgba(5,6,7,0.22))",
+          padding: "11px 13px 10px",
+          borderRadius: 14,
+          background: "linear-gradient(180deg, rgba(5,6,7,0.5), rgba(5,6,7,0.18))",
           border: `1px solid rgba(${toneColor},0.14)`,
           backdropFilter: "blur(4px)",
           display: showNodePanel ? "grid" : "none",
@@ -1222,7 +1447,7 @@ function CosmicBotanicsField({
         <GuanyaoText size="eyebrow" tone="gold">
           {activeNode.title}
         </GuanyaoText>
-        <p style={{ margin: 0, whiteSpace: "pre-line", color: "rgba(245,245,245,0.76)", fontSize: 13, lineHeight: 1.58 }}>
+        <p style={{ margin: 0, whiteSpace: "pre-line", color: "rgba(245,245,245,0.76)", fontSize: 12, lineHeight: 1.46 }}>
           {activeNode.text}
         </p>
         <GuanyaoText size="eyebrow" tone="gold">
@@ -1235,7 +1460,7 @@ function CosmicBotanicsField({
           position: "absolute",
           left: 22,
           right: 22,
-          top: "42%",
+          top: "47%",
           zIndex: 1,
           margin: 0,
           whiteSpace: "pre-line",
@@ -1255,10 +1480,11 @@ function CosmicBotanicsField({
           position: "absolute",
           left: "50%",
           top: "58%",
-          width: 210,
-          height: 210,
+          width: 166,
+          height: 166,
           transform: "translate(-50%, -50%)",
           pointerEvents: "none",
+          opacity: 0.42,
         }}
       >
         {starFlowerForm === "qinglong" ? <QingLongStarFlowerComponent {...starFlowerComponentProps} /> : null}
@@ -1272,8 +1498,8 @@ function CosmicBotanicsField({
         const rad = (angle * Math.PI) / 180;
         const isActive = config.id === activeConfig?.id;
         const state = petalStates[config.id];
-        const left = 50 + Math.cos(rad) * 34;
-        const top = 58 + Math.sin(rad) * 22;
+        const left = 50 + Math.cos(rad) * 32;
+        const top = 58 + Math.sin(rad) * 18;
 
         return (
           <span
@@ -1283,8 +1509,8 @@ function CosmicBotanicsField({
               position: "absolute",
               left: `${left}%`,
               top: `${top}%`,
-              width: isActive ? 68 : 54,
-              height: isActive ? 28 : 22,
+              width: isActive ? 64 : 50,
+              height: isActive ? 26 : 20,
               borderRadius: "50%",
               transform: `translate(-50%, -50%) rotate(${angle + 90}deg)`,
               background: `linear-gradient(90deg, rgba(${toneColor},${isActive ? 0.28 : 0.08}), rgba(245,245,245,${state === "blooming" ? 0.16 : 0.04}))`,
@@ -1319,9 +1545,9 @@ function CosmicBotanicsField({
         style={{
           position: "absolute",
           left: "50%",
-          top: "75%",
-          width: "84%",
-          height: "34%",
+          top: "70%",
+          width: "78%",
+          height: "28%",
           transform: "translate(-50%, -50%)",
           border: "0",
           background: "transparent",
