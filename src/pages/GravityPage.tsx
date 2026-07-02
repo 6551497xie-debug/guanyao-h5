@@ -15,6 +15,11 @@ import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { guanyaoHexagramAssetLibrary } from "../data/guanyaoHexagramAssetLibrary";
 import { getPressureSeedSixSpaceProjection } from "../data/guanyaoPressureSeedSixSpaceProjectionRegistry";
+import {
+  generateCosmicBotanicsNarrative,
+  type CosmicBotanicsNarrativeBeastName,
+  type CosmicBotanicsNarrativeDimension,
+} from "../expression/cosmicBotanicsNarrativeEngine";
 import { getDemoDynamicsResult } from "../services/guanyaoInteractionService";
 import { buildMotherCodeAssetLines, getMotherCodeAsset } from "../services/guanyaoMotherCodeAssetService";
 import { getSession } from "../services/sessionService";
@@ -954,6 +959,23 @@ function YaoTextBlock({ kicker, title, lines, muted }: YaoTextBlockProps) {
   );
 }
 
+function resolveCosmicStarBeastName(starFlowerForm: StarFlowerForm): CosmicBotanicsNarrativeBeastName {
+  const starBeastNameByForm: Record<StarFlowerForm, CosmicBotanicsNarrativeBeastName> = {
+    qinglong: "青龙",
+    baihu: "白虎",
+    zhuque: "朱雀",
+    xuanwu: "玄武",
+  };
+
+  return starBeastNameByForm[starFlowerForm];
+}
+
+function resolveCosmicNarrativeDimension(spaceId: SixSpaceId | undefined): CosmicBotanicsNarrativeDimension {
+  if (spaceId === "action") return "behavior";
+  if (spaceId === "goal") return "motivation";
+  return spaceId ?? "body";
+}
+
 function CosmicBotanicsField({
   configs,
   currentStep,
@@ -984,32 +1006,12 @@ function CosmicBotanicsField({
   const activeConfig = configs[Math.max(0, Math.min(configs.length - 1, currentStep - 1))] ?? configs[0];
   const activePetalState = activeConfig ? petalStates[activeConfig.id] : "active";
   const activePollenBurst = activeConfig ? pollenBursts[activeConfig.id] : 0;
-  const nodeFlow = [
-    {
-      title: "我承认，有些疲惫",
-      line: "胸口发闷，肩膀沉重。你已经很久没有抬头看星空了。",
-    },
-    {
-      title: "现在，呼出一口气",
-      line: "年龄和职级只是此刻的坐标，不是你的边界。",
-    },
-    {
-      title: "今晚，对自己温柔一次",
-      line: "亥时放下手机，给身体一次无条件的修复。",
-    },
-    {
-      title: "长按五秒，给自己一点光",
-      line: "让意识流向紧绷的地方，把意志力注入这片花瓣。",
-    },
-    {
-      title: "它正在开成一束光",
-      line: "你刚才给出的微小动作，正在变成击碎困境的雷霆。",
-    },
-    {
-      title: "白虎已经接住了这点光",
-      line: "其余五个意识空间，正在产生连锁共振。",
-    },
-  ];
+  const narrative = generateCosmicBotanicsNarrative({
+    pressureSeedText: pressureSeedSurface,
+    starBeastName: resolveCosmicStarBeastName(starFlowerForm),
+    currentDimension: resolveCosmicNarrativeDimension(activeConfig?.id),
+  });
+  const nodeFlow = narrative.nodeSteps;
   const activeNode = nodeFlow[Math.min(activeNodeIndex, nodeFlow.length - 1)];
   const readinessTone =
     hexagramReadiness >= 0.98
@@ -1154,14 +1156,24 @@ function CosmicBotanicsField({
           style={{
             position: "relative",
             zIndex: 1,
-            width: 8,
-            height: 8,
-            borderRadius: 999,
-            background: "rgba(245,245,245,0.54)",
-            boxShadow: `0 0 24px rgba(${toneColor},0.28)`,
+            display: "grid",
+            placeItems: "center",
+            gap: 6,
+            width: "100%",
+            maxWidth: 246,
+            color: "rgba(245,245,245,0.82)",
+            fontSize: 12,
+            lineHeight: 1.46,
+            fontWeight: 520,
+            textShadow: `0 0 16px rgba(${toneColor},0.18)`,
             animation: "gy-stardust-drift 4s ease-in-out infinite",
           }}
-        />
+        >
+          <span style={{ color: `rgba(${toneColor},0.76)`, fontSize: 10, letterSpacing: "0.08em" }}>
+            {narrative.fieldTitle}
+          </span>
+          <span>{narrative.pressureText}</span>
+        </span>
       </div>
 
       <div
@@ -1183,10 +1195,31 @@ function CosmicBotanicsField({
         <GuanyaoText size="eyebrow" tone="gold">
           {activeNode.title}
         </GuanyaoText>
-        <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 13, lineHeight: 1.58 }}>
-          {activeNode.line}
+        <p style={{ margin: 0, whiteSpace: "pre-line", color: "rgba(245,245,245,0.76)", fontSize: 13, lineHeight: 1.58 }}>
+          {activeNode.text}
         </p>
+        <GuanyaoText size="eyebrow" tone="gold">
+          {activeNode.actionText}
+        </GuanyaoText>
       </div>
+
+      <p
+        style={{
+          position: "absolute",
+          left: 22,
+          right: 22,
+          top: "39%",
+          zIndex: 1,
+          margin: 0,
+          whiteSpace: "pre-line",
+          color: "rgba(245,245,245,0.62)",
+          fontSize: 12,
+          lineHeight: 1.55,
+          pointerEvents: "none",
+        }}
+      >
+        {narrative.beastIntro}
+      </p>
 
       <div
         style={{
@@ -1343,7 +1376,7 @@ function CosmicBotanicsField({
 
       <div style={{ position: "absolute", left: 18, bottom: 16, right: 18, display: "grid", gap: 5 }}>
         <GuanyaoText size="eyebrow" tone="gold">
-          {activeNodeIndex >= 6 ? "这片花冠已替你亮起" : readinessTone}
+          {activeNodeIndex >= 6 ? narrative.completionText : readinessTone}
         </GuanyaoText>
       </div>
     </section>
