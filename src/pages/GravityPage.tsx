@@ -263,7 +263,8 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, o
 
   return (
     <div
-      aria-label="白虎七星"
+      role="group"
+      aria-label="轻触七星，把一点光送回白虎。"
       style={{
         position: "absolute",
         left: "50%",
@@ -342,6 +343,7 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, o
         <span
           key={`core-${index}`}
           role="button"
+          aria-label="轻触七星，把一点光送回白虎。"
           tabIndex={0}
           onClick={onCoreStarClick}
           onKeyDown={(event) => {
@@ -366,6 +368,25 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, o
           }}
         />
       ))}
+
+      <span
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: "50%",
+          bottom: -8,
+          transform: "translateX(-50%)",
+          color: `rgba(255,248,224,${0.28 + reveal * 0.12})`,
+          fontSize: 10,
+          lineHeight: 1,
+          letterSpacing: "0.08em",
+          whiteSpace: "nowrap",
+          pointerEvents: "none",
+          textShadow: `0 0 10px rgba(${toneColor},0.16)`,
+        }}
+      >
+        轻触星点，白虎会接住这一点光。
+      </span>
 
       <span
         style={{
