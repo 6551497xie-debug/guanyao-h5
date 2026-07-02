@@ -118,6 +118,33 @@ function drawFrame(ctx: CanvasRenderingContext2D, rect: { x: number; y: number; 
   ctx.stroke();
 }
 
+function drawDivider(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, alpha = 0.28) {
+  ctx.strokeStyle = `rgba(232,200,138,${alpha})`;
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + w, y);
+  ctx.stroke();
+}
+
+function drawIdentityChip(ctx: CanvasRenderingContext2D, label: string, value: string, x: number, y: number, w: number) {
+  roundedRectPath(ctx, x, y, w, 46, 8);
+  ctx.fillStyle = "rgba(232,200,138,0.055)";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(232,200,138,0.16)";
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
+
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.fillStyle = "rgba(232,200,138,0.58)";
+  ctx.font = `650 9px ${MONO}`;
+  ctx.fillText(label, x + 12, y + 8);
+  ctx.fillStyle = "rgba(255,247,228,0.82)";
+  ctx.font = `680 12px ${SANS}`;
+  drawWrappedText(ctx, value, x + 12, y + 24, w - 24, 14);
+}
+
 function drawTrigram(ctx: CanvasRenderingContext2D, trigram: string, cx: number, cy: number, w: number, color: string) {
   const lines = TRIGRAM_LINES[normalizeTrigram(trigram)] ?? TRIGRAM_LINES.CACHE_PENDING;
   const gap = w * 0.14;
@@ -154,45 +181,38 @@ function drawFront(ctx: CanvasRenderingContext2D, snapshot: MotherCardReadonlySn
   ctx.font = `650 ${Math.min(10, rect.w * 0.032)}px ${MONO}`;
   ctx.fillText("观爻母码", rect.x + pad, rect.y + pad);
 
+  const identityAura = ctx.createRadialGradient(rect.x + pad + 34, rect.y + pad + 70, 0, rect.x + pad + 34, rect.y + pad + 70, 92);
+  identityAura.addColorStop(0, "rgba(255,247,228,0.12)");
+  identityAura.addColorStop(0.48, "rgba(232,200,138,0.08)");
+  identityAura.addColorStop(1, "rgba(232,200,138,0)");
+  ctx.fillStyle = identityAura;
+  ctx.beginPath();
+  ctx.arc(rect.x + pad + 34, rect.y + pad + 70, 92, 0, Math.PI * 2);
+  ctx.fill();
+
   ctx.fillStyle = "rgba(255,247,228,0.96)";
-  ctx.font = `820 ${Math.min(32, rect.w * 0.098)}px ${SANS}`;
+  ctx.font = `860 ${Math.min(42, rect.w * 0.13)}px ${SANS}`;
   ctx.fillText(`${snapshot.motherCode}`, rect.x + pad, rect.y + pad + 50);
 
   ctx.fillStyle = "rgba(232,200,138,0.86)";
   ctx.font = `700 ${Math.min(18, rect.w * 0.056)}px ${SERIF}`;
-  ctx.fillText(copy.title, rect.x + pad, rect.y + pad + 92);
+  ctx.fillText(copy.title, rect.x + pad, rect.y + pad + 102);
 
-  const glyphY = rect.y + rect.h * 0.46;
+  const glyphY = rect.y + rect.h * 0.43;
   const aura = ctx.createRadialGradient(rect.x + rect.w / 2, glyphY, 0, rect.x + rect.w / 2, glyphY, rect.w * 0.26);
-  aura.addColorStop(0, "rgba(232,200,138,0.16)");
-  aura.addColorStop(0.55, "rgba(232,200,138,0.06)");
+  aura.addColorStop(0, "rgba(232,200,138,0.2)");
+  aura.addColorStop(0.55, "rgba(232,200,138,0.075)");
   aura.addColorStop(1, "rgba(232,200,138,0)");
   ctx.fillStyle = aura;
   ctx.beginPath();
   ctx.arc(rect.x + rect.w / 2, glyphY, rect.w * 0.26, 0, Math.PI * 2);
   ctx.fill();
-  drawTrigram(ctx, trigram, rect.x + rect.w / 2, glyphY, rect.w * 0.27, "rgba(232,200,138,0.92)");
+  drawTrigram(ctx, trigram, rect.x + rect.w / 2, glyphY, rect.w * 0.3, "rgba(232,200,138,0.96)");
 
-  ctx.fillStyle = "rgba(232,200,138,0.64)";
-  ctx.font = `650 ${Math.min(10, rect.w * 0.032)}px ${MONO}`;
-  ctx.fillText("时间铭刻", rect.x + pad, rect.y + rect.h - 142);
-  ctx.fillStyle = "rgba(255,247,228,0.78)";
-  ctx.font = `650 ${Math.min(12, rect.w * 0.038)}px ${SANS}`;
-  ctx.fillText(snapshot.chrono, rect.x + pad, rect.y + rect.h - 122);
-
-  ctx.fillStyle = "rgba(232,200,138,0.64)";
-  ctx.font = `650 ${Math.min(10, rect.w * 0.032)}px ${MONO}`;
-  ctx.fillText("人格象位", rect.x + pad, rect.y + rect.h - 92);
-  ctx.fillStyle = "rgba(255,247,228,0.78)";
-  ctx.font = `650 ${Math.min(12, rect.w * 0.038)}px ${SANS}`;
-  ctx.fillText(snapshot.direction, rect.x + pad, rect.y + rect.h - 72);
-
-  ctx.fillStyle = "rgba(232,200,138,0.64)";
-  ctx.font = `650 ${Math.min(10, rect.w * 0.032)}px ${MONO}`;
-  ctx.fillText("星源印记", rect.x + rect.w * 0.52, rect.y + rect.h - 92);
-  ctx.fillStyle = "rgba(255,247,228,0.66)";
-  ctx.font = `600 ${Math.min(10.5, rect.w * 0.032)}px ${SANS}`;
-  drawWrappedText(ctx, snapshot.starOrigin, rect.x + rect.w * 0.52, rect.y + rect.h - 72, rect.w * 0.38, Math.min(15, rect.w * 0.046));
+  drawDivider(ctx, rect.x + pad, rect.y + rect.h - 162, rect.w - pad * 2, 0.2);
+  drawIdentityChip(ctx, "时间铭刻", snapshot.chrono, rect.x + pad, rect.y + rect.h - 146, rect.w - pad * 2);
+  drawIdentityChip(ctx, "人格象位", snapshot.direction, rect.x + pad, rect.y + rect.h - 92, rect.w * 0.36);
+  drawIdentityChip(ctx, "星源印记", snapshot.starOrigin, rect.x + rect.w * 0.47, rect.y + rect.h - 92, rect.w * 0.45);
 
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(232,200,138,0.46)";
@@ -205,6 +225,9 @@ function drawBack(ctx: CanvasRenderingContext2D, snapshot: MotherCardReadonlySna
   const copy = CARD_COPY[trigram] ?? CARD_COPY.CACHE_PENDING;
   const pad = Math.max(22, rect.w * 0.08);
   drawFrame(ctx, rect);
+  ctx.fillStyle = "rgba(232,200,138,0.035)";
+  roundedRectPath(ctx, rect.x + pad, rect.y + pad + 120, rect.w - pad * 2, rect.h - pad * 2 - 150, 10);
+  ctx.fill();
 
   ctx.textBaseline = "top";
   ctx.textAlign = "left";
@@ -213,34 +236,32 @@ function drawBack(ctx: CanvasRenderingContext2D, snapshot: MotherCardReadonlySna
   ctx.fillText("结构符纹", rect.x + pad, rect.y + pad);
 
   ctx.fillStyle = "rgba(255,247,228,0.96)";
-  ctx.font = `800 ${Math.min(24, rect.w * 0.074)}px ${SANS}`;
+  ctx.font = `840 ${Math.min(30, rect.w * 0.092)}px ${SANS}`;
   ctx.fillText(`${trigram}｜${snapshot.motherCode}`, rect.x + pad, rect.y + pad + 48);
 
   ctx.fillStyle = "rgba(232,200,138,0.86)";
   ctx.font = `700 ${Math.min(15, rect.w * 0.048)}px ${SANS}`;
-  ctx.fillText(`人格骨相｜${copy.structure}`, rect.x + pad, rect.y + pad + 92);
+  ctx.fillText("人格骨相", rect.x + pad, rect.y + pad + 96);
+  ctx.fillStyle = "rgba(255,247,228,0.78)";
+  ctx.font = `650 ${Math.min(14, rect.w * 0.044)}px ${SANS}`;
+  ctx.fillText(copy.structure, rect.x + pad, rect.y + pad + 118);
 
-  ctx.strokeStyle = "rgba(232,200,138,0.32)";
-  ctx.lineWidth = 0.5;
-  ctx.beginPath();
-  ctx.moveTo(rect.x + pad, rect.y + pad + 130);
-  ctx.lineTo(rect.x + rect.w - pad, rect.y + pad + 130);
-  ctx.stroke();
+  drawDivider(ctx, rect.x + pad, rect.y + pad + 150, rect.w - pad * 2, 0.28);
 
   ctx.fillStyle = "rgba(232,200,138,0.64)";
   ctx.font = `650 ${Math.min(10, rect.w * 0.032)}px ${MONO}`;
-  ctx.fillText("人格回声", rect.x + pad, rect.y + pad + 154);
+  ctx.fillText("人格回声", rect.x + pad, rect.y + pad + 174);
   ctx.fillStyle = "rgba(255,247,228,0.84)";
-  ctx.font = `650 ${Math.min(15, rect.w * 0.046)}px ${SERIF}`;
-  drawWrappedText(ctx, copy.summary, rect.x + pad, rect.y + pad + 178, rect.w - pad * 2, Math.min(25, rect.w * 0.074));
+  ctx.font = `680 ${Math.min(16, rect.w * 0.05)}px ${SERIF}`;
+  drawWrappedText(ctx, copy.summary, rect.x + pad, rect.y + pad + 200, rect.w - pad * 2, Math.min(27, rect.w * 0.08));
 
   ctx.fillStyle = "rgba(232,200,138,0.82)";
   ctx.font = `700 ${Math.min(15, rect.w * 0.046)}px ${SERIF}`;
-  ctx.fillText(copy.tags, rect.x + pad, rect.y + rect.h - 126);
+  ctx.fillText(copy.tags, rect.x + pad, rect.y + rect.h - 118);
 
   ctx.fillStyle = "rgba(255,247,228,0.58)";
   ctx.font = `600 ${Math.min(11, rect.w * 0.034)}px ${SANS}`;
-  ctx.fillText(`出生坐标｜${snapshot.chrono}`, rect.x + pad, rect.y + rect.h - 88);
+  ctx.fillText(`出生坐标｜${snapshot.chrono}`, rect.x + pad, rect.y + rect.h - 78);
 
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(232,200,138,0.52)";

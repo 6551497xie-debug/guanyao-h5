@@ -13,14 +13,22 @@
 //   几何双 X LOGO 退役，星兽 + 观爻字标 = 新品牌标记。语言只接住/陪行；声音用暖。
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { drawMotherCardRenderer, getMotherCardRendererRect } from "../components/mother/MotherCardRenderer";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
+import { PressureSeedCrossAxisPage, type PressureSeedCrossAxisSeed } from "./PressureSeedCrossAxisPage";
+import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
+import { buildSelectedPressureSeedContext } from "../services/guanyaoPressureSeedSceneBindingService";
 import {
   createMotherCardReadonlySnapshot,
   type MotherCardReadonlySnapshot,
 } from "../services/guanyaoPersonaSnapshotCache";
 import { triggerPersonaGeneration } from "../services/guanyaoPersonaGenerationTrigger";
+import {
+  buildTripleForceLandingResult,
+  getTripleForceFrontStage,
+} from "../services/guanyaoTripleForceLandingService";
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
@@ -275,6 +283,28 @@ function makeAudio() {
 
 export function LaunchLab() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const navigate = useNavigate();
+  const [showPressureSeedCapture, setShowPressureSeedCapture] = useState(false);
+
+  const commitPressureSeedCapture = useCallback(
+    (candidate: PressureSeedCrossAxisSeed | undefined) => {
+      if (!candidate) return;
+
+      const selectedPressureSeedContext = buildSelectedPressureSeedContext(candidate.seed);
+      const tripleForceLandingResult = buildTripleForceLandingResult(selectedPressureSeedContext);
+      const tripleForceFrontStage = getTripleForceFrontStage(tripleForceLandingResult);
+
+      window.localStorage.setItem("guanyao:selectedPressureSeedContext", JSON.stringify(selectedPressureSeedContext));
+      window.localStorage.setItem("guanyao:tripleForceLandingResult", JSON.stringify(tripleForceLandingResult));
+      window.localStorage.setItem("guanyao:tripleForceFrontStage", JSON.stringify(tripleForceFrontStage));
+      window.localStorage.setItem("guanyao:selectedPressureSeedId", candidate.seed.id);
+      window.localStorage.setItem("guanyao:selectedPressureSliceId", candidate.seed.id);
+      window.localStorage.setItem("guanyao:selectedPressureSliceText", candidate.seed.surface);
+
+      navigate(GUANYAO_ROUTES.hexagramStamp);
+    },
+    [navigate],
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1119,6 +1149,12 @@ export function LaunchLab() {
           side: m.motherSide,
           flipProgress: m.motherFlipT,
         });
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.fillStyle = "rgba(232,200,138,0.74)";
+        ctx.font = `650 ${Math.min(13, m.w * 0.034)}px ${SANS}`;
+        ctx.fillText("轻触空白，捕获此刻压力种子", m.w / 2, m.h * 0.9);
+        ctx.restore();
         return;
       }
 
@@ -1222,6 +1258,9 @@ export function LaunchLab() {
           m.motherFlipT = 0;
           audio.tick();
           vibrate(8);
+        }
+        if (!inCard && m.motherFlipT >= 1) {
+          setShowPressureSeedCapture(true);
         }
         return;
       }
@@ -1346,6 +1385,10 @@ export function LaunchLab() {
       canvas.removeEventListener("pointercancel", onUp);
     };
   }, []);
+
+  if (showPressureSeedCapture) {
+    return <PressureSeedCrossAxisPage onComplete={commitPressureSeedCapture} />;
+  }
 
   return (
     <GyMobilePreviewFrame background="#070512">
