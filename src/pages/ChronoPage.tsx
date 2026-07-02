@@ -486,7 +486,7 @@ function InitialCoordinatesEntry() {
 
   function handleEnterPressureSeed() {
     persistInitialCoordinates(initialCoordinates, motherCodeLanding.motherCodeProfile);
-    navigate(GUANYAO_ROUTES.pressureSeed);
+    navigate(GUANYAO_ROUTES.dynamics);
   }
 
   if (stage === "coordinates") {
@@ -797,7 +797,7 @@ export function ChronoPage() {
             <CausalRail statusLabel="确认时序，开始一次观爻" rightHint="右滑确认时序" onRight={handleGenerate} />
           ) : (
             <>
-              <CausalRail statusLabel="钉入现实压力种子" rightHint="右滑进入现实压力场" onRight={() => navigate(GUANYAO_ROUTES.pressureSeed)} />
+              <CausalRail statusLabel="钉入现实压力种子" rightHint="右滑进入现实压力场" onRight={() => navigate(GUANYAO_ROUTES.dynamics)} />
             </>
           )}
         </div>

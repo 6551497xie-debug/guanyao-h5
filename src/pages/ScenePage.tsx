@@ -2,7 +2,8 @@
 // GUANYAO 2.0 = closed deterministic causal system with irreversible upstream generation and passive downstream rendering only.
 // Data flow is one-way only: Chrono -> Default Reaction -> MotherField -> Behavioral Compression Engine -> Pressure Seed Output -> ScenePage Display.
 // Pressure Seed = result of behavioral inertia compression, not a selection outcome.
-// ScenePage = main-route pressure seed cross-axis loader: vertical axis switches engine-fed triplet groups; horizontal axis loads one seed into the downstream cache.
+// ScenePage = DEPRECATED / ISOLATED / NOT IN ACTIVE FLOW.
+// Kept dormant for legacy pressure-seed review only. It must never forward users to the old hexagram-stamp path.
 // Visible seed labels are neutral presentation indexes only; no semantic category labels are shown on this screen.
 import { useNavigate } from "react-router-dom";
 import { PressureSeedCrossAxisPage, type PressureSeedCrossAxisSeed } from "./PressureSeedCrossAxisPage";
@@ -112,7 +113,7 @@ export function ScenePage() {
     window.localStorage.setItem("guanyao:selectedPressureSliceText", candidate.seed.surface);
     setSelectedSceneSeed(legacySceneSeed);
     setMotherCodeResult(buildMotherCodeResult(getSession()));
-    navigate(GUANYAO_ROUTES.hexagramStamp);
+    navigate(GUANYAO_ROUTES.dynamics);
   }
 
   return <PressureSeedCrossAxisPage ageSegment={pressureSeedAgeSegment} onComplete={commitPressureSeed} />;

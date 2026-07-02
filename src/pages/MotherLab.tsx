@@ -226,7 +226,7 @@ export function MotherLab() {
           m.sandT += dt;
           if (!m.advanced && m.sandT > 0.9) {
             m.advanced = true;
-            navRef.current("/pressure-seed"); // 封存母码 → 进入填装压力种子
+            navRef.current("/dynamics"); // 封存母码 → 进入新六维花冠主链路
           }
           break;
         }

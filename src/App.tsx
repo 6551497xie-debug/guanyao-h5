@@ -10,13 +10,11 @@ import { GenesisLab } from "./pages/GenesisLab";
 import { GoldenCaliperLab } from "./pages/GoldenCaliperLab";
 import { GravityPage } from "./pages/GravityPage";
 import { HexagramCardLabPage } from "./pages/HexagramCardLabPage";
-import { HexagramStampPage } from "./pages/HexagramStampPage";
 import { LaunchLab } from "./pages/LaunchLab";
 import { LaunchPage } from "./pages/LaunchPage";
 import { MigrationPage } from "./pages/MigrationPage";
 import { MotherCodePage } from "./pages/MotherCodePage";
 import { MotherLab } from "./pages/MotherLab";
-import { ScenePage } from "./pages/ScenePage";
 import { StarbeastLab } from "./pages/StarbeastLab";
 import { VisualSystemLabPage } from "./pages/VisualSystemLabPage";
 import { GUANYAO_ROUTES, LEGACY_ROUTE_REDIRECTS } from "./routes/guanyaoRoutes";
@@ -45,8 +43,8 @@ export default function App() {
         <Route path="/launch-legacy" element={<LaunchPage />} />
         <Route path="/chrono-axis" element={<ChronoAxisPage />} />
         <Route path={GUANYAO_ROUTES.motherCode} element={<MotherCodePage />} />
-        <Route path={GUANYAO_ROUTES.pressureSeed} element={<ScenePage />} />
-        <Route path={GUANYAO_ROUTES.hexagramStamp} element={<HexagramStampPage />} />
+        <Route path={GUANYAO_ROUTES.pressureSeed} element={<LegacyRedirect to={GUANYAO_ROUTES.dynamics} />} />
+        <Route path={GUANYAO_ROUTES.hexagramStamp} element={<LegacyRedirect to={GUANYAO_ROUTES.dynamics} />} />
         <Route path={GUANYAO_ROUTES.dynamics} element={<GravityPage />} />
         <Route path={GUANYAO_ROUTES.breachScan} element={<ChoicePage />} />
         <Route path={GUANYAO_ROUTES.yaoDevice} element={<MigrationPage />} />

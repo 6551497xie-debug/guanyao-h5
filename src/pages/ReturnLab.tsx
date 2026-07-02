@@ -271,7 +271,7 @@ export function ReturnLab() {
             m.history = [...m.history, nv].slice(-CFG.maxPoints);
             saveHistory(m.history);
           }
-          if (m.igniteT >= CFG.igniteMs) navRef.current("/pressure-seed"); // 走今日这一局：跳过生辰+母码，直入填装压力种子
+          if (m.igniteT >= CFG.igniteMs) navRef.current("/dynamics"); // 走今日这一局：进入新六维花冠主链路
           break;
         }
       }

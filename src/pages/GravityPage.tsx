@@ -4,6 +4,12 @@
  */
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { CausalRail } from "../components/causal/CausalRail";
+import {
+  BaiHuStarFlowerComponent,
+  QingLongStarFlowerComponent,
+  XuanWuStarFlowerComponent,
+  ZhuQueStarFlowerComponent,
+} from "../components/cosmic-botanics/StarFlowerComponents";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
@@ -13,6 +19,17 @@ import { getDemoDynamicsResult } from "../services/guanyaoInteractionService";
 import { buildMotherCodeAssetLines, getMotherCodeAsset } from "../services/guanyaoMotherCodeAssetService";
 import { getSession } from "../services/sessionService";
 import { buildMotherCodeResult } from "../services/motherCodeService";
+import {
+  applyCosmicBotanicsRuntimeAction,
+  createDormantCosmicBotanicsSixDimensionState,
+  runCosmicBotanicsRuntimeEngine,
+  settleCosmicBotanicsBloomState,
+  type CosmicBotanicsSixDimensionState,
+  type CosmicPetalState,
+  type StarbeastFeedback,
+  type StarFlowerForm,
+  type StarFlowerGrowthState,
+} from "../services/guanyaoCosmicBotanicsRuntimeEngine";
 import { getCollapseYaoTexts, getGravityYaoTexts } from "../services/yaoTextService";
 import { appendInteractiveYaoChoice, generateMockAutoYaoPath, getAutoYaoPath, getInteractiveYaoPath, resetInteractiveYaoPath } from "../services/trajectoryService";
 import type { GuanyaoSession, MotherCodeResult, SceneSlice, YaoBit } from "../types";
@@ -125,7 +142,6 @@ type SixSpaceConfig = {
   completedRightHint: string;
 };
 
-type CosmicPetalState = "dormant" | "active" | "blooming";
 type AwakenedWeaponAsset = {
   space: string;
   spaceId: SixSpaceId;
@@ -945,7 +961,10 @@ function CosmicBotanicsField({
   pressureSeedSurface,
   petalStates,
   pollenBursts,
-  starbeastEnergy,
+  starbeast,
+  starFlowerForm,
+  starFlowerState,
+  hexagramReadiness,
   onBloom,
 }: {
   configs: SixSpaceConfig[];
@@ -953,11 +972,20 @@ function CosmicBotanicsField({
   pressureSeedSurface: string;
   petalStates: Record<SixSpaceId, CosmicPetalState>;
   pollenBursts: Record<SixSpaceId, number>;
-  starbeastEnergy: number;
+  starbeast: StarbeastFeedback;
+  starFlowerForm: StarFlowerForm;
+  starFlowerState: StarFlowerGrowthState;
+  hexagramReadiness: number;
   onBloom: (spaceId: SixSpaceId) => void;
 }) {
   const seedTone = pressureSeedSurface.length % 3;
   const toneColor = seedTone === 0 ? "199,169,107" : seedTone === 1 ? "222,196,154" : "176,210,206";
+  const starFlowerComponentProps = {
+    toneColor,
+    starbeast,
+    growthState: starFlowerState,
+    readiness: hexagramReadiness,
+  };
 
   return (
     <section
@@ -1008,28 +1036,32 @@ function CosmicBotanicsField({
         })}
       </div>
 
+      {starFlowerForm === "qinglong" ? <QingLongStarFlowerComponent {...starFlowerComponentProps} /> : null}
+      {starFlowerForm === "baihu" ? <BaiHuStarFlowerComponent {...starFlowerComponentProps} /> : null}
+      {starFlowerForm === "zhuque" ? <ZhuQueStarFlowerComponent {...starFlowerComponentProps} /> : null}
+      {starFlowerForm === "xuanwu" ? <XuanWuStarFlowerComponent {...starFlowerComponentProps} /> : null}
+
       <div
         style={{
           position: "absolute",
           left: "50%",
           top: "50%",
-          width: 74 + starbeastEnergy * 5,
-          height: 74 + starbeastEnergy * 5,
           transform: "translate(-50%, -50%)",
-          borderRadius: "50%",
-          border: `1px solid rgba(${toneColor},0.28)`,
-          boxShadow: `0 0 ${18 + starbeastEnergy * 4}px rgba(${toneColor},0.22)`,
           display: "grid",
           placeItems: "center",
-          color: `rgba(${toneColor},0.86)`,
+          gap: 4,
+          color: `rgba(${toneColor},${0.72 + starbeast.glowIntensity * 0.22})`,
           fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
           fontSize: 10,
           letterSpacing: "0.12em",
           pointerEvents: "none",
-          transition: "width 360ms ease, height 360ms ease, box-shadow 360ms ease",
+          textAlign: "center",
         }}
       >
-        星兽
+        <span>星花</span>
+        <span style={{ fontSize: 8, opacity: 0.62 }}>
+          {starFlowerForm} · {starFlowerState}
+        </span>
       </div>
 
       {configs.map((config, index) => {
@@ -1102,7 +1134,7 @@ function CosmicBotanicsField({
 
       <div style={{ position: "absolute", left: 18, bottom: 16, right: 18, display: "grid", gap: 5 }}>
         <GuanyaoText size="eyebrow" tone="gold">
-          Cosmic Botanics
+          Cosmic Botanics · {Math.round(hexagramReadiness * 100)}%
         </GuanyaoText>
         <p style={{ margin: 0, color: "rgba(245,245,245,0.52)", fontSize: 12, lineHeight: 1.55 }}>
           压力种子像环境引力。每一次轻触花瓣，都是把一点能量送回星兽。
@@ -1214,9 +1246,9 @@ function HexagramCodeDeliveryShell() {
   const [isAssetFuseDragging, setIsAssetFuseDragging] = useState(false);
   const [isAssetFuseLocked, setIsAssetFuseLocked] = useState(false);
   const [assetFuseStage, setAssetFuseStage] = useState<AssetFuseStage>("interact");
-  const [cosmicPetalStates, setCosmicPetalStates] = useState<Record<SixSpaceId, CosmicPetalState>>(() => buildSpaceRecord<CosmicPetalState>("dormant"));
-  const [cosmicPollenBursts, setCosmicPollenBursts] = useState<Record<SixSpaceId, number>>(() => buildSpaceRecord(0));
-  const [starbeastBloomEnergy, setStarbeastBloomEnergy] = useState(0);
+  const [cosmicSixDimensionState, setCosmicSixDimensionState] = useState<CosmicBotanicsSixDimensionState>(() =>
+    createDormantCosmicBotanicsSixDimensionState(),
+  );
   const [selectedSpaceWeapons, setSelectedSpaceWeapons] = useState<Record<SixSpaceId, SixSpaceWeaponId | null>>(() => ({
     body: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("body")),
     emotion: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("emotion")),
@@ -1294,8 +1326,13 @@ function HexagramCodeDeliveryShell() {
     unlocked: assetStep === "unlocked",
   };
 
+  const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
+    pressureSeed: selectedPressureSeedSurface,
+    sixDimensionState: cosmicSixDimensionState,
+  });
+
   const visiblePetalStates = sixSpaceConfigs.reduce<Record<SixSpaceId, CosmicPetalState>>((acc, config, index) => {
-    const baseState = cosmicPetalStates[config.id];
+    const baseState = cosmicBotanicsRuntime.sixDimensionState[config.id].petalState;
     const isCurrent = sixDimensionStep === index + 1;
     const isCompleted =
       config.id === "body"
@@ -1306,13 +1343,25 @@ function HexagramCodeDeliveryShell() {
     acc[config.id] = isCompleted ? "blooming" : isCurrent && baseState === "dormant" ? "active" : baseState;
     return acc;
   }, buildSpaceRecord<CosmicPetalState>("dormant"));
+  const cosmicPollenBursts = sixSpaceConfigs.reduce<Record<SixSpaceId, number>>((acc, config) => {
+    acc[config.id] = cosmicBotanicsRuntime.sixDimensionState[config.id].bloomCount;
+    return acc;
+  }, buildSpaceRecord(0));
 
   function bloomCosmicPetal(spaceId: SixSpaceId) {
-    setCosmicPetalStates((current) => ({ ...current, [spaceId]: "blooming" }));
-    setCosmicPollenBursts((current) => ({ ...current, [spaceId]: current[spaceId] + 1 }));
-    setStarbeastBloomEnergy((current) => Math.min(6, current + 1));
+    const nextRuntime = applyCosmicBotanicsRuntimeAction(
+      {
+        pressureSeed: selectedPressureSeedSurface,
+        sixDimensionState: cosmicBotanicsRuntime.sixDimensionState,
+      },
+      {
+        type: "bloom",
+        dimensionId: spaceId,
+      },
+    );
+    setCosmicSixDimensionState(nextRuntime.sixDimensionState);
     window.setTimeout(() => {
-      setCosmicPetalStates((current) => (current[spaceId] === "blooming" ? { ...current, [spaceId]: "active" } : current));
+      setCosmicSixDimensionState((current) => settleCosmicBotanicsBloomState(current, spaceId));
     }, 1400);
   }
 
@@ -2280,7 +2329,10 @@ function HexagramCodeDeliveryShell() {
             pressureSeedSurface={selectedPressureSeedSurface}
             petalStates={visiblePetalStates}
             pollenBursts={cosmicPollenBursts}
-            starbeastEnergy={starbeastBloomEnergy}
+            starbeast={cosmicBotanicsRuntime.starbeast}
+            starFlowerForm={cosmicBotanicsRuntime.starFlower.form}
+            starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
+            hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}
             onBloom={bloomCosmicPetal}
           />
         </section>
@@ -2299,9 +2351,9 @@ function HexagramCodeDeliveryShell() {
           }}
         >
           <span>
-            六维花瓣已接入。
+            {cosmicBotanicsRuntime.hexagramCardGeneration.reason}
             <br />
-            星兽正在回收能量。
+            星兽反馈：{cosmicBotanicsRuntime.starbeast.postureShift}
           </span>
           <span
             style={{
@@ -2353,12 +2405,15 @@ function HexagramCodeDeliveryShell() {
         <CosmicBotanicsField
           configs={sixSpaceConfigs}
           currentStep={sixDimensionStep}
-          pressureSeedSurface={selectedPressureSeedSurface}
-          petalStates={visiblePetalStates}
-          pollenBursts={cosmicPollenBursts}
-          starbeastEnergy={starbeastBloomEnergy}
-          onBloom={bloomCosmicPetal}
-        />
+            pressureSeedSurface={selectedPressureSeedSurface}
+            petalStates={visiblePetalStates}
+            pollenBursts={cosmicPollenBursts}
+            starbeast={cosmicBotanicsRuntime.starbeast}
+            starFlowerForm={cosmicBotanicsRuntime.starFlower.form}
+            starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
+            hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}
+            onBloom={bloomCosmicPetal}
+          />
       ) : null}
 
       {currentSpace && sixDimensionStep === 1 && bodySpaceStep === "entry" ? (

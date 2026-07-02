@@ -197,7 +197,7 @@ export function ForcePage() {
           <GuanyaoText className="gy-force-r1-gate-note" as="p" size="eyebrow" tone="faint">
             现实触发证据待接入。
           </GuanyaoText>
-          <Link className="gy-force-r1-gate-link" to={GUANYAO_ROUTES.pressureSeed} onClick={persistForceReading}>
+          <Link className="gy-force-r1-gate-link" to={GUANYAO_ROUTES.dynamics} onClick={persistForceReading}>
             <GuanyaoText as="span" size="body" tone="default">
               接入现实触发证据
             </GuanyaoText>

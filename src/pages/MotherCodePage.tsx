@@ -333,7 +333,7 @@ export function MotherCodePage() {
         >
           母码资产已显影
         </span>
-        <CausalRail statusLabel="进入现实压力场" rightHint="右滑进入现实压力场" onRight={() => navigate(GUANYAO_ROUTES.pressureSeed)} />
+        <CausalRail statusLabel="进入现实压力场" rightHint="右滑进入现实压力场" onRight={() => navigate(GUANYAO_ROUTES.dynamics)} />
       </div>
     </main>
   );

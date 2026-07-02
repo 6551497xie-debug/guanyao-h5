@@ -552,7 +552,7 @@ export function BreachLab() {
         dbl = t;
       }
       if (m.state === "YAOQI") {
-        if (m.yaoqiT > 1.0) navRef.current("/hexagram-stamp"); // 器法 / 下游（占位）
+        if (m.yaoqiT > 1.0) navRef.current("/dynamics"); // 旧卦码占位隔离，回到新六维花冠主链路
         return;
       }
       if (m.state !== "CUT") return;
