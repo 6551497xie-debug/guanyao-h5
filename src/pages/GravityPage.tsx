@@ -444,7 +444,6 @@ function CosmicBotanicsField({
   const showPressureText = narrativePhase === "seed_visible" || narrativePhase === "beast_guide";
   const showBeastIntro = narrativePhase === "beast_guide";
   const showNodePanel = narrativePhase === "node_active" || narrativePhase === "node_complete";
-  const showFieldStatus = narrativePhase === "node_complete";
   const shortPetalNames = ["身体", "情绪", "思维", "行为", "记忆", "目标"];
   const coreReadiness = Math.max(hexagramReadiness, activeNodeIndex / Math.max(1, nodeFlow.length));
   const coreVisible = narrativePhase === "node_active" || narrativePhase === "node_complete";
@@ -840,13 +839,6 @@ function CosmicBotanicsField({
         );
       })}
 
-      <div style={{ position: "absolute", left: 18, bottom: 16, right: 18, display: "grid", gap: 5 }}>
-        {showFieldStatus ? (
-          <GuanyaoText size="eyebrow" tone="gold">
-            {narrative.completionText}
-          </GuanyaoText>
-        ) : null}
-      </div>
     </section>
   );
 }
