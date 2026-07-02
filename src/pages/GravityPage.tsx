@@ -2,7 +2,7 @@
  * GravityPage = passive UI visualization layer for presenting existing causal state transitions
  * without any influence on engine or data flow.
  */
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { CausalRail } from "../components/causal/CausalRail";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
@@ -19,6 +19,7 @@ import type { GuanyaoSession, MotherCodeResult, SceneSlice, YaoBit } from "../ty
 import type { PressureSeedSixSpaceProjection, PressureSeedSpaceProjection } from "../types/guanyaoPressureSeed";
 
 const USE_HEXAGRAM_DELIVERY_SHELL = true;
+const USE_COSMIC_BOTANICS_SIX_SPACE = true;
 type HexagramAssetCode = keyof typeof guanyaoHexagramAssetLibrary;
 
 function toFrontendTrajectory(text: string) {
@@ -123,6 +124,8 @@ type SixSpaceConfig = {
   weapons: SixSpaceWeapon[];
   completedRightHint: string;
 };
+
+type CosmicPetalState = "dormant" | "active" | "blooming";
 type AwakenedWeaponAsset = {
   space: string;
   spaceId: SixSpaceId;
@@ -936,6 +939,179 @@ function YaoTextBlock({ kicker, title, lines, muted }: YaoTextBlockProps) {
   );
 }
 
+function CosmicBotanicsField({
+  configs,
+  currentStep,
+  pressureSeedSurface,
+  petalStates,
+  pollenBursts,
+  starbeastEnergy,
+  onBloom,
+}: {
+  configs: SixSpaceConfig[];
+  currentStep: number;
+  pressureSeedSurface: string;
+  petalStates: Record<SixSpaceId, CosmicPetalState>;
+  pollenBursts: Record<SixSpaceId, number>;
+  starbeastEnergy: number;
+  onBloom: (spaceId: SixSpaceId) => void;
+}) {
+  const seedTone = pressureSeedSurface.length % 3;
+  const toneColor = seedTone === 0 ? "199,169,107" : seedTone === 1 ? "222,196,154" : "176,210,206";
+
+  return (
+    <section
+      aria-label="六维宇宙花冠"
+      style={{
+        position: "relative",
+        minHeight: 214,
+        border: "1px solid rgba(199,169,107,0.16)",
+        borderRadius: 24,
+        overflow: "hidden",
+        padding: "20px 16px",
+        background:
+          `radial-gradient(circle at 50% 44%, rgba(${toneColor},0.12), rgba(5,6,7,0.08) 45%, rgba(5,6,7,0.02) 100%)`,
+      }}
+    >
+      <style>{`
+        @keyframes gy-petal-bloom {
+          0% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(0.92); opacity: 0.62; }
+          45% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(1.08); opacity: 1; }
+          100% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(1); opacity: 0.88; }
+        }
+        @keyframes gy-pollen-rise {
+          0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+          25% { opacity: 1; }
+          100% { transform: translate(calc(-50% + var(--pollen-x)), calc(-50% + var(--pollen-y))) scale(1); opacity: 0; }
+        }
+      `}</style>
+
+      <div style={{ position: "absolute", inset: 0, opacity: 0.38, pointerEvents: "none" }}>
+        {Array.from({ length: 28 }).map((_, index) => {
+          const left = 8 + ((index * 17) % 84);
+          const top = 10 + ((index * 29) % 78);
+          return (
+            <span
+              key={index}
+              style={{
+                position: "absolute",
+                left: `${left}%`,
+                top: `${top}%`,
+                width: index % 7 === 0 ? 3 : 2,
+                height: index % 7 === 0 ? 3 : 2,
+                borderRadius: 999,
+                background: "rgba(245,245,245,0.62)",
+                boxShadow: "0 0 10px rgba(245,245,245,0.36)",
+              }}
+            />
+          );
+        })}
+      </div>
+
+      <div
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          width: 74 + starbeastEnergy * 5,
+          height: 74 + starbeastEnergy * 5,
+          transform: "translate(-50%, -50%)",
+          borderRadius: "50%",
+          border: `1px solid rgba(${toneColor},0.28)`,
+          boxShadow: `0 0 ${18 + starbeastEnergy * 4}px rgba(${toneColor},0.22)`,
+          display: "grid",
+          placeItems: "center",
+          color: `rgba(${toneColor},0.86)`,
+          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          fontSize: 10,
+          letterSpacing: "0.12em",
+          pointerEvents: "none",
+          transition: "width 360ms ease, height 360ms ease, box-shadow 360ms ease",
+        }}
+      >
+        星兽
+      </div>
+
+      {configs.map((config, index) => {
+        const angle = -90 + index * 60;
+        const rad = (angle * Math.PI) / 180;
+        const cx = 50 + Math.cos(rad) * 32;
+        const cy = 50 + Math.sin(rad) * 34;
+        const state = petalStates[config.id];
+        const isCurrent = currentStep === index + 1;
+        const alpha = state === "dormant" ? 0.42 : state === "active" ? 0.78 : 1;
+        const scale = state === "dormant" ? 0.9 : state === "active" ? 1 : 1.08;
+        const pollenBurst = pollenBursts[config.id];
+
+        return (
+          <button
+            key={config.id}
+            type="button"
+            onClick={() => onBloom(config.id)}
+            aria-label={`${config.name}花瓣`}
+            style={{
+              "--petal-rotate": `${angle + 90}deg`,
+              position: "absolute",
+              left: `${cx}%`,
+              top: `${cy}%`,
+              width: 82,
+              minHeight: 42,
+              transform: `translate(-50%, -50%) rotate(${angle + 90}deg) scale(${scale})`,
+              transformOrigin: "center",
+              border: `1px solid rgba(${toneColor},${state === "dormant" ? 0.18 : 0.52})`,
+              borderRadius: "50% 50% 46% 46%",
+              background: `linear-gradient(135deg, rgba(${toneColor},${state === "blooming" ? 0.22 : 0.1}), rgba(5,6,7,0.18))`,
+              color: state === "dormant" ? "rgba(245,245,245,0.56)" : "rgba(245,245,245,0.9)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 10,
+              letterSpacing: "0.08em",
+              cursor: "pointer",
+              opacity: alpha,
+              boxShadow: isCurrent || state === "blooming" ? `0 0 24px rgba(${toneColor},0.22)` : "none",
+              animation: state === "blooming" ? "gy-petal-bloom 900ms ease both" : "none",
+              transition: "opacity 260ms ease, transform 260ms ease, border-color 260ms ease, box-shadow 260ms ease",
+            } as CSSProperties}
+          >
+            <span style={{ display: "block", transform: `rotate(${-angle - 90}deg)`, whiteSpace: "nowrap" }}>
+              {config.no} · {config.name.replace("空间", "")}
+            </span>
+            {pollenBurst > 0
+              ? Array.from({ length: 6 }).map((_, pollenIndex) => (
+                  <span
+                    key={`${pollenBurst}-${pollenIndex}`}
+                    style={{
+                      "--pollen-x": `${Math.cos((pollenIndex / 6) * Math.PI * 2) * 34}px`,
+                      "--pollen-y": `${Math.sin((pollenIndex / 6) * Math.PI * 2) * 28}px`,
+                      position: "absolute",
+                      left: "50%",
+                      top: "50%",
+                      width: 3,
+                      height: 3,
+                      borderRadius: 999,
+                      background: `rgba(${toneColor},0.92)`,
+                      boxShadow: `0 0 8px rgba(${toneColor},0.56)`,
+                      pointerEvents: "none",
+                      animation: "gy-pollen-rise 920ms ease-out both",
+                    } as CSSProperties}
+                  />
+                ))
+              : null}
+          </button>
+        );
+      })}
+
+      <div style={{ position: "absolute", left: 18, bottom: 16, right: 18, display: "grid", gap: 5 }}>
+        <GuanyaoText size="eyebrow" tone="gold">
+          Cosmic Botanics
+        </GuanyaoText>
+        <p style={{ margin: 0, color: "rgba(245,245,245,0.52)", fontSize: 12, lineHeight: 1.55 }}>
+          压力种子像环境引力。每一次轻触花瓣，都是把一点能量送回星兽。
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function HexagramCodeDeliveryShell() {
   const [sixDimensionStep, setSixDimensionStep] = useState(1);
   const [selectedSpaceAction, setSelectedSpaceAction] = useState<{
@@ -1038,6 +1214,9 @@ function HexagramCodeDeliveryShell() {
   const [isAssetFuseDragging, setIsAssetFuseDragging] = useState(false);
   const [isAssetFuseLocked, setIsAssetFuseLocked] = useState(false);
   const [assetFuseStage, setAssetFuseStage] = useState<AssetFuseStage>("interact");
+  const [cosmicPetalStates, setCosmicPetalStates] = useState<Record<SixSpaceId, CosmicPetalState>>(() => buildSpaceRecord<CosmicPetalState>("dormant"));
+  const [cosmicPollenBursts, setCosmicPollenBursts] = useState<Record<SixSpaceId, number>>(() => buildSpaceRecord(0));
+  const [starbeastBloomEnergy, setStarbeastBloomEnergy] = useState(0);
   const [selectedSpaceWeapons, setSelectedSpaceWeapons] = useState<Record<SixSpaceId, SixSpaceWeaponId | null>>(() => ({
     body: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("body")),
     emotion: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("emotion")),
@@ -1114,6 +1293,28 @@ function HexagramCodeDeliveryShell() {
     firstAction72h,
     unlocked: assetStep === "unlocked",
   };
+
+  const visiblePetalStates = sixSpaceConfigs.reduce<Record<SixSpaceId, CosmicPetalState>>((acc, config, index) => {
+    const baseState = cosmicPetalStates[config.id];
+    const isCurrent = sixDimensionStep === index + 1;
+    const isCompleted =
+      config.id === "body"
+        ? bodySpaceStep === "completed"
+        : config.id === "emotion"
+          ? emotionSpaceStep === "completed"
+          : spaceSteps[config.id] === "completed";
+    acc[config.id] = isCompleted ? "blooming" : isCurrent && baseState === "dormant" ? "active" : baseState;
+    return acc;
+  }, buildSpaceRecord<CosmicPetalState>("dormant"));
+
+  function bloomCosmicPetal(spaceId: SixSpaceId) {
+    setCosmicPetalStates((current) => ({ ...current, [spaceId]: "blooming" }));
+    setCosmicPollenBursts((current) => ({ ...current, [spaceId]: current[spaceId] + 1 }));
+    setStarbeastBloomEnergy((current) => Math.min(6, current + 1));
+    window.setTimeout(() => {
+      setCosmicPetalStates((current) => (current[spaceId] === "blooming" ? { ...current, [spaceId]: "active" } : current));
+    }, 1400);
+  }
 
   const activeBodyCaliperIndex = getBodyCaliperIndex(bodyCaliperProgress);
   const activeBodyCaliperLevel = bodyLoadCaliperLevels[activeBodyCaliperIndex];
@@ -1966,6 +2167,156 @@ function HexagramCodeDeliveryShell() {
     setAssetStep("unlocked");
   }
 
+  if (USE_COSMIC_BOTANICS_SIX_SPACE) {
+    const bloomedCount = Object.values(visiblePetalStates).filter((state) => state === "blooming").length;
+
+    return (
+      <main
+        style={{
+          minHeight: "100dvh",
+          width: "100%",
+          boxSizing: "border-box",
+          padding: "46px 20px calc(34px + env(safe-area-inset-bottom))",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          gap: 22,
+          background:
+            "radial-gradient(circle at 50% 28%, rgba(199,169,107,0.08), transparent 32%), radial-gradient(circle at 50% 64%, rgba(0,184,212,0.05), transparent 42%), #050607",
+          color: "#f5f5f5",
+          overflow: "hidden",
+          position: "relative",
+        }}
+      >
+        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.5 }}>
+          {Array.from({ length: 42 }).map((_, index) => (
+            <span
+              key={index}
+              style={{
+                position: "absolute",
+                left: `${4 + ((index * 19) % 92)}%`,
+                top: `${5 + ((index * 31) % 88)}%`,
+                width: index % 9 === 0 ? 3 : 2,
+                height: index % 9 === 0 ? 3 : 2,
+                borderRadius: 999,
+                background: index % 6 === 0 ? "rgba(199,169,107,0.5)" : "rgba(245,245,245,0.32)",
+                boxShadow: index % 6 === 0 ? "0 0 12px rgba(199,169,107,0.32)" : "0 0 8px rgba(245,245,245,0.18)",
+              }}
+            />
+          ))}
+        </div>
+
+        <section style={{ position: "relative", zIndex: 1, display: "grid", gap: 18 }}>
+          <span
+            style={{
+              color: "rgba(199,169,107,0.76)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 12,
+              letterSpacing: "0.16em",
+            }}
+          >
+            GY / 6D COSMIC BOTANICS
+          </span>
+
+          <div style={{ display: "grid", gap: 12 }}>
+            <h1
+              style={{
+                margin: 0,
+                color: "rgba(245,245,245,0.96)",
+                fontSize: "clamp(34px, 10vw, 48px)",
+                lineHeight: 1.08,
+                fontWeight: 520,
+                letterSpacing: "0.01em",
+              }}
+            >
+              六维花冠
+            </h1>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 17, lineHeight: 1.75 }}>
+              这颗种子不是要被审判。
+              <br />
+              它只是需要被看见。
+            </p>
+          </div>
+        </section>
+
+        <section
+          style={{
+            position: "relative",
+            zIndex: 1,
+            display: "grid",
+            gap: 18,
+          }}
+        >
+          <div
+            style={{
+              padding: "16px 0",
+              borderTop: "1px solid rgba(199,169,107,0.16)",
+              borderBottom: "1px solid rgba(199,169,107,0.16)",
+              display: "grid",
+              gap: 10,
+            }}
+          >
+            <span
+              style={{
+                color: "rgba(199,169,107,0.72)",
+                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 11,
+                letterSpacing: "0.12em",
+              }}
+            >
+              当前引力种子
+            </span>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.88)", fontSize: 18, lineHeight: 1.62, fontWeight: 460 }}>
+              {selectedPressureSeedSurface}
+            </p>
+            <span style={{ color: "rgba(245,245,245,0.48)", fontSize: 13, lineHeight: 1.55 }}>
+              轻触任一花瓣，把一点能量送回星兽。
+            </span>
+          </div>
+
+          <CosmicBotanicsField
+            configs={sixSpaceConfigs}
+            currentStep={sixDimensionStep}
+            pressureSeedSurface={selectedPressureSeedSurface}
+            petalStates={visiblePetalStates}
+            pollenBursts={cosmicPollenBursts}
+            starbeastEnergy={starbeastBloomEnergy}
+            onBloom={bloomCosmicPetal}
+          />
+        </section>
+
+        <footer
+          style={{
+            position: "relative",
+            zIndex: 1,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "end",
+            gap: 16,
+            color: "rgba(245,245,245,0.5)",
+            fontSize: 12,
+            lineHeight: 1.55,
+          }}
+        >
+          <span>
+            六维花瓣已接入。
+            <br />
+            星兽正在回收能量。
+          </span>
+          <span
+            style={{
+              color: bloomedCount > 0 ? "rgba(199,169,107,0.86)" : "rgba(245,245,245,0.42)",
+              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              letterSpacing: "0.12em",
+            }}
+          >
+            {bloomedCount}/6
+          </span>
+        </footer>
+      </main>
+    );
+  }
+
   return (
     <main
       style={{
@@ -1997,6 +2348,18 @@ function HexagramCodeDeliveryShell() {
               ? "04｜行为空间｜破心魔"
             : `GY / SPACE-0${sixDimensionStep} / ${currentSixSpaceConfig?.code ?? currentSpace?.spaceCode ?? "SPACE"}`}
       </span>
+
+      {sixDimensionStep >= 1 && sixDimensionStep <= 6 ? (
+        <CosmicBotanicsField
+          configs={sixSpaceConfigs}
+          currentStep={sixDimensionStep}
+          pressureSeedSurface={selectedPressureSeedSurface}
+          petalStates={visiblePetalStates}
+          pollenBursts={cosmicPollenBursts}
+          starbeastEnergy={starbeastBloomEnergy}
+          onBloom={bloomCosmicPetal}
+        />
+      ) : null}
 
       {currentSpace && sixDimensionStep === 1 && bodySpaceStep === "entry" ? (
         <>
