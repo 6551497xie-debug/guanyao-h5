@@ -976,6 +976,8 @@ function resolveCosmicNarrativeDimension(spaceId: SixSpaceId | undefined): Guany
   return spaceId ?? "body";
 }
 
+type CosmicNarrativePhase = "field_intro" | "seed_visible" | "beast_guide" | "node_active" | "node_complete";
+
 function CosmicBotanicsField({
   configs,
   currentStep,
@@ -987,6 +989,7 @@ function CosmicBotanicsField({
   starFlowerState,
   hexagramReadiness,
   activeNodeIndex,
+  narrativePhase,
   onNodeBloom,
 }: {
   configs: SixSpaceConfig[];
@@ -999,6 +1002,7 @@ function CosmicBotanicsField({
   starFlowerState: StarFlowerGrowthState;
   hexagramReadiness: number;
   activeNodeIndex: number;
+  narrativePhase: CosmicNarrativePhase;
   onNodeBloom: () => void;
 }) {
   const seedTone = pressureSeedSurface.length % 3;
@@ -1013,12 +1017,11 @@ function CosmicBotanicsField({
   });
   const nodeFlow = narrative.nodes;
   const activeNode = nodeFlow[Math.min(activeNodeIndex, nodeFlow.length - 1)];
-  const readinessTone =
-    hexagramReadiness >= 0.98
-      ? narrative.bloomStatus
-      : activeNodeIndex > 0
-        ? narrative.activeStatus
-        : narrative.idleStatus;
+  const showBlackholeStatus = narrativePhase === "seed_visible" || narrativePhase === "beast_guide";
+  const showPressureText = narrativePhase === "seed_visible" || narrativePhase === "beast_guide";
+  const showBeastIntro = narrativePhase === "beast_guide";
+  const showNodePanel = narrativePhase === "node_active" || narrativePhase === "node_complete";
+  const showFieldStatus = narrativePhase === "node_complete";
   const shortPetalNames = ["身体", "情绪", "思维", "行为", "记忆", "目标"];
   const starFlowerComponentProps = {
     toneColor,
@@ -1073,6 +1076,10 @@ function CosmicBotanicsField({
           0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.82; }
           50% { transform: translate(-50%, -50%) scale(1.16); opacity: 1; }
         }
+        @keyframes gy-copy-fade-in {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
 
       <div
@@ -1117,11 +1124,12 @@ function CosmicBotanicsField({
           width: "78%",
           minHeight: 108,
           transform: "translateX(-50%)",
-          display: "grid",
+          display: showBlackholeStatus ? "grid" : "none",
           placeItems: "center",
           color: "rgba(245,245,245,0.86)",
           pointerEvents: "none",
           textAlign: "center",
+          animation: "gy-copy-fade-in 360ms ease both",
         }}
       >
         <span
@@ -1187,6 +1195,8 @@ function CosmicBotanicsField({
           fontWeight: 560,
           textAlign: "center",
           pointerEvents: "none",
+          display: showPressureText ? "block" : "none",
+          animation: "gy-copy-fade-in 360ms ease both",
         }}
       >
         {narrative.pressureText}
@@ -1198,7 +1208,6 @@ function CosmicBotanicsField({
           left: 22,
           right: 22,
           bottom: 40,
-          display: "grid",
           gap: 8,
           pointerEvents: "none",
           padding: "14px 14px 13px",
@@ -1206,6 +1215,8 @@ function CosmicBotanicsField({
           background: "linear-gradient(180deg, rgba(5,6,7,0.54), rgba(5,6,7,0.22))",
           border: `1px solid rgba(${toneColor},0.14)`,
           backdropFilter: "blur(4px)",
+          display: showNodePanel ? "grid" : "none",
+          animation: "gy-copy-fade-in 360ms ease both",
         }}
       >
         <GuanyaoText size="eyebrow" tone="gold">
@@ -1232,6 +1243,8 @@ function CosmicBotanicsField({
           fontSize: 11,
           lineHeight: 1.5,
           pointerEvents: "none",
+          display: showBeastIntro ? "block" : "none",
+          animation: "gy-copy-fade-in 360ms ease both",
         }}
       >
         {narrative.beastIntro}
@@ -1391,9 +1404,11 @@ function CosmicBotanicsField({
       </button>
 
       <div style={{ position: "absolute", left: 18, bottom: 16, right: 18, display: "grid", gap: 5 }}>
-        <GuanyaoText size="eyebrow" tone="gold">
-          {activeNodeIndex >= 6 ? narrative.completionText : readinessTone}
-        </GuanyaoText>
+        {showFieldStatus ? (
+          <GuanyaoText size="eyebrow" tone="gold">
+            {narrative.completionText}
+          </GuanyaoText>
+        ) : null}
       </div>
     </section>
   );
@@ -1505,6 +1520,7 @@ function HexagramCodeDeliveryShell() {
     createDormantCosmicBotanicsSixDimensionState(),
   );
   const [cosmicNodeStep, setCosmicNodeStep] = useState(0);
+  const [cosmicNarrativePhase, setCosmicNarrativePhase] = useState<CosmicNarrativePhase>("field_intro");
   const [selectedSpaceWeapons, setSelectedSpaceWeapons] = useState<Record<SixSpaceId, SixSpaceWeaponId | null>>(() => ({
     body: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("body")),
     emotion: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("emotion")),
@@ -1647,6 +1663,31 @@ function HexagramCodeDeliveryShell() {
   const activeEmotionCaliperLevel = emotionLoadCaliperLevels[activeEmotionCaliperIndex];
   const activeThoughtCaliperIndex = getThoughtCaliperIndex(thoughtCaliperProgress);
   const activeThoughtCaliperLevel = thoughtLoadCaliperLevels[activeThoughtCaliperIndex];
+
+  useEffect(() => {
+    if (!USE_COSMIC_BOTANICS_SIX_SPACE) return;
+
+    if (cosmicNodeStep >= 6) {
+      setCosmicNarrativePhase("node_complete");
+      return;
+    }
+
+    if (cosmicNodeStep > 0) {
+      setCosmicNarrativePhase("node_active");
+      return;
+    }
+
+    setCosmicNarrativePhase("field_intro");
+    const seedTimer = window.setTimeout(() => setCosmicNarrativePhase("seed_visible"), 950);
+    const beastTimer = window.setTimeout(() => setCosmicNarrativePhase("beast_guide"), 2400);
+    const nodeTimer = window.setTimeout(() => setCosmicNarrativePhase("node_active"), 3600);
+
+    return () => {
+      window.clearTimeout(seedTimer);
+      window.clearTimeout(beastTimer);
+      window.clearTimeout(nodeTimer);
+    };
+  }, [cosmicNodeStep, selectedPressureSeedSurface, sixDimensionStep]);
 
   useEffect(() => {
     return () => {
@@ -2499,6 +2540,14 @@ function HexagramCodeDeliveryShell() {
       starBeastName: resolveCosmicStarBeastName(cosmicBotanicsRuntime.starFlower.form),
       dimension: resolveCosmicNarrativeDimension(activeCosmicConfig?.id),
     });
+    const cosmicTopCopyOpacity =
+      cosmicNarrativePhase === "field_intro"
+        ? 1
+        : cosmicNarrativePhase === "seed_visible"
+          ? 0.82
+          : cosmicNarrativePhase === "beast_guide"
+            ? 0.42
+            : 0;
 
     return (
       <main
@@ -2536,7 +2585,17 @@ function HexagramCodeDeliveryShell() {
           ))}
         </div>
 
-        <section style={{ position: "relative", zIndex: 1, display: "grid", gap: 18 }}>
+        <section
+          style={{
+            position: "relative",
+            zIndex: 1,
+            display: "grid",
+            gap: 18,
+            opacity: cosmicTopCopyOpacity,
+            transition: "opacity 360ms ease",
+            pointerEvents: cosmicTopCopyOpacity > 0 ? "auto" : "none",
+          }}
+        >
           <span
             style={{
               color: "rgba(199,169,107,0.76)",
@@ -2572,6 +2631,7 @@ function HexagramCodeDeliveryShell() {
             starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
             hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}
             activeNodeIndex={cosmicNodeStep}
+            narrativePhase={cosmicNarrativePhase}
             onNodeBloom={bloomCosmicNode}
           />
         </section>
@@ -2586,7 +2646,7 @@ function HexagramCodeDeliveryShell() {
             lineHeight: 1.55,
           }}
         >
-          {cosmicNodeStep >= 6 ? cosmicPageCopy.completionText : cosmicPageCopy.footerIdleText}
+          {cosmicNarrativePhase === "node_complete" ? cosmicPageCopy.completionText : ""}
         </footer>
       </main>
     );
@@ -2636,6 +2696,7 @@ function HexagramCodeDeliveryShell() {
             starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
             hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}
             activeNodeIndex={cosmicNodeStep}
+            narrativePhase={cosmicNarrativePhase}
             onNodeBloom={bloomCosmicNode}
           />
       ) : null}
