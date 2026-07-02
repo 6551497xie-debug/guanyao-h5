@@ -990,47 +990,76 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }:
   const nodeCharge = Math.min(1, Math.max(0, activeNodeIndex / 6));
   const coreGlow = 0.26 + reveal * 0.24 + nodeCharge * 0.22;
   const coreStars = [
-    [16, 58, 5.8],
-    [28, 42, 4.4],
-    [42, 48, 5.2],
-    [52, 28, 6.6],
-    [66, 40, 4.6],
-    [82, 32, 5.6],
-    [76, 64, 4.8],
+    [24, 39, 6.2],
+    [36, 34, 5.2],
+    [48, 31, 5.4],
+    [60, 30, 6.8],
+    [70, 34, 5.4],
+    [79, 41, 5.8],
+    [86, 31, 5.1],
   ] as const;
-  const silhouetteDust = Array.from({ length: 58 }).map((_, index) => {
-    const lane = index % 4;
-    const t = index / 57;
-    const curveX =
-      lane === 0
-        ? 12 + t * 72
-        : lane === 1
-          ? 18 + t * 62
-          : lane === 2
-            ? 24 + t * 52
-            : 30 + t * 44;
-    const curveY =
-      lane === 0
-        ? 60 - Math.sin(t * Math.PI) * 30 + Math.sin(t * 12) * 2.4
-        : lane === 1
-          ? 52 + Math.sin(t * Math.PI * 1.2) * 20 + Math.cos(t * 14) * 2
-          : lane === 2
-            ? 36 + Math.sin(t * Math.PI * 1.4) * 16
-            : 67 - Math.sin(t * Math.PI) * 13;
+  const headDust = Array.from({ length: 16 }).map((_, index) => {
+    const angle = (index / 16) * Math.PI * 2;
+    const radiusX = 7 + (index % 3) * 1.4;
+    const radiusY = 8 + (index % 4) * 0.9;
     return {
-      left: curveX,
-      top: curveY,
-      size: lane === 0 ? 1.8 : 1.3,
-      delay: (index % 11) * 120,
-      alpha: 0.12 + ((index * 7) % 10) / 80,
+      left: 16 + Math.cos(angle) * radiusX + (index % 5) * 0.4,
+      top: 45 + Math.sin(angle) * radiusY - (index % 2) * 1.2,
+      size: index === 3 ? 2.8 : 1.8 + (index % 3) * 0.35,
+      delay: (index % 8) * 130,
+      alpha: index === 3 ? 0.52 : 0.22 + ((index * 5) % 9) / 80,
     };
   });
-  const innerDust = Array.from({ length: 34 }).map((_, index) => ({
-    left: 24 + ((index * 19) % 54),
-    top: 34 + ((index * 23) % 30),
+  const backDust = Array.from({ length: 28 }).map((_, index) => {
+    const t = index / 27;
+    return {
+      left: 24 + t * 59,
+      top: 40 - Math.sin(t * Math.PI) * 11 + Math.sin(t * 15) * 1.5,
+      size: 1.4 + (index % 4) * 0.25,
+      delay: (index % 10) * 110,
+      alpha: 0.18 + ((index * 7) % 8) / 90,
+    };
+  });
+  const bellyDust = Array.from({ length: 18 }).map((_, index) => {
+    const t = index / 17;
+    return {
+      left: 25 + t * 49,
+      top: 56 + Math.sin(t * Math.PI) * 5 + Math.cos(t * 13) * 1.8,
+      size: 1.2 + (index % 3) * 0.3,
+      delay: (index % 9) * 125,
+      alpha: 0.15 + ((index * 3) % 8) / 100,
+    };
+  });
+  const legDust = [
+    ...Array.from({ length: 9 }).map((_, index) => ({ left: 31 + index * 0.9, top: 56 + index * 3.6, group: 0 })),
+    ...Array.from({ length: 8 }).map((_, index) => ({ left: 42 + index * 0.9, top: 55 + index * 3.2, group: 1 })),
+    ...Array.from({ length: 10 }).map((_, index) => ({ left: 61 + index * 0.8, top: 55 + index * 3.7, group: 2 })),
+    ...Array.from({ length: 8 }).map((_, index) => ({ left: 72 + index * 1.2, top: 54 + index * 3.1, group: 3 })),
+  ].map((particle, index) => ({
+    left: particle.left,
+    top: particle.top,
+    size: 1.15 + (particle.group % 2) * 0.3,
+    delay: (index % 12) * 95,
+    alpha: 0.16 + ((index * 4) % 8) / 100,
+  }));
+  const tailDust = Array.from({ length: 20 }).map((_, index) => {
+    const t = index / 19;
+    const angle = t * Math.PI * 1.35;
+    return {
+      left: 79 + Math.sin(angle) * 12 + t * 8,
+      top: 42 - Math.sin(t * Math.PI) * 26 + Math.cos(angle) * 5,
+      size: 1.1 + (index % 4) * 0.25,
+      delay: (index % 10) * 105,
+      alpha: 0.14 + ((index * 6) % 8) / 110,
+    };
+  });
+  const silhouetteDust = [...headDust, ...backDust, ...bellyDust, ...legDust, ...tailDust];
+  const innerDust = Array.from({ length: 32 }).map((_, index) => ({
+    left: 27 + ((index * 17) % 48),
+    top: 39 + ((index * 19) % 19),
     size: 1.2 + (index % 3) * 0.45,
     delay: (index % 9) * 170,
-    alpha: 0.1 + nodeCharge * 0.18 + ((index * 5) % 8) / 90,
+    alpha: 0.08 + nodeCharge * 0.16 + ((index * 5) % 8) / 110,
   }));
 
   return (
@@ -1040,8 +1069,8 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }:
         position: "absolute",
         left: "50%",
         top: "18%",
-        width: 218,
-        height: 142,
+        width: 242,
+        height: 146,
         transform: "translate(-50%, -50%)",
         opacity: 0.62 + reveal * 0.3,
         pointerEvents: "none",
@@ -1070,21 +1099,21 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }:
               narrativePhase === "seed_visible" || narrativePhase === "beast_guide"
                 ? "gy-starbeast-line 680ms ease-out both"
                 : "none",
-          }}
-        />
+            }}
+          />
         <path
-          d="M10 61 C19 72, 45 72, 64 64 C76 60, 84 49, 90 34 C78 38, 68 30, 54 28 C42 26, 30 36, 19 51"
+          d="M9 47 C13 34, 25 32, 33 42 C46 30, 66 27, 80 39 C72 58, 42 63, 24 56 C17 58, 11 55, 9 47"
           fill="none"
-          stroke={`rgba(${toneColor},${bodyAlpha * 0.24})`}
-          strokeWidth="0.7"
+          stroke={`rgba(${toneColor},${bodyAlpha * 0.14})`}
+          strokeWidth="0.55"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
-          d="M55 29 C62 18, 74 15, 84 22 M81 33 C89 35, 94 39, 96 48 M17 60 C10 66, 7 73, 10 78 M63 64 C68 73, 75 76, 86 72"
+          d="M78 40 C91 28, 89 12, 78 14 M78 14 C92 6, 100 14, 94 25 M30 56 C26 66, 26 75, 20 81 M43 57 C41 67, 45 75, 38 81 M61 57 C58 68, 62 76, 55 82 M73 54 C75 64, 82 69, 77 78 M12 43 C5 41, 3 35, 8 31"
           fill="none"
-          stroke={`rgba(${toneColor},${bodyAlpha * 0.2})`}
-          strokeWidth="0.6"
+          stroke={`rgba(${toneColor},${bodyAlpha * 0.13})`}
+          strokeWidth="0.5"
           strokeLinecap="round"
         />
       </svg>
