@@ -285,6 +285,7 @@ export function LaunchLab() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const navigate = useNavigate();
   const [showPressureSeedCapture, setShowPressureSeedCapture] = useState(false);
+  const [showEmotionalBridge, setShowEmotionalBridge] = useState(false);
 
   const commitPressureSeedCapture = useCallback(
     (candidate: PressureSeedCrossAxisSeed | undefined) => {
@@ -305,6 +306,16 @@ export function LaunchLab() {
     },
     [navigate],
   );
+
+  useEffect(() => {
+    if (!showEmotionalBridge) return undefined;
+
+    const timer = window.setTimeout(() => {
+      setShowPressureSeedCapture(true);
+    }, 2200);
+
+    return () => window.clearTimeout(timer);
+  }, [showEmotionalBridge]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1260,7 +1271,7 @@ export function LaunchLab() {
           vibrate(8);
         }
         if (!inCard && m.motherFlipT >= 1) {
-          setShowPressureSeedCapture(true);
+          setShowEmotionalBridge(true);
         }
         return;
       }
@@ -1393,6 +1404,49 @@ export function LaunchLab() {
   return (
     <GyMobilePreviewFrame background="#070512">
       <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }} />
+      {showEmotionalBridge ? (
+        <>
+          <style>{`
+            @keyframes gy-emotional-bridge {
+              0% { opacity: 0; transform: translateY(8px); }
+              24% { opacity: 1; transform: translateY(0); }
+              76% { opacity: 1; transform: translateY(0); }
+              100% { opacity: 0; transform: translateY(-6px); }
+            }
+          `}</style>
+          <div
+            aria-label="压力种子进入前的情绪缓冲"
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "0 12%",
+              pointerEvents: "auto",
+              background: "radial-gradient(circle at 50% 52%, rgba(232,200,138,0.1), rgba(7,5,18,0.22) 46%, rgba(7,5,18,0.42) 100%)",
+              animation: "gy-emotional-bridge 2.2s ease-in-out forwards",
+            }}
+          >
+            <div
+              style={{
+                color: "#FFF3D0",
+                fontFamily: SANS,
+                fontSize: "clamp(22px, 5.8vw, 34px)",
+                fontWeight: 760,
+                lineHeight: 1.75,
+                letterSpacing: 0,
+                textAlign: "center",
+                textShadow: "0 0 22px rgba(232,200,138,0.34)",
+              }}
+            >
+              <div>你已经被看见了。</div>
+              <div>现在，让我们看见你正在经历的。</div>
+            </div>
+          </div>
+        </>
+      ) : null}
     </GyMobilePreviewFrame>
   );
 }
