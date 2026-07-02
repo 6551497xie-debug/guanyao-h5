@@ -1,5 +1,26 @@
 # 观爻 H5 协议索引
 
+> GUANYAO 1.0 ACTIVE PROTOCOL ENTRY:
+> [docs/GUANYAO_1_0_PROTOCOL_INDEX.md](./GUANYAO_1_0_PROTOCOL_INDEX.md)
+
+## 1.0 使用声明
+
+本文件保留为历史协议追溯索引。
+
+观爻 1.0 的产品结构、施工优先级、表达约束、无惩罚原则、主链路标准，统一以 [GUANYAO_1_0_PROTOCOL_INDEX.md](./GUANYAO_1_0_PROTOCOL_INDEX.md) 为准。
+
+后续 Codex 施工规则：
+
+- 任何 1.0 新施工先读 [GUANYAO_1_0_PROTOCOL_INDEX.md](./GUANYAO_1_0_PROTOCOL_INDEX.md)。
+- 再判断任务属于 P0 因果链 / P1 内容链 / P2 视觉链 / P3 商业化。
+- 不得绕过新索引直接按旧协议施工。
+- 触及冻结架构必须显式说明 unfreeze 范围。
+- 本旧索引中的历史协议可用于追溯，但不得覆盖 1.0 active protocol entry。
+
+LEGACY / SUPERSEDED BY GUANYAO_1_0_PROTOCOL_INDEX.md:
+
+以下内容为 1.0 之前的 H5 协议索引保留区。除非新 1.0 索引明确引用，否则不得作为 active flow 的唯一施工依据。
+
 当前稳定节点：
 
 - H5-Content-R2A｜YuanCode 8 Source Code Content Templates
