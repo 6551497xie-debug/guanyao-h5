@@ -34,6 +34,15 @@ type Particle = {
   color: string;
 };
 
+type AmbientStar = {
+  x: number;
+  y: number;
+  r: number;
+  phase: number;
+  speed: number;
+  warm: number;
+};
+
 const color = {
   bg: "#05040c",
   bone: "#6e6a62",
@@ -100,6 +109,16 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
     let displayedLines = ["", "", "", ""];
     let weldLockPulseFired = false;
     const sandParticles: Particle[] = [];
+    const ambientStars: AmbientStar[] = [];
+    const beastResidue = [
+      { x: 0.49, y: 0.34, r: 1.8 },
+      { x: 0.54, y: 0.39, r: 1.2 },
+      { x: 0.46, y: 0.43, r: 1.5 },
+      { x: 0.52, y: 0.48, r: 1.1 },
+      { x: 0.42, y: 0.52, r: 1.0 },
+      { x: 0.58, y: 0.53, r: 1.0 },
+      { x: 0.5, y: 0.58, r: 1.3 },
+    ];
 
     // 一线贯穿/粒子守恒：取上一屏(MotherField)沙化粒子，入场重凝至轴线区
     const handoff = takeAxisHandoff();
@@ -145,7 +164,60 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       rail.y = height * 0.68;
       stage.axisX = rail.x + stage.w * 0.52;
       rail.w = stage.axisX - rail.x + Math.max(10, stage.w * 0.032);
+      if (ambientStars.length === 0 && width > 0 && height > 0) {
+        for (let index = 0; index < 92; index += 1) {
+          ambientStars.push({
+            x: Math.random(),
+            y: Math.random(),
+            r: 0.55 + Math.random() * 1.2,
+            phase: Math.random() * Math.PI * 2,
+            speed: 0.18 + Math.random() * 0.36,
+            warm: Math.random(),
+          });
+        }
+      }
       if (appState === "SEED_SELECT") setRailToSelectedSeed();
+    }
+
+    function drawAmbientField() {
+      const time = performance.now() / 1000;
+      const glow = ctx.createRadialGradient(width * 0.5, height * 0.44, 0, width * 0.5, height * 0.44, width * 0.55);
+      glow.addColorStop(0, "rgba(232,200,138,0.075)");
+      glow.addColorStop(0.36, "rgba(87,213,223,0.035)");
+      glow.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, width, height);
+
+      ambientStars.forEach((star) => {
+        const pulse = 0.35 + 0.65 * Math.abs(Math.sin(time * star.speed + star.phase));
+        const rgb = star.warm > 0.54 ? "232,200,138" : "244,236,216";
+        ctx.globalAlpha = 0.08 + pulse * 0.22;
+        ctx.fillStyle = `rgba(${rgb},1)`;
+        ctx.beginPath();
+        ctx.arc(star.x * width, star.y * height, star.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+
+      ctx.save();
+      ctx.globalAlpha = 0.12;
+      ctx.strokeStyle = "rgba(232,200,138,0.56)";
+      ctx.lineWidth = 1;
+      for (let index = 0; index < beastResidue.length - 1; index += 1) {
+        const current = beastResidue[index];
+        const next = beastResidue[index + 1];
+        ctx.beginPath();
+        ctx.moveTo(current.x * width, current.y * height);
+        ctx.lineTo(next.x * width, next.y * height);
+        ctx.stroke();
+      }
+      beastResidue.forEach((node) => {
+        ctx.fillStyle = "rgba(255,243,208,0.72)";
+        ctx.beginPath();
+        ctx.arc(node.x * width, node.y * height, node.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.restore();
     }
 
     function getSeedSelectionEndX() {
@@ -525,6 +597,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
         if (voidFrame === 8 && typeof navigator !== "undefined") navigator.vibrate?.([0, 18, 90, 26, 70, 34]);
         ctx.fillStyle = color.bg;
         ctx.fillRect(0, 0, width, height);
+        drawAmbientField();
         if (handoff && !incomingSeeded && width > 0) {
           incomingSeeded = true;
           incoming = handoff.map((p) => ({ x: p.fx * width, y: p.fy * height, vx: p.vx, vy: p.vy, color: p.color }));
@@ -552,6 +625,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       }
       ctx.fillStyle = color.bg;
       ctx.fillRect(0, 0, width, height);
+      drawAmbientField();
       const gradient = ctx.createRadialGradient(width / 2, height * 0.4, 0, width / 2, height * 0.4, width * 0.45);
       gradient.addColorStop(0, appState.startsWith("WELD") ? "rgba(199,169,107,0.055)" : "rgba(87,213,223,0.04)");
       gradient.addColorStop(1, "rgba(0,0,0,0)");

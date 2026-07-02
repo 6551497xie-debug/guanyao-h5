@@ -302,7 +302,7 @@ export function LaunchLab() {
       window.localStorage.setItem("guanyao:selectedPressureSliceId", candidate.seed.id);
       window.localStorage.setItem("guanyao:selectedPressureSliceText", candidate.seed.surface);
 
-      navigate(GUANYAO_ROUTES.hexagramStamp);
+      navigate(GUANYAO_ROUTES.dynamics);
     },
     [navigate],
   );
