@@ -50,6 +50,9 @@ The current GUANYAO 1.0 main chain is locked as:
 
 ### Pressure Seed And Main Chain
 
+- [GUANYAO_1_0_CAUSAL_MAP_PROTOCOL.md](./GUANYAO_1_0_CAUSAL_MAP_PROTOCOL.md)  
+  P0 causal chain mapping protocol. Defines how pressure seed lands in the six-dimensional primary petal, how six-node completion creates starbeast feedback, and how Mother Code + pressure seed + primary petal + completion state enters the hexagram asset PENDING candidate.
+
 - [RC_MAIN_CHAIN_PRESSURE_SEED_LOCK.md](./RC_MAIN_CHAIN_PRESSURE_SEED_LOCK.md)  
   Pressure seed main-chain lock. Defines how pressure seed capture belongs to the active GUANYAO 1.0 flow.
 
@@ -146,6 +149,16 @@ Current implementation priority is locked as:
 ```
 
 Goal: make the active 1.0 chain structurally complete before adding more surface variation.
+
+Current P0 next runtime step:
+
+```text
+selectedPressureSeedContext
+→ derivePrimaryPetal()
+→ pass currentDimension into CosmicBotanicsField
+```
+
+This next step must use [GUANYAO_1_0_CAUSAL_MAP_PROTOCOL.md](./GUANYAO_1_0_CAUSAL_MAP_PROTOCOL.md) as its construction basis. This protocol bridge only records the requirement; it does not implement code.
 
 ### P1 | Content Chain Completion
 
