@@ -16,10 +16,10 @@ import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { guanyaoHexagramAssetLibrary } from "../data/guanyaoHexagramAssetLibrary";
 import { getPressureSeedSixSpaceProjection } from "../data/guanyaoPressureSeedSixSpaceProjectionRegistry";
 import {
-  generateCosmicBotanicsNarrative,
-  type CosmicBotanicsNarrativeBeastName,
-  type CosmicBotanicsNarrativeDimension,
-} from "../expression/cosmicBotanicsNarrativeEngine";
+  generateSixDimensionalTuningDialogue,
+  type GuanyaoLanguageDimension,
+  type GuanyaoStarBeastName,
+} from "../expression/guanyaoLanguageSystem";
 import { getDemoDynamicsResult } from "../services/guanyaoInteractionService";
 import { buildMotherCodeAssetLines, getMotherCodeAsset } from "../services/guanyaoMotherCodeAssetService";
 import { getSession } from "../services/sessionService";
@@ -959,8 +959,8 @@ function YaoTextBlock({ kicker, title, lines, muted }: YaoTextBlockProps) {
   );
 }
 
-function resolveCosmicStarBeastName(starFlowerForm: StarFlowerForm): CosmicBotanicsNarrativeBeastName {
-  const starBeastNameByForm: Record<StarFlowerForm, CosmicBotanicsNarrativeBeastName> = {
+function resolveCosmicStarBeastName(starFlowerForm: StarFlowerForm): GuanyaoStarBeastName {
+  const starBeastNameByForm: Record<StarFlowerForm, GuanyaoStarBeastName> = {
     qinglong: "青龙",
     baihu: "白虎",
     zhuque: "朱雀",
@@ -970,7 +970,7 @@ function resolveCosmicStarBeastName(starFlowerForm: StarFlowerForm): CosmicBotan
   return starBeastNameByForm[starFlowerForm];
 }
 
-function resolveCosmicNarrativeDimension(spaceId: SixSpaceId | undefined): CosmicBotanicsNarrativeDimension {
+function resolveCosmicNarrativeDimension(spaceId: SixSpaceId | undefined): GuanyaoLanguageDimension {
   if (spaceId === "action") return "behavior";
   if (spaceId === "goal") return "motivation";
   return spaceId ?? "body";
@@ -1006,12 +1006,12 @@ function CosmicBotanicsField({
   const activeConfig = configs[Math.max(0, Math.min(configs.length - 1, currentStep - 1))] ?? configs[0];
   const activePetalState = activeConfig ? petalStates[activeConfig.id] : "active";
   const activePollenBurst = activeConfig ? pollenBursts[activeConfig.id] : 0;
-  const narrative = generateCosmicBotanicsNarrative({
+  const narrative = generateSixDimensionalTuningDialogue({
     pressureSeedText: pressureSeedSurface,
     starBeastName: resolveCosmicStarBeastName(starFlowerForm),
-    currentDimension: resolveCosmicNarrativeDimension(activeConfig?.id),
+    dimension: resolveCosmicNarrativeDimension(activeConfig?.id),
   });
-  const nodeFlow = narrative.nodeSteps;
+  const nodeFlow = narrative.nodes;
   const activeNode = nodeFlow[Math.min(activeNodeIndex, nodeFlow.length - 1)];
   const readinessTone =
     hexagramReadiness >= 0.98

@@ -1,35 +1,27 @@
-export type CosmicBotanicsNarrativeDimension =
-  | "body"
-  | "emotion"
-  | "thought"
-  | "behavior"
-  | "memory"
-  | "motivation";
+import type { GuanyaoLanguageDimension, GuanyaoStarBeastName } from "./types";
 
-export type CosmicBotanicsNarrativeBeastName = "青龙" | "白虎" | "朱雀" | "玄武";
-
-export type CosmicBotanicsNarrativeInput = {
+export type SixDimensionalDialogueInput = {
   pressureSeedText: string;
-  starBeastName: CosmicBotanicsNarrativeBeastName;
-  currentDimension: CosmicBotanicsNarrativeDimension;
+  starBeastName: GuanyaoStarBeastName;
+  dimension: GuanyaoLanguageDimension;
 };
 
-export type CosmicBotanicsNarrativeStep = {
+export type SixDimensionalDialogueNode = {
   id: 1 | 2 | 3 | 4 | 5 | 6;
-  title: "觉察" | "破局" | "调频" | "蓄能" | "显影" | "破茧";
+  title: "镜面" | "斩断" | "播种" | "汇聚" | "显影" | "共振";
   text: string;
   actionText: string;
 };
 
-export type CosmicBotanicsNarrativeOutput = {
+export type SixDimensionalDialogueOutput = {
   fieldTitle: string;
   pressureText: string;
   beastIntro: string;
-  nodeSteps: CosmicBotanicsNarrativeStep[];
+  nodes: SixDimensionalDialogueNode[];
   completionText: string;
 };
 
-const beastIntroTone: Record<CosmicBotanicsNarrativeBeastName, Record<CosmicBotanicsNarrativeDimension, string>> = {
+const beastIntroTone: Record<GuanyaoStarBeastName, Record<GuanyaoLanguageDimension, string>> = {
   青龙: {
     body: "青龙察觉到了这股阻碍。\n它先落在你的身体里。\n别急着判断，我们先让这口气重新流动。",
     emotion: "青龙察觉到了这股阻碍。\n它让你的心口有些起伏。\n别急着判断，我们先让情绪有地方流动。",
@@ -64,7 +56,7 @@ const beastIntroTone: Record<CosmicBotanicsNarrativeBeastName, Record<CosmicBota
   },
 };
 
-const dimensionCompletion: Record<CosmicBotanicsNarrativeDimension, string> = {
+const dimensionCompletion: Record<GuanyaoLanguageDimension, string> = {
   body: "身体里的寒霜正在融化。",
   emotion: "情绪里的暗流正在变缓。",
   thought: "脑海里的回声正在变轻。",
@@ -73,125 +65,120 @@ const dimensionCompletion: Record<CosmicBotanicsNarrativeDimension, string> = {
   motivation: "内在的方向正在重新聚光。",
 };
 
-const dimensionSteps: Record<CosmicBotanicsNarrativeDimension, CosmicBotanicsNarrativeStep[]> = {
-  body: [
-    {
-      id: 1,
-      title: "觉察",
-      text: "你感到胸口发闷，肩膀沉重。\n你是不是已经很久没有真正抬头喘口气了？",
-      actionText: "我承认，有些疲惫。",
-    },
-    {
-      id: 2,
-      title: "破局",
-      text: "年龄和职级只是此刻的坐标，不是你的边界。\n白虎的骨骼，不该被一把椅子锁住。",
-      actionText: "现在，先深深呼出一口气。",
-    },
-    {
-      id: 3,
-      title: "调频",
-      text: "身体是原力的容器。\n今晚，给它一次不被打扰的修复。",
-      actionText: "好，今晚我对自己温柔一次。",
-    },
-    {
-      id: 4,
-      title: "蓄能",
-      text: "把意识带回紧绷的地方。\n长按这一刻，把你还愿意前行的光，注入这片花瓣。",
-      actionText: "长按，把光送回去。",
-    },
-    {
-      id: 5,
-      title: "显影",
-      text: "看，星河正在复苏。\n你刚才送回来的光，正在化作击碎困境的力量。",
-      actionText: "它正在开成一束光。",
-    },
-    {
-      id: 6,
-      title: "破茧",
-      text: "白虎已经接住了这点光。\n身体里的寒霜正在融化，其余五个维度正在回应。",
-      actionText: "向上滑动，让这一局开始结晶。",
-    },
-  ],
-  emotion: buildGenericSteps({
-    opening: "心口有一点波动，不一定要马上压下去。",
-    action: "我先接住这股感受。",
-    release: "这股暗流正在慢慢变缓。",
+const bodyTemplate: SixDimensionalDialogueNode[] = [
+  {
+    id: 1,
+    title: "镜面",
+    text: "这颗种子沉入身体，让你的胸口发闷，肩膀沉重。\n你是不是已经很久没有真正喘口气了？",
+    actionText: "轻触：是的，我感受到了疲惫。",
+  },
+  {
+    id: 2,
+    title: "斩断",
+    text: "年龄和职级只是此刻的时空坐标，不是你的边界。\n白虎的骨骼，不该被一把椅子锁住。",
+    actionText: "滑动：吐出这口浊气，重新调频。",
+  },
+  {
+    id: 3,
+    title: "播种",
+    text: "身体是原力的容器。\n今晚，给它一次不被打扰的修复。",
+    actionText: "选择：今晚，我对自己温柔一次。",
+  },
+  {
+    id: 4,
+    title: "汇聚",
+    text: "把意识带回紧绷的地方。\n长按这一刻，把你还愿意前行的光，注入这片花瓣。",
+    actionText: "长按5秒：原力正在灌溉。",
+  },
+  {
+    id: 5,
+    title: "显影",
+    text: "看，星河正在复苏。\n你刚才送回来的光，已经把黑洞的边缘熔成一束亮光。",
+    actionText: "轻触：它正在开成一束光。",
+  },
+  {
+    id: 6,
+    title: "共振",
+    text: "白虎已经接住了这点光。\n身体里的寒霜正在融化，其余五个维度正在回应。",
+    actionText: "向上滑动：让这一局开始结晶。",
+  },
+];
+
+const dimensionTemplates: Record<GuanyaoLanguageDimension, SixDimensionalDialogueNode[]> = {
+  body: bodyTemplate,
+  emotion: buildGenericTemplate({
+    mirror: "这颗种子落进心口，让那里泛起一阵说不清的波动。",
+    action: "轻触：我先接住这股感受。",
+    release: "情绪里的暗流正在变缓。",
   }),
-  thought: buildGenericSteps({
-    opening: "脑海一直在解释，也许只是太想证明自己。",
-    action: "我先停下这一轮反复。",
+  thought: buildGenericTemplate({
+    mirror: "这颗种子进入脑海，让解释和回声反复打转。",
+    action: "轻触：我先停下这一轮反复。",
     release: "脑海里的回声正在变轻。",
   }),
-  behavior: buildGenericSteps({
-    opening: "脚步停住了，不代表你真的走不动。",
-    action: "我先做一个很小的动作。",
+  behavior: buildGenericTemplate({
+    mirror: "这颗种子压住脚步，让一个本来能做的小动作停在原地。",
+    action: "轻触：我先做一个很小的动作。",
     release: "卡住的动作正在重新松开。",
   }),
-  memory: buildGenericSteps({
-    opening: "旧痕被牵动了，但它不是今天的全部。",
-    action: "我先把过去放回过去。",
+  memory: buildGenericTemplate({
+    mirror: "这颗种子牵动旧痕，让过去的经验又靠近了一点。",
+    action: "轻触：我先把过去放回过去。",
     release: "旧经验的拉力正在减弱。",
   }),
-  motivation: buildGenericSteps({
-    opening: "方向感模糊了，也许只是光暂时被挡住。",
-    action: "我先找回一点愿望。",
+  motivation: buildGenericTemplate({
+    mirror: "这颗种子遮住方向，让你一时看不清为什么要继续。",
+    action: "轻触：我先找回一点愿望。",
     release: "内在的方向正在重新聚光。",
   }),
 };
 
-export function generateCosmicBotanicsNarrative(
-  input: CosmicBotanicsNarrativeInput,
-): CosmicBotanicsNarrativeOutput {
+export function generateSixDimensionalTuningDialogue(
+  input: SixDimensionalDialogueInput,
+): SixDimensionalDialogueOutput {
   const pressureSeedText = input.pressureSeedText.trim() || "这件事刚刚发生过。";
-  const currentDimension = input.currentDimension;
-  const starBeastName = input.starBeastName;
 
   return {
     fieldTitle: "当前时空坐标遭遇风暴。",
     pressureText: `『${pressureSeedText}』`,
-    beastIntro: beastIntroTone[starBeastName]?.[currentDimension] ?? beastIntroTone.白虎.body,
-    nodeSteps: dimensionSteps[currentDimension] ?? dimensionSteps.body,
-    completionText: `你的${starBeastName}已经接住了这点光。\n${dimensionCompletion[currentDimension]}\n\n其余五个维度正在回应。\n这一局，开始结晶。`,
+    beastIntro: beastIntroTone[input.starBeastName]?.[input.dimension] ?? beastIntroTone.白虎.body,
+    nodes: dimensionTemplates[input.dimension] ?? dimensionTemplates.body,
+    completionText: `这片行为花冠已替你亮起。\n你的${input.starBeastName}，为你衔回了一枚今日的时空能量资产。`,
   };
 }
 
-function buildGenericSteps(input: { opening: string; action: string; release: string }): CosmicBotanicsNarrativeStep[] {
+function buildGenericTemplate(input: { mirror: string; action: string; release: string }): SixDimensionalDialogueNode[] {
   return [
-    {
-      id: 1,
-      title: "觉察",
-      text: input.opening,
-      actionText: input.action,
-    },
+    { id: 1, title: "镜面", text: input.mirror, actionText: input.action },
     {
       id: 2,
-      title: "破局",
+      title: "斩断",
       text: "它已经出现了。\n现在先不要沿着旧路走下去。",
-      actionText: "我先松开一点。",
+      actionText: "滑动：我先松开一点。",
     },
     {
       id: 3,
-      title: "调频",
+      title: "播种",
       text: "只需要一个很小的动作。\n小到今天真的做得到。",
-      actionText: "我愿意试一次。",
+      actionText: "选择：我愿意试一次。",
     },
     {
       id: 4,
-      title: "蓄能",
+      title: "汇聚",
       text: "把注意力带回来。\n给这片花瓣一点安静的光。",
-      actionText: "长按，把光送回去。",
+      actionText: "长按5秒：把光送回去。",
     },
     {
       id: 5,
       title: "显影",
       text: "你刚才送回来的光，已经开始被看见。",
-      actionText: "它正在开成一束光。",
+      actionText: "轻触：它正在开成一束光。",
     },
     {
       id: 6,
-      title: "破茧",
+      title: "共振",
       text: input.release,
-      actionText: "让这一局开始结晶。",
+      actionText: "向上滑动：让这一局开始结晶。",
     },
   ];
 }
