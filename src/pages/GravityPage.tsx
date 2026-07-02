@@ -35,6 +35,11 @@ import type { PressureSeedSixSpaceProjection, PressureSeedSpaceProjection } from
 
 const USE_HEXAGRAM_DELIVERY_SHELL = true;
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
+// DEPRECATED / ISOLATED / NOT IN ACTIVE 1.0 FLOW.
+// Legacy six-space, weapon, annular-asset, and demo dynamics branches remain in source only for review.
+// They must not become the /dynamics forward user flow while GUANYAO 1.0 uses Cosmic Botanics.
+const LEGACY_DYNAMICS_FLOW_ISOLATED = true;
+const LEGACY_R1_DEMO_DYNAMICS_ISOLATED = true;
 type HexagramAssetCode = keyof typeof guanyaoHexagramAssetLibrary;
 
 function toFrontendTrajectory(text: string) {
@@ -2855,7 +2860,7 @@ function HexagramCodeDeliveryShell() {
     setAssetStep("unlocked");
   }
 
-  if (USE_COSMIC_BOTANICS_SIX_SPACE) {
+  if (USE_COSMIC_BOTANICS_SIX_SPACE || LEGACY_DYNAMICS_FLOW_ISOLATED) {
     const activeCosmicConfig = sixSpaceConfigs[Math.max(0, Math.min(sixSpaceConfigs.length - 1, sixDimensionStep - 1))] ?? sixSpaceConfigs[0];
     const cosmicPageCopy = generateSixDimensionalTuningDialogue({
       pressureSeedText: selectedPressureSeedSurface,
@@ -2975,6 +2980,8 @@ function HexagramCodeDeliveryShell() {
     );
   }
 
+  // DEPRECATED / ISOLATED / NOT IN ACTIVE 1.0 FLOW.
+  // The legacy JSX below is retained dormant and must not render in the active /dynamics path.
   return (
     <main
       style={{
@@ -5413,7 +5420,7 @@ function HexagramCodeDeliveryShell() {
 }
 
 export function GravityPage() {
-  if (USE_HEXAGRAM_DELIVERY_SHELL) {
+  if (USE_HEXAGRAM_DELIVERY_SHELL || LEGACY_R1_DEMO_DYNAMICS_ISOLATED) {
     return <HexagramCodeDeliveryShell />;
   }
 
