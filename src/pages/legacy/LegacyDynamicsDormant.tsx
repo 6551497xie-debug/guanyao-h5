@@ -23,6 +23,8 @@ export const LEGACY_DYNAMICS_DORMANT_BRANCHES: ReadonlyArray<{
   branch: LegacyDynamicsDormantBranch;
   status: "DEPRECATED / ISOLATED / NOT IN ACTIVE 1.0 FLOW";
   owns: string[];
+  legacyStorageKeys: string[];
+  legacyCopyFamilies: string[];
 }> = [
   {
     branch: "six-space-weapon-annular-asset",
@@ -33,6 +35,18 @@ export const LEGACY_DYNAMICS_DORMANT_BRANCHES: ReadonlyArray<{
       "annular asset settlement branch",
       "legacy localStorage-driven fallback UI",
     ],
+    legacyStorageKeys: [
+      "guanyao:selectedBodyWeapon",
+      "guanyao:selectedEmotionWeapon",
+      "guanyao:sixSpace:*",
+      "guanyao:*BreakthroughCompleted",
+    ],
+    legacyCopyFamilies: [
+      "left-swipe weapon selection prompts",
+      "old reaction reveal copy",
+      "annular asset settlement copy",
+      "high-risk window copy",
+    ],
   },
   {
     branch: "r1-demo-dynamics",
@@ -42,8 +56,30 @@ export const LEGACY_DYNAMICS_DORMANT_BRANCHES: ReadonlyArray<{
       "old interaction trajectory rail",
       "legacy pressure-risk scan gate",
     ],
+    legacyStorageKeys: [
+      "guanyao:autoYaoPath",
+      "guanyao:interactiveYaoPath",
+      "guanyao:selectedSceneSlice",
+    ],
+    legacyCopyFamilies: [
+      "R1 demo dynamics title and summary",
+      "mother ledger readout copy",
+      "binary pressure-risk readouts",
+    ],
   },
 ];
+
+export const LEGACY_DYNAMICS_DORMANT_BOUNDARY = {
+  activeFlow: [
+    "selectedPressureSeedContext",
+    "CosmicBotanicsField",
+    "currentDimension",
+    "sixNodeTuning",
+    "starbeastFeedback",
+    "hexagramAssetPending",
+  ],
+  rule: "Legacy branches are traceable here but cannot render, write, or drive /dynamics.",
+} as const;
 
 export function LegacyDynamicsDormant({ branch }: { branch: LegacyDynamicsDormantBranch }) {
   void branch;
