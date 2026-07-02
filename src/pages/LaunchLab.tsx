@@ -14,7 +14,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useRef } from "react";
-import { drawMotherCardRenderer } from "../components/mother/MotherCardRenderer";
+import { drawMotherCardRenderer, getMotherCardRendererRect } from "../components/mother/MotherCardRenderer";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import {
   createMotherCardReadonlySnapshot,
@@ -295,6 +295,9 @@ export function LaunchLab() {
       field: [] as FieldStar[],
       textStars: [] as TextStar[],
       motherSnapshot: null as MotherCardReadonlySnapshot | null,
+      motherSide: "front" as "front" | "back",
+      motherFlipTo: "front" as "front" | "back",
+      motherFlipT: 1,
       afterForm: 0,
       formed: false,
       phaseX: 3,
@@ -679,6 +682,11 @@ export function LaunchLab() {
       m.gaitPhase += dt * 2.6;
       const targetWalk = m.state === STATE.APPROACH || m.state === STATE.READY ? 1 : 0;
       m.walk += (targetWalk - m.walk) * Math.min(1, dt * 1.4);
+      if (m.motherFlipT < 1) {
+        const prev = m.motherFlipT;
+        m.motherFlipT = Math.min(1, m.motherFlipT + dt * 2.6);
+        if (prev < 0.5 && m.motherFlipT >= 0.5) m.motherSide = m.motherFlipTo;
+      }
       switch (m.state) {
         case STATE.STARFIELD_IDLE: {
           if (!m.pulsed && m.t > 0.16) {
@@ -1103,7 +1111,14 @@ export function LaunchLab() {
           trigram: "CACHE_PENDING",
           cacheStatus: "missing" as const,
         };
-        drawMotherCardRenderer({ ctx, snapshot, width: m.w, height: m.h });
+        drawMotherCardRenderer({
+          ctx,
+          snapshot,
+          width: m.w,
+          height: m.h,
+          side: m.motherSide,
+          flipProgress: m.motherFlipT,
+        });
         return;
       }
 
@@ -1198,6 +1213,17 @@ export function LaunchLab() {
         const t = performance.now();
         if (t - dbl < 350) m.debug = !m.debug;
         dbl = t;
+      }
+      if (m.state === STATE.MOTHER_STATIC_RENDER) {
+        const rect = getMotherCardRendererRect(m.w, m.h);
+        const inCard = x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
+        if (inCard && m.motherFlipT >= 1) {
+          m.motherFlipTo = m.motherSide === "front" ? "back" : "front";
+          m.motherFlipT = 0;
+          audio.tick();
+          vibrate(8);
+        }
+        return;
       }
       if (m.state === STATE.READY && m.presentDone) {
         m.state = STATE.STARBEAST_SANDIFY;
