@@ -4,12 +4,6 @@
  */
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { CausalRail } from "../components/causal/CausalRail";
-import {
-  BaiHuStarFlowerComponent,
-  QingLongStarFlowerComponent,
-  XuanWuStarFlowerComponent,
-  ZhuQueStarFlowerComponent,
-} from "../components/cosmic-botanics/StarFlowerComponents";
 import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
@@ -124,6 +118,18 @@ type AssetStep = "preview" | "confirm" | "unlocked";
 type ActionArtifactStage = "interact" | "break" | "front" | "flipping" | "back" | "sandify";
 type MemoryArtifactStage = "interact" | "break" | "front" | "flipping" | "back" | "sandify";
 type GoalFinalStage = "interact" | "break" | "front" | "flipping" | "back" | "sandify";
+type PersonaStarOrigin = {
+  index?: number;
+  intensity?: number;
+  resonance?: number;
+};
+type PersonaOutputSnapshotView = {
+  motherCode?: string;
+  direction?: string;
+  starOrigin?: PersonaStarOrigin | string;
+  trigram?: string;
+};
+type RuntimeCoreStar = readonly [number, number, number];
 type AssetFuseStage = "interact" | "break" | "crystal";
 type SixSpaceWeapon = {
   id: SixSpaceWeaponId;
@@ -976,29 +982,85 @@ function resolveCosmicNarrativeDimension(spaceId: SixSpaceId | undefined): Guany
   return spaceId ?? "body";
 }
 
+function hashPersonaStarInput(input: string) {
+  let hash = 2166136261;
+
+  for (let index = 0; index < input.length; index += 1) {
+    hash ^= input.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return Math.abs(hash >>> 0);
+}
+
+function resolveStarOriginSeed(snapshot: PersonaOutputSnapshotView | null) {
+  const origin = snapshot?.starOrigin;
+
+  if (origin && typeof origin === "object") {
+    return {
+      index: origin.index ?? 0,
+      intensity: origin.intensity ?? 1,
+      resonance: origin.resonance ?? 1,
+    };
+  }
+
+  const fallbackSeed = hashPersonaStarInput(
+    `${snapshot?.motherCode ?? "MOTHER_PENDING"}|${snapshot?.direction ?? "白虎"}|${snapshot?.trigram ?? "兑"}|${origin ?? ""}`,
+  );
+
+  return {
+    index: fallbackSeed % 28,
+    intensity: (fallbackSeed % 7) + 1,
+    resonance: (fallbackSeed % 5) + 1,
+  };
+}
+
+function buildRuntimeBaiHuCoreStars(snapshot: PersonaOutputSnapshotView | null): RuntimeCoreStar[] {
+  const starOrigin = resolveStarOriginSeed(snapshot);
+  const directionSeed = hashPersonaStarInput(`${snapshot?.direction ?? "白虎"}|${snapshot?.motherCode ?? ""}`);
+  const phase = (starOrigin.index % 7) - 3;
+  const lift = (starOrigin.resonance - 3) * 0.72;
+  const stretch = 1 + (starOrigin.intensity - 4) * 0.012;
+  const tailRise = (directionSeed % 4) * 0.8;
+  const baseStars: RuntimeCoreStar[] = [
+    [20, 42, 6.2],
+    [31, 35, 5.2],
+    [44, 31, 5.6],
+    [58, 28, 6.8],
+    [70, 31, 5.4],
+    [79, 36, 5.8],
+    [86, 42, 5.2],
+  ];
+
+  return baseStars.map(([x, y, size], index) => {
+    const spineWave = Math.sin((index + phase) * 0.84) * 1.8;
+    const tailBias = index >= 5 ? -tailRise * (index - 4) : 0;
+    const shoulderBias = index === 1 || index === 2 ? -starOrigin.intensity * 0.16 : 0;
+
+    return [
+      50 + (x - 50) * stretch,
+      y + spineWave + lift + tailBias + shoulderBias,
+      size + (index === starOrigin.index % 7 ? 1.1 : 0),
+    ] as RuntimeCoreStar;
+  });
+}
+
 type CosmicNarrativePhase = "field_intro" | "seed_visible" | "beast_guide" | "node_active" | "node_complete";
 
 type BaiHuConstellationLayerProps = {
   toneColor: string;
   narrativePhase: CosmicNarrativePhase;
   activeNodeIndex: number;
+  onCoreStarClick: () => void;
+  coreStars: RuntimeCoreStar[];
 };
 
-function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }: BaiHuConstellationLayerProps) {
+function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, onCoreStarClick, coreStars }: BaiHuConstellationLayerProps) {
   const reveal = narrativePhase === "field_intro" ? 0.34 : narrativePhase === "seed_visible" ? 0.66 : 1;
   const bodyAlpha = narrativePhase === "beast_guide" || narrativePhase === "node_active" || narrativePhase === "node_complete" ? 0.82 : 0.2;
   const nodeCharge = Math.min(1, Math.max(0, activeNodeIndex / 6));
   const coreGlow = 0.26 + reveal * 0.24 + nodeCharge * 0.22;
-  const coreLineAlpha = 0.08 + reveal * 0.24 + nodeCharge * 0.1;
-  const coreStars = [
-    [22, 41, 6.2],
-    [34, 34, 5.2],
-    [47, 28, 5.6],
-    [59, 26, 6.8],
-    [70, 31, 5.4],
-    [80, 39, 5.8],
-    [88, 25, 5.2],
-  ] as const;
+  const coreLineAlpha = 0.04 + reveal * 0.14 + nodeCharge * 0.06;
   const headShape = [
     [7, 44, 1.7], [9, 39, 1.6], [12, 35, 1.7], [15, 32, 1.8], [19, 33, 1.6],
     [22, 36, 1.8], [24, 40, 1.7], [23, 44, 1.5], [20, 48, 1.5], [17, 51, 1.7],
@@ -1057,7 +1119,21 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }:
       alpha: 0.16 + ((index * 6) % 8) / 100,
     };
   });
-  const silhouetteDust = [...headDust, ...backDust, ...bellyDust, ...legDust, ...tailDust];
+  const tailTipDust = [
+    [95, 21, 2.5],
+    [97, 17, 1.7],
+    [93, 14, 1.5],
+    [90, 18, 1.3],
+    [91, 24, 1.4],
+  ] as const;
+  const tailTipParticles = tailTipDust.map(([left, top, size], index) => ({
+    left,
+    top,
+    size,
+    delay: index * 130,
+    alpha: index === 0 ? 0.54 : 0.24 + index * 0.04,
+  }));
+  const silhouetteDust = [...headDust, ...backDust, ...bellyDust, ...legDust, ...tailDust, ...tailTipParticles];
   const innerDust = Array.from({ length: 32 }).map((_, index) => ({
     left: 27 + ((index * 17) % 48),
     top: 39 + ((index * 19) % 19),
@@ -1068,7 +1144,7 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }:
 
   return (
     <div
-      aria-hidden="true"
+      aria-label="白虎七星"
       style={{
         position: "absolute",
         left: "50%",
@@ -1082,7 +1158,8 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }:
       }}
     >
       <svg
-        viewBox="0 0 100 82"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
         style={{
           position: "absolute",
           inset: 0,
@@ -1094,10 +1171,9 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }:
           d={coreStars.map(([x, y], index) => `${index === 0 ? "M" : "L"} ${x} ${y}`).join(" ")}
           fill="none"
           stroke={`rgba(${toneColor},${coreLineAlpha})`}
-          strokeWidth="0.58"
+          strokeWidth="0.42"
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeDasharray="220"
           style={{
             animation:
               narrativePhase === "seed_visible" || narrativePhase === "beast_guide"
@@ -1146,6 +1222,15 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }:
       {coreStars.map(([left, top, size], index) => (
         <span
           key={`core-${index}`}
+          role="button"
+          tabIndex={0}
+          onClick={onCoreStarClick}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              onCoreStarClick();
+            }
+          }}
           style={{
             position: "absolute",
             left: `${left}%`,
@@ -1157,6 +1242,8 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex }:
             background: `rgba(255,247,220,${0.54 + reveal * 0.36})`,
             boxShadow: `0 0 ${10 + reveal * 14 + nodeCharge * 16}px rgba(${toneColor},${coreGlow})`,
             animation: `gy-starbeast-ignite 760ms ease both ${index * 90}ms`,
+            cursor: "pointer",
+            pointerEvents: "auto",
           }}
         />
       ))}
@@ -1207,6 +1294,7 @@ function CosmicBotanicsField({
   activeNodeIndex,
   narrativePhase,
   onNodeBloom,
+  coreStars,
 }: {
   configs: SixSpaceConfig[];
   currentStep: number;
@@ -1220,12 +1308,12 @@ function CosmicBotanicsField({
   activeNodeIndex: number;
   narrativePhase: CosmicNarrativePhase;
   onNodeBloom: () => void;
+  coreStars: RuntimeCoreStar[];
 }) {
   const seedTone = pressureSeedSurface.length % 3;
   const toneColor = seedTone === 0 ? "199,169,107" : seedTone === 1 ? "222,196,154" : "176,210,206";
   const activeConfig = configs[Math.max(0, Math.min(configs.length - 1, currentStep - 1))] ?? configs[0];
   const activePetalState = activeConfig ? petalStates[activeConfig.id] : "active";
-  const activePollenBurst = activeConfig ? pollenBursts[activeConfig.id] : 0;
   const narrative = generateSixDimensionalTuningDialogue({
     pressureSeedText: pressureSeedSurface,
     starBeastName: resolveCosmicStarBeastName(starFlowerForm),
@@ -1239,12 +1327,10 @@ function CosmicBotanicsField({
   const showNodePanel = narrativePhase === "node_active" || narrativePhase === "node_complete";
   const showFieldStatus = narrativePhase === "node_complete";
   const shortPetalNames = ["身体", "情绪", "思维", "行为", "记忆", "目标"];
-  const starFlowerComponentProps = {
-    toneColor,
-    starbeast,
-    growthState: starFlowerState,
-    readiness: hexagramReadiness,
-  };
+  const coreReadiness = Math.max(hexagramReadiness, activeNodeIndex / Math.max(1, nodeFlow.length));
+  const coreVisible = narrativePhase === "node_active" || narrativePhase === "node_complete";
+  const coreGlow = 0.1 + starbeast.glowIntensity * 0.14 + coreReadiness * 0.12;
+  const coreTone = starFlowerState === "blooming" || starFlowerState === "rebirth" ? toneColor : "176,210,206";
 
   return (
     <section
@@ -1357,7 +1443,13 @@ function CosmicBotanicsField({
         })}
       </div>
 
-      <BaiHuConstellationLayer toneColor={toneColor} narrativePhase={narrativePhase} activeNodeIndex={activeNodeIndex} />
+      <BaiHuConstellationLayer
+        toneColor={toneColor}
+        narrativePhase={narrativePhase}
+        activeNodeIndex={activeNodeIndex}
+        onCoreStarClick={onNodeBloom}
+        coreStars={coreStars}
+      />
 
       <div
         style={{
@@ -1494,22 +1586,95 @@ function CosmicBotanicsField({
       </p>
 
       <div
+        aria-hidden="true"
         style={{
           position: "absolute",
           left: "50%",
-          top: "58%",
-          width: 166,
-          height: 166,
-          transform: "translate(-50%, -50%)",
+          top: "57%",
+          width: 104 + coreReadiness * 14,
+          height: 104 + coreReadiness * 14,
+          transform: `translate(-50%, -50%) scale(${coreVisible ? 1 : 0.9})`,
           pointerEvents: "none",
-          opacity: 0.42,
+          opacity: coreVisible ? 0.38 + coreReadiness * 0.24 : 0,
+          filter: `drop-shadow(0 0 ${14 + coreReadiness * 12}px rgba(${coreTone},${coreGlow}))`,
+          transition: "opacity 360ms ease, width 360ms ease, height 360ms ease, transform 360ms ease, filter 360ms ease",
         }}
       >
-        {starFlowerForm === "qinglong" ? <QingLongStarFlowerComponent {...starFlowerComponentProps} /> : null}
-        {starFlowerForm === "baihu" ? <BaiHuStarFlowerComponent {...starFlowerComponentProps} /> : null}
-        {starFlowerForm === "zhuque" ? <ZhuQueStarFlowerComponent {...starFlowerComponentProps} /> : null}
-        {starFlowerForm === "xuanwu" ? <XuanWuStarFlowerComponent {...starFlowerComponentProps} /> : null}
+        <span
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            width: 18 + coreReadiness * 8,
+            height: 18 + coreReadiness * 8,
+            borderRadius: 999,
+            transform: "translate(-50%, -50%)",
+            background: `rgba(${coreTone},${0.32 + coreReadiness * 0.16})`,
+            boxShadow: `0 0 ${18 + coreReadiness * 20}px rgba(${coreTone},${coreGlow})`,
+            transition: "width 360ms ease, height 360ms ease, background 360ms ease, box-shadow 360ms ease",
+          }}
+        />
+        {Array.from({ length: 6 }).map((_, index) => {
+          const angle = -90 + index * 60;
+          const isComplete = index < activeNodeIndex;
+          const isCurrent = index === Math.min(activeNodeIndex, nodeFlow.length - 1);
+          const nodeAlpha = isComplete ? 0.62 : isCurrent ? 0.78 : 0.2;
+          const nodeSize = isCurrent ? 9 : isComplete ? 7 : 5;
+          return (
+            <span
+              key={`flower-core-${index}`}
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                width: nodeSize,
+                height: 26 + coreReadiness * 13,
+                borderRadius: 999,
+                transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(${-28 - coreReadiness * 8}px)`,
+                transformOrigin: `50% ${28 + coreReadiness * 8}px`,
+                background: `linear-gradient(180deg, rgba(${coreTone},${nodeAlpha}), rgba(${coreTone},0.03))`,
+                boxShadow: isComplete || isCurrent ? `0 0 ${12 + coreReadiness * 10}px rgba(${coreTone},${coreGlow})` : "none",
+                transition: "width 360ms ease, height 360ms ease, transform 360ms ease, background 360ms ease, box-shadow 360ms ease",
+              }}
+            />
+          );
+        })}
       </div>
+
+      {coreVisible && activeNodeIndex > 0 ? (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "45%",
+            width: 42,
+            height: 104,
+            transform: "translateX(-50%)",
+            pointerEvents: "none",
+            opacity: 0.34 + coreReadiness * 0.18,
+          }}
+        >
+          {Array.from({ length: Math.min(6, activeNodeIndex + 1) }).map((_, index) => (
+            <span
+              key={`return-flow-${index}`}
+              style={{
+                "--pollen-x": `${(index % 2 === 0 ? -1 : 1) * (4 + index)}px`,
+                "--pollen-y": `${-44 - index * 6}px`,
+                position: "absolute",
+                left: `${44 + ((index * 7) % 16)}%`,
+                top: `${76 - index * 13}%`,
+                width: 2 + (index % 2),
+                height: 2 + (index % 2),
+                borderRadius: 999,
+                background: `rgba(${coreTone},${0.34 + coreReadiness * 0.18})`,
+                boxShadow: `0 0 10px rgba(${coreTone},${coreGlow})`,
+                animation: `gy-pollen-rise ${900 + index * 90}ms ease-out infinite ${index * 120}ms`,
+              } as CSSProperties}
+            />
+          ))}
+        </div>
+      ) : null}
 
       {configs.map((config, index) => {
         const angle = -90 + index * 60;
@@ -1555,97 +1720,6 @@ function CosmicBotanicsField({
           </span>
         );
       })}
-
-      <button
-        type="button"
-        onClick={onNodeBloom}
-        aria-label={`${activeConfig?.name ?? "当前"}六星连珠`}
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: "70%",
-          width: "78%",
-          height: "28%",
-          transform: "translate(-50%, -50%)",
-          border: "0",
-          background: "transparent",
-          color: "inherit",
-          cursor: "pointer",
-          padding: 0,
-        }}
-      >
-        {nodeFlow.map((node, index) => {
-          const positions = [
-            [18, 58],
-            [32, 43],
-            [47, 55],
-            [58, 36],
-            [72, 48],
-            [84, 30],
-          ];
-          const [left, top] = positions[index];
-          const isLit = index < activeNodeIndex;
-          const isNext = index === activeNodeIndex;
-          const alpha = isLit ? 0.96 : isNext ? 0.74 : 0.28;
-          const size = isLit ? 10 : isNext ? 9 : 6;
-
-          return (
-            <span
-              key={node.title}
-              style={{
-                position: "absolute",
-                left: `${left}%`,
-                top: `${top}%`,
-                width: size,
-                height: size,
-                borderRadius: 999,
-                transform: "translate(-50%, -50%)",
-                background: `rgba(${toneColor},${alpha})`,
-                boxShadow: isLit || isNext ? `0 0 18px rgba(${toneColor},0.46)` : `0 0 8px rgba(${toneColor},0.14)`,
-                animation: isNext ? "gy-node-pulse 1.4s ease-in-out infinite" : "none",
-                transition: "width 260ms ease, height 260ms ease, opacity 260ms ease, box-shadow 260ms ease",
-              }}
-            >
-              {index > 0 ? (
-                <span
-                  style={{
-                    position: "absolute",
-                    right: "50%",
-                    top: "50%",
-                    width: 58,
-                    height: 1,
-                    transform: `rotate(${index % 2 === 0 ? -26 : 24}deg)`,
-                    transformOrigin: "right center",
-                    background: `linear-gradient(90deg, rgba(${toneColor},${isLit ? 0.48 : 0.14}), transparent)`,
-                  }}
-                />
-              ) : null}
-            </span>
-          );
-        })}
-
-        {activePollenBurst > 0
-          ? Array.from({ length: 12 }).map((_, pollenIndex) => (
-              <span
-                key={`${activePollenBurst}-${pollenIndex}`}
-                    style={{
-                  "--pollen-x": `${Math.cos((pollenIndex / 12) * Math.PI * 2) * (36 + (pollenIndex % 4) * 10)}px`,
-                  "--pollen-y": `${Math.sin((pollenIndex / 12) * Math.PI * 2) * (28 + (pollenIndex % 3) * 8)}px`,
-                      position: "absolute",
-                      left: "50%",
-                      top: "50%",
-                      width: 3,
-                      height: 3,
-                      borderRadius: 999,
-                      background: `rgba(${toneColor},0.92)`,
-                      boxShadow: `0 0 8px rgba(${toneColor},0.56)`,
-                      pointerEvents: "none",
-                      animation: "gy-pollen-rise 920ms ease-out both",
-                    } as CSSProperties}
-                  />
-                ))
-          : null}
-      </button>
 
       <div style={{ position: "absolute", left: 18, bottom: 16, right: 18, display: "grid", gap: 5 }}>
         {showFieldStatus ? (
@@ -1781,6 +1855,9 @@ function HexagramCodeDeliveryShell() {
   const [selectedPressureSeedContext] = useState(() =>
     readJsonFromStorage<GravitySelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
   );
+  const [personaOutputSnapshot] = useState(() =>
+    readJsonFromStorage<PersonaOutputSnapshotView>("guanyao:personaOutputSnapshot"),
+  );
   const [pressureSeedProjection] = useState(() =>
     getPressureSeedSixSpaceProjection(selectedPressureSeedContext?.selectedPressureSeedId ?? "unknown-selected-pressure-seed"),
   );
@@ -1846,6 +1923,7 @@ function HexagramCodeDeliveryShell() {
     pressureSeed: selectedPressureSeedSurface,
     sixDimensionState: cosmicSixDimensionState,
   });
+  const baiHuRuntimeCoreStars = buildRuntimeBaiHuCoreStars(personaOutputSnapshot);
 
   const visiblePetalStates = sixSpaceConfigs.reduce<Record<SixSpaceId, CosmicPetalState>>((acc, config, index) => {
     const baseState = cosmicBotanicsRuntime.sixDimensionState[config.id].petalState;
@@ -2877,6 +2955,7 @@ function HexagramCodeDeliveryShell() {
             activeNodeIndex={cosmicNodeStep}
             narrativePhase={cosmicNarrativePhase}
             onNodeBloom={bloomCosmicNode}
+            coreStars={baiHuRuntimeCoreStars}
           />
         </section>
 
@@ -2942,6 +3021,7 @@ function HexagramCodeDeliveryShell() {
             activeNodeIndex={cosmicNodeStep}
             narrativePhase={cosmicNarrativePhase}
             onNodeBloom={bloomCosmicNode}
+            coreStars={baiHuRuntimeCoreStars}
           />
       ) : null}
 
