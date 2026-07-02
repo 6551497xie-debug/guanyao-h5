@@ -35,11 +35,11 @@ type Particle = {
 };
 
 const color = {
-  bg: "#000000",
-  bone: "#555555",
-  boneDark: "#222222",
+  bg: "#05040c",
+  bone: "#6e6a62",
+  boneDark: "#2d2a26",
   white: "#f6f3ec",
-  blue: "#00B8D4",
+  blue: "#57d5df",
   gold: "#C7A96B",
 };
 
@@ -107,8 +107,8 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
     let incomingSeeded = false;
     let incomingT = 0;
     let voidFrame = 0; // 进场四拍·第一/二拍：黑屏停顿 + 入场脉冲
-    const weldFixedLines = ["你刚刚拦住的，", "不是一个情绪。", "也不是一个问题。"];
-    const weldTypedLines = ["你习惯先缓和，", "再把自己从现场撤走。", "但这一次，", "它正在变成一个局。"];
+    const weldFixedLines = ["你刚刚接住的，", "不是一个情绪。", "也不是一个问题。"];
+    const weldTypedLines = ["它只是正在发生。", "我们一起轻轻看一下它。", "然后，", "带着它继续往前。"];
     const rail = {
       x: 0,
       y: 0,
@@ -306,12 +306,12 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
     function drawSeedStage() {
       ctx.fillStyle = color.bone;
       ctx.font = `${Math.min(11, Math.max(10, width * 0.023))}px monospace`;
-      ctx.fillText("04 ｜ 压力种子 · 拦截", rail.x, height * 0.06);
+      ctx.fillText("04 ｜ 此刻 · 看见", rail.x, height * 0.06);
 
       ctx.fillStyle = color.white;
       ctx.font = `bold ${Math.min(25, Math.max(22, width * 0.054))}px monospace`;
-      ctx.fillText("此刻，", rail.x, height * 0.115);
-      ctx.fillText("是什么压住了你？", rail.x, height * 0.157);
+      ctx.fillText("我们看见了", rail.x, height * 0.115);
+      ctx.fillText("这颗正在影响你的种子", rail.x, height * 0.157);
 
       if (appState === "SEED_SANDIFY") return;
 
@@ -351,7 +351,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
         ctx.globalAlpha = appState === "SEED_LOCKED" || isSelected ? 1 : 0.48;
         ctx.fillStyle = color.white;
         ctx.font = isSelected ? "16px monospace" : "15px monospace";
-        ctx.fillText(`SEED ${seed.num}`, rail.x, seedY - 22);
+        ctx.fillText(`种子 ${seed.num}`, rail.x, seedY - 22);
 
         const textLines = buildSeedTextLines(seed.main, seed.sub, maxTextWidth);
         let lineY = seedY;
@@ -372,7 +372,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
 
       ctx.fillStyle = color.bone;
       ctx.font = "10px monospace";
-      ctx.fillText("04 ｜ 焊接 · 因果锁止", rail.x, height * 0.06);
+      ctx.fillText("04 ｜ 共感 · 接住", rail.x, height * 0.06);
 
       if (appState === "WELD_TYPING") {
         typeTimer += 1;
@@ -415,10 +415,10 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       if (appState === "WELD_LOCKED") {
         ctx.fillStyle = weldMutedColor;
         ctx.font = "10px monospace";
-        ctx.fillText("[ 冷金死锁 · 不可逆 ]", rail.x, height * 0.52);
+        ctx.fillText("[ 已经接住 · 准备继续 ]", rail.x, height * 0.52);
         ctx.fillStyle = color.gold;
         ctx.font = "bold 20px monospace";
-        ctx.fillText("本局因果已高压焊死", rail.x, height * 0.56);
+        ctx.fillText("这颗种子已经被看见", rail.x, height * 0.56);
       }
     }
 
@@ -484,11 +484,11 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
 
       ctx.fillStyle = isGoldMode ? color.gold : color.bone;
       ctx.font = "10px monospace";
-      let labelText = "［ 上下换组｜点选定点｜右滑装填 ］";
-      if (appState === "SEED_LOCKED") labelText = "[ 种子已装填 · 因果焊接 ]";
-      if (appState === "WELD_TYPING") labelText = "[ 因果共振 ]";
-      if (appState === "WELD_INTERACT") labelText = isGoldMode ? "［ 高压焊接临界 ］" : "［ ➔ 右滑充能：高压焊接本局因果 ］";
-      if (appState === "WELD_LOCKED") labelText = "［ 冷金死锁：本局命盘因果已焊死 ］";
+      let labelText = "［ 上下轻看｜点选一颗｜右滑接住 ］";
+      if (appState === "SEED_LOCKED") labelText = "[ 已经接住 · 让它慢慢落下 ]";
+      if (appState === "WELD_TYPING") labelText = "[ 我们在这里 ]";
+      if (appState === "WELD_INTERACT") labelText = isGoldMode ? "［ 已经靠近下一步 ］" : "［ ➔ 右滑：带着它继续往前 ］";
+      if (appState === "WELD_LOCKED") labelText = "［ 这颗种子已被温柔接住 ］";
       ctx.fillText(labelText, rail.x, rail.y + 18);
 
       ctx.strokeStyle = isGoldMode ? "rgba(199,169,107,0.72)" : "rgba(0,184,212,0.7)";
@@ -553,7 +553,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       ctx.fillStyle = color.bg;
       ctx.fillRect(0, 0, width, height);
       const gradient = ctx.createRadialGradient(width / 2, height * 0.4, 0, width / 2, height * 0.4, width * 0.45);
-      gradient.addColorStop(0, appState.startsWith("WELD") ? "rgba(199,169,107,0.035)" : "rgba(0,184,212,0.045)");
+      gradient.addColorStop(0, appState.startsWith("WELD") ? "rgba(199,169,107,0.055)" : "rgba(87,213,223,0.04)");
       gradient.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, width, height);
