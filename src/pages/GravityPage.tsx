@@ -20,7 +20,6 @@ import { buildMotherCodeAssetLines, getMotherCodeAsset } from "../services/guany
 import { getSession } from "../services/sessionService";
 import { buildMotherCodeResult } from "../services/motherCodeService";
 import {
-  applyCosmicBotanicsRuntimeAction,
   createDormantCosmicBotanicsSixDimensionState,
   runCosmicBotanicsRuntimeEngine,
   settleCosmicBotanicsBloomState,
@@ -965,7 +964,8 @@ function CosmicBotanicsField({
   starFlowerForm,
   starFlowerState,
   hexagramReadiness,
-  onBloom,
+  activeNodeIndex,
+  onNodeBloom,
 }: {
   configs: SixSpaceConfig[];
   currentStep: number;
@@ -976,10 +976,48 @@ function CosmicBotanicsField({
   starFlowerForm: StarFlowerForm;
   starFlowerState: StarFlowerGrowthState;
   hexagramReadiness: number;
-  onBloom: (spaceId: SixSpaceId) => void;
+  activeNodeIndex: number;
+  onNodeBloom: () => void;
 }) {
   const seedTone = pressureSeedSurface.length % 3;
   const toneColor = seedTone === 0 ? "199,169,107" : seedTone === 1 ? "222,196,154" : "176,210,206";
+  const activeConfig = configs[Math.max(0, Math.min(configs.length - 1, currentStep - 1))] ?? configs[0];
+  const activePetalState = activeConfig ? petalStates[activeConfig.id] : "active";
+  const activePollenBurst = activeConfig ? pollenBursts[activeConfig.id] : 0;
+  const nodeFlow = [
+    {
+      title: "我承认，有些疲惫",
+      line: "胸口发闷，肩膀沉重。你已经很久没有抬头看星空了。",
+    },
+    {
+      title: "现在，呼出一口气",
+      line: "年龄和职级只是此刻的坐标，不是你的边界。",
+    },
+    {
+      title: "今晚，对自己温柔一次",
+      line: "亥时放下手机，给身体一次无条件的修复。",
+    },
+    {
+      title: "长按五秒，给自己一点光",
+      line: "让意识流向紧绷的地方，把意志力注入这片花瓣。",
+    },
+    {
+      title: "它正在开成一束光",
+      line: "你刚才给出的微小动作，正在变成击碎困境的雷霆。",
+    },
+    {
+      title: "白虎已经接住了这点光",
+      line: "其余五个意识空间，正在产生连锁共振。",
+    },
+  ];
+  const activeNode = nodeFlow[Math.min(activeNodeIndex, nodeFlow.length - 1)];
+  const readinessTone =
+    hexagramReadiness >= 0.98
+      ? "它正在开成一束光"
+      : activeNodeIndex > 0
+        ? "它正在慢慢开花"
+        : "星兽正在接住它";
+  const shortPetalNames = ["身体", "情绪", "思维", "行为", "记忆", "目标"];
   const starFlowerComponentProps = {
     toneColor,
     starbeast,
@@ -992,27 +1030,60 @@ function CosmicBotanicsField({
       aria-label="六维宇宙花冠"
       style={{
         position: "relative",
-        minHeight: 214,
+        minHeight: 536,
         border: "1px solid rgba(199,169,107,0.16)",
         borderRadius: 24,
         overflow: "hidden",
-        padding: "20px 16px",
+        padding: "18px 16px",
         background:
-          `radial-gradient(circle at 50% 44%, rgba(${toneColor},0.12), rgba(5,6,7,0.08) 45%, rgba(5,6,7,0.02) 100%)`,
+          `radial-gradient(circle at 52% 24%, rgba(80,58,120,0.2), transparent 28%), radial-gradient(circle at 50% 58%, rgba(${toneColor},0.14), rgba(5,6,7,0.12) 36%, rgba(5,6,7,0.04) 100%)`,
+        boxShadow: activePetalState === "blooming" ? `0 0 30px rgba(${toneColor},0.12)` : "none",
       }}
     >
       <style>{`
+        @keyframes gy-nebula-drift {
+          0%, 100% { transform: translate3d(-1%, -1%, 0) scale(1); opacity: 0.48; }
+          50% { transform: translate3d(1%, 1%, 0) scale(1.04); opacity: 0.68; }
+        }
+        @keyframes gy-blackhole-spin {
+          0% { transform: translate(-50%, -50%) rotate(0deg); }
+          100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes gy-stardust-drift {
+          0%, 100% { transform: translateX(-2px); opacity: 0.42; }
+          50% { transform: translateX(4px); opacity: 0.78; }
+        }
         @keyframes gy-petal-bloom {
           0% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(0.92); opacity: 0.62; }
           45% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(1.08); opacity: 1; }
           100% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(1); opacity: 0.88; }
+        }
+        @keyframes gy-petal-float {
+          0%, 100% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(1); }
+          50% { transform: translate(-50%, calc(-50% - 4px)) rotate(var(--petal-rotate)) scale(1.03); }
         }
         @keyframes gy-pollen-rise {
           0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
           25% { opacity: 1; }
           100% { transform: translate(calc(-50% + var(--pollen-x)), calc(-50% + var(--pollen-y))) scale(1); opacity: 0; }
         }
+        @keyframes gy-node-pulse {
+          0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.82; }
+          50% { transform: translate(-50%, -50%) scale(1.16); opacity: 1; }
+        }
       `}</style>
+
+      <div
+        style={{
+          position: "absolute",
+          inset: "-10%",
+          background:
+            `radial-gradient(circle at 28% 30%, rgba(${toneColor},0.1), transparent 24%), radial-gradient(circle at 74% 62%, rgba(120,92,150,0.12), transparent 28%), radial-gradient(circle at 50% 50%, rgba(176,210,206,0.08), transparent 34%)`,
+          filter: "blur(12px)",
+          animation: "gy-nebula-drift 8s ease-in-out infinite",
+          pointerEvents: "none",
+        }}
+      />
 
       <div style={{ position: "absolute", inset: 0, opacity: 0.38, pointerEvents: "none" }}>
         {Array.from({ length: 28 }).map((_, index) => {
@@ -1036,84 +1107,224 @@ function CosmicBotanicsField({
         })}
       </div>
 
-      {starFlowerForm === "qinglong" ? <QingLongStarFlowerComponent {...starFlowerComponentProps} /> : null}
-      {starFlowerForm === "baihu" ? <BaiHuStarFlowerComponent {...starFlowerComponentProps} /> : null}
-      {starFlowerForm === "zhuque" ? <ZhuQueStarFlowerComponent {...starFlowerComponentProps} /> : null}
-      {starFlowerForm === "xuanwu" ? <XuanWuStarFlowerComponent {...starFlowerComponentProps} /> : null}
+      <div
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "22%",
+          width: "78%",
+          minHeight: 120,
+          transform: "translateX(-50%)",
+          display: "grid",
+          placeItems: "center",
+          color: "rgba(245,245,245,0.86)",
+          pointerEvents: "none",
+          textAlign: "center",
+        }}
+      >
+        <span
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            width: 142,
+            height: 142,
+            borderRadius: "50%",
+            transform: "translate(-50%, -50%)",
+            background:
+              "radial-gradient(circle, rgba(5,6,7,0.92) 0 27%, rgba(40,22,64,0.72) 44%, rgba(199,169,107,0.1) 58%, transparent 72%)",
+            boxShadow: "inset 0 0 32px rgba(5,6,7,0.9), 0 0 38px rgba(80,58,120,0.34)",
+          }}
+        />
+        <span
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            width: 168,
+            height: 168,
+            borderRadius: "50%",
+            transform: "translate(-50%, -50%)",
+            border: "1px solid rgba(199,169,107,0.12)",
+            borderTopColor: "rgba(176,210,206,0.28)",
+            animation: "gy-blackhole-spin 12s linear infinite",
+          }}
+        />
+        <span
+          style={{
+            position: "relative",
+            zIndex: 1,
+            width: 8,
+            height: 8,
+            borderRadius: 999,
+            background: "rgba(245,245,245,0.54)",
+            boxShadow: `0 0 24px rgba(${toneColor},0.28)`,
+            animation: "gy-stardust-drift 4s ease-in-out infinite",
+          }}
+        />
+      </div>
+
+      <div
+        style={{
+          position: "absolute",
+          left: 22,
+          right: 22,
+          bottom: 40,
+          display: "grid",
+          gap: 8,
+          pointerEvents: "none",
+          padding: "14px 14px 13px",
+          borderRadius: 16,
+          background: "linear-gradient(180deg, rgba(5,6,7,0.54), rgba(5,6,7,0.22))",
+          border: `1px solid rgba(${toneColor},0.14)`,
+          backdropFilter: "blur(4px)",
+        }}
+      >
+        <GuanyaoText size="eyebrow" tone="gold">
+          {activeNode.title}
+        </GuanyaoText>
+        <p style={{ margin: 0, color: "rgba(245,245,245,0.76)", fontSize: 13, lineHeight: 1.58 }}>
+          {activeNode.line}
+        </p>
+      </div>
 
       <div
         style={{
           position: "absolute",
           left: "50%",
-          top: "50%",
+          top: "58%",
+          width: 210,
+          height: 210,
           transform: "translate(-50%, -50%)",
-          display: "grid",
-          placeItems: "center",
-          gap: 4,
-          color: `rgba(${toneColor},${0.72 + starbeast.glowIntensity * 0.22})`,
-          fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-          fontSize: 10,
-          letterSpacing: "0.12em",
           pointerEvents: "none",
-          textAlign: "center",
         }}
       >
-        <span>星花</span>
-        <span style={{ fontSize: 8, opacity: 0.62 }}>
-          {starFlowerForm} · {starFlowerState}
-        </span>
+        {starFlowerForm === "qinglong" ? <QingLongStarFlowerComponent {...starFlowerComponentProps} /> : null}
+        {starFlowerForm === "baihu" ? <BaiHuStarFlowerComponent {...starFlowerComponentProps} /> : null}
+        {starFlowerForm === "zhuque" ? <ZhuQueStarFlowerComponent {...starFlowerComponentProps} /> : null}
+        {starFlowerForm === "xuanwu" ? <XuanWuStarFlowerComponent {...starFlowerComponentProps} /> : null}
       </div>
 
       {configs.map((config, index) => {
         const angle = -90 + index * 60;
         const rad = (angle * Math.PI) / 180;
-        const cx = 50 + Math.cos(rad) * 32;
-        const cy = 50 + Math.sin(rad) * 34;
+        const isActive = config.id === activeConfig?.id;
         const state = petalStates[config.id];
-        const isCurrent = currentStep === index + 1;
-        const alpha = state === "dormant" ? 0.42 : state === "active" ? 0.78 : 1;
-        const scale = state === "dormant" ? 0.9 : state === "active" ? 1 : 1.08;
-        const pollenBurst = pollenBursts[config.id];
+        const left = 50 + Math.cos(rad) * 34;
+        const top = 58 + Math.sin(rad) * 22;
 
         return (
-          <button
+          <span
             key={config.id}
-            type="button"
-            onClick={() => onBloom(config.id)}
-            aria-label={`${config.name}花瓣`}
             style={{
               "--petal-rotate": `${angle + 90}deg`,
               position: "absolute",
-              left: `${cx}%`,
-              top: `${cy}%`,
-              width: 82,
-              minHeight: 42,
-              transform: `translate(-50%, -50%) rotate(${angle + 90}deg) scale(${scale})`,
-              transformOrigin: "center",
-              border: `1px solid rgba(${toneColor},${state === "dormant" ? 0.18 : 0.52})`,
-              borderRadius: "50% 50% 46% 46%",
-              background: `linear-gradient(135deg, rgba(${toneColor},${state === "blooming" ? 0.22 : 0.1}), rgba(5,6,7,0.18))`,
-              color: state === "dormant" ? "rgba(245,245,245,0.56)" : "rgba(245,245,245,0.9)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 10,
-              letterSpacing: "0.08em",
-              cursor: "pointer",
-              opacity: alpha,
-              boxShadow: isCurrent || state === "blooming" ? `0 0 24px rgba(${toneColor},0.22)` : "none",
-              animation: state === "blooming" ? "gy-petal-bloom 900ms ease both" : "none",
-              transition: "opacity 260ms ease, transform 260ms ease, border-color 260ms ease, box-shadow 260ms ease",
+              left: `${left}%`,
+              top: `${top}%`,
+              width: isActive ? 68 : 54,
+              height: isActive ? 28 : 22,
+              borderRadius: "50%",
+              transform: `translate(-50%, -50%) rotate(${angle + 90}deg)`,
+              background: `linear-gradient(90deg, rgba(${toneColor},${isActive ? 0.28 : 0.08}), rgba(245,245,245,${state === "blooming" ? 0.16 : 0.04}))`,
+              border: `1px solid rgba(${toneColor},${isActive ? 0.42 : 0.14})`,
+              boxShadow: isActive ? `0 0 24px rgba(${toneColor},0.22)` : "none",
+              opacity: isActive ? 0.96 : 0.54,
+              pointerEvents: "none",
+              animation: "gy-petal-float 4.6s ease-in-out infinite",
             } as CSSProperties}
           >
-            <span style={{ display: "block", transform: `rotate(${-angle - 90}deg)`, whiteSpace: "nowrap" }}>
-              {config.no} · {config.name.replace("空间", "")}
+            <span
+              style={{
+                display: "block",
+                transform: `rotate(${-angle - 90}deg)`,
+                color: isActive ? "rgba(245,245,245,0.72)" : "rgba(245,245,245,0.32)",
+                fontSize: 9,
+                lineHeight: "26px",
+                textAlign: "center",
+                letterSpacing: "0.04em",
+              }}
+            >
+              {shortPetalNames[index]}
             </span>
-            {pollenBurst > 0
-              ? Array.from({ length: 6 }).map((_, pollenIndex) => (
-                  <span
-                    key={`${pollenBurst}-${pollenIndex}`}
+          </span>
+        );
+      })}
+
+      <button
+        type="button"
+        onClick={onNodeBloom}
+        aria-label={`${activeConfig?.name ?? "当前"}六星连珠`}
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "75%",
+          width: "84%",
+          height: "34%",
+          transform: "translate(-50%, -50%)",
+          border: "0",
+          background: "transparent",
+          color: "inherit",
+          cursor: "pointer",
+          padding: 0,
+        }}
+      >
+        {nodeFlow.map((node, index) => {
+          const positions = [
+            [18, 58],
+            [32, 43],
+            [47, 55],
+            [58, 36],
+            [72, 48],
+            [84, 30],
+          ];
+          const [left, top] = positions[index];
+          const isLit = index < activeNodeIndex;
+          const isNext = index === activeNodeIndex;
+          const alpha = isLit ? 0.96 : isNext ? 0.74 : 0.28;
+          const size = isLit ? 10 : isNext ? 9 : 6;
+
+          return (
+            <span
+              key={node.title}
+              style={{
+                position: "absolute",
+                left: `${left}%`,
+                top: `${top}%`,
+                width: size,
+                height: size,
+                borderRadius: 999,
+                transform: "translate(-50%, -50%)",
+                background: `rgba(${toneColor},${alpha})`,
+                boxShadow: isLit || isNext ? `0 0 18px rgba(${toneColor},0.46)` : `0 0 8px rgba(${toneColor},0.14)`,
+                animation: isNext ? "gy-node-pulse 1.4s ease-in-out infinite" : "none",
+                transition: "width 260ms ease, height 260ms ease, opacity 260ms ease, box-shadow 260ms ease",
+              }}
+            >
+              {index > 0 ? (
+                <span
+                  style={{
+                    position: "absolute",
+                    right: "50%",
+                    top: "50%",
+                    width: 58,
+                    height: 1,
+                    transform: `rotate(${index % 2 === 0 ? -26 : 24}deg)`,
+                    transformOrigin: "right center",
+                    background: `linear-gradient(90deg, rgba(${toneColor},${isLit ? 0.48 : 0.14}), transparent)`,
+                  }}
+                />
+              ) : null}
+            </span>
+          );
+        })}
+
+        {activePollenBurst > 0
+          ? Array.from({ length: 12 }).map((_, pollenIndex) => (
+              <span
+                key={`${activePollenBurst}-${pollenIndex}`}
                     style={{
-                      "--pollen-x": `${Math.cos((pollenIndex / 6) * Math.PI * 2) * 34}px`,
-                      "--pollen-y": `${Math.sin((pollenIndex / 6) * Math.PI * 2) * 28}px`,
+                  "--pollen-x": `${Math.cos((pollenIndex / 12) * Math.PI * 2) * (36 + (pollenIndex % 4) * 10)}px`,
+                  "--pollen-y": `${Math.sin((pollenIndex / 12) * Math.PI * 2) * (28 + (pollenIndex % 3) * 8)}px`,
                       position: "absolute",
                       left: "50%",
                       top: "50%",
@@ -1127,18 +1338,13 @@ function CosmicBotanicsField({
                     } as CSSProperties}
                   />
                 ))
-              : null}
-          </button>
-        );
-      })}
+          : null}
+      </button>
 
       <div style={{ position: "absolute", left: 18, bottom: 16, right: 18, display: "grid", gap: 5 }}>
         <GuanyaoText size="eyebrow" tone="gold">
-          Cosmic Botanics · {Math.round(hexagramReadiness * 100)}%
+          {activeNodeIndex >= 6 ? "这片花冠已替你亮起" : readinessTone}
         </GuanyaoText>
-        <p style={{ margin: 0, color: "rgba(245,245,245,0.52)", fontSize: 12, lineHeight: 1.55 }}>
-          压力种子像环境引力。每一次轻触花瓣，都是把一点能量送回星兽。
-        </p>
       </div>
     </section>
   );
@@ -1249,6 +1455,7 @@ function HexagramCodeDeliveryShell() {
   const [cosmicSixDimensionState, setCosmicSixDimensionState] = useState<CosmicBotanicsSixDimensionState>(() =>
     createDormantCosmicBotanicsSixDimensionState(),
   );
+  const [cosmicNodeStep, setCosmicNodeStep] = useState(0);
   const [selectedSpaceWeapons, setSelectedSpaceWeapons] = useState<Record<SixSpaceId, SixSpaceWeaponId | null>>(() => ({
     body: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("body")),
     emotion: readJsonFromStorage<SixSpaceWeaponId>(getSelectedWeaponStorageKey("emotion")),
@@ -1348,20 +1555,40 @@ function HexagramCodeDeliveryShell() {
     return acc;
   }, buildSpaceRecord(0));
 
-  function bloomCosmicPetal(spaceId: SixSpaceId) {
-    const nextRuntime = applyCosmicBotanicsRuntimeAction(
-      {
-        pressureSeed: selectedPressureSeedSurface,
-        sixDimensionState: cosmicBotanicsRuntime.sixDimensionState,
-      },
-      {
-        type: "bloom",
-        dimensionId: spaceId,
-      },
-    );
-    setCosmicSixDimensionState(nextRuntime.sixDimensionState);
+  function bloomCosmicNode() {
+    const activeSpaceId = currentSixSpaceConfig?.id ?? "body";
+    const nextNodeStep = Math.min(6, cosmicNodeStep + 1);
+
+    setCosmicNodeStep(nextNodeStep);
+    setCosmicSixDimensionState((current) => {
+      const nextState: CosmicBotanicsSixDimensionState = {
+        ...current,
+        [activeSpaceId]: {
+          petalState: "blooming",
+          bloomCount: current[activeSpaceId].bloomCount + 1,
+        },
+      };
+
+      if (nextNodeStep >= 6) {
+        sixSpaceConfigs.forEach((config) => {
+          nextState[config.id] = {
+            petalState: "blooming",
+            bloomCount: Math.max(nextState[config.id].bloomCount, 1),
+          };
+        });
+      }
+
+      return nextState;
+    });
+
     window.setTimeout(() => {
-      setCosmicSixDimensionState((current) => settleCosmicBotanicsBloomState(current, spaceId));
+      setCosmicSixDimensionState((current) => {
+        if (nextNodeStep >= 6) {
+          return current;
+        }
+
+        return settleCosmicBotanicsBloomState(current, activeSpaceId);
+      });
     }, 1400);
   }
 
@@ -2217,8 +2444,6 @@ function HexagramCodeDeliveryShell() {
   }
 
   if (USE_COSMIC_BOTANICS_SIX_SPACE) {
-    const bloomedCount = Object.values(visiblePetalStates).filter((state) => state === "blooming").length;
-
     return (
       <main
         style={{
@@ -2264,28 +2489,12 @@ function HexagramCodeDeliveryShell() {
               letterSpacing: "0.16em",
             }}
           >
-            GY / 6D COSMIC BOTANICS
+            FIELD 04 / 6D ALIGNMENT
           </span>
 
-          <div style={{ display: "grid", gap: 12 }}>
-            <h1
-              style={{
-                margin: 0,
-                color: "rgba(245,245,245,0.96)",
-                fontSize: "clamp(34px, 10vw, 48px)",
-                lineHeight: 1.08,
-                fontWeight: 520,
-                letterSpacing: "0.01em",
-              }}
-            >
-              六维花冠
-            </h1>
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.68)", fontSize: 17, lineHeight: 1.75 }}>
-              这颗种子不是要被审判。
-              <br />
-              它只是需要被看见。
-            </p>
-          </div>
+          <p style={{ margin: 0, maxWidth: 292, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.6 }}>
+            当前时空坐标遭遇风暴。先别急着判断，我们一起把光送回去。
+          </p>
         </section>
 
         <section
@@ -2296,33 +2505,6 @@ function HexagramCodeDeliveryShell() {
             gap: 18,
           }}
         >
-          <div
-            style={{
-              padding: "16px 0",
-              borderTop: "1px solid rgba(199,169,107,0.16)",
-              borderBottom: "1px solid rgba(199,169,107,0.16)",
-              display: "grid",
-              gap: 10,
-            }}
-          >
-            <span
-              style={{
-                color: "rgba(199,169,107,0.72)",
-                fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                fontSize: 11,
-                letterSpacing: "0.12em",
-              }}
-            >
-              当前引力种子
-            </span>
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.88)", fontSize: 18, lineHeight: 1.62, fontWeight: 460 }}>
-              {selectedPressureSeedSurface}
-            </p>
-            <span style={{ color: "rgba(245,245,245,0.48)", fontSize: 13, lineHeight: 1.55 }}>
-              轻触任一花瓣，把一点能量送回星兽。
-            </span>
-          </div>
-
           <CosmicBotanicsField
             configs={sixSpaceConfigs}
             currentStep={sixDimensionStep}
@@ -2333,7 +2515,8 @@ function HexagramCodeDeliveryShell() {
             starFlowerForm={cosmicBotanicsRuntime.starFlower.form}
             starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
             hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}
-            onBloom={bloomCosmicPetal}
+            activeNodeIndex={cosmicNodeStep}
+            onNodeBloom={bloomCosmicNode}
           />
         </section>
 
@@ -2351,18 +2534,15 @@ function HexagramCodeDeliveryShell() {
           }}
         >
           <span>
-            {cosmicBotanicsRuntime.hexagramCardGeneration.reason}
-            <br />
-            星兽反馈：{cosmicBotanicsRuntime.starbeast.postureShift}
+            {cosmicNodeStep >= 6 ? "这一局，已经开始结晶。" : "轻触星点，慢慢点亮这片花。"}
           </span>
           <span
             style={{
-              color: bloomedCount > 0 ? "rgba(199,169,107,0.86)" : "rgba(245,245,245,0.42)",
-              fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              letterSpacing: "0.12em",
+              color: cosmicNodeStep > 0 ? "rgba(199,169,107,0.82)" : "rgba(245,245,245,0.42)",
+              letterSpacing: "0.04em",
             }}
           >
-            {bloomedCount}/6
+            {cosmicNodeStep >= 6 ? "这片花冠已替你亮起。" : "一点点往前。"}
           </span>
         </footer>
       </main>
@@ -2412,7 +2592,8 @@ function HexagramCodeDeliveryShell() {
             starFlowerForm={cosmicBotanicsRuntime.starFlower.form}
             starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
             hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}
-            onBloom={bloomCosmicPetal}
+            activeNodeIndex={cosmicNodeStep}
+            onNodeBloom={bloomCosmicNode}
           />
       ) : null}
 
