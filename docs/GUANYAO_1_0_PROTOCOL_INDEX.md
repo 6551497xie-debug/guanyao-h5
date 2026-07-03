@@ -90,6 +90,9 @@ The current GUANYAO 1.0 main chain is locked as:
 - [GUANYAO_1_0_ASSET_RENDER_PROTOCOL.md](./GUANYAO_1_0_ASSET_RENDER_PROTOCOL.md)  
   P0 asset render protocol. Defines how `cardBlueprintCandidate(CARD_BLUEPRINT)` enters `assetRenderCandidate(ASSET_RENDER_CANDIDATE)`, while keeping ASSET_RENDER_CANDIDATE outside the formal 64-hexagram asset card layer and forbidding formal `hexagramCode`, `hexagramName`, `cardName`, UI, route, or commercialization output.
 
+- [GUANYAO_1_0_FINAL_ASSET_PROTOCOL.md](./GUANYAO_1_0_FINAL_ASSET_PROTOCOL.md)  
+  P0 final asset candidate protocol. Defines how `assetRenderCandidate(ASSET_RENDER_CANDIDATE)` enters `finalAssetCandidate(FINAL_ASSET_CANDIDATE)`, while keeping FINAL_ASSET_CANDIDATE outside the formal 64-hexagram asset card layer and forbidding formal `hexagramCode`, `hexagramName`, `cardName`, `finalAssetId`, UI, route, or commercialization output.
+
 - [R8_ENGINE_HEXAGRAM_FORMATION.md](./R8_ENGINE_HEXAGRAM_FORMATION.md)  
   Hexagram formation protocol. Defines how final hexagram assets should be treated as generated output.
 
@@ -190,22 +193,24 @@ selectedPressureSeedContext
 → assetShellCandidate(ASSET_SHELL)
 → resolveCardBlueprintCandidate()
 → cardBlueprintCandidate(CARD_BLUEPRINT)
+→ resolveAssetRenderCandidate()
+→ assetRenderCandidate(ASSET_RENDER_CANDIDATE)
 ```
 
 Current P0 asset-chain next code direction is locked as:
 
 ```text
-→ cardBlueprintCandidate(CARD_BLUEPRINT)
-→ resolveAssetRenderCandidate()
 → assetRenderCandidate(ASSET_RENDER_CANDIDATE)
+→ resolveFinalAssetCandidate()
+→ finalAssetCandidate(FINAL_ASSET_CANDIDATE)
 ```
 
-This next step must use [GUANYAO_1_0_ASSET_RENDER_PROTOCOL.md](./GUANYAO_1_0_ASSET_RENDER_PROTOCOL.md) as its construction basis.
+This next step must use [GUANYAO_1_0_FINAL_ASSET_PROTOCOL.md](./GUANYAO_1_0_FINAL_ASSET_PROTOCOL.md) as its construction basis.
 
 It may only output:
 
 ```text
-assetRenderCandidate(ASSET_RENDER_CANDIDATE)
+finalAssetCandidate(FINAL_ASSET_CANDIDATE)
 ```
 
 It must not generate the formal 64-hexagram card.
