@@ -445,12 +445,97 @@ export const GUANYAO_SDK_RELEASE_CONTRACT = Object.freeze({
   coreVersion: GUANYAO_RUNTIME_ENGINE_VERSION,
   ecosystemVersion: GUANYAO_ECOSYSTEM_VERSION,
   release: "v1.0",
-  publicCoreApi: Object.freeze(["createSnapshot", "run", "advance", "project", "validate"] as const),
+  officialEntryPoint: "createGuanyaoEcosystem",
+  officialUsage: "const ecosystem = createGuanyaoEcosystem(); const instance = ecosystem.spawn(snapshot); const result = ecosystem.execute(instance, intent); const view = ecosystem.inspect(result);",
+  internalCoreApi: Object.freeze(["createSnapshot", "run", "advance", "project", "validate"] as const),
   publicEcosystemApi: Object.freeze(["createGuanyaoEcosystem", "spawn", "execute", "destroy", "inspect"] as const),
+  supportedConsumers: Object.freeze([
+    "headless_runtime_systems",
+    "simulation_engines",
+    "ai_orchestration_systems",
+    "deterministic_execution_pipelines",
+    "external_embedding_systems",
+  ] as const),
+  integrationContract: Object.freeze({
+    input: Object.freeze(["ExecutionSnapshot", "RuntimeIntent"] as const),
+    output: Object.freeze(["ExecutionSnapshot", "RuntimeProjection"] as const),
+    snapshotImmutable: true,
+    intentGoverned: true,
+  }),
+  boundaryGuarantee: Object.freeze({
+    insideSdk: Object.freeze(["engine_core", "execution_kernel", "intent_governance", "plugin_pipeline", "graph_system"] as const),
+    outsideSdk: Object.freeze(["ecosystem_api", "snapshot_interface", "intent_interface", "projection_output"] as const),
+    noCrossBoundaryAccess: true,
+  }),
+  hiddenInternals: Object.freeze([
+    "executionKernel",
+    "sceneGraph",
+    "interactionGraph",
+    "intentEngine",
+    "pluginPipeline",
+    "coherenceValidator",
+  ] as const),
   versionRule: "v1.0 is frozen; compatible changes require v1.1+",
   deterministic: true,
+  deterministicGuarantee: "same snapshot plus same intent sequence produces identical execution result and projection output",
   frameworkAgnostic: true,
   internalArchitectureHidden: true,
+});
+
+export const GUANYAO_SDK_PRODUCT_SPECIFICATION = Object.freeze({
+  definition:
+    "A deterministic spatial behavior execution system based on immutable state transformation and governed intent resolution.",
+  mentalModel: Object.freeze({
+    inputLayer: Object.freeze(["ExecutionSnapshot", "RuntimeIntent"] as const),
+    engineLayer: Object.freeze(["deterministic_execution_kernel", "plugin_augmented_non_authoritative_pipeline"] as const),
+    stateLayer: "ExecutionSnapshot as single source of truth",
+    outputLayer: "RuntimeProjection as consumer rendering data",
+  }),
+  consumerJourney: Object.freeze([
+    "create ecosystem",
+    "spawn runtime instance",
+    "send governed intent",
+    "receive snapshot update",
+    "inspect derived projection",
+  ] as const),
+  documentStructure: Object.freeze([
+    "Overview",
+    "Usage",
+    "Architecture",
+    "Guarantees",
+    "Limitations",
+    "Versioning policy",
+  ] as const),
+  boundaryContract: Object.freeze({
+    exposedToConsumer: Object.freeze(["ecosystem_api", "snapshot_interface", "intent_interface", "projection_output"] as const),
+    hiddenImplementation: Object.freeze(["execution_kernel", "plugin_pipeline", "graph_system", "intent_governance_internals"] as const),
+    strictNonLeakingBoundary: true,
+  }),
+  guarantees: Object.freeze({
+    determinism: "same input yields same output",
+    isolation: "multi-instance execution has no cross contamination",
+    immutability: "snapshot is never mutated in-place",
+    pluginSafety: "plugins cannot override execution outcome",
+  }),
+  safeFailureModes: Object.freeze({
+    invalidIntent: "NOOP_OR_REJECTED",
+    inconsistentSnapshot: "VALIDATION_FAILURE",
+    pluginConflict: "IGNORED_NO_OVERRIDE_ALLOWED",
+  }),
+  limitations: Object.freeze([
+    "does_not_assume_ui_existence",
+    "does_not_expose_internal_graphs",
+    "does_not_expose_plugin_pipeline",
+    "does_not_create_runtime_cache",
+    "does_not_depend_on_time_or_randomness",
+  ] as const),
+  versioningPolicy: Object.freeze({
+    current: "v1.0.0",
+    v1: "frozen_contract",
+    futureMinor: "v1.1+ backward compatible extensions only",
+    breakingChanges: "not allowed in v1.x",
+    evolutionMode: "extension_not_mutation",
+  }),
 });
 
 export const GuanyaoRuntimeEngine = Object.freeze({
