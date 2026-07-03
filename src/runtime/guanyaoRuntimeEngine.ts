@@ -439,6 +439,19 @@ function validate(snapshot: ExecutionSnapshot): SystemIntegrityCheck {
 
 export const GUANYAO_RUNTIME_ENGINE_PACKAGE = "@guanyao/runtime-engine" as const;
 export const GUANYAO_RUNTIME_ENGINE_VERSION = "1.0.0" as const;
+export const GUANYAO_ECOSYSTEM_VERSION = "1.0.0" as const;
+export const GUANYAO_SDK_RELEASE_CONTRACT = Object.freeze({
+  packageName: GUANYAO_RUNTIME_ENGINE_PACKAGE,
+  coreVersion: GUANYAO_RUNTIME_ENGINE_VERSION,
+  ecosystemVersion: GUANYAO_ECOSYSTEM_VERSION,
+  release: "v1.0",
+  publicCoreApi: Object.freeze(["createSnapshot", "run", "advance", "project", "validate"] as const),
+  publicEcosystemApi: Object.freeze(["createGuanyaoEcosystem", "spawn", "execute", "destroy", "inspect"] as const),
+  versionRule: "v1.0 is frozen; compatible changes require v1.1+",
+  deterministic: true,
+  frameworkAgnostic: true,
+  internalArchitectureHidden: true,
+});
 
 export const GuanyaoRuntimeEngine = Object.freeze({
   createSnapshot: createExecutionSnapshot,
@@ -448,31 +461,31 @@ export const GuanyaoRuntimeEngine = Object.freeze({
   validate,
 });
 
-export type GuanyaoRuntimeEnginePublicApi = typeof GuanyaoRuntimeEngine;
+type GuanyaoRuntimeEnginePublicApi = typeof GuanyaoRuntimeEngine;
 
-export type EngineInstance = Readonly<{
+type EngineInstance = Readonly<{
   id: string;
   engine: GuanyaoRuntimeEnginePublicApi;
   snapshot: ExecutionSnapshot;
 }>;
 
-export type GuanyaoPluginContext = Readonly<{
+type GuanyaoPluginContext = Readonly<{
   intent: RuntimeIntent;
   snapshot: ExecutionSnapshot;
   projection?: RuntimeProjection;
   metadata: Readonly<Record<string, unknown>>;
 }>;
 
-export type GuanyaoPlugin = Readonly<{
+type GuanyaoPlugin = Readonly<{
   name: string;
   version: string;
   type: "intent_middleware" | "snapshot_transform" | "projection_extension";
   execute: (context: GuanyaoPluginContext) => GuanyaoPluginContext;
 }>;
 
-export type PluginExecutionPhase = "PRE_INTENT" | "PRE_EXECUTION" | "POST_EXECUTION" | "PROJECTION";
+type PluginExecutionPhase = "PRE_INTENT" | "PRE_EXECUTION" | "POST_EXECUTION" | "PROJECTION";
 
-export const PluginExecutionPipeline = Object.freeze([
+const PluginExecutionPipeline = Object.freeze([
   "PRE_INTENT",
   "INTENT_GOVERNANCE_LAYER",
   "PRE_EXECUTION",
@@ -481,14 +494,19 @@ export const PluginExecutionPipeline = Object.freeze([
   "PROJECTION",
 ] as const);
 
-export const PluginOutputPolicy = Object.freeze({
+const PluginOutputPolicy = Object.freeze({
   OBSERVE_ONLY: "OBSERVE_ONLY",
   TRANSFORM_ALLOWED: "PRE_STAGE_ONLY",
   NO_OVERRIDE: "EXECUTION_RESULT_CANNOT_BE_REPLACED",
   NO_MUTATION: "SNAPSHOT_IS_IMMUTABLE_BOUNDARY",
 } as const);
 
-export type PluginRegistry = Readonly<{
+const InternalPluginContract = Object.freeze({
+  pipeline: PluginExecutionPipeline,
+  outputPolicy: PluginOutputPolicy,
+});
+
+type PluginRegistry = Readonly<{
   register: (plugin: GuanyaoPlugin) => PluginRegistry;
   resolve: (context: GuanyaoPluginContext) => GuanyaoPluginContext;
   list: () => readonly GuanyaoPlugin[];
@@ -547,7 +565,7 @@ function deriveEngineInstanceId(snapshot: ExecutionSnapshot) {
   return `gy-runtime-${hashRuntimeString(stableSnapshotKey(snapshot)).toString(36)}`;
 }
 
-export function injectSnapshot(instance: EngineInstance, snapshot: ExecutionSnapshot): EngineInstance {
+function injectSnapshot(instance: EngineInstance, snapshot: ExecutionSnapshot): EngineInstance {
   return Object.freeze({
     id: instance.id,
     engine: instance.engine,
@@ -618,7 +636,7 @@ function resolvePluginIntentOutput(inputIntent: RuntimeIntent, pluginIntent: Run
   return pluginIntent;
 }
 
-export function createPluginRegistry(plugins: readonly GuanyaoPlugin[] = []): PluginRegistry {
+function createPluginRegistry(plugins: readonly GuanyaoPlugin[] = []): PluginRegistry {
   const registryPlugins = Object.freeze([...plugins]);
 
   return Object.freeze({
@@ -636,7 +654,7 @@ export function createPluginRegistry(plugins: readonly GuanyaoPlugin[] = []): Pl
   });
 }
 
-export function executePipeline(
+function executePipeline(
   instance: EngineInstance,
   intent: RuntimeIntent,
   registry: PluginRegistry = createPluginRegistry(),
@@ -665,7 +683,7 @@ export function executePipeline(
   return nextSnapshot;
 }
 
-export function executePluginCycle(
+function executePluginCycle(
   instance: EngineInstance,
   intent: RuntimeIntent,
   registry: PluginRegistry = createPluginRegistry(),
@@ -673,7 +691,7 @@ export function executePluginCycle(
   return injectSnapshot(instance, executePipeline(instance, intent, registry));
 }
 
-export const RuntimeOrchestrator = Object.freeze({
+const RuntimeOrchestrator = Object.freeze({
   createInstance(initialSnapshot: ExecutionSnapshot): EngineInstance {
     const snapshot = cloneExecutionSnapshot(initialSnapshot);
     return Object.freeze({
@@ -687,10 +705,6 @@ export const RuntimeOrchestrator = Object.freeze({
     return injectSnapshot(instance, executeCycle(instance, intent));
   },
 
-  sendIntentWithPlugins(instance: EngineInstance, intent: RuntimeIntent, registry: PluginRegistry): EngineInstance {
-    return executePluginCycle(instance, intent, registry);
-  },
-
   injectSnapshot,
 
   getSnapshot(instance: EngineInstance): ExecutionSnapshot {
@@ -702,8 +716,125 @@ export const RuntimeOrchestrator = Object.freeze({
   },
 });
 
-export type RuntimeOrchestratorApi = typeof RuntimeOrchestrator;
+type RuntimeOrchestratorApi = typeof RuntimeOrchestrator;
 
-export function createRuntimeEngine(): RuntimeOrchestratorApi {
+function createRuntimeEngine(): RuntimeOrchestratorApi {
   return RuntimeOrchestrator;
 }
+
+type CapabilityRegistrySnapshot = Readonly<{
+  headless: true;
+  multiInstance: true;
+  pluginEnabled: true;
+  deterministic: true;
+}>;
+
+const CapabilityRegistry: CapabilityRegistrySnapshot = Object.freeze({
+  headless: true,
+  multiInstance: true,
+  pluginEnabled: true,
+  deterministic: true,
+});
+
+const GuanyaoRuntimeEcosystemCapabilities = Object.freeze([
+  "headless_execution",
+  "multi_instance",
+  "plugin_extension",
+  "deterministic_replay",
+] as const);
+
+export type GuanyaoRuntimeEcosystemCapability = (typeof GuanyaoRuntimeEcosystemCapabilities)[number];
+
+export type EcosystemInstance = Readonly<{
+  id: string;
+  snapshot: ExecutionSnapshot;
+}>;
+
+export type EcosystemInspection = Readonly<{
+  id: string;
+  version: typeof GUANYAO_ECOSYSTEM_VERSION;
+  mode: "platform";
+  capabilities: CapabilityRegistrySnapshot;
+  snapshot: ExecutionSnapshot;
+  projection: RuntimeProjection;
+}>;
+
+type EngineAdapter = Readonly<{
+  adaptSnapshot: (snapshot: ExecutionSnapshot) => ExecutionSnapshot;
+  adaptIntent: (intent: RuntimeIntent) => RuntimeIntent;
+  adaptResult: (result: EngineInstance) => EcosystemInstance;
+}>;
+
+const defaultEngineAdapter: EngineAdapter = Object.freeze({
+  adaptSnapshot(snapshot: ExecutionSnapshot): ExecutionSnapshot {
+    return cloneExecutionSnapshot(snapshot);
+  },
+
+  adaptIntent(intent: RuntimeIntent): RuntimeIntent {
+    return intent;
+  },
+
+  adaptResult(result: EngineInstance): EcosystemInstance {
+    return Object.freeze({
+      id: result.id,
+      snapshot: cloneExecutionSnapshot(result.snapshot),
+    });
+  },
+});
+
+function toEngineInstance(instance: EcosystemInstance): EngineInstance {
+  return Object.freeze({
+    id: instance.id,
+    engine: GuanyaoRuntimeEngine,
+    snapshot: cloneExecutionSnapshot(instance.snapshot),
+  });
+}
+
+export type GuanyaoRuntimeEcosystem = Readonly<{
+  version: typeof GUANYAO_ECOSYSTEM_VERSION;
+  mode: "platform";
+  capabilities: readonly GuanyaoRuntimeEcosystemCapability[];
+  spawn: (snapshot: ExecutionSnapshot) => EcosystemInstance;
+  execute: (instance: EcosystemInstance, intent: RuntimeIntent) => EcosystemInstance;
+  destroy: (instance: EcosystemInstance) => null;
+  inspect: (instance: EcosystemInstance) => EcosystemInspection;
+}>;
+
+function createEcosystem(): GuanyaoRuntimeEcosystem {
+  const adapter = defaultEngineAdapter;
+  void InternalPluginContract;
+
+  return Object.freeze({
+    version: GUANYAO_ECOSYSTEM_VERSION,
+    mode: "platform",
+    capabilities: GuanyaoRuntimeEcosystemCapabilities,
+
+    spawn(snapshot: ExecutionSnapshot): EcosystemInstance {
+      return adapter.adaptResult(RuntimeOrchestrator.createInstance(adapter.adaptSnapshot(snapshot)));
+    },
+
+    execute(instance: EcosystemInstance, intent: RuntimeIntent): EcosystemInstance {
+      const engineInstance = toEngineInstance(instance);
+      const result = RuntimeOrchestrator.sendIntent(engineInstance, adapter.adaptIntent(intent));
+      return adapter.adaptResult(result);
+    },
+
+    destroy(_instance: EcosystemInstance): null {
+      return null;
+    },
+
+    inspect(instance: EcosystemInstance): EcosystemInspection {
+      const snapshot = adapter.adaptSnapshot(instance.snapshot);
+      return Object.freeze({
+        id: instance.id,
+        version: GUANYAO_ECOSYSTEM_VERSION,
+        mode: "platform",
+        capabilities: CapabilityRegistry,
+        snapshot,
+        projection: GuanyaoRuntimeEngine.project(snapshot),
+      });
+    },
+  });
+}
+
+export const createGuanyaoEcosystem = createEcosystem;
