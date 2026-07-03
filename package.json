@@ -12,8 +12,9 @@
     "check:hexagram-candidate": "node scripts/check-hexagram-asset-candidate.mjs",
     "check:hexagram-draft-candidate": "node scripts/check-hexagram-asset-draft-candidate.mjs",
     "check:hexagram-mapping-candidate": "node scripts/check-hexagram-asset-mapping-candidate.mjs",
+    "check:force-translation": "node scripts/check-force-translation-candidate.mjs",
     "check:release-freeze": "node scripts/check-release-freeze.mjs",
-    "check:release": "npm run check:layers && npm run check:expression && npm run check:mother-card-determinism && npm run check:primary-petal && npm run check:hexagram-candidate && npm run check:hexagram-draft-candidate && npm run check:hexagram-mapping-candidate && npm run check:release-freeze",
+    "check:release": "npm run check:layers && npm run check:expression && npm run check:mother-card-determinism && npm run check:primary-petal && npm run check:hexagram-candidate && npm run check:hexagram-draft-candidate && npm run check:hexagram-mapping-candidate && npm run check:force-translation && npm run check:release-freeze",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
