@@ -120,8 +120,32 @@ type NodeTimingTraceEntry = {
   deltaFromPreviousNode: number;
 };
 
-const nodeTimingTrace: NodeTimingTraceEntry[] = [];
-let lastNodeTimestamp = Date.now();
+function getExecutionTrace(snapshot: Pick<ExecutionSnapshot, "node">): NodeTimingTraceEntry[] {
+  return snapshot.node.completed
+    .filter((node): node is 1 | 2 | 3 | 4 | 5 | 6 => node >= 1 && node <= 6)
+    .sort((a, b) => a - b)
+    .map((node, index) => ({
+      node,
+      timestamp: index + 1,
+      deltaFromPreviousNode: index === 0 ? 1 : 1,
+    }));
+}
+
+function replayNodeTiming(trace: NodeTimingTraceEntry[]) {
+  const deltas = trace.map((entry) => entry.deltaFromPreviousNode);
+  const avgDelta = deltas.reduce((sum, value) => sum + value, 0) / (deltas.length || 1);
+  const variance = deltas.reduce((sum, value) => sum + Math.pow(value - avgDelta, 2), 0) / (deltas.length || 1);
+
+  return {
+    avgDelta,
+    variance,
+    rhythmProfile: trace.map((entry) => ({
+      node: entry.node,
+      delta: entry.deltaFromPreviousNode,
+    })),
+    stabilityScore: 1 / (1 + variance),
+  };
+}
 
 const logExecutionSnapshot = (snapshot: ExecutionSnapshot, phase: string) => {
   const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
@@ -134,7 +158,28 @@ const logExecutionSnapshot = (snapshot: ExecutionSnapshot, phase: string) => {
     node: snapshot.node.current,
     beast: snapshot.beast.tone,
     seed: snapshot.seed.text,
-    nodeTimingTrace: nodeTimingTrace.slice(-5),
+    nodeTimingTrace: getExecutionTrace(snapshot).slice(-5),
+  });
+  console.log("[Execution Rhythm]", replayNodeTiming(getExecutionTrace(snapshot)));
+};
+
+const logRhythmSmokeTest = (snapshot: ExecutionSnapshot, event: string) => {
+  const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
+  if (!viteEnv?.DEV) return;
+
+  const trace = getExecutionTrace(snapshot);
+  const rhythm = replayNodeTiming(trace);
+  const latestTiming = trace[trace.length - 1];
+
+  console.log("[Rhythm Smoke Test]", {
+    event,
+    node: snapshot.node.current,
+    enginePhase: snapshot.runtime.enginePhase,
+    uiPhase: snapshot.runtime.uiPhase,
+    rhythmScore: rhythm.stabilityScore,
+    beastTone: snapshot.beast.tone,
+    delta: latestTiming?.deltaFromPreviousNode ?? 0,
+    stabilityScore: rhythm.stabilityScore,
   });
 };
 
@@ -220,21 +265,32 @@ function readPressureSeedIntensity(context: SelectedPressureSeedContext | null, 
 }
 
 function resolveExecutionBeast({
-  seedIntensity,
-  currentNode,
   enginePhase,
+  node,
+  rhythmScore,
 }: {
-  seedIntensity: number;
-  currentNode: ExecutionSnapshot["node"]["current"];
   enginePhase: ExecutionSnapshot["runtime"]["enginePhase"];
+  node: ExecutionSnapshot["node"];
+  rhythmScore: number;
 }): ExecutionSnapshot["beast"] {
-  const resonance = clampRuntimeValue((seedIntensity * currentNode) / 6);
-
   return {
     active: true,
-    resonance,
-    tone: enginePhase === "COMPLETE" ? "sovereign" : seedIntensity > 0.7 ? "strain" : currentNode >= 4 ? "charge" : "calm",
+    resonance: clampRuntimeValue(rhythmScore),
+    tone: resolveBeastTone(enginePhase, node, rhythmScore),
   };
+}
+
+function resolveBeastTone(
+  enginePhase: ExecutionSnapshot["runtime"]["enginePhase"],
+  node: ExecutionSnapshot["node"],
+  rhythmScore: number,
+): ExecutionSnapshot["beast"]["tone"] {
+  if (node.current === 6 || enginePhase === "COMPLETE") return "sovereign";
+  if (rhythmScore < 0.4) return "strain";
+  if (rhythmScore >= 0.4 && rhythmScore < 0.7) return "calm";
+  if (rhythmScore >= 0.7) return "charge";
+
+  return "calm";
 }
 
 function createExecutionSnapshot(context: SelectedPressureSeedContext | null): ExecutionSnapshot {
@@ -244,6 +300,12 @@ function createExecutionSnapshot(context: SelectedPressureSeedContext | null): E
   const currentNode: ExecutionSnapshot["node"]["current"] = 1;
   const enginePhase: ExecutionSnapshot["runtime"]["enginePhase"] = "INIT";
   const uiPhase: ExecutionSnapshot["runtime"]["uiPhase"] = "INIT";
+  const node: ExecutionSnapshot["node"] = {
+    current: currentNode,
+    completed: [],
+    locked: false,
+  };
+  const rhythmScore = replayNodeTiming(getExecutionTrace({ node })).stabilityScore;
 
   const snapshot: ExecutionSnapshot = {
     seed: {
@@ -254,15 +316,11 @@ function createExecutionSnapshot(context: SelectedPressureSeedContext | null): E
     },
     primaryDimension,
     beast: resolveExecutionBeast({
-      seedIntensity,
-      currentNode,
       enginePhase,
+      node,
+      rhythmScore,
     }),
-    node: {
-      current: currentNode,
-      completed: [],
-      locked: false,
-    },
+    node,
     runtime: {
       isReady: true,
       enginePhase,
@@ -276,17 +334,20 @@ function createExecutionSnapshot(context: SelectedPressureSeedContext | null): E
 }
 
 function refreshExecutionSnapshotBeast(snapshot: ExecutionSnapshot): ExecutionSnapshot {
+  const rhythm = replayNodeTiming(getExecutionTrace(snapshot));
+  const rhythmScore = rhythm.stabilityScore;
   const nextSnapshot: ExecutionSnapshot = {
     ...snapshot,
     beast: resolveExecutionBeast({
-      seedIntensity: snapshot.seed.intensity ?? 0,
-      currentNode: snapshot.node.current,
       enginePhase: snapshot.runtime.enginePhase,
+      node: snapshot.node,
+      rhythmScore,
     }),
   };
 
   assertExecutionInvariant(nextSnapshot);
   logExecutionSnapshot(nextSnapshot, "refreshExecutionSnapshotBeast");
+  logRhythmSmokeTest(nextSnapshot, "beastToneUpdate");
   return nextSnapshot;
 }
 
@@ -322,17 +383,6 @@ function setExecutionUiPhase(snapshot: ExecutionSnapshot, uiPhase: ExecutionSnap
 function advanceExecutionNode(snapshot: ExecutionSnapshot): ExecutionSnapshot {
   if (snapshot.node.locked || snapshot.runtime.enginePhase === "COMPLETE") return snapshot;
 
-  const now = Date.now();
-  const delta = now - lastNodeTimestamp;
-  const traceNode = Math.min(6, snapshot.node.current + 1);
-
-  nodeTimingTrace.push({
-    node: traceNode,
-    timestamp: now,
-    deltaFromPreviousNode: delta,
-  });
-  lastNodeTimestamp = now;
-
   const completed = Array.from(new Set([...snapshot.node.completed, snapshot.node.current])).sort((a, b) => a - b);
   const isComplete = completed.length >= 6;
   const nextCurrent = (isComplete ? 6 : Math.min(6, snapshot.node.current + 1)) as ExecutionSnapshot["node"]["current"];
@@ -354,7 +404,60 @@ function advanceExecutionNode(snapshot: ExecutionSnapshot): ExecutionSnapshot {
 
   assertExecutionInvariant(nextSnapshot);
   logExecutionSnapshot(nextSnapshot, "advanceExecutionNode");
+  logRhythmSmokeTest(nextSnapshot, "advanceExecutionNode");
   return nextSnapshot;
+}
+
+type SpatialIntentType = "CORE_STAR_BLOOM" | "NODE_ADVANCE_REQUEST" | "DIMENSION_FOCUS_REQUEST";
+type SpatialIntent = {
+  type: SpatialIntentType;
+  source: "UI_INTERACTION";
+  payload: {
+    nodeIndex?: number;
+    dimension?: SixSpaceId;
+    context?: "ambient" | "focus" | "inspect";
+    triggerStrength?: number;
+  };
+};
+type ExecutionCommand =
+  | { type: "ADVANCE_NODE"; intent: SpatialIntent }
+  | { type: "NOOP"; intent: SpatialIntent; reason: "COMPLETE" | "FOCUS_DERIVED_ONLY" | "NO_EXECUTION_MAPPING" };
+
+function createSpatialIntent(type: SpatialIntentType, payload: SpatialIntent["payload"] = {}): SpatialIntent {
+  return {
+    type,
+    source: "UI_INTERACTION",
+    payload,
+  };
+}
+
+function resolveSpatialIntent(intent: SpatialIntent, snapshot: ExecutionSnapshot): ExecutionCommand {
+  switch (intent.type) {
+    case "CORE_STAR_BLOOM":
+      return snapshot.node.current < 6 && snapshot.runtime.enginePhase !== "COMPLETE"
+        ? { type: "ADVANCE_NODE", intent: { ...intent, type: "NODE_ADVANCE_REQUEST" } }
+        : { type: "NOOP", intent, reason: "COMPLETE" };
+    case "NODE_ADVANCE_REQUEST":
+      return snapshot.node.current < 6 && snapshot.runtime.enginePhase !== "COMPLETE"
+        ? { type: "ADVANCE_NODE", intent }
+        : { type: "NOOP", intent, reason: "COMPLETE" };
+    case "DIMENSION_FOCUS_REQUEST":
+      return { type: "NOOP", intent, reason: "FOCUS_DERIVED_ONLY" };
+    default:
+      return { type: "NOOP", intent, reason: "NO_EXECUTION_MAPPING" };
+  }
+}
+
+function executeExecutionCommand(command: ExecutionCommand, snapshot: ExecutionSnapshot): ExecutionSnapshot {
+  logRhythmSmokeTest(snapshot, command.intent.type);
+
+  switch (command.type) {
+    case "ADVANCE_NODE":
+      return advanceExecutionNode(snapshot);
+    case "NOOP":
+    default:
+      return snapshot;
+  }
 }
 
 function resolveSnapshotPrimarySpaceId(primaryDimension: PrimaryPetalProtocolDimension): SixSpaceId {
@@ -503,6 +606,433 @@ function buildRuntimeBaiHuCoreStars(snapshot: PersonaOutputSnapshotView | null):
 
 type CosmicNarrativePhase = "field_intro" | "seed_visible" | "beast_guide" | "node_active" | "node_complete";
 
+function CosmicPageStarField() {
+  return (
+    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.5 }}>
+      {Array.from({ length: 42 }).map((_, index) => (
+        <span
+          key={index}
+          style={{
+            position: "absolute",
+            left: `${4 + ((index * 19) % 92)}%`,
+            top: `${5 + ((index * 31) % 88)}%`,
+            width: index % 9 === 0 ? 3 : 2,
+            height: index % 9 === 0 ? 3 : 2,
+            borderRadius: 999,
+            background: index % 6 === 0 ? "rgba(199,169,107,0.5)" : "rgba(245,245,245,0.32)",
+            boxShadow: index % 6 === 0 ? "0 0 12px rgba(199,169,107,0.32)" : "0 0 8px rgba(245,245,245,0.18)",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function CosmicFieldKeyframes() {
+  return (
+    <style>{`
+      @keyframes gy-nebula-drift {
+        0%, 100% { transform: translate3d(-1%, -1%, 0) scale(1); opacity: 0.48; }
+        50% { transform: translate3d(1%, 1%, 0) scale(1.04); opacity: 0.68; }
+      }
+      @keyframes gy-blackhole-spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+      }
+      @keyframes gy-stardust-drift {
+        0%, 100% { transform: translateX(-2px); opacity: 0.42; }
+        50% { transform: translateX(4px); opacity: 0.78; }
+      }
+      @keyframes gy-petal-bloom {
+        0% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(0.92); opacity: 0.62; }
+        45% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(1.08); opacity: 1; }
+        100% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(1); opacity: 0.88; }
+      }
+      @keyframes gy-petal-float {
+        0%, 100% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(1); }
+        50% { transform: translate(-50%, calc(-50% - 4px)) rotate(var(--petal-rotate)) scale(1.03); }
+      }
+      @keyframes gy-pollen-rise {
+        0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+        25% { opacity: 1; }
+        100% { transform: translate(calc(-50% + var(--pollen-x)), calc(-50% + var(--pollen-y))) scale(1); opacity: 0; }
+      }
+      @keyframes gy-node-pulse {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.82; }
+        50% { transform: translate(-50%, -50%) scale(1.16); opacity: 1; }
+      }
+      @keyframes gy-starbeast-ignite {
+        0% { opacity: 0.18; transform: translate(-50%, -50%) scale(0.72); }
+        55% { opacity: 1; transform: translate(-50%, -50%) scale(1.18); }
+        100% { opacity: 0.86; transform: translate(-50%, -50%) scale(1); }
+      }
+      @keyframes gy-starbeast-line {
+        0% { stroke-dashoffset: 220; opacity: 0; }
+        100% { stroke-dashoffset: 0; opacity: 1; }
+      }
+      @keyframes gy-starbeast-breathe {
+        0%, 100% { transform: translate(-50%, -50%) scale(0.98); opacity: 0.72; }
+        50% { transform: translate(-50%, calc(-50% - 3px)) scale(1.03); opacity: 0.92; }
+      }
+      @keyframes gy-starbeast-ripple {
+        0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.34; }
+        100% { transform: translate(-50%, -50%) scale(1.32); opacity: 0; }
+      }
+      @keyframes gy-starbeast-dust {
+        0%, 100% { transform: translate(-50%, -50%) scale(0.82); opacity: 0.36; }
+        50% { transform: translate(calc(-50% + 2px), calc(-50% - 2px)) scale(1.08); opacity: 0.86; }
+      }
+      @keyframes gy-starbeast-inner-breathe {
+        0%, 100% { transform: translate(-50%, -50%) scale(0.72); opacity: 0.24; }
+        50% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.72; }
+      }
+      @keyframes gy-copy-fade-in {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    `}</style>
+  );
+}
+
+function CosmicNebulaScene({ toneColor }: { toneColor: string }) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: "-10%",
+        background:
+          `radial-gradient(circle at 28% 30%, rgba(${toneColor},0.1), transparent 24%), radial-gradient(circle at 74% 62%, rgba(120,92,150,0.12), transparent 28%), radial-gradient(circle at 50% 50%, rgba(176,210,206,0.08), transparent 34%)`,
+        filter: "blur(12px)",
+        animation: "gy-nebula-drift 8s ease-in-out infinite",
+        pointerEvents: "none",
+      }}
+    />
+  );
+}
+
+function CosmicAmbientStars() {
+  return (
+    <div style={{ position: "absolute", inset: 0, opacity: 0.38, pointerEvents: "none" }}>
+      {Array.from({ length: 28 }).map((_, index) => {
+        const left = 8 + ((index * 17) % 84);
+        const top = 10 + ((index * 29) % 78);
+        return (
+          <span
+            key={index}
+            style={{
+              position: "absolute",
+              left: `${left}%`,
+              top: `${top}%`,
+              width: index % 7 === 0 ? 3 : 2,
+              height: index % 7 === 0 ? 3 : 2,
+              borderRadius: 999,
+              background: "rgba(245,245,245,0.62)",
+              boxShadow: "0 0 10px rgba(245,245,245,0.36)",
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function BlackholeVortexScene({ toneColor, visible, status }: { toneColor: string; visible: boolean; status: string }) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: "50%",
+        top: "32%",
+        width: "78%",
+        minHeight: 108,
+        transform: "translateX(-50%)",
+        display: visible ? "grid" : "none",
+        placeItems: "center",
+        color: "rgba(245,245,245,0.86)",
+        pointerEvents: "none",
+        textAlign: "center",
+        animation: "gy-copy-fade-in 360ms ease both",
+      }}
+    >
+      <span
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          width: 124,
+          height: 124,
+          borderRadius: "50%",
+          transform: "translate(-50%, -50%)",
+          background:
+            "radial-gradient(circle, rgba(5,6,7,0.92) 0 27%, rgba(40,22,64,0.72) 44%, rgba(199,169,107,0.1) 58%, transparent 72%)",
+          boxShadow: "inset 0 0 32px rgba(5,6,7,0.9), 0 0 38px rgba(80,58,120,0.34)",
+        }}
+      />
+      <span
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          width: 148,
+          height: 148,
+          borderRadius: "50%",
+          transform: "translate(-50%, -50%)",
+          border: "1px solid rgba(199,169,107,0.12)",
+          borderTopColor: "rgba(176,210,206,0.28)",
+          animation: "gy-blackhole-spin 12s linear infinite",
+        }}
+      />
+      <span
+        style={{
+          position: "relative",
+          zIndex: 1,
+          display: "grid",
+          placeItems: "center",
+          gap: 6,
+          width: "100%",
+          maxWidth: 188,
+          color: "rgba(245,245,245,0.82)",
+          fontSize: 12,
+          lineHeight: 1.46,
+          fontWeight: 520,
+          textShadow: `0 0 16px rgba(${toneColor},0.18)`,
+          animation: "gy-stardust-drift 4s ease-in-out infinite",
+        }}
+      >
+        <span>{status}</span>
+      </span>
+    </div>
+  );
+}
+
+function NodeProgressionPanel({
+  visible,
+  toneColor,
+  activeNode,
+}: {
+  visible: boolean;
+  toneColor: string;
+  activeNode: { title: string; text: string; actionText: string };
+}) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: 22,
+        right: 22,
+        bottom: 18,
+        gap: 6,
+        pointerEvents: "none",
+        padding: "11px 13px 10px",
+        borderRadius: 14,
+        background: "linear-gradient(180deg, rgba(5,6,7,0.5), rgba(5,6,7,0.18))",
+        border: `1px solid rgba(${toneColor},0.14)`,
+        backdropFilter: "blur(4px)",
+        display: visible ? "grid" : "none",
+        animation: "gy-copy-fade-in 360ms ease both",
+      }}
+    >
+      <GuanyaoText size="eyebrow" tone="gold">
+        {activeNode.title}
+      </GuanyaoText>
+      <p style={{ margin: 0, whiteSpace: "pre-line", color: "rgba(245,245,245,0.76)", fontSize: 12, lineHeight: 1.46 }}>
+        {activeNode.text}
+      </p>
+      <GuanyaoText size="eyebrow" tone="gold">
+        {activeNode.actionText}
+      </GuanyaoText>
+    </div>
+  );
+}
+
+function StarFlowerCoreRepresentation({
+  visible,
+  activeNodeIndex,
+  nodeCount,
+  coreReadiness,
+  coreTone,
+  coreGlow,
+}: {
+  visible: boolean;
+  activeNodeIndex: number;
+  nodeCount: number;
+  coreReadiness: number;
+  coreTone: string;
+  coreGlow: number;
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        left: "50%",
+        top: "57%",
+        width: 104 + coreReadiness * 14,
+        height: 104 + coreReadiness * 14,
+        transform: `translate(-50%, -50%) scale(${visible ? 1 : 0.9})`,
+        pointerEvents: "none",
+        opacity: visible ? 0.38 + coreReadiness * 0.24 : 0,
+        filter: `drop-shadow(0 0 ${14 + coreReadiness * 12}px rgba(${coreTone},${coreGlow}))`,
+        transition: "opacity 360ms ease, width 360ms ease, height 360ms ease, transform 360ms ease, filter 360ms ease",
+      }}
+    >
+      <span
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          width: 18 + coreReadiness * 8,
+          height: 18 + coreReadiness * 8,
+          borderRadius: 999,
+          transform: "translate(-50%, -50%)",
+          background: `rgba(${coreTone},${0.32 + coreReadiness * 0.16})`,
+          boxShadow: `0 0 ${18 + coreReadiness * 20}px rgba(${coreTone},${coreGlow})`,
+          transition: "width 360ms ease, height 360ms ease, background 360ms ease, box-shadow 360ms ease",
+        }}
+      />
+      {Array.from({ length: 6 }).map((_, index) => {
+        const angle = -90 + index * 60;
+        const isComplete = index < activeNodeIndex;
+        const isCurrent = index === Math.min(activeNodeIndex, nodeCount - 1);
+        const nodeAlpha = isComplete ? 0.62 : isCurrent ? 0.78 : 0.2;
+        const nodeSize = isCurrent ? 9 : isComplete ? 7 : 5;
+        return (
+          <span
+            key={`flower-core-${index}`}
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              width: nodeSize,
+              height: 26 + coreReadiness * 13,
+              borderRadius: 999,
+              transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(${-28 - coreReadiness * 8}px)`,
+              transformOrigin: `50% ${28 + coreReadiness * 8}px`,
+              background: `linear-gradient(180deg, rgba(${coreTone},${nodeAlpha}), rgba(${coreTone},0.03))`,
+              boxShadow: isComplete || isCurrent ? `0 0 ${12 + coreReadiness * 10}px rgba(${coreTone},${coreGlow})` : "none",
+              transition: "width 360ms ease, height 360ms ease, transform 360ms ease, background 360ms ease, box-shadow 360ms ease",
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function EnergyReturnFlow({
+  visible,
+  activeNodeIndex,
+  coreReadiness,
+  coreTone,
+  coreGlow,
+}: {
+  visible: boolean;
+  activeNodeIndex: number;
+  coreReadiness: number;
+  coreTone: string;
+  coreGlow: number;
+}) {
+  if (!visible || activeNodeIndex <= 0) return null;
+
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        left: "50%",
+        top: "45%",
+        width: 42,
+        height: 104,
+        transform: "translateX(-50%)",
+        pointerEvents: "none",
+        opacity: 0.34 + coreReadiness * 0.18,
+      }}
+    >
+      {Array.from({ length: Math.min(6, activeNodeIndex + 1) }).map((_, index) => (
+        <span
+          key={`return-flow-${index}`}
+          style={{
+            "--pollen-x": `${(index % 2 === 0 ? -1 : 1) * (4 + index)}px`,
+            "--pollen-y": `${-44 - index * 6}px`,
+            position: "absolute",
+            left: `${44 + ((index * 7) % 16)}%`,
+            top: `${76 - index * 13}%`,
+            width: 2 + (index % 2),
+            height: 2 + (index % 2),
+            borderRadius: 999,
+            background: `rgba(${coreTone},${0.34 + coreReadiness * 0.18})`,
+            boxShadow: `0 0 10px rgba(${coreTone},${coreGlow})`,
+            animation: `gy-pollen-rise ${900 + index * 90}ms ease-out infinite ${index * 120}ms`,
+          } as CSSProperties}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SixDimensionWheel({
+  configs,
+  activeConfig,
+  petalStates,
+  toneColor,
+  shortPetalNames,
+}: {
+  configs: SixSpaceConfig[];
+  activeConfig: SixSpaceConfig;
+  petalStates: Record<SixSpaceId, CosmicPetalState>;
+  toneColor: string;
+  shortPetalNames: string[];
+}) {
+  return (
+    <>
+      {configs.map((config, index) => {
+        const angle = -90 + index * 60;
+        const rad = (angle * Math.PI) / 180;
+        const isActive = config.id === activeConfig.id;
+        const state = petalStates[config.id];
+        const left = 50 + Math.cos(rad) * 32;
+        const top = 58 + Math.sin(rad) * 18;
+
+        return (
+          <span
+            key={config.id}
+            style={{
+              "--petal-rotate": `${angle + 90}deg`,
+              position: "absolute",
+              left: `${left}%`,
+              top: `${top}%`,
+              width: isActive ? 64 : 50,
+              height: isActive ? 26 : 20,
+              borderRadius: "50%",
+              transform: `translate(-50%, -50%) rotate(${angle + 90}deg)`,
+              background: `linear-gradient(90deg, rgba(${toneColor},${isActive ? 0.28 : 0.08}), rgba(245,245,245,${state === "blooming" ? 0.16 : 0.04}))`,
+              border: `1px solid rgba(${toneColor},${isActive ? 0.42 : 0.14})`,
+              boxShadow: isActive ? `0 0 24px rgba(${toneColor},0.22)` : "none",
+              opacity: isActive ? 0.96 : 0.54,
+              pointerEvents: "none",
+              animation: "gy-petal-float 4.6s ease-in-out infinite",
+            } as CSSProperties}
+          >
+            <span
+              style={{
+                display: "block",
+                transform: `rotate(${-angle - 90}deg)`,
+                color: isActive ? "rgba(245,245,245,0.72)" : "rgba(245,245,245,0.32)",
+                fontSize: 9,
+                lineHeight: "26px",
+                textAlign: "center",
+                letterSpacing: "0.04em",
+              }}
+            >
+              {shortPetalNames[index]}
+            </span>
+          </span>
+        );
+      })}
+    </>
+  );
+}
+
 type BaiHuConstellationLayerProps = {
   toneColor: string;
   narrativePhase: CosmicNarrativePhase;
@@ -510,6 +1040,56 @@ type BaiHuConstellationLayerProps = {
   onCoreStarClick: () => void;
   coreStars: RuntimeCoreStar[];
 };
+
+function CoreStarInteractionLayer({
+  coreStars,
+  toneColor,
+  reveal,
+  nodeCharge,
+  coreGlow,
+  onCoreStarClick,
+}: {
+  coreStars: RuntimeCoreStar[];
+  toneColor: string;
+  reveal: number;
+  nodeCharge: number;
+  coreGlow: number;
+  onCoreStarClick: () => void;
+}) {
+  return (
+    <>
+      {coreStars.map(([left, top, size], index) => (
+        <span
+          key={`core-${index}`}
+          role="button"
+          aria-label="轻触七星，把一点光送回白虎。"
+          tabIndex={0}
+          onClick={onCoreStarClick}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              onCoreStarClick();
+            }
+          }}
+          style={{
+            position: "absolute",
+            left: `${left}%`,
+            top: `${top}%`,
+            width: size + nodeCharge * 1.8,
+            height: size + nodeCharge * 1.8,
+            borderRadius: 999,
+            transform: "translate(-50%, -50%)",
+            background: `rgba(255,247,220,${0.54 + reveal * 0.36})`,
+            boxShadow: `0 0 ${10 + reveal * 14 + nodeCharge * 16}px rgba(${toneColor},${coreGlow})`,
+            animation: `gy-starbeast-ignite 760ms ease both ${index * 90}ms`,
+            cursor: "pointer",
+            pointerEvents: "auto",
+          }}
+        />
+      ))}
+    </>
+  );
+}
 
 function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, onCoreStarClick, coreStars }: BaiHuConstellationLayerProps) {
   const reveal = narrativePhase === "field_intro" ? 0.34 : narrativePhase === "seed_visible" ? 0.66 : 1;
@@ -676,35 +1256,14 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, o
         />
       ))}
 
-      {coreStars.map(([left, top, size], index) => (
-        <span
-          key={`core-${index}`}
-          role="button"
-          aria-label="轻触七星，把一点光送回白虎。"
-          tabIndex={0}
-          onClick={onCoreStarClick}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              onCoreStarClick();
-            }
-          }}
-          style={{
-            position: "absolute",
-            left: `${left}%`,
-            top: `${top}%`,
-            width: size + nodeCharge * 1.8,
-            height: size + nodeCharge * 1.8,
-            borderRadius: 999,
-            transform: "translate(-50%, -50%)",
-            background: `rgba(255,247,220,${0.54 + reveal * 0.36})`,
-            boxShadow: `0 0 ${10 + reveal * 14 + nodeCharge * 16}px rgba(${toneColor},${coreGlow})`,
-            animation: `gy-starbeast-ignite 760ms ease both ${index * 90}ms`,
-            cursor: "pointer",
-            pointerEvents: "auto",
-          }}
-        />
-      ))}
+      <CoreStarInteractionLayer
+        coreStars={coreStars}
+        toneColor={toneColor}
+        reveal={reveal}
+        nodeCharge={nodeCharge}
+        coreGlow={coreGlow}
+        onCoreStarClick={onCoreStarClick}
+      />
 
       <span
         aria-hidden="true"
@@ -823,101 +1382,9 @@ function CosmicBotanicsField({
         boxShadow: activePetalState === "blooming" ? `0 0 30px rgba(${toneColor},0.12)` : "none",
       }}
     >
-      <style>{`
-        @keyframes gy-nebula-drift {
-          0%, 100% { transform: translate3d(-1%, -1%, 0) scale(1); opacity: 0.48; }
-          50% { transform: translate3d(1%, 1%, 0) scale(1.04); opacity: 0.68; }
-        }
-        @keyframes gy-blackhole-spin {
-          0% { transform: translate(-50%, -50%) rotate(0deg); }
-          100% { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes gy-stardust-drift {
-          0%, 100% { transform: translateX(-2px); opacity: 0.42; }
-          50% { transform: translateX(4px); opacity: 0.78; }
-        }
-        @keyframes gy-petal-bloom {
-          0% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(0.92); opacity: 0.62; }
-          45% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(1.08); opacity: 1; }
-          100% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(1); opacity: 0.88; }
-        }
-        @keyframes gy-petal-float {
-          0%, 100% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(1); }
-          50% { transform: translate(-50%, calc(-50% - 4px)) rotate(var(--petal-rotate)) scale(1.03); }
-        }
-        @keyframes gy-pollen-rise {
-          0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
-          25% { opacity: 1; }
-          100% { transform: translate(calc(-50% + var(--pollen-x)), calc(-50% + var(--pollen-y))) scale(1); opacity: 0; }
-        }
-        @keyframes gy-node-pulse {
-          0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.82; }
-          50% { transform: translate(-50%, -50%) scale(1.16); opacity: 1; }
-        }
-        @keyframes gy-starbeast-ignite {
-          0% { opacity: 0.18; transform: translate(-50%, -50%) scale(0.72); }
-          55% { opacity: 1; transform: translate(-50%, -50%) scale(1.18); }
-          100% { opacity: 0.86; transform: translate(-50%, -50%) scale(1); }
-        }
-        @keyframes gy-starbeast-line {
-          0% { stroke-dashoffset: 220; opacity: 0; }
-          100% { stroke-dashoffset: 0; opacity: 1; }
-        }
-        @keyframes gy-starbeast-breathe {
-          0%, 100% { transform: translate(-50%, -50%) scale(0.98); opacity: 0.72; }
-          50% { transform: translate(-50%, calc(-50% - 3px)) scale(1.03); opacity: 0.92; }
-        }
-        @keyframes gy-starbeast-ripple {
-          0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.34; }
-          100% { transform: translate(-50%, -50%) scale(1.32); opacity: 0; }
-        }
-        @keyframes gy-starbeast-dust {
-          0%, 100% { transform: translate(-50%, -50%) scale(0.82); opacity: 0.36; }
-          50% { transform: translate(calc(-50% + 2px), calc(-50% - 2px)) scale(1.08); opacity: 0.86; }
-        }
-        @keyframes gy-starbeast-inner-breathe {
-          0%, 100% { transform: translate(-50%, -50%) scale(0.72); opacity: 0.24; }
-          50% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.72; }
-        }
-        @keyframes gy-copy-fade-in {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-
-      <div
-        style={{
-          position: "absolute",
-          inset: "-10%",
-          background:
-            `radial-gradient(circle at 28% 30%, rgba(${toneColor},0.1), transparent 24%), radial-gradient(circle at 74% 62%, rgba(120,92,150,0.12), transparent 28%), radial-gradient(circle at 50% 50%, rgba(176,210,206,0.08), transparent 34%)`,
-          filter: "blur(12px)",
-          animation: "gy-nebula-drift 8s ease-in-out infinite",
-          pointerEvents: "none",
-        }}
-      />
-
-      <div style={{ position: "absolute", inset: 0, opacity: 0.38, pointerEvents: "none" }}>
-        {Array.from({ length: 28 }).map((_, index) => {
-          const left = 8 + ((index * 17) % 84);
-          const top = 10 + ((index * 29) % 78);
-          return (
-            <span
-              key={index}
-              style={{
-                position: "absolute",
-                left: `${left}%`,
-                top: `${top}%`,
-                width: index % 7 === 0 ? 3 : 2,
-                height: index % 7 === 0 ? 3 : 2,
-                borderRadius: 999,
-                background: "rgba(245,245,245,0.62)",
-                boxShadow: "0 0 10px rgba(245,245,245,0.36)",
-              }}
-            />
-          );
-        })}
-      </div>
+      <CosmicFieldKeyframes />
+      <CosmicNebulaScene toneColor={toneColor} />
+      <CosmicAmbientStars />
 
       <BaiHuConstellationLayer
         toneColor={toneColor}
@@ -927,70 +1394,7 @@ function CosmicBotanicsField({
         coreStars={coreStars}
       />
 
-      <div
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: "32%",
-          width: "78%",
-          minHeight: 108,
-          transform: "translateX(-50%)",
-          display: showBlackholeStatus ? "grid" : "none",
-          placeItems: "center",
-          color: "rgba(245,245,245,0.86)",
-          pointerEvents: "none",
-          textAlign: "center",
-          animation: "gy-copy-fade-in 360ms ease both",
-        }}
-      >
-        <span
-          style={{
-            position: "absolute",
-            left: "50%",
-            top: "50%",
-            width: 124,
-            height: 124,
-            borderRadius: "50%",
-            transform: "translate(-50%, -50%)",
-            background:
-              "radial-gradient(circle, rgba(5,6,7,0.92) 0 27%, rgba(40,22,64,0.72) 44%, rgba(199,169,107,0.1) 58%, transparent 72%)",
-            boxShadow: "inset 0 0 32px rgba(5,6,7,0.9), 0 0 38px rgba(80,58,120,0.34)",
-          }}
-        />
-        <span
-          style={{
-            position: "absolute",
-            left: "50%",
-            top: "50%",
-            width: 148,
-            height: 148,
-            borderRadius: "50%",
-            transform: "translate(-50%, -50%)",
-            border: "1px solid rgba(199,169,107,0.12)",
-            borderTopColor: "rgba(176,210,206,0.28)",
-            animation: "gy-blackhole-spin 12s linear infinite",
-          }}
-        />
-        <span
-          style={{
-            position: "relative",
-            zIndex: 1,
-            display: "grid",
-            placeItems: "center",
-            gap: 6,
-            width: "100%",
-            maxWidth: 188,
-            color: "rgba(245,245,245,0.82)",
-            fontSize: 12,
-            lineHeight: 1.46,
-            fontWeight: 520,
-            textShadow: `0 0 16px rgba(${toneColor},0.18)`,
-            animation: "gy-stardust-drift 4s ease-in-out infinite",
-          }}
-        >
-          <span>{narrative.blackholeStatus}</span>
-        </span>
-      </div>
+      <BlackholeVortexScene toneColor={toneColor} visible={showBlackholeStatus} status={narrative.blackholeStatus} />
 
       <p
         style={{
@@ -1013,33 +1417,7 @@ function CosmicBotanicsField({
         {narrative.pressureText}
       </p>
 
-      <div
-        style={{
-          position: "absolute",
-          left: 22,
-          right: 22,
-          bottom: 18,
-          gap: 6,
-          pointerEvents: "none",
-          padding: "11px 13px 10px",
-          borderRadius: 14,
-          background: "linear-gradient(180deg, rgba(5,6,7,0.5), rgba(5,6,7,0.18))",
-          border: `1px solid rgba(${toneColor},0.14)`,
-          backdropFilter: "blur(4px)",
-          display: showNodePanel ? "grid" : "none",
-          animation: "gy-copy-fade-in 360ms ease both",
-        }}
-      >
-        <GuanyaoText size="eyebrow" tone="gold">
-          {activeNode.title}
-        </GuanyaoText>
-        <p style={{ margin: 0, whiteSpace: "pre-line", color: "rgba(245,245,245,0.76)", fontSize: 12, lineHeight: 1.46 }}>
-          {activeNode.text}
-        </p>
-        <GuanyaoText size="eyebrow" tone="gold">
-          {activeNode.actionText}
-        </GuanyaoText>
-      </div>
+      <NodeProgressionPanel visible={showNodePanel} toneColor={toneColor} activeNode={activeNode} />
 
       <p
         style={{
@@ -1061,141 +1439,30 @@ function CosmicBotanicsField({
         {narrative.beastIntro}
       </p>
 
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: "57%",
-          width: 104 + coreReadiness * 14,
-          height: 104 + coreReadiness * 14,
-          transform: `translate(-50%, -50%) scale(${coreVisible ? 1 : 0.9})`,
-          pointerEvents: "none",
-          opacity: coreVisible ? 0.38 + coreReadiness * 0.24 : 0,
-          filter: `drop-shadow(0 0 ${14 + coreReadiness * 12}px rgba(${coreTone},${coreGlow}))`,
-          transition: "opacity 360ms ease, width 360ms ease, height 360ms ease, transform 360ms ease, filter 360ms ease",
-        }}
-      >
-        <span
-          style={{
-            position: "absolute",
-            left: "50%",
-            top: "50%",
-            width: 18 + coreReadiness * 8,
-            height: 18 + coreReadiness * 8,
-            borderRadius: 999,
-            transform: "translate(-50%, -50%)",
-            background: `rgba(${coreTone},${0.32 + coreReadiness * 0.16})`,
-            boxShadow: `0 0 ${18 + coreReadiness * 20}px rgba(${coreTone},${coreGlow})`,
-            transition: "width 360ms ease, height 360ms ease, background 360ms ease, box-shadow 360ms ease",
-          }}
-        />
-        {Array.from({ length: 6 }).map((_, index) => {
-          const angle = -90 + index * 60;
-          const isComplete = index < activeNodeIndex;
-          const isCurrent = index === Math.min(activeNodeIndex, nodeFlow.length - 1);
-          const nodeAlpha = isComplete ? 0.62 : isCurrent ? 0.78 : 0.2;
-          const nodeSize = isCurrent ? 9 : isComplete ? 7 : 5;
-          return (
-            <span
-              key={`flower-core-${index}`}
-              style={{
-                position: "absolute",
-                left: "50%",
-                top: "50%",
-                width: nodeSize,
-                height: 26 + coreReadiness * 13,
-                borderRadius: 999,
-                transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(${-28 - coreReadiness * 8}px)`,
-                transformOrigin: `50% ${28 + coreReadiness * 8}px`,
-                background: `linear-gradient(180deg, rgba(${coreTone},${nodeAlpha}), rgba(${coreTone},0.03))`,
-                boxShadow: isComplete || isCurrent ? `0 0 ${12 + coreReadiness * 10}px rgba(${coreTone},${coreGlow})` : "none",
-                transition: "width 360ms ease, height 360ms ease, transform 360ms ease, background 360ms ease, box-shadow 360ms ease",
-              }}
-            />
-          );
-        })}
-      </div>
+      <StarFlowerCoreRepresentation
+        visible={coreVisible}
+        activeNodeIndex={activeNodeIndex}
+        nodeCount={nodeFlow.length}
+        coreReadiness={coreReadiness}
+        coreTone={coreTone}
+        coreGlow={coreGlow}
+      />
 
-      {coreVisible && activeNodeIndex > 0 ? (
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            left: "50%",
-            top: "45%",
-            width: 42,
-            height: 104,
-            transform: "translateX(-50%)",
-            pointerEvents: "none",
-            opacity: 0.34 + coreReadiness * 0.18,
-          }}
-        >
-          {Array.from({ length: Math.min(6, activeNodeIndex + 1) }).map((_, index) => (
-            <span
-              key={`return-flow-${index}`}
-              style={{
-                "--pollen-x": `${(index % 2 === 0 ? -1 : 1) * (4 + index)}px`,
-                "--pollen-y": `${-44 - index * 6}px`,
-                position: "absolute",
-                left: `${44 + ((index * 7) % 16)}%`,
-                top: `${76 - index * 13}%`,
-                width: 2 + (index % 2),
-                height: 2 + (index % 2),
-                borderRadius: 999,
-                background: `rgba(${coreTone},${0.34 + coreReadiness * 0.18})`,
-                boxShadow: `0 0 10px rgba(${coreTone},${coreGlow})`,
-                animation: `gy-pollen-rise ${900 + index * 90}ms ease-out infinite ${index * 120}ms`,
-              } as CSSProperties}
-            />
-          ))}
-        </div>
-      ) : null}
+      <EnergyReturnFlow
+        visible={coreVisible}
+        activeNodeIndex={activeNodeIndex}
+        coreReadiness={coreReadiness}
+        coreTone={coreTone}
+        coreGlow={coreGlow}
+      />
 
-      {configs.map((config, index) => {
-        const angle = -90 + index * 60;
-        const rad = (angle * Math.PI) / 180;
-        const isActive = config.id === activeConfig?.id;
-        const state = petalStates[config.id];
-        const left = 50 + Math.cos(rad) * 32;
-        const top = 58 + Math.sin(rad) * 18;
-
-        return (
-          <span
-            key={config.id}
-            style={{
-              "--petal-rotate": `${angle + 90}deg`,
-              position: "absolute",
-              left: `${left}%`,
-              top: `${top}%`,
-              width: isActive ? 64 : 50,
-              height: isActive ? 26 : 20,
-              borderRadius: "50%",
-              transform: `translate(-50%, -50%) rotate(${angle + 90}deg)`,
-              background: `linear-gradient(90deg, rgba(${toneColor},${isActive ? 0.28 : 0.08}), rgba(245,245,245,${state === "blooming" ? 0.16 : 0.04}))`,
-              border: `1px solid rgba(${toneColor},${isActive ? 0.42 : 0.14})`,
-              boxShadow: isActive ? `0 0 24px rgba(${toneColor},0.22)` : "none",
-              opacity: isActive ? 0.96 : 0.54,
-              pointerEvents: "none",
-              animation: "gy-petal-float 4.6s ease-in-out infinite",
-            } as CSSProperties}
-          >
-            <span
-              style={{
-                display: "block",
-                transform: `rotate(${-angle - 90}deg)`,
-                color: isActive ? "rgba(245,245,245,0.72)" : "rgba(245,245,245,0.32)",
-                fontSize: 9,
-                lineHeight: "26px",
-                textAlign: "center",
-                letterSpacing: "0.04em",
-              }}
-            >
-              {shortPetalNames[index]}
-            </span>
-          </span>
-        );
-      })}
+      <SixDimensionWheel
+        configs={configs}
+        activeConfig={activeConfig}
+        petalStates={petalStates}
+        toneColor={toneColor}
+        shortPetalNames={shortPetalNames}
+      />
 
     </section>
   );
@@ -1241,8 +1508,18 @@ function HexagramCodeDeliveryShell() {
     pressureSeedFallbackText: selectedPressureSeedSurface,
   });
 
+  function handleSpatialInteraction(eventType: SpatialIntentType, context: SpatialIntent["payload"] = {}) {
+    const intent = createSpatialIntent(eventType, context);
+    setExecutionSnapshot((current) => executeExecutionCommand(resolveSpatialIntent(intent, current), current));
+  }
+
   function bloomCosmicNode() {
-    setExecutionSnapshot((current) => advanceExecutionNode(current));
+    handleSpatialInteraction("CORE_STAR_BLOOM", {
+      nodeIndex: executionSnapshot.node.current,
+      dimension: currentPrimarySpaceId,
+      context: "focus",
+      triggerStrength: 1,
+    });
   }
 
   useEffect(() => {
@@ -1313,23 +1590,7 @@ function HexagramCodeDeliveryShell() {
           position: "relative",
         }}
       >
-        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.5 }}>
-          {Array.from({ length: 42 }).map((_, index) => (
-            <span
-              key={index}
-              style={{
-                position: "absolute",
-                left: `${4 + ((index * 19) % 92)}%`,
-                top: `${5 + ((index * 31) % 88)}%`,
-                width: index % 9 === 0 ? 3 : 2,
-                height: index % 9 === 0 ? 3 : 2,
-                borderRadius: 999,
-                background: index % 6 === 0 ? "rgba(199,169,107,0.5)" : "rgba(245,245,245,0.32)",
-                boxShadow: index % 6 === 0 ? "0 0 12px rgba(199,169,107,0.32)" : "0 0 8px rgba(245,245,245,0.18)",
-              }}
-            />
-          ))}
-        </div>
+        <CosmicPageStarField />
 
         <section
           style={{
