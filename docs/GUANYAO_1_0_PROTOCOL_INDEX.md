@@ -111,6 +111,9 @@ The current GUANYAO 1.0 main chain is locked as:
 - [GUANYAO_1_0_COMPONENT_IMPLEMENTATION_PROTOCOL.md](./GUANYAO_1_0_COMPONENT_IMPLEMENTATION_PROTOCOL.md)  
   P0 component implementation candidate protocol. Defines how `uiComponentCandidate(UI_COMPONENT_CANDIDATE)` enters `componentImplementationCandidate(COMPONENT_IMPLEMENTATION_CANDIDATE)`. This stage is still not a formal React component, not a page, not a route, and must not output `componentPath`, `hexagramCode`, `hexagramName`, `cardName`, `finalAssetId`, or `officialAssetId`. It must not connect commercialization or collection.
 
+- [GUANYAO_1_0_SAFE_COMPONENT_STUB_PROTOCOL.md](./GUANYAO_1_0_SAFE_COMPONENT_STUB_PROTOCOL.md)  
+  P0 safe component stub candidate protocol. Defines how `componentImplementationCandidate(COMPONENT_IMPLEMENTATION_CANDIDATE)` enters `safeComponentStubCandidate(SAFE_COMPONENT_STUB_CANDIDATE)`. This stage is still not a formal React component, not a page, not a route, and must not output `componentPath`, `hexagramCode`, `hexagramName`, `cardName`, `finalAssetId`, or `officialAssetId`. It must not connect commercialization or collection.
+
 - [R8_ENGINE_HEXAGRAM_FORMATION.md](./R8_ENGINE_HEXAGRAM_FORMATION.md)  
   Hexagram formation protocol. Defines how final hexagram assets should be treated as generated output.
 
@@ -225,22 +228,24 @@ selectedPressureSeedContext
 → assetCardUiCandidate(ASSET_CARD_UI_CANDIDATE)
 → resolveUiComponentCandidate()
 → uiComponentCandidate(UI_COMPONENT_CANDIDATE)
+→ resolveComponentImplementationCandidate()
+→ componentImplementationCandidate(COMPONENT_IMPLEMENTATION_CANDIDATE)
 ```
 
 Current P0 asset-chain next code direction is locked as:
 
 ```text
-uiComponentCandidate(UI_COMPONENT_CANDIDATE)
-→ resolveComponentImplementationCandidate()
-→ componentImplementationCandidate(COMPONENT_IMPLEMENTATION_CANDIDATE)
+componentImplementationCandidate(COMPONENT_IMPLEMENTATION_CANDIDATE)
+→ resolveSafeComponentStubCandidate()
+→ safeComponentStubCandidate(SAFE_COMPONENT_STUB_CANDIDATE)
 ```
 
-This next step must use [GUANYAO_1_0_COMPONENT_IMPLEMENTATION_PROTOCOL.md](./GUANYAO_1_0_COMPONENT_IMPLEMENTATION_PROTOCOL.md) as its construction basis.
+This next step must use [GUANYAO_1_0_SAFE_COMPONENT_STUB_PROTOCOL.md](./GUANYAO_1_0_SAFE_COMPONENT_STUB_PROTOCOL.md) as its construction basis.
 
 It may only output:
 
 ```text
-componentImplementationCandidate(COMPONENT_IMPLEMENTATION_CANDIDATE)
+safeComponentStubCandidate(SAFE_COMPONENT_STUB_CANDIDATE)
 ```
 
 It must not generate the formal 64-hexagram card.
@@ -273,6 +278,7 @@ For P0 asset-chain work, explicitly forbidden:
 - ASSET_CARD_UI_CANDIDATE may only prepare UI candidate sections. It must not become a real React page, formal asset card page, route, legacy `/hexagram-stamp` entry, collection entry, payment entry, unlock entry, or commercial payload.
 - UI_COMPONENT_CANDIDATE may only prepare component candidate sections. It must not become a real React component, output `componentPath`, create a formal asset card page, add a route, connect legacy `/hexagram-stamp`, or connect collection, payment, unlock, or commercial payloads.
 - COMPONENT_IMPLEMENTATION_CANDIDATE may only prepare component implementation candidate sections. It must not become a real React component, output `componentPath`, create a formal asset card page, add a route, connect legacy `/hexagram-stamp`, or connect collection, payment, unlock, or commercial payloads.
+- SAFE_COMPONENT_STUB_CANDIDATE may only prepare safe component stub candidate sections. It must not become a real React component, output `componentPath`, create a formal asset card page, add a route, connect legacy `/hexagram-stamp`, or connect collection, payment, unlock, or commercial payloads.
 - If formal `hexagramCode`, `hexagramName`, or `cardName` fields are required, first add `GUANYAO_1_0_HEXAGRAM_IDENTITY_ASSIGNMENT_PROTOCOL.md`.
 
 ### P1 | Content Chain Completion
