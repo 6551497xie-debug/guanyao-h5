@@ -69,6 +69,9 @@ The current GUANYAO 1.0 main chain is locked as:
 
 ### Hexagram Asset And 64-Code Card
 
+- [GUANYAO_1_0_HEXAGRAM_ASSET_CANDIDATE_BOUNDARY.md](./GUANYAO_1_0_HEXAGRAM_ASSET_CANDIDATE_BOUNDARY.md)  
+  P0 hexagram asset candidate boundary protocol. Defines the position and forbidden boundaries of `hexagramAssetCandidate(PENDING)`, the missing prerequisites before a formal 64-hexagram card, and the minimum next construction direction: `resolveHexagramAssetDraftCandidate()`.
+
 - [R8_ENGINE_HEXAGRAM_FORMATION.md](./R8_ENGINE_HEXAGRAM_FORMATION.md)  
   Hexagram formation protocol. Defines how final hexagram assets should be treated as generated output.
 
@@ -155,10 +158,30 @@ Current P0 next runtime step:
 ```text
 selectedPressureSeedContext
 → derivePrimaryPetal()
-→ pass currentDimension into CosmicBotanicsField
+→ currentPrimarySpaceId
+→ 6节点完成态
+→ starbeastFeedbackComplete
+→ hexagramAssetCandidate(PENDING)
 ```
 
-This next step must use [GUANYAO_1_0_CAUSAL_MAP_PROTOCOL.md](./GUANYAO_1_0_CAUSAL_MAP_PROTOCOL.md) as its construction basis. This protocol bridge only records the requirement; it does not implement code.
+Current P0 asset-chain next step is locked as:
+
+```text
+hexagramAssetCandidate(PENDING)
+→ resolveHexagramAssetDraftCandidate()
+→ hexagramAssetDraftCandidate(DRAFT)
+```
+
+This next step must use [GUANYAO_1_0_HEXAGRAM_ASSET_CANDIDATE_BOUNDARY.md](./GUANYAO_1_0_HEXAGRAM_ASSET_CANDIDATE_BOUNDARY.md) as its construction basis. It may only produce a draft candidate and must keep legacy routing forbidden.
+
+For P0 asset-chain work, explicitly forbidden:
+
+- Do not connect back to legacy `/hexagram-stamp`.
+- Do not revive the old annular asset flow.
+- Do not revive the old instrument/weapon card system.
+- Do not directly generate the formal 64-hexagram card.
+- Do not add commercialization.
+- Do not output fortune or misfortune judgments.
 
 ### P1 | Content Chain Completion
 
