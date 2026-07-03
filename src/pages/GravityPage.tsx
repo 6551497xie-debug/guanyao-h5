@@ -19,6 +19,7 @@ import {
   type StarFlowerForm,
   type StarFlowerGrowthState,
 } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
+import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
 import { derivePrimaryPetal, type PrimaryPetalId, type SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
 
@@ -937,6 +938,15 @@ function HexagramCodeDeliveryShell() {
     acc[config.id] = cosmicBotanicsRuntime.sixDimensionState[config.id].bloomCount;
     return acc;
   }, buildSpaceRecord(0));
+  const starbeastFeedbackComplete = cosmicNodeStep >= 6 && visiblePetalStates[currentPrimarySpaceId] === "blooming";
+  const hexagramAssetCandidate = resolveHexagramAssetCandidate({
+    personaSnapshot: personaOutputSnapshot,
+    selectedPressureSeedContext,
+    currentPrimarySpaceId,
+    completedNodeCount: cosmicNodeStep,
+    starbeastFeedbackComplete,
+    pressureSeedFallbackText: selectedPressureSeedSurface,
+  });
 
   function bloomCosmicNode() {
     const nextNodeStep = Math.min(6, cosmicNodeStep + 1);
@@ -1102,6 +1112,8 @@ function HexagramCodeDeliveryShell() {
         </section>
 
         <footer
+          data-hexagram-asset-candidate-status={hexagramAssetCandidate.status}
+          data-hexagram-asset-candidate-state={hexagramAssetCandidate.completionState}
           style={{
             position: "relative",
             zIndex: 1,
@@ -1111,7 +1123,10 @@ function HexagramCodeDeliveryShell() {
             lineHeight: 1.55,
           }}
         >
-          {cosmicNarrativePhase === "node_complete" ? cosmicPageCopy.completionText : ""}
+          {cosmicNarrativePhase === "node_complete" &&
+          hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE"
+            ? cosmicPageCopy.completionText
+            : ""}
         </footer>
       </main>
     );
