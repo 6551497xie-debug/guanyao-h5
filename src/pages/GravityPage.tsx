@@ -410,9 +410,7 @@ function advanceExecutionNode(snapshot: ExecutionSnapshot): ExecutionSnapshot {
 
 type SpatialIntentType = "CORE_STAR_BLOOM" | "NODE_ADVANCE_REQUEST" | "DIMENSION_FOCUS_REQUEST";
 const ALLOWED_INTENTS = ["CORE_STAR_BLOOM", "NODE_ADVANCE_REQUEST", "DIMENSION_FOCUS_REQUEST"] as const;
-const ALLOWED_INTENT_SET = new Set<SpatialIntentType>(ALLOWED_INTENTS);
 const ALLOWED_COMMANDS = ["ADVANCE_NODE", "NOOP"] as const;
-const ALLOWED_COMMAND_SET = new Set<ExecutionCommand["type"]>(ALLOWED_COMMANDS);
 
 type RawSpatialIntent = {
   type: string;
@@ -437,6 +435,97 @@ type ExecutionCommand =
       reason: "COMPLETE" | "FOCUS_DERIVED_ONLY" | "NO_EXECUTION_MAPPING" | "INTENT_REJECTED" | "COMMAND_REJECTED" | "SNAPSHOT_INCONSISTENT";
     };
 
+type SceneGraph = {
+  ambient: {
+    cosmicNebulaScene: true;
+    ambientStars: true;
+  };
+  focal: {
+    blackholeVortexScene: boolean;
+  };
+  actors: {
+    starFlowerCoreRepresentation: boolean;
+    baiHuConstellationLayer: true;
+  };
+  nodes: {
+    sixDimensionWheel: true;
+    activeDimension: SixSpaceId;
+    activeNodeIndex: number;
+  };
+};
+
+type InteractionGraph = {
+  nodes: readonly SpatialIntentType[];
+  edges: readonly {
+    from: SpatialIntentType;
+    to: SpatialIntentType | ExecutionCommand["type"];
+    rule: "governed-core-star-bloom" | "governed-node-advance" | "derived-focus-only";
+  }[];
+  resolution: "INTENT_GOVERNANCE_LAYER";
+};
+
+type RuntimeProjection = {
+  currentPrimarySpaceId: SixSpaceId;
+  sixDimensionStep: number;
+  selectedPressureSeedSurface: string;
+  cosmicSixDimensionState: CosmicBotanicsSixDimensionState;
+  cosmicNodeStep: number;
+  cosmicNarrativePhase: CosmicNarrativePhase;
+  sceneGraph: SceneGraph;
+  interactionGraph: InteractionGraph;
+  systemIntegrityCheck: SystemIntegrityCheck;
+};
+
+type ExecutionKernel = {
+  advance: (snapshot: ExecutionSnapshot) => ExecutionSnapshot;
+  resolve: (command: ExecutionCommand, snapshot: ExecutionSnapshot) => ExecutionSnapshot;
+  project: (snapshot: ExecutionSnapshot) => RuntimeProjection;
+};
+
+type GraphCoherenceContract = {
+  sceneGraph: SceneGraph;
+  interactionGraph: InteractionGraph;
+  executionKernel: ExecutionKernel;
+  executionSnapshot: ExecutionSnapshot;
+};
+
+type DriftType = "SCENE_DRIFT" | "INTENT_DRIFT" | "KERNEL_DRIFT";
+type CoherenceReport = {
+  coherence: "PASS" | "FAIL";
+  driftDetected: boolean;
+  driftType: DriftType[];
+  checks: {
+    sceneAligned: boolean;
+    interactionAligned: boolean;
+    kernelAligned: boolean;
+  };
+};
+
+type GraphAlignmentMap = {
+  sceneState: {
+    activeDimension: SixSpaceId;
+    activeNodeIndex: number;
+    blackholeVortexScene: boolean;
+    starFlowerCoreRepresentation: boolean;
+  };
+  interactionState: {
+    allowedIntents: readonly SpatialIntentType[];
+    mappedIntents: readonly SpatialIntentType[];
+  };
+  executionState: {
+    enginePhase: ExecutionSnapshot["runtime"]["enginePhase"];
+    uiPhase: ExecutionSnapshot["runtime"]["uiPhase"];
+    nodeCurrent: ExecutionSnapshot["node"]["current"];
+    allowedCommands: readonly ExecutionCommand["type"][];
+  };
+};
+
+type SystemIntegrityCheck = {
+  coherence: "PASS" | "FAIL";
+  driftDetected: boolean;
+  driftType: DriftType[];
+};
+
 function createRawSpatialIntent(type: SpatialIntentType, payload: SpatialIntent["payload"] = {}): RawSpatialIntent {
   return {
     type,
@@ -444,10 +533,16 @@ function createRawSpatialIntent(type: SpatialIntentType, payload: SpatialIntent[
   };
 }
 
+function isAllowedIntent(type: string): type is SpatialIntentType {
+  return ALLOWED_INTENTS.includes(type as SpatialIntentType);
+}
+
+function isAllowedCommand(type: ExecutionCommand["type"]) {
+  return ALLOWED_COMMANDS.includes(type);
+}
+
 function normalizeIntent(rawIntent: RawSpatialIntent): SpatialIntent {
-  const type = ALLOWED_INTENT_SET.has(rawIntent.type as SpatialIntentType)
-    ? (rawIntent.type as SpatialIntentType)
-    : "DIMENSION_FOCUS_REQUEST";
+  const type = isAllowedIntent(rawIntent.type) ? rawIntent.type : "DIMENSION_FOCUS_REQUEST";
   const payload = rawIntent.payload ?? {};
   const dimension = payload.dimension;
   const context = payload.context;
@@ -501,8 +596,8 @@ function reduceIntent(intent: SpatialIntent, snapshot: ExecutionSnapshot): Execu
 }
 
 function validateExecutionCommand(command: ExecutionCommand, snapshot: ExecutionSnapshot): ExecutionCommand {
-  const isIntentRegistered = ALLOWED_INTENT_SET.has(command.intent.type);
-  const isCommandAllowed = ALLOWED_COMMAND_SET.has(command.type);
+  const isIntentRegistered = isAllowedIntent(command.intent.type);
+  const isCommandAllowed = isAllowedCommand(command.type);
   const isSnapshotConsistent = snapshot.node.current >= 1 && snapshot.node.current <= 6 && Boolean(snapshot.runtime.enginePhase);
 
   if (!isIntentRegistered) return { type: "NOOP", intent: command.intent, reason: "INTENT_REJECTED" };
@@ -513,7 +608,7 @@ function validateExecutionCommand(command: ExecutionCommand, snapshot: Execution
 }
 
 function resolveGovernedExecutionCommand(rawIntent: RawSpatialIntent, snapshot: ExecutionSnapshot): ExecutionCommand {
-  if (!ALLOWED_INTENT_SET.has(rawIntent.type as SpatialIntentType)) {
+  if (!isAllowedIntent(rawIntent.type)) {
     return { type: "NOOP", intent: createRejectedIntent(rawIntent), reason: "INTENT_REJECTED" };
   }
 
@@ -612,6 +707,159 @@ function resolveCosmicNarrativeDimension(spaceId: SixSpaceId | undefined): Guany
 function resolveSixDimensionStep(spaceId: SixSpaceId) {
   return sixSpaceConfigs.findIndex((config) => config.id === spaceId) + 1 || 1;
 }
+
+function deriveSceneGraph(snapshot: ExecutionSnapshot): SceneGraph {
+  const currentPrimarySpaceId = resolveSnapshotPrimarySpaceId(snapshot.primaryDimension);
+  const cosmicNarrativePhase = resolveCosmicNarrativePhase(snapshot.runtime.uiPhase);
+
+  return {
+    ambient: {
+      cosmicNebulaScene: true,
+      ambientStars: true,
+    },
+    focal: {
+      blackholeVortexScene: cosmicNarrativePhase === "seed_visible" || cosmicNarrativePhase === "beast_guide",
+    },
+    actors: {
+      starFlowerCoreRepresentation: cosmicNarrativePhase === "node_active" || cosmicNarrativePhase === "node_complete",
+      baiHuConstellationLayer: true,
+    },
+    nodes: {
+      sixDimensionWheel: true,
+      activeDimension: currentPrimarySpaceId,
+      activeNodeIndex: snapshot.node.completed.length,
+    },
+  };
+}
+
+function deriveInteractionGraph(): InteractionGraph {
+  return {
+    nodes: ALLOWED_INTENTS,
+    edges: [
+      { from: "CORE_STAR_BLOOM", to: "NODE_ADVANCE_REQUEST", rule: "governed-core-star-bloom" },
+      { from: "NODE_ADVANCE_REQUEST", to: "ADVANCE_NODE", rule: "governed-node-advance" },
+      { from: "DIMENSION_FOCUS_REQUEST", to: "NOOP", rule: "derived-focus-only" },
+    ],
+    resolution: "INTENT_GOVERNANCE_LAYER",
+  };
+}
+
+function deriveGraphAlignmentMap(snapshot: ExecutionSnapshot): GraphAlignmentMap {
+  const cosmicNarrativePhase = resolveCosmicNarrativePhase(snapshot.runtime.uiPhase);
+
+  return {
+    sceneState: {
+      activeDimension: resolveSnapshotPrimarySpaceId(snapshot.primaryDimension),
+      activeNodeIndex: snapshot.node.completed.length,
+      blackholeVortexScene: cosmicNarrativePhase === "seed_visible" || cosmicNarrativePhase === "beast_guide",
+      starFlowerCoreRepresentation: cosmicNarrativePhase === "node_active" || cosmicNarrativePhase === "node_complete",
+    },
+    interactionState: {
+      allowedIntents: ALLOWED_INTENTS,
+      mappedIntents: ALLOWED_INTENTS,
+    },
+    executionState: {
+      enginePhase: snapshot.runtime.enginePhase,
+      uiPhase: snapshot.runtime.uiPhase,
+      nodeCurrent: snapshot.node.current,
+      allowedCommands: ALLOWED_COMMANDS,
+    },
+  };
+}
+
+function validateGraphCoherence(
+  snapshot: ExecutionSnapshot,
+  sceneGraph: SceneGraph,
+  interactionGraph: InteractionGraph,
+): CoherenceReport {
+  const alignment = deriveGraphAlignmentMap(snapshot);
+  const sceneAligned =
+    sceneGraph.nodes.activeDimension === alignment.sceneState.activeDimension &&
+    sceneGraph.nodes.activeNodeIndex === alignment.sceneState.activeNodeIndex &&
+    sceneGraph.focal.blackholeVortexScene === alignment.sceneState.blackholeVortexScene &&
+    sceneGraph.actors.starFlowerCoreRepresentation === alignment.sceneState.starFlowerCoreRepresentation;
+  const interactionNodesRegistered = interactionGraph.nodes.every(isAllowedIntent);
+  const interactionEdgesRegistered = interactionGraph.edges.every(
+    (edge) =>
+      isAllowedIntent(edge.from) &&
+      (isAllowedIntent(edge.to) || isAllowedCommand(edge.to as ExecutionCommand["type"])),
+  );
+  const interactionHasNoOrphans = alignment.interactionState.allowedIntents.every((intent) => interactionGraph.nodes.includes(intent));
+  const interactionAligned =
+    interactionGraph.resolution === "INTENT_GOVERNANCE_LAYER" &&
+    interactionNodesRegistered &&
+    interactionEdgesRegistered &&
+    interactionHasNoOrphans;
+  const kernelAligned =
+    executionKernel.advance === advanceExecutionNode &&
+    executionKernel.resolve === executeExecutionCommand &&
+    executionKernel.project === projectExecutionSnapshot &&
+    alignment.executionState.nodeCurrent >= 1 &&
+    alignment.executionState.nodeCurrent <= 6 &&
+    Boolean(alignment.executionState.enginePhase) &&
+    Boolean(alignment.executionState.uiPhase);
+  const driftType: DriftType[] = [
+    ...(sceneAligned ? [] : (["SCENE_DRIFT"] as const)),
+    ...(interactionAligned ? [] : (["INTENT_DRIFT"] as const)),
+    ...(kernelAligned ? [] : (["KERNEL_DRIFT"] as const)),
+  ];
+
+  return {
+    coherence: driftType.length === 0 ? "PASS" : "FAIL",
+    driftDetected: driftType.length > 0,
+    driftType,
+    checks: {
+      sceneAligned,
+      interactionAligned,
+      kernelAligned,
+    },
+  };
+}
+
+function createGraphCoherenceContract(snapshot: ExecutionSnapshot): GraphCoherenceContract {
+  return {
+    sceneGraph: deriveSceneGraph(snapshot),
+    interactionGraph: deriveInteractionGraph(),
+    executionKernel,
+    executionSnapshot: snapshot,
+  };
+}
+
+function createSystemIntegrityCheck(report: CoherenceReport): SystemIntegrityCheck {
+  return {
+    coherence: report.coherence,
+    driftDetected: report.driftDetected,
+    driftType: report.driftType,
+  };
+}
+
+function projectExecutionSnapshot(snapshot: ExecutionSnapshot): RuntimeProjection {
+  const currentPrimarySpaceId = resolveSnapshotPrimarySpaceId(snapshot.primaryDimension);
+  const graphContract = createGraphCoherenceContract(snapshot);
+  const coherenceReport = validateGraphCoherence(
+    graphContract.executionSnapshot,
+    graphContract.sceneGraph,
+    graphContract.interactionGraph,
+  );
+
+  return {
+    currentPrimarySpaceId,
+    sixDimensionStep: resolveSixDimensionStep(currentPrimarySpaceId),
+    selectedPressureSeedSurface: snapshot.seed.text,
+    cosmicSixDimensionState: buildCosmicStateFromExecutionSnapshot(snapshot),
+    cosmicNodeStep: snapshot.node.completed.length,
+    cosmicNarrativePhase: resolveCosmicNarrativePhase(snapshot.runtime.uiPhase),
+    sceneGraph: graphContract.sceneGraph,
+    interactionGraph: graphContract.interactionGraph,
+    systemIntegrityCheck: createSystemIntegrityCheck(coherenceReport),
+  };
+}
+
+const executionKernel: ExecutionKernel = Object.freeze({
+  advance: advanceExecutionNode,
+  resolve: executeExecutionCommand,
+  project: projectExecutionSnapshot,
+});
 
 function hashPersonaStarInput(input: string) {
   let hash = 2166136261;
@@ -1547,17 +1795,20 @@ function HexagramCodeDeliveryShell() {
   const [personaOutputSnapshot] = useState(() =>
     readJsonFromStorage<PersonaOutputSnapshotView>("guanyao:personaOutputSnapshot"),
   );
-  const currentPrimarySpaceId = resolveSnapshotPrimarySpaceId(executionSnapshot.primaryDimension);
-  const sixDimensionStep = resolveSixDimensionStep(currentPrimarySpaceId);
-  const selectedPressureSeedSurface = executionSnapshot.seed.text;
-  const cosmicSixDimensionState = buildCosmicStateFromExecutionSnapshot(executionSnapshot);
+  const runtimeProjection = executionKernel.project(executionSnapshot);
+  const {
+    currentPrimarySpaceId,
+    sixDimensionStep,
+    selectedPressureSeedSurface,
+    cosmicSixDimensionState,
+    cosmicNodeStep,
+    cosmicNarrativePhase,
+  } = runtimeProjection;
   const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
     pressureSeed: selectedPressureSeedSurface,
     sixDimensionState: cosmicSixDimensionState,
   });
   const baiHuRuntimeCoreStars = buildRuntimeBaiHuCoreStars(personaOutputSnapshot);
-  const cosmicNodeStep = executionSnapshot.node.completed.length;
-  const cosmicNarrativePhase = resolveCosmicNarrativePhase(executionSnapshot.runtime.uiPhase);
 
   const visiblePetalStates = sixSpaceConfigs.reduce<Record<SixSpaceId, CosmicPetalState>>((acc, config, index) => {
     const baseState = cosmicBotanicsRuntime.sixDimensionState[config.id].petalState;
@@ -1582,7 +1833,7 @@ function HexagramCodeDeliveryShell() {
 
   function handleSpatialInteraction(eventType: SpatialIntentType, context: SpatialIntent["payload"] = {}) {
     const rawIntent = createRawSpatialIntent(eventType, context);
-    setExecutionSnapshot((current) => executeExecutionCommand(resolveGovernedExecutionCommand(rawIntent, current), current));
+    setExecutionSnapshot((current) => executionKernel.resolve(resolveGovernedExecutionCommand(rawIntent, current), current));
   }
 
   function bloomCosmicNode() {
