@@ -87,9 +87,33 @@ type ExecutionSnapshot = {
 
   runtime: {
     isReady: boolean;
-    phase: "INIT" | "SEED_ACTIVE" | "DIMENSION_LOCKED" | "NODE_RUNNING" | "COMPLETE";
+    enginePhase: "INIT" | "SEED_ACTIVE" | "NODE_RUNNING" | "COMPLETE";
+    uiPhase: "INIT" | "SEED_ACTIVE" | "DIMENSION_LOCKED" | "NODE_RUNNING" | "COMPLETE";
   };
 };
+
+/**
+ * ============================
+ * EXECUTION INVARIANT LOCK
+ * ============================
+ *
+ * enginePhase = ONLY logic layer (node / beast / seed)
+ * uiPhase     = ONLY render layer (CosmicBotanicsField)
+ *
+ * DO NOT CROSS BOUNDARIES
+ */
+const assertExecutionInvariant = (snapshot: ExecutionSnapshot) => {
+  // UI must never directly influence engine
+  if ((snapshot as ExecutionSnapshot & { __uiAffectsEnginePhase?: unknown }).__uiAffectsEnginePhase) {
+    throw new Error("Invariant violation: UI touched enginePhase");
+  }
+
+  // Engine must never directly drive UI logic
+  if ((snapshot as ExecutionSnapshot & { __engineAffectsUiPhaseLogic?: unknown }).__engineAffectsUiPhaseLogic) {
+    throw new Error("Invariant violation: engine touched uiPhase logic");
+  }
+};
+
 type PersonaStarOrigin = {
   index?: number;
   intensity?: number;
@@ -174,18 +198,18 @@ function readPressureSeedIntensity(context: SelectedPressureSeedContext | null, 
 function resolveExecutionBeast({
   seedIntensity,
   currentNode,
-  phase,
+  enginePhase,
 }: {
   seedIntensity: number;
   currentNode: ExecutionSnapshot["node"]["current"];
-  phase: ExecutionSnapshot["runtime"]["phase"];
+  enginePhase: ExecutionSnapshot["runtime"]["enginePhase"];
 }): ExecutionSnapshot["beast"] {
   const resonance = clampRuntimeValue((seedIntensity * currentNode) / 6);
 
   return {
     active: true,
     resonance,
-    tone: phase === "COMPLETE" ? "sovereign" : seedIntensity > 0.7 ? "strain" : currentNode >= 4 ? "charge" : "calm",
+    tone: enginePhase === "COMPLETE" ? "sovereign" : seedIntensity > 0.7 ? "strain" : currentNode >= 4 ? "charge" : "calm",
   };
 }
 
@@ -194,9 +218,10 @@ function createExecutionSnapshot(context: SelectedPressureSeedContext | null): E
   const primaryDimension = toProtocolPrimaryPetal(derivePrimaryPetal(context));
   const seedIntensity = readPressureSeedIntensity(context, seedText);
   const currentNode: ExecutionSnapshot["node"]["current"] = 1;
-  const phase: ExecutionSnapshot["runtime"]["phase"] = "INIT";
+  const enginePhase: ExecutionSnapshot["runtime"]["enginePhase"] = "INIT";
+  const uiPhase: ExecutionSnapshot["runtime"]["uiPhase"] = "INIT";
 
-  return {
+  const snapshot: ExecutionSnapshot = {
     seed: {
       id: context?.selectedPressureSeedId ?? "pressure-seed-runtime-fallback",
       text: seedText,
@@ -207,7 +232,7 @@ function createExecutionSnapshot(context: SelectedPressureSeedContext | null): E
     beast: resolveExecutionBeast({
       seedIntensity,
       currentNode,
-      phase,
+      enginePhase,
     }),
     node: {
       current: currentNode,
@@ -216,41 +241,64 @@ function createExecutionSnapshot(context: SelectedPressureSeedContext | null): E
     },
     runtime: {
       isReady: true,
-      phase,
+      enginePhase,
+      uiPhase,
     },
   };
+
+  assertExecutionInvariant(snapshot);
+  return snapshot;
 }
 
 function refreshExecutionSnapshotBeast(snapshot: ExecutionSnapshot): ExecutionSnapshot {
-  return {
+  const nextSnapshot: ExecutionSnapshot = {
     ...snapshot,
     beast: resolveExecutionBeast({
       seedIntensity: snapshot.seed.intensity ?? 0,
       currentNode: snapshot.node.current,
-      phase: snapshot.runtime.phase,
+      enginePhase: snapshot.runtime.enginePhase,
     }),
   };
+
+  assertExecutionInvariant(nextSnapshot);
+  return nextSnapshot;
 }
 
-function setExecutionPhase(snapshot: ExecutionSnapshot, phase: ExecutionSnapshot["runtime"]["phase"]): ExecutionSnapshot {
-  return refreshExecutionSnapshotBeast({
+function setExecutionEnginePhase(snapshot: ExecutionSnapshot, enginePhase: ExecutionSnapshot["runtime"]["enginePhase"]): ExecutionSnapshot {
+  const nextSnapshot = refreshExecutionSnapshotBeast({
     ...snapshot,
     runtime: {
       ...snapshot.runtime,
-      isReady: phase !== "INIT",
-      phase,
+      isReady: enginePhase !== "INIT",
+      enginePhase,
     },
   });
+
+  assertExecutionInvariant(nextSnapshot);
+  return nextSnapshot;
+}
+
+function setExecutionUiPhase(snapshot: ExecutionSnapshot, uiPhase: ExecutionSnapshot["runtime"]["uiPhase"]): ExecutionSnapshot {
+  const nextSnapshot: ExecutionSnapshot = {
+    ...snapshot,
+    runtime: {
+      ...snapshot.runtime,
+      uiPhase,
+    },
+  };
+
+  assertExecutionInvariant(nextSnapshot);
+  return nextSnapshot;
 }
 
 function advanceExecutionNode(snapshot: ExecutionSnapshot): ExecutionSnapshot {
-  if (snapshot.node.locked || snapshot.runtime.phase === "COMPLETE") return snapshot;
+  if (snapshot.node.locked || snapshot.runtime.enginePhase === "COMPLETE") return snapshot;
 
   const completed = Array.from(new Set([...snapshot.node.completed, snapshot.node.current])).sort((a, b) => a - b);
   const isComplete = completed.length >= 6;
   const nextCurrent = (isComplete ? 6 : Math.min(6, snapshot.node.current + 1)) as ExecutionSnapshot["node"]["current"];
 
-  return refreshExecutionSnapshotBeast({
+  const nextSnapshot = refreshExecutionSnapshotBeast({
     ...snapshot,
     node: {
       ...snapshot.node,
@@ -260,9 +308,13 @@ function advanceExecutionNode(snapshot: ExecutionSnapshot): ExecutionSnapshot {
     runtime: {
       ...snapshot.runtime,
       isReady: true,
-      phase: isComplete ? "COMPLETE" : "NODE_RUNNING",
+      enginePhase: isComplete ? "COMPLETE" : "NODE_RUNNING",
+      uiPhase: isComplete ? "COMPLETE" : "NODE_RUNNING",
     },
   });
+
+  assertExecutionInvariant(nextSnapshot);
+  return nextSnapshot;
 }
 
 function resolveSnapshotPrimarySpaceId(primaryDimension: PrimaryPetalProtocolDimension): SixSpaceId {
@@ -277,7 +329,7 @@ function buildCosmicStateFromExecutionSnapshot(snapshot: ExecutionSnapshot): Cos
 
   return sixSpaceConfigs.reduce<CosmicBotanicsSixDimensionState>((acc, config) => {
     const isPrimary = config.id === primarySpaceId;
-    const isComplete = snapshot.runtime.phase === "COMPLETE";
+    const isComplete = snapshot.runtime.enginePhase === "COMPLETE";
     acc[config.id] = {
       petalState: isComplete ? "blooming" : isPrimary && completedNodeCount > 0 ? "active" : "dormant",
       bloomCount: isComplete ? Math.max(1, completedNodeCount) : isPrimary ? completedNodeCount : 0,
@@ -286,8 +338,8 @@ function buildCosmicStateFromExecutionSnapshot(snapshot: ExecutionSnapshot): Cos
   }, {} as CosmicBotanicsSixDimensionState);
 }
 
-function resolveCosmicNarrativePhase(phase: ExecutionSnapshot["runtime"]["phase"]): CosmicNarrativePhase {
-  switch (phase) {
+function resolveCosmicNarrativePhase(uiPhase: ExecutionSnapshot["runtime"]["uiPhase"]): CosmicNarrativePhase {
+  switch (uiPhase) {
     case "INIT":
       return "field_intro";
     case "SEED_ACTIVE":
@@ -1126,7 +1178,7 @@ function HexagramCodeDeliveryShell() {
   });
   const baiHuRuntimeCoreStars = buildRuntimeBaiHuCoreStars(personaOutputSnapshot);
   const cosmicNodeStep = executionSnapshot.node.completed.length;
-  const cosmicNarrativePhase = resolveCosmicNarrativePhase(executionSnapshot.runtime.phase);
+  const cosmicNarrativePhase = resolveCosmicNarrativePhase(executionSnapshot.runtime.uiPhase);
 
   const visiblePetalStates = sixSpaceConfigs.reduce<Record<SixSpaceId, CosmicPetalState>>((acc, config, index) => {
     const baseState = cosmicBotanicsRuntime.sixDimensionState[config.id].petalState;
@@ -1139,7 +1191,7 @@ function HexagramCodeDeliveryShell() {
     acc[config.id] = cosmicBotanicsRuntime.sixDimensionState[config.id].bloomCount;
     return acc;
   }, buildSpaceRecord(0));
-  const starbeastFeedbackComplete = executionSnapshot.runtime.phase === "COMPLETE" && visiblePetalStates[currentPrimarySpaceId] === "blooming";
+  const starbeastFeedbackComplete = executionSnapshot.runtime.enginePhase === "COMPLETE" && visiblePetalStates[currentPrimarySpaceId] === "blooming";
   const hexagramAssetCandidate = resolveHexagramAssetCandidate({
     personaSnapshot: personaOutputSnapshot,
     selectedPressureSeedContext: buildPressureSeedContextFromExecutionSnapshot(executionSnapshot),
@@ -1155,21 +1207,29 @@ function HexagramCodeDeliveryShell() {
 
   useEffect(() => {
     const seedTimer = window.setTimeout(() => {
-      setExecutionSnapshot((current) => (current.runtime.phase === "INIT" ? setExecutionPhase(current, "SEED_ACTIVE") : current));
+      setExecutionSnapshot((current) => {
+        const nextEngine =
+          current.runtime.enginePhase === "INIT" ? setExecutionEnginePhase(current, "SEED_ACTIVE") : current;
+        return current.runtime.uiPhase === "INIT" ? setExecutionUiPhase(nextEngine, "SEED_ACTIVE") : nextEngine;
+      });
     }, 950);
     const beastTimer = window.setTimeout(() => {
       setExecutionSnapshot((current) =>
-        current.runtime.phase === "SEED_ACTIVE" || current.runtime.phase === "INIT"
-          ? setExecutionPhase(current, "DIMENSION_LOCKED")
+        current.runtime.uiPhase === "SEED_ACTIVE" || current.runtime.uiPhase === "INIT"
+          ? setExecutionUiPhase(current, "DIMENSION_LOCKED")
           : current,
       );
     }, 2400);
     const nodeTimer = window.setTimeout(() => {
-      setExecutionSnapshot((current) =>
-        current.runtime.phase === "DIMENSION_LOCKED" || current.runtime.phase === "SEED_ACTIVE" || current.runtime.phase === "INIT"
-          ? setExecutionPhase(current, "NODE_RUNNING")
-          : current,
-      );
+      setExecutionSnapshot((current) => {
+        const nextEngine =
+          current.runtime.enginePhase === "SEED_ACTIVE" || current.runtime.enginePhase === "INIT"
+            ? setExecutionEnginePhase(current, "NODE_RUNNING")
+            : current;
+        return current.runtime.uiPhase === "DIMENSION_LOCKED" || current.runtime.uiPhase === "SEED_ACTIVE" || current.runtime.uiPhase === "INIT"
+          ? setExecutionUiPhase(nextEngine, "NODE_RUNNING")
+          : nextEngine;
+      });
     }, 3600);
 
     return () => {
