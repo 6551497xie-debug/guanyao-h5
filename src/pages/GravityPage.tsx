@@ -10,9 +10,7 @@ import {
   type GuanyaoStarBeastName,
 } from "../expression/guanyaoLanguageSystem";
 import {
-  createDormantCosmicBotanicsSixDimensionState,
   runCosmicBotanicsRuntimeEngine,
-  settleCosmicBotanicsBloomState,
   type CosmicBotanicsSixDimensionState,
   type CosmicPetalState,
   type StarbeastFeedback,
@@ -20,7 +18,13 @@ import {
   type StarFlowerGrowthState,
 } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
-import { derivePrimaryPetal, type PrimaryPetalId, type SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
+import {
+  derivePrimaryPetal,
+  toProtocolPrimaryPetal,
+  type PrimaryPetalId,
+  type PrimaryPetalProtocolDimension,
+  type SelectedPressureSeedContext,
+} from "../services/guanyaoPrimaryPetalResolver";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
 
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
@@ -59,6 +63,33 @@ const DEV_PRIMARY_PETAL_FIXTURES: Record<string, SelectedPressureSeedContext> = 
 };
 
 type SixSpaceId = PrimaryPetalId;
+type ExecutionSnapshot = {
+  seed: {
+    id: string;
+    text: string;
+    category?: string;
+    intensity?: number;
+  };
+
+  primaryDimension: PrimaryPetalProtocolDimension;
+
+  beast: {
+    active: boolean;
+    resonance: number;
+    tone: "calm" | "strain" | "charge" | "sovereign";
+  };
+
+  node: {
+    current: 1 | 2 | 3 | 4 | 5 | 6;
+    completed: number[];
+    locked: boolean;
+  };
+
+  runtime: {
+    isReady: boolean;
+    phase: "INIT" | "SEED_ACTIVE" | "DIMENSION_LOCKED" | "NODE_RUNNING" | "COMPLETE";
+  };
+};
 type PersonaStarOrigin = {
   index?: number;
   intensity?: number;
@@ -118,6 +149,179 @@ function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
     action: value,
     memory: value,
     goal: value,
+  };
+}
+
+function clampRuntimeValue(value: number) {
+  return Math.min(1, Math.max(0, value));
+}
+
+function readPressureSeedIntensity(context: SelectedPressureSeedContext | null, seedText: string) {
+  const rawIntensity = (context as (SelectedPressureSeedContext & { intensity?: unknown }) | null)?.intensity;
+  if (typeof rawIntensity === "number" && Number.isFinite(rawIntensity)) {
+    return clampRuntimeValue(rawIntensity);
+  }
+
+  const normalizedLength = Math.min(1, Math.max(0.18, seedText.trim().length / 72));
+  const disturbanceHint = ["怕", "不敢", "压", "墙", "替代", "撑", "失去", "沉重"].reduce(
+    (sum, keyword) => sum + (seedText.includes(keyword) ? 0.06 : 0),
+    0,
+  );
+
+  return clampRuntimeValue(normalizedLength + disturbanceHint);
+}
+
+function resolveExecutionBeast({
+  seedIntensity,
+  currentNode,
+  phase,
+}: {
+  seedIntensity: number;
+  currentNode: ExecutionSnapshot["node"]["current"];
+  phase: ExecutionSnapshot["runtime"]["phase"];
+}): ExecutionSnapshot["beast"] {
+  const resonance = clampRuntimeValue((seedIntensity * currentNode) / 6);
+
+  return {
+    active: true,
+    resonance,
+    tone: phase === "COMPLETE" ? "sovereign" : seedIntensity > 0.7 ? "strain" : currentNode >= 4 ? "charge" : "calm",
+  };
+}
+
+function createExecutionSnapshot(context: SelectedPressureSeedContext | null): ExecutionSnapshot {
+  const seedText = context?.surface || "这件事刚刚发生过。";
+  const primaryDimension = toProtocolPrimaryPetal(derivePrimaryPetal(context));
+  const seedIntensity = readPressureSeedIntensity(context, seedText);
+  const currentNode: ExecutionSnapshot["node"]["current"] = 1;
+  const phase: ExecutionSnapshot["runtime"]["phase"] = "INIT";
+
+  return {
+    seed: {
+      id: context?.selectedPressureSeedId ?? "pressure-seed-runtime-fallback",
+      text: seedText,
+      category: context?.category,
+      intensity: seedIntensity,
+    },
+    primaryDimension,
+    beast: resolveExecutionBeast({
+      seedIntensity,
+      currentNode,
+      phase,
+    }),
+    node: {
+      current: currentNode,
+      completed: [],
+      locked: false,
+    },
+    runtime: {
+      isReady: true,
+      phase,
+    },
+  };
+}
+
+function refreshExecutionSnapshotBeast(snapshot: ExecutionSnapshot): ExecutionSnapshot {
+  return {
+    ...snapshot,
+    beast: resolveExecutionBeast({
+      seedIntensity: snapshot.seed.intensity ?? 0,
+      currentNode: snapshot.node.current,
+      phase: snapshot.runtime.phase,
+    }),
+  };
+}
+
+function setExecutionPhase(snapshot: ExecutionSnapshot, phase: ExecutionSnapshot["runtime"]["phase"]): ExecutionSnapshot {
+  return refreshExecutionSnapshotBeast({
+    ...snapshot,
+    runtime: {
+      ...snapshot.runtime,
+      isReady: phase !== "INIT",
+      phase,
+    },
+  });
+}
+
+function advanceExecutionNode(snapshot: ExecutionSnapshot): ExecutionSnapshot {
+  if (snapshot.node.locked || snapshot.runtime.phase === "COMPLETE") return snapshot;
+
+  const completed = Array.from(new Set([...snapshot.node.completed, snapshot.node.current])).sort((a, b) => a - b);
+  const isComplete = completed.length >= 6;
+  const nextCurrent = (isComplete ? 6 : Math.min(6, snapshot.node.current + 1)) as ExecutionSnapshot["node"]["current"];
+
+  return refreshExecutionSnapshotBeast({
+    ...snapshot,
+    node: {
+      ...snapshot.node,
+      current: nextCurrent,
+      completed,
+    },
+    runtime: {
+      ...snapshot.runtime,
+      isReady: true,
+      phase: isComplete ? "COMPLETE" : "NODE_RUNNING",
+    },
+  });
+}
+
+function resolveSnapshotPrimarySpaceId(primaryDimension: PrimaryPetalProtocolDimension): SixSpaceId {
+  if (primaryDimension === "behavior") return "action";
+  if (primaryDimension === "motivation") return "goal";
+  return primaryDimension;
+}
+
+function buildCosmicStateFromExecutionSnapshot(snapshot: ExecutionSnapshot): CosmicBotanicsSixDimensionState {
+  const primarySpaceId = resolveSnapshotPrimarySpaceId(snapshot.primaryDimension);
+  const completedNodeCount = snapshot.node.completed.length;
+
+  return sixSpaceConfigs.reduce<CosmicBotanicsSixDimensionState>((acc, config) => {
+    const isPrimary = config.id === primarySpaceId;
+    const isComplete = snapshot.runtime.phase === "COMPLETE";
+    acc[config.id] = {
+      petalState: isComplete ? "blooming" : isPrimary && completedNodeCount > 0 ? "active" : "dormant",
+      bloomCount: isComplete ? Math.max(1, completedNodeCount) : isPrimary ? completedNodeCount : 0,
+    };
+    return acc;
+  }, {} as CosmicBotanicsSixDimensionState);
+}
+
+function resolveCosmicNarrativePhase(phase: ExecutionSnapshot["runtime"]["phase"]): CosmicNarrativePhase {
+  switch (phase) {
+    case "INIT":
+      return "field_intro";
+    case "SEED_ACTIVE":
+      return "seed_visible";
+    case "DIMENSION_LOCKED":
+      return "beast_guide";
+    case "COMPLETE":
+      return "node_complete";
+    case "NODE_RUNNING":
+    default:
+      return "node_active";
+  }
+}
+
+function buildStarbeastFeedbackFromExecutionSnapshot(snapshot: ExecutionSnapshot): StarbeastFeedback {
+  return {
+    energyRing: Math.round(74 + snapshot.beast.resonance * 58),
+    glowIntensity: Math.min(1, 0.18 + snapshot.beast.resonance * 0.74),
+    postureShift:
+      snapshot.beast.tone === "sovereign"
+        ? "released"
+        : snapshot.beast.tone === "charge"
+          ? "opening"
+          : snapshot.beast.tone === "strain"
+            ? "guarding"
+            : "leaning",
+  };
+}
+
+function buildPressureSeedContextFromExecutionSnapshot(snapshot: ExecutionSnapshot): SelectedPressureSeedContext {
+  return {
+    selectedPressureSeedId: snapshot.seed.id,
+    surface: snapshot.seed.text,
+    category: snapshot.seed.category,
   };
 }
 
@@ -906,26 +1110,23 @@ function CosmicBotanicsField({
 }
 
 function HexagramCodeDeliveryShell() {
-  const [cosmicSixDimensionState, setCosmicSixDimensionState] = useState<CosmicBotanicsSixDimensionState>(() =>
-    createDormantCosmicBotanicsSixDimensionState(),
-  );
-  const [cosmicNodeStep, setCosmicNodeStep] = useState(0);
-  const [cosmicNarrativePhase, setCosmicNarrativePhase] = useState<CosmicNarrativePhase>("field_intro");
-  const [storedPressureSeedContext] = useState(() =>
-    readJsonFromStorage<SelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
+  const [executionSnapshot, setExecutionSnapshot] = useState<ExecutionSnapshot>(() =>
+    createExecutionSnapshot(readDevPrimaryPetalFixture() ?? readJsonFromStorage<SelectedPressureSeedContext>("guanyao:selectedPressureSeedContext")),
   );
   const [personaOutputSnapshot] = useState(() =>
     readJsonFromStorage<PersonaOutputSnapshotView>("guanyao:personaOutputSnapshot"),
   );
-  const selectedPressureSeedContext = readDevPrimaryPetalFixture() ?? storedPressureSeedContext;
-  const currentPrimarySpaceId = derivePrimaryPetal(selectedPressureSeedContext);
+  const currentPrimarySpaceId = resolveSnapshotPrimarySpaceId(executionSnapshot.primaryDimension);
   const sixDimensionStep = resolveSixDimensionStep(currentPrimarySpaceId);
-  const selectedPressureSeedSurface = selectedPressureSeedContext?.surface || "这件事刚刚发生过。";
+  const selectedPressureSeedSurface = executionSnapshot.seed.text;
+  const cosmicSixDimensionState = buildCosmicStateFromExecutionSnapshot(executionSnapshot);
   const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
     pressureSeed: selectedPressureSeedSurface,
     sixDimensionState: cosmicSixDimensionState,
   });
   const baiHuRuntimeCoreStars = buildRuntimeBaiHuCoreStars(personaOutputSnapshot);
+  const cosmicNodeStep = executionSnapshot.node.completed.length;
+  const cosmicNarrativePhase = resolveCosmicNarrativePhase(executionSnapshot.runtime.phase);
 
   const visiblePetalStates = sixSpaceConfigs.reduce<Record<SixSpaceId, CosmicPetalState>>((acc, config, index) => {
     const baseState = cosmicBotanicsRuntime.sixDimensionState[config.id].petalState;
@@ -938,10 +1139,10 @@ function HexagramCodeDeliveryShell() {
     acc[config.id] = cosmicBotanicsRuntime.sixDimensionState[config.id].bloomCount;
     return acc;
   }, buildSpaceRecord(0));
-  const starbeastFeedbackComplete = cosmicNodeStep >= 6 && visiblePetalStates[currentPrimarySpaceId] === "blooming";
+  const starbeastFeedbackComplete = executionSnapshot.runtime.phase === "COMPLETE" && visiblePetalStates[currentPrimarySpaceId] === "blooming";
   const hexagramAssetCandidate = resolveHexagramAssetCandidate({
     personaSnapshot: personaOutputSnapshot,
-    selectedPressureSeedContext,
+    selectedPressureSeedContext: buildPressureSeedContextFromExecutionSnapshot(executionSnapshot),
     currentPrimarySpaceId,
     completedNodeCount: cosmicNodeStep,
     starbeastFeedbackComplete,
@@ -949,63 +1150,34 @@ function HexagramCodeDeliveryShell() {
   });
 
   function bloomCosmicNode() {
-    const nextNodeStep = Math.min(6, cosmicNodeStep + 1);
-
-    setCosmicNodeStep(nextNodeStep);
-    setCosmicSixDimensionState((current) => {
-      const nextState: CosmicBotanicsSixDimensionState = {
-        ...current,
-        [currentPrimarySpaceId]: {
-          petalState: "blooming",
-          bloomCount: current[currentPrimarySpaceId].bloomCount + 1,
-        },
-      };
-
-      if (nextNodeStep >= 6) {
-        sixSpaceConfigs.forEach((config) => {
-          nextState[config.id] = {
-            petalState: "blooming",
-            bloomCount: Math.max(nextState[config.id].bloomCount, 1),
-          };
-        });
-      }
-
-      return nextState;
-    });
-
-    window.setTimeout(() => {
-      setCosmicSixDimensionState((current) => {
-        if (nextNodeStep >= 6) {
-          return current;
-        }
-
-        return settleCosmicBotanicsBloomState(current, currentPrimarySpaceId);
-      });
-    }, 1400);
+    setExecutionSnapshot((current) => advanceExecutionNode(current));
   }
 
   useEffect(() => {
-    if (cosmicNodeStep >= 6) {
-      setCosmicNarrativePhase("node_complete");
-      return;
-    }
-
-    if (cosmicNodeStep > 0) {
-      setCosmicNarrativePhase("node_active");
-      return;
-    }
-
-    setCosmicNarrativePhase("field_intro");
-    const seedTimer = window.setTimeout(() => setCosmicNarrativePhase("seed_visible"), 950);
-    const beastTimer = window.setTimeout(() => setCosmicNarrativePhase("beast_guide"), 2400);
-    const nodeTimer = window.setTimeout(() => setCosmicNarrativePhase("node_active"), 3600);
+    const seedTimer = window.setTimeout(() => {
+      setExecutionSnapshot((current) => (current.runtime.phase === "INIT" ? setExecutionPhase(current, "SEED_ACTIVE") : current));
+    }, 950);
+    const beastTimer = window.setTimeout(() => {
+      setExecutionSnapshot((current) =>
+        current.runtime.phase === "SEED_ACTIVE" || current.runtime.phase === "INIT"
+          ? setExecutionPhase(current, "DIMENSION_LOCKED")
+          : current,
+      );
+    }, 2400);
+    const nodeTimer = window.setTimeout(() => {
+      setExecutionSnapshot((current) =>
+        current.runtime.phase === "DIMENSION_LOCKED" || current.runtime.phase === "SEED_ACTIVE" || current.runtime.phase === "INIT"
+          ? setExecutionPhase(current, "NODE_RUNNING")
+          : current,
+      );
+    }, 3600);
 
     return () => {
       window.clearTimeout(seedTimer);
       window.clearTimeout(beastTimer);
       window.clearTimeout(nodeTimer);
     };
-  }, [cosmicNodeStep, selectedPressureSeedSurface, sixDimensionStep]);
+  }, []);
 
   if (USE_COSMIC_BOTANICS_SIX_SPACE || LEGACY_DYNAMICS_FLOW_ISOLATED) {
     const activeCosmicConfig = sixSpaceConfigs[Math.max(0, Math.min(sixSpaceConfigs.length - 1, sixDimensionStep - 1))] ?? sixSpaceConfigs[0];
@@ -1100,7 +1272,7 @@ function HexagramCodeDeliveryShell() {
             pressureSeedSurface={selectedPressureSeedSurface}
             petalStates={visiblePetalStates}
             pollenBursts={cosmicPollenBursts}
-            starbeast={cosmicBotanicsRuntime.starbeast}
+            starbeast={buildStarbeastFeedbackFromExecutionSnapshot(executionSnapshot)}
             starFlowerForm={cosmicBotanicsRuntime.starFlower.form}
             starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
             hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}
