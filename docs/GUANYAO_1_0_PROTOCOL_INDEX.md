@@ -2,6 +2,22 @@
 
 This document is the protocol index for GUANYAO 1.0.
 
+## ACTIVE FREEZE NOTICE
+
+GUANYAO 1.0 protocol expansion is now frozen.
+
+Active freeze document:
+
+- [GUANYAO_1_0_PROTOCOL_FREEZE.md](./GUANYAO_1_0_PROTOCOL_FREEZE.md)
+
+The protocol layer has reached its final candidate-loop endpoint:
+
+```text
+SAFE_COMPONENT_STUB_IMPLEMENTATION_CANDIDATE
+```
+
+Do not add more protocol-index bridge layers. Do not continue the pattern of `xxx → resolve → xxxCandidate → P1 index`. Future work must enter execution convergence from the frozen protocol chain.
+
 All future Codex work on GUANYAO 1.0 must treat the documents listed here as construction constraints. If a proposed change conflicts with this index, the change must be paused until the product protocol is explicitly updated.
 
 ## 1. GUANYAO 1.0 Main Structure Protocol
@@ -33,6 +49,9 @@ The current GUANYAO 1.0 main chain is locked as:
 ## 2. Core Protocol Directory
 
 ### 1.0 Release And Architecture
+
+- [GUANYAO_1_0_PROTOCOL_FREEZE.md](./GUANYAO_1_0_PROTOCOL_FREEZE.md)  
+  Protocol freeze. Declares the candidate protocol loop complete, forbids further protocol-index expansion, and moves GUANYAO 1.0 into execution convergence from `SAFE_COMPONENT_STUB_IMPLEMENTATION_CANDIDATE`.
 
 - [RELEASE_FREEZE_1_0.md](./RELEASE_FREEZE_1_0.md)  
   1.0 release freeze and architecture lock state. Defines the frozen scope and allowed maintenance boundaries.
@@ -113,6 +132,9 @@ The current GUANYAO 1.0 main chain is locked as:
 
 - [GUANYAO_1_0_SAFE_COMPONENT_STUB_PROTOCOL.md](./GUANYAO_1_0_SAFE_COMPONENT_STUB_PROTOCOL.md)  
   P0 safe component stub candidate protocol. Defines how `componentImplementationCandidate(COMPONENT_IMPLEMENTATION_CANDIDATE)` enters `safeComponentStubCandidate(SAFE_COMPONENT_STUB_CANDIDATE)`. This stage is still not a formal React component, not a page, not a route, and must not output `componentPath`, `hexagramCode`, `hexagramName`, `cardName`, `finalAssetId`, or `officialAssetId`. It must not connect commercialization or collection.
+
+- [GUANYAO_1_0_SAFE_COMPONENT_STUB_IMPLEMENTATION_PROTOCOL.md](./GUANYAO_1_0_SAFE_COMPONENT_STUB_IMPLEMENTATION_PROTOCOL.md)  
+  Final protocol-layer endpoint before execution convergence. Defines how `safeComponentStubCandidate(SAFE_COMPONENT_STUB_CANDIDATE)` enters `safeComponentStubImplementationCandidate(SAFE_COMPONENT_STUB_IMPLEMENTATION_CANDIDATE)`, while still forbidding real React components, component paths, pages, routes, legacy `/hexagram-stamp`, and commercialization.
 
 - [R8_ENGINE_HEXAGRAM_FORMATION.md](./R8_ENGINE_HEXAGRAM_FORMATION.md)  
   Hexagram formation protocol. Defines how final hexagram assets should be treated as generated output.
@@ -230,23 +252,27 @@ selectedPressureSeedContext
 → uiComponentCandidate(UI_COMPONENT_CANDIDATE)
 → resolveComponentImplementationCandidate()
 → componentImplementationCandidate(COMPONENT_IMPLEMENTATION_CANDIDATE)
-```
-
-Current P0 asset-chain next code direction is locked as:
-
-```text
-componentImplementationCandidate(COMPONENT_IMPLEMENTATION_CANDIDATE)
 → resolveSafeComponentStubCandidate()
 → safeComponentStubCandidate(SAFE_COMPONENT_STUB_CANDIDATE)
+→ resolveSafeComponentStubImplementationCandidate()
+→ safeComponentStubImplementationCandidate(SAFE_COMPONENT_STUB_IMPLEMENTATION_CANDIDATE)
 ```
 
-This next step must use [GUANYAO_1_0_SAFE_COMPONENT_STUB_PROTOCOL.md](./GUANYAO_1_0_SAFE_COMPONENT_STUB_PROTOCOL.md) as its construction basis.
-
-It may only output:
+Current P0 protocol layer is frozen.
 
 ```text
-safeComponentStubCandidate(SAFE_COMPONENT_STUB_CANDIDATE)
+Protocol Layer: completed
+Execution Layer: next
 ```
+
+The next allowed direction is no longer another protocol expansion. The next allowed direction is execution convergence:
+
+```text
+SAFE_COMPONENT_STUB_IMPLEMENTATION_CANDIDATE
+→ real minimum runnable render convergence
+```
+
+This execution phase must use [GUANYAO_1_0_PROTOCOL_FREEZE.md](./GUANYAO_1_0_PROTOCOL_FREEZE.md) as its top-level boundary.
 
 It must not generate the formal 64-hexagram card.
 
@@ -279,6 +305,7 @@ For P0 asset-chain work, explicitly forbidden:
 - UI_COMPONENT_CANDIDATE may only prepare component candidate sections. It must not become a real React component, output `componentPath`, create a formal asset card page, add a route, connect legacy `/hexagram-stamp`, or connect collection, payment, unlock, or commercial payloads.
 - COMPONENT_IMPLEMENTATION_CANDIDATE may only prepare component implementation candidate sections. It must not become a real React component, output `componentPath`, create a formal asset card page, add a route, connect legacy `/hexagram-stamp`, or connect collection, payment, unlock, or commercial payloads.
 - SAFE_COMPONENT_STUB_CANDIDATE may only prepare safe component stub candidate sections. It must not become a real React component, output `componentPath`, create a formal asset card page, add a route, connect legacy `/hexagram-stamp`, or connect collection, payment, unlock, or commercial payloads.
+- SAFE_COMPONENT_STUB_IMPLEMENTATION_CANDIDATE is the final frozen protocol endpoint. It may only serve as the starting point for execution convergence and must not become another protocol-expansion source.
 - If formal `hexagramCode`, `hexagramName`, or `cardName` fields are required, first add `GUANYAO_1_0_HEXAGRAM_IDENTITY_ASSIGNMENT_PROTOCOL.md`.
 
 ### P1 | Content Chain Completion
@@ -327,17 +354,22 @@ This protocol index forbids the following unless an explicit unfreeze protocol i
 - Do not turn Cosmic Botanics into a static form UI.
 - Do not turn six nodes into a task checklist.
 - Do not add commercial gates before the active causal chain is complete.
+- Do not add another protocol-index bridge layer.
+- Do not continue infinite `xxx → resolve → xxxCandidate → P1 index` protocol expansion.
+- Do not add another candidate stage after `SAFE_COMPONENT_STUB_IMPLEMENTATION_CANDIDATE` unless an explicit protocol unfreeze is approved.
 
 ## 6. Codex Construction Rule
 
 For future Codex work:
 
 1. Read this protocol index before changing any active 1.0 flow.
-2. Identify which P-level the requested work belongs to.
-3. Check whether the requested change touches frozen architecture.
-4. If it touches frozen architecture, stop and request explicit unfreeze.
-5. If it is UI, copy, visual, or docs only, keep the change scoped to that layer.
-6. Always preserve the highest expression constraints.
+2. Read [GUANYAO_1_0_PROTOCOL_FREEZE.md](./GUANYAO_1_0_PROTOCOL_FREEZE.md).
+3. Identify whether the requested work is execution convergence, runtime verification, UI/visual refinement, language refinement, or documentation clarification.
+4. Reject or redirect requests that attempt to add another protocol layer, another protocol index bridge, or another candidate-chain expansion.
+5. Check whether the requested change touches frozen architecture.
+6. If it touches frozen architecture, stop and request explicit unfreeze.
+7. If it is UI, copy, visual, or docs only, keep the change scoped to that layer.
+8. Always preserve the highest expression constraints.
 
 GUANYAO 1.0 is not a pile of pages. It is a continuous causal field:
 

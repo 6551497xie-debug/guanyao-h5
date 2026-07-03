@@ -409,6 +409,16 @@ function advanceExecutionNode(snapshot: ExecutionSnapshot): ExecutionSnapshot {
 }
 
 type SpatialIntentType = "CORE_STAR_BLOOM" | "NODE_ADVANCE_REQUEST" | "DIMENSION_FOCUS_REQUEST";
+const ALLOWED_INTENTS = ["CORE_STAR_BLOOM", "NODE_ADVANCE_REQUEST", "DIMENSION_FOCUS_REQUEST"] as const;
+const ALLOWED_INTENT_SET = new Set<SpatialIntentType>(ALLOWED_INTENTS);
+const ALLOWED_COMMANDS = ["ADVANCE_NODE", "NOOP"] as const;
+const ALLOWED_COMMAND_SET = new Set<ExecutionCommand["type"]>(ALLOWED_COMMANDS);
+
+type RawSpatialIntent = {
+  type: string;
+  source?: unknown;
+  payload?: Record<string, unknown>;
+};
 type SpatialIntent = {
   type: SpatialIntentType;
   source: "UI_INTERACTION";
@@ -421,17 +431,59 @@ type SpatialIntent = {
 };
 type ExecutionCommand =
   | { type: "ADVANCE_NODE"; intent: SpatialIntent }
-  | { type: "NOOP"; intent: SpatialIntent; reason: "COMPLETE" | "FOCUS_DERIVED_ONLY" | "NO_EXECUTION_MAPPING" };
+  | {
+      type: "NOOP";
+      intent: SpatialIntent;
+      reason: "COMPLETE" | "FOCUS_DERIVED_ONLY" | "NO_EXECUTION_MAPPING" | "INTENT_REJECTED" | "COMMAND_REJECTED" | "SNAPSHOT_INCONSISTENT";
+    };
 
-function createSpatialIntent(type: SpatialIntentType, payload: SpatialIntent["payload"] = {}): SpatialIntent {
+function createRawSpatialIntent(type: SpatialIntentType, payload: SpatialIntent["payload"] = {}): RawSpatialIntent {
   return {
     type,
-    source: "UI_INTERACTION",
     payload,
   };
 }
 
-function resolveSpatialIntent(intent: SpatialIntent, snapshot: ExecutionSnapshot): ExecutionCommand {
+function normalizeIntent(rawIntent: RawSpatialIntent): SpatialIntent {
+  const type = ALLOWED_INTENT_SET.has(rawIntent.type as SpatialIntentType)
+    ? (rawIntent.type as SpatialIntentType)
+    : "DIMENSION_FOCUS_REQUEST";
+  const payload = rawIntent.payload ?? {};
+  const dimension = payload.dimension;
+  const context = payload.context;
+  const triggerStrength = payload.triggerStrength;
+  const nodeIndex = payload.nodeIndex;
+
+  return {
+    type,
+    source: "UI_INTERACTION",
+    payload: {
+      ...(typeof nodeIndex === "number" && nodeIndex >= 1 && nodeIndex <= 6 ? { nodeIndex } : {}),
+      ...(dimension === "body" || dimension === "emotion" || dimension === "thought" || dimension === "action" || dimension === "memory" || dimension === "goal"
+        ? { dimension }
+        : {}),
+      ...(context === "ambient" || context === "focus" || context === "inspect" ? { context } : {}),
+      ...(typeof triggerStrength === "number" && Number.isFinite(triggerStrength)
+        ? { triggerStrength: clampRuntimeValue(triggerStrength) }
+        : {}),
+    },
+  };
+}
+
+function createRejectedIntent(rawIntent: RawSpatialIntent): SpatialIntent {
+  return {
+    type: "DIMENSION_FOCUS_REQUEST",
+    source: "UI_INTERACTION",
+    payload: {
+      context: "inspect",
+      ...(typeof rawIntent.payload?.triggerStrength === "number"
+        ? { triggerStrength: clampRuntimeValue(rawIntent.payload.triggerStrength) }
+        : {}),
+    },
+  };
+}
+
+function reduceIntent(intent: SpatialIntent, snapshot: ExecutionSnapshot): ExecutionCommand {
   switch (intent.type) {
     case "CORE_STAR_BLOOM":
       return snapshot.node.current < 6 && snapshot.runtime.enginePhase !== "COMPLETE"
@@ -446,6 +498,26 @@ function resolveSpatialIntent(intent: SpatialIntent, snapshot: ExecutionSnapshot
     default:
       return { type: "NOOP", intent, reason: "NO_EXECUTION_MAPPING" };
   }
+}
+
+function validateExecutionCommand(command: ExecutionCommand, snapshot: ExecutionSnapshot): ExecutionCommand {
+  const isIntentRegistered = ALLOWED_INTENT_SET.has(command.intent.type);
+  const isCommandAllowed = ALLOWED_COMMAND_SET.has(command.type);
+  const isSnapshotConsistent = snapshot.node.current >= 1 && snapshot.node.current <= 6 && Boolean(snapshot.runtime.enginePhase);
+
+  if (!isIntentRegistered) return { type: "NOOP", intent: command.intent, reason: "INTENT_REJECTED" };
+  if (!isCommandAllowed) return { type: "NOOP", intent: command.intent, reason: "COMMAND_REJECTED" };
+  if (!isSnapshotConsistent) return { type: "NOOP", intent: command.intent, reason: "SNAPSHOT_INCONSISTENT" };
+
+  return command;
+}
+
+function resolveGovernedExecutionCommand(rawIntent: RawSpatialIntent, snapshot: ExecutionSnapshot): ExecutionCommand {
+  if (!ALLOWED_INTENT_SET.has(rawIntent.type as SpatialIntentType)) {
+    return { type: "NOOP", intent: createRejectedIntent(rawIntent), reason: "INTENT_REJECTED" };
+  }
+
+  return validateExecutionCommand(reduceIntent(normalizeIntent(rawIntent), snapshot), snapshot);
 }
 
 function executeExecutionCommand(command: ExecutionCommand, snapshot: ExecutionSnapshot): ExecutionSnapshot {
@@ -1509,8 +1581,8 @@ function HexagramCodeDeliveryShell() {
   });
 
   function handleSpatialInteraction(eventType: SpatialIntentType, context: SpatialIntent["payload"] = {}) {
-    const intent = createSpatialIntent(eventType, context);
-    setExecutionSnapshot((current) => executeExecutionCommand(resolveSpatialIntent(intent, current), current));
+    const rawIntent = createRawSpatialIntent(eventType, context);
+    setExecutionSnapshot((current) => executeExecutionCommand(resolveGovernedExecutionCommand(rawIntent, current), current));
   }
 
   function bloomCosmicNode() {
