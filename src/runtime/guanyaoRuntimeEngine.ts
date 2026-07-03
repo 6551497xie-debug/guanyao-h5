@@ -456,23 +456,43 @@ export type EngineInstance = Readonly<{
   snapshot: ExecutionSnapshot;
 }>;
 
+export type GuanyaoPluginContext = Readonly<{
+  intent: RuntimeIntent;
+  snapshot: ExecutionSnapshot;
+  projection?: RuntimeProjection;
+  metadata: Readonly<Record<string, unknown>>;
+}>;
+
+export type GuanyaoPlugin = Readonly<{
+  name: string;
+  version: string;
+  type: "intent_middleware" | "snapshot_transform" | "projection_extension";
+  execute: (context: GuanyaoPluginContext) => GuanyaoPluginContext;
+}>;
+
+export type PluginRegistry = Readonly<{
+  register: (plugin: GuanyaoPlugin) => PluginRegistry;
+  resolve: (context: GuanyaoPluginContext) => GuanyaoPluginContext;
+  list: () => readonly GuanyaoPlugin[];
+}>;
+
 function cloneExecutionSnapshot(snapshot: ExecutionSnapshot): ExecutionSnapshot {
-  return {
-    seed: {
+  return Object.freeze({
+    seed: Object.freeze({
       ...snapshot.seed,
-    },
+    }),
     primaryDimension: snapshot.primaryDimension,
-    beast: {
+    beast: Object.freeze({
       ...snapshot.beast,
-    },
-    node: {
+    }),
+    node: Object.freeze({
       ...snapshot.node,
-      completed: [...snapshot.node.completed],
-    },
-    runtime: {
+      completed: Object.freeze([...snapshot.node.completed]) as number[],
+    }),
+    runtime: Object.freeze({
       ...snapshot.runtime,
-    },
-  };
+    }),
+  }) as ExecutionSnapshot;
 }
 
 function hashRuntimeString(input: string) {
@@ -521,6 +541,64 @@ function executeCycle(instance: EngineInstance, intent: RuntimeIntent): Executio
   return instance.engine.run(instance.snapshot, intent);
 }
 
+function createPluginContext(intent: RuntimeIntent, snapshot: ExecutionSnapshot): GuanyaoPluginContext {
+  return Object.freeze({
+    intent,
+    snapshot: cloneExecutionSnapshot(snapshot),
+    metadata: Object.freeze({}),
+  });
+}
+
+function sanitizePluginContext(context: GuanyaoPluginContext): GuanyaoPluginContext {
+  return Object.freeze({
+    intent: context.intent,
+    snapshot: cloneExecutionSnapshot(context.snapshot),
+    projection: context.projection,
+    metadata: Object.freeze({ ...context.metadata }),
+  });
+}
+
+export function createPluginRegistry(plugins: readonly GuanyaoPlugin[] = []): PluginRegistry {
+  const registryPlugins = Object.freeze([...plugins]);
+
+  return Object.freeze({
+    register(plugin: GuanyaoPlugin): PluginRegistry {
+      return createPluginRegistry([...registryPlugins, plugin]);
+    },
+
+    resolve(context: GuanyaoPluginContext): GuanyaoPluginContext {
+      return registryPlugins.reduce<GuanyaoPluginContext>((nextContext, plugin) => {
+        const resolvedContext = plugin.execute(sanitizePluginContext(nextContext));
+        return sanitizePluginContext(resolvedContext);
+      }, sanitizePluginContext(context));
+    },
+
+    list(): readonly GuanyaoPlugin[] {
+      return registryPlugins;
+    },
+  });
+}
+
+export function executePluginCycle(
+  instance: EngineInstance,
+  intent: RuntimeIntent,
+  registry: PluginRegistry = createPluginRegistry(),
+): EngineInstance {
+  const prePluginContext = registry.resolve(createPluginContext(intent, instance.snapshot));
+  const nextSnapshot = instance.engine.run(instance.snapshot, prePluginContext.intent);
+  const projection = instance.engine.project(nextSnapshot);
+  registry.resolve(
+    Object.freeze({
+      intent: prePluginContext.intent,
+      snapshot: nextSnapshot,
+      projection,
+      metadata: prePluginContext.metadata,
+    }),
+  );
+
+  return injectSnapshot(instance, nextSnapshot);
+}
+
 export const RuntimeOrchestrator = Object.freeze({
   createInstance(initialSnapshot: ExecutionSnapshot): EngineInstance {
     const snapshot = cloneExecutionSnapshot(initialSnapshot);
@@ -533,6 +611,10 @@ export const RuntimeOrchestrator = Object.freeze({
 
   sendIntent(instance: EngineInstance, intent: RuntimeIntent): EngineInstance {
     return injectSnapshot(instance, executeCycle(instance, intent));
+  },
+
+  sendIntentWithPlugins(instance: EngineInstance, intent: RuntimeIntent, registry: PluginRegistry): EngineInstance {
+    return executePluginCycle(instance, intent, registry);
   },
 
   injectSnapshot,
