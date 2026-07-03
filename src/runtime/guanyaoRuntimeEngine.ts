@@ -470,6 +470,24 @@ export type GuanyaoPlugin = Readonly<{
   execute: (context: GuanyaoPluginContext) => GuanyaoPluginContext;
 }>;
 
+export type PluginExecutionPhase = "PRE_INTENT" | "PRE_EXECUTION" | "POST_EXECUTION" | "PROJECTION";
+
+export const PluginExecutionPipeline = Object.freeze([
+  "PRE_INTENT",
+  "INTENT_GOVERNANCE_LAYER",
+  "PRE_EXECUTION",
+  "EXECUTION_KERNEL",
+  "POST_EXECUTION",
+  "PROJECTION",
+] as const);
+
+export const PluginOutputPolicy = Object.freeze({
+  OBSERVE_ONLY: "OBSERVE_ONLY",
+  TRANSFORM_ALLOWED: "PRE_STAGE_ONLY",
+  NO_OVERRIDE: "EXECUTION_RESULT_CANNOT_BE_REPLACED",
+  NO_MUTATION: "SNAPSHOT_IS_IMMUTABLE_BOUNDARY",
+} as const);
+
 export type PluginRegistry = Readonly<{
   register: (plugin: GuanyaoPlugin) => PluginRegistry;
   resolve: (context: GuanyaoPluginContext) => GuanyaoPluginContext;
@@ -558,6 +576,48 @@ function sanitizePluginContext(context: GuanyaoPluginContext): GuanyaoPluginCont
   });
 }
 
+function schedulePlugins(plugins: readonly GuanyaoPlugin[], phase: PluginExecutionPhase): readonly GuanyaoPlugin[] {
+  const phasePluginType: Record<PluginExecutionPhase, GuanyaoPlugin["type"]> = {
+    PRE_INTENT: "intent_middleware",
+    PRE_EXECUTION: "snapshot_transform",
+    POST_EXECUTION: "snapshot_transform",
+    PROJECTION: "projection_extension",
+  };
+
+  return Object.freeze(plugins.filter((plugin) => plugin.type === phasePluginType[phase]));
+}
+
+function runPluginStage(
+  plugins: readonly GuanyaoPlugin[],
+  phase: PluginExecutionPhase,
+  context: GuanyaoPluginContext,
+): GuanyaoPluginContext {
+  return schedulePlugins(plugins, phase).reduce<GuanyaoPluginContext>((nextContext, plugin) => {
+    const resolvedContext = plugin.execute(
+      sanitizePluginContext({
+        ...nextContext,
+        metadata: Object.freeze({
+          ...nextContext.metadata,
+          pluginExecutionPhase: phase,
+        }),
+      }),
+    );
+    return sanitizePluginContext(resolvedContext);
+  }, sanitizePluginContext(context));
+}
+
+function resolvePluginIntentOutput(inputIntent: RuntimeIntent, pluginIntent: RuntimeIntent): RuntimeIntent {
+  if (isRuntimePhaseIntent(inputIntent)) {
+    return inputIntent;
+  }
+
+  if (isRuntimePhaseIntent(pluginIntent)) {
+    return inputIntent;
+  }
+
+  return pluginIntent;
+}
+
 export function createPluginRegistry(plugins: readonly GuanyaoPlugin[] = []): PluginRegistry {
   const registryPlugins = Object.freeze([...plugins]);
 
@@ -567,10 +627,7 @@ export function createPluginRegistry(plugins: readonly GuanyaoPlugin[] = []): Pl
     },
 
     resolve(context: GuanyaoPluginContext): GuanyaoPluginContext {
-      return registryPlugins.reduce<GuanyaoPluginContext>((nextContext, plugin) => {
-        const resolvedContext = plugin.execute(sanitizePluginContext(nextContext));
-        return sanitizePluginContext(resolvedContext);
-      }, sanitizePluginContext(context));
+      return runPluginStage(registryPlugins, "PRE_INTENT", context);
     },
 
     list(): readonly GuanyaoPlugin[] {
@@ -579,24 +636,41 @@ export function createPluginRegistry(plugins: readonly GuanyaoPlugin[] = []): Pl
   });
 }
 
+export function executePipeline(
+  instance: EngineInstance,
+  intent: RuntimeIntent,
+  registry: PluginRegistry = createPluginRegistry(),
+): ExecutionSnapshot {
+  const plugins = registry.list();
+  const preIntentContext = runPluginStage(plugins, "PRE_INTENT", createPluginContext(intent, instance.snapshot));
+  const governedIntent = resolvePluginIntentOutput(intent, preIntentContext.intent);
+  const preExecutionContext = runPluginStage(plugins, "PRE_EXECUTION", {
+    intent: governedIntent,
+    snapshot: instance.snapshot,
+    metadata: preIntentContext.metadata,
+  });
+  const nextSnapshot = instance.engine.run(instance.snapshot, preExecutionContext.intent);
+  const postExecutionContext = runPluginStage(plugins, "POST_EXECUTION", {
+    intent: preExecutionContext.intent,
+    snapshot: nextSnapshot,
+    metadata: preExecutionContext.metadata,
+  });
+  runPluginStage(plugins, "PROJECTION", {
+    intent: postExecutionContext.intent,
+    snapshot: nextSnapshot,
+    projection: instance.engine.project(nextSnapshot),
+    metadata: postExecutionContext.metadata,
+  });
+
+  return nextSnapshot;
+}
+
 export function executePluginCycle(
   instance: EngineInstance,
   intent: RuntimeIntent,
   registry: PluginRegistry = createPluginRegistry(),
 ): EngineInstance {
-  const prePluginContext = registry.resolve(createPluginContext(intent, instance.snapshot));
-  const nextSnapshot = instance.engine.run(instance.snapshot, prePluginContext.intent);
-  const projection = instance.engine.project(nextSnapshot);
-  registry.resolve(
-    Object.freeze({
-      intent: prePluginContext.intent,
-      snapshot: nextSnapshot,
-      projection,
-      metadata: prePluginContext.metadata,
-    }),
-  );
-
-  return injectSnapshot(instance, nextSnapshot);
+  return injectSnapshot(instance, executePipeline(instance, intent, registry));
 }
 
 export const RuntimeOrchestrator = Object.freeze({
