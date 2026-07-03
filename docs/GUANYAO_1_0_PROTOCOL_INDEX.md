@@ -96,6 +96,9 @@ The current GUANYAO 1.0 main chain is locked as:
 - [GUANYAO_1_0_OFFICIAL_ASSET_GENERATION_PROTOCOL.md](./GUANYAO_1_0_OFFICIAL_ASSET_GENERATION_PROTOCOL.md)  
   P0 official asset generation candidate protocol. Defines how `finalAssetCandidate(FINAL_ASSET_CANDIDATE)` enters `officialAssetGenerationCandidate(OFFICIAL_ASSET_GENERATION_CANDIDATE)`, while this stage still does not output a formal asset card object and does not connect UI, route, or commercialization.
 
+- [GUANYAO_1_0_OFFICIAL_ASSET_OBJECT_PROTOCOL.md](./GUANYAO_1_0_OFFICIAL_ASSET_OBJECT_PROTOCOL.md)  
+  P0 official asset object protocol. Defines how `officialAssetGenerationCandidate(OFFICIAL_ASSET_GENERATION_CANDIDATE)` enters `officialAssetObject(OFFICIAL_ASSET_OBJECT)`. OFFICIAL_ASSET_OBJECT is the official asset data layer, but it is still not UI and does not connect route, legacy `/hexagram-stamp`, collection, payment, unlock, or commercialization.
+
 - [R8_ENGINE_HEXAGRAM_FORMATION.md](./R8_ENGINE_HEXAGRAM_FORMATION.md)  
   Hexagram formation protocol. Defines how final hexagram assets should be treated as generated output.
 
@@ -200,22 +203,24 @@ selectedPressureSeedContext
 → assetRenderCandidate(ASSET_RENDER_CANDIDATE)
 → resolveFinalAssetCandidate()
 → finalAssetCandidate(FINAL_ASSET_CANDIDATE)
+→ resolveOfficialAssetGenerationCandidate()
+→ officialAssetGenerationCandidate(OFFICIAL_ASSET_GENERATION_CANDIDATE)
 ```
 
 Current P0 asset-chain next code direction is locked as:
 
 ```text
-→ finalAssetCandidate(FINAL_ASSET_CANDIDATE)
-→ resolveOfficialAssetGenerationCandidate()
 → officialAssetGenerationCandidate(OFFICIAL_ASSET_GENERATION_CANDIDATE)
+→ resolveOfficialAssetObject()
+→ officialAssetObject(OFFICIAL_ASSET_OBJECT)
 ```
 
-This next step must use [GUANYAO_1_0_OFFICIAL_ASSET_GENERATION_PROTOCOL.md](./GUANYAO_1_0_OFFICIAL_ASSET_GENERATION_PROTOCOL.md) as its construction basis.
+This next step must use [GUANYAO_1_0_OFFICIAL_ASSET_OBJECT_PROTOCOL.md](./GUANYAO_1_0_OFFICIAL_ASSET_OBJECT_PROTOCOL.md) as its construction basis.
 
 It may only output:
 
 ```text
-officialAssetGenerationCandidate(OFFICIAL_ASSET_GENERATION_CANDIDATE)
+officialAssetObject(OFFICIAL_ASSET_OBJECT)
 ```
 
 It must not generate the formal 64-hexagram card.
@@ -239,6 +244,8 @@ For P0 asset-chain work, explicitly forbidden:
 - Do not add collection, payment, or unlock fields.
 - Do not output fortune or misfortune judgments.
 - Do not output punitive expressions such as failure, unfinished shame, or insufficient energy.
+- OFFICIAL_ASSET_OBJECT may form `assetSource`, `forceIdentity`, and `assetNarrative`, but it must not connect rendering, route, or commercial payloads.
+- If formal `hexagramCode`, `hexagramName`, or `cardName` fields are required, first add `GUANYAO_1_0_HEXAGRAM_IDENTITY_ASSIGNMENT_PROTOCOL.md`.
 
 ### P1 | Content Chain Completion
 
