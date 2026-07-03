@@ -84,6 +84,9 @@ The current GUANYAO 1.0 main chain is locked as:
 - [GUANYAO_1_0_ASSET_SHELL_PROTOCOL.md](./GUANYAO_1_0_ASSET_SHELL_PROTOCOL.md)  
   P0 asset shell protocol. Defines how `forceTranslationCandidate(FORCE_TRANSLATION)` enters `assetShellCandidate(ASSET_SHELL)`, while keeping ASSET_SHELL outside the formal 64-hexagram asset card layer and forbidding formal `hexagramCode`, `hexagramName`, `cardName`, UI, route, or commercialization output.
 
+- [GUANYAO_1_0_CARD_BLUEPRINT_PROTOCOL.md](./GUANYAO_1_0_CARD_BLUEPRINT_PROTOCOL.md)  
+  P0 card blueprint protocol. Defines how `assetShellCandidate(ASSET_SHELL)` enters `cardBlueprintCandidate(CARD_BLUEPRINT)`, while keeping CARD_BLUEPRINT outside the formal 64-hexagram asset card layer and forbidding formal `hexagramCode`, `hexagramName`, `cardName`, formal card face, UI, route, or commercialization output.
+
 - [R8_ENGINE_HEXAGRAM_FORMATION.md](./R8_ENGINE_HEXAGRAM_FORMATION.md)  
   Hexagram formation protocol. Defines how final hexagram assets should be treated as generated output.
 
@@ -180,22 +183,24 @@ selectedPressureSeedContext
 → hexagramAssetMappingCandidate(MAPPING)
 → resolveForceTranslationCandidate()
 → forceTranslationCandidate(FORCE_TRANSLATION)
+→ resolveAssetShellCandidate()
+→ assetShellCandidate(ASSET_SHELL)
 ```
 
 Current P0 asset-chain next code direction is locked as:
 
 ```text
-→ forceTranslationCandidate(FORCE_TRANSLATION)
-→ resolveAssetShellCandidate()
 → assetShellCandidate(ASSET_SHELL)
+→ resolveCardBlueprintCandidate()
+→ cardBlueprintCandidate(CARD_BLUEPRINT)
 ```
 
-This next step must use [GUANYAO_1_0_ASSET_SHELL_PROTOCOL.md](./GUANYAO_1_0_ASSET_SHELL_PROTOCOL.md) as its construction basis.
+This next step must use [GUANYAO_1_0_CARD_BLUEPRINT_PROTOCOL.md](./GUANYAO_1_0_CARD_BLUEPRINT_PROTOCOL.md) as its construction basis.
 
 It may only output:
 
 ```text
-assetShellCandidate(ASSET_SHELL)
+cardBlueprintCandidate(CARD_BLUEPRINT)
 ```
 
 It must not generate the formal 64-hexagram card.
@@ -209,6 +214,7 @@ For P0 asset-chain work, explicitly forbidden:
 - Do not output formal `hexagramCode`.
 - Do not output formal `hexagramName`.
 - Do not output formal `cardName`.
+- Do not output a formal card face.
 - Do not connect UI.
 - Do not add routes.
 - Do not add commercialization.
