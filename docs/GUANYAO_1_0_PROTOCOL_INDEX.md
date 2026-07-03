@@ -78,6 +78,9 @@ The current GUANYAO 1.0 main chain is locked as:
 - [GUANYAO_1_0_HEXAGRAM_ASSET_MAPPING_PROTOCOL.md](./GUANYAO_1_0_HEXAGRAM_ASSET_MAPPING_PROTOCOL.md)  
   P0 hexagram asset mapping protocol. Defines how `hexagramAssetDraftCandidate(DRAFT)` enters `hexagramAssetMappingCandidate(MAPPING)`, while keeping MAPPING outside the formal 64-hexagram asset card layer and forbidding formal `hexagramCode`, `hexagramName`, or `cardName` output.
 
+- [GUANYAO_1_0_FORCE_TRANSLATION_PROTOCOL.md](./GUANYAO_1_0_FORCE_TRANSLATION_PROTOCOL.md)  
+  P0 force translation protocol. Defines how `hexagramAssetMappingCandidate(MAPPING)` enters `forceTranslationCandidate(FORCE_TRANSLATION)`, while keeping FORCE_TRANSLATION outside the formal 64-hexagram asset card layer and forbidding formal `hexagramCode`, `hexagramName`, or `cardName` output.
+
 - [R8_ENGINE_HEXAGRAM_FORMATION.md](./R8_ENGINE_HEXAGRAM_FORMATION.md)  
   Hexagram formation protocol. Defines how final hexagram assets should be treated as generated output.
 
@@ -170,22 +173,24 @@ selectedPressureSeedContext
 → hexagramAssetCandidate(PENDING)
 → resolveHexagramAssetDraftCandidate()
 → hexagramAssetDraftCandidate(DRAFT)
+→ resolveHexagramAssetMappingCandidate()
+→ hexagramAssetMappingCandidate(MAPPING)
 ```
 
 Current P0 asset-chain next code direction is locked as:
 
 ```text
-hexagramAssetDraftCandidate(DRAFT)
-→ resolveHexagramAssetMappingCandidate()
 → hexagramAssetMappingCandidate(MAPPING)
+→ resolveForceTranslationCandidate()
+→ forceTranslationCandidate(FORCE_TRANSLATION)
 ```
 
-This next step must use [GUANYAO_1_0_HEXAGRAM_ASSET_MAPPING_PROTOCOL.md](./GUANYAO_1_0_HEXAGRAM_ASSET_MAPPING_PROTOCOL.md) as its construction basis.
+This next step must use [GUANYAO_1_0_FORCE_TRANSLATION_PROTOCOL.md](./GUANYAO_1_0_FORCE_TRANSLATION_PROTOCOL.md) as its construction basis.
 
 It may only output:
 
 ```text
-hexagramAssetMappingCandidate(MAPPING)
+forceTranslationCandidate(FORCE_TRANSLATION)
 ```
 
 It must not generate the formal 64-hexagram card.
@@ -202,6 +207,7 @@ For P0 asset-chain work, explicitly forbidden:
 - Do not add commercialization.
 - Do not add collection, payment, or unlock fields.
 - Do not output fortune or misfortune judgments.
+- Do not output punitive expressions such as failure, unfinished shame, or insufficient energy.
 
 ### P1 | Content Chain Completion
 
