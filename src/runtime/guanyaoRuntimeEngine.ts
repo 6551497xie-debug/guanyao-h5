@@ -7,9 +7,7 @@ import {
 import {
   ALLOWED_COMMANDS,
   ALLOWED_INTENTS,
-  createRawSpatialIntent,
   deriveInteractionGraph,
-  intentEngine,
   isAllowedCommand,
   isAllowedIntent,
   resolveGovernedExecutionCommand,
@@ -21,7 +19,6 @@ import {
   resolveCosmicNarrativePhase,
   resolveSixDimensionStep,
   resolveSnapshotPrimarySpaceId,
-  sceneGraph,
 } from "./sceneGraph";
 import type {
   CoherenceReport,
@@ -31,40 +28,23 @@ import type {
   GraphCoherenceContract,
   InteractionGraph,
   NodeTimingTraceEntry,
-  RawSpatialIntent,
   RuntimeProjection,
+  RuntimeIntent,
   SceneGraph,
-  SpatialIntent,
   SystemIntegrityCheck,
 } from "./guanyaoRuntimeTypes";
+import { sixSpaceConfigs } from "./guanyaoRuntimeTypes";
 
 export type {
-  CoherenceReport,
   CosmicNarrativePhase,
-  DriftType,
-  ExecutionCommand,
-  ExecutionKernel,
   ExecutionSnapshot,
-  GraphAlignmentMap,
-  GraphCoherenceContract,
-  InteractionGraph,
-  RawSpatialIntent,
+  RuntimeIntent,
   RuntimeProjection,
-  SceneGraph,
   SixSpaceConfig,
   SixSpaceId,
   SpatialIntent,
   SpatialIntentType,
-  SystemIntegrityCheck,
 } from "./guanyaoRuntimeTypes";
-export { createRawSpatialIntent };
-export { sixSpaceConfigs } from "./guanyaoRuntimeTypes";
-export {
-  buildCosmicStateFromExecutionSnapshot,
-  resolveCosmicNarrativePhase,
-  resolveSixDimensionStep,
-  resolveSnapshotPrimarySpaceId,
-} from "./sceneGraph";
 
 function clampRuntimeValue(value: number) {
   return Math.min(1, Math.max(0, value));
@@ -417,23 +397,17 @@ function createSystemIntegrityCheck(report: CoherenceReport): SystemIntegrityChe
 
 function projectExecutionSnapshot(snapshot: ExecutionSnapshot): RuntimeProjection {
   const currentPrimarySpaceId = resolveSnapshotPrimarySpaceId(snapshot.primaryDimension);
-  const graphContract = createGraphCoherenceContract(snapshot);
-  const coherenceReport = validateGraphCoherence(
-    graphContract.executionSnapshot,
-    graphContract.sceneGraph,
-    graphContract.interactionGraph,
-  );
 
   return {
+    sixSpaceConfigs,
     currentPrimarySpaceId,
     sixDimensionStep: resolveSixDimensionStep(currentPrimarySpaceId),
     selectedPressureSeedSurface: snapshot.seed.text,
     cosmicSixDimensionState: buildCosmicStateFromExecutionSnapshot(snapshot),
     cosmicNodeStep: snapshot.node.completed.length,
     cosmicNarrativePhase: resolveCosmicNarrativePhase(snapshot.runtime.uiPhase),
-    sceneGraph: graphContract.sceneGraph,
-    interactionGraph: graphContract.interactionGraph,
-    systemIntegrityCheck: createSystemIntegrityCheck(coherenceReport),
+    pressureSeedContext: buildPressureSeedContextFromExecutionSnapshot(snapshot),
+    starbeastFeedback: buildStarbeastFeedbackFromExecutionSnapshot(snapshot),
   };
 }
 
@@ -443,30 +417,30 @@ const executionKernel: ExecutionKernel = Object.freeze({
   project: projectExecutionSnapshot,
 });
 
-function run(snapshot: ExecutionSnapshot, intent: RawSpatialIntent): ExecutionSnapshot {
+function isRuntimePhaseIntent(intent: RuntimeIntent): intent is Extract<RuntimeIntent, { type: "SET_ENGINE_PHASE" | "SET_UI_PHASE" }> {
+  return intent.type === "SET_ENGINE_PHASE" || intent.type === "SET_UI_PHASE";
+}
+
+function run(snapshot: ExecutionSnapshot, intent: RuntimeIntent): ExecutionSnapshot {
+  if (isRuntimePhaseIntent(intent)) {
+    if (intent.type === "SET_ENGINE_PHASE") return setExecutionEnginePhase(snapshot, intent.payload.enginePhase);
+    return setExecutionUiPhase(snapshot, intent.payload.uiPhase);
+  }
+
   return executionKernel.resolve(resolveGovernedExecutionCommand(intent, snapshot), snapshot);
 }
 
 function validate(snapshot: ExecutionSnapshot): SystemIntegrityCheck {
-  return projectExecutionSnapshot(snapshot).systemIntegrityCheck;
+  const graphContract = createGraphCoherenceContract(snapshot);
+  return createSystemIntegrityCheck(
+    validateGraphCoherence(graphContract.executionSnapshot, graphContract.sceneGraph, graphContract.interactionGraph),
+  );
 }
 
 export const GuanyaoRuntimeEngine = Object.freeze({
-  executionKernel,
-  sceneGraph,
-  interactionGraph: deriveInteractionGraph,
-  intentEngine,
-  coherenceValidator: validateGraphCoherence,
   createSnapshot: createExecutionSnapshot,
-  setEnginePhase: setExecutionEnginePhase,
-  setUiPhase: setExecutionUiPhase,
   run,
   advance: advanceExecutionNode,
   project: projectExecutionSnapshot,
   validate,
-  createRawSpatialIntent,
-  buildPressureSeedContext: buildPressureSeedContextFromExecutionSnapshot,
-  buildStarbeastFeedback: buildStarbeastFeedbackFromExecutionSnapshot,
-  resolvePrimarySpaceId: resolveSnapshotPrimarySpaceId,
-  resolveNarrativePhase: resolveCosmicNarrativePhase,
 });

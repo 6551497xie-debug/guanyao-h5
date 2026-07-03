@@ -20,7 +20,6 @@ import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetC
 import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
 import {
   GuanyaoRuntimeEngine,
-  sixSpaceConfigs,
   type ExecutionSnapshot,
   type SixSpaceConfig,
   type SixSpaceId,
@@ -1065,12 +1064,15 @@ function HexagramCodeDeliveryShell() {
   );
   const runtimeProjection = GuanyaoRuntimeEngine.project(executionSnapshot);
   const {
+    sixSpaceConfigs,
     currentPrimarySpaceId,
     sixDimensionStep,
     selectedPressureSeedSurface,
     cosmicSixDimensionState,
     cosmicNodeStep,
     cosmicNarrativePhase,
+    pressureSeedContext,
+    starbeastFeedback,
   } = runtimeProjection;
   const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
     pressureSeed: selectedPressureSeedSurface,
@@ -1092,7 +1094,7 @@ function HexagramCodeDeliveryShell() {
   const starbeastFeedbackComplete = executionSnapshot.runtime.enginePhase === "COMPLETE" && visiblePetalStates[currentPrimarySpaceId] === "blooming";
   const hexagramAssetCandidate = resolveHexagramAssetCandidate({
     personaSnapshot: personaOutputSnapshot,
-    selectedPressureSeedContext: GuanyaoRuntimeEngine.buildPressureSeedContext(executionSnapshot),
+    selectedPressureSeedContext: pressureSeedContext,
     currentPrimarySpaceId,
     completedNodeCount: cosmicNodeStep,
     starbeastFeedbackComplete,
@@ -1100,8 +1102,7 @@ function HexagramCodeDeliveryShell() {
   });
 
   function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
-    const rawIntent = GuanyaoRuntimeEngine.createRawSpatialIntent(eventType, context);
-    setExecutionSnapshot((current) => GuanyaoRuntimeEngine.run(current, rawIntent));
+    setExecutionSnapshot((current) => GuanyaoRuntimeEngine.run(current, { type: eventType, payload: context }));
   }
 
   function bloomCosmicNode() {
@@ -1117,14 +1118,18 @@ function HexagramCodeDeliveryShell() {
     const seedTimer = window.setTimeout(() => {
       setExecutionSnapshot((current) => {
         const nextEngine =
-          current.runtime.enginePhase === "INIT" ? GuanyaoRuntimeEngine.setEnginePhase(current, "SEED_ACTIVE") : current;
-        return current.runtime.uiPhase === "INIT" ? GuanyaoRuntimeEngine.setUiPhase(nextEngine, "SEED_ACTIVE") : nextEngine;
+          current.runtime.enginePhase === "INIT"
+            ? GuanyaoRuntimeEngine.run(current, { type: "SET_ENGINE_PHASE", payload: { enginePhase: "SEED_ACTIVE" } })
+            : current;
+        return current.runtime.uiPhase === "INIT"
+          ? GuanyaoRuntimeEngine.run(nextEngine, { type: "SET_UI_PHASE", payload: { uiPhase: "SEED_ACTIVE" } })
+          : nextEngine;
       });
     }, 950);
     const beastTimer = window.setTimeout(() => {
       setExecutionSnapshot((current) =>
         current.runtime.uiPhase === "SEED_ACTIVE" || current.runtime.uiPhase === "INIT"
-          ? GuanyaoRuntimeEngine.setUiPhase(current, "DIMENSION_LOCKED")
+          ? GuanyaoRuntimeEngine.run(current, { type: "SET_UI_PHASE", payload: { uiPhase: "DIMENSION_LOCKED" } })
           : current,
       );
     }, 2400);
@@ -1132,10 +1137,10 @@ function HexagramCodeDeliveryShell() {
       setExecutionSnapshot((current) => {
         const nextEngine =
           current.runtime.enginePhase === "SEED_ACTIVE" || current.runtime.enginePhase === "INIT"
-            ? GuanyaoRuntimeEngine.setEnginePhase(current, "NODE_RUNNING")
+            ? GuanyaoRuntimeEngine.run(current, { type: "SET_ENGINE_PHASE", payload: { enginePhase: "NODE_RUNNING" } })
             : current;
         return current.runtime.uiPhase === "DIMENSION_LOCKED" || current.runtime.uiPhase === "SEED_ACTIVE" || current.runtime.uiPhase === "INIT"
-          ? GuanyaoRuntimeEngine.setUiPhase(nextEngine, "NODE_RUNNING")
+          ? GuanyaoRuntimeEngine.run(nextEngine, { type: "SET_UI_PHASE", payload: { uiPhase: "NODE_RUNNING" } })
           : nextEngine;
       });
     }, 3600);
@@ -1224,7 +1229,7 @@ function HexagramCodeDeliveryShell() {
             pressureSeedSurface={selectedPressureSeedSurface}
             petalStates={visiblePetalStates}
             pollenBursts={cosmicPollenBursts}
-            starbeast={GuanyaoRuntimeEngine.buildStarbeastFeedback(executionSnapshot)}
+            starbeast={starbeastFeedback}
             starFlowerForm={cosmicBotanicsRuntime.starFlower.form}
             starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
             hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}

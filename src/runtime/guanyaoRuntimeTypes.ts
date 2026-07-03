@@ -64,6 +64,7 @@ export const sixSpaceConfigs: SixSpaceConfig[] = [
 export type CosmicNarrativePhase = "field_intro" | "seed_visible" | "beast_guide" | "node_active" | "node_complete";
 
 export type RuntimeProjection = {
+  sixSpaceConfigs: SixSpaceConfig[];
   currentPrimarySpaceId: SixSpaceId;
   sixDimensionStep: number;
   selectedPressureSeedSurface: string;
@@ -72,9 +73,6 @@ export type RuntimeProjection = {
   cosmicNarrativePhase: CosmicNarrativePhase;
   pressureSeedContext: SelectedPressureSeedContext;
   starbeastFeedback: StarbeastFeedback;
-  sceneGraph: SceneGraph;
-  interactionGraph: InteractionGraph;
-  systemIntegrityCheck: SystemIntegrityCheck;
 };
 
 export type SpatialIntentType = "CORE_STAR_BLOOM" | "NODE_ADVANCE_REQUEST" | "DIMENSION_FOCUS_REQUEST";
