@@ -437,6 +437,9 @@ function validate(snapshot: ExecutionSnapshot): SystemIntegrityCheck {
   );
 }
 
+export const GUANYAO_RUNTIME_ENGINE_PACKAGE = "@guanyao/runtime-engine" as const;
+export const GUANYAO_RUNTIME_ENGINE_VERSION = "1.0.0" as const;
+
 export const GuanyaoRuntimeEngine = Object.freeze({
   createSnapshot: createExecutionSnapshot,
   run,
@@ -444,3 +447,107 @@ export const GuanyaoRuntimeEngine = Object.freeze({
   project: projectExecutionSnapshot,
   validate,
 });
+
+export type GuanyaoRuntimeEnginePublicApi = typeof GuanyaoRuntimeEngine;
+
+export type EngineInstance = Readonly<{
+  id: string;
+  engine: GuanyaoRuntimeEnginePublicApi;
+  snapshot: ExecutionSnapshot;
+}>;
+
+function cloneExecutionSnapshot(snapshot: ExecutionSnapshot): ExecutionSnapshot {
+  return {
+    seed: {
+      ...snapshot.seed,
+    },
+    primaryDimension: snapshot.primaryDimension,
+    beast: {
+      ...snapshot.beast,
+    },
+    node: {
+      ...snapshot.node,
+      completed: [...snapshot.node.completed],
+    },
+    runtime: {
+      ...snapshot.runtime,
+    },
+  };
+}
+
+function hashRuntimeString(input: string) {
+  let hash = 2166136261;
+
+  for (let index = 0; index < input.length; index += 1) {
+    hash ^= input.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return Math.abs(hash >>> 0);
+}
+
+function stableSnapshotKey(snapshot: ExecutionSnapshot) {
+  return [
+    snapshot.seed.id,
+    snapshot.seed.text,
+    snapshot.seed.category ?? "",
+    snapshot.seed.intensity ?? "",
+    snapshot.primaryDimension,
+    snapshot.beast.active ? "1" : "0",
+    snapshot.beast.resonance,
+    snapshot.beast.tone,
+    snapshot.node.current,
+    snapshot.node.completed.join(","),
+    snapshot.node.locked ? "1" : "0",
+    snapshot.runtime.isReady ? "1" : "0",
+    snapshot.runtime.enginePhase,
+    snapshot.runtime.uiPhase,
+  ].join("|");
+}
+
+function deriveEngineInstanceId(snapshot: ExecutionSnapshot) {
+  return `gy-runtime-${hashRuntimeString(stableSnapshotKey(snapshot)).toString(36)}`;
+}
+
+export function injectSnapshot(instance: EngineInstance, snapshot: ExecutionSnapshot): EngineInstance {
+  return Object.freeze({
+    id: instance.id,
+    engine: instance.engine,
+    snapshot: cloneExecutionSnapshot(snapshot),
+  });
+}
+
+function executeCycle(instance: EngineInstance, intent: RuntimeIntent): ExecutionSnapshot {
+  return instance.engine.run(instance.snapshot, intent);
+}
+
+export const RuntimeOrchestrator = Object.freeze({
+  createInstance(initialSnapshot: ExecutionSnapshot): EngineInstance {
+    const snapshot = cloneExecutionSnapshot(initialSnapshot);
+    return Object.freeze({
+      id: deriveEngineInstanceId(snapshot),
+      engine: GuanyaoRuntimeEngine,
+      snapshot,
+    });
+  },
+
+  sendIntent(instance: EngineInstance, intent: RuntimeIntent): EngineInstance {
+    return injectSnapshot(instance, executeCycle(instance, intent));
+  },
+
+  injectSnapshot,
+
+  getSnapshot(instance: EngineInstance): ExecutionSnapshot {
+    return cloneExecutionSnapshot(instance.snapshot);
+  },
+
+  destroyInstance(_instance: EngineInstance): null {
+    return null;
+  },
+});
+
+export type RuntimeOrchestratorApi = typeof RuntimeOrchestrator;
+
+export function createRuntimeEngine(): RuntimeOrchestratorApi {
+  return RuntimeOrchestrator;
+}
