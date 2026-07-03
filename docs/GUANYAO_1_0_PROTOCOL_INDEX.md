@@ -81,6 +81,9 @@ The current GUANYAO 1.0 main chain is locked as:
 - [GUANYAO_1_0_FORCE_TRANSLATION_PROTOCOL.md](./GUANYAO_1_0_FORCE_TRANSLATION_PROTOCOL.md)  
   P0 force translation protocol. Defines how `hexagramAssetMappingCandidate(MAPPING)` enters `forceTranslationCandidate(FORCE_TRANSLATION)`, while keeping FORCE_TRANSLATION outside the formal 64-hexagram asset card layer and forbidding formal `hexagramCode`, `hexagramName`, or `cardName` output.
 
+- [GUANYAO_1_0_ASSET_SHELL_PROTOCOL.md](./GUANYAO_1_0_ASSET_SHELL_PROTOCOL.md)  
+  P0 asset shell protocol. Defines how `forceTranslationCandidate(FORCE_TRANSLATION)` enters `assetShellCandidate(ASSET_SHELL)`, while keeping ASSET_SHELL outside the formal 64-hexagram asset card layer and forbidding formal `hexagramCode`, `hexagramName`, `cardName`, UI, route, or commercialization output.
+
 - [R8_ENGINE_HEXAGRAM_FORMATION.md](./R8_ENGINE_HEXAGRAM_FORMATION.md)  
   Hexagram formation protocol. Defines how final hexagram assets should be treated as generated output.
 
@@ -175,22 +178,24 @@ selectedPressureSeedContext
 → hexagramAssetDraftCandidate(DRAFT)
 → resolveHexagramAssetMappingCandidate()
 → hexagramAssetMappingCandidate(MAPPING)
+→ resolveForceTranslationCandidate()
+→ forceTranslationCandidate(FORCE_TRANSLATION)
 ```
 
 Current P0 asset-chain next code direction is locked as:
 
 ```text
-→ hexagramAssetMappingCandidate(MAPPING)
-→ resolveForceTranslationCandidate()
 → forceTranslationCandidate(FORCE_TRANSLATION)
+→ resolveAssetShellCandidate()
+→ assetShellCandidate(ASSET_SHELL)
 ```
 
-This next step must use [GUANYAO_1_0_FORCE_TRANSLATION_PROTOCOL.md](./GUANYAO_1_0_FORCE_TRANSLATION_PROTOCOL.md) as its construction basis.
+This next step must use [GUANYAO_1_0_ASSET_SHELL_PROTOCOL.md](./GUANYAO_1_0_ASSET_SHELL_PROTOCOL.md) as its construction basis.
 
 It may only output:
 
 ```text
-forceTranslationCandidate(FORCE_TRANSLATION)
+assetShellCandidate(ASSET_SHELL)
 ```
 
 It must not generate the formal 64-hexagram card.
@@ -204,6 +209,8 @@ For P0 asset-chain work, explicitly forbidden:
 - Do not output formal `hexagramCode`.
 - Do not output formal `hexagramName`.
 - Do not output formal `cardName`.
+- Do not connect UI.
+- Do not add routes.
 - Do not add commercialization.
 - Do not add collection, payment, or unlock fields.
 - Do not output fortune or misfortune judgments.
