@@ -75,6 +75,9 @@ The current GUANYAO 1.0 main chain is locked as:
 - [GUANYAO_1_0_HEXAGRAM_DRAFT_CANDIDATE_PROTOCOL.md](./GUANYAO_1_0_HEXAGRAM_DRAFT_CANDIDATE_PROTOCOL.md)  
   P0 hexagram asset draft candidate protocol. Defines the position and forbidden boundaries of `hexagramAssetDraftCandidate(DRAFT)`, and locks the missing layers before a formal 64-hexagram card: asset mapping protocol, force translation language, and new asset card shell.
 
+- [GUANYAO_1_0_HEXAGRAM_ASSET_MAPPING_PROTOCOL.md](./GUANYAO_1_0_HEXAGRAM_ASSET_MAPPING_PROTOCOL.md)  
+  P0 hexagram asset mapping protocol. Defines how `hexagramAssetDraftCandidate(DRAFT)` enters `hexagramAssetMappingCandidate(MAPPING)`, while keeping MAPPING outside the formal 64-hexagram asset card layer and forbidding formal `hexagramCode`, `hexagramName`, or `cardName` output.
+
 - [R8_ENGINE_HEXAGRAM_FORMATION.md](./R8_ENGINE_HEXAGRAM_FORMATION.md)  
   Hexagram formation protocol. Defines how final hexagram assets should be treated as generated output.
 
@@ -169,20 +172,23 @@ selectedPressureSeedContext
 → hexagramAssetDraftCandidate(DRAFT)
 ```
 
-Current P0 asset-chain next protocol step is locked as:
-
-```text
-GUANYAO_1_0_HEXAGRAM_ASSET_MAPPING_PROTOCOL.md
-```
-
-It may only define:
+Current P0 asset-chain next code direction is locked as:
 
 ```text
 hexagramAssetDraftCandidate(DRAFT)
-→ hexagramAssetMappingCandidate
+→ resolveHexagramAssetMappingCandidate()
+→ hexagramAssetMappingCandidate(MAPPING)
 ```
 
-This next step must use [GUANYAO_1_0_HEXAGRAM_DRAFT_CANDIDATE_PROTOCOL.md](./GUANYAO_1_0_HEXAGRAM_DRAFT_CANDIDATE_PROTOCOL.md) as its construction basis. It may only define the asset mapping protocol and must not generate the formal card.
+This next step must use [GUANYAO_1_0_HEXAGRAM_ASSET_MAPPING_PROTOCOL.md](./GUANYAO_1_0_HEXAGRAM_ASSET_MAPPING_PROTOCOL.md) as its construction basis.
+
+It may only output:
+
+```text
+hexagramAssetMappingCandidate(MAPPING)
+```
+
+It must not generate the formal 64-hexagram card.
 
 For P0 asset-chain work, explicitly forbidden:
 
@@ -190,7 +196,11 @@ For P0 asset-chain work, explicitly forbidden:
 - Do not revive the old annular asset flow.
 - Do not revive the old instrument/weapon card system.
 - Do not directly generate the formal 64-hexagram card.
+- Do not output formal `hexagramCode`.
+- Do not output formal `hexagramName`.
+- Do not output formal `cardName`.
 - Do not add commercialization.
+- Do not add collection, payment, or unlock fields.
 - Do not output fortune or misfortune judgments.
 
 ### P1 | Content Chain Completion
