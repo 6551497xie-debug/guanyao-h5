@@ -11,20 +11,21 @@ import {
 } from "../expression/guanyaoLanguageSystem";
 import {
   runCosmicBotanicsRuntimeEngine,
-  type CosmicBotanicsSixDimensionState,
   type CosmicPetalState,
   type StarbeastFeedback,
   type StarFlowerForm,
   type StarFlowerGrowthState,
 } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
+import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
 import {
-  derivePrimaryPetal,
-  toProtocolPrimaryPetal,
-  type PrimaryPetalId,
-  type PrimaryPetalProtocolDimension,
-  type SelectedPressureSeedContext,
-} from "../services/guanyaoPrimaryPetalResolver";
+  GuanyaoRuntimeEngine,
+  sixSpaceConfigs,
+  type ExecutionSnapshot,
+  type SixSpaceConfig,
+  type SixSpaceId,
+  type SpatialIntent,
+} from "../runtime/guanyaoRuntimeEngine";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
 
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
@@ -62,127 +63,6 @@ const DEV_PRIMARY_PETAL_FIXTURES: Record<string, SelectedPressureSeedContext> = 
   },
 };
 
-type SixSpaceId = PrimaryPetalId;
-type ExecutionSnapshot = {
-  seed: {
-    id: string;
-    text: string;
-    category?: string;
-    intensity?: number;
-  };
-
-  primaryDimension: PrimaryPetalProtocolDimension;
-
-  beast: {
-    active: boolean;
-    resonance: number;
-    tone: "calm" | "strain" | "charge" | "sovereign";
-  };
-
-  node: {
-    current: 1 | 2 | 3 | 4 | 5 | 6;
-    completed: number[];
-    locked: boolean;
-  };
-
-  runtime: {
-    isReady: boolean;
-    enginePhase: "INIT" | "SEED_ACTIVE" | "NODE_RUNNING" | "COMPLETE";
-    uiPhase: "INIT" | "SEED_ACTIVE" | "DIMENSION_LOCKED" | "NODE_RUNNING" | "COMPLETE";
-  };
-};
-
-/**
- * ============================
- * EXECUTION INVARIANT LOCK
- * ============================
- *
- * enginePhase = ONLY logic layer (node / beast / seed)
- * uiPhase     = ONLY render layer (CosmicBotanicsField)
- *
- * DO NOT CROSS BOUNDARIES
- */
-const assertExecutionInvariant = (snapshot: ExecutionSnapshot) => {
-  // UI must never directly influence engine
-  if ((snapshot as ExecutionSnapshot & { __uiAffectsEnginePhase?: unknown }).__uiAffectsEnginePhase) {
-    throw new Error("Invariant violation: UI touched enginePhase");
-  }
-
-  // Engine must never directly drive UI logic
-  if ((snapshot as ExecutionSnapshot & { __engineAffectsUiPhaseLogic?: unknown }).__engineAffectsUiPhaseLogic) {
-    throw new Error("Invariant violation: engine touched uiPhase logic");
-  }
-};
-
-type NodeTimingTraceEntry = {
-  node: number;
-  timestamp: number;
-  deltaFromPreviousNode: number;
-};
-
-function getExecutionTrace(snapshot: Pick<ExecutionSnapshot, "node">): NodeTimingTraceEntry[] {
-  return snapshot.node.completed
-    .filter((node): node is 1 | 2 | 3 | 4 | 5 | 6 => node >= 1 && node <= 6)
-    .sort((a, b) => a - b)
-    .map((node, index) => ({
-      node,
-      timestamp: index + 1,
-      deltaFromPreviousNode: index === 0 ? 1 : 1,
-    }));
-}
-
-function replayNodeTiming(trace: NodeTimingTraceEntry[]) {
-  const deltas = trace.map((entry) => entry.deltaFromPreviousNode);
-  const avgDelta = deltas.reduce((sum, value) => sum + value, 0) / (deltas.length || 1);
-  const variance = deltas.reduce((sum, value) => sum + Math.pow(value - avgDelta, 2), 0) / (deltas.length || 1);
-
-  return {
-    avgDelta,
-    variance,
-    rhythmProfile: trace.map((entry) => ({
-      node: entry.node,
-      delta: entry.deltaFromPreviousNode,
-    })),
-    stabilityScore: 1 / (1 + variance),
-  };
-}
-
-const logExecutionSnapshot = (snapshot: ExecutionSnapshot, phase: string) => {
-  const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
-  if (!viteEnv?.DEV) return;
-
-  console.log("[ExecutionSnapshot Trace]", {
-    phase,
-    enginePhase: snapshot.runtime.enginePhase,
-    uiPhase: snapshot.runtime.uiPhase,
-    node: snapshot.node.current,
-    beast: snapshot.beast.tone,
-    seed: snapshot.seed.text,
-    nodeTimingTrace: getExecutionTrace(snapshot).slice(-5),
-  });
-  console.log("[Execution Rhythm]", replayNodeTiming(getExecutionTrace(snapshot)));
-};
-
-const logRhythmSmokeTest = (snapshot: ExecutionSnapshot, event: string) => {
-  const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
-  if (!viteEnv?.DEV) return;
-
-  const trace = getExecutionTrace(snapshot);
-  const rhythm = replayNodeTiming(trace);
-  const latestTiming = trace[trace.length - 1];
-
-  console.log("[Rhythm Smoke Test]", {
-    event,
-    node: snapshot.node.current,
-    enginePhase: snapshot.runtime.enginePhase,
-    uiPhase: snapshot.runtime.uiPhase,
-    rhythmScore: rhythm.stabilityScore,
-    beastTone: snapshot.beast.tone,
-    delta: latestTiming?.deltaFromPreviousNode ?? 0,
-    stabilityScore: rhythm.stabilityScore,
-  });
-};
-
 type PersonaStarOrigin = {
   index?: number;
   intensity?: number;
@@ -195,21 +75,6 @@ type PersonaOutputSnapshotView = {
   trigram?: string;
 };
 type RuntimeCoreStar = readonly [number, number, number];
-type SixSpaceConfig = {
-  id: SixSpaceId;
-  no: number;
-  code: string;
-  name: string;
-};
-
-const sixSpaceConfigs: SixSpaceConfig[] = [
-  { id: "body", no: 1, code: "BODY", name: "身体空间" },
-  { id: "emotion", no: 2, code: "EMOTION", name: "情绪空间" },
-  { id: "thought", no: 3, code: "THOUGHT", name: "思维空间" },
-  { id: "action", no: 4, code: "ACTION", name: "行为空间" },
-  { id: "memory", no: 5, code: "MEMORY", name: "记忆空间" },
-  { id: "goal", no: 6, code: "GOAL", name: "目标空间" },
-];
 
 function readJsonFromStorage<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
@@ -245,448 +110,6 @@ function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
   };
 }
 
-function clampRuntimeValue(value: number) {
-  return Math.min(1, Math.max(0, value));
-}
-
-function readPressureSeedIntensity(context: SelectedPressureSeedContext | null, seedText: string) {
-  const rawIntensity = (context as (SelectedPressureSeedContext & { intensity?: unknown }) | null)?.intensity;
-  if (typeof rawIntensity === "number" && Number.isFinite(rawIntensity)) {
-    return clampRuntimeValue(rawIntensity);
-  }
-
-  const normalizedLength = Math.min(1, Math.max(0.18, seedText.trim().length / 72));
-  const disturbanceHint = ["怕", "不敢", "压", "墙", "替代", "撑", "失去", "沉重"].reduce(
-    (sum, keyword) => sum + (seedText.includes(keyword) ? 0.06 : 0),
-    0,
-  );
-
-  return clampRuntimeValue(normalizedLength + disturbanceHint);
-}
-
-function resolveExecutionBeast({
-  enginePhase,
-  node,
-  rhythmScore,
-}: {
-  enginePhase: ExecutionSnapshot["runtime"]["enginePhase"];
-  node: ExecutionSnapshot["node"];
-  rhythmScore: number;
-}): ExecutionSnapshot["beast"] {
-  return {
-    active: true,
-    resonance: clampRuntimeValue(rhythmScore),
-    tone: resolveBeastTone(enginePhase, node, rhythmScore),
-  };
-}
-
-function resolveBeastTone(
-  enginePhase: ExecutionSnapshot["runtime"]["enginePhase"],
-  node: ExecutionSnapshot["node"],
-  rhythmScore: number,
-): ExecutionSnapshot["beast"]["tone"] {
-  if (node.current === 6 || enginePhase === "COMPLETE") return "sovereign";
-  if (rhythmScore < 0.4) return "strain";
-  if (rhythmScore >= 0.4 && rhythmScore < 0.7) return "calm";
-  if (rhythmScore >= 0.7) return "charge";
-
-  return "calm";
-}
-
-function createExecutionSnapshot(context: SelectedPressureSeedContext | null): ExecutionSnapshot {
-  const seedText = context?.surface || "这件事刚刚发生过。";
-  const primaryDimension = toProtocolPrimaryPetal(derivePrimaryPetal(context));
-  const seedIntensity = readPressureSeedIntensity(context, seedText);
-  const currentNode: ExecutionSnapshot["node"]["current"] = 1;
-  const enginePhase: ExecutionSnapshot["runtime"]["enginePhase"] = "INIT";
-  const uiPhase: ExecutionSnapshot["runtime"]["uiPhase"] = "INIT";
-  const node: ExecutionSnapshot["node"] = {
-    current: currentNode,
-    completed: [],
-    locked: false,
-  };
-  const rhythmScore = replayNodeTiming(getExecutionTrace({ node })).stabilityScore;
-
-  const snapshot: ExecutionSnapshot = {
-    seed: {
-      id: context?.selectedPressureSeedId ?? "pressure-seed-runtime-fallback",
-      text: seedText,
-      category: context?.category,
-      intensity: seedIntensity,
-    },
-    primaryDimension,
-    beast: resolveExecutionBeast({
-      enginePhase,
-      node,
-      rhythmScore,
-    }),
-    node,
-    runtime: {
-      isReady: true,
-      enginePhase,
-      uiPhase,
-    },
-  };
-
-  assertExecutionInvariant(snapshot);
-  logExecutionSnapshot(snapshot, "createExecutionSnapshot");
-  return snapshot;
-}
-
-function refreshExecutionSnapshotBeast(snapshot: ExecutionSnapshot): ExecutionSnapshot {
-  const rhythm = replayNodeTiming(getExecutionTrace(snapshot));
-  const rhythmScore = rhythm.stabilityScore;
-  const nextSnapshot: ExecutionSnapshot = {
-    ...snapshot,
-    beast: resolveExecutionBeast({
-      enginePhase: snapshot.runtime.enginePhase,
-      node: snapshot.node,
-      rhythmScore,
-    }),
-  };
-
-  assertExecutionInvariant(nextSnapshot);
-  logExecutionSnapshot(nextSnapshot, "refreshExecutionSnapshotBeast");
-  logRhythmSmokeTest(nextSnapshot, "beastToneUpdate");
-  return nextSnapshot;
-}
-
-function setExecutionEnginePhase(snapshot: ExecutionSnapshot, enginePhase: ExecutionSnapshot["runtime"]["enginePhase"]): ExecutionSnapshot {
-  const nextSnapshot = refreshExecutionSnapshotBeast({
-    ...snapshot,
-    runtime: {
-      ...snapshot.runtime,
-      isReady: enginePhase !== "INIT",
-      enginePhase,
-    },
-  });
-
-  assertExecutionInvariant(nextSnapshot);
-  logExecutionSnapshot(nextSnapshot, "setExecutionEnginePhase");
-  return nextSnapshot;
-}
-
-function setExecutionUiPhase(snapshot: ExecutionSnapshot, uiPhase: ExecutionSnapshot["runtime"]["uiPhase"]): ExecutionSnapshot {
-  const nextSnapshot: ExecutionSnapshot = {
-    ...snapshot,
-    runtime: {
-      ...snapshot.runtime,
-      uiPhase,
-    },
-  };
-
-  assertExecutionInvariant(nextSnapshot);
-  logExecutionSnapshot(nextSnapshot, "setExecutionUiPhase");
-  return nextSnapshot;
-}
-
-function advanceExecutionNode(snapshot: ExecutionSnapshot): ExecutionSnapshot {
-  if (snapshot.node.locked || snapshot.runtime.enginePhase === "COMPLETE") return snapshot;
-
-  const completed = Array.from(new Set([...snapshot.node.completed, snapshot.node.current])).sort((a, b) => a - b);
-  const isComplete = completed.length >= 6;
-  const nextCurrent = (isComplete ? 6 : Math.min(6, snapshot.node.current + 1)) as ExecutionSnapshot["node"]["current"];
-
-  const nextSnapshot = refreshExecutionSnapshotBeast({
-    ...snapshot,
-    node: {
-      ...snapshot.node,
-      current: nextCurrent,
-      completed,
-    },
-    runtime: {
-      ...snapshot.runtime,
-      isReady: true,
-      enginePhase: isComplete ? "COMPLETE" : "NODE_RUNNING",
-      uiPhase: isComplete ? "COMPLETE" : "NODE_RUNNING",
-    },
-  });
-
-  assertExecutionInvariant(nextSnapshot);
-  logExecutionSnapshot(nextSnapshot, "advanceExecutionNode");
-  logRhythmSmokeTest(nextSnapshot, "advanceExecutionNode");
-  return nextSnapshot;
-}
-
-type SpatialIntentType = "CORE_STAR_BLOOM" | "NODE_ADVANCE_REQUEST" | "DIMENSION_FOCUS_REQUEST";
-const ALLOWED_INTENTS = ["CORE_STAR_BLOOM", "NODE_ADVANCE_REQUEST", "DIMENSION_FOCUS_REQUEST"] as const;
-const ALLOWED_COMMANDS = ["ADVANCE_NODE", "NOOP"] as const;
-
-type RawSpatialIntent = {
-  type: string;
-  source?: unknown;
-  payload?: Record<string, unknown>;
-};
-type SpatialIntent = {
-  type: SpatialIntentType;
-  source: "UI_INTERACTION";
-  payload: {
-    nodeIndex?: number;
-    dimension?: SixSpaceId;
-    context?: "ambient" | "focus" | "inspect";
-    triggerStrength?: number;
-  };
-};
-type ExecutionCommand =
-  | { type: "ADVANCE_NODE"; intent: SpatialIntent }
-  | {
-      type: "NOOP";
-      intent: SpatialIntent;
-      reason: "COMPLETE" | "FOCUS_DERIVED_ONLY" | "NO_EXECUTION_MAPPING" | "INTENT_REJECTED" | "COMMAND_REJECTED" | "SNAPSHOT_INCONSISTENT";
-    };
-
-type SceneGraph = {
-  ambient: {
-    cosmicNebulaScene: true;
-    ambientStars: true;
-  };
-  focal: {
-    blackholeVortexScene: boolean;
-  };
-  actors: {
-    starFlowerCoreRepresentation: boolean;
-    baiHuConstellationLayer: true;
-  };
-  nodes: {
-    sixDimensionWheel: true;
-    activeDimension: SixSpaceId;
-    activeNodeIndex: number;
-  };
-};
-
-type InteractionGraph = {
-  nodes: readonly SpatialIntentType[];
-  edges: readonly {
-    from: SpatialIntentType;
-    to: SpatialIntentType | ExecutionCommand["type"];
-    rule: "governed-core-star-bloom" | "governed-node-advance" | "derived-focus-only";
-  }[];
-  resolution: "INTENT_GOVERNANCE_LAYER";
-};
-
-type RuntimeProjection = {
-  currentPrimarySpaceId: SixSpaceId;
-  sixDimensionStep: number;
-  selectedPressureSeedSurface: string;
-  cosmicSixDimensionState: CosmicBotanicsSixDimensionState;
-  cosmicNodeStep: number;
-  cosmicNarrativePhase: CosmicNarrativePhase;
-  sceneGraph: SceneGraph;
-  interactionGraph: InteractionGraph;
-  systemIntegrityCheck: SystemIntegrityCheck;
-};
-
-type ExecutionKernel = {
-  advance: (snapshot: ExecutionSnapshot) => ExecutionSnapshot;
-  resolve: (command: ExecutionCommand, snapshot: ExecutionSnapshot) => ExecutionSnapshot;
-  project: (snapshot: ExecutionSnapshot) => RuntimeProjection;
-};
-
-type GraphCoherenceContract = {
-  sceneGraph: SceneGraph;
-  interactionGraph: InteractionGraph;
-  executionKernel: ExecutionKernel;
-  executionSnapshot: ExecutionSnapshot;
-};
-
-type DriftType = "SCENE_DRIFT" | "INTENT_DRIFT" | "KERNEL_DRIFT";
-type CoherenceReport = {
-  coherence: "PASS" | "FAIL";
-  driftDetected: boolean;
-  driftType: DriftType[];
-  checks: {
-    sceneAligned: boolean;
-    interactionAligned: boolean;
-    kernelAligned: boolean;
-  };
-};
-
-type GraphAlignmentMap = {
-  sceneState: {
-    activeDimension: SixSpaceId;
-    activeNodeIndex: number;
-    blackholeVortexScene: boolean;
-    starFlowerCoreRepresentation: boolean;
-  };
-  interactionState: {
-    allowedIntents: readonly SpatialIntentType[];
-    mappedIntents: readonly SpatialIntentType[];
-  };
-  executionState: {
-    enginePhase: ExecutionSnapshot["runtime"]["enginePhase"];
-    uiPhase: ExecutionSnapshot["runtime"]["uiPhase"];
-    nodeCurrent: ExecutionSnapshot["node"]["current"];
-    allowedCommands: readonly ExecutionCommand["type"][];
-  };
-};
-
-type SystemIntegrityCheck = {
-  coherence: "PASS" | "FAIL";
-  driftDetected: boolean;
-  driftType: DriftType[];
-};
-
-function createRawSpatialIntent(type: SpatialIntentType, payload: SpatialIntent["payload"] = {}): RawSpatialIntent {
-  return {
-    type,
-    payload,
-  };
-}
-
-function isAllowedIntent(type: string): type is SpatialIntentType {
-  return ALLOWED_INTENTS.includes(type as SpatialIntentType);
-}
-
-function isAllowedCommand(type: ExecutionCommand["type"]) {
-  return ALLOWED_COMMANDS.includes(type);
-}
-
-function normalizeIntent(rawIntent: RawSpatialIntent): SpatialIntent {
-  const type = isAllowedIntent(rawIntent.type) ? rawIntent.type : "DIMENSION_FOCUS_REQUEST";
-  const payload = rawIntent.payload ?? {};
-  const dimension = payload.dimension;
-  const context = payload.context;
-  const triggerStrength = payload.triggerStrength;
-  const nodeIndex = payload.nodeIndex;
-
-  return {
-    type,
-    source: "UI_INTERACTION",
-    payload: {
-      ...(typeof nodeIndex === "number" && nodeIndex >= 1 && nodeIndex <= 6 ? { nodeIndex } : {}),
-      ...(dimension === "body" || dimension === "emotion" || dimension === "thought" || dimension === "action" || dimension === "memory" || dimension === "goal"
-        ? { dimension }
-        : {}),
-      ...(context === "ambient" || context === "focus" || context === "inspect" ? { context } : {}),
-      ...(typeof triggerStrength === "number" && Number.isFinite(triggerStrength)
-        ? { triggerStrength: clampRuntimeValue(triggerStrength) }
-        : {}),
-    },
-  };
-}
-
-function createRejectedIntent(rawIntent: RawSpatialIntent): SpatialIntent {
-  return {
-    type: "DIMENSION_FOCUS_REQUEST",
-    source: "UI_INTERACTION",
-    payload: {
-      context: "inspect",
-      ...(typeof rawIntent.payload?.triggerStrength === "number"
-        ? { triggerStrength: clampRuntimeValue(rawIntent.payload.triggerStrength) }
-        : {}),
-    },
-  };
-}
-
-function reduceIntent(intent: SpatialIntent, snapshot: ExecutionSnapshot): ExecutionCommand {
-  switch (intent.type) {
-    case "CORE_STAR_BLOOM":
-      return snapshot.node.current < 6 && snapshot.runtime.enginePhase !== "COMPLETE"
-        ? { type: "ADVANCE_NODE", intent: { ...intent, type: "NODE_ADVANCE_REQUEST" } }
-        : { type: "NOOP", intent, reason: "COMPLETE" };
-    case "NODE_ADVANCE_REQUEST":
-      return snapshot.node.current < 6 && snapshot.runtime.enginePhase !== "COMPLETE"
-        ? { type: "ADVANCE_NODE", intent }
-        : { type: "NOOP", intent, reason: "COMPLETE" };
-    case "DIMENSION_FOCUS_REQUEST":
-      return { type: "NOOP", intent, reason: "FOCUS_DERIVED_ONLY" };
-    default:
-      return { type: "NOOP", intent, reason: "NO_EXECUTION_MAPPING" };
-  }
-}
-
-function validateExecutionCommand(command: ExecutionCommand, snapshot: ExecutionSnapshot): ExecutionCommand {
-  const isIntentRegistered = isAllowedIntent(command.intent.type);
-  const isCommandAllowed = isAllowedCommand(command.type);
-  const isSnapshotConsistent = snapshot.node.current >= 1 && snapshot.node.current <= 6 && Boolean(snapshot.runtime.enginePhase);
-
-  if (!isIntentRegistered) return { type: "NOOP", intent: command.intent, reason: "INTENT_REJECTED" };
-  if (!isCommandAllowed) return { type: "NOOP", intent: command.intent, reason: "COMMAND_REJECTED" };
-  if (!isSnapshotConsistent) return { type: "NOOP", intent: command.intent, reason: "SNAPSHOT_INCONSISTENT" };
-
-  return command;
-}
-
-function resolveGovernedExecutionCommand(rawIntent: RawSpatialIntent, snapshot: ExecutionSnapshot): ExecutionCommand {
-  if (!isAllowedIntent(rawIntent.type)) {
-    return { type: "NOOP", intent: createRejectedIntent(rawIntent), reason: "INTENT_REJECTED" };
-  }
-
-  return validateExecutionCommand(reduceIntent(normalizeIntent(rawIntent), snapshot), snapshot);
-}
-
-function executeExecutionCommand(command: ExecutionCommand, snapshot: ExecutionSnapshot): ExecutionSnapshot {
-  logRhythmSmokeTest(snapshot, command.intent.type);
-
-  switch (command.type) {
-    case "ADVANCE_NODE":
-      return advanceExecutionNode(snapshot);
-    case "NOOP":
-    default:
-      return snapshot;
-  }
-}
-
-function resolveSnapshotPrimarySpaceId(primaryDimension: PrimaryPetalProtocolDimension): SixSpaceId {
-  if (primaryDimension === "behavior") return "action";
-  if (primaryDimension === "motivation") return "goal";
-  return primaryDimension;
-}
-
-function buildCosmicStateFromExecutionSnapshot(snapshot: ExecutionSnapshot): CosmicBotanicsSixDimensionState {
-  const primarySpaceId = resolveSnapshotPrimarySpaceId(snapshot.primaryDimension);
-  const completedNodeCount = snapshot.node.completed.length;
-
-  return sixSpaceConfigs.reduce<CosmicBotanicsSixDimensionState>((acc, config) => {
-    const isPrimary = config.id === primarySpaceId;
-    const isComplete = snapshot.runtime.enginePhase === "COMPLETE";
-    acc[config.id] = {
-      petalState: isComplete ? "blooming" : isPrimary && completedNodeCount > 0 ? "active" : "dormant",
-      bloomCount: isComplete ? Math.max(1, completedNodeCount) : isPrimary ? completedNodeCount : 0,
-    };
-    return acc;
-  }, {} as CosmicBotanicsSixDimensionState);
-}
-
-function resolveCosmicNarrativePhase(uiPhase: ExecutionSnapshot["runtime"]["uiPhase"]): CosmicNarrativePhase {
-  switch (uiPhase) {
-    case "INIT":
-      return "field_intro";
-    case "SEED_ACTIVE":
-      return "seed_visible";
-    case "DIMENSION_LOCKED":
-      return "beast_guide";
-    case "COMPLETE":
-      return "node_complete";
-    case "NODE_RUNNING":
-    default:
-      return "node_active";
-  }
-}
-
-function buildStarbeastFeedbackFromExecutionSnapshot(snapshot: ExecutionSnapshot): StarbeastFeedback {
-  return {
-    energyRing: Math.round(74 + snapshot.beast.resonance * 58),
-    glowIntensity: Math.min(1, 0.18 + snapshot.beast.resonance * 0.74),
-    postureShift:
-      snapshot.beast.tone === "sovereign"
-        ? "released"
-        : snapshot.beast.tone === "charge"
-          ? "opening"
-          : snapshot.beast.tone === "strain"
-            ? "guarding"
-            : "leaning",
-  };
-}
-
-function buildPressureSeedContextFromExecutionSnapshot(snapshot: ExecutionSnapshot): SelectedPressureSeedContext {
-  return {
-    selectedPressureSeedId: snapshot.seed.id,
-    surface: snapshot.seed.text,
-    category: snapshot.seed.category,
-  };
-}
-
 function resolveCosmicStarBeastName(starFlowerForm: StarFlowerForm): GuanyaoStarBeastName {
   const starBeastNameByForm: Record<StarFlowerForm, GuanyaoStarBeastName> = {
     qinglong: "青龙",
@@ -703,163 +126,6 @@ function resolveCosmicNarrativeDimension(spaceId: SixSpaceId | undefined): Guany
   if (spaceId === "goal") return "motivation";
   return spaceId ?? "body";
 }
-
-function resolveSixDimensionStep(spaceId: SixSpaceId) {
-  return sixSpaceConfigs.findIndex((config) => config.id === spaceId) + 1 || 1;
-}
-
-function deriveSceneGraph(snapshot: ExecutionSnapshot): SceneGraph {
-  const currentPrimarySpaceId = resolveSnapshotPrimarySpaceId(snapshot.primaryDimension);
-  const cosmicNarrativePhase = resolveCosmicNarrativePhase(snapshot.runtime.uiPhase);
-
-  return {
-    ambient: {
-      cosmicNebulaScene: true,
-      ambientStars: true,
-    },
-    focal: {
-      blackholeVortexScene: cosmicNarrativePhase === "seed_visible" || cosmicNarrativePhase === "beast_guide",
-    },
-    actors: {
-      starFlowerCoreRepresentation: cosmicNarrativePhase === "node_active" || cosmicNarrativePhase === "node_complete",
-      baiHuConstellationLayer: true,
-    },
-    nodes: {
-      sixDimensionWheel: true,
-      activeDimension: currentPrimarySpaceId,
-      activeNodeIndex: snapshot.node.completed.length,
-    },
-  };
-}
-
-function deriveInteractionGraph(): InteractionGraph {
-  return {
-    nodes: ALLOWED_INTENTS,
-    edges: [
-      { from: "CORE_STAR_BLOOM", to: "NODE_ADVANCE_REQUEST", rule: "governed-core-star-bloom" },
-      { from: "NODE_ADVANCE_REQUEST", to: "ADVANCE_NODE", rule: "governed-node-advance" },
-      { from: "DIMENSION_FOCUS_REQUEST", to: "NOOP", rule: "derived-focus-only" },
-    ],
-    resolution: "INTENT_GOVERNANCE_LAYER",
-  };
-}
-
-function deriveGraphAlignmentMap(snapshot: ExecutionSnapshot): GraphAlignmentMap {
-  const cosmicNarrativePhase = resolveCosmicNarrativePhase(snapshot.runtime.uiPhase);
-
-  return {
-    sceneState: {
-      activeDimension: resolveSnapshotPrimarySpaceId(snapshot.primaryDimension),
-      activeNodeIndex: snapshot.node.completed.length,
-      blackholeVortexScene: cosmicNarrativePhase === "seed_visible" || cosmicNarrativePhase === "beast_guide",
-      starFlowerCoreRepresentation: cosmicNarrativePhase === "node_active" || cosmicNarrativePhase === "node_complete",
-    },
-    interactionState: {
-      allowedIntents: ALLOWED_INTENTS,
-      mappedIntents: ALLOWED_INTENTS,
-    },
-    executionState: {
-      enginePhase: snapshot.runtime.enginePhase,
-      uiPhase: snapshot.runtime.uiPhase,
-      nodeCurrent: snapshot.node.current,
-      allowedCommands: ALLOWED_COMMANDS,
-    },
-  };
-}
-
-function validateGraphCoherence(
-  snapshot: ExecutionSnapshot,
-  sceneGraph: SceneGraph,
-  interactionGraph: InteractionGraph,
-): CoherenceReport {
-  const alignment = deriveGraphAlignmentMap(snapshot);
-  const sceneAligned =
-    sceneGraph.nodes.activeDimension === alignment.sceneState.activeDimension &&
-    sceneGraph.nodes.activeNodeIndex === alignment.sceneState.activeNodeIndex &&
-    sceneGraph.focal.blackholeVortexScene === alignment.sceneState.blackholeVortexScene &&
-    sceneGraph.actors.starFlowerCoreRepresentation === alignment.sceneState.starFlowerCoreRepresentation;
-  const interactionNodesRegistered = interactionGraph.nodes.every(isAllowedIntent);
-  const interactionEdgesRegistered = interactionGraph.edges.every(
-    (edge) =>
-      isAllowedIntent(edge.from) &&
-      (isAllowedIntent(edge.to) || isAllowedCommand(edge.to as ExecutionCommand["type"])),
-  );
-  const interactionHasNoOrphans = alignment.interactionState.allowedIntents.every((intent) => interactionGraph.nodes.includes(intent));
-  const interactionAligned =
-    interactionGraph.resolution === "INTENT_GOVERNANCE_LAYER" &&
-    interactionNodesRegistered &&
-    interactionEdgesRegistered &&
-    interactionHasNoOrphans;
-  const kernelAligned =
-    executionKernel.advance === advanceExecutionNode &&
-    executionKernel.resolve === executeExecutionCommand &&
-    executionKernel.project === projectExecutionSnapshot &&
-    alignment.executionState.nodeCurrent >= 1 &&
-    alignment.executionState.nodeCurrent <= 6 &&
-    Boolean(alignment.executionState.enginePhase) &&
-    Boolean(alignment.executionState.uiPhase);
-  const driftType: DriftType[] = [
-    ...(sceneAligned ? [] : (["SCENE_DRIFT"] as const)),
-    ...(interactionAligned ? [] : (["INTENT_DRIFT"] as const)),
-    ...(kernelAligned ? [] : (["KERNEL_DRIFT"] as const)),
-  ];
-
-  return {
-    coherence: driftType.length === 0 ? "PASS" : "FAIL",
-    driftDetected: driftType.length > 0,
-    driftType,
-    checks: {
-      sceneAligned,
-      interactionAligned,
-      kernelAligned,
-    },
-  };
-}
-
-function createGraphCoherenceContract(snapshot: ExecutionSnapshot): GraphCoherenceContract {
-  return {
-    sceneGraph: deriveSceneGraph(snapshot),
-    interactionGraph: deriveInteractionGraph(),
-    executionKernel,
-    executionSnapshot: snapshot,
-  };
-}
-
-function createSystemIntegrityCheck(report: CoherenceReport): SystemIntegrityCheck {
-  return {
-    coherence: report.coherence,
-    driftDetected: report.driftDetected,
-    driftType: report.driftType,
-  };
-}
-
-function projectExecutionSnapshot(snapshot: ExecutionSnapshot): RuntimeProjection {
-  const currentPrimarySpaceId = resolveSnapshotPrimarySpaceId(snapshot.primaryDimension);
-  const graphContract = createGraphCoherenceContract(snapshot);
-  const coherenceReport = validateGraphCoherence(
-    graphContract.executionSnapshot,
-    graphContract.sceneGraph,
-    graphContract.interactionGraph,
-  );
-
-  return {
-    currentPrimarySpaceId,
-    sixDimensionStep: resolveSixDimensionStep(currentPrimarySpaceId),
-    selectedPressureSeedSurface: snapshot.seed.text,
-    cosmicSixDimensionState: buildCosmicStateFromExecutionSnapshot(snapshot),
-    cosmicNodeStep: snapshot.node.completed.length,
-    cosmicNarrativePhase: resolveCosmicNarrativePhase(snapshot.runtime.uiPhase),
-    sceneGraph: graphContract.sceneGraph,
-    interactionGraph: graphContract.interactionGraph,
-    systemIntegrityCheck: createSystemIntegrityCheck(coherenceReport),
-  };
-}
-
-const executionKernel: ExecutionKernel = Object.freeze({
-  advance: advanceExecutionNode,
-  resolve: executeExecutionCommand,
-  project: projectExecutionSnapshot,
-});
 
 function hashPersonaStarInput(input: string) {
   let hash = 2166136261;
@@ -1790,12 +1056,14 @@ function CosmicBotanicsField({
 
 function HexagramCodeDeliveryShell() {
   const [executionSnapshot, setExecutionSnapshot] = useState<ExecutionSnapshot>(() =>
-    createExecutionSnapshot(readDevPrimaryPetalFixture() ?? readJsonFromStorage<SelectedPressureSeedContext>("guanyao:selectedPressureSeedContext")),
+    GuanyaoRuntimeEngine.createSnapshot(
+      readDevPrimaryPetalFixture() ?? readJsonFromStorage<SelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
+    ),
   );
   const [personaOutputSnapshot] = useState(() =>
     readJsonFromStorage<PersonaOutputSnapshotView>("guanyao:personaOutputSnapshot"),
   );
-  const runtimeProjection = executionKernel.project(executionSnapshot);
+  const runtimeProjection = GuanyaoRuntimeEngine.project(executionSnapshot);
   const {
     currentPrimarySpaceId,
     sixDimensionStep,
@@ -1824,16 +1092,16 @@ function HexagramCodeDeliveryShell() {
   const starbeastFeedbackComplete = executionSnapshot.runtime.enginePhase === "COMPLETE" && visiblePetalStates[currentPrimarySpaceId] === "blooming";
   const hexagramAssetCandidate = resolveHexagramAssetCandidate({
     personaSnapshot: personaOutputSnapshot,
-    selectedPressureSeedContext: buildPressureSeedContextFromExecutionSnapshot(executionSnapshot),
+    selectedPressureSeedContext: GuanyaoRuntimeEngine.buildPressureSeedContext(executionSnapshot),
     currentPrimarySpaceId,
     completedNodeCount: cosmicNodeStep,
     starbeastFeedbackComplete,
     pressureSeedFallbackText: selectedPressureSeedSurface,
   });
 
-  function handleSpatialInteraction(eventType: SpatialIntentType, context: SpatialIntent["payload"] = {}) {
-    const rawIntent = createRawSpatialIntent(eventType, context);
-    setExecutionSnapshot((current) => executionKernel.resolve(resolveGovernedExecutionCommand(rawIntent, current), current));
+  function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
+    const rawIntent = GuanyaoRuntimeEngine.createRawSpatialIntent(eventType, context);
+    setExecutionSnapshot((current) => GuanyaoRuntimeEngine.run(current, rawIntent));
   }
 
   function bloomCosmicNode() {
@@ -1849,14 +1117,14 @@ function HexagramCodeDeliveryShell() {
     const seedTimer = window.setTimeout(() => {
       setExecutionSnapshot((current) => {
         const nextEngine =
-          current.runtime.enginePhase === "INIT" ? setExecutionEnginePhase(current, "SEED_ACTIVE") : current;
-        return current.runtime.uiPhase === "INIT" ? setExecutionUiPhase(nextEngine, "SEED_ACTIVE") : nextEngine;
+          current.runtime.enginePhase === "INIT" ? GuanyaoRuntimeEngine.setEnginePhase(current, "SEED_ACTIVE") : current;
+        return current.runtime.uiPhase === "INIT" ? GuanyaoRuntimeEngine.setUiPhase(nextEngine, "SEED_ACTIVE") : nextEngine;
       });
     }, 950);
     const beastTimer = window.setTimeout(() => {
       setExecutionSnapshot((current) =>
         current.runtime.uiPhase === "SEED_ACTIVE" || current.runtime.uiPhase === "INIT"
-          ? setExecutionUiPhase(current, "DIMENSION_LOCKED")
+          ? GuanyaoRuntimeEngine.setUiPhase(current, "DIMENSION_LOCKED")
           : current,
       );
     }, 2400);
@@ -1864,10 +1132,10 @@ function HexagramCodeDeliveryShell() {
       setExecutionSnapshot((current) => {
         const nextEngine =
           current.runtime.enginePhase === "SEED_ACTIVE" || current.runtime.enginePhase === "INIT"
-            ? setExecutionEnginePhase(current, "NODE_RUNNING")
+            ? GuanyaoRuntimeEngine.setEnginePhase(current, "NODE_RUNNING")
             : current;
         return current.runtime.uiPhase === "DIMENSION_LOCKED" || current.runtime.uiPhase === "SEED_ACTIVE" || current.runtime.uiPhase === "INIT"
-          ? setExecutionUiPhase(nextEngine, "NODE_RUNNING")
+          ? GuanyaoRuntimeEngine.setUiPhase(nextEngine, "NODE_RUNNING")
           : nextEngine;
       });
     }, 3600);
@@ -1956,7 +1224,7 @@ function HexagramCodeDeliveryShell() {
             pressureSeedSurface={selectedPressureSeedSurface}
             petalStates={visiblePetalStates}
             pollenBursts={cosmicPollenBursts}
-            starbeast={buildStarbeastFeedbackFromExecutionSnapshot(executionSnapshot)}
+            starbeast={GuanyaoRuntimeEngine.buildStarbeastFeedback(executionSnapshot)}
             starFlowerForm={cosmicBotanicsRuntime.starFlower.form}
             starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
             hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}
