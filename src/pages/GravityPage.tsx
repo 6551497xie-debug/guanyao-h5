@@ -114,6 +114,30 @@ const assertExecutionInvariant = (snapshot: ExecutionSnapshot) => {
   }
 };
 
+type NodeTimingTraceEntry = {
+  node: number;
+  timestamp: number;
+  deltaFromPreviousNode: number;
+};
+
+const nodeTimingTrace: NodeTimingTraceEntry[] = [];
+let lastNodeTimestamp = Date.now();
+
+const logExecutionSnapshot = (snapshot: ExecutionSnapshot, phase: string) => {
+  const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
+  if (!viteEnv?.DEV) return;
+
+  console.log("[ExecutionSnapshot Trace]", {
+    phase,
+    enginePhase: snapshot.runtime.enginePhase,
+    uiPhase: snapshot.runtime.uiPhase,
+    node: snapshot.node.current,
+    beast: snapshot.beast.tone,
+    seed: snapshot.seed.text,
+    nodeTimingTrace: nodeTimingTrace.slice(-5),
+  });
+};
+
 type PersonaStarOrigin = {
   index?: number;
   intensity?: number;
@@ -247,6 +271,7 @@ function createExecutionSnapshot(context: SelectedPressureSeedContext | null): E
   };
 
   assertExecutionInvariant(snapshot);
+  logExecutionSnapshot(snapshot, "createExecutionSnapshot");
   return snapshot;
 }
 
@@ -261,6 +286,7 @@ function refreshExecutionSnapshotBeast(snapshot: ExecutionSnapshot): ExecutionSn
   };
 
   assertExecutionInvariant(nextSnapshot);
+  logExecutionSnapshot(nextSnapshot, "refreshExecutionSnapshotBeast");
   return nextSnapshot;
 }
 
@@ -275,6 +301,7 @@ function setExecutionEnginePhase(snapshot: ExecutionSnapshot, enginePhase: Execu
   });
 
   assertExecutionInvariant(nextSnapshot);
+  logExecutionSnapshot(nextSnapshot, "setExecutionEnginePhase");
   return nextSnapshot;
 }
 
@@ -288,11 +315,23 @@ function setExecutionUiPhase(snapshot: ExecutionSnapshot, uiPhase: ExecutionSnap
   };
 
   assertExecutionInvariant(nextSnapshot);
+  logExecutionSnapshot(nextSnapshot, "setExecutionUiPhase");
   return nextSnapshot;
 }
 
 function advanceExecutionNode(snapshot: ExecutionSnapshot): ExecutionSnapshot {
   if (snapshot.node.locked || snapshot.runtime.enginePhase === "COMPLETE") return snapshot;
+
+  const now = Date.now();
+  const delta = now - lastNodeTimestamp;
+  const traceNode = Math.min(6, snapshot.node.current + 1);
+
+  nodeTimingTrace.push({
+    node: traceNode,
+    timestamp: now,
+    deltaFromPreviousNode: delta,
+  });
+  lastNodeTimestamp = now;
 
   const completed = Array.from(new Set([...snapshot.node.completed, snapshot.node.current])).sort((a, b) => a - b);
   const isComplete = completed.length >= 6;
@@ -314,6 +353,7 @@ function advanceExecutionNode(snapshot: ExecutionSnapshot): ExecutionSnapshot {
   });
 
   assertExecutionInvariant(nextSnapshot);
+  logExecutionSnapshot(nextSnapshot, "advanceExecutionNode");
   return nextSnapshot;
 }
 
