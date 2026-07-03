@@ -21,6 +21,7 @@ import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPeta
 import {
   GuanyaoRuntimeEngine,
   type ExecutionSnapshot,
+  type RuntimeProjection,
   type SixSpaceConfig,
   type SixSpaceId,
   type SpatialIntent,
@@ -190,6 +191,157 @@ function buildRuntimeBaiHuCoreStars(snapshot: PersonaOutputSnapshotView | null):
 }
 
 type CosmicNarrativePhase = "field_intro" | "seed_visible" | "beast_guide" | "node_active" | "node_complete";
+
+type VisualDepthState = "background_calm" | "structural_activation" | "entity_emergence" | "interaction_focus" | "crystallization";
+type VisualPrimitive = "BEAST" | "PRESSURE" | "DIMENSION" | "PARTICLE";
+type VisualPrimitiveState = Readonly<{
+  primitive: VisualPrimitive;
+  intensity: number;
+  meaning: "state_container" | "tension_metric" | "behavioral_structure" | "execution_feedback";
+}>;
+type VisualState = Readonly<{
+  nodeIndex: number;
+  visualDepthState: VisualDepthState;
+  colorTemperature: string;
+  spatialComposition: "calm_state" | "blackhole_activation" | "beast_emergence" | "node_focus_collapse" | "supernova_crystallization";
+  focalDimension: SixSpaceId;
+  primitives: {
+    BEAST: VisualPrimitiveState & {
+      coherence: number;
+      stability: number;
+    };
+    PRESSURE: VisualPrimitiveState & {
+      instability: number;
+      urgency: number;
+    };
+    DIMENSION: VisualPrimitiveState & {
+      activeDimension: SixSpaceId;
+      state: "active" | "dormant" | "destabilized";
+    };
+    PARTICLE: VisualPrimitiveState & {
+      transitionEnergy: number;
+      nodeActivity: number;
+    };
+  };
+  zDepth: {
+    background: number;
+    structural: number;
+    entity: number;
+    interaction: number;
+    narrative: number;
+  };
+  timeline: {
+    current: "T0.0" | "T0.95" | "T2.4" | "T3.6" | "completion";
+    label: string;
+  };
+}>;
+
+const VISUAL_TIMELINE_SYNC = Object.freeze({
+  calm: "T0.0 -> calm state",
+  blackhole: "T0.95 -> blackhole activation",
+  beast: "T2.4 -> beast emergence",
+  node: "T3.6 -> node focus collapse",
+  completion: "completion -> supernova crystallization",
+});
+
+function resolveVisualColorTemperature(dimension: SixSpaceId, beastTone: ExecutionSnapshot["beast"]["tone"]) {
+  if (beastTone === "sovereign") return "222,196,154";
+  if (beastTone === "charge") return "199,169,107";
+  if (beastTone === "strain") return "176,210,206";
+
+  const toneByDimension: Record<SixSpaceId, string> = {
+    body: "176,210,206",
+    emotion: "199,169,107",
+    thought: "184,200,224",
+    action: "222,196,154",
+    memory: "190,178,214",
+    goal: "210,190,150",
+  };
+
+  return toneByDimension[dimension];
+}
+
+function resolveVisualState(snapshot: ExecutionSnapshot, projection: RuntimeProjection): VisualState {
+  const nodeProgress = Math.min(1, Math.max(0, snapshot.node.completed.length / 6));
+  const resonance = Math.min(1, Math.max(0, snapshot.beast.resonance));
+  const pressureIntensity = Math.min(1, snapshot.seed.intensity ?? 0.32);
+  const visualDepthState: VisualDepthState =
+    snapshot.runtime.uiPhase === "COMPLETE"
+      ? "crystallization"
+      : snapshot.runtime.uiPhase === "NODE_RUNNING"
+        ? "interaction_focus"
+        : snapshot.runtime.uiPhase === "DIMENSION_LOCKED"
+          ? "entity_emergence"
+          : snapshot.runtime.uiPhase === "SEED_ACTIVE"
+            ? "structural_activation"
+            : "background_calm";
+  const spatialComposition: VisualState["spatialComposition"] =
+    visualDepthState === "crystallization"
+      ? "supernova_crystallization"
+      : visualDepthState === "interaction_focus"
+        ? "node_focus_collapse"
+        : visualDepthState === "entity_emergence"
+          ? "beast_emergence"
+          : visualDepthState === "structural_activation"
+            ? "blackhole_activation"
+            : "calm_state";
+  const timeline: VisualState["timeline"] =
+    visualDepthState === "crystallization"
+      ? { current: "completion", label: VISUAL_TIMELINE_SYNC.completion }
+      : visualDepthState === "interaction_focus"
+        ? { current: "T3.6", label: VISUAL_TIMELINE_SYNC.node }
+        : visualDepthState === "entity_emergence"
+          ? { current: "T2.4", label: VISUAL_TIMELINE_SYNC.beast }
+          : visualDepthState === "structural_activation"
+            ? { current: "T0.95", label: VISUAL_TIMELINE_SYNC.blackhole }
+            : { current: "T0.0", label: VISUAL_TIMELINE_SYNC.calm };
+
+  return Object.freeze({
+    nodeIndex: snapshot.node.current,
+    visualDepthState,
+    colorTemperature: resolveVisualColorTemperature(projection.currentPrimarySpaceId, snapshot.beast.tone),
+    spatialComposition,
+    focalDimension: projection.currentPrimarySpaceId,
+    primitives: {
+      BEAST: {
+        primitive: "BEAST",
+        meaning: "state_container",
+        intensity: pressureIntensity,
+        coherence: resonance,
+        stability: snapshot.beast.tone === "sovereign" ? 1 : snapshot.beast.tone === "charge" ? 0.74 : snapshot.beast.tone === "calm" ? 0.58 : 0.32,
+      },
+      PRESSURE: {
+        primitive: "PRESSURE",
+        meaning: "tension_metric",
+        intensity: pressureIntensity,
+        instability: snapshot.runtime.enginePhase === "COMPLETE" ? 0 : Math.min(1, pressureIntensity * (1 - nodeProgress * 0.42)),
+        urgency: snapshot.runtime.enginePhase === "NODE_RUNNING" ? pressureIntensity : pressureIntensity * 0.72,
+      },
+      DIMENSION: {
+        primitive: "DIMENSION",
+        meaning: "behavioral_structure",
+        intensity: visualDepthState === "background_calm" ? 0.28 : 0.62 + nodeProgress * 0.28,
+        activeDimension: projection.currentPrimarySpaceId,
+        state: visualDepthState === "background_calm" ? "dormant" : pressureIntensity > 0.72 && nodeProgress < 0.34 ? "destabilized" : "active",
+      },
+      PARTICLE: {
+        primitive: "PARTICLE",
+        meaning: "execution_feedback",
+        intensity: Math.min(1, 0.18 + nodeProgress * 0.54 + resonance * 0.28),
+        transitionEnergy: visualDepthState === "crystallization" ? 1 : visualDepthState === "interaction_focus" ? nodeProgress : resonance * 0.42,
+        nodeActivity: nodeProgress,
+      },
+    },
+    zDepth: {
+      background: 0,
+      structural: 1,
+      entity: 2,
+      interaction: 3,
+      narrative: 4,
+    },
+    timeline,
+  } satisfies VisualState);
+}
 
 function CosmicPageStarField() {
   return (
@@ -448,6 +600,8 @@ function StarFlowerCoreRepresentation({
   return (
     <div
       aria-hidden="true"
+      data-visual-primitive="DIMENSION"
+      data-visual-layer="dimension-six-node-core"
       style={{
         position: "absolute",
         left: "50%",
@@ -522,6 +676,8 @@ function EnergyReturnFlow({
   return (
     <div
       aria-hidden="true"
+      data-visual-primitive="PARTICLE"
+      data-visual-layer="particle-energy-return-flow"
       style={{
         position: "absolute",
         left: "50%",
@@ -581,6 +737,8 @@ function SixDimensionWheel({
         return (
           <span
             key={config.id}
+            data-visual-primitive="DIMENSION"
+            data-visual-layer="dimension-six-space-petal"
             style={{
               "--petal-rotate": `${angle + 90}deg`,
               position: "absolute",
@@ -767,6 +925,8 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, o
     <div
       role="group"
       aria-label="轻触七星，把一点光送回白虎。"
+      data-visual-primitive="BEAST"
+      data-visual-layer="beast-state-container"
       style={{
         position: "absolute",
         left: "50%",
@@ -916,6 +1076,7 @@ function CosmicBotanicsField({
   narrativePhase,
   onNodeBloom,
   coreStars,
+  visualState,
 }: {
   configs: SixSpaceConfig[];
   currentStep: number;
@@ -930,9 +1091,10 @@ function CosmicBotanicsField({
   narrativePhase: CosmicNarrativePhase;
   onNodeBloom: () => void;
   coreStars: RuntimeCoreStar[];
+  visualState: VisualState;
 }) {
   const seedTone = pressureSeedSurface.length % 3;
-  const toneColor = seedTone === 0 ? "199,169,107" : seedTone === 1 ? "222,196,154" : "176,210,206";
+  const toneColor = visualState.colorTemperature || (seedTone === 0 ? "199,169,107" : seedTone === 1 ? "222,196,154" : "176,210,206");
   const activeConfig = configs[Math.max(0, Math.min(configs.length - 1, currentStep - 1))] ?? configs[0];
   const activePetalState = activeConfig ? petalStates[activeConfig.id] : "active";
   const narrative = generateSixDimensionalTuningDialogue({
@@ -949,13 +1111,23 @@ function CosmicBotanicsField({
   const shortPetalNames = ["身体", "情绪", "思维", "行为", "记忆", "目标"];
   const coreReadiness = Math.max(hexagramReadiness, activeNodeIndex / Math.max(1, nodeFlow.length));
   const coreVisible = narrativePhase === "node_active" || narrativePhase === "node_complete";
-  const coreGlow = 0.1 + starbeast.glowIntensity * 0.14 + coreReadiness * 0.12;
+  const coreGlow = 0.1 + visualState.primitives.PARTICLE.intensity * 0.14 + coreReadiness * 0.12;
   const coreTone = starFlowerState === "blooming" || starFlowerState === "rebirth" ? toneColor : "176,210,206";
 
   return (
     <section
       aria-label="六维宇宙花冠"
+      data-experience-layer="pure-visual-projection"
+      data-visual-grammar="BEAST_PRESSURE_DIMENSION_PARTICLE"
+      data-visual-depth-state={visualState.visualDepthState}
+      data-visual-composition={visualState.spatialComposition}
+      data-visual-timeline={visualState.timeline.current}
+      data-visual-focal-dimension={visualState.focalDimension}
       style={{
+        "--visual-beast-intensity": visualState.primitives.BEAST.intensity,
+        "--visual-pressure-intensity": visualState.primitives.PRESSURE.intensity,
+        "--visual-dimension-intensity": visualState.primitives.DIMENSION.intensity,
+        "--visual-particle-intensity": visualState.primitives.PARTICLE.intensity,
         position: "relative",
         minHeight: 536,
         border: "1px solid rgba(199,169,107,0.16)",
@@ -963,13 +1135,18 @@ function CosmicBotanicsField({
         overflow: "hidden",
         padding: "18px 16px",
         background:
-          `radial-gradient(circle at 52% 24%, rgba(80,58,120,0.2), transparent 28%), radial-gradient(circle at 50% 58%, rgba(${toneColor},0.14), rgba(5,6,7,0.12) 36%, rgba(5,6,7,0.04) 100%)`,
-        boxShadow: activePetalState === "blooming" ? `0 0 30px rgba(${toneColor},0.12)` : "none",
-      }}
+          `radial-gradient(circle at 52% 24%, rgba(80,58,120,${0.12 + visualState.primitives.PRESSURE.intensity * 0.1}), transparent 28%), radial-gradient(circle at 50% 58%, rgba(${toneColor},${0.1 + visualState.primitives.BEAST.coherence * 0.08}), rgba(5,6,7,0.12) 36%, rgba(5,6,7,0.04) 100%)`,
+        boxShadow:
+          activePetalState === "blooming" || visualState.primitives.PARTICLE.transitionEnergy > 0
+            ? `0 0 ${24 + visualState.primitives.PARTICLE.transitionEnergy * 18}px rgba(${toneColor},${0.1 + visualState.primitives.BEAST.coherence * 0.08})`
+            : "none",
+      } as CSSProperties}
     >
       <CosmicFieldKeyframes />
-      <CosmicNebulaScene toneColor={toneColor} />
-      <CosmicAmbientStars />
+      <div data-visual-primitive="PARTICLE" data-visual-layer="particle-nebula-field" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.background, pointerEvents: "none" }}>
+        <CosmicNebulaScene toneColor={toneColor} />
+        <CosmicAmbientStars />
+      </div>
 
       <BaiHuConstellationLayer
         toneColor={toneColor}
@@ -979,15 +1156,19 @@ function CosmicBotanicsField({
         coreStars={coreStars}
       />
 
-      <BlackholeVortexScene toneColor={toneColor} visible={showBlackholeStatus} status={narrative.blackholeStatus} />
+      <div data-visual-primitive="PRESSURE" data-visual-layer="pressure-blackhole-field" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.structural, pointerEvents: "none" }}>
+        <BlackholeVortexScene toneColor={toneColor} visible={showBlackholeStatus} status={narrative.blackholeStatus} />
+      </div>
 
       <p
+        data-visual-primitive="PRESSURE"
+        data-visual-layer="pressure-text-field"
         style={{
           position: "absolute",
           left: 28,
           right: 28,
           top: "43%",
-          zIndex: 1,
+          zIndex: visualState.zDepth.narrative,
           margin: 0,
           color: "rgba(245,245,245,0.78)",
           fontSize: 13,
@@ -1002,15 +1183,19 @@ function CosmicBotanicsField({
         {narrative.pressureText}
       </p>
 
-      <NodeProgressionPanel visible={showNodePanel} toneColor={toneColor} activeNode={activeNode} />
+      <div data-visual-primitive="PARTICLE" data-visual-layer="particle-node-feedback" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.interaction, pointerEvents: "none" }}>
+        <NodeProgressionPanel visible={showNodePanel} toneColor={toneColor} activeNode={activeNode} />
+      </div>
 
       <p
+        data-visual-primitive="BEAST"
+        data-visual-layer="beast-state-text"
         style={{
           position: "absolute",
           left: 22,
           right: 22,
           top: "47%",
-          zIndex: 1,
+          zIndex: visualState.zDepth.narrative,
           margin: 0,
           whiteSpace: "pre-line",
           color: `rgba(${toneColor},0.72)`,
@@ -1030,7 +1215,7 @@ function CosmicBotanicsField({
         nodeCount={nodeFlow.length}
         coreReadiness={coreReadiness}
         coreTone={coreTone}
-        coreGlow={coreGlow}
+        coreGlow={Math.min(1, coreGlow + visualState.primitives.PARTICLE.intensity * 0.04)}
       />
 
       <EnergyReturnFlow
@@ -1038,7 +1223,7 @@ function CosmicBotanicsField({
         activeNodeIndex={activeNodeIndex}
         coreReadiness={coreReadiness}
         coreTone={coreTone}
-        coreGlow={coreGlow}
+        coreGlow={Math.min(1, coreGlow + visualState.primitives.PARTICLE.intensity * 0.04)}
       />
 
       <SixDimensionWheel
@@ -1074,6 +1259,7 @@ function HexagramCodeDeliveryShell() {
     pressureSeedContext,
     starbeastFeedback,
   } = runtimeProjection;
+  const visualState = resolveVisualState(executionSnapshot, runtimeProjection);
   const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
     pressureSeed: selectedPressureSeedSurface,
     sixDimensionState: cosmicSixDimensionState,
@@ -1237,6 +1423,7 @@ function HexagramCodeDeliveryShell() {
             narrativePhase={cosmicNarrativePhase}
             onNodeBloom={bloomCosmicNode}
             coreStars={baiHuRuntimeCoreStars}
+            visualState={visualState}
           />
         </section>
 
