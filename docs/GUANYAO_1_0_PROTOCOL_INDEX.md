@@ -72,6 +72,9 @@ The current GUANYAO 1.0 main chain is locked as:
 - [GUANYAO_1_0_HEXAGRAM_ASSET_CANDIDATE_BOUNDARY.md](./GUANYAO_1_0_HEXAGRAM_ASSET_CANDIDATE_BOUNDARY.md)  
   P0 hexagram asset candidate boundary protocol. Defines the position and forbidden boundaries of `hexagramAssetCandidate(PENDING)`, the missing prerequisites before a formal 64-hexagram card, and the minimum next construction direction: `resolveHexagramAssetDraftCandidate()`.
 
+- [GUANYAO_1_0_HEXAGRAM_DRAFT_CANDIDATE_PROTOCOL.md](./GUANYAO_1_0_HEXAGRAM_DRAFT_CANDIDATE_PROTOCOL.md)  
+  P0 hexagram asset draft candidate protocol. Defines the position and forbidden boundaries of `hexagramAssetDraftCandidate(DRAFT)`, and locks the missing layers before a formal 64-hexagram card: asset mapping protocol, force translation language, and new asset card shell.
+
 - [R8_ENGINE_HEXAGRAM_FORMATION.md](./R8_ENGINE_HEXAGRAM_FORMATION.md)  
   Hexagram formation protocol. Defines how final hexagram assets should be treated as generated output.
 
@@ -153,7 +156,7 @@ Current implementation priority is locked as:
 
 Goal: make the active 1.0 chain structurally complete before adding more surface variation.
 
-Current P0 next runtime step:
+Current P0 asset chain has reached:
 
 ```text
 selectedPressureSeedContext
@@ -162,17 +165,24 @@ selectedPressureSeedContext
 → 6节点完成态
 → starbeastFeedbackComplete
 → hexagramAssetCandidate(PENDING)
-```
-
-Current P0 asset-chain next step is locked as:
-
-```text
-hexagramAssetCandidate(PENDING)
 → resolveHexagramAssetDraftCandidate()
 → hexagramAssetDraftCandidate(DRAFT)
 ```
 
-This next step must use [GUANYAO_1_0_HEXAGRAM_ASSET_CANDIDATE_BOUNDARY.md](./GUANYAO_1_0_HEXAGRAM_ASSET_CANDIDATE_BOUNDARY.md) as its construction basis. It may only produce a draft candidate and must keep legacy routing forbidden.
+Current P0 asset-chain next protocol step is locked as:
+
+```text
+GUANYAO_1_0_HEXAGRAM_ASSET_MAPPING_PROTOCOL.md
+```
+
+It may only define:
+
+```text
+hexagramAssetDraftCandidate(DRAFT)
+→ hexagramAssetMappingCandidate
+```
+
+This next step must use [GUANYAO_1_0_HEXAGRAM_DRAFT_CANDIDATE_PROTOCOL.md](./GUANYAO_1_0_HEXAGRAM_DRAFT_CANDIDATE_PROTOCOL.md) as its construction basis. It may only define the asset mapping protocol and must not generate the formal card.
 
 For P0 asset-chain work, explicitly forbidden:
 
