@@ -11,6 +11,11 @@ type PreviewVisualProfile = {
   beastGlow: number;
   aggregationDuration: string;
   fieldBlur: number;
+  starScale: number;
+  clusterScale: number;
+  dispersion: number;
+  lineOpacity: number;
+  focalPull: number;
 };
 
 const STAR_POINTS = [
@@ -165,25 +170,53 @@ function getVisualProfile(previewUser: PreviewUser): PreviewVisualProfile {
   if (previewUser === "old") {
     return {
       modeText: "OLD_USER / PRESSURE_SEED_LOADING",
-      primaryText: "压力种子加载中",
-      secondaryText: "光点更快聚拢，压力密度更高。",
-      starOpacity: 0.46,
-      clusterOpacity: 0.9,
-      beastGlow: 0.9,
-      aggregationDuration: "2.8s",
+      primaryText: "压力正在聚合…",
+      secondaryText: "光点被更强的中心拉力收紧，压力密度正在成形。",
+      starOpacity: 0.82,
+      clusterOpacity: 1,
+      beastGlow: 1,
+      aggregationDuration: "1.8s",
       fieldBlur: 0,
+      starScale: 1.08,
+      clusterScale: 1.35,
+      dispersion: 0.18,
+      lineOpacity: 0.92,
+      focalPull: 1,
     };
   }
 
   return {
     modeText: "NEW_USER / ORIGINAL_COORDINATE_LOADING",
-    primaryText: "原始坐标装填中",
-    secondaryText: "星光更散，聚合更慢，先形成基础坐标。",
-    starOpacity: 0.78,
-    clusterOpacity: 0.52,
-    beastGlow: 0.62,
-    aggregationDuration: "5.2s",
-    fieldBlur: 0.4,
+    primaryText: "坐标正在生成…",
+    secondaryText: "星光保持更大的空间距离，中心收束更柔和。",
+    starOpacity: 0.34,
+    clusterOpacity: 0.38,
+    beastGlow: 0.48,
+    aggregationDuration: "6.4s",
+    fieldBlur: 1.4,
+    starScale: 0.78,
+    clusterScale: 0.72,
+    dispersion: 1,
+    lineOpacity: 0.36,
+    focalPull: 0,
+  };
+}
+
+function resolvePointPosition(
+  left: number,
+  top: number,
+  profile: PreviewVisualProfile
+) {
+  const centerX = 50;
+  const centerY = 50;
+  const spread = profile.dispersion * 9;
+  const pull = profile.focalPull * 5;
+  const xFromCenter = left - centerX;
+  const yFromCenter = top - centerY;
+
+  return {
+    left: left + (xFromCenter / 50) * spread - (xFromCenter / 50) * pull,
+    top: top + (yFromCenter / 50) * spread - (yFromCenter / 50) * pull,
   };
 }
 
@@ -220,24 +253,32 @@ export function LaunchLabPreview() {
               style={{
                 ...LINE_STYLE,
                 transform: `rotate(${rotate}deg)`,
-                opacity: profile.clusterOpacity,
+                opacity: profile.lineOpacity,
                 transition: `opacity ${profile.aggregationDuration} ease`,
               }}
             />
           ))}
 
-          {STAR_POINTS.map(([left, top]) => (
-            <span
-              key={`${left}-${top}`}
-              style={{
-                ...POINT_STYLE,
-                left: `${left}%`,
-                top: `${top}%`,
-                opacity: profile.starOpacity,
-                transition: `opacity ${profile.aggregationDuration} ease`,
-              }}
-            />
-          ))}
+          {STAR_POINTS.map(([left, top]) => {
+            const point = resolvePointPosition(left, top, profile);
+
+            return (
+              <span
+                key={`${left}-${top}`}
+                style={{
+                  ...POINT_STYLE,
+                  left: `${point.left}%`,
+                  top: `${point.top}%`,
+                  width: 7 * profile.starScale,
+                  height: 7 * profile.starScale,
+                  marginLeft: -(7 * profile.starScale) / 2,
+                  marginTop: -(7 * profile.starScale) / 2,
+                  opacity: profile.starOpacity,
+                  transition: `opacity ${profile.aggregationDuration} ease, left ${profile.aggregationDuration} ease, top ${profile.aggregationDuration} ease`,
+                }}
+              />
+            );
+          })}
 
           {CLUSTER_POINTS.map(([left, top]) => (
             <span
@@ -246,8 +287,10 @@ export function LaunchLabPreview() {
                 ...POINT_STYLE,
                 left: `${left}%`,
                 top: `${top}%`,
-                width: previewUser === "old" ? 9 : 6,
-                height: previewUser === "old" ? 9 : 6,
+                width: 7 * profile.clusterScale,
+                height: 7 * profile.clusterScale,
+                marginLeft: -(7 * profile.clusterScale) / 2,
+                marginTop: -(7 * profile.clusterScale) / 2,
                 opacity: profile.clusterOpacity,
                 transition: `opacity ${profile.aggregationDuration} ease`,
               }}
