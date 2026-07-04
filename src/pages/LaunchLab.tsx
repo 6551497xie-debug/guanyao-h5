@@ -23,6 +23,7 @@ import {
   buildTripleForceLandingResult,
   getTripleForceFrontStage,
 } from "../services/guanyaoTripleForceLandingService";
+import { getPressureSeedSceneTriplet } from "../services/guanyaoPressureSeedSceneBindingService";
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
@@ -157,12 +158,21 @@ const STATE = {
 
 const TOP_LINES = ["PRESSURE → TRANSFORMATION → ASSET", "把当前压力转成结构化转化。"];
 const CTA_LINE = "轻触 · 进入压力场";
+const ENTRY_HANDOFF_DELAY_MS = 700;
+const PRESSURE_SEED_AUTO_RESOLVE_MS = 2400;
+const RAIL_COMMIT_THRESHOLD = 0.72;
 const PERIOD_LABELS = ["子时", "丑时", "寅时", "卯时", "辰时", "巳时", "午时", "未时", "申时", "酉时", "戌时", "亥时"];
 const CHRONO_DIMS = ["year", "month", "day", "hour"] as const;
 type ChronoDim = (typeof CHRONO_DIMS)[number];
 type GeoDim = "province" | "city";
 type ChronoCoords = { year: number; month: number; day: number; hour: number };
 type EntryTransitionSnapshot = EntryCardRendererOptions["snapshot"];
+type LaunchInteractionState =
+  | "ENTRY"
+  | "PRESSURE_CANVAS_ACTIVE"
+  | "SEED_SELECTED"
+  | "SNAPSHOT_GENERATED"
+  | "DYNAMICS_HANDOFF";
 const DIM_LABEL: Record<ChronoDim, string> = { year: "压力入口", month: "状态映射", day: "转化刻度", hour: "资产预备" };
 const DIM_STAGE_LABEL: Record<ChronoDim, string> = { year: "当前压力", month: "状态层级", day: "转化位置", hour: "资产入口" };
 const GEO_DIMS = ["province", "city"] as const;
@@ -276,15 +286,43 @@ function makeAudio() {
   return { ensure, gather, form, tick };
 }
 
+function buildDeterministicPressureSeedCandidate(): PressureSeedCrossAxisSeed | undefined {
+  const triplet = getPressureSeedSceneTriplet();
+  const seed = triplet.seeds[0];
+  if (!seed) return undefined;
+
+  return {
+    id: seed.id,
+    num: "01",
+    main: seed.surface,
+    sub: seed.shell,
+    seed,
+    seedIndex: 1 as PressureSeedCrossAxisSeed["seedIndex"],
+  };
+}
+
 export function LaunchLab() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const navigate = useNavigate();
   const [showPressureSeedCapture, setShowPressureSeedCapture] = useState(false);
-  const [showEmotionalBridge, setShowEmotionalBridge] = useState(false);
+  const [interactionState, setInteractionState] = useState<LaunchInteractionState>("ENTRY");
+  const interactionStateRef = useRef<LaunchInteractionState>("ENTRY");
+
+  const setLaunchInteractionState = useCallback((nextState: LaunchInteractionState) => {
+    interactionStateRef.current = nextState;
+    setInteractionState(nextState);
+  }, []);
+
+  const openPressureSeedCanvas = useCallback(() => {
+    if (interactionStateRef.current !== "ENTRY") return;
+    setLaunchInteractionState("PRESSURE_CANVAS_ACTIVE");
+    setShowPressureSeedCapture(true);
+  }, [setLaunchInteractionState]);
 
   const commitPressureSeedCapture = useCallback(
     (candidate: PressureSeedCrossAxisSeed | undefined) => {
       if (!candidate) return;
+      setLaunchInteractionState("SEED_SELECTED");
 
       const selectedPressureSeedContext = buildSelectedPressureSeedContext(candidate.seed);
       const tripleForceLandingResult = buildTripleForceLandingResult(selectedPressureSeedContext);
@@ -297,20 +335,23 @@ export function LaunchLab() {
       window.localStorage.setItem("guanyao:selectedPressureSliceId", candidate.seed.id);
       window.localStorage.setItem("guanyao:selectedPressureSliceText", candidate.seed.surface);
 
+      setLaunchInteractionState("SNAPSHOT_GENERATED");
+      setLaunchInteractionState("DYNAMICS_HANDOFF");
       navigate(GUANYAO_ROUTES.dynamics);
     },
-    [navigate],
+    [navigate, setLaunchInteractionState],
   );
 
   useEffect(() => {
-    if (!showEmotionalBridge) return undefined;
+    if (!showPressureSeedCapture || interactionState !== "PRESSURE_CANVAS_ACTIVE") return undefined;
 
     const timer = window.setTimeout(() => {
-      setShowPressureSeedCapture(true);
-    }, 2200);
+      if (interactionStateRef.current !== "PRESSURE_CANVAS_ACTIVE") return;
+      commitPressureSeedCapture(buildDeterministicPressureSeedCandidate());
+    }, PRESSURE_SEED_AUTO_RESOLVE_MS);
 
     return () => window.clearTimeout(timer);
-  }, [showEmotionalBridge]);
+  }, [commitPressureSeedCapture, interactionState, showPressureSeedCapture]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -331,6 +372,7 @@ export function LaunchLab() {
       field: [] as FieldStar[],
       textStars: [] as TextStar[],
       entryTransitionSnapshot: null as EntryTransitionSnapshot | null,
+      pressureCanvasOpened: false,
       entryCardSide: "front" as "front" | "back",
       entryCardFlipTo: "front" as "front" | "back",
       entryCardFlipT: 1,
@@ -536,7 +578,7 @@ export function LaunchLab() {
       } as unknown as EntryTransitionSnapshot;
     }
     function blockLegacyEntryExecution() {
-      console.warn("[LEGACY_ENTRY_BLOCKED]");
+      return;
     }
     function syncDialToCurrent() {
       const rangeOwner = m.state === STATE.GEO_BIND ? activeGeoDim() : activeDim();
@@ -552,65 +594,37 @@ export function LaunchLab() {
     function triggerEntryTransition() {
       if (m.handoffStarted) return;
       m.handoffStarted = true;
+      window.setTimeout(() => {
+        if (m.pressureCanvasOpened) return;
+        m.pressureCanvasOpened = true;
+        openPressureSeedCanvas();
+      }, ENTRY_HANDOFF_DELAY_MS);
+    }
+    function completeEntryCanvasHandoff() {
+      if (m.handoffStarted) return;
+      m.railProgress = 1;
+      m.phaseX = 6;
+      m.clutched = true;
+      m.entryTransitionSnapshot = m.entryTransitionSnapshot ?? buildEntryTransitionSnapshot();
+      m.state = STATE.DISPLAY_LOCK;
+      m.t = 0;
+      audio.form();
+      vibrate([0, 18, 24]);
+      blockLegacyEntryExecution();
+      triggerEntryTransition();
     }
     function commitCurrentDim() {
       if (m.clutched) return;
       if (m.state === STATE.GEO_BIND) {
         const geoDim = activeGeoDim();
         setGeoValue(geoDim, m.dialFloat);
-        m.railProgress = 1;
-        m.phaseX = 6;
-        m.clutched = true;
-        if (m.geoStep < GEO_DIMS.length - 1) {
-          m.geoStep += 1;
-          m.railProgress = 0;
-          m.phaseX = 0;
-          m.verticalTuned = false;
-          m.verticalDragMoved = false;
-          m.t = 0;
-          syncDialToCurrent();
-          audio.tick();
-          vibrate(10);
-          return;
-        }
-        m.dialFloat = m.coords.hour;
-        m.precisionY = Math.round((1 - (m.coords.hour / 23)) * 20);
-        m.state = STATE.DISPLAY_LOCK;
-        m.t = 0;
-        audio.form();
-        vibrate([0, 18, 24]);
-        blockLegacyEntryExecution();
-        triggerEntryTransition();
+        completeEntryCanvasHandoff();
         return;
       }
 
       const dim = activeDim();
       setDimValue(dim, m.dialFloat);
-      m.railProgress = 1;
-      m.phaseX = 6;
-      m.clutched = true;
-      if (m.chronoStep < CHRONO_DIMS.length - 1) {
-        m.chronoStep += 1;
-        m.railProgress = 0;
-        m.phaseX = 0;
-        m.verticalTuned = false;
-        m.verticalDragMoved = false;
-        m.t = 0;
-        syncDialToCurrent();
-        audio.tick();
-        vibrate(10);
-        return;
-      }
-      m.state = STATE.GEO_BIND;
-      m.geoStep = 0;
-      m.railProgress = 0;
-      m.phaseX = 0;
-      m.verticalTuned = false;
-      m.verticalDragMoved = false;
-      syncDialToCurrent();
-      m.t = 0;
-      audio.form();
-      vibrate([0, 18, 24]);
+      completeEntryCanvasHandoff();
     }
     function headAngle(tp: number) {
       const settle = smooth(0.6, 2.6, tp) * 0.05; // 缓缓侧头看你
@@ -1246,7 +1260,7 @@ export function LaunchLab() {
           vibrate(8);
         }
         if (!inCard && m.entryCardFlipT >= 1) {
-          setShowEmotionalBridge(true);
+          openPressureSeedCanvas();
         }
         return;
       }
@@ -1263,7 +1277,7 @@ export function LaunchLab() {
         const g = axisMetrics();
         const onVertical = Math.abs(x - g.axisX) < 52 && y >= g.axisTop - 18 && y <= g.axisBottom + 18;
         const onHorizontal = Math.abs(y - g.railY) < 42 && x >= g.railX0 - 12 && x <= g.railX1 + 12;
-        m.dragAxis = onVertical ? "y" : onHorizontal && m.verticalTuned ? "x" : null;
+        m.dragAxis = onVertical ? "y" : onHorizontal ? "x" : null;
         m.lastX = x;
         m.lastY = y;
         if (m.dragAxis === "x") {
@@ -1293,7 +1307,7 @@ export function LaunchLab() {
       const dx = x - m.lastX;
       const dy = y - m.lastY;
       if (m.dragAxis === null && Math.hypot(dx, dy) > 10) {
-        m.dragAxis = Math.abs(dx) >= Math.abs(dy) && m.verticalTuned ? "x" : "y";
+        m.dragAxis = Math.abs(dx) >= Math.abs(dy) ? "x" : "y";
       }
       if (m.dragAxis === "x") {
         const g = axisMetrics();
@@ -1301,7 +1315,7 @@ export function LaunchLab() {
         m.phaseX = Math.round(m.railProgress * 6);
         m.lastX = x;
         m.dwellT = 0;
-        if (m.railProgress >= 0.96) {
+        if (m.railProgress >= RAIL_COMMIT_THRESHOLD) {
           commitCurrentDim();
           m.dragging = false;
           m.dragAxis = null;
@@ -1338,8 +1352,7 @@ export function LaunchLab() {
       }
       const shouldCommitOnRelease =
         m.dragAxis === "x" &&
-        m.verticalTuned &&
-        m.railProgress >= 0.9 &&
+        m.railProgress >= RAIL_COMMIT_THRESHOLD &&
         (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND) &&
         !m.clutched;
       if (shouldCommitOnRelease) commitCurrentDim();
@@ -1370,7 +1383,7 @@ export function LaunchLab() {
       canvas.removeEventListener("pointerup", onUp);
       canvas.removeEventListener("pointercancel", onUp);
     };
-  }, []);
+  }, [openPressureSeedCanvas]);
 
   if (showPressureSeedCapture) {
     return <PressureSeedCrossAxisPage onComplete={commitPressureSeedCapture} />;
@@ -1378,50 +1391,11 @@ export function LaunchLab() {
 
   return (
     <GyMobilePreviewFrame background="#070512">
-      <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }} />
-      {showEmotionalBridge ? (
-        <>
-          <style>{`
-            @keyframes gy-emotional-bridge {
-              0% { opacity: 0; transform: translateY(8px); }
-              24% { opacity: 1; transform: translateY(0); }
-              76% { opacity: 1; transform: translateY(0); }
-              100% { opacity: 0; transform: translateY(-6px); }
-            }
-          `}</style>
-          <div
-            aria-label="进入当前压力前的状态确认"
-            style={{
-              position: "absolute",
-              inset: 0,
-              zIndex: 2,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "0 12%",
-              pointerEvents: "auto",
-              background: "radial-gradient(circle at 50% 52%, rgba(232,200,138,0.1), rgba(7,5,18,0.22) 46%, rgba(7,5,18,0.42) 100%)",
-              animation: "gy-emotional-bridge 2.2s ease-in-out forwards",
-            }}
-          >
-            <div
-              style={{
-                color: "#FFF3D0",
-                fontFamily: SANS,
-                fontSize: "clamp(22px, 5.8vw, 34px)",
-                fontWeight: 760,
-                lineHeight: 1.75,
-                letterSpacing: 0,
-                textAlign: "center",
-                textShadow: "0 0 22px rgba(232,200,138,0.34)",
-              }}
-            >
-              <div>STATE DETECTED</div>
-              <div>现在进入当前压力。</div>
-            </div>
-          </div>
-        </>
-      ) : null}
+      <canvas
+        ref={canvasRef}
+        data-launch-interaction-state={interactionState}
+        style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }}
+      />
     </GyMobilePreviewFrame>
   );
 }
