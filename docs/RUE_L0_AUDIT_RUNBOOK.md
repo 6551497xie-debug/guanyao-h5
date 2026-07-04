@@ -98,7 +98,44 @@ Monthly FAIL means:
 
 - the system must enter governance review and may need to return to MOCK MODE until the issue is resolved.
 
-## 5. AUDIT LOG FORMAT
+## 5. AUTONOMOUS EXECUTION NOTE
+
+Under AUDIT ONLY MODE, audit execution may use a fixed cadence:
+
+- DAILY;
+- WEEKLY;
+- MONTHLY.
+
+This cadence is used only for execution organization. It does not create a new governance layer or system structure change.
+
+## 6. EXECUTION FLOW
+
+Each audit cycle includes:
+
+1. Snapshot current RUE-L0 state.
+2. Validate metrics stability.
+3. Check flow consistency.
+4. Check beast vector bounds.
+5. Verify governance compliance.
+
+## 7. LOOP INTERPRETATION
+
+`T0 -> T1 -> T2 -> Tn` represents time-sequenced audit windows.
+
+It does not represent system state change. It only represents:
+
+> time slices of continuous observation windows.
+
+## 8. IMPORTANT CONSTRAINT
+
+This cadence mechanism:
+
+- does not create a new governance layer;
+- does not change system structure;
+- does not introduce automated execution;
+- is used only as a manual audit execution reference.
+
+## 9. AUDIT LOG FORMAT
 
 Audit records must use the following structure:
 
@@ -120,7 +157,7 @@ Required field meaning:
 - `metricsSnapshot`: relevant metrics, summary, or observation state used for the audit;
 - `notes`: concise human-readable finding notes.
 
-## 6. NO MODIFICATION RULE
+## 10. NO MODIFICATION RULE
 
 The audit process cannot:
 
@@ -136,13 +173,13 @@ The audit process cannot:
 
 Audit is observation and reporting only.
 
-## 7. PURPOSE
+## 11. PURPOSE
 
 This runbook is used to:
 
 > guide continuous operation monitoring for RUE-L0 while it remains frozen.
 
-## 8. CONSTRAINTS
+## 12. CONSTRAINTS
 
 This document forbids:
 
