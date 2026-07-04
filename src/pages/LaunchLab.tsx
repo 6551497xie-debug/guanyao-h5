@@ -1217,12 +1217,12 @@ export function LaunchLab() {
         ctx.textAlign = "center";
         ctx.fillStyle = "rgba(232,200,138,0.74)";
         ctx.font = `650 ${Math.min(13, m.w * 0.034)}px ${SANS}`;
-        ctx.fillText("点击光兽任意部位，进入下一屏", m.w / 2, m.h * 0.9);
+        ctx.fillText("点击光兽", m.w / 2, m.h * 0.9);
         ctx.restore();
         return;
       }
 
-      if (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY) {
+      if (m.state === STATE.ASSEMBLY || m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY) {
         ctx.save();
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -1271,7 +1271,7 @@ export function LaunchLab() {
         if (ctaSolid > 0.001) {
           ctx.font = `${Math.min(12, m.w * 0.031)}px ${SANS}`;
           ctx.fillStyle = `rgba(255,247,228,${(ctaSolid * 0.62 * (1 - enter)).toFixed(3)})`;
-          ctx.fillText("点击光兽任意部位，进入下一屏", cx, m.h * 0.77);
+          ctx.fillText("点击光兽", cx, m.h * 0.77);
           ctx.font = `${Math.min(11, m.w * 0.028)}px ${MONO}`;
           ctx.fillStyle = `rgba(232,200,138,${(ctaSolid * 0.42 * (1 - enter)).toFixed(3)})`;
           ctx.fillText("观爻 · GUANYAO", cx, m.h * 0.94);
