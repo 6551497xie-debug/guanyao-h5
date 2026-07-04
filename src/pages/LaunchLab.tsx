@@ -180,6 +180,20 @@ const DIM_LABEL: Record<ChronoDim, string> = { year: "压力入口", month: "状
 const DIM_STAGE_LABEL: Record<ChronoDim, string> = { year: "当前压力", month: "状态层级", day: "转化位置", hour: "资产入口" };
 const GEO_DIMS = ["province", "city"] as const;
 const GEO_LABEL: Record<GeoDim, string> = { province: "压力场", city: "转化场" };
+function toStarbeastEntryState(state: LaunchState): Parameters<typeof resolveStarbeastRenderState>[0] {
+  if (
+    state === STATE.STARFIELD_IDLE ||
+    state === STATE.ASSEMBLY ||
+    state === STATE.FORMATION ||
+    state === STATE.APPROACH ||
+    state === STATE.READY ||
+    state === STATE.STARBEAST_SANDIFY
+  ) {
+    return state;
+  }
+
+  return "BEAST_COLLAPSE_TRIGGERED";
+}
 const PROVINCE_OPTIONS = [
   "北京", "天津", "河北", "山西", "内蒙古", "辽宁", "吉林", "黑龙江", "上海", "江苏", "浙江", "安徽", "福建", "江西", "山东", "河南", "湖北",
   "湖南", "广东", "广西", "海南", "重庆", "四川", "贵州", "云南", "西藏", "陕西", "甘肃", "青海", "宁夏", "新疆", "香港", "澳门", "台湾",
@@ -885,6 +899,8 @@ export function LaunchLab() {
       ctx.fillStyle = neb;
       ctx.fillRect(0, 0, m.w, m.h);
       const now = performance.now() / 1000;
+      const entryState = toStarbeastEntryState(m.state);
+      const starbeastState = resolveStarbeastRenderState(entryState);
       const convergenceActive = isConvergenceState();
       const entryStaticActive = isEntryStaticState();
       const axisActive = m.state === STATE.STARBEAST_SANDIFY || isAxisState() || convergenceActive;
@@ -893,10 +909,10 @@ export function LaunchLab() {
         m.field.forEach((s) => {
           const blink = Math.pow(0.5 + 0.5 * Math.sin(now * (2.2 + s.sp * 1.8) + s.ph), 2.2);
           const flare = Math.pow(Math.max(0, Math.sin(now * (0.9 + s.sp) + s.ph * 1.7)), 18);
-          const a = Math.min(0.95, 0.16 + 0.34 * blink + flare * 0.38);
+          const a = Math.min(0.95, 0.16 + 0.34 * blink + flare * 0.38) * starbeastState.starfieldDensity;
           ctx.fillStyle = `rgba(${COLOR.field},${a.toFixed(3)})`;
           ctx.shadowColor = "rgba(230,236,255,0.34)";
-          ctx.shadowBlur = 2.5 + flare * 6;
+          ctx.shadowBlur = 2.5 + flare * 6 + starbeastState.lightAggregationIntensity * 2;
           ctx.beginPath();
           ctx.arc(s.x * m.w, s.y * m.h, s.r * (0.78 + blink * 0.42 + flare * 0.55), 0, Math.PI * 2);
           ctx.fill();
@@ -956,7 +972,7 @@ export function LaunchLab() {
           : m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY
               ? 0.2 * (1 - smooth(0.2, 3.0, m.afterForm)) + 0.035
               : 0.12;
-      const fieldA = assemblyFade * (1 - enter * 0.55);
+      const fieldA = assemblyFade * starbeastState.starfieldDensity * (1 - enter * 0.55);
       m.field.forEach((s, i) => {
         const isLunarMansion = i < NODES.length;
         if (isLunarMansion && m.state !== STATE.STARFIELD_IDLE) return;
@@ -974,7 +990,7 @@ export function LaunchLab() {
         const a = Math.min(0.95, base + pulse * blink + flare * 0.38) * fieldA;
         ctx.fillStyle = `rgba(${COLOR.field},${a.toFixed(3)})`;
         ctx.shadowColor = isLunarMansion ? "rgba(255,243,208,0.72)" : "rgba(230,236,255,0.34)";
-        ctx.shadowBlur = (isLunarMansion ? 8 : 2.5) + flare * (isLunarMansion ? 12 : 6);
+        ctx.shadowBlur = (isLunarMansion ? 8 : 2.5) + flare * (isLunarMansion ? 12 : 6) + starbeastState.lightAggregationIntensity * 4;
         ctx.beginPath();
         ctx.arc(s.x * m.w, s.y * m.h, s.r * (0.78 + blink * 0.42 + flare * 0.55), 0, Math.PI * 2);
         ctx.fill();
@@ -983,7 +999,7 @@ export function LaunchLab() {
 
       const pos = NODES.map((_, i) => {
         const p = nodePos(i);
-        if (m.state !== STATE.STARBEAST_SANDIFY) return p;
+        if (!starbeastState.collapseAnimationTrigger) return p;
         const k = smooth(0.05, 1.15, m.t);
         const gp = i % 2 === 0
           ? railPoint(i % 7)
@@ -995,16 +1011,16 @@ export function LaunchLab() {
           conv: 1,
         };
       });
-      const beastAlpha = m.state === STATE.STARBEAST_SANDIFY
+      const beastAlpha = starbeastState.collapseAnimationTrigger
         ? 1 - smooth(0.25, 1.18, m.t)
         : isAxisState()
           ? 0
-          : 1;
+          : Math.max(0.2, starbeastState.beastEmergenceTiming);
 
       // 连线（两端都汇聚到位才显，亮度随汇聚）
       ctx.lineCap = "round";
-      ctx.shadowColor = "rgba(232,200,138,0.35)";
-      ctx.shadowBlur = 5;
+      ctx.shadowColor = `rgba(232,200,138,${(0.22 + starbeastState.lightAggregationIntensity * 0.18).toFixed(3)})`;
+      ctx.shadowBlur = 4 + starbeastState.lightAggregationIntensity * 4;
       if (beastAlpha > 0.001) EDGES.forEach(([a, b]) => {
         const pa = pos[a]!;
         const pb = pos[b]!;
