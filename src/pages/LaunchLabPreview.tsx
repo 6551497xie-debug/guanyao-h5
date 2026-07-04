@@ -16,6 +16,10 @@ type PreviewVisualProfile = {
   dispersion: number;
   lineOpacity: number;
   focalPull: number;
+  axisOpacity: number;
+  axisSpread: number;
+  axisCompression: number;
+  intersectionOpacity: number;
 };
 
 const STAR_POINTS = [
@@ -40,6 +44,25 @@ const CLUSTER_POINTS = [
   [48, 58],
   [54, 64],
   [50, 72],
+];
+
+const AXIS_LINES = [
+  { left: 50, top: 16, width: 1.2, height: 70, rotate: 0 },
+  { left: 18, top: 50, width: 64, height: 1.2, rotate: 0 },
+  { left: 26, top: 27, width: 58, height: 1.1, rotate: 34 },
+  { left: 22, top: 66, width: 58, height: 1.1, rotate: -28 },
+];
+
+const AXIS_INTERSECTIONS = [
+  [35, 34],
+  [50, 34],
+  [65, 34],
+  [35, 50],
+  [50, 50],
+  [65, 50],
+  [35, 66],
+  [50, 66],
+  [65, 66],
 ];
 
 const PAGE_STYLE: CSSProperties = {
@@ -138,6 +161,14 @@ const LINE_STYLE: CSSProperties = {
     "linear-gradient(to bottom, transparent, rgba(242, 211, 139, 0.52), transparent)",
 };
 
+const AXIS_LINE_STYLE: CSSProperties = {
+  position: "absolute",
+  transformOrigin: "50% 50%",
+  background:
+    "linear-gradient(90deg, transparent, rgba(243, 211, 147, 0.62), transparent)",
+  boxShadow: "0 0 14px rgba(243, 211, 147, 0.32)",
+};
+
 const STATUS_STYLE: CSSProperties = {
   display: "grid",
   gap: 8,
@@ -171,7 +202,7 @@ function getVisualProfile(previewUser: PreviewUser): PreviewVisualProfile {
     return {
       modeText: "OLD_USER / PRESSURE_SEED_LOADING",
       primaryText: "压力正在聚合…",
-      secondaryText: "光点被更强的中心拉力收紧，压力密度正在成形。",
+      secondaryText: "轴场已经成形，压力点正沿交点向中心压缩。",
       starOpacity: 0.82,
       clusterOpacity: 1,
       beastGlow: 1,
@@ -182,13 +213,17 @@ function getVisualProfile(previewUser: PreviewUser): PreviewVisualProfile {
       dispersion: 0.18,
       lineOpacity: 0.92,
       focalPull: 1,
+      axisOpacity: 0.86,
+      axisSpread: 0.3,
+      axisCompression: 0.82,
+      intersectionOpacity: 1,
     };
   }
 
   return {
     modeText: "NEW_USER / ORIGINAL_COORDINATE_LOADING",
     primaryText: "坐标正在生成…",
-    secondaryText: "星光保持更大的空间距离，中心收束更柔和。",
+    secondaryText: "光从交点上长出，两条原始坐标轴正在展开。",
     starOpacity: 0.34,
     clusterOpacity: 0.38,
     beastGlow: 0.48,
@@ -199,6 +234,10 @@ function getVisualProfile(previewUser: PreviewUser): PreviewVisualProfile {
     dispersion: 1,
     lineOpacity: 0.36,
     focalPull: 0,
+    axisOpacity: 0.58,
+    axisSpread: 1.18,
+    axisCompression: 0,
+    intersectionOpacity: 0.52,
   };
 }
 
@@ -220,6 +259,56 @@ function resolvePointPosition(
   };
 }
 
+function resolveAxisLineStyle(
+  axis: (typeof AXIS_LINES)[number],
+  profile: PreviewVisualProfile
+): CSSProperties {
+  const centerX = 50;
+  const centerY = 50;
+  const xFromCenter = axis.left - centerX;
+  const yFromCenter = axis.top - centerY;
+  const spreadOffset = profile.axisSpread * 6;
+  const compressionOffset = profile.axisCompression * 5;
+  const left =
+    axis.left +
+    (xFromCenter / 50) * spreadOffset -
+    (xFromCenter / 50) * compressionOffset;
+  const top =
+    axis.top +
+    (yFromCenter / 50) * spreadOffset -
+    (yFromCenter / 50) * compressionOffset;
+  const scale = 1 + profile.axisSpread * 0.12 - profile.axisCompression * 0.16;
+
+  return {
+    ...AXIS_LINE_STYLE,
+    left: `${left}%`,
+    top: `${top}%`,
+    width: `${axis.width}%`,
+    height: `${axis.height}%`,
+    opacity: profile.axisOpacity,
+    transform: `translate(-50%, -50%) rotate(${axis.rotate}deg) scale(${scale})`,
+    transition: `opacity ${profile.aggregationDuration} ease, transform ${profile.aggregationDuration} ease`,
+  };
+}
+
+function resolveIntersectionPosition(
+  left: number,
+  top: number,
+  profile: PreviewVisualProfile
+) {
+  const centerX = 50;
+  const centerY = 50;
+  const xFromCenter = left - centerX;
+  const yFromCenter = top - centerY;
+  const spread = profile.axisSpread * 5;
+  const compression = profile.axisCompression * 7;
+
+  return {
+    left: left + (xFromCenter / 50) * spread - (xFromCenter / 50) * compression,
+    top: top + (yFromCenter / 50) * spread - (yFromCenter / 50) * compression,
+  };
+}
+
 export function LaunchLabPreview() {
   const previewUser = getPreviewUser();
   const profile = getVisualProfile(previewUser);
@@ -233,7 +322,7 @@ export function LaunchLabPreview() {
           <p style={EYEBROW_STYLE}>SIMULATION ONLY</p>
           <h1 style={TITLE_STYLE}>光兽入口路径预览</h1>
           <p style={BODY_STYLE}>
-            新用户与老用户共用同一片星空，只在装填强度与压力密度上分化。
+            新用户与老用户共用同一片星空，只在轴线生成与压力压缩上分化。
           </p>
         </div>
 
@@ -247,6 +336,13 @@ export function LaunchLabPreview() {
             }}
           />
 
+          {AXIS_LINES.map((axis) => (
+            <span
+              key={`${axis.left}-${axis.top}-${axis.rotate}`}
+              style={resolveAxisLineStyle(axis, profile)}
+            />
+          ))}
+
           {[0, 24, -24, 42, -42].map((rotate) => (
             <span
               key={rotate}
@@ -258,6 +354,28 @@ export function LaunchLabPreview() {
               }}
             />
           ))}
+
+          {AXIS_INTERSECTIONS.map(([left, top]) => {
+            const point = resolveIntersectionPosition(left, top, profile);
+            const size = 5 + profile.clusterScale * 2;
+
+            return (
+              <span
+                key={`axis-${left}-${top}`}
+                style={{
+                  ...POINT_STYLE,
+                  left: `${point.left}%`,
+                  top: `${point.top}%`,
+                  width: size,
+                  height: size,
+                  marginLeft: -size / 2,
+                  marginTop: -size / 2,
+                  opacity: profile.intersectionOpacity,
+                  transition: `opacity ${profile.aggregationDuration} ease, left ${profile.aggregationDuration} ease, top ${profile.aggregationDuration} ease`,
+                }}
+              />
+            );
+          })}
 
           {STAR_POINTS.map(([left, top]) => {
             const point = resolvePointPosition(left, top, profile);
