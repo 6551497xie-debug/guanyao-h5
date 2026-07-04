@@ -345,6 +345,7 @@ export function LaunchLab() {
   const [interactionState, setInteractionState] = useState<LaunchInteractionState>("ENTRY");
   const interactionStateRef = useRef<LaunchInteractionState>("ENTRY");
   const [scene, setScene] = useState<SceneState>("ENTRY");
+  const [clickFlash, setClickFlash] = useState(false);
   const sceneRef = useRef<SceneState>("ENTRY");
   const entryHandoffRef = useRef<((mode: EntryHandoffMode) => void) | null>(null);
 
@@ -371,6 +372,11 @@ export function LaunchLab() {
   const enterNext = useCallback(() => {
     const isNewUser = true;
     entryHandoffRef.current?.(isNewUser ? "NEW_USER" : "OLD_USER");
+  }, []);
+
+  const triggerClickFlash = useCallback(() => {
+    setClickFlash(true);
+    window.setTimeout(() => setClickFlash(false), 180);
   }, []);
 
   const commitPressureSeedCapture = useCallback(
@@ -848,11 +854,27 @@ export function LaunchLab() {
       const pos = NODES.map((_, i) => nodePos(i));
       const nodeHit = pos.some((p) => Math.hypot(x - p.x, y - p.y) <= Math.max(22, p.p * 28));
       if (nodeHit) return true;
-      return EDGES.some(([a, b]) => {
+      const edgeHit = EDGES.some(([a, b]) => {
         const pa = pos[a]!;
         const pb = pos[b]!;
         return isPointNearSegment(x, y, pa.x, pa.y, pb.x, pb.y) <= 18;
       });
+      if (edgeHit) return true;
+
+      const minX = Math.min(...pos.map((p) => p.x));
+      const maxX = Math.max(...pos.map((p) => p.x));
+      const minY = Math.min(...pos.map((p) => p.y));
+      const maxY = Math.max(...pos.map((p) => p.y));
+      const padX = Math.max(72, m.w * 0.14);
+      const padY = Math.max(86, m.h * 0.11);
+      const cx = (minX + maxX) / 2;
+      const cy = (minY + maxY) / 2;
+      const rx = Math.max((maxX - minX) / 2 + padX, m.w * 0.24);
+      const ry = Math.max((maxY - minY) / 2 + padY, m.h * 0.24);
+      const ellipticalHit = ((x - cx) * (x - cx)) / (rx * rx) + ((y - cy) * (y - cy)) / (ry * ry) <= 1;
+      if (ellipticalHit) return true;
+
+      return x >= minX - padX && x <= maxX + padX && y >= minY - padY && y <= maxY + padY;
     }
 
     function step(dt: number) {
@@ -1535,7 +1557,12 @@ export function LaunchLab() {
         }
         return;
       }
-      if (m.state === STATE.READY && m.presentDone && isBeastHit(x, y)) {
+      const beastClickReady =
+        m.state === STATE.FORMATION ||
+        m.state === STATE.APPROACH ||
+        m.state === STATE.READY;
+      if (beastClickReady && isBeastHit(x, y)) {
+        triggerClickFlash();
         emitNode1MirrorActivatedEvent();
         return;
       }
@@ -1655,7 +1682,7 @@ export function LaunchLab() {
       canvas.removeEventListener("pointercancel", onUp);
       entryHandoffRef.current = null;
     };
-  }, [openPressureSeedCanvas, setSceneState]);
+  }, [openPressureSeedCanvas, setSceneState, triggerClickFlash]);
 
   if (showPressureSeedCapture) {
     return <PressureSeedCrossAxisPage onComplete={commitPressureSeedCapture} />;
@@ -1663,12 +1690,32 @@ export function LaunchLab() {
 
   return (
     <GyMobilePreviewFrame background="#070512">
-      <canvas
-        ref={canvasRef}
-        data-launch-interaction-state={interactionState}
-        data-launch-scene={scene}
-        style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }}
-      />
+      <div className="light-beast-hitbox" style={{ position: "relative", width: "100%", height: "100%" }}>
+        <canvas
+          ref={canvasRef}
+          data-launch-interaction-state={interactionState}
+          data-launch-scene={scene}
+          style={{ width: "100%", height: "100%", display: "block", touchAction: "none", cursor: scene === "ENTRY" ? "pointer" : "default" }}
+        />
+        {clickFlash && (
+          <div
+            className="click-flash"
+            style={{
+              position: "absolute",
+              inset: 0,
+              pointerEvents: "none",
+              background: "rgba(255,255,255,0.04)",
+              animation: "guanyao-entry-click-flash 180ms ease forwards",
+            }}
+          />
+        )}
+        <style>{`
+          @keyframes guanyao-entry-click-flash {
+            from { opacity: 0.2; }
+            to { opacity: 0; }
+          }
+        `}</style>
+      </div>
     </GyMobilePreviewFrame>
   );
 }
