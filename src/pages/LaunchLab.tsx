@@ -853,12 +853,44 @@ export function LaunchLab() {
       const axisActive = m.state === STATE.STARBEAST_SANDIFY || isAxisState() || convergenceActive;
 
       if (m.state === STATE.STARFIELD_IDLE) {
+        m.field.forEach((s) => {
+          const blink = Math.pow(0.5 + 0.5 * Math.sin(now * (2.2 + s.sp * 1.8) + s.ph), 2.2);
+          const flare = Math.pow(Math.max(0, Math.sin(now * (0.9 + s.sp) + s.ph * 1.7)), 18);
+          const a = Math.min(0.95, 0.16 + 0.34 * blink + flare * 0.38);
+          ctx.fillStyle = `rgba(${COLOR.field},${a.toFixed(3)})`;
+          ctx.shadowColor = "rgba(230,236,255,0.34)";
+          ctx.shadowBlur = 2.5 + flare * 6;
+          ctx.beginPath();
+          ctx.arc(s.x * m.w, s.y * m.h, s.r * (0.78 + blink * 0.42 + flare * 0.55), 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        });
+
+        const topLineStarts = [0.35, 0.95];
+        const topGather = 1.15;
+        m.textStars.forEach((s, i) => {
+          if (s.line > 1) return;
+          const t0 = topLineStarts[s.line]!;
+          const stagger = ((i % 19) / 19) * 0.35;
+          const e = smooth(t0 + stagger, t0 + topGather + stagger, m.t);
+          if (e <= 0.001) return;
+          const x = lerp(s.ox, s.tx, e);
+          const y = lerp(s.oy, s.ty, e);
+          const tw = 0.65 + 0.35 * Math.sin(now * s.sp + s.ph);
+          const solid = smooth(t0 + topGather - 0.1, t0 + topGather + 0.65, m.t);
+          const a = e * 0.85 * tw * (1 - solid * 0.55);
+          ctx.fillStyle = `rgba(${mixRGB(PAL.coolWhite, PAL.cream, e)},${a.toFixed(3)})`;
+          ctx.beginPath();
+          ctx.arc(x, y, 1.1, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
         ctx.save();
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.font = `600 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
-        const titleAlpha = smooth(0.6, 1.45, m.t);
-        const subtitleAlpha = smooth(1.2, 2.15, m.t);
+        const titleAlpha = smooth(1.35, 2.1, m.t);
+        const subtitleAlpha = smooth(1.95, 2.75, m.t);
         if (titleAlpha > 0.001) {
           ctx.fillStyle = `rgba(255,247,228,${(titleAlpha * 0.95).toFixed(3)})`;
           ctx.fillText(TOP_LINES[0], m.w / 2, m.h * 0.18);
@@ -1182,6 +1214,7 @@ export function LaunchLab() {
         const lineStarts = [0.2, 0.55, 3.1];
         const gather = 1.35;
         m.textStars.forEach((s, i) => {
+          if (s.line !== 2) return;
           const t0 = lineStarts[s.line]!;
           const stagger = ((i % 19) / 19) * 0.38;
           const e = smooth(t0 + stagger, t0 + gather + stagger, m.afterForm);
@@ -1200,8 +1233,6 @@ export function LaunchLab() {
         ctx.textBaseline = "middle";
         const textSize = Math.min(18, m.w * 0.046);
         [
-          { text: TOP_LINES[0], y: 0.18, start: lineStarts[0]!, weight: 600 },
-          { text: TOP_LINES[1], y: 0.23, start: lineStarts[1]!, weight: 600 },
           { text: CTA_LINE, y: 0.82, start: lineStarts[2]!, weight: 700 },
         ].forEach((line) => {
           const solid = smooth(line.start + gather - 0.1, line.start + gather + 0.8, m.afterForm);
