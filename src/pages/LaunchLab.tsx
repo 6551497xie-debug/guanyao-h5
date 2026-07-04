@@ -489,12 +489,6 @@ export function LaunchLab() {
     function isEntryStaticState() {
       return m.state === STATE.ENTRY_STATIC_RENDER;
     }
-    function isEntryClickState(state: LaunchState) {
-      return state === STATE.STARFIELD_IDLE ||
-        state === STATE.ASSEMBLY ||
-        state === STATE.FORMATION ||
-        state === STATE.APPROACH;
-    }
     function axisMetrics() {
       const cols = 7;
       const rows = 21;
@@ -716,6 +710,26 @@ export function LaunchLab() {
         };
       }
       return { x: targetX, y: targetY, conv, p };
+    }
+
+    function isPointNearSegment(px: number, py: number, ax: number, ay: number, bx: number, by: number) {
+      const dx = bx - ax;
+      const dy = by - ay;
+      const lenSq = dx * dx + dy * dy;
+      if (lenSq <= 0.0001) return Math.hypot(px - ax, py - ay);
+      const t = clamp(((px - ax) * dx + (py - ay) * dy) / lenSq, 0, 1);
+      return Math.hypot(px - (ax + dx * t), py - (ay + dy * t));
+    }
+
+    function isBeastHit(x: number, y: number) {
+      const pos = NODES.map((_, i) => nodePos(i));
+      const nodeHit = pos.some((p) => Math.hypot(x - p.x, y - p.y) <= Math.max(22, p.p * 28));
+      if (nodeHit) return true;
+      return EDGES.some(([a, b]) => {
+        const pa = pos[a]!;
+        const pb = pos[b]!;
+        return isPointNearSegment(x, y, pa.x, pa.y, pb.x, pb.y) <= 18;
+      });
     }
 
     function step(dt: number) {
@@ -1203,9 +1217,21 @@ export function LaunchLab() {
         ctx.textAlign = "center";
         ctx.fillStyle = "rgba(232,200,138,0.74)";
         ctx.font = `650 ${Math.min(13, m.w * 0.034)}px ${SANS}`;
-        ctx.fillText("轻触空白，进入当前压力", m.w / 2, m.h * 0.9);
+        ctx.fillText("点击光兽任意部位，进入下一屏", m.w / 2, m.h * 0.9);
         ctx.restore();
         return;
+      }
+
+      if (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY) {
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `600 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
+        ctx.fillStyle = "rgba(255,247,228,0.95)";
+        ctx.fillText(TOP_LINES[0], m.w / 2, m.h * 0.18);
+        ctx.fillStyle = "rgba(255,247,228,0.82)";
+        ctx.fillText(TOP_LINES[1], m.w / 2, m.h * 0.23);
+        ctx.restore();
       }
 
       // Text resolves after the entry form stabilizes.
@@ -1243,9 +1269,9 @@ export function LaunchLab() {
         });
         const ctaSolid = smooth(lineStarts[2]! + gather - 0.1, lineStarts[2]! + gather + 0.8, m.afterForm);
         if (ctaSolid > 0.001) {
-          ctx.font = `${Math.min(13, m.w * 0.033)}px ${MONO}`;
-          ctx.fillStyle = `rgba(232,200,138,${(ctaSolid * 0.7 * (1 - enter)).toFixed(3)})`;
-          ctx.fillText("轻触 · 开始", cx, m.h * 0.88);
+          ctx.font = `${Math.min(12, m.w * 0.031)}px ${SANS}`;
+          ctx.fillStyle = `rgba(255,247,228,${(ctaSolid * 0.62 * (1 - enter)).toFixed(3)})`;
+          ctx.fillText("点击光兽任意部位，进入下一屏", cx, m.h * 0.77);
           ctx.font = `${Math.min(11, m.w * 0.028)}px ${MONO}`;
           ctx.fillStyle = `rgba(232,200,138,${(ctaSolid * 0.42 * (1 - enter)).toFixed(3)})`;
           ctx.fillText("观爻 · GUANYAO", cx, m.h * 0.94);
@@ -1286,10 +1312,6 @@ export function LaunchLab() {
       const r = canvas!.getBoundingClientRect();
       const x = e.clientX - r.left;
       const y = e.clientY - r.top;
-      if (isEntryClickState(m.state)) {
-        openPressureSeedCanvas();
-        return;
-      }
       if (m.state === STATE.ENTRY_STATIC_RENDER) {
         const rect = getEntryCardRendererRect(m.w, m.h);
         const inCard = x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
@@ -1304,7 +1326,7 @@ export function LaunchLab() {
         }
         return;
       }
-      if (m.state === STATE.READY && m.presentDone) {
+      if (m.state === STATE.READY && m.presentDone && isBeastHit(x, y)) {
         openPressureSeedCanvas();
         return;
       }
