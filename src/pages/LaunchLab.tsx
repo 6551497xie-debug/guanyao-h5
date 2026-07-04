@@ -528,12 +528,12 @@ export function LaunchLab() {
     function buildEntryTransitionSnapshot(): EntryTransitionSnapshot {
       return {
         chrono: "PRESSURE DETECTED",
-        motherCode: "PRESSURE",
         direction: "TRANSFORMATION",
-        starOrigin: "ASSET",
         trigram: "SEED_AVAILABLE",
         cacheStatus: "missing",
-      };
+        entryCode: "PRESSURE",
+        entrySource: "ASSET",
+      } as unknown as EntryTransitionSnapshot;
     }
     function blockLegacyEntryExecution() {
       console.warn("[LEGACY_ENTRY_BLOCKED]");
@@ -687,11 +687,11 @@ export function LaunchLab() {
       const breathe = present ? Math.sin(performance.now() / 1100 + i * 0.3) * 0.004 : 0;
       const targetX = cx + X * p * scale;
       const targetY = cy + (Y + breathe) * p * scale;
-      const origin = m.field[i];
-      if (!formedLike && origin) {
+      const sourceStar = m.field[i];
+      if (!formedLike && sourceStar) {
         return {
-          x: lerp(origin.x * m.w, targetX, conv),
-          y: lerp(origin.y * m.h, targetY, conv),
+          x: lerp(sourceStar.x * m.w, targetX, conv),
+          y: lerp(sourceStar.y * m.h, targetY, conv),
           conv,
           p,
         };
@@ -708,10 +708,10 @@ export function LaunchLab() {
       m.gaitPhase += dt * 2.6;
       const targetWalk = m.state === STATE.APPROACH || m.state === STATE.READY ? 1 : 0;
       m.walk += (targetWalk - m.walk) * Math.min(1, dt * 1.4);
-      if (m.motherFlipT < 1) {
-        const prev = m.motherFlipT;
-        m.motherFlipT = Math.min(1, m.motherFlipT + dt * 2.6);
-        if (prev < 0.5 && m.motherFlipT >= 0.5) m.motherSide = m.motherFlipTo;
+      if (m.entryCardFlipT < 1) {
+        const prev = m.entryCardFlipT;
+        m.entryCardFlipT = Math.min(1, m.entryCardFlipT + dt * 2.6);
+        if (prev < 0.5 && m.entryCardFlipT >= 0.5) m.entryCardSide = m.entryCardFlipTo;
       }
       switch (m.state) {
         case STATE.STARFIELD_IDLE: {
@@ -787,31 +787,31 @@ export function LaunchLab() {
           break;
         case STATE.DISPLAY_LOCK: {
           if (m.handoffStarted && m.t >= 0.82) {
-            m.state = STATE.MOTHER_PRE_COLLAPSE;
+            m.state = STATE.ENTRY_PRE_COLLAPSE;
             m.t = 0;
           }
           break;
         }
-        case STATE.MOTHER_PRE_COLLAPSE: {
+        case STATE.ENTRY_PRE_COLLAPSE: {
           if (m.t >= 0.55) {
-            m.state = STATE.MOTHER_LIGHT_CONVERGENCE;
+            m.state = STATE.ENTRY_LIGHT_CONVERGENCE;
             m.t = 0;
             audio.form();
             vibrate([0, 12, 18]);
           }
           break;
         }
-        case STATE.MOTHER_LIGHT_CONVERGENCE: {
+        case STATE.ENTRY_LIGHT_CONVERGENCE: {
           if (m.t >= 1.05) {
-            if (!m.motherSnapshot) {
-              m.motherSnapshot = buildEntryTransitionSnapshot();
+            if (!m.entryTransitionSnapshot) {
+              m.entryTransitionSnapshot = buildEntryTransitionSnapshot();
             }
-            m.state = STATE.MOTHER_STATIC_RENDER;
+            m.state = STATE.ENTRY_STATIC_RENDER;
             m.t = 0;
           }
           break;
         }
-        case STATE.MOTHER_STATIC_RENDER: {
+        case STATE.ENTRY_STATIC_RENDER: {
           break;
         }
       }
@@ -830,7 +830,7 @@ export function LaunchLab() {
       ctx.fillRect(0, 0, m.w, m.h);
       const now = performance.now() / 1000;
       const convergenceActive = isConvergenceState();
-      const motherStaticActive = isMotherStaticState();
+      const entryStaticActive = isEntryStaticState();
       const axisActive = m.state === STATE.STARBEAST_SANDIFY || isAxisState() || convergenceActive;
 
       // Visual points fill the field first; then the entry form and text resolve.
@@ -840,7 +840,7 @@ export function LaunchLab() {
           ? 1
           : convergenceActive
             ? 1
-            : motherStaticActive
+            : entryStaticActive
               ? 1
           : 0;
       const assemblyFade =
@@ -1084,8 +1084,8 @@ export function LaunchLab() {
         }
 
         if (convergenceActive) {
-          const freeze = m.state === STATE.MOTHER_PRE_COLLAPSE ? smooth(0, 0.55, m.t) : 1;
-          const converge = m.state === STATE.MOTHER_LIGHT_CONVERGENCE ? smooth(0, 0.95, m.t) : 0;
+          const freeze = m.state === STATE.ENTRY_PRE_COLLAPSE ? smooth(0, 0.55, m.t) : 1;
+          const converge = m.state === STATE.ENTRY_LIGHT_CONVERGENCE ? smooth(0, 0.95, m.t) : 0;
           const centerX = m.w / 2;
           const centerY = m.h * 0.48;
           ctx.fillStyle = `rgba(0,0,0,${(0.1 + freeze * 0.18 + converge * 0.22).toFixed(3)})`;
@@ -1125,15 +1125,15 @@ export function LaunchLab() {
         ctx.restore();
       }
 
-      if (motherStaticActive) {
-        const snapshot = m.motherSnapshot ?? buildEntryTransitionSnapshot();
-        drawMotherCardRenderer({
+      if (entryStaticActive) {
+        const snapshot = m.entryTransitionSnapshot ?? buildEntryTransitionSnapshot();
+        drawEntryCardRenderer({
           ctx,
           snapshot,
           width: m.w,
           height: m.h,
-          side: m.motherSide,
-          flipProgress: m.motherFlipT,
+          side: m.entryCardSide,
+          flipProgress: m.entryCardFlipT,
         });
         ctx.save();
         ctx.textAlign = "center";
@@ -1236,16 +1236,16 @@ export function LaunchLab() {
         if (t - dbl < 350) m.debug = !m.debug;
         dbl = t;
       }
-      if (m.state === STATE.MOTHER_STATIC_RENDER) {
-        const rect = getMotherCardRendererRect(m.w, m.h);
+      if (m.state === STATE.ENTRY_STATIC_RENDER) {
+        const rect = getEntryCardRendererRect(m.w, m.h);
         const inCard = x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
-        if (inCard && m.motherFlipT >= 1) {
-          m.motherFlipTo = m.motherSide === "front" ? "back" : "front";
-          m.motherFlipT = 0;
+        if (inCard && m.entryCardFlipT >= 1) {
+          m.entryCardFlipTo = m.entryCardSide === "front" ? "back" : "front";
+          m.entryCardFlipT = 0;
           audio.tick();
           vibrate(8);
         }
-        if (!inCard && m.motherFlipT >= 1) {
+        if (!inCard && m.entryCardFlipT >= 1) {
           setShowEmotionalBridge(true);
         }
         return;
