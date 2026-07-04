@@ -304,6 +304,7 @@ function buildDeterministicPressureSeedCandidate(): PressureSeedCrossAxisSeed | 
 export function LaunchLab() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const navigate = useNavigate();
+  const [node1, setNode1] = useState(false);
   const [showPressureSeedCapture, setShowPressureSeedCapture] = useState(false);
   const [interactionState, setInteractionState] = useState<LaunchInteractionState>("ENTRY");
   const interactionStateRef = useRef<LaunchInteractionState>("ENTRY");
@@ -1376,6 +1377,74 @@ export function LaunchLab() {
       canvas.removeEventListener("pointercancel", onUp);
     };
   }, [openPressureSeedCanvas]);
+
+  if (node1) {
+    return (
+      <GyMobilePreviewFrame background="#070512">
+        <div
+          style={{
+            minHeight: "100%",
+            display: "grid",
+            placeItems: "center",
+            padding: 24,
+            color: COLOR.text,
+            fontFamily: SANS,
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: 22, fontWeight: 700 }}>Node 1: Mirror Activated</div>
+        </div>
+      </GyMobilePreviewFrame>
+    );
+  }
+
+  return (
+    <GyMobilePreviewFrame background="#070512">
+      <div
+        style={{
+          minHeight: "100%",
+          display: "grid",
+          alignContent: "center",
+          gap: 18,
+          padding: 28,
+          color: COLOR.text,
+          fontFamily: SANS,
+          textAlign: "center",
+        }}
+      >
+        <div style={{ fontSize: 28, lineHeight: 1.15, fontWeight: 800 }}>
+          PRESSURE → TRANSFORMATION → ASSET
+        </div>
+        <div style={{ fontSize: 15, lineHeight: 1.6, opacity: 0.82 }}>
+          This system converts your current state into structured transformation.
+        </div>
+        <div style={{ fontSize: 12, lineHeight: 1.5, opacity: 0.6 }}>
+          Enter the first node.
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            console.log("ENTER_NODE_1");
+            setNode1(true);
+          }}
+          style={{
+            width: "100%",
+            minHeight: 48,
+            border: "1px solid rgba(232,200,138,0.42)",
+            borderRadius: 8,
+            background: "rgba(232,200,138,0.12)",
+            color: COLOR.warmBright,
+            fontFamily: SANS,
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          唤醒它，照见你的样子
+        </button>
+      </div>
+    </GyMobilePreviewFrame>
+  );
 
   if (showPressureSeedCapture) {
     return <PressureSeedCrossAxisPage onComplete={commitPressureSeedCapture} />;
