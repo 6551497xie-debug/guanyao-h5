@@ -126,8 +126,8 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
     let incomingSeeded = false;
     let incomingT = 0;
     let voidFrame = 0; // 进场四拍·第一/二拍：黑屏停顿 + 入场脉冲
-    const weldFixedLines = ["你刚刚接住的，", "不是一个情绪。", "也不是一个问题。"];
-    const weldTypedLines = ["它只是正在发生。", "我们一起轻轻看一下它。", "然后，", "带着它继续往前。"];
+    const weldFixedLines = ["CURRENT STATE IDENTIFIED", "SEED AVAILABLE", "TRANSFORMATION READY"];
+    const weldTypedLines = ["PRESSURE DETECTED", "SEED AVAILABLE", "TRANSFORMATION READY", "ASSET ENTRY READY"];
     const rail = {
       x: 0,
       y: 0,
@@ -333,57 +333,15 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       }
     }
 
-    function wrapTextLines(text: string, maxWidth: number, maxLines: number) {
-      const source = Array.from(text);
-      const lines: string[] = [];
-      let current = "";
-
-      for (const character of source) {
-        const next = `${current}${character}`;
-        if (current && ctx.measureText(next).width > maxWidth) {
-          lines.push(current);
-          current = character;
-          if (lines.length >= maxLines) break;
-        } else {
-          current = next;
-        }
-      }
-
-      if (current && lines.length < maxLines) lines.push(current);
-      return lines.slice(0, maxLines);
-    }
-
-    function splitSentence(text: string) {
-      const normalized = text.replace(/^[-—\s]+/, "");
-      return normalized.match(/[^。]+。?/g) ?? [normalized];
-    }
-
-    function buildSeedTextLines(main: string, sub: string, maxWidth: number) {
-      const clauses = [...splitSentence(main), ...splitSentence(sub)];
-      const lines: string[] = [];
-
-      clauses.forEach((clause) => {
-        if (lines.length >= 3) return;
-        if (ctx.measureText(clause).width > maxWidth) {
-          const wrapped = wrapTextLines(clause, maxWidth, 3 - lines.length);
-          lines.push(...wrapped.slice(0, Math.max(0, 3 - lines.length)));
-        } else {
-          lines.push(clause);
-        }
-      });
-
-      return lines.slice(0, 3);
-    }
-
     function drawSeedStage() {
       ctx.fillStyle = color.bone;
       ctx.font = `${Math.min(11, Math.max(10, width * 0.023))}px monospace`;
-      ctx.fillText("04 ｜ 此刻 · 看见", rail.x, height * 0.06);
+      ctx.fillText("04 ｜ PRESSURE DETECTED", rail.x, height * 0.06);
 
       ctx.fillStyle = color.white;
       ctx.font = `bold ${Math.min(25, Math.max(22, width * 0.054))}px monospace`;
-      ctx.fillText("我们看见了", rail.x, height * 0.115);
-      ctx.fillText("这颗正在影响你的种子", rail.x, height * 0.157);
+      ctx.fillText("CURRENT STATE", rail.x, height * 0.115);
+      ctx.fillText("IDENTIFIED", rail.x, height * 0.157);
 
       if (appState === "SEED_SANDIFY") return;
 
@@ -416,16 +374,19 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
 
       const startY = height * 0.31;
       const rowGap = Math.min(126, Math.max(104, height * 0.116));
-      const maxTextWidth = Math.max(132, stage.axisX - rail.x - 16);
       currentSeeds.forEach((seed, index) => {
         const seedY = startY + index * rowGap;
         const isSelected = index === selectedSeedIndex;
         ctx.globalAlpha = appState === "SEED_LOCKED" || isSelected ? 1 : 0.48;
         ctx.fillStyle = color.white;
         ctx.font = isSelected ? "16px monospace" : "15px monospace";
-        ctx.fillText(`种子 ${seed.num}`, rail.x, seedY - 22);
+        ctx.fillText(`STATE TYPE ${seed.num}`, rail.x, seedY - 22);
 
-        const textLines = buildSeedTextLines(seed.main, seed.sub, maxTextWidth);
+        const textLines = [
+          `INTENSITY LEVEL ${String(index + 1).padStart(2, "0")}`,
+          isSelected ? "TRIGGER READY" : "SEED AVAILABLE",
+          "TRANSFORMATION READY",
+        ];
         let lineY = seedY;
         textLines.forEach((line, lineIndex) => {
           ctx.fillStyle = lineIndex === textLines.length - 1 ? color.blue : color.white;
@@ -444,7 +405,7 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
 
       ctx.fillStyle = color.bone;
       ctx.font = "10px monospace";
-      ctx.fillText("04 ｜ 共感 · 接住", rail.x, height * 0.06);
+      ctx.fillText("04 ｜ TRANSFORMATION READY", rail.x, height * 0.06);
 
       if (appState === "WELD_TYPING") {
         typeTimer += 1;
@@ -487,10 +448,10 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       if (appState === "WELD_LOCKED") {
         ctx.fillStyle = weldMutedColor;
         ctx.font = "10px monospace";
-        ctx.fillText("[ 已经接住 · 准备继续 ]", rail.x, height * 0.52);
+        ctx.fillText("[ TRANSFORMATION READY ]", rail.x, height * 0.52);
         ctx.fillStyle = color.gold;
         ctx.font = "bold 20px monospace";
-        ctx.fillText("这颗种子已经被看见", rail.x, height * 0.56);
+        ctx.fillText("SEED AVAILABLE", rail.x, height * 0.56);
       }
     }
 
@@ -556,11 +517,11 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
 
       ctx.fillStyle = isGoldMode ? color.gold : color.bone;
       ctx.font = "10px monospace";
-      let labelText = "［ 上下轻看｜点选一颗｜右滑接住 ］";
-      if (appState === "SEED_LOCKED") labelText = "[ 已经接住 · 让它慢慢落下 ]";
-      if (appState === "WELD_TYPING") labelText = "[ 我们在这里 ]";
-      if (appState === "WELD_INTERACT") labelText = isGoldMode ? "［ 已经靠近下一步 ］" : "［ ➔ 右滑：带着它继续往前 ］";
-      if (appState === "WELD_LOCKED") labelText = "［ 这颗种子已被温柔接住 ］";
+      let labelText = "［ CURRENT STATE IDENTIFIED ｜ SEED AVAILABLE ］";
+      if (appState === "SEED_LOCKED") labelText = "[ SEED AVAILABLE ]";
+      if (appState === "WELD_TYPING") labelText = "[ CURRENT STATE IDENTIFIED ]";
+      if (appState === "WELD_INTERACT") labelText = isGoldMode ? "［ TRANSFORMATION READY ］" : "［ ➔ TRANSFORMATION READY ］";
+      if (appState === "WELD_LOCKED") labelText = "［ TRANSFORMATION READY ］";
       ctx.fillText(labelText, rail.x, rail.y + 18);
 
       ctx.strokeStyle = isGoldMode ? "rgba(199,169,107,0.72)" : "rgba(0,184,212,0.7)";
