@@ -1,3 +1,5 @@
+export type { RUEEngagementEvent, RUEEntryEvent, RUEEventType, RUEExitEvent, RUEFlowEvent } from "./rueTrace";
+
 export type YaoBit = 0 | 1;
 
 export type ChronoAgeRange = "18_22" | "23_31" | "32_39" | "40_52" | "53_plus";
