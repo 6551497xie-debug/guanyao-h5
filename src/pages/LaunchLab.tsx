@@ -19,6 +19,7 @@ import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame"
 import { PressureSeedCrossAxisPage, type PressureSeedCrossAxisSeed } from "./PressureSeedCrossAxisPage";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getEntryUserType } from "../runtime/entry/entryDecision";
+import { resolveStarbeastRenderState } from "../runtime/starbeast/starbeastRenderState";
 import { buildSelectedPressureSeedContext } from "../services/guanyaoPressureSeedSceneBindingService";
 import {
   buildTripleForceLandingResult,
@@ -140,12 +141,6 @@ type LaunchState =
   | "entry_pre_collapse"
   | "entry_light_convergence"
   | "entry_static_render";
-type StarbeastRenderState = {
-  starfieldDensity: number;
-  lightAggregationIntensity: number;
-  beastEmergenceTiming: "idle" | "assembling" | "forming" | "approaching" | "ready" | "collapsing";
-  collapseAnimationTrigger: boolean;
-};
 
 const STATE = {
   STARFIELD_IDLE: "starfield_idle",
@@ -185,60 +180,6 @@ const DIM_LABEL: Record<ChronoDim, string> = { year: "压力入口", month: "状
 const DIM_STAGE_LABEL: Record<ChronoDim, string> = { year: "当前压力", month: "状态层级", day: "转化位置", hour: "资产入口" };
 const GEO_DIMS = ["province", "city"] as const;
 const GEO_LABEL: Record<GeoDim, string> = { province: "压力场", city: "转化场" };
-
-function resolveStarbeastRenderState(entryState: LaunchState): StarbeastRenderState {
-  if (entryState === STATE.STARFIELD_IDLE) {
-    return {
-      starfieldDensity: 1,
-      lightAggregationIntensity: 0,
-      beastEmergenceTiming: "idle",
-      collapseAnimationTrigger: false,
-    };
-  }
-
-  if (entryState === STATE.ASSEMBLY) {
-    return {
-      starfieldDensity: 0.82,
-      lightAggregationIntensity: 0.42,
-      beastEmergenceTiming: "assembling",
-      collapseAnimationTrigger: false,
-    };
-  }
-
-  if (entryState === STATE.FORMATION) {
-    return {
-      starfieldDensity: 0.58,
-      lightAggregationIntensity: 0.68,
-      beastEmergenceTiming: "forming",
-      collapseAnimationTrigger: false,
-    };
-  }
-
-  if (entryState === STATE.APPROACH) {
-    return {
-      starfieldDensity: 0.42,
-      lightAggregationIntensity: 0.86,
-      beastEmergenceTiming: "approaching",
-      collapseAnimationTrigger: false,
-    };
-  }
-
-  if (entryState === STATE.READY) {
-    return {
-      starfieldDensity: 0.34,
-      lightAggregationIntensity: 1,
-      beastEmergenceTiming: "ready",
-      collapseAnimationTrigger: false,
-    };
-  }
-
-  return {
-    starfieldDensity: 0.2,
-    lightAggregationIntensity: 1,
-    beastEmergenceTiming: "collapsing",
-    collapseAnimationTrigger: entryState === STATE.STARBEAST_SANDIFY,
-  };
-}
 const PROVINCE_OPTIONS = [
   "北京", "天津", "河北", "山西", "内蒙古", "辽宁", "吉林", "黑龙江", "上海", "江苏", "浙江", "安徽", "福建", "江西", "山东", "河南", "湖北",
   "湖南", "广东", "广西", "海南", "重庆", "四川", "贵州", "云南", "西藏", "陕西", "甘肃", "青海", "宁夏", "新疆", "香港", "澳门", "台湾",
