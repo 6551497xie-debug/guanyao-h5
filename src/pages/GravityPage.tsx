@@ -244,6 +244,56 @@ type ExperienceState = Readonly<{
   };
   crystalCopy: string;
 }>;
+type ProductIdentity = Readonly<{
+  officialDefinition: string;
+  threeSecondModel: "PRESSURE → TRANSFORMATION → ASSET";
+  experienceLoop: readonly [
+    "Enter pressure field",
+    "System detects behavioral state",
+    "User performs 6-step interaction cycle",
+    "System transforms internal state",
+    "System generates crystallized asset",
+  ];
+  onboardingFlow: readonly [
+    "Enter your current state",
+    "System maps your pressure",
+    "You begin 6-step transformation",
+    "You receive crystallized identity asset",
+  ];
+  userPerception: readonly [
+    "internal pressure mirror",
+    "transformation engine",
+    "personal behavioral map",
+    "collectible identity system",
+  ];
+  positioning: "Deterministic consciousness transformation runtime system";
+}>;
+
+const GUANYAO_PRODUCT_IDENTITY = Object.freeze({
+  officialDefinition:
+    "Guanyao is a deterministic behavioral runtime system that converts human pressure into structured consciousness transformation and crystallized digital assets.",
+  threeSecondModel: "PRESSURE → TRANSFORMATION → ASSET",
+  experienceLoop: Object.freeze([
+    "Enter pressure field",
+    "System detects behavioral state",
+    "User performs 6-step interaction cycle",
+    "System transforms internal state",
+    "System generates crystallized asset",
+  ]),
+  onboardingFlow: Object.freeze([
+    "Enter your current state",
+    "System maps your pressure",
+    "You begin 6-step transformation",
+    "You receive crystallized identity asset",
+  ]),
+  userPerception: Object.freeze([
+    "internal pressure mirror",
+    "transformation engine",
+    "personal behavioral map",
+    "collectible identity system",
+  ]),
+  positioning: "Deterministic consciousness transformation runtime system",
+} satisfies ProductIdentity);
 
 const VISUAL_TIMELINE_SYNC = Object.freeze({
   calm: "T0.0 -> calm state",
@@ -480,7 +530,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
     return Object.freeze({
       stage,
       primaryFocus,
-      loopLabel: "压力 → 觉察 → 行动 → 转化 → 结晶",
+      loopLabel: GUANYAO_PRODUCT_IDENTITY.threeSecondModel,
       headline: "结晶已经出现。",
       supportingCopy: "这一轮压力已经穿过六步，正在形成身份资产。",
       pressureCopy: "压力已经完成回收。",
@@ -494,7 +544,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
     return Object.freeze({
       stage,
       primaryFocus,
-      loopLabel: "压力 → 觉察 → 行动 → 转化 → 结晶",
+      loopLabel: GUANYAO_PRODUCT_IDENTITY.threeSecondModel,
       headline: "转化正在收束。",
       supportingCopy: "六步即将完成，压力开始变成可保存的形状。",
       pressureCopy: "压力正在被收回。",
@@ -508,7 +558,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
     return Object.freeze({
       stage,
       primaryFocus,
-      loopLabel: "压力 → 觉察 → 行动 → 转化 → 结晶",
+      loopLabel: GUANYAO_PRODUCT_IDENTITY.threeSecondModel,
       headline: "进入六步行动。",
       supportingCopy: "每一次轻触，只推进一个最小选择。",
       pressureCopy: "压力成为行动入口。",
@@ -522,7 +572,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
     return Object.freeze({
       stage,
       primaryFocus,
-      loopLabel: "压力 → 觉察 → 行动 → 转化 → 结晶",
+      loopLabel: GUANYAO_PRODUCT_IDENTITY.threeSecondModel,
       headline: "看见当前状态。",
       supportingCopy: "它不是评判，只是把压力照出来。",
       pressureCopy: "压力已经显影。",
@@ -535,7 +585,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
   return Object.freeze({
     stage,
     primaryFocus,
-    loopLabel: "压力 → 觉察 → 行动 → 转化 → 结晶",
+    loopLabel: GUANYAO_PRODUCT_IDENTITY.threeSecondModel,
     headline: "压力正在进入。",
     supportingCopy: "先看见它，再做一个最小选择。",
     pressureCopy: "压力正在显影。",
@@ -1558,6 +1608,11 @@ function HexagramCodeDeliveryShell() {
 
     return (
       <main
+        data-product-definition={GUANYAO_PRODUCT_IDENTITY.officialDefinition}
+        data-product-model={GUANYAO_PRODUCT_IDENTITY.threeSecondModel}
+        data-product-positioning={GUANYAO_PRODUCT_IDENTITY.positioning}
+        data-product-onboarding={GUANYAO_PRODUCT_IDENTITY.onboardingFlow.join("|")}
+        data-product-perception={GUANYAO_PRODUCT_IDENTITY.userPerception.join("|")}
         style={{
           minHeight: "100dvh",
           width: "100%",
