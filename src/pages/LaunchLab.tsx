@@ -186,6 +186,8 @@ type LaunchInteractionState =
   | "SEED_SELECTED"
   | "SNAPSHOT_GENERATED"
   | "DYNAMICS_HANDOFF";
+type SceneState = "ENTRY" | "NODE_1" | "NODE_2" | "HANDOFF";
+type EntryHandoffMode = "NEW_USER" | "OLD_USER";
 const DIM_LABEL: Record<ChronoDim, string> = { year: "压力入口", month: "状态映射", day: "转化刻度", hour: "资产预备" };
 const DIM_STAGE_LABEL: Record<ChronoDim, string> = { year: "当前压力", month: "状态层级", day: "转化位置", hour: "资产入口" };
 const GEO_DIMS = ["province", "city"] as const;
@@ -342,6 +344,18 @@ export function LaunchLab() {
   const [showPressureSeedCapture, setShowPressureSeedCapture] = useState(false);
   const [interactionState, setInteractionState] = useState<LaunchInteractionState>("ENTRY");
   const interactionStateRef = useRef<LaunchInteractionState>("ENTRY");
+  const [scene, setScene] = useState<SceneState>("ENTRY");
+  const sceneRef = useRef<SceneState>("ENTRY");
+  const entryHandoffRef = useRef<((mode: EntryHandoffMode) => void) | null>(null);
+
+  const setSceneState = useCallback((nextScene: SceneState) => {
+    sceneRef.current = nextScene;
+    setScene(nextScene);
+  }, []);
+
+  const goHandoff = useCallback(() => {
+    setSceneState("HANDOFF");
+  }, [setSceneState]);
 
   const setLaunchInteractionState = useCallback((nextState: LaunchInteractionState) => {
     interactionStateRef.current = nextState;
@@ -353,6 +367,11 @@ export function LaunchLab() {
     setLaunchInteractionState("PRESSURE_CANVAS_ACTIVE");
     setShowPressureSeedCapture(true);
   }, [setLaunchInteractionState]);
+
+  const enterNext = useCallback(() => {
+    const isNewUser = true;
+    entryHandoffRef.current?.(isNewUser ? "NEW_USER" : "OLD_USER");
+  }, []);
 
   const commitPressureSeedCapture = useCallback(
     (candidate: PressureSeedCrossAxisSeed | undefined) => {
@@ -387,6 +406,26 @@ export function LaunchLab() {
 
     return () => window.clearTimeout(timer);
   }, [commitPressureSeedCapture, interactionState, showPressureSeedCapture]);
+
+  useEffect(() => {
+    if (scene !== "NODE_2") return undefined;
+
+    const timer = window.setTimeout(() => {
+      goHandoff();
+    }, 700);
+
+    return () => window.clearTimeout(timer);
+  }, [goHandoff, scene]);
+
+  useEffect(() => {
+    if (scene !== "HANDOFF") return undefined;
+
+    const timer = window.setTimeout(() => {
+      enterNext();
+    }, 500);
+
+    return () => window.clearTimeout(timer);
+  }, [enterNext, scene]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -435,6 +474,21 @@ export function LaunchLab() {
       fps: 0,
       fpsAcc: 0,
       fpsN: 0,
+    };
+    entryHandoffRef.current = (mode: EntryHandoffMode) => {
+      setSceneState("ENTRY");
+
+      if (mode === "NEW_USER") {
+        m.state = STATE.STARBEAST_SANDIFY;
+        m.t = 0;
+        m.node1State = null;
+        m.node1T = 0;
+        audio.form();
+        vibrate([0, 18, 24]);
+        return;
+      }
+
+      openPressureSeedCanvas();
     };
     for (let i = 0; i < CFG.starfield; i++) {
       const isLunarMansion = i < NODES.length;
@@ -646,6 +700,7 @@ export function LaunchLab() {
       if (m.node1State?.mirrorActivated) return;
       m.node1State = Node1State;
       m.node1T = 0;
+      setSceneState("NODE_1");
       console.log(NODE1_MIRROR_ACTIVATED_EVENT);
       audio.form();
       vibrate([0, 18, 24]);
@@ -933,12 +988,26 @@ export function LaunchLab() {
       ctx.fillStyle = neb;
       ctx.fillRect(0, 0, m.w, m.h);
       const now = performance.now() / 1000;
+      const currentScene = sceneRef.current;
+      if (currentScene === "HANDOFF") {
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `700 ${Math.min(19, m.w * 0.048)}px ${SANS}`;
+        ctx.fillStyle = "rgba(255,247,228,0.94)";
+        ctx.fillText("结构已稳定", m.w / 2, m.h * 0.47);
+        ctx.font = `600 ${Math.min(14, m.w * 0.036)}px ${SANS}`;
+        ctx.fillStyle = "rgba(232,200,138,0.82)";
+        ctx.fillText("进入你的当前状态", m.w / 2, m.h * 0.52);
+        ctx.restore();
+        return;
+      }
       const entryState = toStarbeastEntryState(m.state);
       const starbeastState = resolveStarbeastRenderState(entryState);
       const convergenceActive = isConvergenceState();
       const entryStaticActive = isEntryStaticState();
       const axisActive = m.state === STATE.STARBEAST_SANDIFY || isAxisState() || convergenceActive;
-      const nodeRuntimeActive = Boolean(m.node1State?.mirrorActivated);
+      const nodeRuntimeActive = Boolean(m.node1State?.mirrorActivated) && currentScene !== "ENTRY";
 
       if (m.state === STATE.STARFIELD_IDLE) {
         m.field.forEach((s) => {
@@ -1096,6 +1165,10 @@ export function LaunchLab() {
           node1State: m.node1State!,
           timeSpent: node1ElapsedMs,
         });
+        const resolvedNodeScene: SceneState = domState.shouldRenderNode2 ? "NODE_2" : "NODE_1";
+        if (sceneRef.current !== resolvedNodeScene && sceneRef.current !== "HANDOFF") {
+          setSceneState(resolvedNodeScene);
+        }
         const progress = computeNodeTransitionProgress(node1ElapsedMs);
         const lerp = getNodeTransitionLerp(progress);
         const mirrorIn = smooth(0, 0.28, m.node1T);
@@ -1580,8 +1653,9 @@ export function LaunchLab() {
       canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerup", onUp);
       canvas.removeEventListener("pointercancel", onUp);
+      entryHandoffRef.current = null;
     };
-  }, [openPressureSeedCanvas]);
+  }, [openPressureSeedCanvas, setSceneState]);
 
   if (showPressureSeedCapture) {
     return <PressureSeedCrossAxisPage onComplete={commitPressureSeedCapture} />;
@@ -1592,6 +1666,7 @@ export function LaunchLab() {
       <canvas
         ref={canvasRef}
         data-launch-interaction-state={interactionState}
+        data-launch-scene={scene}
         style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }}
       />
     </GyMobilePreviewFrame>
