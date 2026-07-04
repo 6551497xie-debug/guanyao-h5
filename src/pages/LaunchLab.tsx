@@ -395,7 +395,6 @@ export function LaunchLab() {
       dragAxis: null as null | "x" | "y",
       lastX: 0,
       lastY: 0,
-      debug: false,
       fps: 0,
       fpsAcc: 0,
       fpsN: 0,
@@ -1064,14 +1063,14 @@ export function LaunchLab() {
           const finalLocked = m.state === STATE.DISPLAY_LOCK;
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText("01 ｜ STATE ENTRY", g.railX0, m.h * 0.1);
+          ctx.fillText("PRESSURE → TRANSFORMATION → ASSET", g.railX0, m.h * 0.1);
           ctx.fillStyle = "rgba(255,247,228,0.78)";
           ctx.font = `650 ${Math.min(15, m.w * 0.038)}px ${SANS}`;
-          ctx.fillText("进入当前状态。", g.railX0, m.h * 0.145);
-          ctx.fillText("系统开始映射你的压力。", g.railX0, m.h * 0.18);
+          ctx.fillText("进入压力。", g.railX0, m.h * 0.145);
+          ctx.fillText("开始六步转化。", g.railX0, m.h * 0.18);
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(finalLocked ? "［ STATE DETECTED ］" : isGeoStage ? `［ ${GEO_LABEL[geoDim]} ］` : `［ ${DIM_STAGE_LABEL[dim]} ］`, g.railX0, m.h * 0.34);
+          ctx.fillText(finalLocked ? "［ PRESSURE ］" : isGeoStage ? `［ ${GEO_LABEL[geoDim]} ］` : `［ ${DIM_STAGE_LABEL[dim]} ］`, g.railX0, m.h * 0.34);
           ctx.fillStyle = "rgba(255,247,228,0.96)";
           const valueSize = finalLocked
             ? Math.min(28, m.w * 0.062)
@@ -1082,25 +1081,25 @@ export function LaunchLab() {
           ctx.fillText(finalLocked ? "PRESSURE DETECTED" : isGeoStage ? geoText(geoDim, m.dialFloat) : dimText(dim, m.dialFloat), g.railX0, m.h * 0.47);
           ctx.font = `700 ${Math.min(16, m.w * 0.04)}px ${MONO}`;
           ctx.fillStyle = "rgba(232,200,138,0.82)";
-          ctx.fillText(`压力入口 / 状态映射 / 转化刻度 / 资产预备`, g.railX0, m.h * 0.58);
+          ctx.fillText("PRESSURE / TRANSFORMATION / ASSET", g.railX0, m.h * 0.58);
           ctx.fillStyle = "rgba(232,200,138,0.74)";
-          ctx.fillText(finalLocked ? "SEED GENERATION READY" : "PRESSURE → TRANSFORMATION → ASSET", g.railX0, m.h * 0.63);
+          ctx.fillText("PRESSURE → TRANSFORMATION → ASSET", g.railX0, m.h * 0.63);
           ctx.fillStyle = "rgba(232,200,138,0.46)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "状态已进入" : isGeoStage ? "先上下调频 · 再右滑进入转化场" : "先上下调频 · 再右滑进入状态", g.railX0, m.h * 0.705);
+          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "压力已进入" : isGeoStage ? "先上下调频 · 再右滑进入转化" : "先上下调频 · 再右滑进入压力", g.railX0, m.h * 0.705);
           ctx.fillStyle = "rgba(232,200,138,0.58)";
           ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
           const railHint = finalLocked
-            ? "状态已进入"
+            ? "压力已进入"
             : m.verticalTuned && isGeoStage && geoDim === "city"
-              ? "右滑 · PRESSURE DETECTION"
+              ? "右滑 · PRESSURE"
               : m.verticalTuned
                 ? `右滑进入 · ${isGeoStage ? GEO_LABEL[geoDim] : DIM_LABEL[dim]}`
                 : "纵轴调频后 · 横轴解锁";
           ctx.fillText(railHint, g.railX0, g.railY + 30);
           ctx.textAlign = "right";
           ctx.fillStyle = "rgba(232,200,138,0.82)";
-          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "READY" : "STATE", g.railX1, g.railY - 18);
+          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "ASSET" : "PRESSURE", g.railX1, g.railY - 18);
         }
 
         if (convergenceActive) {
@@ -1210,13 +1209,6 @@ export function LaunchLab() {
         ctx.textBaseline = "alphabetic";
       }
 
-      if (m.debug) {
-        ctx.fillStyle = "rgba(232,200,138,0.9)";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "top";
-        ctx.font = `11px ${MONO}`;
-        ctx.fillText(`state=${m.state} fps=${m.fps.toFixed(0)} t=${m.t.toFixed(2)} nodes=${NODES.length}`, 8, 8);
-      }
     }
 
     let raf = 0;
@@ -1244,18 +1236,12 @@ export function LaunchLab() {
       raf = requestAnimationFrame(frame);
     }
 
-    let dbl = 0;
     function onDown(e: PointerEvent) {
       audio.ensure();
       canvasRef.current?.setPointerCapture?.(e.pointerId);
       const r = canvas!.getBoundingClientRect();
       const x = e.clientX - r.left;
       const y = e.clientY - r.top;
-      if (x > m.w - 60 && y < 60) {
-        const t = performance.now();
-        if (t - dbl < 350) m.debug = !m.debug;
-        dbl = t;
-      }
       if (isEntryClickState(m.state)) {
         openPressureSeedCanvas();
         return;

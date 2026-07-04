@@ -564,7 +564,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       stage,
       primaryFocus,
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
-      headline: "当前状态已识别。",
+      headline: "压力已识别。",
       supportingCopy: "它不是评判，只是把压力转成可推进的状态。",
       pressureCopy: "压力已经显影。",
       beastCopy: "状态已识别。",
