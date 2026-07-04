@@ -2,7 +2,7 @@
 // 观爻 1.0 · ENTRY MODEL —— /launch-lab
 //
 // User-facing entry language is locked to:
-// PRESSURE -> TRANSFORMATION -> ASSET
+// 走过黑夜的人，会留下光的痕迹。
 //
 // This page may retain its existing visual machinery, but no user-facing copy
 // should introduce legacy onboarding, alternate lore, or secondary myths.
@@ -29,7 +29,7 @@ const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
 
 // Visual points retain the existing motion layout; user-facing meaning remains
-// PRESSURE -> TRANSFORMATION -> ASSET.
+// 光痕 -> 光兽 -> 镜面。
 const NODES: { x: number; y: number; z: number; big?: boolean }[] = [
   { x: 0.0, y: 0.22, z: 0.0, big: true }, // 0 吻（最近，朝你）
   { x: 0.0, y: -0.04, z: 0.1 }, // 1 头顶
@@ -156,7 +156,7 @@ const STATE = {
   ENTRY_STATIC_RENDER: "entry_static_render",
 } as const;
 
-const TOP_LINES = ["PRESSURE → TRANSFORMATION → ASSET", "把当前压力转成结构化转化。"];
+const TOP_LINES = ["走过黑夜的人，会留下光的痕迹。", "这些光，正在慢慢汇聚成深空中的“光兽”。"];
 const CTA_LINE = "轻触 · 进入压力场";
 const ENTRY_HANDOFF_DELAY_MS = 700;
 const PRESSURE_SEED_AUTO_RESOLVE_MS = 2400;
@@ -575,12 +575,12 @@ export function LaunchLab() {
     }
     function buildEntryTransitionSnapshot(): EntryTransitionSnapshot {
       return {
-        chrono: "PRESSURE DETECTED",
-        direction: "TRANSFORMATION",
-        trigram: "SEED_AVAILABLE",
+        chrono: "光痕已显现",
+        direction: "光兽汇聚",
+        trigram: "镜面可进入",
         cacheStatus: "missing",
-        entryCode: "PRESSURE",
-        entrySource: "ASSET",
+        entryCode: "光痕",
+        entrySource: "镜面",
       } as unknown as EntryTransitionSnapshot;
     }
     function blockLegacyEntryExecution() {
@@ -1064,14 +1064,14 @@ export function LaunchLab() {
           const finalLocked = m.state === STATE.DISPLAY_LOCK;
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText("PRESSURE → TRANSFORMATION → ASSET", g.railX0, m.h * 0.1);
+          ctx.fillText("走过黑夜的人，会留下光的痕迹。", g.railX0, m.h * 0.1);
           ctx.fillStyle = "rgba(255,247,228,0.78)";
           ctx.font = `650 ${Math.min(15, m.w * 0.038)}px ${SANS}`;
           ctx.fillText("进入压力。", g.railX0, m.h * 0.145);
           ctx.fillText("开始六步转化。", g.railX0, m.h * 0.18);
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(finalLocked ? "［ PRESSURE ］" : isGeoStage ? `［ ${GEO_LABEL[geoDim]} ］` : `［ ${DIM_STAGE_LABEL[dim]} ］`, g.railX0, m.h * 0.34);
+          ctx.fillText(finalLocked ? "［ 光痕 ］" : isGeoStage ? `［ ${GEO_LABEL[geoDim]} ］` : `［ ${DIM_STAGE_LABEL[dim]} ］`, g.railX0, m.h * 0.34);
           ctx.fillStyle = "rgba(255,247,228,0.96)";
           const valueSize = finalLocked
             ? Math.min(28, m.w * 0.062)
@@ -1079,12 +1079,12 @@ export function LaunchLab() {
               ? Math.min(36, m.w * 0.082)
               : Math.min(48, m.w * 0.11);
           ctx.font = `700 ${valueSize}px ${MONO}`;
-          ctx.fillText(finalLocked ? "PRESSURE DETECTED" : isGeoStage ? geoText(geoDim, m.dialFloat) : dimText(dim, m.dialFloat), g.railX0, m.h * 0.47);
+          ctx.fillText(finalLocked ? "光兽正在靠近" : isGeoStage ? geoText(geoDim, m.dialFloat) : dimText(dim, m.dialFloat), g.railX0, m.h * 0.47);
           ctx.font = `700 ${Math.min(16, m.w * 0.04)}px ${MONO}`;
           ctx.fillStyle = "rgba(232,200,138,0.82)";
-          ctx.fillText("PRESSURE / TRANSFORMATION / ASSET", g.railX0, m.h * 0.58);
+          ctx.fillText("它们不会定义你", g.railX0, m.h * 0.58);
           ctx.fillStyle = "rgba(232,200,138,0.74)";
-          ctx.fillText("PRESSURE → TRANSFORMATION → ASSET", g.railX0, m.h * 0.63);
+          ctx.fillText("只是帮你抵住那些风暴和内耗", g.railX0, m.h * 0.63);
           ctx.fillStyle = "rgba(232,200,138,0.46)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
           ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "压力已进入" : isGeoStage ? "先上下调频 · 再右滑进入转化" : "先上下调频 · 再右滑进入压力", g.railX0, m.h * 0.705);
@@ -1093,14 +1093,14 @@ export function LaunchLab() {
           const railHint = finalLocked
             ? "压力已进入"
             : m.verticalTuned && isGeoStage && geoDim === "city"
-              ? "右滑 · PRESSURE"
+              ? "右滑 · 光痕"
               : m.verticalTuned
                 ? `右滑进入 · ${isGeoStage ? GEO_LABEL[geoDim] : DIM_LABEL[dim]}`
                 : "纵轴调频后 · 横轴解锁";
           ctx.fillText(railHint, g.railX0, g.railY + 30);
           ctx.textAlign = "right";
           ctx.fillStyle = "rgba(232,200,138,0.82)";
-          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "ASSET" : "PRESSURE", g.railX1, g.railY - 18);
+          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "镜面" : "光痕", g.railX1, g.railY - 18);
         }
 
         if (convergenceActive) {
@@ -1392,7 +1392,7 @@ export function LaunchLab() {
             textAlign: "center",
           }}
         >
-          <div style={{ fontSize: 22, fontWeight: 700 }}>Node 1: Mirror Activated</div>
+          <div style={{ fontSize: 22, fontWeight: 700 }}>Node 1：镜面已激活</div>
         </div>
       </GyMobilePreviewFrame>
     );
@@ -1413,13 +1413,13 @@ export function LaunchLab() {
         }}
       >
         <div style={{ fontSize: 28, lineHeight: 1.15, fontWeight: 800 }}>
-          PRESSURE → TRANSFORMATION → ASSET
+          走过黑夜的人，会留下光的痕迹。
         </div>
         <div style={{ fontSize: 15, lineHeight: 1.6, opacity: 0.82 }}>
-          This system converts your current state into structured transformation.
+          这些光，正在慢慢汇聚成深空中的“光兽”。
         </div>
         <div style={{ fontSize: 12, lineHeight: 1.5, opacity: 0.6 }}>
-          Enter the first node.
+          它们不会定义你，只是帮你抵住那些风暴和内耗。
         </div>
         <button
           type="button"
