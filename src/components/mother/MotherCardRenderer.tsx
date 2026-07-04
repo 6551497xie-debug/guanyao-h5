@@ -1,41 +1,15 @@
 /**
  * MotherCardRenderer
  *
- * Single Source UI Renderer for Mother Card snapshots.
- *
- * It accepts an already locked guanyao:personaOutputSnapshot-derived object.
- * It does not import engines, does not compute persona data, and does not mutate snapshots.
+ * Compatibility renderer for the launch entry bridge.
+ * It keeps the legacy canvas API, but renders only the current product model:
+ * PRESSURE -> TRANSFORMATION -> ASSET.
  */
 
 import type { MotherCardReadonlySnapshot } from "../../services/guanyaoPersonaSnapshotCache";
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
-const SERIF = "Songti SC, SimSun, serif";
-
-const CARD_COPY: Record<string, { title: string; structure: string; summary: string; tags: string }> = {
-  "乾": { title: "《创世者》", structure: "垂直上升结构", summary: "天行刚健，自强不息。主动开创，统御全局。", tags: "刚健 · 开创 · 统御" },
-  "坤": { title: "《承载者》", structure: "水平承托结构", summary: "地势柔顺，厚德载物。包容承托，滋养万物。", tags: "柔顺 · 包容 · 承载" },
-  "震": { title: "《行动者》", structure: "斜向冲击结构", summary: "雷震百里，万物始生。破局而出，主动冲击。", tags: "奋动 · 破局 · 冲击" },
-  "巽": { title: "《渗透者》", structure: "曲线渗透结构", summary: "风无孔不入，渗透万物。顺势变通，润物无声。", tags: "渗透 · 变通 · 入微" },
-  "坎": { title: "《深潜者》", structure: "纵深下探结构", summary: "水行险陷，深不可测。处险不惊，隐伏流动。", tags: "险陷 · 深沉 · 流动" },
-  "离": { title: "《照见者》", structure: "中心辐射结构", summary: "火附丽光明，温暖万物。向外发散，明亮照人。", tags: "明亮 · 附着 · 扩散" },
-  "艮": { title: "《守望者》", structure: "横向阻断结构", summary: "山为稳固之基，知止而定。守其边界，不动如山。", tags: "稳固 · 止息 · 边界" },
-  "兑": { title: "《连接者》", structure: "水平流动结构", summary: "泽水汇聚，滋养喜悦。交流开放，和悦待人。", tags: "喜悦 · 交流 · 开放" },
-  CACHE_PENDING: { title: "《母码待定》", structure: "收束结构待显影", summary: "坐标锁定后，你的母码会在这里安静显形。", tags: "静候 · 显影 · 归位" },
-};
-
-const TRIGRAM_LINES: Record<string, [boolean, boolean, boolean]> = {
-  "乾": [true, true, true],
-  "兑": [false, true, true],
-  "离": [true, false, true],
-  "震": [false, false, true],
-  "巽": [true, true, false],
-  "坎": [false, true, false],
-  "艮": [true, false, false],
-  "坤": [false, false, false],
-  CACHE_PENDING: [true, false, true],
-};
 
 export type MotherCardSide = "front" | "back";
 
@@ -72,11 +46,6 @@ function roundedRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w:
   ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
   ctx.lineTo(x, y + radius);
   ctx.quadraticCurveTo(x, y, x + radius, y);
-}
-
-function normalizeTrigram(trigram: string) {
-  const key = trigram?.trim()?.[0] ?? "CACHE_PENDING";
-  return key in CARD_COPY ? key : "CACHE_PENDING";
 }
 
 function drawWrappedText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
@@ -127,7 +96,7 @@ function drawDivider(ctx: CanvasRenderingContext2D, x: number, y: number, w: num
   ctx.stroke();
 }
 
-function drawIdentityChip(ctx: CanvasRenderingContext2D, label: string, value: string, x: number, y: number, w: number) {
+function drawStatusChip(ctx: CanvasRenderingContext2D, label: string, value: string, x: number, y: number, w: number) {
   roundedRectPath(ctx, x, y, w, 46, 8);
   ctx.fillStyle = "rgba(232,200,138,0.055)";
   ctx.fill();
@@ -145,33 +114,32 @@ function drawIdentityChip(ctx: CanvasRenderingContext2D, label: string, value: s
   drawWrappedText(ctx, value, x + 12, y + 24, w - 24, 14);
 }
 
-function drawTrigram(ctx: CanvasRenderingContext2D, trigram: string, cx: number, cy: number, w: number, color: string) {
-  const lines = TRIGRAM_LINES[normalizeTrigram(trigram)] ?? TRIGRAM_LINES.CACHE_PENDING;
-  const gap = w * 0.14;
-  const half = w / 2;
-  const rowGap = w * 0.18;
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2.2;
-  ctx.lineCap = "round";
+function drawTransitionCore(ctx: CanvasRenderingContext2D, cx: number, cy: number, size: number) {
+  const ring = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 0.62);
+  ring.addColorStop(0, "rgba(255,247,228,0.22)");
+  ring.addColorStop(0.46, "rgba(232,200,138,0.1)");
+  ring.addColorStop(1, "rgba(232,200,138,0)");
+  ctx.fillStyle = ring;
   ctx.beginPath();
-  lines.forEach((solid, i) => {
-    const y = cy + (i - 1) * rowGap;
-    if (solid) {
-      ctx.moveTo(cx - half, y);
-      ctx.lineTo(cx + half, y);
-    } else {
-      ctx.moveTo(cx - half, y);
-      ctx.lineTo(cx - gap, y);
-      ctx.moveTo(cx + gap, y);
-      ctx.lineTo(cx + half, y);
-    }
-  });
+  ctx.arc(cx, cy, size * 0.62, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(232,200,138,0.84)";
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.arc(cx, cy, size * 0.26, 0, Math.PI * 2);
   ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy, size * 0.42, -Math.PI * 0.18, Math.PI * 1.22);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(255,247,228,0.94)";
+  ctx.beginPath();
+  ctx.arc(cx, cy, size * 0.055, 0, Math.PI * 2);
+  ctx.fill();
 }
 
-function drawFront(ctx: CanvasRenderingContext2D, snapshot: MotherCardReadonlySnapshot, rect: { x: number; y: number; w: number; h: number }) {
-  const trigram = normalizeTrigram(snapshot.trigram);
-  const copy = CARD_COPY[trigram] ?? CARD_COPY.CACHE_PENDING;
+function drawFront(ctx: CanvasRenderingContext2D, _snapshot: MotherCardReadonlySnapshot, rect: { x: number; y: number; w: number; h: number }) {
   const pad = Math.max(22, rect.w * 0.08);
   drawFrame(ctx, rect);
 
@@ -179,50 +147,39 @@ function drawFront(ctx: CanvasRenderingContext2D, snapshot: MotherCardReadonlySn
   ctx.textAlign = "left";
   ctx.fillStyle = "rgba(232,200,138,0.64)";
   ctx.font = `650 ${Math.min(10, rect.w * 0.032)}px ${MONO}`;
-  ctx.fillText("观爻母码", rect.x + pad, rect.y + pad);
+  ctx.fillText("PRESSURE ENTRY", rect.x + pad, rect.y + pad);
 
-  const identityAura = ctx.createRadialGradient(rect.x + pad + 34, rect.y + pad + 70, 0, rect.x + pad + 34, rect.y + pad + 70, 92);
-  identityAura.addColorStop(0, "rgba(255,247,228,0.12)");
-  identityAura.addColorStop(0.48, "rgba(232,200,138,0.08)");
-  identityAura.addColorStop(1, "rgba(232,200,138,0)");
-  ctx.fillStyle = identityAura;
+  const pressureAura = ctx.createRadialGradient(rect.x + pad + 34, rect.y + pad + 70, 0, rect.x + pad + 34, rect.y + pad + 70, 92);
+  pressureAura.addColorStop(0, "rgba(255,247,228,0.12)");
+  pressureAura.addColorStop(0.48, "rgba(232,200,138,0.08)");
+  pressureAura.addColorStop(1, "rgba(232,200,138,0)");
+  ctx.fillStyle = pressureAura;
   ctx.beginPath();
   ctx.arc(rect.x + pad + 34, rect.y + pad + 70, 92, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.fillStyle = "rgba(255,247,228,0.96)";
   ctx.font = `860 ${Math.min(42, rect.w * 0.13)}px ${SANS}`;
-  ctx.fillText(`${snapshot.motherCode}`, rect.x + pad, rect.y + pad + 50);
+  ctx.fillText("PRESSURE", rect.x + pad, rect.y + pad + 50);
 
   ctx.fillStyle = "rgba(232,200,138,0.86)";
-  ctx.font = `700 ${Math.min(18, rect.w * 0.056)}px ${SERIF}`;
-  ctx.fillText(copy.title, rect.x + pad, rect.y + pad + 102);
+  ctx.font = `700 ${Math.min(18, rect.w * 0.056)}px ${SANS}`;
+  ctx.fillText("状态已进入", rect.x + pad, rect.y + pad + 102);
 
-  const glyphY = rect.y + rect.h * 0.43;
-  const aura = ctx.createRadialGradient(rect.x + rect.w / 2, glyphY, 0, rect.x + rect.w / 2, glyphY, rect.w * 0.26);
-  aura.addColorStop(0, "rgba(232,200,138,0.2)");
-  aura.addColorStop(0.55, "rgba(232,200,138,0.075)");
-  aura.addColorStop(1, "rgba(232,200,138,0)");
-  ctx.fillStyle = aura;
-  ctx.beginPath();
-  ctx.arc(rect.x + rect.w / 2, glyphY, rect.w * 0.26, 0, Math.PI * 2);
-  ctx.fill();
-  drawTrigram(ctx, trigram, rect.x + rect.w / 2, glyphY, rect.w * 0.3, "rgba(232,200,138,0.96)");
+  drawTransitionCore(ctx, rect.x + rect.w / 2, rect.y + rect.h * 0.43, rect.w * 0.7);
 
   drawDivider(ctx, rect.x + pad, rect.y + rect.h - 162, rect.w - pad * 2, 0.2);
-  drawIdentityChip(ctx, "时间铭刻", snapshot.chrono, rect.x + pad, rect.y + rect.h - 146, rect.w - pad * 2);
-  drawIdentityChip(ctx, "人格象位", snapshot.direction, rect.x + pad, rect.y + rect.h - 92, rect.w * 0.36);
-  drawIdentityChip(ctx, "星源印记", snapshot.starOrigin, rect.x + rect.w * 0.47, rect.y + rect.h - 92, rect.w * 0.45);
+  drawStatusChip(ctx, "当前阶段", "PRESSURE DETECTION", rect.x + pad, rect.y + rect.h - 146, rect.w - pad * 2);
+  drawStatusChip(ctx, "下一步", "SEED GENERATION", rect.x + pad, rect.y + rect.h - 92, rect.w * 0.36);
+  drawStatusChip(ctx, "目标", "ASSET", rect.x + rect.w * 0.47, rect.y + rect.h - 92, rect.w * 0.45);
 
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(232,200,138,0.46)";
   ctx.font = `650 ${Math.min(11, rect.w * 0.034)}px ${MONO}`;
-  ctx.fillText("轻触翻面", rect.x + rect.w / 2, rect.y + rect.h - 34);
+  ctx.fillText("PRESSURE -> TRANSFORMATION -> ASSET", rect.x + rect.w / 2, rect.y + rect.h - 34);
 }
 
-function drawBack(ctx: CanvasRenderingContext2D, snapshot: MotherCardReadonlySnapshot, rect: { x: number; y: number; w: number; h: number }) {
-  const trigram = normalizeTrigram(snapshot.trigram);
-  const copy = CARD_COPY[trigram] ?? CARD_COPY.CACHE_PENDING;
+function drawBack(ctx: CanvasRenderingContext2D, _snapshot: MotherCardReadonlySnapshot, rect: { x: number; y: number; w: number; h: number }) {
   const pad = Math.max(22, rect.w * 0.08);
   drawFrame(ctx, rect);
   ctx.fillStyle = "rgba(232,200,138,0.035)";
@@ -233,40 +190,40 @@ function drawBack(ctx: CanvasRenderingContext2D, snapshot: MotherCardReadonlySna
   ctx.textAlign = "left";
   ctx.fillStyle = "rgba(232,200,138,0.64)";
   ctx.font = `650 ${Math.min(10, rect.w * 0.032)}px ${MONO}`;
-  ctx.fillText("结构符纹", rect.x + pad, rect.y + pad);
+  ctx.fillText("TRANSFORMATION INIT", rect.x + pad, rect.y + pad);
 
   ctx.fillStyle = "rgba(255,247,228,0.96)";
   ctx.font = `840 ${Math.min(30, rect.w * 0.092)}px ${SANS}`;
-  ctx.fillText(`${trigram}｜${snapshot.motherCode}`, rect.x + pad, rect.y + pad + 48);
+  ctx.fillText("六步转化", rect.x + pad, rect.y + pad + 48);
 
   ctx.fillStyle = "rgba(232,200,138,0.86)";
   ctx.font = `700 ${Math.min(15, rect.w * 0.048)}px ${SANS}`;
-  ctx.fillText("人格骨相", rect.x + pad, rect.y + pad + 96);
+  ctx.fillText("入口状态", rect.x + pad, rect.y + pad + 96);
   ctx.fillStyle = "rgba(255,247,228,0.78)";
   ctx.font = `650 ${Math.min(14, rect.w * 0.044)}px ${SANS}`;
-  ctx.fillText(copy.structure, rect.x + pad, rect.y + pad + 118);
+  ctx.fillText("当前压力正在进入结构化转化。", rect.x + pad, rect.y + pad + 118);
 
   drawDivider(ctx, rect.x + pad, rect.y + pad + 150, rect.w - pad * 2, 0.28);
 
   ctx.fillStyle = "rgba(232,200,138,0.64)";
   ctx.font = `650 ${Math.min(10, rect.w * 0.032)}px ${MONO}`;
-  ctx.fillText("人格回声", rect.x + pad, rect.y + pad + 174);
+  ctx.fillText("转化说明", rect.x + pad, rect.y + pad + 174);
   ctx.fillStyle = "rgba(255,247,228,0.84)";
-  ctx.font = `680 ${Math.min(16, rect.w * 0.05)}px ${SERIF}`;
-  drawWrappedText(ctx, copy.summary, rect.x + pad, rect.y + pad + 200, rect.w - pad * 2, Math.min(27, rect.w * 0.08));
+  ctx.font = `680 ${Math.min(16, rect.w * 0.05)}px ${SANS}`;
+  drawWrappedText(ctx, "系统只保留当前压力、转化步骤与资产预备，不再展示旧入口信息。", rect.x + pad, rect.y + pad + 200, rect.w - pad * 2, Math.min(27, rect.w * 0.08));
 
   ctx.fillStyle = "rgba(232,200,138,0.82)";
-  ctx.font = `700 ${Math.min(15, rect.w * 0.046)}px ${SERIF}`;
-  ctx.fillText(copy.tags, rect.x + pad, rect.y + rect.h - 118);
+  ctx.font = `700 ${Math.min(15, rect.w * 0.046)}px ${SANS}`;
+  ctx.fillText("压力 / 转化 / 资产", rect.x + pad, rect.y + rect.h - 118);
 
   ctx.fillStyle = "rgba(255,247,228,0.58)";
   ctx.font = `600 ${Math.min(11, rect.w * 0.034)}px ${SANS}`;
-  ctx.fillText(`出生坐标｜${snapshot.chrono}`, rect.x + pad, rect.y + rect.h - 78);
+  ctx.fillText("下一步｜进入当前压力", rect.x + pad, rect.y + rect.h - 78);
 
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(232,200,138,0.52)";
   ctx.font = `650 ${Math.min(11, rect.w * 0.034)}px ${MONO}`;
-  ctx.fillText("观爻 · GUANYAO", rect.x + rect.w / 2, rect.y + rect.h - 34);
+  ctx.fillText("PRESSURE -> TRANSFORMATION -> ASSET", rect.x + rect.w / 2, rect.y + rect.h - 34);
 }
 
 export function drawMotherCardRenderer({

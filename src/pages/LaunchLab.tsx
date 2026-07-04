@@ -1,16 +1,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// 观爻 2.0 ·「新首屏 · 28 星宿光兽」隔离原型 LAUNCH LAB —— /launch-lab
+// 观爻 1.0 · ENTRY MODEL —— /launch-lab
 //
-// 星兽 = 人格坐标显影前的结构生命体
-// Chrono = 星兽收束后的原始时间坐标层
-// 28宿 = 结构路径系统，不是装饰
-// Chrono input loop = Gregorian birth date/time first, then province/city.
-// Lunar birth date and mother trigram are derived downstream, not displayed in this UI layer.
+// User-facing entry language is locked to:
+// PRESSURE -> TRANSFORMATION -> ASSET
 //
-// 定稿方向：星兽 = 28 颗星（= 28 宿 = 四象 × 7）连成的星座生命，奔跑姿态。
-//   开场：整片星河由混沌 → 汇聚清晰 → 28 颗星连接起来，星兽显形（未定形、不属任何一象）。
-//   定形（青龙/白虎…）留给生辰之后：那时取出用户那一象的 7 颗星，化成四象兽。
-//   几何双 X LOGO 退役，星兽 + 观爻字标 = 新品牌标记。语言只接住/陪行；声音用暖。
+// This page may retain its existing visual machinery, but no user-facing copy
+// should introduce identity onboarding, coordinate lore, or alternate myths.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -33,8 +28,8 @@ import {
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
 
-// 28 颗星（3D：x 左右、y 下、z 朝屏内/远）。面朝你的四足兽——头/胸最近，背与髋向深处退，
-// 短尾收在身后。前腿近(大)、后腿远(小)＝纵深；从宇宙深处推近、朝你走来。
+// Visual points retain the existing motion layout; user-facing meaning remains
+// PRESSURE -> TRANSFORMATION -> ASSET.
 const NODES: { x: number; y: number; z: number; big?: boolean }[] = [
   { x: 0.0, y: 0.22, z: 0.0, big: true }, // 0 吻（最近，朝你）
   { x: 0.0, y: -0.04, z: 0.1 }, // 1 头顶
@@ -107,7 +102,7 @@ const COLOR = {
   text: "#F4ECD8",
 };
 
-// 整屏一套光：冷白(星河·阴) → 暖金(星兽·阳) → 暖白(成字)
+// Visual tone only; user-facing meaning remains pressure transformation.
 const PAL = {
   coolWhite: [230, 236, 255] as [number, number, number],
   gold: [232, 200, 138] as [number, number, number],
@@ -161,17 +156,17 @@ const STATE = {
   MOTHER_STATIC_RENDER: "mother_static_render",
 } as const;
 
-const TOP_LINES = ["每一个穿过黑夜的人，", "都会留下一点光。"];
-const CTA_LINE = "这一局，我来照亮你。";
+const TOP_LINES = ["PRESSURE → TRANSFORMATION → ASSET", "把当前压力转成结构化转化。"];
+const CTA_LINE = "轻触 · 进入压力场";
 const PERIOD_LABELS = ["子时", "丑时", "寅时", "卯时", "辰时", "巳时", "午时", "未时", "申时", "酉时", "戌时", "亥时"];
 const CHRONO_DIMS = ["year", "month", "day", "hour"] as const;
 type ChronoDim = (typeof CHRONO_DIMS)[number];
 type GeoDim = "province" | "city";
 type ChronoCoords = { year: number; month: number; day: number; hour: number };
-const DIM_LABEL: Record<ChronoDim, string> = { year: "年份", month: "月份", day: "日期", hour: "出生时间" };
-const DIM_STAGE_LABEL: Record<ChronoDim, string> = { year: "公历年份", month: "公历月份", day: "公历日期", hour: "出生时段" };
+const DIM_LABEL: Record<ChronoDim, string> = { year: "压力入口", month: "状态映射", day: "转化刻度", hour: "资产预备" };
+const DIM_STAGE_LABEL: Record<ChronoDim, string> = { year: "当前压力", month: "状态层级", day: "转化位置", hour: "资产入口" };
 const GEO_DIMS = ["province", "city"] as const;
-const GEO_LABEL: Record<GeoDim, string> = { province: "出生省份", city: "出生城市" };
+const GEO_LABEL: Record<GeoDim, string> = { province: "压力场", city: "转化场" };
 const PROVINCE_OPTIONS = [
   "北京", "天津", "河北", "山西", "内蒙古", "辽宁", "吉林", "黑龙江", "上海", "江苏", "浙江", "安徽", "福建", "江西", "山东", "河南", "湖北",
   "湖南", "广东", "广西", "海南", "重庆", "四川", "贵州", "云南", "西藏", "陕西", "甘肃", "青海", "宁夏", "新疆", "香港", "澳门", "台湾",
@@ -496,9 +491,10 @@ export function LaunchLab() {
     }
     function dimText(dim: ChronoDim, value: number) {
       const v = Math.round(value);
-      if (dim === "year") return String(v);
-      if (dim === "month" || dim === "day") return pad2(v);
-      return hourToPeriodRange(clamp(v, 0, 23));
+      if (dim === "year") return `压力入口 ${String(v).slice(-2)}`;
+      if (dim === "month") return `状态映射 ${pad2(v)}`;
+      if (dim === "day") return `转化刻度 ${pad2(v)}`;
+      return `资产预备 ${pad2(clamp(v, 0, 23))}`;
     }
     function activeGeoDim(): GeoDim {
       return GEO_DIMS[m.geoStep] ?? "city";
@@ -526,16 +522,16 @@ export function LaunchLab() {
       }
     }
     function geoText(dim: GeoDim, value: number) {
-      const options = geoOptions(dim);
-      return options[Math.round(clamp(value, 0, Math.max(0, options.length - 1)))] ?? options[0] ?? "";
+      const index = Math.round(clamp(value, 0, Math.max(0, geoOptions(dim).length - 1)));
+      return dim === "province" ? `压力场 ${pad2(index + 1)}` : `转化场 ${pad2(index + 1)}`;
     }
     function periodText() {
-      return PERIOD_LABELS[hourToPeriodIndex(m.coords.hour)] ?? "酉时";
+      return `资产预备 ${pad2(hourToPeriodIndex(m.coords.hour) + 1)}`;
     }
     function buildFinalStateText() {
       const provinceText = geoText("province", m.geo.provinceIndex);
       const cityText = geoText("city", m.geo.cityIndex);
-      return `${periodText()} · ${provinceText} · ${cityText}`;
+      return `状态入口完成 · ${provinceText} · ${cityText}`;
     }
     function dispatchPersonaInput() {
       void triggerPersonaGeneration({
@@ -848,7 +844,7 @@ export function LaunchLab() {
       const motherStaticActive = isMotherStaticState();
       const axisActive = m.state === STATE.STARBEAST_SANDIFY || isAxisState() || convergenceActive;
 
-      // 星河散点先完整铺满；随后其中 28 颗汇聚成星兽，其他星再生成文字。
+      // Visual points fill the field first; then the entry form and text resolve.
       const enter = m.state === STATE.STARBEAST_SANDIFY
         ? smooth(0.1, 1.25, m.t)
         : isAxisState()
@@ -1056,20 +1052,17 @@ export function LaunchLab() {
         ctx.shadowBlur = 0;
         if (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND || m.state === STATE.DISPLAY_LOCK) {
           ctx.textAlign = "left";
-          const periodText = PERIOD_LABELS[hourToPeriodIndex(m.coords.hour)] ?? "酉时";
-          const provinceText = geoText("province", m.geo.provinceIndex);
-          const cityText = geoText("city", m.geo.cityIndex);
           const finalLocked = m.state === STATE.DISPLAY_LOCK;
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText("01 ｜ CHRONO · 确认坐标", g.railX0, m.h * 0.1);
+          ctx.fillText("01 ｜ STATE ENTRY", g.railX0, m.h * 0.1);
           ctx.fillStyle = "rgba(255,247,228,0.78)";
           ctx.font = `650 ${Math.min(15, m.w * 0.038)}px ${SANS}`;
-          ctx.fillText("你来自哪里？", g.railX0, m.h * 0.145);
-          ctx.fillText("让我照见你的原力人格。", g.railX0, m.h * 0.18);
+          ctx.fillText("进入当前状态。", g.railX0, m.h * 0.145);
+          ctx.fillText("系统开始映射你的压力。", g.railX0, m.h * 0.18);
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(finalLocked ? "［ 坐标确认 ］" : isGeoStage ? `［ ${GEO_LABEL[geoDim]} ］` : `［ ${DIM_STAGE_LABEL[dim]} ］`, g.railX0, m.h * 0.34);
+          ctx.fillText(finalLocked ? "［ STATE DETECTED ］" : isGeoStage ? `［ ${GEO_LABEL[geoDim]} ］` : `［ ${DIM_STAGE_LABEL[dim]} ］`, g.railX0, m.h * 0.34);
           ctx.fillStyle = "rgba(255,247,228,0.96)";
           const valueSize = finalLocked
             ? Math.min(28, m.w * 0.062)
@@ -1077,28 +1070,28 @@ export function LaunchLab() {
               ? Math.min(36, m.w * 0.082)
               : Math.min(48, m.w * 0.11);
           ctx.font = `700 ${valueSize}px ${MONO}`;
-          ctx.fillText(finalLocked ? `${periodText} · ${provinceText} · ${cityText}` : isGeoStage ? geoText(geoDim, m.dialFloat) : dimText(dim, m.dialFloat), g.railX0, m.h * 0.47);
+          ctx.fillText(finalLocked ? "PRESSURE DETECTED" : isGeoStage ? geoText(geoDim, m.dialFloat) : dimText(dim, m.dialFloat), g.railX0, m.h * 0.47);
           ctx.font = `700 ${Math.min(16, m.w * 0.04)}px ${MONO}`;
           ctx.fillStyle = "rgba(232,200,138,0.82)";
-          ctx.fillText(`${m.coords.year} / ${pad2(m.coords.month)} / ${pad2(m.coords.day)} / ${hourToPeriodRange(m.coords.hour)}`, g.railX0, m.h * 0.58);
+          ctx.fillText(`压力入口 / 状态映射 / 转化刻度 / 资产预备`, g.railX0, m.h * 0.58);
           ctx.fillStyle = "rgba(232,200,138,0.74)";
-          ctx.fillText(`${periodText} · ${provinceText} · ${cityText}`, g.railX0, m.h * 0.63);
+          ctx.fillText(finalLocked ? "SEED GENERATION READY" : "PRESSURE → TRANSFORMATION → ASSET", g.railX0, m.h * 0.63);
           ctx.fillStyle = "rgba(232,200,138,0.46)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "坐标已确认" : isGeoStage ? "先上下调频 · 再右滑锁定出生地" : "先上下调频 · 再右滑锁定坐标", g.railX0, m.h * 0.705);
+          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "状态已进入" : isGeoStage ? "先上下调频 · 再右滑进入转化场" : "先上下调频 · 再右滑进入状态", g.railX0, m.h * 0.705);
           ctx.fillStyle = "rgba(232,200,138,0.58)";
           ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
           const railHint = finalLocked
-            ? "坐标已确认"
+            ? "状态已进入"
             : m.verticalTuned && isGeoStage && geoDim === "city"
-              ? "右滑 · 原力人格显形"
+              ? "右滑 · PRESSURE DETECTION"
               : m.verticalTuned
-                ? `右滑卡扣 · 锁定${isGeoStage ? GEO_LABEL[geoDim] : DIM_LABEL[dim]}`
+                ? `右滑进入 · ${isGeoStage ? GEO_LABEL[geoDim] : DIM_LABEL[dim]}`
                 : "纵轴调频后 · 横轴解锁";
           ctx.fillText(railHint, g.railX0, g.railY + 30);
           ctx.textAlign = "right";
           ctx.fillStyle = "rgba(232,200,138,0.82)";
-          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "LOCK" : isGeoStage ? "GEO" : "TIME", g.railX1, g.railY - 18);
+          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "READY" : "STATE", g.railX1, g.railY - 18);
         }
 
         if (convergenceActive) {
@@ -1138,7 +1131,7 @@ export function LaunchLab() {
           ctx.textAlign = "center";
           ctx.fillStyle = `rgba(255,247,228,${(0.18 + converge * 0.55).toFixed(3)})`;
           ctx.font = `650 ${Math.min(14, m.w * 0.036)}px ${SANS}`;
-          ctx.fillText("坐标正在收束。", centerX, centerY + 82);
+          ctx.fillText("状态正在进入转化系统。", centerX, centerY + 82);
         }
         ctx.restore();
       }
@@ -1164,12 +1157,12 @@ export function LaunchLab() {
         ctx.textAlign = "center";
         ctx.fillStyle = "rgba(232,200,138,0.74)";
         ctx.font = `650 ${Math.min(13, m.w * 0.034)}px ${SANS}`;
-        ctx.fillText("轻触空白，捕获此刻压力种子", m.w / 2, m.h * 0.9);
+        ctx.fillText("轻触空白，进入当前压力", m.w / 2, m.h * 0.9);
         ctx.restore();
         return;
       }
 
-      // 文字也来自满屏星河，但必须在星兽成形之后再生成。
+      // Text resolves after the entry form stabilizes.
       if (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY) {
         const cx = m.w / 2;
         const lineStarts = [0.2, 0.55, 3.1];
@@ -1415,7 +1408,7 @@ export function LaunchLab() {
             }
           `}</style>
           <div
-            aria-label="压力种子进入前的情绪缓冲"
+            aria-label="进入当前压力前的状态确认"
             style={{
               position: "absolute",
               inset: 0,
@@ -1441,8 +1434,8 @@ export function LaunchLab() {
                 textShadow: "0 0 22px rgba(232,200,138,0.34)",
               }}
             >
-              <div>你已经被看见了。</div>
-              <div>现在，让我们看见你正在经历的。</div>
+              <div>STATE DETECTED</div>
+              <div>现在进入当前压力。</div>
             </div>
           </div>
         </>
