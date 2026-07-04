@@ -11,6 +11,13 @@ type PerceptionFrame = {
   textStacking: boolean;
 };
 
+export type NodePerceptionContinuityAuditResult = {
+  continuityScore: number;
+  flickerDetected: boolean;
+  overlapDetected: boolean;
+  perceptualBreaks: string[];
+};
+
 function hasDualNodeOverlap(frame: PerceptionFrame): boolean {
   return frame.node1Visible && frame.node2Visible;
 }
@@ -26,12 +33,7 @@ function hasAbruptShift(previous: PerceptionFrame, next: PerceptionFrame): boole
   return deformationDelta > 0.65 || lightDelta > 0.65;
 }
 
-export function runNodePerceptionContinuityAudit(): {
-  continuityScore: number;
-  flickerDetected: boolean;
-  overlapDetected: boolean;
-  perceptualBreaks: string[];
-} {
+export function runNodePerceptionContinuityAudit(): NodePerceptionContinuityAuditResult {
   const node1Lerp = getNodeTransitionLerp(0);
   const midLerp = getNodeTransitionLerp(0.5);
   const node2Lerp = getNodeTransitionLerp(1);
