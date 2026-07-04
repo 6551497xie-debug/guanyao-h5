@@ -13,6 +13,7 @@ import { LaunchPage } from "./pages/LaunchPage";
 import { MotherLab } from "./pages/MotherLab";
 import { StarbeastLab } from "./pages/StarbeastLab";
 import { VisualSystemLabPage } from "./pages/VisualSystemLabPage";
+import { previewRoutes } from "./router/previewRoutes";
 import { GUANYAO_ROUTES, LEGACY_ROUTE_REDIRECTS } from "./routes/guanyaoRoutes";
 
 function LegacyRedirect({ to }: { to: string }) {
@@ -59,6 +60,9 @@ export default function App() {
         <Route path="/breach-lab" element={<BreachLab />} />
         <Route path="/starbeast-lab" element={<StarbeastLab />} />
         <Route path="/launch-lab" element={<LaunchLab />} />
+        {previewRoutes.map((route) => (
+          <Route key={route.path} path={route.path} element={route.element} />
+        ))}
         <Route path="/chrono" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/chrono"]} />} />
         <Route path="/identity" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/identity"]} />} />
         <Route path="/force" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/force"]} />} />

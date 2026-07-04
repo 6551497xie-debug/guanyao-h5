@@ -10,7 +10,11 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
   const location = useLocation();
-  const isLaunchEntry = location.pathname === "/" || location.pathname === "/launch" || location.pathname === "/launch-lab";
+  const isLaunchEntry =
+    location.pathname === "/" ||
+    location.pathname === "/launch" ||
+    location.pathname === "/launch-lab" ||
+    location.pathname === "/launch-lab-preview";
   const isProductionDynamics = location.pathname === "/dynamics";
 
   if (isLaunchEntry || isProductionDynamics) {
