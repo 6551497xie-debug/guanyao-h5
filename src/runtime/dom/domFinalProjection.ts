@@ -2,7 +2,11 @@ import {
   resolveNodeDomRenderState,
   type DOMRenderState,
 } from "../node/dom/nodeDomRenderContract";
-import type { NodeRuntimeState } from "../node/runtime/nodeRuntimeBridge";
+import {
+  resolveNodeRuntimeState,
+  type NodeRuntimeState,
+} from "../node/runtime/nodeRuntimeBridge";
+import type { Node1State } from "../node/transition/node1ToNode2";
 
 export type FinalDOMProjection = {
   shouldRenderNode1: boolean;
@@ -14,7 +18,23 @@ export type FinalDOMProjection = {
   };
 };
 
-export function resolveFinalDOMProjection(nodeRuntimeState: NodeRuntimeState): FinalDOMProjection {
+type FinalDOMProjectionInput =
+  | NodeRuntimeState
+  | {
+      node1State: Node1State;
+      timeSpent: number;
+    };
+
+function resolveProjectionRuntimeState(input: FinalDOMProjectionInput): NodeRuntimeState {
+  if ("currentNode" in input) {
+    return input;
+  }
+
+  return resolveNodeRuntimeState(input);
+}
+
+export function resolveFinalDOMProjection(input: FinalDOMProjectionInput): FinalDOMProjection {
+  const nodeRuntimeState = resolveProjectionRuntimeState(input);
   const domState = resolveNodeDomRenderState(nodeRuntimeState);
 
   return {

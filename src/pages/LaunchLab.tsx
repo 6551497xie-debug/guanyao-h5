@@ -19,7 +19,7 @@ import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame"
 import { PressureSeedCrossAxisPage, type PressureSeedCrossAxisSeed } from "./PressureSeedCrossAxisPage";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getEntryUserType } from "../runtime/entry/entryDecision";
-import { resolveNodeRuntimeState } from "../runtime/node/runtime/nodeRuntimeBridge";
+import { resolveFinalDOMProjection } from "../runtime/dom/domFinalProjection";
 import { resolveStarbeastRenderState } from "../runtime/starbeast/starbeastRenderState";
 import { buildSelectedPressureSeedContext } from "../services/guanyaoPressureSeedSceneBindingService";
 import {
@@ -1342,19 +1342,17 @@ export function LaunchLab() {
         }
 
       if (m.node1State?.mirrorActivated) {
-        const runtimeState = resolveNodeRuntimeState({
+        const domState = resolveFinalDOMProjection({
           node1State: m.node1State,
           timeSpent: m.node1T * 1000,
         });
-        const currentNode = runtimeState.currentNode;
-        const node2Signal = runtimeState.currentNode === "NODE2" ? runtimeState.visualState : null;
         const mirrorIn = smooth(0, 0.45, m.node1T);
         const node1LineIn = smooth(0.6, 0.95, m.node1T);
-        const node2LineIn = currentNode === "NODE2" ? smooth(0.8, 1.25, m.node1T) : 0;
+        const node2LineIn = domState.shouldRenderNode2 ? smooth(0.8, 1.25, m.node1T) : 0;
         const centerX = m.w / 2;
         const centerY = m.h * 0.48;
-        const splitHint = node2Signal ? node2Signal.starfieldSplitIntensity : 0;
-        const directionalHint = node2Signal ? node2Signal.directionalLightBias : 0;
+        const splitHint = domState.visualOverlay.splitField ? 1 : 0;
+        const directionalHint = domState.visualOverlay.directionalLight ? 1 : 0;
         ctx.fillStyle = `rgba(7,5,18,${(0.18 + mirrorIn * 0.34 + splitHint * 0.08).toFixed(3)})`;
         ctx.fillRect(0, 0, m.w, m.h);
         const glowX = centerX + directionalHint * m.w * 0.08;
@@ -1370,16 +1368,13 @@ export function LaunchLab() {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        switch (currentNode) {
-          case "NODE1": {
+        if (domState.shouldRenderNode1) {
             if (node1LineIn > 0.001) {
               ctx.font = `700 ${Math.min(20, m.w * 0.05)}px ${SANS}`;
               ctx.fillStyle = `rgba(255,247,228,${(node1LineIn * 0.96).toFixed(3)})`;
               ctx.fillText("Node 1：镜面已激活", centerX, m.h * 0.74);
             }
-            break;
-          }
-          case "NODE2": {
+        } else if (domState.shouldRenderNode2) {
             const splitLineAlpha = node2LineIn * 0.34;
             const splitOffset = Math.min(18, m.w * 0.04);
             ctx.strokeStyle = `rgba(232,200,138,${splitLineAlpha.toFixed(3)})`;
@@ -1396,8 +1391,6 @@ export function LaunchLab() {
               ctx.fillStyle = `rgba(232,200,138,${(node2LineIn * 0.9).toFixed(3)})`;
               ctx.fillText("Node 2：结构开始分离", centerX, m.h * 0.76);
             }
-            break;
-          }
         }
         ctx.restore();
       }
