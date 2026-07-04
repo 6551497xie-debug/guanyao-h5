@@ -349,9 +349,29 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       const axisTop = getAxisTop();
       const axisBottom = getAxisBottom();
       const axisCenter = rail.y;
+      const time = performance.now() / 1000;
       if (verticalKnobY === 0) verticalKnobY = axisTop;
       if (verticalKnobTargetY === 0) verticalKnobTargetY = axisTop;
       verticalKnobY += (verticalKnobTargetY - verticalKnobY) * 0.22;
+
+      const compressionPulse = 0.72 + Math.sin(time * 2.4) * 0.12;
+      const compressionCenterX = axisX;
+      const compressionCenterY = axisCenter;
+      const compressionGlow = ctx.createRadialGradient(
+        compressionCenterX,
+        compressionCenterY,
+        0,
+        compressionCenterX,
+        compressionCenterY,
+        Math.max(stage.w * 0.16, 72)
+      );
+      compressionGlow.addColorStop(0, `rgba(87,213,223,${(0.1 + compressionPulse * 0.08).toFixed(3)})`);
+      compressionGlow.addColorStop(0.42, "rgba(87,213,223,0.04)");
+      compressionGlow.addColorStop(1, "rgba(87,213,223,0)");
+      ctx.fillStyle = compressionGlow;
+      ctx.beginPath();
+      ctx.arc(compressionCenterX, compressionCenterY, Math.max(stage.w * 0.16, 72), 0, Math.PI * 2);
+      ctx.fill();
 
       ctx.strokeStyle = "rgba(0,184,212,0.34)";
       ctx.lineWidth = 1;
@@ -377,6 +397,21 @@ export function PressureSeedCrossAxisPage({ ageSegment, onComplete }: PressureSe
       currentSeeds.forEach((seed, index) => {
         const seedY = startY + index * rowGap;
         const isSelected = index === selectedSeedIndex;
+        const pressurePull = isSelected ? 0.56 + compressionPulse * 0.22 : 0.18;
+        const sourceX = rail.x + Math.max(48, stage.w * 0.12);
+        const sourceY = seedY + 12;
+        ctx.strokeStyle = `rgba(87,213,223,${pressurePull.toFixed(3)})`;
+        ctx.lineWidth = isSelected ? 1.25 : 0.75;
+        ctx.beginPath();
+        ctx.moveTo(sourceX, sourceY);
+        ctx.quadraticCurveTo(
+          sourceX + (axisX - sourceX) * 0.56,
+          sourceY + (axisCenter - sourceY) * 0.32,
+          axisX,
+          axisCenter
+        );
+        ctx.stroke();
+
         ctx.globalAlpha = appState === "SEED_LOCKED" || isSelected ? 1 : 0.48;
         ctx.fillStyle = color.white;
         ctx.font = isSelected ? "16px monospace" : "15px monospace";

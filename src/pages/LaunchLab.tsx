@@ -1250,6 +1250,10 @@ export function LaunchLab() {
         m.precisionY = range.max > range.min ? Math.round((1 - clamp(dialFrac, 0, 1)) * 20) : 10;
         const railCursor = { x: lerp(g.railX0, g.railX1, m.railProgress), y: g.railY };
         const tuneCursor = tunePoint(m.precisionY);
+        const originX = m.w / 2;
+        const originY = m.h * 0.48;
+        const originPulse = 0.72 + Math.sin(now * 2.2) * 0.12;
+        const originEmission = Math.max(axisSeed, axisGrow) * originPulse;
         const guideCycle = (now * 0.34) % 1;
         const guideStage = guideCycle < 0.54 ? "y" : "x";
         const guideProgress = guideStage === "y"
@@ -1260,6 +1264,36 @@ export function LaunchLab() {
           return Math.max(0, 1 - d / width);
         };
         ctx.save();
+        ctx.globalAlpha = Math.min(1, originEmission);
+        const originGlow = ctx.createRadialGradient(originX, originY, 0, originX, originY, Math.min(m.w, m.h) * 0.22);
+        originGlow.addColorStop(0, "rgba(255,247,228,0.22)");
+        originGlow.addColorStop(0.48, "rgba(232,200,138,0.08)");
+        originGlow.addColorStop(1, "rgba(232,200,138,0)");
+        ctx.fillStyle = originGlow;
+        ctx.beginPath();
+        ctx.arc(originX, originY, Math.min(m.w, m.h) * 0.22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = `rgba(${warmAxisRgb},${(0.08 + originEmission * 0.24).toFixed(3)})`;
+        ctx.lineWidth = 1;
+        [0, 2, 4, 6].forEach((col) => {
+          const target = railPoint(col);
+          const headX = lerp(originX, target.x, axisGrow);
+          const headY = lerp(originY, target.y, axisGrow);
+          ctx.beginPath();
+          ctx.moveTo(originX, originY);
+          ctx.lineTo(headX, headY);
+          ctx.stroke();
+        });
+        [2, 8, 14, 20].forEach((row) => {
+          const target = tunePoint(row);
+          const headX = lerp(originX, target.x, axisGrow);
+          const headY = lerp(originY, target.y, axisGrow);
+          ctx.beginPath();
+          ctx.moveTo(originX, originY);
+          ctx.lineTo(headX, headY);
+          ctx.stroke();
+        });
+        ctx.globalAlpha = 1;
         ctx.globalAlpha = axisSeed;
         pos.forEach((p, i) => {
           const residueTarget = i % 2 === 0
