@@ -5,21 +5,20 @@
 // PRESSURE -> TRANSFORMATION -> ASSET
 //
 // This page may retain its existing visual machinery, but no user-facing copy
-// should introduce identity onboarding, coordinate lore, or alternate myths.
+// should introduce legacy onboarding, coordinate lore, or alternate myths.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { drawMotherCardRenderer, getMotherCardRendererRect } from "../components/mother/MotherCardRenderer";
+import {
+  drawMotherCardRenderer as drawEntryCardRenderer,
+  getMotherCardRendererRect as getEntryCardRendererRect,
+  type MotherCardRendererOptions as EntryCardRendererOptions,
+} from "../components/mother/MotherCardRenderer";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import { PressureSeedCrossAxisPage, type PressureSeedCrossAxisSeed } from "./PressureSeedCrossAxisPage";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildSelectedPressureSeedContext } from "../services/guanyaoPressureSeedSceneBindingService";
-import {
-  createMotherCardReadonlySnapshot,
-  type MotherCardReadonlySnapshot,
-} from "../services/guanyaoPersonaSnapshotCache";
-import { triggerPersonaGeneration } from "../services/guanyaoPersonaGenerationTrigger";
 import {
   buildTripleForceLandingResult,
   getTripleForceFrontStage,
@@ -136,9 +135,9 @@ type LaunchState =
   | "time_calibration"
   | "geo_bind"
   | "display_lock"
-  | "mother_pre_collapse"
-  | "mother_light_convergence"
-  | "mother_static_render";
+  | "entry_pre_collapse"
+  | "entry_light_convergence"
+  | "entry_static_render";
 
 const STATE = {
   STARFIELD_IDLE: "starfield_idle",
@@ -151,9 +150,9 @@ const STATE = {
   TIME_CALIBRATION: "time_calibration",
   GEO_BIND: "geo_bind",
   DISPLAY_LOCK: "display_lock",
-  MOTHER_PRE_COLLAPSE: "mother_pre_collapse",
-  MOTHER_LIGHT_CONVERGENCE: "mother_light_convergence",
-  MOTHER_STATIC_RENDER: "mother_static_render",
+  ENTRY_PRE_COLLAPSE: "entry_pre_collapse",
+  ENTRY_LIGHT_CONVERGENCE: "entry_light_convergence",
+  ENTRY_STATIC_RENDER: "entry_static_render",
 } as const;
 
 const TOP_LINES = ["PRESSURE → TRANSFORMATION → ASSET", "把当前压力转成结构化转化。"];
@@ -163,6 +162,7 @@ const CHRONO_DIMS = ["year", "month", "day", "hour"] as const;
 type ChronoDim = (typeof CHRONO_DIMS)[number];
 type GeoDim = "province" | "city";
 type ChronoCoords = { year: number; month: number; day: number; hour: number };
+type EntryTransitionSnapshot = EntryCardRendererOptions["snapshot"];
 const DIM_LABEL: Record<ChronoDim, string> = { year: "压力入口", month: "状态映射", day: "转化刻度", hour: "资产预备" };
 const DIM_STAGE_LABEL: Record<ChronoDim, string> = { year: "当前压力", month: "状态层级", day: "转化位置", hour: "资产入口" };
 const GEO_DIMS = ["province", "city"] as const;
@@ -330,10 +330,10 @@ export function LaunchLab() {
       walk: 0,
       field: [] as FieldStar[],
       textStars: [] as TextStar[],
-      motherSnapshot: null as MotherCardReadonlySnapshot | null,
-      motherSide: "front" as "front" | "back",
-      motherFlipTo: "front" as "front" | "back",
-      motherFlipT: 1,
+      entryTransitionSnapshot: null as EntryTransitionSnapshot | null,
+      entryCardSide: "front" as "front" | "back",
+      entryCardFlipTo: "front" as "front" | "back",
+      entryCardFlipT: 1,
       afterForm: 0,
       formed: false,
       phaseX: 3,
@@ -443,10 +443,10 @@ export function LaunchLab() {
         m.state === STATE.DISPLAY_LOCK;
     }
     function isConvergenceState() {
-      return m.state === STATE.MOTHER_PRE_COLLAPSE || m.state === STATE.MOTHER_LIGHT_CONVERGENCE;
+      return m.state === STATE.ENTRY_PRE_COLLAPSE || m.state === STATE.ENTRY_LIGHT_CONVERGENCE;
     }
-    function isMotherStaticState() {
-      return m.state === STATE.MOTHER_STATIC_RENDER;
+    function isEntryStaticState() {
+      return m.state === STATE.ENTRY_STATIC_RENDER;
     }
     function axisMetrics() {
       const cols = 7;
@@ -525,29 +525,18 @@ export function LaunchLab() {
       const index = Math.round(clamp(value, 0, Math.max(0, geoOptions(dim).length - 1)));
       return dim === "province" ? `压力场 ${pad2(index + 1)}` : `转化场 ${pad2(index + 1)}`;
     }
-    function periodText() {
-      return `资产预备 ${pad2(hourToPeriodIndex(m.coords.hour) + 1)}`;
+    function buildEntryTransitionSnapshot(): EntryTransitionSnapshot {
+      return {
+        chrono: "PRESSURE DETECTED",
+        motherCode: "PRESSURE",
+        direction: "TRANSFORMATION",
+        starOrigin: "ASSET",
+        trigram: "SEED_AVAILABLE",
+        cacheStatus: "missing",
+      };
     }
-    function buildFinalStateText() {
-      const provinceText = geoText("province", m.geo.provinceIndex);
-      const cityText = geoText("city", m.geo.cityIndex);
-      return `状态入口完成 · ${provinceText} · ${cityText}`;
-    }
-    function dispatchPersonaInput() {
-      void triggerPersonaGeneration({
-        chrono: {
-          year: m.coords.year,
-          month: m.coords.month,
-          day: m.coords.day,
-          hour: periodText(),
-        },
-        geo: {
-          province: geoText("province", m.geo.provinceIndex),
-          city: geoText("city", m.geo.cityIndex),
-        },
-      }).catch((error: unknown) => {
-        console.error(error);
-      });
+    function blockLegacyEntryExecution() {
+      console.warn("[LEGACY_ENTRY_BLOCKED]");
     }
     function syncDialToCurrent() {
       const rangeOwner = m.state === STATE.GEO_BIND ? activeGeoDim() : activeDim();
@@ -560,7 +549,7 @@ export function LaunchLab() {
       const frac = max > min ? (m.dialFloat - min) / (max - min) : 0;
       m.precisionY = max > min ? Math.round((1 - frac) * 20) : 10;
     }
-    function triggerMotherCodeRevelation() {
+    function triggerEntryTransition() {
       if (m.handoffStarted) return;
       m.handoffStarted = true;
     }
@@ -590,8 +579,8 @@ export function LaunchLab() {
         m.t = 0;
         audio.form();
         vibrate([0, 18, 24]);
-        dispatchPersonaInput();
-        triggerMotherCodeRevelation();
+        blockLegacyEntryExecution();
+        triggerEntryTransition();
         return;
       }
 
@@ -815,7 +804,7 @@ export function LaunchLab() {
         case STATE.MOTHER_LIGHT_CONVERGENCE: {
           if (m.t >= 1.05) {
             if (!m.motherSnapshot) {
-              m.motherSnapshot = createMotherCardReadonlySnapshot(buildFinalStateText());
+              m.motherSnapshot = buildEntryTransitionSnapshot();
             }
             m.state = STATE.MOTHER_STATIC_RENDER;
             m.t = 0;
@@ -1137,14 +1126,7 @@ export function LaunchLab() {
       }
 
       if (motherStaticActive) {
-        const snapshot = m.motherSnapshot ?? {
-          chrono: buildFinalStateText(),
-          motherCode: "CACHE_PENDING",
-          direction: "CACHE_PENDING",
-          starOrigin: "CACHE_PENDING",
-          trigram: "CACHE_PENDING",
-          cacheStatus: "missing" as const,
-        };
+        const snapshot = m.motherSnapshot ?? buildEntryTransitionSnapshot();
         drawMotherCardRenderer({
           ctx,
           snapshot,
