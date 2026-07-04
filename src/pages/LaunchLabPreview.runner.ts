@@ -23,3 +23,5 @@ export function runCognitiveDivergenceCheck(): LaunchLabPreviewCognitiveDivergen
     result,
   };
 }
+
+export const runCognitiveDivergenceGate = runCognitiveDivergenceCheck;
