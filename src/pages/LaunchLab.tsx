@@ -1346,10 +1346,11 @@ export function LaunchLab() {
           node1State: m.node1State,
           timeSpent: m.node1T * 1000,
         });
+        const currentNode = runtimeState.currentNode;
         const node2Signal = runtimeState.currentNode === "NODE2" ? runtimeState.visualState : null;
         const mirrorIn = smooth(0, 0.45, m.node1T);
-        const secondLineIn = smooth(0.6, 0.95, m.node1T);
-        const node2LineIn = runtimeState.currentNode === "NODE2" ? smooth(0.8, 1.25, m.node1T) : 0;
+        const node1LineIn = smooth(0.6, 0.95, m.node1T);
+        const node2LineIn = currentNode === "NODE2" ? smooth(0.8, 1.25, m.node1T) : 0;
         const centerX = m.w / 2;
         const centerY = m.h * 0.48;
         const splitHint = node2Signal ? node2Signal.starfieldSplitIntensity : 0;
@@ -1368,18 +1369,35 @@ export function LaunchLab() {
         ctx.save();
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.font = `600 ${Math.min(16, m.w * 0.04)}px ${SANS}`;
-        ctx.fillStyle = `rgba(255,247,228,${(mirrorIn * 0.86).toFixed(3)})`;
-        ctx.fillText("你正在进入你的结构映射", centerX, m.h * 0.68);
-        if (secondLineIn > 0.001) {
-          ctx.font = `700 ${Math.min(20, m.w * 0.05)}px ${SANS}`;
-          ctx.fillStyle = `rgba(255,247,228,${(secondLineIn * 0.96).toFixed(3)})`;
-          ctx.fillText("Node 1：镜面已激活", centerX, m.h * 0.74);
-        }
-        if (node2LineIn > 0.001) {
-          ctx.font = `700 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
-          ctx.fillStyle = `rgba(232,200,138,${(node2LineIn * 0.9).toFixed(3)})`;
-          ctx.fillText("Node 2：结构开始分离", centerX, m.h * 0.8);
+
+        switch (currentNode) {
+          case "NODE1": {
+            if (node1LineIn > 0.001) {
+              ctx.font = `700 ${Math.min(20, m.w * 0.05)}px ${SANS}`;
+              ctx.fillStyle = `rgba(255,247,228,${(node1LineIn * 0.96).toFixed(3)})`;
+              ctx.fillText("Node 1：镜面已激活", centerX, m.h * 0.74);
+            }
+            break;
+          }
+          case "NODE2": {
+            const splitLineAlpha = node2LineIn * 0.34;
+            const splitOffset = Math.min(18, m.w * 0.04);
+            ctx.strokeStyle = `rgba(232,200,138,${splitLineAlpha.toFixed(3)})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(centerX - splitOffset, m.h * 0.36);
+            ctx.lineTo(centerX - splitOffset * 1.8, m.h * 0.62);
+            ctx.moveTo(centerX + splitOffset, m.h * 0.36);
+            ctx.lineTo(centerX + splitOffset * 1.8, m.h * 0.62);
+            ctx.stroke();
+
+            if (node2LineIn > 0.001) {
+              ctx.font = `700 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
+              ctx.fillStyle = `rgba(232,200,138,${(node2LineIn * 0.9).toFixed(3)})`;
+              ctx.fillText("Node 2：结构开始分离", centerX, m.h * 0.76);
+            }
+            break;
+          }
         }
         ctx.restore();
       }
