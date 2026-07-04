@@ -1090,6 +1090,68 @@ export function LaunchLab() {
         ctx.globalAlpha = 1;
       });
 
+      if (nodeRuntimeActive) {
+        const node1ElapsedMs = m.node1T * 1000;
+        const domState = resolveFinalDOMProjection({
+          node1State: m.node1State!,
+          timeSpent: node1ElapsedMs,
+        });
+        const progress = computeNodeTransitionProgress(node1ElapsedMs);
+        const lerp = getNodeTransitionLerp(progress);
+        const mirrorIn = smooth(0, 0.28, m.node1T);
+        const node1TextAlpha = domState.shouldRenderNode1
+          ? smooth(0.04, 0.22, m.node1T) * (1 - smooth(0.72, 1.08, m.node1T))
+          : 0;
+        const node2TextAlpha = domState.shouldRenderNode2 ? smooth(1.28, 1.58, m.node1T) : 0;
+        const centerX = m.w / 2;
+        const centerY = m.h * 0.48;
+        const splitHint = lerp.starfieldFragmentation;
+        const directionalHint = lerp.directionalLightShift;
+
+        ctx.fillStyle = `rgba(7,5,18,${(0.18 + mirrorIn * 0.34 + splitHint * 0.08).toFixed(3)})`;
+        ctx.fillRect(0, 0, m.w, m.h);
+
+        const glowX = centerX + directionalHint * m.w * 0.08;
+        const glow = ctx.createRadialGradient(glowX, centerY, 0, glowX, centerY, Math.min(m.w, m.h) * (0.32 + splitHint * 0.04));
+        glow.addColorStop(0, `rgba(255,247,228,${(0.12 + mirrorIn * 0.32).toFixed(3)})`);
+        glow.addColorStop(0.45, `rgba(232,200,138,${(0.08 + mirrorIn * 0.18 + directionalHint * 0.08).toFixed(3)})`);
+        glow.addColorStop(1, "rgba(232,200,138,0)");
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(glowX, centerY, Math.min(m.w, m.h) * (0.32 + splitHint * 0.04), 0, Math.PI * 2);
+        ctx.fill();
+
+        if (domState.shouldRenderNode2) {
+          const splitLineAlpha = Math.max(node2TextAlpha, 0.18) * lerp.starfieldFragmentation * 0.34;
+          const splitOffset = Math.min(18, m.w * 0.04);
+          ctx.strokeStyle = `rgba(232,200,138,${splitLineAlpha.toFixed(3)})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(centerX - splitOffset, m.h * 0.36);
+          ctx.lineTo(centerX - splitOffset * 1.8, m.h * 0.62);
+          ctx.moveTo(centerX + splitOffset, m.h * 0.36);
+          ctx.lineTo(centerX + splitOffset * 1.8, m.h * 0.62);
+          ctx.stroke();
+        }
+
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        if (node1TextAlpha > 0.001) {
+          ctx.font = `700 ${Math.min(20, m.w * 0.05)}px ${SANS}`;
+          ctx.fillStyle = `rgba(255,247,228,${(node1TextAlpha * 0.96).toFixed(3)})`;
+          ctx.fillText("Node 1：镜面已激活", centerX, m.h * 0.75 - (1 - node1TextAlpha) * 4);
+        } else if (node2TextAlpha > 0.001) {
+          ctx.font = `700 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
+          ctx.fillStyle = `rgba(232,200,138,${(node2TextAlpha * 0.92).toFixed(3)})`;
+          ctx.fillText("Node 2：结构开始分离", centerX, m.h * 0.75 + (1 - node2TextAlpha) * 5);
+        }
+
+        ctx.restore();
+        return;
+      }
+
       if (axisActive) {
         const axisSeed =
           m.state === STATE.STARBEAST_SANDIFY
@@ -1352,65 +1414,6 @@ export function LaunchLab() {
         }
         ctx.textBaseline = "alphabetic";
         }
-
-      if (m.node1State?.mirrorActivated) {
-        const node1ElapsedMs = m.node1T * 1000;
-        const domState = resolveFinalDOMProjection({
-          node1State: m.node1State,
-          timeSpent: node1ElapsedMs,
-        });
-        const progress = computeNodeTransitionProgress(node1ElapsedMs);
-        const lerp = getNodeTransitionLerp(progress);
-        const mirrorIn = smooth(0, 0.45, m.node1T);
-        const node1LineIn = smooth(0.6, 0.95, m.node1T);
-        const node2LineIn = domState.shouldRenderNode2 ? smooth(1.04, 1.3, m.node1T) : 0;
-        const centerX = m.w / 2;
-        const centerY = m.h * 0.48;
-        const splitHint = lerp.starfieldFragmentation;
-        const directionalHint = lerp.directionalLightShift;
-        ctx.fillStyle = `rgba(7,5,18,${(0.18 + mirrorIn * 0.34 + splitHint * 0.08).toFixed(3)})`;
-        ctx.fillRect(0, 0, m.w, m.h);
-        const glowX = centerX + directionalHint * m.w * 0.08;
-        const glow = ctx.createRadialGradient(glowX, centerY, 0, glowX, centerY, Math.min(m.w, m.h) * (0.32 + splitHint * 0.04));
-        glow.addColorStop(0, `rgba(255,247,228,${(0.12 + mirrorIn * 0.32).toFixed(3)})`);
-        glow.addColorStop(0.45, `rgba(232,200,138,${(0.08 + mirrorIn * 0.18 + directionalHint * 0.08).toFixed(3)})`);
-        glow.addColorStop(1, "rgba(232,200,138,0)");
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(glowX, centerY, Math.min(m.w, m.h) * (0.32 + splitHint * 0.04), 0, Math.PI * 2);
-        ctx.fill();
-        ctx.save();
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-
-        if (domState.shouldRenderNode1) {
-            if (node1LineIn > 0.001) {
-              const node1Lift = (1 - lerp.node1LabelOpacity) * 4;
-              ctx.font = `700 ${Math.min(20, m.w * 0.05)}px ${SANS}`;
-              ctx.fillStyle = `rgba(255,247,228,${(node1LineIn * lerp.node1LabelOpacity * 0.96).toFixed(3)})`;
-              ctx.fillText("Node 1：镜面已激活", centerX, m.h * 0.74 - node1Lift);
-            }
-        } else if (domState.shouldRenderNode2) {
-            const splitLineAlpha = node2LineIn * lerp.starfieldFragmentation * 0.34;
-            const splitOffset = Math.min(18, m.w * 0.04);
-            ctx.strokeStyle = `rgba(232,200,138,${splitLineAlpha.toFixed(3)})`;
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(centerX - splitOffset, m.h * 0.36);
-            ctx.lineTo(centerX - splitOffset * 1.8, m.h * 0.62);
-            ctx.moveTo(centerX + splitOffset, m.h * 0.36);
-            ctx.lineTo(centerX + splitOffset * 1.8, m.h * 0.62);
-            ctx.stroke();
-
-            if (node2LineIn > 0.001) {
-              const node2Lift = (1 - lerp.node2LabelOpacity) * 5;
-              ctx.font = `700 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
-              ctx.fillStyle = `rgba(232,200,138,${(node2LineIn * lerp.node2LabelOpacity * 0.9).toFixed(3)})`;
-              ctx.fillText("Node 2：结构开始分离", centerX, m.h * 0.76 + node2Lift);
-            }
-        }
-        ctx.restore();
-      }
 
     }
 
