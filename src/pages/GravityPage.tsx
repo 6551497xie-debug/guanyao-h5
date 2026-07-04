@@ -5,15 +5,9 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import {
-  generateSixDimensionalTuningDialogue,
-  type GuanyaoLanguageDimension,
-  type GuanyaoStarBeastName,
-} from "../expression/guanyaoLanguageSystem";
-import {
   runCosmicBotanicsRuntimeEngine,
   type CosmicPetalState,
   type StarbeastFeedback,
-  type StarFlowerForm,
   type StarFlowerGrowthState,
 } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
@@ -108,23 +102,6 @@ function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
     memory: value,
     goal: value,
   };
-}
-
-function resolveCosmicStarBeastName(starFlowerForm: StarFlowerForm): GuanyaoStarBeastName {
-  const starBeastNameByForm: Record<StarFlowerForm, GuanyaoStarBeastName> = {
-    qinglong: "青龙",
-    baihu: "白虎",
-    zhuque: "朱雀",
-    xuanwu: "玄武",
-  };
-
-  return starBeastNameByForm[starFlowerForm];
-}
-
-function resolveCosmicNarrativeDimension(spaceId: SixSpaceId | undefined): GuanyaoLanguageDimension {
-  if (spaceId === "action") return "behavior";
-  if (spaceId === "goal") return "motivation";
-  return spaceId ?? "body";
 }
 
 function hashPersonaStarInput(input: string) {
@@ -236,6 +213,38 @@ type VisualState = Readonly<{
   };
 }>;
 
+type BehaviorSignal = "NODE_PROGRESS" | "NODE_STALL" | "NODE_BREAKTHROUGH" | "COMPLETION_EVENT";
+type PressureState = "LOW" | "MEDIUM" | "HIGH";
+type EmotionalState = "CALM" | "TENSION" | "STRUGGLE" | "BREAKTHROUGH" | "CRYSTALLIZATION";
+type AssetTrigger = "NONE" | "SEED_ASSET" | "EMOTIONAL_PEAK_ASSET" | "64_HEXAGRAM_CRYSTAL_ASSET";
+type MonetizationEvent = "NONE" | "UNLOCK_ENHANCEMENT_OFFER" | "ASSET_UPGRADE_OFFER" | "HOURGLASS_INVERSION_OFFER";
+type ValueFlowState = Readonly<{
+  behaviorSignals: readonly BehaviorSignal[];
+  pressureState: PressureState;
+  emotionalState: EmotionalState;
+  assetTrigger: AssetTrigger;
+  monetizationEvent: MonetizationEvent;
+  hourglassLoopClosed: boolean;
+  nonInvasive: true;
+}>;
+type ExperienceStage = "PRESSURE" | "AWARENESS" | "ACTION" | "TRANSFORMATION" | "CRYSTAL";
+type ExperiencePrimaryFocus = "PRESSURE_FIELD" | "PRESSURE_AND_BEAST" | "BEAST_AND_DIMENSION" | "DIMENSION_FLOW" | "CRYSTALLIZATION";
+type ExperienceState = Readonly<{
+  stage: ExperienceStage;
+  primaryFocus: ExperiencePrimaryFocus;
+  loopLabel: string;
+  headline: string;
+  supportingCopy: string;
+  pressureCopy: string;
+  beastCopy: string;
+  nodeCopy: {
+    title: string;
+    text: string;
+    actionText: string;
+  };
+  crystalCopy: string;
+}>;
+
 const VISUAL_TIMELINE_SYNC = Object.freeze({
   calm: "T0.0 -> calm state",
   blackhole: "T0.95 -> blackhole activation",
@@ -341,6 +350,199 @@ function resolveVisualState(snapshot: ExecutionSnapshot, projection: RuntimeProj
     },
     timeline,
   } satisfies VisualState);
+}
+
+function resolveBehaviorSignals(snapshot: ExecutionSnapshot): readonly BehaviorSignal[] {
+  const signals: BehaviorSignal[] = [];
+  const completedNodeCount = snapshot.node.completed.length;
+
+  if (completedNodeCount > 0) signals.push("NODE_PROGRESS");
+  if (snapshot.node.locked || (snapshot.runtime.enginePhase === "NODE_RUNNING" && completedNodeCount === 0)) {
+    signals.push("NODE_STALL");
+  }
+  if (snapshot.runtime.enginePhase === "NODE_RUNNING" && completedNodeCount > 0 && completedNodeCount < 6) {
+    signals.push("NODE_BREAKTHROUGH");
+  }
+  if (snapshot.runtime.enginePhase === "COMPLETE" || completedNodeCount >= 6) signals.push("COMPLETION_EVENT");
+
+  return Object.freeze(signals);
+}
+
+function resolveValuePressureState(snapshot: ExecutionSnapshot, behaviorSignals: readonly BehaviorSignal[]): PressureState {
+  const seedIntensity = Math.min(1, Math.max(0, snapshot.seed.intensity ?? 0));
+  const structuralStallBoost = behaviorSignals.includes("NODE_STALL") ? 0.22 : 0;
+  const externalConflictBoost = snapshot.seed.category ? 0.08 : 0;
+  const pressureScore = Math.min(1, seedIntensity + structuralStallBoost + externalConflictBoost);
+
+  if (pressureScore >= 0.72) return "HIGH";
+  if (pressureScore >= 0.38) return "MEDIUM";
+  return "LOW";
+}
+
+function resolveValueEmotionalState({
+  pressureState,
+  completedNodeCount,
+  enginePhase,
+}: {
+  pressureState: PressureState;
+  completedNodeCount: number;
+  enginePhase: ExecutionSnapshot["runtime"]["enginePhase"];
+}): EmotionalState {
+  if (enginePhase === "COMPLETE" || completedNodeCount >= 6) return "CRYSTALLIZATION";
+  if (completedNodeCount >= 5) return "BREAKTHROUGH";
+  if (pressureState === "HIGH") return "STRUGGLE";
+  if (pressureState === "MEDIUM") return "TENSION";
+  return "CALM";
+}
+
+function resolveAssetTrigger(snapshot: ExecutionSnapshot): AssetTrigger {
+  const completedNodeCount = snapshot.node.completed.length;
+
+  if (snapshot.runtime.enginePhase === "COMPLETE" || completedNodeCount >= 6) return "64_HEXAGRAM_CRYSTAL_ASSET";
+  if (completedNodeCount >= 5) return "EMOTIONAL_PEAK_ASSET";
+  if (completedNodeCount >= 3) return "SEED_ASSET";
+  return "NONE";
+}
+
+function resolveMonetizationEvent({
+  emotionalState,
+  pressureState,
+  completedNodeCount,
+  behaviorSignals,
+}: {
+  emotionalState: EmotionalState;
+  pressureState: PressureState;
+  completedNodeCount: number;
+  behaviorSignals: readonly BehaviorSignal[];
+}): MonetizationEvent {
+  if (emotionalState === "BREAKTHROUGH" && completedNodeCount === 5) return "UNLOCK_ENHANCEMENT_OFFER";
+  if (emotionalState === "CRYSTALLIZATION" && completedNodeCount >= 6) return "ASSET_UPGRADE_OFFER";
+  if (pressureState === "HIGH" && behaviorSignals.includes("NODE_STALL")) return "HOURGLASS_INVERSION_OFFER";
+  return "NONE";
+}
+
+function resolveValueFlow(snapshot: ExecutionSnapshot): ValueFlowState {
+  const behaviorSignals = resolveBehaviorSignals(snapshot);
+  const completedNodeCount = snapshot.node.completed.length;
+  const pressureState = resolveValuePressureState(snapshot, behaviorSignals);
+  const emotionalState = resolveValueEmotionalState({
+    pressureState,
+    completedNodeCount,
+    enginePhase: snapshot.runtime.enginePhase,
+  });
+
+  return Object.freeze({
+    behaviorSignals,
+    pressureState,
+    emotionalState,
+    assetTrigger: resolveAssetTrigger(snapshot),
+    monetizationEvent: resolveMonetizationEvent({
+      emotionalState,
+      pressureState,
+      completedNodeCount,
+      behaviorSignals,
+    }),
+    hourglassLoopClosed: true,
+    nonInvasive: true,
+  } satisfies ValueFlowState);
+}
+
+function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: VisualState): ExperienceState {
+  const completedNodeCount = snapshot.node.completed.length;
+  const nodeNumber = Math.min(6, Math.max(1, snapshot.node.current));
+  const stage: ExperienceStage =
+    snapshot.runtime.enginePhase === "COMPLETE" || completedNodeCount >= 6
+      ? "CRYSTAL"
+      : completedNodeCount >= 5
+        ? "TRANSFORMATION"
+        : snapshot.runtime.uiPhase === "NODE_RUNNING"
+          ? "ACTION"
+          : snapshot.runtime.uiPhase === "DIMENSION_LOCKED"
+            ? "AWARENESS"
+            : "PRESSURE";
+  const primaryFocus: ExperiencePrimaryFocus =
+    stage === "CRYSTAL"
+      ? "CRYSTALLIZATION"
+      : stage === "TRANSFORMATION" || stage === "ACTION"
+        ? "DIMENSION_FLOW"
+        : stage === "AWARENESS"
+          ? "BEAST_AND_DIMENSION"
+          : visualState.timeline.current === "T0.95"
+            ? "PRESSURE_AND_BEAST"
+            : "PRESSURE_FIELD";
+  const nodeCopy = {
+    title: `第 ${nodeNumber} / 6 步`,
+    text: "选择一个最小动作，让压力开始移动。",
+    actionText: "轻触光点，推进这一格。",
+  };
+
+  if (stage === "CRYSTAL") {
+    return Object.freeze({
+      stage,
+      primaryFocus,
+      loopLabel: "压力 → 觉察 → 行动 → 转化 → 结晶",
+      headline: "结晶已经出现。",
+      supportingCopy: "这一轮压力已经穿过六步，正在形成身份资产。",
+      pressureCopy: "压力已经完成回收。",
+      beastCopy: "状态稳定，转化完成。",
+      nodeCopy,
+      crystalCopy: "这一局，已经开始结晶。",
+    });
+  }
+
+  if (stage === "TRANSFORMATION") {
+    return Object.freeze({
+      stage,
+      primaryFocus,
+      loopLabel: "压力 → 觉察 → 行动 → 转化 → 结晶",
+      headline: "转化正在收束。",
+      supportingCopy: "六步即将完成，压力开始变成可保存的形状。",
+      pressureCopy: "压力正在被收回。",
+      beastCopy: "状态正在趋稳。",
+      nodeCopy,
+      crystalCopy: "结晶还未压印。",
+    });
+  }
+
+  if (stage === "ACTION") {
+    return Object.freeze({
+      stage,
+      primaryFocus,
+      loopLabel: "压力 → 觉察 → 行动 → 转化 → 结晶",
+      headline: "进入六步行动。",
+      supportingCopy: "每一次轻触，只推进一个最小选择。",
+      pressureCopy: "压力成为行动入口。",
+      beastCopy: "状态正在跟随行动变化。",
+      nodeCopy,
+      crystalCopy: "继续推进，结晶会自然出现。",
+    });
+  }
+
+  if (stage === "AWARENESS") {
+    return Object.freeze({
+      stage,
+      primaryFocus,
+      loopLabel: "压力 → 觉察 → 行动 → 转化 → 结晶",
+      headline: "看见当前状态。",
+      supportingCopy: "它不是评判，只是把压力照出来。",
+      pressureCopy: "压力已经显影。",
+      beastCopy: "状态被接住了。",
+      nodeCopy,
+      crystalCopy: "行动完成后才会结晶。",
+    });
+  }
+
+  return Object.freeze({
+    stage,
+    primaryFocus,
+    loopLabel: "压力 → 觉察 → 行动 → 转化 → 结晶",
+    headline: "压力正在进入。",
+    supportingCopy: "先看见它，再做一个最小选择。",
+    pressureCopy: "压力正在显影。",
+    beastCopy: "状态即将被照见。",
+    nodeCopy,
+    crystalCopy: "结晶还未开始。",
+  });
 }
 
 function CosmicPageStarField() {
@@ -805,7 +1007,7 @@ function CoreStarInteractionLayer({
         <span
           key={`core-${index}`}
           role="button"
-          aria-label="轻触七星，把一点光送回白虎。"
+          aria-label="轻触光点，推进当前一步。"
           tabIndex={0}
           onClick={onCoreStarClick}
           onKeyDown={(event) => {
@@ -924,7 +1126,7 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, o
   return (
     <div
       role="group"
-      aria-label="轻触七星，把一点光送回白虎。"
+      aria-label="状态镜像与六步推进入口。"
       data-visual-primitive="BEAST"
       data-visual-layer="beast-state-container"
       style={{
@@ -1026,7 +1228,7 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, o
           textShadow: `0 0 10px rgba(${toneColor},0.16)`,
         }}
       >
-        轻触星点，白虎会接住这一点光。
+        轻触光点，推进当前一步。
       </span>
 
       <span
@@ -1069,7 +1271,6 @@ function CosmicBotanicsField({
   petalStates,
   pollenBursts,
   starbeast,
-  starFlowerForm,
   starFlowerState,
   hexagramReadiness,
   activeNodeIndex,
@@ -1077,6 +1278,7 @@ function CosmicBotanicsField({
   onNodeBloom,
   coreStars,
   visualState,
+  experienceState,
 }: {
   configs: SixSpaceConfig[];
   currentStep: number;
@@ -1084,7 +1286,6 @@ function CosmicBotanicsField({
   petalStates: Record<SixSpaceId, CosmicPetalState>;
   pollenBursts: Record<SixSpaceId, number>;
   starbeast: StarbeastFeedback;
-  starFlowerForm: StarFlowerForm;
   starFlowerState: StarFlowerGrowthState;
   hexagramReadiness: number;
   activeNodeIndex: number;
@@ -1092,37 +1293,38 @@ function CosmicBotanicsField({
   onNodeBloom: () => void;
   coreStars: RuntimeCoreStar[];
   visualState: VisualState;
+  experienceState: ExperienceState;
 }) {
   const seedTone = pressureSeedSurface.length % 3;
   const toneColor = visualState.colorTemperature || (seedTone === 0 ? "199,169,107" : seedTone === 1 ? "222,196,154" : "176,210,206");
   const activeConfig = configs[Math.max(0, Math.min(configs.length - 1, currentStep - 1))] ?? configs[0];
   const activePetalState = activeConfig ? petalStates[activeConfig.id] : "active";
-  const narrative = generateSixDimensionalTuningDialogue({
-    pressureSeedText: pressureSeedSurface,
-    starBeastName: resolveCosmicStarBeastName(starFlowerForm),
-    dimension: resolveCosmicNarrativeDimension(activeConfig?.id),
-  });
-  const nodeFlow = narrative.nodes;
-  const activeNode = nodeFlow[Math.min(activeNodeIndex, nodeFlow.length - 1)];
   const showBlackholeStatus = narrativePhase === "seed_visible" || narrativePhase === "beast_guide";
   const showPressureText = narrativePhase === "seed_visible" || narrativePhase === "beast_guide";
   const showBeastIntro = narrativePhase === "beast_guide";
   const showNodePanel = narrativePhase === "node_active" || narrativePhase === "node_complete";
   const shortPetalNames = ["身体", "情绪", "思维", "行为", "记忆", "目标"];
-  const coreReadiness = Math.max(hexagramReadiness, activeNodeIndex / Math.max(1, nodeFlow.length));
+  const coreReadiness = Math.max(hexagramReadiness, activeNodeIndex / 6);
   const coreVisible = narrativePhase === "node_active" || narrativePhase === "node_complete";
   const coreGlow = 0.1 + visualState.primitives.PARTICLE.intensity * 0.14 + coreReadiness * 0.12;
   const coreTone = starFlowerState === "blooming" || starFlowerState === "rebirth" ? toneColor : "176,210,206";
+  const pressureLayerOpacity = experienceState.primaryFocus === "PRESSURE_FIELD" ? 1 : experienceState.primaryFocus === "PRESSURE_AND_BEAST" ? 0.82 : 0.34;
+  const beastLayerOpacity = experienceState.primaryFocus === "BEAST_AND_DIMENSION" ? 1 : experienceState.primaryFocus === "PRESSURE_AND_BEAST" ? 0.72 : experienceState.primaryFocus === "CRYSTALLIZATION" ? 0.62 : 0.5;
+  const dimensionLayerOpacity = experienceState.primaryFocus === "DIMENSION_FLOW" ? 1 : experienceState.primaryFocus === "BEAST_AND_DIMENSION" ? 0.72 : experienceState.primaryFocus === "CRYSTALLIZATION" ? 0.76 : 0.38;
+  const particleLayerOpacity = experienceState.primaryFocus === "CRYSTALLIZATION" ? 1 : experienceState.primaryFocus === "DIMENSION_FLOW" ? 0.78 : 0.42;
 
   return (
     <section
-      aria-label="六维宇宙花冠"
+      aria-label="压力到结晶的六步转化区"
       data-experience-layer="pure-visual-projection"
       data-visual-grammar="BEAST_PRESSURE_DIMENSION_PARTICLE"
       data-visual-depth-state={visualState.visualDepthState}
       data-visual-composition={visualState.spatialComposition}
       data-visual-timeline={visualState.timeline.current}
       data-visual-focal-dimension={visualState.focalDimension}
+      data-experience-loop="PRESSURE_AWARENESS_ACTION_TRANSFORMATION_CRYSTAL"
+      data-experience-stage={experienceState.stage}
+      data-experience-focus={experienceState.primaryFocus}
       style={{
         "--visual-beast-intensity": visualState.primitives.BEAST.intensity,
         "--visual-pressure-intensity": visualState.primitives.PRESSURE.intensity,
@@ -1143,21 +1345,23 @@ function CosmicBotanicsField({
       } as CSSProperties}
     >
       <CosmicFieldKeyframes />
-      <div data-visual-primitive="PARTICLE" data-visual-layer="particle-nebula-field" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.background, pointerEvents: "none" }}>
+      <div data-visual-primitive="PARTICLE" data-visual-layer="particle-nebula-field" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.background, pointerEvents: "none", opacity: particleLayerOpacity }}>
         <CosmicNebulaScene toneColor={toneColor} />
         <CosmicAmbientStars />
       </div>
 
-      <BaiHuConstellationLayer
-        toneColor={toneColor}
-        narrativePhase={narrativePhase}
-        activeNodeIndex={activeNodeIndex}
-        onCoreStarClick={onNodeBloom}
-        coreStars={coreStars}
-      />
+      <div style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.entity, pointerEvents: "none", opacity: beastLayerOpacity }}>
+        <BaiHuConstellationLayer
+          toneColor={toneColor}
+          narrativePhase={narrativePhase}
+          activeNodeIndex={activeNodeIndex}
+          onCoreStarClick={onNodeBloom}
+          coreStars={coreStars}
+        />
+      </div>
 
-      <div data-visual-primitive="PRESSURE" data-visual-layer="pressure-blackhole-field" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.structural, pointerEvents: "none" }}>
-        <BlackholeVortexScene toneColor={toneColor} visible={showBlackholeStatus} status={narrative.blackholeStatus} />
+      <div data-visual-primitive="PRESSURE" data-visual-layer="pressure-blackhole-field" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.structural, pointerEvents: "none", opacity: pressureLayerOpacity }}>
+        <BlackholeVortexScene toneColor={toneColor} visible={showBlackholeStatus} status={experienceState.pressureCopy} />
       </div>
 
       <p
@@ -1180,11 +1384,11 @@ function CosmicBotanicsField({
           animation: "gy-copy-fade-in 360ms ease both",
         }}
       >
-        {narrative.pressureText}
+        {experienceState.pressureCopy}
       </p>
 
       <div data-visual-primitive="PARTICLE" data-visual-layer="particle-node-feedback" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.interaction, pointerEvents: "none" }}>
-        <NodeProgressionPanel visible={showNodePanel} toneColor={toneColor} activeNode={activeNode} />
+        <NodeProgressionPanel visible={showNodePanel} toneColor={toneColor} activeNode={experienceState.nodeCopy} />
       </div>
 
       <p
@@ -1206,33 +1410,35 @@ function CosmicBotanicsField({
           animation: "gy-copy-fade-in 360ms ease both",
         }}
       >
-        {narrative.beastIntro}
+        {experienceState.beastCopy}
       </p>
 
-      <StarFlowerCoreRepresentation
-        visible={coreVisible}
-        activeNodeIndex={activeNodeIndex}
-        nodeCount={nodeFlow.length}
-        coreReadiness={coreReadiness}
-        coreTone={coreTone}
-        coreGlow={Math.min(1, coreGlow + visualState.primitives.PARTICLE.intensity * 0.04)}
-      />
+      <div style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.interaction, pointerEvents: "none", opacity: dimensionLayerOpacity }}>
+        <StarFlowerCoreRepresentation
+          visible={coreVisible}
+          activeNodeIndex={activeNodeIndex}
+          nodeCount={6}
+          coreReadiness={coreReadiness}
+          coreTone={coreTone}
+          coreGlow={Math.min(1, coreGlow + visualState.primitives.PARTICLE.intensity * 0.04)}
+        />
 
-      <EnergyReturnFlow
-        visible={coreVisible}
-        activeNodeIndex={activeNodeIndex}
-        coreReadiness={coreReadiness}
-        coreTone={coreTone}
-        coreGlow={Math.min(1, coreGlow + visualState.primitives.PARTICLE.intensity * 0.04)}
-      />
+        <EnergyReturnFlow
+          visible={coreVisible}
+          activeNodeIndex={activeNodeIndex}
+          coreReadiness={coreReadiness}
+          coreTone={coreTone}
+          coreGlow={Math.min(1, coreGlow + visualState.primitives.PARTICLE.intensity * 0.04)}
+        />
 
-      <SixDimensionWheel
-        configs={configs}
-        activeConfig={activeConfig}
-        petalStates={petalStates}
-        toneColor={toneColor}
-        shortPetalNames={shortPetalNames}
-      />
+        <SixDimensionWheel
+          configs={configs}
+          activeConfig={activeConfig}
+          petalStates={petalStates}
+          toneColor={toneColor}
+          shortPetalNames={shortPetalNames}
+        />
+      </div>
 
     </section>
   );
@@ -1260,6 +1466,8 @@ function HexagramCodeDeliveryShell() {
     starbeastFeedback,
   } = runtimeProjection;
   const visualState = resolveVisualState(executionSnapshot, runtimeProjection);
+  const experienceState = resolveExperienceState(executionSnapshot, visualState);
+  const valueFlow = resolveValueFlow(executionSnapshot);
   const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
     pressureSeed: selectedPressureSeedSurface,
     sixDimensionState: cosmicSixDimensionState,
@@ -1339,12 +1547,6 @@ function HexagramCodeDeliveryShell() {
   }, []);
 
   if (USE_COSMIC_BOTANICS_SIX_SPACE || LEGACY_DYNAMICS_FLOW_ISOLATED) {
-    const activeCosmicConfig = sixSpaceConfigs[Math.max(0, Math.min(sixSpaceConfigs.length - 1, sixDimensionStep - 1))] ?? sixSpaceConfigs[0];
-    const cosmicPageCopy = generateSixDimensionalTuningDialogue({
-      pressureSeedText: selectedPressureSeedSurface,
-      starBeastName: resolveCosmicStarBeastName(cosmicBotanicsRuntime.starFlower.form),
-      dimension: resolveCosmicNarrativeDimension(activeCosmicConfig?.id),
-    });
     const cosmicTopCopyOpacity =
       cosmicNarrativePhase === "field_intro"
         ? 1
@@ -1393,11 +1595,13 @@ function HexagramCodeDeliveryShell() {
               letterSpacing: "0.16em",
             }}
           >
-            FIELD 04 / 6D ALIGNMENT
+            {experienceState.loopLabel}
           </span>
 
           <p style={{ margin: 0, maxWidth: 292, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.6 }}>
-            {cosmicPageCopy.fieldTitle}
+            {experienceState.headline}
+            <br />
+            {experienceState.supportingCopy}
           </p>
         </section>
 
@@ -1416,7 +1620,6 @@ function HexagramCodeDeliveryShell() {
             petalStates={visiblePetalStates}
             pollenBursts={cosmicPollenBursts}
             starbeast={starbeastFeedback}
-            starFlowerForm={cosmicBotanicsRuntime.starFlower.form}
             starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
             hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}
             activeNodeIndex={cosmicNodeStep}
@@ -1424,12 +1627,18 @@ function HexagramCodeDeliveryShell() {
             onNodeBloom={bloomCosmicNode}
             coreStars={baiHuRuntimeCoreStars}
             visualState={visualState}
+            experienceState={experienceState}
           />
         </section>
 
         <footer
           data-hexagram-asset-candidate-status={hexagramAssetCandidate.status}
           data-hexagram-asset-candidate-state={hexagramAssetCandidate.completionState}
+          data-value-flow-behavior={valueFlow.behaviorSignals.join("|") || "NONE"}
+          data-value-flow-pressure={valueFlow.pressureState}
+          data-value-flow-emotion={valueFlow.emotionalState}
+          data-value-flow-asset={valueFlow.assetTrigger}
+          data-value-flow-monetization={valueFlow.monetizationEvent}
           style={{
             position: "relative",
             zIndex: 1,
@@ -1441,7 +1650,7 @@ function HexagramCodeDeliveryShell() {
         >
           {cosmicNarrativePhase === "node_complete" &&
           hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE"
-            ? cosmicPageCopy.completionText
+            ? experienceState.crystalCopy
             : ""}
         </footer>
       </main>
