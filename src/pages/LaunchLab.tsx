@@ -490,6 +490,12 @@ export function LaunchLab() {
     function isEntryStaticState() {
       return m.state === STATE.ENTRY_STATIC_RENDER;
     }
+    function isEntryClickState(state: LaunchState) {
+      return state === STATE.STARFIELD_IDLE ||
+        state === STATE.ASSEMBLY ||
+        state === STATE.FORMATION ||
+        state === STATE.APPROACH;
+    }
     function axisMetrics() {
       const cols = 7;
       const rows = 21;
@@ -1250,6 +1256,10 @@ export function LaunchLab() {
         if (t - dbl < 350) m.debug = !m.debug;
         dbl = t;
       }
+      if (isEntryClickState(m.state)) {
+        openPressureSeedCanvas();
+        return;
+      }
       if (m.state === STATE.ENTRY_STATIC_RENDER) {
         const rect = getEntryCardRendererRect(m.w, m.h);
         const inCard = x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
@@ -1265,11 +1275,7 @@ export function LaunchLab() {
         return;
       }
       if (m.state === STATE.READY && m.presentDone) {
-        m.state = STATE.STARBEAST_SANDIFY;
-        m.t = 0;
-        m.dwellT = 0;
-        audio.form();
-        vibrate([0, 18, 28]);
+        openPressureSeedCanvas();
         return;
       }
       if (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND) {
