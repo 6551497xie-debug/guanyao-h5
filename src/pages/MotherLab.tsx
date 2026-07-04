@@ -15,7 +15,7 @@
 
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { drawMotherCardRenderer, getMotherCardRendererRect } from "../components/mother/MotherCardRenderer";
+import { drawEntryCardRenderer, getEntryCardRendererRect } from "../components/entry/EntryCardRenderer";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import { createMotherCardReadonlySnapshot } from "../services/guanyaoPersonaSnapshotCache";
 
@@ -161,7 +161,7 @@ export function MotherLab() {
     }
 
     function cardRect() {
-      return getMotherCardRendererRect(m.w, m.h);
+      return getEntryCardRendererRect(m.w, m.h);
     }
     function railY() {
       return m.h * 0.9;
@@ -298,7 +298,7 @@ export function MotherLab() {
       if (m.state === "CARD" || m.state === "SANDIFY") {
         const appear = m.state === "CARD" ? smooth(0, 0.6, m.cardT) : Math.max(0, 1 - m.sandT * 1.6);
         if (appear > 0.01) {
-          drawMotherCardRenderer({
+          drawEntryCardRenderer({
             ctx,
             snapshot,
             width: m.w,

@@ -11,10 +11,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  drawMotherCardRenderer as drawEntryCardRenderer,
-  getMotherCardRendererRect as getEntryCardRendererRect,
-  type MotherCardRendererOptions as EntryCardRendererOptions,
-} from "../components/mother/MotherCardRenderer";
+  drawEntryCardRenderer,
+  getEntryCardRendererRect,
+  type EntryCardRendererOptions,
+} from "../components/entry/EntryCardRenderer";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import { PressureSeedCrossAxisPage, type PressureSeedCrossAxisSeed } from "./PressureSeedCrossAxisPage";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";

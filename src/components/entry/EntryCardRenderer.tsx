@@ -1,29 +1,36 @@
 /**
- * MotherCardRenderer
+ * EntryCardRenderer
  *
- * Compatibility renderer for the launch entry bridge.
- * It keeps the legacy canvas API, but renders only the current product model:
+ * Renderer for the launch entry bridge.
+ * It renders only the current product model:
  * PRESSURE -> TRANSFORMATION -> ASSET.
  */
-
-import type { MotherCardReadonlySnapshot } from "../../services/guanyaoPersonaSnapshotCache";
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
 
-export type MotherCardSide = "front" | "back";
+export type EntryCardSnapshot = {
+  chrono?: string;
+  direction?: string;
+  trigram?: string;
+  cacheStatus?: "missing" | "ready" | "hit";
+  entryCode?: string;
+  entrySource?: string;
+};
 
-export type MotherCardRendererOptions = {
+export type EntryCardSide = "front" | "back";
+
+export type EntryCardRendererOptions = {
   ctx: CanvasRenderingContext2D;
-  snapshot: MotherCardReadonlySnapshot;
+  snapshot: EntryCardSnapshot;
   width: number;
   height: number;
   alpha?: number;
-  side?: MotherCardSide;
+  side?: EntryCardSide;
   flipProgress?: number;
 };
 
-export function getMotherCardRendererRect(width: number, height: number) {
+export function getEntryCardRendererRect(width: number, height: number) {
   const cardW = Math.min(330, width * 0.76);
   const cardH = Math.min(430, height * 0.54);
   return {
@@ -139,7 +146,7 @@ function drawTransitionCore(ctx: CanvasRenderingContext2D, cx: number, cy: numbe
   ctx.fill();
 }
 
-function drawFront(ctx: CanvasRenderingContext2D, _snapshot: MotherCardReadonlySnapshot, rect: { x: number; y: number; w: number; h: number }) {
+function drawFront(ctx: CanvasRenderingContext2D, _snapshot: EntryCardSnapshot, rect: { x: number; y: number; w: number; h: number }) {
   const pad = Math.max(22, rect.w * 0.08);
   drawFrame(ctx, rect);
 
@@ -179,7 +186,7 @@ function drawFront(ctx: CanvasRenderingContext2D, _snapshot: MotherCardReadonlyS
   ctx.fillText("PRESSURE -> TRANSFORMATION -> ASSET", rect.x + rect.w / 2, rect.y + rect.h - 34);
 }
 
-function drawBack(ctx: CanvasRenderingContext2D, _snapshot: MotherCardReadonlySnapshot, rect: { x: number; y: number; w: number; h: number }) {
+function drawBack(ctx: CanvasRenderingContext2D, _snapshot: EntryCardSnapshot, rect: { x: number; y: number; w: number; h: number }) {
   const pad = Math.max(22, rect.w * 0.08);
   drawFrame(ctx, rect);
   ctx.fillStyle = "rgba(232,200,138,0.035)";
@@ -226,7 +233,7 @@ function drawBack(ctx: CanvasRenderingContext2D, _snapshot: MotherCardReadonlySn
   ctx.fillText("PRESSURE -> TRANSFORMATION -> ASSET", rect.x + rect.w / 2, rect.y + rect.h - 34);
 }
 
-export function drawMotherCardRenderer({
+export function drawEntryCardRenderer({
   ctx,
   snapshot,
   width,
@@ -234,10 +241,10 @@ export function drawMotherCardRenderer({
   alpha = 1,
   side = "front",
   flipProgress = 1,
-}: MotherCardRendererOptions) {
+}: EntryCardRendererOptions) {
   const cx = width / 2;
   const cy = height * 0.47;
-  const rect = getMotherCardRendererRect(width, height);
+  const rect = getEntryCardRendererRect(width, height);
   const flipScale = Math.max(0.06, Math.abs(Math.cos(Math.min(1, Math.max(0, flipProgress)) * Math.PI)));
 
   ctx.save();
