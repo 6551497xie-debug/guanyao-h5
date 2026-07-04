@@ -481,19 +481,10 @@ export function LaunchLab() {
       fpsAcc: 0,
       fpsN: 0,
     };
-    entryHandoffRef.current = (mode: EntryHandoffMode) => {
+    entryHandoffRef.current = (_mode: EntryHandoffMode) => {
       setSceneState("ENTRY");
-
-      if (mode === "NEW_USER") {
-        m.state = STATE.STARBEAST_SANDIFY;
-        m.t = 0;
-        m.node1State = null;
-        m.node1T = 0;
-        audio.form();
-        vibrate([0, 18, 24]);
-        return;
-      }
-
+      m.node1State = null;
+      m.node1T = 0;
       openPressureSeedCanvas();
     };
     for (let i = 0; i < CFG.starfield; i++) {
@@ -1194,10 +1185,6 @@ export function LaunchLab() {
         const progress = computeNodeTransitionProgress(node1ElapsedMs);
         const lerp = getNodeTransitionLerp(progress);
         const mirrorIn = smooth(0, 0.28, m.node1T);
-        const node1TextAlpha = domState.shouldRenderNode1
-          ? smooth(0.04, 0.22, m.node1T) * (1 - smooth(0.72, 1.08, m.node1T))
-          : 0;
-        const node2TextAlpha = domState.shouldRenderNode2 ? smooth(1.28, 1.58, m.node1T) : 0;
         const centerX = m.w / 2;
         const centerY = m.h * 0.48;
         const splitHint = lerp.starfieldFragmentation;
@@ -1217,7 +1204,7 @@ export function LaunchLab() {
         ctx.fill();
 
         if (domState.shouldRenderNode2) {
-          const splitLineAlpha = Math.max(node2TextAlpha, 0.18) * lerp.starfieldFragmentation * 0.34;
+          const splitLineAlpha = Math.max(smooth(1.2, 1.45, m.node1T), 0.18) * lerp.starfieldFragmentation * 0.34;
           const splitOffset = Math.min(18, m.w * 0.04);
           ctx.strokeStyle = `rgba(232,200,138,${splitLineAlpha.toFixed(3)})`;
           ctx.lineWidth = 1;
@@ -1228,22 +1215,6 @@ export function LaunchLab() {
           ctx.lineTo(centerX + splitOffset * 1.8, m.h * 0.62);
           ctx.stroke();
         }
-
-        ctx.save();
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-
-        if (node1TextAlpha > 0.001) {
-          ctx.font = `700 ${Math.min(20, m.w * 0.05)}px ${SANS}`;
-          ctx.fillStyle = `rgba(255,247,228,${(node1TextAlpha * 0.96).toFixed(3)})`;
-          ctx.fillText("Node 1：镜面已激活", centerX, m.h * 0.75 - (1 - node1TextAlpha) * 4);
-        } else if (node2TextAlpha > 0.001) {
-          ctx.font = `700 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
-          ctx.fillStyle = `rgba(232,200,138,${(node2TextAlpha * 0.92).toFixed(3)})`;
-          ctx.fillText("Node 2：结构开始分离", centerX, m.h * 0.75 + (1 - node2TextAlpha) * 5);
-        }
-
-        ctx.restore();
         return;
       }
 
