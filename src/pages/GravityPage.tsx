@@ -57,16 +57,10 @@ const DEV_PRIMARY_PETAL_FIXTURES: Record<string, SelectedPressureSeedContext> = 
   },
 };
 
-type PersonaStarOrigin = {
-  index?: number;
-  intensity?: number;
-  resonance?: number;
-};
-type PersonaOutputSnapshotView = {
-  motherCode?: string;
-  direction?: string;
-  starOrigin?: PersonaStarOrigin | string;
-  trigram?: string;
+type PressureBeastSeed = {
+  index: number;
+  intensity: number;
+  resonance: number;
 };
 type RuntimeCoreStar = readonly [number, number, number];
 
@@ -104,7 +98,7 @@ function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
   };
 }
 
-function hashPersonaStarInput(input: string) {
+function hashPressureBeastInput(input: string) {
   let hash = 2166136261;
 
   for (let index = 0; index < input.length; index += 1) {
@@ -115,35 +109,32 @@ function hashPersonaStarInput(input: string) {
   return Math.abs(hash >>> 0);
 }
 
-function resolveStarOriginSeed(snapshot: PersonaOutputSnapshotView | null) {
-  const origin = snapshot?.starOrigin;
-
-  if (origin && typeof origin === "object") {
-    return {
-      index: origin.index ?? 0,
-      intensity: origin.intensity ?? 1,
-      resonance: origin.resonance ?? 1,
-    };
-  }
-
-  const fallbackSeed = hashPersonaStarInput(
-    `${snapshot?.motherCode ?? "MOTHER_PENDING"}|${snapshot?.direction ?? "白虎"}|${snapshot?.trigram ?? "兑"}|${origin ?? ""}`,
+function resolvePressureBeastSeed(snapshot: ExecutionSnapshot, projection: RuntimeProjection): PressureBeastSeed {
+  const fallbackSeed = hashPressureBeastInput(
+    [
+      snapshot.seed.id,
+      snapshot.seed.text,
+      snapshot.primaryDimension,
+      snapshot.beast.tone,
+      snapshot.node.current,
+      projection.currentPrimarySpaceId,
+    ].join("|"),
   );
 
   return {
     index: fallbackSeed % 28,
-    intensity: (fallbackSeed % 7) + 1,
-    resonance: (fallbackSeed % 5) + 1,
+    intensity: Math.max(1, Math.min(7, Math.round(snapshot.beast.resonance * 7) || ((fallbackSeed % 7) + 1))),
+    resonance: Math.max(1, Math.min(5, Math.round((snapshot.seed.intensity ?? 0.5) * 5) || ((fallbackSeed % 5) + 1))),
   };
 }
 
-function buildRuntimeBaiHuCoreStars(snapshot: PersonaOutputSnapshotView | null): RuntimeCoreStar[] {
-  const starOrigin = resolveStarOriginSeed(snapshot);
-  const directionSeed = hashPersonaStarInput(`${snapshot?.direction ?? "白虎"}|${snapshot?.motherCode ?? ""}`);
-  const phase = (starOrigin.index % 7) - 3;
-  const lift = (starOrigin.resonance - 3) * 0.72;
-  const stretch = 1 + (starOrigin.intensity - 4) * 0.012;
-  const tailRise = (directionSeed % 4) * 0.8;
+function buildRuntimeBaiHuCoreStars(snapshot: ExecutionSnapshot, projection: RuntimeProjection): RuntimeCoreStar[] {
+  const beastSeed = resolvePressureBeastSeed(snapshot, projection);
+  const pressureSeed = hashPressureBeastInput(`${snapshot.seed.id}|${snapshot.seed.text}|${projection.selectedPressureSeedSurface}`);
+  const phase = (beastSeed.index % 7) - 3;
+  const lift = (beastSeed.resonance - 3) * 0.72;
+  const stretch = 1 + (beastSeed.intensity - 4) * 0.012;
+  const tailRise = (pressureSeed % 4) * 0.8;
   const baseStars: RuntimeCoreStar[] = [
     [20, 42, 6.2],
     [31, 35, 5.2],
@@ -157,12 +148,12 @@ function buildRuntimeBaiHuCoreStars(snapshot: PersonaOutputSnapshotView | null):
   return baseStars.map(([x, y, size], index) => {
     const spineWave = Math.sin((index + phase) * 0.84) * 1.8;
     const tailBias = index >= 5 ? -tailRise * (index - 4) : 0;
-    const shoulderBias = index === 1 || index === 2 ? -starOrigin.intensity * 0.16 : 0;
+    const shoulderBias = index === 1 || index === 2 ? -beastSeed.intensity * 0.16 : 0;
 
     return [
       50 + (x - 50) * stretch,
       y + spineWave + lift + tailBias + shoulderBias,
-      size + (index === starOrigin.index % 7 ? 1.1 : 0),
+      size + (index === beastSeed.index % 7 ? 1.1 : 0),
     ] as RuntimeCoreStar;
   });
 }
@@ -244,7 +235,7 @@ type ExperienceState = Readonly<{
   };
   crystalCopy: string;
 }>;
-type ProductIdentity = Readonly<{
+type ProductRuntimeDefinition = Readonly<{
   officialDefinition: string;
   threeSecondModel: "PRESSURE → TRANSFORMATION → ASSET";
   experienceLoop: readonly [
@@ -258,18 +249,18 @@ type ProductIdentity = Readonly<{
     "Enter your current state",
     "System maps your pressure",
     "You begin 6-step transformation",
-    "You receive crystallized identity asset",
+    "You receive crystallized asset",
   ];
   userPerception: readonly [
     "internal pressure mirror",
     "transformation engine",
-    "personal behavioral map",
-    "collectible identity system",
+    "behavioral pressure map",
+    "collectible asset system",
   ];
   positioning: "Deterministic consciousness transformation runtime system";
 }>;
 
-const GUANYAO_PRODUCT_IDENTITY = Object.freeze({
+const GUANYAO_PRODUCT_RUNTIME_DEFINITION = Object.freeze({
   officialDefinition:
     "Guanyao is a deterministic behavioral runtime system that converts human pressure into structured consciousness transformation and crystallized digital assets.",
   threeSecondModel: "PRESSURE → TRANSFORMATION → ASSET",
@@ -284,16 +275,16 @@ const GUANYAO_PRODUCT_IDENTITY = Object.freeze({
     "Enter your current state",
     "System maps your pressure",
     "You begin 6-step transformation",
-    "You receive crystallized identity asset",
+    "You receive crystallized asset",
   ]),
   userPerception: Object.freeze([
     "internal pressure mirror",
     "transformation engine",
-    "personal behavioral map",
-    "collectible identity system",
+    "behavioral pressure map",
+    "collectible asset system",
   ]),
   positioning: "Deterministic consciousness transformation runtime system",
-} satisfies ProductIdentity);
+} satisfies ProductRuntimeDefinition);
 
 const VISUAL_TIMELINE_SYNC = Object.freeze({
   calm: "T0.0 -> calm state",
@@ -530,9 +521,9 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
     return Object.freeze({
       stage,
       primaryFocus,
-      loopLabel: GUANYAO_PRODUCT_IDENTITY.threeSecondModel,
+      loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
       headline: "结晶已经出现。",
-      supportingCopy: "这一轮压力已经穿过六步，正在形成身份资产。",
+      supportingCopy: "这一轮压力已经穿过六步，正在形成结晶资产。",
       pressureCopy: "压力已经完成回收。",
       beastCopy: "状态稳定，转化完成。",
       nodeCopy,
@@ -544,7 +535,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
     return Object.freeze({
       stage,
       primaryFocus,
-      loopLabel: GUANYAO_PRODUCT_IDENTITY.threeSecondModel,
+      loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
       headline: "转化正在收束。",
       supportingCopy: "六步即将完成，压力开始变成可保存的形状。",
       pressureCopy: "压力正在被收回。",
@@ -558,7 +549,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
     return Object.freeze({
       stage,
       primaryFocus,
-      loopLabel: GUANYAO_PRODUCT_IDENTITY.threeSecondModel,
+      loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
       headline: "进入六步行动。",
       supportingCopy: "每一次轻触，只推进一个最小选择。",
       pressureCopy: "压力成为行动入口。",
@@ -572,7 +563,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
     return Object.freeze({
       stage,
       primaryFocus,
-      loopLabel: GUANYAO_PRODUCT_IDENTITY.threeSecondModel,
+      loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
       headline: "看见当前状态。",
       supportingCopy: "它不是评判，只是把压力照出来。",
       pressureCopy: "压力已经显影。",
@@ -585,7 +576,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
   return Object.freeze({
     stage,
     primaryFocus,
-    loopLabel: GUANYAO_PRODUCT_IDENTITY.threeSecondModel,
+    loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
     headline: "压力正在进入。",
     supportingCopy: "先看见它，再做一个最小选择。",
     pressureCopy: "压力正在显影。",
@@ -1500,9 +1491,6 @@ function HexagramCodeDeliveryShell() {
       readDevPrimaryPetalFixture() ?? readJsonFromStorage<SelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
     ),
   );
-  const [personaOutputSnapshot] = useState(() =>
-    readJsonFromStorage<PersonaOutputSnapshotView>("guanyao:personaOutputSnapshot"),
-  );
   const runtimeProjection = GuanyaoRuntimeEngine.project(executionSnapshot);
   const {
     sixSpaceConfigs,
@@ -1522,7 +1510,7 @@ function HexagramCodeDeliveryShell() {
     pressureSeed: selectedPressureSeedSurface,
     sixDimensionState: cosmicSixDimensionState,
   });
-  const baiHuRuntimeCoreStars = buildRuntimeBaiHuCoreStars(personaOutputSnapshot);
+  const baiHuRuntimeCoreStars = buildRuntimeBaiHuCoreStars(executionSnapshot, runtimeProjection);
 
   const visiblePetalStates = sixSpaceConfigs.reduce<Record<SixSpaceId, CosmicPetalState>>((acc, config, index) => {
     const baseState = cosmicBotanicsRuntime.sixDimensionState[config.id].petalState;
@@ -1537,7 +1525,6 @@ function HexagramCodeDeliveryShell() {
   }, buildSpaceRecord(0));
   const starbeastFeedbackComplete = executionSnapshot.runtime.enginePhase === "COMPLETE" && visiblePetalStates[currentPrimarySpaceId] === "blooming";
   const hexagramAssetCandidate = resolveHexagramAssetCandidate({
-    personaSnapshot: personaOutputSnapshot,
     selectedPressureSeedContext: pressureSeedContext,
     currentPrimarySpaceId,
     completedNodeCount: cosmicNodeStep,
@@ -1608,11 +1595,11 @@ function HexagramCodeDeliveryShell() {
 
     return (
       <main
-        data-product-definition={GUANYAO_PRODUCT_IDENTITY.officialDefinition}
-        data-product-model={GUANYAO_PRODUCT_IDENTITY.threeSecondModel}
-        data-product-positioning={GUANYAO_PRODUCT_IDENTITY.positioning}
-        data-product-onboarding={GUANYAO_PRODUCT_IDENTITY.onboardingFlow.join("|")}
-        data-product-perception={GUANYAO_PRODUCT_IDENTITY.userPerception.join("|")}
+        data-product-definition={GUANYAO_PRODUCT_RUNTIME_DEFINITION.officialDefinition}
+        data-product-model={GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel}
+        data-product-positioning={GUANYAO_PRODUCT_RUNTIME_DEFINITION.positioning}
+        data-product-onboarding={GUANYAO_PRODUCT_RUNTIME_DEFINITION.onboardingFlow.join("|")}
+        data-product-perception={GUANYAO_PRODUCT_RUNTIME_DEFINITION.userPerception.join("|")}
         style={{
           minHeight: "100dvh",
           width: "100%",
