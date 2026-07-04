@@ -1,4 +1,13 @@
 export type { RUEEngagementEvent, RUEEntryEvent, RUEEventType, RUEExitEvent, RUEFlowEvent } from "./rueTrace";
+export type {
+  BaseRUEPayload,
+  EngagementEventPayload,
+  EntryEventPayload,
+  ExitEventPayload,
+  FlowEventPayload,
+  RUEPayloadFor,
+  RUETracePayloadByEvent,
+} from "./rueTracePayloadSpec";
 
 export type YaoBit = 0 | 1;
 
