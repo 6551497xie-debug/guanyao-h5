@@ -1061,11 +1061,11 @@ function CoreStarInteractionLayer({
             position: "absolute",
             left: `${left}%`,
             top: `${top}%`,
-            width: size + nodeCharge * 1.8,
-            height: size + nodeCharge * 1.8,
+            width: Math.max(28, size + nodeCharge * 1.8),
+            height: Math.max(28, size + nodeCharge * 1.8),
             borderRadius: 999,
             transform: "translate(-50%, -50%)",
-            background: `rgba(255,247,220,${0.54 + reveal * 0.36})`,
+            background: `radial-gradient(circle, rgba(255,247,220,${0.54 + reveal * 0.36}) 0 ${Math.max(2, size / 2)}px, transparent ${Math.max(3, size / 2 + 1)}px)`,
             boxShadow: `0 0 ${10 + reveal * 14 + nodeCharge * 16}px rgba(${toneColor},${coreGlow})`,
             animation: `gy-starbeast-ignite 760ms ease both ${index * 90}ms`,
             cursor: "pointer",
@@ -1308,6 +1308,7 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, o
 function CosmicBotanicsField({
   configs,
   currentStep,
+  activeDimensionStep,
   pressureSeedSurface,
   petalStates,
   pollenBursts,
@@ -1323,6 +1324,7 @@ function CosmicBotanicsField({
 }: {
   configs: SixSpaceConfig[];
   currentStep: number;
+  activeDimensionStep: number;
   pressureSeedSurface: string;
   petalStates: Record<SixSpaceId, CosmicPetalState>;
   pollenBursts: Record<SixSpaceId, number>;
@@ -1338,7 +1340,7 @@ function CosmicBotanicsField({
 }) {
   const seedTone = pressureSeedSurface.length % 3;
   const toneColor = visualState.colorTemperature || (seedTone === 0 ? "199,169,107" : seedTone === 1 ? "222,196,154" : "176,210,206");
-  const activeConfig = configs[Math.max(0, Math.min(configs.length - 1, currentStep - 1))] ?? configs[0];
+  const activeConfig = configs[Math.max(0, Math.min(configs.length - 1, activeDimensionStep - 1))] ?? configs[0];
   const activePetalState = activeConfig ? petalStates[activeConfig.id] : "active";
   const showBlackholeStatus = narrativePhase === "seed_visible" || narrativePhase === "beast_guide";
   const showPressureText = narrativePhase === "seed_visible" || narrativePhase === "beast_guide";
@@ -1391,7 +1393,7 @@ function CosmicBotanicsField({
         <CosmicAmbientStars />
       </div>
 
-      <div style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.entity, pointerEvents: "none", opacity: beastLayerOpacity }}>
+      <div style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.entity, pointerEvents: coreVisible ? "auto" : "none", opacity: beastLayerOpacity }}>
         <BaiHuConstellationLayer
           toneColor={toneColor}
           narrativePhase={narrativePhase}
@@ -1533,7 +1535,11 @@ function HexagramCodeDeliveryShell() {
   });
 
   function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
-    setExecutionSnapshot((current) => GuanyaoRuntimeEngine.run(current, { type: eventType, payload: context }));
+    setExecutionSnapshot((current) =>
+      eventType === "CORE_STAR_BLOOM" && current.node.current === 6 && current.runtime.enginePhase !== "COMPLETE"
+        ? GuanyaoRuntimeEngine.advance(current)
+        : GuanyaoRuntimeEngine.run(current, { type: eventType, payload: context }),
+    );
   }
 
   function bloomCosmicNode() {
@@ -1657,7 +1663,8 @@ function HexagramCodeDeliveryShell() {
         >
           <CosmicBotanicsField
             configs={sixSpaceConfigs}
-            currentStep={sixDimensionStep}
+            currentStep={executionSnapshot.node.current}
+            activeDimensionStep={sixDimensionStep}
             pressureSeedSurface={selectedPressureSeedSurface}
             petalStates={visiblePetalStates}
             pollenBursts={cosmicPollenBursts}
