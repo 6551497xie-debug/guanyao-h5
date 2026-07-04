@@ -72,7 +72,7 @@ const EDGES: [number, number][] = [
 ];
 
 const CFG = {
-  voidMs: 2.4,
+  voidMs: 3.6,
   convergeMs: 6.0,
   cyFrac: 0.46,
   scaleFrac: 0.62,
@@ -852,6 +852,25 @@ export function LaunchLab() {
       const entryStaticActive = isEntryStaticState();
       const axisActive = m.state === STATE.STARBEAST_SANDIFY || isAxisState() || convergenceActive;
 
+      if (m.state === STATE.STARFIELD_IDLE) {
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `600 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
+        const titleAlpha = smooth(0.6, 1.45, m.t);
+        const subtitleAlpha = smooth(1.2, 2.15, m.t);
+        if (titleAlpha > 0.001) {
+          ctx.fillStyle = `rgba(255,247,228,${(titleAlpha * 0.95).toFixed(3)})`;
+          ctx.fillText(TOP_LINES[0], m.w / 2, m.h * 0.18);
+        }
+        if (subtitleAlpha > 0.001) {
+          ctx.fillStyle = `rgba(255,247,228,${(subtitleAlpha * 0.82).toFixed(3)})`;
+          ctx.fillText(TOP_LINES[1], m.w / 2, m.h * 0.23);
+        }
+        ctx.restore();
+        return;
+      }
+
       // Visual points fill the field first; then the entry form and text resolve.
       const enter = m.state === STATE.STARBEAST_SANDIFY
         ? smooth(0.1, 1.25, m.t)
@@ -865,9 +884,7 @@ export function LaunchLab() {
       const assemblyFade =
         m.state === STATE.ASSEMBLY
           ? 1 - smooth(CFG.convergeMs * 0.2, CFG.convergeMs, m.t) * 0.78
-          : m.state === STATE.STARFIELD_IDLE
-            ? 1
-            : m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY
+          : m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY
               ? 0.2 * (1 - smooth(0.2, 3.0, m.afterForm)) + 0.035
               : 0.12;
       const fieldA = assemblyFade * (1 - enter * 0.55);
@@ -894,10 +911,6 @@ export function LaunchLab() {
         ctx.fill();
         ctx.shadowBlur = 0;
       });
-
-      if (m.state === STATE.STARFIELD_IDLE) {
-        return;
-      }
 
       const pos = NODES.map((_, i) => {
         const p = nodePos(i);
