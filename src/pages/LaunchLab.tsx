@@ -171,8 +171,8 @@ const Node1State = {
 } as const;
 const ENTRY_HANDOFF_DELAY_MS = 700;
 const PRESSURE_SEED_AUTO_RESOLVE_MS = 2400;
-const NODE_TRANSITION_LERP_START_MS = 900;
-const NODE_TRANSITION_LERP_DURATION_MS = 600;
+const NODE_TRANSITION_LERP_START_MS = 760;
+const NODE_TRANSITION_LERP_DURATION_MS = 900;
 const RAIL_COMMIT_THRESHOLD = 0.72;
 const PERIOD_LABELS = ["子时", "丑时", "寅时", "卯时", "辰时", "巳时", "午时", "未时", "申时", "酉时", "戌时", "亥时"];
 const CHRONO_DIMS = ["year", "month", "day", "hour"] as const;
@@ -1363,7 +1363,7 @@ export function LaunchLab() {
         const lerp = getNodeTransitionLerp(progress);
         const mirrorIn = smooth(0, 0.45, m.node1T);
         const node1LineIn = smooth(0.6, 0.95, m.node1T);
-        const node2LineIn = domState.shouldRenderNode2 ? smooth(0.8, 1.25, m.node1T) : 0;
+        const node2LineIn = domState.shouldRenderNode2 ? smooth(1.04, 1.3, m.node1T) : 0;
         const centerX = m.w / 2;
         const centerY = m.h * 0.48;
         const splitHint = lerp.starfieldFragmentation;
@@ -1385,9 +1385,10 @@ export function LaunchLab() {
 
         if (domState.shouldRenderNode1) {
             if (node1LineIn > 0.001) {
+              const node1Lift = (1 - lerp.node1LabelOpacity) * 4;
               ctx.font = `700 ${Math.min(20, m.w * 0.05)}px ${SANS}`;
               ctx.fillStyle = `rgba(255,247,228,${(node1LineIn * lerp.node1LabelOpacity * 0.96).toFixed(3)})`;
-              ctx.fillText("Node 1：镜面已激活", centerX, m.h * 0.74);
+              ctx.fillText("Node 1：镜面已激活", centerX, m.h * 0.74 - node1Lift);
             }
         } else if (domState.shouldRenderNode2) {
             const splitLineAlpha = node2LineIn * lerp.starfieldFragmentation * 0.34;
@@ -1402,9 +1403,10 @@ export function LaunchLab() {
             ctx.stroke();
 
             if (node2LineIn > 0.001) {
+              const node2Lift = (1 - lerp.node2LabelOpacity) * 5;
               ctx.font = `700 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
               ctx.fillStyle = `rgba(232,200,138,${(node2LineIn * lerp.node2LabelOpacity * 0.9).toFixed(3)})`;
-              ctx.fillText("Node 2：结构开始分离", centerX, m.h * 0.76);
+              ctx.fillText("Node 2：结构开始分离", centerX, m.h * 0.76 + node2Lift);
             }
         }
         ctx.restore();
