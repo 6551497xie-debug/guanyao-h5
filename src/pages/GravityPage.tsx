@@ -524,8 +524,8 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
       headline: "结晶已经出现。",
       supportingCopy: "这一轮压力已经穿过六步，正在形成结晶资产。",
-      pressureCopy: "压力已经完成回收。",
-      beastCopy: "状态稳定，转化完成。",
+      pressureCopy: "压力已进入资产状态。",
+      beastCopy: "转化完成，状态稳定。",
       nodeCopy,
       crystalCopy: "这一局，已经开始结晶。",
     });
@@ -538,10 +538,10 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
       headline: "转化正在收束。",
       supportingCopy: "六步即将完成，压力开始变成可保存的形状。",
-      pressureCopy: "压力正在被收回。",
-      beastCopy: "状态正在趋稳。",
+      pressureCopy: "压力正在进入转化末段。",
+      beastCopy: "转化正在趋稳。",
       nodeCopy,
-      crystalCopy: "结晶还未压印。",
+      crystalCopy: "资产尚未生成。",
     });
   }
 
@@ -567,9 +567,9 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       headline: "当前状态已识别。",
       supportingCopy: "它不是评判，只是把压力转成可推进的状态。",
       pressureCopy: "压力已经显影。",
-      beastCopy: "状态被接住了。",
+      beastCopy: "状态已识别。",
       nodeCopy,
-      crystalCopy: "行动完成后才会结晶。",
+      crystalCopy: "完成六步后生成资产。",
     });
   }
 
@@ -582,7 +582,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
     pressureCopy: "压力正在显影。",
     beastCopy: "状态即将被识别。",
     nodeCopy,
-    crystalCopy: "结晶还未开始。",
+    crystalCopy: "资产尚未生成。",
   });
 }
 
@@ -1167,7 +1167,7 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, o
   return (
     <div
       role="group"
-      aria-label="状态镜像与六步推进入口。"
+      aria-label="压力转化与六步推进入口。"
       data-visual-primitive="BEAST"
       data-visual-layer="beast-state-container"
       style={{
