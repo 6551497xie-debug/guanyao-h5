@@ -19,6 +19,7 @@ import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame"
 import { PressureSeedCrossAxisPage, type PressureSeedCrossAxisSeed } from "./PressureSeedCrossAxisPage";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getEntryUserType } from "../runtime/entry/entryDecision";
+import { resolveNodeRuntimeState } from "../runtime/node/runtime/nodeRuntimeBridge";
 import { resolveStarbeastRenderState } from "../runtime/starbeast/starbeastRenderState";
 import { buildSelectedPressureSeedContext } from "../services/guanyaoPressureSeedSceneBindingService";
 import {
@@ -1341,19 +1342,28 @@ export function LaunchLab() {
         }
 
       if (m.node1State?.mirrorActivated) {
+        const runtimeState = resolveNodeRuntimeState({
+          node1State: m.node1State,
+          timeSpent: m.node1T * 1000,
+        });
+        const node2Signal = runtimeState.currentNode === "NODE2" ? runtimeState.visualState : null;
         const mirrorIn = smooth(0, 0.45, m.node1T);
         const secondLineIn = smooth(0.6, 0.95, m.node1T);
+        const node2LineIn = runtimeState.currentNode === "NODE2" ? smooth(0.8, 1.25, m.node1T) : 0;
         const centerX = m.w / 2;
         const centerY = m.h * 0.48;
-        ctx.fillStyle = `rgba(7,5,18,${(0.18 + mirrorIn * 0.34).toFixed(3)})`;
+        const splitHint = node2Signal ? node2Signal.starfieldSplitIntensity : 0;
+        const directionalHint = node2Signal ? node2Signal.directionalLightBias : 0;
+        ctx.fillStyle = `rgba(7,5,18,${(0.18 + mirrorIn * 0.34 + splitHint * 0.08).toFixed(3)})`;
         ctx.fillRect(0, 0, m.w, m.h);
-        const glow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.min(m.w, m.h) * 0.32);
+        const glowX = centerX + directionalHint * m.w * 0.08;
+        const glow = ctx.createRadialGradient(glowX, centerY, 0, glowX, centerY, Math.min(m.w, m.h) * (0.32 + splitHint * 0.04));
         glow.addColorStop(0, `rgba(255,247,228,${(0.12 + mirrorIn * 0.32).toFixed(3)})`);
-        glow.addColorStop(0.45, `rgba(232,200,138,${(0.08 + mirrorIn * 0.18).toFixed(3)})`);
+        glow.addColorStop(0.45, `rgba(232,200,138,${(0.08 + mirrorIn * 0.18 + directionalHint * 0.08).toFixed(3)})`);
         glow.addColorStop(1, "rgba(232,200,138,0)");
         ctx.fillStyle = glow;
         ctx.beginPath();
-        ctx.arc(centerX, centerY, Math.min(m.w, m.h) * 0.32, 0, Math.PI * 2);
+        ctx.arc(glowX, centerY, Math.min(m.w, m.h) * (0.32 + splitHint * 0.04), 0, Math.PI * 2);
         ctx.fill();
         ctx.save();
         ctx.textAlign = "center";
@@ -1365,6 +1375,11 @@ export function LaunchLab() {
           ctx.font = `700 ${Math.min(20, m.w * 0.05)}px ${SANS}`;
           ctx.fillStyle = `rgba(255,247,228,${(secondLineIn * 0.96).toFixed(3)})`;
           ctx.fillText("Node 1：镜面已激活", centerX, m.h * 0.74);
+        }
+        if (node2LineIn > 0.001) {
+          ctx.font = `700 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
+          ctx.fillStyle = `rgba(232,200,138,${(node2LineIn * 0.9).toFixed(3)})`;
+          ctx.fillText("Node 2：结构开始分离", centerX, m.h * 0.8);
         }
         ctx.restore();
       }
