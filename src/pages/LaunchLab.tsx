@@ -161,6 +161,12 @@ const STATE = {
 const TOP_LINES = ["走过黑夜的人，会留下光的痕迹。", "这些光，正在慢慢汇聚成深空中的“光兽”。"];
 const CTA_LINE = "唤醒它，照见你的样子";
 const BEAST_COLLAPSE_VISUAL_EVENT = "BEAST_COLLAPSE_VISUAL_EVENT";
+const NODE1_MIRROR_ACTIVATED_EVENT = "NODE1_MIRROR_ACTIVATED";
+const Node1State = {
+  mirrorActivated: true,
+  reflectionMode: "ACTIVE",
+  starbeastSync: true,
+} as const;
 const ENTRY_HANDOFF_DELAY_MS = 700;
 const PRESSURE_SEED_AUTO_RESOLVE_MS = 2400;
 const RAIL_COMMIT_THRESHOLD = 0.72;
@@ -412,6 +418,8 @@ export function LaunchLab() {
       dragAxis: null as null | "x" | "y",
       lastX: 0,
       lastY: 0,
+      node1State: null as null | typeof Node1State,
+      node1T: 0,
       fps: 0,
       fpsAcc: 0,
       fpsN: 0,
@@ -619,6 +627,17 @@ export function LaunchLab() {
     function emitBeastCollapseVisualEvent() {
       window.dispatchEvent(new CustomEvent(BEAST_COLLAPSE_VISUAL_EVENT));
     }
+    function emitNode1MirrorActivatedEvent() {
+      window.dispatchEvent(new CustomEvent(NODE1_MIRROR_ACTIVATED_EVENT));
+    }
+    function activateNode1Mirror() {
+      if (m.node1State?.mirrorActivated) return;
+      m.node1State = Node1State;
+      m.node1T = 0;
+      console.log(NODE1_MIRROR_ACTIVATED_EVENT);
+      audio.form();
+      vibrate([0, 18, 24]);
+    }
     function routeEntryFromBeastCollapseEvent() {
       const type = getEntryUserType();
       const routeMode = type === "NEW_USER" ? "ORIGINAL_COORDINATE_LOADING" : "PRESSURE_SEED_LOADING";
@@ -771,6 +790,9 @@ export function LaunchLab() {
 
     function step(dt: number) {
       m.t += dt;
+      if (m.node1State?.mirrorActivated) {
+        m.node1T += dt;
+      }
       if (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY) {
         m.afterForm += dt;
       }
@@ -1316,6 +1338,35 @@ export function LaunchLab() {
           ctx.fillText("观爻 · GUANYAO", cx, m.h * 0.94);
         }
         ctx.textBaseline = "alphabetic";
+        }
+
+      if (m.node1State?.mirrorActivated) {
+        const mirrorIn = smooth(0, 0.45, m.node1T);
+        const secondLineIn = smooth(0.6, 0.95, m.node1T);
+        const centerX = m.w / 2;
+        const centerY = m.h * 0.48;
+        ctx.fillStyle = `rgba(7,5,18,${(0.18 + mirrorIn * 0.34).toFixed(3)})`;
+        ctx.fillRect(0, 0, m.w, m.h);
+        const glow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.min(m.w, m.h) * 0.32);
+        glow.addColorStop(0, `rgba(255,247,228,${(0.12 + mirrorIn * 0.32).toFixed(3)})`);
+        glow.addColorStop(0.45, `rgba(232,200,138,${(0.08 + mirrorIn * 0.18).toFixed(3)})`);
+        glow.addColorStop(1, "rgba(232,200,138,0)");
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, Math.min(m.w, m.h) * 0.32, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `600 ${Math.min(16, m.w * 0.04)}px ${SANS}`;
+        ctx.fillStyle = `rgba(255,247,228,${(mirrorIn * 0.86).toFixed(3)})`;
+        ctx.fillText("你正在进入你的结构映射", centerX, m.h * 0.68);
+        if (secondLineIn > 0.001) {
+          ctx.font = `700 ${Math.min(20, m.w * 0.05)}px ${SANS}`;
+          ctx.fillStyle = `rgba(255,247,228,${(secondLineIn * 0.96).toFixed(3)})`;
+          ctx.fillText("Node 1：镜面已激活", centerX, m.h * 0.74);
+        }
+        ctx.restore();
       }
 
     }
@@ -1366,7 +1417,7 @@ export function LaunchLab() {
         return;
       }
       if (m.state === STATE.READY && m.presentDone && isBeastHit(x, y)) {
-        emitBeastCollapseVisualEvent();
+        emitNode1MirrorActivatedEvent();
         return;
       }
       if (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND) {
@@ -1467,6 +1518,7 @@ export function LaunchLab() {
     resize();
     window.addEventListener("resize", resize);
     window.addEventListener(BEAST_COLLAPSE_VISUAL_EVENT, routeEntryFromBeastCollapseEvent);
+    window.addEventListener(NODE1_MIRROR_ACTIVATED_EVENT, activateNode1Mirror);
     canvas.addEventListener("pointerdown", onDown);
     canvas.addEventListener("pointermove", onMove);
     canvas.addEventListener("pointerup", onUp);
@@ -1477,6 +1529,7 @@ export function LaunchLab() {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
       window.removeEventListener(BEAST_COLLAPSE_VISUAL_EVENT, routeEntryFromBeastCollapseEvent);
+      window.removeEventListener(NODE1_MIRROR_ACTIVATED_EVENT, activateNode1Mirror);
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerup", onUp);
