@@ -370,8 +370,7 @@ export function LaunchLab() {
   }, [setLaunchInteractionState]);
 
   const enterNext = useCallback(() => {
-    const isNewUser = true;
-    entryHandoffRef.current?.(isNewUser ? "NEW_USER" : "OLD_USER");
+    entryHandoffRef.current?.(getEntryUserType());
   }, []);
 
   const triggerClickFlash = useCallback(() => {
@@ -481,10 +480,19 @@ export function LaunchLab() {
       fpsAcc: 0,
       fpsN: 0,
     };
-    entryHandoffRef.current = (_mode: EntryHandoffMode) => {
+    entryHandoffRef.current = (mode: EntryHandoffMode) => {
       setSceneState("ENTRY");
       m.node1State = null;
       m.node1T = 0;
+
+      if (mode === "NEW_USER") {
+        m.state = STATE.STARBEAST_SANDIFY;
+        m.t = 0;
+        audio.form();
+        vibrate([0, 18, 24]);
+        return;
+      }
+
       openPressureSeedCanvas();
     };
     for (let i = 0; i < CFG.starfield; i++) {
