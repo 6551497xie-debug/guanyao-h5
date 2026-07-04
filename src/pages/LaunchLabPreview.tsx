@@ -20,6 +20,12 @@ type PreviewVisualProfile = {
   axisSpread: number;
   axisCompression: number;
   intersectionOpacity: number;
+  forceCoreOpacity: number;
+  forceCoreScale: number;
+  forceCoreShadow: string;
+  axisGradient: string;
+  axisAnimation: string;
+  pointAnimation: string;
 };
 
 const STAR_POINTS = [
@@ -164,10 +170,43 @@ const LINE_STYLE: CSSProperties = {
 const AXIS_LINE_STYLE: CSSProperties = {
   position: "absolute",
   transformOrigin: "50% 50%",
-  background:
-    "linear-gradient(90deg, transparent, rgba(243, 211, 147, 0.62), transparent)",
   boxShadow: "0 0 14px rgba(243, 211, 147, 0.32)",
 };
+
+const FORCE_CORE_STYLE: CSSProperties = {
+  position: "absolute",
+  left: "50%",
+  top: "50%",
+  width: 42,
+  height: 42,
+  marginLeft: -21,
+  marginTop: -21,
+  borderRadius: "50%",
+  background:
+    "radial-gradient(circle, rgba(255, 237, 188, 0.96), rgba(232, 188, 107, 0.36) 44%, transparent 72%)",
+};
+
+const FORCE_MOTION_STYLE = `
+@keyframes gy-preview-axis-emit {
+  0% { opacity: 0.26; filter: blur(1.6px); }
+  100% { opacity: 0.72; filter: blur(0); }
+}
+
+@keyframes gy-preview-axis-collapse {
+  0% { opacity: 0.5; filter: blur(0); }
+  100% { opacity: 1; filter: blur(0.4px); }
+}
+
+@keyframes gy-preview-point-emit {
+  0% { transform: scale(0.72); }
+  100% { transform: scale(1); }
+}
+
+@keyframes gy-preview-point-collapse {
+  0% { transform: scale(1.18); }
+  100% { transform: scale(0.92); }
+}
+`;
 
 const STATUS_STYLE: CSSProperties = {
   display: "grid",
@@ -202,7 +241,7 @@ function getVisualProfile(previewUser: PreviewUser): PreviewVisualProfile {
     return {
       modeText: "OLD_USER / PRESSURE_SEED_LOADING",
       primaryText: "压力正在聚合…",
-      secondaryText: "轴场已经成形，压力点正沿交点向中心压缩。",
+      secondaryText: "外层光被拉回光兽核心，轴场沿交点向内坍缩。",
       starOpacity: 0.82,
       clusterOpacity: 1,
       beastGlow: 1,
@@ -217,13 +256,20 @@ function getVisualProfile(previewUser: PreviewUser): PreviewVisualProfile {
       axisSpread: 0.3,
       axisCompression: 0.82,
       intersectionOpacity: 1,
+      forceCoreOpacity: 1,
+      forceCoreScale: 1.18,
+      forceCoreShadow: "0 0 46px rgba(245, 207, 128, 0.78)",
+      axisGradient:
+        "linear-gradient(90deg, rgba(243, 211, 147, 0.08), rgba(243, 211, 147, 0.78), rgba(243, 211, 147, 0.08))",
+      axisAnimation: "gy-preview-axis-collapse",
+      pointAnimation: "gy-preview-point-collapse",
     };
   }
 
   return {
     modeText: "NEW_USER / ORIGINAL_COORDINATE_LOADING",
     primaryText: "坐标正在生成…",
-    secondaryText: "光从交点上长出，两条原始坐标轴正在展开。",
+    secondaryText: "光从光兽核心向外发射，原始坐标轴正在展开。",
     starOpacity: 0.34,
     clusterOpacity: 0.38,
     beastGlow: 0.48,
@@ -238,6 +284,13 @@ function getVisualProfile(previewUser: PreviewUser): PreviewVisualProfile {
     axisSpread: 1.18,
     axisCompression: 0,
     intersectionOpacity: 0.52,
+    forceCoreOpacity: 0.72,
+    forceCoreScale: 0.82,
+    forceCoreShadow: "0 0 34px rgba(245, 207, 128, 0.46)",
+    axisGradient:
+      "linear-gradient(90deg, transparent, rgba(243, 211, 147, 0.68), rgba(243, 211, 147, 0.24), transparent)",
+    axisAnimation: "gy-preview-axis-emit",
+    pointAnimation: "gy-preview-point-emit",
   };
 }
 
@@ -286,7 +339,9 @@ function resolveAxisLineStyle(
     width: `${axis.width}%`,
     height: `${axis.height}%`,
     opacity: profile.axisOpacity,
+    background: profile.axisGradient,
     transform: `translate(-50%, -50%) rotate(${axis.rotate}deg) scale(${scale})`,
+    animation: `${profile.axisAnimation} ${profile.aggregationDuration} ease-in-out infinite alternate`,
     transition: `opacity ${profile.aggregationDuration} ease, transform ${profile.aggregationDuration} ease`,
   };
 }
@@ -315,6 +370,7 @@ export function LaunchLabPreview() {
 
   return (
     <main style={PAGE_STYLE} aria-label="Entry user path preview">
+      <style>{FORCE_MOTION_STYLE}</style>
       <div style={STARFIELD_STYLE} aria-hidden="true" />
 
       <section style={CONTENT_STYLE}>
@@ -322,7 +378,7 @@ export function LaunchLabPreview() {
           <p style={EYEBROW_STYLE}>SIMULATION ONLY</p>
           <h1 style={TITLE_STYLE}>光兽入口路径预览</h1>
           <p style={BODY_STYLE}>
-            新用户与老用户共用同一片星空，只在轴线生成与压力压缩上分化。
+            新用户与老用户共用同一片星空，只在力场来源与轴线方向上分化。
           </p>
         </div>
 
@@ -333,6 +389,16 @@ export function LaunchLabPreview() {
               opacity: profile.beastGlow,
               filter: `blur(${profile.fieldBlur}px)`,
               transition: `opacity ${profile.aggregationDuration} ease, filter ${profile.aggregationDuration} ease`,
+            }}
+          />
+
+          <span
+            style={{
+              ...FORCE_CORE_STYLE,
+              opacity: profile.forceCoreOpacity,
+              transform: `scale(${profile.forceCoreScale})`,
+              boxShadow: profile.forceCoreShadow,
+              transition: `opacity ${profile.aggregationDuration} ease, transform ${profile.aggregationDuration} ease`,
             }}
           />
 
@@ -371,6 +437,7 @@ export function LaunchLabPreview() {
                   marginLeft: -size / 2,
                   marginTop: -size / 2,
                   opacity: profile.intersectionOpacity,
+                  animation: `${profile.pointAnimation} ${profile.aggregationDuration} ease-in-out infinite alternate`,
                   transition: `opacity ${profile.aggregationDuration} ease, left ${profile.aggregationDuration} ease, top ${profile.aggregationDuration} ease`,
                 }}
               />
