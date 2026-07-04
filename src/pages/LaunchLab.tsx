@@ -170,7 +170,7 @@ const Node1State = {
   starbeastSync: true,
 } as const;
 const ENTRY_HANDOFF_DELAY_MS = 700;
-const PRESSURE_SEED_AUTO_RESOLVE_MS = 2400;
+const PRESSURE_SEED_AUTO_RESOLVE_MS = 1600;
 const NODE_TRANSITION_LERP_START_MS = 760;
 const NODE_TRANSITION_LERP_DURATION_MS = 900;
 const RAIL_COMMIT_THRESHOLD = 0.72;
@@ -188,10 +188,10 @@ type LaunchInteractionState =
   | "DYNAMICS_HANDOFF";
 type SceneState = "ENTRY" | "NODE_1" | "NODE_2" | "HANDOFF";
 type EntryHandoffMode = "NEW_USER" | "OLD_USER";
-const DIM_LABEL: Record<ChronoDim, string> = { year: "压力入口", month: "状态映射", day: "转化刻度", hour: "资产预备" };
-const DIM_STAGE_LABEL: Record<ChronoDim, string> = { year: "当前压力", month: "状态层级", day: "转化位置", hour: "资产入口" };
+const DIM_LABEL: Record<ChronoDim, string> = { year: "原始坐标", month: "坐标层级", day: "坐标刻度", hour: "坐标锚点" };
+const DIM_STAGE_LABEL: Record<ChronoDim, string> = { year: "原始坐标", month: "坐标层级", day: "坐标刻度", hour: "坐标锚点" };
 const GEO_DIMS = ["province", "city"] as const;
-const GEO_LABEL: Record<GeoDim, string> = { province: "压力场", city: "转化场" };
+const GEO_LABEL: Record<GeoDim, string> = { province: "空间坐标", city: "方位坐标" };
 function toStarbeastEntryState(state: LaunchState): Parameters<typeof resolveStarbeastRenderState>[0] {
   if (
     state === STATE.STARFIELD_IDLE ||
@@ -638,10 +638,10 @@ export function LaunchLab() {
     }
     function dimText(dim: ChronoDim, value: number) {
       const v = Math.round(value);
-      if (dim === "year") return `压力入口 ${String(v).slice(-2)}`;
-      if (dim === "month") return `状态映射 ${pad2(v)}`;
-      if (dim === "day") return `转化刻度 ${pad2(v)}`;
-      return `资产预备 ${pad2(clamp(v, 0, 23))}`;
+      if (dim === "year") return `原始坐标 ${String(v).slice(-2)}`;
+      if (dim === "month") return `坐标层级 ${pad2(v)}`;
+      if (dim === "day") return `坐标刻度 ${pad2(v)}`;
+      return `坐标锚点 ${pad2(clamp(v, 0, 23))}`;
     }
     function activeGeoDim(): GeoDim {
       return GEO_DIMS[m.geoStep] ?? "city";
@@ -670,7 +670,7 @@ export function LaunchLab() {
     }
     function geoText(dim: GeoDim, value: number) {
       const index = Math.round(clamp(value, 0, Math.max(0, geoOptions(dim).length - 1)));
-      return dim === "province" ? `压力场 ${pad2(index + 1)}` : `转化场 ${pad2(index + 1)}`;
+      return dim === "province" ? `空间坐标 ${pad2(index + 1)}` : `方位坐标 ${pad2(index + 1)}`;
     }
     function buildEntryTransitionSnapshot(): EntryTransitionSnapshot {
       return {
@@ -1379,8 +1379,8 @@ export function LaunchLab() {
           ctx.fillText("走过黑夜的人，会留下光的痕迹。", g.railX0, m.h * 0.1);
           ctx.fillStyle = "rgba(255,247,228,0.78)";
           ctx.font = `650 ${Math.min(15, m.w * 0.038)}px ${SANS}`;
-          ctx.fillText("进入压力。", g.railX0, m.h * 0.145);
-          ctx.fillText("开始六步转化。", g.railX0, m.h * 0.18);
+          ctx.fillText("原始坐标生成。", g.railX0, m.h * 0.145);
+          ctx.fillText("坐标正在成形。", g.railX0, m.h * 0.18);
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
           ctx.fillText(finalLocked ? "［ 光痕 ］" : isGeoStage ? `［ ${GEO_LABEL[geoDim]} ］` : `［ ${DIM_STAGE_LABEL[dim]} ］`, g.railX0, m.h * 0.34);
@@ -1399,11 +1399,11 @@ export function LaunchLab() {
           ctx.fillText("只是帮你抵住那些风暴和内耗", g.railX0, m.h * 0.63);
           ctx.fillStyle = "rgba(232,200,138,0.46)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "压力已进入" : isGeoStage ? "先上下调频 · 再右滑进入转化" : "先上下调频 · 再右滑进入压力", g.railX0, m.h * 0.705);
+          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "坐标已成形" : isGeoStage ? "先上下调频 · 再右滑固定方位" : "先上下调频 · 再右滑固定坐标", g.railX0, m.h * 0.705);
           ctx.fillStyle = "rgba(232,200,138,0.58)";
           ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
           const railHint = finalLocked
-            ? "压力已进入"
+            ? "坐标已成形"
             : m.verticalTuned && isGeoStage && geoDim === "city"
               ? "右滑 · 光痕"
               : m.verticalTuned
@@ -1452,7 +1452,7 @@ export function LaunchLab() {
           ctx.textAlign = "center";
           ctx.fillStyle = `rgba(255,247,228,${(0.18 + converge * 0.55).toFixed(3)})`;
           ctx.font = `650 ${Math.min(14, m.w * 0.036)}px ${SANS}`;
-          ctx.fillText("状态正在进入转化系统。", centerX, centerY + 82);
+          ctx.fillText("坐标正在成形。", centerX, centerY + 82);
         }
         ctx.restore();
       }
