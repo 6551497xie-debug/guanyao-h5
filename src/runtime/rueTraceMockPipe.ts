@@ -1,4 +1,4 @@
-import type { RUEEventType } from "../types";
+import type { RUEEventType, RUEPayloadFor } from "../types";
 
 export type RUETracePayload = Record<string, unknown>;
 
@@ -12,7 +12,7 @@ const traceLog: RUETraceEvent[] = [];
 
 let nextTraceId = 1;
 
-export function pushEvent(type: RUEEventType, payload: RUETracePayload = {}): RUETraceEvent {
+export function pushEvent<Event extends RUEEventType>(type: Event, payload: RUEPayloadFor<Event>): RUETraceEvent {
   const event: RUETraceEvent = {
     id: nextTraceId,
     type,
@@ -33,4 +33,3 @@ export function clearTraceLog(): void {
   traceLog.length = 0;
   nextTraceId = 1;
 }
-

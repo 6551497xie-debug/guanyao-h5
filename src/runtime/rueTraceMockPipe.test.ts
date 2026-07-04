@@ -13,9 +13,9 @@ export function runRUETraceMockPipeCheck(): RUETraceMockPipeCheckResult {
     clearTraceLog();
     steps.push("cleared initial trace log");
 
-    const first = pushEvent("launch_entry", { source: "check" });
-    const second = pushEvent("step_view", { step: 1 });
-    const third = pushEvent("hesitation_gap", { milliseconds: 1200 });
+    const first = pushEvent("launch_entry", { sessionId: "check-session", timestamp: 1 });
+    const second = pushEvent("step_view", { sessionId: "check-session", timestamp: 2, stepIndex: 1 });
+    const third = pushEvent("hesitation_gap", { sessionId: "check-session", timestamp: 3, gapMs: 1200 });
     const ids = [first.id, second.id, third.id];
 
     if (ids.join(",") !== "1,2,3") {
@@ -67,7 +67,7 @@ export function runRUETraceMockPipeCheck(): RUETraceMockPipeCheckResult {
     }
     steps.push("validated clearTraceLog empties trace log");
 
-    const resetEvent = pushEvent("launch_re_entry", { source: "reset-check" });
+    const resetEvent = pushEvent("launch_re_entry", { sessionId: "check-session", timestamp: 4 });
     if (resetEvent.id !== 1) {
       return {
         success: false,
@@ -94,4 +94,3 @@ export function runRUETraceMockPipeCheck(): RUETraceMockPipeCheckResult {
     };
   }
 }
-
