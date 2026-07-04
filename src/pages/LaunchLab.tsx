@@ -18,6 +18,7 @@ import {
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import { PressureSeedCrossAxisPage, type PressureSeedCrossAxisSeed } from "./PressureSeedCrossAxisPage";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
+import { getEntryUserType } from "../runtime/entry/entryDecision";
 import { buildSelectedPressureSeedContext } from "../services/guanyaoPressureSeedSceneBindingService";
 import {
   buildTripleForceLandingResult,
@@ -598,6 +599,23 @@ export function LaunchLab() {
         m.pressureCanvasOpened = true;
         openPressureSeedCanvas();
       }, ENTRY_HANDOFF_DELAY_MS);
+    }
+    function routeEntryFromBeastClick() {
+      const type = getEntryUserType();
+      const routeMode = type === "NEW_USER" ? "ORIGINAL_COORDINATE_LOADING" : "PRESSURE_SEED_LOADING";
+
+      console.log("ENTRY_DECISION", type);
+      console.log("ROUTE_MODE", routeMode);
+
+      if (type === "NEW_USER") {
+        m.state = STATE.STARBEAST_SANDIFY;
+        m.t = 0;
+        audio.form();
+        vibrate([0, 18, 24]);
+        return;
+      }
+
+      openPressureSeedCanvas();
     }
     function completeEntryCanvasHandoff() {
       if (m.handoffStarted) return;
@@ -1327,7 +1345,7 @@ export function LaunchLab() {
         return;
       }
       if (m.state === STATE.READY && m.presentDone && isBeastHit(x, y)) {
-        openPressureSeedCanvas();
+        routeEntryFromBeastClick();
         return;
       }
       if (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND) {
