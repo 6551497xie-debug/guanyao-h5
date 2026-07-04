@@ -9,7 +9,7 @@ import type {
 
 // Pressure Seed Matrix V3.0 locked library.
 // surface: 用户可见现实切片，≤30字；必须是具体场景、动作、关系角色；不写情绪、不写解释、不写答案。
-// shell: 代价预览，≤20字；可以提示旧反应，但不能变成心理标签。
+// shell: 代价预览，≤20字；可以提示旧反应，但不能变成解释标签。
 // ESTABLISHING 节点每个压力场 15 枚：覆盖 25-34 岁立足期的现实之刺。
 
 type PressureSeedRuntimeAgeGroup = Extract<PressureSeedAgeGroup, "ESTABLISHING">;
@@ -41,20 +41,20 @@ export const PRESSURE_SEED_FIELD_LABELS: Record<PressureSeedField, string> = {
   RELATION: "关系场",
   FAMILY: "家庭场",
   SOCIAL: "社会场",
-  EXISTENCE: "存在场",
+  EXISTENCE: "状态场",
 };
 
 const matrixSeeds: Record<`${PressureSeedRuntimeAgeGroup}_${PressureSeedField}`, PressureSeedMatrixSeed[]> = {
   ESTABLISHING_POWER: [
     { id: "ESTABLISHING_POWER_01", pressureNature: "EVALUATION", surface: "你在这个行业十年了，抬头还是经理。", shell: "你不敢算，怕算出自己不值。" },
     { id: "ESTABLISHING_POWER_02", pressureNature: "EVALUATION", surface: "公司来了个比你小十岁的总监。", shell: "他年轻，你开始倒数自己。" },
-    { id: "ESTABLISHING_POWER_03", pressureNature: "IDENTITY", surface: "新人开始接你负责的部分。你说“挺好的”。", shell: "你被替代了，还要笑着说好。" },
+    { id: "ESTABLISHING_POWER_03", pressureNature: "EVALUATION", surface: "新人开始接你负责的部分。你说“挺好的”。", shell: "你的负责范围正在变轻。" },
     { id: "ESTABLISHING_POWER_04", pressureNature: "CONTROL", surface: "你休了几天假，回来流程改了。没人通知你。", shell: "你不在的时候，他们替你做了决定。" },
     { id: "ESTABLISHING_POWER_05", pressureNature: "BELONGING", surface: "你升职后，以前一起吃饭的人不再叫你。", shell: "你站高了，也站远了。" },
     { id: "ESTABLISHING_POWER_06", pressureNature: "EVALUATION", surface: "他说“你经验丰富，但这个方向我们想用年轻人”。", shell: "你的经验，被当成了过时。" },
     { id: "ESTABLISHING_POWER_07", pressureNature: "EVALUATION", surface: "你提了一个建议，他说“我们以前试过，不行”。", shell: "你的想法，还没开始就被否了。" },
     { id: "ESTABLISHING_POWER_08", pressureNature: "RESOURCE", surface: "你的下属被越级提拔，成了你的平级。", shell: "你带出来的人，成了你的对手。" },
-    { id: "ESTABLISHING_POWER_09", pressureNature: "IDENTITY", surface: "他说“公司要优化结构”，你收到了邮件。", shell: "你被优化了，还没人提前告诉你。" },
+    { id: "ESTABLISHING_POWER_09", pressureNature: "CONTROL", surface: "他说“公司要优化结构”，你收到了邮件。", shell: "结构变化先于通知到来。" },
     { id: "ESTABLISHING_POWER_10", pressureNature: "EVALUATION", surface: "你面试了一家新公司，对方说“你有点 overqualified”。", shell: "你太强了，反而不要你。" },
     { id: "ESTABLISHING_POWER_11", pressureNature: "RESOURCE", surface: "你问晋升标准，他说“这个级别暂时没有名额”。", shell: "你再努力，也没有位置。" },
     { id: "ESTABLISHING_POWER_12", pressureNature: "EVALUATION", surface: "你加班到凌晨，第二天他说“注意效率”。", shell: "你的付出，被当成了能力不行。" },
@@ -98,7 +98,7 @@ const matrixSeeds: Record<`${PressureSeedRuntimeAgeGroup}_${PressureSeedField}`,
   ],
   ESTABLISHING_FAMILY: [
     { id: "ESTABLISHING_FAMILY_01", pressureNature: "OBLIGATION", surface: "工资到账，房贷、车贷、孩子学费一扣，没了。", shell: "你挣的钱，不是你的。" },
-    { id: "ESTABLISHING_FAMILY_02", pressureNature: "OBLIGATION", surface: "你说累了，她说“谁不累”。", shell: "你的疲惫，不被看见。" },
+    { id: "ESTABLISHING_FAMILY_02", pressureNature: "OBLIGATION", surface: "你说累了，她说“谁不累”。", shell: "你的疲惫被继续压下。" },
     { id: "ESTABLISHING_FAMILY_03", pressureNature: "OBLIGATION", surface: "你加班回来，她说“这家你还要不要”。", shell: "你拼事业，成了不顾家。" },
     { id: "ESTABLISHING_FAMILY_04", pressureNature: "OBLIGATION", surface: "你生病了，她说“你就是不注意”。", shell: "你病了，还要被说。" },
     { id: "ESTABLISHING_FAMILY_05", pressureNature: "CONTROL", surface: "你想换工作，他说“稳定点不好吗”。", shell: "你的选择，被他否定。" },
@@ -118,7 +118,7 @@ const matrixSeeds: Record<`${PressureSeedRuntimeAgeGroup}_${PressureSeedField}`,
     { id: "ESTABLISHING_SOCIAL_02", pressureNature: "BELONGING", surface: "你被分到新部门，老同事不联系你，新同事不理你。", shell: "你哪边都不是，两边都不要你。" },
     { id: "ESTABLISHING_SOCIAL_03", pressureNature: "BELONGING", surface: "你帮了他很多，轮到你时他说“不方便”。", shell: "你帮过的人，不一定会帮你。" },
     { id: "ESTABLISHING_SOCIAL_04", pressureNature: "BELONGING", surface: "你发现他们在背后议论你。", shell: "你怕知道真相，只能活在猜测里。" },
-    { id: "ESTABLISHING_SOCIAL_05", pressureNature: "BELONGING", surface: "你发了朋友圈，没人点赞。你删了。", shell: "你把回应，当成了存在。" },
+    { id: "ESTABLISHING_SOCIAL_05", pressureNature: "BELONGING", surface: "你发了朋友圈，没人点赞。你删了。", shell: "外部回应牵动了状态。" },
     { id: "ESTABLISHING_SOCIAL_06", pressureNature: "BELONGING", surface: "你参加聚会，没人跟你说话。你坐在角落。", shell: "你在人群里，比一个人还空。" },
     { id: "ESTABLISHING_SOCIAL_07", pressureNature: "BELONGING", surface: "你主动打招呼，对方没认出来。", shell: "你被忘了，还不自知。" },
     { id: "ESTABLISHING_SOCIAL_08", pressureNature: "BELONGING", surface: "你说了一个想法，大家没反应。五分钟后别人说了同样的话，大家说“好主意”。", shell: "你的声音，被当成空气。" },
@@ -131,21 +131,21 @@ const matrixSeeds: Record<`${PressureSeedRuntimeAgeGroup}_${PressureSeedField}`,
     { id: "ESTABLISHING_SOCIAL_15", pressureNature: "BELONGING", surface: "你在群里说话，没人接。你不再说了。", shell: "你把自己，也禁言了。" },
   ],
   ESTABLISHING_EXISTENCE: [
-    { id: "ESTABLISHING_EXISTENCE_01", pressureNature: "IDENTITY", surface: "四十岁生日那晚，你列了一下自己的成就。", shell: "你发现离四十岁的目标，还差很远。" },
-    { id: "ESTABLISHING_EXISTENCE_02", pressureNature: "IDENTITY", surface: "你刷朋友圈，别人的生活都在往前。", shell: "你停在原地，开始不想看了。" },
+    { id: "ESTABLISHING_EXISTENCE_01", pressureNature: "EVALUATION", surface: "四十岁生日那晚，你列了一下当前进度。", shell: "阶段目标和现实距离拉开。" },
+    { id: "ESTABLISHING_EXISTENCE_02", pressureNature: "EVALUATION", surface: "你刷朋友圈，别人的生活都在往前。", shell: "比较压力让状态停住。" },
     { id: "ESTABLISHING_EXISTENCE_03", pressureNature: "SURVIVAL", surface: "你发现自己越来越没力气了。", shell: "你不服老，身体先认了。" },
-    { id: "ESTABLISHING_EXISTENCE_04", pressureNature: "IDENTITY", surface: "你问自己“我这十年做了什么”，想了很久。", shell: "你发现没什么可说的。" },
-    { id: "ESTABLISHING_EXISTENCE_05", pressureNature: "IDENTITY", surface: "你突然不知道自己想要什么。", shell: "你把别人的目标，当成了自己的。" },
-    { id: "ESTABLISHING_EXISTENCE_06", pressureNature: "IDENTITY", surface: "你成功了，但没觉得开心。", shell: "你怕这是顶峰，接下来就是下坡。" },
-    { id: "ESTABLISHING_EXISTENCE_07", pressureNature: "IDENTITY", surface: "你问自己“我到底要什么”，没有答案。", shell: "你把忙，当成了方向。" },
-    { id: "ESTABLISHING_EXISTENCE_08", pressureNature: "IDENTITY", surface: "你每天早上醒来，不知道今天为什么要上班。", shell: "你把活着，当成了任务。" },
-    { id: "ESTABLISHING_EXISTENCE_09", pressureNature: "IDENTITY", surface: "你看着镜子，觉得陌生。", shell: "你把自己活丢了。" },
-    { id: "ESTABLISHING_EXISTENCE_10", pressureNature: "IDENTITY", surface: "你问自己“快乐吗”，答不上来。", shell: "你连自己的感受都不知道。" },
-    { id: "ESTABLISHING_EXISTENCE_11", pressureNature: "IDENTITY", surface: "你拼命工作，但不知道为了什么。", shell: "你怕停下来，会面对空。" },
-    { id: "ESTABLISHING_EXISTENCE_12", pressureNature: "IDENTITY", surface: "你突然想辞职，但不知道辞职后干嘛。", shell: "你被困住了，连逃的方向都没有。" },
-    { id: "ESTABLISHING_EXISTENCE_13", pressureNature: "IDENTITY", surface: "你问自己“我这辈子值吗”，没有答案。", shell: "你怕答案是“不值”。" },
-    { id: "ESTABLISHING_EXISTENCE_14", pressureNature: "IDENTITY", surface: "你看着父母老了，孩子大了，自己还没为自己活过。", shell: "你的一生，都在为别人。" },
-    { id: "ESTABLISHING_EXISTENCE_15", pressureNature: "IDENTITY", surface: "你问自己“还有机会吗”，沉默了。", shell: "你怕答案是“没有”。" },
+    { id: "ESTABLISHING_EXISTENCE_04", pressureNature: "EVALUATION", surface: "你复盘这十年的进度，想了很久。", shell: "阶段记录暂时空白。" },
+    { id: "ESTABLISHING_EXISTENCE_05", pressureNature: "CONTROL", surface: "你突然不知道下一步要选什么。", shell: "外部目标盖住了方向。" },
+    { id: "ESTABLISHING_EXISTENCE_06", pressureNature: "EVALUATION", surface: "阶段目标达成了，状态却没有松开。", shell: "新的压力接着出现。" },
+    { id: "ESTABLISHING_EXISTENCE_07", pressureNature: "CONTROL", surface: "你问下一步要往哪走，没有答案。", shell: "忙碌暂时替代了方向。" },
+    { id: "ESTABLISHING_EXISTENCE_08", pressureNature: "OBLIGATION", surface: "你每天早上醒来，不知道今天为什么要上班。", shell: "日程变成了压力任务。" },
+    { id: "ESTABLISHING_EXISTENCE_09", pressureNature: "EVALUATION", surface: "你看着镜子，状态和预期对不上。", shell: "当前状态变得陌生。" },
+    { id: "ESTABLISHING_EXISTENCE_10", pressureNature: "EVALUATION", surface: "你问自己“现在好吗”，答不上来。", shell: "状态反馈暂时中断。" },
+    { id: "ESTABLISHING_EXISTENCE_11", pressureNature: "CONTROL", surface: "你拼命工作，但方向仍然模糊。", shell: "停下来会暴露空档。" },
+    { id: "ESTABLISHING_EXISTENCE_12", pressureNature: "CONTROL", surface: "你突然想辞职，但不知道下一步去哪。", shell: "出口还没有形成。" },
+    { id: "ESTABLISHING_EXISTENCE_13", pressureNature: "EVALUATION", surface: "你开始评估这一路的投入和回报。", shell: "结果压力压住判断。" },
+    { id: "ESTABLISHING_EXISTENCE_14", pressureNature: "OBLIGATION", surface: "父母老了，孩子大了，你的日程被挤满。", shell: "长期责任占满空间。" },
+    { id: "ESTABLISHING_EXISTENCE_15", pressureNature: "CONTROL", surface: "你问自己“还能调整吗”，沉默了。", shell: "可选路径暂时收窄。" },
   ],
 };
 

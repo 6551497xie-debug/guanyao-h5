@@ -5,7 +5,7 @@
 // PRESSURE -> TRANSFORMATION -> ASSET
 //
 // This page may retain its existing visual machinery, but no user-facing copy
-// should introduce legacy onboarding, coordinate lore, or alternate myths.
+// should introduce legacy onboarding, alternate lore, or secondary myths.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useCallback, useEffect, useRef, useState } from "react";
