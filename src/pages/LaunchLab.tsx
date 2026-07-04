@@ -157,7 +157,7 @@ const STATE = {
 } as const;
 
 const TOP_LINES = ["走过黑夜的人，会留下光的痕迹。", "这些光，正在慢慢汇聚成深空中的“光兽”。"];
-const CTA_LINE = "轻触 · 进入压力场";
+const CTA_LINE = "唤醒它，照见你的样子";
 const ENTRY_HANDOFF_DELAY_MS = 700;
 const PRESSURE_SEED_AUTO_RESOLVE_MS = 2400;
 const RAIL_COMMIT_THRESHOLD = 0.72;
@@ -304,7 +304,6 @@ function buildDeterministicPressureSeedCandidate(): PressureSeedCrossAxisSeed | 
 export function LaunchLab() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const navigate = useNavigate();
-  const [node1, setNode1] = useState(false);
   const [showPressureSeedCapture, setShowPressureSeedCapture] = useState(false);
   const [interactionState, setInteractionState] = useState<LaunchInteractionState>("ENTRY");
   const interactionStateRef = useRef<LaunchInteractionState>("ENTRY");
@@ -1377,74 +1376,6 @@ export function LaunchLab() {
       canvas.removeEventListener("pointercancel", onUp);
     };
   }, [openPressureSeedCanvas]);
-
-  if (node1) {
-    return (
-      <GyMobilePreviewFrame background="#070512">
-        <div
-          style={{
-            minHeight: "100%",
-            display: "grid",
-            placeItems: "center",
-            padding: 24,
-            color: COLOR.text,
-            fontFamily: SANS,
-            textAlign: "center",
-          }}
-        >
-          <div style={{ fontSize: 22, fontWeight: 700 }}>Node 1：镜面已激活</div>
-        </div>
-      </GyMobilePreviewFrame>
-    );
-  }
-
-  return (
-    <GyMobilePreviewFrame background="#070512">
-      <div
-        style={{
-          minHeight: "100%",
-          display: "grid",
-          alignContent: "center",
-          gap: 18,
-          padding: 28,
-          color: COLOR.text,
-          fontFamily: SANS,
-          textAlign: "center",
-        }}
-      >
-        <div style={{ fontSize: 28, lineHeight: 1.15, fontWeight: 800 }}>
-          走过黑夜的人，会留下光的痕迹。
-        </div>
-        <div style={{ fontSize: 15, lineHeight: 1.6, opacity: 0.82 }}>
-          这些光，正在慢慢汇聚成深空中的“光兽”。
-        </div>
-        <div style={{ fontSize: 12, lineHeight: 1.5, opacity: 0.6 }}>
-          它们不会定义你，只是帮你抵住那些风暴和内耗。
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            console.log("ENTER_NODE_1");
-            setNode1(true);
-          }}
-          style={{
-            width: "100%",
-            minHeight: 48,
-            border: "1px solid rgba(232,200,138,0.42)",
-            borderRadius: 8,
-            background: "rgba(232,200,138,0.12)",
-            color: COLOR.warmBright,
-            fontFamily: SANS,
-            fontSize: 15,
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
-        >
-          唤醒它，照见你的样子
-        </button>
-      </div>
-    </GyMobilePreviewFrame>
-  );
 
   if (showPressureSeedCapture) {
     return <PressureSeedCrossAxisPage onComplete={commitPressureSeedCapture} />;
