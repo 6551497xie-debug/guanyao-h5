@@ -2,32 +2,81 @@ import type { CSSProperties } from "react";
 
 type PreviewUser = "new" | "old";
 
-type PreviewStep = {
-  label: string;
-  detail: string;
+type PreviewVisualProfile = {
+  modeText: string;
+  primaryText: string;
+  secondaryText: string;
+  starOpacity: number;
+  clusterOpacity: number;
+  beastGlow: number;
+  aggregationDuration: string;
+  fieldBlur: number;
 };
+
+const STAR_POINTS = [
+  [48, 8],
+  [42, 18],
+  [56, 20],
+  [36, 32],
+  [52, 34],
+  [66, 35],
+  [44, 47],
+  [58, 50],
+  [39, 61],
+  [62, 66],
+  [50, 78],
+];
+
+const CLUSTER_POINTS = [
+  [46, 34],
+  [54, 36],
+  [42, 46],
+  [58, 49],
+  [48, 58],
+  [54, 64],
+  [50, 72],
+];
 
 const PAGE_STYLE: CSSProperties = {
   minHeight: "100vh",
+  position: "relative",
+  overflow: "hidden",
   display: "grid",
   placeItems: "center",
   padding: 24,
   background:
-    "radial-gradient(circle at 50% 35%, rgba(205, 178, 115, 0.16), transparent 34%), #070512",
-  color: "#f5ead6",
+    "radial-gradient(circle at 50% 48%, rgba(192, 162, 103, 0.2), transparent 34%), #060410",
+  color: "#f4e7cf",
   fontFamily:
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 };
 
-const PANEL_STYLE: CSSProperties = {
-  width: "min(680px, 100%)",
+const STARFIELD_STYLE: CSSProperties = {
+  position: "absolute",
+  inset: 0,
+  backgroundImage:
+    "radial-gradient(circle at 18% 20%, rgba(235, 218, 177, 0.36) 0 1px, transparent 2px), radial-gradient(circle at 82% 28%, rgba(235, 218, 177, 0.28) 0 1px, transparent 2px), radial-gradient(circle at 28% 78%, rgba(235, 218, 177, 0.22) 0 1px, transparent 2px), radial-gradient(circle at 72% 72%, rgba(235, 218, 177, 0.3) 0 1px, transparent 2px)",
+  opacity: 0.68,
+};
+
+const CONTENT_STYLE: CSSProperties = {
+  position: "relative",
+  zIndex: 1,
+  width: "min(560px, 100%)",
   display: "grid",
-  gap: 24,
+  gap: 28,
+  justifyItems: "center",
+  textAlign: "center",
+};
+
+const COPY_GROUP_STYLE: CSSProperties = {
+  display: "grid",
+  gap: 10,
 };
 
 const EYEBROW_STYLE: CSSProperties = {
   margin: 0,
-  color: "rgba(245, 234, 214, 0.58)",
+  color: "rgba(244, 231, 207, 0.54)",
   fontSize: 12,
   fontWeight: 700,
   letterSpacing: 0,
@@ -35,59 +84,74 @@ const EYEBROW_STYLE: CSSProperties = {
 
 const TITLE_STYLE: CSSProperties = {
   margin: 0,
-  fontSize: 36,
-  lineHeight: 1.12,
+  color: "#f1d58c",
+  fontSize: "clamp(30px, 8vw, 46px)",
+  lineHeight: 1.14,
   letterSpacing: 0,
 };
 
-const COPY_STYLE: CSSProperties = {
+const BODY_STYLE: CSSProperties = {
   margin: 0,
-  maxWidth: 560,
-  color: "rgba(245, 234, 214, 0.72)",
+  color: "rgba(244, 231, 207, 0.72)",
   fontSize: 15,
-  lineHeight: 1.7,
+  lineHeight: 1.75,
 };
 
-const MODE_STYLE: CSSProperties = {
-  width: "fit-content",
-  padding: "8px 12px",
-  border: "1px solid rgba(245, 234, 214, 0.18)",
-  borderRadius: 8,
-  color: "#e6c983",
-  background: "rgba(245, 234, 214, 0.06)",
-  fontSize: 14,
-  fontWeight: 700,
+const BEAST_FIELD_STYLE: CSSProperties = {
+  position: "relative",
+  width: "min(360px, 82vw)",
+  aspectRatio: "1 / 1.22",
 };
 
-const FLOW_STYLE: CSSProperties = {
+const BEAST_AURA_STYLE: CSSProperties = {
+  position: "absolute",
+  inset: "13% 9%",
+  borderRadius: "48% 52% 46% 54%",
+  background:
+    "radial-gradient(circle at 50% 45%, rgba(240, 211, 151, 0.46), rgba(156, 122, 72, 0.18) 42%, transparent 70%)",
+};
+
+const POINT_STYLE: CSSProperties = {
+  position: "absolute",
+  width: 7,
+  height: 7,
+  marginLeft: -3.5,
+  marginTop: -3.5,
+  borderRadius: "50%",
+  background: "#f4dfac",
+  boxShadow: "0 0 18px rgba(244, 223, 172, 0.76)",
+};
+
+const LINE_STYLE: CSSProperties = {
+  position: "absolute",
+  left: "50%",
+  top: "26%",
+  width: 1,
+  height: "54%",
+  transformOrigin: "50% 100%",
+  background:
+    "linear-gradient(to bottom, transparent, rgba(242, 211, 139, 0.52), transparent)",
+};
+
+const STATUS_STYLE: CSSProperties = {
   display: "grid",
-  gap: 12,
-  padding: 0,
-  margin: 0,
-  listStyle: "none",
+  gap: 8,
 };
 
-const STEP_STYLE: CSSProperties = {
-  display: "grid",
-  gap: 6,
-  padding: 18,
-  border: "1px solid rgba(245, 234, 214, 0.14)",
-  borderRadius: 8,
-  background: "rgba(255, 255, 255, 0.035)",
-};
-
-const STEP_LABEL_STYLE: CSSProperties = {
+const STATUS_MAIN_STYLE: CSSProperties = {
   margin: 0,
   color: "#f1d58c",
-  fontSize: 16,
+  fontSize: 24,
   fontWeight: 800,
+  lineHeight: 1.25,
+  letterSpacing: 0,
 };
 
-const STEP_DETAIL_STYLE: CSSProperties = {
+const STATUS_SUB_STYLE: CSSProperties = {
   margin: 0,
-  color: "rgba(245, 234, 214, 0.66)",
+  color: "rgba(244, 231, 207, 0.6)",
   fontSize: 14,
-  lineHeight: 1.55,
+  lineHeight: 1.6,
 };
 
 function getPreviewUser(): PreviewUser {
@@ -97,65 +161,105 @@ function getPreviewUser(): PreviewUser {
   return value === "old" ? "old" : "new";
 }
 
-function getPreviewSteps(previewUser: PreviewUser): PreviewStep[] {
+function getVisualProfile(previewUser: PreviewUser): PreviewVisualProfile {
   if (previewUser === "old") {
-    return [
-      {
-        label: "OLD_USER",
-        detail: "Existing baseline context is simulated.",
-      },
-      {
-        label: "PRESSURE_SEED_LOADING",
-        detail: "Preview enters pressure seed loading directly.",
-      },
-    ];
+    return {
+      modeText: "OLD_USER / PRESSURE_SEED_LOADING",
+      primaryText: "压力种子加载中",
+      secondaryText: "光点更快聚拢，压力密度更高。",
+      starOpacity: 0.46,
+      clusterOpacity: 0.9,
+      beastGlow: 0.9,
+      aggregationDuration: "2.8s",
+      fieldBlur: 0,
+    };
   }
 
-  return [
-    {
-      label: "NEW_USER",
-      detail: "No baseline context is simulated.",
-    },
-    {
-      label: "ORIGINAL_COORDINATE_LOADING",
-      detail: "Preview loads original coordinate setup first.",
-    },
-    {
-      label: "PRESSURE_FLOW",
-      detail: "Preview continues into pressure seed flow after baseline setup.",
-    },
-  ];
+  return {
+    modeText: "NEW_USER / ORIGINAL_COORDINATE_LOADING",
+    primaryText: "原始坐标装填中",
+    secondaryText: "星光更散，聚合更慢，先形成基础坐标。",
+    starOpacity: 0.78,
+    clusterOpacity: 0.52,
+    beastGlow: 0.62,
+    aggregationDuration: "5.2s",
+    fieldBlur: 0.4,
+  };
 }
 
 export function LaunchLabPreview() {
   const previewUser = getPreviewUser();
-  const steps = getPreviewSteps(previewUser);
+  const profile = getVisualProfile(previewUser);
 
   return (
     <main style={PAGE_STYLE} aria-label="Entry user path preview">
-      <section style={PANEL_STYLE}>
-        <div>
+      <div style={STARFIELD_STYLE} aria-hidden="true" />
+
+      <section style={CONTENT_STYLE}>
+        <div style={COPY_GROUP_STYLE}>
           <p style={EYEBROW_STYLE}>SIMULATION ONLY</p>
-          <h1 style={TITLE_STYLE}>ENTRY USER PATH PREVIEW</h1>
+          <h1 style={TITLE_STYLE}>光兽入口路径预览</h1>
+          <p style={BODY_STYLE}>
+            新用户与老用户共用同一片星空，只在装填强度与压力密度上分化。
+          </p>
         </div>
 
-        <p style={COPY_STYLE}>
-          Pure visualization mock. It does not read localStorage, mutate ENTRY
-          state, use runtime bridge logic, or modify STARBEAST rendering.
-        </p>
+        <div style={BEAST_FIELD_STYLE} aria-hidden="true">
+          <div
+            style={{
+              ...BEAST_AURA_STYLE,
+              opacity: profile.beastGlow,
+              filter: `blur(${profile.fieldBlur}px)`,
+              transition: `opacity ${profile.aggregationDuration} ease, filter ${profile.aggregationDuration} ease`,
+            }}
+          />
 
-        <div style={MODE_STYLE}>previewUser={previewUser}</div>
-
-        <ol style={FLOW_STYLE}>
-          {steps.map((step, index) => (
-            <li key={step.label} style={STEP_STYLE}>
-              <p style={STEP_LABEL_STYLE}>
-                {index + 1}. {step.label}
-              </p>
-              <p style={STEP_DETAIL_STYLE}>{step.detail}</p>
-            </li>
+          {[0, 24, -24, 42, -42].map((rotate) => (
+            <span
+              key={rotate}
+              style={{
+                ...LINE_STYLE,
+                transform: `rotate(${rotate}deg)`,
+                opacity: profile.clusterOpacity,
+                transition: `opacity ${profile.aggregationDuration} ease`,
+              }}
+            />
           ))}
-        </ol>
+
+          {STAR_POINTS.map(([left, top]) => (
+            <span
+              key={`${left}-${top}`}
+              style={{
+                ...POINT_STYLE,
+                left: `${left}%`,
+                top: `${top}%`,
+                opacity: profile.starOpacity,
+                transition: `opacity ${profile.aggregationDuration} ease`,
+              }}
+            />
+          ))}
+
+          {CLUSTER_POINTS.map(([left, top]) => (
+            <span
+              key={`cluster-${left}-${top}`}
+              style={{
+                ...POINT_STYLE,
+                left: `${left}%`,
+                top: `${top}%`,
+                width: previewUser === "old" ? 9 : 6,
+                height: previewUser === "old" ? 9 : 6,
+                opacity: profile.clusterOpacity,
+                transition: `opacity ${profile.aggregationDuration} ease`,
+              }}
+            />
+          ))}
+        </div>
+
+        <div style={STATUS_STYLE}>
+          <p style={EYEBROW_STYLE}>{profile.modeText}</p>
+          <p style={STATUS_MAIN_STYLE}>{profile.primaryText}</p>
+          <p style={STATUS_SUB_STYLE}>{profile.secondaryText}</p>
+        </div>
       </section>
     </main>
   );
