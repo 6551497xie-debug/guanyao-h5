@@ -938,6 +938,7 @@ export function LaunchLab() {
       const convergenceActive = isConvergenceState();
       const entryStaticActive = isEntryStaticState();
       const axisActive = m.state === STATE.STARBEAST_SANDIFY || isAxisState() || convergenceActive;
+      const nodeRuntimeActive = Boolean(m.node1State?.mirrorActivated);
 
       if (m.state === STATE.STARFIELD_IDLE) {
         m.field.forEach((s) => {
@@ -1295,7 +1296,7 @@ export function LaunchLab() {
         return;
       }
 
-      if (m.state === STATE.ASSEMBLY || m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY) {
+      if (!nodeRuntimeActive && (m.state === STATE.ASSEMBLY || m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY)) {
         ctx.save();
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -1308,7 +1309,7 @@ export function LaunchLab() {
       }
 
       // Text resolves after the entry form stabilizes.
-      if (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY) {
+      if (!nodeRuntimeActive && (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY)) {
         const cx = m.w / 2;
         const lineStarts = [0.2, 0.55, 3.1];
         const gather = 1.35;
