@@ -696,6 +696,10 @@ export function LaunchLab() {
       m.node1State = null;
       m.node1T = 0;
       m.pendingAxisMode = mode;
+      if (mode === "OLD_USER") {
+        openPressureSeedAxis();
+        return;
+      }
       m.state = STATE.STARBEAST_SANDIFY;
       m.t = 0;
       audio.form();
