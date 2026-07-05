@@ -834,6 +834,8 @@ export function LaunchLab() {
       entryCardSide: "front" as "front" | "back",
       entryCardFlipTo: "front" as "front" | "back",
       entryCardFlipT: 1,
+      motherCardFace: "front" as "front" | "back",
+      motherCardFlipPulse: 0,
       originLockPulse: 0,
       afterForm: 0,
       formed: false,
@@ -1157,6 +1159,8 @@ export function LaunchLab() {
       m.dragging = false;
       m.dragAxis = null;
       m.clutched = false;
+      m.motherCardFace = "front";
+      m.motherCardFlipPulse = 0;
       m.state = STATE.MOTHER_CODE_REVEAL;
       m.t = 0;
       audio.form();
@@ -1460,6 +1464,9 @@ export function LaunchLab() {
       }
       if (m.originLockPulse > 0) {
         m.originLockPulse = Math.max(0, m.originLockPulse - dt * 4.2);
+      }
+      if (m.motherCardFlipPulse > 0) {
+        m.motherCardFlipPulse = Math.max(0, m.motherCardFlipPulse - dt * 5.2);
       }
       switch (m.state) {
         case STATE.STARFIELD_IDLE: {
@@ -2311,6 +2318,12 @@ export function LaunchLab() {
         const cardY = m.h * 0.335;
         const cardW = g.railX1 - g.railX0;
         const cardH = Math.min(232, m.h * 0.33);
+        const flipPulse = smooth(0, 1, m.motherCardFlipPulse);
+        const cardScale = 1 + flipPulse * 0.012;
+        ctx.save();
+        ctx.translate(cardX + cardW / 2, cardY + cardH / 2);
+        ctx.scale(cardScale, cardScale);
+        ctx.translate(-(cardX + cardW / 2), -(cardY + cardH / 2));
         ctx.fillStyle = "rgba(255,247,228,0.052)";
         ctx.strokeStyle = "rgba(232,200,138,0.3)";
         ctx.lineWidth = 0.8;
@@ -2321,39 +2334,64 @@ export function LaunchLab() {
         ctx.stroke();
         drawFourBeastCardWatermark(ctx, reveal.geo.symbol, cardX, cardY, cardW, cardH);
 
-        ctx.fillStyle = "rgba(232,200,138,0.76)";
-        ctx.font = `650 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
-        ctx.fillText("母码卡", cardX + 16, cardY + 30);
-        ctx.fillStyle = "rgba(255,247,228,0.98)";
-        ctx.font = `780 ${Math.min(32, m.w * 0.078)}px ${SANS}`;
-        ctx.fillText(`${definition.trigramSymbol} ${profile.motherCodeName}`, cardX + 16, cardY + 72);
-        ctx.fillStyle = "rgba(232,200,138,0.72)";
-        ctx.font = `650 ${Math.min(12, m.w * 0.031)}px ${MONO}`;
-        ctx.fillText(`角色：${profile.motherCodeTitle}`, cardX + 16, cardY + 100);
-        ctx.fillStyle = "rgba(232,200,138,0.82)";
-        ctx.font = `700 ${Math.min(15, m.w * 0.038)}px ${SANS}`;
-        drawCanvasWrappedText(ctx, definition.assetSummary, cardX + 16, cardY + 132, cardW - 32, 20, 2);
-        ctx.fillStyle = "rgba(232,200,138,0.66)";
-        ctx.font = `600 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
-        ctx.fillText(`时序卦符：${reveal.chrono.lockPoint} · ${definition.trigramSymbol}${reveal.mother.trigram}`, cardX + 16, cardY + cardH - 58);
-        ctx.fillStyle = "rgba(232,200,138,0.62)";
-        ctx.beginPath();
-        ctx.arc(cardX + 20, cardY + cardH - 36, 2.2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "rgba(232,200,138,0.66)";
-        ctx.fillText(`方位落位：${reveal.geo.symbol} · ${reveal.geo.province}`, cardX + 28, cardY + cardH - 34);
-        ctx.fillStyle = "rgba(232,200,138,0.54)";
-        ctx.fillText(`动作语法：${reveal.geo.symbol} × ${reveal.mother.trigram}`, cardX + 16, cardY + cardH - 16);
-        if (fourBeastGrammarLine) {
+        if (m.motherCardFace === "front") {
+          ctx.fillStyle = "rgba(232,200,138,0.74)";
+          ctx.font = `650 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
+          ctx.fillText("母码构图", cardX + 16, cardY + 28);
           ctx.textAlign = "right";
-          ctx.fillStyle = "rgba(232,200,138,0.44)";
-          ctx.fillText(fourBeastGrammarLine, cardX + cardW - 16, cardY + cardH - 16);
+          ctx.fillStyle = "rgba(232,200,138,0.58)";
+          ctx.fillText(`${reveal.geo.symbol} × ${reveal.mother.trigram}`, cardX + cardW - 16, cardY + 28);
           ctx.textAlign = "left";
+          ctx.fillStyle = "rgba(255,247,228,0.98)";
+          ctx.font = `780 ${Math.min(32, m.w * 0.078)}px ${SANS}`;
+          ctx.fillText(`${definition.trigramSymbol} ${profile.motherCodeName}`, cardX + 16, cardY + 74);
+          ctx.fillStyle = "rgba(232,200,138,0.74)";
+          ctx.font = `650 ${Math.min(12, m.w * 0.031)}px ${MONO}`;
+          ctx.fillText(`角色：${profile.motherCodeTitle}`, cardX + 16, cardY + 102);
+          ctx.fillStyle = "rgba(255,247,228,0.9)";
+          ctx.font = `740 ${Math.min(16, m.w * 0.04)}px ${SANS}`;
+          drawCanvasWrappedText(ctx, definition.assetSummary, cardX + 16, cardY + 136, cardW - 32, 21, 2);
+          ctx.fillStyle = "rgba(232,200,138,0.5)";
+          ctx.font = `600 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
+          ctx.fillText(fourBeastGrammarLine || "四象兽动作正在落印", cardX + 16, cardY + cardH - 42);
+          ctx.fillStyle = "rgba(232,200,138,0.56)";
+          ctx.fillText("轻触翻面，查看人格原型", cardX + 16, cardY + cardH - 16);
+        } else {
+          const decodeX = cardX + 16;
+          let decodeY = cardY + 28;
+          const labelW = Math.min(64, cardW * 0.22);
+          const valueX = decodeX + labelW;
+          const rowGap = Math.min(34, cardH * 0.15);
+          const drawDecodeRow = (label: string, text: string, maxLines = 1) => {
+            ctx.fillStyle = "rgba(232,200,138,0.58)";
+            ctx.font = `650 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
+            ctx.fillText(label, decodeX, decodeY);
+            ctx.fillStyle = "rgba(255,247,228,0.88)";
+            ctx.font = `650 ${Math.min(11, m.w * 0.029)}px ${SANS}`;
+            drawCanvasWrappedText(ctx, text, valueX, decodeY, cardW - labelW - 32, 14, maxLines);
+            decodeY += rowGap;
+          };
+          ctx.fillStyle = "rgba(232,200,138,0.72)";
+          ctx.font = `650 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
+          ctx.fillText("人格原型解码", decodeX, decodeY);
+          ctx.textAlign = "right";
+          ctx.fillText("轻触返回母码构图", cardX + cardW - 16, decodeY);
+          ctx.textAlign = "left";
+          decodeY += 28;
+          drawDecodeRow("原型", profile.motherCodeName);
+          drawDecodeRow("原力", definition.baseDrive, 2);
+          drawDecodeRow("惯性", definition.defaultReactionChain);
+          drawDecodeRow("阴影", definition.shadowInertia, 2);
+          drawDecodeRow("转化", definition.personalityAsset || definition.assetSummary, 2);
+          ctx.fillStyle = "rgba(232,200,138,0.48)";
+          ctx.font = `600 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
+          ctx.fillText(`来源：${reveal.chrono.lockPoint} · ${reveal.geo.symbol}/${reveal.geo.province} · ${definition.trigramSymbol}`, cardX + 16, cardY + cardH - 16);
         }
+        ctx.restore();
 
         ctx.fillStyle = "rgba(232,200,138,0.52)";
         ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-        ctx.fillText("右滑进入现实压力", g.railX0, g.railY + 30);
+        ctx.fillText("右滑，进入现实压力", g.railX0, g.railY + 30);
         ctx.textAlign = "right";
         ctx.fillStyle = "rgba(232,200,138,0.72)";
         ctx.fillText("现实压力", g.railX1, g.railY - 18);
@@ -2619,6 +2657,21 @@ export function LaunchLab() {
       const selectedSeedY = seedY[m.pressureSeedIndex] ?? seedY[1]!;
       return Math.abs(y - selectedSeedY) < 108 && x >= g.railX0 - 36 && x <= g.railX1 + 44;
     }
+    function isMotherCodeCardHit(x: number, y: number) {
+      if (m.state !== STATE.MOTHER_CODE_REVEAL) return false;
+      const g = axisMetrics();
+      const cardX = g.railX0;
+      const cardY = m.h * 0.335;
+      const cardW = g.railX1 - g.railX0;
+      const cardH = Math.min(232, m.h * 0.33);
+      return x >= cardX && x <= cardX + cardW && y >= cardY && y <= cardY + cardH;
+    }
+    function flipMotherCodeCard() {
+      m.motherCardFace = m.motherCardFace === "front" ? "back" : "front";
+      m.motherCardFlipPulse = 1;
+      audio.tick();
+      vibrate(8);
+    }
     function onMove(e: PointerEvent) {
       if (!m.dragging || (
         m.state !== STATE.TIME_CALIBRATION &&
@@ -2742,7 +2795,17 @@ export function LaunchLab() {
       } catch {
         // ignore pointer capture release differences across browsers
       }
-      if (e && isPressureSeedCenterHit(e.clientX - canvas!.getBoundingClientRect().left, e.clientY - canvas!.getBoundingClientRect().top)) {
+      const rect = e ? canvas!.getBoundingClientRect() : null;
+      const upX = e && rect ? e.clientX - rect.left : 0;
+      const upY = e && rect ? e.clientY - rect.top : 0;
+      const tapTravel = e ? Math.hypot(upX - m.lastX, upY - m.lastY) : Infinity;
+      if (e && m.state === STATE.MOTHER_CODE_REVEAL && m.dragAxis === null && tapTravel < 12 && isMotherCodeCardHit(upX, upY)) {
+        flipMotherCodeCard();
+        m.dragging = false;
+        m.dragAxis = null;
+        return;
+      }
+      if (e && isPressureSeedCenterHit(upX, upY)) {
         enterFocusedPressureSeed();
         m.dragging = false;
         m.dragAxis = null;
