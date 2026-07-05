@@ -898,8 +898,8 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
             : "PRESSURE_FIELD";
   const nodeCopy = {
     title: `第 ${nodeNumber} 维正在显影`,
-    text: "读取这一维在现实压力下的惯性反应。",
-    actionText: "轻触光点，读取这一维反应。",
+    text: "这一维正在暴露你在现实压力下的惯性反应。",
+    actionText: "读完后，传导会进入下一维。",
   };
 
   if (stage === "CRYSTAL") {
@@ -1679,7 +1679,7 @@ function BaiHuConstellationLayer({
             textShadow: `0 0 10px rgba(${toneColor},0.16)`,
           }}
         >
-          轻触光点，读取这一维反应。
+          轻触光点，读取这一维。
         </span>
       ) : null}
 
