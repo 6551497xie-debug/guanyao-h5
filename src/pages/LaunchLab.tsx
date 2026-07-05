@@ -1028,6 +1028,17 @@ export function LaunchLab() {
       if (dim === "day") return `${copy.day} ${pad2(v)}`;
       return `${copy.hour} ${hourToPeriodLabel(clamp(v, 0, 23))}`;
     }
+    function originTuningCenterValue(dim: ChronoDim, value: number, isGeoStage: boolean, geoDim: GeoDim) {
+      if (isGeoStage) {
+        const index = Math.round(clamp(value, 0, Math.max(0, geoOptions(geoDim).length - 1)));
+        return geoOptions(geoDim)[index] ?? currentProvinceName();
+      }
+
+      const v = Math.round(value);
+      if (dim === "year") return String(v).slice(-2);
+      if (dim === "month" || dim === "day") return pad2(v);
+      return `${pad2(clamp(v, 0, 23))}:00`;
+    }
     function activeGeoDim(): GeoDim {
       return GEO_DIMS[m.geoStep] ?? "province";
     }
@@ -2033,7 +2044,9 @@ export function LaunchLab() {
             if (isNewOriginFlow) {
               ctx.fillText(originStep.group, g.railX0, m.h * 0.252);
               ctx.fillText(
-                isGeoStage
+                !isGeoStage && dim === "hour"
+                  ? `推导时辰：${hourToPeriodLabel(Math.round(m.dialFloat))}`
+                  : isGeoStage
                   ? `四象兽归位：${originMother.geo.symbol} · ${FOUR_BEAST_VISUAL_COPY[originMother.geo.symbol].axis} · ${originMother.geo.province}`
                   : `已锁定：${originCoordinateSummary()}`,
                 g.railX0,
@@ -2067,7 +2080,17 @@ export function LaunchLab() {
           ctx.font = `700 ${valueSize}px ${MONO}`;
           ctx.shadowColor = `rgba(${starWhiteRgb},${(originLockFeedback ? 0.34 + lockPulse * 0.32 : 0).toFixed(3)})`;
           ctx.shadowBlur = originLockFeedback ? 8 + lockPulse * 12 : 0;
-          ctx.fillText(finalLocked ? "光兽正在靠近" : isGeoStage ? geoText(geoDim, m.dialFloat) : dimText(dim, m.dialFloat), g.railX0, m.h * 0.47);
+          ctx.fillText(
+            finalLocked
+              ? "光兽正在靠近"
+              : isNewOriginFlow
+                ? originTuningCenterValue(dim, m.dialFloat, isGeoStage, geoDim)
+                : isGeoStage
+                  ? geoText(geoDim, m.dialFloat)
+                  : dimText(dim, m.dialFloat),
+            g.railX0,
+            m.h * 0.47
+          );
           ctx.shadowBlur = 0;
           ctx.font = `700 ${Math.min(16, m.w * 0.04)}px ${MONO}`;
           ctx.fillStyle = "rgba(232,200,138,0.82)";
