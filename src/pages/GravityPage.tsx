@@ -15,6 +15,11 @@ import {
   formCurrentHexagramProfile,
 } from "../services/guanyaoCausalEngineService";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
+import {
+  createPersonalityRingLiteEntryFromCrystal,
+  readPersonalityRingLite,
+  savePersonalityRingLiteEntry,
+} from "../services/personalityRingLiteService";
 import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
 import type {
   CurrentHexagramProfile,
@@ -1884,6 +1889,15 @@ function CosmicBotanicsField({
 
 function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState }) {
   const hexagramTitle = state.hexagram.hexagramName ?? state.hexagram.hexagramTitle ?? state.hexagram.hexagramCode ?? "本局卦码";
+  const [ringLiteState, setRingLiteState] = useState(() => readPersonalityRingLite());
+  const savedEntry = ringLiteState.entries.find((entry) => entry.createdAt === state.createdAt);
+
+  function saveToPersonalityRingLite() {
+    const entry = createPersonalityRingLiteEntryFromCrystal(state);
+    if (!entry) return;
+
+    setRingLiteState(savePersonalityRingLiteEntry(entry));
+  }
 
   return (
     <section
@@ -2013,6 +2027,58 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
         >
           {state.crystal.copy}
         </p>
+
+        <div
+          style={{
+            display: "grid",
+            justifyItems: "center",
+            gap: 8,
+            marginTop: 3,
+          }}
+        >
+          <button
+            type="button"
+            onClick={saveToPersonalityRingLite}
+            disabled={Boolean(savedEntry)}
+            style={{
+              appearance: "none",
+              border: "1px solid rgba(255,226,158,0.42)",
+              borderRadius: 999,
+              padding: "10px 18px",
+              background: savedEntry
+                ? "rgba(199,169,107,0.16)"
+                : "linear-gradient(135deg, rgba(255,226,158,0.18), rgba(199,169,107,0.07))",
+              color: "rgba(255,236,184,0.92)",
+              fontSize: 14,
+              fontWeight: 650,
+              letterSpacing: 0,
+              cursor: savedEntry ? "default" : "pointer",
+              boxShadow: savedEntry ? "0 0 18px rgba(199,169,107,0.1)" : "0 0 24px rgba(199,169,107,0.14)",
+            }}
+          >
+            {savedEntry ? "已保存" : "保存入人格年轮"}
+          </button>
+
+          {savedEntry ? (
+            <div
+              style={{
+                display: "grid",
+                justifyItems: "center",
+                gap: 4,
+                color: "rgba(245,245,245,0.62)",
+                fontSize: 12,
+                lineHeight: 1.55,
+              }}
+            >
+              <strong style={{ color: "rgba(255,226,158,0.84)", fontSize: 14, fontWeight: 650 }}>人格年轮已点亮</strong>
+              <span>今天的本局结晶，已经成为你人格年轮上的一枚星点。</span>
+              <span style={{ color: "rgba(199,169,107,0.58)" }}>
+                已保存 · {ringLiteState.entries.length} 枚结晶
+                {hexagramTitle ? ` · 最近一枚：${hexagramTitle}` : ""}
+              </span>
+            </div>
+          ) : null}
+        </div>
       </div>
     </section>
   );
