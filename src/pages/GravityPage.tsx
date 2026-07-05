@@ -483,41 +483,6 @@ function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
   };
 }
 
-function sixSpaceShortLabel(spaceId: SixSpaceId) {
-  const labels: Record<SixSpaceId, string> = {
-    body: "身体",
-    emotion: "情绪",
-    thought: "思想",
-    action: "行动",
-    memory: "记忆",
-    goal: "动机",
-  };
-
-  return labels[spaceId];
-}
-
-function sixSpaceFullLabel(spaceId: SixSpaceId) {
-  return `${sixSpaceShortLabel(spaceId)}空间`;
-}
-
-function buildPrimarySpaceNodeCopy(spaceId: SixSpaceId, nodeNumber: number) {
-  const label = sixSpaceShortLabel(spaceId);
-  const copyBySpace: Record<SixSpaceId, string> = {
-    body: "这粒压力先落在你的身体反应里。",
-    emotion: "这粒压力开始牵动你的情绪反应。",
-    thought: "这粒压力正在进入你的判断与解释系统。",
-    action: "这粒压力开始穿过你的行动惯性。",
-    memory: "这粒压力正在唤起旧经验里的回声。",
-    goal: "这粒压力正在触碰你的方向与动机。",
-  };
-
-  return {
-    title: `第 ${nodeNumber} 节｜${label}`,
-    text: copyBySpace[spaceId],
-    actionText: "轻触当前光点，读取这一节。",
-  };
-}
-
 function hashPressureBeastInput(input: string) {
   let hash = 2166136261;
 
@@ -931,7 +896,11 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
           : visualState.timeline.current === "T0.95"
             ? "PRESSURE_AND_BEAST"
             : "PRESSURE_FIELD";
-  const nodeCopy = buildPrimarySpaceNodeCopy(visualState.focalDimension, nodeNumber);
+  const nodeCopy = {
+    title: `第 ${nodeNumber} 维正在显影`,
+    text: "读取这一维在现实压力下的惯性反应。",
+    actionText: "轻触光点，读取这一维反应。",
+  };
 
   if (stage === "CRYSTAL") {
     return Object.freeze({
@@ -1205,6 +1174,46 @@ function BlackholeVortexScene({ toneColor, visible, status }: { toneColor: strin
   );
 }
 
+function NodeProgressionPanel({
+  visible,
+  toneColor,
+  activeNode,
+}: {
+  visible: boolean;
+  toneColor: string;
+  activeNode: { title: string; text: string; actionText: string };
+}) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: 22,
+        right: 22,
+        bottom: 18,
+        gap: 6,
+        pointerEvents: "none",
+        padding: "11px 13px 10px",
+        borderRadius: 14,
+        background: "linear-gradient(180deg, rgba(5,6,7,0.5), rgba(5,6,7,0.18))",
+        border: `1px solid rgba(${toneColor},0.14)`,
+        backdropFilter: "blur(4px)",
+        display: visible ? "grid" : "none",
+        animation: "gy-copy-fade-in 360ms ease both",
+      }}
+    >
+      <GuanyaoText size="eyebrow" tone="gold">
+        {activeNode.title}
+      </GuanyaoText>
+      <p style={{ margin: 0, whiteSpace: "pre-line", color: "rgba(245,245,245,0.76)", fontSize: 12, lineHeight: 1.46 }}>
+        {activeNode.text}
+      </p>
+      <GuanyaoText size="eyebrow" tone="gold">
+        {activeNode.actionText}
+      </GuanyaoText>
+    </div>
+  );
+}
+
 function StarFlowerCoreRepresentation({
   visible,
   activeNodeIndex,
@@ -1340,14 +1349,12 @@ function SixDimensionWheel({
   petalStates,
   toneColor,
   shortPetalNames,
-  activeNodeIndex,
 }: {
   configs: SixSpaceConfig[];
   activeConfig: SixSpaceConfig;
   petalStates: Record<SixSpaceId, CosmicPetalState>;
   toneColor: string;
   shortPetalNames: string[];
-  activeNodeIndex: number;
 }) {
   return (
     <>
@@ -1358,7 +1365,6 @@ function SixDimensionWheel({
         const state = petalStates[config.id];
         const left = 50 + Math.cos(rad) * 32;
         const top = 58 + Math.sin(rad) * 18;
-        const isWeakComplete = index < Math.min(activeNodeIndex, configs.length);
 
         return (
           <span
@@ -1370,14 +1376,14 @@ function SixDimensionWheel({
               position: "absolute",
               left: `${left}%`,
               top: `${top}%`,
-              width: isActive ? 76 : 38,
-              height: isActive ? 28 : 14,
+              width: isActive ? 64 : 50,
+              height: isActive ? 26 : 20,
               borderRadius: "50%",
               transform: `translate(-50%, -50%) rotate(${angle + 90}deg)`,
-              background: `linear-gradient(90deg, rgba(${toneColor},${isActive ? 0.34 : isWeakComplete ? 0.12 : 0.045}), rgba(245,245,245,${state === "blooming" ? 0.12 : 0.025}))`,
-              border: `1px solid rgba(${toneColor},${isActive ? 0.52 : isWeakComplete ? 0.18 : 0.08})`,
-              boxShadow: isActive ? `0 0 32px rgba(${toneColor},0.32)` : isWeakComplete ? `0 0 12px rgba(${toneColor},0.12)` : "none",
-              opacity: isActive ? 1 : isWeakComplete ? 0.34 : 0.18,
+              background: `linear-gradient(90deg, rgba(${toneColor},${isActive ? 0.28 : 0.08}), rgba(245,245,245,${state === "blooming" ? 0.16 : 0.04}))`,
+              border: `1px solid rgba(${toneColor},${isActive ? 0.42 : 0.14})`,
+              boxShadow: isActive ? `0 0 24px rgba(${toneColor},0.22)` : "none",
+              opacity: isActive ? 0.96 : 0.54,
               pointerEvents: "none",
               animation: "gy-petal-float 4.6s ease-in-out infinite",
             } as CSSProperties}
@@ -1386,9 +1392,9 @@ function SixDimensionWheel({
               style={{
                 display: "block",
                 transform: `rotate(${-angle - 90}deg)`,
-                color: isActive ? "rgba(245,245,245,0.82)" : "rgba(245,245,245,0.22)",
+                color: isActive ? "rgba(245,245,245,0.72)" : "rgba(245,245,245,0.32)",
                 fontSize: 9,
-                lineHeight: isActive ? "28px" : "14px",
+                lineHeight: "26px",
                 textAlign: "center",
                 letterSpacing: "0.04em",
               }}
@@ -1399,174 +1405,6 @@ function SixDimensionWheel({
         );
       })}
     </>
-  );
-}
-
-function PrimarySpaceFocusChamber({
-  activeConfig,
-  currentStep,
-  completedNodeCount,
-  toneColor,
-  activeNode,
-  onNodeBloom,
-}: {
-  activeConfig: SixSpaceConfig;
-  currentStep: number;
-  completedNodeCount: number;
-  toneColor: string;
-  activeNode: { title: string; text: string; actionText: string };
-  onNodeBloom: () => void;
-}) {
-  const currentNode = Math.min(6, Math.max(1, currentStep));
-  const progress = Math.min(1, Math.max(0, completedNodeCount / 6));
-
-  return (
-    <div
-      data-visual-layer="primary-space-focus-chamber"
-      style={{
-        position: "absolute",
-        left: "50%",
-        top: "50%",
-        zIndex: 6,
-        width: "min(82%, 306px)",
-        transform: "translate(-50%, -50%)",
-        display: "grid",
-        justifyItems: "center",
-        gap: 12,
-        pointerEvents: "none",
-        textAlign: "center",
-      }}
-    >
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: "42%",
-          width: 210 + progress * 24,
-          height: 210 + progress * 24,
-          borderRadius: "50%",
-          transform: "translate(-50%, -50%)",
-          background: `radial-gradient(circle, rgba(${toneColor},${0.16 + progress * 0.08}) 0 12%, rgba(${toneColor},0.07) 13% 42%, transparent 64%)`,
-          border: `1px solid rgba(${toneColor},${0.12 + progress * 0.08})`,
-          boxShadow: `0 0 ${36 + progress * 24}px rgba(${toneColor},${0.08 + progress * 0.07})`,
-        }}
-      />
-
-      <GuanyaoText size="eyebrow" tone="gold">
-        主修空间
-      </GuanyaoText>
-
-      <strong
-        style={{
-          position: "relative",
-          zIndex: 1,
-          color: "rgba(255,236,184,0.96)",
-          fontSize: 34,
-          lineHeight: 1.04,
-          fontWeight: 760,
-          letterSpacing: 0,
-          textShadow: `0 0 28px rgba(${toneColor},0.28)`,
-        }}
-      >
-        {sixSpaceFullLabel(activeConfig.id)}
-      </strong>
-
-      <div
-        aria-label="六个传导节点"
-        style={{
-          position: "relative",
-          zIndex: 1,
-          display: "grid",
-          gridTemplateColumns: "repeat(6, 1fr)",
-          gap: 6,
-          width: "min(100%, 236px)",
-          marginTop: 2,
-        }}
-      >
-        {Array.from({ length: 6 }).map((_, index) => {
-          const node = index + 1;
-          const isDone = node <= completedNodeCount;
-          const isCurrent = node === currentNode && completedNodeCount < 6;
-          return (
-            <span
-              key={node}
-              aria-label={`第 ${node} 节${isDone ? "已完成" : isCurrent ? "正在读取" : "待开启"}`}
-              style={{
-                height: isCurrent ? 22 : 15,
-                alignSelf: "end",
-                borderRadius: 999,
-                background: isDone
-                  ? `rgba(${toneColor},0.42)`
-                  : isCurrent
-                    ? "rgba(255,246,220,0.9)"
-                    : "rgba(245,245,245,0.12)",
-                boxShadow: isCurrent
-                  ? `0 0 20px rgba(${toneColor},0.5)`
-                  : isDone
-                    ? `0 0 10px rgba(${toneColor},0.22)`
-                    : "none",
-                transition: "height 240ms ease, background 240ms ease, box-shadow 240ms ease",
-              }}
-            />
-          );
-        })}
-      </div>
-
-      <button
-        type="button"
-        onClick={onNodeBloom}
-        style={{
-          position: "relative",
-          zIndex: 1,
-          appearance: "none",
-          border: `1px solid rgba(${toneColor},0.44)`,
-          borderRadius: 999,
-          width: 76,
-          height: 76,
-          display: "grid",
-          placeItems: "center",
-          margin: "2px 0 0",
-          background: `radial-gradient(circle, rgba(255,247,220,0.92) 0 16%, rgba(${toneColor},0.28) 17% 42%, rgba(${toneColor},0.08) 43% 68%, transparent 69%)`,
-          boxShadow: `0 0 32px rgba(${toneColor},0.42), inset 0 0 18px rgba(255,247,220,0.16)`,
-          cursor: "pointer",
-          pointerEvents: "auto",
-        }}
-        aria-label={activeNode.actionText}
-      >
-        <span
-          aria-hidden="true"
-          style={{
-            width: 14,
-            height: 14,
-            borderRadius: "50%",
-            background: "rgba(255,250,232,0.96)",
-            boxShadow: `0 0 18px rgba(${toneColor},0.72)`,
-          }}
-        />
-      </button>
-
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          display: "grid",
-          gap: 5,
-          maxWidth: 266,
-          padding: "0 6px",
-        }}
-      >
-        <GuanyaoText size="eyebrow" tone="gold">
-          {activeNode.title}
-        </GuanyaoText>
-        <p style={{ margin: 0, color: "rgba(245,245,245,0.72)", fontSize: 13, lineHeight: 1.52 }}>
-          {activeNode.text}
-        </p>
-        <span style={{ color: `rgba(${toneColor},0.68)`, fontSize: 12, lineHeight: 1.4 }}>
-          {activeNode.actionText}
-        </span>
-      </div>
-    </div>
   );
 }
 
@@ -1906,6 +1744,7 @@ function CosmicBotanicsField({
   const showBlackholeStatus = narrativePhase === "seed_visible" || narrativePhase === "beast_guide";
   const showPressureText = narrativePhase === "seed_visible" || narrativePhase === "beast_guide";
   const showBeastIntro = narrativePhase === "beast_guide";
+  const showNodePanel = narrativePhase === "node_active" || narrativePhase === "node_complete";
   const shortPetalNames = ["身体", "情绪", "思维", "行为", "记忆", "目标"];
   const coreReadiness = Math.max(hexagramReadiness, activeNodeIndex / 6);
   const coreVisible = narrativePhase === "node_active" || narrativePhase === "node_complete";
@@ -1991,6 +1830,10 @@ function CosmicBotanicsField({
         {experienceState.pressureCopy}
       </p>
 
+      <div data-visual-primitive="PARTICLE" data-visual-layer="particle-node-feedback" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.interaction, pointerEvents: "none" }}>
+        <NodeProgressionPanel visible={showNodePanel} toneColor={toneColor} activeNode={experienceState.nodeCopy} />
+      </div>
+
       <p
         data-visual-primitive="BEAST"
         data-visual-layer="beast-state-text"
@@ -2037,18 +1880,9 @@ function CosmicBotanicsField({
           petalStates={petalStates}
           toneColor={toneColor}
           shortPetalNames={shortPetalNames}
-          activeNodeIndex={activeNodeIndex}
         />
       </div>
 
-      <PrimarySpaceFocusChamber
-        activeConfig={activeConfig}
-        currentStep={currentStep}
-        completedNodeCount={activeNodeIndex}
-        toneColor={toneColor}
-        activeNode={experienceState.nodeCopy}
-        onNodeBloom={onNodeBloom}
-      />
     </section>
   );
 }
@@ -2525,6 +2359,15 @@ function HexagramCodeDeliveryShell() {
   }, []);
 
   if (USE_COSMIC_BOTANICS_SIX_SPACE || LEGACY_DYNAMICS_FLOW_ISOLATED) {
+    const cosmicTopCopyOpacity =
+      cosmicNarrativePhase === "field_intro"
+        ? 1
+        : cosmicNarrativePhase === "seed_visible"
+          ? 0.82
+          : cosmicNarrativePhase === "beast_guide"
+            ? 0.42
+            : 0;
+
     return (
       <main
         data-product-definition={GUANYAO_PRODUCT_RUNTIME_DEFINITION.officialDefinition}
@@ -2562,11 +2405,10 @@ function HexagramCodeDeliveryShell() {
             position: "relative",
             zIndex: 1,
             display: "grid",
-            gap: 7,
-            padding: "11px 13px",
-            borderTop: "1px solid rgba(199,169,107,0.2)",
-            borderBottom: "1px solid rgba(199,169,107,0.1)",
-            background: "linear-gradient(90deg, rgba(199,169,107,0.055), rgba(5,6,7,0.16), rgba(199,169,107,0.035))",
+            gap: 18,
+            opacity: cosmicTopCopyOpacity,
+            transition: "opacity 360ms ease",
+            pointerEvents: cosmicTopCopyOpacity > 0 ? "auto" : "none",
           }}
         >
           <span
@@ -2574,14 +2416,16 @@ function HexagramCodeDeliveryShell() {
               color: "rgba(199,169,107,0.76)",
               fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
               fontSize: 12,
-              letterSpacing: "0.08em",
+              letterSpacing: "0.16em",
             }}
           >
-            压力种子已锁定
+            {displayExperienceState.loopLabel}
           </span>
 
-          <p style={{ margin: 0, color: "rgba(245,245,245,0.6)", fontSize: 13, lineHeight: 1.52 }}>
-            这粒压力正在进入你的母码六维传导
+          <p style={{ margin: 0, maxWidth: 292, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.6 }}>
+            {displayExperienceState.headline}
+            <br />
+            {displayExperienceState.supportingCopy}
             {motherCodeName ? (
               <>
                 <br />
@@ -2593,9 +2437,6 @@ function HexagramCodeDeliveryShell() {
                 <br />
                 <span style={{ color: "rgba(199,169,107,0.62)" }}>
                   下卦：{currentHexagramProfile.lowerTrigram} · 上卦：{currentHexagramProfile.upperTrigram}
-                  {currentHexagramProfile.hexagramName || currentHexagramProfile.hexagramTitle
-                    ? ` · 本局：${currentHexagramProfile.hexagramName ?? currentHexagramProfile.hexagramTitle}`
-                    : ""}
                 </span>
               </>
             ) : null}
