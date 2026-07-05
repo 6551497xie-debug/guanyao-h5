@@ -1817,14 +1817,14 @@ export function LaunchLab() {
           if (confirmed) {
             const hitW = Math.min(m.w * 0.72, g.railX1 - g.railX0 + 22);
             const hitX = g.railX0 - 10;
-            const hitY = y - 62;
-            ctx.fillStyle = "rgba(255,247,228,0.035)";
-            ctx.strokeStyle = "rgba(232,200,138,0.16)";
+            const hitY = y - 56;
+            ctx.fillStyle = "rgba(255,247,228,0.048)";
+            ctx.strokeStyle = "rgba(232,200,138,0.22)";
             ctx.lineWidth = 0.6;
             ctx.beginPath();
-            ctx.roundRect?.(hitX, hitY, hitW, 126, 14);
+            ctx.roundRect?.(hitX, hitY, hitW, 112, 14);
             if (!ctx.roundRect) {
-              ctx.rect(hitX, hitY, hitW, 126);
+              ctx.rect(hitX, hitY, hitW, 112);
             }
             ctx.fill();
             ctx.stroke();
@@ -1839,17 +1839,22 @@ export function LaunchLab() {
 
           ctx.textAlign = "left";
           ctx.textBaseline = "alphabetic";
-          ctx.fillStyle = active ? "rgba(232,200,138,0.9)" : "rgba(232,200,138,0.42)";
+          ctx.fillStyle = confirmed ? "rgba(255,247,228,0.86)" : active ? "rgba(232,200,138,0.9)" : "rgba(232,200,138,0.42)";
           ctx.font = `650 ${active ? Math.min(12, m.w * 0.031) : Math.min(10, m.w * 0.027)}px ${MONO}`;
-          ctx.fillText(active ? confirmed ? "中州已锁定 · 点击进入" : "横轴锁定中州" : `压力 ${index + 1}`, x, y - (active ? 44 : 18));
-          ctx.fillStyle = active ? "rgba(255,247,228,0.92)" : "rgba(255,247,228,0.48)";
+          ctx.fillText(active ? confirmed ? "中州已锁定 · 点击进入" : "横轴锁定中州" : `压力 ${index + 1}`, x, y - (active ? confirmed ? 38 : 44 : 18));
+          ctx.fillStyle = confirmed ? "rgba(255,247,228,0.98)" : active ? "rgba(255,247,228,0.92)" : "rgba(255,247,228,0.48)";
+          ctx.shadowColor = confirmed ? "rgba(255,247,228,0.44)" : "rgba(255,247,228,0)";
+          ctx.shadowBlur = confirmed ? 10 : 0;
           ctx.font = `680 ${active ? Math.min(17, m.w * 0.042) : Math.min(12, m.w * 0.032)}px ${SANS}`;
-          drawCanvasWrappedText(ctx, seed.main, x, y - (active ? 20 : 2), active ? m.w * 0.68 : m.w * 0.5, active ? 24 : 17, active ? 2 : 1);
+          drawCanvasWrappedText(ctx, seed.main, x, y - (active ? confirmed ? 14 : 20 : 2), active ? m.w * 0.68 : m.w * 0.5, active ? confirmed ? 22 : 24 : 17, active ? 2 : 1);
           if (active) {
-            ctx.fillStyle = "rgba(232,200,138,0.66)";
+            ctx.fillStyle = confirmed ? "rgba(255,247,228,0.86)" : "rgba(232,200,138,0.66)";
+            ctx.shadowColor = confirmed ? "rgba(232,200,138,0.34)" : "rgba(255,247,228,0)";
+            ctx.shadowBlur = confirmed ? 8 : 0;
             ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${SANS}`;
-            drawCanvasWrappedText(ctx, seed.sub, x, y + 34, m.w * 0.66, 18, 2);
+            drawCanvasWrappedText(ctx, seed.sub, x, y + (confirmed ? 28 : 34), m.w * 0.66, confirmed ? 16 : 18, 2);
           }
+          ctx.shadowBlur = 0;
         });
 
         const railCursor = { x: lerp(g.railX0, g.railX1, m.railProgress), y: g.railY };
@@ -2056,10 +2061,7 @@ export function LaunchLab() {
       if (m.state === STATE.PRESSURE_SEED_AXIS) {
         m.dragging = true;
         const g = axisMetrics();
-        const seedY = [m.h * 0.36, m.h * 0.5, m.h * 0.64];
-        const selectedSeedY = seedY[m.pressureSeedIndex] ?? seedY[1]!;
-        const centerHit = m.pressureSeedLocked && Math.abs(y - selectedSeedY) < 76 && x >= g.railX0 - 24 && x <= g.railX1 + 30;
-        if (centerHit) {
+        if (isPressureSeedCenterHit(x, y)) {
           enterFocusedPressureSeed();
           m.dragging = false;
           m.dragAxis = null;
@@ -2118,6 +2120,13 @@ export function LaunchLab() {
         }
         m.dwellT = 0;
       }
+    }
+    function isPressureSeedCenterHit(x: number, y: number) {
+      if (m.state !== STATE.PRESSURE_SEED_AXIS || !m.pressureSeedLocked) return false;
+      const g = axisMetrics();
+      const seedY = [m.h * 0.36, m.h * 0.5, m.h * 0.64];
+      const selectedSeedY = seedY[m.pressureSeedIndex] ?? seedY[1]!;
+      return Math.abs(y - selectedSeedY) < 108 && x >= g.railX0 - 36 && x <= g.railX1 + 44;
     }
     function onMove(e: PointerEvent) {
       if (!m.dragging || (
@@ -2222,6 +2231,12 @@ export function LaunchLab() {
         if (e) canvasRef.current?.releasePointerCapture?.(e.pointerId);
       } catch {
         // ignore pointer capture release differences across browsers
+      }
+      if (e && isPressureSeedCenterHit(e.clientX - canvas!.getBoundingClientRect().left, e.clientY - canvas!.getBoundingClientRect().top)) {
+        enterFocusedPressureSeed();
+        m.dragging = false;
+        m.dragAxis = null;
+        return;
       }
       const shouldCommitOnRelease =
         m.dragAxis === "x" &&
