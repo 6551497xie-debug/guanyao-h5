@@ -709,6 +709,7 @@ export function LaunchLab() {
       entryCardSide: "front" as "front" | "back",
       entryCardFlipTo: "front" as "front" | "back",
       entryCardFlipT: 1,
+      originLockPulse: 0,
       afterForm: 0,
       formed: false,
       phaseX: 3,
@@ -1145,6 +1146,7 @@ export function LaunchLab() {
         const geoDim = activeGeoDim();
         setGeoValue(geoDim, m.dialFloat);
         if (m.pendingAxisMode === "NEW_USER") {
+          m.originLockPulse = 1;
           if (m.geoStep < GEO_DIMS.length - 1) {
             m.geoStep += 1;
             resetAxisStepProgress();
@@ -1163,6 +1165,7 @@ export function LaunchLab() {
       const dim = activeDim();
       setDimValue(dim, m.dialFloat);
       if (m.pendingAxisMode === "NEW_USER") {
+        m.originLockPulse = 1;
         if (m.chronoStep < CHRONO_DIMS.length - 1) {
           m.chronoStep += 1;
           resetAxisStepProgress();
@@ -1329,6 +1332,9 @@ export function LaunchLab() {
       }
       if (m.pressureSeedGroupPulse > 0) {
         m.pressureSeedGroupPulse = Math.max(0, m.pressureSeedGroupPulse - dt * 3.4);
+      }
+      if (m.originLockPulse > 0) {
+        m.originLockPulse = Math.max(0, m.originLockPulse - dt * 4.2);
       }
       switch (m.state) {
         case STATE.STARFIELD_IDLE: {
@@ -1670,6 +1676,9 @@ export function LaunchLab() {
         const originMother = m.pendingAxisMode === "NEW_USER" ? resolveOriginMotherCode() : null;
         const dim = activeDim();
         const geoDim = activeGeoDim();
+        const isNewOriginAxis = m.pendingAxisMode === "NEW_USER" && (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND);
+        const originStepIndex = isGeoStage ? CHRONO_DIMS.length : m.chronoStep;
+        const lockPulse = smooth(0, 1, m.originLockPulse);
         const range = isGeoStage ? geoRange(geoDim) : dimRange(m.coords, dim);
         const dialFrac = range.max > range.min ? (m.dialFloat - range.min) / (range.max - range.min) : 0;
         m.precisionY = range.max > range.min ? Math.round((1 - clamp(dialFrac, 0, 1)) * 20) : 10;
@@ -1748,16 +1757,41 @@ export function LaunchLab() {
         ctx.stroke();
         for (let col = 0; col < g.cols; col++) {
           const p = railPoint(col);
-          const lit = col <= m.phaseX || Math.abs(p.x - railCursor.x) < 5;
           const posOnAxis = col / (g.cols - 1);
+          const completed = isNewOriginAxis && col < originStepIndex;
+          const current = isNewOriginAxis && col === originStepIndex;
+          const next = isNewOriginAxis && col === originStepIndex + 1;
+          const lit = isNewOriginAxis
+            ? completed || current || Math.abs(p.x - railCursor.x) < 5
+            : col <= m.phaseX || Math.abs(p.x - railCursor.x) < 5;
           const sweep = guideStage === "x" ? comet(posOnAxis, guideProgress, 0.16) : 0;
           const dragGlow = m.dragAxis === "x" ? comet(posOnAxis, m.railProgress, 0.18) : 0;
           const flow = Math.max(sweep, dragGlow);
-          ctx.fillStyle = `rgba(${starWhiteRgb},${(lit ? 0.58 + flow * 0.38 : 0.2 + flow * 0.48).toFixed(3)})`;
-          ctx.shadowColor = `rgba(${starWhiteRgb},${(0.14 + flow * 0.62).toFixed(3)})`;
-          ctx.shadowBlur = lit ? 7 + flow * 12 : 2 + flow * 12;
+          const baseAlpha = isNewOriginAxis
+            ? current
+              ? 0.76 + lockPulse * 0.18
+              : completed
+                ? 0.46
+                : next
+                  ? 0.26
+                  : 0.14
+            : lit
+              ? 0.58
+              : 0.2;
+          const radius = isNewOriginAxis
+            ? current
+              ? 3.0 + lockPulse * 1.2 + flow * 1.0
+              : completed
+                ? 2.15 + flow * 0.7
+                : 1.15 + flow * 1.0
+            : lit
+              ? 2.35 + flow * 1.2
+              : 1.25 + flow * 1.25;
+          ctx.fillStyle = `rgba(${starWhiteRgb},${Math.min(0.98, baseAlpha + flow * 0.34).toFixed(3)})`;
+          ctx.shadowColor = `rgba(${starWhiteRgb},${(0.14 + flow * 0.62 + (current ? 0.2 + lockPulse * 0.26 : 0)).toFixed(3)})`;
+          ctx.shadowBlur = current ? 12 + lockPulse * 14 + flow * 12 : lit ? 7 + flow * 12 : 2 + flow * 12;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, lit ? 2.35 + flow * 1.2 : 1.25 + flow * 1.25, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.shadowBlur = 0;
@@ -1793,6 +1827,7 @@ export function LaunchLab() {
           const isNewOriginFlow = m.pendingAxisMode === "NEW_USER" && !finalLocked;
           const originStepKey: OriginTuningStep = isGeoStage ? "province" : dim;
           const originStep = ORIGIN_TUNING_STATUS[originStepKey];
+          const originLockFeedback = isNewOriginFlow && lockPulse > 0.08;
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
           ctx.fillText(axisCopy.kicker, g.railX0, m.h * 0.1);
@@ -1821,7 +1856,10 @@ export function LaunchLab() {
               ? Math.min(36, m.w * 0.082)
               : Math.min(48, m.w * 0.11);
           ctx.font = `700 ${valueSize}px ${MONO}`;
+          ctx.shadowColor = `rgba(${starWhiteRgb},${(originLockFeedback ? 0.34 + lockPulse * 0.32 : 0).toFixed(3)})`;
+          ctx.shadowBlur = originLockFeedback ? 8 + lockPulse * 12 : 0;
           ctx.fillText(finalLocked ? "光兽正在靠近" : isGeoStage ? geoText(geoDim, m.dialFloat) : dimText(dim, m.dialFloat), g.railX0, m.h * 0.47);
+          ctx.shadowBlur = 0;
           ctx.font = `700 ${Math.min(16, m.w * 0.04)}px ${MONO}`;
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.fillText(axisCopy.bodyPrimary, g.railX0, m.h * 0.58);
@@ -1829,7 +1867,7 @@ export function LaunchLab() {
           ctx.fillText(axisCopy.bodySecondary, g.railX0, m.h * 0.63);
           ctx.fillStyle = "rgba(232,200,138,0.46)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? axisCopy.lockText : axisCopy.actionPrimary, g.railX0, m.h * 0.705);
+          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? axisCopy.lockText : originLockFeedback ? "上一格已锁定 · 进入下一格" : axisCopy.actionPrimary, g.railX0, m.h * 0.705);
           ctx.fillStyle = "rgba(232,200,138,0.58)";
           ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
           const railHint = finalLocked
