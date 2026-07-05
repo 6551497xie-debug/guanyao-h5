@@ -1882,6 +1882,142 @@ function CosmicBotanicsField({
   );
 }
 
+function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState }) {
+  const hexagramTitle = state.hexagram.hexagramName ?? state.hexagram.hexagramTitle ?? state.hexagram.hexagramCode ?? "本局卦码";
+
+  return (
+    <section
+      aria-label="本局结晶终点"
+      style={{
+        minHeight: 424,
+        position: "relative",
+        display: "grid",
+        placeItems: "center",
+        padding: "22px 0 8px",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "45%",
+          width: 292,
+          height: 292,
+          borderRadius: "50%",
+          transform: "translate(-50%, -50%)",
+          background:
+            "radial-gradient(circle, rgba(255,244,205,0.2) 0 7%, rgba(199,169,107,0.14) 8% 22%, rgba(199,169,107,0.05) 23% 48%, transparent 68%)",
+          filter: "blur(0.2px)",
+          boxShadow: "0 0 60px rgba(199,169,107,0.08)",
+        }}
+      />
+
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "45%",
+          width: 108,
+          height: 108,
+          borderRadius: "42% 58% 45% 55%",
+          transform: "translate(-50%, -50%) rotate(45deg)",
+          border: "1px solid rgba(255,236,184,0.42)",
+          background:
+            "linear-gradient(135deg, rgba(255,246,216,0.3), rgba(199,169,107,0.08) 48%, rgba(245,245,245,0.04))",
+          boxShadow: "0 0 34px rgba(199,169,107,0.2), inset 0 0 28px rgba(255,246,216,0.08)",
+        }}
+      />
+
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          width: "min(100%, 342px)",
+          display: "grid",
+          justifyItems: "center",
+          textAlign: "center",
+          gap: 13,
+        }}
+      >
+        <GuanyaoText size="eyebrow" tone="gold">
+          六维传导已完成
+        </GuanyaoText>
+
+        <h1
+          style={{
+            margin: "92px 0 0",
+            color: "rgba(245,245,245,0.92)",
+            fontSize: 30,
+            lineHeight: 1.16,
+            fontWeight: 720,
+            letterSpacing: 0,
+            textShadow: "0 0 24px rgba(199,169,107,0.18)",
+          }}
+        >
+          本局结晶已经形成
+        </h1>
+
+        <strong
+          style={{
+            color: "rgba(255,226,158,0.94)",
+            fontSize: 24,
+            lineHeight: 1.18,
+            fontWeight: 680,
+            letterSpacing: 0,
+          }}
+        >
+          本局：{hexagramTitle}
+        </strong>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 10,
+            width: "100%",
+            maxWidth: 278,
+          }}
+        >
+          {[
+            ["下卦", state.hexagram.lowerTrigram],
+            ["上卦", state.hexagram.upperTrigram],
+          ].map(([label, value]) => (
+            <span
+              key={label}
+              style={{
+                display: "grid",
+                gap: 3,
+                padding: "8px 10px",
+                borderTop: "1px solid rgba(199,169,107,0.3)",
+                borderBottom: "1px solid rgba(199,169,107,0.12)",
+                color: "rgba(245,245,245,0.7)",
+              }}
+            >
+              <span style={{ color: "rgba(199,169,107,0.62)", fontSize: 11 }}>{label}</span>
+              <span style={{ color: "rgba(245,245,245,0.9)", fontSize: 18, fontWeight: 650 }}>{value}</span>
+            </span>
+          ))}
+        </div>
+
+        <p
+          style={{
+            margin: "3px 0 0",
+            maxWidth: 310,
+            color: "rgba(245,245,245,0.66)",
+            fontSize: 14,
+            lineHeight: 1.62,
+          }}
+        >
+          {state.crystal.copy}
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function HexagramCodeDeliveryShell() {
   const [dynamicsInputContext] = useState<DynamicsInputContext>(() => readDynamicsInputContext());
   const [activeCurrentHexagramContext] = useState<ActiveCurrentHexagramContext | null>(() =>
@@ -2129,23 +2265,27 @@ function HexagramCodeDeliveryShell() {
             gap: 18,
           }}
         >
-          <CosmicBotanicsField
-            configs={sixSpaceConfigs}
-            currentStep={executionSnapshot.node.current}
-            activeDimensionStep={sixDimensionStep}
-            pressureSeedSurface={selectedPressureSeedSurface}
-            petalStates={visiblePetalStates}
-            pollenBursts={cosmicPollenBursts}
-            starbeast={starbeastFeedback}
-            starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
-            hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}
-            activeNodeIndex={cosmicNodeStep}
-            narrativePhase={cosmicNarrativePhase}
-            onNodeBloom={bloomCosmicNode}
-            coreStars={baiHuRuntimeCoreStars}
-            visualState={visualState}
-            experienceState={displayExperienceState}
-          />
+          {currentCrystalEndState ? (
+            <CurrentCrystalEndStateFocus state={currentCrystalEndState} />
+          ) : (
+            <CosmicBotanicsField
+              configs={sixSpaceConfigs}
+              currentStep={executionSnapshot.node.current}
+              activeDimensionStep={sixDimensionStep}
+              pressureSeedSurface={selectedPressureSeedSurface}
+              petalStates={visiblePetalStates}
+              pollenBursts={cosmicPollenBursts}
+              starbeast={starbeastFeedback}
+              starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
+              hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}
+              activeNodeIndex={cosmicNodeStep}
+              narrativePhase={cosmicNarrativePhase}
+              onNodeBloom={bloomCosmicNode}
+              coreStars={baiHuRuntimeCoreStars}
+              visualState={visualState}
+              experienceState={displayExperienceState}
+            />
+          )}
         </section>
 
         <footer
@@ -2167,27 +2307,9 @@ function HexagramCodeDeliveryShell() {
           }}
         >
           {currentCrystalEndState ? (
-            <section
-              aria-label="本局结晶"
-              style={{
-                display: "grid",
-                gap: 7,
-                padding: "14px 15px",
-                border: "1px solid rgba(199,169,107,0.22)",
-                borderRadius: 14,
-                background: "rgba(199,169,107,0.07)",
-                boxShadow: "0 0 28px rgba(199,169,107,0.08)",
-              }}
-            >
-              <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 15, fontWeight: 650 }}>
-                本局结晶已经形成
-              </strong>
-              <span style={{ color: "rgba(245,245,245,0.62)" }}>{currentCrystalEndState.crystal.copy}</span>
-              <span style={{ color: "rgba(199,169,107,0.72)" }}>
-                下卦：{currentCrystalEndState.hexagram.lowerTrigram} · 上卦：{currentCrystalEndState.hexagram.upperTrigram}
-                {currentCrystalEndState.hexagram.hexagramName ? ` · 本局：${currentCrystalEndState.hexagram.hexagramName}` : ""}
-              </span>
-            </section>
+            <span style={{ display: "block", textAlign: "center", color: "rgba(199,169,107,0.54)" }}>
+              六维传导已完成
+            </span>
           ) : cosmicNarrativePhase === "node_complete" &&
             hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE"
               ? displayExperienceState.crystalCopy
