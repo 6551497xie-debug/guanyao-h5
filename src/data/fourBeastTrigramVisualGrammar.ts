@@ -171,7 +171,7 @@ export const FOUR_BEAST_TRIGRAM_VISUAL_GRAMMAR: FourBeastTrigramVisualGrammarIte
       return {
         beast,
         trigram,
-        key: `${beast}-${trigram}`,
+        key: `${beast}_${trigram}`,
         beastBase: beastGrammar.beastBase,
         posture: `${beastGrammar.posture} ${trigramGrammar.posture}`,
         motion: `${beastGrammar.motionBase} / ${trigramGrammar.motion}`,
