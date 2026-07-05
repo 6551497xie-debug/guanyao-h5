@@ -459,6 +459,14 @@ function resolveCurrentCrystalEndState({
   };
 }
 
+function shouldAutoCompleteFinalDimension(snapshot: ExecutionSnapshot) {
+  return (
+    snapshot.runtime.enginePhase !== "COMPLETE" &&
+    snapshot.node.current === 6 &&
+    snapshot.node.completed.length >= 5
+  );
+}
+
 function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
   return {
     body: value,
@@ -898,7 +906,11 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       supportingCopy: "这粒压力已经穿过六维，反应正在沉积成一枚结晶。",
       pressureCopy: "压力种子已完成六维传导。",
       beastCopy: "反应已稳定沉积。",
-      nodeCopy,
+      nodeCopy: {
+        title: "六维传导已完成",
+        text: "本局反应正在沉积为结晶。",
+        actionText: "本局结晶已经形成。",
+      },
       crystalCopy: "这一轮反应，已经沉积为结晶。",
     });
   }
@@ -1397,6 +1409,7 @@ type BaiHuConstellationLayerProps = {
   activeNodeIndex: number;
   onCoreStarClick: () => void;
   coreStars: RuntimeCoreStar[];
+  showInteractionHint: boolean;
 };
 
 function CoreStarInteractionLayer({
@@ -1449,7 +1462,14 @@ function CoreStarInteractionLayer({
   );
 }
 
-function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, onCoreStarClick, coreStars }: BaiHuConstellationLayerProps) {
+function BaiHuConstellationLayer({
+  toneColor,
+  narrativePhase,
+  activeNodeIndex,
+  onCoreStarClick,
+  coreStars,
+  showInteractionHint,
+}: BaiHuConstellationLayerProps) {
   const reveal = narrativePhase === "field_intro" ? 0.34 : narrativePhase === "seed_visible" ? 0.66 : 1;
   const bodyAlpha = narrativePhase === "beast_guide" || narrativePhase === "node_active" || narrativePhase === "node_complete" ? 0.82 : 0.2;
   const nodeCharge = Math.min(1, Math.max(0, activeNodeIndex / 6));
@@ -1625,24 +1645,26 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, o
         onCoreStarClick={onCoreStarClick}
       />
 
-      <span
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          left: "50%",
-          bottom: -8,
-          transform: "translateX(-50%)",
-          color: `rgba(255,248,224,${0.28 + reveal * 0.12})`,
-          fontSize: 10,
-          lineHeight: 1,
-          letterSpacing: "0.08em",
-          whiteSpace: "nowrap",
-          pointerEvents: "none",
-          textShadow: `0 0 10px rgba(${toneColor},0.16)`,
-        }}
-      >
-        轻触光点，读取这一维反应。
-      </span>
+      {showInteractionHint ? (
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            left: "50%",
+            bottom: -8,
+            transform: "translateX(-50%)",
+            color: `rgba(255,248,224,${0.28 + reveal * 0.12})`,
+            fontSize: 10,
+            lineHeight: 1,
+            letterSpacing: "0.08em",
+            whiteSpace: "nowrap",
+            pointerEvents: "none",
+            textShadow: `0 0 10px rgba(${toneColor},0.16)`,
+          }}
+        >
+          轻触光点，读取这一维反应。
+        </span>
+      ) : null}
 
       <span
         style={{
@@ -1772,6 +1794,7 @@ function CosmicBotanicsField({
           activeNodeIndex={activeNodeIndex}
           onCoreStarClick={onNodeBloom}
           coreStars={coreStars}
+          showInteractionHint={experienceState.primaryFocus !== "CRYSTALLIZATION"}
         />
       </div>
 
@@ -1945,6 +1968,18 @@ function HexagramCodeDeliveryShell() {
     if (!currentCrystalEndState) return;
     writeJsonToStorage("guanyao:currentCrystalEndState", currentCrystalEndState);
   }, [currentCrystalEndState]);
+
+  useEffect(() => {
+    if (!shouldAutoCompleteFinalDimension(executionSnapshot)) return;
+
+    const finalDimensionTimer = window.setTimeout(() => {
+      setExecutionSnapshot((current) =>
+        shouldAutoCompleteFinalDimension(current) ? GuanyaoRuntimeEngine.advance(current) : current,
+      );
+    }, 620);
+
+    return () => window.clearTimeout(finalDimensionTimer);
+  }, [executionSnapshot]);
 
   function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
     setExecutionSnapshot((current) =>
