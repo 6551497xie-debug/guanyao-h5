@@ -1073,6 +1073,7 @@ export function LaunchLab() {
       ctx.fillRect(0, 0, m.w, m.h);
       const now = performance.now() / 1000;
       const currentScene = sceneRef.current;
+      const entryVisualCopyActive = currentScene === "ENTRY";
       const entryState = toStarbeastEntryState(m.state);
       const starbeastState = resolveStarbeastRenderState(entryState);
       const convergenceActive = isConvergenceState();
@@ -1113,21 +1114,23 @@ export function LaunchLab() {
           ctx.fill();
         });
 
-        ctx.save();
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = `600 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
-        const titleAlpha = smooth(1.35, 2.1, m.t);
-        const subtitleAlpha = smooth(1.95, 2.75, m.t);
-        if (titleAlpha > 0.001) {
-          ctx.fillStyle = `rgba(255,247,228,${(titleAlpha * 0.95).toFixed(3)})`;
-          ctx.fillText(TOP_LINES[0], m.w / 2, m.h * 0.18);
+        if (entryVisualCopyActive) {
+          ctx.save();
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = `600 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
+          const titleAlpha = smooth(1.35, 2.1, m.t);
+          const subtitleAlpha = smooth(1.95, 2.75, m.t);
+          if (titleAlpha > 0.001) {
+            ctx.fillStyle = `rgba(255,247,228,${(titleAlpha * 0.95).toFixed(3)})`;
+            ctx.fillText(TOP_LINES[0], m.w / 2, m.h * 0.18);
+          }
+          if (subtitleAlpha > 0.001) {
+            ctx.fillStyle = `rgba(255,247,228,${(subtitleAlpha * 0.82).toFixed(3)})`;
+            ctx.fillText(TOP_LINES[1], m.w / 2, m.h * 0.23);
+          }
+          ctx.restore();
         }
-        if (subtitleAlpha > 0.001) {
-          ctx.fillStyle = `rgba(255,247,228,${(subtitleAlpha * 0.82).toFixed(3)})`;
-          ctx.fillText(TOP_LINES[1], m.w / 2, m.h * 0.23);
-        }
-        ctx.restore();
         return;
       }
 
@@ -1515,7 +1518,7 @@ export function LaunchLab() {
         return;
       }
 
-      if (!nodeRuntimeActive && (m.state === STATE.ASSEMBLY || m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY)) {
+      if (entryVisualCopyActive && !nodeRuntimeActive && (m.state === STATE.ASSEMBLY || m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY)) {
         ctx.save();
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -1528,7 +1531,7 @@ export function LaunchLab() {
       }
 
       // Text resolves after the entry form stabilizes.
-      if (!nodeRuntimeActive && (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY)) {
+      if (entryVisualCopyActive && !nodeRuntimeActive && (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY)) {
         const cx = m.w / 2;
         const lineStarts = [0.2, 0.55, 3.1];
         const gather = 1.35;
