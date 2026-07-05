@@ -23,6 +23,10 @@ import {
   getTripleForceFrontStage,
 } from "../services/guanyaoTripleForceLandingService";
 import { getPressureSeedSceneTriplet } from "../services/guanyaoPressureSeedSceneBindingService";
+import {
+  runGeoChronoMotherFusionEngine,
+  type GeoChronoMotherFusionResult,
+} from "../services/guanyaoGeoChronoMotherFusionEngine";
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
@@ -135,6 +139,7 @@ type LaunchState =
   | "time_calibration"
   | "geo_bind"
   | "display_lock"
+  | "mother_code_reveal"
   | "entry_pre_collapse"
   | "entry_light_convergence"
   | "pressure_seed_axis"
@@ -151,6 +156,7 @@ const STATE = {
   TIME_CALIBRATION: "time_calibration",
   GEO_BIND: "geo_bind",
   DISPLAY_LOCK: "display_lock",
+  MOTHER_CODE_REVEAL: "mother_code_reveal",
   ENTRY_PRE_COLLAPSE: "entry_pre_collapse",
   ENTRY_LIGHT_CONVERGENCE: "entry_light_convergence",
   PRESSURE_SEED_AXIS: "pressure_seed_axis",
@@ -223,8 +229,8 @@ const AXIS_COPY: Record<EntryHandoffMode, {
     bodyPrimary: "系统正在对齐时间、身体与当前状态",
     bodySecondary: "完成后进入现实压力",
     actionPrimary: "上下调频，找到你的原始坐标",
-    actionConfirm: "右滑固定坐标，进入现实压力",
-    lockText: "坐标已成形",
+    actionConfirm: "右滑固定坐标，显影母码",
+    lockText: "坐标已固定",
   },
   OLD_USER: {
     dimLabel: { year: "压力种子", month: "压力层级", day: "压力刻度", hour: "压力锚点" },
@@ -791,6 +797,9 @@ export function LaunchLab() {
         m.state === STATE.GEO_BIND ||
         m.state === STATE.DISPLAY_LOCK;
     }
+    function isMotherCodeRevealState() {
+      return m.state === STATE.MOTHER_CODE_REVEAL;
+    }
     function isConvergenceState() {
       return m.state === STATE.ENTRY_PRE_COLLAPSE || m.state === STATE.ENTRY_LIGHT_CONVERGENCE;
     }
@@ -876,6 +885,32 @@ export function LaunchLab() {
       const copy = AXIS_COPY[m.pendingAxisMode].geoLabel;
       return dim === "province" ? `${copy.province} ${pad2(index + 1)}` : `${copy.city} ${pad2(index + 1)}`;
     }
+    function currentProvinceName() {
+      return PROVINCE_OPTIONS[m.geo.provinceIndex] ?? "广东";
+    }
+    function currentCityName() {
+      const province = currentProvinceName();
+      return (CITY_OPTIONS_BY_PROVINCE[province] ?? ["广州"])[m.geo.cityIndex] ?? "广州";
+    }
+    function resolveOriginMotherCode(): GeoChronoMotherFusionResult {
+      return runGeoChronoMotherFusionEngine({
+        geo: {
+          province: currentProvinceName(),
+          city: currentCityName(),
+        },
+        chrono: {
+          year: m.coords.year,
+          month: m.coords.month,
+          day: m.coords.day,
+          periodIndex: hourToPeriodIndex(m.coords.hour),
+        },
+        starbeast: {
+          nodeCount: NODES.length,
+          primaryNodeIndex: Math.max(0, Math.min(NODES.length - 1, Math.round((m.precisionY / 20) * (NODES.length - 1)))),
+          originLightTrace: "28光兽入口",
+        },
+      });
+    }
     function buildEntryTransitionSnapshot(): EntryTransitionSnapshot {
       return {
         chrono: "光痕已显现",
@@ -920,9 +955,30 @@ export function LaunchLab() {
         m.dragging = false;
         m.dragAxis = null;
         m.clutched = false;
-        m.state = STATE.ENTRY_STATIC_RENDER;
-        m.t = 0;
+        openMotherCodeReveal();
       }, ENTRY_HANDOFF_DELAY_MS);
+    }
+    function openMotherCodeReveal() {
+      m.railProgress = 0;
+      m.phaseX = 0;
+      m.dragging = false;
+      m.dragAxis = null;
+      m.clutched = false;
+      m.state = STATE.MOTHER_CODE_REVEAL;
+      m.t = 0;
+      audio.form();
+      vibrate([0, 12, 18]);
+    }
+    function openRealityPressureEntry() {
+      m.railProgress = 0;
+      m.phaseX = 0;
+      m.dragging = false;
+      m.dragAxis = null;
+      m.clutched = false;
+      m.state = STATE.ENTRY_STATIC_RENDER;
+      m.t = 0;
+      audio.form();
+      vibrate([0, 12, 18]);
     }
     function emitBeastCollapseVisualEvent() {
       window.dispatchEvent(new CustomEvent(BEAST_COLLAPSE_VISUAL_EVENT));
@@ -1026,6 +1082,19 @@ export function LaunchLab() {
 
       const dim = activeDim();
       setDimValue(dim, m.dialFloat);
+      if (m.pendingAxisMode === "NEW_USER") {
+        m.state = STATE.GEO_BIND;
+        m.geoStep = 1;
+        m.dragging = false;
+        m.dragAxis = null;
+        m.clutched = false;
+        m.railProgress = 0;
+        m.phaseX = 0;
+        syncDialToCurrent();
+        audio.tick();
+        vibrate(8);
+        return;
+      }
       completeEntryCanvasHandoff();
     }
     function headAngle(tp: number) {
@@ -1513,6 +1582,7 @@ export function LaunchLab() {
         const starWhiteRgb = "255,247,228";
         const g = axisMetrics();
         const isGeoStage = m.state === STATE.GEO_BIND;
+        const originMother = m.pendingAxisMode === "NEW_USER" ? resolveOriginMotherCode() : null;
         const dim = activeDim();
         const geoDim = activeGeoDim();
         const range = isGeoStage ? geoRange(geoDim) : dimRange(m.coords, dim);
@@ -1645,6 +1715,14 @@ export function LaunchLab() {
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
           ctx.fillText(finalLocked ? "［ 光痕 ］" : isGeoStage ? `［ ${axisCopy.geoLabel[geoDim]} ］` : `［ ${axisCopy.dimStageLabel[dim]} ］`, g.railX0, m.h * 0.34);
+          if (originMother && !finalLocked) {
+            ctx.fillStyle = "rgba(232,200,138,0.66)";
+            ctx.font = `600 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
+            ctx.fillText("时序填装 · 卦符正在显影", g.railX0, m.h * 0.245);
+            ctx.fillText(`${originMother.chrono.lockPoint} · ${originMother.mother.definition.trigramSymbol}${originMother.mother.trigram}`, g.railX0, m.h * 0.272);
+            ctx.fillText("方位填装 · 四象兽正在归位", g.railX0, m.h * 0.3);
+            ctx.fillText(`${originMother.geo.symbol} · ${originMother.geo.province}/${originMother.geo.city}`, g.railX0, m.h * 0.327);
+          }
           ctx.fillStyle = "rgba(255,247,228,0.96)";
           const valueSize = finalLocked
             ? Math.min(28, m.w * 0.062)
@@ -1893,6 +1971,102 @@ export function LaunchLab() {
         return;
       }
 
+      if (isMotherCodeRevealState()) {
+        ctx.save();
+        const g = axisMetrics();
+        const reveal = resolveOriginMotherCode();
+        const profile = reveal.mother.profile;
+        const definition = reveal.mother.definition;
+        const inT = smooth(0, 0.6, m.t);
+        const pulse = 0.72 + Math.sin(now * 2.1) * 0.1;
+        const centerX = m.w / 2;
+        const centerY = m.h * 0.52;
+
+        ctx.globalAlpha = inT;
+        const glow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.min(m.w, m.h) * 0.36);
+        glow.addColorStop(0, `rgba(255,247,228,${(0.14 + inT * 0.18 * pulse).toFixed(3)})`);
+        glow.addColorStop(0.48, `rgba(232,200,138,${(0.07 + inT * 0.12).toFixed(3)})`);
+        glow.addColorStop(1, "rgba(232,200,138,0)");
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, Math.min(m.w, m.h) * 0.36, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(232,200,138,0.24)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(g.railX0, g.railY);
+        ctx.lineTo(g.railX1, g.railY);
+        ctx.stroke();
+        for (let col = 0; col < g.cols; col++) {
+          const p = railPoint(col);
+          const lit = col / (g.cols - 1) <= m.railProgress;
+          ctx.fillStyle = `rgba(255,247,228,${lit ? "0.82" : "0.22"})`;
+          ctx.shadowColor = "rgba(255,247,228,0.34)";
+          ctx.shadowBlur = lit ? 10 : 3;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, lit ? 2.4 : 1.25, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        const railCursor = { x: lerp(g.railX0, g.railX1, m.railProgress), y: g.railY };
+        ctx.shadowColor = "rgba(255,247,228,0.72)";
+        ctx.shadowBlur = 14;
+        ctx.fillStyle = "rgba(255,247,228,0.94)";
+        ctx.beginPath();
+        ctx.arc(railCursor.x, railCursor.y, 4.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillStyle = "rgba(232,200,138,0.76)";
+        ctx.font = `650 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
+        ctx.fillText("母码正在显影", g.railX0, m.h * 0.12);
+        ctx.fillStyle = "rgba(255,247,228,0.96)";
+        ctx.font = `760 ${Math.min(30, m.w * 0.074)}px ${SANS}`;
+        ctx.fillText("你的原始坐标已经固定", g.railX0, m.h * 0.2);
+        ctx.fillStyle = "rgba(232,200,138,0.76)";
+        ctx.font = `650 ${Math.min(13, m.w * 0.034)}px ${SANS}`;
+        ctx.fillText("时序与方位正在生成", g.railX0, m.h * 0.275);
+        ctx.fillText("你的内在底码。", g.railX0, m.h * 0.315);
+
+        const cardX = g.railX0;
+        const cardY = m.h * 0.38;
+        const cardW = g.railX1 - g.railX0;
+        const cardH = Math.min(210, m.h * 0.28);
+        ctx.fillStyle = "rgba(255,247,228,0.045)";
+        ctx.strokeStyle = "rgba(232,200,138,0.24)";
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.roundRect?.(cardX, cardY, cardW, cardH, 18);
+        if (!ctx.roundRect) ctx.rect(cardX, cardY, cardW, cardH);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(232,200,138,0.76)";
+        ctx.font = `650 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
+        ctx.fillText("母码卡", cardX + 16, cardY + 30);
+        ctx.fillStyle = "rgba(255,247,228,0.98)";
+        ctx.font = `760 ${Math.min(28, m.w * 0.07)}px ${SANS}`;
+        ctx.fillText(`${definition.trigramSymbol} ${profile.motherCodeName}`, cardX + 16, cardY + 72);
+        ctx.fillStyle = "rgba(232,200,138,0.82)";
+        ctx.font = `650 ${Math.min(13, m.w * 0.034)}px ${SANS}`;
+        drawCanvasWrappedText(ctx, profile.unlockPotential ?? definition.assetSummary, cardX + 16, cardY + 106, cardW - 32, 18, 2);
+        ctx.fillStyle = "rgba(232,200,138,0.66)";
+        ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
+        ctx.fillText(`时序卦符：${reveal.chrono.lockPoint} · ${definition.trigramSymbol}${reveal.mother.trigram}`, cardX + 16, cardY + cardH - 48);
+        ctx.fillText(`方位落位：${reveal.geo.symbol} · ${reveal.geo.province}/${reveal.geo.city}`, cardX + 16, cardY + cardH - 22);
+
+        ctx.fillStyle = "rgba(232,200,138,0.52)";
+        ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
+        ctx.fillText("右滑进入现实压力", g.railX0, g.railY + 30);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "rgba(232,200,138,0.72)";
+        ctx.fillText("现实压力", g.railX1, g.railY - 18);
+        ctx.restore();
+        return;
+      }
+
       if (entryStaticActive) {
         ctx.save();
         const g = axisMetrics();
@@ -2064,6 +2238,23 @@ export function LaunchLab() {
         }
         return;
       }
+      if (m.state === STATE.MOTHER_CODE_REVEAL) {
+        m.dragging = true;
+        const g = axisMetrics();
+        const onHorizontal = Math.abs(y - g.railY) < 48 && x >= g.railX0 - 16 && x <= g.railX1 + 16;
+        m.dragAxis = onHorizontal ? "x" : null;
+        m.lastX = x;
+        m.lastY = y;
+        if (m.dragAxis === "x") {
+          m.railProgress = clamp((x - g.railX0) / (g.railX1 - g.railX0), 0, 1);
+          if (m.railProgress >= RAIL_COMMIT_THRESHOLD) {
+            openRealityPressureEntry();
+            m.dragging = false;
+            m.dragAxis = null;
+          }
+        }
+        return;
+      }
       if (m.state === STATE.PRESSURE_SEED_AXIS) {
         m.dragging = true;
         const g = axisMetrics();
@@ -2138,6 +2329,7 @@ export function LaunchLab() {
       if (!m.dragging || (
         m.state !== STATE.TIME_CALIBRATION &&
         m.state !== STATE.GEO_BIND &&
+        m.state !== STATE.MOTHER_CODE_REVEAL &&
         m.state !== STATE.ENTRY_STATIC_RENDER &&
         m.state !== STATE.PRESSURE_SEED_AXIS
       )) return;
@@ -2156,6 +2348,24 @@ export function LaunchLab() {
           m.lastX = x;
           if (m.railProgress >= RAIL_COMMIT_THRESHOLD) {
             openPressureSeedAxis();
+            m.dragging = false;
+            m.dragAxis = null;
+          }
+          audio.tick();
+          vibrate(6);
+        }
+        return;
+      }
+      if (m.state === STATE.MOTHER_CODE_REVEAL) {
+        if (m.dragAxis === null && Math.hypot(dx, dy) > 10) {
+          m.dragAxis = Math.abs(dx) >= Math.abs(dy) ? "x" : null;
+        }
+        if (m.dragAxis === "x") {
+          const g = axisMetrics();
+          m.railProgress = clamp((x - g.railX0) / (g.railX1 - g.railX0), 0, 1);
+          m.lastX = x;
+          if (m.railProgress >= RAIL_COMMIT_THRESHOLD) {
+            openRealityPressureEntry();
             m.dragging = false;
             m.dragAxis = null;
           }
@@ -2249,10 +2459,12 @@ export function LaunchLab() {
         m.railProgress >= RAIL_COMMIT_THRESHOLD &&
         (m.state === STATE.TIME_CALIBRATION ||
           m.state === STATE.GEO_BIND ||
+          m.state === STATE.MOTHER_CODE_REVEAL ||
           m.state === STATE.ENTRY_STATIC_RENDER) &&
         !m.clutched;
       if (shouldCommitOnRelease) {
         if (m.state === STATE.ENTRY_STATIC_RENDER) openPressureSeedAxis();
+        else if (m.state === STATE.MOTHER_CODE_REVEAL) openRealityPressureEntry();
         else commitCurrentDim();
       }
       m.dragging = false;
