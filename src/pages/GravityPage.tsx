@@ -237,53 +237,53 @@ type ExperienceState = Readonly<{
 }>;
 type ProductRuntimeDefinition = Readonly<{
   officialDefinition: string;
-  threeSecondModel: "PRESSURE → TRANSFORMATION → ASSET";
+  threeSecondModel: "压力种子已锁定 → 六维传导 → 惯性反应显影";
   experienceLoop: readonly [
-    "Enter pressure field",
-    "System detects behavioral state",
-    "User performs 6-step interaction cycle",
-    "System transforms internal state",
-    "System generates crystallized asset",
+    "压力种子已锁定",
+    "进入六维传导",
+    "读取惯性反应",
+    "完成六维显影",
+    "沉积为结晶",
   ];
   onboardingFlow: readonly [
-    "Enter your current state",
-    "System maps your pressure",
-    "You begin 6-step transformation",
-    "You receive crystallized asset",
+    "确认当前压力种子",
+    "进入六维传导",
+    "逐维读取惯性反应",
+    "完成后形成结晶",
   ];
   userPerception: readonly [
-    "internal pressure mirror",
-    "transformation engine",
-    "behavioral pressure map",
-    "collectible asset system",
+    "压力种子入口",
+    "六维传导场",
+    "惯性反应显影",
+    "结晶沉积过程",
   ];
-  positioning: "Deterministic consciousness transformation runtime system";
+  positioning: "压力种子六维传导系统";
 }>;
 
 const GUANYAO_PRODUCT_RUNTIME_DEFINITION = Object.freeze({
   officialDefinition:
-    "Guanyao is a deterministic behavioral runtime system that converts human pressure into structured consciousness transformation and crystallized digital assets.",
-  threeSecondModel: "PRESSURE → TRANSFORMATION → ASSET",
+    "观爻将已锁定的压力种子送入六维传导，读取现实压力下的惯性反应，并在完成后沉积为结晶。",
+  threeSecondModel: "压力种子已锁定 → 六维传导 → 惯性反应显影",
   experienceLoop: Object.freeze([
-    "Enter pressure field",
-    "System detects behavioral state",
-    "User performs 6-step interaction cycle",
-    "System transforms internal state",
-    "System generates crystallized asset",
+    "压力种子已锁定",
+    "进入六维传导",
+    "读取惯性反应",
+    "完成六维显影",
+    "沉积为结晶",
   ]),
   onboardingFlow: Object.freeze([
-    "Enter your current state",
-    "System maps your pressure",
-    "You begin 6-step transformation",
-    "You receive crystallized asset",
+    "确认当前压力种子",
+    "进入六维传导",
+    "逐维读取惯性反应",
+    "完成后形成结晶",
   ]),
   userPerception: Object.freeze([
-    "internal pressure mirror",
-    "transformation engine",
-    "behavioral pressure map",
-    "collectible asset system",
+    "压力种子入口",
+    "六维传导场",
+    "惯性反应显影",
+    "结晶沉积过程",
   ]),
-  positioning: "Deterministic consciousness transformation runtime system",
+  positioning: "压力种子六维传导系统",
 } satisfies ProductRuntimeDefinition);
 
 const VISUAL_TIMELINE_SYNC = Object.freeze({
@@ -512,9 +512,9 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
             ? "PRESSURE_AND_BEAST"
             : "PRESSURE_FIELD";
   const nodeCopy = {
-    title: `第 ${nodeNumber} / 6 步`,
-    text: "选择一个最小动作，让压力开始移动。",
-    actionText: "轻触光点，推进这一格。",
+    title: `第 ${nodeNumber} 维正在显影`,
+    text: "读取这一维在现实压力下的惯性反应。",
+    actionText: "轻触光点，读取这一维反应。",
   };
 
   if (stage === "CRYSTAL") {
@@ -523,11 +523,11 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       primaryFocus,
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
       headline: "结晶已经出现。",
-      supportingCopy: "这一轮压力已经穿过六步，正在形成结晶资产。",
-      pressureCopy: "压力已进入资产状态。",
-      beastCopy: "转化完成，状态稳定。",
+      supportingCopy: "这粒压力已经穿过六维，反应正在沉积成一枚结晶。",
+      pressureCopy: "压力种子已完成六维传导。",
+      beastCopy: "反应已稳定沉积。",
       nodeCopy,
-      crystalCopy: "这一局，已经开始结晶。",
+      crystalCopy: "这一轮反应，已经沉积为结晶。",
     });
   }
 
@@ -536,12 +536,12 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       stage,
       primaryFocus,
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
-      headline: "转化正在收束。",
-      supportingCopy: "六步即将完成，压力开始变成可保存的形状。",
-      pressureCopy: "压力正在进入转化末段。",
-      beastCopy: "转化正在趋稳。",
+      headline: "六维传导正在收束。",
+      supportingCopy: "反应即将完成显影，正在沉积成可保存的形状。",
+      pressureCopy: "压力种子正在进入传导末段。",
+      beastCopy: "惯性反应正在趋稳。",
       nodeCopy,
-      crystalCopy: "资产尚未生成。",
+      crystalCopy: "尚未形成结晶。",
     });
   }
 
@@ -550,12 +550,12 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       stage,
       primaryFocus,
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
-      headline: "进入六步行动。",
-      supportingCopy: "每一次轻触，只推进一个最小选择。",
-      pressureCopy: "压力成为行动入口。",
-      beastCopy: "状态正在跟随行动变化。",
+      headline: "进入六维传导。",
+      supportingCopy: "每一次轻触，只读取一维惯性反应。",
+      pressureCopy: "压力种子正在穿过当前维度。",
+      beastCopy: "惯性反应正在随触点显影。",
       nodeCopy,
-      crystalCopy: "继续推进，结晶会自然出现。",
+      crystalCopy: "完成六维后，反应会沉积成一枚结晶。",
     });
   }
 
@@ -564,12 +564,12 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       stage,
       primaryFocus,
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
-      headline: "压力已识别。",
-      supportingCopy: "它不是评判，只是把压力转成可推进的状态。",
-      pressureCopy: "压力已经显影。",
-      beastCopy: "状态已识别。",
+      headline: "压力种子已锁定。",
+      supportingCopy: "接下来读取它穿过身体、情绪、思想、行动、记忆与动机时的反应。",
+      pressureCopy: "压力种子已锁定。",
+      beastCopy: "六维传导即将展开。",
       nodeCopy,
-      crystalCopy: "完成六步后生成资产。",
+      crystalCopy: "完成六维后，反应会沉积成一枚结晶。",
     });
   }
 
@@ -577,12 +577,12 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
     stage,
     primaryFocus,
     loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
-    headline: "压力正在进入。",
-    supportingCopy: "先识别它，再做一个最小选择。",
-    pressureCopy: "压力正在显影。",
-    beastCopy: "状态即将被识别。",
+    headline: "这粒压力正在进入六维传导。",
+    supportingCopy: "系统开始读取你在现实压力下的惯性反应。",
+    pressureCopy: "压力种子正在进入。",
+    beastCopy: "惯性反应即将显影。",
     nodeCopy,
-    crystalCopy: "资产尚未生成。",
+    crystalCopy: "尚未形成结晶。",
   });
 }
 
@@ -1048,7 +1048,7 @@ function CoreStarInteractionLayer({
         <span
           key={`core-${index}`}
           role="button"
-          aria-label="轻触光点，推进当前一步。"
+          aria-label="轻触光点，读取这一维反应。"
           tabIndex={0}
           onClick={onCoreStarClick}
           onKeyDown={(event) => {
@@ -1167,7 +1167,7 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, o
   return (
     <div
       role="group"
-      aria-label="压力转化与六步推进入口。"
+      aria-label="压力种子六维传导入口。"
       data-visual-primitive="BEAST"
       data-visual-layer="beast-state-container"
       style={{
@@ -1269,7 +1269,7 @@ function BaiHuConstellationLayer({ toneColor, narrativePhase, activeNodeIndex, o
           textShadow: `0 0 10px rgba(${toneColor},0.16)`,
         }}
       >
-        轻触光点，推进当前一步。
+        轻触光点，读取这一维反应。
       </span>
 
       <span
@@ -1358,14 +1358,14 @@ function CosmicBotanicsField({
 
   return (
     <section
-      aria-label="压力到结晶的六步转化区"
+      aria-label="压力种子进入六维传导区"
       data-experience-layer="pure-visual-projection"
       data-visual-grammar="BEAST_PRESSURE_DIMENSION_PARTICLE"
       data-visual-depth-state={visualState.visualDepthState}
       data-visual-composition={visualState.spatialComposition}
       data-visual-timeline={visualState.timeline.current}
       data-visual-focal-dimension={visualState.focalDimension}
-      data-experience-loop="PRESSURE_AWARENESS_ACTION_TRANSFORMATION_CRYSTAL"
+      data-experience-loop="压力种子_六维传导_惯性显影_结晶"
       data-experience-stage={experienceState.stage}
       data-experience-focus={experienceState.primaryFocus}
       style={{
