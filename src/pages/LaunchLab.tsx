@@ -1749,11 +1749,12 @@ export function LaunchLab() {
   return (
     <GyMobilePreviewFrame background="#070512">
       <div
-        className={`light-beast-hitbox${SNAPSHOT_MODE ? " snapshot-mode" : ""}`}
+        className={`light-beast-hitbox scene-${scene.toLowerCase()}${SNAPSHOT_MODE ? " snapshot-mode" : ""}`}
         style={{ position: "relative", width: "100%", height: "100%" }}
       >
         <canvas
           ref={canvasRef}
+          className="light-field"
           data-launch-interaction-state={interactionState}
           data-launch-scene={scene}
           data-launch-timeline={timeline[scene]}
@@ -1803,6 +1804,17 @@ export function LaunchLab() {
             inset: 0;
             pointer-events: none;
           }
+          .light-field {
+            transform-origin: center center;
+            transition:
+              transform 520ms cubic-bezier(0.16, 1, 0.3, 1),
+              filter 520ms ease;
+            will-change: transform, filter;
+          }
+          .scene-node_2 .light-field {
+            transform: scale(0.985) rotate(-0.4deg);
+            filter: blur(0.4px) contrast(1.05);
+          }
           .gy-timeline-layer {
             position: absolute;
             inset: 0;
@@ -1817,19 +1829,27 @@ export function LaunchLab() {
             text-align: center;
             letter-spacing: 0;
             opacity: 0;
-            transform: translateY(6px);
-            transition: opacity 420ms ease, transform 420ms ease;
-            will-change: opacity, transform;
+            transform: translateY(6px) scale(0.99);
+            filter: blur(0.8px);
+            transition:
+              opacity 420ms ease,
+              transform 520ms cubic-bezier(0.16, 1, 0.3, 1),
+              filter 520ms ease,
+              letter-spacing 520ms ease;
+            will-change: opacity, transform, filter;
           }
           .gy-timeline-layer.on {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
+            filter: blur(0);
           }
           .gy-timeline-layer.off {
             opacity: 0;
-            transform: translateY(6px);
+            transform: translateY(6px) scale(0.99);
+            filter: blur(0.8px);
           }
-          .snapshot-mode .gy-timeline-layer {
+          .snapshot-mode .gy-timeline-layer,
+          .snapshot-mode .light-field {
             transition: none;
           }
           .entry-layer {
@@ -1842,6 +1862,28 @@ export function LaunchLab() {
             bottom: 18%;
             height: 18%;
             color: rgba(232,200,138,0.9);
+          }
+          .node1-layer.on {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            filter: blur(0);
+          }
+          .node1-layer.off {
+            opacity: 0;
+            transform: scale(0.96) translateY(8px);
+            filter: blur(2px);
+          }
+          .node2-layer.off {
+            opacity: 0;
+            transform: scale(1.025) translateY(-8px) skewX(-0.6deg);
+            filter: blur(1.5px);
+            letter-spacing: 0.02em;
+          }
+          .node2-layer.on {
+            opacity: 1;
+            transform: scale(1) translateY(0) skewX(0);
+            filter: blur(0);
+            letter-spacing: 0.04em;
           }
           .handoff-layer small {
             display: block;
