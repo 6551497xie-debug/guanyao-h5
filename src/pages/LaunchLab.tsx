@@ -846,6 +846,7 @@ export function LaunchLab() {
       chronoStep: 0,
       geo: { provinceIndex: DEFAULT_PROVINCE_INDEX >= 0 ? DEFAULT_PROVINCE_INDEX : 0, cityIndex: DEFAULT_CITY_INDEX >= 0 ? DEFAULT_CITY_INDEX : 0 },
       geoStep: 0,
+      originMotherContextPersisted: false,
       dialFloat: 1995,
       railProgress: 0,
       clutched: false,
@@ -1086,6 +1087,57 @@ export function LaunchLab() {
         },
       });
     }
+    function persistOriginMotherContext(reveal: GeoChronoMotherFusionResult) {
+      if (m.pendingAxisMode !== "NEW_USER" || m.originMotherContextPersisted) return;
+
+      const { profile, definition, trigram } = reveal.mother;
+      const motherCodeProfile = {
+        ...profile,
+        trigram,
+        lowerTrigram: profile.lowerTrigram ?? trigram,
+        trigramSymbol: definition.trigramSymbol,
+        trigramImage: definition.trigramImage,
+        baseDrive: definition.baseDrive,
+        defaultReactionChain: definition.defaultReactionChain,
+        shadowInertia: definition.shadowInertia,
+        personalityAsset: definition.personalityAsset,
+        assetSummary: definition.assetSummary,
+      };
+      const originMotherContext = {
+        source: "launch-lab",
+        createdAt: new Date().toISOString(),
+        geo: reveal.geo,
+        chrono: reveal.chrono,
+        mother_seed: reveal.mother_seed,
+        mother: reveal.mother,
+        fourBeast: reveal.geo.symbol,
+        trigram,
+      };
+      const personaOutputSnapshot = {
+        motherCode: profile.motherCodeName,
+        motherCodeName: profile.motherCodeName,
+        motherCodeTitle: profile.motherCodeTitle,
+        trigram,
+        trigramSymbol: definition.trigramSymbol,
+        direction: reveal.geo.symbol,
+        fourBeast: reveal.geo.symbol,
+        chronoLockPoint: reveal.chrono.lockPoint,
+        geoProvince: reveal.geo.province,
+        starOrigin: {
+          index: Math.max(0, NODES.findIndex((_, index) => reveal.starbeast.primaryNode.endsWith(String(index + 1).padStart(2, "0")))),
+          originLightTrace: reveal.starbeast.originLightTrace,
+        },
+      };
+
+      try {
+        window.localStorage.setItem("guanyao:motherCodeProfile", JSON.stringify(motherCodeProfile));
+        window.localStorage.setItem("guanyao:originMotherContext", JSON.stringify(originMotherContext));
+        window.localStorage.setItem("guanyao:personaOutputSnapshot", JSON.stringify(personaOutputSnapshot));
+        m.originMotherContextPersisted = true;
+      } catch (error) {
+        console.warn("[LaunchLab] failed to persist origin mother context", error);
+      }
+    }
     function buildEntryTransitionSnapshot(): EntryTransitionSnapshot {
       return {
         chrono: "光痕已显现",
@@ -1113,6 +1165,7 @@ export function LaunchLab() {
     function resetOriginTuningFlow() {
       m.chronoStep = 0;
       m.geoStep = 0;
+      m.originMotherContextPersisted = false;
       m.railProgress = 0;
       m.phaseX = 0;
       m.dragging = false;
@@ -1154,6 +1207,8 @@ export function LaunchLab() {
       }, ENTRY_HANDOFF_DELAY_MS);
     }
     function openMotherCodeReveal() {
+      const originMother = resolveOriginMotherCode();
+      persistOriginMotherContext(originMother);
       m.railProgress = 0;
       m.phaseX = 0;
       m.dragging = false;
