@@ -10,11 +10,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  drawEntryCardRenderer,
-  getEntryCardRendererRect,
-  type EntryCardRendererOptions,
-} from "../components/entry/EntryCardRenderer";
+import type { EntryCardRendererOptions } from "../components/entry/EntryCardRenderer";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import type { PressureSeedCrossAxisSeed } from "./PressureSeedCrossAxisPage";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
@@ -869,6 +865,11 @@ export function LaunchLab() {
           commitPressureSeedCapture(buildDeterministicPressureSeedCandidate());
           return;
         }
+        m.railProgress = 0;
+        m.phaseX = 0;
+        m.dragging = false;
+        m.dragAxis = null;
+        m.clutched = false;
         m.state = STATE.ENTRY_STATIC_RENDER;
         m.t = 0;
       }, ENTRY_HANDOFF_DELAY_MS);
@@ -1609,20 +1610,65 @@ export function LaunchLab() {
       }
 
       if (entryStaticActive) {
-        const snapshot = m.entryTransitionSnapshot ?? buildEntryTransitionSnapshot();
-        drawEntryCardRenderer({
-          ctx,
-          snapshot,
-          width: m.w,
-          height: m.h,
-          side: m.entryCardSide,
-          flipProgress: m.entryCardFlipT,
-        });
         ctx.save();
-        ctx.textAlign = "center";
-        ctx.fillStyle = "rgba(232,200,138,0.74)";
-        ctx.font = `650 ${Math.min(13, m.w * 0.034)}px ${SANS}`;
-        ctx.fillText("点击光兽", m.w / 2, m.h * 0.9);
+        const g = axisMetrics();
+        const centerX = m.w / 2;
+        const centerY = m.h * 0.48;
+        const inT = smooth(0, 0.6, m.t);
+        const pulse = 0.72 + Math.sin(now * 2.1) * 0.1;
+        const glow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.min(m.w, m.h) * 0.34);
+        glow.addColorStop(0, `rgba(255,247,228,${(0.14 + inT * 0.16 * pulse).toFixed(3)})`);
+        glow.addColorStop(0.46, `rgba(232,200,138,${(0.07 + inT * 0.09).toFixed(3)})`);
+        glow.addColorStop(1, "rgba(232,200,138,0)");
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, Math.min(m.w, m.h) * 0.34, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.globalAlpha = inT;
+        ctx.strokeStyle = "rgba(232,200,138,0.34)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(g.railX0, g.railY);
+        ctx.lineTo(g.railX1, g.railY);
+        ctx.stroke();
+        for (let col = 0; col < g.cols; col++) {
+          const p = railPoint(col);
+          const lit = col / (g.cols - 1) <= m.railProgress;
+          ctx.fillStyle = `rgba(255,247,228,${lit ? "0.82" : "0.26"})`;
+          ctx.shadowColor = "rgba(255,247,228,0.36)";
+          ctx.shadowBlur = lit ? 10 : 3;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, lit ? 2.4 : 1.35, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        const railCursor = { x: lerp(g.railX0, g.railX1, m.railProgress), y: g.railY };
+        ctx.shadowColor = "rgba(255,247,228,0.78)";
+        ctx.shadowBlur = 16;
+        ctx.fillStyle = "rgba(255,247,228,0.96)";
+        ctx.beginPath();
+        ctx.arc(railCursor.x, railCursor.y, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillStyle = "rgba(232,200,138,0.76)";
+        ctx.font = `650 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
+        ctx.fillText("现实压力入口", g.railX0, m.h * 0.18);
+        ctx.fillStyle = "rgba(255,247,228,0.96)";
+        ctx.font = `760 ${Math.min(34, m.w * 0.082)}px ${SANS}`;
+        ctx.fillText("现实压力开始聚合", g.railX0, m.h * 0.3);
+        ctx.fillStyle = "rgba(232,200,138,0.82)";
+        ctx.font = `650 ${Math.min(15, m.w * 0.038)}px ${SANS}`;
+        ctx.fillText("系统将从你的当前处境中", g.railX0, m.h * 0.4);
+        ctx.fillText("捕获三粒压力种子。", g.railX0, m.h * 0.445);
+        ctx.fillStyle = "rgba(232,200,138,0.52)";
+        ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
+        ctx.fillText("右滑进入压力种子", g.railX0, g.railY + 30);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "rgba(232,200,138,0.72)";
+        ctx.fillText("压力种子", g.railX1, g.railY - 18);
         ctx.restore();
         return;
       }
@@ -1718,16 +1764,19 @@ export function LaunchLab() {
       const x = e.clientX - r.left;
       const y = e.clientY - r.top;
       if (m.state === STATE.ENTRY_STATIC_RENDER) {
-        const rect = getEntryCardRendererRect(m.w, m.h);
-        const inCard = x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
-        if (inCard && m.entryCardFlipT >= 1) {
-          m.entryCardFlipTo = m.entryCardSide === "front" ? "back" : "front";
-          m.entryCardFlipT = 0;
-          audio.tick();
-          vibrate(8);
-        }
-        if (!inCard && m.entryCardFlipT >= 1) {
-          commitPressureSeedCapture(buildDeterministicPressureSeedCandidate());
+        m.dragging = true;
+        const g = axisMetrics();
+        const onHorizontal = Math.abs(y - g.railY) < 48 && x >= g.railX0 - 16 && x <= g.railX1 + 16;
+        m.dragAxis = onHorizontal ? "x" : null;
+        m.lastX = x;
+        m.lastY = y;
+        if (m.dragAxis === "x") {
+          m.railProgress = clamp((x - g.railX0) / (g.railX1 - g.railX0), 0, 1);
+          if (m.railProgress >= RAIL_COMMIT_THRESHOLD) {
+            commitPressureSeedCapture(buildDeterministicPressureSeedCandidate());
+            m.dragging = false;
+            m.dragAxis = null;
+          }
         }
         return;
       }
@@ -1768,12 +1817,30 @@ export function LaunchLab() {
       }
     }
     function onMove(e: PointerEvent) {
-      if (!m.dragging || (m.state !== STATE.TIME_CALIBRATION && m.state !== STATE.GEO_BIND)) return;
+      if (!m.dragging || (m.state !== STATE.TIME_CALIBRATION && m.state !== STATE.GEO_BIND && m.state !== STATE.ENTRY_STATIC_RENDER)) return;
       const r = canvas!.getBoundingClientRect();
       const x = e.clientX - r.left;
       const y = e.clientY - r.top;
       const dx = x - m.lastX;
       const dy = y - m.lastY;
+      if (m.state === STATE.ENTRY_STATIC_RENDER) {
+        if (m.dragAxis === null && Math.hypot(dx, dy) > 10) {
+          m.dragAxis = Math.abs(dx) >= Math.abs(dy) ? "x" : null;
+        }
+        if (m.dragAxis === "x") {
+          const g = axisMetrics();
+          m.railProgress = clamp((x - g.railX0) / (g.railX1 - g.railX0), 0, 1);
+          m.lastX = x;
+          if (m.railProgress >= RAIL_COMMIT_THRESHOLD) {
+            commitPressureSeedCapture(buildDeterministicPressureSeedCandidate());
+            m.dragging = false;
+            m.dragAxis = null;
+          }
+          audio.tick();
+          vibrate(6);
+        }
+        return;
+      }
       if (m.dragAxis === null && Math.hypot(dx, dy) > 10) {
         m.dragAxis = Math.abs(dx) >= Math.abs(dy) ? "x" : "y";
       }
@@ -1821,9 +1888,12 @@ export function LaunchLab() {
       const shouldCommitOnRelease =
         m.dragAxis === "x" &&
         m.railProgress >= RAIL_COMMIT_THRESHOLD &&
-        (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND) &&
+        (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND || m.state === STATE.ENTRY_STATIC_RENDER) &&
         !m.clutched;
-      if (shouldCommitOnRelease) commitCurrentDim();
+      if (shouldCommitOnRelease) {
+        if (m.state === STATE.ENTRY_STATIC_RENDER) commitPressureSeedCapture(buildDeterministicPressureSeedCandidate());
+        else commitCurrentDim();
+      }
       m.dragging = false;
       if (m.dragAxis === "y" && m.verticalDragMoved) m.verticalTuned = true;
       m.dragAxis = null;
