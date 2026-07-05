@@ -137,6 +137,7 @@ type LaunchState =
   | "display_lock"
   | "entry_pre_collapse"
   | "entry_light_convergence"
+  | "pressure_seed_axis"
   | "entry_static_render";
 
 const STATE = {
@@ -152,6 +153,7 @@ const STATE = {
   DISPLAY_LOCK: "display_lock",
   ENTRY_PRE_COLLAPSE: "entry_pre_collapse",
   ENTRY_LIGHT_CONVERGENCE: "entry_light_convergence",
+  PRESSURE_SEED_AXIS: "pressure_seed_axis",
   ENTRY_STATIC_RENDER: "entry_static_render",
 } as const;
 
@@ -377,19 +379,47 @@ function makeAudio() {
   return { ensure, gather, form, tick };
 }
 
-function buildDeterministicPressureSeedCandidate(): PressureSeedCrossAxisSeed | undefined {
-  const triplet = getPressureSeedSceneTriplet();
-  const seed = triplet.seeds[0];
-  if (!seed) return undefined;
+function buildDeterministicPressureSeedCandidate(excludeSeedIds: string[] = []): PressureSeedCrossAxisSeed | undefined {
+  return buildDeterministicPressureSeedCandidates(excludeSeedIds)[0];
+}
 
-  return {
+function buildDeterministicPressureSeedCandidates(excludeSeedIds: string[] = []): PressureSeedCrossAxisSeed[] {
+  const triplet = getPressureSeedSceneTriplet({ excludeSeedIds });
+  return triplet.seeds.slice(0, 3).map((seed, index) => ({
     id: seed.id,
-    num: "01",
+    num: pad2(index + 1),
     main: seed.surface,
     sub: seed.shell,
     seed,
-    seedIndex: 1 as PressureSeedCrossAxisSeed["seedIndex"],
-  };
+    seedIndex: (index + 1) as PressureSeedCrossAxisSeed["seedIndex"],
+  }));
+}
+
+function drawCanvasWrappedText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+  maxLines = 2,
+) {
+  let line = "";
+  let yy = y;
+  let lines = 0;
+  for (const ch of text) {
+    const test = line + ch;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      ctx.fillText(line, x, yy);
+      line = ch;
+      yy += lineHeight;
+      lines += 1;
+      if (lines >= maxLines) return;
+    } else {
+      line = test;
+    }
+  }
+  if (line && lines < maxLines) ctx.fillText(line, x, yy);
 }
 
 export function LaunchLab() {
@@ -650,6 +680,13 @@ export function LaunchLab() {
       node1State: null as null | typeof Node1State,
       node1T: 0,
       pendingAxisMode: "NEW_USER" as EntryHandoffMode,
+      pressureSeeds: buildDeterministicPressureSeedCandidates(),
+      pressureSeedIndex: 1,
+      pressureSeedExcludedIds: [] as string[],
+      pressureSeedCoordinateIndex: 10,
+      pressureSeedRound: 0,
+      pressureSeedLocked: false,
+      pressureSeedGroupPulse: 0,
       fps: 0,
       fpsAcc: 0,
       fpsN: 0,
@@ -862,7 +899,14 @@ export function LaunchLab() {
       m.handoffStarted = true;
       window.setTimeout(() => {
         if (m.pendingAxisMode === "OLD_USER") {
-          commitPressureSeedCapture(buildDeterministicPressureSeedCandidate());
+          m.railProgress = 0;
+          m.phaseX = 0;
+          m.dragging = false;
+          m.dragAxis = null;
+          m.clutched = false;
+          m.pressureSeedIndex = 1;
+          m.state = STATE.PRESSURE_SEED_AXIS;
+          m.t = 0;
           return;
         }
         m.railProgress = 0;
@@ -916,6 +960,54 @@ export function LaunchLab() {
       vibrate([0, 18, 24]);
       blockLegacyEntryExecution();
       triggerEntryTransition();
+    }
+    function openPressureSeedAxis() {
+      m.railProgress = 0;
+      m.phaseX = 0;
+      m.dragging = false;
+      m.dragAxis = null;
+      m.clutched = false;
+      m.pressureSeedExcludedIds = [];
+      m.pressureSeeds = buildDeterministicPressureSeedCandidates();
+      m.pressureSeedIndex = 1;
+      m.pressureSeedCoordinateIndex = 10;
+      m.pressureSeedRound = 0;
+      m.pressureSeedLocked = false;
+      m.railProgress = 0.5;
+      m.pressureSeedGroupPulse = 0;
+      m.state = STATE.PRESSURE_SEED_AXIS;
+      m.t = 0;
+      audio.form();
+      vibrate([0, 12, 18]);
+    }
+    function loadPressureSeedTriplet(nextCoordinateIndex: number) {
+      const currentIds = m.pressureSeeds.map((seed) => seed.id);
+      const excluded = Array.from(new Set([...m.pressureSeedExcludedIds, ...currentIds]));
+      let nextSeeds = buildDeterministicPressureSeedCandidates(excluded);
+      const sameGroup = nextSeeds.map((seed) => seed.id).join("|") === currentIds.join("|");
+      if (sameGroup && excluded.length > 0) {
+        nextSeeds = buildDeterministicPressureSeedCandidates();
+        m.pressureSeedExcludedIds = [];
+        m.pressureSeedRound += 1;
+      } else {
+        m.pressureSeedExcludedIds = excluded;
+      }
+      if (nextSeeds.length > 0) {
+        m.pressureSeeds = nextSeeds;
+        m.pressureSeedIndex = Math.min(1, nextSeeds.length - 1);
+        m.pressureSeedCoordinateIndex = clamp(nextCoordinateIndex, 0, 20);
+        m.pressureSeedLocked = false;
+        m.railProgress = 0.5;
+        m.phaseX = 0;
+        m.pressureSeedGroupPulse = 1;
+        audio.tick();
+        vibrate(10);
+      }
+    }
+    function enterFocusedPressureSeed() {
+      if (!m.pressureSeedLocked) return;
+      const selected = m.pressureSeeds[m.pressureSeedIndex] ?? m.pressureSeeds[0] ?? buildDeterministicPressureSeedCandidate();
+      commitPressureSeedCapture(selected);
     }
     function commitCurrentDim() {
       if (m.clutched) return;
@@ -1070,6 +1162,9 @@ export function LaunchLab() {
         m.entryCardFlipT = Math.min(1, m.entryCardFlipT + dt * 2.6);
         if (prev < 0.5 && m.entryCardFlipT >= 0.5) m.entryCardSide = m.entryCardFlipTo;
       }
+      if (m.pressureSeedGroupPulse > 0) {
+        m.pressureSeedGroupPulse = Math.max(0, m.pressureSeedGroupPulse - dt * 3.4);
+      }
       switch (m.state) {
         case STATE.STARFIELD_IDLE: {
           if (!m.pulsed && m.t > 0.16) {
@@ -1164,6 +1259,9 @@ export function LaunchLab() {
             m.state = STATE.ENTRY_STATIC_RENDER;
             m.t = 0;
           }
+          break;
+        }
+        case STATE.PRESSURE_SEED_AXIS: {
           break;
         }
         case STATE.ENTRY_STATIC_RENDER: {
@@ -1609,6 +1707,136 @@ export function LaunchLab() {
         ctx.restore();
       }
 
+      if (m.state === STATE.PRESSURE_SEED_AXIS) {
+        ctx.save();
+        const g = axisMetrics();
+        const inT = smooth(0, 0.55, m.t);
+        const centerX = g.axisX;
+        const centerY = m.h * 0.5;
+        const seedY = [m.h * 0.36, centerY, m.h * 0.64];
+        const selected = clamp(m.pressureSeedIndex, 0, 2);
+        const selectedSeed = m.pressureSeeds[selected] ?? m.pressureSeeds[0];
+        const pulse = 0.72 + Math.sin(now * 2.3) * 0.1;
+        const groupPulse = smooth(0, 1, m.pressureSeedGroupPulse);
+        const coordY = lerp(g.axisTop, g.axisBottom, m.pressureSeedCoordinateIndex / 20);
+        const railStops = [0.18, 0.5, 0.82];
+
+        ctx.globalAlpha = inT;
+        const glow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.min(m.w, m.h) * 0.34);
+        glow.addColorStop(0, `rgba(255,247,228,${(0.13 + pulse * 0.11).toFixed(3)})`);
+        glow.addColorStop(0.48, "rgba(232,200,138,0.08)");
+        glow.addColorStop(1, "rgba(232,200,138,0)");
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, Math.min(m.w, m.h) * 0.34, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(232,200,138,0.48)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(g.axisX, g.axisTop);
+        ctx.lineTo(g.axisX, g.axisBottom);
+        ctx.stroke();
+        for (let row = 0; row <= 20; row++) {
+          const y = lerp(g.axisTop, g.axisBottom, row / 20);
+          const activeCoord = row === m.pressureSeedCoordinateIndex;
+          ctx.fillStyle = activeCoord ? "rgba(255,247,228,0.92)" : "rgba(232,200,138,0.24)";
+          ctx.shadowColor = activeCoord ? "rgba(255,247,228,0.7)" : "rgba(232,200,138,0.2)";
+          ctx.shadowBlur = activeCoord ? 13 + groupPulse * 8 : 3;
+          ctx.beginPath();
+          ctx.arc(g.axisX, y, activeCoord ? 3.8 + groupPulse * 1.2 : row % 2 === 0 ? 1.45 : 0.9, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = `rgba(255,247,228,${(0.1 + groupPulse * 0.42).toFixed(3)})`;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(g.axisX - 10, coordY);
+        ctx.lineTo(g.axisX + 10, coordY);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(g.railX0, g.railY);
+        ctx.lineTo(g.railX1, g.railY);
+        ctx.stroke();
+
+        railStops.forEach((stop, index) => {
+          const p = { x: lerp(g.railX0, g.railX1, stop), y: g.railY };
+          const active = index === selected;
+          const locked = active && m.pressureSeedLocked;
+          ctx.fillStyle = locked ? "rgba(255,247,228,0.98)" : active ? "rgba(255,247,228,0.78)" : "rgba(232,200,138,0.28)";
+          ctx.shadowColor = locked ? "rgba(255,247,228,0.86)" : active ? "rgba(255,247,228,0.42)" : "rgba(232,200,138,0.2)";
+          ctx.shadowBlur = locked ? 18 : active ? 10 : 4;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, locked ? 5.2 : active ? 4.2 : 2.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.textAlign = "center";
+          ctx.fillStyle = locked ? "rgba(255,247,228,0.8)" : "rgba(232,200,138,0.46)";
+          ctx.font = `600 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
+          ctx.fillText(`${index + 1}`, p.x, p.y + 20);
+        });
+        ctx.shadowBlur = 0;
+
+        m.pressureSeeds.forEach((seed, index) => {
+          const y = seedY[index] ?? centerY;
+          const active = index === selected;
+          const confirmed = active && m.pressureSeedLocked;
+          const x = active ? g.railX0 : g.railX0 + 16;
+          const dotX = g.axisX;
+          const seedPulse = groupPulse * (index === 1 ? 0.18 : 0.12);
+          ctx.fillStyle = active ? "rgba(255,247,228,0.96)" : `rgba(232,200,138,${(0.38 + seedPulse).toFixed(3)})`;
+          ctx.shadowColor = active ? "rgba(255,247,228,0.82)" : "rgba(232,200,138,0.28)";
+          ctx.shadowBlur = confirmed ? 24 : active ? 16 + groupPulse * 10 : 6 + groupPulse * 5;
+          ctx.beginPath();
+          ctx.arc(dotX, y, confirmed ? 8.2 : active ? 5.4 : 3.2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          ctx.textAlign = "left";
+          ctx.textBaseline = "alphabetic";
+          ctx.fillStyle = active ? "rgba(232,200,138,0.9)" : "rgba(232,200,138,0.42)";
+          ctx.font = `650 ${active ? Math.min(12, m.w * 0.031) : Math.min(10, m.w * 0.027)}px ${MONO}`;
+          ctx.fillText(active ? confirmed ? "中州已锁定 · 点击进入" : "横轴锁定中州" : `压力 ${index + 1}`, x, y - (active ? 44 : 18));
+          ctx.fillStyle = active ? "rgba(255,247,228,0.92)" : "rgba(255,247,228,0.48)";
+          ctx.font = `680 ${active ? Math.min(17, m.w * 0.042) : Math.min(12, m.w * 0.032)}px ${SANS}`;
+          drawCanvasWrappedText(ctx, seed.main, x, y - (active ? 20 : 2), active ? m.w * 0.68 : m.w * 0.5, active ? 24 : 17, active ? 2 : 1);
+          if (active) {
+            ctx.fillStyle = "rgba(232,200,138,0.66)";
+            ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${SANS}`;
+            drawCanvasWrappedText(ctx, seed.sub, x, y + 34, m.w * 0.66, 18, 2);
+          }
+        });
+
+        const railCursor = { x: lerp(g.railX0, g.railX1, m.railProgress), y: g.railY };
+        ctx.shadowColor = m.pressureSeedLocked ? "rgba(255,247,228,0.78)" : "rgba(232,200,138,0.42)";
+        ctx.shadowBlur = m.pressureSeedLocked ? 16 : 9;
+        ctx.fillStyle = m.pressureSeedLocked ? "rgba(255,247,228,0.96)" : "rgba(232,200,138,0.72)";
+        ctx.beginPath();
+        ctx.arc(railCursor.x, railCursor.y, m.pressureSeedLocked ? 4.8 : 3.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.textAlign = "left";
+        ctx.fillStyle = "rgba(232,200,138,0.76)";
+        ctx.font = `650 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
+        ctx.fillText("压力种子轴", g.railX0, m.h * 0.12);
+        ctx.fillStyle = "rgba(255,247,228,0.96)";
+        ctx.font = `760 ${Math.min(28, m.w * 0.072)}px ${SANS}`;
+        ctx.fillText("现实压力正在成形", g.railX0, m.h * 0.19);
+        ctx.fillStyle = "rgba(232,200,138,0.72)";
+        ctx.font = `650 ${Math.min(13, m.w * 0.034)}px ${SANS}`;
+        ctx.fillText("纵轴 21 个星光坐标，每格调取三粒。", g.railX0, m.h * 0.245);
+        ctx.fillStyle = "rgba(232,200,138,0.54)";
+        ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
+        ctx.fillText(`当前坐标 ${pad2(m.pressureSeedCoordinateIndex + 1)} / 21 · 第 ${m.pressureSeedRound + 1} 轮`, g.railX0, m.h * 0.295);
+        ctx.fillText(m.pressureSeedLocked ? "点击中州进入下一屏" : "横轴三光标锁定一粒", g.railX0, g.railY + 30);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "rgba(232,200,138,0.72)";
+        ctx.fillText(m.pressureSeedLocked ? "已锁定" : "三选一", g.railX1, g.railY - 18);
+        ctx.restore();
+        return;
+      }
+
       if (entryStaticActive) {
         ctx.save();
         const g = axisMetrics();
@@ -1773,10 +2001,40 @@ export function LaunchLab() {
         if (m.dragAxis === "x") {
           m.railProgress = clamp((x - g.railX0) / (g.railX1 - g.railX0), 0, 1);
           if (m.railProgress >= RAIL_COMMIT_THRESHOLD) {
-            commitPressureSeedCapture(buildDeterministicPressureSeedCandidate());
+            openPressureSeedAxis();
             m.dragging = false;
             m.dragAxis = null;
           }
+        }
+        return;
+      }
+      if (m.state === STATE.PRESSURE_SEED_AXIS) {
+        m.dragging = true;
+        const g = axisMetrics();
+        const seedY = [m.h * 0.36, m.h * 0.5, m.h * 0.64];
+        const selectedSeedY = seedY[m.pressureSeedIndex] ?? seedY[1]!;
+        const centerHit = m.pressureSeedLocked && Math.abs(y - selectedSeedY) < 64 && x >= g.railX0 - 12 && x <= g.railX1 + 18;
+        if (centerHit) {
+          enterFocusedPressureSeed();
+          m.dragging = false;
+          m.dragAxis = null;
+          return;
+        }
+        const onHorizontal = Math.abs(y - g.railY) < 48 && x >= g.railX0 - 16 && x <= g.railX1 + 16;
+        const onVertical = Math.abs(x - g.axisX) < 58 && y >= g.axisTop - 18 && y <= g.axisBottom + 18;
+        m.dragAxis = onHorizontal ? "x" : onVertical ? "y" : null;
+        m.lastX = x;
+        m.lastY = y;
+        if (m.dragAxis === "x") {
+          const railStops = [0.18, 0.5, 0.82];
+          const progress = clamp((x - g.railX0) / (g.railX1 - g.railX0), 0, 1);
+          const nearestIndex = railStops.reduce((best, stop, index) =>
+            Math.abs(stop - progress) < Math.abs(railStops[best]! - progress) ? index : best, 0);
+          m.railProgress = railStops[nearestIndex]!;
+          m.pressureSeedIndex = nearestIndex;
+          m.pressureSeedLocked = true;
+          audio.tick();
+          vibrate(8);
         }
         return;
       }
@@ -1817,7 +2075,12 @@ export function LaunchLab() {
       }
     }
     function onMove(e: PointerEvent) {
-      if (!m.dragging || (m.state !== STATE.TIME_CALIBRATION && m.state !== STATE.GEO_BIND && m.state !== STATE.ENTRY_STATIC_RENDER)) return;
+      if (!m.dragging || (
+        m.state !== STATE.TIME_CALIBRATION &&
+        m.state !== STATE.GEO_BIND &&
+        m.state !== STATE.ENTRY_STATIC_RENDER &&
+        m.state !== STATE.PRESSURE_SEED_AXIS
+      )) return;
       const r = canvas!.getBoundingClientRect();
       const x = e.clientX - r.left;
       const y = e.clientY - r.top;
@@ -1832,12 +2095,42 @@ export function LaunchLab() {
           m.railProgress = clamp((x - g.railX0) / (g.railX1 - g.railX0), 0, 1);
           m.lastX = x;
           if (m.railProgress >= RAIL_COMMIT_THRESHOLD) {
-            commitPressureSeedCapture(buildDeterministicPressureSeedCandidate());
+            openPressureSeedAxis();
             m.dragging = false;
             m.dragAxis = null;
           }
           audio.tick();
           vibrate(6);
+        }
+        return;
+      }
+      if (m.state === STATE.PRESSURE_SEED_AXIS) {
+        if (m.dragAxis === null && Math.hypot(dx, dy) > 10) {
+          m.dragAxis = Math.abs(dx) >= Math.abs(dy) ? "x" : "y";
+        }
+        if (m.dragAxis === "x") {
+          const g = axisMetrics();
+          const railStops = [0.18, 0.5, 0.82];
+          const progress = clamp((x - g.railX0) / (g.railX1 - g.railX0), 0, 1);
+          const nearestIndex = railStops.reduce((best, stop, index) =>
+            Math.abs(stop - progress) < Math.abs(railStops[best]! - progress) ? index : best, 0);
+          m.railProgress = railStops[nearestIndex]!;
+          if (nearestIndex !== m.pressureSeedIndex || !m.pressureSeedLocked) {
+            m.pressureSeedIndex = nearestIndex;
+            m.pressureSeedLocked = true;
+            audio.tick();
+            vibrate(8);
+          }
+          m.lastX = x;
+        }
+        if (m.dragAxis === "y") {
+          const g = axisMetrics();
+          const nextCoordinateIndex = Math.round(clamp((y - g.axisTop) / (g.axisBottom - g.axisTop), 0, 1) * 20);
+          if (nextCoordinateIndex !== m.pressureSeedCoordinateIndex) {
+            loadPressureSeedTriplet(nextCoordinateIndex);
+          }
+          m.lastY = y;
+          m.lastX = x;
         }
         return;
       }
@@ -1888,10 +2181,12 @@ export function LaunchLab() {
       const shouldCommitOnRelease =
         m.dragAxis === "x" &&
         m.railProgress >= RAIL_COMMIT_THRESHOLD &&
-        (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND || m.state === STATE.ENTRY_STATIC_RENDER) &&
+        (m.state === STATE.TIME_CALIBRATION ||
+          m.state === STATE.GEO_BIND ||
+          m.state === STATE.ENTRY_STATIC_RENDER) &&
         !m.clutched;
       if (shouldCommitOnRelease) {
-        if (m.state === STATE.ENTRY_STATIC_RENDER) commitPressureSeedCapture(buildDeterministicPressureSeedCandidate());
+        if (m.state === STATE.ENTRY_STATIC_RENDER) openPressureSeedAxis();
         else commitCurrentDim();
       }
       m.dragging = false;
