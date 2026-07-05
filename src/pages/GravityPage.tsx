@@ -1887,10 +1887,44 @@ function CosmicBotanicsField({
   );
 }
 
+type CrystalView = "MOLD" | "CARD";
+
+function crystalDimensionLabel(value: string | undefined) {
+  const labels: Record<string, string> = {
+    body: "身体维度",
+    emotion: "情绪维度",
+    thought: "思维维度",
+    behavior: "行动维度",
+    memory: "记忆维度",
+    motivation: "动机维度",
+  };
+
+  return labels[value ?? ""] ?? "六维结构";
+}
+
+function buildCrystalBehaviorReading(state: CurrentCrystalEndState) {
+  const motherName = state.mother.motherCodeName || state.mother.lowerTrigram;
+  const hexagramTitle = state.hexagram.hexagramName ?? state.hexagram.hexagramTitle ?? state.hexagram.hexagramCode ?? "本局卦码";
+  const pressureField = `这一次压力来自${pressureFieldLabel(state.pressure.pressureField)}。`;
+  const dimensionLine = state.transmission.primaryDimension
+    ? `它优先沉积在${crystalDimensionLabel(state.transmission.primaryDimension)}上。`
+    : "它已经穿过六维传导。";
+
+  return [
+    "这枚结晶不记录你的压力原句。",
+    `它记录的是压力穿过你的${motherName}母码底盘后，在${hexagramTitle}中沉积出的行为结构。`,
+    `${pressureField}${dimensionLine}`,
+    "当外部压力升高时，你的力量会先收束，重新确认边界，再在更精准的坐标上保留下一次行动的可能。",
+  ];
+}
+
 function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState }) {
   const hexagramTitle = state.hexagram.hexagramName ?? state.hexagram.hexagramTitle ?? state.hexagram.hexagramCode ?? "本局卦码";
+  const [crystalView, setCrystalView] = useState<CrystalView>("MOLD");
   const [ringLiteState, setRingLiteState] = useState(() => readPersonalityRingLite());
   const savedEntry = ringLiteState.entries.find((entry) => entry.createdAt === state.createdAt);
+  const behaviorReading = buildCrystalBehaviorReading(state);
+  const isCardView = crystalView === "CARD";
 
   function saveToPersonalityRingLite() {
     const entry = createPersonalityRingLiteEntryFromCrystal(state);
@@ -1901,13 +1935,14 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
 
   return (
     <section
-      aria-label="本局结晶终点"
+      aria-label={isCardView ? "本局结晶卡" : "本局结晶承接态"}
+      data-crystal-view={crystalView}
       style={{
-        minHeight: 424,
+        minHeight: isCardView ? 548 : 424,
         position: "relative",
         display: "grid",
         placeItems: "center",
-        padding: "22px 0 8px",
+        padding: isCardView ? "16px 0 8px" : "22px 0 8px",
         overflow: "hidden",
       }}
     >
@@ -1916,9 +1951,9 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
         style={{
           position: "absolute",
           left: "50%",
-          top: "45%",
-          width: 292,
-          height: 292,
+          top: isCardView ? "38%" : "45%",
+          width: isCardView ? 330 : 292,
+          height: isCardView ? 330 : 292,
           borderRadius: "50%",
           transform: "translate(-50%, -50%)",
           background:
@@ -1953,38 +1988,75 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
           display: "grid",
           justifyItems: "center",
           textAlign: "center",
-          gap: 13,
+          gap: isCardView ? 11 : 13,
         }}
       >
         <GuanyaoText size="eyebrow" tone="gold">
-          六维传导已完成
+          {isCardView ? "本局结晶卡" : "六维传导已完成"}
         </GuanyaoText>
 
-        <h1
-          style={{
-            margin: "92px 0 0",
-            color: "rgba(245,245,245,0.92)",
-            fontSize: 30,
-            lineHeight: 1.16,
-            fontWeight: 720,
-            letterSpacing: 0,
-            textShadow: "0 0 24px rgba(199,169,107,0.18)",
-          }}
-        >
-          本局结晶已经形成
-        </h1>
+        {isCardView ? (
+          <article
+            aria-label="本局结晶卡内容"
+            style={{
+              width: "100%",
+              display: "grid",
+              gap: 12,
+              padding: "20px 18px",
+              border: "1px solid rgba(255,226,158,0.26)",
+              borderRadius: 22,
+              background:
+                "linear-gradient(160deg, rgba(255,226,158,0.1), rgba(199,169,107,0.04) 48%, rgba(5,6,7,0.38)), radial-gradient(circle at 50% 20%, rgba(255,244,205,0.14), transparent 44%)",
+              boxShadow: "0 0 38px rgba(199,169,107,0.12), inset 0 0 26px rgba(255,246,216,0.04)",
+            }}
+          >
+            <h1
+              style={{
+                margin: 0,
+                color: "rgba(255,226,158,0.96)",
+                fontSize: 30,
+                lineHeight: 1.12,
+                fontWeight: 720,
+                letterSpacing: 0,
+                textShadow: "0 0 24px rgba(199,169,107,0.2)",
+              }}
+            >
+              {hexagramTitle}
+            </h1>
 
-        <strong
-          style={{
-            color: "rgba(255,226,158,0.94)",
-            fontSize: 24,
-            lineHeight: 1.18,
-            fontWeight: 680,
-            letterSpacing: 0,
-          }}
-        >
-          本局：{hexagramTitle}
-        </strong>
+            <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 13, lineHeight: 1.55 }}>
+              从【{state.mother.motherCodeName || state.mother.lowerTrigram}】进入【{hexagramTitle}】
+            </p>
+          </article>
+        ) : (
+          <>
+            <h1
+              style={{
+                margin: "92px 0 0",
+                color: "rgba(245,245,245,0.92)",
+                fontSize: 30,
+                lineHeight: 1.16,
+                fontWeight: 720,
+                letterSpacing: 0,
+                textShadow: "0 0 24px rgba(199,169,107,0.18)",
+              }}
+            >
+              本局结晶已经形成
+            </h1>
+
+            <strong
+              style={{
+                color: "rgba(255,226,158,0.94)",
+                fontSize: 24,
+                lineHeight: 1.18,
+                fontWeight: 680,
+                letterSpacing: 0,
+              }}
+            >
+              本局：{hexagramTitle}
+            </strong>
+          </>
+        )}
 
         <div
           style={{
@@ -2025,8 +2097,34 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
             lineHeight: 1.62,
           }}
         >
-          {state.crystal.copy}
+          {isCardView ? "这是一张只保留人格动态的本局结晶卡，不暴露具体压力原句。" : state.crystal.copy}
         </p>
+
+        {isCardView ? (
+          <section
+            aria-label="行为特征解码"
+            style={{
+              display: "grid",
+              gap: 8,
+              width: "100%",
+              maxWidth: 318,
+              textAlign: "left",
+              padding: "12px 14px",
+              borderTop: "1px solid rgba(199,169,107,0.24)",
+              borderBottom: "1px solid rgba(199,169,107,0.12)",
+              color: "rgba(245,245,245,0.68)",
+              fontSize: 13,
+              lineHeight: 1.56,
+            }}
+          >
+            <strong style={{ color: "rgba(255,226,158,0.82)", fontSize: 13 }}>行为特征解码</strong>
+            {behaviorReading.map((line) => (
+              <p key={line} style={{ margin: 0 }}>
+                {line}
+              </p>
+            ))}
+          </section>
+        ) : null}
 
         <div
           style={{
@@ -2036,30 +2134,52 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
             marginTop: 3,
           }}
         >
-          <button
-            type="button"
-            onClick={saveToPersonalityRingLite}
-            disabled={Boolean(savedEntry)}
-            style={{
-              appearance: "none",
-              border: "1px solid rgba(255,226,158,0.42)",
-              borderRadius: 999,
-              padding: "10px 18px",
-              background: savedEntry
-                ? "rgba(199,169,107,0.16)"
-                : "linear-gradient(135deg, rgba(255,226,158,0.18), rgba(199,169,107,0.07))",
-              color: "rgba(255,236,184,0.92)",
-              fontSize: 14,
-              fontWeight: 650,
-              letterSpacing: 0,
-              cursor: savedEntry ? "default" : "pointer",
-              boxShadow: savedEntry ? "0 0 18px rgba(199,169,107,0.1)" : "0 0 24px rgba(199,169,107,0.14)",
-            }}
-          >
-            {savedEntry ? "已保存" : "保存入人格年轮"}
-          </button>
+          {isCardView ? (
+            <button
+              type="button"
+              onClick={saveToPersonalityRingLite}
+              disabled={Boolean(savedEntry)}
+              style={{
+                appearance: "none",
+                border: "1px solid rgba(255,226,158,0.42)",
+                borderRadius: 999,
+                padding: "10px 18px",
+                background: savedEntry
+                  ? "rgba(199,169,107,0.16)"
+                  : "linear-gradient(135deg, rgba(255,226,158,0.18), rgba(199,169,107,0.07))",
+                color: "rgba(255,236,184,0.92)",
+                fontSize: 14,
+                fontWeight: 650,
+                letterSpacing: 0,
+                cursor: savedEntry ? "default" : "pointer",
+                boxShadow: savedEntry ? "0 0 18px rgba(199,169,107,0.1)" : "0 0 24px rgba(199,169,107,0.14)",
+              }}
+            >
+              {savedEntry ? "已保存" : "保存入人格年轮"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setCrystalView("CARD")}
+              style={{
+                appearance: "none",
+                border: "1px solid rgba(255,226,158,0.42)",
+                borderRadius: 999,
+                padding: "10px 18px",
+                background: "linear-gradient(135deg, rgba(255,226,158,0.2), rgba(199,169,107,0.08))",
+                color: "rgba(255,236,184,0.94)",
+                fontSize: 14,
+                fontWeight: 650,
+                letterSpacing: 0,
+                cursor: "pointer",
+                boxShadow: "0 0 24px rgba(199,169,107,0.14)",
+              }}
+            >
+              提取本局结晶
+            </button>
+          )}
 
-          {savedEntry ? (
+          {isCardView && savedEntry ? (
             <div
               style={{
                 display: "grid",
