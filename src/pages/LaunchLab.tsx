@@ -1139,14 +1139,20 @@ export function LaunchLab() {
       const maxX = Math.max(...pos.map((p) => p.x));
       const minY = Math.min(...pos.map((p) => p.y));
       const maxY = Math.max(...pos.map((p) => p.y));
-      const padX = Math.max(72, m.w * 0.14);
-      const padY = Math.max(86, m.h * 0.11);
+      const padX = Math.max(92, m.w * 0.18);
+      const padY = Math.max(106, m.h * 0.15);
       const cx = (minX + maxX) / 2;
       const cy = (minY + maxY) / 2;
-      const rx = Math.max((maxX - minX) / 2 + padX, m.w * 0.24);
-      const ry = Math.max((maxY - minY) / 2 + padY, m.h * 0.24);
+      const rx = Math.max((maxX - minX) / 2 + padX, m.w * 0.3);
+      const ry = Math.max((maxY - minY) / 2 + padY, m.h * 0.28);
       const ellipticalHit = ((x - cx) * (x - cx)) / (rx * rx) + ((y - cy) * (y - cy)) / (ry * ry) <= 1;
       if (ellipticalHit) return true;
+
+      const ctaY = m.h * 0.82;
+      const ctaHit =
+        Math.abs(x - m.w / 2) <= Math.min(170, m.w * 0.42) &&
+        Math.abs(y - ctaY) <= Math.min(76, m.h * 0.095);
+      if (ctaHit) return true;
 
       return x >= minX - padX && x <= maxX + padX && y >= minY - padY && y <= maxY + padY;
     }
