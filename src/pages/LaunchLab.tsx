@@ -26,6 +26,7 @@ import { getPressureSeedSceneTriplet } from "../services/guanyaoPressureSeedScen
 import {
   runGeoChronoMotherFusionEngine,
   type GeoChronoMotherFusionResult,
+  type GeoDirectionSymbol,
 } from "../services/guanyaoGeoChronoMotherFusionEngine";
 
 const SANS = "-apple-system, system-ui, sans-serif";
@@ -351,6 +352,15 @@ const CITY_OPTIONS_BY_PROVINCE: Record<string, string[]> = {
 };
 const DEFAULT_PROVINCE_INDEX = PROVINCE_OPTIONS.indexOf("广东");
 const DEFAULT_CITY_INDEX = CITY_OPTIONS_BY_PROVINCE["广东"]?.indexOf("广州") ?? 0;
+const FOUR_BEAST_VISUAL_COPY: Record<GeoDirectionSymbol, {
+  axis: string;
+  mark: string;
+}> = {
+  青龙: { axis: "东方木位", mark: "青" },
+  朱雀: { axis: "南方火位", mark: "朱" },
+  白虎: { axis: "西方金位", mark: "白" },
+  玄武: { axis: "北方水位", mark: "玄" },
+};
 
 function pad2(v: number) {
   return String(v).padStart(2, "0");
@@ -471,6 +481,98 @@ function drawCanvasWrappedText(
     }
   }
   if (line && lines < maxLines) ctx.fillText(line, x, yy);
+}
+
+function drawFourBeastOriginMarker(
+  ctx: CanvasRenderingContext2D,
+  beast: GeoDirectionSymbol,
+  province: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  alpha = 1,
+) {
+  const copy = FOUR_BEAST_VISUAL_COPY[beast];
+  const cx = x + w * 0.5;
+  const cy = y + h * 0.48;
+  const radius = Math.min(w, h) * 0.34;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.45);
+  glow.addColorStop(0, "rgba(232,200,138,0.105)");
+  glow.addColorStop(0.58, "rgba(232,200,138,0.036)");
+  glow.addColorStop(1, "rgba(232,200,138,0)");
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius * 1.45, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(232,200,138,0.13)";
+  ctx.lineWidth = 0.9;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, -Math.PI * 0.18, Math.PI * 1.22);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - radius * 0.72, cy + radius * 0.2);
+  ctx.quadraticCurveTo(cx, cy - radius * 0.46, cx + radius * 0.78, cy + radius * 0.16);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - radius * 0.42, cy + radius * 0.48);
+  ctx.quadraticCurveTo(cx + radius * 0.08, cy + radius * 0.18, cx + radius * 0.5, cy + radius * 0.55);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(255,247,228,0.075)";
+  ctx.font = `780 ${Math.min(72, Math.max(42, w * 0.38))}px ${SANS}`;
+  ctx.fillText(beast, cx, cy - radius * 0.04);
+
+  ctx.fillStyle = "rgba(232,200,138,0.54)";
+  ctx.font = `700 ${Math.min(13, Math.max(10, w * 0.06))}px ${MONO}`;
+  ctx.fillText("四象兽归位", cx, cy + radius * 0.78);
+  ctx.fillStyle = "rgba(232,200,138,0.42)";
+  ctx.font = `600 ${Math.min(10.5, Math.max(8.5, w * 0.047))}px ${MONO}`;
+  ctx.fillText(`${copy.axis} · ${province}`, cx, cy + radius * 1.06);
+
+  ctx.restore();
+}
+
+function drawFourBeastCardWatermark(
+  ctx: CanvasRenderingContext2D,
+  beast: GeoDirectionSymbol,
+  cardX: number,
+  cardY: number,
+  cardW: number,
+  cardH: number,
+) {
+  const copy = FOUR_BEAST_VISUAL_COPY[beast];
+  const cx = cardX + cardW * 0.74;
+  const cy = cardY + cardH * 0.47;
+  const r = Math.min(cardW, cardH) * 0.23;
+
+  ctx.save();
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.globalAlpha = 0.72;
+  ctx.strokeStyle = "rgba(232,200,138,0.075)";
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.7, cy);
+  ctx.quadraticCurveTo(cx, cy - r * 0.52, cx + r * 0.7, cy);
+  ctx.stroke();
+  ctx.fillStyle = "rgba(255,247,228,0.045)";
+  ctx.font = `780 ${Math.min(58, cardW * 0.18)}px ${SANS}`;
+  ctx.fillText(beast, cx, cy);
+  ctx.fillStyle = "rgba(232,200,138,0.16)";
+  ctx.font = `700 ${Math.min(14, cardW * 0.04)}px ${MONO}`;
+  ctx.fillText(copy.mark, cx, cy + r * 0.72);
+  ctx.restore();
 }
 
 export function LaunchLab() {
@@ -1843,11 +1945,29 @@ export function LaunchLab() {
             ctx.font = `600 ${Math.min(9.5, m.w * 0.024)}px ${MONO}`;
             if (isNewOriginFlow) {
               ctx.fillText(originStep.group, g.railX0, m.h * 0.252);
-              ctx.fillText(`已锁定：${originCoordinateSummary()}`, g.railX0, m.h * 0.282);
+              ctx.fillText(
+                isGeoStage
+                  ? `四象兽归位：${originMother.geo.symbol} · ${FOUR_BEAST_VISUAL_COPY[originMother.geo.symbol].axis} · ${originMother.geo.province}`
+                  : `已锁定：${originCoordinateSummary()}`,
+                g.railX0,
+                m.h * 0.282
+              );
             } else {
               ctx.fillText(`时序填装：卦符显影 ${originMother.chrono.lockPoint} · ${originMother.mother.definition.trigramSymbol}${originMother.mother.trigram}`, g.railX0, m.h * 0.252);
               ctx.fillText(`方位填装：四象兽归位 ${originMother.geo.symbol} · ${originMother.geo.province}/${originMother.geo.city}`, g.railX0, m.h * 0.282);
             }
+          }
+          if (originMother && isNewOriginFlow && isGeoStage) {
+            drawFourBeastOriginMarker(
+              ctx,
+              originMother.geo.symbol,
+              originMother.geo.province,
+              g.railX0 + (g.railX1 - g.railX0) * 0.56,
+              m.h * 0.19,
+              (g.railX1 - g.railX0) * 0.42,
+              m.h * 0.22,
+              0.92
+            );
           }
           ctx.fillStyle = "rgba(255,247,228,0.96)";
           const valueSize = finalLocked
@@ -2170,6 +2290,7 @@ export function LaunchLab() {
         if (!ctx.roundRect) ctx.rect(cardX, cardY, cardW, cardH);
         ctx.fill();
         ctx.stroke();
+        drawFourBeastCardWatermark(ctx, reveal.geo.symbol, cardX, cardY, cardW, cardH);
 
         ctx.fillStyle = "rgba(232,200,138,0.76)";
         ctx.font = `650 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
@@ -2186,7 +2307,12 @@ export function LaunchLab() {
         ctx.fillStyle = "rgba(232,200,138,0.66)";
         ctx.font = `600 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
         ctx.fillText(`时序卦符：${reveal.chrono.lockPoint} · ${definition.trigramSymbol}${reveal.mother.trigram}`, cardX + 16, cardY + cardH - 48);
-        ctx.fillText(`方位落位：${reveal.geo.symbol} · ${reveal.geo.province}/${reveal.geo.city}`, cardX + 16, cardY + cardH - 22);
+        ctx.fillStyle = "rgba(232,200,138,0.62)";
+        ctx.beginPath();
+        ctx.arc(cardX + 20, cardY + cardH - 25, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "rgba(232,200,138,0.66)";
+        ctx.fillText(`方位落位：${reveal.geo.symbol} · ${reveal.geo.province}`, cardX + 28, cardY + cardH - 22);
 
         ctx.fillStyle = "rgba(232,200,138,0.52)";
         ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
