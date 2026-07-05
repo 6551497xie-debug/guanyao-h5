@@ -28,6 +28,7 @@ import {
   getTripleForceFrontStage,
 } from "../services/guanyaoTripleForceLandingService";
 import { getPressureSeedSceneTriplet } from "../services/guanyaoPressureSeedSceneBindingService";
+import { setAxisHandoff } from "../systems/axisHandoff";
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
@@ -170,7 +171,7 @@ const Node1State = {
   starbeastSync: true,
 } as const;
 const ENTRY_HANDOFF_DELAY_MS = 700;
-const PRESSURE_SEED_AUTO_RESOLVE_MS = 1600;
+const PRESSURE_SEED_AUTO_RESOLVE_MS = 2200;
 const NODE_TRANSITION_LERP_START_MS = 760;
 const NODE_TRANSITION_LERP_DURATION_MS = 900;
 const RAIL_COMMIT_THRESHOLD = 0.72;
@@ -486,6 +487,7 @@ export function LaunchLab() {
       lastY: 0,
       node1State: null as null | typeof Node1State,
       node1T: 0,
+      pendingAxisMode: "NEW_USER" as EntryHandoffMode,
       fps: 0,
       fpsAcc: 0,
       fpsN: 0,
@@ -494,6 +496,7 @@ export function LaunchLab() {
       setSceneState("ENTRY");
       m.node1State = null;
       m.node1T = 0;
+      m.pendingAxisMode = mode;
 
       if (mode === "NEW_USER") {
         m.state = STATE.STARBEAST_SANDIFY;
@@ -503,7 +506,10 @@ export function LaunchLab() {
         return;
       }
 
-      openPressureSeedCanvas();
+      m.state = STATE.ENTRY_PRE_COLLAPSE;
+      m.t = 0;
+      audio.form();
+      vibrate([0, 18, 24]);
     };
     for (let i = 0; i < CFG.starfield; i++) {
       const isLunarMansion = i < NODES.length;
@@ -710,6 +716,27 @@ export function LaunchLab() {
     }
     function emitNode1MirrorActivatedEvent() {
       window.dispatchEvent(new CustomEvent(NODE1_MIRROR_ACTIVATED_EVENT));
+    }
+    function seedPressureAxisHandoff() {
+      const centerX = m.w / 2;
+      const centerY = m.h * 0.48;
+      const particles = NODES.flatMap((_, i) => {
+        const ring = (i % 7) / 7;
+        const angle = ring * Math.PI * 2 + i * 0.47;
+        return [0, 1, 2].map((layer) => {
+          const radius = 8 + (i % 3) * 4 + layer * 5;
+          const px = centerX + Math.cos(angle + layer * 0.18) * radius;
+          const py = centerY + Math.sin(angle + layer * 0.18) * (8 + (i % 4) * 3 + layer * 4);
+          return {
+            fx: clamp(px / Math.max(m.w, 1), 0, 1),
+            fy: clamp(py / Math.max(m.h, 1), 0, 1),
+            vx: Math.cos(angle) * 0.18,
+            vy: Math.sin(angle) * 0.18,
+            color: layer === 0 ? "#FFF7E4" : "#E8C88A",
+          };
+        });
+      });
+      setAxisHandoff(particles);
     }
     function activateNode1Mirror() {
       if (m.node1State?.mirrorActivated) return;
@@ -993,6 +1020,12 @@ export function LaunchLab() {
         }
         case STATE.ENTRY_LIGHT_CONVERGENCE: {
           if (m.t >= 1.05) {
+            if (m.pendingAxisMode === "OLD_USER") {
+              seedPressureAxisHandoff();
+              openPressureSeedCanvas();
+              m.t = 0;
+              break;
+            }
             if (!m.entryTransitionSnapshot) {
               m.entryTransitionSnapshot = buildEntryTransitionSnapshot();
             }
@@ -1146,11 +1179,12 @@ export function LaunchLab() {
           conv: 1,
         };
       });
-      const beastAlpha = starbeastState.collapseAnimationTrigger
+      const nodeFade = nodeRuntimeActive ? 1 - smooth(0, 0.36, m.node1T) : 1;
+      const beastAlpha = (starbeastState.collapseAnimationTrigger
         ? 1 - smooth(0.25, 1.18, m.t)
         : isAxisState()
           ? 0
-          : Math.max(0.2, starbeastState.beastEmergenceTiming);
+          : Math.max(0.2, starbeastState.beastEmergenceTiming)) * nodeFade;
 
       // 连线（两端都汇聚到位才显，亮度随汇聚）
       ctx.lineCap = "round";
@@ -1452,7 +1486,12 @@ export function LaunchLab() {
           ctx.textAlign = "center";
           ctx.fillStyle = `rgba(255,247,228,${(0.18 + converge * 0.55).toFixed(3)})`;
           ctx.font = `650 ${Math.min(14, m.w * 0.036)}px ${SANS}`;
-          ctx.fillText("坐标正在成形。", centerX, centerY + 82);
+          ctx.fillText(m.pendingAxisMode === "OLD_USER" ? "压力正在聚合。" : "坐标正在成形。", centerX, centerY + 82);
+          if (m.pendingAxisMode === "OLD_USER") {
+            ctx.fillStyle = `rgba(232,200,138,${(0.12 + converge * 0.38).toFixed(3)})`;
+            ctx.font = `600 ${Math.min(12, m.w * 0.031)}px ${SANS}`;
+            ctx.fillText("压力压入轴心。", centerX, centerY + 108);
+          }
         }
         ctx.restore();
       }
