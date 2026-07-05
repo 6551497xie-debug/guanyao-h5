@@ -10,8 +10,19 @@ import {
   type StarbeastFeedback,
   type StarFlowerGrowthState,
 } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
+import {
+  buildPressureField,
+  formCurrentHexagramProfile,
+} from "../services/guanyaoCausalEngineService";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
 import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
+import type {
+  CurrentHexagramProfile,
+  MotherCodeProfile,
+  PressureIntensity,
+  PressureSeed,
+  Trigram,
+} from "../types/guanyaoCausalEngine";
 import {
   GuanyaoRuntimeEngine,
   type ExecutionSnapshot,
@@ -63,12 +74,13 @@ type PressureBeastSeed = {
   resonance: number;
 };
 type RuntimeCoreStar = readonly [number, number, number];
-type StoredMotherCodeProfile = {
+type StoredMotherCodeProfile = Partial<MotherCodeProfile> & {
   motherCodeName?: string;
   motherCodeTitle?: string;
   trigram?: string;
   lowerTrigram?: string;
   trigramSymbol?: string;
+  baseDrive?: string;
 };
 type StoredOriginMotherContext = {
   source?: string;
@@ -99,6 +111,24 @@ type DynamicsInputContext = {
   motherCodeProfile: StoredMotherCodeProfile | null;
   originMotherContext: StoredOriginMotherContext | null;
   personaOutputSnapshot: StoredPersonaOutputSnapshot | null;
+};
+type ActiveCurrentHexagramContext = {
+  source: "dynamics";
+  createdAt: string;
+  motherCodeProfile: {
+    motherCodeName: string;
+    motherCodeTitle?: string;
+    lowerTrigram?: string;
+    trigram?: string;
+  };
+  selectedPressureSeedContext: {
+    selectedPressureSeedId?: string;
+    matrixCode?: string;
+    pressureField?: string;
+    pressureNature?: string;
+    surface?: string;
+  };
+  currentHexagramProfile: CurrentHexagramProfile;
 };
 
 function readJsonFromStorage<T>(key: string): T | null {
@@ -134,6 +164,16 @@ function readDynamicsInputContext(): DynamicsInputContext {
   };
 }
 
+function writeJsonToStorage(key: string, value: unknown) {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Storage must never block the active /dynamics runtime.
+  }
+}
+
 function resolveMotherCodeName(input: DynamicsInputContext) {
   return (
     input.motherCodeProfile?.motherCodeName ??
@@ -164,6 +204,181 @@ function resolveMotherPersonaSnapshot(input: DynamicsInputContext) {
     motherCode,
     trigram,
     fourSymbol,
+  };
+}
+
+function normalizePressureIntensity(value: unknown): PressureIntensity {
+  if (typeof value === "number") {
+    if (value >= 88) return "critical";
+    if (value >= 72) return "high";
+    if (value >= 42) return "medium";
+    return "low";
+  }
+
+  return "medium";
+}
+
+function pressureFieldLabel(value: unknown) {
+  const source = String(value ?? "").trim();
+  const labels: Record<string, string> = {
+    POWER: "权力压力",
+    INTEREST: "利益压力",
+    RELATION: "关系压力",
+    FAMILY: "家庭压力",
+    SOCIAL: "社会压力",
+    EXISTENCE: "存在压力",
+  };
+
+  return labels[source] ?? (source || "现实压力");
+}
+
+function pressureNatureLabel(value: unknown) {
+  const source = String(value ?? "").trim();
+  const labels: Record<string, string> = {
+    EVALUATION: "评价威胁",
+    RESOURCE: "资源冲突",
+    ATTACHMENT: "依恋断裂",
+    CONTROL: "控制压迫",
+    OBLIGATION: "责任义务",
+    BELONGING: "归属压力",
+    IDENTITY: "身份压力",
+    SURVIVAL: "生存压力",
+  };
+
+  return labels[source] ?? (source || "现实触发");
+}
+
+function relationLabel(value: unknown) {
+  const source = String(value ?? "").trim();
+  const labels: Record<string, string> = {
+    BOSS: "上级 / 权力关系",
+    CLIENT: "客户关系",
+    PARTNER_BUSINESS: "合作关系",
+    PARTNER_ROMANTIC: "亲密关系",
+    PARENT: "父母关系",
+    CHILD: "子女关系",
+    FRIEND: "朋友关系",
+    COLLEAGUE: "同事关系",
+    SELF: "自我关系",
+    SYSTEM: "系统结构",
+  };
+
+  return labels[source] ?? (source || "关系结构");
+}
+
+function isTrigram(value: unknown): value is Trigram {
+  return value === "乾" || value === "坤" || value === "震" || value === "巽" || value === "坎" || value === "离" || value === "艮" || value === "兑";
+}
+
+function normalizeMotherCodeProfileForHexagram(
+  input: DynamicsInputContext,
+): MotherCodeProfile | null {
+  const profile = input.motherCodeProfile ?? input.originMotherContext?.mother?.profile;
+  const lowerTrigramCandidate = profile?.lowerTrigram ?? profile?.trigram ?? input.originMotherContext?.mother?.trigram ?? input.originMotherContext?.trigram;
+  const motherCodeName = profile?.motherCodeName ?? input.personaOutputSnapshot?.motherCodeName ?? input.personaOutputSnapshot?.motherCode;
+
+  if (!profile || !motherCodeName || !isTrigram(lowerTrigramCandidate)) return null;
+
+  return {
+    motherCodeId: profile.motherCodeId ?? motherCodeName,
+    motherCodeDefinitionId: profile.motherCodeDefinitionId,
+    motherCodeName,
+    motherCodeTitle: profile.motherCodeTitle,
+    lowerTrigram: lowerTrigramCandidate,
+    baseForce: profile.baseForce ?? profile.baseDrive ?? "母码底盘已接入。",
+    causalPosition: profile.causalPosition,
+    pressureEntry: profile.pressureEntry,
+    defaultReactionPattern: profile.defaultReactionPattern ?? profile.defaultReactionChain ?? "默认反应链待显影。",
+    pressureSensitiveZones: profile.pressureSensitiveZones ?? ["现实压力"],
+    defenseTendency: profile.defenseTendency ?? profile.pressureMode ?? "防御倾向待显影。",
+    behaviorBias: profile.behaviorBias ?? profile.shadowInertia ?? "行为惯性待显影。",
+    shadowInertia: profile.shadowInertia,
+    pressureMode: profile.pressureMode,
+    defaultReactionChain: profile.defaultReactionChain,
+    unlockPotential: profile.unlockPotential,
+    personalityAsset: profile.personalityAsset,
+    assetSummary: profile.assetSummary,
+    visualAssetKey: profile.visualAssetKey,
+    visualAssetCode: profile.visualAssetCode,
+    xiantianNumber: profile.xiantianNumber,
+    xiantianDisplay: profile.xiantianDisplay,
+    trigramSymbol: profile.trigramSymbol,
+    trigramImage: profile.trigramImage,
+    wuxing: profile.wuxing,
+    visualAssetStatus: profile.visualAssetStatus,
+    visualAssetPackage: profile.visualAssetPackage,
+    visualTags: profile.visualTags,
+    uiBindingStatus: profile.uiBindingStatus,
+    uiSurface: profile.uiSurface,
+  };
+}
+
+function buildPressureSeedForHexagram(context: SelectedPressureSeedContext): PressureSeed {
+  const runtimeContext = context as SelectedPressureSeedContext & {
+    pressureIntensity?: unknown;
+    primaryRelation?: unknown;
+    core?: { mechanism?: string; engineHint?: string };
+    mappingHint?: string;
+  };
+  const pressureType = pressureFieldLabel(context.pressureField ?? context.category);
+  const pressureNature = pressureNatureLabel(context.pressureNature ?? context.emotionalTone);
+  const relationshipRole = relationLabel(runtimeContext.primaryRelation ?? context.scenarioDomain);
+  const locationTags = [
+    context.matrixCode,
+    context.category,
+    context.pressureField,
+    context.pressureNature,
+    context.scenarioDomain,
+    context.emotionalTone,
+    runtimeContext.primaryRelation,
+    runtimeContext.mappingHint,
+    runtimeContext.core?.mechanism,
+    runtimeContext.core?.engineHint,
+    ...(context.tags ?? []),
+    ...(context.semanticTags ?? []),
+  ]
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0);
+
+  return {
+    seedId: context.selectedPressureSeedId ?? "pressure-seed-runtime",
+    sceneText: [context.surface, context.shell].filter(Boolean).join(" "),
+    pressureType,
+    relationshipRole,
+    triggerMoment: context.surface ?? "现实压力正在进入。",
+    intensityLevel: normalizePressureIntensity(runtimeContext.pressureIntensity),
+    costHint: context.shell ?? runtimeContext.mappingHint ?? "当前压力代价待显影。",
+    fieldBias: `${pressureNature}｜${relationshipRole}`,
+    locationTags,
+  };
+}
+
+function resolveActiveCurrentHexagramContext(input: DynamicsInputContext): ActiveCurrentHexagramContext | null {
+  if (!input.selectedPressureSeedContext) return null;
+
+  const motherCodeProfile = normalizeMotherCodeProfileForHexagram(input);
+  if (!motherCodeProfile) return null;
+
+  const pressureSeed = buildPressureSeedForHexagram(input.selectedPressureSeedContext);
+  const pressureField = buildPressureField(motherCodeProfile, pressureSeed);
+  const currentHexagramProfile = formCurrentHexagramProfile(motherCodeProfile, pressureSeed, pressureField);
+
+  return {
+    source: "dynamics",
+    createdAt: new Date().toISOString(),
+    motherCodeProfile: {
+      motherCodeName: motherCodeProfile.motherCodeName,
+      motherCodeTitle: motherCodeProfile.motherCodeTitle,
+      lowerTrigram: motherCodeProfile.lowerTrigram,
+      trigram: input.motherCodeProfile?.trigram ?? input.originMotherContext?.mother?.trigram ?? input.originMotherContext?.trigram,
+    },
+    selectedPressureSeedContext: {
+      selectedPressureSeedId: input.selectedPressureSeedContext.selectedPressureSeedId,
+      matrixCode: input.selectedPressureSeedContext.matrixCode,
+      pressureField: input.selectedPressureSeedContext.pressureField,
+      pressureNature: input.selectedPressureSeedContext.pressureNature,
+      surface: input.selectedPressureSeedContext.surface,
+    },
+    currentHexagramProfile,
   };
 }
 
@@ -1569,6 +1784,9 @@ function CosmicBotanicsField({
 
 function HexagramCodeDeliveryShell() {
   const [dynamicsInputContext] = useState<DynamicsInputContext>(() => readDynamicsInputContext());
+  const [activeCurrentHexagramContext] = useState<ActiveCurrentHexagramContext | null>(() =>
+    resolveActiveCurrentHexagramContext(readDynamicsInputContext()),
+  );
   const [executionSnapshot, setExecutionSnapshot] = useState<ExecutionSnapshot>(() =>
     GuanyaoRuntimeEngine.createSnapshot(dynamicsInputContext.selectedPressureSeedContext),
   );
@@ -1588,6 +1806,7 @@ function HexagramCodeDeliveryShell() {
   const experienceState = resolveExperienceState(executionSnapshot, visualState);
   const motherPersonaSnapshot = resolveMotherPersonaSnapshot(dynamicsInputContext);
   const motherCodeName = resolveMotherCodeName(dynamicsInputContext);
+  const currentHexagramProfile = activeCurrentHexagramContext?.currentHexagramProfile ?? null;
   const displayExperienceState: ExperienceState = motherCodeName && experienceState.stage === "PRESSURE"
     ? {
         ...experienceState,
@@ -1623,6 +1842,11 @@ function HexagramCodeDeliveryShell() {
     starbeastFeedbackComplete,
     pressureSeedFallbackText: selectedPressureSeedSurface,
   });
+
+  useEffect(() => {
+    if (!activeCurrentHexagramContext) return;
+    writeJsonToStorage("guanyao:currentHexagramProfile", activeCurrentHexagramContext);
+  }, [activeCurrentHexagramContext]);
 
   function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
     setExecutionSnapshot((current) =>
@@ -1698,8 +1922,11 @@ function HexagramCodeDeliveryShell() {
         data-product-perception={GUANYAO_PRODUCT_RUNTIME_DEFINITION.userPerception.join("|")}
         data-dynamics-mother-context={motherPersonaSnapshot ? "connected" : "missing"}
         data-dynamics-pressure-context={dynamicsInputContext.selectedPressureSeedContext ? "connected" : "fallback"}
+        data-dynamics-current-hexagram={currentHexagramProfile ? "connected" : "missing"}
         data-dynamics-mother-code={motherCodeName || "missing"}
         data-dynamics-four-beast={motherPersonaSnapshot?.fourSymbol ?? "missing"}
+        data-dynamics-lower-trigram={currentHexagramProfile?.lowerTrigram ?? "missing"}
+        data-dynamics-upper-trigram={currentHexagramProfile?.upperTrigram ?? "missing"}
         style={{
           minHeight: "100dvh",
           width: "100%",
@@ -1748,6 +1975,14 @@ function HexagramCodeDeliveryShell() {
               <>
                 <br />
                 <span style={{ color: "rgba(199,169,107,0.66)" }}>母码：{motherCodeName}</span>
+              </>
+            ) : null}
+            {currentHexagramProfile ? (
+              <>
+                <br />
+                <span style={{ color: "rgba(199,169,107,0.62)" }}>
+                  下卦：{currentHexagramProfile.lowerTrigram} · 上卦：{currentHexagramProfile.upperTrigram}
+                </span>
               </>
             ) : null}
           </p>
