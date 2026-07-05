@@ -396,6 +396,15 @@ export function LaunchLab() {
   const nodeTimelineStartedAtRef = useRef(0);
   const entryHandoffRef = useRef<((mode: EntryHandoffMode) => void) | null>(null);
   const showInternalNodeCopy = DEBUG_TIMELINE;
+  const collapsePhase =
+    DEBUG_TIMELINE || scene === "ENTRY"
+      ? "none"
+      : scene === "NODE_1"
+        ? "start"
+        : scene === "NODE_2"
+          ? "separate"
+          : "settle";
+  const isProductionCollapse = collapsePhase !== "none";
   const visualLayerClass = useCallback(
     (targetScene: SceneState, extra = "") => `gy-timeline-layer ${extra} ${scene === targetScene ? "on" : "off"}`,
     [scene],
@@ -1849,6 +1858,8 @@ export function LaunchLab() {
     <GyMobilePreviewFrame background="#070512">
       <div
         className={`light-beast-hitbox scene-${scene.toLowerCase()}${SNAPSHOT_MODE ? " snapshot-mode" : ""}`}
+        data-production-collapse={isProductionCollapse ? "true" : "false"}
+        data-collapse-phase={collapsePhase}
         style={{ position: "relative", width: "100%", height: "100%" }}
       >
         <canvas
@@ -1917,6 +1928,22 @@ export function LaunchLab() {
           .scene-node_2 .light-field {
             transform: scale(0.985) rotate(-0.4deg);
             filter: blur(0.4px) contrast(1.05);
+          }
+          .light-beast-hitbox[data-production-collapse="true"] .light-field {
+            transform: scale(0.985);
+            filter: blur(0.35px) brightness(1.06) contrast(1.03);
+          }
+          .light-beast-hitbox[data-collapse-phase="start"] .light-field {
+            transform: scale(0.982);
+            filter: blur(0.35px) brightness(1.1) contrast(1.04);
+          }
+          .light-beast-hitbox[data-collapse-phase="separate"] .light-field {
+            transform: scale(0.97) rotate(-0.4deg);
+            filter: blur(0.6px) brightness(1.04) contrast(1.08);
+          }
+          .light-beast-hitbox[data-collapse-phase="settle"] .light-field {
+            transform: scale(0.96);
+            filter: blur(0.8px) brightness(0.92) contrast(1.05);
           }
           .gy-timeline-layer {
             position: absolute;
