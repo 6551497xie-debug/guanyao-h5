@@ -16,10 +16,9 @@ import {
   type EntryCardRendererOptions,
 } from "../components/entry/EntryCardRenderer";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
-import { PressureSeedCrossAxisPage, type PressureSeedCrossAxisSeed } from "./PressureSeedCrossAxisPage";
+import type { PressureSeedCrossAxisSeed } from "./PressureSeedCrossAxisPage";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getEntryUserType } from "../runtime/entry/entryDecision";
-import { resolveFinalDOMProjection } from "../runtime/dom/domFinalProjection";
 import { getNodeTransitionLerp } from "../runtime/node/perception/nodeTransitionLerp";
 import { resolveStarbeastRenderState } from "../runtime/starbeast/starbeastRenderState";
 import { buildSelectedPressureSeedContext } from "../services/guanyaoPressureSeedSceneBindingService";
@@ -28,7 +27,6 @@ import {
   getTripleForceFrontStage,
 } from "../services/guanyaoTripleForceLandingService";
 import { getPressureSeedSceneTriplet } from "../services/guanyaoPressureSeedSceneBindingService";
-import { setAxisHandoff } from "../systems/axisHandoff";
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
@@ -171,7 +169,6 @@ const Node1State = {
   starbeastSync: true,
 } as const;
 const ENTRY_HANDOFF_DELAY_MS = 700;
-const PRESSURE_SEED_AUTO_RESOLVE_MS = 2200;
 const NODE_TRANSITION_LERP_START_MS = 760;
 const NODE_TRANSITION_LERP_DURATION_MS = 900;
 const RAIL_COMMIT_THRESHOLD = 0.72;
@@ -189,10 +186,39 @@ type LaunchInteractionState =
   | "DYNAMICS_HANDOFF";
 type SceneState = "ENTRY" | "NODE_1" | "NODE_2" | "HANDOFF";
 type EntryHandoffMode = "NEW_USER" | "OLD_USER";
-const DIM_LABEL: Record<ChronoDim, string> = { year: "原始坐标", month: "坐标层级", day: "坐标刻度", hour: "坐标锚点" };
-const DIM_STAGE_LABEL: Record<ChronoDim, string> = { year: "原始坐标", month: "坐标层级", day: "坐标刻度", hour: "坐标锚点" };
+const SCENE_ORDER = ["ENTRY", "NODE_1", "NODE_2", "HANDOFF"] as const;
+const timeline: Record<SceneState, number> = {
+  ENTRY: 0,
+  NODE_1: 1,
+  NODE_2: 2,
+  HANDOFF: 3,
+};
 const GEO_DIMS = ["province", "city"] as const;
-const GEO_LABEL: Record<GeoDim, string> = { province: "空间坐标", city: "方位坐标" };
+const AXIS_COPY: Record<EntryHandoffMode, {
+  dimLabel: Record<ChronoDim, string>;
+  dimStageLabel: Record<ChronoDim, string>;
+  geoLabel: Record<GeoDim, string>;
+  topPrimary: string;
+  topSecondary: string;
+  lockText: string;
+}> = {
+  NEW_USER: {
+    dimLabel: { year: "原始坐标", month: "坐标层级", day: "坐标刻度", hour: "坐标锚点" },
+    dimStageLabel: { year: "原始坐标", month: "坐标层级", day: "坐标刻度", hour: "坐标锚点" },
+    geoLabel: { province: "空间坐标", city: "方位坐标" },
+    topPrimary: "原始坐标生成。",
+    topSecondary: "坐标正在成形。",
+    lockText: "坐标已成形",
+  },
+  OLD_USER: {
+    dimLabel: { year: "压力种子", month: "压力层级", day: "压力刻度", hour: "压力锚点" },
+    dimStageLabel: { year: "压力种子", month: "压力层级", day: "压力刻度", hour: "压力锚点" },
+    geoLabel: { province: "压力坐标", city: "轴心坐标" },
+    topPrimary: "压力正在聚合。",
+    topSecondary: "压力压入轴心。",
+    lockText: "压力已入轴",
+  },
+};
 function toStarbeastEntryState(state: LaunchState): Parameters<typeof resolveStarbeastRenderState>[0] {
   if (
     state === STATE.STARFIELD_IDLE ||
@@ -352,33 +378,32 @@ function buildDeterministicPressureSeedCandidate(): PressureSeedCrossAxisSeed | 
 export function LaunchLab() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const navigate = useNavigate();
-  const [showPressureSeedCapture, setShowPressureSeedCapture] = useState(false);
   const [interactionState, setInteractionState] = useState<LaunchInteractionState>("ENTRY");
   const interactionStateRef = useRef<LaunchInteractionState>("ENTRY");
   const [scene, setScene] = useState<SceneState>("ENTRY");
   const [clickFlash, setClickFlash] = useState(false);
   const sceneRef = useRef<SceneState>("ENTRY");
   const entryHandoffRef = useRef<((mode: EntryHandoffMode) => void) | null>(null);
+  const visualLayerClass = useCallback(
+    (targetScene: SceneState, extra = "") => `gy-timeline-layer ${extra} ${scene === targetScene ? "on" : "off"}`,
+    [scene],
+  );
 
   const setSceneState = useCallback((nextScene: SceneState) => {
     sceneRef.current = nextScene;
     setScene(nextScene);
   }, []);
 
-  const goHandoff = useCallback(() => {
-    setSceneState("HANDOFF");
+  const goNext = useCallback((current: SceneState) => {
+    const idx = SCENE_ORDER.indexOf(current);
+    const next = SCENE_ORDER[idx + 1];
+    if (next) setSceneState(next);
   }, [setSceneState]);
 
   const setLaunchInteractionState = useCallback((nextState: LaunchInteractionState) => {
     interactionStateRef.current = nextState;
     setInteractionState(nextState);
   }, []);
-
-  const openPressureSeedCanvas = useCallback(() => {
-    if (interactionStateRef.current !== "ENTRY") return;
-    setLaunchInteractionState("PRESSURE_CANVAS_ACTIVE");
-    setShowPressureSeedCapture(true);
-  }, [setLaunchInteractionState]);
 
   const enterNext = useCallback(() => {
     entryHandoffRef.current?.(getEntryUserTypePreviewOverride() ?? getEntryUserType());
@@ -413,25 +438,24 @@ export function LaunchLab() {
   );
 
   useEffect(() => {
-    if (!showPressureSeedCapture || interactionState !== "PRESSURE_CANVAS_ACTIVE") return undefined;
+    if (scene !== "NODE_1") return undefined;
 
     const timer = window.setTimeout(() => {
-      if (interactionStateRef.current !== "PRESSURE_CANVAS_ACTIVE") return;
-      commitPressureSeedCapture(buildDeterministicPressureSeedCandidate());
-    }, PRESSURE_SEED_AUTO_RESOLVE_MS);
+      goNext("NODE_1");
+    }, 1200);
 
     return () => window.clearTimeout(timer);
-  }, [commitPressureSeedCapture, interactionState, showPressureSeedCapture]);
+  }, [goNext, scene]);
 
   useEffect(() => {
     if (scene !== "NODE_2") return undefined;
 
     const timer = window.setTimeout(() => {
-      goHandoff();
+      goNext("NODE_2");
     }, 700);
 
     return () => window.clearTimeout(timer);
-  }, [goHandoff, scene]);
+  }, [goNext, scene]);
 
   useEffect(() => {
     if (scene !== "HANDOFF") return undefined;
@@ -497,16 +521,7 @@ export function LaunchLab() {
       m.node1State = null;
       m.node1T = 0;
       m.pendingAxisMode = mode;
-
-      if (mode === "NEW_USER") {
-        m.state = STATE.STARBEAST_SANDIFY;
-        m.t = 0;
-        audio.form();
-        vibrate([0, 18, 24]);
-        return;
-      }
-
-      m.state = STATE.ENTRY_PRE_COLLAPSE;
+      m.state = STATE.STARBEAST_SANDIFY;
       m.t = 0;
       audio.form();
       vibrate([0, 18, 24]);
@@ -644,10 +659,11 @@ export function LaunchLab() {
     }
     function dimText(dim: ChronoDim, value: number) {
       const v = Math.round(value);
-      if (dim === "year") return `原始坐标 ${String(v).slice(-2)}`;
-      if (dim === "month") return `坐标层级 ${pad2(v)}`;
-      if (dim === "day") return `坐标刻度 ${pad2(v)}`;
-      return `坐标锚点 ${pad2(clamp(v, 0, 23))}`;
+      const copy = AXIS_COPY[m.pendingAxisMode].dimLabel;
+      if (dim === "year") return `${copy.year} ${String(v).slice(-2)}`;
+      if (dim === "month") return `${copy.month} ${pad2(v)}`;
+      if (dim === "day") return `${copy.day} ${pad2(v)}`;
+      return `${copy.hour} ${pad2(clamp(v, 0, 23))}`;
     }
     function activeGeoDim(): GeoDim {
       return GEO_DIMS[m.geoStep] ?? "city";
@@ -676,7 +692,8 @@ export function LaunchLab() {
     }
     function geoText(dim: GeoDim, value: number) {
       const index = Math.round(clamp(value, 0, Math.max(0, geoOptions(dim).length - 1)));
-      return dim === "province" ? `空间坐标 ${pad2(index + 1)}` : `方位坐标 ${pad2(index + 1)}`;
+      const copy = AXIS_COPY[m.pendingAxisMode].geoLabel;
+      return dim === "province" ? `${copy.province} ${pad2(index + 1)}` : `${copy.city} ${pad2(index + 1)}`;
     }
     function buildEntryTransitionSnapshot(): EntryTransitionSnapshot {
       return {
@@ -706,9 +723,12 @@ export function LaunchLab() {
       if (m.handoffStarted) return;
       m.handoffStarted = true;
       window.setTimeout(() => {
-        if (m.pressureCanvasOpened) return;
-        m.pressureCanvasOpened = true;
-        openPressureSeedCanvas();
+        if (m.pendingAxisMode === "OLD_USER") {
+          commitPressureSeedCapture(buildDeterministicPressureSeedCandidate());
+          return;
+        }
+        m.state = STATE.ENTRY_STATIC_RENDER;
+        m.t = 0;
       }, ENTRY_HANDOFF_DELAY_MS);
     }
     function emitBeastCollapseVisualEvent() {
@@ -716,27 +736,6 @@ export function LaunchLab() {
     }
     function emitNode1MirrorActivatedEvent() {
       window.dispatchEvent(new CustomEvent(NODE1_MIRROR_ACTIVATED_EVENT));
-    }
-    function seedPressureAxisHandoff() {
-      const centerX = m.w / 2;
-      const centerY = m.h * 0.48;
-      const particles = NODES.flatMap((_, i) => {
-        const ring = (i % 7) / 7;
-        const angle = ring * Math.PI * 2 + i * 0.47;
-        return [0, 1, 2].map((layer) => {
-          const radius = 8 + (i % 3) * 4 + layer * 5;
-          const px = centerX + Math.cos(angle + layer * 0.18) * radius;
-          const py = centerY + Math.sin(angle + layer * 0.18) * (8 + (i % 4) * 3 + layer * 4);
-          return {
-            fx: clamp(px / Math.max(m.w, 1), 0, 1),
-            fy: clamp(py / Math.max(m.h, 1), 0, 1),
-            vx: Math.cos(angle) * 0.18,
-            vy: Math.sin(angle) * 0.18,
-            color: layer === 0 ? "#FFF7E4" : "#E8C88A",
-          };
-        });
-      });
-      setAxisHandoff(particles);
     }
     function activateNode1Mirror() {
       if (m.node1State?.mirrorActivated) return;
@@ -748,21 +747,17 @@ export function LaunchLab() {
       vibrate([0, 18, 24]);
     }
     function routeEntryFromBeastCollapseEvent() {
-      const type = getEntryUserType();
+      const type = getEntryUserTypePreviewOverride() ?? getEntryUserType();
       const routeMode = type === "NEW_USER" ? "ORIGINAL_COORDINATE_LOADING" : "PRESSURE_SEED_LOADING";
 
       console.log("ENTRY_DECISION", type);
       console.log("ROUTE_MODE", routeMode);
 
-      if (type === "NEW_USER") {
-        m.state = STATE.STARBEAST_SANDIFY;
-        m.t = 0;
-        audio.form();
-        vibrate([0, 18, 24]);
-        return;
-      }
-
-      openPressureSeedCanvas();
+      m.pendingAxisMode = type;
+      m.state = STATE.STARBEAST_SANDIFY;
+      m.t = 0;
+      audio.form();
+      vibrate([0, 18, 24]);
     }
     function completeEntryCanvasHandoff() {
       if (m.handoffStarted) return;
@@ -1020,12 +1015,6 @@ export function LaunchLab() {
         }
         case STATE.ENTRY_LIGHT_CONVERGENCE: {
           if (m.t >= 1.05) {
-            if (m.pendingAxisMode === "OLD_USER") {
-              seedPressureAxisHandoff();
-              openPressureSeedCanvas();
-              m.t = 0;
-              break;
-            }
             if (!m.entryTransitionSnapshot) {
               m.entryTransitionSnapshot = buildEntryTransitionSnapshot();
             }
@@ -1053,25 +1042,12 @@ export function LaunchLab() {
       ctx.fillRect(0, 0, m.w, m.h);
       const now = performance.now() / 1000;
       const currentScene = sceneRef.current;
-      if (currentScene === "HANDOFF") {
-        ctx.save();
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = `700 ${Math.min(19, m.w * 0.048)}px ${SANS}`;
-        ctx.fillStyle = "rgba(255,247,228,0.94)";
-        ctx.fillText("结构已稳定", m.w / 2, m.h * 0.47);
-        ctx.font = `600 ${Math.min(14, m.w * 0.036)}px ${SANS}`;
-        ctx.fillStyle = "rgba(232,200,138,0.82)";
-        ctx.fillText("进入你的当前状态", m.w / 2, m.h * 0.52);
-        ctx.restore();
-        return;
-      }
       const entryState = toStarbeastEntryState(m.state);
       const starbeastState = resolveStarbeastRenderState(entryState);
       const convergenceActive = isConvergenceState();
       const entryStaticActive = isEntryStaticState();
       const axisActive = m.state === STATE.STARBEAST_SANDIFY || isAxisState() || convergenceActive;
-      const nodeRuntimeActive = Boolean(m.node1State?.mirrorActivated) && currentScene !== "ENTRY";
+      const nodeRuntimeActive = Boolean(m.node1State?.mirrorActivated) && (currentScene === "NODE_1" || currentScene === "NODE_2");
 
       if (m.state === STATE.STARFIELD_IDLE) {
         m.field.forEach((s) => {
@@ -1226,14 +1202,6 @@ export function LaunchLab() {
 
       if (nodeRuntimeActive) {
         const node1ElapsedMs = m.node1T * 1000;
-        const domState = resolveFinalDOMProjection({
-          node1State: m.node1State!,
-          timeSpent: node1ElapsedMs,
-        });
-        const resolvedNodeScene: SceneState = domState.shouldRenderNode2 ? "NODE_2" : "NODE_1";
-        if (sceneRef.current !== resolvedNodeScene && sceneRef.current !== "HANDOFF") {
-          setSceneState(resolvedNodeScene);
-        }
         const progress = computeNodeTransitionProgress(node1ElapsedMs);
         const lerp = getNodeTransitionLerp(progress);
         const mirrorIn = smooth(0, 0.28, m.node1T);
@@ -1255,7 +1223,7 @@ export function LaunchLab() {
         ctx.arc(glowX, centerY, Math.min(m.w, m.h) * (0.32 + splitHint * 0.04), 0, Math.PI * 2);
         ctx.fill();
 
-        if (domState.shouldRenderNode2) {
+        if (currentScene === "NODE_2") {
           const splitLineAlpha = Math.max(smooth(1.2, 1.45, m.node1T), 0.18) * lerp.starfieldFragmentation * 0.34;
           const splitOffset = Math.min(18, m.w * 0.04);
           ctx.strokeStyle = `rgba(232,200,138,${splitLineAlpha.toFixed(3)})`;
@@ -1408,16 +1376,17 @@ export function LaunchLab() {
         if (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND || m.state === STATE.DISPLAY_LOCK) {
           ctx.textAlign = "left";
           const finalLocked = m.state === STATE.DISPLAY_LOCK;
+          const axisCopy = AXIS_COPY[m.pendingAxisMode];
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
           ctx.fillText("走过黑夜的人，会留下光的痕迹。", g.railX0, m.h * 0.1);
           ctx.fillStyle = "rgba(255,247,228,0.78)";
           ctx.font = `650 ${Math.min(15, m.w * 0.038)}px ${SANS}`;
-          ctx.fillText("原始坐标生成。", g.railX0, m.h * 0.145);
-          ctx.fillText("坐标正在成形。", g.railX0, m.h * 0.18);
+          ctx.fillText(axisCopy.topPrimary, g.railX0, m.h * 0.145);
+          ctx.fillText(axisCopy.topSecondary, g.railX0, m.h * 0.18);
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(finalLocked ? "［ 光痕 ］" : isGeoStage ? `［ ${GEO_LABEL[geoDim]} ］` : `［ ${DIM_STAGE_LABEL[dim]} ］`, g.railX0, m.h * 0.34);
+          ctx.fillText(finalLocked ? "［ 光痕 ］" : isGeoStage ? `［ ${axisCopy.geoLabel[geoDim]} ］` : `［ ${axisCopy.dimStageLabel[dim]} ］`, g.railX0, m.h * 0.34);
           ctx.fillStyle = "rgba(255,247,228,0.96)";
           const valueSize = finalLocked
             ? Math.min(28, m.w * 0.062)
@@ -1433,15 +1402,15 @@ export function LaunchLab() {
           ctx.fillText("只是帮你抵住那些风暴和内耗", g.railX0, m.h * 0.63);
           ctx.fillStyle = "rgba(232,200,138,0.46)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "坐标已成形" : isGeoStage ? "先上下调频 · 再右滑固定方位" : "先上下调频 · 再右滑固定坐标", g.railX0, m.h * 0.705);
+          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? axisCopy.lockText : isGeoStage ? "先上下调频 · 再右滑固定方位" : "先上下调频 · 再右滑固定坐标", g.railX0, m.h * 0.705);
           ctx.fillStyle = "rgba(232,200,138,0.58)";
           ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
           const railHint = finalLocked
-            ? "坐标已成形"
+            ? axisCopy.lockText
             : m.verticalTuned && isGeoStage && geoDim === "city"
               ? "右滑 · 光痕"
               : m.verticalTuned
-                ? `右滑进入 · ${isGeoStage ? GEO_LABEL[geoDim] : DIM_LABEL[dim]}`
+                ? `右滑进入 · ${isGeoStage ? axisCopy.geoLabel[geoDim] : axisCopy.dimLabel[dim]}`
                 : "纵轴调频后 · 横轴解锁";
           ctx.fillText(railHint, g.railX0, g.railY + 30);
           ctx.textAlign = "right";
@@ -1615,7 +1584,7 @@ export function LaunchLab() {
           vibrate(8);
         }
         if (!inCard && m.entryCardFlipT >= 1) {
-          openPressureSeedCanvas();
+          commitPressureSeedCapture(buildDeterministicPressureSeedCandidate());
         }
         return;
       }
@@ -1744,11 +1713,7 @@ export function LaunchLab() {
       canvas.removeEventListener("pointercancel", onUp);
       entryHandoffRef.current = null;
     };
-  }, [openPressureSeedCanvas, setSceneState, triggerClickFlash]);
-
-  if (showPressureSeedCapture) {
-    return <PressureSeedCrossAxisPage onComplete={commitPressureSeedCapture} />;
-  }
+  }, [commitPressureSeedCapture, setSceneState, triggerClickFlash]);
 
   return (
     <GyMobilePreviewFrame background="#070512">
@@ -1757,8 +1722,22 @@ export function LaunchLab() {
           ref={canvasRef}
           data-launch-interaction-state={interactionState}
           data-launch-scene={scene}
+          data-launch-timeline={timeline[scene]}
           style={{ width: "100%", height: "100%", display: "block", touchAction: "none", cursor: scene === "ENTRY" ? "pointer" : "default" }}
         />
+        <div className="visual-stage" aria-hidden="true">
+          <div className={visualLayerClass("ENTRY", "entry-layer")} />
+          <div className={visualLayerClass("NODE_1", "node1-layer")}>
+            Node 1：镜面已激活
+          </div>
+          <div className={visualLayerClass("NODE_2", "node2-layer")}>
+            Node 2：结构开始分离
+          </div>
+          <div className={visualLayerClass("HANDOFF", "handoff-layer")}>
+            <span>结构已稳定</span>
+            <small>进入你的当前状态</small>
+          </div>
+        </div>
         {clickFlash && (
           <div
             className="click-flash"
@@ -1772,6 +1751,55 @@ export function LaunchLab() {
           />
         )}
         <style>{`
+          .visual-stage {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+          }
+          .gy-timeline-layer {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: rgba(255,247,228,0.94);
+            font-family: ${SANS};
+            font-weight: 700;
+            font-size: min(20px, 5vw);
+            text-align: center;
+            letter-spacing: 0;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 420ms ease, transform 420ms ease;
+            will-change: opacity, transform;
+          }
+          .gy-timeline-layer.on {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          .gy-timeline-layer.off {
+            opacity: 0;
+            transform: translateY(6px);
+          }
+          .entry-layer {
+            opacity: 0;
+          }
+          .node1-layer,
+          .node2-layer,
+          .handoff-layer {
+            top: auto;
+            bottom: 18%;
+            height: 18%;
+            color: rgba(232,200,138,0.9);
+          }
+          .handoff-layer small {
+            display: block;
+            margin-top: 10px;
+            color: rgba(232,200,138,0.78);
+            font-size: min(14px, 3.6vw);
+            font-weight: 600;
+          }
           @keyframes guanyao-entry-click-flash {
             from { opacity: 0.2; }
             to { opacity: 0; }
