@@ -395,6 +395,7 @@ export function LaunchLab() {
   const timelineRunIdRef = useRef(0);
   const nodeTimelineStartedAtRef = useRef(0);
   const entryHandoffRef = useRef<((mode: EntryHandoffMode) => void) | null>(null);
+  const showInternalNodeCopy = DEBUG_TIMELINE;
   const visualLayerClass = useCallback(
     (targetScene: SceneState, extra = "") => `gy-timeline-layer ${extra} ${scene === targetScene ? "on" : "off"}`,
     [scene],
@@ -1862,14 +1863,18 @@ export function LaunchLab() {
         <div className="visual-stage" aria-hidden="true">
           <div className={visualLayerClass("ENTRY", "entry-layer")} />
           <div className={visualLayerClass("NODE_1", "node1-layer")}>
-            Node 1：镜面已激活
+            {showInternalNodeCopy ? "Node 1：镜面已激活" : null}
           </div>
           <div className={visualLayerClass("NODE_2", "node2-layer")}>
-            Node 2：结构开始分离
+            {showInternalNodeCopy ? "Node 2：结构开始分离" : null}
           </div>
           <div className={visualLayerClass("HANDOFF", "handoff-layer")}>
-            <span>结构已稳定</span>
-            <small>进入你的当前状态</small>
+            {showInternalNodeCopy ? (
+              <>
+                <span>结构已稳定</span>
+                <small>进入你的当前状态</small>
+              </>
+            ) : null}
           </div>
         </div>
         {clickFlash && (
