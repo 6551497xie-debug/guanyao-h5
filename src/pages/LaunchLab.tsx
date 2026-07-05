@@ -197,6 +197,8 @@ const DEBUG_TIMELINE =
   new URLSearchParams(window.location.search).get("debugTimeline") === "1";
 const SNAPSHOT_MODE = DEBUG_TIMELINE;
 const snapshotTargets: SceneState[] = [...SCENE_ORDER];
+// Production URLs: /launch-lab?entryUser=new, /launch-lab?entryUser=old
+// Debug URL: /launch-lab?entryUser=new&debugTimeline=1
 const GEO_DIMS = ["province", "city"] as const;
 const AXIS_COPY: Record<EntryHandoffMode, {
   dimLabel: Record<ChronoDim, string>;
@@ -2314,6 +2316,10 @@ export function LaunchLab() {
         )}
         {SNAPSHOT_MODE && (
           <div className="snapshot-panel">
+            <div className="snapshot-panel-note" aria-hidden="true">
+              <strong>内部节点调试</strong>
+              <span>生产路径请使用 /launch-lab?entryUser=new 或 /launch-lab?entryUser=old</span>
+            </div>
             {snapshotTargets.map((target) => (
               <button key={target} type="button" onClick={() => debugGoTo(target)}>
                 {target}
@@ -2420,12 +2426,33 @@ export function LaunchLab() {
             bottom: 20px;
             z-index: 99999;
             display: flex;
+            align-items: center;
+            flex-wrap: wrap;
             gap: 6px;
             opacity: 0.8;
             pointer-events: auto;
             background: rgba(0,0,0,0.4);
             padding: 8px;
             border-radius: 6px;
+          }
+          .snapshot-panel-note {
+            flex-basis: 100%;
+            display: grid;
+            gap: 2px;
+            max-width: min(310px, calc(100vw - 56px));
+            padding: 0 2px 4px;
+            color: rgba(255,247,228,0.82);
+            font-family: ${SANS};
+            font-size: 11px;
+            line-height: 1.35;
+          }
+          .snapshot-panel-note strong {
+            color: rgba(232,200,138,0.94);
+            font-size: 12px;
+            letter-spacing: 0;
+          }
+          .snapshot-panel-note span {
+            color: rgba(255,247,228,0.62);
           }
           .snapshot-panel button {
             border: 1px solid rgba(232,200,138,0.42);
