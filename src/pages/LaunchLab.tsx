@@ -12,6 +12,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { EntryCardRendererOptions } from "../components/entry/EntryCardRenderer";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
+import {
+  getFourBeastTrigramVisualGrammar,
+  type FourBeastTrigramVisualGrammarItem,
+} from "../data/fourBeastTrigramVisualGrammar";
 import type { PressureSeedCrossAxisSeed } from "./PressureSeedCrossAxisPage";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getEntryUserType } from "../runtime/entry/entryDecision";
@@ -483,10 +487,28 @@ function drawCanvasWrappedText(
   if (line && lines < maxLines) ctx.fillText(line, x, yy);
 }
 
+function resolveFourBeastGrammar(
+  result: GeoChronoMotherFusionResult,
+): FourBeastTrigramVisualGrammarItem | undefined {
+  try {
+    return getFourBeastTrigramVisualGrammar(result.geo.symbol, result.mother.trigram);
+  } catch {
+    return undefined;
+  }
+}
+
+function fourBeastGrammarShortLine(grammar?: FourBeastTrigramVisualGrammarItem) {
+  if (!grammar) return "";
+  const motionTail = grammar.motion.split("/").pop()?.trim() ?? grammar.motion;
+  return motionTail.replace(/[。.]$/, "");
+}
+
 function drawFourBeastOriginMarker(
   ctx: CanvasRenderingContext2D,
   beast: GeoDirectionSymbol,
+  trigram: string,
   province: string,
+  grammarLine: string,
   x: number,
   y: number,
   w: number,
@@ -532,10 +554,11 @@ function drawFourBeastOriginMarker(
 
   ctx.fillStyle = "rgba(232,200,138,0.54)";
   ctx.font = `700 ${Math.min(13, Math.max(10, w * 0.06))}px ${MONO}`;
-  ctx.fillText("四象兽归位", cx, cy + radius * 0.78);
+  ctx.fillText(`${beast} × ${trigram}`, cx, cy + radius * 0.72);
   ctx.fillStyle = "rgba(232,200,138,0.42)";
   ctx.font = `600 ${Math.min(10.5, Math.max(8.5, w * 0.047))}px ${MONO}`;
-  ctx.fillText(`${copy.axis} · ${province}`, cx, cy + radius * 1.06);
+  ctx.fillText(grammarLine || `${copy.axis} · ${province}`, cx, cy + radius * 0.98);
+  ctx.fillText(`${copy.axis} · ${province}`, cx, cy + radius * 1.22);
 
   ctx.restore();
 }
@@ -1930,6 +1953,8 @@ export function LaunchLab() {
           const originStepKey: OriginTuningStep = isGeoStage ? "province" : dim;
           const originStep = ORIGIN_TUNING_STATUS[originStepKey];
           const originLockFeedback = isNewOriginFlow && lockPulse > 0.08;
+          const fourBeastGrammar = originMother ? resolveFourBeastGrammar(originMother) : undefined;
+          const fourBeastGrammarLine = fourBeastGrammarShortLine(fourBeastGrammar);
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
           ctx.fillText(axisCopy.kicker, g.railX0, m.h * 0.1);
@@ -1961,7 +1986,9 @@ export function LaunchLab() {
             drawFourBeastOriginMarker(
               ctx,
               originMother.geo.symbol,
+              originMother.mother.trigram,
               originMother.geo.province,
+              fourBeastGrammarLine,
               g.railX0 + (g.railX1 - g.railX0) * 0.56,
               m.h * 0.19,
               (g.railX1 - g.railX0) * 0.42,
@@ -2226,6 +2253,8 @@ export function LaunchLab() {
         const reveal = resolveOriginMotherCode();
         const profile = reveal.mother.profile;
         const definition = reveal.mother.definition;
+        const fourBeastGrammar = resolveFourBeastGrammar(reveal);
+        const fourBeastGrammarLine = fourBeastGrammarShortLine(fourBeastGrammar);
         const inT = smooth(0, 0.6, m.t);
         const pulse = 0.72 + Math.sin(now * 2.1) * 0.1;
         const centerX = m.w / 2;
@@ -2306,13 +2335,21 @@ export function LaunchLab() {
         drawCanvasWrappedText(ctx, definition.assetSummary, cardX + 16, cardY + 132, cardW - 32, 20, 2);
         ctx.fillStyle = "rgba(232,200,138,0.66)";
         ctx.font = `600 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
-        ctx.fillText(`时序卦符：${reveal.chrono.lockPoint} · ${definition.trigramSymbol}${reveal.mother.trigram}`, cardX + 16, cardY + cardH - 48);
+        ctx.fillText(`时序卦符：${reveal.chrono.lockPoint} · ${definition.trigramSymbol}${reveal.mother.trigram}`, cardX + 16, cardY + cardH - 58);
         ctx.fillStyle = "rgba(232,200,138,0.62)";
         ctx.beginPath();
-        ctx.arc(cardX + 20, cardY + cardH - 25, 2.2, 0, Math.PI * 2);
+        ctx.arc(cardX + 20, cardY + cardH - 36, 2.2, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = "rgba(232,200,138,0.66)";
-        ctx.fillText(`方位落位：${reveal.geo.symbol} · ${reveal.geo.province}`, cardX + 28, cardY + cardH - 22);
+        ctx.fillText(`方位落位：${reveal.geo.symbol} · ${reveal.geo.province}`, cardX + 28, cardY + cardH - 34);
+        ctx.fillStyle = "rgba(232,200,138,0.54)";
+        ctx.fillText(`动作语法：${reveal.geo.symbol} × ${reveal.mother.trigram}`, cardX + 16, cardY + cardH - 16);
+        if (fourBeastGrammarLine) {
+          ctx.textAlign = "right";
+          ctx.fillStyle = "rgba(232,200,138,0.44)";
+          ctx.fillText(fourBeastGrammarLine, cardX + cardW - 16, cardY + cardH - 16);
+          ctx.textAlign = "left";
+        }
 
         ctx.fillStyle = "rgba(232,200,138,0.52)";
         ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
