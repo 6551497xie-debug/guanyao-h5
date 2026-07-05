@@ -1363,6 +1363,14 @@ function SixDimensionWheel({
         const rad = (angle * Math.PI) / 180;
         const isActive = config.id === activeConfig.id;
         const state = petalStates[config.id];
+        const isBlooming = state === "blooming";
+        const petalWidth = isActive ? 72 : isBlooming ? 46 : 42;
+        const petalHeight = isActive ? 29 : isBlooming ? 19 : 17;
+        const petalOpacity = isActive ? 1 : isBlooming ? 0.5 : 0.36;
+        const petalGlow = isActive ? `0 0 30px rgba(${toneColor},0.3), 0 0 7px rgba(245,245,245,0.1)` : isBlooming ? `0 0 12px rgba(${toneColor},0.1)` : "none";
+        const petalBorderAlpha = isActive ? 0.58 : isBlooming ? 0.2 : 0.11;
+        const petalToneAlpha = isActive ? 0.34 : isBlooming ? 0.11 : 0.055;
+        const petalLightAlpha = isActive ? 0.2 : isBlooming ? 0.1 : 0.028;
         const left = 50 + Math.cos(rad) * 32;
         const top = 58 + Math.sin(rad) * 18;
 
@@ -1376,27 +1384,31 @@ function SixDimensionWheel({
               position: "absolute",
               left: `${left}%`,
               top: `${top}%`,
-              width: isActive ? 64 : 50,
-              height: isActive ? 26 : 20,
+              width: petalWidth,
+              height: petalHeight,
               borderRadius: "50%",
               transform: `translate(-50%, -50%) rotate(${angle + 90}deg)`,
-              background: `linear-gradient(90deg, rgba(${toneColor},${isActive ? 0.28 : 0.08}), rgba(245,245,245,${state === "blooming" ? 0.16 : 0.04}))`,
-              border: `1px solid rgba(${toneColor},${isActive ? 0.42 : 0.14})`,
-              boxShadow: isActive ? `0 0 24px rgba(${toneColor},0.22)` : "none",
-              opacity: isActive ? 0.96 : 0.54,
+              background: `linear-gradient(90deg, rgba(${toneColor},${petalToneAlpha}), rgba(245,245,245,${petalLightAlpha}))`,
+              border: `1px solid rgba(${toneColor},${petalBorderAlpha})`,
+              boxShadow: petalGlow,
+              opacity: petalOpacity,
               pointerEvents: "none",
               animation: "gy-petal-float 4.6s ease-in-out infinite",
+              transition: "width 320ms ease, height 320ms ease, opacity 320ms ease, border-color 320ms ease, box-shadow 320ms ease, background 320ms ease",
             } as CSSProperties}
           >
             <span
               style={{
                 display: "block",
                 transform: `rotate(${-angle - 90}deg)`,
-                color: isActive ? "rgba(245,245,245,0.72)" : "rgba(245,245,245,0.32)",
-                fontSize: 9,
-                lineHeight: "26px",
+                color: isActive ? "rgba(245,245,245,0.86)" : isBlooming ? "rgba(245,245,245,0.38)" : "rgba(245,245,245,0.24)",
+                fontSize: isActive ? 10 : 9,
+                fontWeight: isActive ? 650 : 500,
+                lineHeight: `${petalHeight}px`,
                 textAlign: "center",
                 letterSpacing: "0.04em",
+                textShadow: isActive ? `0 0 12px rgba(${toneColor},0.28)` : "none",
+                transition: "color 320ms ease, line-height 320ms ease, text-shadow 320ms ease",
               }}
             >
               {shortPetalNames[index]}
