@@ -1720,6 +1720,7 @@ export function LaunchLab() {
         const groupPulse = smooth(0, 1, m.pressureSeedGroupPulse);
         const coordY = lerp(g.axisTop, g.axisBottom, m.pressureSeedCoordinateIndex / 20);
         const railStops = [0.18, 0.5, 0.82];
+        const railPoints = railStops.map((stop) => ({ x: lerp(g.railX0, g.railX1, stop), y: g.railY }));
 
         ctx.globalAlpha = inT;
         const glow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.min(m.w, m.h) * 0.34);
@@ -1759,10 +1760,33 @@ export function LaunchLab() {
         ctx.lineTo(g.railX1, g.railY);
         ctx.stroke();
 
-        railStops.forEach((stop, index) => {
-          const p = { x: lerp(g.railX0, g.railX1, stop), y: g.railY };
+        railPoints.forEach((railPoint, index) => {
+          const seedLineY = seedY[index] ?? centerY;
           const active = index === selected;
           const locked = active && m.pressureSeedLocked;
+          ctx.strokeStyle = locked
+            ? "rgba(255,247,228,0.34)"
+            : active
+              ? "rgba(232,200,138,0.24)"
+              : "rgba(232,200,138,0.1)";
+          ctx.lineWidth = locked ? 1.2 : 0.7;
+          ctx.beginPath();
+          ctx.moveTo(railPoint.x, railPoint.y - 8);
+          ctx.lineTo(g.axisX, seedLineY);
+          ctx.stroke();
+        });
+
+        railPoints.forEach((p, index) => {
+          const active = index === selected;
+          const locked = active && m.pressureSeedLocked;
+          if (locked) {
+            const lockRing = 0.5 + 0.5 * Math.sin(now * 18);
+            ctx.strokeStyle = `rgba(255,247,228,${(0.22 + lockRing * 0.34).toFixed(3)})`;
+            ctx.lineWidth = 1.1;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 10 + lockRing * 4, 0, Math.PI * 2);
+            ctx.stroke();
+          }
           ctx.fillStyle = locked ? "rgba(255,247,228,0.98)" : active ? "rgba(255,247,228,0.78)" : "rgba(232,200,138,0.28)";
           ctx.shadowColor = locked ? "rgba(255,247,228,0.86)" : active ? "rgba(255,247,228,0.42)" : "rgba(232,200,138,0.2)";
           ctx.shadowBlur = locked ? 18 : active ? 10 : 4;
@@ -1773,7 +1797,7 @@ export function LaunchLab() {
           ctx.textAlign = "center";
           ctx.fillStyle = locked ? "rgba(255,247,228,0.8)" : "rgba(232,200,138,0.46)";
           ctx.font = `600 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
-          ctx.fillText(`${index + 1}`, p.x, p.y + 20);
+          ctx.fillText(pad2(index + 1), p.x, p.y + 22);
         });
         ctx.shadowBlur = 0;
 
@@ -1784,6 +1808,21 @@ export function LaunchLab() {
           const x = active ? g.railX0 : g.railX0 + 16;
           const dotX = g.axisX;
           const seedPulse = groupPulse * (index === 1 ? 0.18 : 0.12);
+          if (confirmed) {
+            const hitW = Math.min(m.w * 0.72, g.railX1 - g.railX0 + 22);
+            const hitX = g.railX0 - 10;
+            const hitY = y - 62;
+            ctx.fillStyle = "rgba(255,247,228,0.035)";
+            ctx.strokeStyle = "rgba(232,200,138,0.16)";
+            ctx.lineWidth = 0.6;
+            ctx.beginPath();
+            ctx.roundRect?.(hitX, hitY, hitW, 126, 14);
+            if (!ctx.roundRect) {
+              ctx.rect(hitX, hitY, hitW, 126);
+            }
+            ctx.fill();
+            ctx.stroke();
+          }
           ctx.fillStyle = active ? "rgba(255,247,228,0.96)" : `rgba(232,200,138,${(0.38 + seedPulse).toFixed(3)})`;
           ctx.shadowColor = active ? "rgba(255,247,228,0.82)" : "rgba(232,200,138,0.28)";
           ctx.shadowBlur = confirmed ? 24 : active ? 16 + groupPulse * 10 : 6 + groupPulse * 5;
@@ -2013,7 +2052,7 @@ export function LaunchLab() {
         const g = axisMetrics();
         const seedY = [m.h * 0.36, m.h * 0.5, m.h * 0.64];
         const selectedSeedY = seedY[m.pressureSeedIndex] ?? seedY[1]!;
-        const centerHit = m.pressureSeedLocked && Math.abs(y - selectedSeedY) < 64 && x >= g.railX0 - 12 && x <= g.railX1 + 18;
+        const centerHit = m.pressureSeedLocked && Math.abs(y - selectedSeedY) < 76 && x >= g.railX0 - 24 && x <= g.railX1 + 30;
         if (centerHit) {
           enterFocusedPressureSeed();
           m.dragging = false;
