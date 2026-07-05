@@ -176,6 +176,7 @@ const ENTRY_HANDOFF_DELAY_MS = 700;
 const NODE_TRANSITION_LERP_START_MS = 760;
 const NODE_TRANSITION_LERP_DURATION_MS = 900;
 const RAIL_COMMIT_THRESHOLD = 0.58;
+const ORIGIN_RAIL_COLS = 5;
 const PERIOD_LABELS = ["子时", "丑时", "寅时", "卯时", "辰时", "巳时", "午时", "未时", "申时", "酉时", "戌时", "亥时"];
 const CHRONO_DIMS = ["year", "month", "day", "hour"] as const;
 type ChronoDim = (typeof CHRONO_DIMS)[number];
@@ -205,7 +206,45 @@ const SNAPSHOT_MODE = DEBUG_TIMELINE;
 const snapshotTargets: SceneState[] = [...SCENE_ORDER];
 // Production URLs: /launch-lab?entryUser=new, /launch-lab?entryUser=old
 // Debug URL: /launch-lab?entryUser=new&debugTimeline=1
-const GEO_DIMS = ["province", "city"] as const;
+const GEO_DIMS = ["province"] as const;
+type OriginTuningStep = ChronoDim | (typeof GEO_DIMS)[number];
+const ORIGIN_TUNING_STATUS: Record<OriginTuningStep, {
+  title: string;
+  stage: string;
+  axis: string;
+  group: string;
+}> = {
+  year: {
+    title: "年份正在锁定",
+    stage: "年份锁定",
+    axis: "原始时间轴 · 第 1 / 5 格",
+    group: "时序填装：年 / 月 / 日 / 时",
+  },
+  month: {
+    title: "月份正在对齐",
+    stage: "月份对齐",
+    axis: "原始时间轴 · 第 2 / 5 格",
+    group: "时序填装：年 / 月 / 日 / 时",
+  },
+  day: {
+    title: "日期正在落点",
+    stage: "日期落点",
+    axis: "原始时间轴 · 第 3 / 5 格",
+    group: "时序填装：年 / 月 / 日 / 时",
+  },
+  hour: {
+    title: "时辰正在显影",
+    stage: "时辰显影",
+    axis: "原始时间轴 · 第 4 / 5 格",
+    group: "时序填装：年 / 月 / 日 / 时",
+  },
+  province: {
+    title: "方位正在展开",
+    stage: "方位展开",
+    axis: "地理方位轴 · 第 5 / 5 格",
+    group: "方位填装：省份",
+  },
+};
 const AXIS_COPY: Record<EntryHandoffMode, {
   dimLabel: Record<ChronoDim, string>;
   dimStageLabel: Record<ChronoDim, string>;
@@ -220,9 +259,9 @@ const AXIS_COPY: Record<EntryHandoffMode, {
   lockText: string;
 }> = {
   NEW_USER: {
-    dimLabel: { year: "原始坐标", month: "坐标层级", day: "坐标刻度", hour: "坐标锚点" },
-    dimStageLabel: { year: "原始坐标", month: "坐标层级", day: "坐标刻度", hour: "坐标锚点" },
-    geoLabel: { province: "空间坐标", city: "方位坐标" },
+    dimLabel: { year: "年份", month: "月份", day: "日期", hour: "时辰" },
+    dimStageLabel: { year: "年份锁定", month: "月份对齐", day: "日期落点", hour: "时辰显影" },
+    geoLabel: { province: "省份", city: "城市落点" },
     kicker: "第一次原始坐标",
     topPrimary: "你的原始坐标正在生成",
     topSecondary: "正在装填你的原始坐标",
@@ -326,6 +365,10 @@ function hourToPeriodRange(hour: number) {
   const start = (periodIndex * 2 + 23) % 24;
   const end = (start + 2) % 24;
   return `${pad2(start)}:00-${pad2(end)}:00`;
+}
+
+function hourToPeriodLabel(hour: number) {
+  return PERIOD_LABELS[hourToPeriodIndex(hour)] ?? "子时";
 }
 
 function computeNodeTransitionProgress(node1ElapsedMs: number): number {
@@ -708,6 +751,7 @@ export function LaunchLab() {
         openPressureSeedAxis();
         return;
       }
+      resetOriginTuningFlow();
       m.state = STATE.STARBEAST_SANDIFY;
       m.t = 0;
       audio.form();
@@ -807,7 +851,7 @@ export function LaunchLab() {
       return m.state === STATE.ENTRY_STATIC_RENDER;
     }
     function axisMetrics() {
-      const cols = 7;
+      const cols = ORIGIN_RAIL_COLS;
       const rows = 21;
       const cw = Math.min(m.w, 440);
       const cl = (m.w - cw) / 2;
@@ -853,10 +897,10 @@ export function LaunchLab() {
       if (dim === "year") return `${copy.year} ${String(v).slice(-2)}`;
       if (dim === "month") return `${copy.month} ${pad2(v)}`;
       if (dim === "day") return `${copy.day} ${pad2(v)}`;
-      return `${copy.hour} ${pad2(clamp(v, 0, 23))}`;
+      return `${copy.hour} ${hourToPeriodLabel(clamp(v, 0, 23))}`;
     }
     function activeGeoDim(): GeoDim {
-      return GEO_DIMS[m.geoStep] ?? "city";
+      return GEO_DIMS[m.geoStep] ?? "province";
     }
     function geoOptions(dim: GeoDim) {
       if (dim === "province") return PROVINCE_OPTIONS;
@@ -891,6 +935,9 @@ export function LaunchLab() {
     function currentCityName() {
       const province = currentProvinceName();
       return (CITY_OPTIONS_BY_PROVINCE[province] ?? ["广州"])[m.geo.cityIndex] ?? "广州";
+    }
+    function originCoordinateSummary() {
+      return `${m.coords.year}/${pad2(m.coords.month)}/${pad2(m.coords.day)} ${pad2(m.coords.hour)}时-${hourToPeriodLabel(m.coords.hour)} · ${currentProvinceName()}`;
     }
     function resolveOriginMotherCode(): GeoChronoMotherFusionResult {
       return runGeoChronoMotherFusionEngine({
@@ -934,6 +981,26 @@ export function LaunchLab() {
         : dimRange(m.coords, rangeOwner as ChronoDim);
       const frac = max > min ? (m.dialFloat - min) / (max - min) : 0;
       m.precisionY = max > min ? Math.round((1 - frac) * 20) : 10;
+    }
+    function resetOriginTuningFlow() {
+      m.chronoStep = 0;
+      m.geoStep = 0;
+      m.railProgress = 0;
+      m.phaseX = 0;
+      m.dragging = false;
+      m.dragAxis = null;
+      m.clutched = false;
+      m.verticalTuned = false;
+      m.verticalDragMoved = false;
+    }
+    function resetAxisStepProgress() {
+      m.railProgress = 0;
+      m.phaseX = 0;
+      m.dragging = false;
+      m.dragAxis = null;
+      m.clutched = false;
+      m.verticalDragMoved = false;
+      m.dwellT = 0;
     }
     function triggerEntryTransition() {
       if (m.handoffStarted) return;
@@ -1005,6 +1072,7 @@ export function LaunchLab() {
       console.log("ROUTE_MODE", routeMode);
 
       m.pendingAxisMode = type;
+      if (type === "NEW_USER") resetOriginTuningFlow();
       m.state = STATE.STARBEAST_SANDIFY;
       m.t = 0;
       audio.form();
@@ -1013,7 +1081,7 @@ export function LaunchLab() {
     function completeEntryCanvasHandoff() {
       if (m.handoffStarted) return;
       m.railProgress = 1;
-      m.phaseX = 6;
+      m.phaseX = ORIGIN_RAIL_COLS - 1;
       m.clutched = true;
       m.entryTransitionSnapshot = m.entryTransitionSnapshot ?? buildEntryTransitionSnapshot();
       m.state = STATE.DISPLAY_LOCK;
@@ -1076,6 +1144,18 @@ export function LaunchLab() {
       if (m.state === STATE.GEO_BIND) {
         const geoDim = activeGeoDim();
         setGeoValue(geoDim, m.dialFloat);
+        if (m.pendingAxisMode === "NEW_USER") {
+          if (m.geoStep < GEO_DIMS.length - 1) {
+            m.geoStep += 1;
+            resetAxisStepProgress();
+            syncDialToCurrent();
+            audio.tick();
+            vibrate(8);
+            return;
+          }
+          openMotherCodeReveal();
+          return;
+        }
         completeEntryCanvasHandoff();
         return;
       }
@@ -1083,13 +1163,17 @@ export function LaunchLab() {
       const dim = activeDim();
       setDimValue(dim, m.dialFloat);
       if (m.pendingAxisMode === "NEW_USER") {
+        if (m.chronoStep < CHRONO_DIMS.length - 1) {
+          m.chronoStep += 1;
+          resetAxisStepProgress();
+          syncDialToCurrent();
+          audio.tick();
+          vibrate(8);
+          return;
+        }
         m.state = STATE.GEO_BIND;
-        m.geoStep = 1;
-        m.dragging = false;
-        m.dragAxis = null;
-        m.clutched = false;
-        m.railProgress = 0;
-        m.phaseX = 0;
+        m.geoStep = 0;
+        resetAxisStepProgress();
         syncDialToCurrent();
         audio.tick();
         vibrate(8);
@@ -1470,8 +1554,9 @@ export function LaunchLab() {
         const p = nodePos(i);
         if (!starbeastState.collapseAnimationTrigger) return p;
         const k = smooth(0.05, 1.15, m.t);
+        const railCols = axisMetrics().cols;
         const gp = i % 2 === 0
-          ? railPoint(i % 7)
+          ? railPoint(i % railCols)
           : tunePoint(Math.min(20, 2 + Math.floor(i / 7) * 5));
         return {
           ...p,
@@ -1615,7 +1700,7 @@ export function LaunchLab() {
         ctx.fill();
         ctx.strokeStyle = `rgba(${warmAxisRgb},${(0.08 + originEmission * 0.24).toFixed(3)})`;
         ctx.lineWidth = 1;
-        [0, 2, 4, 6].forEach((col) => {
+        [0, 1, 2, 3, 4].forEach((col) => {
           const target = railPoint(col);
           const headX = lerp(originX, target.x, axisGrow);
           const headY = lerp(originY, target.y, axisGrow);
@@ -1637,7 +1722,7 @@ export function LaunchLab() {
         ctx.globalAlpha = axisSeed;
         pos.forEach((p, i) => {
           const residueTarget = i % 2 === 0
-            ? railPoint(i % 7)
+            ? railPoint(i % g.cols)
             : tunePoint(i % 21);
           const settle = smooth(0.1 + (i / pos.length) * 0.45, 1.0, axisSeed);
           const x = lerp(p.x, residueTarget.x, settle);
@@ -1705,21 +1790,29 @@ export function LaunchLab() {
           ctx.textAlign = "left";
           const finalLocked = m.state === STATE.DISPLAY_LOCK;
           const axisCopy = AXIS_COPY[m.pendingAxisMode];
+          const isNewOriginFlow = m.pendingAxisMode === "NEW_USER" && !finalLocked;
+          const originStepKey: OriginTuningStep = isGeoStage ? "province" : dim;
+          const originStep = ORIGIN_TUNING_STATUS[originStepKey];
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
           ctx.fillText(axisCopy.kicker, g.railX0, m.h * 0.1);
           ctx.fillStyle = "rgba(255,247,228,0.78)";
           ctx.font = `650 ${Math.min(15, m.w * 0.038)}px ${SANS}`;
-          ctx.fillText(axisCopy.topPrimary, g.railX0, m.h * 0.145);
-          ctx.fillText(axisCopy.topSecondary, g.railX0, m.h * 0.18);
+          ctx.fillText(isNewOriginFlow ? originStep.title : axisCopy.topPrimary, g.railX0, m.h * 0.145);
+          ctx.fillText(isNewOriginFlow ? originStep.axis : axisCopy.topSecondary, g.railX0, m.h * 0.18);
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(finalLocked ? "［ 光痕 ］" : isGeoStage ? `［ ${axisCopy.geoLabel[geoDim]} ］` : `［ ${axisCopy.dimStageLabel[dim]} ］`, g.railX0, m.h * 0.34);
+          ctx.fillText(finalLocked ? "［ 光痕 ］" : isNewOriginFlow ? `［ ${originStep.stage} ］` : isGeoStage ? `［ ${axisCopy.geoLabel[geoDim]} ］` : `［ ${axisCopy.dimStageLabel[dim]} ］`, g.railX0, m.h * 0.34);
           if (originMother && !finalLocked) {
             ctx.fillStyle = "rgba(232,200,138,0.5)";
             ctx.font = `600 ${Math.min(9.5, m.w * 0.024)}px ${MONO}`;
-            ctx.fillText(`时序填装：卦符显影 ${originMother.chrono.lockPoint} · ${originMother.mother.definition.trigramSymbol}${originMother.mother.trigram}`, g.railX0, m.h * 0.252);
-            ctx.fillText(`方位填装：四象兽归位 ${originMother.geo.symbol} · ${originMother.geo.province}/${originMother.geo.city}`, g.railX0, m.h * 0.282);
+            if (isNewOriginFlow) {
+              ctx.fillText(originStep.group, g.railX0, m.h * 0.252);
+              ctx.fillText(`已锁定：${originCoordinateSummary()}`, g.railX0, m.h * 0.282);
+            } else {
+              ctx.fillText(`时序填装：卦符显影 ${originMother.chrono.lockPoint} · ${originMother.mother.definition.trigramSymbol}${originMother.mother.trigram}`, g.railX0, m.h * 0.252);
+              ctx.fillText(`方位填装：四象兽归位 ${originMother.geo.symbol} · ${originMother.geo.province}/${originMother.geo.city}`, g.railX0, m.h * 0.282);
+            }
           }
           ctx.fillStyle = "rgba(255,247,228,0.96)";
           const valueSize = finalLocked
@@ -2301,7 +2394,7 @@ export function LaunchLab() {
         m.lastY = y;
         if (m.dragAxis === "x") {
           m.railProgress = clamp((x - g.railX0) / (g.railX1 - g.railX0), 0, 1);
-          m.phaseX = Math.round(m.railProgress * 6);
+          m.phaseX = Math.round(m.railProgress * (g.cols - 1));
         }
         if (m.dragAxis === "y") {
           m.verticalDragMoved = false;
@@ -2410,7 +2503,7 @@ export function LaunchLab() {
       if (m.dragAxis === "x") {
         const g = axisMetrics();
         m.railProgress = clamp((x - g.railX0) / (g.railX1 - g.railX0), 0, 1);
-        m.phaseX = Math.round(m.railProgress * 6);
+        m.phaseX = Math.round(m.railProgress * (g.cols - 1));
         m.lastX = x;
         m.dwellT = 0;
         if (m.railProgress >= RAIL_COMMIT_THRESHOLD) {
