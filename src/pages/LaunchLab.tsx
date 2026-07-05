@@ -204,24 +204,33 @@ const AXIS_COPY: Record<EntryHandoffMode, {
   dimLabel: Record<ChronoDim, string>;
   dimStageLabel: Record<ChronoDim, string>;
   geoLabel: Record<GeoDim, string>;
+  kicker: string;
   topPrimary: string;
   topSecondary: string;
+  bodyPrimary: string;
+  bodySecondary: string;
   lockText: string;
 }> = {
   NEW_USER: {
     dimLabel: { year: "原始坐标", month: "坐标层级", day: "坐标刻度", hour: "坐标锚点" },
     dimStageLabel: { year: "原始坐标", month: "坐标层级", day: "坐标刻度", hour: "坐标锚点" },
     geoLabel: { province: "空间坐标", city: "方位坐标" },
-    topPrimary: "原始坐标生成。",
-    topSecondary: "坐标正在成形。",
+    kicker: "第一次原始坐标",
+    topPrimary: "你的原始坐标正在生成",
+    topSecondary: "正在装填你的原始坐标",
+    bodyPrimary: "系统正在对齐时间、身体与当前状态",
+    bodySecondary: "完成后进入现实压力",
     lockText: "坐标已成形",
   },
   OLD_USER: {
     dimLabel: { year: "压力种子", month: "压力层级", day: "压力刻度", hour: "压力锚点" },
     dimStageLabel: { year: "压力种子", month: "压力层级", day: "压力刻度", hour: "压力锚点" },
     geoLabel: { province: "压力坐标", city: "轴心坐标" },
-    topPrimary: "压力正在聚合。",
-    topSecondary: "压力压入轴心。",
+    kicker: "当前压力聚合",
+    topPrimary: "压力正在聚合",
+    topSecondary: "正在聚合你的当前压力",
+    bodyPrimary: "当前状态正在形成可选择的现实压力",
+    bodySecondary: "压力会被压入既有轴心",
     lockText: "压力已入轴",
   },
 };
@@ -1518,7 +1527,7 @@ export function LaunchLab() {
           const axisCopy = AXIS_COPY[m.pendingAxisMode];
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText("走过黑夜的人，会留下光的痕迹。", g.railX0, m.h * 0.1);
+          ctx.fillText(axisCopy.kicker, g.railX0, m.h * 0.1);
           ctx.fillStyle = "rgba(255,247,228,0.78)";
           ctx.font = `650 ${Math.min(15, m.w * 0.038)}px ${SANS}`;
           ctx.fillText(axisCopy.topPrimary, g.railX0, m.h * 0.145);
@@ -1536,9 +1545,9 @@ export function LaunchLab() {
           ctx.fillText(finalLocked ? "光兽正在靠近" : isGeoStage ? geoText(geoDim, m.dialFloat) : dimText(dim, m.dialFloat), g.railX0, m.h * 0.47);
           ctx.font = `700 ${Math.min(16, m.w * 0.04)}px ${MONO}`;
           ctx.fillStyle = "rgba(232,200,138,0.82)";
-          ctx.fillText("它们不会定义你", g.railX0, m.h * 0.58);
+          ctx.fillText(axisCopy.bodyPrimary, g.railX0, m.h * 0.58);
           ctx.fillStyle = "rgba(232,200,138,0.74)";
-          ctx.fillText("只是帮你抵住那些风暴和内耗", g.railX0, m.h * 0.63);
+          ctx.fillText(axisCopy.bodySecondary, g.railX0, m.h * 0.63);
           ctx.fillStyle = "rgba(232,200,138,0.46)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
           ctx.fillText(m.state === STATE.DISPLAY_LOCK ? axisCopy.lockText : isGeoStage ? "先上下调频 · 再右滑固定方位" : "先上下调频 · 再右滑固定坐标", g.railX0, m.h * 0.705);
