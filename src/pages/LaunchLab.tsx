@@ -1716,12 +1716,10 @@ export function LaunchLab() {
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
           ctx.fillText(finalLocked ? "［ 光痕 ］" : isGeoStage ? `［ ${axisCopy.geoLabel[geoDim]} ］` : `［ ${axisCopy.dimStageLabel[dim]} ］`, g.railX0, m.h * 0.34);
           if (originMother && !finalLocked) {
-            ctx.fillStyle = "rgba(232,200,138,0.66)";
-            ctx.font = `600 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
-            ctx.fillText("时序填装 · 卦符正在显影", g.railX0, m.h * 0.245);
-            ctx.fillText(`${originMother.chrono.lockPoint} · ${originMother.mother.definition.trigramSymbol}${originMother.mother.trigram}`, g.railX0, m.h * 0.272);
-            ctx.fillText("方位填装 · 四象兽正在归位", g.railX0, m.h * 0.3);
-            ctx.fillText(`${originMother.geo.symbol} · ${originMother.geo.province}/${originMother.geo.city}`, g.railX0, m.h * 0.327);
+            ctx.fillStyle = "rgba(232,200,138,0.5)";
+            ctx.font = `600 ${Math.min(9.5, m.w * 0.024)}px ${MONO}`;
+            ctx.fillText(`时序填装：卦符显影 ${originMother.chrono.lockPoint} · ${originMother.mother.definition.trigramSymbol}${originMother.mother.trigram}`, g.railX0, m.h * 0.252);
+            ctx.fillText(`方位填装：四象兽归位 ${originMother.geo.symbol} · ${originMother.geo.province}/${originMother.geo.city}`, g.railX0, m.h * 0.282);
           }
           ctx.fillStyle = "rgba(255,247,228,0.96)";
           const valueSize = finalLocked
@@ -2020,22 +2018,21 @@ export function LaunchLab() {
         ctx.textAlign = "left";
         ctx.textBaseline = "alphabetic";
         ctx.fillStyle = "rgba(232,200,138,0.76)";
-        ctx.font = `650 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-        ctx.fillText("母码正在显影", g.railX0, m.h * 0.12);
+        ctx.font = `650 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
+        ctx.fillText("母码正在显影", g.railX0, m.h * 0.115);
         ctx.fillStyle = "rgba(255,247,228,0.96)";
         ctx.font = `760 ${Math.min(30, m.w * 0.074)}px ${SANS}`;
-        ctx.fillText("你的原始坐标已经固定", g.railX0, m.h * 0.2);
-        ctx.fillStyle = "rgba(232,200,138,0.76)";
-        ctx.font = `650 ${Math.min(13, m.w * 0.034)}px ${SANS}`;
-        ctx.fillText("时序与方位正在生成", g.railX0, m.h * 0.275);
-        ctx.fillText("你的内在底码。", g.railX0, m.h * 0.315);
+        ctx.fillText("原始坐标已固定", g.railX0, m.h * 0.19);
+        ctx.fillStyle = "rgba(232,200,138,0.58)";
+        ctx.font = `620 ${Math.min(12, m.w * 0.031)}px ${SANS}`;
+        ctx.fillText("时序与方位正在生成你的内在底码", g.railX0, m.h * 0.248);
 
         const cardX = g.railX0;
-        const cardY = m.h * 0.38;
+        const cardY = m.h * 0.335;
         const cardW = g.railX1 - g.railX0;
-        const cardH = Math.min(210, m.h * 0.28);
-        ctx.fillStyle = "rgba(255,247,228,0.045)";
-        ctx.strokeStyle = "rgba(232,200,138,0.24)";
+        const cardH = Math.min(232, m.h * 0.33);
+        ctx.fillStyle = "rgba(255,247,228,0.052)";
+        ctx.strokeStyle = "rgba(232,200,138,0.3)";
         ctx.lineWidth = 0.8;
         ctx.beginPath();
         ctx.roundRect?.(cardX, cardY, cardW, cardH, 18);
@@ -2047,13 +2044,16 @@ export function LaunchLab() {
         ctx.font = `650 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
         ctx.fillText("母码卡", cardX + 16, cardY + 30);
         ctx.fillStyle = "rgba(255,247,228,0.98)";
-        ctx.font = `760 ${Math.min(28, m.w * 0.07)}px ${SANS}`;
+        ctx.font = `780 ${Math.min(32, m.w * 0.078)}px ${SANS}`;
         ctx.fillText(`${definition.trigramSymbol} ${profile.motherCodeName}`, cardX + 16, cardY + 72);
+        ctx.fillStyle = "rgba(232,200,138,0.72)";
+        ctx.font = `650 ${Math.min(12, m.w * 0.031)}px ${MONO}`;
+        ctx.fillText(`角色：${profile.motherCodeTitle}`, cardX + 16, cardY + 100);
         ctx.fillStyle = "rgba(232,200,138,0.82)";
-        ctx.font = `650 ${Math.min(13, m.w * 0.034)}px ${SANS}`;
-        drawCanvasWrappedText(ctx, profile.unlockPotential ?? definition.assetSummary, cardX + 16, cardY + 106, cardW - 32, 18, 2);
+        ctx.font = `700 ${Math.min(15, m.w * 0.038)}px ${SANS}`;
+        drawCanvasWrappedText(ctx, definition.assetSummary, cardX + 16, cardY + 132, cardW - 32, 20, 2);
         ctx.fillStyle = "rgba(232,200,138,0.66)";
-        ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
+        ctx.font = `600 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
         ctx.fillText(`时序卦符：${reveal.chrono.lockPoint} · ${definition.trigramSymbol}${reveal.mother.trigram}`, cardX + 16, cardY + cardH - 48);
         ctx.fillText(`方位落位：${reveal.geo.symbol} · ${reveal.geo.province}/${reveal.geo.city}`, cardX + 16, cardY + cardH - 22);
 
