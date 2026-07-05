@@ -194,8 +194,8 @@ const timeline: Record<SceneState, number> = {
   HANDOFF: 3,
 };
 const DEBUG_TIMELINE =
-  import.meta.env.DEV &&
   typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
   new URLSearchParams(window.location.search).get("debugTimeline") === "1";
 const GEO_DIMS = ["province", "city"] as const;
 const AXIS_COPY: Record<EntryHandoffMode, {
