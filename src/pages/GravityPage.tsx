@@ -2,7 +2,7 @@
  * GravityPage = passive UI visualization layer for presenting existing causal state transitions
  * without any influence on engine or data flow.
  */
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import {
   runCosmicBotanicsRuntimeEngine,
@@ -129,6 +129,35 @@ type ActiveCurrentHexagramContext = {
     surface?: string;
   };
   currentHexagramProfile: CurrentHexagramProfile;
+};
+type CurrentCrystalEndState = {
+  source: "dynamics";
+  status: "CRYSTALLIZED";
+  createdAt: string;
+  mother: {
+    motherCodeName: string;
+    lowerTrigram: string;
+  };
+  pressure: {
+    selectedPressureSeedId?: string;
+    surface?: string;
+    pressureField?: string;
+  };
+  hexagram: {
+    lowerTrigram: string;
+    upperTrigram: string;
+    hexagramCode?: string;
+    hexagramName?: string;
+    hexagramTitle?: string;
+  };
+  transmission: {
+    completedNodeCount: 6;
+    primaryDimension?: string;
+  };
+  crystal: {
+    title: "本局结晶";
+    copy: string;
+  };
 };
 
 function readJsonFromStorage<T>(key: string): T | null {
@@ -379,6 +408,54 @@ function resolveActiveCurrentHexagramContext(input: DynamicsInputContext): Activ
       surface: input.selectedPressureSeedContext.surface,
     },
     currentHexagramProfile,
+  };
+}
+
+function resolveCurrentCrystalEndState({
+  currentHexagramProfile,
+  motherCodeName,
+  selectedPressureSeedContext,
+  completedNodeCount,
+  primaryDimension,
+  readyToCrystallize,
+}: {
+  currentHexagramProfile: CurrentHexagramProfile | null;
+  motherCodeName: string;
+  selectedPressureSeedContext: SelectedPressureSeedContext | null;
+  completedNodeCount: number;
+  primaryDimension?: string;
+  readyToCrystallize: boolean;
+}): CurrentCrystalEndState | null {
+  if (!currentHexagramProfile || !readyToCrystallize || completedNodeCount < 6) return null;
+
+  return {
+    source: "dynamics",
+    status: "CRYSTALLIZED",
+    createdAt: new Date().toISOString(),
+    mother: {
+      motherCodeName: motherCodeName || currentHexagramProfile.lowerTrigram,
+      lowerTrigram: currentHexagramProfile.lowerTrigram,
+    },
+    pressure: {
+      selectedPressureSeedId: selectedPressureSeedContext?.selectedPressureSeedId,
+      surface: selectedPressureSeedContext?.surface,
+      pressureField: selectedPressureSeedContext?.pressureField,
+    },
+    hexagram: {
+      lowerTrigram: currentHexagramProfile.lowerTrigram,
+      upperTrigram: currentHexagramProfile.upperTrigram,
+      hexagramCode: currentHexagramProfile.hexagramCode,
+      hexagramName: currentHexagramProfile.hexagramName,
+      hexagramTitle: currentHexagramProfile.hexagramTitle,
+    },
+    transmission: {
+      completedNodeCount: 6,
+      primaryDimension,
+    },
+    crystal: {
+      title: "本局结晶",
+      copy: "这粒压力已经完成六维传导，沉积为一枚可保存的本局结晶。",
+    },
   };
 }
 
@@ -1842,11 +1919,32 @@ function HexagramCodeDeliveryShell() {
     starbeastFeedbackComplete,
     pressureSeedFallbackText: selectedPressureSeedSurface,
   });
+  const currentCrystalEndState = useMemo(() =>
+    resolveCurrentCrystalEndState({
+      currentHexagramProfile,
+      motherCodeName,
+      selectedPressureSeedContext: dynamicsInputContext.selectedPressureSeedContext,
+      completedNodeCount: cosmicNodeStep,
+      primaryDimension: currentPrimarySpaceId,
+      readyToCrystallize: hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE",
+    }), [
+      currentHexagramProfile,
+      motherCodeName,
+      dynamicsInputContext.selectedPressureSeedContext,
+      cosmicNodeStep,
+      currentPrimarySpaceId,
+      hexagramAssetCandidate.completionState,
+    ]);
 
   useEffect(() => {
     if (!activeCurrentHexagramContext) return;
     writeJsonToStorage("guanyao:currentHexagramProfile", activeCurrentHexagramContext);
   }, [activeCurrentHexagramContext]);
+
+  useEffect(() => {
+    if (!currentCrystalEndState) return;
+    writeJsonToStorage("guanyao:currentCrystalEndState", currentCrystalEndState);
+  }, [currentCrystalEndState]);
 
   function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
     setExecutionSnapshot((current) =>
@@ -2018,6 +2116,7 @@ function HexagramCodeDeliveryShell() {
         <footer
           data-hexagram-asset-candidate-status={hexagramAssetCandidate.status}
           data-hexagram-asset-candidate-state={hexagramAssetCandidate.completionState}
+          data-current-crystal-end-state={currentCrystalEndState ? "connected" : "missing"}
           data-value-flow-behavior={valueFlow.behaviorSignals.join("|") || "NONE"}
           data-value-flow-pressure={valueFlow.pressureState}
           data-value-flow-emotion={valueFlow.emotionalState}
@@ -2032,10 +2131,32 @@ function HexagramCodeDeliveryShell() {
             lineHeight: 1.55,
           }}
         >
-          {cosmicNarrativePhase === "node_complete" &&
-          hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE"
-            ? displayExperienceState.crystalCopy
-            : ""}
+          {currentCrystalEndState ? (
+            <section
+              aria-label="本局结晶"
+              style={{
+                display: "grid",
+                gap: 7,
+                padding: "14px 15px",
+                border: "1px solid rgba(199,169,107,0.22)",
+                borderRadius: 14,
+                background: "rgba(199,169,107,0.07)",
+                boxShadow: "0 0 28px rgba(199,169,107,0.08)",
+              }}
+            >
+              <strong style={{ color: "rgba(245,245,245,0.88)", fontSize: 15, fontWeight: 650 }}>
+                本局结晶已经形成
+              </strong>
+              <span style={{ color: "rgba(245,245,245,0.62)" }}>{currentCrystalEndState.crystal.copy}</span>
+              <span style={{ color: "rgba(199,169,107,0.72)" }}>
+                下卦：{currentCrystalEndState.hexagram.lowerTrigram} · 上卦：{currentCrystalEndState.hexagram.upperTrigram}
+                {currentCrystalEndState.hexagram.hexagramName ? ` · 本局：${currentCrystalEndState.hexagram.hexagramName}` : ""}
+              </span>
+            </section>
+          ) : cosmicNarrativePhase === "node_complete" &&
+            hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE"
+              ? displayExperienceState.crystalCopy
+              : ""}
         </footer>
       </main>
     );
