@@ -193,6 +193,10 @@ const timeline: Record<SceneState, number> = {
   NODE_2: 2,
   HANDOFF: 3,
 };
+const DEBUG_TIMELINE =
+  import.meta.env.DEV &&
+  typeof window !== "undefined" &&
+  new URLSearchParams(window.location.search).get("debugTimeline") === "1";
 const GEO_DIMS = ["province", "city"] as const;
 const AXIS_COPY: Record<EntryHandoffMode, {
   dimLabel: Record<ChronoDim, string>;
@@ -400,6 +404,10 @@ export function LaunchLab() {
     if (next) setSceneState(next);
   }, [setSceneState]);
 
+  const debugGoTo = useCallback((target: SceneState) => {
+    setSceneState(target);
+  }, [setSceneState]);
+
   const setLaunchInteractionState = useCallback((nextState: LaunchInteractionState) => {
     interactionStateRef.current = nextState;
     setInteractionState(nextState);
@@ -439,6 +447,7 @@ export function LaunchLab() {
 
   useEffect(() => {
     if (scene !== "NODE_1") return undefined;
+    if (DEBUG_TIMELINE) return undefined;
 
     const timer = window.setTimeout(() => {
       goNext("NODE_1");
@@ -449,6 +458,7 @@ export function LaunchLab() {
 
   useEffect(() => {
     if (scene !== "NODE_2") return undefined;
+    if (DEBUG_TIMELINE) return undefined;
 
     const timer = window.setTimeout(() => {
       goNext("NODE_2");
@@ -459,6 +469,7 @@ export function LaunchLab() {
 
   useEffect(() => {
     if (scene !== "HANDOFF") return undefined;
+    if (DEBUG_TIMELINE) return undefined;
 
     const timer = window.setTimeout(() => {
       enterNext();
@@ -1750,6 +1761,15 @@ export function LaunchLab() {
             }}
           />
         )}
+        {DEBUG_TIMELINE && (
+          <div className="debug-panel">
+            {SCENE_ORDER.map((target) => (
+              <button key={target} type="button" onClick={() => debugGoTo(target)}>
+                {target}
+              </button>
+            ))}
+          </div>
+        )}
         <style>{`
           .visual-stage {
             position: absolute;
@@ -1799,6 +1819,26 @@ export function LaunchLab() {
             color: rgba(232,200,138,0.78);
             font-size: min(14px, 3.6vw);
             font-weight: 600;
+          }
+          .debug-panel {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 9999;
+            display: flex;
+            gap: 8px;
+            opacity: 0.65;
+            pointer-events: auto;
+          }
+          .debug-panel button {
+            border: 1px solid rgba(232,200,138,0.42);
+            background: rgba(7,5,18,0.72);
+            color: rgba(255,247,228,0.92);
+            font-family: ${MONO};
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
           }
           @keyframes guanyao-entry-click-flash {
             from { opacity: 0.2; }
