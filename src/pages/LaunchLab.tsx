@@ -390,6 +390,10 @@ export function LaunchLab() {
   const [clickFlash, setClickFlash] = useState(false);
   const [snapshotIndex, setSnapshotIndex] = useState(0);
   const sceneRef = useRef<SceneState>("ENTRY");
+  const sceneEnteredAtRef = useRef(0);
+  const pendingSceneTimerRef = useRef<number | null>(null);
+  const timelineRunIdRef = useRef(0);
+  const nodeTimelineStartedAtRef = useRef(0);
   const entryHandoffRef = useRef<((mode: EntryHandoffMode) => void) | null>(null);
   const visualLayerClass = useCallback(
     (targetScene: SceneState, extra = "") => `gy-timeline-layer ${extra} ${scene === targetScene ? "on" : "off"}`,
@@ -397,11 +401,69 @@ export function LaunchLab() {
   );
 
   const setSceneState = useCallback((nextScene: SceneState) => {
+    const currentScene = sceneRef.current;
+    if (!DEBUG_TIMELINE) {
+      const requiredHoldMs =
+        currentScene === "NODE_1" && nextScene === "NODE_2"
+          ? 1200
+          : currentScene === "NODE_2" && nextScene === "HANDOFF"
+            ? 700
+            : currentScene === "HANDOFF" && nextScene === "ENTRY"
+              ? 500
+              : 0;
+      const requiredTimelineMs =
+        nodeTimelineStartedAtRef.current > 0
+          ? nextScene === "NODE_2"
+            ? 1200
+            : nextScene === "HANDOFF"
+              ? 1900
+              : nextScene === "ENTRY" && currentScene === "HANDOFF"
+                ? 2400
+                : 0
+          : 0;
+      const remainingTimelineMs = requiredTimelineMs > 0
+        ? requiredTimelineMs - (performance.now() - nodeTimelineStartedAtRef.current)
+        : 0;
+
+      if (requiredHoldMs > 0 || remainingTimelineMs > 0) {
+        const remainingMs = Math.max(
+          requiredHoldMs > 0 ? requiredHoldMs - (performance.now() - sceneEnteredAtRef.current) : 0,
+          remainingTimelineMs
+        );
+        if (remainingMs > 0) {
+          if (pendingSceneTimerRef.current !== null) window.clearTimeout(pendingSceneTimerRef.current);
+          pendingSceneTimerRef.current = window.setTimeout(() => {
+            pendingSceneTimerRef.current = null;
+            setSceneState(nextScene);
+          }, remainingMs);
+          return;
+        }
+      }
+    }
+
+    if (pendingSceneTimerRef.current !== null) {
+      window.clearTimeout(pendingSceneTimerRef.current);
+      pendingSceneTimerRef.current = null;
+    }
     sceneRef.current = nextScene;
+    sceneEnteredAtRef.current = performance.now();
     setScene(nextScene);
   }, []);
 
   const goNext = useCallback((current: SceneState) => {
+    if (!DEBUG_TIMELINE && nodeTimelineStartedAtRef.current > 0) {
+      const requiredTimelineMs = current === "NODE_1" ? 1200 : current === "NODE_2" ? 1900 : 0;
+      const remainingMs = requiredTimelineMs - (performance.now() - nodeTimelineStartedAtRef.current);
+      if (remainingMs > 0) {
+        if (pendingSceneTimerRef.current !== null) window.clearTimeout(pendingSceneTimerRef.current);
+        pendingSceneTimerRef.current = window.setTimeout(() => {
+          pendingSceneTimerRef.current = null;
+          goNext(current);
+        }, remainingMs);
+        return;
+      }
+    }
+
     const idx = SCENE_ORDER.indexOf(current);
     const next = SCENE_ORDER[idx + 1];
     if (next) setSceneState(next);
@@ -428,6 +490,7 @@ export function LaunchLab() {
   }, []);
 
   const enterNext = useCallback(() => {
+    if (sceneRef.current !== "HANDOFF") return;
     entryHandoffRef.current?.(getEntryUserTypePreviewOverride() ?? getEntryUserType());
   }, []);
 
@@ -469,9 +532,19 @@ export function LaunchLab() {
     if (scene !== "NODE_1") return undefined;
     if (DEBUG_TIMELINE) return undefined;
 
-    const timer = window.setTimeout(() => {
+    const startedAt = sceneEnteredAtRef.current;
+    const runId = timelineRunIdRef.current;
+    const advanceAfterHold = () => {
+      if (timelineRunIdRef.current !== runId) return;
+      if (sceneRef.current !== "NODE_1" || sceneEnteredAtRef.current !== startedAt) return;
+      const remainingMs = 1200 - (performance.now() - startedAt);
+      if (remainingMs > 0) {
+        timer = window.setTimeout(advanceAfterHold, remainingMs);
+        return;
+      }
       goNext("NODE_1");
-    }, 1200);
+    };
+    let timer = window.setTimeout(advanceAfterHold, 1200);
 
     return () => window.clearTimeout(timer);
   }, [goNext, scene]);
@@ -480,9 +553,19 @@ export function LaunchLab() {
     if (scene !== "NODE_2") return undefined;
     if (DEBUG_TIMELINE) return undefined;
 
-    const timer = window.setTimeout(() => {
+    const startedAt = sceneEnteredAtRef.current;
+    const runId = timelineRunIdRef.current;
+    const advanceAfterHold = () => {
+      if (timelineRunIdRef.current !== runId) return;
+      if (sceneRef.current !== "NODE_2" || sceneEnteredAtRef.current !== startedAt) return;
+      const remainingMs = 700 - (performance.now() - startedAt);
+      if (remainingMs > 0) {
+        timer = window.setTimeout(advanceAfterHold, remainingMs);
+        return;
+      }
       goNext("NODE_2");
-    }, 700);
+    };
+    let timer = window.setTimeout(advanceAfterHold, 700);
 
     return () => window.clearTimeout(timer);
   }, [goNext, scene]);
@@ -491,9 +574,19 @@ export function LaunchLab() {
     if (scene !== "HANDOFF") return undefined;
     if (DEBUG_TIMELINE) return undefined;
 
-    const timer = window.setTimeout(() => {
+    const startedAt = sceneEnteredAtRef.current;
+    const runId = timelineRunIdRef.current;
+    const advanceAfterHold = () => {
+      if (timelineRunIdRef.current !== runId) return;
+      if (sceneRef.current !== "HANDOFF" || sceneEnteredAtRef.current !== startedAt) return;
+      const remainingMs = 500 - (performance.now() - startedAt);
+      if (remainingMs > 0) {
+        timer = window.setTimeout(advanceAfterHold, remainingMs);
+        return;
+      }
       enterNext();
-    }, 500);
+    };
+    let timer = window.setTimeout(advanceAfterHold, 500);
 
     return () => window.clearTimeout(timer);
   }, [enterNext, scene]);
@@ -770,6 +863,8 @@ export function LaunchLab() {
     }
     function activateNode1Mirror() {
       if (m.node1State?.mirrorActivated) return;
+      timelineRunIdRef.current += 1;
+      nodeTimelineStartedAtRef.current = performance.now();
       m.node1State = Node1State;
       m.node1T = 0;
       setSceneState("NODE_1");
