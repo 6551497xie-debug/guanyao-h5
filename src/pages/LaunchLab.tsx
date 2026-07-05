@@ -197,6 +197,8 @@ const DEBUG_TIMELINE =
   typeof window !== "undefined" &&
   (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
   new URLSearchParams(window.location.search).get("debugTimeline") === "1";
+const SNAPSHOT_MODE = DEBUG_TIMELINE;
+const snapshotTargets: SceneState[] = [...SCENE_ORDER];
 const GEO_DIMS = ["province", "city"] as const;
 const AXIS_COPY: Record<EntryHandoffMode, {
   dimLabel: Record<ChronoDim, string>;
@@ -386,6 +388,7 @@ export function LaunchLab() {
   const interactionStateRef = useRef<LaunchInteractionState>("ENTRY");
   const [scene, setScene] = useState<SceneState>("ENTRY");
   const [clickFlash, setClickFlash] = useState(false);
+  const [snapshotIndex, setSnapshotIndex] = useState(0);
   const sceneRef = useRef<SceneState>("ENTRY");
   const entryHandoffRef = useRef<((mode: EntryHandoffMode) => void) | null>(null);
   const visualLayerClass = useCallback(
@@ -405,7 +408,18 @@ export function LaunchLab() {
   }, [setSceneState]);
 
   const debugGoTo = useCallback((target: SceneState) => {
+    const targetIndex = snapshotTargets.indexOf(target);
+    if (targetIndex >= 0) setSnapshotIndex(targetIndex);
     setSceneState(target);
+  }, [setSceneState]);
+
+  const nextSnapshot = useCallback(() => {
+    setSnapshotIndex((prev) => {
+      const next = prev + 1;
+      if (next >= snapshotTargets.length) return prev;
+      setSceneState(snapshotTargets[next]!);
+      return next;
+    });
   }, [setSceneState]);
 
   const setLaunchInteractionState = useCallback((nextState: LaunchInteractionState) => {
@@ -444,6 +458,12 @@ export function LaunchLab() {
     },
     [navigate, setLaunchInteractionState],
   );
+
+  useEffect(() => {
+    if (!SNAPSHOT_MODE) return undefined;
+    sceneRef.current = scene;
+    return undefined;
+  }, [scene]);
 
   useEffect(() => {
     if (scene !== "NODE_1") return undefined;
@@ -1728,12 +1748,16 @@ export function LaunchLab() {
 
   return (
     <GyMobilePreviewFrame background="#070512">
-      <div className="light-beast-hitbox" style={{ position: "relative", width: "100%", height: "100%" }}>
+      <div
+        className={`light-beast-hitbox${SNAPSHOT_MODE ? " snapshot-mode" : ""}`}
+        style={{ position: "relative", width: "100%", height: "100%" }}
+      >
         <canvas
           ref={canvasRef}
           data-launch-interaction-state={interactionState}
           data-launch-scene={scene}
           data-launch-timeline={timeline[scene]}
+          data-snapshot-index={snapshotIndex}
           style={{ width: "100%", height: "100%", display: "block", touchAction: "none", cursor: scene === "ENTRY" ? "pointer" : "default" }}
         />
         <div className="visual-stage" aria-hidden="true">
@@ -1761,13 +1785,16 @@ export function LaunchLab() {
             }}
           />
         )}
-        {DEBUG_TIMELINE && (
-          <div className="debug-panel">
-            {SCENE_ORDER.map((target) => (
+        {SNAPSHOT_MODE && (
+          <div className="snapshot-panel">
+            {snapshotTargets.map((target) => (
               <button key={target} type="button" onClick={() => debugGoTo(target)}>
                 {target}
               </button>
             ))}
+            <button type="button" onClick={nextSnapshot}>
+              NEXT SNAPSHOT
+            </button>
           </div>
         )}
         <style>{`
@@ -1802,6 +1829,9 @@ export function LaunchLab() {
             opacity: 0;
             transform: translateY(6px);
           }
+          .snapshot-mode .gy-timeline-layer {
+            transition: none;
+          }
           .entry-layer {
             opacity: 0;
           }
@@ -1820,17 +1850,20 @@ export function LaunchLab() {
             font-size: min(14px, 3.6vw);
             font-weight: 600;
           }
-          .debug-panel {
+          .snapshot-panel {
             position: fixed;
-            right: 20px;
+            left: 20px;
             bottom: 20px;
-            z-index: 9999;
+            z-index: 99999;
             display: flex;
-            gap: 8px;
-            opacity: 0.65;
+            gap: 6px;
+            opacity: 0.8;
             pointer-events: auto;
+            background: rgba(0,0,0,0.4);
+            padding: 8px;
+            border-radius: 6px;
           }
-          .debug-panel button {
+          .snapshot-panel button {
             border: 1px solid rgba(232,200,138,0.42);
             background: rgba(7,5,18,0.72);
             color: rgba(255,247,228,0.92);
