@@ -63,6 +63,43 @@ type PressureBeastSeed = {
   resonance: number;
 };
 type RuntimeCoreStar = readonly [number, number, number];
+type StoredMotherCodeProfile = {
+  motherCodeName?: string;
+  motherCodeTitle?: string;
+  trigram?: string;
+  lowerTrigram?: string;
+  trigramSymbol?: string;
+};
+type StoredOriginMotherContext = {
+  source?: string;
+  geo?: {
+    symbol?: string;
+    province?: string;
+  };
+  chrono?: {
+    lockPoint?: string;
+  };
+  mother?: {
+    trigram?: string;
+    profile?: StoredMotherCodeProfile;
+  };
+  fourBeast?: string;
+  trigram?: string;
+};
+type StoredPersonaOutputSnapshot = {
+  motherCode?: string;
+  motherCodeName?: string;
+  trigram?: string;
+  trigramSymbol?: string;
+  fourBeast?: string;
+  direction?: string;
+};
+type DynamicsInputContext = {
+  selectedPressureSeedContext: SelectedPressureSeedContext | null;
+  motherCodeProfile: StoredMotherCodeProfile | null;
+  originMotherContext: StoredOriginMotherContext | null;
+  personaOutputSnapshot: StoredPersonaOutputSnapshot | null;
+};
 
 function readJsonFromStorage<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
@@ -85,6 +122,49 @@ function readDevPrimaryPetalFixture(): SelectedPressureSeedContext | null {
   if (!fixtureKey) return null;
 
   return DEV_PRIMARY_PETAL_FIXTURES[fixtureKey] ?? null;
+}
+
+function readDynamicsInputContext(): DynamicsInputContext {
+  return {
+    selectedPressureSeedContext:
+      readDevPrimaryPetalFixture() ?? readJsonFromStorage<SelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
+    motherCodeProfile: readJsonFromStorage<StoredMotherCodeProfile>("guanyao:motherCodeProfile"),
+    originMotherContext: readJsonFromStorage<StoredOriginMotherContext>("guanyao:originMotherContext"),
+    personaOutputSnapshot: readJsonFromStorage<StoredPersonaOutputSnapshot>("guanyao:personaOutputSnapshot"),
+  };
+}
+
+function resolveMotherCodeName(input: DynamicsInputContext) {
+  return (
+    input.motherCodeProfile?.motherCodeName ??
+    input.originMotherContext?.mother?.profile?.motherCodeName ??
+    input.personaOutputSnapshot?.motherCodeName ??
+    input.personaOutputSnapshot?.motherCode ??
+    ""
+  );
+}
+
+function resolveMotherPersonaSnapshot(input: DynamicsInputContext) {
+  const motherCode = resolveMotherCodeName(input);
+  const trigram =
+    input.motherCodeProfile?.trigram ??
+    input.motherCodeProfile?.lowerTrigram ??
+    input.originMotherContext?.mother?.trigram ??
+    input.originMotherContext?.trigram ??
+    input.personaOutputSnapshot?.trigram;
+  const fourSymbol =
+    input.originMotherContext?.fourBeast ??
+    input.originMotherContext?.geo?.symbol ??
+    input.personaOutputSnapshot?.fourBeast ??
+    input.personaOutputSnapshot?.direction;
+
+  if (!motherCode && !trigram && !fourSymbol) return null;
+
+  return {
+    motherCode,
+    trigram,
+    fourSymbol,
+  };
 }
 
 function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
@@ -1488,10 +1568,9 @@ function CosmicBotanicsField({
 }
 
 function HexagramCodeDeliveryShell() {
+  const [dynamicsInputContext] = useState<DynamicsInputContext>(() => readDynamicsInputContext());
   const [executionSnapshot, setExecutionSnapshot] = useState<ExecutionSnapshot>(() =>
-    GuanyaoRuntimeEngine.createSnapshot(
-      readDevPrimaryPetalFixture() ?? readJsonFromStorage<SelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
-    ),
+    GuanyaoRuntimeEngine.createSnapshot(dynamicsInputContext.selectedPressureSeedContext),
   );
   const runtimeProjection = GuanyaoRuntimeEngine.project(executionSnapshot);
   const {
@@ -1507,6 +1586,16 @@ function HexagramCodeDeliveryShell() {
   } = runtimeProjection;
   const visualState = resolveVisualState(executionSnapshot, runtimeProjection);
   const experienceState = resolveExperienceState(executionSnapshot, visualState);
+  const motherPersonaSnapshot = resolveMotherPersonaSnapshot(dynamicsInputContext);
+  const motherCodeName = resolveMotherCodeName(dynamicsInputContext);
+  const displayExperienceState: ExperienceState = motherCodeName && experienceState.stage === "PRESSURE"
+    ? {
+        ...experienceState,
+        headline: "母码已接入。",
+        supportingCopy: "这粒压力正在进入你的母码六维传导。",
+        pressureCopy: "母码已接入，压力种子开始进入六维传导。",
+      }
+    : experienceState;
   const valueFlow = resolveValueFlow(executionSnapshot);
   const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
     pressureSeed: selectedPressureSeedSurface,
@@ -1527,6 +1616,7 @@ function HexagramCodeDeliveryShell() {
   }, buildSpaceRecord(0));
   const starbeastFeedbackComplete = executionSnapshot.runtime.enginePhase === "COMPLETE" && visiblePetalStates[currentPrimarySpaceId] === "blooming";
   const hexagramAssetCandidate = resolveHexagramAssetCandidate({
+    personaSnapshot: motherPersonaSnapshot,
     selectedPressureSeedContext: pressureSeedContext,
     currentPrimarySpaceId,
     completedNodeCount: cosmicNodeStep,
@@ -1606,6 +1696,10 @@ function HexagramCodeDeliveryShell() {
         data-product-positioning={GUANYAO_PRODUCT_RUNTIME_DEFINITION.positioning}
         data-product-onboarding={GUANYAO_PRODUCT_RUNTIME_DEFINITION.onboardingFlow.join("|")}
         data-product-perception={GUANYAO_PRODUCT_RUNTIME_DEFINITION.userPerception.join("|")}
+        data-dynamics-mother-context={motherPersonaSnapshot ? "connected" : "missing"}
+        data-dynamics-pressure-context={dynamicsInputContext.selectedPressureSeedContext ? "connected" : "fallback"}
+        data-dynamics-mother-code={motherCodeName || "missing"}
+        data-dynamics-four-beast={motherPersonaSnapshot?.fourSymbol ?? "missing"}
         style={{
           minHeight: "100dvh",
           width: "100%",
@@ -1643,13 +1737,19 @@ function HexagramCodeDeliveryShell() {
               letterSpacing: "0.16em",
             }}
           >
-            {experienceState.loopLabel}
+            {displayExperienceState.loopLabel}
           </span>
 
           <p style={{ margin: 0, maxWidth: 292, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.6 }}>
-            {experienceState.headline}
+            {displayExperienceState.headline}
             <br />
-            {experienceState.supportingCopy}
+            {displayExperienceState.supportingCopy}
+            {motherCodeName ? (
+              <>
+                <br />
+                <span style={{ color: "rgba(199,169,107,0.66)" }}>母码：{motherCodeName}</span>
+              </>
+            ) : null}
           </p>
         </section>
 
@@ -1676,7 +1776,7 @@ function HexagramCodeDeliveryShell() {
             onNodeBloom={bloomCosmicNode}
             coreStars={baiHuRuntimeCoreStars}
             visualState={visualState}
-            experienceState={experienceState}
+            experienceState={displayExperienceState}
           />
         </section>
 
@@ -1699,7 +1799,7 @@ function HexagramCodeDeliveryShell() {
         >
           {cosmicNarrativePhase === "node_complete" &&
           hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE"
-            ? experienceState.crystalCopy
+            ? displayExperienceState.crystalCopy
             : ""}
         </footer>
       </main>
