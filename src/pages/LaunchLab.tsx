@@ -171,7 +171,7 @@ const Node1State = {
 const ENTRY_HANDOFF_DELAY_MS = 700;
 const NODE_TRANSITION_LERP_START_MS = 760;
 const NODE_TRANSITION_LERP_DURATION_MS = 900;
-const RAIL_COMMIT_THRESHOLD = 0.72;
+const RAIL_COMMIT_THRESHOLD = 0.58;
 const PERIOD_LABELS = ["子时", "丑时", "寅时", "卯时", "辰时", "巳时", "午时", "未时", "申时", "酉时", "戌时", "亥时"];
 const CHRONO_DIMS = ["year", "month", "day", "hour"] as const;
 type ChronoDim = (typeof CHRONO_DIMS)[number];
@@ -209,6 +209,8 @@ const AXIS_COPY: Record<EntryHandoffMode, {
   topSecondary: string;
   bodyPrimary: string;
   bodySecondary: string;
+  actionPrimary: string;
+  actionConfirm: string;
   lockText: string;
 }> = {
   NEW_USER: {
@@ -220,6 +222,8 @@ const AXIS_COPY: Record<EntryHandoffMode, {
     topSecondary: "正在装填你的原始坐标",
     bodyPrimary: "系统正在对齐时间、身体与当前状态",
     bodySecondary: "完成后进入现实压力",
+    actionPrimary: "上下调频，找到你的原始坐标",
+    actionConfirm: "右滑固定坐标，进入现实压力",
     lockText: "坐标已成形",
   },
   OLD_USER: {
@@ -231,6 +235,8 @@ const AXIS_COPY: Record<EntryHandoffMode, {
     topSecondary: "正在聚合你的当前压力",
     bodyPrimary: "当前状态正在形成可选择的现实压力",
     bodySecondary: "压力会被压入既有轴心",
+    actionPrimary: "上下调频，找到当前压力方位",
+    actionConfirm: "右滑固定方位，进入压力种子",
     lockText: "压力已入轴",
   },
 };
@@ -405,15 +411,8 @@ export function LaunchLab() {
   const nodeTimelineStartedAtRef = useRef(0);
   const entryHandoffRef = useRef<((mode: EntryHandoffMode) => void) | null>(null);
   const showInternalNodeCopy = DEBUG_TIMELINE;
-  const collapsePhase =
-    DEBUG_TIMELINE || scene === "ENTRY"
-      ? "none"
-      : scene === "NODE_1"
-        ? "start"
-        : scene === "NODE_2"
-          ? "separate"
-          : "settle";
-  const isProductionCollapse = collapsePhase !== "none";
+  const collapsePhase = "none";
+  const isProductionCollapse = false;
   const visualLayerClass = useCallback(
     (targetScene: SceneState, extra = "") => `gy-timeline-layer ${extra} ${scene === targetScene ? "on" : "off"}`,
     [scene],
@@ -1120,9 +1119,11 @@ export function LaunchLab() {
           break;
         }
         case STATE.STARBEAST_SANDIFY: {
-          if (m.t >= 1.25) {
-            m.state = STATE.AXIS_EMERGENCE;
+          if (m.t >= 1.18) {
+            syncDialToCurrent();
+            m.state = STATE.TIME_CALIBRATION;
             m.t = 0;
+            m.dwellT = 0;
           }
           break;
         }
@@ -1143,10 +1144,6 @@ export function LaunchLab() {
         case STATE.GEO_BIND:
           break;
         case STATE.DISPLAY_LOCK: {
-          if (m.handoffStarted && m.t >= 0.82) {
-            m.state = STATE.ENTRY_PRE_COLLAPSE;
-            m.t = 0;
-          }
           break;
         }
         case STATE.ENTRY_PRE_COLLAPSE: {
@@ -1250,7 +1247,7 @@ export function LaunchLab() {
 
       // Visual points fill the field first; then the entry form and text resolve.
       const enter = m.state === STATE.STARBEAST_SANDIFY
-        ? smooth(0.1, 1.25, m.t)
+        ? smooth(0.08, 1.1, m.t)
         : isAxisState()
           ? 1
           : convergenceActive
@@ -1389,12 +1386,14 @@ export function LaunchLab() {
       if (axisActive) {
         const axisSeed =
           m.state === STATE.STARBEAST_SANDIFY
-            ? smooth(0.35, 1.2, m.t) * 0.45
+            ? smooth(0.05, 0.92, m.t)
             : m.state === STATE.AXIS_EMERGENCE
               ? smooth(0, 1.25, m.t)
               : 1;
         const axisGrow =
-          m.state === STATE.AXIS_EMERGENCE
+          m.state === STATE.STARBEAST_SANDIFY
+            ? smooth(0.18, 1.08, m.t)
+            : m.state === STATE.AXIS_EMERGENCE
             ? smooth(0.25, 1.25, m.t)
             : isAxisState() || convergenceActive
               ? 1
@@ -1550,16 +1549,12 @@ export function LaunchLab() {
           ctx.fillText(axisCopy.bodySecondary, g.railX0, m.h * 0.63);
           ctx.fillStyle = "rgba(232,200,138,0.46)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? axisCopy.lockText : isGeoStage ? "先上下调频 · 再右滑固定方位" : "先上下调频 · 再右滑固定坐标", g.railX0, m.h * 0.705);
+          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? axisCopy.lockText : axisCopy.actionPrimary, g.railX0, m.h * 0.705);
           ctx.fillStyle = "rgba(232,200,138,0.58)";
           ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
           const railHint = finalLocked
             ? axisCopy.lockText
-            : m.verticalTuned && isGeoStage && geoDim === "city"
-              ? "右滑 · 光痕"
-              : m.verticalTuned
-                ? `右滑进入 · ${isGeoStage ? axisCopy.geoLabel[geoDim] : axisCopy.dimLabel[dim]}`
-                : "纵轴调频后 · 横轴解锁";
+            : axisCopy.actionConfirm;
           ctx.fillText(railHint, g.railX0, g.railY + 30);
           ctx.textAlign = "right";
           ctx.fillStyle = "rgba(232,200,138,0.82)";
@@ -1632,7 +1627,7 @@ export function LaunchLab() {
         return;
       }
 
-      if (entryVisualCopyActive && !nodeRuntimeActive && (m.state === STATE.ASSEMBLY || m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY)) {
+      if (entryVisualCopyActive && !nodeRuntimeActive && (m.state === STATE.ASSEMBLY || m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY)) {
         ctx.save();
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -1645,7 +1640,7 @@ export function LaunchLab() {
       }
 
       // Text resolves after the entry form stabilizes.
-      if (entryVisualCopyActive && !nodeRuntimeActive && (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY || m.state === STATE.STARBEAST_SANDIFY)) {
+      if (entryVisualCopyActive && !nodeRuntimeActive && (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY)) {
         const cx = m.w / 2;
         const lineStarts = [0.2, 0.55, 3.1];
         const gather = 1.35;
@@ -1933,26 +1928,6 @@ export function LaunchLab() {
               transform 520ms cubic-bezier(0.16, 1, 0.3, 1),
               filter 520ms ease;
             will-change: transform, filter;
-          }
-          .scene-node_2 .light-field {
-            transform: scale(0.985) rotate(-0.4deg);
-            filter: blur(0.4px) contrast(1.05);
-          }
-          .light-beast-hitbox[data-production-collapse="true"] .light-field {
-            transform: scale(0.985);
-            filter: blur(0.35px) brightness(1.06) contrast(1.03);
-          }
-          .light-beast-hitbox[data-collapse-phase="start"] .light-field {
-            transform: scale(0.982);
-            filter: blur(0.35px) brightness(1.1) contrast(1.04);
-          }
-          .light-beast-hitbox[data-collapse-phase="separate"] .light-field {
-            transform: scale(0.97) rotate(-0.4deg);
-            filter: blur(0.6px) brightness(1.04) contrast(1.08);
-          }
-          .light-beast-hitbox[data-collapse-phase="settle"] .light-field {
-            transform: scale(0.96);
-            filter: blur(0.8px) brightness(0.92) contrast(1.05);
           }
           .gy-timeline-layer {
             position: absolute;
