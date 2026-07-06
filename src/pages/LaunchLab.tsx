@@ -833,11 +833,11 @@ function drawFourBeastCardWatermark(
 ) {
   const copy = FOUR_BEAST_VISUAL_COPY[beast];
   const visualX = cardX + cardW * 0.17;
-  const visualY = cardY + cardH * 0.13;
+  const visualY = cardY + cardH * 0.28;
   const visualW = cardW * 0.66;
   const visualH = cardH * 0.32;
   const cx = visualX + visualW * 0.5;
-  const cy = visualY + visualH * 0.53;
+  const cy = visualY + visualH * 0.52;
 
   ctx.save();
   ctx.beginPath();
@@ -847,10 +847,10 @@ function drawFourBeastCardWatermark(
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.globalAlpha = 0.58;
-  drawFourBeastLiteStar(ctx, beast, undefined, visualX + visualW * 0.14, visualY + visualH * 0.18, visualW * 0.72, visualH * 0.56, 0.22);
+  drawFourBeastLiteStar(ctx, beast, undefined, visualX + visualW * 0.12, visualY + visualH * 0.16, visualW * 0.76, visualH * 0.6, 0.24);
   ctx.fillStyle = "rgba(232,200,138,0.16)";
   ctx.font = `700 ${Math.min(14, cardW * 0.04)}px ${MONO}`;
-  ctx.fillText(copy.mark, cx, cy + visualH * 0.28);
+  ctx.fillText(copy.mark, cx, cy + visualH * 0.3);
   ctx.restore();
 }
 
@@ -2594,7 +2594,6 @@ export function LaunchLab() {
         const reveal = resolveOriginMotherCode();
         const profile = reveal.mother.profile;
         const definition = reveal.mother.definition;
-        const fourBeastGrammar = resolveFourBeastGrammar(reveal);
         const displayCopy = motherCardDisplayCopy(reveal.mother.trigram, definition);
         const inT = smooth(0, 0.6, m.t);
         const pulse = 0.72 + Math.sin(now * 2.1) * 0.1;
@@ -2680,16 +2679,20 @@ export function LaunchLab() {
         drawFourBeastCardWatermark(ctx, reveal.geo.symbol, cardX, cardY, cardW, cardH);
 
         if (m.motherCardFace === "front") {
+          const [trigramName, roleName] = profile.motherCodeName.split("｜");
+          ctx.fillStyle = "rgba(232,200,138,0.44)";
+          ctx.font = `600 ${Math.min(9, cardW * 0.027)}px ${MONO}`;
+          ctx.fillText("母码卡", cardX + cardPad, cardY + 25);
+          ctx.textAlign = "center";
+          ctx.fillStyle = "rgba(255,247,228,0.96)";
+          ctx.font = `800 ${Math.min(28, cardW * 0.082)}px ${SANS}`;
+          ctx.fillText(`${trigramName || reveal.mother.trigram}  ${definition.trigramSymbol}  ${reveal.geo.symbol}`, cardX + cardW / 2, cardY + cardH * 0.165);
           ctx.fillStyle = "rgba(232,200,138,0.74)";
-          ctx.font = `650 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
-          ctx.fillText("母码卡", cardX + cardPad, cardY + 28);
-          ctx.textAlign = "right";
-          ctx.fillStyle = "rgba(232,200,138,0.58)";
-          ctx.fillText(`${reveal.geo.symbol} × ${reveal.mother.trigram}`, cardX + cardW - cardPad, cardY + 28);
-          ctx.textAlign = "left";
+          ctx.font = `650 ${Math.min(15, cardW * 0.044)}px ${SANS}`;
+          ctx.fillText(roleName || profile.motherCodeTitle || definition.motherCodeTitle, cardX + cardW / 2, cardY + cardH * 0.235);
           const badgeX = cardX + cardW / 2;
-          const badgeY = cardY + cardH * 0.31;
-          const badgeR = Math.min(cardW * 0.24, cardH * 0.18);
+          const badgeY = cardY + cardH * 0.405;
+          const badgeR = Math.min(cardW * 0.22, cardH * 0.15);
           ctx.strokeStyle = "rgba(232,200,138,0.2)";
           ctx.lineWidth = 0.7;
           ctx.beginPath();
@@ -2705,24 +2708,14 @@ export function LaunchLab() {
           ctx.stroke();
           ctx.textAlign = "center";
           ctx.fillStyle = "rgba(255,247,228,0.2)";
-          ctx.font = `780 ${Math.min(78, cardW * 0.23)}px ${SANS}`;
+          ctx.font = `780 ${Math.min(70, cardW * 0.205)}px ${SANS}`;
           ctx.fillText(definition.trigramSymbol, badgeX, badgeY + badgeR * 0.2);
-          const [trigramName, roleName] = profile.motherCodeName.split("｜");
-          ctx.fillStyle = "rgba(255,247,228,0.98)";
-          ctx.font = `800 ${Math.min(44, cardW * 0.13)}px ${SANS}`;
-          ctx.fillText(trigramName || reveal.mother.trigram, cardX + cardW / 2, cardY + cardH * 0.52);
-          ctx.fillStyle = "rgba(232,200,138,0.72)";
-          ctx.font = `650 ${Math.min(14, cardW * 0.041)}px ${SANS}`;
-          ctx.fillText(roleName || profile.motherCodeTitle || definition.motherCodeTitle, cardX + cardW / 2, cardY + cardH * 0.59);
           ctx.textAlign = "left";
           ctx.fillStyle = "rgba(255,247,228,0.9)";
-          ctx.font = `720 ${Math.min(14.5, cardW * 0.043)}px ${SANS}`;
-          drawCanvasWrappedText(ctx, displayCopy.oneLine, cardX + cardPad, cardY + cardH * 0.675, cardW - cardPad * 2, 19, 2);
-          ctx.fillStyle = "rgba(232,200,138,0.78)";
-          ctx.font = `650 ${Math.min(11, cardW * 0.033)}px ${SANS}`;
-          drawCanvasWrappedText(ctx, `转化方向：${displayCopy.transform}`, cardX + cardPad, cardY + cardH * 0.785, cardW - cardPad * 2, 16, 2);
+          ctx.font = `720 ${Math.min(15.5, cardW * 0.046)}px ${SANS}`;
+          drawCanvasWrappedText(ctx, displayCopy.oneLine, cardX + cardPad, cardY + cardH * 0.625, cardW - cardPad * 2, 20, 2);
           let tagX = cardX + cardPad;
-          const tagY = cardY + cardH - 48;
+          const tagY = cardY + cardH - 35;
           displayCopy.tags.forEach((tag) => {
             const tagW = Math.min(86, Math.max(48, ctx.measureText(tag).width + 20));
             ctx.fillStyle = "rgba(232,200,138,0.075)";
@@ -2738,9 +2731,6 @@ export function LaunchLab() {
             ctx.fillText(tag, tagX + 10, tagY);
             tagX += tagW + 8;
           });
-          ctx.fillStyle = "rgba(232,200,138,0.56)";
-          ctx.font = `600 ${Math.min(10, cardW * 0.03)}px ${MONO}`;
-          ctx.fillText("轻触翻面，查看人格原型", cardX + cardPad, cardY + cardH - 17);
         } else {
           const decodeX = cardX + cardPad;
           let decodeY = cardY + 32;
@@ -2757,9 +2747,6 @@ export function LaunchLab() {
           ctx.fillStyle = "rgba(232,200,138,0.72)";
           ctx.font = `650 ${Math.min(10, cardW * 0.03)}px ${MONO}`;
           ctx.fillText("人格原型解码", decodeX, decodeY);
-          ctx.textAlign = "right";
-          ctx.fillText("轻触返回构图", cardX + cardW - cardPad, decodeY);
-          ctx.textAlign = "left";
           decodeY += 36;
           drawDecodeBlock("原型识别", displayCopy.archetype, 2);
           drawDecodeBlock("惯性反应", displayCopy.inertia, 2);
@@ -2767,14 +2754,20 @@ export function LaunchLab() {
           drawDecodeBlock("转化方向", displayCopy.direction, 2);
           ctx.fillStyle = "rgba(232,200,138,0.48)";
           ctx.font = `600 ${Math.min(9.5, cardW * 0.029)}px ${MONO}`;
-          ctx.fillText(`来源：${reveal.chrono.lockPoint} · ${reveal.geo.symbol}/${reveal.geo.province} · ${definition.trigramSymbol}`, cardX + cardPad, cardY + cardH - 33);
+          ctx.fillText(`来源：${reveal.geo.symbol}方位 × ${reveal.mother.trigram}母码`, cardX + cardPad, cardY + cardH - 33);
           ctx.fillStyle = "rgba(232,200,138,0.56)";
           ctx.fillText("这张母码，是你进入本局之前的内在底座", cardX + cardPad, cardY + cardH - 15);
         }
         ctx.restore();
 
+        ctx.textAlign = "center";
+        ctx.fillStyle = "rgba(232,200,138,0.38)";
+        ctx.font = `600 ${Math.min(9.5, m.w * 0.024)}px ${MONO}`;
+        ctx.fillText(m.motherCardFace === "front" ? "轻触查看背面" : "轻触返回正面", centerX, cardY + cardH + 17);
+
         ctx.fillStyle = "rgba(232,200,138,0.52)";
         ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
+        ctx.textAlign = "left";
         ctx.fillText("收下这张母码，再进入现实压力", g.railX0, g.railY + 30);
         ctx.textAlign = "right";
         ctx.fillStyle = "rgba(232,200,138,0.72)";
