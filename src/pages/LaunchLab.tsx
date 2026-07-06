@@ -503,6 +503,103 @@ function fourBeastGrammarShortLine(grammar?: FourBeastTrigramVisualGrammarItem) 
   return motionTail.replace(/[。.]$/, "");
 }
 
+type MotherCardDisplayCopy = {
+  oneLine: string;
+  transform: string;
+  tags: [string, string, string];
+  archetype: string;
+  inertia: string;
+  cost: string;
+  direction: string;
+};
+
+const MOTHER_CARD_DISPLAY_COPY: Record<string, MotherCardDisplayCopy> = {
+  乾: {
+    oneLine: "你会先抬高目标，再试图掌控局面。",
+    transform: "把控制欲升级为真正的控制能力。",
+    tags: ["开创", "掌控", "定局"],
+    archetype: "你会先看见局面需要方向，并本能地想把盘面立起来。",
+    inertia: "压力越近，你越容易接管、收紧、一个人硬扛。",
+    cost: "它能让局面启动，也可能让所有责任都压回你身上。",
+    direction: "当这股力量被校准，它会成为定方向、立边界、推进秩序的能力。",
+  },
+  坤: {
+    oneLine: "你会先接住别人，再慢慢感到自己被压住。",
+    transform: "把无边界承受升级为有边界托底。",
+    tags: ["承载", "边界", "托底"],
+    archetype: "你不是只会承受，而是会先让人和局面稳定下来。",
+    inertia: "压力越近，你越容易先让步、先接住、先把自己放到后面。",
+    cost: "它能稳定局面，也可能让你的边界被长期消耗。",
+    direction: "当这股力量被校准，它会成为既能托底、也能守住自身的能力。",
+  },
+  震: {
+    oneLine: "你会先动起来，用行动冲破停滞。",
+    transform: "把行动冲动升级为行动前的思考力。",
+    tags: ["启动", "破局", "校准"],
+    archetype: "你不是只想快，而是会用行动把停住的局面打开。",
+    inertia: "压力越近，你越容易先冲出去，用动作压住不安。",
+    cost: "它能带来突破，也可能让节奏失控、方向变乱。",
+    direction: "当这股力量被校准，它会成为判断之后再启动的破局力。",
+  },
+  巽: {
+    oneLine: "你会先观察缝隙，再寻找进入现实的路径。",
+    transform: "把反复权衡升级为谋而后动的判断力。",
+    tags: ["渗透", "判断", "入局"],
+    archetype: "你不是回避进入，而是会先找出最小阻力的入口。",
+    inertia: "压力越近，你越容易反复观察、权衡、绕行。",
+    cost: "它能避开硬碰硬，也可能让真正的进入一再推迟。",
+    direction: "当这股力量被校准，它会成为识别缝隙并及时入局的能力。",
+  },
+  坎: {
+    oneLine: "你会先感到危险，再逼自己穿过困局。",
+    transform: "把反复深陷升级为穿越困局的耐力。",
+    tags: ["深潜", "承压", "穿越"],
+    archetype: "你不是沉在问题里，而是会先感到深处的风险。",
+    inertia: "压力越近，你越容易陷入、复盘、反复确认危险。",
+    cost: "它能保留警觉，也可能让你在困局里停留太久。",
+    direction: "当这股力量被校准，它会成为穿过困局并保留判断的耐力。",
+  },
+  离: {
+    oneLine: "你会先看见问题，也会忍不住证明自己看得对。",
+    transform: "把反复证明升级为照见真相的勇气。",
+    tags: ["照见", "辨明", "显化"],
+    archetype: "你不是只想表现，而是会先把模糊的问题照出来。",
+    inertia: "压力越近，你越容易证明、解释、让自己更亮。",
+    cost: "它能让真相显影，也可能让你被外部目光牵住。",
+    direction: "当这股力量被校准，它会成为看见本质并清楚表达的能力。",
+  },
+  艮: {
+    oneLine: "你会先稳住边界，再判断是否前进。",
+    transform: "把过度防御性升级为及时止损的预见性。",
+    tags: ["止住", "边界", "预判"],
+    archetype: "你不是单纯停住，而是在风险靠近时先建立边界。",
+    inertia: "压力越近，你越容易收紧、观察、隔开，把自己放进安全距离。",
+    cost: "它保护你不被冲垮，也可能让机会在迟疑中错过。",
+    direction: "当这股力量被校准，它会成为及时止损和提前预判的能力。",
+  },
+  兑: {
+    oneLine: "你会先缓和冲突，再寻找可以转圜的出口。",
+    transform: "把回避冲突升级为化解冲突的沟通力。",
+    tags: ["转圜", "沟通", "化解"],
+    archetype: "你不是只想缓和，而是会寻找关系重新流动的出口。",
+    inertia: "压力越近，你越容易避重就轻、先让气氛松下来。",
+    cost: "它能降低冲突，也可能让真正的问题被延后处理。",
+    direction: "当这股力量被校准，它会成为说清问题并化解僵局的沟通力。",
+  },
+};
+
+function motherCardDisplayCopy(trigram: string, definition: { assetSummary: string; baseDrive: string; shadowInertia: string; personalityAsset: string }) {
+  return MOTHER_CARD_DISPLAY_COPY[trigram] ?? {
+    oneLine: definition.baseDrive,
+    transform: definition.assetSummary,
+    tags: ["识别", "定界", "转化"] as [string, string, string],
+    archetype: definition.baseDrive,
+    inertia: definition.shadowInertia,
+    cost: "它保护你维持稳定，也可能让新的动作被推迟。",
+    direction: definition.personalityAsset || definition.assetSummary,
+  };
+}
+
 type FourBeastLitePoint = {
   x: number;
   y: number;
@@ -735,18 +832,25 @@ function drawFourBeastCardWatermark(
   cardH: number,
 ) {
   const copy = FOUR_BEAST_VISUAL_COPY[beast];
-  const cx = cardX + cardW * 0.74;
-  const cy = cardY + cardH * 0.47;
-  const r = Math.min(cardW, cardH) * 0.23;
+  const visualX = cardX + cardW * 0.17;
+  const visualY = cardY + cardH * 0.13;
+  const visualW = cardW * 0.66;
+  const visualH = cardH * 0.32;
+  const cx = visualX + visualW * 0.5;
+  const cy = visualY + visualH * 0.53;
 
   ctx.save();
+  ctx.beginPath();
+  ctx.roundRect?.(visualX, visualY, visualW, visualH, 18);
+  if (!ctx.roundRect) ctx.rect(visualX, visualY, visualW, visualH);
+  ctx.clip();
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.globalAlpha = 0.72;
-  drawFourBeastLiteStar(ctx, beast, undefined, cx - r * 1.12, cy - r * 0.84, r * 2.24, r * 1.68, 0.42);
+  ctx.globalAlpha = 0.58;
+  drawFourBeastLiteStar(ctx, beast, undefined, visualX + visualW * 0.14, visualY + visualH * 0.18, visualW * 0.72, visualH * 0.56, 0.22);
   ctx.fillStyle = "rgba(232,200,138,0.16)";
   ctx.font = `700 ${Math.min(14, cardW * 0.04)}px ${MONO}`;
-  ctx.fillText(copy.mark, cx, cy + r * 0.72);
+  ctx.fillText(copy.mark, cx, cy + visualH * 0.28);
   ctx.restore();
 }
 
@@ -2491,7 +2595,7 @@ export function LaunchLab() {
         const profile = reveal.mother.profile;
         const definition = reveal.mother.definition;
         const fourBeastGrammar = resolveFourBeastGrammar(reveal);
-        const fourBeastGrammarLine = fourBeastGrammarShortLine(fourBeastGrammar);
+        const displayCopy = motherCardDisplayCopy(reveal.mother.trigram, definition);
         const inT = smooth(0, 0.6, m.t);
         const pulse = 0.72 + Math.sin(now * 2.1) * 0.1;
         const centerX = m.w / 2;
@@ -2544,84 +2648,134 @@ export function LaunchLab() {
         ctx.font = `620 ${Math.min(12, m.w * 0.031)}px ${SANS}`;
         ctx.fillText("时序与方位正在生成你的内在底码", g.railX0, m.h * 0.248);
 
-        const cardX = g.railX0;
-        const cardY = m.h * 0.335;
-        const cardW = g.railX1 - g.railX0;
-        const cardH = Math.min(232, m.h * 0.33);
+        const cardW = Math.min(g.railX1 - g.railX0, Math.min(326, m.w * 0.84));
+        const cardH = Math.min(360, m.h * 0.425, cardW * 1.12);
+        const cardX = centerX - cardW / 2;
+        const cardY = m.h * 0.235;
+        const cardPad = Math.min(22, cardW * 0.06);
         const flipPulse = smooth(0, 1, m.motherCardFlipPulse);
         const cardScale = 1 + flipPulse * 0.012;
         ctx.save();
         ctx.translate(cardX + cardW / 2, cardY + cardH / 2);
         ctx.scale(cardScale, cardScale);
         ctx.translate(-(cardX + cardW / 2), -(cardY + cardH / 2));
-        ctx.fillStyle = "rgba(255,247,228,0.052)";
-        ctx.strokeStyle = "rgba(232,200,138,0.3)";
+        const cardBg = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
+        cardBg.addColorStop(0, "rgba(255,247,228,0.064)");
+        cardBg.addColorStop(0.44, "rgba(232,200,138,0.032)");
+        cardBg.addColorStop(1, "rgba(255,247,228,0.044)");
+        ctx.fillStyle = cardBg;
+        ctx.strokeStyle = "rgba(232,200,138,0.34)";
         ctx.lineWidth = 0.8;
         ctx.beginPath();
-        ctx.roundRect?.(cardX, cardY, cardW, cardH, 18);
+        ctx.roundRect?.(cardX, cardY, cardW, cardH, 20);
         if (!ctx.roundRect) ctx.rect(cardX, cardY, cardW, cardH);
         ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(255,247,228,0.08)";
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.roundRect?.(cardX + 7, cardY + 7, cardW - 14, cardH - 14, 16);
+        if (!ctx.roundRect) ctx.rect(cardX + 7, cardY + 7, cardW - 14, cardH - 14);
         ctx.stroke();
         drawFourBeastCardWatermark(ctx, reveal.geo.symbol, cardX, cardY, cardW, cardH);
 
         if (m.motherCardFace === "front") {
           ctx.fillStyle = "rgba(232,200,138,0.74)";
           ctx.font = `650 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
-          ctx.fillText("母码构图", cardX + 16, cardY + 28);
+          ctx.fillText("母码卡", cardX + cardPad, cardY + 28);
           ctx.textAlign = "right";
           ctx.fillStyle = "rgba(232,200,138,0.58)";
-          ctx.fillText(`${reveal.geo.symbol} × ${reveal.mother.trigram}`, cardX + cardW - 16, cardY + 28);
+          ctx.fillText(`${reveal.geo.symbol} × ${reveal.mother.trigram}`, cardX + cardW - cardPad, cardY + 28);
           ctx.textAlign = "left";
+          const badgeX = cardX + cardW / 2;
+          const badgeY = cardY + cardH * 0.31;
+          const badgeR = Math.min(cardW * 0.24, cardH * 0.18);
+          ctx.strokeStyle = "rgba(232,200,138,0.2)";
+          ctx.lineWidth = 0.7;
+          ctx.beginPath();
+          ctx.arc(badgeX, badgeY, badgeR, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.strokeStyle = "rgba(255,247,228,0.08)";
+          ctx.beginPath();
+          ctx.arc(badgeX, badgeY, badgeR * 0.68, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(badgeX - badgeR * 0.72, badgeY);
+          ctx.lineTo(badgeX + badgeR * 0.72, badgeY);
+          ctx.stroke();
+          ctx.textAlign = "center";
+          ctx.fillStyle = "rgba(255,247,228,0.2)";
+          ctx.font = `780 ${Math.min(78, cardW * 0.23)}px ${SANS}`;
+          ctx.fillText(definition.trigramSymbol, badgeX, badgeY + badgeR * 0.2);
+          const [trigramName, roleName] = profile.motherCodeName.split("｜");
           ctx.fillStyle = "rgba(255,247,228,0.98)";
-          ctx.font = `780 ${Math.min(32, m.w * 0.078)}px ${SANS}`;
-          ctx.fillText(`${definition.trigramSymbol} ${profile.motherCodeName}`, cardX + 16, cardY + 74);
-          ctx.fillStyle = "rgba(232,200,138,0.74)";
-          ctx.font = `650 ${Math.min(12, m.w * 0.031)}px ${MONO}`;
-          ctx.fillText(`角色：${profile.motherCodeTitle}`, cardX + 16, cardY + 102);
+          ctx.font = `800 ${Math.min(44, cardW * 0.13)}px ${SANS}`;
+          ctx.fillText(trigramName || reveal.mother.trigram, cardX + cardW / 2, cardY + cardH * 0.52);
+          ctx.fillStyle = "rgba(232,200,138,0.72)";
+          ctx.font = `650 ${Math.min(14, cardW * 0.041)}px ${SANS}`;
+          ctx.fillText(roleName || profile.motherCodeTitle || definition.motherCodeTitle, cardX + cardW / 2, cardY + cardH * 0.59);
+          ctx.textAlign = "left";
           ctx.fillStyle = "rgba(255,247,228,0.9)";
-          ctx.font = `740 ${Math.min(16, m.w * 0.04)}px ${SANS}`;
-          drawCanvasWrappedText(ctx, definition.assetSummary, cardX + 16, cardY + 136, cardW - 32, 21, 2);
-          ctx.fillStyle = "rgba(232,200,138,0.5)";
-          ctx.font = `600 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
-          ctx.fillText(fourBeastGrammarLine || "四象兽动作正在落印", cardX + 16, cardY + cardH - 42);
+          ctx.font = `720 ${Math.min(14.5, cardW * 0.043)}px ${SANS}`;
+          drawCanvasWrappedText(ctx, displayCopy.oneLine, cardX + cardPad, cardY + cardH * 0.675, cardW - cardPad * 2, 19, 2);
+          ctx.fillStyle = "rgba(232,200,138,0.78)";
+          ctx.font = `650 ${Math.min(11, cardW * 0.033)}px ${SANS}`;
+          drawCanvasWrappedText(ctx, `转化方向：${displayCopy.transform}`, cardX + cardPad, cardY + cardH * 0.785, cardW - cardPad * 2, 16, 2);
+          let tagX = cardX + cardPad;
+          const tagY = cardY + cardH - 48;
+          displayCopy.tags.forEach((tag) => {
+            const tagW = Math.min(86, Math.max(48, ctx.measureText(tag).width + 20));
+            ctx.fillStyle = "rgba(232,200,138,0.075)";
+            ctx.strokeStyle = "rgba(232,200,138,0.2)";
+            ctx.lineWidth = 0.6;
+            ctx.beginPath();
+            ctx.roundRect?.(tagX, tagY - 16, tagW, 24, 12);
+            if (!ctx.roundRect) ctx.rect(tagX, tagY - 16, tagW, 24);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = "rgba(232,200,138,0.7)";
+            ctx.font = `650 ${Math.min(10.5, cardW * 0.031)}px ${MONO}`;
+            ctx.fillText(tag, tagX + 10, tagY);
+            tagX += tagW + 8;
+          });
           ctx.fillStyle = "rgba(232,200,138,0.56)";
-          ctx.fillText("轻触翻面，查看人格原型", cardX + 16, cardY + cardH - 16);
+          ctx.font = `600 ${Math.min(10, cardW * 0.03)}px ${MONO}`;
+          ctx.fillText("轻触翻面，查看人格原型", cardX + cardPad, cardY + cardH - 17);
         } else {
-          const decodeX = cardX + 16;
-          let decodeY = cardY + 28;
-          const labelW = Math.min(64, cardW * 0.22);
-          const valueX = decodeX + labelW;
-          const rowGap = Math.min(34, cardH * 0.15);
-          const drawDecodeRow = (label: string, text: string, maxLines = 1) => {
-            ctx.fillStyle = "rgba(232,200,138,0.58)";
-            ctx.font = `650 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
+          const decodeX = cardX + cardPad;
+          let decodeY = cardY + 32;
+          const sectionGap = Math.min(62, cardH * 0.168);
+          const drawDecodeBlock = (label: string, text: string, maxLines = 2) => {
+            ctx.fillStyle = "rgba(232,200,138,0.62)";
+            ctx.font = `650 ${Math.min(10, cardW * 0.03)}px ${MONO}`;
             ctx.fillText(label, decodeX, decodeY);
             ctx.fillStyle = "rgba(255,247,228,0.88)";
-            ctx.font = `650 ${Math.min(11, m.w * 0.029)}px ${SANS}`;
-            drawCanvasWrappedText(ctx, text, valueX, decodeY, cardW - labelW - 32, 14, maxLines);
-            decodeY += rowGap;
+            ctx.font = `650 ${Math.min(11.2, cardW * 0.034)}px ${SANS}`;
+            drawCanvasWrappedText(ctx, text, decodeX, decodeY + 20, cardW - cardPad * 2, 15, maxLines);
+            decodeY += sectionGap;
           };
           ctx.fillStyle = "rgba(232,200,138,0.72)";
-          ctx.font = `650 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
+          ctx.font = `650 ${Math.min(10, cardW * 0.03)}px ${MONO}`;
           ctx.fillText("人格原型解码", decodeX, decodeY);
           ctx.textAlign = "right";
-          ctx.fillText("轻触返回母码构图", cardX + cardW - 16, decodeY);
+          ctx.fillText("轻触返回构图", cardX + cardW - cardPad, decodeY);
           ctx.textAlign = "left";
-          decodeY += 28;
-          drawDecodeRow("原型", profile.motherCodeName);
-          drawDecodeRow("原力", definition.baseDrive, 2);
-          drawDecodeRow("惯性", definition.defaultReactionChain);
-          drawDecodeRow("阴影", definition.shadowInertia, 2);
-          drawDecodeRow("转化", definition.personalityAsset || definition.assetSummary, 2);
+          decodeY += 36;
+          drawDecodeBlock("原型识别", displayCopy.archetype, 2);
+          drawDecodeBlock("惯性反应", displayCopy.inertia, 2);
+          drawDecodeBlock("行为代价", displayCopy.cost, 2);
+          drawDecodeBlock("转化方向", displayCopy.direction, 2);
           ctx.fillStyle = "rgba(232,200,138,0.48)";
-          ctx.font = `600 ${Math.min(10, m.w * 0.026)}px ${MONO}`;
-          ctx.fillText(`来源：${reveal.chrono.lockPoint} · ${reveal.geo.symbol}/${reveal.geo.province} · ${definition.trigramSymbol}`, cardX + 16, cardY + cardH - 16);
+          ctx.font = `600 ${Math.min(9.5, cardW * 0.029)}px ${MONO}`;
+          ctx.fillText(`来源：${reveal.chrono.lockPoint} · ${reveal.geo.symbol}/${reveal.geo.province} · ${definition.trigramSymbol}`, cardX + cardPad, cardY + cardH - 33);
+          ctx.fillStyle = "rgba(232,200,138,0.56)";
+          ctx.fillText("这张母码，是你进入本局之前的内在底座", cardX + cardPad, cardY + cardH - 15);
         }
         ctx.restore();
 
         ctx.fillStyle = "rgba(232,200,138,0.52)";
-        ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-        ctx.fillText("右滑，进入现实压力", g.railX0, g.railY + 30);
+        ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
+        ctx.fillText("收下这张母码，再进入现实压力", g.railX0, g.railY + 30);
         ctx.textAlign = "right";
         ctx.fillStyle = "rgba(232,200,138,0.72)";
         ctx.fillText("现实压力", g.railX1, g.railY - 18);
@@ -2890,10 +3044,10 @@ export function LaunchLab() {
     function isMotherCodeCardHit(x: number, y: number) {
       if (m.state !== STATE.MOTHER_CODE_REVEAL) return false;
       const g = axisMetrics();
-      const cardX = g.railX0;
-      const cardY = m.h * 0.335;
-      const cardW = g.railX1 - g.railX0;
-      const cardH = Math.min(232, m.h * 0.33);
+      const cardW = Math.min(g.railX1 - g.railX0, Math.min(326, m.w * 0.84));
+      const cardH = Math.min(360, m.h * 0.425, cardW * 1.12);
+      const cardX = m.w / 2 - cardW / 2;
+      const cardY = m.h * 0.235;
       return x >= cardX && x <= cardX + cardW && y >= cardY && y <= cardY + cardH;
     }
     function flipMotherCodeCard() {
