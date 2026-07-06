@@ -503,6 +503,185 @@ function fourBeastGrammarShortLine(grammar?: FourBeastTrigramVisualGrammarItem) 
   return motionTail.replace(/[。.]$/, "");
 }
 
+type FourBeastLitePoint = {
+  x: number;
+  y: number;
+  power?: number;
+};
+
+type FourBeastLiteShape = {
+  points: FourBeastLitePoint[];
+  edges: Array<[number, number]>;
+};
+
+function fourBeastLiteShape(beast: GeoDirectionSymbol): FourBeastLiteShape {
+  if (beast === "青龙") {
+    return {
+      points: [
+        { x: 0.13, y: 0.6, power: 0.72 },
+        { x: 0.26, y: 0.44, power: 0.8 },
+        { x: 0.4, y: 0.5, power: 0.72 },
+        { x: 0.54, y: 0.34, power: 0.9 },
+        { x: 0.68, y: 0.4, power: 0.78 },
+        { x: 0.82, y: 0.28, power: 0.96 },
+        { x: 0.9, y: 0.5, power: 0.68 },
+      ],
+      edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]],
+    };
+  }
+  if (beast === "朱雀") {
+    return {
+      points: [
+        { x: 0.5, y: 0.24, power: 0.98 },
+        { x: 0.38, y: 0.46, power: 0.84 },
+        { x: 0.2, y: 0.35, power: 0.76 },
+        { x: 0.14, y: 0.62, power: 0.66 },
+        { x: 0.62, y: 0.46, power: 0.84 },
+        { x: 0.8, y: 0.35, power: 0.76 },
+        { x: 0.86, y: 0.62, power: 0.66 },
+      ],
+      edges: [[0, 1], [1, 2], [2, 3], [0, 4], [4, 5], [5, 6], [1, 4]],
+    };
+  }
+  if (beast === "白虎") {
+    return {
+      points: [
+        { x: 0.18, y: 0.5, power: 0.9 },
+        { x: 0.32, y: 0.38, power: 0.82 },
+        { x: 0.5, y: 0.42, power: 0.94 },
+        { x: 0.68, y: 0.48, power: 0.78 },
+        { x: 0.82, y: 0.42, power: 0.72 },
+        { x: 0.42, y: 0.67, power: 0.7 },
+        { x: 0.65, y: 0.69, power: 0.68 },
+      ],
+      edges: [[0, 1], [1, 2], [2, 3], [3, 4], [2, 5], [3, 6], [5, 6]],
+    };
+  }
+  return {
+    points: [
+      { x: 0.28, y: 0.5, power: 0.78 },
+      { x: 0.38, y: 0.32, power: 0.86 },
+      { x: 0.58, y: 0.3, power: 0.92 },
+      { x: 0.74, y: 0.46, power: 0.78 },
+      { x: 0.62, y: 0.64, power: 0.82 },
+      { x: 0.4, y: 0.66, power: 0.72 },
+      { x: 0.2, y: 0.72, power: 0.66 },
+    ],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0], [0, 6]],
+  };
+}
+
+function drawFourBeastLiteStar(
+  ctx: CanvasRenderingContext2D,
+  beast: GeoDirectionSymbol,
+  trigram: string | undefined,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  alpha = 1,
+) {
+  const shape = fourBeastLiteShape(beast);
+  const sx = (v: number) => x + v * w;
+  const sy = (v: number) => y + v * h;
+  const points = shape.points.map((p) => ({ x: sx(p.x), y: sy(p.y), power: p.power ?? 0.75 }));
+  const gold = "232,200,138";
+  const white = "255,247,228";
+  const seed = beast === "青龙" ? 13 : beast === "朱雀" ? 29 : beast === "白虎" ? 47 : 61;
+
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  const glow = ctx.createRadialGradient(x + w * 0.5, y + h * 0.48, 0, x + w * 0.5, y + h * 0.48, Math.max(w, h) * 0.66);
+  glow.addColorStop(0, "rgba(255,247,228,0.09)");
+  glow.addColorStop(0.45, "rgba(232,200,138,0.035)");
+  glow.addColorStop(1, "rgba(232,200,138,0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(x - w * 0.08, y - h * 0.08, w * 1.16, h * 1.16);
+
+  for (let i = 0; i < 30; i++) {
+    const a = (i * 2.399 + seed) % (Math.PI * 2);
+    const band = i % points.length;
+    const p = points[band];
+    const q = points[(band + 2) % points.length];
+    const mix = 0.24 + ((i * 37 + seed) % 53) / 100;
+    const px = lerp(p.x, q.x, mix) + Math.cos(a) * w * (0.018 + (i % 5) * 0.004);
+    const py = lerp(p.y, q.y, mix) + Math.sin(a) * h * (0.018 + (i % 4) * 0.004);
+    const dot = 0.45 + (i % 4) * 0.18;
+    ctx.fillStyle = `rgba(${i % 3 === 0 ? gold : white},${(0.06 + (i % 5) * 0.012).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.arc(px, py, dot, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.strokeStyle = "rgba(255,247,228,0.18)";
+  ctx.lineWidth = 0.75;
+  ctx.shadowColor = "rgba(232,200,138,0.16)";
+  ctx.shadowBlur = 8;
+  for (const [from, to] of shape.edges) {
+    const p = points[from];
+    const q = points[to];
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(q.x, q.y);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = "rgba(232,200,138,0.12)";
+  ctx.lineWidth = 1;
+  ctx.shadowColor = "rgba(232,200,138,0.18)";
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  if (beast === "青龙") {
+    ctx.moveTo(sx(0.08), sy(0.64));
+    ctx.bezierCurveTo(sx(0.24), sy(0.3), sx(0.52), sy(0.56), sx(0.84), sy(0.24));
+    ctx.bezierCurveTo(sx(0.96), sy(0.12), sx(0.98), sy(0.34), sx(0.9), sy(0.5));
+  } else if (beast === "朱雀") {
+    ctx.moveTo(sx(0.5), sy(0.26));
+    ctx.bezierCurveTo(sx(0.26), sy(0.18), sx(0.08), sy(0.34), sx(0.12), sy(0.66));
+    ctx.moveTo(sx(0.5), sy(0.26));
+    ctx.bezierCurveTo(sx(0.74), sy(0.18), sx(0.92), sy(0.34), sx(0.88), sy(0.66));
+    if (trigram === "艮") {
+      ctx.moveTo(sx(0.26), sy(0.72));
+      ctx.lineTo(sx(0.74), sy(0.72));
+    }
+  } else if (beast === "白虎") {
+    ctx.moveTo(sx(0.12), sy(0.54));
+    ctx.bezierCurveTo(sx(0.3), sy(0.24), sx(0.72), sy(0.38), sx(0.9), sy(0.42));
+    ctx.bezierCurveTo(sx(0.68), sy(0.72), sx(0.34), sy(0.72), sx(0.18), sy(0.54));
+    for (let i = 0; i < 3; i++) {
+      const cx = sx(0.7 + i * 0.055);
+      ctx.moveTo(cx, sy(0.58));
+      ctx.lineTo(cx + w * 0.055, sy(0.66 + i * 0.018));
+    }
+  } else {
+    ctx.ellipse(sx(0.5), sy(0.49), w * 0.28, h * 0.2, -0.04, 0, Math.PI * 2);
+    ctx.moveTo(sx(0.22), sy(0.72));
+    ctx.bezierCurveTo(sx(0.4), sy(0.8), sx(0.7), sy(0.78), sx(0.86), sy(0.64));
+    ctx.moveTo(sx(0.22), sy(0.72));
+    ctx.bezierCurveTo(sx(0.1), sy(0.62), sx(0.2), sy(0.42), sx(0.34), sy(0.48));
+  }
+  ctx.stroke();
+
+  points.forEach((p, i) => {
+    const r = 1.7 + p.power * 1.8 + (i === 0 ? 0.8 : 0);
+    ctx.fillStyle = `rgba(${i % 2 === 0 ? white : gold},${(0.58 + p.power * 0.32).toFixed(3)})`;
+    ctx.shadowColor = `rgba(${white},${(0.2 + p.power * 0.28).toFixed(3)})`;
+    ctx.shadowBlur = 7 + p.power * 8;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = `rgba(${gold},0.16)`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r * 2.25, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.restore();
+}
+
 function drawFourBeastOriginMarker(
   ctx: CanvasRenderingContext2D,
   beast: GeoDirectionSymbol,
@@ -517,8 +696,8 @@ function drawFourBeastOriginMarker(
 ) {
   const copy = FOUR_BEAST_VISUAL_COPY[beast];
   const cx = x + w * 0.5;
-  const cy = y + h * 0.48;
-  const radius = Math.min(w, h) * 0.34;
+  const cy = y + h * 0.38;
+  const radius = Math.min(w, h) * 0.42;
 
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -534,31 +713,15 @@ function drawFourBeastOriginMarker(
   ctx.arc(cx, cy, radius * 1.45, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.strokeStyle = "rgba(232,200,138,0.13)";
-  ctx.lineWidth = 0.9;
-  ctx.beginPath();
-  ctx.arc(cx, cy, radius, -Math.PI * 0.18, Math.PI * 1.22);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(cx - radius * 0.72, cy + radius * 0.2);
-  ctx.quadraticCurveTo(cx, cy - radius * 0.46, cx + radius * 0.78, cy + radius * 0.16);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(cx - radius * 0.42, cy + radius * 0.48);
-  ctx.quadraticCurveTo(cx + radius * 0.08, cy + radius * 0.18, cx + radius * 0.5, cy + radius * 0.55);
-  ctx.stroke();
-
-  ctx.fillStyle = "rgba(255,247,228,0.075)";
-  ctx.font = `780 ${Math.min(72, Math.max(42, w * 0.38))}px ${SANS}`;
-  ctx.fillText(beast, cx, cy - radius * 0.04);
+  drawFourBeastLiteStar(ctx, beast, trigram, cx - radius * 1.02, cy - radius * 0.74, radius * 2.04, radius * 1.48, 0.96);
 
   ctx.fillStyle = "rgba(232,200,138,0.54)";
-  ctx.font = `700 ${Math.min(13, Math.max(10, w * 0.06))}px ${MONO}`;
-  ctx.fillText(`${beast} × ${trigram}`, cx, cy + radius * 0.72);
+  ctx.font = `700 ${Math.min(12, Math.max(9, w * 0.052))}px ${MONO}`;
+  ctx.fillText(`${beast} × ${trigram}`, cx, cy + radius * 0.9);
   ctx.fillStyle = "rgba(232,200,138,0.42)";
-  ctx.font = `600 ${Math.min(10.5, Math.max(8.5, w * 0.047))}px ${MONO}`;
-  ctx.fillText(grammarLine || `${copy.axis} · ${province}`, cx, cy + radius * 0.98);
-  ctx.fillText(`${copy.axis} · ${province}`, cx, cy + radius * 1.22);
+  ctx.font = `600 ${Math.min(9.5, Math.max(7.8, w * 0.04))}px ${MONO}`;
+  ctx.fillText(grammarLine || `${copy.axis} · ${province}`, cx, cy + radius * 1.12);
+  ctx.fillText(`${copy.axis} · ${province}`, cx, cy + radius * 1.34);
 
   ctx.restore();
 }
@@ -580,18 +743,7 @@ function drawFourBeastCardWatermark(
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.globalAlpha = 0.72;
-  ctx.strokeStyle = "rgba(232,200,138,0.075)";
-  ctx.lineWidth = 0.8;
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(cx - r * 0.7, cy);
-  ctx.quadraticCurveTo(cx, cy - r * 0.52, cx + r * 0.7, cy);
-  ctx.stroke();
-  ctx.fillStyle = "rgba(255,247,228,0.045)";
-  ctx.font = `780 ${Math.min(58, cardW * 0.18)}px ${SANS}`;
-  ctx.fillText(beast, cx, cy);
+  drawFourBeastLiteStar(ctx, beast, undefined, cx - r * 1.12, cy - r * 0.84, r * 2.24, r * 1.68, 0.42);
   ctx.fillStyle = "rgba(232,200,138,0.16)";
   ctx.font = `700 ${Math.min(14, cardW * 0.04)}px ${MONO}`;
   ctx.fillText(copy.mark, cx, cy + r * 0.72);
