@@ -2241,14 +2241,24 @@ function HexagramCodeDeliveryShell() {
   const motherPersonaSnapshot = resolveMotherPersonaSnapshot(dynamicsInputContext);
   const motherCodeName = resolveMotherCodeName(dynamicsInputContext);
   const currentHexagramProfile = activeCurrentHexagramContext?.currentHexagramProfile ?? null;
-  const displayExperienceState: ExperienceState = motherCodeName && experienceState.stage === "PRESSURE"
+  const hasLockedPressureSeed = Boolean(dynamicsInputContext.selectedPressureSeedContext);
+  const displayExperienceState: ExperienceState = !hasLockedPressureSeed
     ? {
+        ...experienceState,
+        loopLabel: "六维传导预览",
+        headline: "等待压力种子锁定。",
+        supportingCopy: "当前为安全预览状态，缺少本局上下文。",
+        pressureCopy: "等待压力种子进入。",
+        beastCopy: "六维传导将在压力种子锁定后展开。",
+      }
+    : motherCodeName && experienceState.stage === "PRESSURE"
+      ? {
         ...experienceState,
         headline: "母码已接入。",
         supportingCopy: "这粒压力正在进入你的母码六维传导。",
         pressureCopy: "母码已接入，压力种子开始进入六维传导。",
       }
-    : experienceState;
+      : experienceState;
   const valueFlow = resolveValueFlow(executionSnapshot);
   const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
     pressureSeed: selectedPressureSeedSurface,
