@@ -907,16 +907,16 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       stage,
       primaryFocus,
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
-      headline: "结晶已经出现。",
-      supportingCopy: "这粒压力已经穿过六维，反应正在沉积成一枚结晶。",
+      headline: "六维传导已完成。",
+      supportingCopy: "本局上下文完整后，将生成结晶。",
       pressureCopy: "压力种子已完成六维传导。",
-      beastCopy: "反应已稳定沉积。",
+      beastCopy: "反应已进入结晶候选态。",
       nodeCopy: {
         title: "六维传导已完成",
-        text: "本局反应正在沉积为结晶。",
-        actionText: "本局结晶已经形成。",
+        text: "这轮反应已经具备进入结晶的条件。",
+        actionText: "等待本局上下文完整。",
       },
-      crystalCopy: "这一轮反应，已经沉积为结晶。",
+      crystalCopy: "六维传导已完成，正在等待本局结晶条件。",
     });
   }
 
