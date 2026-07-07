@@ -967,7 +967,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
     primaryFocus,
     loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
     headline: "这粒压力正在进入六维传导。",
-    supportingCopy: "系统开始读取你在现实压力下的惯性反应。",
+    supportingCopy: "本局开始读取你在现实压力下的惯性反应。",
     pressureCopy: "压力种子正在进入。",
     beastCopy: "惯性反应即将显影。",
     nodeCopy,
@@ -1947,7 +1947,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
 
   return (
     <section
-      aria-label={isCardView ? "本局结晶卡" : "本局结晶承接态"}
+      aria-label={isCardView ? "本局卦码卡" : "本局结晶承接态"}
       data-crystal-view={crystalView}
       style={{
         minHeight: isCardView ? 548 : 424,
@@ -2004,12 +2004,12 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
         }}
       >
         <GuanyaoText size="eyebrow" tone="gold">
-          {isCardView ? "本局结晶卡" : "六维传导已完成"}
+          {isCardView ? "64 卦码资产" : "六维传导已完成"}
         </GuanyaoText>
 
         {isCardView ? (
           <article
-            aria-label="本局结晶卡内容"
+            aria-label="本局卦码卡内容"
             style={{
               width: "100%",
               display: "grid",
@@ -2036,8 +2036,20 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
               {hexagramTitle}
             </h1>
 
+            <strong
+              style={{
+                margin: "-2px 0 0",
+                color: "rgba(255,226,158,0.78)",
+                fontSize: 13,
+                lineHeight: 1.4,
+                fontWeight: 650,
+              }}
+            >
+              本局卦码卡
+            </strong>
+
             <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 13, lineHeight: 1.55 }}>
-              从【{state.mother.motherCodeName || state.mother.lowerTrigram}】进入【{hexagramTitle}】
+              从【{state.mother.motherCodeName || state.mother.lowerTrigram}】进入【{hexagramTitle}】，结晶为这一局的 64 卦码。
             </p>
           </article>
         ) : (
@@ -2109,7 +2121,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
             lineHeight: 1.62,
           }}
         >
-          {isCardView ? "这是一张只保留人格动态的本局结晶卡，不暴露具体压力原句。" : state.crystal.copy}
+          {isCardView ? "这是一张由本局结晶生成的卦码卡，只保留人格动态，不暴露具体压力原句。" : state.crystal.copy}
         </p>
 
         {isCardView ? (

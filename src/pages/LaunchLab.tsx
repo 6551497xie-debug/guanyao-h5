@@ -2639,13 +2639,13 @@ export function LaunchLab() {
         ctx.textBaseline = "alphabetic";
         ctx.fillStyle = "rgba(232,200,138,0.76)";
         ctx.font = `650 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
-        ctx.fillText("母码正在显影", g.railX0, m.h * 0.115);
+        ctx.fillText("8 母码正在显影", g.railX0, m.h * 0.115);
         ctx.fillStyle = "rgba(255,247,228,0.96)";
         ctx.font = `760 ${Math.min(30, m.w * 0.074)}px ${SANS}`;
         ctx.fillText("原始坐标已固定", g.railX0, m.h * 0.19);
         ctx.fillStyle = "rgba(232,200,138,0.58)";
         ctx.font = `620 ${Math.min(12, m.w * 0.031)}px ${SANS}`;
-        ctx.fillText("时序与方位正在生成你的内在底码", g.railX0, m.h * 0.248);
+        ctx.fillText("时序与方位正在生成你的 8 母码底盘", g.railX0, m.h * 0.248);
 
         const cardW = Math.min(g.railX1 - g.railX0, Math.min(326, m.w * 0.84));
         const cardH = Math.min(360, m.h * 0.425, cardW * 1.12);
@@ -2682,7 +2682,7 @@ export function LaunchLab() {
           const [trigramName, roleName] = profile.motherCodeName.split("｜");
           ctx.fillStyle = "rgba(232,200,138,0.44)";
           ctx.font = `600 ${Math.min(9, cardW * 0.027)}px ${MONO}`;
-          ctx.fillText("母码卡", cardX + cardPad, cardY + 25);
+          ctx.fillText("8 母码", cardX + cardPad, cardY + 25);
           ctx.textAlign = "center";
           ctx.fillStyle = "rgba(255,247,228,0.96)";
           ctx.font = `800 ${Math.min(28, cardW * 0.082)}px ${SANS}`;
@@ -2756,7 +2756,7 @@ export function LaunchLab() {
           ctx.font = `600 ${Math.min(9.5, cardW * 0.029)}px ${MONO}`;
           ctx.fillText(`来源：${reveal.geo.symbol}方位 × ${reveal.mother.trigram}母码`, cardX + cardPad, cardY + cardH - 33);
           ctx.fillStyle = "rgba(232,200,138,0.56)";
-          ctx.fillText("这张母码，是你进入本局之前的内在底座", cardX + cardPad, cardY + cardH - 15);
+          ctx.fillText("这张 8 母码，是你进入本局之前的内在底座", cardX + cardPad, cardY + cardH - 15);
         }
         ctx.restore();
 
@@ -2768,7 +2768,7 @@ export function LaunchLab() {
         ctx.fillStyle = "rgba(232,200,138,0.52)";
         ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
         ctx.textAlign = "left";
-        ctx.fillText("收下这张母码，再进入现实压力", g.railX0, g.railY + 30);
+        ctx.fillText("收下这张 8 母码，再进入这一局现实压力", g.railX0, g.railY + 30);
         ctx.textAlign = "right";
         ctx.fillStyle = "rgba(232,200,138,0.72)";
         ctx.fillText("现实压力", g.railX1, g.railY - 18);
@@ -2825,11 +2825,11 @@ export function LaunchLab() {
         ctx.fillText("现实压力入口", g.railX0, m.h * 0.18);
         ctx.fillStyle = "rgba(255,247,228,0.96)";
         ctx.font = `760 ${Math.min(34, m.w * 0.082)}px ${SANS}`;
-        ctx.fillText("现实压力开始聚合", g.railX0, m.h * 0.3);
+        ctx.fillText("现实压力开始成局", g.railX0, m.h * 0.3);
         ctx.fillStyle = "rgba(232,200,138,0.82)";
         ctx.font = `650 ${Math.min(15, m.w * 0.038)}px ${SANS}`;
-        ctx.fillText("系统将从你的当前处境中", g.railX0, m.h * 0.4);
-        ctx.fillText("捕获三粒压力种子。", g.railX0, m.h * 0.445);
+        ctx.fillText("从你的当前处境中", g.railX0, m.h * 0.4);
+        ctx.fillText("选择这一局的现实压力。", g.railX0, m.h * 0.445);
         ctx.fillStyle = "rgba(232,200,138,0.52)";
         ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
         ctx.fillText("右滑进入压力种子", g.railX0, g.railY + 30);
