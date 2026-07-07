@@ -2680,9 +2680,18 @@ export function LaunchLab() {
 
         if (m.motherCardFace === "front") {
           const [trigramName, roleName] = profile.motherCodeName.split("｜");
+          const assetBadgeW = Math.min(62, Math.max(48, cardW * 0.18));
+          ctx.fillStyle = "rgba(232,200,138,0.07)";
+          ctx.strokeStyle = "rgba(232,200,138,0.2)";
+          ctx.lineWidth = 0.6;
+          ctx.beginPath();
+          ctx.roundRect?.(cardX + cardPad - 2, cardY + 12, assetBadgeW, 22, 11);
+          if (!ctx.roundRect) ctx.rect(cardX + cardPad - 2, cardY + 12, assetBadgeW, 22);
+          ctx.fill();
+          ctx.stroke();
           ctx.fillStyle = "rgba(232,200,138,0.44)";
           ctx.font = `600 ${Math.min(9, cardW * 0.027)}px ${MONO}`;
-          ctx.fillText("8 母码", cardX + cardPad, cardY + 25);
+          ctx.fillText("8 母码", cardX + cardPad + 7, cardY + 26);
           ctx.textAlign = "center";
           ctx.fillStyle = "rgba(255,247,228,0.96)";
           ctx.font = `800 ${Math.min(28, cardW * 0.082)}px ${SANS}`;

@@ -2048,6 +2048,20 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
               本局卦码卡
             </strong>
 
+            <span
+              style={{
+                justifySelf: "center",
+                padding: "4px 10px",
+                border: "1px solid rgba(255,226,158,0.18)",
+                borderRadius: 999,
+                color: "rgba(199,169,107,0.68)",
+                fontSize: 11,
+                fontWeight: 650,
+              }}
+            >
+              64 卦码 · 本局资产
+            </span>
+
             <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 13, lineHeight: 1.55 }}>
               从【{state.mother.motherCodeName || state.mother.lowerTrigram}】进入【{hexagramTitle}】，结晶为这一局的 64 卦码。
             </p>
