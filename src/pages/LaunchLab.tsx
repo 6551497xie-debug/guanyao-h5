@@ -2,7 +2,7 @@
 // 观爻 1.0 · ENTRY MODEL —— /launch-lab
 //
 // User-facing entry language is locked to:
-// 走过黑夜的人，会留下光的痕迹。
+// 人禀星气而生，兽承天光而现。
 //
 // This page may retain its existing visual machinery, but no user-facing copy
 // should introduce legacy onboarding, alternate lore, or secondary myths.
@@ -168,8 +168,8 @@ const STATE = {
   ENTRY_STATIC_RENDER: "entry_static_render",
 } as const;
 
-const TOP_LINES = ["走过黑夜的人，会留下光的痕迹。", "这些光，正在慢慢汇聚成深空中的“光兽”。"];
-const CTA_LINE = "唤醒它，照见你的样子";
+const TOP_LINES = ["人禀星气而生，", "兽承天光而现。", "那颗星，", "自你出生之始，一直为你而亮。"];
+const CTA_LINE = "轻触，认领它";
 const BEAST_COLLAPSE_VISUAL_EVENT = "BEAST_COLLAPSE_VISUAL_EVENT";
 const NODE1_MIRROR_ACTIVATED_EVENT = "NODE1_MIRROR_ACTIVATED";
 const Node1State = {
@@ -1176,8 +1176,10 @@ export function LaunchLab() {
       if (!m.w || !m.h) return;
       const size = Math.min(18, m.w * 0.046);
       const lines = [
-        { text: TOP_LINES[0], y: m.h * 0.18, weight: 600 },
-        { text: TOP_LINES[1], y: m.h * 0.23, weight: 600 },
+        { text: TOP_LINES[0], y: m.h * 0.16, weight: 650 },
+        { text: TOP_LINES[1], y: m.h * 0.205, weight: 650 },
+        { text: TOP_LINES[2], y: m.h * 0.27, weight: 560 },
+        { text: TOP_LINES[3], y: m.h * 0.312, weight: 560 },
         { text: CTA_LINE, y: m.h * 0.82, weight: 700 },
       ];
       const off = document.createElement("canvas");
@@ -1953,16 +1955,21 @@ export function LaunchLab() {
           ctx.save();
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.font = `600 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
+          const mainSize = Math.min(18, m.w * 0.046);
+          const subSize = Math.min(15, m.w * 0.038);
           const titleAlpha = smooth(1.35, 2.1, m.t);
           const subtitleAlpha = smooth(1.95, 2.75, m.t);
           if (titleAlpha > 0.001) {
             ctx.fillStyle = `rgba(255,247,228,${(titleAlpha * 0.95).toFixed(3)})`;
-            ctx.fillText(TOP_LINES[0], m.w / 2, m.h * 0.18);
+            ctx.font = `650 ${mainSize}px ${SANS}`;
+            ctx.fillText(TOP_LINES[0], m.w / 2, m.h * 0.16);
+            ctx.fillText(TOP_LINES[1], m.w / 2, m.h * 0.205);
           }
           if (subtitleAlpha > 0.001) {
             ctx.fillStyle = `rgba(255,247,228,${(subtitleAlpha * 0.82).toFixed(3)})`;
-            ctx.fillText(TOP_LINES[1], m.w / 2, m.h * 0.23);
+            ctx.font = `560 ${subSize}px ${SANS}`;
+            ctx.fillText(TOP_LINES[2], m.w / 2, m.h * 0.27);
+            ctx.fillText(TOP_LINES[3], m.w / 2, m.h * 0.312);
           }
           ctx.restore();
         }
@@ -2853,21 +2860,26 @@ export function LaunchLab() {
         ctx.save();
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.font = `600 ${Math.min(18, m.w * 0.046)}px ${SANS}`;
+        const mainSize = Math.min(18, m.w * 0.046);
+        const subSize = Math.min(15, m.w * 0.038);
         ctx.fillStyle = "rgba(255,247,228,0.95)";
-        ctx.fillText(TOP_LINES[0], m.w / 2, m.h * 0.18);
+        ctx.font = `650 ${mainSize}px ${SANS}`;
+        ctx.fillText(TOP_LINES[0], m.w / 2, m.h * 0.16);
+        ctx.fillText(TOP_LINES[1], m.w / 2, m.h * 0.205);
         ctx.fillStyle = "rgba(255,247,228,0.82)";
-        ctx.fillText(TOP_LINES[1], m.w / 2, m.h * 0.23);
+        ctx.font = `560 ${subSize}px ${SANS}`;
+        ctx.fillText(TOP_LINES[2], m.w / 2, m.h * 0.27);
+        ctx.fillText(TOP_LINES[3], m.w / 2, m.h * 0.312);
         ctx.restore();
       }
 
       // Text resolves after the entry form stabilizes.
       if (entryVisualCopyActive && !nodeRuntimeActive && (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY)) {
         const cx = m.w / 2;
-        const lineStarts = [0.2, 0.55, 3.1];
+        const lineStarts = [0.2, 0.36, 0.74, 0.92, 3.1];
         const gather = 1.35;
         m.textStars.forEach((s, i) => {
-          if (s.line !== 2) return;
+          if (s.line !== 4) return;
           const t0 = lineStarts[s.line]!;
           const stagger = ((i % 19) / 19) * 0.38;
           const e = smooth(t0 + stagger, t0 + gather + stagger, m.afterForm);
@@ -2886,7 +2898,7 @@ export function LaunchLab() {
         ctx.textBaseline = "middle";
         const textSize = Math.min(18, m.w * 0.046);
         [
-          { text: CTA_LINE, y: 0.82, start: lineStarts[2]!, weight: 700 },
+          { text: CTA_LINE, y: 0.82, start: lineStarts[4]!, weight: 700 },
         ].forEach((line) => {
           const solid = smooth(line.start + gather - 0.1, line.start + gather + 0.8, m.afterForm);
           if (solid <= 0.001) return;
@@ -2894,11 +2906,11 @@ export function LaunchLab() {
           ctx.fillStyle = `rgba(255,247,228,${(solid * 0.95 * (1 - enter)).toFixed(3)})`;
           ctx.fillText(line.text, cx, m.h * line.y);
         });
-        const ctaSolid = smooth(lineStarts[2]! + gather - 0.1, lineStarts[2]! + gather + 0.8, m.afterForm);
+        const ctaSolid = smooth(lineStarts[4]! + gather - 0.1, lineStarts[4]! + gather + 0.8, m.afterForm);
         if (ctaSolid > 0.001) {
           ctx.font = `${Math.min(12, m.w * 0.031)}px ${SANS}`;
           ctx.fillStyle = `rgba(255,247,228,${(ctaSolid * 0.62 * (1 - enter)).toFixed(3)})`;
-          ctx.fillText("点击光兽", cx, m.h * 0.77);
+          ctx.fillText("轻触认领", cx, m.h * 0.77);
           ctx.font = `${Math.min(11, m.w * 0.028)}px ${MONO}`;
           ctx.fillStyle = `rgba(232,200,138,${(ctaSolid * 0.42 * (1 - enter)).toFixed(3)})`;
           ctx.fillText("观爻 · GUANYAO", cx, m.h * 0.94);
