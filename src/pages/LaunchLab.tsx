@@ -212,44 +212,6 @@ const snapshotTargets: SceneState[] = [...SCENE_ORDER];
 // Production URLs: /launch-lab?entryUser=new, /launch-lab?entryUser=old
 // Debug URL: /launch-lab?entryUser=new&debugTimeline=1
 const GEO_DIMS = ["province"] as const;
-type OriginTuningStep = ChronoDim | (typeof GEO_DIMS)[number];
-const ORIGIN_TUNING_STATUS: Record<OriginTuningStep, {
-  title: string;
-  stage: string;
-  axis: string;
-  group: string;
-}> = {
-  year: {
-    title: "年份正在锁定",
-    stage: "年份锁定",
-    axis: "原始时间轴 · 第 1 / 5 格",
-    group: "时序填装：年 / 月 / 日 / 时",
-  },
-  month: {
-    title: "月份正在对齐",
-    stage: "月份对齐",
-    axis: "原始时间轴 · 第 2 / 5 格",
-    group: "时序填装：年 / 月 / 日 / 时",
-  },
-  day: {
-    title: "日期正在落点",
-    stage: "日期落点",
-    axis: "原始时间轴 · 第 3 / 5 格",
-    group: "时序填装：年 / 月 / 日 / 时",
-  },
-  hour: {
-    title: "时辰正在显影",
-    stage: "时辰显影",
-    axis: "原始时间轴 · 第 4 / 5 格",
-    group: "时序填装：年 / 月 / 日 / 时",
-  },
-  province: {
-    title: "方位正在展开",
-    stage: "方位展开",
-    axis: "地理方位轴 · 第 5 / 5 格",
-    group: "方位填装：省份",
-  },
-};
 const AXIS_COPY: Record<EntryHandoffMode, {
   dimLabel: Record<ChronoDim, string>;
   dimStageLabel: Record<ChronoDim, string>;
@@ -267,12 +229,12 @@ const AXIS_COPY: Record<EntryHandoffMode, {
     dimLabel: { year: "年份", month: "月份", day: "日期", hour: "时辰" },
     dimStageLabel: { year: "年份锁定", month: "月份对齐", day: "日期落点", hour: "时辰显影" },
     geoLabel: { province: "省份", city: "城市落点" },
-    kicker: "第一次原始坐标",
-    topPrimary: "你的原始坐标正在生成",
-    topSecondary: "正在装填你的原始坐标",
-    bodyPrimary: "系统正在对齐时间、身体与当前状态",
+    kicker: "原始坐标",
+    topPrimary: "系统正在对齐时间",
+    topSecondary: "完成后进入现实压力",
+    bodyPrimary: "系统正在对齐时间",
     bodySecondary: "完成后进入现实压力",
-    actionPrimary: "上下调频，找到你的原始坐标",
+    actionPrimary: "上下调频，找到原始坐标",
     actionConfirm: "右滑固定坐标，显影母码",
     lockText: "坐标已固定",
   },
@@ -1335,7 +1297,7 @@ export function LaunchLab() {
       return (CITY_OPTIONS_BY_PROVINCE[province] ?? ["广州"])[m.geo.cityIndex] ?? "广州";
     }
     function originCoordinateSummary() {
-      return `${m.coords.year}/${pad2(m.coords.month)}/${pad2(m.coords.day)} ${pad2(m.coords.hour)}时-${hourToPeriodLabel(m.coords.hour)} · ${currentProvinceName()}`;
+      return `${m.coords.year}/${pad2(m.coords.month)}/${pad2(m.coords.day)} ${hourToPeriodLabel(m.coords.hour)} · ${currentProvinceName()}`;
     }
     function resolveOriginMotherCode(): GeoChronoMotherFusionResult {
       return runGeoChronoMotherFusionEngine({
@@ -2286,26 +2248,24 @@ export function LaunchLab() {
           const finalLocked = m.state === STATE.DISPLAY_LOCK;
           const axisCopy = AXIS_COPY[m.pendingAxisMode];
           const isNewOriginFlow = m.pendingAxisMode === "NEW_USER" && !finalLocked;
-          const originStepKey: OriginTuningStep = isGeoStage ? "province" : dim;
-          const originStep = ORIGIN_TUNING_STATUS[originStepKey];
           const originLockFeedback = isNewOriginFlow && lockPulse > 0.08;
           const fourBeastGrammar = originMother ? resolveFourBeastGrammar(originMother) : undefined;
           const fourBeastGrammarLine = fourBeastGrammarShortLine(fourBeastGrammar);
+          ctx.fillStyle = "rgba(255,247,228,0.82)";
+          ctx.font = `650 ${Math.min(16, m.w * 0.041)}px ${SANS}`;
+          ctx.fillText(isNewOriginFlow ? axisCopy.bodyPrimary : axisCopy.topPrimary, g.railX0, m.h * 0.15);
+          ctx.fillStyle = "rgba(232,200,138,0.72)";
+          ctx.font = `620 ${Math.min(13, m.w * 0.033)}px ${SANS}`;
+          ctx.fillText(isNewOriginFlow ? axisCopy.bodySecondary : axisCopy.topSecondary, g.railX0, m.h * 0.195);
           ctx.fillStyle = "rgba(232,200,138,0.82)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(axisCopy.kicker, g.railX0, m.h * 0.1);
-          ctx.fillStyle = "rgba(255,247,228,0.78)";
-          ctx.font = `650 ${Math.min(15, m.w * 0.038)}px ${SANS}`;
-          ctx.fillText(isNewOriginFlow ? originStep.title : axisCopy.topPrimary, g.railX0, m.h * 0.145);
-          ctx.fillText(isNewOriginFlow ? originStep.axis : axisCopy.topSecondary, g.railX0, m.h * 0.18);
-          ctx.fillStyle = "rgba(232,200,138,0.82)";
-          ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(finalLocked ? "［ 光痕 ］" : isNewOriginFlow ? `［ ${originStep.stage} ］` : isGeoStage ? `［ ${axisCopy.geoLabel[geoDim]} ］` : `［ ${axisCopy.dimStageLabel[dim]} ］`, g.railX0, m.h * 0.34);
+          if (!isNewOriginFlow) {
+            ctx.fillText(finalLocked ? "［ 光痕 ］" : isGeoStage ? `［ ${axisCopy.geoLabel[geoDim]} ］` : `［ ${axisCopy.dimStageLabel[dim]} ］`, g.railX0, m.h * 0.34);
+          }
           if (originMother && !finalLocked) {
             ctx.fillStyle = "rgba(232,200,138,0.5)";
             ctx.font = `600 ${Math.min(9.5, m.w * 0.024)}px ${MONO}`;
             if (isNewOriginFlow) {
-              ctx.fillText(originStep.group, g.railX0, m.h * 0.252);
               ctx.fillText(
                 !isGeoStage && dim === "hour"
                   ? `推导时辰：${hourToPeriodLabel(Math.round(m.dialFloat))}`
@@ -2355,11 +2315,13 @@ export function LaunchLab() {
             m.h * 0.47
           );
           ctx.shadowBlur = 0;
-          ctx.font = `700 ${Math.min(16, m.w * 0.04)}px ${MONO}`;
-          ctx.fillStyle = "rgba(232,200,138,0.82)";
-          ctx.fillText(axisCopy.bodyPrimary, g.railX0, m.h * 0.58);
-          ctx.fillStyle = "rgba(232,200,138,0.74)";
-          ctx.fillText(axisCopy.bodySecondary, g.railX0, m.h * 0.63);
+          if (!isNewOriginFlow) {
+            ctx.font = `700 ${Math.min(16, m.w * 0.04)}px ${MONO}`;
+            ctx.fillStyle = "rgba(232,200,138,0.82)";
+            ctx.fillText(axisCopy.bodyPrimary, g.railX0, m.h * 0.58);
+            ctx.fillStyle = "rgba(232,200,138,0.74)";
+            ctx.fillText(axisCopy.bodySecondary, g.railX0, m.h * 0.63);
+          }
           ctx.fillStyle = "rgba(232,200,138,0.46)";
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
           ctx.fillText(m.state === STATE.DISPLAY_LOCK ? axisCopy.lockText : originLockFeedback ? "上一格已锁定 · 进入下一格" : axisCopy.actionPrimary, g.railX0, m.h * 0.705);
