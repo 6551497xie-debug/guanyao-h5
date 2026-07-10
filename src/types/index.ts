@@ -8,6 +8,17 @@ export type {
   RUEPayloadFor,
   RUETracePayloadByEvent,
 } from "./rueTracePayloadSpec";
+export type {
+  PersonaDimension,
+  PersonaTransmissionBeastCue,
+  PersonaTransmissionCrystalTrace,
+  PersonaTransmissionIdentity,
+  PersonaTransmissionRuntimeGuardrails,
+  PersonaTransmissionRuntimeSource,
+  PersonaTransmissionRuntimeUnit,
+  PersonaTransmissionTriggerContext,
+  PersonaYaoStage,
+} from "./personaTransmission";
 
 export type YaoBit = 0 | 1;
 
