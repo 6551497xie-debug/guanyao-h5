@@ -479,14 +479,6 @@ function resolveCurrentCrystalEndState({
   };
 }
 
-function shouldAutoCompleteFinalDimension(snapshot: ExecutionSnapshot) {
-  return (
-    snapshot.runtime.enginePhase !== "COMPLETE" &&
-    snapshot.node.current === 6 &&
-    snapshot.node.completed.length >= 5
-  );
-}
-
 function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
   return {
     body: value,
@@ -496,6 +488,42 @@ function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
     memory: value,
     goal: value,
   };
+}
+
+const SEQUENTIAL_SIX_SPACE_IDS: readonly SixSpaceId[] = ["body", "emotion", "thought", "action", "memory", "goal"];
+
+function countCompletedSixDimensions(snapshot: ExecutionSnapshot) {
+  return snapshot.node.completed.filter((node) => node >= 1 && node <= 6).length;
+}
+
+function alignVisualStateToSequentialDimension(
+  visualState: VisualState,
+  focalDimension: SixSpaceId,
+): VisualState {
+  return Object.freeze({
+    ...visualState,
+    focalDimension,
+    primitives: {
+      ...visualState.primitives,
+      DIMENSION: {
+        ...visualState.primitives.DIMENSION,
+        activeDimension: focalDimension,
+      },
+    },
+  } satisfies VisualState);
+}
+
+function createNodeRunningExecutionSnapshot(context: SelectedPressureSeedContext | null) {
+  const seedSnapshot = GuanyaoRuntimeEngine.createSnapshot(context);
+  const engineReadySnapshot = GuanyaoRuntimeEngine.run(seedSnapshot, {
+    type: "SET_ENGINE_PHASE",
+    payload: { enginePhase: "NODE_RUNNING" },
+  });
+
+  return GuanyaoRuntimeEngine.run(engineReadySnapshot, {
+    type: "SET_UI_PHASE",
+    payload: { uiPhase: "NODE_RUNNING" },
+  });
 }
 
 function hashPressureBeastInput(input: string) {
@@ -921,7 +949,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
             ? "PRESSURE_AND_BEAST"
             : "PRESSURE_FIELD";
   const nodeCopy = {
-    title: `第 ${nodeNumber} 维正在显影`,
+    title: `第 ${nodeNumber} 节正在显影`,
     text: SIX_DIMENSION_RESPONSE_COPY[visualState.focalDimension] ?? "这一层，留下了痕迹。",
     actionText: "你走过了这一层。",
   };
@@ -1211,16 +1239,17 @@ function NodeProgressionPanel({
     <div
       style={{
         position: "absolute",
-        left: 22,
-        right: 22,
-        bottom: 18,
-        gap: 6,
+        left: 28,
+        right: 28,
+        bottom: 16,
+        gap: 5,
         pointerEvents: "none",
-        padding: "11px 13px 10px",
-        borderRadius: 14,
-        background: "linear-gradient(180deg, rgba(5,6,7,0.5), rgba(5,6,7,0.18))",
-        border: `1px solid rgba(${toneColor},0.14)`,
-        backdropFilter: "blur(4px)",
+        padding: "10px 12px 9px",
+        borderRadius: 18,
+        background: "linear-gradient(180deg, rgba(5,6,7,0.34), rgba(5,6,7,0.1))",
+        border: `1px solid rgba(${toneColor},0.1)`,
+        backdropFilter: "blur(5px)",
+        boxShadow: `0 0 22px rgba(${toneColor},0.05)`,
         display: visible ? "grid" : "none",
         animation: "gy-copy-fade-in 360ms ease both",
       }}
@@ -1228,7 +1257,7 @@ function NodeProgressionPanel({
       <GuanyaoText size="eyebrow" tone="gold">
         {activeNode.title}
       </GuanyaoText>
-      <p style={{ margin: 0, whiteSpace: "pre-line", color: "rgba(245,245,245,0.76)", fontSize: 12, lineHeight: 1.46 }}>
+      <p style={{ margin: 0, whiteSpace: "pre-line", color: "rgba(245,245,245,0.64)", fontSize: 11.5, lineHeight: 1.46 }}>
         {activeNode.text}
       </p>
       <GuanyaoText size="eyebrow" tone="gold">
@@ -1388,15 +1417,15 @@ function SixDimensionWheel({
         const isActive = config.id === activeConfig.id;
         const state = petalStates[config.id];
         const isBlooming = state === "blooming";
-        const petalWidth = isActive ? 72 : isBlooming ? 46 : 42;
-        const petalHeight = isActive ? 29 : isBlooming ? 19 : 17;
-        const petalOpacity = isActive ? 1 : isBlooming ? 0.5 : 0.36;
-        const petalGlow = isActive ? `0 0 30px rgba(${toneColor},0.3), 0 0 7px rgba(245,245,245,0.1)` : isBlooming ? `0 0 12px rgba(${toneColor},0.1)` : "none";
-        const petalBorderAlpha = isActive ? 0.58 : isBlooming ? 0.2 : 0.11;
-        const petalToneAlpha = isActive ? 0.34 : isBlooming ? 0.11 : 0.055;
-        const petalLightAlpha = isActive ? 0.2 : isBlooming ? 0.1 : 0.028;
-        const left = 50 + Math.cos(rad) * 32;
-        const top = 58 + Math.sin(rad) * 18;
+        const petalWidth = isActive ? 62 : isBlooming ? 38 : 34;
+        const petalHeight = isActive ? 22 : isBlooming ? 13 : 12;
+        const petalOpacity = isActive ? 0.82 : isBlooming ? 0.3 : 0.2;
+        const petalGlow = isActive ? `0 0 24px rgba(${toneColor},0.28), 0 0 6px rgba(245,245,245,0.08)` : isBlooming ? `0 0 10px rgba(${toneColor},0.08)` : "none";
+        const petalBorderAlpha = isActive ? 0.46 : isBlooming ? 0.16 : 0.08;
+        const petalToneAlpha = isActive ? 0.18 : isBlooming ? 0.06 : 0.028;
+        const petalLightAlpha = isActive ? 0.12 : isBlooming ? 0.05 : 0.018;
+        const left = 50 + Math.cos(rad) * 29;
+        const top = 50 + Math.sin(rad) * 15;
 
         return (
           <span
@@ -1425,9 +1454,9 @@ function SixDimensionWheel({
               style={{
                 display: "block",
                 transform: `rotate(${-angle - 90}deg)`,
-                color: isActive ? "rgba(245,245,245,0.86)" : isBlooming ? "rgba(245,245,245,0.38)" : "rgba(245,245,245,0.24)",
-                fontSize: isActive ? 10 : 9,
-                fontWeight: isActive ? 650 : 500,
+                color: isActive ? "rgba(245,245,245,0.74)" : isBlooming ? "rgba(245,245,245,0.28)" : "rgba(245,245,245,0.18)",
+                fontSize: isActive ? 9.5 : 8.5,
+                fontWeight: isActive ? 620 : 500,
                 lineHeight: `${petalHeight}px`,
                 textAlign: "center",
                 letterSpacing: "0.04em",
@@ -1448,6 +1477,7 @@ type BaiHuConstellationLayerProps = {
   toneColor: string;
   narrativePhase: CosmicNarrativePhase;
   activeNodeIndex: number;
+  activeDimensionName: string;
   onCoreStarClick: () => void;
   coreStars: RuntimeCoreStar[];
   showInteractionHint: boolean;
@@ -1507,15 +1537,16 @@ function BaiHuConstellationLayer({
   toneColor,
   narrativePhase,
   activeNodeIndex,
+  activeDimensionName,
   onCoreStarClick,
   coreStars,
   showInteractionHint,
 }: BaiHuConstellationLayerProps) {
   const reveal = narrativePhase === "field_intro" ? 0.34 : narrativePhase === "seed_visible" ? 0.66 : 1;
-  const bodyAlpha = narrativePhase === "beast_guide" || narrativePhase === "node_active" || narrativePhase === "node_complete" ? 0.82 : 0.2;
+  const bodyAlpha = narrativePhase === "beast_guide" || narrativePhase === "node_active" || narrativePhase === "node_complete" ? 1 : 0.28;
   const nodeCharge = Math.min(1, Math.max(0, activeNodeIndex / 6));
-  const coreGlow = 0.26 + reveal * 0.24 + nodeCharge * 0.22;
-  const coreLineAlpha = 0.04 + reveal * 0.14 + nodeCharge * 0.06;
+  const coreGlow = 0.34 + reveal * 0.28 + nodeCharge * 0.26;
+  const coreLineAlpha = 0.08 + reveal * 0.18 + nodeCharge * 0.08;
   const headShape = [
     [7, 44, 1.7], [9, 39, 1.6], [12, 35, 1.7], [15, 32, 1.8], [19, 33, 1.6],
     [22, 36, 1.8], [24, 40, 1.7], [23, 44, 1.5], [20, 48, 1.5], [17, 51, 1.7],
@@ -1606,15 +1637,30 @@ function BaiHuConstellationLayer({
       style={{
         position: "absolute",
         left: "50%",
-        top: "18%",
-        width: 242,
-        height: 146,
+        top: "31%",
+        width: 310,
+        height: 202,
         transform: "translate(-50%, -50%)",
-        opacity: 0.62 + reveal * 0.3,
+        opacity: 0.76 + reveal * 0.22,
         pointerEvents: "none",
-        zIndex: 1,
+        zIndex: 2,
       }}
     >
+      <span
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: "54%",
+          top: "50%",
+          width: 250 + nodeCharge * 30,
+          height: 132 + nodeCharge * 18,
+          borderRadius: "50%",
+          transform: "translate(-50%, -50%)",
+          background: `radial-gradient(ellipse, rgba(${toneColor},${0.11 + nodeCharge * 0.1}), rgba(${toneColor},0.035) 42%, transparent 72%)`,
+          filter: "blur(4px)",
+          animation: "gy-starbeast-breathe 5.2s ease-in-out infinite",
+        }}
+      />
       <svg
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
@@ -1692,7 +1738,7 @@ function BaiHuConstellationLayer({
           style={{
             position: "absolute",
             left: "50%",
-            bottom: -8,
+            bottom: -3,
             transform: "translateX(-50%)",
             color: `rgba(255,248,224,${0.28 + reveal * 0.12})`,
             fontSize: 10,
@@ -1707,16 +1753,41 @@ function BaiHuConstellationLayer({
         </span>
       ) : null}
 
+      {narrativePhase === "node_active" || narrativePhase === "node_complete" ? (
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            left: "53%",
+            top: "72%",
+            transform: "translateX(-50%)",
+            padding: "4px 9px",
+            borderRadius: 999,
+            border: `1px solid rgba(${toneColor},0.18)`,
+            background: "rgba(5,6,7,0.18)",
+            color: `rgba(255,248,224,${0.5 + nodeCharge * 0.16})`,
+            fontSize: 10,
+            lineHeight: 1,
+            letterSpacing: "0.08em",
+            whiteSpace: "nowrap",
+            pointerEvents: "none",
+            textShadow: `0 0 12px rgba(${toneColor},0.18)`,
+          }}
+        >
+          {activeDimensionName.replace("空间", "")}正在显影
+        </span>
+      ) : null}
+
       <span
         style={{
           position: "absolute",
           left: "55%",
           top: "49%",
-          width: 116 + nodeCharge * 18,
-          height: 58 + nodeCharge * 12,
+          width: 156 + nodeCharge * 26,
+          height: 76 + nodeCharge * 18,
           borderRadius: "50%",
           transform: "translate(-50%, -50%)",
-          background: `radial-gradient(ellipse, rgba(${toneColor},${0.08 + bodyAlpha * 0.12}), transparent 68%)`,
+          background: `radial-gradient(ellipse, rgba(${toneColor},${0.1 + bodyAlpha * 0.14}), transparent 68%)`,
           filter: "blur(3px)",
           animation: "gy-starbeast-breathe 4.8s ease-in-out infinite",
         }}
@@ -1728,8 +1799,8 @@ function BaiHuConstellationLayer({
             position: "absolute",
             left: "55%",
             top: "50%",
-            width: 126 + nodeCharge * 18,
-            height: 70 + nodeCharge * 10,
+            width: 176 + nodeCharge * 24,
+            height: 92 + nodeCharge * 14,
             borderRadius: "50%",
             border: `1px solid rgba(${toneColor},${0.18 + nodeCharge * 0.14})`,
             animation: "gy-starbeast-ripple 1.8s ease-out infinite",
@@ -1786,10 +1857,17 @@ function CosmicBotanicsField({
   const coreVisible = narrativePhase === "node_active" || narrativePhase === "node_complete";
   const coreGlow = 0.1 + visualState.primitives.PARTICLE.intensity * 0.14 + coreReadiness * 0.12;
   const coreTone = starFlowerState === "blooming" || starFlowerState === "rebirth" ? toneColor : "176,210,206";
-  const pressureLayerOpacity = experienceState.primaryFocus === "PRESSURE_FIELD" ? 1 : experienceState.primaryFocus === "PRESSURE_AND_BEAST" ? 0.82 : 0.34;
-  const beastLayerOpacity = experienceState.primaryFocus === "BEAST_AND_DIMENSION" ? 1 : experienceState.primaryFocus === "PRESSURE_AND_BEAST" ? 0.72 : experienceState.primaryFocus === "CRYSTALLIZATION" ? 0.62 : 0.5;
-  const dimensionLayerOpacity = experienceState.primaryFocus === "DIMENSION_FLOW" ? 1 : experienceState.primaryFocus === "BEAST_AND_DIMENSION" ? 0.72 : experienceState.primaryFocus === "CRYSTALLIZATION" ? 0.76 : 0.38;
-  const particleLayerOpacity = experienceState.primaryFocus === "CRYSTALLIZATION" ? 1 : experienceState.primaryFocus === "DIMENSION_FLOW" ? 0.78 : 0.42;
+  const pressureLayerOpacity = experienceState.primaryFocus === "PRESSURE_FIELD" ? 1 : experienceState.primaryFocus === "PRESSURE_AND_BEAST" ? 0.74 : 0.24;
+  const beastLayerOpacity =
+    experienceState.primaryFocus === "BEAST_AND_DIMENSION" || experienceState.primaryFocus === "DIMENSION_FLOW"
+      ? 1
+      : experienceState.primaryFocus === "PRESSURE_AND_BEAST"
+        ? 0.78
+        : experienceState.primaryFocus === "CRYSTALLIZATION"
+          ? 0.66
+          : 0.56;
+  const dimensionLayerOpacity = experienceState.primaryFocus === "DIMENSION_FLOW" ? 0.64 : experienceState.primaryFocus === "BEAST_AND_DIMENSION" ? 0.56 : experienceState.primaryFocus === "CRYSTALLIZATION" ? 0.58 : 0.28;
+  const particleLayerOpacity = experienceState.primaryFocus === "CRYSTALLIZATION" ? 0.92 : experienceState.primaryFocus === "DIMENSION_FLOW" ? 0.7 : 0.42;
 
   return (
     <section
@@ -1833,6 +1911,7 @@ function CosmicBotanicsField({
           toneColor={toneColor}
           narrativePhase={narrativePhase}
           activeNodeIndex={activeNodeIndex}
+          activeDimensionName={activeConfig.name}
           onCoreStarClick={onNodeBloom}
           coreStars={coreStars}
           showInteractionHint={experienceState.primaryFocus !== "CRYSTALLIZATION"}
@@ -1892,7 +1971,7 @@ function CosmicBotanicsField({
         {experienceState.beastCopy}
       </p>
 
-      <div style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.interaction, pointerEvents: "none", opacity: dimensionLayerOpacity }}>
+      <div style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.structural, pointerEvents: "none", opacity: dimensionLayerOpacity }}>
         <StarFlowerCoreRepresentation
           visible={coreVisible}
           activeNodeIndex={activeNodeIndex}
@@ -2274,19 +2353,28 @@ function HexagramCodeDeliveryShell() {
   const [executionSnapshot, setExecutionSnapshot] = useState<ExecutionSnapshot>(() =>
     GuanyaoRuntimeEngine.createSnapshot(dynamicsInputContext.selectedPressureSeedContext),
   );
+  const [activeDimensionIndex, setActiveDimensionIndex] = useState(0);
+  const [completedDimensionIds, setCompletedDimensionIds] = useState<readonly SixSpaceId[]>([]);
   const runtimeProjection = GuanyaoRuntimeEngine.project(executionSnapshot);
   const {
     sixSpaceConfigs,
-    currentPrimarySpaceId,
-    sixDimensionStep,
     selectedPressureSeedSurface,
     cosmicSixDimensionState,
-    cosmicNodeStep,
     cosmicNarrativePhase,
     pressureSeedContext,
     starbeastFeedback,
   } = runtimeProjection;
-  const visualState = resolveVisualState(executionSnapshot, runtimeProjection);
+  const activeDimensionId = SEQUENTIAL_SIX_SPACE_IDS[Math.max(0, Math.min(SEQUENTIAL_SIX_SPACE_IDS.length - 1, activeDimensionIndex))];
+  const completedDimensionSet = new Set(completedDimensionIds);
+  if (executionSnapshot.runtime.enginePhase === "COMPLETE") completedDimensionSet.add(activeDimensionId);
+  const completedSixDimensionCount = completedDimensionSet.size;
+  const currentInnerNodeCount = countCompletedSixDimensions(executionSnapshot);
+  const sequentialCurrentSpaceId = activeDimensionId;
+  const sequentialCurrentSpaceConfig = sixSpaceConfigs.find((config) => config.id === sequentialCurrentSpaceId) ?? sixSpaceConfigs[0];
+  const visualState = alignVisualStateToSequentialDimension(
+    resolveVisualState(executionSnapshot, runtimeProjection),
+    sequentialCurrentSpaceId,
+  );
   const experienceState = resolveExperienceState(executionSnapshot, visualState);
   const motherPersonaSnapshot = resolveMotherPersonaSnapshot(dynamicsInputContext);
   const motherCodeName = resolveMotherCodeName(dynamicsInputContext);
@@ -2326,22 +2414,21 @@ function HexagramCodeDeliveryShell() {
   const baiHuRuntimeCoreStars = buildRuntimeBaiHuCoreStars(executionSnapshot, runtimeProjection);
 
   const visiblePetalStates = sixSpaceConfigs.reduce<Record<SixSpaceId, CosmicPetalState>>((acc, config, index) => {
-    const baseState = cosmicBotanicsRuntime.sixDimensionState[config.id].petalState;
-    const isCurrent = sixDimensionStep === index + 1;
-    const isCompleted = cosmicNodeStep >= 6;
-    acc[config.id] = isCompleted ? "blooming" : isCurrent && baseState === "dormant" ? "active" : baseState;
+    const isCompleted = completedDimensionSet.has(config.id);
+    const isCurrent = config.id === sequentialCurrentSpaceId;
+    acc[config.id] = isCompleted ? "blooming" : isCurrent ? "active" : "dormant";
     return acc;
   }, buildSpaceRecord<CosmicPetalState>("dormant"));
   const cosmicPollenBursts = sixSpaceConfigs.reduce<Record<SixSpaceId, number>>((acc, config) => {
     acc[config.id] = cosmicBotanicsRuntime.sixDimensionState[config.id].bloomCount;
     return acc;
   }, buildSpaceRecord(0));
-  const starbeastFeedbackComplete = executionSnapshot.runtime.enginePhase === "COMPLETE" && visiblePetalStates[currentPrimarySpaceId] === "blooming";
+  const starbeastFeedbackComplete = executionSnapshot.runtime.enginePhase === "COMPLETE" && completedSixDimensionCount >= 6;
   const hexagramAssetCandidate = resolveHexagramAssetCandidate({
     personaSnapshot: motherPersonaSnapshot,
     selectedPressureSeedContext: pressureSeedContext,
-    currentPrimarySpaceId,
-    completedNodeCount: cosmicNodeStep,
+    currentPrimarySpaceId: sequentialCurrentSpaceId,
+    completedNodeCount: completedSixDimensionCount,
     starbeastFeedbackComplete,
     pressureSeedFallbackText: selectedPressureSeedSurface,
   });
@@ -2350,15 +2437,15 @@ function HexagramCodeDeliveryShell() {
       currentHexagramProfile,
       motherCodeName,
       selectedPressureSeedContext: dynamicsInputContext.selectedPressureSeedContext,
-      completedNodeCount: cosmicNodeStep,
-      primaryDimension: currentPrimarySpaceId,
+      completedNodeCount: completedSixDimensionCount,
+      primaryDimension: sequentialCurrentSpaceId,
       readyToCrystallize: hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE",
     }), [
       currentHexagramProfile,
       motherCodeName,
       dynamicsInputContext.selectedPressureSeedContext,
-      cosmicNodeStep,
-      currentPrimarySpaceId,
+      completedSixDimensionCount,
+      sequentialCurrentSpaceId,
       hexagramAssetCandidate.completionState,
     ]);
 
@@ -2372,30 +2459,29 @@ function HexagramCodeDeliveryShell() {
     writeJsonToStorage("guanyao:currentCrystalEndState", currentCrystalEndState);
   }, [currentCrystalEndState]);
 
-  useEffect(() => {
-    if (!shouldAutoCompleteFinalDimension(executionSnapshot)) return;
-
-    const finalDimensionTimer = window.setTimeout(() => {
-      setExecutionSnapshot((current) =>
-        shouldAutoCompleteFinalDimension(current) ? GuanyaoRuntimeEngine.advance(current) : current,
-      );
-    }, 620);
-
-    return () => window.clearTimeout(finalDimensionTimer);
-  }, [executionSnapshot]);
-
   function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
-    setExecutionSnapshot((current) =>
-      eventType === "CORE_STAR_BLOOM" && current.node.current === 6 && current.runtime.enginePhase !== "COMPLETE"
-        ? GuanyaoRuntimeEngine.advance(current)
-        : GuanyaoRuntimeEngine.run(current, { type: eventType, payload: context }),
-    );
+    setExecutionSnapshot((current) => {
+      if (eventType !== "CORE_STAR_BLOOM" || current.node.current !== 6 || current.runtime.enginePhase === "COMPLETE") {
+        return GuanyaoRuntimeEngine.run(current, { type: eventType, payload: context });
+      }
+
+      setCompletedDimensionIds((previous) =>
+        previous.includes(sequentialCurrentSpaceId) ? previous : [...previous, sequentialCurrentSpaceId],
+      );
+
+      if (activeDimensionIndex < SEQUENTIAL_SIX_SPACE_IDS.length - 1) {
+        setActiveDimensionIndex((previous) => Math.min(SEQUENTIAL_SIX_SPACE_IDS.length - 1, previous + 1));
+        return createNodeRunningExecutionSnapshot(dynamicsInputContext.selectedPressureSeedContext);
+      }
+
+      return GuanyaoRuntimeEngine.advance(current);
+    });
   }
 
   function bloomCosmicNode() {
     handleSpatialInteraction("CORE_STAR_BLOOM", {
       nodeIndex: executionSnapshot.node.current,
-      dimension: currentPrimarySpaceId,
+      dimension: sequentialCurrentSpaceId,
       context: "focus",
       triggerStrength: 1,
     });
@@ -2559,14 +2645,14 @@ function HexagramCodeDeliveryShell() {
             <CosmicBotanicsField
               configs={sixSpaceConfigs}
               currentStep={executionSnapshot.node.current}
-              activeDimensionStep={sixDimensionStep}
+              activeDimensionStep={sequentialCurrentSpaceConfig.no}
               pressureSeedSurface={selectedPressureSeedSurface}
               petalStates={visiblePetalStates}
               pollenBursts={cosmicPollenBursts}
               starbeast={starbeastFeedback}
               starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
               hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}
-              activeNodeIndex={cosmicNodeStep}
+              activeNodeIndex={currentInnerNodeCount}
               narrativePhase={cosmicNarrativePhase}
               onNodeBloom={bloomCosmicNode}
               coreStars={baiHuRuntimeCoreStars}
