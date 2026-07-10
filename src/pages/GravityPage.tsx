@@ -11,6 +11,7 @@ import {
   type StarFlowerGrowthState,
 } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
 import {
+  buildYaoTransmissionChain,
   buildPressureField,
   formCurrentHexagramProfile,
 } from "../services/guanyaoCausalEngineService";
@@ -163,6 +164,14 @@ type CurrentCrystalEndState = {
     title: "本局结晶";
     copy: string;
   };
+};
+type SingleModelRevisionAction = {
+  layerLabel: string;
+  yaoName: string;
+  actionLine: string;
+  sourceReason: string;
+  interventionPotential: number;
+  userAgency: number;
 };
 
 function readJsonFromStorage<T>(key: string): T | null {
@@ -479,6 +488,35 @@ function resolveCurrentCrystalEndState({
   };
 }
 
+function resolveSingleModelRevisionAction(
+  input: DynamicsInputContext,
+  currentHexagramProfile: CurrentHexagramProfile | null,
+): SingleModelRevisionAction | null {
+  if (!input.selectedPressureSeedContext || !currentHexagramProfile) return null;
+
+  const motherCodeProfile = normalizeMotherCodeProfileForHexagram(input);
+  if (!motherCodeProfile) return null;
+
+  const pressureSeed = buildPressureSeedForHexagram(input.selectedPressureSeedContext);
+  const yaoTransmissionChain = buildYaoTransmissionChain(motherCodeProfile, pressureSeed, currentHexagramProfile, {
+    preferRuntimePressureSeed: true,
+  });
+  const mainTransmission =
+    yaoTransmissionChain.transmissions.find((transmission) => transmission.yaoLayer === yaoTransmissionChain.mainCut.yaoLayer) ??
+    yaoTransmissionChain.transmissions[0];
+
+  if (!mainTransmission) return null;
+
+  return {
+    layerLabel: mainTransmission.layerLabel,
+    yaoName: mainTransmission.yaoName,
+    actionLine: mainTransmission.antiInstinctHint,
+    sourceReason: mainTransmission.inertiaSignal,
+    interventionPotential: yaoTransmissionChain.mainCut.interventionLeverage,
+    userAgency: yaoTransmissionChain.mainCut.userAgency,
+  };
+}
+
 function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
   return {
     body: value,
@@ -672,6 +710,40 @@ const SIX_DIMENSION_RESPONSE_COPY: Record<SixSpaceId, string> = {
   memory: "旧痕被照见。",
   goal: "真正想守住的东西出现了。",
 };
+
+const YAO_SEMANTIC_STAGES: Record<number, ExperienceState["nodeCopy"]> = {
+  1: {
+    title: "初爻 · 触发正在显影",
+    text: "压力刚进入这一层。",
+    actionText: "先看见它从哪里开始。",
+  },
+  2: {
+    title: "二爻 · 接管正在显影",
+    text: "旧反应开始接管。",
+    actionText: "你正在回到熟悉的保护方式。",
+  },
+  3: {
+    title: "三爻 · 解释正在显影",
+    text: "你开始用过去的方式解释现在。",
+    actionText: "先看见脑中的那句话。",
+  },
+  4: {
+    title: "四爻 · 固化正在显影",
+    text: "这个反应逐渐成为习惯。",
+    actionText: "它快要变成惯常动作。",
+  },
+  5: {
+    title: "五爻 · 觉察正在显影",
+    text: "你开始看见这个模式。",
+    actionText: "旧反应被照见了。",
+  },
+  6: {
+    title: "上爻 · 修正正在显影",
+    text: "新的回应开始出现。",
+    actionText: "这一层，可以留下新的走法。",
+  },
+};
+
 type ProductRuntimeDefinition = Readonly<{
   officialDefinition: string;
   threeSecondModel: "压力种子已锁定 → 六维传导 → 惯性反应显影";
@@ -948,10 +1020,12 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
           : visualState.timeline.current === "T0.95"
             ? "PRESSURE_AND_BEAST"
             : "PRESSURE_FIELD";
+  const yaoStageCopy = YAO_SEMANTIC_STAGES[nodeNumber] ?? YAO_SEMANTIC_STAGES[1];
+  const dimensionResponse = SIX_DIMENSION_RESPONSE_COPY[visualState.focalDimension] ?? "这一层，留下了痕迹。";
   const nodeCopy = {
-    title: `第 ${nodeNumber} 节正在显影`,
-    text: SIX_DIMENSION_RESPONSE_COPY[visualState.focalDimension] ?? "这一层，留下了痕迹。",
-    actionText: "你走过了这一层。",
+    title: yaoStageCopy.title,
+    text: `${yaoStageCopy.text}\n${dimensionResponse}`,
+    actionText: yaoStageCopy.actionText,
   };
 
   if (stage === "CRYSTAL") {
@@ -2004,6 +2078,133 @@ function CosmicBotanicsField({
 
 type CrystalView = "MOLD" | "CARD";
 
+function SingleModelRevisionActionFocus({
+  action,
+  onConfirm,
+}: {
+  action: SingleModelRevisionAction;
+  onConfirm: () => void;
+}) {
+  return (
+    <section
+      aria-label="本局修正动作"
+      data-model-revision-action="pending"
+      data-model-revision-layer={action.layerLabel}
+      data-model-revision-yao={action.yaoName}
+      data-model-revision-intervention={action.interventionPotential}
+      data-model-revision-agency={action.userAgency}
+      style={{
+        minHeight: 430,
+        position: "relative",
+        display: "grid",
+        placeItems: "center",
+        padding: "20px 0 8px",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "47%",
+          width: 306,
+          height: 306,
+          transform: "translate(-50%, -50%)",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(255,226,158,0.14), transparent 26%), radial-gradient(circle, rgba(0,184,212,0.08), transparent 58%)",
+          filter: "blur(4px)",
+          opacity: 0.72,
+        }}
+      />
+
+      <div
+        style={{
+          position: "relative",
+          width: "min(100%, 340px)",
+          boxSizing: "border-box",
+          display: "grid",
+          justifyItems: "center",
+          gap: 18,
+          padding: "30px 22px 24px",
+          borderRadius: 28,
+          border: "1px solid rgba(199,169,107,0.28)",
+          background:
+            "linear-gradient(180deg, rgba(16,18,20,0.88), rgba(6,7,8,0.96)), radial-gradient(circle at 50% 12%, rgba(199,169,107,0.18), transparent 42%)",
+          boxShadow: "0 28px 70px rgba(0,0,0,0.38), inset 0 0 34px rgba(199,169,107,0.08)",
+          textAlign: "center",
+        }}
+      >
+        <span
+          style={{
+            color: "rgba(199,169,107,0.72)",
+            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            fontSize: 11,
+            letterSpacing: "0.14em",
+          }}
+        >
+          本局修正动作
+        </span>
+
+        <div style={{ display: "grid", justifyItems: "center", gap: 8 }}>
+          <strong style={{ color: "rgba(255,246,218,0.94)", fontSize: 22, fontWeight: 680, letterSpacing: 0 }}>
+            这一局，可以先改一个旧反应
+          </strong>
+          <span style={{ color: "rgba(245,245,245,0.54)", fontSize: 13, lineHeight: 1.55 }}>
+            {action.yaoName} · {action.layerLabel}层出现了旧惯性
+          </span>
+        </div>
+
+        <div
+          style={{
+            width: "100%",
+            boxSizing: "border-box",
+            display: "grid",
+            gap: 10,
+            padding: "18px 16px",
+            borderRadius: 22,
+            border: "1px solid rgba(255,226,158,0.16)",
+            background: "rgba(255,255,255,0.035)",
+          }}
+        >
+          <span style={{ color: "rgba(245,245,245,0.48)", fontSize: 12, lineHeight: 1.5 }}>
+            旧反应：{action.sourceReason}
+          </span>
+          <strong style={{ color: "rgba(255,226,158,0.9)", fontSize: 16, lineHeight: 1.6, fontWeight: 650 }}>
+            {action.actionLine}
+          </strong>
+        </div>
+
+        <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 13, lineHeight: 1.65 }}>
+          不用解决全局。只是这一局，你先留下一个新的回应方式。
+        </p>
+
+        <button
+          type="button"
+          onClick={onConfirm}
+          style={{
+            appearance: "none",
+            width: "100%",
+            minHeight: 48,
+            border: "1px solid rgba(255,226,158,0.28)",
+            borderRadius: 999,
+            background: "linear-gradient(135deg, rgba(255,226,158,0.16), rgba(199,169,107,0.08))",
+            color: "rgba(255,246,218,0.92)",
+            fontSize: 14,
+            fontWeight: 650,
+            letterSpacing: "0.04em",
+            cursor: "pointer",
+            boxShadow: "0 0 24px rgba(199,169,107,0.12)",
+          }}
+        >
+          确认这一局的新回应
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function crystalDimensionLabel(value: string | undefined) {
   const labels: Record<string, string> = {
     body: "身体维度",
@@ -2355,6 +2556,7 @@ function HexagramCodeDeliveryShell() {
   );
   const [activeDimensionIndex, setActiveDimensionIndex] = useState(0);
   const [completedDimensionIds, setCompletedDimensionIds] = useState<readonly SixSpaceId[]>([]);
+  const [revisionActionConfirmed, setRevisionActionConfirmed] = useState(false);
   const runtimeProjection = GuanyaoRuntimeEngine.project(executionSnapshot);
   const {
     sixSpaceConfigs,
@@ -2432,6 +2634,14 @@ function HexagramCodeDeliveryShell() {
     starbeastFeedbackComplete,
     pressureSeedFallbackText: selectedPressureSeedSurface,
   });
+  const singleModelRevisionAction = useMemo(
+    () => resolveSingleModelRevisionAction(dynamicsInputContext, currentHexagramProfile),
+    [dynamicsInputContext, currentHexagramProfile],
+  );
+  const isRevisionActionPending =
+    hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE" &&
+    Boolean(singleModelRevisionAction) &&
+    !revisionActionConfirmed;
   const currentCrystalEndState = useMemo(() =>
     resolveCurrentCrystalEndState({
       currentHexagramProfile,
@@ -2439,7 +2649,9 @@ function HexagramCodeDeliveryShell() {
       selectedPressureSeedContext: dynamicsInputContext.selectedPressureSeedContext,
       completedNodeCount: completedSixDimensionCount,
       primaryDimension: sequentialCurrentSpaceId,
-      readyToCrystallize: hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE",
+      readyToCrystallize:
+        hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE" &&
+        (!singleModelRevisionAction || revisionActionConfirmed),
     }), [
       currentHexagramProfile,
       motherCodeName,
@@ -2447,6 +2659,8 @@ function HexagramCodeDeliveryShell() {
       completedSixDimensionCount,
       sequentialCurrentSpaceId,
       hexagramAssetCandidate.completionState,
+      singleModelRevisionAction,
+      revisionActionConfirmed,
     ]);
 
   useEffect(() => {
@@ -2641,6 +2855,11 @@ function HexagramCodeDeliveryShell() {
         >
           {currentCrystalEndState ? (
             <CurrentCrystalEndStateFocus state={currentCrystalEndState} />
+          ) : isRevisionActionPending && singleModelRevisionAction ? (
+            <SingleModelRevisionActionFocus
+              action={singleModelRevisionAction}
+              onConfirm={() => setRevisionActionConfirmed(true)}
+            />
           ) : (
             <CosmicBotanicsField
               configs={sixSpaceConfigs}
@@ -2666,6 +2885,9 @@ function HexagramCodeDeliveryShell() {
           data-hexagram-asset-candidate-status={hexagramAssetCandidate.status}
           data-hexagram-asset-candidate-state={hexagramAssetCandidate.completionState}
           data-current-crystal-end-state={currentCrystalEndState ? "connected" : "missing"}
+          data-model-revision-action={
+            isRevisionActionPending ? "pending" : revisionActionConfirmed ? "confirmed" : "inactive"
+          }
           data-value-flow-behavior={valueFlow.behaviorSignals.join("|") || "NONE"}
           data-value-flow-pressure={valueFlow.pressureState}
           data-value-flow-emotion={valueFlow.emotionalState}
@@ -2683,6 +2905,10 @@ function HexagramCodeDeliveryShell() {
           {currentCrystalEndState ? (
             <span style={{ display: "block", textAlign: "center", color: "rgba(199,169,107,0.54)" }}>
               六维传导已完成
+            </span>
+          ) : isRevisionActionPending ? (
+            <span style={{ display: "block", textAlign: "center", color: "rgba(199,169,107,0.54)" }}>
+              确认一次新的回应后，本局才会结晶
             </span>
           ) : cosmicNarrativePhase === "node_complete" &&
             hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE"
