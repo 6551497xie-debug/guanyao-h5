@@ -282,6 +282,21 @@ function pressureNatureLabel(value: unknown) {
   return labels[source] ?? (source || "现实触发");
 }
 
+function trigramSymbolLabel(value: Trigram | undefined) {
+  const symbols: Record<Trigram, string> = {
+    乾: "☰",
+    坤: "☷",
+    震: "☳",
+    巽: "☴",
+    坎: "☵",
+    离: "☲",
+    艮: "☶",
+    兑: "☱",
+  };
+
+  return value ? symbols[value] : "";
+}
+
 function relationLabel(value: unknown) {
   const source = String(value ?? "").trim();
   const labels: Record<string, string> = {
@@ -2294,6 +2309,15 @@ function HexagramCodeDeliveryShell() {
         pressureCopy: "母码已接入，压力开始进入六维传导。",
       }
       : experienceState;
+  const currentHexagramOrientationTitle = currentHexagramProfile
+    ? currentHexagramProfile.hexagramName || currentHexagramProfile.hexagramTitle || currentHexagramProfile.hexagramCode
+    : "";
+  const currentHexagramOrientationMark = currentHexagramProfile
+    ? `${trigramSymbolLabel(currentHexagramProfile.lowerTrigram)}${trigramSymbolLabel(currentHexagramProfile.upperTrigram)}`
+    : "";
+  const currentHexagramOrientationBeast = motherPersonaSnapshot?.fourSymbol && currentHexagramProfile?.lowerTrigram
+    ? `${motherPersonaSnapshot.fourSymbol}入${currentHexagramProfile.lowerTrigram}`
+    : "";
   const valueFlow = resolveValueFlow(executionSnapshot);
   const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
     pressureSeed: selectedPressureSeedSurface,
@@ -2492,8 +2516,29 @@ function HexagramCodeDeliveryShell() {
             {currentHexagramProfile ? (
               <>
                 <br />
-                <span style={{ color: "rgba(199,169,107,0.62)" }}>
-                  下卦：{currentHexagramProfile.lowerTrigram} · 上卦：{currentHexagramProfile.upperTrigram}
+                <span
+                  style={{
+                    display: "inline-grid",
+                    gap: 4,
+                    marginTop: 8,
+                    color: "rgba(199,169,107,0.68)",
+                  }}
+                >
+                  <span style={{ fontSize: 11, fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", letterSpacing: "0.12em" }}>
+                    本局卦象定位
+                  </span>
+                  <span style={{ color: "rgba(245,245,245,0.82)", fontSize: 16, fontWeight: 680, letterSpacing: 0 }}>
+                    {currentHexagramOrientationTitle}
+                    {currentHexagramOrientationMark ? ` ${currentHexagramOrientationMark}` : ""}
+                  </span>
+                  <span style={{ color: "rgba(245,245,245,0.56)", fontSize: 13, lineHeight: 1.5 }}>
+                    你被推到一个需要重新选择方向的位置。
+                  </span>
+                  {currentHexagramOrientationBeast ? (
+                    <span style={{ color: "rgba(199,169,107,0.62)", fontSize: 12 }}>
+                      {currentHexagramOrientationBeast}
+                    </span>
+                  ) : null}
                 </span>
               </>
             ) : null}
