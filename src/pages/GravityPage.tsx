@@ -898,7 +898,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
             : "PRESSURE_FIELD";
   const nodeCopy = {
     title: `第 ${nodeNumber} 维正在显影`,
-    text: "这一维正在暴露你在现实压力下的惯性反应。",
+    text: "这一维正在显出你在现实压力下的惯性反应。",
     actionText: "读完后，传导会进入下一维。",
   };
 
@@ -908,8 +908,8 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       primaryFocus,
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
       headline: "六维传导已完成。",
-      supportingCopy: "本局上下文完整后，将生成结晶。",
-      pressureCopy: "压力种子已完成六维传导。",
+      supportingCopy: "本局上下文完整后，结晶会成形。",
+      pressureCopy: "这一颗压力已经穿过六维。",
       beastCopy: "反应已进入结晶候选态。",
       nodeCopy: {
         title: "六维传导已完成",
@@ -939,8 +939,8 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       stage,
       primaryFocus,
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
-      headline: "进入六维传导。",
-      supportingCopy: "每一次轻触，只读取一维惯性反应。",
+      headline: "本局开始显影。",
+      supportingCopy: "每一次轻触，只看见一维惯性反应。",
       pressureCopy: "压力种子正在穿过当前维度。",
       beastCopy: "惯性反应正在随触点显影。",
       nodeCopy,
@@ -953,9 +953,9 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       stage,
       primaryFocus,
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
-      headline: "压力种子已锁定。",
-      supportingCopy: "接下来读取它穿过身体、情绪、思想、行动、记忆与动机时的反应。",
-      pressureCopy: "压力种子已锁定。",
+      headline: "这一颗压力，被看见了。",
+      supportingCopy: "它将穿过身体、情绪、思想、行动、记忆与动机。",
+      pressureCopy: "这一颗压力，被看见了。",
       beastCopy: "六维传导即将展开。",
       nodeCopy,
       crystalCopy: "完成六维后，反应会沉积成一枚结晶。",
@@ -966,8 +966,8 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
     stage,
     primaryFocus,
     loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
-    headline: "这粒压力正在进入六维传导。",
-    supportingCopy: "本局开始读取你在现实压力下的惯性反应。",
+    headline: "你的压力正在穿过你。",
+    supportingCopy: "本局开始显出你在现实压力下的惯性反应。",
     pressureCopy: "压力种子正在进入。",
     beastCopy: "惯性反应即将显影。",
     nodeCopy,
@@ -1924,7 +1924,7 @@ function buildCrystalBehaviorReading(state: CurrentCrystalEndState) {
 
   return [
     "这枚结晶不记录你的压力原句。",
-    `它记录的是压力穿过你的${motherName}母码底盘后，在${hexagramTitle}中沉积出的行为结构。`,
+    `它留下的是压力穿过你的${motherName}母码底盘后，在${hexagramTitle}中沉积出的行为结构。`,
     `${pressureField}${dimensionLine}`,
     "当外部压力升高时，你的力量会先收束，重新确认边界，再在更精准的坐标上保留下一次行动的可能。",
   ];
@@ -2063,7 +2063,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
             </span>
 
             <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 13, lineHeight: 1.55 }}>
-              从【{state.mother.motherCodeName || state.mother.lowerTrigram}】进入【{hexagramTitle}】，结晶为这一局的 64 卦码。
+              从【{state.mother.motherCodeName || state.mother.lowerTrigram}】进入【{hexagramTitle}】，这一局沉积为 64 卦码。
             </p>
           </article>
         ) : (
@@ -2135,7 +2135,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
             lineHeight: 1.62,
           }}
         >
-          {isCardView ? "这是一张由本局结晶生成的卦码卡，只保留人格动态，不暴露具体压力原句。" : state.crystal.copy}
+          {isCardView ? "这是一张从本局结晶中显出的卦码卡，只保留人格动态，不暴露具体压力原句。" : state.crystal.copy}
         </p>
 
         {isCardView ? (
@@ -2193,7 +2193,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 boxShadow: savedEntry ? "0 0 18px rgba(199,169,107,0.1)" : "0 0 24px rgba(199,169,107,0.14)",
               }}
             >
-              {savedEntry ? "已保存" : "保存入人格年轮"}
+              {savedEntry ? "已留痕" : "保存入人格年轮"}
             </button>
           ) : (
             <button
@@ -2231,7 +2231,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
               <strong style={{ color: "rgba(255,226,158,0.84)", fontSize: 14, fontWeight: 650 }}>人格年轮已点亮</strong>
               <span>今天的本局结晶，已经成为你人格年轮上的一枚星点。</span>
               <span style={{ color: "rgba(199,169,107,0.58)" }}>
-                已保存 · {ringLiteState.entries.length} 枚结晶
+                已留痕 · {ringLiteState.entries.length} 枚结晶
                 {hexagramTitle ? ` · 最近一枚：${hexagramTitle}` : ""}
               </span>
             </div>
@@ -2272,17 +2272,17 @@ function HexagramCodeDeliveryShell() {
     ? {
         ...experienceState,
         loopLabel: "六维传导预览",
-        headline: "等待压力种子锁定。",
+        headline: "等待这一局压力被看见。",
         supportingCopy: "当前为安全预览状态，缺少本局上下文。",
-        pressureCopy: "等待压力种子进入。",
+        pressureCopy: "等待这一颗压力进入。",
         beastCopy: "六维传导将在压力种子锁定后展开。",
       }
     : motherCodeName && experienceState.stage === "PRESSURE"
       ? {
         ...experienceState,
         headline: "母码已接入。",
-        supportingCopy: "这粒压力正在进入你的母码六维传导。",
-        pressureCopy: "母码已接入，压力种子开始进入六维传导。",
+        supportingCopy: "这一颗压力正在穿过你的母码。",
+        pressureCopy: "母码已接入，压力开始进入六维传导。",
       }
       : experienceState;
   const valueFlow = resolveValueFlow(executionSnapshot);

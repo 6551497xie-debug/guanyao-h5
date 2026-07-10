@@ -231,9 +231,9 @@ const AXIS_COPY: Record<EntryHandoffMode, {
     dimStageLabel: { year: "年份锁定", month: "月份对齐", day: "日期落点", hour: "时辰显影" },
     geoLabel: { province: "省份", city: "城市落点" },
     kicker: "原始坐标",
-    topPrimary: "系统正在对齐时间",
+    topPrimary: "时空正在对齐",
     topSecondary: "完成后进入现实压力",
-    bodyPrimary: "系统正在对齐时间",
+    bodyPrimary: "时空正在对齐",
     bodySecondary: "完成后进入现实压力",
     actionPrimary: "上下调频，找到原始坐标",
     actionConfirm: "右滑固定坐标，显影母码",
@@ -2538,14 +2538,14 @@ export function LaunchLab() {
         ctx.fillText("压力种子轴", g.railX0, m.h * 0.12);
         ctx.fillStyle = "rgba(255,247,228,0.96)";
         ctx.font = `760 ${Math.min(28, m.w * 0.072)}px ${SANS}`;
-        ctx.fillText("现实压力正在成形", g.railX0, m.h * 0.19);
+        ctx.fillText("这一刻，什么正在压住你？", g.railX0, m.h * 0.19);
         ctx.fillStyle = "rgba(232,200,138,0.72)";
         ctx.font = `650 ${Math.min(13, m.w * 0.034)}px ${SANS}`;
         ctx.fillText("纵轴 21 个星光坐标，每格调取三粒。", g.railX0, m.h * 0.245);
         ctx.fillStyle = "rgba(232,200,138,0.54)";
         ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
         ctx.fillText(`当前坐标 ${pad2(m.pressureSeedCoordinateIndex + 1)} / 21 · 第 ${m.pressureSeedRound + 1} 轮`, g.railX0, m.h * 0.295);
-        ctx.fillText(m.pressureSeedLocked ? "点击中州进入下一屏" : "横轴三光标锁定一粒", g.railX0, g.railY + 30);
+        ctx.fillText(m.pressureSeedLocked ? "这一颗压力，被看见了" : "横轴三光标锁定一粒", g.railX0, g.railY + 30);
         ctx.textAlign = "right";
         ctx.fillStyle = "rgba(232,200,138,0.72)";
         ctx.fillText(m.pressureSeedLocked ? "已锁定" : "三选一", g.railX1, g.railY - 18);
@@ -2610,7 +2610,7 @@ export function LaunchLab() {
         ctx.fillText("原始坐标已固定", g.railX0, m.h * 0.19);
         ctx.fillStyle = "rgba(232,200,138,0.58)";
         ctx.font = `620 ${Math.min(12, m.w * 0.031)}px ${SANS}`;
-        ctx.fillText("时序与方位正在生成你的 8 母码底盘", g.railX0, m.h * 0.248);
+        ctx.fillText("时序与方位正在合流，8 母码开始成形", g.railX0, m.h * 0.248);
 
         const cardW = Math.min(g.railX1 - g.railX0, Math.min(326, m.w * 0.84));
         const cardH = Math.min(360, m.h * 0.425, cardW * 1.12);
