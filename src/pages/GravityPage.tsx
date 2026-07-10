@@ -620,6 +620,15 @@ type ExperienceState = Readonly<{
   };
   crystalCopy: string;
 }>;
+
+const SIX_DIMENSION_RESPONSE_COPY: Record<SixSpaceId, string> = {
+  body: "身体先留下了反应。",
+  emotion: "情绪开始浮出水面。",
+  thought: "念头正在聚焦。",
+  action: "行动的方向露出来了。",
+  memory: "旧痕被照见。",
+  goal: "真正想守住的东西出现了。",
+};
 type ProductRuntimeDefinition = Readonly<{
   officialDefinition: string;
   threeSecondModel: "压力种子已锁定 → 六维传导 → 惯性反应显影";
@@ -898,8 +907,8 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
             : "PRESSURE_FIELD";
   const nodeCopy = {
     title: `第 ${nodeNumber} 维正在显影`,
-    text: "这一维正在显出你在现实压力下的惯性反应。",
-    actionText: "读完后，传导会进入下一维。",
+    text: SIX_DIMENSION_RESPONSE_COPY[visualState.focalDimension] ?? "这一层，留下了痕迹。",
+    actionText: "你走过了这一层。",
   };
 
   if (stage === "CRYSTAL") {
@@ -913,10 +922,10 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       beastCopy: "反应已进入结晶候选态。",
       nodeCopy: {
         title: "六维传导已完成",
-        text: "这轮反应已经具备进入结晶的条件。",
-        actionText: "等待本局上下文完整。",
+        text: "你走完了六层。",
+        actionText: "本局正在等待结晶成形。",
       },
-      crystalCopy: "六维传导已完成，正在等待本局结晶条件。",
+      crystalCopy: "你走完了六层，本局正在等待结晶成形。",
     });
   }
 
@@ -2135,7 +2144,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
             lineHeight: 1.62,
           }}
         >
-          {isCardView ? "这是一张从本局结晶中显出的卦码卡，只保留人格动态，不暴露具体压力原句。" : state.crystal.copy}
+          {isCardView ? "认领这一局留下的卦码。它只保留人格动态，不暴露具体压力原句。" : state.crystal.copy}
         </p>
 
         {isCardView ? (
@@ -2213,7 +2222,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 boxShadow: "0 0 24px rgba(199,169,107,0.14)",
               }}
             >
-              提取本局结晶
+              提取这一局留下的形状
             </button>
           )}
 
@@ -2229,7 +2238,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
               }}
             >
               <strong style={{ color: "rgba(255,226,158,0.84)", fontSize: 14, fontWeight: 650 }}>人格年轮已点亮</strong>
-              <span>今天的本局结晶，已经成为你人格年轮上的一枚星点。</span>
+              <span>这一局，已经成为你人格年轮上的一枚星点。</span>
               <span style={{ color: "rgba(199,169,107,0.58)" }}>
                 已留痕 · {ringLiteState.entries.length} 枚结晶
                 {hexagramTitle ? ` · 最近一枚：${hexagramTitle}` : ""}

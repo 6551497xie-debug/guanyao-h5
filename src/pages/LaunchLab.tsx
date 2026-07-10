@@ -237,7 +237,7 @@ const AXIS_COPY: Record<EntryHandoffMode, {
     bodySecondary: "完成后进入现实压力",
     actionPrimary: "上下调频，找到原始坐标",
     actionConfirm: "右滑固定坐标，显影母码",
-    lockText: "坐标已固定",
+    lockText: "光位已定",
   },
   OLD_USER: {
     dimLabel: { year: "压力种子", month: "压力层级", day: "压力刻度", hour: "压力锚点" },
@@ -2607,7 +2607,7 @@ export function LaunchLab() {
         ctx.fillText("8 母码正在显影", g.railX0, m.h * 0.115);
         ctx.fillStyle = "rgba(255,247,228,0.96)";
         ctx.font = `760 ${Math.min(30, m.w * 0.074)}px ${SANS}`;
-        ctx.fillText("原始坐标已固定", g.railX0, m.h * 0.19);
+        ctx.fillText("光位已定", g.railX0, m.h * 0.19);
         ctx.fillStyle = "rgba(232,200,138,0.58)";
         ctx.font = `620 ${Math.min(12, m.w * 0.031)}px ${SANS}`;
         ctx.fillText("时序与方位正在合流，8 母码开始成形", g.railX0, m.h * 0.248);
