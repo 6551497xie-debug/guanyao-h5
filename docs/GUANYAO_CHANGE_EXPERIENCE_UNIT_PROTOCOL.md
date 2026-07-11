@@ -77,7 +77,7 @@ body
 emotion
 thought
 action
-experience
+memory
 motivation
 ```
 
@@ -89,8 +89,10 @@ Which part of the user's operating system is changing?
 
 Notes:
 
-- `experience` means the memory / past-experience space.
-- It should not be confused with the whole user experience.
+- `Experience` names the user experience layer.
+- `Memory` names the six-dimension persona space where past experience affects current operation.
+- Do not name the memory dimension `experience`.
+- Do not interpret `ChangeExperience` as `Memory Experience`.
 
 ### 2. `pressureContext`
 
@@ -244,7 +246,7 @@ Examples:
 Action pattern upgraded.
 Emotional awareness upgraded.
 Cognition upgraded.
-Experience wisdom upgraded.
+Memory wisdom upgraded.
 Inner drive awakened.
 ```
 
@@ -343,7 +345,7 @@ body_shift
 emotion_shift
 cognition_shift
 behavior_shift
-experience_shift
+memory_shift
 motivation_shift
 ```
 

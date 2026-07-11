@@ -9,6 +9,15 @@ export type {
   RUETracePayloadByEvent,
 } from "./rueTracePayloadSpec";
 export type {
+  ChangeExperienceContext,
+  ChangeExperienceDimension,
+  ChangeExperienceMeaning,
+  ChangeExperienceRecognition,
+  ChangeExperienceRevision,
+  ChangeExperienceType,
+  ChangeExperienceUnit,
+} from "./changeExperience";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,

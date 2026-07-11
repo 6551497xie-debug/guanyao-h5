@@ -353,7 +353,7 @@ It should sound like a concise value the user can carry away.
 | Action | Restore control through action. | Judge first, then act. | Action pattern upgraded. |
 | Emotion | Let emotion make the factual conclusion. | See the emotion, then confirm the fact. | Emotional awareness upgraded. |
 | Thought | Treat interpretation as reality. | See the fact first, then see the interpretation. | Cognition upgraded. |
-| Experience | Let past experience limit the present. | Let experience serve the present. | Experience wisdom upgraded. |
+| Memory | Let past experience limit the present. | Let memory serve the present. | Memory wisdom upgraded. |
 | Motivation | Prove the self through external results. | Return to what truly needs protection. | Inner drive awakened. |
 
 Chinese product shorthand:
