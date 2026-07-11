@@ -721,6 +721,7 @@ type ExperienceState = Readonly<{
   nodeCopy: {
     title: string;
     text: string;
+    dimensionInsight?: string;
     actionText: string;
   };
   crystalCopy: string;
@@ -733,6 +734,15 @@ const SIX_DIMENSION_RESPONSE_COPY: Record<SixSpaceId, string> = {
   action: "行动的方向露出来了。",
   memory: "旧痕被照见。",
   goal: "真正想守住的东西出现了。",
+};
+
+const SIX_DIMENSION_INSIGHT_COPY: Record<SixSpaceId, string> = {
+  body: "你的身体比意识更早感受到这个局，你可能已经习惯先紧绷，再寻找答案。",
+  emotion: "你的情绪正在提醒你危险，但它也可能替你提前做出了判断。",
+  thought: "你看到的不只是事情本身，还有你过去形成的解释方式。",
+  action: "你正在用熟悉的行动方式恢复掌控，这个方式曾经帮过你，也可能限制你。",
+  memory: "过去的经验正在参与今天的选择，旧经验不是敌人，它只是还在保护你。",
+  goal: "在这些反应背后，你真正想保护的东西正在浮出来。",
 };
 
 const YAO_SEMANTIC_STAGES: Record<number, ExperienceState["nodeCopy"]> = {
@@ -1046,9 +1056,11 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
             : "PRESSURE_FIELD";
   const yaoStageCopy = YAO_SEMANTIC_STAGES[nodeNumber] ?? YAO_SEMANTIC_STAGES[1];
   const dimensionResponse = SIX_DIMENSION_RESPONSE_COPY[visualState.focalDimension] ?? "这一层，留下了痕迹。";
+  const dimensionInsight = SIX_DIMENSION_INSIGHT_COPY[visualState.focalDimension];
   const nodeCopy = {
     title: yaoStageCopy.title,
     text: `${yaoStageCopy.text}\n${dimensionResponse}`,
+    dimensionInsight,
     actionText: yaoStageCopy.actionText,
   };
 
@@ -1331,7 +1343,7 @@ function NodeProgressionPanel({
 }: {
   visible: boolean;
   toneColor: string;
-  activeNode: { title: string; text: string; actionText: string };
+  activeNode: { title: string; text: string; dimensionInsight?: string; actionText: string };
 }) {
   return (
     <div
@@ -1358,6 +1370,18 @@ function NodeProgressionPanel({
       <p style={{ margin: 0, whiteSpace: "pre-line", color: "rgba(245,245,245,0.64)", fontSize: 11.5, lineHeight: 1.46 }}>
         {activeNode.text}
       </p>
+      {activeNode.dimensionInsight ? (
+        <p
+          style={{
+            margin: 0,
+            color: "rgba(255,226,158,0.72)",
+            fontSize: 12,
+            lineHeight: 1.5,
+          }}
+        >
+          {activeNode.dimensionInsight}
+        </p>
+      ) : null}
       <GuanyaoText size="eyebrow" tone="gold">
         {activeNode.actionText}
       </GuanyaoText>
