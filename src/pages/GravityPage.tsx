@@ -556,7 +556,7 @@ function resolveCurrentCrystalEndState({
     },
     crystal: {
       title: "本局结晶",
-      copy: "这粒压力已经完成六维传导，沉积为一枚可保存的本局结晶。",
+      copy: "这一局，你从旧反应中移动了一点。这次新的回应，留下了它的形状。",
     },
   };
 }
@@ -2611,7 +2611,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
         }}
       >
         <GuanyaoText size="eyebrow" tone="gold">
-          {isCardView ? "64 卦码资产" : "六维传导已完成"}
+          {isCardView ? "64 卦码资产" : "变化已经留痕"}
         </GuanyaoText>
 
         {isCardView ? (
@@ -2670,7 +2670,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
             </span>
 
             <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 13, lineHeight: 1.55 }}>
-              从【{state.mother.motherCodeName || state.mother.lowerTrigram}】进入【{hexagramTitle}】，这一局沉积为 64 卦码。
+              从【{state.mother.motherCodeName || state.mother.lowerTrigram}】进入【{hexagramTitle}】，这一局的变化沉积为 64 卦码。
             </p>
           </article>
         ) : (
@@ -2686,7 +2686,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 textShadow: "0 0 24px rgba(199,169,107,0.18)",
               }}
             >
-              本局结晶已经形成
+              这一局留下了形状
             </h1>
 
             <strong
