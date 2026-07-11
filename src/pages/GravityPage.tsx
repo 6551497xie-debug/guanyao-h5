@@ -554,6 +554,24 @@ function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
 
 const SEQUENTIAL_SIX_SPACE_IDS: readonly SixSpaceId[] = ["body", "emotion", "thought", "action", "memory", "goal"];
 
+const SIX_SPACE_DISPLAY_NAME: Record<SixSpaceId, string> = {
+  body: "身体空间",
+  emotion: "情绪空间",
+  thought: "思维空间",
+  action: "行为空间",
+  memory: "记忆空间",
+  goal: "动机空间",
+};
+
+const SIX_SPACE_SHORT_LABELS: Record<SixSpaceId, string> = {
+  body: "身体",
+  emotion: "情绪",
+  thought: "思维",
+  action: "行为",
+  memory: "记忆",
+  goal: "动机",
+};
+
 function countCompletedSixDimensions(snapshot: ExecutionSnapshot) {
   return snapshot.node.completed.filter((node) => node >= 1 && node <= 6).length;
 }
@@ -734,7 +752,7 @@ const SIX_DIMENSION_RESPONSE_COPY: Record<SixSpaceId, string> = {
   thought: "念头正在聚焦。",
   action: "行动的方向露出来了。",
   memory: "旧痕被照见。",
-  goal: "真正想守住的东西出现了。",
+  goal: "真正想守护的东西出现了。",
 };
 
 const SIX_DIMENSION_INSIGHT_COPY: Record<SixSpaceId, string> = {
@@ -743,7 +761,7 @@ const SIX_DIMENSION_INSIGHT_COPY: Record<SixSpaceId, string> = {
   thought: "你看到的不只事情，还有过去形成的解释方式。",
   action: "你用熟悉的行动恢复掌控，它帮过你，也可能限制你。",
   memory: "过去正在参与今天的选择，旧经验还在保护你。",
-  goal: "这些反应背后，有一个你真正想保护的东西。",
+  goal: "这些反应背后，是你一直想守护的价值感、安全感或掌控感。",
 };
 
 const SIX_DIMENSION_UNDERSTANDING_COPY: Record<SixSpaceId, string> = {
@@ -752,7 +770,7 @@ const SIX_DIMENSION_UNDERSTANDING_COPY: Record<SixSpaceId, string> = {
   thought: "这种解释方式，曾经帮你建立确定感。",
   action: "这种行动力曾帮你突破困难，只是现在需要重新校准。",
   memory: "旧经验不是束缚，它曾经是一条保护你的路径。",
-  goal: "你的惯性背后，藏着一直想守住的东西。",
+  goal: "动机不是未来计划，而是行为背后正在保护的对象。",
 };
 
 const YAO_SEMANTIC_STAGES: Record<number, ExperienceState["nodeCopy"]> = {
@@ -2004,7 +2022,7 @@ function CosmicBotanicsField({
   const showPressureText = narrativePhase === "seed_visible" || narrativePhase === "beast_guide";
   const showBeastIntro = narrativePhase === "beast_guide";
   const showNodePanel = narrativePhase === "node_active" || narrativePhase === "node_complete";
-  const shortPetalNames = ["身体", "情绪", "思维", "行为", "记忆", "目标"];
+  const shortPetalNames = configs.map((config) => SIX_SPACE_SHORT_LABELS[config.id] ?? config.name.replace("空间", ""));
   const coreReadiness = Math.max(hexagramReadiness, activeNodeIndex / 6);
   const coreVisible = narrativePhase === "node_active" || narrativePhase === "node_complete";
   const coreGlow = 0.1 + visualState.primitives.PARTICLE.intensity * 0.14 + coreReadiness * 0.12;
@@ -2063,7 +2081,7 @@ function CosmicBotanicsField({
           toneColor={toneColor}
           narrativePhase={narrativePhase}
           activeNodeIndex={activeNodeIndex}
-          activeDimensionName={activeConfig.name}
+          activeDimensionName={SIX_SPACE_DISPLAY_NAME[activeConfig.id] ?? activeConfig.name}
           onCoreStarClick={onNodeBloom}
           coreStars={coreStars}
           showInteractionHint={experienceState.primaryFocus !== "CRYSTALLIZATION"}
