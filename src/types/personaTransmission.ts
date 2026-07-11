@@ -106,3 +106,56 @@ export type PersonaTransmissionMappingResult =
   | PersonaTransmissionMappingSuccess
   | PersonaTransmissionMappingNeedsTranslation
   | PersonaTransmissionMappingFailure;
+
+export type PersonaTransmissionExperienceIdentity = Readonly<{
+  unitId: string;
+  dimension: PersonaDimension;
+  yaoStage: PersonaYaoStage;
+}>;
+
+export type PersonaTransmissionExperienceOrientation = Readonly<{
+  pressureLine: string;
+  currentRoundLine?: string;
+}>;
+
+export type PersonaTransmissionExperienceRecognition = Readonly<{
+  oldModelLine: string;
+  inertiaLine: string;
+  insightLine: string;
+}>;
+
+export type PersonaTransmissionExperienceRevision = Readonly<{
+  directionLine: string;
+  microActionLine: string;
+}>;
+
+export type PersonaTransmissionExperienceStarbeast = Readonly<{
+  beforeLine: string;
+  afterLine: string;
+  cueLine: string;
+}>;
+
+export type PersonaTransmissionExperienceTrace = Readonly<{
+  crystalLine: string;
+  depositsToCrystal: boolean;
+  depositsToRingLite: boolean;
+}>;
+
+export type PersonaTransmissionExperienceModel = Readonly<{
+  status: "READY";
+  identity: PersonaTransmissionExperienceIdentity;
+  orientation: PersonaTransmissionExperienceOrientation;
+  recognition: PersonaTransmissionExperienceRecognition;
+  revision: PersonaTransmissionExperienceRevision;
+  starbeast: PersonaTransmissionExperienceStarbeast;
+  trace: PersonaTransmissionExperienceTrace;
+}>;
+
+export type PersonaTransmissionExperienceFallback = Readonly<{
+  status: "NOT_READY";
+  reason: string;
+}>;
+
+export type PersonaTransmissionExperienceResult =
+  | PersonaTransmissionExperienceModel
+  | PersonaTransmissionExperienceFallback;
