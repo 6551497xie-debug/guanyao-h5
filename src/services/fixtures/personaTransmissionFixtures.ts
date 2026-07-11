@@ -12,7 +12,7 @@ export const actionFiveAwarenessRuntimeUnit: PersonaTransmissionRuntimeUnit = {
   dimension: "action",
   yaoStage: "awareness",
   triggerContext: {
-    pressureSeed: "面对推进压力，用户试图通过立即行动恢复掌控。",
+    pressureSeed: "面对必须推进、但结果仍不确定的现实局，用户试图通过立即行动恢复掌控。",
     pressureField: "movement_under_uncertainty",
     motherCodeInfluence: "用户容易通过行动重新获得掌控感，也用行动确认自己的价值。",
     motherCodeName: "fixture-mother-code",
@@ -20,18 +20,18 @@ export const actionFiveAwarenessRuntimeUnit: PersonaTransmissionRuntimeUnit = {
     currentHexagramName: "fixture-current-hexagram",
     source: "fixture",
   },
-  oldModel: "通过行动恢复掌控感。",
-  inertiaPattern: "遇到不确定时立即行动。",
-  insight: "你已经习惯用行动，让自己重新获得掌控感。",
+  oldModel: "在结果不确定时，通过马上行动恢复掌控感。",
+  inertiaPattern: "越不确定，越想立刻推进。",
+  insight: "面对这局不确定的推进压力，你已经习惯先行动，让自己重新获得掌控感。",
   revisionDirection: "先判断，再行动。",
-  microAction: "下一次行动前，先确认真正要解决的问题。",
+  microAction: "下一次急着推进前，先确认真正要解决的问题。",
   beastCue: {
     before: "方向光轨过快外射。",
     after: "方向重新稳定展开。",
     cue: "星兽从向前急冲，转为先稳住方向。",
   },
   crystalTrace: {
-    traceLine: "从自动行动转向有意识行动。",
+    traceLine: "从用行动压下不确定，转向先判断再行动。",
     shouldDepositToCrystal: true,
     shouldDepositToRingLite: true,
   },
@@ -66,7 +66,7 @@ export const actionFiveAwarenessMappingInput: PersonaTransmissionMappingInput = 
   },
   pressureContext: {
     pressureSeedId: ACTION_FIVE_AWARENESS_FIXTURE_ID,
-    pressureSeed: "面对推进压力，用户试图通过立即行动恢复掌控。",
+    pressureSeed: "面对必须推进、但结果仍不确定的现实局，用户试图通过立即行动恢复掌控。",
     pressureField: "movement_under_uncertainty",
   },
   currentContext: {

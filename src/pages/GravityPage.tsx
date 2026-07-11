@@ -747,30 +747,30 @@ type ExperienceState = Readonly<{
 }>;
 
 const SIX_DIMENSION_RESPONSE_COPY: Record<SixSpaceId, string> = {
-  body: "身体先留下了反应。",
-  emotion: "情绪开始浮出水面。",
-  thought: "念头正在聚焦。",
-  action: "行动的方向露出来了。",
-  memory: "旧痕被照见。",
-  goal: "真正想守护的东西出现了。",
+  body: "压力先落在身体里。",
+  emotion: "情绪把信号推上来了。",
+  thought: "解释开始成形。",
+  action: "回应的方向露出来了。",
+  memory: "旧经验被照亮。",
+  goal: "守护的核心露出来了。",
 };
 
 const SIX_DIMENSION_INSIGHT_COPY: Record<SixSpaceId, string> = {
-  body: "身体比意识更早感到压力，你可能先紧绷，再找答案。",
-  emotion: "情绪在提醒危险，也可能替你提前下判断。",
-  thought: "你看到的不只事情，还有过去形成的解释方式。",
-  action: "你用熟悉的行动恢复掌控，它帮过你，也可能限制你。",
-  memory: "过去正在参与今天的选择，旧经验还在保护你。",
-  goal: "这些反应背后，是你一直想守护的价值感、安全感或掌控感。",
+  body: "身体比意识更早知道压力来了。",
+  emotion: "你正在经历的感受，可能正在替现实加重颜色。",
+  thought: "你看见的不只是事情，还有你给它的意义。",
+  action: "结果还不确定时，你会先用行动把局面拉回掌控。",
+  memory: "过去正在参与此刻，让现在像曾经的某一幕。",
+  goal: "这些反应背后，有一个你不想失去的重要东西。",
 };
 
 const SIX_DIMENSION_UNDERSTANDING_COPY: Record<SixSpaceId, string> = {
-  body: "这是身体在帮你更快应对变化。",
-  emotion: "情绪不是敌人，它曾帮你提前发现风险。",
-  thought: "这种解释方式，曾经帮你建立确定感。",
-  action: "这种行动力曾帮你突破困难，只是现在需要重新校准。",
-  memory: "旧经验不是束缚，它曾经是一条保护你的路径。",
-  goal: "动机不是未来计划，而是行为背后正在保护的对象。",
+  body: "先感到它，是身体在帮你准备回应。",
+  emotion: "它不是问题，它是在提醒你哪里需要被照看。",
+  thought: "这种解释曾帮你抓住确定感。",
+  action: "行动力是能力，现在需要先判断再出手。",
+  memory: "它曾保护你，这一次可以只作为参考。",
+  goal: "动机不是计划，是你正在保护的价值感。",
 };
 
 const YAO_SEMANTIC_STAGES: Record<number, ExperienceState["nodeCopy"]> = {

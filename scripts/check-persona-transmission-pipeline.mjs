@@ -95,7 +95,7 @@ try {
   assertEqual(
     "fixture action-five-awareness experience insight",
     experienceResult.recognition?.insightLine,
-    "你已经习惯用行动，让自己重新获得掌控感。",
+    "面对这局不确定的推进压力，你已经习惯先行动，让自己重新获得掌控感。",
   );
 
   const experienceValidation = validatePersonaTransmissionExperienceModel(experienceResult);
@@ -114,7 +114,7 @@ try {
   assertEqual(
     "fixture action-five-awareness presentation micro action",
     presentation.revision?.microActionLine,
-    "下一次行动前，先确认真正要解决的问题。",
+    "下一次急着推进前，先确认真正要解决的问题。",
   );
   assertNoForbiddenPresentationLanguage(presentation);
 
