@@ -9,6 +9,12 @@ export type {
   RUETracePayloadByEvent,
 } from "./rueTracePayloadSpec";
 export type {
+  CrystalState,
+  CrystalStateAssetBoundary,
+  CrystalStateGuardrails,
+  CrystalStateReadiness,
+  CrystalStateRingDepositMeaning,
+  CrystalStateStructureSource,
   PersonaDimension,
   PersonaMigrationImpact,
   PersonaMigrationImpactBeastImpact,

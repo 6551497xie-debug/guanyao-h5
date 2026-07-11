@@ -1,4 +1,4 @@
-import type { CutCandidate, YaoTransmissionProfile } from "./guanyaoCausalEngine";
+import type { CurrentHexagramProfile, CutCandidate, YaoTransmissionProfile } from "./guanyaoCausalEngine";
 
 export type PersonaDimension = "body" | "emotion" | "thought" | "action" | "memory" | "motivation";
 
@@ -98,6 +98,46 @@ export type PersonaMigrationImpact = Readonly<{
   crystalImprint: PersonaMigrationImpactCrystalImprint;
   impactReadiness: PersonaMigrationImpactReadiness;
   guardrails: PersonaMigrationImpactGuardrails;
+}>;
+
+export type CrystalStateReadiness = "NOT_READY" | "READY_TO_CRYSTALLIZE" | "CRYSTALLIZED";
+
+export type CrystalStateStructureSource = Readonly<{
+  source: "currentHexagramProfile";
+  currentHexagramProfile: CurrentHexagramProfile;
+}>;
+
+export type CrystalStateAssetBoundary = Readonly<{
+  canCreateCurrentCrystalEndState: boolean;
+  canExposeHexagramAsset: boolean;
+  canDepositToRingLite: boolean;
+}>;
+
+export type CrystalStateRingDepositMeaning = Readonly<{
+  traceLine: string;
+  shouldDepositToRingLite: boolean;
+}>;
+
+export type CrystalStateGuardrails = Readonly<{
+  noStorageWrite: true;
+  noHexagramGeneration: true;
+  noCrystalEngineMutation: true;
+  noScore: true;
+  noGrowthValue: true;
+  no384Yao: true;
+  noArchive: true;
+  noOldR8: true;
+}>;
+
+export type CrystalState = Readonly<{
+  structureSource: CrystalStateStructureSource | null;
+  impactSources: readonly PersonaMigrationImpact[];
+  dominantImpact: PersonaMigrationImpact | null;
+  readiness: CrystalStateReadiness;
+  crystalMeaning: string;
+  assetBoundary: CrystalStateAssetBoundary;
+  ringDepositMeaning: CrystalStateRingDepositMeaning;
+  guardrails: CrystalStateGuardrails;
 }>;
 
 export type PersonaTransmissionPressureContext = Readonly<{
