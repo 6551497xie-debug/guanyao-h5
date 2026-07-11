@@ -25,6 +25,7 @@ import {
   actionFiveAwarenessExperiencePresentation,
   type PersonaTransmissionExperiencePresentation,
 } from "../services/fixtures/personaTransmissionExperiencePresentationFixtures";
+import { actionFiveAwarenessRuntimeUnit } from "../services/fixtures/personaTransmissionFixtures";
 import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
 import type {
   CurrentHexagramProfile,
@@ -76,6 +77,42 @@ const DEV_PRIMARY_PETAL_FIXTURES: Record<string, SelectedPressureSeedContext> = 
     surface: "你不知道该往哪走，假装不需要，就不怕得不到。",
     motivationLoss: "方向感变得模糊。",
   },
+};
+
+const DEV_ACTION_FIVE_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
+  selectedPressureSeedId: "action-five-awareness",
+  surface: "面对必须推进、但结果仍不确定的现实局，你试图通过立即行动恢复掌控。",
+  pressureField: "ACTION",
+  pressureNature: "CONTROL",
+  scenarioDomain: "SELF",
+  behaviorBlock: "越不确定，越想立刻推进。",
+  semanticTags: ["action-five-awareness", "movement_under_uncertainty", "persona-transmission-smoke"],
+};
+
+const DEV_ACTION_FIVE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
+  motherCodeId: "dev-action-five-mother-gen",
+  motherCodeName: "艮",
+  motherCodeTitle: "停滞者",
+  trigram: "艮",
+  lowerTrigram: "艮",
+  trigramSymbol: "☶",
+  baseForce: "停住、承载、重新判断。",
+  defaultReactionPattern: "遇到不确定时先停住局面，再用行动找回掌控。",
+  defaultReactionChain: "不确定 → 停住 → 推进行动 → 恢复掌控感",
+  pressureEntry: "压力会先进入行动判断。",
+  behaviorBias: "通过立刻推进压住不确定。",
+  shadowInertia: "越不确定，越想马上行动。",
+  defenseTendency: "用行动维持安全感。",
+  pressureSensitiveZones: ["推进压力", "结果不确定", "控制感"],
+};
+
+const DEV_ACTION_FIVE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
+  motherCode: "艮",
+  motherCodeName: "艮",
+  trigram: "艮",
+  trigramSymbol: "☶",
+  fourBeast: "朱雀",
+  direction: "朱雀",
 };
 
 type PressureBeastSeed = {
@@ -210,6 +247,11 @@ function readDevPrimaryPetalFixture(): SelectedPressureSeedContext | null {
 
   const fixtureKey = new URLSearchParams(window.location.search).get("fixture");
   if (!fixtureKey) return null;
+  const experienceSmokeFixture = new URLSearchParams(window.location.search).get("__experienceSmoke");
+
+  if (fixtureKey === "behavior" && experienceSmokeFixture === "action-five") {
+    return DEV_ACTION_FIVE_PRESSURE_CONTEXT;
+  }
 
   return DEV_PRIMARY_PETAL_FIXTURES[fixtureKey] ?? null;
 }
@@ -222,12 +264,19 @@ function readDevExperienceSmokeFixture(): string | null {
 }
 
 function readDynamicsInputContext(): DynamicsInputContext {
+  const experienceSmokeFixture = readDevExperienceSmokeFixture();
+  const isActionFiveSmoke = experienceSmokeFixture === "action-five";
+
   return {
     selectedPressureSeedContext:
       readDevPrimaryPetalFixture() ?? readJsonFromStorage<SelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
-    motherCodeProfile: readJsonFromStorage<StoredMotherCodeProfile>("guanyao:motherCodeProfile"),
+    motherCodeProfile:
+      (isActionFiveSmoke ? DEV_ACTION_FIVE_MOTHER_CODE_PROFILE : null) ??
+      readJsonFromStorage<StoredMotherCodeProfile>("guanyao:motherCodeProfile"),
     originMotherContext: readJsonFromStorage<StoredOriginMotherContext>("guanyao:originMotherContext"),
-    personaOutputSnapshot: readJsonFromStorage<StoredPersonaOutputSnapshot>("guanyao:personaOutputSnapshot"),
+    personaOutputSnapshot:
+      (isActionFiveSmoke ? DEV_ACTION_FIVE_PERSONA_OUTPUT : null) ??
+      readJsonFromStorage<StoredPersonaOutputSnapshot>("guanyao:personaOutputSnapshot"),
   };
 }
 
@@ -538,6 +587,22 @@ function resolveSingleModelRevisionAction(
     sourceReason: mainTransmission.inertiaSignal,
     interventionPotential: yaoTransmissionChain.mainCut.interventionLeverage,
     userAgency: yaoTransmissionChain.mainCut.userAgency,
+  };
+}
+
+function resolveDevExperienceSmokeRevisionAction(
+  experienceSmokeFixture: string | null,
+): SingleModelRevisionAction | null {
+  const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
+  if (!viteEnv?.DEV || experienceSmokeFixture !== "action-five") return null;
+
+  return {
+    layerLabel: "行动",
+    yaoName: "五爻 · 觉察",
+    actionLine: actionFiveAwarenessExperiencePresentation.revision.microActionLine,
+    sourceReason: actionFiveAwarenessRuntimeUnit.inertiaPattern,
+    interventionPotential: 0.82,
+    userAgency: 0.8,
   };
 }
 
@@ -2876,11 +2941,13 @@ function HexagramCodeDeliveryShell() {
     starbeastFeedbackComplete,
     pressureSeedFallbackText: selectedPressureSeedSurface,
   });
-  const singleModelRevisionAction = useMemo(
-    () => resolveSingleModelRevisionAction(dynamicsInputContext, currentHexagramProfile),
-    [dynamicsInputContext, currentHexagramProfile],
-  );
   const experienceSmokeFixture = readDevExperienceSmokeFixture();
+  const singleModelRevisionAction = useMemo(
+    () =>
+      resolveSingleModelRevisionAction(dynamicsInputContext, currentHexagramProfile) ??
+      resolveDevExperienceSmokeRevisionAction(experienceSmokeFixture),
+    [dynamicsInputContext, currentHexagramProfile, experienceSmokeFixture],
+  );
   const personaTransmissionPresentation = useMemo(
     () => resolvePersonaTransmissionPresentationForAction(singleModelRevisionAction, experienceSmokeFixture),
     [singleModelRevisionAction, experienceSmokeFixture],
