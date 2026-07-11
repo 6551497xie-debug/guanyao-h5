@@ -26,6 +26,7 @@
     "check:safe-component-stub": "node scripts/check-safe-component-stub-candidate.mjs",
     "check:asset-chain-e2e": "node scripts/check-asset-chain-e2e.mjs",
     "check:persona-transmission": "node scripts/check-persona-transmission-pipeline.mjs",
+    "check:change-experience-unit": "node scripts/check-change-experience-unit.mjs",
     "check:crystal-mapping": "node scripts/check-crystal-mapping-pipeline.mjs",
     "check:crystal-end-state-adapter": "node scripts/check-crystal-end-state-adapter-pipeline.mjs",
     "check:hexagram-crystal-adapter": "node scripts/check-hexagram-crystal-adapter-pipeline.mjs",
