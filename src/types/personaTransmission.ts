@@ -122,8 +122,11 @@ export type CrystalStateGuardrails = Readonly<{
   noStorageWrite: true;
   noHexagramGeneration: true;
   noCrystalEngineMutation: true;
+  noCollectibleAsset: true;
   noScore: true;
+  noLevel: true;
   noGrowthValue: true;
+  noPetGrowth: true;
   no384Yao: true;
   noArchive: true;
   noOldR8: true;

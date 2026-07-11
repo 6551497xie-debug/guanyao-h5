@@ -186,7 +186,9 @@ They must not create `currentCrystalEndState`.
 
 ## 04. Minimum CrystalState Shape
 
-This protocol does not require a TypeScript type yet.
+The TypeScript contract is now represented by `CrystalState`.
+
+This protocol still does not implement mapping logic.
 
 The minimum semantic shape is:
 
@@ -352,7 +354,211 @@ currentCrystalEndState
 Personality Ring Lite trace
 ```
 
-## 06. Aggregation Rule For PersonaMigrationImpact[]
+## 06. CrystalState Formation Rule
+
+CrystalState is formed by a pure semantic mapping.
+
+It should not:
+
+- mutate `currentHexagramProfile`;
+- mutate `PersonaMigrationImpact`;
+- generate a new hexagram;
+- write storage;
+- call Crystal Engine;
+- create `currentCrystalEndState` directly.
+
+The mapping is:
+
+```text
+structureSource = currentHexagramProfile ? currentHexagramProfile : null
+
+impactSources = PersonaMigrationImpact[]
+  filtered by impactReadiness = READY_FOR_CRYSTAL
+
+dominantImpact = selectDominantImpact(impactSources)
+
+readiness = resolveCrystalReadiness(structureSource, dominantImpact)
+
+crystalMeaning = formCrystalMeaning(structureSource, dominantImpact)
+
+assetBoundary = resolveAssetBoundary(readiness)
+
+ringDepositMeaning = formRingDepositMeaning(dominantImpact)
+
+guardrails = fixed 1.0 boundaries
+```
+
+### Structure Rule
+
+If `currentHexagramProfile` is missing:
+
+```text
+structureSource = null
+readiness = NOT_READY
+```
+
+The current round cannot crystallize without a hexagram structure.
+
+This protects the product from:
+
+- generating a crystal from a micro action alone;
+- treating persona movement as a free-floating result;
+- creating a 64 hexagram-code asset without a current-round position.
+
+### Impact Rule
+
+Only ready impacts enter the state:
+
+```text
+impactSources = impacts where impactReadiness = READY_FOR_CRYSTAL
+```
+
+Do not include impacts that are:
+
+- only seen but not confirmed;
+- missing a micro action;
+- missing a crystal imprint;
+- marked `NOT_READY`;
+- derived only from raw engine language.
+
+### Dominant Impact Rule
+
+In 1.0:
+
+```text
+dominantImpact = the single confirmed current-round impact
+```
+
+If no ready impact exists:
+
+```text
+dominantImpact = null
+readiness = NOT_READY
+```
+
+If more than one ready impact exists in future:
+
+```text
+dominantImpact must be selected explicitly
+```
+
+Do not:
+
+- average impacts;
+- concatenate all impacts into a report;
+- turn impacts into a score;
+- choose by array order without a rule.
+
+### Readiness Rule
+
+Readiness must be derived only from structure and movement:
+
+```text
+if structureSource exists
+and dominantImpact exists
+then readiness = READY_TO_CRYSTALLIZE
+else readiness = NOT_READY
+```
+
+After `currentCrystalEndState` is actually materialized:
+
+```text
+readiness = CRYSTALLIZED
+```
+
+`READY_TO_CRYSTALLIZE` is not the same as `CRYSTALLIZED`.
+
+It means:
+
+```text
+the round has enough structure and movement to form a crystal
+```
+
+It does not mean:
+
+```text
+the 64 hexagram-code crystal has already been issued
+```
+
+### Crystal Meaning Rule
+
+`crystalMeaning` should combine:
+
+```text
+current-round hexagram structure
++
+dominant persona migration
+```
+
+It should answer:
+
+```text
+What did this round become after this movement?
+```
+
+It should not answer:
+
+- what type of person the user is;
+- what will happen in the future;
+- whether the user succeeded;
+- whether the user earned an asset.
+
+### Asset Boundary Rule
+
+`assetBoundary` should follow readiness:
+
+```text
+NOT_READY:
+  canCreateCurrentCrystalEndState = false
+  canExposeHexagramAsset = false
+  canDepositToRingLite = false
+
+READY_TO_CRYSTALLIZE:
+  canCreateCurrentCrystalEndState = true
+  canExposeHexagramAsset = false
+  canDepositToRingLite = false
+
+CRYSTALLIZED:
+  canCreateCurrentCrystalEndState = true
+  canExposeHexagramAsset = true
+  canDepositToRingLite = true
+```
+
+This preserves the difference between:
+
+```text
+ready to crystallize
+```
+
+and:
+
+```text
+visible 64 hexagram-code crystal
+```
+
+### Ring Deposit Rule
+
+`ringDepositMeaning` should be formed from:
+
+```text
+dominantImpact.crystalImprint
+```
+
+It should express:
+
+```text
+what this round's migration left behind
+```
+
+It should not store:
+
+- raw `PersonaMigrationImpact`;
+- raw `currentHexagramProfile`;
+- raw engine language;
+- a score;
+- a long-term profile field.
+
+## 07. Aggregation Rule For PersonaMigrationImpact[]
 
 In 1.0, the expected production shape is:
 
@@ -385,7 +591,110 @@ Future multi-impact aggregation must define:
 
 That belongs to 1.1 / 2.0.
 
-## 07. Causal Chain
+## 08. Mapping Examples
+
+### Example A: Missing Structure
+
+Input:
+
+```text
+currentHexagramProfile = null
+PersonaMigrationImpact[] = [READY_FOR_CRYSTAL impact]
+```
+
+Output:
+
+```text
+structureSource = null
+impactSources = [impact]
+dominantImpact = impact
+readiness = NOT_READY
+assetBoundary.canCreateCurrentCrystalEndState = false
+```
+
+Reason:
+
+The user may have completed a movement, but the current-round hexagram structure is missing.
+
+No 64 hexagram-code crystal may be formed.
+
+### Example B: Missing Ready Impact
+
+Input:
+
+```text
+currentHexagramProfile = present
+PersonaMigrationImpact[] = []
+```
+
+Output:
+
+```text
+structureSource = currentHexagramProfile
+impactSources = []
+dominantImpact = null
+readiness = NOT_READY
+assetBoundary.canCreateCurrentCrystalEndState = false
+```
+
+Reason:
+
+The round has a structure, but no confirmed persona migration movement.
+
+The user is still before crystallization.
+
+### Example C: Ready To Crystallize
+
+Input:
+
+```text
+currentHexagramProfile = present
+PersonaMigrationImpact[] = [READY_FOR_CRYSTAL action-five-awareness impact]
+```
+
+Output:
+
+```text
+structureSource = currentHexagramProfile
+impactSources = [action-five-awareness impact]
+dominantImpact = action-five-awareness impact
+readiness = READY_TO_CRYSTALLIZE
+assetBoundary.canCreateCurrentCrystalEndState = true
+assetBoundary.canExposeHexagramAsset = false
+assetBoundary.canDepositToRingLite = false
+```
+
+Reason:
+
+The current-round structure and movement are both present.
+
+The round may now enter `currentCrystalEndState`, but the visible asset is not issued until crystallization is materialized.
+
+### Example D: Crystallized
+
+Input:
+
+```text
+CrystalState = READY_TO_CRYSTALLIZE
+currentCrystalEndState = materialized
+```
+
+Output:
+
+```text
+readiness = CRYSTALLIZED
+assetBoundary.canCreateCurrentCrystalEndState = true
+assetBoundary.canExposeHexagramAsset = true
+assetBoundary.canDepositToRingLite = true
+```
+
+Reason:
+
+The round has crossed the frontend materialization boundary.
+
+The user can now recognize the 64 hexagram-code crystal and deposit its trace into Personality Ring Lite.
+
+## 09. Causal Chain
 
 The complete causal chain is:
 
@@ -429,7 +738,7 @@ Chinese product chain:
 人格年轮留痕
 ```
 
-## 08. Relationship To currentCrystalEndState
+## 10. Relationship To currentCrystalEndState
 
 `currentCrystalEndState` is the frontend materialization boundary.
 
@@ -459,7 +768,7 @@ ready PersonaMigrationImpact
 CrystalState READY_TO_CRYSTALLIZE
 ```
 
-## 09. User-Facing Semantics
+## 11. User-Facing Semantics
 
 Before CrystalState is ready, allowed language:
 
@@ -485,7 +794,7 @@ Forbidden before crystallization:
 - 本局资产已经完成。
 - 结果已生成。
 
-## 10. 1.0 Boundary
+## 12. 1.0 Boundary
 
 1.0 can include:
 
@@ -508,12 +817,12 @@ Forbidden before crystallization:
 - pet growth;
 - score or level.
 
-## 11. Engineering Route
+## 13. Engineering Route
 
 Recommended future implementation order:
 
 1. Keep `PersonaMigrationImpact` type stable.
-2. Define a lightweight `CrystalState` type only when implementation needs it.
+2. Keep `CrystalState` as a type contract only until mapping implementation is explicitly requested.
 3. Build a pure mapping adapter:
 
 ```text
@@ -524,7 +833,7 @@ currentHexagramProfile + PersonaMigrationImpact[] -> CrystalState
 5. Do not write storage until a separate storage protocol exists.
 6. Do not modify existing hexagram-code generation without a separate engine change request.
 
-## 12. Summary
+## 14. Summary
 
 `currentHexagramProfile` gives the crystal its structure.
 
