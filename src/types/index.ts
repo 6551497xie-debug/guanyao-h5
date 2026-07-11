@@ -10,6 +10,12 @@ export type {
 } from "./rueTracePayloadSpec";
 export type {
   PersonaDimension,
+  PersonaMigrationImpact,
+  PersonaMigrationImpactBeastImpact,
+  PersonaMigrationImpactCrystalImprint,
+  PersonaMigrationImpactGuardrails,
+  PersonaMigrationImpactReadiness,
+  PersonaMigrationImpactSourceUnit,
   PersonaTransmissionCurrentContext,
   PersonaTransmissionBeastCue,
   PersonaTransmissionCrystalTrace,

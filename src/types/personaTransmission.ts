@@ -57,6 +57,49 @@ export type PersonaTransmissionRuntimeUnit = Readonly<{
   guardrails: PersonaTransmissionRuntimeGuardrails;
 }>;
 
+export type PersonaMigrationImpactReadiness = "NOT_READY" | "READY_FOR_CRYSTAL";
+
+export type PersonaMigrationImpactSourceUnit = Readonly<{
+  unitId: string;
+  dimension: PersonaDimension;
+  yaoStage: PersonaYaoStage;
+}>;
+
+export type PersonaMigrationImpactBeastImpact = Readonly<{
+  before: string;
+  after: string;
+  cue: string;
+}>;
+
+export type PersonaMigrationImpactCrystalImprint = Readonly<{
+  imprintLine: string;
+  shouldFeedCrystal: boolean;
+  shouldDepositToRingLite: boolean;
+}>;
+
+export type PersonaMigrationImpactGuardrails = Readonly<{
+  noStorageWrite: true;
+  noLongTermProfile: true;
+  noScore: true;
+  noGrowthValue: true;
+  noRawEngineLanguage: true;
+  no384Yao: true;
+  noArchive: true;
+}>;
+
+export type PersonaMigrationImpact = Readonly<{
+  sourceUnit: PersonaMigrationImpactSourceUnit;
+  dimension: PersonaDimension;
+  yaoStage: PersonaYaoStage;
+  fromModel: string;
+  toResponse: string;
+  deflectionVector: string;
+  beastImpact: PersonaMigrationImpactBeastImpact;
+  crystalImprint: PersonaMigrationImpactCrystalImprint;
+  impactReadiness: PersonaMigrationImpactReadiness;
+  guardrails: PersonaMigrationImpactGuardrails;
+}>;
+
 export type PersonaTransmissionPressureContext = Readonly<{
   pressureSeedId?: string;
   pressureSeed?: string;
