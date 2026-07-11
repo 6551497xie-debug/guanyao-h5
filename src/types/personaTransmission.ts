@@ -1,8 +1,12 @@
+import type { CutCandidate, YaoTransmissionProfile } from "./guanyaoCausalEngine";
+
 export type PersonaDimension = "body" | "emotion" | "thought" | "action" | "memory" | "motivation";
 
 export type PersonaYaoStage = "trigger" | "takeover" | "explain" | "solidify" | "awareness" | "revision";
 
 export type PersonaTransmissionRuntimeSource = "runtime" | "fixture" | "fallback";
+
+export type PersonaTransmissionMappingStatus = "PASS" | "NEEDS_TRANSLATION" | "NOT_READY";
 
 export type PersonaTransmissionIdentity = Readonly<{
   unitId: string;
@@ -52,3 +56,53 @@ export type PersonaTransmissionRuntimeUnit = Readonly<{
   crystalTrace: PersonaTransmissionCrystalTrace;
   guardrails: PersonaTransmissionRuntimeGuardrails;
 }>;
+
+export type PersonaTransmissionPressureContext = Readonly<{
+  pressureSeedId?: string;
+  pressureSeed?: string;
+  pressureField?: string;
+}>;
+
+export type PersonaTransmissionCurrentContext = Readonly<{
+  currentHexagramProfile?: string;
+  currentHexagramName?: string;
+  motherCodeProfile?: string;
+  motherCodeName?: string;
+  motherCodeInfluence?: string;
+}>;
+
+export type PersonaTransmissionCutContext = Readonly<{
+  mainCut?: CutCandidate;
+  secondaryCut?: CutCandidate;
+  rootCut?: CutCandidate;
+  userAgency?: number;
+}>;
+
+export type PersonaTransmissionMappingInput = Readonly<{
+  yaoTransmissionProfile?: YaoTransmissionProfile;
+  pressureContext: PersonaTransmissionPressureContext;
+  currentContext: PersonaTransmissionCurrentContext;
+  cutContext?: PersonaTransmissionCutContext;
+  source: PersonaTransmissionRuntimeSource;
+}>;
+
+export type PersonaTransmissionMappingSuccess = Readonly<{
+  status: "PASS";
+  unit: PersonaTransmissionRuntimeUnit;
+}>;
+
+export type PersonaTransmissionMappingNeedsTranslation = Readonly<{
+  status: "NEEDS_TRANSLATION";
+  reason: string;
+  partialUnit?: Partial<PersonaTransmissionRuntimeUnit>;
+}>;
+
+export type PersonaTransmissionMappingFailure = Readonly<{
+  status: "NOT_READY";
+  reason: string;
+}>;
+
+export type PersonaTransmissionMappingResult =
+  | PersonaTransmissionMappingSuccess
+  | PersonaTransmissionMappingNeedsTranslation
+  | PersonaTransmissionMappingFailure;

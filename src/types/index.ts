@@ -10,9 +10,18 @@ export type {
 } from "./rueTracePayloadSpec";
 export type {
   PersonaDimension,
+  PersonaTransmissionCurrentContext,
   PersonaTransmissionBeastCue,
   PersonaTransmissionCrystalTrace,
+  PersonaTransmissionCutContext,
   PersonaTransmissionIdentity,
+  PersonaTransmissionMappingFailure,
+  PersonaTransmissionMappingInput,
+  PersonaTransmissionMappingNeedsTranslation,
+  PersonaTransmissionMappingResult,
+  PersonaTransmissionMappingStatus,
+  PersonaTransmissionMappingSuccess,
+  PersonaTransmissionPressureContext,
   PersonaTransmissionRuntimeGuardrails,
   PersonaTransmissionRuntimeSource,
   PersonaTransmissionRuntimeUnit,
