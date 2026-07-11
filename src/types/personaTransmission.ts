@@ -211,6 +211,61 @@ export type CrystalEndStateAdapterResult =
   | CrystalEndStateAdapterSuccess
   | CrystalEndStateAdapterNotReady;
 
+export type HexagramCrystalInputReadiness = "NOT_READY" | "READY_FOR_HEXAGRAM_CRYSTAL";
+
+export type HexagramCrystalInputSourceCrystal = Readonly<{
+  source: "currentCrystalEndState";
+  status: "CRYSTALLIZED";
+  crystalMeaning: string;
+}>;
+
+export type HexagramCrystalInputSourceHexagram = Readonly<{
+  lowerTrigram?: string;
+  upperTrigram?: string;
+  hexagramCode?: string;
+  hexagramName?: string;
+  hexagramTitle?: string;
+}>;
+
+export type HexagramCrystalInputMigrationTrace = Readonly<{
+  traceLine: string;
+  sourceUnitId?: string;
+  dimension?: PersonaDimension;
+  yaoStage?: PersonaYaoStage;
+}>;
+
+export type HexagramCrystalInputDominantShift = Readonly<{
+  fromModel: string;
+  toResponse: string;
+  deflectionVector?: string;
+}>;
+
+export type HexagramCrystalInputGuardrails = Readonly<{
+  noStorageWrite: true;
+  noHexagramGeneration: true;
+  noCurrentCrystalEndStateMutation: true;
+  noCrystalEngineMutation: true;
+  noCollectibleAsset: true;
+  noScore: true;
+  noLevel: true;
+  noGrowthValue: true;
+  noPetGrowth: true;
+  no384Yao: true;
+  noArchive: true;
+  noOldR8: true;
+}>;
+
+export type HexagramCrystalInput = Readonly<{
+  sourceCrystal: HexagramCrystalInputSourceCrystal;
+  sourceHexagram: HexagramCrystalInputSourceHexagram;
+  migrationTrace: HexagramCrystalInputMigrationTrace;
+  dominantShift: HexagramCrystalInputDominantShift;
+  crystalMeaning: string;
+  readiness: HexagramCrystalInputReadiness;
+  source: CrystalMappingSource;
+  guardrails: HexagramCrystalInputGuardrails;
+}>;
+
 export type PersonaTransmissionPressureContext = Readonly<{
   pressureSeedId?: string;
   pressureSeed?: string;
