@@ -2,7 +2,7 @@
  * GravityPage = passive UI visualization layer for presenting existing causal state transitions
  * without any influence on engine or data flow.
  */
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import {
   runCosmicBotanicsRuntimeEngine,
@@ -722,6 +722,7 @@ type ExperienceState = Readonly<{
     title: string;
     text: string;
     dimensionInsight?: string;
+    dimensionUnderstanding?: string;
     actionText: string;
   };
   crystalCopy: string;
@@ -743,6 +744,15 @@ const SIX_DIMENSION_INSIGHT_COPY: Record<SixSpaceId, string> = {
   action: "你用熟悉的行动恢复掌控，它帮过你，也可能限制你。",
   memory: "过去正在参与今天的选择，旧经验还在保护你。",
   goal: "这些反应背后，有一个你真正想保护的东西。",
+};
+
+const SIX_DIMENSION_UNDERSTANDING_COPY: Record<SixSpaceId, string> = {
+  body: "这是身体在帮你更快应对变化。",
+  emotion: "情绪不是敌人，它曾帮你提前发现风险。",
+  thought: "这种解释方式，曾经帮你建立确定感。",
+  action: "这种行动力曾帮你突破困难，只是现在需要重新校准。",
+  memory: "旧经验不是束缚，它曾经是一条保护你的路径。",
+  goal: "你的惯性背后，藏着一直想守住的东西。",
 };
 
 const YAO_SEMANTIC_STAGES: Record<number, ExperienceState["nodeCopy"]> = {
@@ -1057,10 +1067,12 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
   const yaoStageCopy = YAO_SEMANTIC_STAGES[nodeNumber] ?? YAO_SEMANTIC_STAGES[1];
   const dimensionResponse = SIX_DIMENSION_RESPONSE_COPY[visualState.focalDimension] ?? "这一层，留下了痕迹。";
   const dimensionInsight = SIX_DIMENSION_INSIGHT_COPY[visualState.focalDimension];
+  const dimensionUnderstanding = SIX_DIMENSION_UNDERSTANDING_COPY[visualState.focalDimension];
   const nodeCopy = {
     title: yaoStageCopy.title,
     text: `${yaoStageCopy.text}\n${dimensionResponse}`,
     dimensionInsight,
+    dimensionUnderstanding,
     actionText: yaoStageCopy.actionText,
   };
 
@@ -1343,7 +1355,13 @@ function NodeProgressionPanel({
 }: {
   visible: boolean;
   toneColor: string;
-  activeNode: { title: string; text: string; dimensionInsight?: string; actionText: string };
+  activeNode: {
+    title: string;
+    text: string;
+    dimensionInsight?: string;
+    dimensionUnderstanding?: string;
+    actionText: string;
+  };
 }) {
   return (
     <div
@@ -1380,6 +1398,18 @@ function NodeProgressionPanel({
           }}
         >
           {activeNode.dimensionInsight}
+        </p>
+      ) : null}
+      {activeNode.dimensionUnderstanding ? (
+        <p
+          style={{
+            margin: 0,
+            color: "rgba(245,245,245,0.52)",
+            fontSize: 11.5,
+            lineHeight: 1.48,
+          }}
+        >
+          {activeNode.dimensionUnderstanding}
         </p>
       ) : null}
       <GuanyaoText size="eyebrow" tone="gold">
@@ -2748,6 +2778,7 @@ function HexagramCodeDeliveryShell() {
   const [completedDimensionIds, setCompletedDimensionIds] = useState<readonly SixSpaceId[]>([]);
   const [revisionActionConfirmed, setRevisionActionConfirmed] = useState(false);
   const [transformationMomentActive, setTransformationMomentActive] = useState(false);
+  const dimensionTransitionLockRef = useRef(false);
   const runtimeProjection = GuanyaoRuntimeEngine.project(executionSnapshot);
   const {
     sixSpaceConfigs,
@@ -2883,27 +2914,39 @@ function HexagramCodeDeliveryShell() {
     return () => window.clearTimeout(timer);
   }, [transformationMomentActive]);
 
+  useEffect(() => {
+    dimensionTransitionLockRef.current = false;
+  }, [activeDimensionIndex, executionSnapshot.node.current, executionSnapshot.runtime.enginePhase]);
+
   function handleRevisionActionConfirm() {
     setTransformationMomentActive(true);
   }
 
   function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
-    setExecutionSnapshot((current) => {
-      if (eventType !== "CORE_STAR_BLOOM" || current.node.current !== 6 || current.runtime.enginePhase === "COMPLETE") {
-        return GuanyaoRuntimeEngine.run(current, { type: eventType, payload: context });
-      }
+    const isDimensionBoundary =
+      eventType === "CORE_STAR_BLOOM" &&
+      executionSnapshot.node.current === 6 &&
+      executionSnapshot.runtime.enginePhase !== "COMPLETE";
 
-      setCompletedDimensionIds((previous) =>
-        previous.includes(sequentialCurrentSpaceId) ? previous : [...previous, sequentialCurrentSpaceId],
-      );
+    if (!isDimensionBoundary) {
+      setExecutionSnapshot((current) => GuanyaoRuntimeEngine.run(current, { type: eventType, payload: context }));
+      return;
+    }
 
-      if (activeDimensionIndex < SEQUENTIAL_SIX_SPACE_IDS.length - 1) {
-        setActiveDimensionIndex((previous) => Math.min(SEQUENTIAL_SIX_SPACE_IDS.length - 1, previous + 1));
-        return createNodeRunningExecutionSnapshot(dynamicsInputContext.selectedPressureSeedContext);
-      }
+    if (dimensionTransitionLockRef.current) return;
+    dimensionTransitionLockRef.current = true;
 
-      return GuanyaoRuntimeEngine.advance(current);
-    });
+    setCompletedDimensionIds((previous) =>
+      previous.includes(sequentialCurrentSpaceId) ? previous : [...previous, sequentialCurrentSpaceId],
+    );
+
+    if (activeDimensionIndex < SEQUENTIAL_SIX_SPACE_IDS.length - 1) {
+      setActiveDimensionIndex((previous) => Math.min(SEQUENTIAL_SIX_SPACE_IDS.length - 1, previous + 1));
+      setExecutionSnapshot(createNodeRunningExecutionSnapshot(dynamicsInputContext.selectedPressureSeedContext));
+      return;
+    }
+
+    setExecutionSnapshot(GuanyaoRuntimeEngine.advance(executionSnapshot));
   }
 
   function bloomCosmicNode() {
