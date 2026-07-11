@@ -21,6 +21,10 @@ import {
   readPersonalityRingLite,
   savePersonalityRingLiteEntry,
 } from "../services/personalityRingLiteService";
+import {
+  actionFiveAwarenessExperiencePresentation,
+  type PersonaTransmissionExperiencePresentation,
+} from "../services/fixtures/personaTransmissionExperiencePresentationFixtures";
 import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
 import type {
   CurrentHexagramProfile,
@@ -174,6 +178,19 @@ type SingleModelRevisionAction = {
   userAgency: number;
 };
 
+function resolvePersonaTransmissionPresentationForAction(
+  action: SingleModelRevisionAction | null,
+  experienceSmokeFixture: string | null,
+): PersonaTransmissionExperiencePresentation | null {
+  if (!action) return null;
+
+  const isActionSpace = action.layerLabel === "行动" || action.layerLabel === "行为";
+  const isAwarenessYao = action.yaoName.includes("五爻") || action.yaoName.includes("觉察");
+  const isActionFiveSmoke = experienceSmokeFixture === "action-five";
+
+  return isActionSpace && (isAwarenessYao || isActionFiveSmoke) ? actionFiveAwarenessExperiencePresentation : null;
+}
+
 function readJsonFromStorage<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
 
@@ -195,6 +212,13 @@ function readDevPrimaryPetalFixture(): SelectedPressureSeedContext | null {
   if (!fixtureKey) return null;
 
   return DEV_PRIMARY_PETAL_FIXTURES[fixtureKey] ?? null;
+}
+
+function readDevExperienceSmokeFixture(): string | null {
+  const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
+  if (!viteEnv?.DEV || typeof window === "undefined") return null;
+
+  return new URLSearchParams(window.location.search).get("__experienceSmoke");
 }
 
 function readDynamicsInputContext(): DynamicsInputContext {
@@ -2080,11 +2104,20 @@ type CrystalView = "MOLD" | "CARD";
 
 function SingleModelRevisionActionFocus({
   action,
+  presentation,
   onConfirm,
 }: {
   action: SingleModelRevisionAction;
+  presentation?: PersonaTransmissionExperiencePresentation | null;
   onConfirm: () => void;
 }) {
+  const hasPresentation = Boolean(presentation);
+  const supportingLine = presentation?.orientation.supportingLine ?? `${action.yaoName} · ${action.layerLabel}层出现了旧惯性`;
+  const recognitionLine = presentation?.recognition.insightLine ?? `旧反应：${action.sourceReason}`;
+  const microActionLine = presentation?.revision.microActionLine ?? action.actionLine;
+  const beastCueLine = presentation?.starbeast.cueLine;
+  const traceLine = presentation?.trace.crystalLine ?? "不用解决全局。只是这一局，你先留下一个新的回应方式。";
+
   return (
     <section
       aria-label="本局修正动作"
@@ -2093,6 +2126,7 @@ function SingleModelRevisionActionFocus({
       data-model-revision-yao={action.yaoName}
       data-model-revision-intervention={action.interventionPotential}
       data-model-revision-agency={action.userAgency}
+      data-persona-transmission-presentation={hasPresentation ? presentation?.identity.unitId : "fallback"}
       style={{
         minHeight: 430,
         position: "relative",
@@ -2152,7 +2186,7 @@ function SingleModelRevisionActionFocus({
             这一局，可以先改一个旧反应
           </strong>
           <span style={{ color: "rgba(245,245,245,0.54)", fontSize: 13, lineHeight: 1.55 }}>
-            {action.yaoName} · {action.layerLabel}层出现了旧惯性
+            {supportingLine}
           </span>
         </div>
 
@@ -2169,15 +2203,20 @@ function SingleModelRevisionActionFocus({
           }}
         >
           <span style={{ color: "rgba(245,245,245,0.48)", fontSize: 12, lineHeight: 1.5 }}>
-            旧反应：{action.sourceReason}
+            {recognitionLine}
           </span>
           <strong style={{ color: "rgba(255,226,158,0.9)", fontSize: 16, lineHeight: 1.6, fontWeight: 650 }}>
-            {action.actionLine}
+            {microActionLine}
           </strong>
+          {beastCueLine ? (
+            <span style={{ color: "rgba(199,169,107,0.68)", fontSize: 12, lineHeight: 1.55 }}>
+              {beastCueLine}
+            </span>
+          ) : null}
         </div>
 
         <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 13, lineHeight: 1.65 }}>
-          不用解决全局。只是这一局，你先留下一个新的回应方式。
+          {traceLine}
         </p>
 
         <button
@@ -2568,7 +2607,9 @@ function HexagramCodeDeliveryShell() {
   } = runtimeProjection;
   const activeDimensionId = SEQUENTIAL_SIX_SPACE_IDS[Math.max(0, Math.min(SEQUENTIAL_SIX_SPACE_IDS.length - 1, activeDimensionIndex))];
   const completedDimensionSet = new Set(completedDimensionIds);
-  if (executionSnapshot.runtime.enginePhase === "COMPLETE") completedDimensionSet.add(activeDimensionId);
+  if (executionSnapshot.runtime.enginePhase === "COMPLETE") {
+    SEQUENTIAL_SIX_SPACE_IDS.forEach((dimensionId) => completedDimensionSet.add(dimensionId));
+  }
   const completedSixDimensionCount = completedDimensionSet.size;
   const currentInnerNodeCount = countCompletedSixDimensions(executionSnapshot);
   const sequentialCurrentSpaceId = activeDimensionId;
@@ -2637,6 +2678,11 @@ function HexagramCodeDeliveryShell() {
   const singleModelRevisionAction = useMemo(
     () => resolveSingleModelRevisionAction(dynamicsInputContext, currentHexagramProfile),
     [dynamicsInputContext, currentHexagramProfile],
+  );
+  const experienceSmokeFixture = readDevExperienceSmokeFixture();
+  const personaTransmissionPresentation = useMemo(
+    () => resolvePersonaTransmissionPresentationForAction(singleModelRevisionAction, experienceSmokeFixture),
+    [singleModelRevisionAction, experienceSmokeFixture],
   );
   const isRevisionActionPending =
     hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE" &&
@@ -2858,6 +2904,7 @@ function HexagramCodeDeliveryShell() {
           ) : isRevisionActionPending && singleModelRevisionAction ? (
             <SingleModelRevisionActionFocus
               action={singleModelRevisionAction}
+              presentation={personaTransmissionPresentation}
               onConfirm={() => setRevisionActionConfirmed(true)}
             />
           ) : (
@@ -2887,6 +2934,9 @@ function HexagramCodeDeliveryShell() {
           data-current-crystal-end-state={currentCrystalEndState ? "connected" : "missing"}
           data-model-revision-action={
             isRevisionActionPending ? "pending" : revisionActionConfirmed ? "confirmed" : "inactive"
+          }
+          data-persona-transmission-presentation={
+            personaTransmissionPresentation ? personaTransmissionPresentation.identity.unitId : "inactive"
           }
           data-value-flow-behavior={valueFlow.behaviorSignals.join("|") || "NONE"}
           data-value-flow-pressure={valueFlow.pressureState}
