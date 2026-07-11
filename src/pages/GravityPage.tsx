@@ -737,12 +737,12 @@ const SIX_DIMENSION_RESPONSE_COPY: Record<SixSpaceId, string> = {
 };
 
 const SIX_DIMENSION_INSIGHT_COPY: Record<SixSpaceId, string> = {
-  body: "你的身体比意识更早感受到这个局，你可能已经习惯先紧绷，再寻找答案。",
-  emotion: "你的情绪正在提醒你危险，但它也可能替你提前做出了判断。",
-  thought: "你看到的不只是事情本身，还有你过去形成的解释方式。",
-  action: "你正在用熟悉的行动方式恢复掌控，这个方式曾经帮过你，也可能限制你。",
-  memory: "过去的经验正在参与今天的选择，旧经验不是敌人，它只是还在保护你。",
-  goal: "在这些反应背后，你真正想保护的东西正在浮出来。",
+  body: "身体比意识更早感到压力，你可能先紧绷，再找答案。",
+  emotion: "情绪在提醒危险，也可能替你提前下判断。",
+  thought: "你看到的不只事情，还有过去形成的解释方式。",
+  action: "你用熟悉的行动恢复掌控，它帮过你，也可能限制你。",
+  memory: "过去正在参与今天的选择，旧经验还在保护你。",
+  goal: "这些反应背后，有一个你真正想保护的东西。",
 };
 
 const YAO_SEMANTIC_STAGES: Record<number, ExperienceState["nodeCopy"]> = {
