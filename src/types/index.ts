@@ -9,6 +9,12 @@ export type {
   RUETracePayloadByEvent,
 } from "./rueTracePayloadSpec";
 export type {
+  CrystalMappingInput,
+  CrystalMappingNotReady,
+  CrystalMappingNotReadyReason,
+  CrystalMappingResult,
+  CrystalMappingSource,
+  CrystalMappingSuccess,
   CrystalState,
   CrystalStateAssetBoundary,
   CrystalStateGuardrails,

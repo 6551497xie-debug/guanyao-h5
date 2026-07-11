@@ -143,6 +143,34 @@ export type CrystalState = Readonly<{
   guardrails: CrystalStateGuardrails;
 }>;
 
+export type CrystalMappingSource = "runtime" | "fixture" | "fallback";
+
+export type CrystalMappingInput = Readonly<{
+  structureSource: CrystalStateStructureSource | null;
+  migrationImpacts: readonly PersonaMigrationImpact[];
+  source: CrystalMappingSource;
+}>;
+
+export type CrystalMappingSuccess = Readonly<{
+  status: "PASS";
+  crystalState: CrystalState;
+}>;
+
+export type CrystalMappingNotReadyReason =
+  | "CURRENT_HEXAGRAM_PROFILE_MISSING"
+  | "READY_MIGRATION_IMPACT_MISSING"
+  | "DOMINANT_IMPACT_UNRESOLVED"
+  | "RAW_ENGINE_LANGUAGE_DETECTED"
+  | "BOUNDARY_VIOLATION";
+
+export type CrystalMappingNotReady = Readonly<{
+  status: "NOT_READY";
+  reason: CrystalMappingNotReadyReason;
+  crystalState?: CrystalState;
+}>;
+
+export type CrystalMappingResult = CrystalMappingSuccess | CrystalMappingNotReady;
+
 export type PersonaTransmissionPressureContext = Readonly<{
   pressureSeedId?: string;
   pressureSeed?: string;
