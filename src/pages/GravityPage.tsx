@@ -2244,6 +2244,133 @@ function SingleModelRevisionActionFocus({
   );
 }
 
+function TransformationMomentFocus({
+  action,
+  presentation,
+}: {
+  action: SingleModelRevisionAction;
+  presentation?: PersonaTransmissionExperiencePresentation | null;
+}) {
+  const oldReactionLine = presentation?.recognition.insightLine ?? `旧反应：${action.sourceReason}`;
+  const newResponseLine = presentation?.revision.microActionLine ?? action.actionLine;
+  const beastCueLine = presentation?.starbeast.cueLine ?? "星兽正在把这次移动收进光里。";
+  const traceLine = presentation?.trace.crystalLine ?? "这一局，你留下了一种新的回应方式。";
+
+  return (
+    <section
+      aria-label="本局变化正在发生"
+      data-transformation-moment="active"
+      style={{
+        minHeight: 430,
+        position: "relative",
+        display: "grid",
+        placeItems: "center",
+        padding: "20px 0 8px",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "47%",
+          width: 318,
+          height: 318,
+          transform: "translate(-50%, -50%)",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(255,246,218,0.2), transparent 18%), radial-gradient(circle, rgba(199,169,107,0.12), transparent 52%)",
+          filter: "blur(5px)",
+          opacity: 0.82,
+        }}
+      />
+
+      <div
+        style={{
+          position: "relative",
+          width: "min(100%, 340px)",
+          boxSizing: "border-box",
+          display: "grid",
+          justifyItems: "center",
+          gap: 18,
+          padding: "30px 22px 26px",
+          borderRadius: 28,
+          border: "1px solid rgba(255,226,158,0.28)",
+          background:
+            "linear-gradient(180deg, rgba(18,18,18,0.9), rgba(6,7,8,0.96)), radial-gradient(circle at 50% 8%, rgba(255,226,158,0.16), transparent 42%)",
+          boxShadow: "0 28px 70px rgba(0,0,0,0.4), inset 0 0 34px rgba(255,226,158,0.07)",
+          textAlign: "center",
+        }}
+      >
+        <span
+          style={{
+            color: "rgba(199,169,107,0.72)",
+            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            fontSize: 11,
+            letterSpacing: "0.14em",
+          }}
+        >
+          改变正在发生
+        </span>
+
+        <strong style={{ color: "rgba(255,246,218,0.94)", fontSize: 23, fontWeight: 700, letterSpacing: 0 }}>
+          你刚刚移动了一点
+        </strong>
+
+        <div
+          style={{
+            width: "100%",
+            display: "grid",
+            gap: 10,
+            textAlign: "left",
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gap: 6,
+              padding: "14px 15px",
+              borderRadius: 18,
+              border: "1px solid rgba(245,245,245,0.1)",
+              background: "rgba(255,255,255,0.03)",
+            }}
+          >
+            <span style={{ color: "rgba(245,245,245,0.42)", fontSize: 11 }}>旧反应</span>
+            <span style={{ color: "rgba(245,245,245,0.66)", fontSize: 13, lineHeight: 1.55 }}>
+              {oldReactionLine}
+            </span>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gap: 6,
+              padding: "14px 15px",
+              borderRadius: 18,
+              border: "1px solid rgba(255,226,158,0.2)",
+              background: "rgba(255,226,158,0.055)",
+            }}
+          >
+            <span style={{ color: "rgba(199,169,107,0.72)", fontSize: 11 }}>新回应</span>
+            <span style={{ color: "rgba(255,226,158,0.9)", fontSize: 15, lineHeight: 1.55, fontWeight: 650 }}>
+              {newResponseLine}
+            </span>
+          </div>
+        </div>
+
+        <p style={{ margin: 0, color: "rgba(199,169,107,0.7)", fontSize: 12, lineHeight: 1.6 }}>
+          {beastCueLine}
+        </p>
+
+        <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 13, lineHeight: 1.65 }}>
+          {traceLine}
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function crystalDimensionLabel(value: string | undefined) {
   const labels: Record<string, string> = {
     body: "身体维度",
@@ -2596,6 +2723,7 @@ function HexagramCodeDeliveryShell() {
   const [activeDimensionIndex, setActiveDimensionIndex] = useState(0);
   const [completedDimensionIds, setCompletedDimensionIds] = useState<readonly SixSpaceId[]>([]);
   const [revisionActionConfirmed, setRevisionActionConfirmed] = useState(false);
+  const [transformationMomentActive, setTransformationMomentActive] = useState(false);
   const runtimeProjection = GuanyaoRuntimeEngine.project(executionSnapshot);
   const {
     sixSpaceConfigs,
@@ -2687,7 +2815,8 @@ function HexagramCodeDeliveryShell() {
   const isRevisionActionPending =
     hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE" &&
     Boolean(singleModelRevisionAction) &&
-    !revisionActionConfirmed;
+    !revisionActionConfirmed &&
+    !transformationMomentActive;
   const currentCrystalEndState = useMemo(() =>
     resolveCurrentCrystalEndState({
       currentHexagramProfile,
@@ -2718,6 +2847,21 @@ function HexagramCodeDeliveryShell() {
     if (!currentCrystalEndState) return;
     writeJsonToStorage("guanyao:currentCrystalEndState", currentCrystalEndState);
   }, [currentCrystalEndState]);
+
+  useEffect(() => {
+    if (!transformationMomentActive) return;
+
+    const timer = window.setTimeout(() => {
+      setRevisionActionConfirmed(true);
+      setTransformationMomentActive(false);
+    }, 1650);
+
+    return () => window.clearTimeout(timer);
+  }, [transformationMomentActive]);
+
+  function handleRevisionActionConfirm() {
+    setTransformationMomentActive(true);
+  }
 
   function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
     setExecutionSnapshot((current) => {
@@ -2901,11 +3045,16 @@ function HexagramCodeDeliveryShell() {
         >
           {currentCrystalEndState ? (
             <CurrentCrystalEndStateFocus state={currentCrystalEndState} />
+          ) : transformationMomentActive && singleModelRevisionAction ? (
+            <TransformationMomentFocus
+              action={singleModelRevisionAction}
+              presentation={personaTransmissionPresentation}
+            />
           ) : isRevisionActionPending && singleModelRevisionAction ? (
             <SingleModelRevisionActionFocus
               action={singleModelRevisionAction}
               presentation={personaTransmissionPresentation}
-              onConfirm={() => setRevisionActionConfirmed(true)}
+              onConfirm={handleRevisionActionConfirm}
             />
           ) : (
             <CosmicBotanicsField
@@ -2933,7 +3082,7 @@ function HexagramCodeDeliveryShell() {
           data-hexagram-asset-candidate-state={hexagramAssetCandidate.completionState}
           data-current-crystal-end-state={currentCrystalEndState ? "connected" : "missing"}
           data-model-revision-action={
-            isRevisionActionPending ? "pending" : revisionActionConfirmed ? "confirmed" : "inactive"
+            isRevisionActionPending ? "pending" : transformationMomentActive ? "transforming" : revisionActionConfirmed ? "confirmed" : "inactive"
           }
           data-persona-transmission-presentation={
             personaTransmissionPresentation ? personaTransmissionPresentation.identity.unitId : "inactive"
@@ -2955,6 +3104,10 @@ function HexagramCodeDeliveryShell() {
           {currentCrystalEndState ? (
             <span style={{ display: "block", textAlign: "center", color: "rgba(199,169,107,0.54)" }}>
               六维传导已完成
+            </span>
+          ) : transformationMomentActive ? (
+            <span style={{ display: "block", textAlign: "center", color: "rgba(199,169,107,0.54)" }}>
+              新的回应正在进入这一局
             </span>
           ) : isRevisionActionPending ? (
             <span style={{ display: "block", textAlign: "center", color: "rgba(199,169,107,0.54)" }}>
