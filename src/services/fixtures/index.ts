@@ -1,4 +1,5 @@
 export * from "./changeExperienceFixtures";
+export * from "./changeExperiencePresentationFixtures";
 export * from "./crystalEndStateAdapterFixtures";
 export * from "./crystalMappingFixtures";
 export * from "./hexagramCrystalAdapterFixtures";
