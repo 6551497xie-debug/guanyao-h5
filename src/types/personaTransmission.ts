@@ -171,6 +171,46 @@ export type CrystalMappingNotReady = Readonly<{
 
 export type CrystalMappingResult = CrystalMappingSuccess | CrystalMappingNotReady;
 
+export type CrystalEndStateAdapterInput = Readonly<{
+  crystalState: CrystalState;
+  source: CrystalMappingSource;
+}>;
+
+export type CrystalEndStateAdapterReadiness = "NOT_READY" | "READY_FOR_CURRENT_CRYSTAL_END_STATE";
+
+export type CrystalEndStateAdapterBoundary = Readonly<{
+  canAdaptToCurrentCrystalEndState: boolean;
+  nextCrystalStateReadiness: CrystalStateReadiness;
+  canExposeHexagramAssetAfterAdapt: boolean;
+  canDepositToRingLiteAfterAdapt: boolean;
+}>;
+
+export type CrystalEndStateAdapterSuccess = Readonly<{
+  status: "READY";
+  readiness: "READY_FOR_CURRENT_CRYSTAL_END_STATE";
+  crystalState: CrystalState;
+  boundary: CrystalEndStateAdapterBoundary;
+}>;
+
+export type CrystalEndStateAdapterNotReadyReason =
+  | "CRYSTAL_STATE_NOT_READY_TO_CRYSTALLIZE"
+  | "CURRENT_CRYSTAL_END_STATE_BOUNDARY_CLOSED"
+  | "HEXAGRAM_ASSET_BOUNDARY_PREMATURE"
+  | "RING_DEPOSIT_BOUNDARY_PREMATURE"
+  | "BOUNDARY_VIOLATION";
+
+export type CrystalEndStateAdapterNotReady = Readonly<{
+  status: "NOT_READY";
+  readiness: "NOT_READY";
+  reason: CrystalEndStateAdapterNotReadyReason;
+  crystalState: CrystalState;
+  boundary: CrystalEndStateAdapterBoundary;
+}>;
+
+export type CrystalEndStateAdapterResult =
+  | CrystalEndStateAdapterSuccess
+  | CrystalEndStateAdapterNotReady;
+
 export type PersonaTransmissionPressureContext = Readonly<{
   pressureSeedId?: string;
   pressureSeed?: string;
