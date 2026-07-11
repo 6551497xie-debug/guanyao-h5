@@ -58,8 +58,9 @@ Every complete Guanyao 1.0 self-change experience should follow this spine:
 5. Protection meaning is understood
 6. User chooses a new response
 7. Transformation Moment
-8. Change imprint
-9. Hexagram-code crystal
+8. Growth meaning
+9. Change imprint
+10. Hexagram-code crystal
 ```
 
 Chinese frontend semantics:
@@ -78,6 +79,8 @@ Chinese frontend semantics:
 用户选择新回应
 ↓
 改变发生
+↓
+成长价值
 ↓
 变化留痕
 ↓
@@ -104,6 +107,8 @@ Protection Meaning
 New Response
 ↓
 Transformation Moment
+↓
+Growth Meaning
 ↓
 Crystal Imprint
 ```
@@ -296,7 +301,72 @@ Chinese golden sample:
 星兽从向前急冲，转为先稳住方向。
 ```
 
-### 7. Crystal Imprint
+### 7. Growth Meaning
+
+Answers:
+
+```text
+What did this movement mean for my growth?
+```
+
+Growth Meaning is the user-facing value expression after a persona-dynamics deflection.
+
+It is not:
+
+- a score;
+- a level;
+- an achievement;
+- a game reward;
+- a long-term growth metric;
+- a storage field.
+
+It is:
+
+> The language by which the user can recognize and own the value of this small movement.
+
+Three language layers must remain separated:
+
+```text
+1. Experience language
+   User is experiencing:
+   "First see the emotion, then confirm the fact."
+
+2. Persona-dynamics migration language
+   The system understands:
+   "Emotion moves from automatic judgment to observable signal."
+
+3. Growth-value language
+   User receives:
+   "Emotional awareness upgraded."
+```
+
+Growth Meaning is the third layer.
+
+It should not expose engine fields or pretend to be a quantified achievement.
+
+It should sound like a concise value the user can carry away.
+
+#### Growth Meaning Examples
+
+| Space | Old Reaction | New Response | Growth Meaning |
+| --- | --- | --- | --- |
+| Action | Restore control through action. | Judge first, then act. | Action pattern upgraded. |
+| Emotion | Let emotion make the factual conclusion. | See the emotion, then confirm the fact. | Emotional awareness upgraded. |
+| Thought | Treat interpretation as reality. | See the fact first, then see the interpretation. | Cognition upgraded. |
+| Experience | Let past experience limit the present. | Let experience serve the present. | Experience wisdom upgraded. |
+| Motivation | Prove the self through external results. | Return to what truly needs protection. | Inner drive awakened. |
+
+Chinese product shorthand:
+
+```text
+行动模式升级
+情绪觉察升级
+认知升级
+经验智慧升级
+内在驱动力觉醒
+```
+
+### 8. Crystal Imprint
 
 Answers:
 
@@ -422,6 +492,7 @@ In the template, it controls:
 - `Protection Meaning`;
 - `New Response`;
 - `Transformation Moment`;
+- `Growth Meaning`;
 - `Crystal Imprint`.
 
 Raw engine fields must not be shown directly.
@@ -447,6 +518,7 @@ In the template, it supports:
 - old response tightening;
 - new response beginning;
 - Transformation Moment;
+- Growth Meaning when the movement becomes recognizable as value;
 - trace deposition.
 
 The starbeast must remain:
@@ -542,7 +614,15 @@ The user can say:
 I moved a little.
 ```
 
-### 7. Crystal Imprint
+### 7. Growth Meaning
+
+The user can say:
+
+```text
+This movement has a growth value I can recognize.
+```
+
+### 8. Crystal Imprint
 
 The user can say:
 
@@ -551,6 +631,22 @@ This crystal is the shape left by my movement.
 ```
 
 ## 07. Boundary
+
+Growth Meaning does not change:
+
+- `PersonaTransmissionUnit`;
+- `PersonaMigrationImpact`;
+- `CrystalState`;
+- the Hexagram Engine;
+- 64 hexagram-code generation;
+- storage;
+- routes.
+
+It is only a user-value expression layer.
+
+It may guide future copy, fixture, and presentation work.
+
+It must not become a score, level, achievement, or reward system.
 
 This template does not require:
 
@@ -587,4 +683,3 @@ Reason:
 - it is close to bodily pressure;
 - it can validate whether the template works outside action space;
 - it can test whether "protection meaning" still holds without relying on action-language strength.
-
