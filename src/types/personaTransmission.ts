@@ -266,6 +266,46 @@ export type HexagramCrystalInput = Readonly<{
   guardrails: HexagramCrystalInputGuardrails;
 }>;
 
+export type CurrentCrystalEndStateLike = Readonly<{
+  source: "dynamics";
+  status: "CRYSTALLIZED";
+  hexagram: HexagramCrystalInputSourceHexagram;
+  crystal: Readonly<{
+    title: string;
+    copy: string;
+  }>;
+  transmission?: Readonly<{
+    completedNodeCount?: number;
+    primaryDimension?: string;
+  }>;
+}>;
+
+export type HexagramCrystalAdapterInput = Readonly<{
+  sourceCrystal?: CurrentCrystalEndStateLike | null;
+  source: CrystalMappingSource;
+}>;
+
+export type HexagramCrystalAdapterSuccess = Readonly<{
+  status: "READY";
+  input: HexagramCrystalInput;
+}>;
+
+export type HexagramCrystalAdapterNotReadyReason =
+  | "CURRENT_CRYSTAL_END_STATE_MISSING"
+  | "CURRENT_CRYSTAL_END_STATE_NOT_CRYSTALLIZED"
+  | "HEXAGRAM_STRUCTURE_MISSING"
+  | "MOVEMENT_TRACE_MISSING"
+  | "BOUNDARY_VIOLATION";
+
+export type HexagramCrystalAdapterNotReady = Readonly<{
+  status: "NOT_READY";
+  reason: HexagramCrystalAdapterNotReadyReason;
+}>;
+
+export type HexagramCrystalAdapterResult =
+  | HexagramCrystalAdapterSuccess
+  | HexagramCrystalAdapterNotReady;
+
 export type PersonaTransmissionPressureContext = Readonly<{
   pressureSeedId?: string;
   pressureSeed?: string;
