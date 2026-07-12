@@ -1,10 +1,37 @@
 import type {
   ChangeExperiencePresentation,
   ChangeExperiencePresentationInput,
+  ChangeExperiencePresentationVisual,
 } from "../types/changeExperience";
+
+const hasText = (value: string | undefined): value is string => typeof value === "string" && value.trim().length > 0;
+
+const resolveVisual = (
+  input: ChangeExperiencePresentationInput,
+  fallbackVisual?: ChangeExperiencePresentationVisual,
+): ChangeExperiencePresentationVisual => ({
+  starbeast: {
+    beforeState: hasText(input.personaExperience.starbeast.beforeLine)
+      ? input.personaExperience.starbeast.beforeLine
+      : fallbackVisual?.starbeast?.beforeState,
+    afterState: hasText(input.personaExperience.starbeast.afterLine)
+      ? input.personaExperience.starbeast.afterLine
+      : fallbackVisual?.starbeast?.afterState,
+    cueLine: hasText(input.personaExperience.starbeast.cueLine)
+      ? input.personaExperience.starbeast.cueLine
+      : fallbackVisual?.starbeast?.cueLine,
+  },
+  trace: {
+    traceLine: hasText(input.personaExperience.trace.crystalLine)
+      ? input.personaExperience.trace.crystalLine
+      : fallbackVisual?.trace?.traceLine,
+    crystalLine: input.changeExperience.meaning.crystalImprint,
+  },
+});
 
 export const adaptChangeExperiencePresentation = (
   input: ChangeExperiencePresentationInput,
+  fallbackVisual?: ChangeExperiencePresentationVisual,
 ): ChangeExperiencePresentation => ({
   context: {
     pressureContext: input.changeExperience.context.pressureContext,
@@ -22,17 +49,7 @@ export const adaptChangeExperiencePresentation = (
     growthMeaning: input.changeExperience.meaning.growthMeaning,
     crystalImprint: input.changeExperience.meaning.crystalImprint,
   },
-  visual: {
-    starbeast: {
-      beforeState: input.personaExperience.starbeast.beforeLine,
-      afterState: input.personaExperience.starbeast.afterLine,
-      cueLine: input.personaExperience.starbeast.cueLine,
-    },
-    trace: {
-      traceLine: input.personaExperience.trace.crystalLine,
-      crystalLine: input.changeExperience.meaning.crystalImprint,
-    },
-  },
+  visual: resolveVisual(input, fallbackVisual),
 });
 
 export const ChangeExperiencePresentationAdapter = {

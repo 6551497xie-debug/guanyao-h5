@@ -15,13 +15,20 @@ import {
   buildPressureField,
   formCurrentHexagramProfile,
 } from "../services/guanyaoCausalEngineService";
+import { adaptCrystalState } from "../services/crystalEndStateAdapterService";
+import { mapCrystalState } from "../services/crystalMappingService";
+import { formRuntimePersonaMigrationImpact } from "../services/personaMigrationImpactRuntimeService";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
 import {
   createPersonalityRingLiteEntryFromCrystal,
   readPersonalityRingLite,
   savePersonalityRingLiteEntry,
 } from "../services/personalityRingLiteService";
-import { actionFiveAwarenessChangeExperiencePresentation } from "../services/fixtures/changeExperiencePresentationFixtures";
+import {
+  actionFiveAwarenessChangeExperiencePresentation,
+  emotionChangeAwarenessChangeExperiencePresentation,
+  thoughtChangeCognitionChangeExperiencePresentation,
+} from "../services/fixtures/changeExperiencePresentationFixtures";
 import { actionFiveAwarenessRuntimeUnit } from "../services/fixtures/personaTransmissionFixtures";
 import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
 import type {
@@ -40,6 +47,7 @@ import {
   type SpatialIntent,
 } from "../runtime/guanyaoRuntimeEngine";
 import type { ChangeExperiencePresentation } from "../types/changeExperience";
+import type { CrystalState, PersonaDimension, PersonaMigrationImpact, PersonaYaoStage } from "../types/personaTransmission";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
 
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
@@ -87,6 +95,26 @@ const DEV_ACTION_FIVE_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
   semanticTags: ["action-five-awareness", "movement_under_uncertainty", "persona-transmission-smoke"],
 };
 
+const DEV_EMOTION_CHANGE_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
+  selectedPressureSeedId: "emotion-change-awareness",
+  surface: "关系结果还不确定，对方回应、距离、态度变化让情绪比事实更早抵达。",
+  pressureField: "EMOTION",
+  pressureNature: "RELATIONSHIP_UNCERTAINTY",
+  scenarioDomain: "PARTNER_ROMANTIC",
+  emotionalTone: "fear",
+  semanticTags: ["emotion-change-awareness", "relationship_uncertainty", "change-experience-smoke"],
+};
+
+const DEV_THOUGHT_CHANGE_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
+  selectedPressureSeedId: "thought-change-cognition",
+  surface: "现实结果没有按照预期发生，投入与反馈不一致，你开始寻找解释让局面重新确定。",
+  pressureField: "THOUGHT",
+  pressureNature: "UNCERTAINTY",
+  scenarioDomain: "SELF",
+  thoughtPattern: "快速下结论，用解释重新获得确定感。",
+  semanticTags: ["thought-change-cognition", "interpretation_under_uncertainty", "change-experience-smoke"],
+};
+
 const DEV_ACTION_FIVE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
   motherCodeId: "dev-action-five-mother-gen",
   motherCodeName: "艮",
@@ -104,6 +132,40 @@ const DEV_ACTION_FIVE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
   pressureSensitiveZones: ["推进压力", "结果不确定", "控制感"],
 };
 
+const DEV_EMOTION_CHANGE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
+  motherCodeId: "dev-emotion-change-mother-dui",
+  motherCodeName: "兑",
+  motherCodeTitle: "感应者",
+  trigram: "兑",
+  lowerTrigram: "兑",
+  trigramSymbol: "☱",
+  baseForce: "感受、回应、辨认关系信号。",
+  defaultReactionPattern: "关系不确定时，情绪会先替事实下结论。",
+  defaultReactionChain: "关系变化 → 情绪提前抵达 → 预判风险 → 急于确认",
+  pressureEntry: "压力会先进入情绪判断。",
+  behaviorBias: "通过提前揣测降低关系不确定。",
+  shadowInertia: "越不确定，越容易让情绪先替事实回答。",
+  defenseTendency: "用情绪预判保护自己不受伤。",
+  pressureSensitiveZones: ["关系压力", "态度变化", "避免受伤"],
+};
+
+const DEV_THOUGHT_CHANGE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
+  motherCodeId: "dev-thought-change-mother-kan",
+  motherCodeName: "坎",
+  motherCodeTitle: "辨认者",
+  trigram: "坎",
+  lowerTrigram: "坎",
+  trigramSymbol: "☵",
+  baseForce: "辨认、解释、在不确定中寻找确定。",
+  defaultReactionPattern: "现实不符合预期时，会用解释快速稳定局面。",
+  defaultReactionChain: "结果落差 → 快速解释 → 寻找证据 → 获得确定感",
+  pressureEntry: "压力会先进入思想解释。",
+  behaviorBias: "把解释当成现实。",
+  shadowInertia: "越不确定，越容易相信自己的解释就是事实。",
+  defenseTendency: "用解释维持确定感。",
+  pressureSensitiveZones: ["现实落差", "反馈不一致", "确定感"],
+};
+
 const DEV_ACTION_FIVE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
   motherCode: "艮",
   motherCodeName: "艮",
@@ -111,6 +173,24 @@ const DEV_ACTION_FIVE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
   trigramSymbol: "☶",
   fourBeast: "朱雀",
   direction: "朱雀",
+};
+
+const DEV_EMOTION_CHANGE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
+  motherCode: "兑",
+  motherCodeName: "兑",
+  trigram: "兑",
+  trigramSymbol: "☱",
+  fourBeast: "玄武",
+  direction: "玄武",
+};
+
+const DEV_THOUGHT_CHANGE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
+  motherCode: "坎",
+  motherCodeName: "坎",
+  trigram: "坎",
+  trigramSymbol: "☵",
+  fourBeast: "青龙",
+  direction: "青龙",
 };
 
 type PressureBeastSeed = {
@@ -220,10 +300,56 @@ function resolveChangeExperiencePresentationForAction(
   if (!action) return null;
 
   const isActionSpace = action.layerLabel === "行动" || action.layerLabel === "行为";
+  const isEmotionSpace = action.layerLabel === "情绪";
+  const isThoughtSpace = action.layerLabel === "思想" || action.layerLabel === "思维";
   const isAwarenessYao = action.yaoName.includes("五爻") || action.yaoName.includes("觉察");
   const isActionFiveSmoke = experienceSmokeFixture === "action-five";
+  const isEmotionChangeSmoke = experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion";
+  const isThoughtChangeSmoke = experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought";
 
-  return isActionSpace && (isAwarenessYao || isActionFiveSmoke) ? actionFiveAwarenessChangeExperiencePresentation : null;
+  if (isActionSpace && (isAwarenessYao || isActionFiveSmoke)) return actionFiveAwarenessChangeExperiencePresentation;
+  if (isEmotionSpace && (isAwarenessYao || isEmotionChangeSmoke)) return emotionChangeAwarenessChangeExperiencePresentation;
+  if (isThoughtSpace && (isAwarenessYao || isThoughtChangeSmoke)) return thoughtChangeCognitionChangeExperiencePresentation;
+
+  return null;
+}
+
+function resolveCrystalMigrationImpactForAction(
+  action: SingleModelRevisionAction | null,
+  presentation: ChangeExperiencePresentation | null,
+): PersonaMigrationImpact | null {
+  if (!action || !presentation) return null;
+
+  const dimension = resolvePersonaDimensionFromLayerLabel(action.layerLabel);
+  const yaoStage = resolvePersonaYaoStageFromYaoName(action.yaoName);
+  if (!dimension || !yaoStage) return null;
+
+  return formRuntimePersonaMigrationImpact({
+    sourceUnitId: `gravity-${dimension}-${yaoStage}`,
+    dimension,
+    yaoStage,
+    presentation,
+  });
+}
+
+function resolvePersonaDimensionFromLayerLabel(layerLabel: string): PersonaDimension | null {
+  if (layerLabel === "身体") return "body";
+  if (layerLabel === "情绪") return "emotion";
+  if (layerLabel === "思想" || layerLabel === "思维") return "thought";
+  if (layerLabel === "行动" || layerLabel === "行为") return "action";
+  if (layerLabel === "记忆") return "memory";
+  if (layerLabel === "动机" || layerLabel === "目标") return "motivation";
+  return null;
+}
+
+function resolvePersonaYaoStageFromYaoName(yaoName: string): PersonaYaoStage | null {
+  if (yaoName.includes("初爻") || yaoName.includes("触发")) return "trigger";
+  if (yaoName.includes("二爻") || yaoName.includes("接管")) return "takeover";
+  if (yaoName.includes("三爻") || yaoName.includes("解释")) return "explain";
+  if (yaoName.includes("四爻") || yaoName.includes("固化")) return "solidify";
+  if (yaoName.includes("五爻") || yaoName.includes("觉察")) return "awareness";
+  if (yaoName.includes("上爻") || yaoName.includes("修正")) return "revision";
+  return null;
 }
 
 function readJsonFromStorage<T>(key: string): T | null {
@@ -250,6 +376,12 @@ function readDevPrimaryPetalFixture(): SelectedPressureSeedContext | null {
   if (fixtureKey === "behavior" && experienceSmokeFixture === "action-five") {
     return DEV_ACTION_FIVE_PRESSURE_CONTEXT;
   }
+  if (fixtureKey === "emotion" && (experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion")) {
+    return DEV_EMOTION_CHANGE_PRESSURE_CONTEXT;
+  }
+  if (fixtureKey === "thought" && (experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought")) {
+    return DEV_THOUGHT_CHANGE_PRESSURE_CONTEXT;
+  }
 
   return DEV_PRIMARY_PETAL_FIXTURES[fixtureKey] ?? null;
 }
@@ -264,16 +396,22 @@ function readDevExperienceSmokeFixture(): string | null {
 function readDynamicsInputContext(): DynamicsInputContext {
   const experienceSmokeFixture = readDevExperienceSmokeFixture();
   const isActionFiveSmoke = experienceSmokeFixture === "action-five";
+  const isEmotionChangeSmoke = experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion";
+  const isThoughtChangeSmoke = experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought";
 
   return {
     selectedPressureSeedContext:
       readDevPrimaryPetalFixture() ?? readJsonFromStorage<SelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
     motherCodeProfile:
       (isActionFiveSmoke ? DEV_ACTION_FIVE_MOTHER_CODE_PROFILE : null) ??
+      (isEmotionChangeSmoke ? DEV_EMOTION_CHANGE_MOTHER_CODE_PROFILE : null) ??
+      (isThoughtChangeSmoke ? DEV_THOUGHT_CHANGE_MOTHER_CODE_PROFILE : null) ??
       readJsonFromStorage<StoredMotherCodeProfile>("guanyao:motherCodeProfile"),
     originMotherContext: readJsonFromStorage<StoredOriginMotherContext>("guanyao:originMotherContext"),
     personaOutputSnapshot:
       (isActionFiveSmoke ? DEV_ACTION_FIVE_PERSONA_OUTPUT : null) ??
+      (isEmotionChangeSmoke ? DEV_EMOTION_CHANGE_PERSONA_OUTPUT : null) ??
+      (isThoughtChangeSmoke ? DEV_THOUGHT_CHANGE_PERSONA_OUTPUT : null) ??
       readJsonFromStorage<StoredPersonaOutputSnapshot>("guanyao:personaOutputSnapshot"),
   };
 }
@@ -518,6 +656,7 @@ function resolveCurrentCrystalEndState({
   completedNodeCount,
   primaryDimension,
   readyToCrystallize,
+  migrationImpact,
 }: {
   currentHexagramProfile: CurrentHexagramProfile | null;
   motherCodeName: string;
@@ -525,8 +664,33 @@ function resolveCurrentCrystalEndState({
   completedNodeCount: number;
   primaryDimension?: string;
   readyToCrystallize: boolean;
+  migrationImpact?: PersonaMigrationImpact | null;
 }): CurrentCrystalEndState | null {
   if (!currentHexagramProfile || !readyToCrystallize || completedNodeCount < 6) return null;
+
+  let crystalState: CrystalState | null = null;
+
+  if (migrationImpact) {
+    const crystalMappingResult = mapCrystalState({
+      structureSource: {
+        source: "currentHexagramProfile",
+        currentHexagramProfile,
+      },
+      migrationImpacts: [migrationImpact],
+      source: "runtime",
+    });
+
+    if (crystalMappingResult.status !== "PASS") return null;
+
+    const endStateAdapterResult = adaptCrystalState({
+      crystalState: crystalMappingResult.crystalState,
+      source: "runtime",
+    });
+
+    if (endStateAdapterResult.status !== "READY") return null;
+
+    crystalState = endStateAdapterResult.crystalState;
+  }
 
   return {
     source: "dynamics",
@@ -550,11 +714,13 @@ function resolveCurrentCrystalEndState({
     },
     transmission: {
       completedNodeCount: 6,
-      primaryDimension,
+      primaryDimension: crystalState?.dominantImpact?.dimension ?? primaryDimension,
     },
     crystal: {
       title: "本局结晶",
-      copy: "这一局，你从旧反应中移动了一点。这次新的回应，留下了它的形状。",
+      copy:
+        crystalState?.crystalMeaning ??
+        "这一局，你从旧反应中移动了一点。这次新的回应，已经留下变化印记。",
     },
   };
 }
@@ -592,7 +758,31 @@ function resolveDevExperienceSmokeRevisionAction(
   experienceSmokeFixture: string | null,
 ): SingleModelRevisionAction | null {
   const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
-  if (!viteEnv?.DEV || experienceSmokeFixture !== "action-five") return null;
+  if (!viteEnv?.DEV) return null;
+
+  if (experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion") {
+    return {
+      layerLabel: "情绪",
+      yaoName: "五爻 · 觉察",
+      actionLine: emotionChangeAwarenessChangeExperiencePresentation.revision.newResponse,
+      sourceReason: emotionChangeAwarenessChangeExperiencePresentation.recognition.oldReaction,
+      interventionPotential: 0.78,
+      userAgency: 0.76,
+    };
+  }
+
+  if (experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought") {
+    return {
+      layerLabel: "思想",
+      yaoName: "五爻 · 觉察",
+      actionLine: thoughtChangeCognitionChangeExperiencePresentation.revision.newResponse,
+      sourceReason: thoughtChangeCognitionChangeExperiencePresentation.recognition.oldReaction,
+      interventionPotential: 0.8,
+      userAgency: 0.78,
+    };
+  }
+
+  if (experienceSmokeFixture !== "action-five") return null;
 
   return {
     layerLabel: "行动",
@@ -877,45 +1067,45 @@ type ProductRuntimeDefinition = Readonly<{
     "进入六维传导",
     "读取惯性反应",
     "完成六维显影",
-    "沉积为结晶",
+    "留下变化印记",
   ];
   onboardingFlow: readonly [
     "确认当前压力种子",
     "进入六维传导",
     "逐维读取惯性反应",
-    "完成后形成结晶",
+    "完成后留下变化印记",
   ];
   userPerception: readonly [
     "压力种子入口",
     "六维传导场",
     "惯性反应显影",
-    "结晶沉积过程",
+    "变化留痕过程",
   ];
   positioning: "压力种子六维传导系统";
 }>;
 
 const GUANYAO_PRODUCT_RUNTIME_DEFINITION = Object.freeze({
   officialDefinition:
-    "观爻将已锁定的压力种子送入六维传导，读取现实压力下的惯性反应，并在完成后沉积为结晶。",
+    "观爻将已锁定的压力种子送入六维传导，读取现实压力下的惯性反应，并在新的回应确认后留下变化印记。",
   threeSecondModel: "压力种子已锁定 → 六维传导 → 惯性反应显影",
   experienceLoop: Object.freeze([
     "压力种子已锁定",
     "进入六维传导",
     "读取惯性反应",
     "完成六维显影",
-    "沉积为结晶",
+    "留下变化印记",
   ]),
   onboardingFlow: Object.freeze([
     "确认当前压力种子",
     "进入六维传导",
     "逐维读取惯性反应",
-    "完成后形成结晶",
+    "完成后留下变化印记",
   ]),
   userPerception: Object.freeze([
     "压力种子入口",
     "六维传导场",
     "惯性反应显影",
-    "结晶沉积过程",
+    "变化留痕过程",
   ]),
   positioning: "压力种子六维传导系统",
 } satisfies ProductRuntimeDefinition);
@@ -1163,15 +1353,15 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       primaryFocus,
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
       headline: "六维传导已完成。",
-      supportingCopy: "本局上下文完整后，结晶会成形。",
+      supportingCopy: "确认新的回应后，这一局才会留下变化印记。",
       pressureCopy: "这一颗压力已经穿过六维。",
       beastCopy: "反应已进入结晶候选态。",
       nodeCopy: {
         title: "六维传导已完成",
         text: "你走完了六层。",
-        actionText: "本局正在等待结晶成形。",
+        actionText: "本局正在等待新的回应被确认。",
       },
-      crystalCopy: "你走完了六层，本局正在等待结晶成形。",
+      crystalCopy: "你走完了六层，本局正在等待新的回应留下印记。",
     });
   }
 
@@ -1181,11 +1371,11 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       primaryFocus,
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
       headline: "六维传导正在收束。",
-      supportingCopy: "反应即将完成显影，正在沉积成可保存的形状。",
+      supportingCopy: "反应即将完成显影，正在等待一次新的回应。",
       pressureCopy: "压力种子正在进入传导末段。",
       beastCopy: "惯性反应正在趋稳。",
       nodeCopy,
-      crystalCopy: "尚未形成结晶。",
+      crystalCopy: "尚未留下变化印记。",
     });
   }
 
@@ -1199,7 +1389,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       pressureCopy: "压力种子正在穿过当前维度。",
       beastCopy: "惯性反应正在随触点显影。",
       nodeCopy,
-      crystalCopy: "完成六维后，反应会沉积成一枚结晶。",
+      crystalCopy: "完成六维后，本局会等待一次新的回应。",
     });
   }
 
@@ -1213,7 +1403,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       pressureCopy: "这一颗压力，被看见了。",
       beastCopy: "六维传导即将展开。",
       nodeCopy,
-      crystalCopy: "完成六维后，反应会沉积成一枚结晶。",
+      crystalCopy: "完成六维后，本局会等待一次新的回应。",
     });
   }
 
@@ -1226,7 +1416,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
     pressureCopy: "压力种子正在进入。",
     beastCopy: "惯性反应即将显影。",
     nodeCopy,
-    crystalCopy: "尚未形成结晶。",
+    crystalCopy: "尚未留下变化印记。",
   });
 }
 
@@ -2261,7 +2451,7 @@ function SingleModelRevisionActionFocus({
       data-model-revision-yao={action.yaoName}
       data-model-revision-intervention={action.interventionPotential}
       data-model-revision-agency={action.userAgency}
-      data-change-experience-presentation={hasPresentation ? "action-five-awareness" : "fallback"}
+      data-change-experience-presentation={hasPresentation ? "active" : "fallback"}
       style={{
         minHeight: 430,
         position: "relative",
@@ -2521,7 +2711,7 @@ function crystalDimensionLabel(value: string | undefined) {
 
 function buildCrystalBehaviorReading(state: CurrentCrystalEndState) {
   const motherName = state.mother.motherCodeName || state.mother.lowerTrigram;
-  const hexagramTitle = state.hexagram.hexagramName ?? state.hexagram.hexagramTitle ?? state.hexagram.hexagramCode ?? "本局卦码";
+  const hexagramTitle = state.hexagram.hexagramName ?? state.hexagram.hexagramTitle ?? state.hexagram.hexagramCode ?? "本局定位";
   const pressureField = `这一次压力来自${pressureFieldLabel(state.pressure.pressureField)}。`;
   const dimensionLine = state.transmission.primaryDimension
     ? `它优先沉积在${crystalDimensionLabel(state.transmission.primaryDimension)}上。`
@@ -2529,14 +2719,14 @@ function buildCrystalBehaviorReading(state: CurrentCrystalEndState) {
 
   return [
     "这枚结晶不记录你的压力原句。",
-    `它留下的是压力穿过你的${motherName}母码底盘后，在${hexagramTitle}中沉积出的行为结构。`,
+    `它留下的是压力穿过你的${motherName}母码底盘后，在「${hexagramTitle}」这一局里发生过的变化。`,
     `${pressureField}${dimensionLine}`,
     "当外部压力升高时，你的力量会先收束，重新确认边界，再在更精准的坐标上保留下一次行动的可能。",
   ];
 }
 
 function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState }) {
-  const hexagramTitle = state.hexagram.hexagramName ?? state.hexagram.hexagramTitle ?? state.hexagram.hexagramCode ?? "本局卦码";
+  const hexagramTitle = state.hexagram.hexagramName ?? state.hexagram.hexagramTitle ?? state.hexagram.hexagramCode ?? "本局定位";
   const [crystalView, setCrystalView] = useState<CrystalView>("MOLD");
   const [ringLiteState, setRingLiteState] = useState(() => readPersonalityRingLite());
   const savedEntry = ringLiteState.entries.find((entry) => entry.createdAt === state.createdAt);
@@ -2552,7 +2742,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
 
   return (
     <section
-      aria-label={isCardView ? "本局卦码卡" : "本局结晶承接态"}
+      aria-label={isCardView ? "本局变化印记" : "本局结晶承接态"}
       data-crystal-view={crystalView}
       style={{
         minHeight: isCardView ? 548 : 424,
@@ -2609,12 +2799,12 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
         }}
       >
         <GuanyaoText size="eyebrow" tone="gold">
-          {isCardView ? "64 卦码资产" : "变化已经留痕"}
+          {isCardView ? "本局变化印记" : "变化已经留痕"}
         </GuanyaoText>
 
         {isCardView ? (
           <article
-            aria-label="本局卦码卡内容"
+            aria-label="本局变化印记内容"
             style={{
               width: "100%",
               display: "grid",
@@ -2650,7 +2840,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 fontWeight: 650,
               }}
             >
-              本局卦码卡
+              本局定位承载的变化
             </strong>
 
             <span
@@ -2664,11 +2854,11 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 fontWeight: 650,
               }}
             >
-              64 卦码 · 本局资产
+              本局定位 · 变化印记
             </span>
 
             <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 13, lineHeight: 1.55 }}>
-              从【{state.mother.motherCodeName || state.mother.lowerTrigram}】进入【{hexagramTitle}】，这一局的变化沉积为 64 卦码。
+              这一局从【{state.mother.motherCodeName || state.mother.lowerTrigram}】进入【{hexagramTitle}】。经过你的回应和变化，它留下了自己的结晶。
             </p>
           </article>
         ) : (
@@ -2684,7 +2874,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 textShadow: "0 0 24px rgba(199,169,107,0.18)",
               }}
             >
-              这一局留下了形状
+              这一局留下了变化印记
             </h1>
 
             <strong
@@ -2696,7 +2886,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 letterSpacing: 0,
               }}
             >
-              本局：{hexagramTitle}
+              本局定位：{hexagramTitle}
             </strong>
           </>
         )}
@@ -2740,7 +2930,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
             lineHeight: 1.62,
           }}
         >
-          {isCardView ? "认领这一局留下的卦码。它只保留人格动态，不暴露具体压力原句。" : state.crystal.copy}
+          {isCardView ? "认领这一局留下的变化印记。它只保留人格动态，不暴露具体压力原句。" : state.crystal.copy}
         </p>
 
         {isCardView ? (
@@ -2818,7 +3008,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 boxShadow: "0 0 24px rgba(199,169,107,0.14)",
               }}
             >
-              提取这一局留下的形状
+              提取这次改变的印记
             </button>
           )}
 
@@ -2942,13 +3132,17 @@ function HexagramCodeDeliveryShell() {
   const experienceSmokeFixture = readDevExperienceSmokeFixture();
   const singleModelRevisionAction = useMemo(
     () =>
-      resolveSingleModelRevisionAction(dynamicsInputContext, currentHexagramProfile) ??
-      resolveDevExperienceSmokeRevisionAction(experienceSmokeFixture),
+      resolveDevExperienceSmokeRevisionAction(experienceSmokeFixture) ??
+      resolveSingleModelRevisionAction(dynamicsInputContext, currentHexagramProfile),
     [dynamicsInputContext, currentHexagramProfile, experienceSmokeFixture],
   );
   const changeExperiencePresentation = useMemo(
     () => resolveChangeExperiencePresentationForAction(singleModelRevisionAction, experienceSmokeFixture),
     [singleModelRevisionAction, experienceSmokeFixture],
+  );
+  const crystalMigrationImpact = useMemo(
+    () => resolveCrystalMigrationImpactForAction(singleModelRevisionAction, changeExperiencePresentation),
+    [singleModelRevisionAction, changeExperiencePresentation],
   );
   const isRevisionActionPending =
     hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE" &&
@@ -2965,6 +3159,7 @@ function HexagramCodeDeliveryShell() {
       readyToCrystallize:
         hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE" &&
         (!singleModelRevisionAction || revisionActionConfirmed),
+      migrationImpact: crystalMigrationImpact,
     }), [
       currentHexagramProfile,
       motherCodeName,
@@ -2974,6 +3169,7 @@ function HexagramCodeDeliveryShell() {
       hexagramAssetCandidate.completionState,
       singleModelRevisionAction,
       revisionActionConfirmed,
+      crystalMigrationImpact,
     ]);
 
   useEffect(() => {
