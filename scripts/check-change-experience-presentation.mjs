@@ -12,6 +12,7 @@ const sourceFiles = [
   "src/services/fixtures/personaTransmissionFixtures.ts",
   "src/services/fixtures/personaTransmissionExperienceFixtures.ts",
   "src/services/fixtures/changeExperienceFixtures.ts",
+  "src/services/changeExperiencePresentationAdapter.ts",
   "src/services/fixtures/changeExperiencePresentationFixtures.ts",
   "src/services/validators/changeExperiencePresentationValidator.ts",
 ];
