@@ -42,20 +42,49 @@ try {
   const requireFromTemp = createRequire(path.join(tempRoot, "check.cjs"));
   const {
     actionFiveAwarenessChangeExperienceUnit,
+    emotionChangeAwarenessChangeExperienceUnit,
+    thoughtChangeCognitionChangeExperienceUnit,
   } = requireFromTemp("./src/services/fixtures/changeExperienceFixtures.js");
   const {
     validateChangeExperienceUnit,
   } = requireFromTemp("./src/services/validators/changeExperienceUnitValidator.js");
 
-  const validResult = validateChangeExperienceUnit(actionFiveAwarenessChangeExperienceUnit);
-  assertEqual("action-five change experience fixture", validResult.status, "VALID_CHANGE_EXPERIENCE_UNIT");
+  const fixtureCases = [
+    {
+      name: "action-five change experience fixture",
+      unit: actionFiveAwarenessChangeExperienceUnit,
+      expectedDimension: "action",
+      expectedChangeType: "behavior_shift",
+    },
+    {
+      name: "emotion-change change experience fixture",
+      unit: emotionChangeAwarenessChangeExperienceUnit,
+      expectedDimension: "emotion",
+      expectedChangeType: "emotion_shift",
+    },
+    {
+      name: "thought-change change experience fixture",
+      unit: thoughtChangeCognitionChangeExperienceUnit,
+      expectedDimension: "thought",
+      expectedChangeType: "cognition_shift",
+    },
+  ];
 
-  const invalidBoundaryResult = validateChangeExperienceUnit({
-    ...actionFiveAwarenessChangeExperienceUnit,
-    readiness: "READY_TO_CRYSTALLIZE",
+  fixtureCases.forEach(({ name, unit, expectedDimension, expectedChangeType }) => {
+    const validResult = validateChangeExperienceUnit(unit);
+    assertEqual(name, validResult.status, "VALID_CHANGE_EXPERIENCE_UNIT");
+    assertEqual(`${name} dimension`, unit.dimension, expectedDimension);
+    assertEqual(`${name} change type`, unit.revision.changeType, expectedChangeType);
   });
-  assertEqual("boundary field guard", invalidBoundaryResult.status, "CHANGE_EXPERIENCE_UNIT_INVALID");
-  assertEqual("boundary field reason", invalidBoundaryResult.reasons.includes("INVALID_BOUNDARY"), true);
+
+  fixtureCases.forEach(({ name, unit }) => {
+    const invalidBoundaryResult = validateChangeExperienceUnit({
+      ...unit,
+      readiness: "READY_TO_CRYSTALLIZE",
+    });
+    assertEqual(`${name} boundary field guard`, invalidBoundaryResult.status, "CHANGE_EXPERIENCE_UNIT_INVALID");
+    assertEqual(`${name} boundary field reason`, invalidBoundaryResult.reasons.includes("INVALID_BOUNDARY"), true);
+  });
 
   console.log("[CHANGE EXPERIENCE UNIT] PASS");
 } finally {
