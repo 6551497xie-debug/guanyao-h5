@@ -1,6 +1,6 @@
 import type {
   HexagramCrystalEngineInput,
-  HexagramCrystalResult,
+  HexagramCrystalEngineSuccess,
 } from "../../types/personaTransmission";
 import { actionFiveAwarenessHexagramCrystalInput } from "./hexagramCrystalInputFixtures";
 
@@ -18,7 +18,7 @@ export const actionFiveAwarenessHexagramCrystalEngineInput: HexagramCrystalEngin
   source: "fixture",
 };
 
-export const actionFiveAwarenessHexagramCrystalResult: HexagramCrystalResult = {
+export const actionFiveAwarenessHexagramCrystalResult: HexagramCrystalEngineSuccess = {
   status: "READY",
   readiness: "READY_FOR_HEXAGRAM_CRYSTAL_EXPRESSION",
   expression: {

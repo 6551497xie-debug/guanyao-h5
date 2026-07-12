@@ -32,6 +32,7 @@
     "check:crystal-end-state-adapter": "node scripts/check-crystal-end-state-adapter-pipeline.mjs",
     "check:hexagram-crystal-adapter": "node scripts/check-hexagram-crystal-adapter-pipeline.mjs",
     "check:hexagram-crystal-engine": "node scripts/check-hexagram-crystal-engine-pipeline.mjs",
+    "check:hexagram-crystal-result-consumption": "node scripts/check-hexagram-crystal-result-consumption.mjs",
     "check:release-freeze": "node scripts/check-release-freeze.mjs",
     "check:launch-preview-gate": "node scripts/check-launch-preview-gate.mjs",
     "check:release": "npm run check:layers && npm run check:expression && npm run check:mother-card-determinism && npm run check:primary-petal && npm run check:hexagram-candidate && npm run check:hexagram-draft-candidate && npm run check:hexagram-mapping-candidate && npm run check:force-translation && npm run check:asset-shell && npm run check:card-blueprint && npm run check:asset-render && npm run check:final-asset-candidate && npm run check:official-asset-generation && npm run check:official-asset-object && npm run check:asset-card-render && npm run check:asset-card-ui && npm run check:ui-component && npm run check:component-implementation && npm run check:safe-component-stub && npm run check:asset-chain-e2e && npm run check:persona-transmission && npm run check:release-freeze",

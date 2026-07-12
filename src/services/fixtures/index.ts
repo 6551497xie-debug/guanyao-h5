@@ -5,6 +5,7 @@ export * from "./crystalMappingFixtures";
 export * from "./hexagramCrystalAdapterFixtures";
 export * from "./hexagramCrystalEngineFixtures";
 export * from "./hexagramCrystalInputFixtures";
+export * from "./hexagramCrystalResultConsumptionFixtures";
 export * from "./personaTransmissionExperienceFixtures";
 export * from "./personaTransmissionExperiencePresentationFixtures";
 export * from "./personaTransmissionFixtures";
