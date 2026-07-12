@@ -21,10 +21,7 @@ import {
   readPersonalityRingLite,
   savePersonalityRingLiteEntry,
 } from "../services/personalityRingLiteService";
-import {
-  actionFiveAwarenessExperiencePresentation,
-  type PersonaTransmissionExperiencePresentation,
-} from "../services/fixtures/personaTransmissionExperiencePresentationFixtures";
+import { actionFiveAwarenessChangeExperiencePresentation } from "../services/fixtures/changeExperiencePresentationFixtures";
 import { actionFiveAwarenessRuntimeUnit } from "../services/fixtures/personaTransmissionFixtures";
 import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
 import type {
@@ -42,6 +39,7 @@ import {
   type SixSpaceId,
   type SpatialIntent,
 } from "../runtime/guanyaoRuntimeEngine";
+import type { ChangeExperiencePresentation } from "../types/changeExperience";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
 
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
@@ -215,17 +213,17 @@ type SingleModelRevisionAction = {
   userAgency: number;
 };
 
-function resolvePersonaTransmissionPresentationForAction(
+function resolveChangeExperiencePresentationForAction(
   action: SingleModelRevisionAction | null,
   experienceSmokeFixture: string | null,
-): PersonaTransmissionExperiencePresentation | null {
+): ChangeExperiencePresentation | null {
   if (!action) return null;
 
   const isActionSpace = action.layerLabel === "行动" || action.layerLabel === "行为";
   const isAwarenessYao = action.yaoName.includes("五爻") || action.yaoName.includes("觉察");
   const isActionFiveSmoke = experienceSmokeFixture === "action-five";
 
-  return isActionSpace && (isAwarenessYao || isActionFiveSmoke) ? actionFiveAwarenessExperiencePresentation : null;
+  return isActionSpace && (isAwarenessYao || isActionFiveSmoke) ? actionFiveAwarenessChangeExperiencePresentation : null;
 }
 
 function readJsonFromStorage<T>(key: string): T | null {
@@ -599,7 +597,7 @@ function resolveDevExperienceSmokeRevisionAction(
   return {
     layerLabel: "行动",
     yaoName: "五爻 · 觉察",
-    actionLine: actionFiveAwarenessExperiencePresentation.revision.microActionLine,
+    actionLine: actionFiveAwarenessChangeExperiencePresentation.revision.newResponse,
     sourceReason: actionFiveAwarenessRuntimeUnit.inertiaPattern,
     interventionPotential: 0.82,
     userAgency: 0.8,
@@ -2245,15 +2243,15 @@ function SingleModelRevisionActionFocus({
   onConfirm,
 }: {
   action: SingleModelRevisionAction;
-  presentation?: PersonaTransmissionExperiencePresentation | null;
+  presentation?: ChangeExperiencePresentation | null;
   onConfirm: () => void;
 }) {
   const hasPresentation = Boolean(presentation);
-  const supportingLine = presentation?.orientation.supportingLine ?? `${action.yaoName} · ${action.layerLabel}层出现了旧惯性`;
-  const recognitionLine = presentation?.recognition.insightLine ?? `旧反应：${action.sourceReason}`;
-  const microActionLine = presentation?.revision.microActionLine ?? action.actionLine;
-  const beastCueLine = presentation?.starbeast.cueLine;
-  const traceLine = presentation?.trace.crystalLine ?? "不用解决全局。只是这一局，你先留下一个新的回应方式。";
+  const supportingLine = presentation?.recognition.protectionMeaning ?? `${action.yaoName} · ${action.layerLabel}层出现了旧惯性`;
+  const recognitionLine = presentation ? `旧反应：${presentation.recognition.oldReaction}` : `旧反应：${action.sourceReason}`;
+  const microActionLine = presentation?.revision.newResponse ?? action.actionLine;
+  const beastCueLine = presentation?.visual.starbeast?.cueLine;
+  const traceLine = presentation?.meaning.crystalImprint ?? "不用解决全局。只是这一局，你先留下一个新的回应方式。";
 
   return (
     <section
@@ -2263,7 +2261,7 @@ function SingleModelRevisionActionFocus({
       data-model-revision-yao={action.yaoName}
       data-model-revision-intervention={action.interventionPotential}
       data-model-revision-agency={action.userAgency}
-      data-persona-transmission-presentation={hasPresentation ? presentation?.identity.unitId : "fallback"}
+      data-change-experience-presentation={hasPresentation ? "action-five-awareness" : "fallback"}
       style={{
         minHeight: 430,
         position: "relative",
@@ -2386,12 +2384,12 @@ function TransformationMomentFocus({
   presentation,
 }: {
   action: SingleModelRevisionAction;
-  presentation?: PersonaTransmissionExperiencePresentation | null;
+  presentation?: ChangeExperiencePresentation | null;
 }) {
-  const oldReactionLine = presentation?.recognition.insightLine ?? `旧反应：${action.sourceReason}`;
-  const newResponseLine = presentation?.revision.microActionLine ?? action.actionLine;
-  const beastCueLine = presentation?.starbeast.cueLine ?? "星兽正在把这次移动收进光里。";
-  const traceLine = presentation?.trace.crystalLine ?? "这一局，你留下了一种新的回应方式。";
+  const oldReactionLine = presentation?.revision.transformationMoment ?? `旧反应：${action.sourceReason}`;
+  const newResponseLine = presentation?.meaning.growthMeaning ?? action.actionLine;
+  const beastCueLine = presentation?.visual.starbeast?.cueLine ?? "星兽正在把这次移动收进光里。";
+  const traceLine = presentation?.meaning.crystalImprint ?? "这一局，你留下了一种新的回应方式。";
 
   return (
     <section
@@ -2473,7 +2471,7 @@ function TransformationMomentFocus({
               background: "rgba(255,255,255,0.03)",
             }}
           >
-            <span style={{ color: "rgba(245,245,245,0.42)", fontSize: 11 }}>旧反应</span>
+            <span style={{ color: "rgba(245,245,245,0.42)", fontSize: 11 }}>这次移动</span>
             <span style={{ color: "rgba(245,245,245,0.66)", fontSize: 13, lineHeight: 1.55 }}>
               {oldReactionLine}
             </span>
@@ -2489,7 +2487,7 @@ function TransformationMomentFocus({
               background: "rgba(255,226,158,0.055)",
             }}
           >
-            <span style={{ color: "rgba(199,169,107,0.72)", fontSize: 11 }}>新回应</span>
+            <span style={{ color: "rgba(199,169,107,0.72)", fontSize: 11 }}>成长回应</span>
             <span style={{ color: "rgba(255,226,158,0.9)", fontSize: 15, lineHeight: 1.55, fontWeight: 650 }}>
               {newResponseLine}
             </span>
@@ -2948,8 +2946,8 @@ function HexagramCodeDeliveryShell() {
       resolveDevExperienceSmokeRevisionAction(experienceSmokeFixture),
     [dynamicsInputContext, currentHexagramProfile, experienceSmokeFixture],
   );
-  const personaTransmissionPresentation = useMemo(
-    () => resolvePersonaTransmissionPresentationForAction(singleModelRevisionAction, experienceSmokeFixture),
+  const changeExperiencePresentation = useMemo(
+    () => resolveChangeExperiencePresentationForAction(singleModelRevisionAction, experienceSmokeFixture),
     [singleModelRevisionAction, experienceSmokeFixture],
   );
   const isRevisionActionPending =
@@ -3200,12 +3198,12 @@ function HexagramCodeDeliveryShell() {
           ) : transformationMomentActive && singleModelRevisionAction ? (
             <TransformationMomentFocus
               action={singleModelRevisionAction}
-              presentation={personaTransmissionPresentation}
+              presentation={changeExperiencePresentation}
             />
           ) : isRevisionActionPending && singleModelRevisionAction ? (
             <SingleModelRevisionActionFocus
               action={singleModelRevisionAction}
-              presentation={personaTransmissionPresentation}
+              presentation={changeExperiencePresentation}
               onConfirm={handleRevisionActionConfirm}
             />
           ) : (
@@ -3236,9 +3234,7 @@ function HexagramCodeDeliveryShell() {
           data-model-revision-action={
             isRevisionActionPending ? "pending" : transformationMomentActive ? "transforming" : revisionActionConfirmed ? "confirmed" : "inactive"
           }
-          data-persona-transmission-presentation={
-            personaTransmissionPresentation ? personaTransmissionPresentation.identity.unitId : "inactive"
-          }
+          data-change-experience-presentation={changeExperiencePresentation ? "action-five-awareness" : "inactive"}
           data-value-flow-behavior={valueFlow.behaviorSignals.join("|") || "NONE"}
           data-value-flow-pressure={valueFlow.pressureState}
           data-value-flow-emotion={valueFlow.emotionalState}
