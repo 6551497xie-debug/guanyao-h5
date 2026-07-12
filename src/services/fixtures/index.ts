@@ -3,6 +3,7 @@ export * from "./changeExperiencePresentationFixtures";
 export * from "./crystalEndStateAdapterFixtures";
 export * from "./crystalMappingFixtures";
 export * from "./hexagramCrystalAdapterFixtures";
+export * from "./hexagramCrystalEngineFixtures";
 export * from "./hexagramCrystalInputFixtures";
 export * from "./personaTransmissionExperienceFixtures";
 export * from "./personaTransmissionExperiencePresentationFixtures";
