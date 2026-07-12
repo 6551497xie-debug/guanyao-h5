@@ -18,6 +18,8 @@ export type {
   ChangeExperiencePresentationMeaning,
   ChangeExperiencePresentationRecognition,
   ChangeExperiencePresentationRevision,
+  ChangeExperiencePresentationStarbeastVisual,
+  ChangeExperiencePresentationTraceVisual,
   ChangeExperiencePresentationVisual,
   ChangeExperienceRecognition,
   ChangeExperienceRevision,

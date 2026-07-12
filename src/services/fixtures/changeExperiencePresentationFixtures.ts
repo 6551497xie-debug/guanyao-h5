@@ -25,8 +25,15 @@ export const createChangeExperiencePresentation = (
     crystalImprint: input.changeExperience.meaning.crystalImprint,
   },
   visual: {
-    starbeast: input.personaExperience.starbeast,
-    trace: input.personaExperience.trace,
+    starbeast: {
+      beforeState: input.personaExperience.starbeast.beforeLine,
+      afterState: input.personaExperience.starbeast.afterLine,
+      cueLine: input.personaExperience.starbeast.cueLine,
+    },
+    trace: {
+      traceLine: input.personaExperience.trace.crystalLine,
+      crystalLine: input.changeExperience.meaning.crystalImprint,
+    },
   },
 });
 

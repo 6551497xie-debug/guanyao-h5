@@ -96,6 +96,24 @@ export const validateChangeExperiencePresentation = (
   const visual = presentation.visual;
   if (!isRecord(visual)) {
     reasons.push("VISUAL_INVALID");
+  } else {
+    const starbeast = visual.starbeast;
+    const trace = visual.trace;
+    const hasValidStarbeast =
+      starbeast === undefined ||
+      (isRecord(starbeast) &&
+        (starbeast.beforeState === undefined || hasText(starbeast.beforeState)) &&
+        (starbeast.afterState === undefined || hasText(starbeast.afterState)) &&
+        (starbeast.cueLine === undefined || hasText(starbeast.cueLine)));
+    const hasValidTrace =
+      trace === undefined ||
+      (isRecord(trace) &&
+        (trace.traceLine === undefined || hasText(trace.traceLine)) &&
+        (trace.crystalLine === undefined || hasText(trace.crystalLine)));
+
+    if (!hasValidStarbeast || !hasValidTrace) {
+      reasons.push("VISUAL_INVALID");
+    }
   }
 
   return {

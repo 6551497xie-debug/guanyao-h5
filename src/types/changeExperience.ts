@@ -66,9 +66,20 @@ export type ChangeExperiencePresentationMeaning = Readonly<{
   crystalImprint: string;
 }>;
 
+export type ChangeExperiencePresentationStarbeastVisual = Readonly<{
+  beforeState?: string;
+  afterState?: string;
+  cueLine?: string;
+}>;
+
+export type ChangeExperiencePresentationTraceVisual = Readonly<{
+  traceLine?: string;
+  crystalLine?: string;
+}>;
+
 export type ChangeExperiencePresentationVisual = Readonly<{
-  starbeast?: unknown;
-  trace?: unknown;
+  starbeast?: ChangeExperiencePresentationStarbeastVisual;
+  trace?: ChangeExperiencePresentationTraceVisual;
 }>;
 
 export type ChangeExperiencePresentation = Readonly<{
