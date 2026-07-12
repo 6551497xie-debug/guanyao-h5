@@ -243,21 +243,57 @@ It is:
 Examples:
 
 ```text
+Body sensing upgraded.
 Action pattern upgraded.
-Emotional awareness upgraded.
+Emotional response upgraded.
 Cognition upgraded.
 Memory wisdom upgraded.
-Inner drive awakened.
+I begin to see the force that drives me.
 ```
 
 Chinese product shorthand:
 
 ```text
+身体感知升级
 行动模式升级
-情绪觉察升级
+情绪反应升级
 认知升级
 经验智慧升级
-内在驱动力觉醒
+我开始看见驱动自己的力量
+```
+
+Six-space definitions:
+
+```text
+身体感知升级：
+从忽略身体信号，到能够感受到压力如何进入自身。
+
+情绪反应升级：
+从被情绪自动推动，到能够看见情绪信号并选择新的回应。
+不是情绪控制，也不是压制情绪。
+
+认知升级：
+从相信自己的解释，到观察并重新理解现实。
+
+行动模式升级：
+从自动推进，到有意识选择行动方式。
+
+经验智慧升级：
+从过去经验控制现在，到让经验服务当前选择。
+
+我开始看见驱动自己的力量：
+从被外部结果牵引，到理解推动自己的内在力量。
+```
+
+Unified six-space formula:
+
+```text
+身体：我开始感知身体。
+情绪：我开始改变情绪反应。
+思想：我开始重新理解现实。
+行动：我开始选择行动方式。
+经验：我开始使用经验。
+动机：我开始看见驱动自己的力量。
 ```
 
 ### 9. `crystalImprint`
@@ -428,7 +464,7 @@ transformationMoment:
 The user does not suppress emotion; the user begins to see what it is signaling.
 
 growthMeaning:
-Emotional awareness upgraded.
+Emotional response upgraded.
 
 crystalImprint:
 This round leaves a new way of relating to emotion.
@@ -448,7 +484,7 @@ Chinese shorthand:
 ```text
 从：情绪替事实下结论
 到：先看见情绪，再确认事实
-成长价值：情绪觉察升级
+成长价值：情绪反应升级
 ```
 
 ### C. Thought Sample

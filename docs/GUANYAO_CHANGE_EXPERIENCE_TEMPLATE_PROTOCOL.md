@@ -337,7 +337,7 @@ Three language layers must remain separated:
 
 3. Growth-value language
    User receives:
-   "Emotional awareness upgraded."
+   "Emotional response upgraded."
 ```
 
 Growth Meaning is the third layer.
@@ -350,20 +350,56 @@ It should sound like a concise value the user can carry away.
 
 | Space | Old Reaction | New Response | Growth Meaning |
 | --- | --- | --- | --- |
+| Body | Ignore body signals until pressure takes over. | Feel how pressure enters the body before reacting. | Body sensing upgraded. |
 | Action | Restore control through action. | Judge first, then act. | Action pattern upgraded. |
-| Emotion | Let emotion make the factual conclusion. | See the emotion, then confirm the fact. | Emotional awareness upgraded. |
+| Emotion | Let emotion make the factual conclusion. | See the emotion signal, then choose a new response. | Emotional response upgraded. |
 | Thought | Treat interpretation as reality. | See the fact first, then see the interpretation. | Cognition upgraded. |
 | Memory | Let past experience limit the present. | Let memory serve the present. | Memory wisdom upgraded. |
-| Motivation | Prove the self through external results. | Return to what truly needs protection. | Inner drive awakened. |
+| Motivation | Be pulled by external results. | Understand the inner force that is moving the self. | I begin to see the force that drives me. |
 
 Chinese product shorthand:
 
 ```text
+身体感知升级
 行动模式升级
-情绪觉察升级
+情绪反应升级
 认知升级
 经验智慧升级
-内在驱动力觉醒
+我开始看见驱动自己的力量
+```
+
+Definitions:
+
+```text
+Body:
+From ignoring body signals to sensing how pressure enters the self.
+
+Emotion:
+From being automatically pushed by emotion to seeing the emotional signal and choosing a new response.
+It is not emotional control or emotional suppression.
+
+Thought:
+From believing one's own interpretation to observing and re-understanding reality.
+
+Action:
+From automatic pushing to consciously choosing an action mode.
+
+Memory:
+From past experience controlling the present to letting experience serve the current choice.
+
+Motivation:
+From being pulled by external results to understanding the inner force that moves the self.
+```
+
+Unified six-space formula:
+
+```text
+身体：我开始感知身体。
+情绪：我开始改变情绪反应。
+思想：我开始重新理解现实。
+行动：我开始选择行动方式。
+经验：我开始使用经验。
+动机：我开始看见驱动自己的力量。
 ```
 
 ### 8. Crystal Imprint

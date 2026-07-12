@@ -42,7 +42,10 @@ try {
   const requireFromTemp = createRequire(path.join(tempRoot, "check.cjs"));
   const {
     actionFiveAwarenessChangeExperienceUnit,
+    bodyAwarenessChangeExperienceUnit,
     emotionChangeAwarenessChangeExperienceUnit,
+    memoryWisdomChangeExperienceUnit,
+    motivationDriveChangeExperienceUnit,
     thoughtChangeCognitionChangeExperienceUnit,
   } = requireFromTemp("./src/services/fixtures/changeExperienceFixtures.js");
   const {
@@ -50,6 +53,12 @@ try {
   } = requireFromTemp("./src/services/validators/changeExperienceUnitValidator.js");
 
   const fixtureCases = [
+    {
+      name: "body-awareness change experience fixture",
+      unit: bodyAwarenessChangeExperienceUnit,
+      expectedDimension: "body",
+      expectedChangeType: "body_shift",
+    },
     {
       name: "action-five change experience fixture",
       unit: actionFiveAwarenessChangeExperienceUnit,
@@ -67,6 +76,18 @@ try {
       unit: thoughtChangeCognitionChangeExperienceUnit,
       expectedDimension: "thought",
       expectedChangeType: "cognition_shift",
+    },
+    {
+      name: "memory-wisdom change experience fixture",
+      unit: memoryWisdomChangeExperienceUnit,
+      expectedDimension: "memory",
+      expectedChangeType: "memory_shift",
+    },
+    {
+      name: "motivation-drive change experience fixture",
+      unit: motivationDriveChangeExperienceUnit,
+      expectedDimension: "motivation",
+      expectedChangeType: "motivation_shift",
     },
   ];
 
