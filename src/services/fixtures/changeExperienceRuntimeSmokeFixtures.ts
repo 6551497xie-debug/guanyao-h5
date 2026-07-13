@@ -1,3 +1,4 @@
+import type { SingleModelRevisionAction } from "../../types/dynamicsRevisionAction";
 import type {
   StoredMotherCodeProfile,
   StoredPersonaOutputSnapshot,
@@ -13,14 +14,7 @@ import {
 } from "./changeExperiencePresentationFixtures";
 import { actionFiveAwarenessRuntimeUnit } from "./personaTransmissionFixtures";
 
-export type ChangeExperienceRuntimeSmokeRevisionAction = Readonly<{
-  layerLabel: string;
-  yaoName: string;
-  actionLine: string;
-  sourceReason: string;
-  interventionPotential: number;
-  userAgency: number;
-}>;
+export type ChangeExperienceRuntimeSmokeRevisionAction = SingleModelRevisionAction;
 
 export type ChangeExperienceRuntimeSmokeFixture = Readonly<{
   fixtureKey: string;

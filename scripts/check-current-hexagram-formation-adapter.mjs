@@ -123,7 +123,7 @@ try {
   assertIncludes("formation adapter delegates pressure field building", adapterSource, "buildPressureField(readiness.motherCodeProfile, pressureSeed)");
   assertIncludes("formation adapter delegates current hexagram formation", adapterSource, "formCurrentHexagramProfile(");
   assertIncludes("Gravity consumes formation adapter", gravitySource, "resolveCurrentHexagramFormation(dynamicsInputReadiness)");
-  assertIncludes("Gravity reuses formation pressure seed", gravitySource, "formation.pressureSeed");
+  assertIncludes("Gravity hands formation to revision adapter", gravitySource, "resolveDynamicsRevisionAction(currentHexagramFormation)");
   assertExcludes("Gravity no longer builds pressure fields", gravitySource, "buildPressureField");
   assertExcludes("Gravity no longer forms current hexagram directly", gravitySource, "formCurrentHexagramProfile");
   assertExcludes("Gravity no longer owns pressure seed construction", gravitySource, "function buildPressureSeedForHexagram");

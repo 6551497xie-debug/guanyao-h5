@@ -11,7 +11,6 @@ import {
   type StarbeastFeedback,
   type StarFlowerGrowthState,
 } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
-import { buildYaoTransmissionChain } from "../services/guanyaoCausalEngineService";
 import {
   resolveRuntimeCurrentCrystalEndState,
   type RuntimeCurrentCrystalEndState as CurrentCrystalEndState,
@@ -42,8 +41,10 @@ import {
   resolveCurrentHexagramFormation,
   resolveDynamicsPressureFieldLabel,
 } from "../services/guanyaoCurrentHexagramFormationAdapter";
+import { resolveDynamicsRevisionAction } from "../services/guanyaoDynamicsRevisionActionAdapter";
 import type { CurrentHexagramProfile, Trigram } from "../types/guanyaoCausalEngine";
 import type { CurrentHexagramFormationResult } from "../types/currentHexagramFormation";
+import type { SingleModelRevisionAction } from "../types/dynamicsRevisionAction";
 import type { SelectedPressureSeedContext } from "../types/primaryPetal";
 import {
   GuanyaoRuntimeEngine,
@@ -67,15 +68,6 @@ type PressureBeastSeed = {
   resonance: number;
 };
 type RuntimeCoreStar = readonly [number, number, number];
-type SingleModelRevisionAction = {
-  layerLabel: string;
-  yaoName: string;
-  actionLine: string;
-  sourceReason: string;
-  interventionPotential: number;
-  userAgency: number;
-};
-
 function resolveCrystalMigrationImpactForAction(
   action: SingleModelRevisionAction | null,
   changeExperienceRoute: ChangeExperienceRuntimeRoute | null,
@@ -201,35 +193,6 @@ function resolveCurrentCrystalEndState({
     readyToCrystallize,
     migrationImpact,
   });
-}
-
-function resolveSingleModelRevisionAction(
-  formation: CurrentHexagramFormationResult | null,
-): SingleModelRevisionAction | null {
-  if (!formation) return null;
-
-  const yaoTransmissionChain = buildYaoTransmissionChain(
-    formation.motherCodeProfile,
-    formation.pressureSeed,
-    formation.currentHexagramProfile,
-    {
-      preferRuntimePressureSeed: true,
-    },
-  );
-  const mainTransmission =
-    yaoTransmissionChain.transmissions.find((transmission) => transmission.yaoLayer === yaoTransmissionChain.mainCut.yaoLayer) ??
-    yaoTransmissionChain.transmissions[0];
-
-  if (!mainTransmission) return null;
-
-  return {
-    layerLabel: mainTransmission.layerLabel,
-    yaoName: mainTransmission.yaoName,
-    actionLine: mainTransmission.antiInstinctHint,
-    sourceReason: mainTransmission.inertiaSignal,
-    interventionPotential: yaoTransmissionChain.mainCut.interventionLeverage,
-    userAgency: yaoTransmissionChain.mainCut.userAgency,
-  };
 }
 
 function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
@@ -2565,7 +2528,7 @@ function HexagramCodeDeliveryShell() {
   const singleModelRevisionAction = useMemo(
     () =>
       resolveChangeExperienceRuntimeSmokeRevisionAction(experienceSmokeFixture) ??
-      resolveSingleModelRevisionAction(currentHexagramFormation),
+      resolveDynamicsRevisionAction(currentHexagramFormation),
     [currentHexagramFormation, experienceSmokeFixture],
   );
   const changeExperienceRoute = useMemo(
