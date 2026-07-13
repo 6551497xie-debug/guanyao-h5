@@ -1,4 +1,7 @@
-const PERSONALITY_RING_LITE_KEY = "guanyao:personalityRingLite";
+import {
+  readPersistedPersonalityRingLiteState,
+  writePersistedPersonalityRingLiteState,
+} from "./guanyaoPersonalityRingLitePersistenceAdapter";
 
 export type PersonalityRingLiteState = {
   version: "1.0";
@@ -55,10 +58,6 @@ function emptyPersonalityRingLiteState(): PersonalityRingLiteState {
   };
 }
 
-function canUseStorage(): boolean {
-  return typeof window !== "undefined" && Boolean(window.localStorage);
-}
-
 function createEntryId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
@@ -78,13 +77,13 @@ function isValidEntry(entry: PersonalityRingLiteEntry): boolean {
 }
 
 export function readPersonalityRingLite(): PersonalityRingLiteState {
-  if (!canUseStorage()) return emptyPersonalityRingLiteState();
-
   try {
-    const raw = window.localStorage.getItem(PERSONALITY_RING_LITE_KEY);
-    if (!raw) return emptyPersonalityRingLiteState();
+    const persistedState = readPersistedPersonalityRingLiteState();
+    if (!persistedState || typeof persistedState !== "object") {
+      return emptyPersonalityRingLiteState();
+    }
 
-    const parsed = JSON.parse(raw) as Partial<PersonalityRingLiteState>;
+    const parsed = persistedState as Partial<PersonalityRingLiteState>;
     if (parsed.version !== "1.0" || !Array.isArray(parsed.entries)) {
       return emptyPersonalityRingLiteState();
     }
@@ -136,13 +135,6 @@ export function savePersonalityRingLiteEntry(entry: PersonalityRingLiteEntry): P
     entries: [entry, ...current.entries],
   };
 
-  if (!canUseStorage()) return next;
-
-  try {
-    window.localStorage.setItem(PERSONALITY_RING_LITE_KEY, JSON.stringify(next));
-  } catch {
-    return current;
-  }
-
-  return next;
+  const writeStatus = writePersistedPersonalityRingLiteState(next);
+  return writeStatus === "FAILED" ? current : next;
 }
