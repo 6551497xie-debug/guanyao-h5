@@ -73,8 +73,7 @@ export const changeExperienceRuntimeSmokeFixtures: readonly ChangeExperienceRunt
       motherCodeName: "坤",
       trigram: "坤",
       trigramSymbol: "☷",
-      fourBeast: "白虎",
-      direction: "白虎",
+      starbeast: { fourSymbol: "白虎" },
     },
   },
   {
@@ -118,8 +117,7 @@ export const changeExperienceRuntimeSmokeFixtures: readonly ChangeExperienceRunt
       motherCodeName: "兑",
       trigram: "兑",
       trigramSymbol: "☱",
-      fourBeast: "玄武",
-      direction: "玄武",
+      starbeast: { fourSymbol: "玄武" },
     },
   },
   {
@@ -163,8 +161,7 @@ export const changeExperienceRuntimeSmokeFixtures: readonly ChangeExperienceRunt
       motherCodeName: "坎",
       trigram: "坎",
       trigramSymbol: "☵",
-      fourBeast: "青龙",
-      direction: "青龙",
+      starbeast: { fourSymbol: "青龙" },
     },
   },
   {
@@ -208,8 +205,7 @@ export const changeExperienceRuntimeSmokeFixtures: readonly ChangeExperienceRunt
       motherCodeName: "艮",
       trigram: "艮",
       trigramSymbol: "☶",
-      fourBeast: "朱雀",
-      direction: "朱雀",
+      starbeast: { fourSymbol: "朱雀" },
     },
   },
   {
@@ -253,8 +249,7 @@ export const changeExperienceRuntimeSmokeFixtures: readonly ChangeExperienceRunt
       motherCodeName: "坎",
       trigram: "坎",
       trigramSymbol: "☵",
-      fourBeast: "玄武",
-      direction: "玄武",
+      starbeast: { fourSymbol: "玄武" },
     },
   },
   {
@@ -298,8 +293,7 @@ export const changeExperienceRuntimeSmokeFixtures: readonly ChangeExperienceRunt
       motherCodeName: "震",
       trigram: "震",
       trigramSymbol: "☳",
-      fourBeast: "青龙",
-      direction: "青龙",
+      starbeast: { fourSymbol: "青龙" },
     },
   },
 ];

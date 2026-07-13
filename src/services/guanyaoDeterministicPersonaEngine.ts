@@ -79,7 +79,9 @@ export type PersonaGenerationResult = {
 export type PersonaOutputSnapshot = {
   chrono: string;
   motherCode: string;
-  direction: Direction;
+  starbeast: {
+    fourSymbol: Direction;
+  };
   starOrigin: StarNode;
   trigram: string;
   motherCodeCard: MotherCodeCard;
@@ -208,22 +210,34 @@ function assertPersonaWriteAuthority(engine: string): asserts engine is typeof D
   }
 }
 
-function readExistingSnapshot(): PersonaOutputSnapshot | null {
+type LegacyPersonaOutputSnapshot = Omit<PersonaOutputSnapshot, "starbeast"> & {
+  starbeast?: {
+    fourSymbol?: Direction;
+  };
+  fourBeast?: Direction;
+  direction?: Direction;
+};
+
+function readExistingSnapshot(): LegacyPersonaOutputSnapshot | null {
   if (typeof window === "undefined") return null;
 
   try {
     const raw = window.localStorage.getItem(PERSONA_SNAPSHOT_KEY);
-    return raw ? JSON.parse(raw) as PersonaOutputSnapshot : null;
+    return raw ? JSON.parse(raw) as LegacyPersonaOutputSnapshot : null;
   } catch {
     return null;
   }
 }
 
-function sameSnapshotIdentity(a: PersonaOutputSnapshot, b: PersonaOutputSnapshot) {
+function resolveSnapshotFourSymbol(snapshot: LegacyPersonaOutputSnapshot) {
+  return snapshot.starbeast?.fourSymbol ?? snapshot.fourBeast ?? snapshot.direction;
+}
+
+function sameSnapshotIdentity(a: LegacyPersonaOutputSnapshot, b: PersonaOutputSnapshot) {
   return (
     a.chrono === b.chrono &&
     a.motherCode === b.motherCode &&
-    a.direction === b.direction &&
+    resolveSnapshotFourSymbol(a) === b.starbeast.fourSymbol &&
     a.trigram === b.trigram &&
     a.starOrigin.index === b.starOrigin.index &&
     a.starOrigin.intensity === b.starOrigin.intensity &&
@@ -238,7 +252,9 @@ export function buildPersonaOutputSnapshot(result: PersonaGenerationResult): Per
   return Object.freeze({
     chrono: `${result.chrono.phase} · ${geoAnchor}`,
     motherCode: result.mother.trigram,
-    direction: result.direction,
+    starbeast: Object.freeze({
+      fourSymbol: result.direction,
+    }),
     starOrigin: Object.freeze({ ...result.mother.starOrigin }),
     trigram: result.mother.trigram,
     motherCodeCard,
@@ -258,7 +274,7 @@ export function writePersonaOutputSnapshotFromDeterministicEngine(result: Person
       throw new Error("PERSONA_SNAPSHOT_IMMUTABLE");
     }
 
-    return existing;
+    return snapshot;
   }
 
   if (typeof window !== "undefined") {

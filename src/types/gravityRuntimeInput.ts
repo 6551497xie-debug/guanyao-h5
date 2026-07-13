@@ -15,8 +15,9 @@ export type StoredPersonaOutputSnapshot = {
   motherCodeName?: string;
   trigram?: string;
   trigramSymbol?: string;
-  fourBeast?: string;
-  direction?: string;
+  starbeast?: {
+    fourSymbol?: string;
+  };
 };
 
 export type StoredOriginMotherContext = {

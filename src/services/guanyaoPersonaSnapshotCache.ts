@@ -18,7 +18,7 @@ export type CachedStarOrigin =
 
 export type CachedPersonaOutput = {
   motherCode: string;
-  direction: string;
+  fourSymbol: string;
   starOrigin: CachedStarOrigin;
   trigram: string;
 };
@@ -26,7 +26,7 @@ export type CachedPersonaOutput = {
 export type MotherCardReadonlySnapshot = {
   chrono: string;
   motherCode: string;
-  direction: string;
+  fourSymbol: string;
   starOrigin: string;
   trigram: string;
   cacheStatus: "hit" | "missing";
@@ -54,14 +54,18 @@ function normalizeCachedPersonaOutput(value: unknown): CachedPersonaOutput | nul
 
   const trigram = typeof value.trigram === "string" ? value.trigram : "";
   const motherCode = typeof value.motherCode === "string" ? value.motherCode : "";
-  const direction = typeof value.direction === "string" ? value.direction : "";
+  const starbeast = isRecord(value.starbeast) ? value.starbeast : null;
+  const fourSymbol =
+    (starbeast && typeof starbeast.fourSymbol === "string" ? starbeast.fourSymbol : "") ||
+    (typeof value.fourBeast === "string" ? value.fourBeast : "") ||
+    (typeof value.direction === "string" ? value.direction : "");
   const starOrigin = isRecord(value.starOrigin) ? value.starOrigin : "";
 
-  if (!motherCode || !direction || !trigram) return null;
+  if (!motherCode || !fourSymbol || !trigram) return null;
 
   return {
     motherCode,
-    direction,
+    fourSymbol,
     starOrigin,
     trigram,
   };
@@ -83,7 +87,7 @@ export function createMotherCardReadonlySnapshot(chrono: string): MotherCardRead
     return {
       chrono,
       motherCode: "CACHE_PENDING",
-      direction: "CACHE_PENDING",
+      fourSymbol: "CACHE_PENDING",
       starOrigin: "CACHE_PENDING",
       trigram: "CACHE_PENDING",
       cacheStatus: "missing",
@@ -93,7 +97,7 @@ export function createMotherCardReadonlySnapshot(chrono: string): MotherCardRead
   return {
     chrono,
     motherCode: cachedPersonaOutput.motherCode,
-    direction: cachedPersonaOutput.direction,
+    fourSymbol: cachedPersonaOutput.fourSymbol,
     starOrigin: formatStarOrigin(cachedPersonaOutput.starOrigin),
     trigram: cachedPersonaOutput.trigram,
     cacheStatus: "hit",

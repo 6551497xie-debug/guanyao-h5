@@ -111,7 +111,7 @@ export function MotherLab() {
     const audio = makeAudio();
     const snapshot = snapshotRef.current;
     const readout = {
-      base: `四象｜${snapshot.direction}`,
+      base: `四象｜${snapshot.fourSymbol}`,
       chain: `星源｜${snapshot.starOrigin}`,
     };
 

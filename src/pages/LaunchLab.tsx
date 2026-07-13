@@ -1353,8 +1353,9 @@ export function LaunchLab() {
         motherCodeTitle: profile.motherCodeTitle,
         trigram,
         trigramSymbol: definition.trigramSymbol,
-        direction: reveal.starbeast.fourSymbol,
-        fourBeast: reveal.starbeast.fourSymbol,
+        starbeast: {
+          fourSymbol: reveal.starbeast.fourSymbol,
+        },
         chronoLockPoint: reveal.chrono.lockPoint,
         geoProvince: reveal.geo.province,
         starOrigin: {
