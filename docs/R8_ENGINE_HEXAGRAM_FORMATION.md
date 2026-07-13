@@ -84,7 +84,11 @@ P2A 锁定补充：
 - `lowerTrigram`
 - `lowerSource: "mother_code"`
 - `upperTrigram`
-- `upperSource: "pressure_field"`
+- `upperSource: "pressure_seed_classification"`
+
+`upperSource` 表示上卦来自压力种子的语义分类结果。
+
+它不表示 `PressureField` 直接生成上卦。
 - `hexagramCode`
 - `hexagramName`
 - `hexagramTitle`

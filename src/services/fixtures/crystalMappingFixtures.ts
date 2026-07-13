@@ -13,7 +13,7 @@ export const actionFiveAwarenessCrystalStructureSource: CrystalStateStructureSou
     lowerTrigram: "艮",
     lowerSource: "mother_code",
     upperTrigram: "巽",
-    upperSource: "pressure_field",
+    upperSource: "pressure_seed_classification",
     hexagramCode: "53",
     hexagramName: "风山渐",
     hexagramTitle: "行动重新校准的一局",

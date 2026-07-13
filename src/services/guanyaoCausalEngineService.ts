@@ -245,7 +245,7 @@ const requiredTraceSteps = [
   "mother_code_to_pressure_seed",
   "dynamic_modifiers_to_pressure_field",
   "pressure_seed_to_pressure_field",
-  "pressure_field_to_current_hexagram_profile",
+  "pressure_seed_classification_to_current_hexagram_profile",
   "current_hexagram_profile_to_yao_transmission_chain",
   "yao_transmission_chain_to_device_method_package",
   "device_method_package_to_personality_asset_deposition",
@@ -853,7 +853,7 @@ export const formCurrentHexagramProfile = (
     lowerTrigram,
     lowerSource: "mother_code",
     upperTrigram,
-    upperSource: "pressure_field",
+    upperSource: "pressure_seed_classification",
     hexagramCode,
     hexagramName,
     hexagramTitle,
@@ -1482,8 +1482,8 @@ const buildCausalTrace = (result: Omit<GuanyaoCausalPipelineResult, "causalTrace
       reason: `压力场「${result.pressureField.fieldName}」撞击「${result.motherCodeProfile.motherCodeName}」，坍缩为「${result.hexagramField.behaviorFieldName}」。`,
     },
     {
-      step: "pressure_field_to_current_hexagram_profile",
-      reason: `${result.currentHexagramProfile.upperCodeFormation.formationReason}${result.currentHexagramProfile.upperCodeFormation.upperCodeReading}上码「${result.currentHexagramProfile.upperTrigram}」与母码下码「${result.currentHexagramProfile.lowerTrigram}」成局为「${result.currentHexagramProfile.hexagramCode}｜${result.currentHexagramProfile.hexagramName}」。人格重力值为「${result.currentHexagramProfile.gravityValue}」。`,
+      step: "pressure_seed_classification_to_current_hexagram_profile",
+      reason: `${result.currentHexagramProfile.upperCodeFormation.formationReason}${result.currentHexagramProfile.upperCodeFormation.upperCodeReading}压力种子分类形成上码「${result.currentHexagramProfile.upperTrigram}」，与母码下码「${result.currentHexagramProfile.lowerTrigram}」成局为「${result.currentHexagramProfile.hexagramCode}｜${result.currentHexagramProfile.hexagramName}」。压力场只提供人格重力值「${result.currentHexagramProfile.gravityValue}」，不参与上下卦选择。`,
     },
     {
       step: "current_hexagram_profile_to_yao_transmission_chain",
@@ -1616,7 +1616,10 @@ export function auditGuanyaoCausalPipeline(): {
     ["pressureField has dynamicWeight", typeof result.pressureField.dynamicWeight === "number"],
     ["has currentHexagramProfile", Boolean(result.currentHexagramProfile)],
     ["currentHexagramProfile lowerSource mother_code", result.currentHexagramProfile.lowerSource === "mother_code"],
-    ["currentHexagramProfile upperSource pressure_field", result.currentHexagramProfile.upperSource === "pressure_field"],
+    [
+      "currentHexagramProfile upperSource pressure_seed_classification",
+      result.currentHexagramProfile.upperSource === "pressure_seed_classification",
+    ],
     ["currentHexagramProfile has upperCodeFormation", Boolean(result.currentHexagramProfile.upperCodeFormation)],
     ["upperCodeFormation reads three line impact", typeof result.currentHexagramProfile.upperCodeFormation.lineImpact.systemMechanismLine === "number"],
     ["currentHexagramProfile has gravityValue", Boolean(result.currentHexagramProfile.gravityValue)],
@@ -1640,7 +1643,10 @@ export function auditGuanyaoCausalPipeline(): {
       requiredTraceSteps.every((step) => traceSteps.has(step)),
     ],
     ["causalTrace includes dynamic_modifiers_to_pressure_field", traceSteps.has("dynamic_modifiers_to_pressure_field")],
-    ["causalTrace includes pressure_field_to_current_hexagram_profile", traceSteps.has("pressure_field_to_current_hexagram_profile")],
+    [
+      "causalTrace includes pressure_seed_classification_to_current_hexagram_profile",
+      traceSteps.has("pressure_seed_classification_to_current_hexagram_profile"),
+    ],
     ["causalTrace includes current_hexagram_profile_to_yao_transmission_chain", traceSteps.has("current_hexagram_profile_to_yao_transmission_chain")],
     ["causalTrace includes yao_transmission_chain_to_device_method_package", traceSteps.has("yao_transmission_chain_to_device_method_package")],
     ["causalTrace includes device_method_package_to_personality_asset_deposition", traceSteps.has("device_method_package_to_personality_asset_deposition")],
@@ -1947,7 +1953,9 @@ export function auditGuanyaoHexagramFormation(): {
       ],
       [
         `${formationCase.caseId} gravity does not choose trigram`,
-        Boolean(sample.gravityValue) && sample.upperSource === "pressure_field" && sample.lowerSource === "mother_code",
+        Boolean(sample.gravityValue) &&
+          sample.upperSource === "pressure_seed_classification" &&
+          sample.lowerSource === "mother_code",
       ],
     ] satisfies [string, boolean][];
   });

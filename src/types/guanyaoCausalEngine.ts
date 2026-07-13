@@ -326,7 +326,7 @@ export interface CurrentHexagramProfile {
   lowerTrigram: Trigram;
   lowerSource: "mother_code";
   upperTrigram: Trigram;
-  upperSource: "pressure_field";
+  upperSource: "pressure_seed_classification";
   hexagramCode: string;
   hexagramName: string;
   hexagramTitle: string;
