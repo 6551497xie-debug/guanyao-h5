@@ -1,12 +1,14 @@
 import type {
   CrystalMappingSource,
-  HexagramCrystalExpression,
   HexagramCrystalInputDominantShift,
   HexagramCrystalInputMigrationTrace,
   HexagramCrystalInputSourceHexagram,
+} from "./personaTransmission";
+import type {
+  HexagramCrystalExpression,
   HexagramCrystalResult,
   HexagramCrystalResultReadiness,
-} from "./personaTransmission";
+} from "./hexagramCrystalEngine";
 
 export type HexagramCrystalResultConsumptionBoundary = Readonly<{
   canEnterHexagramExpressionLayer: boolean;

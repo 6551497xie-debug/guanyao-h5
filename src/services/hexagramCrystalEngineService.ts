@@ -5,7 +5,7 @@ import type {
   HexagramCrystalEngineSuccess,
   HexagramCrystalResult,
   HexagramCrystalResultGuardrails,
-} from "../types/personaTransmission";
+} from "../types/hexagramCrystalEngine";
 
 const createNotReadyResult = (reason: HexagramCrystalEngineNotReadyReason): HexagramCrystalEngineNotReady => ({
   status: "NOT_READY",

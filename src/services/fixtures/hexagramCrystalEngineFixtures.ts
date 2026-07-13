@@ -1,7 +1,7 @@
 import type {
   HexagramCrystalEngineInput,
   HexagramCrystalEngineSuccess,
-} from "../../types/personaTransmission";
+} from "../../types/hexagramCrystalEngine";
 import { actionFiveAwarenessHexagramCrystalInput } from "./hexagramCrystalInputFixtures";
 
 export const actionFiveAwarenessHexagramCrystalEngineInput: HexagramCrystalEngineInput = {

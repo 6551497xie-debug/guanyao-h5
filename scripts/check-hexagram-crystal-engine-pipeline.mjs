@@ -7,6 +7,24 @@ import ts from "typescript";
 
 const rootDir = process.cwd();
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "guanyao-hexagram-crystal-engine-"));
+const personaTransmissionTypeSource = fs.readFileSync(
+  path.join(rootDir, "src/types/personaTransmission.ts"),
+  "utf8",
+);
+const engineTypeSource = fs.readFileSync(path.join(rootDir, "src/types/hexagramCrystalEngine.ts"), "utf8");
+const engineServiceSource = fs.readFileSync(
+  path.join(rootDir, "src/services/hexagramCrystalEngineService.ts"),
+  "utf8",
+);
+const engineFixtureSource = fs.readFileSync(
+  path.join(rootDir, "src/services/fixtures/hexagramCrystalEngineFixtures.ts"),
+  "utf8",
+);
+const resultConsumptionTypeSource = fs.readFileSync(
+  path.join(rootDir, "src/types/hexagramCrystalResultConsumption.ts"),
+  "utf8",
+);
+const typeIndexSource = fs.readFileSync(path.join(rootDir, "src/types/index.ts"), "utf8");
 
 const sourceFiles = [
   "src/services/hexagramCrystalEngineService.ts",
@@ -37,6 +55,20 @@ const assertEqual = (name, actual, expected) => {
   console.log(`PASS | ${name} | expected=${expected} | actual=${actual}`);
 };
 
+const assertIncludes = (name, source, expected) => {
+  if (!source.includes(expected)) {
+    throw new Error(`${name} missing=${expected}`);
+  }
+  console.log(`PASS | ${name} | includes=${expected}`);
+};
+
+const assertNotIncludes = (name, source, forbidden) => {
+  if (source.includes(forbidden)) {
+    throw new Error(`${name} forbidden=${forbidden}`);
+  }
+  console.log(`PASS | ${name} | forbidden=absent`);
+};
+
 try {
   sourceFiles.forEach(transpileToTemp);
   const requireFromTemp = createRequire(path.join(tempRoot, "check.cjs"));
@@ -46,6 +78,47 @@ try {
     actionFiveAwarenessHexagramCrystalResult,
   } = requireFromTemp("./src/services/fixtures/hexagramCrystalEngineFixtures.js");
   const { actionFiveAwarenessMigrationImpact } = requireFromTemp("./src/services/fixtures/crystalMappingFixtures.js");
+
+  assertIncludes(
+    "hexagram crystal engine type owns engine input",
+    engineTypeSource,
+    "export type HexagramCrystalEngineInput =",
+  );
+  assertNotIncludes(
+    "persona transmission no longer owns engine types",
+    personaTransmissionTypeSource,
+    "export type HexagramCrystalEngineInput =",
+  );
+  assertIncludes(
+    "hexagram crystal engine service consumes neutral engine types",
+    engineServiceSource,
+    'from "../types/hexagramCrystalEngine"',
+  );
+  assertNotIncludes(
+    "hexagram crystal engine service no longer consumes persona transmission types",
+    engineServiceSource,
+    'from "../types/personaTransmission"',
+  );
+  assertIncludes(
+    "hexagram crystal engine fixture consumes neutral engine types",
+    engineFixtureSource,
+    'from "../../types/hexagramCrystalEngine"',
+  );
+  assertNotIncludes(
+    "hexagram crystal engine fixture no longer consumes persona transmission types",
+    engineFixtureSource,
+    'from "../../types/personaTransmission"',
+  );
+  assertIncludes(
+    "result consumption type consumes neutral engine result",
+    resultConsumptionTypeSource,
+    'from "./hexagramCrystalEngine"',
+  );
+  assertIncludes(
+    "type index exports neutral engine types",
+    typeIndexSource,
+    'from "./hexagramCrystalEngine"',
+  );
 
   const readyResult = formHexagramCrystalResult(actionFiveAwarenessHexagramCrystalEngineInput);
   assertEqual("fixture action-five-awareness engine status", readyResult.status, "READY");
