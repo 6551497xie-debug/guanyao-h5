@@ -1,8 +1,11 @@
 import type { ChronoProfile, GuanyaoSession, MotherCodeResult, SceneSeed, SceneSlice } from "../types";
 import { buildYuanCodeResult, normalizeGuaFieldFromLegacy } from "./codeContractService";
+import {
+  clearPersistedSessionState,
+  readPersistedSessionState,
+  writePersistedSessionState,
+} from "./guanyaoSessionPersistenceAdapter";
 import { initializeTimeSandglassAfterChrono } from "./timeSandglassService";
-
-const SESSION_KEY = "guanyao_h5_session";
 
 const defaultSession: GuanyaoSession = {
   chronoProfile: null,
@@ -30,28 +33,12 @@ const defaultSession: GuanyaoSession = {
   energyState: null,
 };
 
-function canUseStorage(): boolean {
-  return typeof window !== "undefined" && Boolean(window.localStorage);
-}
-
 export function getSession(): GuanyaoSession {
-  if (!canUseStorage()) {
-    return { ...defaultSession };
-  }
-
-  try {
-    const rawSession = window.localStorage.getItem(SESSION_KEY);
-    if (!rawSession) {
-      return { ...defaultSession };
-    }
-
-    return {
-      ...defaultSession,
-      ...(JSON.parse(rawSession) as Partial<GuanyaoSession>),
-    };
-  } catch {
-    return { ...defaultSession };
-  }
+  const persistedSession = readPersistedSessionState<Partial<GuanyaoSession>>();
+  return {
+    ...defaultSession,
+    ...persistedSession,
+  };
 }
 
 export function updateSession(partial: Partial<GuanyaoSession>): GuanyaoSession {
@@ -59,14 +46,7 @@ export function updateSession(partial: Partial<GuanyaoSession>): GuanyaoSession 
     ...getSession(),
     ...partial,
   };
-
-  if (canUseStorage()) {
-    try {
-      window.localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
-    } catch {
-      return nextSession;
-    }
-  }
+  writePersistedSessionState(nextSession);
 
   return nextSession;
 }
@@ -134,13 +114,6 @@ export function setMotherCodeResult(motherCode: MotherCodeResult): GuanyaoSessio
 }
 
 export function resetSession(): GuanyaoSession {
-  if (canUseStorage()) {
-    try {
-      window.localStorage.removeItem(SESSION_KEY);
-    } catch {
-      return { ...defaultSession };
-    }
-  }
-
+  clearPersistedSessionState();
   return { ...defaultSession };
 }
