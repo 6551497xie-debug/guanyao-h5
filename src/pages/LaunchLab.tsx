@@ -32,6 +32,8 @@ import {
   type GeoChronoMotherFusionResult,
   type GeoDirectionSymbol,
 } from "../services/guanyaoGeoChronoMotherFusionEngine";
+import { resolveLunarTrigramLanding } from "../services/guanyaoLunarTrigramLandingResolver";
+import { resolveStarbeastFromBirthDate } from "../services/guanyaoStarbeastEngineService";
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
@@ -183,7 +185,7 @@ const NODE_TRANSITION_LERP_START_MS = 760;
 const NODE_TRANSITION_LERP_DURATION_MS = 900;
 const RAIL_COMMIT_THRESHOLD = 0.58;
 const ORIGIN_RAIL_COLS = 5;
-const PERIOD_LABELS = ["子时", "丑时", "寅时", "卯时", "辰时", "巳时", "午时", "未时", "申时", "酉时", "戌时", "亥时"];
+const PERIOD_LABELS = ["子时", "丑时", "寅时", "卯时", "辰时", "巳时", "午时", "未时", "申时", "酉时", "戌时", "亥时"] as const;
 const CHRONO_DIMS = ["year", "month", "day", "hour"] as const;
 type ChronoDim = (typeof CHRONO_DIMS)[number];
 type GeoDim = "province" | "city";
@@ -1304,6 +1306,21 @@ export function LaunchLab() {
       return `${m.coords.year}/${pad2(m.coords.month)}/${pad2(m.coords.day)} ${hourToPeriodLabel(m.coords.hour)} · ${currentProvinceName()}`;
     }
     function resolveOriginMotherCode(): GeoChronoMotherFusionResult {
+      const birthDate = {
+        year: m.coords.year,
+        month: m.coords.month,
+        day: m.coords.day,
+      };
+      const trigramLanding = resolveLunarTrigramLanding({
+        ...birthDate,
+        hourBranch: hourToPeriodLabel(m.coords.hour),
+      });
+      const starbeastDerivation = resolveStarbeastFromBirthDate(birthDate);
+
+      if (starbeastDerivation.status !== "READY") {
+        throw new Error(`STARBEAST_DERIVATION_NOT_READY:${starbeastDerivation.reason}`);
+      }
+
       return runGeoChronoMotherFusionEngine({
         geo: {
           province: currentProvinceName(),
@@ -1320,6 +1337,8 @@ export function LaunchLab() {
           primaryNodeIndex: Math.max(0, Math.min(NODES.length - 1, Math.round((m.precisionY / 20) * (NODES.length - 1)))),
           originLightTrace: "28光兽入口",
         },
+        fourSymbol: starbeastDerivation.fourSymbol,
+        trigramLanding,
       });
     }
     function persistOriginMotherContext(reveal: GeoChronoMotherFusionResult) {
