@@ -1,6 +1,9 @@
 import type { ChronoProfile, TimeSandglassState, TimeSandglassUnlocks } from "../types";
+import {
+  readPersistedTimeSandglassState,
+  writePersistedTimeSandglassState,
+} from "./guanyaoTimeSandglassPersistenceAdapter";
 
-const TIME_SANDGLASS_KEY = "guanyao_h5_time_sandglass";
 const defaultMaxEnergy = 6;
 const defaultRecoveryIntervalMinutes = 360;
 
@@ -14,10 +17,6 @@ const defaultUnlocks: TimeSandglassUnlocks = {
   canViewDeepSource: true,
 };
 
-function canUseStorage(): boolean {
-  return typeof window !== "undefined" && Boolean(window.localStorage);
-}
-
 function addMinutes(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60 * 1000).toISOString();
 }
@@ -29,15 +28,8 @@ function emitTimeSandglassChange() {
 }
 
 function persistTimeSandglass(nextState: TimeSandglassState): TimeSandglassState {
-  if (canUseStorage()) {
-    try {
-      window.localStorage.setItem(TIME_SANDGLASS_KEY, JSON.stringify(nextState));
-    } catch {
-      return nextState;
-    }
-  }
-
-  emitTimeSandglassChange();
+  const writeStatus = writePersistedTimeSandglassState(nextState);
+  if (writeStatus !== "FAILED") emitTimeSandglassChange();
   return nextState;
 }
 
@@ -77,14 +69,7 @@ export function buildInitialTimeSandglass(chronoProfile?: ChronoProfile | null):
 }
 
 export function getTimeSandglassState(): TimeSandglassState | null {
-  if (!canUseStorage()) return null;
-
-  try {
-    const rawState = window.localStorage.getItem(TIME_SANDGLASS_KEY);
-    return rawState ? (JSON.parse(rawState) as TimeSandglassState) : null;
-  } catch {
-    return null;
-  }
+  return readPersistedTimeSandglassState<TimeSandglassState>();
 }
 
 export function initializeTimeSandglassAfterChrono(chronoProfile: ChronoProfile): TimeSandglassState {
