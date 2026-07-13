@@ -12,6 +12,7 @@ const paths = {
   domainTypes: path.join(rootDir, "src/types/primaryPetal.ts"),
   launch: path.join(rootDir, "src/pages/LaunchLab.tsx"),
   scene: path.join(rootDir, "src/pages/ScenePage.tsx"),
+  motherField: path.join(rootDir, "src/pages/MotherFieldEngine.tsx"),
   gravity: path.join(rootDir, "src/pages/GravityPage.tsx"),
   r8: path.join(rootDir, "src/adapters/guanyaoR8ReadModelAdapter.ts"),
 };
@@ -115,6 +116,8 @@ try {
   assertExcludes("Scene does not persist legacy pressure seed id mirror", sources.scene, "guanyao:selectedPressureSeedId");
   assertExcludes("Scene does not persist legacy pressure slice id mirror", sources.scene, "guanyao:selectedPressureSliceId");
   assertExcludes("Scene does not persist legacy pressure slice text mirror", sources.scene, "guanyao:selectedPressureSliceText");
+  assertExcludes("Mother field does not persist orphaned pressure seed packet", sources.motherField, "guanyao:pressureSeedPacket");
+  assertExcludes("Mother field does not own orphaned pressure seed packet type", sources.motherField, "PressureSeedPacket");
   assertIncludes("Gravity delegates context reading", sources.gravity, "readPersistedSelectedPressureSeedContext()");
   assertExcludes("Gravity does not own context storage key", sources.gravity, "guanyao:selectedPressureSeedContext");
   assertIncludes("R8 delegates context reading", sources.r8, "readPersistedSelectedPressureSeedContext()");

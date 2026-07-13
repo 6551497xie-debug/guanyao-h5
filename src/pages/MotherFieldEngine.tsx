@@ -25,15 +25,6 @@ import { setAxisHandoff, takeAxisHandoff } from "../systems/axisHandoff";
 
 export type MotherField = { tag: string; title: string; body: string };
 
-export type PressureSeedPacket = {
-  motherCode: string;
-  defaultDefensePattern: string;
-  flowState: string;
-  protectionState: string;
-  collapseState: string;
-  inertiaSignature: string;
-};
-
 type Phase = "VOID" | "OPENING" | "SCRUB" | "SANDIFY";
 
 type Particle = { x: number; y: number; vx: number; vy: number; alpha: number };
@@ -191,12 +182,6 @@ export function MotherFieldEngine({
       return out;
     }
 
-    function hashStr(s: string) {
-      let h = 0;
-      for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
-      return (h >>> 0).toString(16).toUpperCase();
-    }
-
     function enterSandify() {
       if (m.fired) return;
       m.fired = true;
@@ -218,21 +203,6 @@ export function MotherFieldEngine({
       setAxisHandoff(
         list.map((p, i) => ({ fx: p.x / m.w, fy: p.y / m.h, vx: p.vx, vy: p.vy, color: ["#C7A96B", "#00B8D4", "#6b6b6b"][i % 3] ?? "#C7A96B" })),
       );
-      // 生成压力种子（单轴完成时固化）
-      const d = dataRef.current;
-      const packet: PressureSeedPacket = {
-        motherCode: d.motherCode,
-        defaultDefensePattern: d.fields[1]?.body ?? "",
-        flowState: d.fields[0]?.body ?? "",
-        protectionState: d.fields[1]?.body ?? "",
-        collapseState: d.fields[2]?.body ?? "",
-        inertiaSignature: `GY_INERTIA_${hashStr(d.fields.map((f) => f.body).join("|"))}`,
-      };
-      try {
-        window.localStorage.setItem("guanyao:pressureSeedPacket", JSON.stringify(packet));
-      } catch {
-        /* storage unavailable */
-      }
       vibrate(24);
     }
 
