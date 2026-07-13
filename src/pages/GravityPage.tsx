@@ -175,16 +175,6 @@ function readDynamicsInputContext(): DynamicsInputContext {
   };
 }
 
-function writeJsonToStorage(key: string, value: unknown) {
-  if (typeof window === "undefined") return;
-
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Storage must never block the active /dynamics runtime.
-  }
-}
-
 function resolveMotherCodeName(input: DynamicsInputContext) {
   return (
     input.motherCodeProfile?.motherCodeName ??
@@ -2823,16 +2813,6 @@ function HexagramCodeDeliveryShell() {
       revisionActionConfirmed,
       crystalMigrationImpact,
     ]);
-
-  useEffect(() => {
-    if (!activeCurrentHexagramContext) return;
-    writeJsonToStorage("guanyao:currentHexagramProfile", activeCurrentHexagramContext);
-  }, [activeCurrentHexagramContext]);
-
-  useEffect(() => {
-    if (!currentCrystalEndState) return;
-    writeJsonToStorage("guanyao:currentCrystalEndState", currentCrystalEndState);
-  }, [currentCrystalEndState]);
 
   useEffect(() => {
     if (!transformationMomentActive) return;

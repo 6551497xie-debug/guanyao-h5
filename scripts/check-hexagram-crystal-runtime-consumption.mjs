@@ -134,6 +134,31 @@ try {
     gravityPageSource,
     "hexagramName: currentHexagramProfile.hexagramName",
   );
+  assertNotIncludes(
+    "gravity does not persist raw current hexagram orientation",
+    gravityPageSource,
+    "guanyao:currentHexagramProfile",
+  );
+  assertNotIncludes(
+    "gravity does not persist raw current crystal end state",
+    gravityPageSource,
+    "guanyao:currentCrystalEndState",
+  );
+  assertNotIncludes(
+    "gravity does not own generic runtime snapshot storage",
+    gravityPageSource,
+    "writeJsonToStorage",
+  );
+  assertIncludes(
+    "gravity keeps explicit personality ring deposition adapter",
+    gravityPageSource,
+    "createPersonalityRingLiteEntryFromCrystal(state)",
+  );
+  assertIncludes(
+    "gravity keeps explicit personality ring persistence",
+    gravityPageSource,
+    "savePersonalityRingLiteEntry(entry)",
+  );
 
   sourceFiles.forEach(transpileToTemp);
   const requireFromTemp = createRequire(path.join(tempRoot, "check.cjs"));
