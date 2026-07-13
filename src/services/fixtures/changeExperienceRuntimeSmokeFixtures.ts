@@ -1,5 +1,8 @@
 import type { SelectedPressureSeedContext } from "../guanyaoPrimaryPetalResolver";
-import type { MotherCodeProfile } from "../../types/guanyaoCausalEngine";
+import type {
+  StoredMotherCodeProfile,
+  StoredPersonaOutputSnapshot,
+} from "../../types/gravityRuntimeInput";
 import {
   actionFiveAwarenessChangeExperiencePresentation,
   bodyAwarenessChangeExperiencePresentation,
@@ -9,24 +12,6 @@ import {
   thoughtChangeCognitionChangeExperiencePresentation,
 } from "./changeExperiencePresentationFixtures";
 import { actionFiveAwarenessRuntimeUnit } from "./personaTransmissionFixtures";
-
-export type StoredMotherCodeProfile = Partial<MotherCodeProfile> & {
-  motherCodeName?: string;
-  motherCodeTitle?: string;
-  trigram?: string;
-  lowerTrigram?: string;
-  trigramSymbol?: string;
-  baseDrive?: string;
-};
-
-export type StoredPersonaOutputSnapshot = {
-  motherCode?: string;
-  motherCodeName?: string;
-  trigram?: string;
-  trigramSymbol?: string;
-  fourBeast?: string;
-  direction?: string;
-};
 
 export type ChangeExperienceRuntimeSmokeRevisionAction = Readonly<{
   layerLabel: string;

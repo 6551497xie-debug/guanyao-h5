@@ -8,6 +8,10 @@ import ts from "typescript";
 const rootDir = process.cwd();
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "guanyao-gravity-change-experience-routing-"));
 const gravityPageSource = fs.readFileSync(path.join(rootDir, "src/pages/GravityPage.tsx"), "utf8");
+const smokeFixtureSource = fs.readFileSync(
+  path.join(rootDir, "src/services/fixtures/changeExperienceRuntimeSmokeFixtures.ts"),
+  "utf8",
+);
 
 const sourceFiles = [
   "src/services/fixtures/personaTransmissionFixtures.ts",
@@ -216,6 +220,21 @@ try {
     "gravity no longer imports smoke presentation fixtures",
     gravityPageSource,
     "actionFiveAwarenessChangeExperiencePresentation",
+  );
+  assertIncludes(
+    "smoke fixtures consume neutral runtime input types",
+    smokeFixtureSource,
+    'from "../../types/gravityRuntimeInput"',
+  );
+  assertNotIncludes(
+    "smoke fixtures no longer own stored mother profile type",
+    smokeFixtureSource,
+    "export type StoredMotherCodeProfile",
+  );
+  assertNotIncludes(
+    "smoke fixtures no longer own stored persona output type",
+    smokeFixtureSource,
+    "export type StoredPersonaOutputSnapshot",
   );
   assertNotIncludes(
     "gravity no longer owns smoke fixture constants",

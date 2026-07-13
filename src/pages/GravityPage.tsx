@@ -33,8 +33,6 @@ import {
 import {
   resolveChangeExperienceRuntimeSmokeFixture,
   resolveChangeExperienceRuntimeSmokeRevisionAction,
-  type StoredMotherCodeProfile,
-  type StoredPersonaOutputSnapshot,
 } from "../services/fixtures/changeExperienceRuntimeSmokeFixtures";
 import { resolvePrimaryPetalDevFixture } from "../services/fixtures/primaryPetalDevFixtures";
 import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
@@ -54,6 +52,10 @@ import {
   type SpatialIntent,
 } from "../runtime/guanyaoRuntimeEngine";
 import type { ChangeExperiencePresentation } from "../types/changeExperience";
+import type {
+  StoredMotherCodeProfile,
+  StoredPersonaOutputSnapshot,
+} from "../types/gravityRuntimeInput";
 import type { PersonaMigrationImpact, PersonaYaoStage } from "../types/personaTransmission";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
 
