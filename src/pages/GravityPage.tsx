@@ -35,7 +35,6 @@ import {
   resolveChangeExperienceRuntimeSmokeRevisionAction,
 } from "../services/fixtures/changeExperienceRuntimeSmokeFixtures";
 import { resolvePrimaryPetalDevFixture } from "../services/fixtures/primaryPetalDevFixtures";
-import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
 import type {
   CurrentHexagramProfile,
   MotherCodeProfile,
@@ -43,6 +42,7 @@ import type {
   PressureSeed,
   Trigram,
 } from "../types/guanyaoCausalEngine";
+import type { SelectedPressureSeedContext } from "../types/primaryPetal";
 import {
   GuanyaoRuntimeEngine,
   type ExecutionSnapshot,

@@ -1,7 +1,7 @@
 import type {
   PrimaryPetalProtocolDimension,
   SelectedPressureSeedContext,
-} from "../guanyaoPrimaryPetalResolver";
+} from "../../types/primaryPetal";
 
 export const primaryPetalDevFixtures: Readonly<
   Record<PrimaryPetalProtocolDimension, SelectedPressureSeedContext>

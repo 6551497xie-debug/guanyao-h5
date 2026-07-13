@@ -20,6 +20,14 @@ const gravityRuntimeInputTypeSource = fs.readFileSync(
 const runtimeTypeSource = fs.readFileSync(path.join(rootDir, "src/runtime/guanyaoRuntimeTypes.ts"), "utf8");
 const runtimeEngineSource = fs.readFileSync(path.join(rootDir, "src/runtime/guanyaoRuntimeEngine.ts"), "utf8");
 const sceneGraphSource = fs.readFileSync(path.join(rootDir, "src/runtime/sceneGraph.ts"), "utf8");
+const smokeFixtureSource = fs.readFileSync(
+  path.join(rootDir, "src/services/fixtures/changeExperienceRuntimeSmokeFixtures.ts"),
+  "utf8",
+);
+const primaryPetalDevFixtureSource = fs.readFileSync(
+  path.join(rootDir, "src/services/fixtures/primaryPetalDevFixtures.ts"),
+  "utf8",
+);
 const sourceFiles = [
   "src/services/guanyaoPrimaryPetalResolver.ts",
   "src/services/fixtures/primaryPetalDevFixtures.ts",
@@ -164,6 +172,36 @@ try {
     "runtime engine keeps primary petal runtime functions",
     runtimeEngineSource,
     'import { derivePrimaryPetal, toProtocolPrimaryPetal } from "../services/guanyaoPrimaryPetalResolver"',
+  );
+  assertIncludes(
+    "gravity consumes neutral selected pressure context type",
+    gravityPageSource,
+    'from "../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "gravity no longer depends on primary petal service types",
+    gravityPageSource,
+    "guanyaoPrimaryPetalResolver",
+  );
+  assertIncludes(
+    "change experience smoke fixtures consume neutral primary petal type",
+    smokeFixtureSource,
+    'from "../../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "change experience smoke fixtures no longer depend on primary petal service types",
+    smokeFixtureSource,
+    "guanyaoPrimaryPetalResolver",
+  );
+  assertIncludes(
+    "primary petal dev fixtures consume neutral primary petal types",
+    primaryPetalDevFixtureSource,
+    'from "../../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "primary petal dev fixtures no longer depend on primary petal service types",
+    primaryPetalDevFixtureSource,
+    "guanyaoPrimaryPetalResolver",
   );
 
   console.log(`\n[PRIMARY PETAL RESOLVER] PASS: ${fixtures.length}/${fixtures.length} fixture(s) matched.`);

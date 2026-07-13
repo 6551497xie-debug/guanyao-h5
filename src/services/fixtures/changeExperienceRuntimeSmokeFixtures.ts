@@ -1,8 +1,8 @@
-import type { SelectedPressureSeedContext } from "../guanyaoPrimaryPetalResolver";
 import type {
   StoredMotherCodeProfile,
   StoredPersonaOutputSnapshot,
 } from "../../types/gravityRuntimeInput";
+import type { SelectedPressureSeedContext } from "../../types/primaryPetal";
 import {
   actionFiveAwarenessChangeExperiencePresentation,
   bodyAwarenessChangeExperiencePresentation,
