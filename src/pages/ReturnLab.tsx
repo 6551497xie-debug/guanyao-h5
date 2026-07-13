@@ -12,12 +12,17 @@
 //   唯一动作：拉动空槽 → 走今日这一局。
 //   底部署名：观爻 · GUANYAO。
 //
-//   持久化 localStorage `guanyao:returnTraj`：走一局加一点 → 下次进入轨迹更长（续写）。
+//   轨迹由版本化持久化边界续写：走一局加一点 → 下次进入轨迹更长。
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
+import {
+  GUANYAO_RETURN_TRAJECTORY_MAX_POINTS,
+  readPersistedReturnTrajectory,
+  writeReturnTrajectory,
+} from "../services/guanyaoReturnTrajectoryPersistenceAdapter";
 
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
 const SANS = "-apple-system, system-ui, sans-serif";
@@ -31,7 +36,7 @@ const CFG = {
   voidMs: 0.35,
   revealMs: 1.1, // 轨迹亮出
   igniteMs: 0.9, // "进入今日这一局…"
-  maxPoints: 14,
+  maxPoints: GUANYAO_RETURN_TRAJECTORY_MAX_POINTS,
   particleBudget: 90,
 };
 
@@ -43,8 +48,6 @@ const COLOR = {
   bone: "#555555",
 };
 
-const TRAJ_KEY = "guanyao:returnTraj";
-
 function clamp(v: number, a: number, b: number) {
   return Math.min(Math.max(v, a), b);
 }
@@ -55,26 +58,6 @@ function smooth(e0: number, e1: number, x: number) {
   const t = clamp((x - e0) / (e1 - e0), 0, 1);
   return t * t * (3 - 2 * t);
 }
-function loadHistory(): number[] {
-  try {
-    const raw = window.localStorage.getItem(TRAJ_KEY);
-    if (raw) {
-      const arr = JSON.parse(raw);
-      if (Array.isArray(arr) && arr.length && arr.every((n) => typeof n === "number")) return arr.slice(-CFG.maxPoints);
-    }
-  } catch {
-    /* ignore */
-  }
-  return [0.5, 0.62, 0.45, 0.58, 0.5, 0.4];
-}
-function saveHistory(h: number[]) {
-  try {
-    window.localStorage.setItem(TRAJ_KEY, JSON.stringify(h.slice(-CFG.maxPoints)));
-  } catch {
-    /* ignore */
-  }
-}
-
 type Particle = { x: number; y: number; vx: number; vy: number; alpha: number; active: boolean };
 
 function makeAudio() {
@@ -147,7 +130,7 @@ export function ReturnLab() {
       pulsed: false,
       entryT: 0,
       woken: false,
-      history: loadHistory(),
+      history: readPersistedReturnTrajectory(),
       lastVal: 0.5,
       pull: 0,
       dragging: false,
@@ -187,7 +170,7 @@ export function ReturnLab() {
     }
 
     function reset() {
-      m.history = loadHistory();
+      m.history = readPersistedReturnTrajectory();
       m.lastVal = m.history[m.history.length - 1] ?? 0.5;
       m.state = "VOID";
       m.voidT = 0;
@@ -269,7 +252,7 @@ export function ReturnLab() {
             m.appended = true;
             const nv = clamp(m.lastVal + (Math.random() - 0.5) * 0.3, 0.05, 0.95);
             m.history = [...m.history, nv].slice(-CFG.maxPoints);
-            saveHistory(m.history);
+            writeReturnTrajectory(m.history);
           }
           if (m.igniteT >= CFG.igniteMs) navRef.current("/dynamics"); // 走今日这一局：进入新六维花冠主链路
           break;
