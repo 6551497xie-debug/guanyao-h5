@@ -289,7 +289,7 @@ export function AxisLinePage({ onAxisEvent }: { onAxisEvent?: (e: AxisEvent) => 
       vibrate([0, 28, 18, 40]);
     }
 
-    // REBOUND = behavior crystallization point —— 双通道：emit + 现实生成跳转
+    // REBOUND 完成只输出语义事件与显式路由状态，不建立无消费者的本地影子快照。
     function finish(now: number) {
       if (m.fired) return;
       m.fired = true;
@@ -299,13 +299,6 @@ export function AxisLinePage({ onAxisEvent }: { onAxisEvent?: (e: AxisEvent) => 
       const payload = { finalProgress: 1, mode, timestamp };
       // ① 系统事件输出
       emit("REBOUND_COMPLETE", payload);
-      // 行为结构体固化（现实沉积）
-      const axisBehaviorAsset = axisLineSystem.crystallizeAxisBehaviorAsset(m.run);
-      try {
-        window.localStorage.setItem("guanyao:axisBehaviorAsset", JSON.stringify(axisBehaviorAsset));
-      } catch {
-        /* storage unavailable — event channel already fired */
-      }
       // ② 现实生成跳转
       navigate(GUANYAO_ROUTES.motherCode, {
         state: { source: "axis-rebound", reboundComplete: payload },
