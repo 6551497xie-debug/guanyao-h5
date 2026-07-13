@@ -22,6 +22,7 @@ export type StoredPersonaOutputSnapshot = {
 };
 
 export type StoredOriginMotherContext = {
+  schemaVersion?: "GUANYAO_ORIGIN_MOTHER_CONTEXT_V2";
   source?: string;
   geo?: {
     province?: string;

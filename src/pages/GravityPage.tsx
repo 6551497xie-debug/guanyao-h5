@@ -36,6 +36,7 @@ import {
 } from "../services/fixtures/changeExperienceRuntimeSmokeFixtures";
 import { resolvePrimaryPetalDevFixture } from "../services/fixtures/primaryPetalDevFixtures";
 import { resolveStoredMotherFourSymbol } from "../services/guanyaoStoredMotherContextAdapter";
+import { readPersistedOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
 import { readPersistedPersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
 import type {
   CurrentHexagramProfile,
@@ -176,7 +177,7 @@ function readDynamicsInputContext(): DynamicsInputContext {
     motherCodeProfile:
       smokeFixture?.motherCodeProfile ??
       readJsonFromStorage<StoredMotherCodeProfile>("guanyao:motherCodeProfile"),
-    originMotherContext: readJsonFromStorage<StoredOriginMotherContext>("guanyao:originMotherContext"),
+    originMotherContext: readPersistedOriginMotherContext() as StoredOriginMotherContext | null,
     personaOutputSnapshot:
       smokeFixture?.personaOutputSnapshot ??
       readPersistedPersonaOutputSnapshot() as StoredPersonaOutputSnapshot | null,
