@@ -8,6 +8,8 @@
  * It only normalizes already-locked cached output for static rendering.
  */
 
+import { readPersistedPersonaOutputSnapshot } from "./guanyaoPersonaSnapshotPersistenceAdapter";
+
 export type CachedStarOrigin =
   | {
       index?: number;
@@ -31,19 +33,6 @@ export type MotherCardReadonlySnapshot = {
   trigram: string;
   cacheStatus: "hit" | "missing";
 };
-
-const PERSONA_SNAPSHOT_KEY = "guanyao:personaOutputSnapshot";
-
-function readJson(key: string): unknown | null {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const raw = window.localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -72,7 +61,7 @@ function normalizeCachedPersonaOutput(value: unknown): CachedPersonaOutput | nul
 }
 
 export function readCachedPersonaOutput(): CachedPersonaOutput | null {
-  return normalizeCachedPersonaOutput(readJson(PERSONA_SNAPSHOT_KEY));
+  return normalizeCachedPersonaOutput(readPersistedPersonaOutputSnapshot());
 }
 
 function formatStarOrigin(starOrigin: CachedStarOrigin) {

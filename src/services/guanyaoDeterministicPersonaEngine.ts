@@ -17,6 +17,11 @@
  */
 
 import { serializeMotherCodeCard, type MotherCodeCard } from "./guanyaoMotherCodeCardProtocol";
+import {
+  GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION,
+  readPersistedPersonaOutputSnapshot,
+  writePersonaOutputSnapshot,
+} from "./guanyaoPersonaSnapshotPersistenceAdapter";
 
 export type ChronoInput = {
   year: number;
@@ -77,6 +82,7 @@ export type PersonaGenerationResult = {
 };
 
 export type PersonaOutputSnapshot = {
+  schemaVersion: typeof GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION;
   chrono: string;
   motherCode: string;
   starbeast: {
@@ -100,7 +106,6 @@ export const PERSONA_ENGINE_STATE = {
 } as const;
 
 const TRIGRAMS = ["乾", "坤", "震", "巽", "坎", "离", "艮", "兑"] as const;
-const PERSONA_SNAPSHOT_KEY = "guanyao:personaOutputSnapshot";
 const DETERMINISTIC_PERSONA_WRITER = "deterministicPersonaEngine" as const;
 
 function stableHash(input: string): number {
@@ -210,7 +215,8 @@ function assertPersonaWriteAuthority(engine: string): asserts engine is typeof D
   }
 }
 
-type LegacyPersonaOutputSnapshot = Omit<PersonaOutputSnapshot, "starbeast"> & {
+type LegacyPersonaOutputSnapshot = Omit<PersonaOutputSnapshot, "schemaVersion" | "starbeast"> & {
+  schemaVersion?: typeof GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION;
   starbeast?: {
     fourSymbol?: Direction;
   };
@@ -219,14 +225,7 @@ type LegacyPersonaOutputSnapshot = Omit<PersonaOutputSnapshot, "starbeast"> & {
 };
 
 function readExistingSnapshot(): LegacyPersonaOutputSnapshot | null {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const raw = window.localStorage.getItem(PERSONA_SNAPSHOT_KEY);
-    return raw ? JSON.parse(raw) as LegacyPersonaOutputSnapshot : null;
-  } catch {
-    return null;
-  }
+  return readPersistedPersonaOutputSnapshot() as LegacyPersonaOutputSnapshot | null;
 }
 
 function resolveSnapshotFourSymbol(snapshot: LegacyPersonaOutputSnapshot) {
@@ -250,6 +249,7 @@ export function buildPersonaOutputSnapshot(result: PersonaGenerationResult): Per
   const motherCodeCard = serializeMotherCodeCard(result);
 
   return Object.freeze({
+    schemaVersion: GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION,
     chrono: `${result.chrono.phase} · ${geoAnchor}`,
     motherCode: result.mother.trigram,
     starbeast: Object.freeze({
@@ -277,9 +277,5 @@ export function writePersonaOutputSnapshotFromDeterministicEngine(result: Person
     return snapshot;
   }
 
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(PERSONA_SNAPSHOT_KEY, JSON.stringify(snapshot));
-  }
-
-  return snapshot;
+  return writePersonaOutputSnapshot(snapshot);
 }

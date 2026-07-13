@@ -10,8 +10,10 @@ const paths = {
   adapter: path.join(rootDir, "src/services/guanyaoStoredMotherContextAdapter.ts"),
   cache: path.join(rootDir, "src/services/guanyaoPersonaSnapshotCache.ts"),
   engine: path.join(rootDir, "src/services/guanyaoDeterministicPersonaEngine.ts"),
+  persistence: path.join(rootDir, "src/services/guanyaoPersonaSnapshotPersistenceAdapter.ts"),
   runtimeTypes: path.join(rootDir, "src/types/gravityRuntimeInput.ts"),
   launch: path.join(rootDir, "src/pages/LaunchLab.tsx"),
+  gravity: path.join(rootDir, "src/pages/GravityPage.tsx"),
   motherLab: path.join(rootDir, "src/pages/MotherLab.tsx"),
   fixtures: path.join(rootDir, "src/services/fixtures/changeExperienceRuntimeSmokeFixtures.ts"),
 };
@@ -58,10 +60,11 @@ globalThis.window = {
 };
 
 try {
-  const [adapterModule, cacheModule, engineModule] = await Promise.all([
+  const [adapterModule, cacheModule, engineModule, persistenceModule] = await Promise.all([
     bundleAndImport(paths.adapter, "adapter.mjs"),
     bundleAndImport(paths.cache, "cache.mjs"),
     bundleAndImport(paths.engine, "engine.mjs"),
+    bundleAndImport(paths.persistence, "persistence.mjs"),
   ]);
   const { resolveStoredMotherFourSymbol } = adapterModule;
   const { readCachedPersonaOutput } = cacheModule;
@@ -70,6 +73,11 @@ try {
     generatePersona,
     writePersonaOutputSnapshotFromDeterministicEngine,
   } = engineModule;
+  const {
+    GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION,
+    readPersistedPersonaOutputSnapshot,
+    writePersonaOutputSnapshot,
+  } = persistenceModule;
 
   const context = (originMotherContext, personaOutputSnapshot) => ({
     selectedPressureSeedContext: null,
@@ -113,6 +121,28 @@ try {
     direction: "白虎",
   }));
   assertEqual("MotherLab cache reads legacy direction", readCachedPersonaOutput()?.fourSymbol, "白虎");
+  assertEqual(
+    "persistence adapter reads unversioned legacy snapshot",
+    readPersistedPersonaOutputSnapshot()?.direction,
+    "白虎",
+  );
+
+  const versionedByAdapter = writePersonaOutputSnapshot({
+    motherCode: "兑",
+    trigram: "兑",
+    starbeast: { fourSymbol: "青龙" },
+  });
+  assertEqual(
+    "persistence adapter attaches schema version",
+    versionedByAdapter.schemaVersion,
+    GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION,
+  );
+  assertEqual("persistence adapter preserves snapshot immutability", Object.isFrozen(versionedByAdapter), true);
+  assertEqual(
+    "persistence adapter stores schema version",
+    JSON.parse(storage.get("guanyao:personaOutputSnapshot")).schemaVersion,
+    "GUANYAO_PERSONA_SNAPSHOT_V2",
+  );
 
   const generationInput = {
     chrono: { year: 1995, month: 6, day: 2, hour: "酉时" },
@@ -120,15 +150,26 @@ try {
   };
   const result = generatePersona(generationInput);
   const formalSnapshot = buildPersonaOutputSnapshot(result);
+  assertEqual("deterministic snapshot declares schema version", formalSnapshot.schemaVersion, "GUANYAO_PERSONA_SNAPSHOT_V2");
   assertEqual("deterministic writer builds formal fourSymbol", formalSnapshot.starbeast.fourSymbol, result.direction);
   assertEqual("deterministic writer omits direction", "direction" in formalSnapshot, false);
   assertEqual("deterministic writer omits fourBeast", "fourBeast" in formalSnapshot, false);
 
   const legacySnapshot = { ...formalSnapshot, direction: formalSnapshot.starbeast.fourSymbol };
   delete legacySnapshot.starbeast;
+  delete legacySnapshot.schemaVersion;
   storage.set("guanyao:personaOutputSnapshot", JSON.stringify(legacySnapshot));
   const compatibleWrite = writePersonaOutputSnapshotFromDeterministicEngine(result);
   assertEqual("deterministic writer accepts matching legacy cache", compatibleWrite.starbeast.fourSymbol, result.direction);
+  assertEqual("deterministic writer leaves matching legacy cache untouched", JSON.parse(storage.get("guanyao:personaOutputSnapshot")).schemaVersion, undefined);
+
+  storage.clear();
+  writePersonaOutputSnapshotFromDeterministicEngine(result);
+  assertEqual(
+    "deterministic writer delegates versioned persistence",
+    JSON.parse(storage.get("guanyao:personaOutputSnapshot")).schemaVersion,
+    "GUANYAO_PERSONA_SNAPSHOT_V2",
+  );
 
   const storedTypeBlock = sources.runtimeTypes.slice(
     sources.runtimeTypes.indexOf("export type StoredPersonaOutputSnapshot"),
@@ -143,6 +184,7 @@ try {
     sources.engine.indexOf("export const PERSONA_ENGINE_STATE"),
   );
   assertIncludes("formal stored persona type owns starbeast", storedTypeBlock, "starbeast?: {");
+  assertIncludes("stored persona type recognizes schema version", storedTypeBlock, 'schemaVersion?: "GUANYAO_PERSONA_SNAPSHOT_V2"');
   assertIncludes("formal stored persona type owns fourSymbol", storedTypeBlock, "fourSymbol?: string;");
   assertExcludes("formal stored persona type excludes fourBeast", storedTypeBlock, "fourBeast?:");
   assertExcludes("formal stored persona type excludes direction", storedTypeBlock, "direction?:");
@@ -150,8 +192,18 @@ try {
   assertIncludes("Launch writes formal persona fourSymbol", launchSnapshotBlock, "fourSymbol: reveal.starbeast.fourSymbol");
   assertExcludes("Launch stops persona fourBeast writes", launchSnapshotBlock, "fourBeast:");
   assertExcludes("Launch stops persona direction writes", launchSnapshotBlock, "direction:");
+  assertIncludes("Launch delegates persona persistence", sources.launch, "writePersonaOutputSnapshot(personaOutputSnapshot)");
+  assertExcludes("Launch does not own persona storage key", sources.launch, "guanyao:personaOutputSnapshot");
   assertIncludes("deterministic snapshot type owns formal starbeast", engineSnapshotTypeBlock, "starbeast: {");
+  assertIncludes("deterministic snapshot type owns schema version", engineSnapshotTypeBlock, "schemaVersion: typeof GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION");
   assertExcludes("deterministic snapshot type excludes direction", engineSnapshotTypeBlock, "direction: Direction;");
+  assertIncludes("deterministic writer delegates persona persistence", sources.engine, "writePersonaOutputSnapshot(snapshot)");
+  assertExcludes("deterministic engine does not own persona storage key", sources.engine, "guanyao:personaOutputSnapshot");
+  assertIncludes("persistence adapter owns persona storage key", sources.persistence, 'GUANYAO_PERSONA_SNAPSHOT_STORAGE_KEY = "guanyao:personaOutputSnapshot"');
+  assertIncludes("persistence adapter owns schema version", sources.persistence, 'GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION = "GUANYAO_PERSONA_SNAPSHOT_V2"');
+  assertExcludes("MotherLab cache does not own persona storage key", sources.cache, "guanyao:personaOutputSnapshot");
+  assertIncludes("Gravity delegates persona snapshot reading", sources.gravity, "readPersistedPersonaOutputSnapshot()");
+  assertExcludes("Gravity does not own persona storage key", sources.gravity, "guanyao:personaOutputSnapshot");
   assertIncludes("MotherLab consumes normalized fourSymbol", sources.motherLab, "snapshot.fourSymbol");
   assertExcludes("formal smoke fixtures exclude fourBeast", sources.fixtures, "fourBeast:");
   assertExcludes("formal smoke fixtures exclude direction", sources.fixtures, "direction:");

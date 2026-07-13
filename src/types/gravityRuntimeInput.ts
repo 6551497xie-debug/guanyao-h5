@@ -11,6 +11,7 @@ export type StoredMotherCodeProfile = Partial<MotherCodeProfile> & {
 };
 
 export type StoredPersonaOutputSnapshot = {
+  schemaVersion?: "GUANYAO_PERSONA_SNAPSHOT_V2";
   motherCode?: string;
   motherCodeName?: string;
   trigram?: string;
