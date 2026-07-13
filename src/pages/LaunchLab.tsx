@@ -1056,7 +1056,7 @@ export function LaunchLab() {
       chronoStep: 0,
       geo: { provinceIndex: DEFAULT_PROVINCE_INDEX >= 0 ? DEFAULT_PROVINCE_INDEX : 0, cityIndex: DEFAULT_CITY_INDEX >= 0 ? DEFAULT_CITY_INDEX : 0 },
       geoStep: 0,
-      originMotherContextPersisted: false,
+      originMotherContextPersistenceAttempted: false,
       dialFloat: 1995,
       railProgress: 0,
       clutched: false,
@@ -1315,7 +1315,7 @@ export function LaunchLab() {
       });
     }
     function persistOriginMotherContext(reveal: GeoChronoMotherFusionResult) {
-      if (m.pendingAxisMode !== "NEW_USER" || m.originMotherContextPersisted) return;
+      if (m.pendingAxisMode !== "NEW_USER" || m.originMotherContextPersistenceAttempted) return;
 
       const { profile, definition, trigram } = reveal.mother;
       const motherCodeProfile = {
@@ -1361,9 +1361,9 @@ export function LaunchLab() {
         writeMotherCodeProfile(motherCodeProfile);
         writeOriginMotherContext(originMotherContext);
         writePersonaOutputSnapshot(personaOutputSnapshot);
-        m.originMotherContextPersisted = true;
+        m.originMotherContextPersistenceAttempted = true;
       } catch (error) {
-        console.warn("[LaunchLab] failed to persist origin mother context", error);
+        console.warn("[LaunchLab] failed to persist launch mother assets", error);
       }
     }
     function buildEntryTransitionSnapshot(): EntryTransitionSnapshot {
@@ -1393,7 +1393,7 @@ export function LaunchLab() {
     function resetOriginTuningFlow() {
       m.chronoStep = 0;
       m.geoStep = 0;
-      m.originMotherContextPersisted = false;
+      m.originMotherContextPersistenceAttempted = false;
       m.railProgress = 0;
       m.phaseX = 0;
       m.dragging = false;

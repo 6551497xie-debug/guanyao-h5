@@ -100,10 +100,14 @@ try {
   );
 
   const storage = new Map();
+  let rejectWrites = false;
   globalThis.window = {
     localStorage: {
       getItem: (key) => storage.get(key) ?? null,
-      setItem: (key, value) => storage.set(key, value),
+      setItem: (key, value) => {
+        if (rejectWrites) throw new Error("storage write rejected");
+        storage.set(key, value);
+      },
     },
   };
   storage.set("guanyao:originMotherContext", JSON.stringify({ source: "legacy", trigram: "兑" }));
@@ -125,6 +129,48 @@ try {
     "GUANYAO_ORIGIN_MOTHER_CONTEXT_V2",
   );
 
+  rejectWrites = true;
+  const rejectedWriteContext = writeOriginMotherContext({ source: "launch-lab", trigram: "坎" });
+  rejectWrites = false;
+  assertEqual(
+    "rejected storage write preserves resolved context",
+    rejectedWriteContext.trigram,
+    "坎",
+  );
+  assertEqual(
+    "rejected storage write preserves schema version",
+    rejectedWriteContext.schemaVersion,
+    GUANYAO_ORIGIN_MOTHER_CONTEXT_SCHEMA_VERSION,
+  );
+  assertEqual(
+    "rejected storage write preserves context immutability",
+    Object.isFrozen(rejectedWriteContext),
+    true,
+  );
+  assertEqual(
+    "rejected storage write does not replace persisted context",
+    JSON.parse(storage.get("guanyao:originMotherContext")).trigram,
+    "震",
+  );
+
+  const availableWindow = globalThis.window;
+  globalThis.window = {};
+  const unavailableStorageContext = writeOriginMotherContext({
+    source: "launch-lab",
+    trigram: "离",
+  });
+  globalThis.window = availableWindow;
+  assertEqual(
+    "unavailable storage preserves resolved context",
+    unavailableStorageContext.trigram,
+    "离",
+  );
+  assertEqual(
+    "unavailable storage preserves context immutability",
+    Object.isFrozen(unavailableStorageContext),
+    true,
+  );
+
   const originPersistenceBlock = launchSource.slice(
     launchSource.indexOf("const originMotherContext ="),
     launchSource.indexOf("const personaOutputSnapshot ="),
@@ -144,6 +190,16 @@ try {
   assertExcludes("formal stored context excludes top-level fourBeast", storedContextBlock, "fourBeast?:");
   assertIncludes("new writes persist complete starbeast context", originPersistenceBlock, "starbeast: reveal.starbeast");
   assertIncludes("Launch delegates origin context persistence", launchSource, "writeOriginMotherContext(originMotherContext)");
+  assertIncludes(
+    "Launch names persistence latch as an attempt",
+    launchSource,
+    "originMotherContextPersistenceAttempted",
+  );
+  assertExcludes(
+    "Launch does not mislabel persistence attempt as success",
+    launchSource,
+    "originMotherContextPersisted",
+  );
   assertExcludes("Launch does not own origin context storage key", launchSource, "guanyao:originMotherContext");
   assertExcludes("new writes stop top-level fourBeast mirror", originPersistenceBlock, "fourBeast:");
   assertExcludes("fusion geo contract does not carry symbol", geoResultBlock, "symbol:");

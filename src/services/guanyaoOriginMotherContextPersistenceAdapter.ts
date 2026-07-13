@@ -26,10 +26,14 @@ export function writeOriginMotherContext<T extends object>(
   }) as VersionedOriginMotherContext<T>;
 
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(
-      GUANYAO_ORIGIN_MOTHER_CONTEXT_STORAGE_KEY,
-      JSON.stringify(versionedContext),
-    );
+    try {
+      window.localStorage.setItem(
+        GUANYAO_ORIGIN_MOTHER_CONTEXT_STORAGE_KEY,
+        JSON.stringify(versionedContext),
+      );
+    } catch {
+      // Persistence is optional; the resolved origin mother context remains available.
+    }
   }
 
   return versionedContext;
