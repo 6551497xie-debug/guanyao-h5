@@ -18,7 +18,6 @@ import { readPersistedBreachSelectionState } from "../services/guanyaoBreachSele
 import { getMotherCodeAsset } from "../services/guanyaoMotherCodeAssetService";
 import type { ArchiveItem, CausalContextPackage, YaoBit } from "../types";
 
-const SELECTED_PRESSURE_EXPOSURE_KEY = "guanyao:selectedPressureExposureId";
 const USE_R7_ARCHIVE_SHELL = true;
 
 function formatArchiveTime(createdAt: string) {
@@ -643,9 +642,7 @@ export function ArchivePage() {
   const demoBreachScan = getDemoBreachScan();
   const demoBreachSelection = readPersistedBreachSelectionState();
   const demoAssetStatus = demoBreachSelection?.assetStatus === "sealed" ? "sealed" : "activated";
-  const demoPressureExposureId = window.localStorage.getItem(SELECTED_PRESSURE_EXPOSURE_KEY) ?? "hide-collapse";
   const demoPressureExposure =
-    demoPressureExposureOptions.find((option) => option.id === demoPressureExposureId) ??
     demoPressureExposureOptions.find((option) => option.id === "hide-collapse") ??
     demoPressureExposureOptions[0];
   const demoBreachId = demoBreachSelection?.selectedBreachId ?? demoBreachScan.mainBreachId;

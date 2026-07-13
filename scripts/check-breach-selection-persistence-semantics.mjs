@@ -100,6 +100,16 @@ try {
   assertIncludes("Migration delegates persisted state reading", sources.migration, "readPersistedBreachSelectionState()");
   assertIncludes("Migration delegates persisted state writing", sources.migration, "writeBreachSelectionState({");
   assertIncludes("Archive delegates persisted state reading", sources.archive, "readPersistedBreachSelectionState()");
+  assertExcludes(
+    "Archive does not read orphaned pressure exposure selection",
+    sources.archive,
+    "guanyao:selectedPressureExposureId",
+  );
+  assertIncludes(
+    "Archive preserves the pressure exposure fallback",
+    sources.archive,
+    'option.id === "hide-collapse"',
+  );
   assertIncludes(
     "adapter owns V2 storage key",
     sources.persistence,
