@@ -9,6 +9,10 @@ import { yaoCodes } from "../data/yaoCodes";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { saveArchive } from "../services/archiveService";
 import { buildYaoCodeCard, buildYaoCodeResult, normalizeGuaFieldFromLegacy } from "../services/codeContractService";
+import {
+  readPersistedBreachSelectionState,
+  writeBreachSelectionState,
+} from "../services/guanyaoBreachSelectionPersistenceAdapter";
 import { getMotherCodeAsset } from "../services/guanyaoMotherCodeAssetService";
 import {
   activateYaoDeviceByBreachId,
@@ -21,8 +25,6 @@ import { consumeEnergy, getTimeSandglassState } from "../services/timeSandglassS
 import { buildFinalChoiceCode } from "../services/trajectoryService";
 import type { CausalContextPackage, GuanyaoSession, MigrationCard, RepairTargetResult, YaoCodeCard, YaoCodeResult } from "../types";
 
-const SELECTED_BREACH_KEY = "guanyao:selectedBreachId";
-const ASSET_STATUS_KEY = "guanyao:assetStatus";
 const USE_R7_DELIVERY_SHELL = true;
 
 const ninetyDayScriptBills = [
@@ -264,14 +266,13 @@ function BehaviorDefenseKit() {
 
 function R7DeliveryShell({ mode }: { mode: "device" | "repair" }) {
   const navigate = useNavigate();
-  const selectedBreachId = window.localStorage.getItem(SELECTED_BREACH_KEY) ?? "mud-point";
+  const selectedBreachId = readPersistedBreachSelectionState()?.selectedBreachId ?? "mud-point";
   const readModel = getGuanyaoR8ReadModel();
   const isRepair = mode === "repair";
 
   function handleNext() {
     if (isRepair) {
-      window.localStorage.setItem(ASSET_STATUS_KEY, "activated");
-      window.localStorage.setItem(SELECTED_BREACH_KEY, selectedBreachId);
+      writeBreachSelectionState({ selectedBreachId, assetStatus: "activated" });
       navigate(GUANYAO_ROUTES.archive);
       return;
     }
@@ -451,7 +452,8 @@ export function MigrationPage() {
   const yaoCodeCard = useMemo(() => buildYaoCodeCard(session, card, finalChoiceCode, yaoCode), [card, finalChoiceCode, session, yaoCode]);
   const repairTarget = useMemo(() => buildRepairTarget(session, card, yaoCodeCard), [card, session, yaoCodeCard]);
   const breachScan = getDemoBreachScan();
-  const selectedBreachId = window.localStorage.getItem(SELECTED_BREACH_KEY) ?? breachScan.mainBreachId;
+  const selectedBreachId =
+    readPersistedBreachSelectionState()?.selectedBreachId ?? breachScan.mainBreachId;
   const selectedBreach =
     breachScan.breaches.find((breach) => breach.id === selectedBreachId) ??
     breachScan.breaches.find((breach) => breach.id === breachScan.mainBreachId) ??
@@ -463,8 +465,10 @@ export function MigrationPage() {
   const demoPressureSeed = getDemoPressureSeed();
 
   function handleSave() {
-    window.localStorage.setItem(ASSET_STATUS_KEY, "activated");
-    window.localStorage.setItem(SELECTED_BREACH_KEY, selectedBreach?.id ?? breachScan.mainBreachId);
+    writeBreachSelectionState({
+      selectedBreachId: selectedBreach?.id ?? breachScan.mainBreachId,
+      assetStatus: "activated",
+    });
     const timeSandglass = consumeEnergy("archive_save", 0, "压入人格资产年轮");
     updateSession({
       yaoCode,

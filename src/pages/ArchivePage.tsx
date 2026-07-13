@@ -14,11 +14,10 @@ import {
   getRepairMethodByDeviceId,
 } from "../services/guanyaoInteractionService";
 import { getArchives } from "../services/archiveService";
+import { readPersistedBreachSelectionState } from "../services/guanyaoBreachSelectionPersistenceAdapter";
 import { getMotherCodeAsset } from "../services/guanyaoMotherCodeAssetService";
 import type { ArchiveItem, CausalContextPackage, YaoBit } from "../types";
 
-const SELECTED_BREACH_KEY = "guanyao:selectedBreachId";
-const ASSET_STATUS_KEY = "guanyao:assetStatus";
 const SELECTED_PRESSURE_EXPOSURE_KEY = "guanyao:selectedPressureExposureId";
 const USE_R7_ARCHIVE_SHELL = true;
 
@@ -642,13 +641,14 @@ export function ArchivePage() {
   const demoPressure = getDemoPressureSeed();
   const demoPressureExposureOptions = getDemoPressureExposureOptions();
   const demoBreachScan = getDemoBreachScan();
-  const demoAssetStatus = window.localStorage.getItem(ASSET_STATUS_KEY) === "sealed" ? "sealed" : "activated";
+  const demoBreachSelection = readPersistedBreachSelectionState();
+  const demoAssetStatus = demoBreachSelection?.assetStatus === "sealed" ? "sealed" : "activated";
   const demoPressureExposureId = window.localStorage.getItem(SELECTED_PRESSURE_EXPOSURE_KEY) ?? "hide-collapse";
   const demoPressureExposure =
     demoPressureExposureOptions.find((option) => option.id === demoPressureExposureId) ??
     demoPressureExposureOptions.find((option) => option.id === "hide-collapse") ??
     demoPressureExposureOptions[0];
-  const demoBreachId = window.localStorage.getItem(SELECTED_BREACH_KEY) ?? demoBreachScan.mainBreachId;
+  const demoBreachId = demoBreachSelection?.selectedBreachId ?? demoBreachScan.mainBreachId;
   const demoBreach =
     demoBreachScan.breaches.find((breach) => breach.id === demoBreachId) ??
     demoBreachScan.breaches.find((breach) => breach.id === demoBreachScan.mainBreachId) ??

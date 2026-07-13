@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { getGuanyaoR8ReadModel } from "../adapters/guanyaoR8ReadModelAdapter";
 import { CausalRail } from "../components/causal/CausalRail";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
-
-const SELECTED_BREACH_KEY = "guanyao:selectedBreachId";
-const ASSET_STATUS_KEY = "guanyao:assetStatus";
+import {
+  readPersistedBreachSelectionState,
+  writeBreachSelectionState,
+} from "../services/guanyaoBreachSelectionPersistenceAdapter";
 
 export function ChoicePage() {
   const navigate = useNavigate();
@@ -37,19 +38,21 @@ export function ChoicePage() {
     },
   ] as const;
   const [selectedBreachId, setSelectedBreachId] = useState(() => {
-    return window.localStorage.getItem(SELECTED_BREACH_KEY) ?? breaches[0].id;
+    return readPersistedBreachSelectionState()?.selectedBreachId ?? breaches[0].id;
   });
 
   const selectedBreach = breaches.find((breach) => breach.id === selectedBreachId) ?? breaches[0];
 
   function handleSelectBreach(breachId: string) {
     setSelectedBreachId(breachId);
-    window.localStorage.setItem(SELECTED_BREACH_KEY, breachId);
+    writeBreachSelectionState({ selectedBreachId: breachId });
   }
 
   function handleCommitCut() {
-    window.localStorage.setItem(SELECTED_BREACH_KEY, selectedBreach.id);
-    window.localStorage.setItem(ASSET_STATUS_KEY, "activated");
+    writeBreachSelectionState({
+      selectedBreachId: selectedBreach.id,
+      assetStatus: "activated",
+    });
     navigate(GUANYAO_ROUTES.yaoDevice);
   }
 
