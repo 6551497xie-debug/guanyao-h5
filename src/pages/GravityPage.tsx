@@ -20,6 +20,10 @@ import {
   type RuntimeCurrentCrystalEndState as CurrentCrystalEndState,
 } from "../services/hexagramCrystalRuntimeEndpointService";
 import { formRuntimePersonaMigrationImpact } from "../services/personaMigrationImpactRuntimeService";
+import {
+  resolveChangeExperienceRuntimeRoute,
+  type ChangeExperienceRuntimeRoute,
+} from "../services/changeExperienceRuntimeRoutingService";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
 import {
   createPersonalityRingLiteEntryFromCrystal,
@@ -34,14 +38,6 @@ import {
   motivationDriveChangeExperiencePresentation,
   thoughtChangeCognitionChangeExperiencePresentation,
 } from "../services/fixtures/changeExperiencePresentationFixtures";
-import {
-  actionFiveAwarenessChangeExperienceUnit,
-  bodyAwarenessChangeExperienceUnit,
-  emotionChangeAwarenessChangeExperienceUnit,
-  memoryWisdomChangeExperienceUnit,
-  motivationDriveChangeExperienceUnit,
-  thoughtChangeCognitionChangeExperienceUnit,
-} from "../services/fixtures/changeExperienceFixtures";
 import { actionFiveAwarenessRuntimeUnit } from "../services/fixtures/personaTransmissionFixtures";
 import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
 import type {
@@ -59,8 +55,8 @@ import {
   type SixSpaceId,
   type SpatialIntent,
 } from "../runtime/guanyaoRuntimeEngine";
-import type { ChangeExperiencePresentation, ChangeExperienceUnit } from "../types/changeExperience";
-import type { PersonaDimension, PersonaMigrationImpact, PersonaYaoStage } from "../types/personaTransmission";
+import type { ChangeExperiencePresentation } from "../types/changeExperience";
+import type { PersonaMigrationImpact, PersonaYaoStage } from "../types/personaTransmission";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
 
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
@@ -385,81 +381,28 @@ type SingleModelRevisionAction = {
   userAgency: number;
 };
 
-function resolveChangeExperienceUnitForAction(
-  action: SingleModelRevisionAction | null,
-  experienceSmokeFixture: string | null,
-): ChangeExperienceUnit | null {
-  if (!action) return null;
-
-  const isActionSpace = action.layerLabel === "行动" || action.layerLabel === "行为";
-  const isBodySpace = action.layerLabel === "身体";
-  const isEmotionSpace = action.layerLabel === "情绪";
-  const isMemorySpace = action.layerLabel === "记忆";
-  const isMotivationSpace = action.layerLabel === "动机" || action.layerLabel === "目标";
-  const isThoughtSpace = action.layerLabel === "思想" || action.layerLabel === "思维";
-  const isAwarenessYao = action.yaoName.includes("五爻") || action.yaoName.includes("觉察");
-  const isActionFiveSmoke = experienceSmokeFixture === "action-five";
-  const isBodyAwarenessSmoke = experienceSmokeFixture === "body-awareness" || experienceSmokeFixture === "body";
-  const isEmotionChangeSmoke = experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion";
-  const isMemoryWisdomSmoke = experienceSmokeFixture === "memory-wisdom" || experienceSmokeFixture === "memory";
-  const isMotivationDriveSmoke = experienceSmokeFixture === "motivation-drive" || experienceSmokeFixture === "motivation";
-  const isThoughtChangeSmoke = experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought";
-
-  if (isActionSpace && (isAwarenessYao || isActionFiveSmoke)) return actionFiveAwarenessChangeExperienceUnit;
-  if (isBodySpace && (isAwarenessYao || isBodyAwarenessSmoke)) return bodyAwarenessChangeExperienceUnit;
-  if (isEmotionSpace && (isAwarenessYao || isEmotionChangeSmoke)) return emotionChangeAwarenessChangeExperienceUnit;
-  if (isMemorySpace && (isAwarenessYao || isMemoryWisdomSmoke)) return memoryWisdomChangeExperienceUnit;
-  if (isMotivationSpace && (isAwarenessYao || isMotivationDriveSmoke)) return motivationDriveChangeExperienceUnit;
-  if (isThoughtSpace && (isAwarenessYao || isThoughtChangeSmoke)) return thoughtChangeCognitionChangeExperienceUnit;
-
-  return null;
-}
-
-function resolveChangeExperiencePresentationForUnit(
-  changeExperienceUnit: ChangeExperienceUnit | null,
-): ChangeExperiencePresentation | null {
-  if (!changeExperienceUnit) return null;
-  if (changeExperienceUnit === actionFiveAwarenessChangeExperienceUnit) return actionFiveAwarenessChangeExperiencePresentation;
-  if (changeExperienceUnit === bodyAwarenessChangeExperienceUnit) return bodyAwarenessChangeExperiencePresentation;
-  if (changeExperienceUnit === emotionChangeAwarenessChangeExperienceUnit) return emotionChangeAwarenessChangeExperiencePresentation;
-  if (changeExperienceUnit === memoryWisdomChangeExperienceUnit) return memoryWisdomChangeExperiencePresentation;
-  if (changeExperienceUnit === motivationDriveChangeExperienceUnit) return motivationDriveChangeExperiencePresentation;
-  if (changeExperienceUnit === thoughtChangeCognitionChangeExperienceUnit) return thoughtChangeCognitionChangeExperiencePresentation;
-  return null;
-}
-
 function resolveCrystalMigrationImpactForAction(
   action: SingleModelRevisionAction | null,
-  changeExperienceUnit: ChangeExperienceUnit | null,
+  changeExperienceRoute: ChangeExperienceRuntimeRoute | null,
 ): PersonaMigrationImpact | null {
-  if (!action || !changeExperienceUnit) return null;
+  if (!action || !changeExperienceRoute) return null;
 
-  const dimension = resolvePersonaDimensionFromLayerLabel(action.layerLabel);
+  const { dimension, unit } = changeExperienceRoute;
   const yaoStage = resolvePersonaYaoStageFromYaoName(action.yaoName);
-  if (!dimension || !yaoStage) return null;
+  if (!yaoStage) return null;
 
   return formRuntimePersonaMigrationImpact({
     sourceUnitId: `gravity-${dimension}-${yaoStage}`,
     dimension,
     yaoStage,
     domainFacts: {
-      oldReaction: changeExperienceUnit.recognition.oldReaction,
-      revisedResponse: changeExperienceUnit.revision.newResponse,
-      crystalImprint: changeExperienceUnit.meaning.crystalImprint,
-      migrationTrace: changeExperienceUnit.revision.transformationMoment,
-      dominantShift: `${changeExperienceUnit.recognition.rootProtection}:${changeExperienceUnit.recognition.manifestBehavior} → ${changeExperienceUnit.revision.changeType}`,
+      oldReaction: unit.recognition.oldReaction,
+      revisedResponse: unit.revision.newResponse,
+      crystalImprint: unit.meaning.crystalImprint,
+      migrationTrace: unit.revision.transformationMoment,
+      dominantShift: `${unit.recognition.rootProtection}:${unit.recognition.manifestBehavior} → ${unit.revision.changeType}`,
     },
   });
-}
-
-function resolvePersonaDimensionFromLayerLabel(layerLabel: string): PersonaDimension | null {
-  if (layerLabel === "身体") return "body";
-  if (layerLabel === "情绪") return "emotion";
-  if (layerLabel === "思想" || layerLabel === "思维") return "thought";
-  if (layerLabel === "行动" || layerLabel === "行为") return "action";
-  if (layerLabel === "记忆") return "memory";
-  if (layerLabel === "动机" || layerLabel === "目标") return "motivation";
-  return null;
 }
 
 function resolvePersonaYaoStageFromYaoName(yaoName: string): PersonaYaoStage | null {
@@ -3243,17 +3186,14 @@ function HexagramCodeDeliveryShell() {
       resolveSingleModelRevisionAction(dynamicsInputContext, currentHexagramProfile),
     [dynamicsInputContext, currentHexagramProfile, experienceSmokeFixture],
   );
-  const changeExperienceUnit = useMemo(
-    () => resolveChangeExperienceUnitForAction(singleModelRevisionAction, experienceSmokeFixture),
+  const changeExperienceRoute = useMemo(
+    () => resolveChangeExperienceRuntimeRoute(singleModelRevisionAction, experienceSmokeFixture),
     [singleModelRevisionAction, experienceSmokeFixture],
   );
-  const changeExperiencePresentation = useMemo(
-    () => resolveChangeExperiencePresentationForUnit(changeExperienceUnit),
-    [changeExperienceUnit],
-  );
+  const changeExperiencePresentation = changeExperienceRoute?.presentation ?? null;
   const crystalMigrationImpact = useMemo(
-    () => resolveCrystalMigrationImpactForAction(singleModelRevisionAction, changeExperienceUnit),
-    [singleModelRevisionAction, changeExperienceUnit],
+    () => resolveCrystalMigrationImpactForAction(singleModelRevisionAction, changeExperienceRoute),
+    [singleModelRevisionAction, changeExperienceRoute],
   );
   const isRevisionActionPending =
     hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE" &&
@@ -3541,7 +3481,7 @@ function HexagramCodeDeliveryShell() {
           data-model-revision-action={
             isRevisionActionPending ? "pending" : transformationMomentActive ? "transforming" : revisionActionConfirmed ? "confirmed" : "inactive"
           }
-          data-change-experience-presentation={changeExperienceUnit?.dimension ?? "inactive"}
+          data-change-experience-presentation={changeExperienceRoute?.dimension ?? "inactive"}
           data-value-flow-behavior={valueFlow.behaviorSignals.join("|") || "NONE"}
           data-value-flow-pressure={valueFlow.pressureState}
           data-value-flow-emotion={valueFlow.emotionalState}
