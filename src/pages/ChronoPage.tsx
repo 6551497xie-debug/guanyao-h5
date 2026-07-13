@@ -11,11 +11,15 @@ import { GuanyaoShell } from "../components/visual/GuanyaoShell";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildYuanCodeResult } from "../services/codeContractService";
-import { getDemoInitialCoordinates, getDemoMotherCode } from "../services/guanyaoInteractionService";
+import { getDemoMotherCode } from "../services/guanyaoInteractionService";
+import {
+  readPersistedChronoNumericCoordinates,
+  writeChronoNumericCoordinates,
+} from "../services/guanyaoChronoNumericPersistenceAdapter";
 import { runMotherCodeLandingEngine } from "../services/guanyaoLunarMotherCodeLandingAdapter";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { setChronoProfile } from "../services/sessionService";
-import type { ChronoAgeRange, ChronoProfile, ChronoPrototypeCard, InitialCoordinates } from "../types";
+import type { ChronoAgeRange, ChronoProfile, ChronoPrototypeCard } from "../types";
 import type { MotherCodeProfile } from "../types/guanyaoCausalEngine";
 
 const minBirthYear = 1950;
@@ -385,39 +389,14 @@ function buildChronoProfile(birthYear: number, birthMonth: number, birthDay: num
   };
 }
 
-// 老用户回流：读取上次锁定的数值生辰坐标，只用于回填坐标确认页，不跳过时序填装。
-function readNumericChronoCoords(): ChronoCoords | null {
-  try {
-    const raw = window.localStorage.getItem("guanyao:chronoNumeric");
-    if (raw) {
-      const c = JSON.parse(raw);
-      if (c && typeof c.year === "number" && typeof c.month === "number" && typeof c.day === "number" && typeof c.periodIndex === "number") {
-        return { year: c.year, month: c.month, day: c.day, periodIndex: c.periodIndex };
-      }
-    }
-  } catch {
-    /* ignore */
-  }
-  return null;
-}
-
-function persistInitialCoordinates(
-  initialCoordinates: InitialCoordinates,
-  motherCodeProfile: MotherCodeProfile,
-) {
-  window.localStorage.setItem("guanyao:initialCoordinates", JSON.stringify(initialCoordinates));
+function persistMotherCodeProfile(motherCodeProfile: MotherCodeProfile) {
   writeMotherCodeProfile(motherCodeProfile);
 }
 
 function InitialCoordinatesEntry() {
   const navigate = useNavigate();
-  const initialCoordinates: InitialCoordinates = {
-    ...getDemoInitialCoordinates(),
-    birthChrono: "1995 / 06 / 02 · 17:00—19:00",
-    geoAnchor: "中国 / 广东省 / 广州市",
-  };
   // 老用户回流：只预置上次坐标，不跳过时序填装；首页预览必须能完整进入坐标确认。
-  const seededCoords = useMemo(() => readNumericChronoCoords(), []);
+  const seededCoords = useMemo(() => readPersistedChronoNumericCoordinates(), []);
   const [stage, setStage] = useState<"coordinates" | "defaultReaction" | "mother">("coordinates");
   const [displayYear, setDisplayYear] = useState(seededCoords?.year ?? 1995);
   const [displayMonth, setDisplayMonth] = useState(seededCoords?.month ?? 6);
@@ -472,9 +451,9 @@ function InitialCoordinatesEntry() {
       day: coords.day,
       hourBranch: chronoPeriodOptions[coords.periodIndex]?.label ?? "酉时",
     });
-    persistInitialCoordinates(initialCoordinates, landing.motherCodeProfile);
+    persistMotherCodeProfile(landing.motherCodeProfile);
     try {
-      window.localStorage.setItem("guanyao:chronoNumeric", JSON.stringify(coords)); // 供老用户回流时回填坐标
+      writeChronoNumericCoordinates(coords); // 供老用户回流时回填坐标
     } catch {
       /* ignore */
     }
@@ -486,7 +465,7 @@ function InitialCoordinatesEntry() {
   }
 
   function handleEnterPressureSeed() {
-    persistInitialCoordinates(initialCoordinates, motherCodeLanding.motherCodeProfile);
+    persistMotherCodeProfile(motherCodeLanding.motherCodeProfile);
     navigate(GUANYAO_ROUTES.dynamics);
   }
 
