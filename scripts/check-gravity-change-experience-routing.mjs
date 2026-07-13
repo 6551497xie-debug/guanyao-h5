@@ -12,6 +12,10 @@ const smokeFixtureSource = fs.readFileSync(
   path.join(rootDir, "src/services/fixtures/changeExperienceRuntimeSmokeFixtures.ts"),
   "utf8",
 );
+const runtimeInputTypeSource = fs.readFileSync(
+  path.join(rootDir, "src/types/gravityRuntimeInput.ts"),
+  "utf8",
+);
 
 const sourceFiles = [
   "src/services/fixtures/personaTransmissionFixtures.ts",
@@ -235,6 +239,26 @@ try {
     "smoke fixtures no longer own stored persona output type",
     smokeFixtureSource,
     "export type StoredPersonaOutputSnapshot",
+  );
+  assertIncludes(
+    "runtime input types own stored origin mother context",
+    runtimeInputTypeSource,
+    "export type StoredOriginMotherContext",
+  );
+  assertIncludes(
+    "runtime input types own dynamics input context",
+    runtimeInputTypeSource,
+    "export type DynamicsInputContext",
+  );
+  assertNotIncludes(
+    "gravity no longer owns stored origin mother context type",
+    gravityPageSource,
+    "type StoredOriginMotherContext =",
+  );
+  assertNotIncludes(
+    "gravity no longer owns dynamics input context type",
+    gravityPageSource,
+    "type DynamicsInputContext =",
   );
   assertNotIncludes(
     "gravity no longer owns smoke fixture constants",

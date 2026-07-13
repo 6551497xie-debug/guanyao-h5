@@ -53,7 +53,9 @@ import {
 } from "../runtime/guanyaoRuntimeEngine";
 import type { ChangeExperiencePresentation } from "../types/changeExperience";
 import type {
+  DynamicsInputContext,
   StoredMotherCodeProfile,
+  StoredOriginMotherContext,
   StoredPersonaOutputSnapshot,
 } from "../types/gravityRuntimeInput";
 import type { PersonaMigrationImpact, PersonaYaoStage } from "../types/personaTransmission";
@@ -68,28 +70,6 @@ type PressureBeastSeed = {
   resonance: number;
 };
 type RuntimeCoreStar = readonly [number, number, number];
-type StoredOriginMotherContext = {
-  source?: string;
-  geo?: {
-    symbol?: string;
-    province?: string;
-  };
-  chrono?: {
-    lockPoint?: string;
-  };
-  mother?: {
-    trigram?: string;
-    profile?: StoredMotherCodeProfile;
-  };
-  fourBeast?: string;
-  trigram?: string;
-};
-type DynamicsInputContext = {
-  selectedPressureSeedContext: SelectedPressureSeedContext | null;
-  motherCodeProfile: StoredMotherCodeProfile | null;
-  originMotherContext: StoredOriginMotherContext | null;
-  personaOutputSnapshot: StoredPersonaOutputSnapshot | null;
-};
 type ActiveCurrentHexagramContext = {
   source: "dynamics";
   createdAt: string;
