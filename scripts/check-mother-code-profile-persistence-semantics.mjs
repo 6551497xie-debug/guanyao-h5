@@ -37,10 +37,14 @@ const assertExcludes = (name, source, forbidden) => {
 };
 
 const storage = new Map();
+let rejectWrites = false;
 globalThis.window = {
   localStorage: {
     getItem: (key) => storage.get(key) ?? null,
-    setItem: (key, value) => storage.set(key, value),
+    setItem: (key, value) => {
+      if (rejectWrites) throw new Error("storage write rejected");
+      storage.set(key, value);
+    },
   },
 };
 
@@ -82,6 +86,51 @@ try {
     "persistence adapter stores schema version",
     JSON.parse(storage.get("guanyao:motherCodeProfile")).schemaVersion,
     "GUANYAO_MOTHER_CODE_PROFILE_V2",
+  );
+
+  rejectWrites = true;
+  const rejectedWriteProfile = writeMotherCodeProfile({
+    motherCodeName: "坎｜洞察者",
+    trigram: "坎",
+  });
+  rejectWrites = false;
+  assertEqual(
+    "rejected storage write preserves generated profile",
+    rejectedWriteProfile.motherCodeName,
+    "坎｜洞察者",
+  );
+  assertEqual(
+    "rejected storage write preserves schema version",
+    rejectedWriteProfile.schemaVersion,
+    GUANYAO_MOTHER_CODE_PROFILE_SCHEMA_VERSION,
+  );
+  assertEqual(
+    "rejected storage write preserves profile immutability",
+    Object.isFrozen(rejectedWriteProfile),
+    true,
+  );
+  assertEqual(
+    "rejected storage write does not replace persisted profile",
+    JSON.parse(storage.get("guanyao:motherCodeProfile")).motherCodeName,
+    "震｜行动者",
+  );
+
+  const availableWindow = globalThis.window;
+  globalThis.window = {};
+  const unavailableStorageProfile = writeMotherCodeProfile({
+    motherCodeName: "离｜照见者",
+    trigram: "离",
+  });
+  globalThis.window = availableWindow;
+  assertEqual(
+    "unavailable storage preserves generated profile",
+    unavailableStorageProfile.motherCodeName,
+    "离｜照见者",
+  );
+  assertEqual(
+    "unavailable storage preserves profile immutability",
+    Object.isFrozen(unavailableStorageProfile),
+    true,
   );
 
   const storedTypeBlock = sources.runtimeTypes.slice(
