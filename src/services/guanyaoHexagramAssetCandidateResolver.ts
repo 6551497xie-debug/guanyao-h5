@@ -1,9 +1,9 @@
-import {
-  toProtocolPrimaryPetal,
-  type PrimaryPetalId,
-  type PrimaryPetalProtocolDimension,
-  type SelectedPressureSeedContext,
-} from "./guanyaoPrimaryPetalResolver";
+import { toProtocolPrimaryPetal } from "./guanyaoPrimaryPetalResolver";
+import type {
+  PrimaryPetalId,
+  PrimaryPetalProtocolDimension,
+  SelectedPressureSeedContext,
+} from "../types/primaryPetal";
 
 export type HexagramAssetCandidateCompletionState = "INCOMPLETE" | "READY_TO_CRYSTALLIZE";
 

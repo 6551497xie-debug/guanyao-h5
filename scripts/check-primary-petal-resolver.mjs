@@ -28,6 +28,18 @@ const primaryPetalDevFixtureSource = fs.readFileSync(
   path.join(rootDir, "src/services/fixtures/primaryPetalDevFixtures.ts"),
   "utf8",
 );
+const hexagramAssetCandidateSource = fs.readFileSync(
+  path.join(rootDir, "src/services/guanyaoHexagramAssetCandidateResolver.ts"),
+  "utf8",
+);
+const hexagramAssetDraftCandidateSource = fs.readFileSync(
+  path.join(rootDir, "src/services/guanyaoHexagramAssetDraftCandidateResolver.ts"),
+  "utf8",
+);
+const hexagramAssetMappingCandidateSource = fs.readFileSync(
+  path.join(rootDir, "src/services/guanyaoHexagramAssetMappingCandidateResolver.ts"),
+  "utf8",
+);
 const sourceFiles = [
   "src/services/guanyaoPrimaryPetalResolver.ts",
   "src/services/fixtures/primaryPetalDevFixtures.ts",
@@ -201,6 +213,41 @@ try {
   assertNotIncludes(
     "primary petal dev fixtures no longer depend on primary petal service types",
     primaryPetalDevFixtureSource,
+    "guanyaoPrimaryPetalResolver",
+  );
+  assertIncludes(
+    "hexagram asset candidate consumes neutral primary petal types",
+    hexagramAssetCandidateSource,
+    'from "../types/primaryPetal"',
+  );
+  assertIncludes(
+    "hexagram asset candidate keeps primary petal runtime function only",
+    hexagramAssetCandidateSource,
+    'import { toProtocolPrimaryPetal } from "./guanyaoPrimaryPetalResolver"',
+  );
+  assertEqual(
+    "hexagram asset candidate primary petal service import count",
+    hexagramAssetCandidateSource.split("guanyaoPrimaryPetalResolver").length - 1,
+    1,
+  );
+  assertIncludes(
+    "hexagram asset draft candidate consumes neutral primary petal type",
+    hexagramAssetDraftCandidateSource,
+    'from "../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "hexagram asset draft candidate no longer depends on primary petal service",
+    hexagramAssetDraftCandidateSource,
+    "guanyaoPrimaryPetalResolver",
+  );
+  assertIncludes(
+    "hexagram asset mapping candidate consumes neutral primary petal type",
+    hexagramAssetMappingCandidateSource,
+    'from "../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "hexagram asset mapping candidate no longer depends on primary petal service",
+    hexagramAssetMappingCandidateSource,
     "guanyaoPrimaryPetalResolver",
   );
 
