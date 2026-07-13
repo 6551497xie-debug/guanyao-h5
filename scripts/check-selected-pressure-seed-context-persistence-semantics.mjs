@@ -104,11 +104,17 @@ try {
   assertExcludes("Launch does not persist orphaned triple force result", sources.launch, "guanyao:tripleForceLandingResult");
   assertExcludes("Launch does not persist orphaned triple force front stage", sources.launch, "guanyao:tripleForceFrontStage");
   assertExcludes("Launch does not compute unused triple force result", sources.launch, "buildTripleForceLandingResult");
+  assertExcludes("Launch does not persist legacy pressure seed id mirror", sources.launch, "guanyao:selectedPressureSeedId");
+  assertExcludes("Launch does not persist legacy pressure slice id mirror", sources.launch, "guanyao:selectedPressureSliceId");
+  assertExcludes("Launch does not persist legacy pressure slice text mirror", sources.launch, "guanyao:selectedPressureSliceText");
   assertIncludes("Scene delegates context persistence", sources.scene, "writeSelectedPressureSeedContext(selectedPressureSeedContext)");
   assertExcludes("Scene does not own context storage key", sources.scene, "guanyao:selectedPressureSeedContext");
   assertExcludes("Scene does not persist orphaned triple force result", sources.scene, "guanyao:tripleForceLandingResult");
   assertExcludes("Scene does not persist orphaned triple force front stage", sources.scene, "guanyao:tripleForceFrontStage");
   assertExcludes("Scene does not compute unused triple force result", sources.scene, "buildTripleForceLandingResult");
+  assertExcludes("Scene does not persist legacy pressure seed id mirror", sources.scene, "guanyao:selectedPressureSeedId");
+  assertExcludes("Scene does not persist legacy pressure slice id mirror", sources.scene, "guanyao:selectedPressureSliceId");
+  assertExcludes("Scene does not persist legacy pressure slice text mirror", sources.scene, "guanyao:selectedPressureSliceText");
   assertIncludes("Gravity delegates context reading", sources.gravity, "readPersistedSelectedPressureSeedContext()");
   assertExcludes("Gravity does not own context storage key", sources.gravity, "guanyao:selectedPressureSeedContext");
   assertIncludes("R8 delegates context reading", sources.r8, "readPersistedSelectedPressureSeedContext()");
@@ -123,6 +129,8 @@ try {
     sources.persistence,
     '"GUANYAO_SELECTED_PRESSURE_SEED_CONTEXT_V2" as const',
   );
+  assertIncludes("formal pressure context owns selected seed id", sources.domainTypes, "selectedPressureSeedId?: string;");
+  assertIncludes("formal pressure context owns selected seed text", sources.domainTypes, "surface?: string;");
   assertIncludes(
     "triple force remains available as an on-demand derivation",
     sources.tripleForce,

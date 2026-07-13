@@ -944,9 +944,6 @@ export function LaunchLab() {
       const selectedPressureSeedContext = buildSelectedPressureSeedContext(candidate.seed);
 
       writeSelectedPressureSeedContext(selectedPressureSeedContext);
-      window.localStorage.setItem("guanyao:selectedPressureSeedId", candidate.seed.id);
-      window.localStorage.setItem("guanyao:selectedPressureSliceId", candidate.seed.id);
-      window.localStorage.setItem("guanyao:selectedPressureSliceText", candidate.seed.surface);
 
       setLaunchInteractionState("SNAPSHOT_GENERATED");
       setLaunchInteractionState("DYNAMICS_HANDOFF");

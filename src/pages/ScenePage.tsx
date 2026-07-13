@@ -101,9 +101,6 @@ export function ScenePage() {
     const legacySceneSeed = toLegacySceneSeed(candidate.seed, latestSession, candidate.seedIndex);
 
     writeSelectedPressureSeedContext(selectedPressureSeedContext);
-    window.localStorage.setItem("guanyao:selectedPressureSeedId", candidate.seed.id);
-    window.localStorage.setItem("guanyao:selectedPressureSliceId", candidate.seed.id);
-    window.localStorage.setItem("guanyao:selectedPressureSliceText", candidate.seed.surface);
     setSelectedSceneSeed(legacySceneSeed);
     setMotherCodeResult(buildMotherCodeResult(getSession()));
     navigate(GUANYAO_ROUTES.dynamics);
