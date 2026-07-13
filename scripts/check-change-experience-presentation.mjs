@@ -45,29 +45,82 @@ try {
 
   const requireFromTemp = createRequire(path.join(tempRoot, "check.cjs"));
   const {
+    bodyAwarenessChangeExperiencePresentation,
+    emotionChangeAwarenessChangeExperiencePresentation,
+    thoughtChangeCognitionChangeExperiencePresentation,
     actionFiveAwarenessChangeExperiencePresentation,
+    memoryWisdomChangeExperiencePresentation,
+    motivationDriveChangeExperiencePresentation,
   } = requireFromTemp("./src/services/fixtures/changeExperiencePresentationFixtures.js");
   const {
     validateChangeExperiencePresentation,
   } = requireFromTemp("./src/services/validators/changeExperiencePresentationValidator.js");
 
-  const validResult = validateChangeExperiencePresentation(actionFiveAwarenessChangeExperiencePresentation);
+  const presentationCases = [
+    {
+      space: "body",
+      name: "body-awareness change experience presentation",
+      presentation: bodyAwarenessChangeExperiencePresentation,
+    },
+    {
+      space: "emotion",
+      name: "emotion-change change experience presentation",
+      presentation: emotionChangeAwarenessChangeExperiencePresentation,
+    },
+    {
+      space: "thought",
+      name: "thought-change change experience presentation",
+      presentation: thoughtChangeCognitionChangeExperiencePresentation,
+    },
+    {
+      space: "action",
+      name: "action-five change experience presentation",
+      presentation: actionFiveAwarenessChangeExperiencePresentation,
+    },
+    {
+      space: "memory",
+      name: "memory-wisdom change experience presentation",
+      presentation: memoryWisdomChangeExperiencePresentation,
+    },
+    {
+      space: "motivation",
+      name: "motivation-drive change experience presentation",
+      presentation: motivationDriveChangeExperiencePresentation,
+    },
+  ];
+
+  assertEqual("six-space presentation case count", presentationCases.length, 6);
   assertEqual(
-    "action-five change experience presentation",
-    validResult.status,
-    "VALID_CHANGE_EXPERIENCE_PRESENTATION",
+    "six-space presentation uniqueness",
+    new Set(presentationCases.map(({ space }) => space)).size,
+    6,
   );
 
-  const invalidBoundaryResult = validateChangeExperiencePresentation({
-    ...actionFiveAwarenessChangeExperiencePresentation,
-    hexagramCode: "01",
+  presentationCases.forEach(({ name, presentation }) => {
+    const validResult = validateChangeExperiencePresentation(presentation);
+    assertEqual(
+      name,
+      validResult.status,
+      "VALID_CHANGE_EXPERIENCE_PRESENTATION",
+    );
   });
-  assertEqual(
-    "presentation boundary field guard",
-    invalidBoundaryResult.status,
-    "CHANGE_EXPERIENCE_PRESENTATION_INVALID",
-  );
-  assertEqual("presentation boundary field reason", invalidBoundaryResult.reasons.includes("INVALID_PRESENTATION_BOUNDARY"), true);
+
+  presentationCases.forEach(({ name, presentation }) => {
+    const invalidBoundaryResult = validateChangeExperiencePresentation({
+      ...presentation,
+      hexagramCode: "01",
+    });
+    assertEqual(
+      `${name} boundary field guard`,
+      invalidBoundaryResult.status,
+      "CHANGE_EXPERIENCE_PRESENTATION_INVALID",
+    );
+    assertEqual(
+      `${name} boundary field reason`,
+      invalidBoundaryResult.reasons.includes("INVALID_PRESENTATION_BOUNDARY"),
+      true,
+    );
+  });
 
   console.log("[CHANGE EXPERIENCE PRESENTATION] PASS");
 } finally {
