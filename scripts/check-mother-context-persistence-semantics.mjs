@@ -7,6 +7,7 @@ import { build } from "esbuild";
 const rootDir = process.cwd();
 const adapterPath = path.join(rootDir, "src/services/guanyaoStoredMotherContextAdapter.ts");
 const handoffPath = path.join(rootDir, "src/services/guanyaoDynamicsMotherHandoffAdapter.ts");
+const inputAdapterPath = path.join(rootDir, "src/services/guanyaoDynamicsInputContextAdapter.ts");
 const persistencePath = path.join(rootDir, "src/services/guanyaoOriginMotherContextPersistenceAdapter.ts");
 const typePath = path.join(rootDir, "src/types/gravityRuntimeInput.ts");
 const fusionTypePath = path.join(rootDir, "src/types/guanyaoGeoChronoMotherFusion.ts");
@@ -14,6 +15,7 @@ const launchPath = path.join(rootDir, "src/pages/LaunchLab.tsx");
 const gravityPath = path.join(rootDir, "src/pages/GravityPage.tsx");
 const adapterSource = fs.readFileSync(adapterPath, "utf8");
 const handoffSource = fs.readFileSync(handoffPath, "utf8");
+const inputAdapterSource = fs.readFileSync(inputAdapterPath, "utf8");
 const persistenceSource = fs.readFileSync(persistencePath, "utf8");
 const typeSource = fs.readFileSync(typePath, "utf8");
 const fusionTypeSource = fs.readFileSync(fusionTypePath, "utf8");
@@ -222,9 +224,8 @@ try {
     true,
   );
 
-  const gravityInputBlock = gravitySource.slice(
-    gravitySource.indexOf("function readDynamicsInputContext"),
-    gravitySource.indexOf("function resolveMotherCodeName"),
+  const dynamicsInputBlock = inputAdapterSource.slice(
+    inputAdapterSource.indexOf("export function resolveDynamicsInputContext"),
   );
   const geoResultBlock = fusionTypeSource.slice(
     fusionTypeSource.indexOf("geo: Readonly<{"),
@@ -267,26 +268,31 @@ try {
   assertExcludes("fusion geo contract does not carry symbol", geoResultBlock, "symbol:");
   assertIncludes("fusion starbeast contract carries formal fourSymbol", fusionTypeSource, "fourSymbol: FourSymbol;");
   assertIncludes("gravity delegates stored fourSymbol resolution", gravitySource, "resolveStoredMotherFourSymbol(input)");
-  assertIncludes("Gravity delegates origin context reading", gravitySource, "readPersistedOriginMotherContext()");
   assertIncludes(
-    "Gravity prioritizes routed mother profile",
-    gravityInputBlock,
+    "Dynamics input adapter delegates origin context reading",
+    inputAdapterSource,
+    "readPersistedOriginMotherContext()",
+  );
+  assertIncludes("Gravity delegates input resolution", gravitySource, "resolveDynamicsInputContext({");
+  assertIncludes(
+    "Dynamics input adapter prioritizes routed mother profile",
+    dynamicsInputBlock,
     "handoffState?.mother?.motherCodeProfile ??",
   );
   assertIncludes(
-    "Gravity prioritizes routed origin context",
-    gravityInputBlock,
+    "Dynamics input adapter prioritizes routed origin context",
+    dynamicsInputBlock,
     "handoffState?.mother?.originMotherContext ??",
   );
   assertIncludes(
-    "Gravity prioritizes routed persona snapshot",
-    gravityInputBlock,
+    "Dynamics input adapter prioritizes routed persona snapshot",
+    dynamicsInputBlock,
     "handoffState?.mother?.personaOutputSnapshot ??",
   );
   assertEqual(
     "routed origin context precedes persistence fallback",
-    gravityInputBlock.indexOf("handoffState?.mother?.originMotherContext ??") <
-      gravityInputBlock.indexOf("readPersistedOriginMotherContext()"),
+    dynamicsInputBlock.indexOf("handoffState?.mother?.originMotherContext ??") <
+      dynamicsInputBlock.indexOf("readPersistedOriginMotherContext()"),
     true,
   );
   assertExcludes("Gravity does not own origin context storage key", gravitySource, "guanyao:originMotherContext");

@@ -7,6 +7,7 @@ import { build } from "esbuild";
 const rootDir = process.cwd();
 const paths = {
   persistence: path.join(rootDir, "src/services/guanyaoSelectedPressureSeedContextPersistenceAdapter.ts"),
+  inputAdapter: path.join(rootDir, "src/services/guanyaoDynamicsInputContextAdapter.ts"),
   tripleForce: path.join(rootDir, "src/services/guanyaoTripleForceLandingService.ts"),
   runtimeTypes: path.join(rootDir, "src/types/gravityRuntimeInput.ts"),
   domainTypes: path.join(rootDir, "src/types/primaryPetal.ts"),
@@ -139,9 +140,8 @@ try {
     true,
   );
 
-  const gravityInputBlock = sources.gravity.slice(
-    sources.gravity.indexOf("function readDynamicsInputContext"),
-    sources.gravity.indexOf("function resolveMotherCodeName"),
+  const dynamicsInputBlock = sources.inputAdapter.slice(
+    sources.inputAdapter.indexOf("export function resolveDynamicsInputContext"),
   );
 
   assertIncludes(
@@ -187,21 +187,25 @@ try {
   assertExcludes("Scene does not persist legacy pressure slice text mirror", sources.scene, "guanyao:selectedPressureSliceText");
   assertExcludes("Mother field does not persist orphaned pressure seed packet", sources.motherField, "guanyao:pressureSeedPacket");
   assertExcludes("Mother field does not own orphaned pressure seed packet type", sources.motherField, "PressureSeedPacket");
-  assertIncludes("Gravity delegates context reading", sources.gravity, "readPersistedSelectedPressureSeedContext()");
   assertIncludes(
-    "Gravity reads typed Dynamics route state",
-    sources.gravity,
-    "location.state as DynamicsHandoffState | null",
+    "Dynamics input adapter delegates context reading",
+    sources.inputAdapter,
+    "readPersistedSelectedPressureSeedContext()",
   );
   assertIncludes(
-    "Gravity prioritizes route pressure context",
+    "Gravity delegates unknown Dynamics route state",
     sources.gravity,
+    "handoffState: location.state",
+  );
+  assertIncludes(
+    "Dynamics input adapter prioritizes route pressure context",
+    sources.inputAdapter,
     "handoffState?.selectedPressureSeedContext ??",
   );
   assertEqual(
-    "Gravity route pressure context precedes persistence fallback",
-    gravityInputBlock.indexOf("handoffState?.selectedPressureSeedContext ??") <
-      gravityInputBlock.indexOf("readPersistedSelectedPressureSeedContext()"),
+    "route pressure context precedes persistence fallback",
+    dynamicsInputBlock.indexOf("handoffState?.selectedPressureSeedContext ??") <
+      dynamicsInputBlock.indexOf("readPersistedSelectedPressureSeedContext()"),
     true,
   );
   assertExcludes("Gravity does not own context storage key", sources.gravity, "guanyao:selectedPressureSeedContext");

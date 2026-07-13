@@ -208,7 +208,7 @@ try {
   assertIncludes(
     "gravity consumes centralized smoke fixture",
     gravityPageSource,
-    "resolveChangeExperienceRuntimeSmokeFixture(readDevExperienceSmokeFixture())",
+    "smokeFixture: resolveChangeExperienceRuntimeSmokeFixture(experienceSmokeFixture)",
   );
   assertIncludes(
     "gravity consumes centralized smoke revision action",

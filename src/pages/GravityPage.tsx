@@ -37,10 +37,7 @@ import {
 } from "../services/fixtures/changeExperienceRuntimeSmokeFixtures";
 import { resolvePrimaryPetalDevFixture } from "../services/fixtures/primaryPetalDevFixtures";
 import { resolveStoredMotherFourSymbol } from "../services/guanyaoStoredMotherContextAdapter";
-import { readPersistedMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
-import { readPersistedOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
-import { readPersistedPersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
-import { readPersistedSelectedPressureSeedContext } from "../services/guanyaoSelectedPressureSeedContextPersistenceAdapter";
+import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import type {
   CurrentHexagramProfile,
   MotherCodeProfile,
@@ -58,14 +55,7 @@ import {
   type SpatialIntent,
 } from "../runtime/guanyaoRuntimeEngine";
 import type { ChangeExperiencePresentation } from "../types/changeExperience";
-import type {
-  DynamicsHandoffState,
-  DynamicsInputContext,
-  StoredMotherCodeProfile,
-  StoredOriginMotherContext,
-  StoredPersonaOutputSnapshot,
-  StoredSelectedPressureSeedContext,
-} from "../types/gravityRuntimeInput";
+import type { DynamicsInputContext } from "../types/gravityRuntimeInput";
 import type { PersonaMigrationImpact, PersonaYaoStage } from "../types/personaTransmission";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
 
@@ -158,28 +148,6 @@ function readDevExperienceSmokeFixture(): string | null {
   if (!viteEnv?.DEV || typeof window === "undefined") return null;
 
   return new URLSearchParams(window.location.search).get("__experienceSmoke");
-}
-
-function readDynamicsInputContext(handoffState?: DynamicsHandoffState | null): DynamicsInputContext {
-  const smokeFixture = resolveChangeExperienceRuntimeSmokeFixture(readDevExperienceSmokeFixture());
-
-  return {
-    selectedPressureSeedContext:
-      readDevPrimaryPetalFixture() ??
-      handoffState?.selectedPressureSeedContext ??
-      readPersistedSelectedPressureSeedContext() as StoredSelectedPressureSeedContext | null,
-    motherCodeProfile:
-      smokeFixture?.motherCodeProfile ??
-      handoffState?.mother?.motherCodeProfile ??
-      readPersistedMotherCodeProfile() as StoredMotherCodeProfile | null,
-    originMotherContext:
-      handoffState?.mother?.originMotherContext ??
-      readPersistedOriginMotherContext() as StoredOriginMotherContext | null,
-    personaOutputSnapshot:
-      smokeFixture?.personaOutputSnapshot ??
-      handoffState?.mother?.personaOutputSnapshot ??
-      readPersistedPersonaOutputSnapshot() as StoredPersonaOutputSnapshot | null,
-  };
 }
 
 function resolveMotherCodeName(input: DynamicsInputContext) {
@@ -2687,8 +2655,14 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
 
 function HexagramCodeDeliveryShell() {
   const location = useLocation();
-  const handoffState = location.state as DynamicsHandoffState | null;
-  const [dynamicsInputContext] = useState<DynamicsInputContext>(() => readDynamicsInputContext(handoffState));
+  const experienceSmokeFixture = readDevExperienceSmokeFixture();
+  const [dynamicsInputContext] = useState<DynamicsInputContext>(() =>
+    resolveDynamicsInputContext({
+      handoffState: location.state,
+      primaryPetalFixture: readDevPrimaryPetalFixture(),
+      smokeFixture: resolveChangeExperienceRuntimeSmokeFixture(experienceSmokeFixture),
+    }),
+  );
   const [activeCurrentHexagramContext] = useState<ActiveCurrentHexagramContext | null>(() =>
     resolveActiveCurrentHexagramContext(dynamicsInputContext),
   );
@@ -2779,7 +2753,6 @@ function HexagramCodeDeliveryShell() {
     starbeastFeedbackComplete,
     pressureSeedFallbackText: selectedPressureSeedSurface,
   });
-  const experienceSmokeFixture = readDevExperienceSmokeFixture();
   const singleModelRevisionAction = useMemo(
     () =>
       resolveChangeExperienceRuntimeSmokeRevisionAction(experienceSmokeFixture) ??

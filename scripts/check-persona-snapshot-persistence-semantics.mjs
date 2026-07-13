@@ -12,6 +12,7 @@ const paths = {
   engine: path.join(rootDir, "src/services/guanyaoDeterministicPersonaEngine.ts"),
   trigger: path.join(rootDir, "src/services/guanyaoPersonaGenerationTrigger.ts"),
   handoff: path.join(rootDir, "src/services/guanyaoDynamicsMotherHandoffAdapter.ts"),
+  inputAdapter: path.join(rootDir, "src/services/guanyaoDynamicsInputContextAdapter.ts"),
   persistence: path.join(rootDir, "src/services/guanyaoPersonaSnapshotPersistenceAdapter.ts"),
   runtimeTypes: path.join(rootDir, "src/types/gravityRuntimeInput.ts"),
   launch: path.join(rootDir, "src/pages/LaunchLab.tsx"),
@@ -317,7 +318,12 @@ try {
   assertIncludes("persistence adapter owns persona storage key", sources.persistence, 'GUANYAO_PERSONA_SNAPSHOT_STORAGE_KEY = "guanyao:personaOutputSnapshot"');
   assertIncludes("persistence adapter owns schema version", sources.persistence, 'GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION = "GUANYAO_PERSONA_SNAPSHOT_V2"');
   assertExcludes("MotherLab cache does not own persona storage key", sources.cache, "guanyao:personaOutputSnapshot");
-  assertIncludes("Gravity delegates persona snapshot reading", sources.gravity, "readPersistedPersonaOutputSnapshot()");
+  assertIncludes(
+    "Dynamics input adapter delegates persona snapshot reading",
+    sources.inputAdapter,
+    "readPersistedPersonaOutputSnapshot()",
+  );
+  assertIncludes("Gravity delegates input resolution", sources.gravity, "resolveDynamicsInputContext({");
   assertExcludes("Gravity does not own persona storage key", sources.gravity, "guanyao:personaOutputSnapshot");
   assertIncludes("MotherLab consumes normalized fourSymbol", sources.motherLab, "snapshot.fourSymbol");
   assertExcludes("formal smoke fixtures exclude fourBeast", sources.fixtures, "fourBeast:");

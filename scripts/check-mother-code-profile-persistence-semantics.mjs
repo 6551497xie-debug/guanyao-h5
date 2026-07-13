@@ -7,6 +7,7 @@ import { build } from "esbuild";
 const rootDir = process.cwd();
 const paths = {
   persistence: path.join(rootDir, "src/services/guanyaoMotherCodeProfilePersistenceAdapter.ts"),
+  inputAdapter: path.join(rootDir, "src/services/guanyaoDynamicsInputContextAdapter.ts"),
   runtimeTypes: path.join(rootDir, "src/types/gravityRuntimeInput.ts"),
   launch: path.join(rootDir, "src/pages/LaunchLab.tsx"),
   chrono: path.join(rootDir, "src/pages/ChronoPage.tsx"),
@@ -150,7 +151,8 @@ try {
   assertExcludes("Launch does not own profile storage key", sources.launch, "guanyao:motherCodeProfile");
   assertIncludes("Chrono delegates profile persistence", sources.chrono, "writeMotherCodeProfile(motherCodeProfile)");
   assertExcludes("Chrono does not own profile storage key", sources.chrono, "guanyao:motherCodeProfile");
-  assertIncludes("Gravity delegates profile reading", sources.gravity, "readPersistedMotherCodeProfile()");
+  assertIncludes("Dynamics input adapter delegates profile reading", sources.inputAdapter, "readPersistedMotherCodeProfile()");
+  assertIncludes("Gravity delegates input resolution", sources.gravity, "resolveDynamicsInputContext({");
   assertExcludes("Gravity does not own profile storage key", sources.gravity, "guanyao:motherCodeProfile");
   assertIncludes("R8 delegates profile reading", sources.r8, "readPersistedMotherCodeProfile()");
   assertExcludes("R8 does not own profile storage key", sources.r8, "guanyao:motherCodeProfile");
