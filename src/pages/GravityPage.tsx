@@ -521,7 +521,7 @@ function relationLabel(value: unknown) {
     FRIEND: "朋友关系",
     COLLEAGUE: "同事关系",
     SELF: "自我关系",
-    SYSTEM: "系统结构",
+    SYSTEM: "外部结构",
   };
 
   return labels[source] ?? (source || "关系结构");
@@ -549,10 +549,10 @@ function normalizeMotherCodeProfileForHexagram(
     baseForce: profile.baseForce ?? profile.baseDrive ?? "母码底盘已接入。",
     causalPosition: profile.causalPosition,
     pressureEntry: profile.pressureEntry,
-    defaultReactionPattern: profile.defaultReactionPattern ?? profile.defaultReactionChain ?? "默认反应链待显影。",
+    defaultReactionPattern: profile.defaultReactionPattern ?? profile.defaultReactionChain ?? "默认反应待补充。",
     pressureSensitiveZones: profile.pressureSensitiveZones ?? ["现实压力"],
-    defenseTendency: profile.defenseTendency ?? profile.pressureMode ?? "防御倾向待显影。",
-    behaviorBias: profile.behaviorBias ?? profile.shadowInertia ?? "行为惯性待显影。",
+    defenseTendency: profile.defenseTendency ?? profile.pressureMode ?? "保护方式待补充。",
+    behaviorBias: profile.behaviorBias ?? profile.shadowInertia ?? "回应方式待补充。",
     shadowInertia: profile.shadowInertia,
     pressureMode: profile.pressureMode,
     defaultReactionChain: profile.defaultReactionChain,
@@ -607,7 +607,7 @@ function buildPressureSeedForHexagram(context: SelectedPressureSeedContext): Pre
     relationshipRole,
     triggerMoment: context.surface ?? "现实压力正在进入。",
     intensityLevel: normalizePressureIntensity(runtimeContext.pressureIntensity),
-    costHint: context.shell ?? runtimeContext.mappingHint ?? "当前压力代价待显影。",
+    costHint: context.shell ?? runtimeContext.mappingHint ?? "当前压力的影响待补充。",
     fieldBias: `${pressureNature}｜${relationshipRole}`,
     locationTags,
   };
@@ -947,16 +947,16 @@ type ExperienceState = Readonly<{
 
 const SIX_DIMENSION_RESPONSE_COPY: Record<SixSpaceId, string> = {
   body: "压力先落在身体里。",
-  emotion: "情绪把信号推上来了。",
+  emotion: "情绪先到了。",
   thought: "解释开始成形。",
   action: "回应的方向露出来了。",
-  memory: "旧经验被照亮。",
+  memory: "旧经验被带到了现在。",
   goal: "守护的核心露出来了。",
 };
 
 const SIX_DIMENSION_INSIGHT_COPY: Record<SixSpaceId, string> = {
   body: "身体比意识更早知道压力来了。",
-  emotion: "你正在经历的感受，可能正在替现实加重颜色。",
+  emotion: "你正在经历的感受，可能让这件事看起来更重。",
   thought: "你看见的不只是事情，还有你给它的意义。",
   action: "结果还不确定时，你会先用行动把局面拉回掌控。",
   memory: "过去正在参与此刻，让现在像曾经的某一幕。",
@@ -974,32 +974,32 @@ const SIX_DIMENSION_UNDERSTANDING_COPY: Record<SixSpaceId, string> = {
 
 const YAO_SEMANTIC_STAGES: Record<number, ExperienceState["nodeCopy"]> = {
   1: {
-    title: "初爻 · 触发正在显影",
-    text: "压力刚进入这一层。",
+    title: "压力刚开始出现",
+    text: "你开始注意到这一层的反应。",
     actionText: "先看见它从哪里开始。",
   },
   2: {
-    title: "二爻 · 接管正在显影",
-    text: "旧反应开始接管。",
+    title: "熟悉的反应正在出现",
+    text: "你可能正在回到以前常用的方式。",
     actionText: "你正在回到熟悉的保护方式。",
   },
   3: {
-    title: "三爻 · 解释正在显影",
+    title: "你开始解释这件事",
     text: "你开始用过去的方式解释现在。",
     actionText: "先看见脑中的那句话。",
   },
   4: {
-    title: "四爻 · 固化正在显影",
+    title: "这个反应正在变熟悉",
     text: "这个反应逐渐成为习惯。",
     actionText: "它快要变成惯常动作。",
   },
   5: {
-    title: "五爻 · 觉察正在显影",
-    text: "你开始看见这个模式。",
-    actionText: "旧反应被照见了。",
+    title: "你开始看见自己",
+    text: "你开始看见自己熟悉的反应。",
+    actionText: "这个反应被你看见了。",
   },
   6: {
-    title: "上爻 · 修正正在显影",
+    title: "新的回应开始出现",
     text: "新的回应开始出现。",
     actionText: "这一层，可以留下新的走法。",
   },
@@ -1007,53 +1007,37 @@ const YAO_SEMANTIC_STAGES: Record<number, ExperienceState["nodeCopy"]> = {
 
 type ProductRuntimeDefinition = Readonly<{
   officialDefinition: string;
-  threeSecondModel: "压力种子已锁定 → 六维传导 → 惯性反应显影";
-  experienceLoop: readonly [
-    "压力种子已锁定",
-    "进入六维传导",
-    "读取惯性反应",
-    "完成六维显影",
-    "留下变化印记",
-  ];
-  onboardingFlow: readonly [
-    "确认当前压力种子",
-    "进入六维传导",
-    "逐维读取惯性反应",
-    "完成后留下变化印记",
-  ];
-  userPerception: readonly [
-    "压力种子入口",
-    "六维传导场",
-    "惯性反应显影",
-    "变化留痕过程",
-  ];
-  positioning: "压力种子六维传导系统";
+  threeSecondModel: string;
+  experienceLoop: readonly string[];
+  onboardingFlow: readonly string[];
+  userPerception: readonly string[];
+  positioning: string;
 }>;
 
 const GUANYAO_PRODUCT_RUNTIME_DEFINITION = Object.freeze({
   officialDefinition:
-    "观爻将已锁定的压力种子送入六维传导，读取现实压力下的惯性反应，并在新的回应确认后留下变化印记。",
-  threeSecondModel: "压力种子已锁定 → 六维传导 → 惯性反应显影",
+    "观爻陪你把当前压力放进六个空间里看一遍，并在新的回应确认后留下变化印记。",
+  threeSecondModel: "当前压力 → 六个空间 → 看见反应",
   experienceLoop: Object.freeze([
-    "压力种子已锁定",
-    "进入六维传导",
-    "读取惯性反应",
-    "完成六维显影",
+    "确认当前压力",
+    "进入六个空间",
+    "看见熟悉反应",
+    "走完六层",
     "留下变化印记",
   ]),
   onboardingFlow: Object.freeze([
-    "确认当前压力种子",
-    "进入六维传导",
-    "逐维读取惯性反应",
+    "确认当前压力",
+    "进入六个空间",
+    "逐层看见反应",
     "完成后留下变化印记",
   ]),
   userPerception: Object.freeze([
-    "压力种子入口",
-    "六维传导场",
-    "惯性反应显影",
+    "当前压力入口",
+    "六个空间",
+    "熟悉反应被看见",
     "变化留痕过程",
   ]),
-  positioning: "压力种子六维传导系统",
+  positioning: "当前压力下的自我改变体验",
 } satisfies ProductRuntimeDefinition);
 
 const VISUAL_TIMELINE_SYNC = Object.freeze({
@@ -1298,12 +1282,12 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       stage,
       primaryFocus,
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
-      headline: "六维传导已完成。",
+      headline: "六个空间已经走完。",
       supportingCopy: "确认新的回应后，这一局才会留下变化印记。",
-      pressureCopy: "这一颗压力已经穿过六维。",
-      beastCopy: "反应已进入结晶候选态。",
+      pressureCopy: "这一颗压力已经被你看过一遍。",
+      beastCopy: "你的反应正在安定下来。",
       nodeCopy: {
-        title: "六维传导已完成",
+        title: "六个空间已经走完",
         text: "你走完了六层。",
         actionText: "本局正在等待新的回应被确认。",
       },
@@ -1316,10 +1300,10 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       stage,
       primaryFocus,
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
-      headline: "六维传导正在收束。",
-      supportingCopy: "反应即将完成显影，正在等待一次新的回应。",
-      pressureCopy: "压力种子正在进入传导末段。",
-      beastCopy: "惯性反应正在趋稳。",
+      headline: "这一局正在收束。",
+      supportingCopy: "你已经看见熟悉的反应，正在靠近一次新的回应。",
+      pressureCopy: "这颗压力已经被你看过几层。",
+      beastCopy: "你的反应正在趋稳。",
       nodeCopy,
       crystalCopy: "尚未留下变化印记。",
     });
@@ -1330,10 +1314,10 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       stage,
       primaryFocus,
       loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
-      headline: "本局开始显影。",
-      supportingCopy: "每一次轻触，只看见一维惯性反应。",
-      pressureCopy: "压力种子正在穿过当前维度。",
-      beastCopy: "惯性反应正在随触点显影。",
+      headline: "这一局开始变清楚。",
+      supportingCopy: "每一次轻触，只看见一个空间里的反应。",
+      pressureCopy: "这颗压力正在进入当前空间。",
+      beastCopy: "你的反应正在随着触点出现。",
       nodeCopy,
       crystalCopy: "完成六维后，本局会等待一次新的回应。",
     });
@@ -1347,7 +1331,7 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
       headline: "这一颗压力，被看见了。",
       supportingCopy: "它将穿过身体、情绪、思想、行动、记忆与动机。",
       pressureCopy: "这一颗压力，被看见了。",
-      beastCopy: "六维传导即将展开。",
+      beastCopy: "六个空间即将展开。",
       nodeCopy,
       crystalCopy: "完成六维后，本局会等待一次新的回应。",
     });
@@ -1358,9 +1342,9 @@ function resolveExperienceState(snapshot: ExecutionSnapshot, visualState: Visual
     primaryFocus,
     loopLabel: GUANYAO_PRODUCT_RUNTIME_DEFINITION.threeSecondModel,
     headline: "你的压力正在穿过你。",
-    supportingCopy: "本局开始显出你在现实压力下的惯性反应。",
-    pressureCopy: "压力种子正在进入。",
-    beastCopy: "惯性反应即将显影。",
+    supportingCopy: "这一局开始让你看见，压力来到时你会怎么回应。",
+    pressureCopy: "当前压力正在进入。",
+    beastCopy: "你的反应即将出现。",
     nodeCopy,
     crystalCopy: "尚未留下变化印记。",
   });
@@ -1873,7 +1857,7 @@ function CoreStarInteractionLayer({
         <span
           key={`core-${index}`}
           role="button"
-          aria-label="轻触光点，读取这一维反应。"
+          aria-label="轻触光点，看看这里发生了什么。"
           tabIndex={0}
           onClick={onCoreStarClick}
           onKeyDown={(event) => {
@@ -2000,7 +1984,7 @@ function BaiHuConstellationLayer({
   return (
     <div
       role="group"
-      aria-label="压力种子六维传导入口。"
+      aria-label="当前压力进入六个空间。"
       data-visual-primitive="BEAST"
       data-visual-layer="beast-state-container"
       style={{
@@ -2118,7 +2102,7 @@ function BaiHuConstellationLayer({
             textShadow: `0 0 10px rgba(${toneColor},0.16)`,
           }}
         >
-          轻触光点，读取这一维。
+          轻触光点，看看这里发生了什么。
         </span>
       ) : null}
 
@@ -2143,7 +2127,7 @@ function BaiHuConstellationLayer({
             textShadow: `0 0 12px rgba(${toneColor},0.18)`,
           }}
         >
-          {activeDimensionName.replace("空间", "")}正在显影
+          {activeDimensionName.replace("空间", "")}正在出现
         </span>
       ) : null}
 
@@ -2240,14 +2224,14 @@ function CosmicBotanicsField({
 
   return (
     <section
-      aria-label="压力种子进入六维传导区"
+      aria-label="当前压力进入六个空间"
       data-experience-layer="pure-visual-projection"
       data-visual-grammar="BEAST_PRESSURE_DIMENSION_PARTICLE"
       data-visual-depth-state={visualState.visualDepthState}
       data-visual-composition={visualState.spatialComposition}
       data-visual-timeline={visualState.timeline.current}
       data-visual-focal-dimension={visualState.focalDimension}
-      data-experience-loop="压力种子_六维传导_惯性显影_结晶"
+      data-experience-loop="当前压力_六个空间_看见反应_结晶"
       data-experience-stage={experienceState.stage}
       data-experience-focus={experienceState.primaryFocus}
       style={{
@@ -2383,8 +2367,8 @@ function SingleModelRevisionActionFocus({
   onConfirm: () => void;
 }) {
   const hasPresentation = Boolean(presentation);
-  const supportingLine = presentation?.recognition.protectionMeaning ?? `${action.yaoName} · ${action.layerLabel}层出现了旧惯性`;
-  const recognitionLine = presentation ? `旧反应：${presentation.recognition.oldReaction}` : `旧反应：${action.sourceReason}`;
+  const supportingLine = presentation?.recognition.protectionMeaning ?? `你在${action.layerLabel}这里，看见了一种熟悉的保护方式。`;
+  const recognitionLine = presentation ? `熟悉的反应：${presentation.recognition.oldReaction}` : `熟悉的反应：${action.sourceReason}`;
   const microActionLine = presentation?.revision.newResponse ?? action.actionLine;
   const beastCueLine = presentation?.visual.starbeast?.cueLine;
   const traceLine = presentation?.meaning.crystalImprint ?? "不用解决全局。只是这一局，你先留下一个新的回应方式。";
@@ -2454,7 +2438,7 @@ function SingleModelRevisionActionFocus({
 
         <div style={{ display: "grid", justifyItems: "center", gap: 8 }}>
           <strong style={{ color: "rgba(255,246,218,0.94)", fontSize: 22, fontWeight: 680, letterSpacing: 0 }}>
-            这一局，可以先改一个旧反应
+            这一局，可以先换一种回应
           </strong>
           <span style={{ color: "rgba(245,245,245,0.54)", fontSize: 13, lineHeight: 1.55 }}>
             {supportingLine}
@@ -2522,7 +2506,7 @@ function TransformationMomentFocus({
   action: SingleModelRevisionAction;
   presentation?: ChangeExperiencePresentation | null;
 }) {
-  const oldReactionLine = presentation?.revision.transformationMoment ?? `旧反应：${action.sourceReason}`;
+  const oldReactionLine = presentation?.revision.transformationMoment ?? `你刚才看见了：${action.sourceReason}`;
   const newResponseLine = presentation?.meaning.growthMeaning ?? action.actionLine;
   const beastCueLine = presentation?.visual.starbeast?.cueLine ?? "星兽正在把这次移动收进光里。";
   const traceLine = presentation?.meaning.crystalImprint ?? "这一局，你留下了一种新的回应方式。";
@@ -2644,15 +2628,15 @@ function TransformationMomentFocus({
 
 function crystalDimensionLabel(value: string | undefined) {
   const labels: Record<string, string> = {
-    body: "身体维度",
-    emotion: "情绪维度",
-    thought: "思维维度",
-    behavior: "行动维度",
-    memory: "记忆维度",
-    motivation: "动机维度",
+    body: "身体",
+    emotion: "情绪",
+    thought: "思想",
+    behavior: "行动",
+    memory: "记忆",
+    motivation: "动机",
   };
 
-  return labels[value ?? ""] ?? "六维结构";
+  return labels[value ?? ""] ?? "六个空间";
 }
 
 function buildCrystalBehaviorReading(state: CurrentCrystalEndState) {
@@ -2660,8 +2644,8 @@ function buildCrystalBehaviorReading(state: CurrentCrystalEndState) {
   const hexagramTitle = state.hexagram.hexagramName ?? state.hexagram.hexagramTitle ?? state.hexagram.hexagramCode ?? "本局定位";
   const pressureField = `这一次压力来自${pressureFieldLabel(state.pressure.pressureField)}。`;
   const dimensionLine = state.transmission.primaryDimension
-    ? `它优先沉积在${crystalDimensionLabel(state.transmission.primaryDimension)}上。`
-    : "它已经穿过六维传导。";
+    ? `它优先留在${crystalDimensionLabel(state.transmission.primaryDimension)}这里。`
+    : "它已经穿过六个空间。";
 
   return [
     "这枚结晶不记录你的压力原句。",
@@ -3026,18 +3010,18 @@ function HexagramCodeDeliveryShell() {
   const displayExperienceState: ExperienceState = !hasLockedPressureSeed
     ? {
         ...experienceState,
-        loopLabel: "六维传导预览",
+        loopLabel: "六个空间预览",
         headline: "等待这一局压力被看见。",
         supportingCopy: "当前为安全预览状态，缺少本局上下文。",
         pressureCopy: "等待这一颗压力进入。",
-        beastCopy: "六维传导将在压力种子锁定后展开。",
+        beastCopy: "六个空间将在当前压力确认后展开。",
       }
     : motherCodeName && experienceState.stage === "PRESSURE"
       ? {
         ...experienceState,
         headline: "母码已接入。",
         supportingCopy: "这一颗压力正在穿过你的母码。",
-        pressureCopy: "母码已接入，压力开始进入六维传导。",
+        pressureCopy: "母码已接入，压力开始进入六个空间。",
       }
       : experienceState;
   const currentHexagramOrientationTitle = currentHexagramProfile
@@ -3397,7 +3381,7 @@ function HexagramCodeDeliveryShell() {
         >
           {currentCrystalEndState ? (
             <span style={{ display: "block", textAlign: "center", color: "rgba(199,169,107,0.54)" }}>
-              六维传导已完成
+              六个空间已经走完
             </span>
           ) : transformationMomentActive ? (
             <span style={{ display: "block", textAlign: "center", color: "rgba(199,169,107,0.54)" }}>
