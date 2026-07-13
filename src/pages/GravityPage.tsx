@@ -38,9 +38,12 @@ import {
 import { resolvePrimaryPetalDevFixture } from "../services/fixtures/primaryPetalDevFixtures";
 import { resolveStoredMotherFourSymbol } from "../services/guanyaoStoredMotherContextAdapter";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
+import {
+  resolveDynamicsInputReadiness,
+  type DynamicsInputReadiness,
+} from "../services/guanyaoDynamicsInputReadinessAdapter";
 import type {
   CurrentHexagramProfile,
-  MotherCodeProfile,
   PressureIntensity,
   PressureSeed,
   Trigram,
@@ -253,53 +256,6 @@ function relationLabel(value: unknown) {
   return labels[source] ?? (source || "关系结构");
 }
 
-function isTrigram(value: unknown): value is Trigram {
-  return value === "乾" || value === "坤" || value === "震" || value === "巽" || value === "坎" || value === "离" || value === "艮" || value === "兑";
-}
-
-function normalizeMotherCodeProfileForHexagram(
-  input: DynamicsInputContext,
-): MotherCodeProfile | null {
-  const profile = input.motherCodeProfile ?? input.originMotherContext?.mother?.profile;
-  const lowerTrigramCandidate = profile?.lowerTrigram ?? profile?.trigram ?? input.originMotherContext?.mother?.trigram ?? input.originMotherContext?.trigram;
-  const motherCodeName = profile?.motherCodeName ?? input.personaOutputSnapshot?.motherCodeName ?? input.personaOutputSnapshot?.motherCode;
-
-  if (!profile || !motherCodeName || !isTrigram(lowerTrigramCandidate)) return null;
-
-  return {
-    motherCodeId: profile.motherCodeId ?? motherCodeName,
-    motherCodeDefinitionId: profile.motherCodeDefinitionId,
-    motherCodeName,
-    motherCodeTitle: profile.motherCodeTitle,
-    lowerTrigram: lowerTrigramCandidate,
-    baseForce: profile.baseForce ?? profile.baseDrive ?? "母码底盘已接入。",
-    causalPosition: profile.causalPosition,
-    pressureEntry: profile.pressureEntry,
-    defaultReactionPattern: profile.defaultReactionPattern ?? profile.defaultReactionChain ?? "默认反应待补充。",
-    pressureSensitiveZones: profile.pressureSensitiveZones ?? ["现实压力"],
-    defenseTendency: profile.defenseTendency ?? profile.pressureMode ?? "保护方式待补充。",
-    behaviorBias: profile.behaviorBias ?? profile.shadowInertia ?? "回应方式待补充。",
-    shadowInertia: profile.shadowInertia,
-    pressureMode: profile.pressureMode,
-    defaultReactionChain: profile.defaultReactionChain,
-    unlockPotential: profile.unlockPotential,
-    personalityAsset: profile.personalityAsset,
-    assetSummary: profile.assetSummary,
-    visualAssetKey: profile.visualAssetKey,
-    visualAssetCode: profile.visualAssetCode,
-    xiantianNumber: profile.xiantianNumber,
-    xiantianDisplay: profile.xiantianDisplay,
-    trigramSymbol: profile.trigramSymbol,
-    trigramImage: profile.trigramImage,
-    wuxing: profile.wuxing,
-    visualAssetStatus: profile.visualAssetStatus,
-    visualAssetPackage: profile.visualAssetPackage,
-    visualTags: profile.visualTags,
-    uiBindingStatus: profile.uiBindingStatus,
-    uiSurface: profile.uiSurface,
-  };
-}
-
 function buildPressureSeedForHexagram(context: SelectedPressureSeedContext): PressureSeed {
   const runtimeContext = context as SelectedPressureSeedContext & {
     pressureIntensity?: unknown;
@@ -339,13 +295,12 @@ function buildPressureSeedForHexagram(context: SelectedPressureSeedContext): Pre
   };
 }
 
-function resolveActiveCurrentHexagramContext(input: DynamicsInputContext): ActiveCurrentHexagramContext | null {
-  if (!input.selectedPressureSeedContext) return null;
+function resolveActiveCurrentHexagramContext(readiness: DynamicsInputReadiness): ActiveCurrentHexagramContext | null {
+  if (readiness.status !== "READY") return null;
 
-  const motherCodeProfile = normalizeMotherCodeProfileForHexagram(input);
-  if (!motherCodeProfile) return null;
+  const { motherCodeProfile, selectedPressureSeedContext } = readiness;
 
-  const pressureSeed = buildPressureSeedForHexagram(input.selectedPressureSeedContext);
+  const pressureSeed = buildPressureSeedForHexagram(selectedPressureSeedContext);
   const pressureField = buildPressureField(motherCodeProfile, pressureSeed);
   const currentHexagramProfile = formCurrentHexagramProfile(motherCodeProfile, pressureSeed, pressureField);
 
@@ -356,14 +311,14 @@ function resolveActiveCurrentHexagramContext(input: DynamicsInputContext): Activ
       motherCodeName: motherCodeProfile.motherCodeName,
       motherCodeTitle: motherCodeProfile.motherCodeTitle,
       lowerTrigram: motherCodeProfile.lowerTrigram,
-      trigram: input.motherCodeProfile?.trigram ?? input.originMotherContext?.mother?.trigram ?? input.originMotherContext?.trigram,
+      trigram: readiness.motherTrigram,
     },
     selectedPressureSeedContext: {
-      selectedPressureSeedId: input.selectedPressureSeedContext.selectedPressureSeedId,
-      matrixCode: input.selectedPressureSeedContext.matrixCode,
-      pressureField: input.selectedPressureSeedContext.pressureField,
-      pressureNature: input.selectedPressureSeedContext.pressureNature,
-      surface: input.selectedPressureSeedContext.surface,
+      selectedPressureSeedId: selectedPressureSeedContext.selectedPressureSeedId,
+      matrixCode: selectedPressureSeedContext.matrixCode,
+      pressureField: selectedPressureSeedContext.pressureField,
+      pressureNature: selectedPressureSeedContext.pressureNature,
+      surface: selectedPressureSeedContext.surface,
     },
     currentHexagramProfile,
   };
@@ -398,15 +353,13 @@ function resolveCurrentCrystalEndState({
 }
 
 function resolveSingleModelRevisionAction(
-  input: DynamicsInputContext,
+  readiness: DynamicsInputReadiness,
   currentHexagramProfile: CurrentHexagramProfile | null,
 ): SingleModelRevisionAction | null {
-  if (!input.selectedPressureSeedContext || !currentHexagramProfile) return null;
+  if (readiness.status !== "READY" || !currentHexagramProfile) return null;
 
-  const motherCodeProfile = normalizeMotherCodeProfileForHexagram(input);
-  if (!motherCodeProfile) return null;
-
-  const pressureSeed = buildPressureSeedForHexagram(input.selectedPressureSeedContext);
+  const pressureSeed = buildPressureSeedForHexagram(readiness.selectedPressureSeedContext);
+  const motherCodeProfile = readiness.motherCodeProfile;
   const yaoTransmissionChain = buildYaoTransmissionChain(motherCodeProfile, pressureSeed, currentHexagramProfile, {
     preferRuntimePressureSeed: true,
   });
@@ -2663,8 +2616,11 @@ function HexagramCodeDeliveryShell() {
       smokeFixture: resolveChangeExperienceRuntimeSmokeFixture(experienceSmokeFixture),
     }),
   );
+  const [dynamicsInputReadiness] = useState<DynamicsInputReadiness>(() =>
+    resolveDynamicsInputReadiness(dynamicsInputContext),
+  );
   const [activeCurrentHexagramContext] = useState<ActiveCurrentHexagramContext | null>(() =>
-    resolveActiveCurrentHexagramContext(dynamicsInputContext),
+    resolveActiveCurrentHexagramContext(dynamicsInputReadiness),
   );
   const [executionSnapshot, setExecutionSnapshot] = useState<ExecutionSnapshot>(() =>
     GuanyaoRuntimeEngine.createSnapshot(dynamicsInputContext.selectedPressureSeedContext),
@@ -2700,7 +2656,7 @@ function HexagramCodeDeliveryShell() {
   const motherPersonaSnapshot = resolveMotherPersonaSnapshot(dynamicsInputContext);
   const motherCodeName = resolveMotherCodeName(dynamicsInputContext);
   const currentHexagramProfile = activeCurrentHexagramContext?.currentHexagramProfile ?? null;
-  const hasLockedPressureSeed = Boolean(dynamicsInputContext.selectedPressureSeedContext);
+  const hasLockedPressureSeed = dynamicsInputReadiness.hasPressureContext;
   const displayExperienceState: ExperienceState = !hasLockedPressureSeed
     ? {
         ...experienceState,
@@ -2756,8 +2712,8 @@ function HexagramCodeDeliveryShell() {
   const singleModelRevisionAction = useMemo(
     () =>
       resolveChangeExperienceRuntimeSmokeRevisionAction(experienceSmokeFixture) ??
-      resolveSingleModelRevisionAction(dynamicsInputContext, currentHexagramProfile),
-    [dynamicsInputContext, currentHexagramProfile, experienceSmokeFixture],
+      resolveSingleModelRevisionAction(dynamicsInputReadiness, currentHexagramProfile),
+    [dynamicsInputReadiness, currentHexagramProfile, experienceSmokeFixture],
   );
   const changeExperienceRoute = useMemo(
     () => resolveChangeExperienceRuntimeRoute(singleModelRevisionAction, experienceSmokeFixture),
@@ -2907,7 +2863,7 @@ function HexagramCodeDeliveryShell() {
         data-product-onboarding={GUANYAO_PRODUCT_RUNTIME_DEFINITION.onboardingFlow.join("|")}
         data-product-perception={GUANYAO_PRODUCT_RUNTIME_DEFINITION.userPerception.join("|")}
         data-dynamics-mother-context={motherPersonaSnapshot ? "connected" : "missing"}
-        data-dynamics-pressure-context={dynamicsInputContext.selectedPressureSeedContext ? "connected" : "fallback"}
+        data-dynamics-pressure-context={dynamicsInputReadiness.hasPressureContext ? "connected" : "fallback"}
         data-dynamics-current-hexagram={currentHexagramProfile ? "connected" : "missing"}
         data-dynamics-mother-code={motherCodeName || "missing"}
         data-dynamics-four-beast={motherPersonaSnapshot?.fourSymbol ?? "missing"}
