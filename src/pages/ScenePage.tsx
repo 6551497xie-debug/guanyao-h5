@@ -15,6 +15,7 @@ import {
   buildTripleForceLandingResult,
   getTripleForceFrontStage,
 } from "../services/guanyaoTripleForceLandingService";
+import { writeSelectedPressureSeedContext } from "../services/guanyaoSelectedPressureSeedContextPersistenceAdapter";
 import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId, SceneSeed } from "../types";
 import type { GuanyaoAgeSegment, GuanyaoPressureSeed } from "../types/guanyaoPressureSeed";
 
@@ -105,7 +106,7 @@ export function ScenePage() {
     const tripleForceFrontStage = getTripleForceFrontStage(tripleForceLandingResult);
     const legacySceneSeed = toLegacySceneSeed(candidate.seed, latestSession, candidate.seedIndex);
 
-    window.localStorage.setItem("guanyao:selectedPressureSeedContext", JSON.stringify(selectedPressureSeedContext));
+    writeSelectedPressureSeedContext(selectedPressureSeedContext);
     window.localStorage.setItem("guanyao:tripleForceLandingResult", JSON.stringify(tripleForceLandingResult));
     window.localStorage.setItem("guanyao:tripleForceFrontStage", JSON.stringify(tripleForceFrontStage));
     window.localStorage.setItem("guanyao:selectedPressureSeedId", candidate.seed.id);

@@ -39,6 +39,7 @@ import { resolveStoredMotherFourSymbol } from "../services/guanyaoStoredMotherCo
 import { readPersistedMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { readPersistedOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
 import { readPersistedPersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
+import { readPersistedSelectedPressureSeedContext } from "../services/guanyaoSelectedPressureSeedContextPersistenceAdapter";
 import type {
   CurrentHexagramProfile,
   MotherCodeProfile,
@@ -61,6 +62,7 @@ import type {
   StoredMotherCodeProfile,
   StoredOriginMotherContext,
   StoredPersonaOutputSnapshot,
+  StoredSelectedPressureSeedContext,
 } from "../types/gravityRuntimeInput";
 import type { PersonaMigrationImpact, PersonaYaoStage } from "../types/personaTransmission";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
@@ -135,19 +137,6 @@ function resolvePersonaYaoStageFromYaoName(yaoName: string): PersonaYaoStage | n
   return null;
 }
 
-function readJsonFromStorage<T>(key: string): T | null {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return null;
-
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
-}
-
 function readDevPrimaryPetalFixture(): SelectedPressureSeedContext | null {
   const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
   if (!viteEnv?.DEV || typeof window === "undefined") return null;
@@ -174,7 +163,8 @@ function readDynamicsInputContext(): DynamicsInputContext {
 
   return {
     selectedPressureSeedContext:
-      readDevPrimaryPetalFixture() ?? readJsonFromStorage<SelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
+      readDevPrimaryPetalFixture() ??
+      readPersistedSelectedPressureSeedContext() as StoredSelectedPressureSeedContext | null,
     motherCodeProfile:
       smokeFixture?.motherCodeProfile ??
       readPersistedMotherCodeProfile() as StoredMotherCodeProfile | null,

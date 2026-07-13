@@ -33,6 +33,7 @@ import { resolveLaunchOriginMother } from "../services/guanyaoLaunchOriginMother
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
 import { writePersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
+import { writeSelectedPressureSeedContext } from "../services/guanyaoSelectedPressureSeedContextPersistenceAdapter";
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
@@ -948,7 +949,7 @@ export function LaunchLab() {
       const tripleForceLandingResult = buildTripleForceLandingResult(selectedPressureSeedContext);
       const tripleForceFrontStage = getTripleForceFrontStage(tripleForceLandingResult);
 
-      window.localStorage.setItem("guanyao:selectedPressureSeedContext", JSON.stringify(selectedPressureSeedContext));
+      writeSelectedPressureSeedContext(selectedPressureSeedContext);
       window.localStorage.setItem("guanyao:tripleForceLandingResult", JSON.stringify(tripleForceLandingResult));
       window.localStorage.setItem("guanyao:tripleForceFrontStage", JSON.stringify(tripleForceFrontStage));
       window.localStorage.setItem("guanyao:selectedPressureSeedId", candidate.seed.id);

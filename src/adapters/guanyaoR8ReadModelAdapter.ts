@@ -8,6 +8,7 @@ import {
 } from "../services/guanyaoCausalEngineService";
 import { readPersistedMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import type { GuanyaoSelectedPressureSeedContext } from "../services/guanyaoPressureSeedSceneBindingService";
+import { readPersistedSelectedPressureSeedContext } from "../services/guanyaoSelectedPressureSeedContextPersistenceAdapter";
 import type {
   CutCandidate,
   GuanyaoCausalPipelineResult,
@@ -154,19 +155,6 @@ const knownHexagramDisplays: Record<string, { code: string; name: string; title:
 
 const selectedPressureSeedContextSource = "selected_pressure_seed_context";
 
-function readJsonFromStorage<T>(key: string): T | null {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return null;
-
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
-}
-
 function resolveRuntimePressureIntensity(pressureIntensity: number | undefined): PressureIntensity {
   if ((pressureIntensity ?? 0) >= 88) return "critical";
   if ((pressureIntensity ?? 0) >= 72) return "high";
@@ -255,9 +243,8 @@ function buildRuntimePressureSeedFromSelectedContext(
 function buildPipelineResultWithSelectedPressureSeed(
   baseResult: GuanyaoCausalPipelineResult,
 ): GuanyaoCausalPipelineResult {
-  const selectedPressureSeedContext = readJsonFromStorage<GuanyaoSelectedPressureSeedContext>(
-    "guanyao:selectedPressureSeedContext",
-  );
+  const selectedPressureSeedContext =
+    readPersistedSelectedPressureSeedContext() as GuanyaoSelectedPressureSeedContext | null;
 
   if (!selectedPressureSeedContext?.selectedPressureSeedId) {
     return baseResult;

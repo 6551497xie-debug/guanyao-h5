@@ -1,6 +1,10 @@
 import type { MotherCodeProfile } from "./guanyaoCausalEngine";
 import type { SelectedPressureSeedContext } from "./primaryPetal";
 
+export type StoredSelectedPressureSeedContext = SelectedPressureSeedContext & {
+  schemaVersion?: "GUANYAO_SELECTED_PRESSURE_SEED_CONTEXT_V2";
+};
+
 export type StoredMotherCodeProfile = Partial<MotherCodeProfile> & {
   schemaVersion?: "GUANYAO_MOTHER_CODE_PROFILE_V2";
   motherCodeName?: string;
@@ -47,7 +51,7 @@ export type StoredOriginMotherContext = {
 };
 
 export type DynamicsInputContext = {
-  selectedPressureSeedContext: SelectedPressureSeedContext | null;
+  selectedPressureSeedContext: StoredSelectedPressureSeedContext | null;
   motherCodeProfile: StoredMotherCodeProfile | null;
   originMotherContext: StoredOriginMotherContext | null;
   personaOutputSnapshot: StoredPersonaOutputSnapshot | null;
