@@ -6,18 +6,21 @@ import { build } from "esbuild";
 
 const rootDir = process.cwd();
 const adapterPath = path.join(rootDir, "src/services/guanyaoStoredMotherContextAdapter.ts");
+const handoffPath = path.join(rootDir, "src/services/guanyaoDynamicsMotherHandoffAdapter.ts");
 const persistencePath = path.join(rootDir, "src/services/guanyaoOriginMotherContextPersistenceAdapter.ts");
 const typePath = path.join(rootDir, "src/types/gravityRuntimeInput.ts");
 const fusionTypePath = path.join(rootDir, "src/types/guanyaoGeoChronoMotherFusion.ts");
 const launchPath = path.join(rootDir, "src/pages/LaunchLab.tsx");
 const gravityPath = path.join(rootDir, "src/pages/GravityPage.tsx");
 const adapterSource = fs.readFileSync(adapterPath, "utf8");
+const handoffSource = fs.readFileSync(handoffPath, "utf8");
 const persistenceSource = fs.readFileSync(persistencePath, "utf8");
 const typeSource = fs.readFileSync(typePath, "utf8");
 const fusionTypeSource = fs.readFileSync(fusionTypePath, "utf8");
 const launchSource = fs.readFileSync(launchPath, "utf8");
 const gravitySource = fs.readFileSync(gravityPath, "utf8");
 const tempAdapterPath = path.join(os.tmpdir(), `guanyao-mother-context-adapter-${process.pid}.mjs`);
+const tempHandoffPath = path.join(os.tmpdir(), `guanyao-mother-handoff-${process.pid}.mjs`);
 const tempPersistencePath = path.join(os.tmpdir(), `guanyao-mother-context-persistence-${process.pid}.mjs`);
 
 const assertEqual = (name, actual, expected) => {
@@ -47,6 +50,15 @@ try {
       logLevel: "silent",
     }),
     build({
+      entryPoints: [handoffPath],
+      outfile: tempHandoffPath,
+      bundle: true,
+      platform: "node",
+      format: "esm",
+      target: "node20",
+      logLevel: "silent",
+    }),
+    build({
       entryPoints: [persistencePath],
       outfile: tempPersistencePath,
       bundle: true,
@@ -58,6 +70,7 @@ try {
   ]);
 
   const { resolveStoredMotherFourSymbol } = await import(`file://${tempAdapterPath}?t=${Date.now()}`);
+  const { buildDynamicsMotherHandoff } = await import(`file://${tempHandoffPath}?t=${Date.now()}`);
   const {
     GUANYAO_ORIGIN_MOTHER_CONTEXT_SCHEMA_VERSION,
     readPersistedOriginMotherContext,
@@ -98,6 +111,44 @@ try {
     resolveStoredMotherFourSymbol(context(null, { direction: "青龙" })),
     "青龙",
   );
+
+  const motherHandoff = buildDynamicsMotherHandoff({
+    mother_seed: { direction: "青龙", timePhase: "X2-Y3", starResidue: "28宿节点-07" },
+    geo: { province: "甘肃", city: "兰州", role: "birth location context" },
+    chrono: { lockPoint: "X2-Y3", timePhaseIndex: 1, calibrationIndex: 2, role: "temporal axis" },
+    starbeast: {
+      fourSymbol: "青龙",
+      primaryNode: "28宿节点-07",
+      originLightTrace: "28光兽入口",
+      role: "identity residue",
+    },
+    mother: {
+      trigram: "兑",
+      profile: {
+        motherCodeId: "M08",
+        motherCodeName: "兑｜连接者",
+        baseForce: "连接",
+        defaultReactionPattern: "先建立连接",
+        pressureSensitiveZones: [],
+        defenseTendency: "维持关系",
+        behaviorBias: "寻找回应",
+      },
+      definition: {
+        trigramSymbol: "☱",
+        trigramImage: "泽",
+        baseDrive: "连接",
+        defaultReactionChain: "寻找回应",
+        shadowInertia: "依赖反馈",
+        personalityAsset: "连接力",
+        assetSummary: "让关系流动",
+      },
+    },
+  });
+  assertEqual("mother handoff is immutable", Object.isFrozen(motherHandoff), true);
+  assertEqual("mother handoff profile follows resolved trigram", motherHandoff.motherCodeProfile.trigram, "兑");
+  assertEqual("mother handoff keeps formal starbeast", motherHandoff.originMotherContext.starbeast.fourSymbol, "青龙");
+  assertEqual("mother handoff persona keeps formal fourSymbol", motherHandoff.personaOutputSnapshot.starbeast.fourSymbol, "青龙");
+  assertEqual("mother handoff preserves star origin index", motherHandoff.personaOutputSnapshot.starOrigin.index, 6);
 
   const storage = new Map();
   let rejectWrites = false;
@@ -171,9 +222,9 @@ try {
     true,
   );
 
-  const originPersistenceBlock = launchSource.slice(
-    launchSource.indexOf("const originMotherContext ="),
-    launchSource.indexOf("const personaOutputSnapshot ="),
+  const gravityInputBlock = gravitySource.slice(
+    gravitySource.indexOf("function readDynamicsInputContext"),
+    gravitySource.indexOf("function resolveMotherCodeName"),
   );
   const geoResultBlock = fusionTypeSource.slice(
     fusionTypeSource.indexOf("geo: Readonly<{"),
@@ -184,12 +235,23 @@ try {
     typeSource.indexOf("export type DynamicsInputContext"),
   );
   assertIncludes("stored context type owns formal starbeast", typeSource, "starbeast?: {");
+  assertIncludes("runtime input owns formal mother handoff bundle", typeSource, "export type DynamicsMotherHandoff");
   assertIncludes("stored context type recognizes schema version", storedContextBlock, 'schemaVersion?: "GUANYAO_ORIGIN_MOTHER_CONTEXT_V2"');
   assertIncludes("stored context type owns formal fourSymbol", typeSource, "fourSymbol?: string;");
   assertExcludes("formal stored context excludes geo symbol", storedContextBlock, "symbol?:");
   assertExcludes("formal stored context excludes top-level fourBeast", storedContextBlock, "fourBeast?:");
-  assertIncludes("new writes persist complete starbeast context", originPersistenceBlock, "starbeast: reveal.starbeast");
-  assertIncludes("Launch delegates origin context persistence", launchSource, "writeOriginMotherContext(originMotherContext)");
+  assertIncludes("handoff adapter builds complete starbeast context", handoffSource, "starbeast: reveal.starbeast");
+  assertIncludes("Launch delegates mother handoff construction", launchSource, "buildDynamicsMotherHandoff(reveal)");
+  assertIncludes(
+    "Launch persists adapter-owned origin context",
+    launchSource,
+    "writeOriginMotherContext(motherHandoff.originMotherContext)",
+  );
+  assertIncludes(
+    "Launch carries mother bundle into Dynamics route",
+    launchSource,
+    "mother: dynamicsMotherHandoffRef.current",
+  );
   assertIncludes(
     "Launch names persistence latch as an attempt",
     launchSource,
@@ -201,11 +263,32 @@ try {
     "originMotherContextPersisted",
   );
   assertExcludes("Launch does not own origin context storage key", launchSource, "guanyao:originMotherContext");
-  assertExcludes("new writes stop top-level fourBeast mirror", originPersistenceBlock, "fourBeast:");
+  assertExcludes("new handoff stops top-level fourBeast mirror", handoffSource, "fourBeast:");
   assertExcludes("fusion geo contract does not carry symbol", geoResultBlock, "symbol:");
   assertIncludes("fusion starbeast contract carries formal fourSymbol", fusionTypeSource, "fourSymbol: FourSymbol;");
   assertIncludes("gravity delegates stored fourSymbol resolution", gravitySource, "resolveStoredMotherFourSymbol(input)");
   assertIncludes("Gravity delegates origin context reading", gravitySource, "readPersistedOriginMotherContext()");
+  assertIncludes(
+    "Gravity prioritizes routed mother profile",
+    gravityInputBlock,
+    "handoffState?.mother?.motherCodeProfile ??",
+  );
+  assertIncludes(
+    "Gravity prioritizes routed origin context",
+    gravityInputBlock,
+    "handoffState?.mother?.originMotherContext ??",
+  );
+  assertIncludes(
+    "Gravity prioritizes routed persona snapshot",
+    gravityInputBlock,
+    "handoffState?.mother?.personaOutputSnapshot ??",
+  );
+  assertEqual(
+    "routed origin context precedes persistence fallback",
+    gravityInputBlock.indexOf("handoffState?.mother?.originMotherContext ??") <
+      gravityInputBlock.indexOf("readPersistedOriginMotherContext()"),
+    true,
+  );
   assertExcludes("Gravity does not own origin context storage key", gravitySource, "guanyao:originMotherContext");
   assertExcludes("gravity does not read legacy geo symbol directly", gravitySource, "originMotherContext?.geo?.symbol");
   assertIncludes("adapter isolates legacy context shape", adapterSource, "type LegacyStoredOriginMotherContext");
@@ -220,5 +303,6 @@ try {
   process.exit(1);
 } finally {
   fs.rmSync(tempAdapterPath, { force: true });
+  fs.rmSync(tempHandoffPath, { force: true });
   fs.rmSync(tempPersistencePath, { force: true });
 }

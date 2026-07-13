@@ -170,10 +170,14 @@ function readDynamicsInputContext(handoffState?: DynamicsHandoffState | null): D
       readPersistedSelectedPressureSeedContext() as StoredSelectedPressureSeedContext | null,
     motherCodeProfile:
       smokeFixture?.motherCodeProfile ??
+      handoffState?.mother?.motherCodeProfile ??
       readPersistedMotherCodeProfile() as StoredMotherCodeProfile | null,
-    originMotherContext: readPersistedOriginMotherContext() as StoredOriginMotherContext | null,
+    originMotherContext:
+      handoffState?.mother?.originMotherContext ??
+      readPersistedOriginMotherContext() as StoredOriginMotherContext | null,
     personaOutputSnapshot:
       smokeFixture?.personaOutputSnapshot ??
+      handoffState?.mother?.personaOutputSnapshot ??
       readPersistedPersonaOutputSnapshot() as StoredPersonaOutputSnapshot | null,
   };
 }

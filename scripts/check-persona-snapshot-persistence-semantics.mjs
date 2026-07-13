@@ -11,6 +11,7 @@ const paths = {
   cache: path.join(rootDir, "src/services/guanyaoPersonaSnapshotCache.ts"),
   engine: path.join(rootDir, "src/services/guanyaoDeterministicPersonaEngine.ts"),
   trigger: path.join(rootDir, "src/services/guanyaoPersonaGenerationTrigger.ts"),
+  handoff: path.join(rootDir, "src/services/guanyaoDynamicsMotherHandoffAdapter.ts"),
   persistence: path.join(rootDir, "src/services/guanyaoPersonaSnapshotPersistenceAdapter.ts"),
   runtimeTypes: path.join(rootDir, "src/types/gravityRuntimeInput.ts"),
   launch: path.join(rootDir, "src/pages/LaunchLab.tsx"),
@@ -276,9 +277,9 @@ try {
     sources.runtimeTypes.indexOf("export type StoredPersonaOutputSnapshot"),
     sources.runtimeTypes.indexOf("export type StoredOriginMotherContext"),
   );
-  const launchSnapshotBlock = sources.launch.slice(
-    sources.launch.indexOf("const personaOutputSnapshot ="),
-    sources.launch.indexOf("try {", sources.launch.indexOf("const personaOutputSnapshot =")),
+  const handoffSnapshotBlock = sources.handoff.slice(
+    sources.handoff.indexOf("const personaOutputSnapshot ="),
+    sources.handoff.indexOf("return Object.freeze"),
   );
   const engineSnapshotTypeBlock = sources.engine.slice(
     sources.engine.indexOf("export type PersonaOutputSnapshot"),
@@ -292,11 +293,15 @@ try {
   assertIncludes("formal stored persona type owns fourSymbol", storedTypeBlock, "fourSymbol?: string;");
   assertExcludes("formal stored persona type excludes fourBeast", storedTypeBlock, "fourBeast?:");
   assertExcludes("formal stored persona type excludes direction", storedTypeBlock, "direction?:");
-  assertIncludes("Launch writes formal persona starbeast", launchSnapshotBlock, "starbeast: {");
-  assertIncludes("Launch writes formal persona fourSymbol", launchSnapshotBlock, "fourSymbol: reveal.starbeast.fourSymbol");
-  assertExcludes("Launch stops persona fourBeast writes", launchSnapshotBlock, "fourBeast:");
-  assertExcludes("Launch stops persona direction writes", launchSnapshotBlock, "direction:");
-  assertIncludes("Launch delegates persona persistence", sources.launch, "writePersonaOutputSnapshot(personaOutputSnapshot)");
+  assertIncludes("handoff adapter writes formal persona starbeast", handoffSnapshotBlock, "starbeast: {");
+  assertIncludes("handoff adapter writes formal persona fourSymbol", handoffSnapshotBlock, "fourSymbol: reveal.starbeast.fourSymbol");
+  assertExcludes("handoff adapter stops persona fourBeast writes", handoffSnapshotBlock, "fourBeast:");
+  assertExcludes("handoff adapter stops persona direction writes", handoffSnapshotBlock, "direction:");
+  assertIncludes(
+    "Launch delegates persona persistence",
+    sources.launch,
+    "writePersonaOutputSnapshot(motherHandoff.personaOutputSnapshot)",
+  );
   assertExcludes("Launch does not own persona storage key", sources.launch, "guanyao:personaOutputSnapshot");
   assertIncludes("deterministic snapshot type owns formal starbeast", engineSnapshotTypeBlock, "starbeast: {");
   assertIncludes("deterministic snapshot type owns schema version", engineSnapshotTypeBlock, "schemaVersion: typeof GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION");

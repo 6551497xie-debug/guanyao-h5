@@ -142,7 +142,11 @@ try {
     storedTypeBlock,
     'schemaVersion?: "GUANYAO_MOTHER_CODE_PROFILE_V2"',
   );
-  assertIncludes("Launch delegates profile persistence", sources.launch, "writeMotherCodeProfile(motherCodeProfile)");
+  assertIncludes(
+    "Launch delegates profile persistence",
+    sources.launch,
+    "writeMotherCodeProfile(motherHandoff.motherCodeProfile)",
+  );
   assertExcludes("Launch does not own profile storage key", sources.launch, "guanyao:motherCodeProfile");
   assertIncludes("Chrono delegates profile persistence", sources.chrono, "writeMotherCodeProfile(motherCodeProfile)");
   assertExcludes("Chrono does not own profile storage key", sources.chrono, "guanyao:motherCodeProfile");

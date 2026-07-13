@@ -25,7 +25,8 @@ import { buildSelectedPressureSeedContext } from "../services/guanyaoPressureSee
 import { getPressureSeedSceneTriplet } from "../services/guanyaoPressureSeedSceneBindingService";
 import type { GeoChronoMotherFusionResult } from "../types/guanyaoGeoChronoMotherFusion";
 import type { FourSymbol } from "../types/guanyaoStarbeast";
-import type { DynamicsHandoffState } from "../types/gravityRuntimeInput";
+import type { DynamicsHandoffState, DynamicsMotherHandoff } from "../types/gravityRuntimeInput";
+import { buildDynamicsMotherHandoff } from "../services/guanyaoDynamicsMotherHandoffAdapter";
 import { resolveLaunchOriginMother } from "../services/guanyaoLaunchOriginMotherInputAdapter";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
@@ -830,6 +831,7 @@ export function LaunchLab() {
   const timelineRunIdRef = useRef(0);
   const nodeTimelineStartedAtRef = useRef(0);
   const entryHandoffRef = useRef<((mode: EntryHandoffMode) => void) | null>(null);
+  const dynamicsMotherHandoffRef = useRef<DynamicsMotherHandoff | null>(null);
   const showInternalNodeCopy = DEBUG_TIMELINE;
   const collapsePhase = "none";
   const isProductionCollapse = false;
@@ -947,6 +949,7 @@ export function LaunchLab() {
       const selectedPressureSeedHandoff = writeSelectedPressureSeedContext(selectedPressureSeedContext);
       const dynamicsHandoffState: DynamicsHandoffState = {
         selectedPressureSeedContext: selectedPressureSeedHandoff,
+        mother: dynamicsMotherHandoffRef.current,
       };
 
       setLaunchInteractionState("SNAPSHOT_GENERATED");
@@ -1090,6 +1093,7 @@ export function LaunchLab() {
       m.node1State = null;
       m.node1T = 0;
       m.pendingAxisMode = mode;
+      dynamicsMotherHandoffRef.current = null;
       if (mode === "OLD_USER") {
         openPressureSeedAxis();
         return;
@@ -1321,50 +1325,14 @@ export function LaunchLab() {
     function persistOriginMotherContext(reveal: GeoChronoMotherFusionResult) {
       if (m.pendingAxisMode !== "NEW_USER" || m.originMotherContextPersistenceAttempted) return;
 
-      const { profile, definition, trigram } = reveal.mother;
-      const motherCodeProfile = {
-        ...profile,
-        trigram,
-        lowerTrigram: profile.lowerTrigram ?? trigram,
-        trigramSymbol: definition.trigramSymbol,
-        trigramImage: definition.trigramImage,
-        baseDrive: definition.baseDrive,
-        defaultReactionChain: definition.defaultReactionChain,
-        shadowInertia: definition.shadowInertia,
-        personalityAsset: definition.personalityAsset,
-        assetSummary: definition.assetSummary,
-      };
-      const originMotherContext = {
-        source: "launch-lab",
-        createdAt: new Date().toISOString(),
-        geo: reveal.geo,
-        chrono: reveal.chrono,
-        starbeast: reveal.starbeast,
-        mother_seed: reveal.mother_seed,
-        mother: reveal.mother,
-        trigram,
-      };
-      const personaOutputSnapshot = {
-        motherCode: profile.motherCodeName,
-        motherCodeName: profile.motherCodeName,
-        motherCodeTitle: profile.motherCodeTitle,
-        trigram,
-        trigramSymbol: definition.trigramSymbol,
-        starbeast: {
-          fourSymbol: reveal.starbeast.fourSymbol,
-        },
-        chronoLockPoint: reveal.chrono.lockPoint,
-        geoProvince: reveal.geo.province,
-        starOrigin: {
-          index: Math.max(0, NODES.findIndex((_, index) => reveal.starbeast.primaryNode.endsWith(String(index + 1).padStart(2, "0")))),
-          originLightTrace: reveal.starbeast.originLightTrace,
-        },
-      };
+      const motherHandoff = buildDynamicsMotherHandoff(reveal);
 
       try {
-        writeMotherCodeProfile(motherCodeProfile);
-        writeOriginMotherContext(originMotherContext);
-        writePersonaOutputSnapshot(personaOutputSnapshot);
+        dynamicsMotherHandoffRef.current = Object.freeze({
+          motherCodeProfile: writeMotherCodeProfile(motherHandoff.motherCodeProfile),
+          originMotherContext: writeOriginMotherContext(motherHandoff.originMotherContext),
+          personaOutputSnapshot: writePersonaOutputSnapshot(motherHandoff.personaOutputSnapshot),
+        });
         m.originMotherContextPersistenceAttempted = true;
       } catch (error) {
         console.warn("[LaunchLab] failed to persist launch mother assets", error);
@@ -1398,6 +1366,7 @@ export function LaunchLab() {
       m.chronoStep = 0;
       m.geoStep = 0;
       m.originMotherContextPersistenceAttempted = false;
+      dynamicsMotherHandoffRef.current = null;
       m.railProgress = 0;
       m.phaseX = 0;
       m.dragging = false;

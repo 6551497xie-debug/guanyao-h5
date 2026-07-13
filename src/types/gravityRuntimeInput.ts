@@ -5,10 +5,6 @@ export type StoredSelectedPressureSeedContext = SelectedPressureSeedContext & {
   schemaVersion?: "GUANYAO_SELECTED_PRESSURE_SEED_CONTEXT_V2";
 };
 
-export type DynamicsHandoffState = Readonly<{
-  selectedPressureSeedContext?: StoredSelectedPressureSeedContext | null;
-}>;
-
 export type StoredMotherCodeProfile = Partial<MotherCodeProfile> & {
   schemaVersion?: "GUANYAO_MOTHER_CODE_PROFILE_V2";
   motherCodeName?: string;
@@ -53,6 +49,17 @@ export type StoredOriginMotherContext = {
   };
   trigram?: string;
 };
+
+export type DynamicsMotherHandoff = Readonly<{
+  motherCodeProfile: StoredMotherCodeProfile;
+  originMotherContext: StoredOriginMotherContext;
+  personaOutputSnapshot: StoredPersonaOutputSnapshot;
+}>;
+
+export type DynamicsHandoffState = Readonly<{
+  selectedPressureSeedContext?: StoredSelectedPressureSeedContext | null;
+  mother?: DynamicsMotherHandoff | null;
+}>;
 
 export type DynamicsInputContext = {
   selectedPressureSeedContext: StoredSelectedPressureSeedContext | null;
