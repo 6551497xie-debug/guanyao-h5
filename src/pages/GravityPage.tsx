@@ -29,6 +29,11 @@ import {
   emotionChangeAwarenessChangeExperiencePresentation,
   thoughtChangeCognitionChangeExperiencePresentation,
 } from "../services/fixtures/changeExperiencePresentationFixtures";
+import {
+  actionFiveAwarenessChangeExperienceUnit,
+  emotionChangeAwarenessChangeExperienceUnit,
+  thoughtChangeCognitionChangeExperienceUnit,
+} from "../services/fixtures/changeExperienceFixtures";
 import { actionFiveAwarenessRuntimeUnit } from "../services/fixtures/personaTransmissionFixtures";
 import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
 import type {
@@ -46,7 +51,7 @@ import {
   type SixSpaceId,
   type SpatialIntent,
 } from "../runtime/guanyaoRuntimeEngine";
-import type { ChangeExperiencePresentation } from "../types/changeExperience";
+import type { ChangeExperiencePresentation, ChangeExperienceUnit } from "../types/changeExperience";
 import type { CrystalState, PersonaDimension, PersonaMigrationImpact, PersonaYaoStage } from "../types/personaTransmission";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
 
@@ -293,10 +298,10 @@ type SingleModelRevisionAction = {
   userAgency: number;
 };
 
-function resolveChangeExperiencePresentationForAction(
+function resolveChangeExperienceUnitForAction(
   action: SingleModelRevisionAction | null,
   experienceSmokeFixture: string | null,
-): ChangeExperiencePresentation | null {
+): ChangeExperienceUnit | null {
   if (!action) return null;
 
   const isActionSpace = action.layerLabel === "行动" || action.layerLabel === "行为";
@@ -307,18 +312,28 @@ function resolveChangeExperiencePresentationForAction(
   const isEmotionChangeSmoke = experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion";
   const isThoughtChangeSmoke = experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought";
 
-  if (isActionSpace && (isAwarenessYao || isActionFiveSmoke)) return actionFiveAwarenessChangeExperiencePresentation;
-  if (isEmotionSpace && (isAwarenessYao || isEmotionChangeSmoke)) return emotionChangeAwarenessChangeExperiencePresentation;
-  if (isThoughtSpace && (isAwarenessYao || isThoughtChangeSmoke)) return thoughtChangeCognitionChangeExperiencePresentation;
+  if (isActionSpace && (isAwarenessYao || isActionFiveSmoke)) return actionFiveAwarenessChangeExperienceUnit;
+  if (isEmotionSpace && (isAwarenessYao || isEmotionChangeSmoke)) return emotionChangeAwarenessChangeExperienceUnit;
+  if (isThoughtSpace && (isAwarenessYao || isThoughtChangeSmoke)) return thoughtChangeCognitionChangeExperienceUnit;
 
+  return null;
+}
+
+function resolveChangeExperiencePresentationForUnit(
+  changeExperienceUnit: ChangeExperienceUnit | null,
+): ChangeExperiencePresentation | null {
+  if (!changeExperienceUnit) return null;
+  if (changeExperienceUnit === actionFiveAwarenessChangeExperienceUnit) return actionFiveAwarenessChangeExperiencePresentation;
+  if (changeExperienceUnit === emotionChangeAwarenessChangeExperienceUnit) return emotionChangeAwarenessChangeExperiencePresentation;
+  if (changeExperienceUnit === thoughtChangeCognitionChangeExperienceUnit) return thoughtChangeCognitionChangeExperiencePresentation;
   return null;
 }
 
 function resolveCrystalMigrationImpactForAction(
   action: SingleModelRevisionAction | null,
-  presentation: ChangeExperiencePresentation | null,
+  changeExperienceUnit: ChangeExperienceUnit | null,
 ): PersonaMigrationImpact | null {
-  if (!action || !presentation) return null;
+  if (!action || !changeExperienceUnit) return null;
 
   const dimension = resolvePersonaDimensionFromLayerLabel(action.layerLabel);
   const yaoStage = resolvePersonaYaoStageFromYaoName(action.yaoName);
@@ -328,7 +343,13 @@ function resolveCrystalMigrationImpactForAction(
     sourceUnitId: `gravity-${dimension}-${yaoStage}`,
     dimension,
     yaoStage,
-    presentation,
+    domainFacts: {
+      oldReaction: changeExperienceUnit.recognition.oldReaction,
+      revisedResponse: changeExperienceUnit.revision.newResponse,
+      crystalImprint: changeExperienceUnit.meaning.crystalImprint,
+      migrationTrace: changeExperienceUnit.revision.transformationMoment,
+      dominantShift: `${changeExperienceUnit.recognition.rootProtection}:${changeExperienceUnit.recognition.manifestBehavior} → ${changeExperienceUnit.revision.changeType}`,
+    },
   });
 }
 
@@ -3136,13 +3157,17 @@ function HexagramCodeDeliveryShell() {
       resolveSingleModelRevisionAction(dynamicsInputContext, currentHexagramProfile),
     [dynamicsInputContext, currentHexagramProfile, experienceSmokeFixture],
   );
-  const changeExperiencePresentation = useMemo(
-    () => resolveChangeExperiencePresentationForAction(singleModelRevisionAction, experienceSmokeFixture),
+  const changeExperienceUnit = useMemo(
+    () => resolveChangeExperienceUnitForAction(singleModelRevisionAction, experienceSmokeFixture),
     [singleModelRevisionAction, experienceSmokeFixture],
   );
+  const changeExperiencePresentation = useMemo(
+    () => resolveChangeExperiencePresentationForUnit(changeExperienceUnit),
+    [changeExperienceUnit],
+  );
   const crystalMigrationImpact = useMemo(
-    () => resolveCrystalMigrationImpactForAction(singleModelRevisionAction, changeExperiencePresentation),
-    [singleModelRevisionAction, changeExperiencePresentation],
+    () => resolveCrystalMigrationImpactForAction(singleModelRevisionAction, changeExperienceUnit),
+    [singleModelRevisionAction, changeExperienceUnit],
   );
   const isRevisionActionPending =
     hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE" &&

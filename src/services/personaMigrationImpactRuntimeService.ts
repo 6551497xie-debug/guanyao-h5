@@ -1,4 +1,3 @@
-import type { ChangeExperiencePresentation } from "../types/changeExperience";
 import type {
   PersonaDimension,
   PersonaMigrationImpact,
@@ -6,11 +5,24 @@ import type {
   PersonaYaoStage,
 } from "../types/personaTransmission";
 
+export type RuntimePersonaMigrationImpactDomainFacts = Readonly<{
+  oldReaction: string;
+  revisedResponse: string;
+  crystalImprint: string;
+  migrationTrace: string;
+  dominantShift: string;
+  visualMetadata?: Readonly<{
+    starbeastBefore?: string;
+    starbeastAfter?: string;
+    starbeastCue?: string;
+  }>;
+}>;
+
 export type RuntimePersonaMigrationImpactInput = Readonly<{
   sourceUnitId: string;
   dimension: PersonaDimension;
   yaoStage: PersonaYaoStage;
-  presentation: ChangeExperiencePresentation;
+  domainFacts: RuntimePersonaMigrationImpactDomainFacts;
 }>;
 
 const hasText = (value?: string): value is string => typeof value === "string" && value.trim().length > 0;
@@ -26,15 +38,17 @@ const createGuardrails = (): PersonaMigrationImpactGuardrails => ({
 });
 
 const createDeflectionVector = (input: RuntimePersonaMigrationImpactInput): string =>
-  `runtime:${input.dimension}:${input.yaoStage}:oldReaction → newResponse`;
+  hasText(input.domainFacts.dominantShift)
+    ? input.domainFacts.dominantShift
+    : `runtime:${input.dimension}:${input.yaoStage}:oldReaction → revisedResponse`;
 
 export const formRuntimePersonaMigrationImpact = (
   input: RuntimePersonaMigrationImpactInput,
 ): PersonaMigrationImpact | null => {
-  const { presentation } = input;
-  const fromModel = presentation.recognition.oldReaction;
-  const toResponse = presentation.revision.newResponse;
-  const imprintLine = presentation.meaning.crystalImprint || presentation.revision.transformationMoment;
+  const { domainFacts } = input;
+  const fromModel = domainFacts.oldReaction;
+  const toResponse = domainFacts.revisedResponse;
+  const imprintLine = domainFacts.crystalImprint || domainFacts.migrationTrace;
 
   if (!hasText(fromModel) || !hasText(toResponse) || !hasText(imprintLine)) return null;
 
@@ -50,9 +64,9 @@ export const formRuntimePersonaMigrationImpact = (
     toResponse,
     deflectionVector: createDeflectionVector(input),
     beastImpact: {
-      before: presentation.visual.starbeast?.beforeState ?? "",
-      after: presentation.visual.starbeast?.afterState ?? "",
-      cue: presentation.visual.starbeast?.cueLine ?? "",
+      before: domainFacts.visualMetadata?.starbeastBefore ?? "",
+      after: domainFacts.visualMetadata?.starbeastAfter ?? "",
+      cue: domainFacts.visualMetadata?.starbeastCue ?? "",
     },
     crystalImprint: {
       imprintLine,
