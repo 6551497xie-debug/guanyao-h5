@@ -2,6 +2,7 @@ import type { MotherCodeProfile } from "./guanyaoCausalEngine";
 import type { SelectedPressureSeedContext } from "./primaryPetal";
 
 export type StoredMotherCodeProfile = Partial<MotherCodeProfile> & {
+  schemaVersion?: "GUANYAO_MOTHER_CODE_PROFILE_V2";
   motherCodeName?: string;
   motherCodeTitle?: string;
   trigram?: string;

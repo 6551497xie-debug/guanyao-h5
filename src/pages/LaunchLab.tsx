@@ -30,6 +30,7 @@ import { getPressureSeedSceneTriplet } from "../services/guanyaoPressureSeedScen
 import type { GeoChronoMotherFusionResult } from "../types/guanyaoGeoChronoMotherFusion";
 import type { FourSymbol } from "../types/guanyaoStarbeast";
 import { resolveLaunchOriginMother } from "../services/guanyaoLaunchOriginMotherInputAdapter";
+import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
 import { writePersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
 
@@ -1367,7 +1368,7 @@ export function LaunchLab() {
       };
 
       try {
-        window.localStorage.setItem("guanyao:motherCodeProfile", JSON.stringify(motherCodeProfile));
+        writeMotherCodeProfile(motherCodeProfile);
         writeOriginMotherContext(originMotherContext);
         writePersonaOutputSnapshot(personaOutputSnapshot);
         m.originMotherContextPersisted = true;

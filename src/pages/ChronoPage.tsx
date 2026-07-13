@@ -13,6 +13,7 @@ import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildYuanCodeResult } from "../services/codeContractService";
 import { getDemoInitialCoordinates, getDemoMotherCode } from "../services/guanyaoInteractionService";
 import { runMotherCodeLandingEngine } from "../services/guanyaoLunarMotherCodeLandingAdapter";
+import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { setChronoProfile } from "../services/sessionService";
 import type { ChronoAgeRange, ChronoProfile, ChronoPrototypeCard, InitialCoordinates } from "../types";
 import type { MotherCodeProfile } from "../types/guanyaoCausalEngine";
@@ -405,7 +406,7 @@ function persistInitialCoordinates(
   motherCodeProfile: MotherCodeProfile,
 ) {
   window.localStorage.setItem("guanyao:initialCoordinates", JSON.stringify(initialCoordinates));
-  window.localStorage.setItem("guanyao:motherCodeProfile", JSON.stringify(motherCodeProfile));
+  writeMotherCodeProfile(motherCodeProfile);
 }
 
 function InitialCoordinatesEntry() {

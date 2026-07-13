@@ -6,6 +6,7 @@ import {
   formCurrentHexagramProfile,
   runGuanyaoCausalPipeline,
 } from "../services/guanyaoCausalEngineService";
+import { readPersistedMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import type { GuanyaoSelectedPressureSeedContext } from "../services/guanyaoPressureSeedSceneBindingService";
 import type {
   CutCandidate,
@@ -262,7 +263,7 @@ function buildPipelineResultWithSelectedPressureSeed(
     return baseResult;
   }
 
-  const storedMotherCodeProfile = readJsonFromStorage<MotherCodeProfile>("guanyao:motherCodeProfile");
+  const storedMotherCodeProfile = readPersistedMotherCodeProfile() as MotherCodeProfile | null;
   const motherCodeProfile = storedMotherCodeProfile ?? baseResult.motherCodeProfile;
   const pressureSeed = buildRuntimePressureSeedFromSelectedContext(selectedPressureSeedContext);
   const pressureField = buildPressureField(
