@@ -12,7 +12,7 @@ import { GuanyaoText } from "../components/visual/GuanyaoText";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { buildYuanCodeResult } from "../services/codeContractService";
 import { getDemoInitialCoordinates, getDemoMotherCode } from "../services/guanyaoInteractionService";
-import { runMotherCodeLandingEngine } from "../services/guanyaoLunarMotherCodeEngineService";
+import { runMotherCodeLandingEngine } from "../services/guanyaoLunarMotherCodeLandingAdapter";
 import { setChronoProfile } from "../services/sessionService";
 import type { ChronoAgeRange, ChronoProfile, ChronoPrototypeCard, InitialCoordinates } from "../types";
 import type { MotherCodeProfile } from "../types/guanyaoCausalEngine";
