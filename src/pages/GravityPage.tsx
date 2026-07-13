@@ -11,10 +11,6 @@ import {
   type StarbeastFeedback,
   type StarFlowerGrowthState,
 } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
-import {
-  resolveRuntimeCurrentCrystalEndState,
-  type RuntimeCurrentCrystalEndState as CurrentCrystalEndState,
-} from "../services/hexagramCrystalRuntimeEndpointService";
 import { resolveChangeExperienceRuntimeRoute } from "../services/changeExperienceRuntimeRoutingService";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
 import {
@@ -39,7 +35,11 @@ import {
 } from "../services/guanyaoCurrentHexagramFormationAdapter";
 import { resolveDynamicsRevisionAction } from "../services/guanyaoDynamicsRevisionActionAdapter";
 import { resolveDynamicsMigrationImpact } from "../services/guanyaoDynamicsMigrationImpactAdapter";
-import type { CurrentHexagramProfile, Trigram } from "../types/guanyaoCausalEngine";
+import {
+  resolveDynamicsCurrentCrystalEndState,
+  type DynamicsCurrentCrystalEndState as CurrentCrystalEndState,
+} from "../services/guanyaoDynamicsCrystalRuntimeAdapter";
+import type { Trigram } from "../types/guanyaoCausalEngine";
 import type { CurrentHexagramFormationResult } from "../types/currentHexagramFormation";
 import type { SingleModelRevisionAction } from "../types/dynamicsRevisionAction";
 import type { SelectedPressureSeedContext } from "../types/primaryPetal";
@@ -53,7 +53,6 @@ import {
 } from "../runtime/guanyaoRuntimeEngine";
 import type { ChangeExperiencePresentation } from "../types/changeExperience";
 import type { DynamicsInputContext } from "../types/gravityRuntimeInput";
-import type { PersonaMigrationImpact } from "../types/personaTransmission";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
 
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
@@ -128,34 +127,6 @@ function trigramSymbolLabel(value: Trigram | undefined) {
   };
 
   return value ? symbols[value] : "";
-}
-
-function resolveCurrentCrystalEndState({
-  currentHexagramProfile,
-  motherCodeName,
-  selectedPressureSeedContext,
-  completedNodeCount,
-  primaryDimension,
-  readyToCrystallize,
-  migrationImpact,
-}: {
-  currentHexagramProfile: CurrentHexagramProfile | null;
-  motherCodeName: string;
-  selectedPressureSeedContext: SelectedPressureSeedContext | null;
-  completedNodeCount: number;
-  primaryDimension?: string;
-  readyToCrystallize: boolean;
-  migrationImpact?: PersonaMigrationImpact | null;
-}): CurrentCrystalEndState | null {
-  return resolveRuntimeCurrentCrystalEndState({
-    currentHexagramProfile,
-    motherCodeName,
-    selectedPressureSeedContext,
-    completedNodeCount,
-    primaryDimension,
-    readyToCrystallize,
-    migrationImpact,
-  });
 }
 
 function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
@@ -2513,26 +2484,22 @@ function HexagramCodeDeliveryShell() {
     !revisionActionConfirmed &&
     !transformationMomentActive;
   const currentCrystalEndState = useMemo(() =>
-    resolveCurrentCrystalEndState({
-      currentHexagramProfile,
-      motherCodeName,
-      selectedPressureSeedContext: dynamicsInputContext.selectedPressureSeedContext,
+    resolveDynamicsCurrentCrystalEndState({
+      formation: currentHexagramFormation,
+      migrationImpact: crystalMigrationImpact,
       completedNodeCount: completedSixDimensionCount,
       primaryDimension: sequentialCurrentSpaceId,
-      readyToCrystallize:
-        hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE" &&
-        (!singleModelRevisionAction || revisionActionConfirmed),
-      migrationImpact: crystalMigrationImpact,
+      assetCompletionState: hexagramAssetCandidate.completionState,
+      revisionAction: singleModelRevisionAction,
+      revisionActionConfirmed,
     }), [
-      currentHexagramProfile,
-      motherCodeName,
-      dynamicsInputContext.selectedPressureSeedContext,
+      currentHexagramFormation,
+      crystalMigrationImpact,
       completedSixDimensionCount,
       sequentialCurrentSpaceId,
       hexagramAssetCandidate.completionState,
       singleModelRevisionAction,
       revisionActionConfirmed,
-      crystalMigrationImpact,
     ]);
 
   useEffect(() => {

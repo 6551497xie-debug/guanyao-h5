@@ -100,7 +100,12 @@ const formCurrentCrystalEndState = ({
 try {
   const gravityPageSource = fs.readFileSync(path.join(rootDir, "src/pages/GravityPage.tsx"), "utf8");
   assertIncludes(
-    "gravity final endpoint delegates to runtime service",
+    "gravity final endpoint delegates to Dynamics crystal adapter",
+    gravityPageSource,
+    "resolveDynamicsCurrentCrystalEndState({",
+  );
+  assertNotIncludes(
+    "gravity no longer calls runtime crystal endpoint directly",
     gravityPageSource,
     "resolveRuntimeCurrentCrystalEndState",
   );
