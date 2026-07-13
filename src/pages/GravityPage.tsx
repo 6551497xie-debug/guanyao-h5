@@ -15,11 +15,7 @@ import {
   resolveRuntimeCurrentCrystalEndState,
   type RuntimeCurrentCrystalEndState as CurrentCrystalEndState,
 } from "../services/hexagramCrystalRuntimeEndpointService";
-import { formRuntimePersonaMigrationImpact } from "../services/personaMigrationImpactRuntimeService";
-import {
-  resolveChangeExperienceRuntimeRoute,
-  type ChangeExperienceRuntimeRoute,
-} from "../services/changeExperienceRuntimeRoutingService";
+import { resolveChangeExperienceRuntimeRoute } from "../services/changeExperienceRuntimeRoutingService";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
 import {
   createPersonalityRingLiteEntryFromCrystal,
@@ -42,6 +38,7 @@ import {
   resolveDynamicsPressureFieldLabel,
 } from "../services/guanyaoCurrentHexagramFormationAdapter";
 import { resolveDynamicsRevisionAction } from "../services/guanyaoDynamicsRevisionActionAdapter";
+import { resolveDynamicsMigrationImpact } from "../services/guanyaoDynamicsMigrationImpactAdapter";
 import type { CurrentHexagramProfile, Trigram } from "../types/guanyaoCausalEngine";
 import type { CurrentHexagramFormationResult } from "../types/currentHexagramFormation";
 import type { SingleModelRevisionAction } from "../types/dynamicsRevisionAction";
@@ -56,7 +53,7 @@ import {
 } from "../runtime/guanyaoRuntimeEngine";
 import type { ChangeExperiencePresentation } from "../types/changeExperience";
 import type { DynamicsInputContext } from "../types/gravityRuntimeInput";
-import type { PersonaMigrationImpact, PersonaYaoStage } from "../types/personaTransmission";
+import type { PersonaMigrationImpact } from "../types/personaTransmission";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
 
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
@@ -68,40 +65,6 @@ type PressureBeastSeed = {
   resonance: number;
 };
 type RuntimeCoreStar = readonly [number, number, number];
-function resolveCrystalMigrationImpactForAction(
-  action: SingleModelRevisionAction | null,
-  changeExperienceRoute: ChangeExperienceRuntimeRoute | null,
-): PersonaMigrationImpact | null {
-  if (!action || !changeExperienceRoute) return null;
-
-  const { dimension, unit } = changeExperienceRoute;
-  const yaoStage = resolvePersonaYaoStageFromYaoName(action.yaoName);
-  if (!yaoStage) return null;
-
-  return formRuntimePersonaMigrationImpact({
-    sourceUnitId: `gravity-${dimension}-${yaoStage}`,
-    dimension,
-    yaoStage,
-    domainFacts: {
-      oldReaction: unit.recognition.oldReaction,
-      revisedResponse: unit.revision.newResponse,
-      crystalImprint: unit.meaning.crystalImprint,
-      migrationTrace: unit.revision.transformationMoment,
-      dominantShift: `${unit.recognition.rootProtection}:${unit.recognition.manifestBehavior} → ${unit.revision.changeType}`,
-    },
-  });
-}
-
-function resolvePersonaYaoStageFromYaoName(yaoName: string): PersonaYaoStage | null {
-  if (yaoName.includes("初爻") || yaoName.includes("触发")) return "trigger";
-  if (yaoName.includes("二爻") || yaoName.includes("接管")) return "takeover";
-  if (yaoName.includes("三爻") || yaoName.includes("解释")) return "explain";
-  if (yaoName.includes("四爻") || yaoName.includes("固化")) return "solidify";
-  if (yaoName.includes("五爻") || yaoName.includes("觉察")) return "awareness";
-  if (yaoName.includes("上爻") || yaoName.includes("修正")) return "revision";
-  return null;
-}
-
 function readDevPrimaryPetalFixture(): SelectedPressureSeedContext | null {
   const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
   if (!viteEnv?.DEV || typeof window === "undefined") return null;
@@ -2537,7 +2500,11 @@ function HexagramCodeDeliveryShell() {
   );
   const changeExperiencePresentation = changeExperienceRoute?.presentation ?? null;
   const crystalMigrationImpact = useMemo(
-    () => resolveCrystalMigrationImpactForAction(singleModelRevisionAction, changeExperienceRoute),
+    () =>
+      resolveDynamicsMigrationImpact({
+        action: singleModelRevisionAction,
+        changeExperienceRoute,
+      }),
     [singleModelRevisionAction, changeExperienceRoute],
   );
   const isRevisionActionPending =
