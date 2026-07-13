@@ -4,12 +4,6 @@ import type {
   SelectedPressureSeedContext,
 } from "../types/primaryPetal";
 
-export type {
-  PrimaryPetalId,
-  PrimaryPetalProtocolDimension,
-  SelectedPressureSeedContext,
-} from "../types/primaryPetal";
-
 const primaryPetalPriority: PrimaryPetalId[] = ["body", "action", "thought", "emotion", "memory", "goal"];
 
 const primaryPetalTextRules: Array<{ id: PrimaryPetalId; keywords: string[] }> = [

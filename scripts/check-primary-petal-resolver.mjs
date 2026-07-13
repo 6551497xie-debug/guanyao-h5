@@ -191,9 +191,14 @@ try {
     "export type SelectedPressureSeedContext =",
   );
   assertIncludes(
-    "primary petal resolver re-exports neutral types",
+    "primary petal resolver consumes neutral types",
     resolverSource,
     'from "../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "primary petal resolver no longer re-exports neutral types",
+    resolverSource,
+    "export type {",
   );
   assertNotIncludes(
     "primary petal resolver no longer owns selected pressure context type",
