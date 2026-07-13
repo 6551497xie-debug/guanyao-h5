@@ -7,6 +7,23 @@ import ts from "typescript";
 
 const rootDir = process.cwd();
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "guanyao-hexagram-crystal-result-consumption-"));
+const personaTransmissionTypeSource = fs.readFileSync(
+  path.join(rootDir, "src/types/personaTransmission.ts"),
+  "utf8",
+);
+const resultConsumptionTypeSource = fs.readFileSync(
+  path.join(rootDir, "src/types/hexagramCrystalResultConsumption.ts"),
+  "utf8",
+);
+const resultConsumptionServiceSource = fs.readFileSync(
+  path.join(rootDir, "src/services/hexagramCrystalResultConsumptionService.ts"),
+  "utf8",
+);
+const resultConsumptionFixtureSource = fs.readFileSync(
+  path.join(rootDir, "src/services/fixtures/hexagramCrystalResultConsumptionFixtures.ts"),
+  "utf8",
+);
+const typeIndexSource = fs.readFileSync(path.join(rootDir, "src/types/index.ts"), "utf8");
 
 const sourceFiles = [
   "src/services/hexagramCrystalResultConsumptionService.ts",
@@ -38,6 +55,20 @@ const assertEqual = (name, actual, expected) => {
   console.log(`PASS | ${name} | expected=${expected} | actual=${actual}`);
 };
 
+const assertIncludes = (name, source, expected) => {
+  if (!source.includes(expected)) {
+    throw new Error(`${name} missing=${expected}`);
+  }
+  console.log(`PASS | ${name} | includes=${expected}`);
+};
+
+const assertNotIncludes = (name, source, forbidden) => {
+  if (source.includes(forbidden)) {
+    throw new Error(`${name} forbidden=${forbidden}`);
+  }
+  console.log(`PASS | ${name} | forbidden=absent`);
+};
+
 const assertAbsent = (name, object, forbiddenFields) => {
   const present = forbiddenFields.filter((field) => Object.prototype.hasOwnProperty.call(object, field));
   if (present.length > 0) {
@@ -60,6 +91,42 @@ try {
     "./src/services/hexagramCrystalResultConsumptionService.js",
   );
   const { actionFiveAwarenessMigrationImpact } = requireFromTemp("./src/services/fixtures/crystalMappingFixtures.js");
+
+  assertIncludes(
+    "result consumption neutral type owns consumption boundary",
+    resultConsumptionTypeSource,
+    "export type HexagramCrystalResultConsumptionBoundary =",
+  );
+  assertNotIncludes(
+    "persona transmission no longer owns result consumption types",
+    personaTransmissionTypeSource,
+    "export type HexagramCrystalResultConsumptionBoundary =",
+  );
+  assertIncludes(
+    "result consumption service consumes neutral result consumption types",
+    resultConsumptionServiceSource,
+    'from "../types/hexagramCrystalResultConsumption"',
+  );
+  assertNotIncludes(
+    "result consumption service no longer consumes persona transmission types",
+    resultConsumptionServiceSource,
+    'from "../types/personaTransmission"',
+  );
+  assertIncludes(
+    "result consumption fixture consumes neutral result consumption types",
+    resultConsumptionFixtureSource,
+    'from "../../types/hexagramCrystalResultConsumption"',
+  );
+  assertNotIncludes(
+    "result consumption fixture no longer consumes persona transmission types",
+    resultConsumptionFixtureSource,
+    'from "../../types/personaTransmission"',
+  );
+  assertIncludes(
+    "type index exports neutral result consumption types",
+    typeIndexSource,
+    'from "./hexagramCrystalResultConsumption"',
+  );
 
   const serviceConsumption = consumeHexagramCrystalResult({
     result: actionFiveAwarenessHexagramCrystalResult,

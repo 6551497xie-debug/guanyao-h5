@@ -1,7 +1,7 @@
 import type {
   HexagramCrystalResultConsumption,
   HexagramCrystalResultConsumptionInput,
-} from "../../types/personaTransmission";
+} from "../../types/hexagramCrystalResultConsumption";
 import {
   actionFiveAwarenessHexagramCrystalEngineInput,
   actionFiveAwarenessHexagramCrystalResult,

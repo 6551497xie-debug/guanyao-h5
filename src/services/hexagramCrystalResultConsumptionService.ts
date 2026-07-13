@@ -3,7 +3,7 @@ import type {
   HexagramCrystalResultConsumptionBoundary,
   HexagramCrystalResultConsumptionInput,
   HexagramCrystalResultConsumptionNotReady,
-} from "../types/personaTransmission";
+} from "../types/hexagramCrystalResultConsumption";
 
 const createBoundary = (): HexagramCrystalResultConsumptionBoundary => ({
   canEnterHexagramExpressionLayer: true,

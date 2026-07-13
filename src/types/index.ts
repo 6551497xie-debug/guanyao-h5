@@ -66,13 +66,6 @@ export type {
   HexagramCrystalInputSourceCrystal,
   HexagramCrystalInputSourceHexagram,
   HexagramCrystalResult,
-  HexagramCrystalResultConsumption,
-  HexagramCrystalResultConsumptionBoundary,
-  HexagramCrystalResultConsumptionInput,
-  HexagramCrystalResultConsumptionNotReady,
-  HexagramCrystalResultConsumptionNotReadyReason,
-  HexagramCrystalResultConsumptionPayload,
-  HexagramCrystalResultConsumptionReady,
   HexagramCrystalResultGuardrails,
   HexagramCrystalResultReadiness,
   PersonaDimension,
@@ -109,6 +102,15 @@ export type {
   PersonaTransmissionTriggerContext,
   PersonaYaoStage,
 } from "./personaTransmission";
+export type {
+  HexagramCrystalResultConsumption,
+  HexagramCrystalResultConsumptionBoundary,
+  HexagramCrystalResultConsumptionInput,
+  HexagramCrystalResultConsumptionNotReady,
+  HexagramCrystalResultConsumptionNotReadyReason,
+  HexagramCrystalResultConsumptionPayload,
+  HexagramCrystalResultConsumptionReady,
+} from "./hexagramCrystalResultConsumption";
 
 export type YaoBit = 0 | 1;
 
