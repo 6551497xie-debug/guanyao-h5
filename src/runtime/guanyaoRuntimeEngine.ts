@@ -1,9 +1,6 @@
 import type { StarbeastFeedback } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
-import {
-  derivePrimaryPetal,
-  toProtocolPrimaryPetal,
-  type SelectedPressureSeedContext,
-} from "../services/guanyaoPrimaryPetalResolver";
+import { derivePrimaryPetal, toProtocolPrimaryPetal } from "../services/guanyaoPrimaryPetalResolver";
+import type { SelectedPressureSeedContext } from "../types/primaryPetal";
 import {
   ALLOWED_COMMANDS,
   ALLOWED_INTENTS,

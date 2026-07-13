@@ -1,5 +1,5 @@
 import type { CosmicBotanicsSixDimensionState } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
-import type { PrimaryPetalProtocolDimension } from "../services/guanyaoPrimaryPetalResolver";
+import type { PrimaryPetalProtocolDimension } from "../types/primaryPetal";
 import type {
   CosmicNarrativePhase,
   ExecutionSnapshot,

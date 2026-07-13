@@ -17,6 +17,9 @@ const gravityRuntimeInputTypeSource = fs.readFileSync(
   path.join(rootDir, "src/types/gravityRuntimeInput.ts"),
   "utf8",
 );
+const runtimeTypeSource = fs.readFileSync(path.join(rootDir, "src/runtime/guanyaoRuntimeTypes.ts"), "utf8");
+const runtimeEngineSource = fs.readFileSync(path.join(rootDir, "src/runtime/guanyaoRuntimeEngine.ts"), "utf8");
+const sceneGraphSource = fs.readFileSync(path.join(rootDir, "src/runtime/sceneGraph.ts"), "utf8");
 const sourceFiles = [
   "src/services/guanyaoPrimaryPetalResolver.ts",
   "src/services/fixtures/primaryPetalDevFixtures.ts",
@@ -131,6 +134,36 @@ try {
     "gravity runtime input no longer depends on primary petal service",
     gravityRuntimeInputTypeSource,
     "guanyaoPrimaryPetalResolver",
+  );
+  assertIncludes(
+    "runtime types consume neutral primary petal types",
+    runtimeTypeSource,
+    'from "../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "runtime types no longer depend on primary petal service",
+    runtimeTypeSource,
+    "guanyaoPrimaryPetalResolver",
+  );
+  assertIncludes(
+    "scene graph consumes neutral primary petal types",
+    sceneGraphSource,
+    'from "../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "scene graph no longer depends on primary petal service",
+    sceneGraphSource,
+    "guanyaoPrimaryPetalResolver",
+  );
+  assertIncludes(
+    "runtime engine consumes neutral selected pressure context type",
+    runtimeEngineSource,
+    'import type { SelectedPressureSeedContext } from "../types/primaryPetal"',
+  );
+  assertIncludes(
+    "runtime engine keeps primary petal runtime functions",
+    runtimeEngineSource,
+    'import { derivePrimaryPetal, toProtocolPrimaryPetal } from "../services/guanyaoPrimaryPetalResolver"',
   );
 
   console.log(`\n[PRIMARY PETAL RESOLVER] PASS: ${fixtures.length}/${fixtures.length} fixture(s) matched.`);

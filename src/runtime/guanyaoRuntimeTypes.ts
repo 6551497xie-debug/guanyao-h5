@@ -6,7 +6,7 @@ import type {
   PrimaryPetalId,
   PrimaryPetalProtocolDimension,
   SelectedPressureSeedContext,
-} from "../services/guanyaoPrimaryPetalResolver";
+} from "../types/primaryPetal";
 
 export type SixSpaceId = PrimaryPetalId;
 
