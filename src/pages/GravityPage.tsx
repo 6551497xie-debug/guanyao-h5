@@ -11,11 +11,7 @@ import {
   type StarbeastFeedback,
   type StarFlowerGrowthState,
 } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
-import {
-  buildYaoTransmissionChain,
-  buildPressureField,
-  formCurrentHexagramProfile,
-} from "../services/guanyaoCausalEngineService";
+import { buildYaoTransmissionChain } from "../services/guanyaoCausalEngineService";
 import {
   resolveRuntimeCurrentCrystalEndState,
   type RuntimeCurrentCrystalEndState as CurrentCrystalEndState,
@@ -42,12 +38,12 @@ import {
   resolveDynamicsInputReadiness,
   type DynamicsInputReadiness,
 } from "../services/guanyaoDynamicsInputReadinessAdapter";
-import type {
-  CurrentHexagramProfile,
-  PressureIntensity,
-  PressureSeed,
-  Trigram,
-} from "../types/guanyaoCausalEngine";
+import {
+  resolveCurrentHexagramFormation,
+  resolveDynamicsPressureFieldLabel,
+} from "../services/guanyaoCurrentHexagramFormationAdapter";
+import type { CurrentHexagramProfile, Trigram } from "../types/guanyaoCausalEngine";
+import type { CurrentHexagramFormationResult } from "../types/currentHexagramFormation";
 import type { SelectedPressureSeedContext } from "../types/primaryPetal";
 import {
   GuanyaoRuntimeEngine,
@@ -71,24 +67,6 @@ type PressureBeastSeed = {
   resonance: number;
 };
 type RuntimeCoreStar = readonly [number, number, number];
-type ActiveCurrentHexagramContext = {
-  source: "dynamics";
-  createdAt: string;
-  motherCodeProfile: {
-    motherCodeName: string;
-    motherCodeTitle?: string;
-    lowerTrigram?: string;
-    trigram?: string;
-  };
-  selectedPressureSeedContext: {
-    selectedPressureSeedId?: string;
-    matrixCode?: string;
-    pressureField?: string;
-    pressureNature?: string;
-    surface?: string;
-  };
-  currentHexagramProfile: CurrentHexagramProfile;
-};
 type SingleModelRevisionAction = {
   layerLabel: string;
   yaoName: string;
@@ -182,47 +160,6 @@ function resolveMotherPersonaSnapshot(input: DynamicsInputContext) {
   };
 }
 
-function normalizePressureIntensity(value: unknown): PressureIntensity {
-  if (typeof value === "number") {
-    if (value >= 88) return "critical";
-    if (value >= 72) return "high";
-    if (value >= 42) return "medium";
-    return "low";
-  }
-
-  return "medium";
-}
-
-function pressureFieldLabel(value: unknown) {
-  const source = String(value ?? "").trim();
-  const labels: Record<string, string> = {
-    POWER: "权力压力",
-    INTEREST: "利益压力",
-    RELATION: "关系压力",
-    FAMILY: "家庭压力",
-    SOCIAL: "社会压力",
-    EXISTENCE: "存在压力",
-  };
-
-  return labels[source] ?? (source || "现实压力");
-}
-
-function pressureNatureLabel(value: unknown) {
-  const source = String(value ?? "").trim();
-  const labels: Record<string, string> = {
-    EVALUATION: "评价威胁",
-    RESOURCE: "资源冲突",
-    ATTACHMENT: "依恋断裂",
-    CONTROL: "控制压迫",
-    OBLIGATION: "责任义务",
-    BELONGING: "归属压力",
-    IDENTITY: "身份压力",
-    SURVIVAL: "生存压力",
-  };
-
-  return labels[source] ?? (source || "现实触发");
-}
-
 function trigramSymbolLabel(value: Trigram | undefined) {
   const symbols: Record<Trigram, string> = {
     乾: "☰",
@@ -236,92 +173,6 @@ function trigramSymbolLabel(value: Trigram | undefined) {
   };
 
   return value ? symbols[value] : "";
-}
-
-function relationLabel(value: unknown) {
-  const source = String(value ?? "").trim();
-  const labels: Record<string, string> = {
-    BOSS: "上级 / 权力关系",
-    CLIENT: "客户关系",
-    PARTNER_BUSINESS: "合作关系",
-    PARTNER_ROMANTIC: "亲密关系",
-    PARENT: "父母关系",
-    CHILD: "子女关系",
-    FRIEND: "朋友关系",
-    COLLEAGUE: "同事关系",
-    SELF: "自我关系",
-    SYSTEM: "外部结构",
-  };
-
-  return labels[source] ?? (source || "关系结构");
-}
-
-function buildPressureSeedForHexagram(context: SelectedPressureSeedContext): PressureSeed {
-  const runtimeContext = context as SelectedPressureSeedContext & {
-    pressureIntensity?: unknown;
-    primaryRelation?: unknown;
-    core?: { mechanism?: string; engineHint?: string };
-    mappingHint?: string;
-  };
-  const pressureType = pressureFieldLabel(context.pressureField ?? context.category);
-  const pressureNature = pressureNatureLabel(context.pressureNature ?? context.emotionalTone);
-  const relationshipRole = relationLabel(runtimeContext.primaryRelation ?? context.scenarioDomain);
-  const locationTags = [
-    context.matrixCode,
-    context.category,
-    context.pressureField,
-    context.pressureNature,
-    context.scenarioDomain,
-    context.emotionalTone,
-    runtimeContext.primaryRelation,
-    runtimeContext.mappingHint,
-    runtimeContext.core?.mechanism,
-    runtimeContext.core?.engineHint,
-    ...(context.tags ?? []),
-    ...(context.semanticTags ?? []),
-  ]
-    .filter((value): value is string => typeof value === "string" && value.trim().length > 0);
-
-  return {
-    seedId: context.selectedPressureSeedId ?? "pressure-seed-runtime",
-    sceneText: [context.surface, context.shell].filter(Boolean).join(" "),
-    pressureType,
-    relationshipRole,
-    triggerMoment: context.surface ?? "现实压力正在进入。",
-    intensityLevel: normalizePressureIntensity(runtimeContext.pressureIntensity),
-    costHint: context.shell ?? runtimeContext.mappingHint ?? "当前压力的影响待补充。",
-    fieldBias: `${pressureNature}｜${relationshipRole}`,
-    locationTags,
-  };
-}
-
-function resolveActiveCurrentHexagramContext(readiness: DynamicsInputReadiness): ActiveCurrentHexagramContext | null {
-  if (readiness.status !== "READY") return null;
-
-  const { motherCodeProfile, selectedPressureSeedContext } = readiness;
-
-  const pressureSeed = buildPressureSeedForHexagram(selectedPressureSeedContext);
-  const pressureField = buildPressureField(motherCodeProfile, pressureSeed);
-  const currentHexagramProfile = formCurrentHexagramProfile(motherCodeProfile, pressureSeed, pressureField);
-
-  return {
-    source: "dynamics",
-    createdAt: new Date().toISOString(),
-    motherCodeProfile: {
-      motherCodeName: motherCodeProfile.motherCodeName,
-      motherCodeTitle: motherCodeProfile.motherCodeTitle,
-      lowerTrigram: motherCodeProfile.lowerTrigram,
-      trigram: readiness.motherTrigram,
-    },
-    selectedPressureSeedContext: {
-      selectedPressureSeedId: selectedPressureSeedContext.selectedPressureSeedId,
-      matrixCode: selectedPressureSeedContext.matrixCode,
-      pressureField: selectedPressureSeedContext.pressureField,
-      pressureNature: selectedPressureSeedContext.pressureNature,
-      surface: selectedPressureSeedContext.surface,
-    },
-    currentHexagramProfile,
-  };
 }
 
 function resolveCurrentCrystalEndState({
@@ -353,16 +204,18 @@ function resolveCurrentCrystalEndState({
 }
 
 function resolveSingleModelRevisionAction(
-  readiness: DynamicsInputReadiness,
-  currentHexagramProfile: CurrentHexagramProfile | null,
+  formation: CurrentHexagramFormationResult | null,
 ): SingleModelRevisionAction | null {
-  if (readiness.status !== "READY" || !currentHexagramProfile) return null;
+  if (!formation) return null;
 
-  const pressureSeed = buildPressureSeedForHexagram(readiness.selectedPressureSeedContext);
-  const motherCodeProfile = readiness.motherCodeProfile;
-  const yaoTransmissionChain = buildYaoTransmissionChain(motherCodeProfile, pressureSeed, currentHexagramProfile, {
-    preferRuntimePressureSeed: true,
-  });
+  const yaoTransmissionChain = buildYaoTransmissionChain(
+    formation.motherCodeProfile,
+    formation.pressureSeed,
+    formation.currentHexagramProfile,
+    {
+      preferRuntimePressureSeed: true,
+    },
+  );
   const mainTransmission =
     yaoTransmissionChain.transmissions.find((transmission) => transmission.yaoLayer === yaoTransmissionChain.mainCut.yaoLayer) ??
     yaoTransmissionChain.transmissions[0];
@@ -2281,7 +2134,7 @@ function crystalDimensionLabel(value: string | undefined) {
 function buildCrystalBehaviorReading(state: CurrentCrystalEndState) {
   const motherName = state.mother.motherCodeName || state.mother.lowerTrigram;
   const hexagramTitle = state.hexagram.hexagramName ?? state.hexagram.hexagramTitle ?? state.hexagram.hexagramCode ?? "本局定位";
-  const pressureField = `这一次压力来自${pressureFieldLabel(state.pressure.pressureField)}。`;
+  const pressureField = `这一次压力来自${resolveDynamicsPressureFieldLabel(state.pressure.pressureField)}。`;
   const dimensionLine = state.transmission.primaryDimension
     ? `它优先留在${crystalDimensionLabel(state.transmission.primaryDimension)}这里。`
     : "它已经穿过六个空间。";
@@ -2619,8 +2472,8 @@ function HexagramCodeDeliveryShell() {
   const [dynamicsInputReadiness] = useState<DynamicsInputReadiness>(() =>
     resolveDynamicsInputReadiness(dynamicsInputContext),
   );
-  const [activeCurrentHexagramContext] = useState<ActiveCurrentHexagramContext | null>(() =>
-    resolveActiveCurrentHexagramContext(dynamicsInputReadiness),
+  const [currentHexagramFormation] = useState<CurrentHexagramFormationResult | null>(() =>
+    resolveCurrentHexagramFormation(dynamicsInputReadiness),
   );
   const [executionSnapshot, setExecutionSnapshot] = useState<ExecutionSnapshot>(() =>
     GuanyaoRuntimeEngine.createSnapshot(dynamicsInputContext.selectedPressureSeedContext),
@@ -2655,7 +2508,7 @@ function HexagramCodeDeliveryShell() {
   const experienceState = resolveExperienceState(executionSnapshot, visualState);
   const motherPersonaSnapshot = resolveMotherPersonaSnapshot(dynamicsInputContext);
   const motherCodeName = resolveMotherCodeName(dynamicsInputContext);
-  const currentHexagramProfile = activeCurrentHexagramContext?.currentHexagramProfile ?? null;
+  const currentHexagramProfile = currentHexagramFormation?.currentHexagramProfile ?? null;
   const hasLockedPressureSeed = dynamicsInputReadiness.hasPressureContext;
   const displayExperienceState: ExperienceState = !hasLockedPressureSeed
     ? {
@@ -2712,8 +2565,8 @@ function HexagramCodeDeliveryShell() {
   const singleModelRevisionAction = useMemo(
     () =>
       resolveChangeExperienceRuntimeSmokeRevisionAction(experienceSmokeFixture) ??
-      resolveSingleModelRevisionAction(dynamicsInputReadiness, currentHexagramProfile),
-    [dynamicsInputReadiness, currentHexagramProfile, experienceSmokeFixture],
+      resolveSingleModelRevisionAction(currentHexagramFormation),
+    [currentHexagramFormation, experienceSmokeFixture],
   );
   const changeExperienceRoute = useMemo(
     () => resolveChangeExperienceRuntimeRoute(singleModelRevisionAction, experienceSmokeFixture),

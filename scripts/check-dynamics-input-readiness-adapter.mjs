@@ -115,7 +115,7 @@ try {
   assertIncludes("readiness adapter owns pressure missing reason", adapterSource, '"PRESSURE_CONTEXT_MISSING"');
   assertIncludes("readiness adapter owns mother missing reason", adapterSource, '"MOTHER_CONTEXT_MISSING"');
   assertIncludes("Gravity delegates readiness resolution", gravitySource, "resolveDynamicsInputReadiness(dynamicsInputContext)");
-  assertIncludes("current hexagram formation consumes readiness", gravitySource, "resolveActiveCurrentHexagramContext(dynamicsInputReadiness)");
+  assertIncludes("current hexagram formation consumes readiness", gravitySource, "resolveCurrentHexagramFormation(dynamicsInputReadiness)");
   assertIncludes("preview state follows readiness pressure flag", gravitySource, "const hasLockedPressureSeed = dynamicsInputReadiness.hasPressureContext;");
   assertIncludes(
     "pressure marker follows readiness pressure flag",
