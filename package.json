@@ -33,6 +33,7 @@
     "check:hexagram-crystal-adapter": "node scripts/check-hexagram-crystal-adapter-pipeline.mjs",
     "check:hexagram-crystal-engine": "node scripts/check-hexagram-crystal-engine-pipeline.mjs",
     "check:hexagram-crystal-result-consumption": "node scripts/check-hexagram-crystal-result-consumption.mjs",
+    "check:hexagram-crystal-runtime-consumption": "node scripts/check-hexagram-crystal-runtime-consumption.mjs",
     "check:hexagram-crystal-runtime-bridge": "node scripts/check-hexagram-crystal-runtime-bridge.mjs",
     "check:release-freeze": "node scripts/check-release-freeze.mjs",
     "check:launch-preview-gate": "node scripts/check-launch-preview-gate.mjs",

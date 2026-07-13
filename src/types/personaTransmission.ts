@@ -394,6 +394,10 @@ export type HexagramCrystalResultConsumptionPayload = Readonly<{
   inheritedIdentity: HexagramCrystalInputSourceHexagram;
   crystalLine: string;
   migrationLine: string;
+  crystalMeaning: string;
+  migrationTrace: HexagramCrystalInputMigrationTrace;
+  dominantShift: HexagramCrystalInputDominantShift;
+  readiness: HexagramCrystalResultReadiness;
   boundary: HexagramCrystalResultConsumptionBoundary;
 }>;
 

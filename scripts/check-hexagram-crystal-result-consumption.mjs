@@ -9,6 +9,7 @@ const rootDir = process.cwd();
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "guanyao-hexagram-crystal-result-consumption-"));
 
 const sourceFiles = [
+  "src/services/hexagramCrystalResultConsumptionService.ts",
   "src/services/fixtures/crystalMappingFixtures.ts",
   "src/services/fixtures/hexagramCrystalInputFixtures.ts",
   "src/services/fixtures/hexagramCrystalEngineFixtures.ts",
@@ -55,10 +56,18 @@ try {
   const { actionFiveAwarenessHexagramCrystalResult } = requireFromTemp(
     "./src/services/fixtures/hexagramCrystalEngineFixtures.js",
   );
+  const { consumeHexagramCrystalResult } = requireFromTemp(
+    "./src/services/hexagramCrystalResultConsumptionService.js",
+  );
   const { actionFiveAwarenessMigrationImpact } = requireFromTemp("./src/services/fixtures/crystalMappingFixtures.js");
 
+  const serviceConsumption = consumeHexagramCrystalResult({
+    result: actionFiveAwarenessHexagramCrystalResult,
+    source: "fixture",
+  });
   const consumption = actionFiveAwarenessHexagramCrystalResultConsumption;
   assertEqual("fixture result consumption status", consumption.status, "READY_FOR_HEXAGRAM_EXPRESSION_LAYER");
+  assertEqual("service result consumption status", serviceConsumption.status, "READY_FOR_HEXAGRAM_EXPRESSION_LAYER");
   assertEqual("fixture consumption input source", actionFiveAwarenessHexagramCrystalResultConsumptionInput.source, "fixture");
   assertEqual("fixture input result status", actionFiveAwarenessHexagramCrystalResultConsumptionInput.result.status, "READY");
   assertEqual(
@@ -76,6 +85,31 @@ try {
     "fixture migration line comes from migration impact",
     consumption.payload.migrationLine,
     `${actionFiveAwarenessMigrationImpact.fromModel} → ${actionFiveAwarenessMigrationImpact.toResponse}`,
+  );
+  assertEqual(
+    "fixture crystal meaning comes from result source input",
+    consumption.payload.crystalMeaning,
+    actionFiveAwarenessHexagramCrystalResult.sourceInput.crystalMeaning,
+  );
+  assertEqual(
+    "fixture migration trace comes from result source input",
+    consumption.payload.migrationTrace.traceLine,
+    actionFiveAwarenessHexagramCrystalResult.sourceInput.migrationTrace.traceLine,
+  );
+  assertEqual(
+    "fixture dominant shift comes from result source input",
+    consumption.payload.dominantShift.deflectionVector,
+    actionFiveAwarenessHexagramCrystalResult.sourceInput.dominantShift.deflectionVector,
+  );
+  assertEqual(
+    "fixture readiness comes from result",
+    consumption.payload.readiness,
+    actionFiveAwarenessHexagramCrystalResult.readiness,
+  );
+  assertEqual(
+    "service consumption matches fixture migration line",
+    serviceConsumption.payload.migrationLine,
+    consumption.payload.migrationLine,
   );
   assertEqual("fixture can enter expression layer", consumption.payload.boundary.canEnterHexagramExpressionLayer, true);
   assertEqual("fixture cannot mutate matrix", consumption.payload.boundary.canMutateHexagramMatrix, false);
@@ -95,6 +129,21 @@ try {
     "hexagramMatrixMutation",
     "collectibleAsset",
   ]);
+
+  const notReadyConsumption = consumeHexagramCrystalResult({
+    result: {
+      status: "NOT_READY",
+      readiness: "NOT_READY",
+      reason: "HEXAGRAM_CRYSTAL_INPUT_MISSING",
+    },
+    source: "fixture",
+  });
+  assertEqual("service not-ready result blocks consumption", notReadyConsumption.status, "NOT_READY");
+  assertEqual(
+    "service not-ready result reason",
+    notReadyConsumption.reason,
+    "HEXAGRAM_CRYSTAL_RESULT_NOT_READY",
+  );
 
   console.log("\n[HEXAGRAM CRYSTAL RESULT CONSUMPTION] PASS");
 } catch (error) {

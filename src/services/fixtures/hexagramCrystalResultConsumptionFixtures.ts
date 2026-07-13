@@ -19,6 +19,10 @@ export const actionFiveAwarenessHexagramCrystalResultConsumption: HexagramCrysta
     inheritedIdentity: actionFiveAwarenessHexagramCrystalEngineInput.sourceHexagram,
     crystalLine: actionFiveAwarenessHexagramCrystalResult.expression.crystalLine,
     migrationLine: actionFiveAwarenessHexagramCrystalResult.expression.migrationLine,
+    crystalMeaning: actionFiveAwarenessHexagramCrystalResult.sourceInput.crystalMeaning,
+    migrationTrace: actionFiveAwarenessHexagramCrystalResult.sourceInput.migrationTrace,
+    dominantShift: actionFiveAwarenessHexagramCrystalResult.sourceInput.dominantShift,
+    readiness: actionFiveAwarenessHexagramCrystalResult.readiness,
     boundary: {
       canEnterHexagramExpressionLayer: true,
       canMutateHexagramMatrix: false,
