@@ -1,22 +1,12 @@
 import type { ArchiveItem, CausalContextPackage, MigrationCard } from "../types";
-
-const ARCHIVE_KEY = "guanyao_h5_archive";
-
-function canUseStorage(): boolean {
-  return typeof window !== "undefined" && Boolean(window.localStorage);
-}
+import {
+  clearPersistedArchives,
+  readPersistedArchives,
+  writePersistedArchives,
+} from "./guanyaoArchivePersistenceAdapter";
 
 export function getArchives(): ArchiveItem[] {
-  if (!canUseStorage()) {
-    return [];
-  }
-
-  try {
-    const rawArchive = window.localStorage.getItem(ARCHIVE_KEY);
-    return rawArchive ? (JSON.parse(rawArchive) as ArchiveItem[]) : [];
-  } catch {
-    return [];
-  }
+  return readPersistedArchives();
 }
 
 export function saveArchive(item: MigrationCard & { finalChoiceCode: string; causalContext?: CausalContextPackage; repairTarget?: ArchiveItem["repairTarget"] }): ArchiveItem[] {
@@ -38,26 +28,11 @@ export function saveArchive(item: MigrationCard & { finalChoiceCode: string; cau
   };
 
   const nextArchive = [archiveItem, ...getArchives()];
-
-  if (canUseStorage()) {
-    try {
-      window.localStorage.setItem(ARCHIVE_KEY, JSON.stringify(nextArchive));
-    } catch {
-      return nextArchive;
-    }
-  }
+  writePersistedArchives(nextArchive);
 
   return nextArchive;
 }
 
 export function clearArchives(): void {
-  if (!canUseStorage()) {
-    return;
-  }
-
-  try {
-    window.localStorage.removeItem(ARCHIVE_KEY);
-  } catch {
-    return;
-  }
+  clearPersistedArchives();
 }
