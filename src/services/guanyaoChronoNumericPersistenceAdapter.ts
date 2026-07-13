@@ -53,10 +53,14 @@ export function writeChronoNumericCoordinates(
   });
 
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(
-      GUANYAO_CHRONO_NUMERIC_STORAGE_KEY,
-      JSON.stringify(versionedCoordinates),
-    );
+    try {
+      window.localStorage.setItem(
+        GUANYAO_CHRONO_NUMERIC_STORAGE_KEY,
+        JSON.stringify(versionedCoordinates),
+      );
+    } catch {
+      // Persistence is optional; the runtime coordinate result remains available.
+    }
   }
 
   return versionedCoordinates;

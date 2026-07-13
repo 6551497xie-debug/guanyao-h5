@@ -30,10 +30,14 @@ const assertExcludes = (name, source, forbidden) => {
 };
 
 const storage = new Map();
+let rejectWrites = false;
 globalThis.window = {
   localStorage: {
     getItem: (key) => storage.get(key) ?? null,
-    setItem: (key, value) => storage.set(key, value),
+    setItem: (key, value) => {
+      if (rejectWrites) throw new Error("storage write rejected");
+      storage.set(key, value);
+    },
   },
 };
 
@@ -81,6 +85,55 @@ try {
     "adapter stores schema version",
     JSON.parse(storage.get("guanyao:chronoNumeric")).schemaVersion,
     "GUANYAO_CHRONO_NUMERIC_V2",
+  );
+
+  rejectWrites = true;
+  const rejectedWriteCoordinates = writeChronoNumericCoordinates({
+    year: 2001,
+    month: 8,
+    day: 12,
+    periodIndex: 4,
+  });
+  rejectWrites = false;
+  assertEqual(
+    "rejected storage write preserves runtime coordinates",
+    rejectedWriteCoordinates.year,
+    2001,
+  );
+  assertEqual(
+    "rejected storage write preserves schema version",
+    rejectedWriteCoordinates.schemaVersion,
+    GUANYAO_CHRONO_NUMERIC_SCHEMA_VERSION,
+  );
+  assertEqual(
+    "rejected storage write preserves coordinate immutability",
+    Object.isFrozen(rejectedWriteCoordinates),
+    true,
+  );
+  assertEqual(
+    "rejected storage write does not replace persisted coordinates",
+    JSON.parse(storage.get("guanyao:chronoNumeric")).year,
+    1995,
+  );
+
+  const availableWindow = globalThis.window;
+  globalThis.window = {};
+  const unavailableStorageCoordinates = writeChronoNumericCoordinates({
+    year: 2010,
+    month: 1,
+    day: 3,
+    periodIndex: 7,
+  });
+  globalThis.window = availableWindow;
+  assertEqual(
+    "unavailable storage preserves runtime coordinates",
+    unavailableStorageCoordinates.year,
+    2010,
+  );
+  assertEqual(
+    "unavailable storage preserves coordinate immutability",
+    Object.isFrozen(unavailableStorageCoordinates),
+    true,
   );
 
   assertIncludes("Chrono delegates coordinate reading", chronoPageSource, "readPersistedChronoNumericCoordinates()");
