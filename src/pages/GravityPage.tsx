@@ -28,11 +28,13 @@ import {
 } from "../services/personalityRingLiteService";
 import {
   actionFiveAwarenessChangeExperiencePresentation,
+  bodyAwarenessChangeExperiencePresentation,
   emotionChangeAwarenessChangeExperiencePresentation,
   thoughtChangeCognitionChangeExperiencePresentation,
 } from "../services/fixtures/changeExperiencePresentationFixtures";
 import {
   actionFiveAwarenessChangeExperienceUnit,
+  bodyAwarenessChangeExperienceUnit,
   emotionChangeAwarenessChangeExperienceUnit,
   thoughtChangeCognitionChangeExperienceUnit,
 } from "../services/fixtures/changeExperienceFixtures";
@@ -102,6 +104,16 @@ const DEV_ACTION_FIVE_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
   semanticTags: ["action-five-awareness", "movement_under_uncertainty", "persona-transmission-smoke"],
 };
 
+const DEV_BODY_AWARENESS_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
+  selectedPressureSeedId: "body-awareness",
+  surface: "压力进入时，身体先收紧、屏息，提前为尚未发生的变化做准备。",
+  pressureField: "BODY",
+  pressureNature: "SAFETY",
+  scenarioDomain: "SELF",
+  bodySignal: "身体自动紧绷、屏息，进入防御。",
+  semanticTags: ["body-awareness", "somatic_alert", "change-experience-smoke"],
+};
+
 const DEV_EMOTION_CHANGE_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
   selectedPressureSeedId: "emotion-change-awareness",
   surface: "关系结果还不确定，对方回应、距离、态度变化让情绪比事实更早抵达。",
@@ -137,6 +149,23 @@ const DEV_ACTION_FIVE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
   shadowInertia: "越不确定，越想马上行动。",
   defenseTendency: "用行动维持安全感。",
   pressureSensitiveZones: ["推进压力", "结果不确定", "控制感"],
+};
+
+const DEV_BODY_AWARENESS_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
+  motherCodeId: "dev-body-awareness-mother-kun",
+  motherCodeName: "坤",
+  motherCodeTitle: "承载者",
+  trigram: "坤",
+  lowerTrigram: "坤",
+  trigramSymbol: "☷",
+  baseForce: "承载、感知、让身体重新稳定。",
+  defaultReactionPattern: "压力进入时，身体会先收紧并进入防御。",
+  defaultReactionChain: "压力进入 → 身体收紧 → 提前防御 → 等待安全信号",
+  pressureEntry: "压力会先进入身体感知。",
+  behaviorBias: "把身体警觉当成必须立刻服从的命令。",
+  shadowInertia: "越不确定，身体越容易提前进入防御。",
+  defenseTendency: "用紧绷和屏息保护安全感。",
+  pressureSensitiveZones: ["身体警觉", "安全感", "提前防御"],
 };
 
 const DEV_EMOTION_CHANGE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
@@ -180,6 +209,15 @@ const DEV_ACTION_FIVE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
   trigramSymbol: "☶",
   fourBeast: "朱雀",
   direction: "朱雀",
+};
+
+const DEV_BODY_AWARENESS_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
+  motherCode: "坤",
+  motherCodeName: "坤",
+  trigram: "坤",
+  trigramSymbol: "☷",
+  fourBeast: "白虎",
+  direction: "白虎",
 };
 
 const DEV_EMOTION_CHANGE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
@@ -278,14 +316,17 @@ function resolveChangeExperienceUnitForAction(
   if (!action) return null;
 
   const isActionSpace = action.layerLabel === "行动" || action.layerLabel === "行为";
+  const isBodySpace = action.layerLabel === "身体";
   const isEmotionSpace = action.layerLabel === "情绪";
   const isThoughtSpace = action.layerLabel === "思想" || action.layerLabel === "思维";
   const isAwarenessYao = action.yaoName.includes("五爻") || action.yaoName.includes("觉察");
   const isActionFiveSmoke = experienceSmokeFixture === "action-five";
+  const isBodyAwarenessSmoke = experienceSmokeFixture === "body-awareness" || experienceSmokeFixture === "body";
   const isEmotionChangeSmoke = experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion";
   const isThoughtChangeSmoke = experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought";
 
   if (isActionSpace && (isAwarenessYao || isActionFiveSmoke)) return actionFiveAwarenessChangeExperienceUnit;
+  if (isBodySpace && (isAwarenessYao || isBodyAwarenessSmoke)) return bodyAwarenessChangeExperienceUnit;
   if (isEmotionSpace && (isAwarenessYao || isEmotionChangeSmoke)) return emotionChangeAwarenessChangeExperienceUnit;
   if (isThoughtSpace && (isAwarenessYao || isThoughtChangeSmoke)) return thoughtChangeCognitionChangeExperienceUnit;
 
@@ -297,6 +338,7 @@ function resolveChangeExperiencePresentationForUnit(
 ): ChangeExperiencePresentation | null {
   if (!changeExperienceUnit) return null;
   if (changeExperienceUnit === actionFiveAwarenessChangeExperienceUnit) return actionFiveAwarenessChangeExperiencePresentation;
+  if (changeExperienceUnit === bodyAwarenessChangeExperienceUnit) return bodyAwarenessChangeExperiencePresentation;
   if (changeExperienceUnit === emotionChangeAwarenessChangeExperienceUnit) return emotionChangeAwarenessChangeExperiencePresentation;
   if (changeExperienceUnit === thoughtChangeCognitionChangeExperienceUnit) return thoughtChangeCognitionChangeExperiencePresentation;
   return null;
@@ -370,6 +412,9 @@ function readDevPrimaryPetalFixture(): SelectedPressureSeedContext | null {
   if (fixtureKey === "behavior" && experienceSmokeFixture === "action-five") {
     return DEV_ACTION_FIVE_PRESSURE_CONTEXT;
   }
+  if (fixtureKey === "body" && (experienceSmokeFixture === "body-awareness" || experienceSmokeFixture === "body")) {
+    return DEV_BODY_AWARENESS_PRESSURE_CONTEXT;
+  }
   if (fixtureKey === "emotion" && (experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion")) {
     return DEV_EMOTION_CHANGE_PRESSURE_CONTEXT;
   }
@@ -390,6 +435,7 @@ function readDevExperienceSmokeFixture(): string | null {
 function readDynamicsInputContext(): DynamicsInputContext {
   const experienceSmokeFixture = readDevExperienceSmokeFixture();
   const isActionFiveSmoke = experienceSmokeFixture === "action-five";
+  const isBodyAwarenessSmoke = experienceSmokeFixture === "body-awareness" || experienceSmokeFixture === "body";
   const isEmotionChangeSmoke = experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion";
   const isThoughtChangeSmoke = experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought";
 
@@ -398,12 +444,14 @@ function readDynamicsInputContext(): DynamicsInputContext {
       readDevPrimaryPetalFixture() ?? readJsonFromStorage<SelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
     motherCodeProfile:
       (isActionFiveSmoke ? DEV_ACTION_FIVE_MOTHER_CODE_PROFILE : null) ??
+      (isBodyAwarenessSmoke ? DEV_BODY_AWARENESS_MOTHER_CODE_PROFILE : null) ??
       (isEmotionChangeSmoke ? DEV_EMOTION_CHANGE_MOTHER_CODE_PROFILE : null) ??
       (isThoughtChangeSmoke ? DEV_THOUGHT_CHANGE_MOTHER_CODE_PROFILE : null) ??
       readJsonFromStorage<StoredMotherCodeProfile>("guanyao:motherCodeProfile"),
     originMotherContext: readJsonFromStorage<StoredOriginMotherContext>("guanyao:originMotherContext"),
     personaOutputSnapshot:
       (isActionFiveSmoke ? DEV_ACTION_FIVE_PERSONA_OUTPUT : null) ??
+      (isBodyAwarenessSmoke ? DEV_BODY_AWARENESS_PERSONA_OUTPUT : null) ??
       (isEmotionChangeSmoke ? DEV_EMOTION_CHANGE_PERSONA_OUTPUT : null) ??
       (isThoughtChangeSmoke ? DEV_THOUGHT_CHANGE_PERSONA_OUTPUT : null) ??
       readJsonFromStorage<StoredPersonaOutputSnapshot>("guanyao:personaOutputSnapshot"),
@@ -705,6 +753,17 @@ function resolveDevExperienceSmokeRevisionAction(
 ): SingleModelRevisionAction | null {
   const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
   if (!viteEnv?.DEV) return null;
+
+  if (experienceSmokeFixture === "body-awareness" || experienceSmokeFixture === "body") {
+    return {
+      layerLabel: "身体",
+      yaoName: "五爻 · 觉察",
+      actionLine: bodyAwarenessChangeExperiencePresentation.revision.newResponse,
+      sourceReason: bodyAwarenessChangeExperiencePresentation.recognition.oldReaction,
+      interventionPotential: 0.76,
+      userAgency: 0.74,
+    };
+  }
 
   if (experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion") {
     return {
@@ -3364,7 +3423,7 @@ function HexagramCodeDeliveryShell() {
           data-model-revision-action={
             isRevisionActionPending ? "pending" : transformationMomentActive ? "transforming" : revisionActionConfirmed ? "confirmed" : "inactive"
           }
-          data-change-experience-presentation={changeExperiencePresentation ? "action-five-awareness" : "inactive"}
+          data-change-experience-presentation={changeExperienceUnit?.dimension ?? "inactive"}
           data-value-flow-behavior={valueFlow.behaviorSignals.join("|") || "NONE"}
           data-value-flow-pressure={valueFlow.pressureState}
           data-value-flow-emotion={valueFlow.emotionalState}
