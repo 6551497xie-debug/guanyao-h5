@@ -31,6 +31,7 @@ import {
   bodyAwarenessChangeExperiencePresentation,
   emotionChangeAwarenessChangeExperiencePresentation,
   memoryWisdomChangeExperiencePresentation,
+  motivationDriveChangeExperiencePresentation,
   thoughtChangeCognitionChangeExperiencePresentation,
 } from "../services/fixtures/changeExperiencePresentationFixtures";
 import {
@@ -38,6 +39,7 @@ import {
   bodyAwarenessChangeExperienceUnit,
   emotionChangeAwarenessChangeExperienceUnit,
   memoryWisdomChangeExperienceUnit,
+  motivationDriveChangeExperienceUnit,
   thoughtChangeCognitionChangeExperienceUnit,
 } from "../services/fixtures/changeExperienceFixtures";
 import { actionFiveAwarenessRuntimeUnit } from "../services/fixtures/personaTransmissionFixtures";
@@ -146,6 +148,16 @@ const DEV_MEMORY_WISDOM_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
   semanticTags: ["memory-wisdom", "past_experience_echo", "change-experience-smoke"],
 };
 
+const DEV_MOTIVATION_DRIVE_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
+  selectedPressureSeedId: "motivation-drive",
+  surface: "现实压力碰到价值感和方向感，你开始通过结果、认可与控制确认自己。",
+  pressureField: "MOTIVATION",
+  pressureNature: "VALUE_DIRECTION",
+  scenarioDomain: "SELF",
+  motivationLoss: "外部结果正在拉扯内在方向。",
+  semanticTags: ["motivation-drive", "value_direction", "change-experience-smoke"],
+};
+
 const DEV_ACTION_FIVE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
   motherCodeId: "dev-action-five-mother-gen",
   motherCodeName: "艮",
@@ -231,6 +243,23 @@ const DEV_MEMORY_WISDOM_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
   pressureSensitiveZones: ["过去经验", "相似触发", "避免受伤"],
 };
 
+const DEV_MOTIVATION_DRIVE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
+  motherCodeId: "dev-motivation-drive-mother-zhen",
+  motherCodeName: "震",
+  motherCodeTitle: "启动者",
+  trigram: "震",
+  lowerTrigram: "震",
+  trigramSymbol: "☳",
+  baseForce: "启动、辨认方向、把力量带回自身。",
+  defaultReactionPattern: "方向不稳时，会通过结果和认可确认自身价值。",
+  defaultReactionChain: "方向动摇 → 追逐结果 → 寻求认可 → 暂时确认价值",
+  pressureEntry: "压力会先触碰价值感与方向感。",
+  behaviorBias: "把外部结果当成内在价值的唯一证明。",
+  shadowInertia: "越不确定方向，越容易不断向前证明自己。",
+  defenseTendency: "用结果、认可和控制维持价值感。",
+  pressureSensitiveZones: ["价值感", "方向感", "外部认可"],
+};
+
 const DEV_ACTION_FIVE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
   motherCode: "艮",
   motherCodeName: "艮",
@@ -274,6 +303,15 @@ const DEV_MEMORY_WISDOM_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
   trigramSymbol: "☵",
   fourBeast: "玄武",
   direction: "玄武",
+};
+
+const DEV_MOTIVATION_DRIVE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
+  motherCode: "震",
+  motherCodeName: "震",
+  trigram: "震",
+  trigramSymbol: "☳",
+  fourBeast: "青龙",
+  direction: "青龙",
 };
 
 type PressureBeastSeed = {
@@ -357,18 +395,21 @@ function resolveChangeExperienceUnitForAction(
   const isBodySpace = action.layerLabel === "身体";
   const isEmotionSpace = action.layerLabel === "情绪";
   const isMemorySpace = action.layerLabel === "记忆";
+  const isMotivationSpace = action.layerLabel === "动机" || action.layerLabel === "目标";
   const isThoughtSpace = action.layerLabel === "思想" || action.layerLabel === "思维";
   const isAwarenessYao = action.yaoName.includes("五爻") || action.yaoName.includes("觉察");
   const isActionFiveSmoke = experienceSmokeFixture === "action-five";
   const isBodyAwarenessSmoke = experienceSmokeFixture === "body-awareness" || experienceSmokeFixture === "body";
   const isEmotionChangeSmoke = experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion";
   const isMemoryWisdomSmoke = experienceSmokeFixture === "memory-wisdom" || experienceSmokeFixture === "memory";
+  const isMotivationDriveSmoke = experienceSmokeFixture === "motivation-drive" || experienceSmokeFixture === "motivation";
   const isThoughtChangeSmoke = experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought";
 
   if (isActionSpace && (isAwarenessYao || isActionFiveSmoke)) return actionFiveAwarenessChangeExperienceUnit;
   if (isBodySpace && (isAwarenessYao || isBodyAwarenessSmoke)) return bodyAwarenessChangeExperienceUnit;
   if (isEmotionSpace && (isAwarenessYao || isEmotionChangeSmoke)) return emotionChangeAwarenessChangeExperienceUnit;
   if (isMemorySpace && (isAwarenessYao || isMemoryWisdomSmoke)) return memoryWisdomChangeExperienceUnit;
+  if (isMotivationSpace && (isAwarenessYao || isMotivationDriveSmoke)) return motivationDriveChangeExperienceUnit;
   if (isThoughtSpace && (isAwarenessYao || isThoughtChangeSmoke)) return thoughtChangeCognitionChangeExperienceUnit;
 
   return null;
@@ -382,6 +423,7 @@ function resolveChangeExperiencePresentationForUnit(
   if (changeExperienceUnit === bodyAwarenessChangeExperienceUnit) return bodyAwarenessChangeExperiencePresentation;
   if (changeExperienceUnit === emotionChangeAwarenessChangeExperienceUnit) return emotionChangeAwarenessChangeExperiencePresentation;
   if (changeExperienceUnit === memoryWisdomChangeExperienceUnit) return memoryWisdomChangeExperiencePresentation;
+  if (changeExperienceUnit === motivationDriveChangeExperienceUnit) return motivationDriveChangeExperiencePresentation;
   if (changeExperienceUnit === thoughtChangeCognitionChangeExperienceUnit) return thoughtChangeCognitionChangeExperiencePresentation;
   return null;
 }
@@ -466,6 +508,9 @@ function readDevPrimaryPetalFixture(): SelectedPressureSeedContext | null {
   if (fixtureKey === "memory" && (experienceSmokeFixture === "memory-wisdom" || experienceSmokeFixture === "memory")) {
     return DEV_MEMORY_WISDOM_PRESSURE_CONTEXT;
   }
+  if (fixtureKey === "motivation" && (experienceSmokeFixture === "motivation-drive" || experienceSmokeFixture === "motivation")) {
+    return DEV_MOTIVATION_DRIVE_PRESSURE_CONTEXT;
+  }
 
   return DEV_PRIMARY_PETAL_FIXTURES[fixtureKey] ?? null;
 }
@@ -483,6 +528,7 @@ function readDynamicsInputContext(): DynamicsInputContext {
   const isBodyAwarenessSmoke = experienceSmokeFixture === "body-awareness" || experienceSmokeFixture === "body";
   const isEmotionChangeSmoke = experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion";
   const isMemoryWisdomSmoke = experienceSmokeFixture === "memory-wisdom" || experienceSmokeFixture === "memory";
+  const isMotivationDriveSmoke = experienceSmokeFixture === "motivation-drive" || experienceSmokeFixture === "motivation";
   const isThoughtChangeSmoke = experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought";
 
   return {
@@ -493,6 +539,7 @@ function readDynamicsInputContext(): DynamicsInputContext {
       (isBodyAwarenessSmoke ? DEV_BODY_AWARENESS_MOTHER_CODE_PROFILE : null) ??
       (isEmotionChangeSmoke ? DEV_EMOTION_CHANGE_MOTHER_CODE_PROFILE : null) ??
       (isMemoryWisdomSmoke ? DEV_MEMORY_WISDOM_MOTHER_CODE_PROFILE : null) ??
+      (isMotivationDriveSmoke ? DEV_MOTIVATION_DRIVE_MOTHER_CODE_PROFILE : null) ??
       (isThoughtChangeSmoke ? DEV_THOUGHT_CHANGE_MOTHER_CODE_PROFILE : null) ??
       readJsonFromStorage<StoredMotherCodeProfile>("guanyao:motherCodeProfile"),
     originMotherContext: readJsonFromStorage<StoredOriginMotherContext>("guanyao:originMotherContext"),
@@ -501,6 +548,7 @@ function readDynamicsInputContext(): DynamicsInputContext {
       (isBodyAwarenessSmoke ? DEV_BODY_AWARENESS_PERSONA_OUTPUT : null) ??
       (isEmotionChangeSmoke ? DEV_EMOTION_CHANGE_PERSONA_OUTPUT : null) ??
       (isMemoryWisdomSmoke ? DEV_MEMORY_WISDOM_PERSONA_OUTPUT : null) ??
+      (isMotivationDriveSmoke ? DEV_MOTIVATION_DRIVE_PERSONA_OUTPUT : null) ??
       (isThoughtChangeSmoke ? DEV_THOUGHT_CHANGE_PERSONA_OUTPUT : null) ??
       readJsonFromStorage<StoredPersonaOutputSnapshot>("guanyao:personaOutputSnapshot"),
   };
@@ -843,6 +891,17 @@ function resolveDevExperienceSmokeRevisionAction(
       sourceReason: memoryWisdomChangeExperiencePresentation.recognition.oldReaction,
       interventionPotential: 0.72,
       userAgency: 0.7,
+    };
+  }
+
+  if (experienceSmokeFixture === "motivation-drive" || experienceSmokeFixture === "motivation") {
+    return {
+      layerLabel: "动机",
+      yaoName: "五爻 · 觉察",
+      actionLine: motivationDriveChangeExperiencePresentation.revision.newResponse,
+      sourceReason: motivationDriveChangeExperiencePresentation.recognition.oldReaction,
+      interventionPotential: 0.74,
+      userAgency: 0.72,
     };
   }
 
