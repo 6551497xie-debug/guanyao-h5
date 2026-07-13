@@ -30,12 +30,14 @@ import {
   actionFiveAwarenessChangeExperiencePresentation,
   bodyAwarenessChangeExperiencePresentation,
   emotionChangeAwarenessChangeExperiencePresentation,
+  memoryWisdomChangeExperiencePresentation,
   thoughtChangeCognitionChangeExperiencePresentation,
 } from "../services/fixtures/changeExperiencePresentationFixtures";
 import {
   actionFiveAwarenessChangeExperienceUnit,
   bodyAwarenessChangeExperienceUnit,
   emotionChangeAwarenessChangeExperienceUnit,
+  memoryWisdomChangeExperienceUnit,
   thoughtChangeCognitionChangeExperienceUnit,
 } from "../services/fixtures/changeExperienceFixtures";
 import { actionFiveAwarenessRuntimeUnit } from "../services/fixtures/personaTransmissionFixtures";
@@ -134,6 +136,16 @@ const DEV_THOUGHT_CHANGE_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
   semanticTags: ["thought-change-cognition", "interpretation_under_uncertainty", "change-experience-smoke"],
 };
 
+const DEV_MEMORY_WISDOM_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
+  selectedPressureSeedId: "memory-wisdom",
+  surface: "当前局面触发了过去经验，旧路径比眼前事实更早参与判断。",
+  pressureField: "MEMORY",
+  pressureNature: "PAST_EXPERIENCE",
+  scenarioDomain: "SELF",
+  memoryEcho: "过去经历正在覆盖现在的判断。",
+  semanticTags: ["memory-wisdom", "past_experience_echo", "change-experience-smoke"],
+};
+
 const DEV_ACTION_FIVE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
   motherCodeId: "dev-action-five-mother-gen",
   motherCodeName: "艮",
@@ -202,6 +214,23 @@ const DEV_THOUGHT_CHANGE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
   pressureSensitiveZones: ["现实落差", "反馈不一致", "确定感"],
 };
 
+const DEV_MEMORY_WISDOM_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
+  motherCodeId: "dev-memory-wisdom-mother-kan",
+  motherCodeName: "坎",
+  motherCodeTitle: "溯源者",
+  trigram: "坎",
+  lowerTrigram: "坎",
+  trigramSymbol: "☵",
+  baseForce: "回看、辨认、让经验重新服务现在。",
+  defaultReactionPattern: "相似局面出现时，会用过去经验提前判断现在。",
+  defaultReactionChain: "相似触发 → 旧经验回响 → 提前判断 → 套用旧路径",
+  pressureEntry: "压力会先唤起记忆中的旧经验。",
+  behaviorBias: "把过去发生过的事当成现在必然发生的事。",
+  shadowInertia: "越像过去，越容易忽略当下已经不同。",
+  defenseTendency: "用旧经验减少风险、避免再次受伤。",
+  pressureSensitiveZones: ["过去经验", "相似触发", "避免受伤"],
+};
+
 const DEV_ACTION_FIVE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
   motherCode: "艮",
   motherCodeName: "艮",
@@ -236,6 +265,15 @@ const DEV_THOUGHT_CHANGE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
   trigramSymbol: "☵",
   fourBeast: "青龙",
   direction: "青龙",
+};
+
+const DEV_MEMORY_WISDOM_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
+  motherCode: "坎",
+  motherCodeName: "坎",
+  trigram: "坎",
+  trigramSymbol: "☵",
+  fourBeast: "玄武",
+  direction: "玄武",
 };
 
 type PressureBeastSeed = {
@@ -318,16 +356,19 @@ function resolveChangeExperienceUnitForAction(
   const isActionSpace = action.layerLabel === "行动" || action.layerLabel === "行为";
   const isBodySpace = action.layerLabel === "身体";
   const isEmotionSpace = action.layerLabel === "情绪";
+  const isMemorySpace = action.layerLabel === "记忆";
   const isThoughtSpace = action.layerLabel === "思想" || action.layerLabel === "思维";
   const isAwarenessYao = action.yaoName.includes("五爻") || action.yaoName.includes("觉察");
   const isActionFiveSmoke = experienceSmokeFixture === "action-five";
   const isBodyAwarenessSmoke = experienceSmokeFixture === "body-awareness" || experienceSmokeFixture === "body";
   const isEmotionChangeSmoke = experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion";
+  const isMemoryWisdomSmoke = experienceSmokeFixture === "memory-wisdom" || experienceSmokeFixture === "memory";
   const isThoughtChangeSmoke = experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought";
 
   if (isActionSpace && (isAwarenessYao || isActionFiveSmoke)) return actionFiveAwarenessChangeExperienceUnit;
   if (isBodySpace && (isAwarenessYao || isBodyAwarenessSmoke)) return bodyAwarenessChangeExperienceUnit;
   if (isEmotionSpace && (isAwarenessYao || isEmotionChangeSmoke)) return emotionChangeAwarenessChangeExperienceUnit;
+  if (isMemorySpace && (isAwarenessYao || isMemoryWisdomSmoke)) return memoryWisdomChangeExperienceUnit;
   if (isThoughtSpace && (isAwarenessYao || isThoughtChangeSmoke)) return thoughtChangeCognitionChangeExperienceUnit;
 
   return null;
@@ -340,6 +381,7 @@ function resolveChangeExperiencePresentationForUnit(
   if (changeExperienceUnit === actionFiveAwarenessChangeExperienceUnit) return actionFiveAwarenessChangeExperiencePresentation;
   if (changeExperienceUnit === bodyAwarenessChangeExperienceUnit) return bodyAwarenessChangeExperiencePresentation;
   if (changeExperienceUnit === emotionChangeAwarenessChangeExperienceUnit) return emotionChangeAwarenessChangeExperiencePresentation;
+  if (changeExperienceUnit === memoryWisdomChangeExperienceUnit) return memoryWisdomChangeExperiencePresentation;
   if (changeExperienceUnit === thoughtChangeCognitionChangeExperienceUnit) return thoughtChangeCognitionChangeExperiencePresentation;
   return null;
 }
@@ -421,6 +463,9 @@ function readDevPrimaryPetalFixture(): SelectedPressureSeedContext | null {
   if (fixtureKey === "thought" && (experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought")) {
     return DEV_THOUGHT_CHANGE_PRESSURE_CONTEXT;
   }
+  if (fixtureKey === "memory" && (experienceSmokeFixture === "memory-wisdom" || experienceSmokeFixture === "memory")) {
+    return DEV_MEMORY_WISDOM_PRESSURE_CONTEXT;
+  }
 
   return DEV_PRIMARY_PETAL_FIXTURES[fixtureKey] ?? null;
 }
@@ -437,6 +482,7 @@ function readDynamicsInputContext(): DynamicsInputContext {
   const isActionFiveSmoke = experienceSmokeFixture === "action-five";
   const isBodyAwarenessSmoke = experienceSmokeFixture === "body-awareness" || experienceSmokeFixture === "body";
   const isEmotionChangeSmoke = experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion";
+  const isMemoryWisdomSmoke = experienceSmokeFixture === "memory-wisdom" || experienceSmokeFixture === "memory";
   const isThoughtChangeSmoke = experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought";
 
   return {
@@ -446,6 +492,7 @@ function readDynamicsInputContext(): DynamicsInputContext {
       (isActionFiveSmoke ? DEV_ACTION_FIVE_MOTHER_CODE_PROFILE : null) ??
       (isBodyAwarenessSmoke ? DEV_BODY_AWARENESS_MOTHER_CODE_PROFILE : null) ??
       (isEmotionChangeSmoke ? DEV_EMOTION_CHANGE_MOTHER_CODE_PROFILE : null) ??
+      (isMemoryWisdomSmoke ? DEV_MEMORY_WISDOM_MOTHER_CODE_PROFILE : null) ??
       (isThoughtChangeSmoke ? DEV_THOUGHT_CHANGE_MOTHER_CODE_PROFILE : null) ??
       readJsonFromStorage<StoredMotherCodeProfile>("guanyao:motherCodeProfile"),
     originMotherContext: readJsonFromStorage<StoredOriginMotherContext>("guanyao:originMotherContext"),
@@ -453,6 +500,7 @@ function readDynamicsInputContext(): DynamicsInputContext {
       (isActionFiveSmoke ? DEV_ACTION_FIVE_PERSONA_OUTPUT : null) ??
       (isBodyAwarenessSmoke ? DEV_BODY_AWARENESS_PERSONA_OUTPUT : null) ??
       (isEmotionChangeSmoke ? DEV_EMOTION_CHANGE_PERSONA_OUTPUT : null) ??
+      (isMemoryWisdomSmoke ? DEV_MEMORY_WISDOM_PERSONA_OUTPUT : null) ??
       (isThoughtChangeSmoke ? DEV_THOUGHT_CHANGE_PERSONA_OUTPUT : null) ??
       readJsonFromStorage<StoredPersonaOutputSnapshot>("guanyao:personaOutputSnapshot"),
   };
@@ -784,6 +832,17 @@ function resolveDevExperienceSmokeRevisionAction(
       sourceReason: thoughtChangeCognitionChangeExperiencePresentation.recognition.oldReaction,
       interventionPotential: 0.8,
       userAgency: 0.78,
+    };
+  }
+
+  if (experienceSmokeFixture === "memory-wisdom" || experienceSmokeFixture === "memory") {
+    return {
+      layerLabel: "记忆",
+      yaoName: "五爻 · 觉察",
+      actionLine: memoryWisdomChangeExperiencePresentation.revision.newResponse,
+      sourceReason: memoryWisdomChangeExperiencePresentation.recognition.oldReaction,
+      interventionPotential: 0.72,
+      userAgency: 0.7,
     };
   }
 
