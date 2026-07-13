@@ -22,7 +22,6 @@ const assertExcludes = (name, source, forbidden) => {
 
 try {
   for (const typeName of [
-    "GeoDirectionSymbol",
     "GeoLayerInput",
     "ChronoLayerInput",
     "StarbeastLayerInput",

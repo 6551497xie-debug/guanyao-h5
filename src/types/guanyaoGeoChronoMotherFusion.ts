@@ -2,8 +2,6 @@ import type { MotherCodeDefinition, MotherCodeProfile, Trigram } from "./guanyao
 import type { LunarTrigramLandingResult } from "./guanyaoLunarTrigramLanding";
 import type { FourSymbol } from "./guanyaoStarbeast";
 
-export type GeoDirectionSymbol = FourSymbol;
-
 export type GeoLayerInput = Readonly<{
   province: string;
   city: string;
@@ -23,7 +21,7 @@ export type StarbeastLayerInput = Readonly<{
 }>;
 
 export type MotherSeed = Readonly<{
-  direction: GeoDirectionSymbol;
+  direction: FourSymbol;
   timePhase: string;
   starResidue: string;
 }>;
@@ -41,8 +39,7 @@ export type GeoChronoMotherFusionResult = Readonly<{
   geo: Readonly<{
     province: string;
     city: string;
-    symbol: GeoDirectionSymbol;
-    role: "directional bias";
+    role: "birth location context";
   }>;
   chrono: Readonly<{
     lockPoint: string;
@@ -51,6 +48,7 @@ export type GeoChronoMotherFusionResult = Readonly<{
     role: "temporal axis";
   }>;
   starbeast: Readonly<{
+    fourSymbol: FourSymbol;
     primaryNode: string;
     originLightTrace: string;
     role: "identity residue";

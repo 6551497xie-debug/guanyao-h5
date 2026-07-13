@@ -94,14 +94,16 @@ try {
   const gansu = buildFusion("甘肃", "兰州");
   const malaysia = buildFusion("马来西亚", "吉隆坡");
   assertEqual("production mother uses lunar trigram", gansu.mother.trigram, "兑");
-  assertEqual("production mother uses birth-date starbeast", gansu.geo.symbol, "青龙");
+  assertEqual("production mother uses birth-date starbeast", gansu.starbeast.fourSymbol, "青龙");
   assertEqual("location does not change production trigram", malaysia.mother.trigram, gansu.mother.trigram);
-  assertEqual("location does not change production starbeast", malaysia.geo.symbol, gansu.geo.symbol);
+  assertEqual("location does not change production starbeast", malaysia.starbeast.fourSymbol, gansu.starbeast.fourSymbol);
   assertEqual("mother profile follows resolved trigram", gansu.mother.profile.lowerTrigram, "兑");
 
-  const visual = getFourBeastTrigramVisualGrammar(gansu.geo.symbol, gansu.mother.trigram);
+  const visual = getFourBeastTrigramVisualGrammar(gansu.starbeast.fourSymbol, gansu.mother.trigram);
   assertEqual("resolved beast lands in resolved trigram", visual.key, "青龙_兑");
   assertEqual("fusion result keeps geo shape", gansu.geo.province, "甘肃");
+  assertEqual("fusion result scopes geo to birth location", gansu.geo.role, "birth location context");
+  assertEqual("fusion result removes starbeast from geo", "symbol" in gansu.geo, false);
   assertEqual("fusion result keeps chrono shape", gansu.chrono.role, "temporal axis");
   assertEqual("fusion result keeps starbeast residue shape", gansu.starbeast.role, "identity residue");
 

@@ -47,14 +47,14 @@ export function runGeoChronoMotherFusionEngine(
     geo: {
       province: input.geo.province,
       city: input.geo.city,
-      symbol,
-      role: "directional bias",
+      role: "birth location context",
     },
     chrono: {
       ...chrono,
       role: "temporal axis",
     },
     starbeast: {
+      fourSymbol: symbol,
       primaryNode: starbeast.primaryNode,
       originLightTrace: input.starbeast.originLightTrace,
       role: "identity residue",

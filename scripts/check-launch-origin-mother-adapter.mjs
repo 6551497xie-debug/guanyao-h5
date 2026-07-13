@@ -73,7 +73,8 @@ try {
   assertEqual("adapter preserves chrono period index", adapted.chrono.periodIndex, 0);
   assertEqual("adapter preserves starbeast residue input", adapted.starbeast.primaryNodeIndex, 6);
   assertEqual("adapter output reaches mother fusion", result.mother.trigram, "兑");
-  assertEqual("adapter output keeps mother starbeast", result.geo.symbol, "青龙");
+  assertEqual("adapter output keeps mother starbeast", result.starbeast.fourSymbol, "青龙");
+  assertEqual("adapter output keeps geo semantic clean", "symbol" in result.geo, false);
 
   console.log("\n[LAUNCH ORIGIN MOTHER ADAPTER] PASS");
 } catch (error) {

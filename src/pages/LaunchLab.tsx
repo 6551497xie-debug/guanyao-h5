@@ -27,10 +27,8 @@ import {
   getTripleForceFrontStage,
 } from "../services/guanyaoTripleForceLandingService";
 import { getPressureSeedSceneTriplet } from "../services/guanyaoPressureSeedSceneBindingService";
-import type {
-  GeoChronoMotherFusionResult,
-  GeoDirectionSymbol,
-} from "../types/guanyaoGeoChronoMotherFusion";
+import type { GeoChronoMotherFusionResult } from "../types/guanyaoGeoChronoMotherFusion";
+import type { FourSymbol } from "../types/guanyaoStarbeast";
 import { resolveLaunchOriginMother } from "../services/guanyaoLaunchOriginMotherInputAdapter";
 
 const SANS = "-apple-system, system-ui, sans-serif";
@@ -319,7 +317,7 @@ const CITY_OPTIONS_BY_PROVINCE: Record<string, string[]> = {
 };
 const DEFAULT_PROVINCE_INDEX = PROVINCE_OPTIONS.indexOf("广东");
 const DEFAULT_CITY_INDEX = CITY_OPTIONS_BY_PROVINCE["广东"]?.indexOf("广州") ?? 0;
-const FOUR_BEAST_VISUAL_COPY: Record<GeoDirectionSymbol, {
+const FOUR_BEAST_VISUAL_COPY: Record<FourSymbol, {
   axis: string;
   mark: string;
 }> = {
@@ -454,7 +452,7 @@ function resolveFourBeastGrammar(
   result: GeoChronoMotherFusionResult,
 ): FourBeastTrigramVisualGrammarItem | undefined {
   try {
-    return getFourBeastTrigramVisualGrammar(result.geo.symbol, result.mother.trigram);
+    return getFourBeastTrigramVisualGrammar(result.starbeast.fourSymbol, result.mother.trigram);
   } catch {
     return undefined;
   }
@@ -574,7 +572,7 @@ type FourBeastLiteShape = {
   edges: Array<[number, number]>;
 };
 
-function fourBeastLiteShape(beast: GeoDirectionSymbol): FourBeastLiteShape {
+function fourBeastLiteShape(beast: FourSymbol): FourBeastLiteShape {
   if (beast === "青龙") {
     return {
       points: [
@@ -633,7 +631,7 @@ function fourBeastLiteShape(beast: GeoDirectionSymbol): FourBeastLiteShape {
 
 function drawFourBeastLiteStar(
   ctx: CanvasRenderingContext2D,
-  beast: GeoDirectionSymbol,
+  beast: FourSymbol,
   trigram: string | undefined,
   x: number,
   y: number,
@@ -744,7 +742,7 @@ function drawFourBeastLiteStar(
 
 function drawFourBeastOriginMarker(
   ctx: CanvasRenderingContext2D,
-  beast: GeoDirectionSymbol,
+  beast: FourSymbol,
   trigram: string,
   province: string,
   grammarLine: string,
@@ -788,7 +786,7 @@ function drawFourBeastOriginMarker(
 
 function drawFourBeastCardWatermark(
   ctx: CanvasRenderingContext2D,
-  beast: GeoDirectionSymbol,
+  beast: FourSymbol,
   cardX: number,
   cardY: number,
   cardW: number,
@@ -1344,9 +1342,10 @@ export function LaunchLab() {
         createdAt: new Date().toISOString(),
         geo: reveal.geo,
         chrono: reveal.chrono,
+        starbeast: reveal.starbeast,
         mother_seed: reveal.mother_seed,
         mother: reveal.mother,
-        fourBeast: reveal.geo.symbol,
+        fourBeast: reveal.starbeast.fourSymbol,
         trigram,
       };
       const personaOutputSnapshot = {
@@ -1355,8 +1354,8 @@ export function LaunchLab() {
         motherCodeTitle: profile.motherCodeTitle,
         trigram,
         trigramSymbol: definition.trigramSymbol,
-        direction: reveal.geo.symbol,
-        fourBeast: reveal.geo.symbol,
+        direction: reveal.starbeast.fourSymbol,
+        fourBeast: reveal.starbeast.fourSymbol,
         chronoLockPoint: reveal.chrono.lockPoint,
         geoProvince: reveal.geo.province,
         starOrigin: {
@@ -2267,20 +2266,20 @@ export function LaunchLab() {
                 !isGeoStage && dim === "hour"
                   ? `推导时辰：${hourToPeriodLabel(Math.round(m.dialFloat))}`
                   : isGeoStage
-                  ? `四象兽归位：${originMother.geo.symbol} · ${FOUR_BEAST_VISUAL_COPY[originMother.geo.symbol].axis} · ${originMother.geo.province}`
+                  ? `四象兽归位：${originMother.starbeast.fourSymbol} · ${FOUR_BEAST_VISUAL_COPY[originMother.starbeast.fourSymbol].axis} · ${originMother.geo.province}`
                   : `已锁定：${originCoordinateSummary()}`,
                 g.railX0,
                 m.h * 0.282
               );
             } else {
               ctx.fillText(`时序填装：卦符显影 ${originMother.chrono.lockPoint} · ${originMother.mother.definition.trigramSymbol}${originMother.mother.trigram}`, g.railX0, m.h * 0.252);
-              ctx.fillText(`方位填装：四象兽归位 ${originMother.geo.symbol} · ${originMother.geo.province}/${originMother.geo.city}`, g.railX0, m.h * 0.282);
+              ctx.fillText(`方位填装：四象兽归位 ${originMother.starbeast.fourSymbol} · ${originMother.geo.province}/${originMother.geo.city}`, g.railX0, m.h * 0.282);
             }
           }
           if (originMother && isNewOriginFlow && isGeoStage) {
             drawFourBeastOriginMarker(
               ctx,
-              originMother.geo.symbol,
+              originMother.starbeast.fourSymbol,
               originMother.mother.trigram,
               originMother.geo.province,
               fourBeastGrammarLine,
@@ -2642,7 +2641,7 @@ export function LaunchLab() {
         ctx.roundRect?.(cardX + 7, cardY + 7, cardW - 14, cardH - 14, 16);
         if (!ctx.roundRect) ctx.rect(cardX + 7, cardY + 7, cardW - 14, cardH - 14);
         ctx.stroke();
-        drawFourBeastCardWatermark(ctx, reveal.geo.symbol, cardX, cardY, cardW, cardH);
+        drawFourBeastCardWatermark(ctx, reveal.starbeast.fourSymbol, cardX, cardY, cardW, cardH);
 
         if (m.motherCardFace === "front") {
           const [trigramName, roleName] = profile.motherCodeName.split("｜");
@@ -2661,7 +2660,7 @@ export function LaunchLab() {
           ctx.textAlign = "center";
           ctx.fillStyle = "rgba(255,247,228,0.96)";
           ctx.font = `800 ${Math.min(28, cardW * 0.082)}px ${SANS}`;
-          ctx.fillText(`${trigramName || reveal.mother.trigram}  ${definition.trigramSymbol}  ${reveal.geo.symbol}`, cardX + cardW / 2, cardY + cardH * 0.165);
+          ctx.fillText(`${trigramName || reveal.mother.trigram}  ${definition.trigramSymbol}  ${reveal.starbeast.fourSymbol}`, cardX + cardW / 2, cardY + cardH * 0.165);
           ctx.fillStyle = "rgba(232,200,138,0.74)";
           ctx.font = `650 ${Math.min(15, cardW * 0.044)}px ${SANS}`;
           ctx.fillText(roleName || profile.motherCodeTitle || definition.motherCodeTitle, cardX + cardW / 2, cardY + cardH * 0.235);
@@ -2729,7 +2728,7 @@ export function LaunchLab() {
           drawDecodeBlock("转化方向", displayCopy.direction, 2);
           ctx.fillStyle = "rgba(232,200,138,0.48)";
           ctx.font = `600 ${Math.min(9.5, cardW * 0.029)}px ${MONO}`;
-          ctx.fillText(`来源：${reveal.geo.symbol}方位 × ${reveal.mother.trigram}母码`, cardX + cardPad, cardY + cardH - 33);
+          ctx.fillText(`来源：${reveal.starbeast.fourSymbol}方位 × ${reveal.mother.trigram}母码`, cardX + cardPad, cardY + cardH - 33);
           ctx.fillStyle = "rgba(232,200,138,0.56)";
           ctx.fillText("这张 8 母码，是你进入本局之前的内在底座", cardX + cardPad, cardY + cardH - 15);
         }

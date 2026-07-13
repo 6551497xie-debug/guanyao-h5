@@ -148,7 +148,7 @@ try {
   assertEqual("four beast variants keep resolved trigram", new Set(sameTrigramVisuals.map((item) => item.trigram)).size, 1);
   assertIncludes("production fusion input still carries starbeast", fusionTypeSource, "starbeast: StarbeastLayerInput");
   assertIncludes("production fusion engine still consumes starbeast", fusionEngineSource, "resolveStarbeastResidue(input.starbeast)");
-  assertIncludes("launch chain still resolves four beast x trigram grammar", launchLabSource, "getFourBeastTrigramVisualGrammar(result.geo.symbol, result.mother.trigram)");
+  assertIncludes("launch chain still resolves four beast x trigram grammar", launchLabSource, "getFourBeastTrigramVisualGrammar(result.starbeast.fourSymbol, result.mother.trigram)");
 
   let invalidReason = "";
   try {
