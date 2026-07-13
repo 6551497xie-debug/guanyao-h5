@@ -1,5 +1,5 @@
 import type { MotherCodeProfile } from "./guanyaoCausalEngine";
-import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
+import type { SelectedPressureSeedContext } from "./primaryPetal";
 
 export type StoredMotherCodeProfile = Partial<MotherCodeProfile> & {
   motherCodeName?: string;

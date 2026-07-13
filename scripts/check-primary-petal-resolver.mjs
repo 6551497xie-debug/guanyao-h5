@@ -8,6 +8,15 @@ import ts from "typescript";
 const rootDir = process.cwd();
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "guanyao-primary-petal-resolver-"));
 const gravityPageSource = fs.readFileSync(path.join(rootDir, "src/pages/GravityPage.tsx"), "utf8");
+const resolverSource = fs.readFileSync(
+  path.join(rootDir, "src/services/guanyaoPrimaryPetalResolver.ts"),
+  "utf8",
+);
+const primaryPetalTypeSource = fs.readFileSync(path.join(rootDir, "src/types/primaryPetal.ts"), "utf8");
+const gravityRuntimeInputTypeSource = fs.readFileSync(
+  path.join(rootDir, "src/types/gravityRuntimeInput.ts"),
+  "utf8",
+);
 const sourceFiles = [
   "src/services/guanyaoPrimaryPetalResolver.ts",
   "src/services/fixtures/primaryPetalDevFixtures.ts",
@@ -87,6 +96,41 @@ try {
     "gravity no longer owns primary petal dev fixtures",
     gravityPageSource,
     "DEV_PRIMARY_PETAL_FIXTURES",
+  );
+  assertIncludes(
+    "neutral primary petal types own primary petal id",
+    primaryPetalTypeSource,
+    "export type PrimaryPetalId =",
+  );
+  assertIncludes(
+    "neutral primary petal types own protocol dimension",
+    primaryPetalTypeSource,
+    "export type PrimaryPetalProtocolDimension =",
+  );
+  assertIncludes(
+    "neutral primary petal types own selected pressure context",
+    primaryPetalTypeSource,
+    "export type SelectedPressureSeedContext =",
+  );
+  assertIncludes(
+    "primary petal resolver re-exports neutral types",
+    resolverSource,
+    'from "../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "primary petal resolver no longer owns selected pressure context type",
+    resolverSource,
+    "export type SelectedPressureSeedContext =",
+  );
+  assertIncludes(
+    "gravity runtime input consumes neutral primary petal type",
+    gravityRuntimeInputTypeSource,
+    'from "./primaryPetal"',
+  );
+  assertNotIncludes(
+    "gravity runtime input no longer depends on primary petal service",
+    gravityRuntimeInputTypeSource,
+    "guanyaoPrimaryPetalResolver",
   );
 
   console.log(`\n[PRIMARY PETAL RESOLVER] PASS: ${fixtures.length}/${fixtures.length} fixture(s) matched.`);
