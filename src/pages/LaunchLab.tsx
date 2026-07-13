@@ -22,10 +22,6 @@ import { getEntryUserType } from "../runtime/entry/entryDecision";
 import { getNodeTransitionLerp } from "../runtime/node/perception/nodeTransitionLerp";
 import { resolveStarbeastRenderState } from "../runtime/starbeast/starbeastRenderState";
 import { buildSelectedPressureSeedContext } from "../services/guanyaoPressureSeedSceneBindingService";
-import {
-  buildTripleForceLandingResult,
-  getTripleForceFrontStage,
-} from "../services/guanyaoTripleForceLandingService";
 import { getPressureSeedSceneTriplet } from "../services/guanyaoPressureSeedSceneBindingService";
 import type { GeoChronoMotherFusionResult } from "../types/guanyaoGeoChronoMotherFusion";
 import type { FourSymbol } from "../types/guanyaoStarbeast";
@@ -946,12 +942,8 @@ export function LaunchLab() {
       setLaunchInteractionState("SEED_SELECTED");
 
       const selectedPressureSeedContext = buildSelectedPressureSeedContext(candidate.seed);
-      const tripleForceLandingResult = buildTripleForceLandingResult(selectedPressureSeedContext);
-      const tripleForceFrontStage = getTripleForceFrontStage(tripleForceLandingResult);
 
       writeSelectedPressureSeedContext(selectedPressureSeedContext);
-      window.localStorage.setItem("guanyao:tripleForceLandingResult", JSON.stringify(tripleForceLandingResult));
-      window.localStorage.setItem("guanyao:tripleForceFrontStage", JSON.stringify(tripleForceFrontStage));
       window.localStorage.setItem("guanyao:selectedPressureSeedId", candidate.seed.id);
       window.localStorage.setItem("guanyao:selectedPressureSliceId", candidate.seed.id);
       window.localStorage.setItem("guanyao:selectedPressureSliceText", candidate.seed.surface);

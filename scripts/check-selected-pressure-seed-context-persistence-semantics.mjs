@@ -7,6 +7,7 @@ import { build } from "esbuild";
 const rootDir = process.cwd();
 const paths = {
   persistence: path.join(rootDir, "src/services/guanyaoSelectedPressureSeedContextPersistenceAdapter.ts"),
+  tripleForce: path.join(rootDir, "src/services/guanyaoTripleForceLandingService.ts"),
   runtimeTypes: path.join(rootDir, "src/types/gravityRuntimeInput.ts"),
   domainTypes: path.join(rootDir, "src/types/primaryPetal.ts"),
   launch: path.join(rootDir, "src/pages/LaunchLab.tsx"),
@@ -100,8 +101,14 @@ try {
   );
   assertIncludes("Launch delegates context persistence", sources.launch, "writeSelectedPressureSeedContext(selectedPressureSeedContext)");
   assertExcludes("Launch does not own context storage key", sources.launch, "guanyao:selectedPressureSeedContext");
+  assertExcludes("Launch does not persist orphaned triple force result", sources.launch, "guanyao:tripleForceLandingResult");
+  assertExcludes("Launch does not persist orphaned triple force front stage", sources.launch, "guanyao:tripleForceFrontStage");
+  assertExcludes("Launch does not compute unused triple force result", sources.launch, "buildTripleForceLandingResult");
   assertIncludes("Scene delegates context persistence", sources.scene, "writeSelectedPressureSeedContext(selectedPressureSeedContext)");
   assertExcludes("Scene does not own context storage key", sources.scene, "guanyao:selectedPressureSeedContext");
+  assertExcludes("Scene does not persist orphaned triple force result", sources.scene, "guanyao:tripleForceLandingResult");
+  assertExcludes("Scene does not persist orphaned triple force front stage", sources.scene, "guanyao:tripleForceFrontStage");
+  assertExcludes("Scene does not compute unused triple force result", sources.scene, "buildTripleForceLandingResult");
   assertIncludes("Gravity delegates context reading", sources.gravity, "readPersistedSelectedPressureSeedContext()");
   assertExcludes("Gravity does not own context storage key", sources.gravity, "guanyao:selectedPressureSeedContext");
   assertIncludes("R8 delegates context reading", sources.r8, "readPersistedSelectedPressureSeedContext()");
@@ -115,6 +122,16 @@ try {
     "persistence adapter owns schema version",
     sources.persistence,
     '"GUANYAO_SELECTED_PRESSURE_SEED_CONTEXT_V2" as const',
+  );
+  assertIncludes(
+    "triple force remains available as an on-demand derivation",
+    sources.tripleForce,
+    "export function buildTripleForceLandingResult(",
+  );
+  assertIncludes(
+    "triple force front stage remains available on demand",
+    sources.tripleForce,
+    "export function getTripleForceFrontStage(",
   );
 
   console.log("\n[SELECTED PRESSURE SEED CONTEXT PERSISTENCE SEMANTICS] PASS");
