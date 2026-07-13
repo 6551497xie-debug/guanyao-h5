@@ -27,11 +27,11 @@ import {
   getTripleForceFrontStage,
 } from "../services/guanyaoTripleForceLandingService";
 import { getPressureSeedSceneTriplet } from "../services/guanyaoPressureSeedSceneBindingService";
-import {
-  runGeoChronoMotherFusionEngine,
-  type GeoChronoMotherFusionResult,
-  type GeoDirectionSymbol,
-} from "../services/guanyaoGeoChronoMotherFusionEngine";
+import { runGeoChronoMotherFusionEngine } from "../services/guanyaoGeoChronoMotherFusionEngine";
+import type {
+  GeoChronoMotherFusionResult,
+  GeoDirectionSymbol,
+} from "../types/guanyaoGeoChronoMotherFusion";
 import { resolveLunarTrigramLanding } from "../services/guanyaoLunarTrigramLandingResolver";
 import { resolveStarbeastFromBirthDate } from "../services/guanyaoStarbeastEngineService";
 

@@ -9,11 +9,13 @@ const resolverPath = path.join(rootDir, "src/services/guanyaoLunarTrigramLanding
 const adapterPath = path.join(rootDir, "src/services/guanyaoLunarMotherCodeLandingAdapter.ts");
 const visualGrammarPath = path.join(rootDir, "src/data/fourBeastTrigramVisualGrammar.ts");
 const fusionEnginePath = path.join(rootDir, "src/services/guanyaoGeoChronoMotherFusionEngine.ts");
+const fusionTypePath = path.join(rootDir, "src/types/guanyaoGeoChronoMotherFusion.ts");
 const launchLabPath = path.join(rootDir, "src/pages/LaunchLab.tsx");
 const chronoPagePath = path.join(rootDir, "src/pages/ChronoPage.tsx");
 const resolverSource = fs.readFileSync(resolverPath, "utf8");
 const adapterSource = fs.readFileSync(adapterPath, "utf8");
 const fusionEngineSource = fs.readFileSync(fusionEnginePath, "utf8");
+const fusionTypeSource = fs.readFileSync(fusionTypePath, "utf8");
 const launchLabSource = fs.readFileSync(launchLabPath, "utf8");
 const chronoPageSource = fs.readFileSync(chronoPagePath, "utf8");
 const tempResolverPath = path.join(os.tmpdir(), `guanyao-lunar-trigram-${process.pid}.mjs`);
@@ -144,7 +146,8 @@ try {
   assertEqual("same trigram keeps four beast landing variants", new Set(sameTrigramVisuals.map((item) => item.key)).size, 4);
   assertEqual("same trigram keeps four life postures", new Set(sameTrigramVisuals.map((item) => item.beastBase)).size, 4);
   assertEqual("four beast variants keep resolved trigram", new Set(sameTrigramVisuals.map((item) => item.trigram)).size, 1);
-  assertIncludes("production fusion engine still consumes starbeast", fusionEngineSource, "starbeast: StarbeastLayerInput");
+  assertIncludes("production fusion input still carries starbeast", fusionTypeSource, "starbeast: StarbeastLayerInput");
+  assertIncludes("production fusion engine still consumes starbeast", fusionEngineSource, "resolveStarbeastResidue(input.starbeast)");
   assertIncludes("launch chain still resolves four beast x trigram grammar", launchLabSource, "getFourBeastTrigramVisualGrammar(result.geo.symbol, result.mother.trigram)");
 
   let invalidReason = "";

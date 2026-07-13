@@ -1,58 +1,10 @@
 import { getMotherCodeDefinitionByTrigram, toMotherCodeProfile } from "../data/guanyaoMotherCodeRegistry";
-import type { MotherCodeDefinition, MotherCodeProfile, Trigram } from "../types/guanyaoCausalEngine";
-import type { LunarTrigramLandingResult } from "../types/guanyaoLunarTrigramLanding";
-
-export type GeoDirectionSymbol = "青龙" | "朱雀" | "白虎" | "玄武";
-
-export type GeoLayerInput = {
-  province: string;
-  city: string;
-};
-
-export type ChronoLayerInput = {
-  year: number;
-  month: number;
-  day: number;
-  periodIndex: number;
-};
-
-export type StarbeastLayerInput = {
-  nodeCount: number;
-  primaryNodeIndex: number;
-  originLightTrace: string;
-};
-
-export type MotherSeed = {
-  direction: GeoDirectionSymbol;
-  timePhase: string;
-  starResidue: string;
-};
-
-export type GeoChronoMotherFusionResult = {
-  mother_seed: MotherSeed;
-  geo: {
-    province: string;
-    city: string;
-    symbol: GeoDirectionSymbol;
-    role: "directional bias";
-  };
-  chrono: {
-    lockPoint: string;
-    timePhaseIndex: number;
-    calibrationIndex: number;
-    role: "temporal axis";
-  };
-  starbeast: {
-    primaryNode: string;
-    originLightTrace: string;
-    role: "identity residue";
-  };
-  mother: {
-    trigram: Trigram;
-    definition: MotherCodeDefinition;
-    profile: MotherCodeProfile;
-  };
-};
+import type {
+  ChronoLayerInput,
+  GeoChronoMotherFusionInput,
+  GeoChronoMotherFusionResult,
+  StarbeastLayerInput,
+} from "../types/guanyaoGeoChronoMotherFusion";
 
 function resolveChronoLockPoint(input: ChronoLayerInput) {
   const timePhaseIndex = Math.abs(input.periodIndex) % 7;
@@ -73,13 +25,9 @@ function resolveStarbeastResidue(input: StarbeastLayerInput) {
   };
 }
 
-export function runGeoChronoMotherFusionEngine(input: {
-  geo: GeoLayerInput;
-  chrono: ChronoLayerInput;
-  starbeast: StarbeastLayerInput;
-  fourSymbol: GeoDirectionSymbol;
-  trigramLanding: LunarTrigramLandingResult;
-}): GeoChronoMotherFusionResult {
+export function runGeoChronoMotherFusionEngine(
+  input: GeoChronoMotherFusionInput,
+): GeoChronoMotherFusionResult {
   const symbol = input.fourSymbol;
   const chrono = resolveChronoLockPoint(input.chrono);
   const starbeast = resolveStarbeastResidue(input.starbeast);
