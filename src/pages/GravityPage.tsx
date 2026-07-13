@@ -38,6 +38,11 @@ import {
   motivationDriveChangeExperiencePresentation,
   thoughtChangeCognitionChangeExperiencePresentation,
 } from "../services/fixtures/changeExperiencePresentationFixtures";
+import {
+  resolveChangeExperienceRuntimeSmokeFixture,
+  type StoredMotherCodeProfile,
+  type StoredPersonaOutputSnapshot,
+} from "../services/fixtures/changeExperienceRuntimeSmokeFixtures";
 import { actionFiveAwarenessRuntimeUnit } from "../services/fixtures/personaTransmissionFixtures";
 import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
 import type {
@@ -94,236 +99,12 @@ const DEV_PRIMARY_PETAL_FIXTURES: Record<string, SelectedPressureSeedContext> = 
   },
 };
 
-const DEV_ACTION_FIVE_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
-  selectedPressureSeedId: "action-five-awareness",
-  surface: "面对必须推进、但结果仍不确定的现实局，你试图通过立即行动恢复掌控。",
-  pressureField: "ACTION",
-  pressureNature: "CONTROL",
-  scenarioDomain: "SELF",
-  behaviorBlock: "越不确定，越想立刻推进。",
-  semanticTags: ["action-five-awareness", "movement_under_uncertainty", "persona-transmission-smoke"],
-};
-
-const DEV_BODY_AWARENESS_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
-  selectedPressureSeedId: "body-awareness",
-  surface: "压力进入时，身体先收紧、屏息，提前为尚未发生的变化做准备。",
-  pressureField: "BODY",
-  pressureNature: "SAFETY",
-  scenarioDomain: "SELF",
-  bodySignal: "身体自动紧绷、屏息，进入防御。",
-  semanticTags: ["body-awareness", "somatic_alert", "change-experience-smoke"],
-};
-
-const DEV_EMOTION_CHANGE_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
-  selectedPressureSeedId: "emotion-change-awareness",
-  surface: "关系结果还不确定，对方回应、距离、态度变化让情绪比事实更早抵达。",
-  pressureField: "EMOTION",
-  pressureNature: "RELATIONSHIP_UNCERTAINTY",
-  scenarioDomain: "PARTNER_ROMANTIC",
-  emotionalTone: "fear",
-  semanticTags: ["emotion-change-awareness", "relationship_uncertainty", "change-experience-smoke"],
-};
-
-const DEV_THOUGHT_CHANGE_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
-  selectedPressureSeedId: "thought-change-cognition",
-  surface: "现实结果没有按照预期发生，投入与反馈不一致，你开始寻找解释让局面重新确定。",
-  pressureField: "THOUGHT",
-  pressureNature: "UNCERTAINTY",
-  scenarioDomain: "SELF",
-  thoughtPattern: "快速下结论，用解释重新获得确定感。",
-  semanticTags: ["thought-change-cognition", "interpretation_under_uncertainty", "change-experience-smoke"],
-};
-
-const DEV_MEMORY_WISDOM_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
-  selectedPressureSeedId: "memory-wisdom",
-  surface: "当前局面触发了过去经验，旧路径比眼前事实更早参与判断。",
-  pressureField: "MEMORY",
-  pressureNature: "PAST_EXPERIENCE",
-  scenarioDomain: "SELF",
-  memoryEcho: "过去经历正在覆盖现在的判断。",
-  semanticTags: ["memory-wisdom", "past_experience_echo", "change-experience-smoke"],
-};
-
-const DEV_MOTIVATION_DRIVE_PRESSURE_CONTEXT: SelectedPressureSeedContext = {
-  selectedPressureSeedId: "motivation-drive",
-  surface: "现实压力碰到价值感和方向感，你开始通过结果、认可与控制确认自己。",
-  pressureField: "MOTIVATION",
-  pressureNature: "VALUE_DIRECTION",
-  scenarioDomain: "SELF",
-  motivationLoss: "外部结果正在拉扯内在方向。",
-  semanticTags: ["motivation-drive", "value_direction", "change-experience-smoke"],
-};
-
-const DEV_ACTION_FIVE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
-  motherCodeId: "dev-action-five-mother-gen",
-  motherCodeName: "艮",
-  motherCodeTitle: "停滞者",
-  trigram: "艮",
-  lowerTrigram: "艮",
-  trigramSymbol: "☶",
-  baseForce: "停住、承载、重新判断。",
-  defaultReactionPattern: "遇到不确定时先停住局面，再用行动找回掌控。",
-  defaultReactionChain: "不确定 → 停住 → 推进行动 → 恢复掌控感",
-  pressureEntry: "压力会先进入行动判断。",
-  behaviorBias: "通过立刻推进压住不确定。",
-  shadowInertia: "越不确定，越想马上行动。",
-  defenseTendency: "用行动维持安全感。",
-  pressureSensitiveZones: ["推进压力", "结果不确定", "控制感"],
-};
-
-const DEV_BODY_AWARENESS_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
-  motherCodeId: "dev-body-awareness-mother-kun",
-  motherCodeName: "坤",
-  motherCodeTitle: "承载者",
-  trigram: "坤",
-  lowerTrigram: "坤",
-  trigramSymbol: "☷",
-  baseForce: "承载、感知、让身体重新稳定。",
-  defaultReactionPattern: "压力进入时，身体会先收紧并进入防御。",
-  defaultReactionChain: "压力进入 → 身体收紧 → 提前防御 → 等待安全信号",
-  pressureEntry: "压力会先进入身体感知。",
-  behaviorBias: "把身体警觉当成必须立刻服从的命令。",
-  shadowInertia: "越不确定，身体越容易提前进入防御。",
-  defenseTendency: "用紧绷和屏息保护安全感。",
-  pressureSensitiveZones: ["身体警觉", "安全感", "提前防御"],
-};
-
-const DEV_EMOTION_CHANGE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
-  motherCodeId: "dev-emotion-change-mother-dui",
-  motherCodeName: "兑",
-  motherCodeTitle: "感应者",
-  trigram: "兑",
-  lowerTrigram: "兑",
-  trigramSymbol: "☱",
-  baseForce: "感受、回应、辨认关系信号。",
-  defaultReactionPattern: "关系不确定时，情绪会先替事实下结论。",
-  defaultReactionChain: "关系变化 → 情绪提前抵达 → 预判风险 → 急于确认",
-  pressureEntry: "压力会先进入情绪判断。",
-  behaviorBias: "通过提前揣测降低关系不确定。",
-  shadowInertia: "越不确定，越容易让情绪先替事实回答。",
-  defenseTendency: "用情绪预判保护自己不受伤。",
-  pressureSensitiveZones: ["关系压力", "态度变化", "避免受伤"],
-};
-
-const DEV_THOUGHT_CHANGE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
-  motherCodeId: "dev-thought-change-mother-kan",
-  motherCodeName: "坎",
-  motherCodeTitle: "辨认者",
-  trigram: "坎",
-  lowerTrigram: "坎",
-  trigramSymbol: "☵",
-  baseForce: "辨认、解释、在不确定中寻找确定。",
-  defaultReactionPattern: "现实不符合预期时，会用解释快速稳定局面。",
-  defaultReactionChain: "结果落差 → 快速解释 → 寻找证据 → 获得确定感",
-  pressureEntry: "压力会先进入思想解释。",
-  behaviorBias: "把解释当成现实。",
-  shadowInertia: "越不确定，越容易相信自己的解释就是事实。",
-  defenseTendency: "用解释维持确定感。",
-  pressureSensitiveZones: ["现实落差", "反馈不一致", "确定感"],
-};
-
-const DEV_MEMORY_WISDOM_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
-  motherCodeId: "dev-memory-wisdom-mother-kan",
-  motherCodeName: "坎",
-  motherCodeTitle: "溯源者",
-  trigram: "坎",
-  lowerTrigram: "坎",
-  trigramSymbol: "☵",
-  baseForce: "回看、辨认、让经验重新服务现在。",
-  defaultReactionPattern: "相似局面出现时，会用过去经验提前判断现在。",
-  defaultReactionChain: "相似触发 → 旧经验回响 → 提前判断 → 套用旧路径",
-  pressureEntry: "压力会先唤起记忆中的旧经验。",
-  behaviorBias: "把过去发生过的事当成现在必然发生的事。",
-  shadowInertia: "越像过去，越容易忽略当下已经不同。",
-  defenseTendency: "用旧经验减少风险、避免再次受伤。",
-  pressureSensitiveZones: ["过去经验", "相似触发", "避免受伤"],
-};
-
-const DEV_MOTIVATION_DRIVE_MOTHER_CODE_PROFILE: StoredMotherCodeProfile = {
-  motherCodeId: "dev-motivation-drive-mother-zhen",
-  motherCodeName: "震",
-  motherCodeTitle: "启动者",
-  trigram: "震",
-  lowerTrigram: "震",
-  trigramSymbol: "☳",
-  baseForce: "启动、辨认方向、把力量带回自身。",
-  defaultReactionPattern: "方向不稳时，会通过结果和认可确认自身价值。",
-  defaultReactionChain: "方向动摇 → 追逐结果 → 寻求认可 → 暂时确认价值",
-  pressureEntry: "压力会先触碰价值感与方向感。",
-  behaviorBias: "把外部结果当成内在价值的唯一证明。",
-  shadowInertia: "越不确定方向，越容易不断向前证明自己。",
-  defenseTendency: "用结果、认可和控制维持价值感。",
-  pressureSensitiveZones: ["价值感", "方向感", "外部认可"],
-};
-
-const DEV_ACTION_FIVE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
-  motherCode: "艮",
-  motherCodeName: "艮",
-  trigram: "艮",
-  trigramSymbol: "☶",
-  fourBeast: "朱雀",
-  direction: "朱雀",
-};
-
-const DEV_BODY_AWARENESS_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
-  motherCode: "坤",
-  motherCodeName: "坤",
-  trigram: "坤",
-  trigramSymbol: "☷",
-  fourBeast: "白虎",
-  direction: "白虎",
-};
-
-const DEV_EMOTION_CHANGE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
-  motherCode: "兑",
-  motherCodeName: "兑",
-  trigram: "兑",
-  trigramSymbol: "☱",
-  fourBeast: "玄武",
-  direction: "玄武",
-};
-
-const DEV_THOUGHT_CHANGE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
-  motherCode: "坎",
-  motherCodeName: "坎",
-  trigram: "坎",
-  trigramSymbol: "☵",
-  fourBeast: "青龙",
-  direction: "青龙",
-};
-
-const DEV_MEMORY_WISDOM_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
-  motherCode: "坎",
-  motherCodeName: "坎",
-  trigram: "坎",
-  trigramSymbol: "☵",
-  fourBeast: "玄武",
-  direction: "玄武",
-};
-
-const DEV_MOTIVATION_DRIVE_PERSONA_OUTPUT: StoredPersonaOutputSnapshot = {
-  motherCode: "震",
-  motherCodeName: "震",
-  trigram: "震",
-  trigramSymbol: "☳",
-  fourBeast: "青龙",
-  direction: "青龙",
-};
-
 type PressureBeastSeed = {
   index: number;
   intensity: number;
   resonance: number;
 };
 type RuntimeCoreStar = readonly [number, number, number];
-type StoredMotherCodeProfile = Partial<MotherCodeProfile> & {
-  motherCodeName?: string;
-  motherCodeTitle?: string;
-  trigram?: string;
-  lowerTrigram?: string;
-  trigramSymbol?: string;
-  baseDrive?: string;
-};
 type StoredOriginMotherContext = {
   source?: string;
   geo?: {
@@ -339,14 +120,6 @@ type StoredOriginMotherContext = {
   };
   fourBeast?: string;
   trigram?: string;
-};
-type StoredPersonaOutputSnapshot = {
-  motherCode?: string;
-  motherCodeName?: string;
-  trigram?: string;
-  trigramSymbol?: string;
-  fourBeast?: string;
-  direction?: string;
 };
 type DynamicsInputContext = {
   selectedPressureSeedContext: SelectedPressureSeedContext | null;
@@ -432,28 +205,12 @@ function readDevPrimaryPetalFixture(): SelectedPressureSeedContext | null {
   const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
   if (!viteEnv?.DEV || typeof window === "undefined") return null;
 
-  const fixtureKey = new URLSearchParams(window.location.search).get("fixture");
+  const searchParams = new URLSearchParams(window.location.search);
+  const fixtureKey = searchParams.get("fixture");
   if (!fixtureKey) return null;
-  const experienceSmokeFixture = new URLSearchParams(window.location.search).get("__experienceSmoke");
+  const smokeFixture = resolveChangeExperienceRuntimeSmokeFixture(searchParams.get("__experienceSmoke"));
 
-  if (fixtureKey === "behavior" && experienceSmokeFixture === "action-five") {
-    return DEV_ACTION_FIVE_PRESSURE_CONTEXT;
-  }
-  if (fixtureKey === "body" && (experienceSmokeFixture === "body-awareness" || experienceSmokeFixture === "body")) {
-    return DEV_BODY_AWARENESS_PRESSURE_CONTEXT;
-  }
-  if (fixtureKey === "emotion" && (experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion")) {
-    return DEV_EMOTION_CHANGE_PRESSURE_CONTEXT;
-  }
-  if (fixtureKey === "thought" && (experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought")) {
-    return DEV_THOUGHT_CHANGE_PRESSURE_CONTEXT;
-  }
-  if (fixtureKey === "memory" && (experienceSmokeFixture === "memory-wisdom" || experienceSmokeFixture === "memory")) {
-    return DEV_MEMORY_WISDOM_PRESSURE_CONTEXT;
-  }
-  if (fixtureKey === "motivation" && (experienceSmokeFixture === "motivation-drive" || experienceSmokeFixture === "motivation")) {
-    return DEV_MOTIVATION_DRIVE_PRESSURE_CONTEXT;
-  }
+  if (smokeFixture?.fixtureKey === fixtureKey) return smokeFixture.pressureContext;
 
   return DEV_PRIMARY_PETAL_FIXTURES[fixtureKey] ?? null;
 }
@@ -466,33 +223,17 @@ function readDevExperienceSmokeFixture(): string | null {
 }
 
 function readDynamicsInputContext(): DynamicsInputContext {
-  const experienceSmokeFixture = readDevExperienceSmokeFixture();
-  const isActionFiveSmoke = experienceSmokeFixture === "action-five";
-  const isBodyAwarenessSmoke = experienceSmokeFixture === "body-awareness" || experienceSmokeFixture === "body";
-  const isEmotionChangeSmoke = experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion";
-  const isMemoryWisdomSmoke = experienceSmokeFixture === "memory-wisdom" || experienceSmokeFixture === "memory";
-  const isMotivationDriveSmoke = experienceSmokeFixture === "motivation-drive" || experienceSmokeFixture === "motivation";
-  const isThoughtChangeSmoke = experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought";
+  const smokeFixture = resolveChangeExperienceRuntimeSmokeFixture(readDevExperienceSmokeFixture());
 
   return {
     selectedPressureSeedContext:
       readDevPrimaryPetalFixture() ?? readJsonFromStorage<SelectedPressureSeedContext>("guanyao:selectedPressureSeedContext"),
     motherCodeProfile:
-      (isActionFiveSmoke ? DEV_ACTION_FIVE_MOTHER_CODE_PROFILE : null) ??
-      (isBodyAwarenessSmoke ? DEV_BODY_AWARENESS_MOTHER_CODE_PROFILE : null) ??
-      (isEmotionChangeSmoke ? DEV_EMOTION_CHANGE_MOTHER_CODE_PROFILE : null) ??
-      (isMemoryWisdomSmoke ? DEV_MEMORY_WISDOM_MOTHER_CODE_PROFILE : null) ??
-      (isMotivationDriveSmoke ? DEV_MOTIVATION_DRIVE_MOTHER_CODE_PROFILE : null) ??
-      (isThoughtChangeSmoke ? DEV_THOUGHT_CHANGE_MOTHER_CODE_PROFILE : null) ??
+      smokeFixture?.motherCodeProfile ??
       readJsonFromStorage<StoredMotherCodeProfile>("guanyao:motherCodeProfile"),
     originMotherContext: readJsonFromStorage<StoredOriginMotherContext>("guanyao:originMotherContext"),
     personaOutputSnapshot:
-      (isActionFiveSmoke ? DEV_ACTION_FIVE_PERSONA_OUTPUT : null) ??
-      (isBodyAwarenessSmoke ? DEV_BODY_AWARENESS_PERSONA_OUTPUT : null) ??
-      (isEmotionChangeSmoke ? DEV_EMOTION_CHANGE_PERSONA_OUTPUT : null) ??
-      (isMemoryWisdomSmoke ? DEV_MEMORY_WISDOM_PERSONA_OUTPUT : null) ??
-      (isMotivationDriveSmoke ? DEV_MOTIVATION_DRIVE_PERSONA_OUTPUT : null) ??
-      (isThoughtChangeSmoke ? DEV_THOUGHT_CHANGE_PERSONA_OUTPUT : null) ??
+      smokeFixture?.personaOutputSnapshot ??
       readJsonFromStorage<StoredPersonaOutputSnapshot>("guanyao:personaOutputSnapshot"),
   };
 }

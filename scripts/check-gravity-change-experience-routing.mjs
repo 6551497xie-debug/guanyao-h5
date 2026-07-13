@@ -15,6 +15,7 @@ const sourceFiles = [
   "src/services/fixtures/changeExperienceFixtures.ts",
   "src/services/changeExperiencePresentationAdapter.ts",
   "src/services/fixtures/changeExperiencePresentationFixtures.ts",
+  "src/services/fixtures/changeExperienceRuntimeSmokeFixtures.ts",
   "src/services/changeExperienceRuntimeRoutingService.ts",
 ];
 
@@ -58,12 +59,32 @@ const assertNotIncludes = (name, source, forbidden) => {
 };
 
 const routingCases = [
-  { dimension: "body", fixtureKey: "body", smoke: "body-awareness", layerLabel: "身体" },
-  { dimension: "emotion", fixtureKey: "emotion", smoke: "emotion-change", layerLabel: "情绪" },
-  { dimension: "thought", fixtureKey: "thought", smoke: "thought-change", layerLabel: "思想" },
-  { dimension: "action", fixtureKey: "behavior", smoke: "action-five", layerLabel: "行动" },
-  { dimension: "memory", fixtureKey: "memory", smoke: "memory-wisdom", layerLabel: "记忆" },
-  { dimension: "motivation", fixtureKey: "motivation", smoke: "motivation-drive", layerLabel: "动机" },
+  { dimension: "body", fixtureKey: "body", smokeKeys: ["body-awareness", "body"], layerLabel: "身体" },
+  {
+    dimension: "emotion",
+    fixtureKey: "emotion",
+    smokeKeys: ["emotion-change", "emotion"],
+    layerLabel: "情绪",
+  },
+  {
+    dimension: "thought",
+    fixtureKey: "thought",
+    smokeKeys: ["thought-change", "thought"],
+    layerLabel: "思想",
+  },
+  { dimension: "action", fixtureKey: "behavior", smokeKeys: ["action-five"], layerLabel: "行动" },
+  {
+    dimension: "memory",
+    fixtureKey: "memory",
+    smokeKeys: ["memory-wisdom", "memory"],
+    layerLabel: "记忆",
+  },
+  {
+    dimension: "motivation",
+    fixtureKey: "motivation",
+    smokeKeys: ["motivation-drive", "motivation"],
+    layerLabel: "动机",
+  },
 ];
 
 try {
@@ -72,6 +93,10 @@ try {
   const { resolveChangeExperienceRuntimeRoute } = requireFromTemp(
     "./src/services/changeExperienceRuntimeRoutingService.js",
   );
+  const {
+    changeExperienceRuntimeSmokeFixtures,
+    resolveChangeExperienceRuntimeSmokeFixture,
+  } = requireFromTemp("./src/services/fixtures/changeExperienceRuntimeSmokeFixtures.js");
 
   assertEqual("gravity change experience route count", routingCases.length, 6);
   assertEqual(
@@ -79,8 +104,17 @@ try {
     new Set(routingCases.map(({ dimension }) => dimension)).size,
     6,
   );
+  assertEqual("gravity change experience smoke fixture count", changeExperienceRuntimeSmokeFixtures.length, 6);
+  assertEqual(
+    "gravity change experience smoke fixture key uniqueness",
+    new Set(changeExperienceRuntimeSmokeFixtures.map(({ fixtureKey }) => fixtureKey)).size,
+    6,
+  );
+  const registeredSmokeKeys = changeExperienceRuntimeSmokeFixtures.flatMap(({ smokeKeys }) => smokeKeys);
+  assertEqual("gravity change experience smoke key count", registeredSmokeKeys.length, 11);
+  assertEqual("gravity change experience smoke key uniqueness", new Set(registeredSmokeKeys).size, 11);
 
-  routingCases.forEach(({ dimension, fixtureKey, smoke, layerLabel }) => {
+  routingCases.forEach(({ dimension, fixtureKey, smokeKeys, layerLabel }) => {
     const awarenessRoute = resolveChangeExperienceRuntimeRoute(
       { layerLabel, yaoName: "五爻 · 觉察" },
       null,
@@ -93,12 +127,22 @@ try {
       awarenessRoute?.unit.meaning.crystalImprint,
     );
 
-    const smokeRoute = resolveChangeExperienceRuntimeRoute(
-      { layerLabel, yaoName: "初爻 · 触发" },
-      smoke,
-    );
-    assertEqual(`${dimension} smoke route dimension`, smokeRoute?.dimension, dimension);
-    assertIncludes(`${dimension} fixture route is connected`, gravityPageSource, `fixtureKey === "${fixtureKey}"`);
+    smokeKeys.forEach((smokeKey) => {
+      const smokeRoute = resolveChangeExperienceRuntimeRoute(
+        { layerLabel, yaoName: "初爻 · 触发" },
+        smokeKey,
+      );
+      assertEqual(`${dimension} ${smokeKey} route dimension`, smokeRoute?.dimension, dimension);
+      assertEqual(
+        `${dimension} ${smokeKey} fixture key`,
+        resolveChangeExperienceRuntimeSmokeFixture(smokeKey)?.fixtureKey,
+        fixtureKey,
+      );
+    });
+    const smokeFixture = resolveChangeExperienceRuntimeSmokeFixture(smokeKeys[0]);
+    assertEqual(`${dimension} smoke pressure context is present`, Boolean(smokeFixture?.pressureContext), true);
+    assertEqual(`${dimension} smoke mother profile is present`, Boolean(smokeFixture?.motherCodeProfile), true);
+    assertEqual(`${dimension} smoke persona output is present`, Boolean(smokeFixture?.personaOutputSnapshot), true);
   });
 
   assertEqual(
@@ -116,6 +160,16 @@ try {
     "gravity consumes centralized route",
     gravityPageSource,
     "resolveChangeExperienceRuntimeRoute(singleModelRevisionAction, experienceSmokeFixture)",
+  );
+  assertIncludes(
+    "gravity consumes centralized smoke fixture",
+    gravityPageSource,
+    "resolveChangeExperienceRuntimeSmokeFixture(readDevExperienceSmokeFixture())",
+  );
+  assertNotIncludes(
+    "gravity no longer owns smoke fixture constants",
+    gravityPageSource,
+    "DEV_ACTION_FIVE_PRESSURE_CONTEXT",
   );
   assertIncludes(
     "gravity presentation marker follows routed dimension",
