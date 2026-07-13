@@ -52,6 +52,18 @@ const cardBlueprintCandidateSource = fs.readFileSync(
   path.join(rootDir, "src/services/guanyaoCardBlueprintCandidateResolver.ts"),
   "utf8",
 );
+const assetRenderCandidateSource = fs.readFileSync(
+  path.join(rootDir, "src/services/guanyaoAssetRenderCandidateResolver.ts"),
+  "utf8",
+);
+const finalAssetCandidateSource = fs.readFileSync(
+  path.join(rootDir, "src/services/guanyaoFinalAssetCandidateResolver.ts"),
+  "utf8",
+);
+const officialAssetGenerationCandidateSource = fs.readFileSync(
+  path.join(rootDir, "src/services/guanyaoOfficialAssetGenerationCandidateResolver.ts"),
+  "utf8",
+);
 const sourceFiles = [
   "src/services/guanyaoPrimaryPetalResolver.ts",
   "src/services/fixtures/primaryPetalDevFixtures.ts",
@@ -290,6 +302,36 @@ try {
   assertNotIncludes(
     "card blueprint candidate no longer depends on primary petal service",
     cardBlueprintCandidateSource,
+    "guanyaoPrimaryPetalResolver",
+  );
+  assertIncludes(
+    "asset render candidate consumes neutral primary petal type",
+    assetRenderCandidateSource,
+    'from "../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "asset render candidate no longer depends on primary petal service",
+    assetRenderCandidateSource,
+    "guanyaoPrimaryPetalResolver",
+  );
+  assertIncludes(
+    "final asset candidate consumes neutral primary petal type",
+    finalAssetCandidateSource,
+    'from "../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "final asset candidate no longer depends on primary petal service",
+    finalAssetCandidateSource,
+    "guanyaoPrimaryPetalResolver",
+  );
+  assertIncludes(
+    "official asset generation candidate consumes neutral primary petal type",
+    officialAssetGenerationCandidateSource,
+    'from "../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "official asset generation candidate no longer depends on primary petal service",
+    officialAssetGenerationCandidateSource,
     "guanyaoPrimaryPetalResolver",
   );
 

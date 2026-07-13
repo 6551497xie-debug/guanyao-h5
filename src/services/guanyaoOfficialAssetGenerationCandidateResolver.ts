@@ -1,5 +1,5 @@
 import type { FinalAssetCandidate } from "./guanyaoFinalAssetCandidateResolver";
-import type { PrimaryPetalProtocolDimension } from "./guanyaoPrimaryPetalResolver";
+import type { PrimaryPetalProtocolDimension } from "../types/primaryPetal";
 
 export type OfficialAssetGenerationCandidateReadiness = "NOT_READY" | "READY_FOR_OFFICIAL_ASSET_OBJECT";
 
