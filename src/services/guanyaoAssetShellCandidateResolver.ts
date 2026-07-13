@@ -1,5 +1,5 @@
 import type { ForceTranslationCandidate } from "./guanyaoForceTranslationCandidateResolver";
-import type { PrimaryPetalProtocolDimension } from "./guanyaoPrimaryPetalResolver";
+import type { PrimaryPetalProtocolDimension } from "../types/primaryPetal";
 
 export type AssetShellCandidateReadiness = "NOT_READY" | "READY_FOR_CARD_BLUEPRINT";
 

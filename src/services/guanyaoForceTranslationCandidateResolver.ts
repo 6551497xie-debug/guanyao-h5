@@ -1,5 +1,5 @@
 import type { HexagramAssetMappingCandidate } from "./guanyaoHexagramAssetMappingCandidateResolver";
-import type { PrimaryPetalProtocolDimension } from "./guanyaoPrimaryPetalResolver";
+import type { PrimaryPetalProtocolDimension } from "../types/primaryPetal";
 
 export type ForceTranslationCandidateReadiness = "NOT_READY" | "READY_FOR_ASSET_SHELL";
 

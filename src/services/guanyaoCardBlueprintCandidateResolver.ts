@@ -1,5 +1,5 @@
 import type { AssetShellCandidate } from "./guanyaoAssetShellCandidateResolver";
-import type { PrimaryPetalProtocolDimension } from "./guanyaoPrimaryPetalResolver";
+import type { PrimaryPetalProtocolDimension } from "../types/primaryPetal";
 
 export type CardBlueprintCandidateReadiness = "NOT_READY" | "READY_FOR_ASSET_RENDER_PROTOCOL";
 
