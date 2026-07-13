@@ -27,13 +27,11 @@ import {
   getTripleForceFrontStage,
 } from "../services/guanyaoTripleForceLandingService";
 import { getPressureSeedSceneTriplet } from "../services/guanyaoPressureSeedSceneBindingService";
-import { runGeoChronoMotherFusionEngine } from "../services/guanyaoGeoChronoMotherFusionEngine";
 import type {
   GeoChronoMotherFusionResult,
   GeoDirectionSymbol,
 } from "../types/guanyaoGeoChronoMotherFusion";
-import { resolveLunarTrigramLanding } from "../services/guanyaoLunarTrigramLandingResolver";
-import { resolveStarbeastFromBirthDate } from "../services/guanyaoStarbeastEngineService";
+import { resolveLaunchOriginMother } from "../services/guanyaoLaunchOriginMotherInputAdapter";
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
@@ -1306,39 +1304,23 @@ export function LaunchLab() {
       return `${m.coords.year}/${pad2(m.coords.month)}/${pad2(m.coords.day)} ${hourToPeriodLabel(m.coords.hour)} · ${currentProvinceName()}`;
     }
     function resolveOriginMotherCode(): GeoChronoMotherFusionResult {
-      const birthDate = {
-        year: m.coords.year,
-        month: m.coords.month,
-        day: m.coords.day,
-      };
-      const trigramLanding = resolveLunarTrigramLanding({
-        ...birthDate,
-        hourBranch: hourToPeriodLabel(m.coords.hour),
-      });
-      const starbeastDerivation = resolveStarbeastFromBirthDate(birthDate);
-
-      if (starbeastDerivation.status !== "READY") {
-        throw new Error(`STARBEAST_DERIVATION_NOT_READY:${starbeastDerivation.reason}`);
-      }
-
-      return runGeoChronoMotherFusionEngine({
-        geo: {
-          province: currentProvinceName(),
-          city: currentCityName(),
-        },
-        chrono: {
+      return resolveLaunchOriginMother({
+        birth: {
           year: m.coords.year,
           month: m.coords.month,
           day: m.coords.day,
-          periodIndex: hourToPeriodIndex(m.coords.hour),
+          hourBranch: hourToPeriodLabel(m.coords.hour),
+        },
+        periodIndex: hourToPeriodIndex(m.coords.hour),
+        geo: {
+          province: currentProvinceName(),
+          city: currentCityName(),
         },
         starbeast: {
           nodeCount: NODES.length,
           primaryNodeIndex: Math.max(0, Math.min(NODES.length - 1, Math.round((m.precisionY / 20) * (NODES.length - 1)))),
           originLightTrace: "28光兽入口",
         },
-        fourSymbol: starbeastDerivation.fourSymbol,
-        trigramLanding,
       });
     }
     function persistOriginMotherContext(reveal: GeoChronoMotherFusionResult) {

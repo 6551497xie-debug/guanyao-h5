@@ -10,8 +10,10 @@ const trigramPath = path.join(rootDir, "src/services/guanyaoLunarTrigramLandingR
 const starbeastPath = path.join(rootDir, "src/services/guanyaoStarbeastEngineService.ts");
 const visualPath = path.join(rootDir, "src/data/fourBeastTrigramVisualGrammar.ts");
 const launchPath = path.join(rootDir, "src/pages/LaunchLab.tsx");
+const adapterPath = path.join(rootDir, "src/services/guanyaoLaunchOriginMotherInputAdapter.ts");
 const fusionSource = fs.readFileSync(fusionPath, "utf8");
 const launchSource = fs.readFileSync(launchPath, "utf8");
+const adapterSource = fs.readFileSync(adapterPath, "utf8");
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "guanyao-launch-mother-chain-"));
 
 const assertEqual = (name, actual, expected) => {
@@ -62,10 +64,14 @@ try {
   const { resolveStarbeastFromBirthDate } = starbeastModule;
   const { getFourBeastTrigramVisualGrammar } = visualModule;
 
-  assertIncludes("launch consumes lunar trigram resolver", launchSource, "resolveLunarTrigramLanding");
-  assertIncludes("launch consumes birth-date starbeast resolver", launchSource, "resolveStarbeastFromBirthDate");
-  assertIncludes("launch feeds resolved trigram landing", launchSource, "trigramLanding,");
-  assertIncludes("launch feeds resolved four symbol", launchSource, "fourSymbol: starbeastDerivation.fourSymbol");
+  assertIncludes("adapter consumes lunar trigram resolver", adapterSource, "resolveLunarTrigramLanding");
+  assertIncludes("adapter consumes birth-date starbeast resolver", adapterSource, "resolveStarbeastFromBirthDate");
+  assertIncludes("adapter feeds resolved trigram landing", adapterSource, "trigramLanding,");
+  assertIncludes("adapter feeds resolved four symbol", adapterSource, "fourSymbol: starbeastDerivation.fourSymbol");
+  assertIncludes("launch delegates origin mother resolution", launchSource, "resolveLaunchOriginMother({");
+  assertExcludes("launch no longer calls lunar trigram resolver", launchSource, "resolveLunarTrigramLanding");
+  assertExcludes("launch no longer calls starbeast resolver", launchSource, "resolveStarbeastFromBirthDate");
+  assertExcludes("launch no longer calls fusion engine", launchSource, "runGeoChronoMotherFusionEngine");
   assertIncludes("fusion reads resolved trigram", fusionSource, "input.trigramLanding.fieldMapping.trigram");
   assertIncludes("fusion reads resolved four symbol", fusionSource, "const symbol = input.fourSymbol");
   assertExcludes("fusion no longer derives beast from geography", fusionSource, "resolveGeoSymbol");
