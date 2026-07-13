@@ -52,10 +52,14 @@ const bundleAndImport = async (entryPath, outputName) => {
 };
 
 const storage = new Map();
+let rejectWrites = false;
 globalThis.window = {
   localStorage: {
     getItem: (key) => storage.get(key) ?? null,
-    setItem: (key, value) => storage.set(key, String(value)),
+    setItem: (key, value) => {
+      if (rejectWrites) throw new Error("storage write rejected");
+      storage.set(key, String(value));
+    },
   },
 };
 
@@ -144,6 +148,53 @@ try {
     "GUANYAO_PERSONA_SNAPSHOT_V2",
   );
 
+  rejectWrites = true;
+  const rejectedAdapterWrite = writePersonaOutputSnapshot({
+    motherCode: "坎",
+    trigram: "坎",
+    starbeast: { fourSymbol: "玄武" },
+  });
+  rejectWrites = false;
+  assertEqual(
+    "rejected adapter write preserves formal snapshot",
+    rejectedAdapterWrite.starbeast.fourSymbol,
+    "玄武",
+  );
+  assertEqual(
+    "rejected adapter write preserves schema version",
+    rejectedAdapterWrite.schemaVersion,
+    GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION,
+  );
+  assertEqual(
+    "rejected adapter write preserves snapshot immutability",
+    Object.isFrozen(rejectedAdapterWrite),
+    true,
+  );
+  assertEqual(
+    "rejected adapter write does not replace persisted snapshot",
+    JSON.parse(storage.get("guanyao:personaOutputSnapshot")).trigram,
+    "兑",
+  );
+
+  const availableWindow = globalThis.window;
+  globalThis.window = {};
+  const unavailableStorageSnapshot = writePersonaOutputSnapshot({
+    motherCode: "离",
+    trigram: "离",
+    starbeast: { fourSymbol: "朱雀" },
+  });
+  globalThis.window = availableWindow;
+  assertEqual(
+    "unavailable storage preserves formal snapshot",
+    unavailableStorageSnapshot.starbeast.fourSymbol,
+    "朱雀",
+  );
+  assertEqual(
+    "unavailable storage preserves snapshot immutability",
+    Object.isFrozen(unavailableStorageSnapshot),
+    true,
+  );
+
   const generationInput = {
     chrono: { year: 1995, month: 6, day: 2, hour: "酉时" },
     geo: { province: "广东", city: "广州" },
@@ -170,6 +221,27 @@ try {
     JSON.parse(storage.get("guanyao:personaOutputSnapshot")).schemaVersion,
     "GUANYAO_PERSONA_SNAPSHOT_V2",
   );
+
+  storage.clear();
+  rejectWrites = true;
+  const rejectedDeterministicWrite = writePersonaOutputSnapshotFromDeterministicEngine(result);
+  rejectWrites = false;
+  assertEqual(
+    "rejected deterministic write preserves formal fourSymbol",
+    rejectedDeterministicWrite.starbeast.fourSymbol,
+    result.direction,
+  );
+  assertEqual(
+    "rejected deterministic write preserves schema version",
+    rejectedDeterministicWrite.schemaVersion,
+    GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION,
+  );
+  assertEqual(
+    "rejected deterministic write preserves snapshot immutability",
+    Object.isFrozen(rejectedDeterministicWrite),
+    true,
+  );
+  assertEqual("rejected deterministic write leaves storage empty", storage.size, 0);
 
   const storedTypeBlock = sources.runtimeTypes.slice(
     sources.runtimeTypes.indexOf("export type StoredPersonaOutputSnapshot"),

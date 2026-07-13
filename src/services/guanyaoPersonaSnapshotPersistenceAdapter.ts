@@ -25,10 +25,14 @@ export function writePersonaOutputSnapshot<T extends object>(
   }) as VersionedPersonaOutputSnapshot<T>;
 
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(
-      GUANYAO_PERSONA_SNAPSHOT_STORAGE_KEY,
-      JSON.stringify(versionedSnapshot),
-    );
+    try {
+      window.localStorage.setItem(
+        GUANYAO_PERSONA_SNAPSHOT_STORAGE_KEY,
+        JSON.stringify(versionedSnapshot),
+      );
+    } catch {
+      // Persistence is optional; the formal persona snapshot remains available.
+    }
   }
 
   return versionedSnapshot;
