@@ -1,5 +1,5 @@
 import type { UiComponentCandidate } from "./guanyaoUiComponentCandidateResolver";
-import type { PrimaryPetalProtocolDimension } from "./guanyaoPrimaryPetalResolver";
+import type { PrimaryPetalProtocolDimension } from "../types/primaryPetal";
 
 export type ComponentImplementationCandidateReadiness = "NOT_READY" | "READY_FOR_SAFE_COMPONENT_STUB_PROTOCOL";
 

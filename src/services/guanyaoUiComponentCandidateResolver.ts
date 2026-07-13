@@ -1,5 +1,5 @@
 import type { AssetCardUiCandidate } from "./guanyaoAssetCardUiCandidateResolver";
-import type { PrimaryPetalProtocolDimension } from "./guanyaoPrimaryPetalResolver";
+import type { PrimaryPetalProtocolDimension } from "../types/primaryPetal";
 
 export type UiComponentCandidateReadiness = "NOT_READY" | "READY_FOR_COMPONENT_IMPLEMENTATION_PROTOCOL";
 

@@ -76,10 +76,29 @@ const assetCardUiCandidateSource = fs.readFileSync(
   path.join(rootDir, "src/services/guanyaoAssetCardUiCandidateResolver.ts"),
   "utf8",
 );
+const uiComponentCandidateSource = fs.readFileSync(
+  path.join(rootDir, "src/services/guanyaoUiComponentCandidateResolver.ts"),
+  "utf8",
+);
+const componentImplementationCandidateSource = fs.readFileSync(
+  path.join(rootDir, "src/services/guanyaoComponentImplementationCandidateResolver.ts"),
+  "utf8",
+);
+const safeComponentStubCandidateSource = fs.readFileSync(
+  path.join(rootDir, "src/services/guanyaoSafeComponentStubCandidateResolver.ts"),
+  "utf8",
+);
 const sourceFiles = [
   "src/services/guanyaoPrimaryPetalResolver.ts",
   "src/services/fixtures/primaryPetalDevFixtures.ts",
 ];
+
+const collectSourcePaths = (directoryPath) =>
+  fs.readdirSync(directoryPath, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = path.join(directoryPath, entry.name);
+    if (entry.isDirectory()) return collectSourcePaths(entryPath);
+    return /\.(?:ts|tsx)$/.test(entry.name) ? [entryPath] : [];
+  });
 
 const transpileToTemp = (sourcePath) => {
   const source = fs.readFileSync(path.join(rootDir, sourcePath), "utf8");
@@ -375,6 +394,49 @@ try {
     "asset card ui candidate no longer depends on primary petal service",
     assetCardUiCandidateSource,
     "guanyaoPrimaryPetalResolver",
+  );
+  assertIncludes(
+    "ui component candidate consumes neutral primary petal type",
+    uiComponentCandidateSource,
+    'from "../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "ui component candidate no longer depends on primary petal service",
+    uiComponentCandidateSource,
+    "guanyaoPrimaryPetalResolver",
+  );
+  assertIncludes(
+    "component implementation candidate consumes neutral primary petal type",
+    componentImplementationCandidateSource,
+    'from "../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "component implementation candidate no longer depends on primary petal service",
+    componentImplementationCandidateSource,
+    "guanyaoPrimaryPetalResolver",
+  );
+  assertIncludes(
+    "safe component stub candidate consumes neutral primary petal type",
+    safeComponentStubCandidateSource,
+    'from "../types/primaryPetal"',
+  );
+  assertNotIncludes(
+    "safe component stub candidate no longer depends on primary petal service",
+    safeComponentStubCandidateSource,
+    "guanyaoPrimaryPetalResolver",
+  );
+
+  const primaryPetalRuntimeConsumers = collectSourcePaths(path.join(rootDir, "src"))
+    .filter((sourcePath) => fs.readFileSync(sourcePath, "utf8").includes("guanyaoPrimaryPetalResolver"))
+    .map((sourcePath) => path.relative(rootDir, sourcePath))
+    .sort();
+  assertEqual(
+    "primary petal service is limited to runtime consumers",
+    primaryPetalRuntimeConsumers.join(","),
+    [
+      "src/runtime/guanyaoRuntimeEngine.ts",
+      "src/services/guanyaoHexagramAssetCandidateResolver.ts",
+    ].join(","),
   );
 
   console.log(`\n[PRIMARY PETAL RESOLVER] PASS: ${fixtures.length}/${fixtures.length} fixture(s) matched.`);
