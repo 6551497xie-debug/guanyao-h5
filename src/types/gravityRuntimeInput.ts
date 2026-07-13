@@ -22,17 +22,23 @@ export type StoredPersonaOutputSnapshot = {
 export type StoredOriginMotherContext = {
   source?: string;
   geo?: {
-    symbol?: string;
     province?: string;
+    city?: string;
+    role?: string;
   };
   chrono?: {
     lockPoint?: string;
+  };
+  starbeast?: {
+    fourSymbol?: string;
+    primaryNode?: string;
+    originLightTrace?: string;
+    role?: string;
   };
   mother?: {
     trigram?: string;
     profile?: StoredMotherCodeProfile;
   };
-  fourBeast?: string;
   trigram?: string;
 };
 

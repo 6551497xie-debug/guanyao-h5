@@ -1345,7 +1345,6 @@ export function LaunchLab() {
         starbeast: reveal.starbeast,
         mother_seed: reveal.mother_seed,
         mother: reveal.mother,
-        fourBeast: reveal.starbeast.fourSymbol,
         trigram,
       };
       const personaOutputSnapshot = {

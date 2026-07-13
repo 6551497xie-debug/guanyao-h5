@@ -35,6 +35,7 @@ import {
   resolveChangeExperienceRuntimeSmokeRevisionAction,
 } from "../services/fixtures/changeExperienceRuntimeSmokeFixtures";
 import { resolvePrimaryPetalDevFixture } from "../services/fixtures/primaryPetalDevFixtures";
+import { resolveStoredMotherFourSymbol } from "../services/guanyaoStoredMotherContextAdapter";
 import type {
   CurrentHexagramProfile,
   MotherCodeProfile,
@@ -209,11 +210,7 @@ function resolveMotherPersonaSnapshot(input: DynamicsInputContext) {
     input.originMotherContext?.mother?.trigram ??
     input.originMotherContext?.trigram ??
     input.personaOutputSnapshot?.trigram;
-  const fourSymbol =
-    input.originMotherContext?.fourBeast ??
-    input.originMotherContext?.geo?.symbol ??
-    input.personaOutputSnapshot?.fourBeast ??
-    input.personaOutputSnapshot?.direction;
+  const fourSymbol = resolveStoredMotherFourSymbol(input);
 
   if (!motherCode && !trigram && !fourSymbol) return null;
 
