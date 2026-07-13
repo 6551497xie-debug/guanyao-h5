@@ -18,7 +18,7 @@ export const PERSONA_GENERATION_TRIGGER_STATE = {
   IDLE: "idle",
   TRIGGERED: "triggered",
   GENERATING: "generating",
-  WRITTEN: "written",
+  SNAPSHOT_FINALIZED: "snapshot_finalized",
   READY_FOR_READ: "ready_for_read",
 } as const;
 
@@ -32,8 +32,8 @@ export async function triggerPersonaGeneration(input: PersonaGenerationInput): P
   state = PERSONA_GENERATION_TRIGGER_STATE.GENERATING;
   const result = generatePersona(input);
 
-  state = PERSONA_GENERATION_TRIGGER_STATE.WRITTEN;
   const snapshot = writePersonaOutputSnapshotFromDeterministicEngine(result);
+  state = PERSONA_GENERATION_TRIGGER_STATE.SNAPSHOT_FINALIZED;
 
   state = PERSONA_GENERATION_TRIGGER_STATE.READY_FOR_READ;
   void state;

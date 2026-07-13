@@ -10,6 +10,7 @@ const paths = {
   adapter: path.join(rootDir, "src/services/guanyaoStoredMotherContextAdapter.ts"),
   cache: path.join(rootDir, "src/services/guanyaoPersonaSnapshotCache.ts"),
   engine: path.join(rootDir, "src/services/guanyaoDeterministicPersonaEngine.ts"),
+  trigger: path.join(rootDir, "src/services/guanyaoPersonaGenerationTrigger.ts"),
   persistence: path.join(rootDir, "src/services/guanyaoPersonaSnapshotPersistenceAdapter.ts"),
   runtimeTypes: path.join(rootDir, "src/types/gravityRuntimeInput.ts"),
   launch: path.join(rootDir, "src/pages/LaunchLab.tsx"),
@@ -64,10 +65,11 @@ globalThis.window = {
 };
 
 try {
-  const [adapterModule, cacheModule, engineModule, persistenceModule] = await Promise.all([
+  const [adapterModule, cacheModule, engineModule, triggerModule, persistenceModule] = await Promise.all([
     bundleAndImport(paths.adapter, "adapter.mjs"),
     bundleAndImport(paths.cache, "cache.mjs"),
     bundleAndImport(paths.engine, "engine.mjs"),
+    bundleAndImport(paths.trigger, "trigger.mjs"),
     bundleAndImport(paths.persistence, "persistence.mjs"),
   ]);
   const { resolveStoredMotherFourSymbol } = adapterModule;
@@ -77,6 +79,7 @@ try {
     generatePersona,
     writePersonaOutputSnapshotFromDeterministicEngine,
   } = engineModule;
+  const { PERSONA_GENERATION_TRIGGER_STATE, triggerPersonaGeneration } = triggerModule;
   const {
     GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION,
     readPersistedPersonaOutputSnapshot,
@@ -243,6 +246,32 @@ try {
   );
   assertEqual("rejected deterministic write leaves storage empty", storage.size, 0);
 
+  assertEqual(
+    "trigger state names snapshot completion without claiming persistence",
+    PERSONA_GENERATION_TRIGGER_STATE.SNAPSHOT_FINALIZED,
+    "snapshot_finalized",
+  );
+  assertEqual(
+    "trigger state removes written success claim",
+    "WRITTEN" in PERSONA_GENERATION_TRIGGER_STATE,
+    false,
+  );
+  storage.clear();
+  rejectWrites = true;
+  const rejectedTriggerWrite = await triggerPersonaGeneration(generationInput);
+  rejectWrites = false;
+  assertEqual(
+    "rejected trigger write preserves formal snapshot",
+    rejectedTriggerWrite.starbeast.fourSymbol,
+    result.direction,
+  );
+  assertEqual(
+    "rejected trigger write preserves schema version",
+    rejectedTriggerWrite.schemaVersion,
+    GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION,
+  );
+  assertEqual("rejected trigger write leaves storage empty", storage.size, 0);
+
   const storedTypeBlock = sources.runtimeTypes.slice(
     sources.runtimeTypes.indexOf("export type StoredPersonaOutputSnapshot"),
     sources.runtimeTypes.indexOf("export type StoredOriginMotherContext"),
@@ -254,6 +283,9 @@ try {
   const engineSnapshotTypeBlock = sources.engine.slice(
     sources.engine.indexOf("export type PersonaOutputSnapshot"),
     sources.engine.indexOf("export const PERSONA_ENGINE_STATE"),
+  );
+  const triggerFunctionBlock = sources.trigger.slice(
+    sources.trigger.indexOf("export async function triggerPersonaGeneration"),
   );
   assertIncludes("formal stored persona type owns starbeast", storedTypeBlock, "starbeast?: {");
   assertIncludes("stored persona type recognizes schema version", storedTypeBlock, 'schemaVersion?: "GUANYAO_PERSONA_SNAPSHOT_V2"');
@@ -271,6 +303,12 @@ try {
   assertExcludes("deterministic snapshot type excludes direction", engineSnapshotTypeBlock, "direction: Direction;");
   assertIncludes("deterministic writer delegates persona persistence", sources.engine, "writePersonaOutputSnapshot(snapshot)");
   assertExcludes("deterministic engine does not own persona storage key", sources.engine, "guanyao:personaOutputSnapshot");
+  assertIncludes(
+    "trigger finalizes snapshot after deterministic writer returns",
+    triggerFunctionBlock,
+    "const snapshot = writePersonaOutputSnapshotFromDeterministicEngine(result);\n  state = PERSONA_GENERATION_TRIGGER_STATE.SNAPSHOT_FINALIZED;",
+  );
+  assertExcludes("trigger does not claim snapshot was persisted", sources.trigger, "WRITTEN");
   assertIncludes("persistence adapter owns persona storage key", sources.persistence, 'GUANYAO_PERSONA_SNAPSHOT_STORAGE_KEY = "guanyao:personaOutputSnapshot"');
   assertIncludes("persistence adapter owns schema version", sources.persistence, 'GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION = "GUANYAO_PERSONA_SNAPSHOT_V2"');
   assertExcludes("MotherLab cache does not own persona storage key", sources.cache, "guanyao:personaOutputSnapshot");
