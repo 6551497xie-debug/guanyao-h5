@@ -3,6 +3,7 @@
  * without any influence on engine or data flow.
  */
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useLocation } from "react-router-dom";
 import { GuanyaoText } from "../components/visual/GuanyaoText";
 import {
   runCosmicBotanicsRuntimeEngine,
@@ -58,6 +59,7 @@ import {
 } from "../runtime/guanyaoRuntimeEngine";
 import type { ChangeExperiencePresentation } from "../types/changeExperience";
 import type {
+  DynamicsHandoffState,
   DynamicsInputContext,
   StoredMotherCodeProfile,
   StoredOriginMotherContext,
@@ -158,12 +160,13 @@ function readDevExperienceSmokeFixture(): string | null {
   return new URLSearchParams(window.location.search).get("__experienceSmoke");
 }
 
-function readDynamicsInputContext(): DynamicsInputContext {
+function readDynamicsInputContext(handoffState?: DynamicsHandoffState | null): DynamicsInputContext {
   const smokeFixture = resolveChangeExperienceRuntimeSmokeFixture(readDevExperienceSmokeFixture());
 
   return {
     selectedPressureSeedContext:
       readDevPrimaryPetalFixture() ??
+      handoffState?.selectedPressureSeedContext ??
       readPersistedSelectedPressureSeedContext() as StoredSelectedPressureSeedContext | null,
     motherCodeProfile:
       smokeFixture?.motherCodeProfile ??
@@ -2679,9 +2682,11 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
 }
 
 function HexagramCodeDeliveryShell() {
-  const [dynamicsInputContext] = useState<DynamicsInputContext>(() => readDynamicsInputContext());
+  const location = useLocation();
+  const handoffState = location.state as DynamicsHandoffState | null;
+  const [dynamicsInputContext] = useState<DynamicsInputContext>(() => readDynamicsInputContext(handoffState));
   const [activeCurrentHexagramContext] = useState<ActiveCurrentHexagramContext | null>(() =>
-    resolveActiveCurrentHexagramContext(readDynamicsInputContext()),
+    resolveActiveCurrentHexagramContext(dynamicsInputContext),
   );
   const [executionSnapshot, setExecutionSnapshot] = useState<ExecutionSnapshot>(() =>
     GuanyaoRuntimeEngine.createSnapshot(dynamicsInputContext.selectedPressureSeedContext),

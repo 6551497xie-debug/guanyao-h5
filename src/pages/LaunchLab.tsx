@@ -25,6 +25,7 @@ import { buildSelectedPressureSeedContext } from "../services/guanyaoPressureSee
 import { getPressureSeedSceneTriplet } from "../services/guanyaoPressureSeedSceneBindingService";
 import type { GeoChronoMotherFusionResult } from "../types/guanyaoGeoChronoMotherFusion";
 import type { FourSymbol } from "../types/guanyaoStarbeast";
+import type { DynamicsHandoffState } from "../types/gravityRuntimeInput";
 import { resolveLaunchOriginMother } from "../services/guanyaoLaunchOriginMotherInputAdapter";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
@@ -943,11 +944,14 @@ export function LaunchLab() {
 
       const selectedPressureSeedContext = buildSelectedPressureSeedContext(candidate.seed);
 
-      writeSelectedPressureSeedContext(selectedPressureSeedContext);
+      const selectedPressureSeedHandoff = writeSelectedPressureSeedContext(selectedPressureSeedContext);
+      const dynamicsHandoffState: DynamicsHandoffState = {
+        selectedPressureSeedContext: selectedPressureSeedHandoff,
+      };
 
       setLaunchInteractionState("SNAPSHOT_GENERATED");
       setLaunchInteractionState("DYNAMICS_HANDOFF");
-      navigate(GUANYAO_ROUTES.dynamics);
+      navigate(GUANYAO_ROUTES.dynamics, { state: dynamicsHandoffState });
     },
     [navigate, setLaunchInteractionState],
   );

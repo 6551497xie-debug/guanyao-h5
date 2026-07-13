@@ -27,10 +27,14 @@ export function writeSelectedPressureSeedContext<T extends object>(
   }) as VersionedSelectedPressureSeedContext<T>;
 
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(
-      GUANYAO_SELECTED_PRESSURE_SEED_CONTEXT_STORAGE_KEY,
-      JSON.stringify(versionedContext),
-    );
+    try {
+      window.localStorage.setItem(
+        GUANYAO_SELECTED_PRESSURE_SEED_CONTEXT_STORAGE_KEY,
+        JSON.stringify(versionedContext),
+      );
+    } catch {
+      // Route handoff remains available when persistence is unavailable.
+    }
   }
 
   return versionedContext;

@@ -14,6 +14,7 @@ import { buildSelectedPressureSeedContext } from "../services/guanyaoPressureSee
 import { writeSelectedPressureSeedContext } from "../services/guanyaoSelectedPressureSeedContextPersistenceAdapter";
 import type { GuanyaoSession, IdentityFragment, IdentityLifeStageId, SceneSeed } from "../types";
 import type { GuanyaoAgeSegment, GuanyaoPressureSeed } from "../types/guanyaoPressureSeed";
+import type { DynamicsHandoffState } from "../types/gravityRuntimeInput";
 
 const yuanCodeKeys: IdentityFragment["yuanCodeKey"][] = ["qian", "kun", "zhen", "xun", "kan", "li", "gen", "dui"];
 
@@ -100,10 +101,13 @@ export function ScenePage() {
     const selectedPressureSeedContext = buildSelectedPressureSeedContext(candidate.seed);
     const legacySceneSeed = toLegacySceneSeed(candidate.seed, latestSession, candidate.seedIndex);
 
-    writeSelectedPressureSeedContext(selectedPressureSeedContext);
+    const selectedPressureSeedHandoff = writeSelectedPressureSeedContext(selectedPressureSeedContext);
+    const dynamicsHandoffState: DynamicsHandoffState = {
+      selectedPressureSeedContext: selectedPressureSeedHandoff,
+    };
     setSelectedSceneSeed(legacySceneSeed);
     setMotherCodeResult(buildMotherCodeResult(getSession()));
-    navigate(GUANYAO_ROUTES.dynamics);
+    navigate(GUANYAO_ROUTES.dynamics, { state: dynamicsHandoffState });
   }
 
   return <PressureSeedCrossAxisPage ageSegment={pressureSeedAgeSegment} onComplete={commitPressureSeed} />;

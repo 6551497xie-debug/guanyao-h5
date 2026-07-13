@@ -5,6 +5,10 @@ export type StoredSelectedPressureSeedContext = SelectedPressureSeedContext & {
   schemaVersion?: "GUANYAO_SELECTED_PRESSURE_SEED_CONTEXT_V2";
 };
 
+export type DynamicsHandoffState = Readonly<{
+  selectedPressureSeedContext?: StoredSelectedPressureSeedContext | null;
+}>;
+
 export type StoredMotherCodeProfile = Partial<MotherCodeProfile> & {
   schemaVersion?: "GUANYAO_MOTHER_CODE_PROFILE_V2";
   motherCodeName?: string;

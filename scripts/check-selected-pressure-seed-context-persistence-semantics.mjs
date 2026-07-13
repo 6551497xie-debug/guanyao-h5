@@ -40,10 +40,14 @@ const assertExcludes = (name, source, forbidden) => {
 };
 
 const storage = new Map();
+let rejectWrites = false;
 globalThis.window = {
   localStorage: {
     getItem: (key) => storage.get(key) ?? null,
-    setItem: (key, value) => storage.set(key, value),
+    setItem: (key, value) => {
+      if (rejectWrites) throw new Error("storage write rejected");
+      storage.set(key, value);
+    },
   },
 };
 
@@ -90,10 +94,65 @@ try {
     "GUANYAO_SELECTED_PRESSURE_SEED_CONTEXT_V2",
   );
 
+  rejectWrites = true;
+  const rejectedWriteContext = writeSelectedPressureSeedContext({
+    selectedPressureSeedId: "route-seed",
+    pressureField: "关系压力",
+  });
+  rejectWrites = false;
+  assertEqual(
+    "rejected storage write preserves handoff context",
+    rejectedWriteContext.selectedPressureSeedId,
+    "route-seed",
+  );
+  assertEqual(
+    "rejected storage write preserves schema version",
+    rejectedWriteContext.schemaVersion,
+    GUANYAO_SELECTED_PRESSURE_SEED_CONTEXT_SCHEMA_VERSION,
+  );
+  assertEqual(
+    "rejected storage write preserves context immutability",
+    Object.isFrozen(rejectedWriteContext),
+    true,
+  );
+  assertEqual(
+    "rejected storage write does not replace persisted context",
+    JSON.parse(storage.get("guanyao:selectedPressureSeedContext")).selectedPressureSeedId,
+    "current-seed",
+  );
+
+  const availableWindow = globalThis.window;
+  globalThis.window = {};
+  const unavailableStorageContext = writeSelectedPressureSeedContext({
+    selectedPressureSeedId: "route-only-seed",
+    pressureField: "行动受阻",
+  });
+  globalThis.window = availableWindow;
+  assertEqual(
+    "unavailable storage preserves handoff context",
+    unavailableStorageContext.selectedPressureSeedId,
+    "route-only-seed",
+  );
+  assertEqual(
+    "unavailable storage preserves context immutability",
+    Object.isFrozen(unavailableStorageContext),
+    true,
+  );
+
+  const gravityInputBlock = sources.gravity.slice(
+    sources.gravity.indexOf("function readDynamicsInputContext"),
+    sources.gravity.indexOf("function resolveMotherCodeName"),
+  );
+
   assertIncludes(
     "stored context type recognizes schema version",
     sources.runtimeTypes,
     'schemaVersion?: "GUANYAO_SELECTED_PRESSURE_SEED_CONTEXT_V2"',
+  );
+  assertIncludes(
+    "runtime input owns typed dynamics handoff state",
+    sources.runtimeTypes,
+    "export type DynamicsHandoffState",
   );
   assertExcludes(
     "domain pressure context stays persistence-neutral",
@@ -101,6 +160,11 @@ try {
     "GUANYAO_SELECTED_PRESSURE_SEED_CONTEXT_V2",
   );
   assertIncludes("Launch delegates context persistence", sources.launch, "writeSelectedPressureSeedContext(selectedPressureSeedContext)");
+  assertIncludes(
+    "Launch hands formal pressure context to Dynamics route",
+    sources.launch,
+    "navigate(GUANYAO_ROUTES.dynamics, { state: dynamicsHandoffState })",
+  );
   assertExcludes("Launch does not own context storage key", sources.launch, "guanyao:selectedPressureSeedContext");
   assertExcludes("Launch does not persist orphaned triple force result", sources.launch, "guanyao:tripleForceLandingResult");
   assertExcludes("Launch does not persist orphaned triple force front stage", sources.launch, "guanyao:tripleForceFrontStage");
@@ -109,6 +173,11 @@ try {
   assertExcludes("Launch does not persist legacy pressure slice id mirror", sources.launch, "guanyao:selectedPressureSliceId");
   assertExcludes("Launch does not persist legacy pressure slice text mirror", sources.launch, "guanyao:selectedPressureSliceText");
   assertIncludes("Scene delegates context persistence", sources.scene, "writeSelectedPressureSeedContext(selectedPressureSeedContext)");
+  assertIncludes(
+    "Scene hands formal pressure context to Dynamics route",
+    sources.scene,
+    "navigate(GUANYAO_ROUTES.dynamics, { state: dynamicsHandoffState })",
+  );
   assertExcludes("Scene does not own context storage key", sources.scene, "guanyao:selectedPressureSeedContext");
   assertExcludes("Scene does not persist orphaned triple force result", sources.scene, "guanyao:tripleForceLandingResult");
   assertExcludes("Scene does not persist orphaned triple force front stage", sources.scene, "guanyao:tripleForceFrontStage");
@@ -119,6 +188,22 @@ try {
   assertExcludes("Mother field does not persist orphaned pressure seed packet", sources.motherField, "guanyao:pressureSeedPacket");
   assertExcludes("Mother field does not own orphaned pressure seed packet type", sources.motherField, "PressureSeedPacket");
   assertIncludes("Gravity delegates context reading", sources.gravity, "readPersistedSelectedPressureSeedContext()");
+  assertIncludes(
+    "Gravity reads typed Dynamics route state",
+    sources.gravity,
+    "location.state as DynamicsHandoffState | null",
+  );
+  assertIncludes(
+    "Gravity prioritizes route pressure context",
+    sources.gravity,
+    "handoffState?.selectedPressureSeedContext ??",
+  );
+  assertEqual(
+    "Gravity route pressure context precedes persistence fallback",
+    gravityInputBlock.indexOf("handoffState?.selectedPressureSeedContext ??") <
+      gravityInputBlock.indexOf("readPersistedSelectedPressureSeedContext()"),
+    true,
+  );
   assertExcludes("Gravity does not own context storage key", sources.gravity, "guanyao:selectedPressureSeedContext");
   assertIncludes("R8 delegates context reading", sources.r8, "readPersistedSelectedPressureSeedContext()");
   assertExcludes("R8 does not own context storage key", sources.r8, "guanyao:selectedPressureSeedContext");
