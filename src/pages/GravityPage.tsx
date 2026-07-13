@@ -15,10 +15,10 @@ import {
   buildPressureField,
   formCurrentHexagramProfile,
 } from "../services/guanyaoCausalEngineService";
-import { adaptCrystalState } from "../services/crystalEndStateAdapterService";
-import { mapCrystalState } from "../services/crystalMappingService";
-import { formHexagramCrystalResult } from "../services/hexagramCrystalEngineService";
-import { consumeHexagramCrystalResult } from "../services/hexagramCrystalResultConsumptionService";
+import {
+  resolveRuntimeCurrentCrystalEndState,
+  type RuntimeCurrentCrystalEndState as CurrentCrystalEndState,
+} from "../services/hexagramCrystalRuntimeEndpointService";
 import { formRuntimePersonaMigrationImpact } from "../services/personaMigrationImpactRuntimeService";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
 import {
@@ -54,7 +54,7 @@ import {
   type SpatialIntent,
 } from "../runtime/guanyaoRuntimeEngine";
 import type { ChangeExperiencePresentation, ChangeExperienceUnit } from "../types/changeExperience";
-import type { CrystalState, PersonaDimension, PersonaMigrationImpact, PersonaYaoStage } from "../types/personaTransmission";
+import type { PersonaDimension, PersonaMigrationImpact, PersonaYaoStage } from "../types/personaTransmission";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
 
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
@@ -261,35 +261,6 @@ type ActiveCurrentHexagramContext = {
     surface?: string;
   };
   currentHexagramProfile: CurrentHexagramProfile;
-};
-type CurrentCrystalEndState = {
-  source: "dynamics";
-  status: "CRYSTALLIZED";
-  createdAt: string;
-  mother: {
-    motherCodeName: string;
-    lowerTrigram: string;
-  };
-  pressure: {
-    selectedPressureSeedId?: string;
-    surface?: string;
-    pressureField?: string;
-  };
-  hexagram: {
-    lowerTrigram: string;
-    upperTrigram: string;
-    hexagramCode?: string;
-    hexagramName?: string;
-    hexagramTitle?: string;
-  };
-  transmission: {
-    completedNodeCount: 6;
-    primaryDimension?: string;
-  };
-  crystal: {
-    title: "本局结晶";
-    copy: string;
-  };
 };
 type SingleModelRevisionAction = {
   layerLabel: string;
@@ -689,100 +660,15 @@ function resolveCurrentCrystalEndState({
   readyToCrystallize: boolean;
   migrationImpact?: PersonaMigrationImpact | null;
 }): CurrentCrystalEndState | null {
-  if (!currentHexagramProfile || !readyToCrystallize || completedNodeCount < 6 || !migrationImpact) return null;
-
-  const crystalMappingResult = mapCrystalState({
-    structureSource: {
-      source: "currentHexagramProfile",
-      currentHexagramProfile,
-    },
-    migrationImpacts: [migrationImpact],
-    source: "runtime",
+  return resolveRuntimeCurrentCrystalEndState({
+    currentHexagramProfile,
+    motherCodeName,
+    selectedPressureSeedContext,
+    completedNodeCount,
+    primaryDimension,
+    readyToCrystallize,
+    migrationImpact,
   });
-
-  if (crystalMappingResult.status !== "PASS") return null;
-
-  const endStateAdapterResult = adaptCrystalState({
-    crystalState: crystalMappingResult.crystalState,
-    source: "runtime",
-  });
-
-  if (endStateAdapterResult.status !== "READY") return null;
-
-  const crystalState: CrystalState = endStateAdapterResult.crystalState;
-  const sourceHexagram = crystalState.structureSource?.currentHexagramProfile;
-  const dominantImpact = crystalState.dominantImpact;
-  if (!sourceHexagram || !dominantImpact) return null;
-
-  const hexagramCrystalResult = formHexagramCrystalResult({
-    sourceHexagram: {
-      lowerTrigram: sourceHexagram.lowerTrigram,
-      upperTrigram: sourceHexagram.upperTrigram,
-      hexagramCode: sourceHexagram.hexagramCode,
-      hexagramName: sourceHexagram.hexagramName,
-      hexagramTitle: sourceHexagram.hexagramTitle,
-    },
-    crystalMeaning: crystalState.crystalMeaning,
-    migrationTrace: {
-      traceLine: dominantImpact.crystalImprint.imprintLine,
-      sourceUnitId: dominantImpact.sourceUnit.unitId,
-      dimension: dominantImpact.dimension,
-      yaoStage: dominantImpact.yaoStage,
-    },
-    dominantShift: {
-      fromModel: dominantImpact.fromModel,
-      toResponse: dominantImpact.toResponse,
-      deflectionVector: dominantImpact.deflectionVector,
-    },
-    changedLineContext: {
-      sourceUnitId: dominantImpact.sourceUnit.unitId,
-      dimension: dominantImpact.dimension,
-      yaoStage: dominantImpact.yaoStage,
-      changedLineHint: dominantImpact.crystalImprint.imprintLine,
-    },
-    source: "runtime",
-  });
-
-  const resultConsumption = consumeHexagramCrystalResult({
-    result: hexagramCrystalResult,
-    source: "runtime",
-  });
-
-  if (resultConsumption.status !== "READY_FOR_HEXAGRAM_EXPRESSION_LAYER") return null;
-
-  const consumptionPayload = resultConsumption.payload;
-  const inheritedIdentity = consumptionPayload.inheritedIdentity;
-  if (!inheritedIdentity.lowerTrigram || !inheritedIdentity.upperTrigram) return null;
-
-  return {
-    source: "dynamics",
-    status: "CRYSTALLIZED",
-    createdAt: new Date().toISOString(),
-    mother: {
-      motherCodeName: motherCodeName || inheritedIdentity.lowerTrigram,
-      lowerTrigram: inheritedIdentity.lowerTrigram,
-    },
-    pressure: {
-      selectedPressureSeedId: selectedPressureSeedContext?.selectedPressureSeedId,
-      surface: selectedPressureSeedContext?.surface,
-      pressureField: selectedPressureSeedContext?.pressureField,
-    },
-    hexagram: {
-      lowerTrigram: inheritedIdentity.lowerTrigram,
-      upperTrigram: inheritedIdentity.upperTrigram,
-      hexagramCode: inheritedIdentity.hexagramCode,
-      hexagramName: inheritedIdentity.hexagramName,
-      hexagramTitle: inheritedIdentity.hexagramTitle,
-    },
-    transmission: {
-      completedNodeCount: 6,
-      primaryDimension: consumptionPayload.migrationTrace.dimension ?? primaryDimension,
-    },
-    crystal: {
-      title: "本局结晶",
-      copy: consumptionPayload.crystalLine,
-    },
-  };
 }
 
 function resolveSingleModelRevisionAction(

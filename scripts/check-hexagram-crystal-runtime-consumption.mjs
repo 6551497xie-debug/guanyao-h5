@@ -10,9 +10,11 @@ const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "guanyao-hexagram-crystal
 
 const sourceFiles = [
   "src/services/personaMigrationImpactRuntimeService.ts",
+  "src/services/crystalEndStateAdapterService.ts",
   "src/services/crystalMappingService.ts",
   "src/services/hexagramCrystalEngineService.ts",
   "src/services/hexagramCrystalResultConsumptionService.ts",
+  "src/services/hexagramCrystalRuntimeEndpointService.ts",
   "src/services/fixtures/changeExperienceFixtures.ts",
   "src/services/fixtures/crystalMappingFixtures.ts",
 ];
@@ -60,12 +62,10 @@ const formDomainFacts = (unit, overrides = {}, visualMetadata) => ({
   visualMetadata,
 });
 
-const formConsumption = ({
+const formCurrentCrystalEndState = ({
   formRuntimePersonaMigrationImpact,
-  mapCrystalState,
-  formHexagramCrystalResult,
-  consumeHexagramCrystalResult,
-  structureSource,
+  resolveRuntimeCurrentCrystalEndState,
+  currentHexagramProfile,
   unit,
   overrides,
   visualMetadata,
@@ -77,69 +77,47 @@ const formConsumption = ({
     domainFacts: formDomainFacts(unit, overrides, visualMetadata),
   });
 
-  const crystalMappingResult = mapCrystalState({
-    structureSource,
-    migrationImpacts: impact ? [impact] : [],
-    source: "runtime",
-  });
-
-  if (crystalMappingResult.status !== "PASS") {
-    return {
-      impact,
-      crystalMappingResult,
-      engineResult: null,
-      consumption: consumeHexagramCrystalResult({
-        result: formHexagramCrystalResult(null),
-        source: "runtime",
-      }),
-    };
-  }
-
-  const currentHexagramProfile = crystalMappingResult.crystalState.structureSource.currentHexagramProfile;
-  const dominantImpact = crystalMappingResult.crystalState.dominantImpact;
-  const engineResult = formHexagramCrystalResult({
-    sourceHexagram: {
-      lowerTrigram: currentHexagramProfile.lowerTrigram,
-      upperTrigram: currentHexagramProfile.upperTrigram,
-      hexagramCode: currentHexagramProfile.hexagramCode,
-      hexagramName: currentHexagramProfile.hexagramName,
-      hexagramTitle: currentHexagramProfile.hexagramTitle,
-    },
-    crystalMeaning: crystalMappingResult.crystalState.crystalMeaning,
-    migrationTrace: {
-      traceLine: dominantImpact.crystalImprint.imprintLine,
-      sourceUnitId: dominantImpact.sourceUnit.unitId,
-      dimension: dominantImpact.dimension,
-      yaoStage: dominantImpact.yaoStage,
-    },
-    dominantShift: {
-      fromModel: dominantImpact.fromModel,
-      toResponse: dominantImpact.toResponse,
-      deflectionVector: dominantImpact.deflectionVector,
-    },
-    changedLineContext: {
-      sourceUnitId: dominantImpact.sourceUnit.unitId,
-      dimension: dominantImpact.dimension,
-      yaoStage: dominantImpact.yaoStage,
-      changedLineHint: dominantImpact.crystalImprint.imprintLine,
-    },
-    source: "runtime",
-  });
-
   return {
     impact,
-    crystalMappingResult,
-    engineResult,
-    consumption: consumeHexagramCrystalResult({
-      result: engineResult,
-      source: "runtime",
+    currentCrystalEndState: resolveRuntimeCurrentCrystalEndState({
+      currentHexagramProfile,
+      motherCodeName: "乾",
+      selectedPressureSeedContext: {
+        selectedPressureSeedId: "action-five-awareness",
+        surface: "面对必须推进、但结果仍不确定的现实局。",
+        pressureField: "ACTION",
+      },
+      completedNodeCount: 6,
+      primaryDimension: "action",
+      readyToCrystallize: true,
+      migrationImpact: impact,
+      createdAt: "2026-07-13T00:00:00.000Z",
     }),
   };
 };
 
 try {
   const gravityPageSource = fs.readFileSync(path.join(rootDir, "src/pages/GravityPage.tsx"), "utf8");
-  assertIncludes("gravity final endpoint consumes result consumption", gravityPageSource, "consumeHexagramCrystalResult");
+  assertIncludes(
+    "gravity final endpoint delegates to runtime service",
+    gravityPageSource,
+    "resolveRuntimeCurrentCrystalEndState",
+  );
+  assertNotIncludes(
+    "gravity no longer calls result consumption directly",
+    gravityPageSource,
+    "consumeHexagramCrystalResult",
+  );
+  assertNotIncludes(
+    "gravity no longer calls crystal mapping directly",
+    gravityPageSource,
+    "mapCrystalState",
+  );
+  assertNotIncludes(
+    "gravity no longer calls hexagram crystal engine directly",
+    gravityPageSource,
+    "formHexagramCrystalResult",
+  );
   assertNotIncludes(
     "gravity final hexagram lower is not direct currentHexagramProfile",
     gravityPageSource,
@@ -161,8 +139,9 @@ try {
   const { formRuntimePersonaMigrationImpact } = requireFromTemp(
     "./src/services/personaMigrationImpactRuntimeService.js",
   );
-  const { mapCrystalState } = requireFromTemp("./src/services/crystalMappingService.js");
-  const { formHexagramCrystalResult } = requireFromTemp("./src/services/hexagramCrystalEngineService.js");
+  const { resolveRuntimeCurrentCrystalEndState } = requireFromTemp(
+    "./src/services/hexagramCrystalRuntimeEndpointService.js",
+  );
   const { consumeHexagramCrystalResult } = requireFromTemp(
     "./src/services/hexagramCrystalResultConsumptionService.js",
   );
@@ -172,46 +151,37 @@ try {
   const { actionFiveAwarenessCrystalStructureSource } = requireFromTemp(
     "./src/services/fixtures/crystalMappingFixtures.js",
   );
+  const currentHexagramProfile = actionFiveAwarenessCrystalStructureSource.currentHexagramProfile;
 
-  const baseRuntime = formConsumption({
+  const baseRuntime = formCurrentCrystalEndState({
     formRuntimePersonaMigrationImpact,
-    mapCrystalState,
-    formHexagramCrystalResult,
-    consumeHexagramCrystalResult,
-    structureSource: actionFiveAwarenessCrystalStructureSource,
+    resolveRuntimeCurrentCrystalEndState,
+    currentHexagramProfile,
     unit: actionFiveAwarenessChangeExperienceUnit,
   });
 
-  assertEqual("runtime consumption status", baseRuntime.consumption.status, "READY_FOR_HEXAGRAM_EXPRESSION_LAYER");
-  assertEqual("runtime result status", baseRuntime.engineResult.status, "READY");
-  assertEqual("runtime inherited source hexagram", baseRuntime.consumption.payload.inheritedIdentity.hexagramName, "风山渐");
+  assertEqual("runtime endpoint returns currentCrystalEndState", Boolean(baseRuntime.currentCrystalEndState), true);
+  assertEqual("runtime endpoint inherited source hexagram", baseRuntime.currentCrystalEndState.hexagram.hexagramName, "风山渐");
   assertEqual(
-    "runtime consumption migration line comes from result",
-    baseRuntime.consumption.payload.migrationLine,
-    baseRuntime.engineResult.expression.migrationLine,
+    "runtime endpoint crystal line comes from result consumption",
+    baseRuntime.currentCrystalEndState.crystal.copy,
+    "这一局把你习惯通过行动快速恢复掌控。转向先判断真正要解决的问题，再采取行动。",
   );
   assertEqual(
-    "runtime consumption crystal line comes from result",
-    baseRuntime.consumption.payload.crystalLine,
-    baseRuntime.engineResult.expression.crystalLine,
+    "runtime endpoint primary dimension comes from migration trace",
+    baseRuntime.currentCrystalEndState.transmission.primaryDimension,
+    "action",
   );
   assertEqual(
-    "runtime consumption carries dominant shift",
-    baseRuntime.consumption.payload.dominantShift.deflectionVector,
-    baseRuntime.impact.deflectionVector,
-  );
-  assertEqual(
-    "runtime consumption carries migration trace",
-    baseRuntime.consumption.payload.migrationTrace.traceLine,
-    baseRuntime.impact.crystalImprint.imprintLine,
+    "runtime endpoint blocks storage writes",
+    baseRuntime.currentCrystalEndState.source,
+    "dynamics",
   );
 
-  const changedMigration = formConsumption({
+  const changedMigration = formCurrentCrystalEndState({
     formRuntimePersonaMigrationImpact,
-    mapCrystalState,
-    formHexagramCrystalResult,
-    consumeHexagramCrystalResult,
-    structureSource: actionFiveAwarenessCrystalStructureSource,
+    resolveRuntimeCurrentCrystalEndState,
+    currentHexagramProfile,
     unit: actionFiveAwarenessChangeExperienceUnit,
     overrides: {
       oldReaction: "旧反应被 runtime 改变。",
@@ -224,31 +194,24 @@ try {
 
   assertEqual(
     "source hexagram identity remains inherited",
-    changedMigration.consumption.payload.inheritedIdentity.hexagramName,
-    baseRuntime.consumption.payload.inheritedIdentity.hexagramName,
-  );
-  assertEqual(
-    "changed migration updates migration line",
-    changedMigration.consumption.payload.migrationLine,
-    "旧反应被 runtime 改变。 → 新的回应方向被 runtime 改变。",
+    changedMigration.currentCrystalEndState.hexagram.hexagramName,
+    baseRuntime.currentCrystalEndState.hexagram.hexagramName,
   );
   assertEqual(
     "changed migration updates crystal line",
-    changedMigration.consumption.payload.crystalLine,
+    changedMigration.currentCrystalEndState.crystal.copy,
     "这一局把旧反应被 runtime 改变。转向新的回应方向被 runtime 改变。",
   );
   assertEqual(
-    "changed migration updates dominant shift",
-    changedMigration.consumption.payload.dominantShift.deflectionVector,
+    "changed migration updates impact dominant shift",
+    changedMigration.impact.deflectionVector,
     "runtime-dominant-shift-changed",
   );
 
-  const visualOnlyMutation = formConsumption({
+  const visualOnlyMutation = formCurrentCrystalEndState({
     formRuntimePersonaMigrationImpact,
-    mapCrystalState,
-    formHexagramCrystalResult,
-    consumeHexagramCrystalResult,
-    structureSource: actionFiveAwarenessCrystalStructureSource,
+    resolveRuntimeCurrentCrystalEndState,
+    currentHexagramProfile,
     unit: actionFiveAwarenessChangeExperienceUnit,
     visualMetadata: {
       starbeastBefore: "visual-only before changed",
@@ -258,23 +221,32 @@ try {
   });
 
   assertEqual(
-    "visual metadata does not change migration line",
-    visualOnlyMutation.consumption.payload.migrationLine,
-    baseRuntime.consumption.payload.migrationLine,
-  );
-  assertEqual(
     "visual metadata does not change crystal line",
-    visualOnlyMutation.consumption.payload.crystalLine,
-    baseRuntime.consumption.payload.crystalLine,
+    visualOnlyMutation.currentCrystalEndState.crystal.copy,
+    baseRuntime.currentCrystalEndState.crystal.copy,
   );
   assertEqual(
     "visual metadata does not change dominant shift",
-    visualOnlyMutation.consumption.payload.dominantShift.deflectionVector,
-    baseRuntime.consumption.payload.dominantShift.deflectionVector,
+    visualOnlyMutation.impact.deflectionVector,
+    baseRuntime.impact.deflectionVector,
   );
 
+  const notReadyCurrentCrystal = resolveRuntimeCurrentCrystalEndState({
+    currentHexagramProfile,
+    motherCodeName: "乾",
+    selectedPressureSeedContext: null,
+    completedNodeCount: 6,
+    readyToCrystallize: true,
+    migrationImpact: null,
+  });
+  assertEqual("not ready endpoint blocks currentCrystalEndState", notReadyCurrentCrystal, null);
+
   const notReadyConsumption = consumeHexagramCrystalResult({
-    result: formHexagramCrystalResult(null),
+    result: {
+      status: "NOT_READY",
+      readiness: "NOT_READY",
+      reason: "HEXAGRAM_CRYSTAL_INPUT_MISSING",
+    },
     source: "runtime",
   });
   assertEqual("not ready result blocks consumption", notReadyConsumption.status, "NOT_READY");
