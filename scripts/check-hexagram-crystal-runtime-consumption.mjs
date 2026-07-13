@@ -70,9 +70,10 @@ const formCurrentCrystalEndState = ({
   overrides,
   visualMetadata,
 }) => {
+  const dimension = unit.dimension;
   const impact = formRuntimePersonaMigrationImpact({
-    sourceUnitId: "gravity-action-awareness",
-    dimension: "action",
+    sourceUnitId: `gravity-${dimension}-awareness`,
+    dimension,
     yaoStage: "awareness",
     domainFacts: formDomainFacts(unit, overrides, visualMetadata),
   });
@@ -83,12 +84,12 @@ const formCurrentCrystalEndState = ({
       currentHexagramProfile,
       motherCodeName: "乾",
       selectedPressureSeedContext: {
-        selectedPressureSeedId: "action-five-awareness",
-        surface: "面对必须推进、但结果仍不确定的现实局。",
-        pressureField: "ACTION",
+        selectedPressureSeedId: `${dimension}-change-experience`,
+        surface: unit.context.pressureContext,
+        pressureField: dimension.toUpperCase(),
       },
       completedNodeCount: 6,
-      primaryDimension: "action",
+      primaryDimension: dimension,
       readyToCrystallize: true,
       migrationImpact: impact,
       createdAt: "2026-07-13T00:00:00.000Z",
@@ -145,13 +146,86 @@ try {
   const { consumeHexagramCrystalResult } = requireFromTemp(
     "./src/services/hexagramCrystalResultConsumptionService.js",
   );
-  const { actionFiveAwarenessChangeExperienceUnit } = requireFromTemp(
+  const {
+    actionFiveAwarenessChangeExperienceUnit,
+    bodyAwarenessChangeExperienceUnit,
+    emotionChangeAwarenessChangeExperienceUnit,
+    memoryWisdomChangeExperienceUnit,
+    motivationDriveChangeExperienceUnit,
+    thoughtChangeCognitionChangeExperienceUnit,
+  } = requireFromTemp(
     "./src/services/fixtures/changeExperienceFixtures.js",
   );
   const { actionFiveAwarenessCrystalStructureSource } = requireFromTemp(
     "./src/services/fixtures/crystalMappingFixtures.js",
   );
   const currentHexagramProfile = actionFiveAwarenessCrystalStructureSource.currentHexagramProfile;
+
+  const sixSpaceCases = [
+    {
+      dimension: "body",
+      unit: bodyAwarenessChangeExperienceUnit,
+    },
+    {
+      dimension: "emotion",
+      unit: emotionChangeAwarenessChangeExperienceUnit,
+    },
+    {
+      dimension: "thought",
+      unit: thoughtChangeCognitionChangeExperienceUnit,
+    },
+    {
+      dimension: "action",
+      unit: actionFiveAwarenessChangeExperienceUnit,
+    },
+    {
+      dimension: "memory",
+      unit: memoryWisdomChangeExperienceUnit,
+    },
+    {
+      dimension: "motivation",
+      unit: motivationDriveChangeExperienceUnit,
+    },
+  ];
+
+  assertEqual("six-space runtime consumption case count", sixSpaceCases.length, 6);
+  assertEqual(
+    "six-space runtime consumption uniqueness",
+    new Set(sixSpaceCases.map(({ dimension }) => dimension)).size,
+    6,
+  );
+
+  sixSpaceCases.forEach(({ dimension, unit }) => {
+    const runtime = formCurrentCrystalEndState({
+      formRuntimePersonaMigrationImpact,
+      resolveRuntimeCurrentCrystalEndState,
+      currentHexagramProfile,
+      unit,
+    });
+
+    assertEqual(`${dimension} runtime impact is ready`, runtime.impact?.impactReadiness, "READY_FOR_CRYSTAL");
+    assertEqual(`${dimension} runtime endpoint returns currentCrystalEndState`, Boolean(runtime.currentCrystalEndState), true);
+    assertEqual(
+      `${dimension} runtime endpoint primary dimension`,
+      runtime.currentCrystalEndState.transmission.primaryDimension,
+      dimension,
+    );
+    assertEqual(
+      `${dimension} runtime endpoint crystal line`,
+      runtime.currentCrystalEndState.crystal.copy,
+      `这一局把${unit.recognition.oldReaction}转向${unit.revision.newResponse}`,
+    );
+    assertEqual(
+      `${dimension} runtime endpoint inherits source hexagram`,
+      runtime.currentCrystalEndState.hexagram.hexagramName,
+      currentHexagramProfile.hexagramName,
+    );
+    assertEqual(
+      `${dimension} runtime impact carries crystal imprint`,
+      runtime.impact.crystalImprint.imprintLine,
+      unit.meaning.crystalImprint,
+    );
+  });
 
   const baseRuntime = formCurrentCrystalEndState({
     formRuntimePersonaMigrationImpact,
