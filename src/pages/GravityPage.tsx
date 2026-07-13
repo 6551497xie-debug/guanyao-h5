@@ -31,19 +31,11 @@ import {
   savePersonalityRingLiteEntry,
 } from "../services/personalityRingLiteService";
 import {
-  actionFiveAwarenessChangeExperiencePresentation,
-  bodyAwarenessChangeExperiencePresentation,
-  emotionChangeAwarenessChangeExperiencePresentation,
-  memoryWisdomChangeExperiencePresentation,
-  motivationDriveChangeExperiencePresentation,
-  thoughtChangeCognitionChangeExperiencePresentation,
-} from "../services/fixtures/changeExperiencePresentationFixtures";
-import {
   resolveChangeExperienceRuntimeSmokeFixture,
+  resolveChangeExperienceRuntimeSmokeRevisionAction,
   type StoredMotherCodeProfile,
   type StoredPersonaOutputSnapshot,
 } from "../services/fixtures/changeExperienceRuntimeSmokeFixtures";
-import { actionFiveAwarenessRuntimeUnit } from "../services/fixtures/personaTransmissionFixtures";
 import type { SelectedPressureSeedContext } from "../services/guanyaoPrimaryPetalResolver";
 import type {
   CurrentHexagramProfile,
@@ -525,79 +517,6 @@ function resolveSingleModelRevisionAction(
     sourceReason: mainTransmission.inertiaSignal,
     interventionPotential: yaoTransmissionChain.mainCut.interventionLeverage,
     userAgency: yaoTransmissionChain.mainCut.userAgency,
-  };
-}
-
-function resolveDevExperienceSmokeRevisionAction(
-  experienceSmokeFixture: string | null,
-): SingleModelRevisionAction | null {
-  const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
-  if (!viteEnv?.DEV) return null;
-
-  if (experienceSmokeFixture === "body-awareness" || experienceSmokeFixture === "body") {
-    return {
-      layerLabel: "身体",
-      yaoName: "五爻 · 觉察",
-      actionLine: bodyAwarenessChangeExperiencePresentation.revision.newResponse,
-      sourceReason: bodyAwarenessChangeExperiencePresentation.recognition.oldReaction,
-      interventionPotential: 0.76,
-      userAgency: 0.74,
-    };
-  }
-
-  if (experienceSmokeFixture === "emotion-change" || experienceSmokeFixture === "emotion") {
-    return {
-      layerLabel: "情绪",
-      yaoName: "五爻 · 觉察",
-      actionLine: emotionChangeAwarenessChangeExperiencePresentation.revision.newResponse,
-      sourceReason: emotionChangeAwarenessChangeExperiencePresentation.recognition.oldReaction,
-      interventionPotential: 0.78,
-      userAgency: 0.76,
-    };
-  }
-
-  if (experienceSmokeFixture === "thought-change" || experienceSmokeFixture === "thought") {
-    return {
-      layerLabel: "思想",
-      yaoName: "五爻 · 觉察",
-      actionLine: thoughtChangeCognitionChangeExperiencePresentation.revision.newResponse,
-      sourceReason: thoughtChangeCognitionChangeExperiencePresentation.recognition.oldReaction,
-      interventionPotential: 0.8,
-      userAgency: 0.78,
-    };
-  }
-
-  if (experienceSmokeFixture === "memory-wisdom" || experienceSmokeFixture === "memory") {
-    return {
-      layerLabel: "记忆",
-      yaoName: "五爻 · 觉察",
-      actionLine: memoryWisdomChangeExperiencePresentation.revision.newResponse,
-      sourceReason: memoryWisdomChangeExperiencePresentation.recognition.oldReaction,
-      interventionPotential: 0.72,
-      userAgency: 0.7,
-    };
-  }
-
-  if (experienceSmokeFixture === "motivation-drive" || experienceSmokeFixture === "motivation") {
-    return {
-      layerLabel: "动机",
-      yaoName: "五爻 · 觉察",
-      actionLine: motivationDriveChangeExperiencePresentation.revision.newResponse,
-      sourceReason: motivationDriveChangeExperiencePresentation.recognition.oldReaction,
-      interventionPotential: 0.74,
-      userAgency: 0.72,
-    };
-  }
-
-  if (experienceSmokeFixture !== "action-five") return null;
-
-  return {
-    layerLabel: "行动",
-    yaoName: "五爻 · 觉察",
-    actionLine: actionFiveAwarenessChangeExperiencePresentation.revision.newResponse,
-    sourceReason: actionFiveAwarenessRuntimeUnit.inertiaPattern,
-    interventionPotential: 0.82,
-    userAgency: 0.8,
   };
 }
 
@@ -2923,7 +2842,7 @@ function HexagramCodeDeliveryShell() {
   const experienceSmokeFixture = readDevExperienceSmokeFixture();
   const singleModelRevisionAction = useMemo(
     () =>
-      resolveDevExperienceSmokeRevisionAction(experienceSmokeFixture) ??
+      resolveChangeExperienceRuntimeSmokeRevisionAction(experienceSmokeFixture) ??
       resolveSingleModelRevisionAction(dynamicsInputContext, currentHexagramProfile),
     [dynamicsInputContext, currentHexagramProfile, experienceSmokeFixture],
   );

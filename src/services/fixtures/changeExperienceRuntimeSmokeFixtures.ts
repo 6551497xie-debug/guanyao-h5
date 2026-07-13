@@ -1,5 +1,14 @@
 import type { SelectedPressureSeedContext } from "../guanyaoPrimaryPetalResolver";
 import type { MotherCodeProfile } from "../../types/guanyaoCausalEngine";
+import {
+  actionFiveAwarenessChangeExperiencePresentation,
+  bodyAwarenessChangeExperiencePresentation,
+  emotionChangeAwarenessChangeExperiencePresentation,
+  memoryWisdomChangeExperiencePresentation,
+  motivationDriveChangeExperiencePresentation,
+  thoughtChangeCognitionChangeExperiencePresentation,
+} from "./changeExperiencePresentationFixtures";
+import { actionFiveAwarenessRuntimeUnit } from "./personaTransmissionFixtures";
 
 export type StoredMotherCodeProfile = Partial<MotherCodeProfile> & {
   motherCodeName?: string;
@@ -19,18 +28,36 @@ export type StoredPersonaOutputSnapshot = {
   direction?: string;
 };
 
+export type ChangeExperienceRuntimeSmokeRevisionAction = Readonly<{
+  layerLabel: string;
+  yaoName: string;
+  actionLine: string;
+  sourceReason: string;
+  interventionPotential: number;
+  userAgency: number;
+}>;
+
 export type ChangeExperienceRuntimeSmokeFixture = Readonly<{
   fixtureKey: string;
   smokeKeys: readonly string[];
   pressureContext: SelectedPressureSeedContext;
   motherCodeProfile: StoredMotherCodeProfile;
   personaOutputSnapshot: StoredPersonaOutputSnapshot;
+  revisionAction: ChangeExperienceRuntimeSmokeRevisionAction;
 }>;
 
 export const changeExperienceRuntimeSmokeFixtures: readonly ChangeExperienceRuntimeSmokeFixture[] = [
   {
     fixtureKey: "body",
     smokeKeys: ["body-awareness", "body"],
+    revisionAction: {
+      layerLabel: "身体",
+      yaoName: "五爻 · 觉察",
+      actionLine: bodyAwarenessChangeExperiencePresentation.revision.newResponse,
+      sourceReason: bodyAwarenessChangeExperiencePresentation.recognition.oldReaction,
+      interventionPotential: 0.76,
+      userAgency: 0.74,
+    },
     pressureContext: {
       selectedPressureSeedId: "body-awareness",
       surface: "压力进入时，身体先收紧、屏息，提前为尚未发生的变化做准备。",
@@ -68,6 +95,14 @@ export const changeExperienceRuntimeSmokeFixtures: readonly ChangeExperienceRunt
   {
     fixtureKey: "emotion",
     smokeKeys: ["emotion-change", "emotion"],
+    revisionAction: {
+      layerLabel: "情绪",
+      yaoName: "五爻 · 觉察",
+      actionLine: emotionChangeAwarenessChangeExperiencePresentation.revision.newResponse,
+      sourceReason: emotionChangeAwarenessChangeExperiencePresentation.recognition.oldReaction,
+      interventionPotential: 0.78,
+      userAgency: 0.76,
+    },
     pressureContext: {
       selectedPressureSeedId: "emotion-change-awareness",
       surface: "关系结果还不确定，对方回应、距离、态度变化让情绪比事实更早抵达。",
@@ -105,6 +140,14 @@ export const changeExperienceRuntimeSmokeFixtures: readonly ChangeExperienceRunt
   {
     fixtureKey: "thought",
     smokeKeys: ["thought-change", "thought"],
+    revisionAction: {
+      layerLabel: "思想",
+      yaoName: "五爻 · 觉察",
+      actionLine: thoughtChangeCognitionChangeExperiencePresentation.revision.newResponse,
+      sourceReason: thoughtChangeCognitionChangeExperiencePresentation.recognition.oldReaction,
+      interventionPotential: 0.8,
+      userAgency: 0.78,
+    },
     pressureContext: {
       selectedPressureSeedId: "thought-change-cognition",
       surface: "现实结果没有按照预期发生，投入与反馈不一致，你开始寻找解释让局面重新确定。",
@@ -142,6 +185,14 @@ export const changeExperienceRuntimeSmokeFixtures: readonly ChangeExperienceRunt
   {
     fixtureKey: "behavior",
     smokeKeys: ["action-five"],
+    revisionAction: {
+      layerLabel: "行动",
+      yaoName: "五爻 · 觉察",
+      actionLine: actionFiveAwarenessChangeExperiencePresentation.revision.newResponse,
+      sourceReason: actionFiveAwarenessRuntimeUnit.inertiaPattern,
+      interventionPotential: 0.82,
+      userAgency: 0.8,
+    },
     pressureContext: {
       selectedPressureSeedId: "action-five-awareness",
       surface: "面对必须推进、但结果仍不确定的现实局，你试图通过立即行动恢复掌控。",
@@ -179,6 +230,14 @@ export const changeExperienceRuntimeSmokeFixtures: readonly ChangeExperienceRunt
   {
     fixtureKey: "memory",
     smokeKeys: ["memory-wisdom", "memory"],
+    revisionAction: {
+      layerLabel: "记忆",
+      yaoName: "五爻 · 觉察",
+      actionLine: memoryWisdomChangeExperiencePresentation.revision.newResponse,
+      sourceReason: memoryWisdomChangeExperiencePresentation.recognition.oldReaction,
+      interventionPotential: 0.72,
+      userAgency: 0.7,
+    },
     pressureContext: {
       selectedPressureSeedId: "memory-wisdom",
       surface: "当前局面触发了过去经验，旧路径比眼前事实更早参与判断。",
@@ -216,6 +275,14 @@ export const changeExperienceRuntimeSmokeFixtures: readonly ChangeExperienceRunt
   {
     fixtureKey: "motivation",
     smokeKeys: ["motivation-drive", "motivation"],
+    revisionAction: {
+      layerLabel: "动机",
+      yaoName: "五爻 · 觉察",
+      actionLine: motivationDriveChangeExperiencePresentation.revision.newResponse,
+      sourceReason: motivationDriveChangeExperiencePresentation.recognition.oldReaction,
+      interventionPotential: 0.74,
+      userAgency: 0.72,
+    },
     pressureContext: {
       selectedPressureSeedId: "motivation-drive",
       surface: "现实压力碰到价值感和方向感，你开始通过结果、认可与控制确认自己。",
@@ -259,3 +326,8 @@ export const resolveChangeExperienceRuntimeSmokeFixture = (
 
   return changeExperienceRuntimeSmokeFixtures.find((fixture) => fixture.smokeKeys.includes(smokeKey)) ?? null;
 };
+
+export const resolveChangeExperienceRuntimeSmokeRevisionAction = (
+  smokeKey: string | null,
+): ChangeExperienceRuntimeSmokeRevisionAction | null =>
+  resolveChangeExperienceRuntimeSmokeFixture(smokeKey)?.revisionAction ?? null;

@@ -59,31 +59,53 @@ const assertNotIncludes = (name, source, forbidden) => {
 };
 
 const routingCases = [
-  { dimension: "body", fixtureKey: "body", smokeKeys: ["body-awareness", "body"], layerLabel: "身体" },
+  {
+    dimension: "body",
+    fixtureKey: "body",
+    smokeKeys: ["body-awareness", "body"],
+    layerLabel: "身体",
+    interventionPotential: 0.76,
+    userAgency: 0.74,
+  },
   {
     dimension: "emotion",
     fixtureKey: "emotion",
     smokeKeys: ["emotion-change", "emotion"],
     layerLabel: "情绪",
+    interventionPotential: 0.78,
+    userAgency: 0.76,
   },
   {
     dimension: "thought",
     fixtureKey: "thought",
     smokeKeys: ["thought-change", "thought"],
     layerLabel: "思想",
+    interventionPotential: 0.8,
+    userAgency: 0.78,
   },
-  { dimension: "action", fixtureKey: "behavior", smokeKeys: ["action-five"], layerLabel: "行动" },
+  {
+    dimension: "action",
+    fixtureKey: "behavior",
+    smokeKeys: ["action-five"],
+    layerLabel: "行动",
+    interventionPotential: 0.82,
+    userAgency: 0.8,
+  },
   {
     dimension: "memory",
     fixtureKey: "memory",
     smokeKeys: ["memory-wisdom", "memory"],
     layerLabel: "记忆",
+    interventionPotential: 0.72,
+    userAgency: 0.7,
   },
   {
     dimension: "motivation",
     fixtureKey: "motivation",
     smokeKeys: ["motivation-drive", "motivation"],
     layerLabel: "动机",
+    interventionPotential: 0.74,
+    userAgency: 0.72,
   },
 ];
 
@@ -96,6 +118,7 @@ try {
   const {
     changeExperienceRuntimeSmokeFixtures,
     resolveChangeExperienceRuntimeSmokeFixture,
+    resolveChangeExperienceRuntimeSmokeRevisionAction,
   } = requireFromTemp("./src/services/fixtures/changeExperienceRuntimeSmokeFixtures.js");
 
   assertEqual("gravity change experience route count", routingCases.length, 6);
@@ -114,7 +137,8 @@ try {
   assertEqual("gravity change experience smoke key count", registeredSmokeKeys.length, 11);
   assertEqual("gravity change experience smoke key uniqueness", new Set(registeredSmokeKeys).size, 11);
 
-  routingCases.forEach(({ dimension, fixtureKey, smokeKeys, layerLabel }) => {
+  routingCases.forEach((routingCase) => {
+    const { dimension, fixtureKey, smokeKeys, layerLabel, interventionPotential, userAgency } = routingCase;
     const awarenessRoute = resolveChangeExperienceRuntimeRoute(
       { layerLabel, yaoName: "五爻 · 觉察" },
       null,
@@ -138,11 +162,23 @@ try {
         resolveChangeExperienceRuntimeSmokeFixture(smokeKey)?.fixtureKey,
         fixtureKey,
       );
+      const revisionAction = resolveChangeExperienceRuntimeSmokeRevisionAction(smokeKey);
+      assertEqual(`${dimension} ${smokeKey} revision layer`, revisionAction?.layerLabel, layerLabel);
+      assertEqual(`${dimension} ${smokeKey} revision yao`, revisionAction?.yaoName, "五爻 · 觉察");
+      assertEqual(
+        `${dimension} ${smokeKey} intervention potential`,
+        revisionAction?.interventionPotential,
+        interventionPotential,
+      );
+      assertEqual(`${dimension} ${smokeKey} user agency`, revisionAction?.userAgency, userAgency);
+      assertEqual(`${dimension} ${smokeKey} action line is present`, Boolean(revisionAction?.actionLine), true);
+      assertEqual(`${dimension} ${smokeKey} source reason is present`, Boolean(revisionAction?.sourceReason), true);
     });
     const smokeFixture = resolveChangeExperienceRuntimeSmokeFixture(smokeKeys[0]);
     assertEqual(`${dimension} smoke pressure context is present`, Boolean(smokeFixture?.pressureContext), true);
     assertEqual(`${dimension} smoke mother profile is present`, Boolean(smokeFixture?.motherCodeProfile), true);
     assertEqual(`${dimension} smoke persona output is present`, Boolean(smokeFixture?.personaOutputSnapshot), true);
+    assertEqual(`${dimension} smoke revision action is present`, Boolean(smokeFixture?.revisionAction), true);
   });
 
   assertEqual(
@@ -165,6 +201,21 @@ try {
     "gravity consumes centralized smoke fixture",
     gravityPageSource,
     "resolveChangeExperienceRuntimeSmokeFixture(readDevExperienceSmokeFixture())",
+  );
+  assertIncludes(
+    "gravity consumes centralized smoke revision action",
+    gravityPageSource,
+    "resolveChangeExperienceRuntimeSmokeRevisionAction(experienceSmokeFixture)",
+  );
+  assertNotIncludes(
+    "gravity no longer owns smoke revision routing",
+    gravityPageSource,
+    "function resolveDevExperienceSmokeRevisionAction",
+  );
+  assertNotIncludes(
+    "gravity no longer imports smoke presentation fixtures",
+    gravityPageSource,
+    "actionFiveAwarenessChangeExperiencePresentation",
   );
   assertNotIncludes(
     "gravity no longer owns smoke fixture constants",
