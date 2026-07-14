@@ -8,6 +8,7 @@ const rootDir = process.cwd();
 const adapterPath = path.join(rootDir, "src/services/guanyaoStoredMotherContextAdapter.ts");
 const handoffPath = path.join(rootDir, "src/services/guanyaoDynamicsMotherHandoffAdapter.ts");
 const inputAdapterPath = path.join(rootDir, "src/services/guanyaoDynamicsInputContextAdapter.ts");
+const presentationAdapterPath = path.join(rootDir, "src/services/guanyaoDynamicsMotherPresentationAdapter.ts");
 const persistencePath = path.join(rootDir, "src/services/guanyaoOriginMotherContextPersistenceAdapter.ts");
 const typePath = path.join(rootDir, "src/types/gravityRuntimeInput.ts");
 const fusionTypePath = path.join(rootDir, "src/types/guanyaoGeoChronoMotherFusion.ts");
@@ -16,6 +17,7 @@ const gravityPath = path.join(rootDir, "src/pages/GravityPage.tsx");
 const adapterSource = fs.readFileSync(adapterPath, "utf8");
 const handoffSource = fs.readFileSync(handoffPath, "utf8");
 const inputAdapterSource = fs.readFileSync(inputAdapterPath, "utf8");
+const presentationAdapterSource = fs.readFileSync(presentationAdapterPath, "utf8");
 const persistenceSource = fs.readFileSync(persistencePath, "utf8");
 const typeSource = fs.readFileSync(typePath, "utf8");
 const fusionTypeSource = fs.readFileSync(fusionTypePath, "utf8");
@@ -267,7 +269,16 @@ try {
   assertExcludes("new handoff stops top-level fourBeast mirror", handoffSource, "fourBeast:");
   assertExcludes("fusion geo contract does not carry symbol", geoResultBlock, "symbol:");
   assertIncludes("fusion starbeast contract carries formal fourSymbol", fusionTypeSource, "fourSymbol: FourSymbol;");
-  assertIncludes("gravity delegates stored fourSymbol resolution", gravitySource, "resolveStoredMotherFourSymbol(input)");
+  assertIncludes(
+    "mother presentation delegates stored fourSymbol resolution",
+    presentationAdapterSource,
+    "resolveStoredMotherFourSymbol(context)",
+  );
+  assertIncludes(
+    "Gravity consumes unified mother presentation",
+    gravitySource,
+    "resolveDynamicsMotherPresentation({ context: dynamicsInputContext })",
+  );
   assertIncludes(
     "Dynamics input adapter delegates origin context reading",
     inputAdapterSource,

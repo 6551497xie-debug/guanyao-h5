@@ -21,7 +21,6 @@ import {
   resolveChangeExperienceRuntimeSmokeFixture,
 } from "../services/fixtures/changeExperienceRuntimeSmokeFixtures";
 import { resolvePrimaryPetalDevFixture } from "../services/fixtures/primaryPetalDevFixtures";
-import { resolveStoredMotherFourSymbol } from "../services/guanyaoStoredMotherContextAdapter";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import {
   resolveDynamicsInputReadiness,
@@ -32,6 +31,7 @@ import {
   resolveDynamicsPressureFieldLabel,
 } from "../services/guanyaoCurrentHexagramFormationAdapter";
 import { resolveDynamicsChangeExperienceRuntime } from "../services/guanyaoDynamicsChangeExperienceRuntimeAdapter";
+import { resolveDynamicsMotherPresentation } from "../services/guanyaoDynamicsMotherPresentationAdapter";
 import {
   resolveDynamicsCurrentCrystalEndState,
   type DynamicsCurrentCrystalEndState as CurrentCrystalEndState,
@@ -80,35 +80,6 @@ function readDevExperienceSmokeFixture(): string | null {
   if (!viteEnv?.DEV || typeof window === "undefined") return null;
 
   return new URLSearchParams(window.location.search).get("__experienceSmoke");
-}
-
-function resolveMotherCodeName(input: DynamicsInputContext) {
-  return (
-    input.motherCodeProfile?.motherCodeName ??
-    input.originMotherContext?.mother?.profile?.motherCodeName ??
-    input.personaOutputSnapshot?.motherCodeName ??
-    input.personaOutputSnapshot?.motherCode ??
-    ""
-  );
-}
-
-function resolveMotherPersonaSnapshot(input: DynamicsInputContext) {
-  const motherCode = resolveMotherCodeName(input);
-  const trigram =
-    input.motherCodeProfile?.trigram ??
-    input.motherCodeProfile?.lowerTrigram ??
-    input.originMotherContext?.mother?.trigram ??
-    input.originMotherContext?.trigram ??
-    input.personaOutputSnapshot?.trigram;
-  const fourSymbol = resolveStoredMotherFourSymbol(input);
-
-  if (!motherCode && !trigram && !fourSymbol) return null;
-
-  return {
-    motherCode,
-    trigram,
-    fourSymbol,
-  };
 }
 
 function trigramSymbolLabel(value: Trigram | undefined) {
@@ -2400,8 +2371,12 @@ function HexagramCodeDeliveryShell() {
     sequentialCurrentSpaceId,
   );
   const experienceState = resolveExperienceState(executionSnapshot, visualState);
-  const motherPersonaSnapshot = resolveMotherPersonaSnapshot(dynamicsInputContext);
-  const motherCodeName = resolveMotherCodeName(dynamicsInputContext);
+  const motherPresentation = useMemo(
+    () => resolveDynamicsMotherPresentation({ context: dynamicsInputContext }),
+    [dynamicsInputContext],
+  );
+  const motherPersonaSnapshot = motherPresentation.personaSnapshot;
+  const motherCodeName = motherPresentation.motherCodeName;
   const currentHexagramProfile = currentHexagramFormation?.currentHexagramProfile ?? null;
   const hasLockedPressureSeed = dynamicsInputReadiness.hasPressureContext;
   const displayExperienceState: ExperienceState = !hasLockedPressureSeed
