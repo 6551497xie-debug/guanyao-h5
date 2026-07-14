@@ -2079,14 +2079,14 @@ function HexagramCodeDeliveryShell() {
                   }}
                 >
                   <span style={{ fontSize: 11, fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", letterSpacing: "0.12em" }}>
-                    本局卦象定位
+                    这一局，力量如何相遇
                   </span>
                   <span style={{ color: "rgba(245,245,245,0.82)", fontSize: 16, fontWeight: 680, letterSpacing: 0 }}>
                     {currentHexagramPresentation.title}
                     {currentHexagramPresentation.trigramMark ? ` ${currentHexagramPresentation.trigramMark}` : ""}
                   </span>
                   <span style={{ color: "rgba(245,245,245,0.56)", fontSize: 13, lineHeight: 1.5 }}>
-                    你被推到一个需要重新选择方向的位置。
+                    你的原始生命倾向，正在与此刻的环境力量相遇。这不是对你的最终定义。
                   </span>
                   {currentHexagramPresentation.starbeastIngress ? (
                     <span style={{ color: "rgba(199,169,107,0.62)", fontSize: 12 }}>

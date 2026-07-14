@@ -199,7 +199,19 @@ try {
     gravitySource,
     "currentHexagramPresentation.starbeastIngress",
   );
-  assertIncludes("Gravity keeps current orientation label", gravitySource, "本局卦象定位");
+  assertIncludes("Gravity presents the current force relationship", gravitySource, "这一局，力量如何相遇");
+  assertIncludes(
+    "Gravity explains original tendency meeting environment force",
+    gravitySource,
+    "你的原始生命倾向，正在与此刻的环境力量相遇。",
+  );
+  assertIncludes("Gravity blocks final identity wording", gravitySource, "这不是对你的最终定义。");
+  assertExcludes("Gravity removes backend orientation label", gravitySource, "本局卦象定位");
+  assertExcludes(
+    "Gravity removes directional verdict wording",
+    gravitySource,
+    "你被推到一个需要重新选择方向的位置。",
+  );
   assertExcludes("Gravity no longer owns trigram symbol mapping", gravitySource, "function trigramSymbolLabel");
   assertExcludes("Gravity no longer assembles orientation title", gravitySource, "currentHexagramOrientationTitle");
   assertExcludes("Gravity no longer assembles orientation mark", gravitySource, "currentHexagramOrientationMark");
