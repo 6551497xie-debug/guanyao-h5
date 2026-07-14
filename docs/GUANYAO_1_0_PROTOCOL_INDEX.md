@@ -39,7 +39,7 @@ The current GUANYAO 1.0 main chain is locked as:
 ```text
 时空调频
 → 母码卡 / 原始生命倾向
-→ 压力种子 / 引力扰动
+→ 压力种子 / 环境力量
 → Cosmic Botanics 六维花冠
 → 主修花瓣 6 节点调频
 → 星兽反馈
@@ -52,7 +52,7 @@ The current GUANYAO 1.0 main chain is locked as:
 | --- | --- | --- |
 | 时空调频 | 用户确认自己的出生时间与出生地 | Chrono + Geo input |
 | 母码卡 / 原始生命倾向 | 用户看见生命最自然的起势方式 | Mother life-tendency expression |
-| 压力种子 / 引力扰动 | 当前现实压力被温和看见 | Pressure context |
+| 压力种子 / 环境力量 | 用户看见生命正在遇到的现实力量 | Environment force context |
 | Cosmic Botanics 六维花冠 | 压力落入人格空间后的调频场 | Six-dimensional interaction field |
 | 主修花瓣 6 节点调频 | 用户完成一个小而真实的回应动作 | Six-node micro-tuning |
 | 星兽反馈 | 星兽接住动作，并把光送回人格结构 | Starbeast lifeforce feedback |
@@ -84,11 +84,14 @@ The current GUANYAO 1.0 main chain is locked as:
 
 ### Pressure Seed And Main Chain
 
+- [GUANYAO_PRESSURE_SEED_ENVIRONMENT_FORCE_PROTOCOL.md](./GUANYAO_PRESSURE_SEED_ENVIRONMENT_FORCE_PROTOCOL.md)
+  Active pressure-seed semantic protocol. Defines Pressure Seed as an environment force, preserves the classification-to-upper-trigram chain, and prevents pressure from becoming user blame, diagnosis, or final result.
+
 - [GUANYAO_1_0_CAUSAL_MAP_PROTOCOL.md](./GUANYAO_1_0_CAUSAL_MAP_PROTOCOL.md)  
-  P0 causal chain mapping protocol. Defines how pressure seed lands in the six-dimensional primary petal, how six-node completion creates starbeast feedback, and how Mother Code + pressure seed + primary petal + completion state enters the hexagram asset PENDING candidate.
+  Existing causal-chain engineering reference. Its legacy personality and asset wording does not override the active worldview, starbeast, mother-code, or pressure-seed semantic protocols.
 
 - [RC_MAIN_CHAIN_PRESSURE_SEED_LOCK.md](./RC_MAIN_CHAIN_PRESSURE_SEED_LOCK.md)  
-  Pressure seed main-chain lock. Defines how pressure seed capture belongs to the active GUANYAO 1.0 flow.
+  Existing pressure-seed route lock. It preserves the capture-to-six-space path, while its blackhole-resolution and personality-asset wording remains legacy expression context.
 
 - [R8_ENGINE_FULL_PIPELINE_AUDIT.md](./R8_ENGINE_FULL_PIPELINE_AUDIT.md)  
   Full pipeline audit reference for checking whether the running chain remains structurally coherent.
