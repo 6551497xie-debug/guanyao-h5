@@ -155,6 +155,11 @@ try {
     "你与星兽已经一起走过六个空间，现在可以回望这次变化。",
   );
   assertEqual(
+    "crystal pressure copy recalls the six spaces",
+    crystalByCount.pressureCopy,
+    "你已经看见，这件事如何落在身体、情绪、思想、行动、记忆与动机里。",
+  );
+  assertEqual(
     "crystal transition preserves user agency",
     crystalByCount.supportingCopy,
     "当你愿意认领一个新的回应，这一局会留下它发生过的变化印记。",
@@ -225,6 +230,7 @@ try {
   assertExcludes("experience adapter removes layered-pressure count copy", adapterSource, "压力已经被你看过几层");
   assertExcludes("experience adapter removes reaction-stabilization copy", adapterSource, "反应正在趋稳");
   assertExcludes("experience adapter removes settled-reaction judgment", adapterSource, "你的反应正在安定下来");
+  assertExcludes("experience adapter removes one-pass pressure wording", adapterSource, "这一颗压力已经被你看过一遍");
   assertExcludes("Gravity removes crystallization gate language", gravitySource, "本局才会结晶");
   assertExcludes("Gravity no longer owns experience resolver", gravitySource, "function resolveExperienceState");
   assertExcludes("Gravity no longer owns dimension response copy", gravitySource, "SIX_DIMENSION_RESPONSE_COPY");
@@ -234,6 +240,7 @@ try {
   assertExcludes("Gravity does not own action headline", gravitySource, "你正在看见，回应是怎样一层层发生的。");
   assertExcludes("Gravity does not own transformation headline", gravitySource, "你已经从多个方向看见这件事。");
   assertExcludes("Gravity does not own crystal shared-journey copy", gravitySource, "你与星兽已经一起走过六个空间");
+  assertExcludes("Gravity does not own crystal six-space reflection copy", gravitySource, "这件事如何落在身体、情绪、思想、行动、记忆与动机里");
   assertExcludes("Gravity product loop removes familiar-reaction wording", gravitySource, "看见熟悉反应");
   assertExcludes("Gravity onboarding removes layer-by-layer reaction wording", gravitySource, "逐层看见反应");
   assertExcludes("Gravity user perception removes passive familiar-reaction wording", gravitySource, "熟悉反应被看见");

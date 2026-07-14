@@ -116,7 +116,7 @@ export function resolveDynamicsExperienceState(
       loopLabel: input.loopLabel,
       headline: "六个空间已经走完。",
       supportingCopy: "当你愿意认领一个新的回应，这一局会留下它发生过的变化印记。",
-      pressureCopy: "这一颗压力已经被你看过一遍。",
+      pressureCopy: "你已经看见，这件事如何落在身体、情绪、思想、行动、记忆与动机里。",
       beastCopy: "你与星兽已经一起走过六个空间，现在可以回望这次变化。",
       nodeCopy: {
         title: "六个空间已经走完",
