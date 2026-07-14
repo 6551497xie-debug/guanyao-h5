@@ -38,6 +38,16 @@ export type {
   StarBeastState,
 } from "./originalSelf";
 export type {
+  LifeArchetypeCode,
+  LifeArchetypeProfile,
+  LifeJourneySchemaPath,
+  LifeJourneySchemaState,
+  LifeJourneyStage,
+  OriginalSelfLifeSchemaMapping,
+  OriginalSelfLifeSchemaMappingBoundary,
+  OriginalSelfLifeSchemaMappingInput,
+} from "./originalSelfLifeSchema";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,
