@@ -1,13 +1,13 @@
 # GUANYAO Original Self Architecture Protocol
 # 观爻本我架构协议
 
-版本：Phase 1 / P7
+版本：Phase 1 / P8
 
 状态：ACTIVE FOUNDATION PROTOCOL
 
 基础施工编号：`RC-ORIGINAL-SELF-FOUNDATION-P0`
 
-当前边界校准：`RC-ORIGINAL-SELF-CONSUMPTION-P7`
+当前边界校准：`RC-ORIGINAL-SELF-ENDPOINT-P8`
 
 ## 00｜协议定位
 
@@ -215,7 +215,7 @@ resolveOriginalSelfFoundation
 OriginalSelfFoundationResult
 ```
 
-对未来消费方开放的唯一合法生成入口是：
+Foundation 内部唯一合法生成入口是：
 
 ```text
 resolveOriginalSelfFoundationFromSources
@@ -231,7 +231,7 @@ Foundation 内部职责严格分离：
 - Resolver 只处理 READY、NOT_READY 与验证结果；
 - Entry 只按固定顺序组合 Source Adapter 与 Resolver。
 
-未来消费者不得绕过 Entry 直接调用 Foundation Adapter、Validator、Resolver 或 Source Adapter，也不得自行拼装 `OriginalSelfState`。消费者只能接收 `OriginalSelfFoundationResult`，并根据其 READY / NOT_READY 状态决定是否读取既有 Foundation 状态。
+任何层都不得绕过 Entry 直接调用 Foundation Adapter、Validator、Resolver 或 Source Adapter，也不得自行拼装 `OriginalSelfState`。Entry 产生的 `OriginalSelfFoundationResult` 只允许继续进入 Result Consumption，不直接交给 UI、Runtime 或其他外部消费者。
 
 这条路径是 Foundation 的生成边界，不改变任何既有业务引擎的推导职责，也不代表页面或 Runtime 已经接入。
 
@@ -255,7 +255,33 @@ OriginalSelfFoundationConsumption
 
 Result Consumption 不调用 Entry、Source Adapter、Resolver、Validator、Foundation Adapter 或任何业务引擎；不生成 fallback Foundation，不推断阶段，不渲染 UI，不推进 Runtime，也不写入 Storage。
 
-## 14｜验收
+## 14｜Foundation Endpoint
+
+Foundation 对未来外部消费者只开放一个只读 Endpoint：
+
+```text
+既有只读来源
+↓
+resolveOriginalSelfFoundationConsumption
+↓
+OriginalSelfFoundationConsumption
+```
+
+Endpoint 内部固定组合：
+
+```text
+resolveOriginalSelfFoundationFromSources
+↓
+OriginalSelfFoundationResult
+↓
+consumeOriginalSelfFoundationResult
+```
+
+Endpoint 不返回裸露的 READY / NOT_READY 顶层结果，只返回 AVAILABLE / UNAVAILABLE 消费语义。为保证原因不丢失，Consumption 内部仍保留原始 Foundation Result 引用。
+
+未来外部消费者不得分别调用 Entry 或 Result Consumption。Endpoint 不调用 Star Beast、Mother Code、Hexagram、Yao、Gravity、Crystal Engine 或任何 Runtime，不推断 Journey 阶段，不读取或写入 Storage，也不创建 UI contract。
+
+## 15｜验收
 
 Foundation 当前阶段完成的唯一标准是：
 
@@ -267,5 +293,6 @@ Foundation 当前阶段完成的唯一标准是：
 6. foundation gate、release gate 与 build 通过。
 7. Foundation 内部调用顺序唯一，外部消费者不能绕过 Entry 直接生成 `OriginalSelfState`。
 8. Foundation Result 只能被只读转换为 AVAILABLE / UNAVAILABLE，任何 NOT_READY 原因都被完整保留。
+9. 外部调用只能经过 Foundation Endpoint，并只获得 `OriginalSelfFoundationConsumption`。
 
 满足以上条件，只代表架构地基完成，不代表任何产品页面已经接入 Original Self。

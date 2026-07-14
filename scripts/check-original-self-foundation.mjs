@@ -13,6 +13,7 @@ const resolverPath = path.join(rootDir, "src/services/originalSelfFoundationReso
 const sourceAdapterPath = path.join(rootDir, "src/services/originalSelfFoundationSourceAdapter.ts");
 const entryPath = path.join(rootDir, "src/services/originalSelfFoundationEntry.ts");
 const consumptionPath = path.join(rootDir, "src/services/originalSelfFoundationResultConsumption.ts");
+const endpointPath = path.join(rootDir, "src/services/originalSelfFoundationEndpoint.ts");
 const protocolPath = path.join(rootDir, "docs/GUANYAO_ORIGINAL_SELF_ARCHITECTURE_PROTOCOL.md");
 const packagePath = path.join(rootDir, "package.json");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-original-self-foundation-${process.pid}.mjs`);
@@ -62,6 +63,7 @@ for (const [name, filePath] of [
   ["foundation source adapter", sourceAdapterPath],
   ["foundation entry", entryPath],
   ["foundation result consumption", consumptionPath],
+  ["foundation endpoint", endpointPath],
   ["architecture protocol", protocolPath],
   ["package manifest", packagePath],
 ]) {
@@ -78,6 +80,7 @@ if (failures.length === 0) {
   const sourceAdapterSource = fs.readFileSync(sourceAdapterPath, "utf8");
   const entrySource = fs.readFileSync(entryPath, "utf8");
   const consumptionSource = fs.readFileSync(consumptionPath, "utf8");
+  const endpointSource = fs.readFileSync(endpointPath, "utf8");
   const protocolSource = fs.readFileSync(protocolPath, "utf8");
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   const sourceFile = ts.createSourceFile(typePath, typeSource, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS);
@@ -284,6 +287,32 @@ if (failures.length === 0) {
     assertExcludes("foundation result consumption stays result-only", consumptionSource, marker),
   );
 
+  [
+    "export type OriginalSelfFoundationEndpointInput = OriginalSelfFoundationEntryInput",
+    "export function resolveOriginalSelfFoundationConsumption",
+    "consumeOriginalSelfFoundationResult(resolveOriginalSelfFoundationFromSources(input))",
+    "): OriginalSelfFoundationConsumption",
+  ].forEach((marker) => assertIncludes("foundation endpoint contract", endpointSource, marker));
+
+  [
+    "adaptOriginalSelfFoundationSource(",
+    "resolveOriginalSelfFoundation(",
+    "adaptOriginalSelfFoundation(",
+    "validateOriginalSelfFoundation(",
+    "resolveStarbeastFromBirthDate",
+    "guanyaoStarbeastEngineService",
+    "GuanyaoRuntimeEngine",
+    "resolveRuntime",
+    "resolveCurrentHexagram",
+    "HexagramCrystalEngine",
+    "localStorage",
+    "sessionStorage",
+    "fetch(",
+    'from "react"',
+    "if (",
+    "switch (",
+  ].forEach((marker) => assertExcludes("foundation endpoint stays composition-only", endpointSource, marker));
+
   assertOnlyAllowedSourceSites(
     "foundation adapter has no external callers",
     /\badaptOriginalSelfFoundation\b/,
@@ -308,6 +337,16 @@ if (failures.length === 0) {
     "foundation result stays inside entry-consumption boundary",
     /\bOriginalSelfFoundationResult\b/,
     [resolverPath, entryPath, consumptionPath],
+  );
+  assertOnlyAllowedSourceSites(
+    "foundation entry is only consumed by endpoint",
+    /\bresolveOriginalSelfFoundationFromSources\b/,
+    [entryPath, endpointPath],
+  );
+  assertOnlyAllowedSourceSites(
+    "foundation result consumption is only consumed by endpoint",
+    /\bconsumeOriginalSelfFoundationResult\b/,
+    [consumptionPath, endpointPath],
   );
   assertOnlyAllowedSourceSites(
     "original self state has one construction site",
@@ -345,8 +384,8 @@ if (failures.length === 0) {
     "resolveOriginalSelfFoundation",
     "OriginalSelfFoundationResult",
     "resolveOriginalSelfFoundationFromSources",
-    "未来消费者不得绕过 Entry",
-    "消费者只能接收 `OriginalSelfFoundationResult`",
+    "任何层都不得绕过 Entry",
+    "只允许继续进入 Result Consumption",
     "Foundation Result Consumption",
     "consumeOriginalSelfFoundationResult",
     "OriginalSelfFoundationConsumption",
@@ -354,6 +393,11 @@ if (failures.length === 0) {
     "UNAVAILABLE",
     "原始 `OriginalSelfFoundationNotReady` Result",
     "不得被吞掉、改写或降级为无原因的 `null`",
+    "Foundation Endpoint",
+    "resolveOriginalSelfFoundationConsumption",
+    "Endpoint 内部固定组合",
+    "未来外部消费者不得分别调用 Entry 或 Result Consumption",
+    "只获得 `OriginalSelfFoundationConsumption`",
   ].forEach((marker) => assertIncludes("foundation protocol contract", protocolSource, marker));
 
   assertIncludes(
@@ -424,9 +468,25 @@ if (failures.length === 0) {
       strict: true,
     },
   });
+  const endpointRuntimeSource = endpointSource
+    .replace(
+      /import \{\s*resolveOriginalSelfFoundationFromSources,\s*type OriginalSelfFoundationEntryInput,\s*\} from "\.\/originalSelfFoundationEntry";\n/,
+      "",
+    )
+    .replace(
+      /import \{\s*consumeOriginalSelfFoundationResult,\s*type OriginalSelfFoundationConsumption,\s*\} from "\.\/originalSelfFoundationResultConsumption";\n/,
+      "",
+    );
+  const transpiledEndpoint = ts.transpileModule(endpointRuntimeSource, {
+    compilerOptions: {
+      module: ts.ModuleKind.ES2022,
+      target: ts.ScriptTarget.ES2022,
+      strict: true,
+    },
+  });
   fs.writeFileSync(
     tempModulePath,
-    `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}\n${transpiledResolver.outputText}\n${transpiledSourceAdapter.outputText}\n${transpiledEntry.outputText}\n${transpiledConsumption.outputText}`,
+    `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}\n${transpiledResolver.outputText}\n${transpiledSourceAdapter.outputText}\n${transpiledEntry.outputText}\n${transpiledConsumption.outputText}\n${transpiledEndpoint.outputText}`,
   );
 
   const {
@@ -434,6 +494,7 @@ if (failures.length === 0) {
     adaptOriginalSelfFoundationSource,
     consumeOriginalSelfFoundationResult,
     resolveOriginalSelfFoundation,
+    resolveOriginalSelfFoundationConsumption,
     resolveOriginalSelfFoundationFromSources,
     validateOriginalSelfFoundation,
   } = await import(`file://${tempModulePath}?t=${Date.now()}`);
@@ -750,6 +811,37 @@ if (failures.length === 0) {
     true,
   );
   assertEqual("consumption freezes unavailable output", Object.isFrozen(validationFailureConsumption), true);
+
+  const endpointInputSnapshot = JSON.stringify(sourceInput);
+  const endpointConsumption = resolveOriginalSelfFoundationConsumption(sourceInput);
+  assertEqual("endpoint exposes available consumption", endpointConsumption.status, "AVAILABLE");
+  assertEqual("endpoint exposes consumption source", endpointConsumption.source, "original_self_foundation_consumption");
+  assertEqual("endpoint preserves explicit journey phase", endpointConsumption.state?.journey.currentPhase, "HEXAGRAM");
+  assertEqual("endpoint preserves source hexagram reference", endpointConsumption.state?.journey.hexagram === hexagram, true);
+  assertEqual("endpoint preserves source yao reference", endpointConsumption.state?.journey.yao === yao, true);
+  assertEqual("endpoint preserves source crystal reference", endpointConsumption.state?.journey.crystal === crystal, true);
+  assertEqual("endpoint freezes consumption", Object.isFrozen(endpointConsumption), true);
+  assertEqual("endpoint does not mutate source input", JSON.stringify(sourceInput), endpointInputSnapshot);
+
+  const unavailableEndpointConsumption = resolveOriginalSelfFoundationConsumption({
+    ...sourceInput,
+    starBeastResult: Object.freeze({
+      status: "INVALID_DATE",
+      protocolVersion: "GUANYAO_LUNAR_MANSION_V1",
+      reason: "OUTSIDE_SUPPORTED_GREGORIAN_RANGE",
+    }),
+  });
+  assertEqual("endpoint exposes unavailable consumption", unavailableEndpointConsumption.status, "UNAVAILABLE");
+  assertEqual(
+    "endpoint preserves unavailable reason",
+    unavailableEndpointConsumption.reason,
+    "STAR_BEAST_INVALID_DATE",
+  );
+  assertEqual(
+    "endpoint preserves unavailable upstream reason",
+    unavailableEndpointConsumption.result.upstreamReason,
+    "OUTSIDE_SUPPORTED_GREGORIAN_RANGE",
+  );
 }
 
 fs.rmSync(tempModulePath, { force: true });
