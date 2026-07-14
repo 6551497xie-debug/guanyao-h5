@@ -55,7 +55,18 @@ try {
   const pressure = resolveDynamicsExperienceState(pressureInput);
   assertEqual("initial runtime maps to pressure", pressure.stage, "PRESSURE");
   assertEqual("initial timeline focuses pressure field", pressure.primaryFocus, "PRESSURE_FIELD");
-  assertEqual("pressure headline remains unchanged", pressure.headline, "你的压力正在穿过你。");
+  assertEqual("pressure headline begins with present experience", pressure.headline, "这一刻，你的感受和回应正在出现。");
+  assertEqual(
+    "pressure supporting copy invites observation before change",
+    pressure.supportingCopy,
+    "先不用改变什么，只看见此刻发生了什么。",
+  );
+  assertEqual("pressure copy names the present situation", pressure.pressureCopy, "这件事已经来到你面前。");
+  assertEqual(
+    "pressure beast copy observes how response happens",
+    pressure.beastCopy,
+    "你与星兽会从这里一起看见，回应如何发生。",
+  );
   assertEqual(
     "pressure stage begins with observation instead of a missing result",
     pressure.crystalCopy,
@@ -150,11 +161,14 @@ try {
   assertExcludes("experience adapter removes passive response waiting", adapterSource, "等待新的回应");
   assertExcludes("experience adapter removes passive confirmation language", adapterSource, "新的回应被确认");
   assertExcludes("experience adapter removes missing-imprint framing", adapterSource, "尚未留下变化印记");
+  assertExcludes("experience adapter removes pressure-through-body language", adapterSource, "压力正在穿过你");
+  assertExcludes("experience adapter removes system entry language", adapterSource, "当前压力正在进入");
+  assertExcludes("experience adapter removes predictive reaction language", adapterSource, "反应即将出现");
   assertExcludes("Gravity removes crystallization gate language", gravitySource, "本局才会结晶");
   assertExcludes("Gravity no longer owns experience resolver", gravitySource, "function resolveExperienceState");
   assertExcludes("Gravity no longer owns dimension response copy", gravitySource, "SIX_DIMENSION_RESPONSE_COPY");
   assertExcludes("Gravity no longer owns semantic stage copy", gravitySource, "YAO_SEMANTIC_STAGES");
-  assertExcludes("Gravity no longer owns pressure headline", gravitySource, "你的压力正在穿过你。");
+  assertExcludes("Gravity does not own pressure headline", gravitySource, "这一刻，你的感受和回应正在出现。");
 
   console.log("\n[DYNAMICS EXPERIENCE STATE ADAPTER] PASS");
 } catch (error) {
