@@ -27,6 +27,16 @@ export type {
   ChangeExperienceUnit,
 } from "./changeExperience";
 export type {
+  JourneyState,
+  LifeArchetypeState,
+  OriginalSelfFoundationGuardrails,
+  OriginalSelfJourneyPhase,
+  OriginalSelfSemanticPath,
+  OriginalSelfState,
+  StarBeastSemanticBoundary,
+  StarBeastState,
+} from "./originalSelf";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,
