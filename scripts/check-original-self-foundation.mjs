@@ -9,6 +9,7 @@ const typePath = path.join(rootDir, "src/types/originalSelf.ts");
 const typeIndexPath = path.join(rootDir, "src/types/index.ts");
 const adapterPath = path.join(rootDir, "src/services/originalSelfFoundationAdapter.ts");
 const validatorPath = path.join(rootDir, "src/services/validators/originalSelfFoundationValidator.ts");
+const resolverPath = path.join(rootDir, "src/services/originalSelfFoundationResolver.ts");
 const protocolPath = path.join(rootDir, "docs/GUANYAO_ORIGINAL_SELF_ARCHITECTURE_PROTOCOL.md");
 const packagePath = path.join(rootDir, "package.json");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-original-self-foundation-${process.pid}.mjs`);
@@ -35,6 +36,7 @@ for (const [name, filePath] of [
   ["type index", typeIndexPath],
   ["foundation adapter", adapterPath],
   ["foundation validator", validatorPath],
+  ["foundation resolver", resolverPath],
   ["architecture protocol", protocolPath],
   ["package manifest", packagePath],
 ]) {
@@ -47,6 +49,7 @@ if (failures.length === 0) {
   const typeIndexSource = fs.readFileSync(typeIndexPath, "utf8");
   const adapterSource = fs.readFileSync(adapterPath, "utf8");
   const validatorSource = fs.readFileSync(validatorPath, "utf8");
+  const resolverSource = fs.readFileSync(resolverPath, "utf8");
   const protocolSource = fs.readFileSync(protocolPath, "utf8");
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   const sourceFile = ts.createSourceFile(typePath, typeSource, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS);
@@ -143,6 +146,30 @@ if (failures.length === 0) {
     "HexagramCrystalEngine",
   ].forEach((marker) => assertExcludes("foundation validator stays validation-only", validatorSource, marker));
 
+  [
+    "export type OriginalSelfFoundationResolverInput",
+    "export type OriginalSelfFoundationResult",
+    "export function resolveOriginalSelfFoundation",
+    'reason: "STAR_BEAST_INVALID_DATE"',
+    'reason: "STAR_BEAST_CALENDAR_UNAVAILABLE"',
+    'reason: "FOUNDATION_VALIDATION_FAILED"',
+    "adaptOriginalSelfFoundation({",
+    "validateOriginalSelfFoundation(state)",
+  ].forEach((marker) => assertIncludes("foundation resolver contract", resolverSource, marker));
+
+  [
+    "resolveStarbeastFromBirthDate",
+    "guanyaoStarbeastEngineService",
+    "GuanyaoRuntimeEngine",
+    "resolveRuntime",
+    "resolveCurrentHexagram",
+    "HexagramCrystalEngine",
+    "localStorage",
+    "sessionStorage",
+    "fetch(",
+    'from "react"',
+  ].forEach((marker) => assertExcludes("foundation resolver stays result-only", resolverSource, marker));
+
   ["localStorage", "sessionStorage", "fetch(", 'from "react"', "JSX.", "HTMLElement", "CurrentHexagramProfile {", "CrystalState = Readonly"].forEach(
     (marker) => assertExcludes("foundation stays implementation-neutral", typeSource, marker),
   );
@@ -193,11 +220,29 @@ if (failures.length === 0) {
       strict: true,
     },
   });
-  fs.writeFileSync(tempModulePath, `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}`);
-
-  const { adaptOriginalSelfFoundation, validateOriginalSelfFoundation } = await import(
-    `file://${tempModulePath}?t=${Date.now()}`
+  const resolverRuntimeSource = resolverSource
+    .replace('import { adaptOriginalSelfFoundation } from "./originalSelfFoundationAdapter";\n', "")
+    .replace(
+      /import \{\s*validateOriginalSelfFoundation,\s*type OriginalSelfFoundationValidationReason,\s*\} from "\.\/validators\/originalSelfFoundationValidator";\n/,
+      "",
+    );
+  const transpiledResolver = ts.transpileModule(resolverRuntimeSource, {
+    compilerOptions: {
+      module: ts.ModuleKind.ES2022,
+      target: ts.ScriptTarget.ES2022,
+      strict: true,
+    },
+  });
+  fs.writeFileSync(
+    tempModulePath,
+    `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}\n${transpiledResolver.outputText}`,
   );
+
+  const {
+    adaptOriginalSelfFoundation,
+    resolveOriginalSelfFoundation,
+    validateOriginalSelfFoundation,
+  } = await import(`file://${tempModulePath}?t=${Date.now()}`);
   const hexagram = Object.freeze({ marker: "existing-hexagram" });
   const yao = Object.freeze({ marker: "existing-yao" });
   const crystal = Object.freeze({ marker: "existing-crystal" });
@@ -315,6 +360,73 @@ if (failures.length === 0) {
   const validationSnapshot = JSON.stringify(state);
   validateOriginalSelfFoundation(state);
   assertEqual("validator does not mutate state", JSON.stringify(state), validationSnapshot);
+
+  const resolverInputSnapshot = JSON.stringify(input);
+  const readyResult = resolveOriginalSelfFoundation(input);
+  assertEqual("resolver accepts ready star beast", readyResult.status, "READY");
+  assertEqual("resolver exposes original self source", readyResult.source, "original_self_foundation");
+  assertEqual("resolver preserves ready hexagram reference", readyResult.state?.journey.hexagram === hexagram, true);
+  assertEqual("resolver preserves ready yao reference", readyResult.state?.journey.yao === yao, true);
+  assertEqual("resolver preserves ready crystal reference", readyResult.state?.journey.crystal === crystal, true);
+  assertEqual("resolver freezes ready result", Object.isFrozen(readyResult), true);
+  assertEqual("resolver does not mutate ready input", JSON.stringify(input), resolverInputSnapshot);
+
+  const invalidDateResult = resolveOriginalSelfFoundation({
+    ...input,
+    starBeast: Object.freeze({
+      status: "INVALID_DATE",
+      protocolVersion: "GUANYAO_LUNAR_MANSION_V1",
+      reason: "INVALID_GREGORIAN_BIRTH_DATE",
+    }),
+  });
+  assertEqual("resolver blocks invalid date", invalidDateResult.status, "NOT_READY");
+  assertEqual("resolver maps invalid date reason", invalidDateResult.reason, "STAR_BEAST_INVALID_DATE");
+  assertEqual("resolver preserves invalid date reason", invalidDateResult.upstreamReason, "INVALID_GREGORIAN_BIRTH_DATE");
+  assertEqual("resolver freezes invalid date result", Object.isFrozen(invalidDateResult), true);
+
+  const unavailableResult = resolveOriginalSelfFoundation({
+    ...input,
+    starBeast: Object.freeze({
+      status: "CALENDAR_UNAVAILABLE",
+      protocolVersion: "GUANYAO_LUNAR_MANSION_V1",
+      reason: "CHINESE_CALENDAR_NOT_SUPPORTED",
+    }),
+  });
+  assertEqual("resolver blocks unavailable calendar", unavailableResult.status, "NOT_READY");
+  assertEqual(
+    "resolver maps unavailable calendar reason",
+    unavailableResult.reason,
+    "STAR_BEAST_CALENDAR_UNAVAILABLE",
+  );
+  assertEqual(
+    "resolver preserves unavailable calendar reason",
+    unavailableResult.upstreamReason,
+    "CHINESE_CALENDAR_NOT_SUPPORTED",
+  );
+
+  const invalidFoundationResult = resolveOriginalSelfFoundation({
+    ...input,
+    starBeast: Object.freeze({
+      ...input.starBeast,
+      fourSymbol: "麒麟",
+    }),
+  });
+  assertEqual("resolver blocks invalid foundation", invalidFoundationResult.status, "NOT_READY");
+  assertEqual(
+    "resolver maps validation failure",
+    invalidFoundationResult.reason,
+    "FOUNDATION_VALIDATION_FAILED",
+  );
+  assertEqual(
+    "resolver preserves validation reasons",
+    invalidFoundationResult.validationReasons?.includes("FOUR_SYMBOL_MISMATCH"),
+    true,
+  );
+  assertEqual(
+    "resolver freezes validation reasons",
+    Object.isFrozen(invalidFoundationResult.validationReasons),
+    true,
+  );
 }
 
 fs.rmSync(tempModulePath, { force: true });
