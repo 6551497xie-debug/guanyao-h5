@@ -98,6 +98,18 @@ try {
   const action = resolveDynamicsExperienceState(baseInput({ uiPhase: "NODE_RUNNING", currentNode: 3 }));
   assertEqual("node running maps to action", action.stage, "ACTION");
   assertEqual("action focuses dimension flow", action.primaryFocus, "DIMENSION_FLOW");
+  assertEqual("action headline reveals response layer by layer", action.headline, "你正在看见，回应是怎样一层层发生的。");
+  assertEqual(
+    "action supporting copy keeps attention on one space",
+    action.supportingCopy,
+    "一次只看一个空间，不需要同时理解全部。",
+  );
+  assertEqual("action pressure copy locates the current space", action.pressureCopy, "这件事正在落进当前空间。");
+  assertEqual(
+    "action beast copy observes feelings and responses together",
+    action.beastCopy,
+    "你与星兽正在一起辨认这里的感受与回应。",
+  );
   assertEqual("third node title remains unchanged", action.nodeCopy.title, "你开始解释这件事");
   assertEqual(
     "action previews a user-owned response",
@@ -178,12 +190,16 @@ try {
   assertExcludes("experience adapter removes passive awareness headline", adapterSource, "这一颗压力，被看见了");
   assertExcludes("experience adapter removes six-space process forecast", adapterSource, "它将穿过身体");
   assertExcludes("experience adapter removes unfolding announcement", adapterSource, "六个空间即将展开");
+  assertExcludes("experience adapter removes touch instruction copy", adapterSource, "每一次轻触");
+  assertExcludes("experience adapter removes pressure-entry process copy", adapterSource, "压力正在进入当前空间");
+  assertExcludes("experience adapter removes touch-trigger reaction copy", adapterSource, "随着触点出现");
   assertExcludes("Gravity removes crystallization gate language", gravitySource, "本局才会结晶");
   assertExcludes("Gravity no longer owns experience resolver", gravitySource, "function resolveExperienceState");
   assertExcludes("Gravity no longer owns dimension response copy", gravitySource, "SIX_DIMENSION_RESPONSE_COPY");
   assertExcludes("Gravity no longer owns semantic stage copy", gravitySource, "YAO_SEMANTIC_STAGES");
   assertExcludes("Gravity does not own pressure headline", gravitySource, "这一刻，你的感受和回应正在出现。");
   assertExcludes("Gravity does not own awareness headline", gravitySource, "你已经停下来，看见这一刻。");
+  assertExcludes("Gravity does not own action headline", gravitySource, "你正在看见，回应是怎样一层层发生的。");
 
   console.log("\n[DYNAMICS EXPERIENCE STATE ADAPTER] PASS");
 } catch (error) {
