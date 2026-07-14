@@ -25,6 +25,7 @@ import {
 import { resolveCurrentHexagramFormation } from "../services/guanyaoCurrentHexagramFormationAdapter";
 import { resolveDynamicsChangeExperienceRuntime } from "../services/guanyaoDynamicsChangeExperienceRuntimeAdapter";
 import { resolveDynamicsMotherPresentation } from "../services/guanyaoDynamicsMotherPresentationAdapter";
+import { resolveDynamicsExperienceReadinessPresentation } from "../services/guanyaoDynamicsExperienceReadinessPresentationAdapter";
 import { resolveDynamicsCurrentHexagramPresentation } from "../services/guanyaoDynamicsCurrentHexagramPresentationAdapter";
 import {
   resolveDynamicsCurrentCrystalEndState,
@@ -35,6 +36,11 @@ import { depositDynamicsCurrentCrystalToPersonalityRing } from "../services/guan
 import { resolveDynamicsPersonalityRingPresentation } from "../services/guanyaoDynamicsPersonalityRingPresentationAdapter";
 import type { CurrentHexagramFormationResult } from "../types/currentHexagramFormation";
 import type { SingleModelRevisionAction } from "../types/dynamicsRevisionAction";
+import type {
+  DynamicsExperiencePrimaryFocus as ExperiencePrimaryFocus,
+  DynamicsExperienceStage as ExperienceStage,
+  DynamicsExperienceState as ExperienceState,
+} from "../types/dynamicsExperiencePresentation";
 import type { SelectedPressureSeedContext } from "../types/primaryPetal";
 import {
   GuanyaoRuntimeEngine,
@@ -263,26 +269,6 @@ type ValueFlowState = Readonly<{
   hourglassLoopClosed: boolean;
   nonInvasive: true;
 }>;
-type ExperienceStage = "PRESSURE" | "AWARENESS" | "ACTION" | "TRANSFORMATION" | "CRYSTAL";
-type ExperiencePrimaryFocus = "PRESSURE_FIELD" | "PRESSURE_AND_BEAST" | "BEAST_AND_DIMENSION" | "DIMENSION_FLOW" | "CRYSTALLIZATION";
-type ExperienceState = Readonly<{
-  stage: ExperienceStage;
-  primaryFocus: ExperiencePrimaryFocus;
-  loopLabel: string;
-  headline: string;
-  supportingCopy: string;
-  pressureCopy: string;
-  beastCopy: string;
-  nodeCopy: {
-    title: string;
-    text: string;
-    dimensionInsight?: string;
-    dimensionUnderstanding?: string;
-    actionText: string;
-  };
-  crystalCopy: string;
-}>;
-
 const SIX_DIMENSION_RESPONSE_COPY: Record<SixSpaceId, string> = {
   body: "压力先落在身体里。",
   emotion: "情绪先到了。",
@@ -2340,6 +2326,12 @@ function HexagramCodeDeliveryShell() {
   );
   const motherPersonaSnapshot = motherPresentation.personaSnapshot;
   const motherCodeName = motherPresentation.motherCodeName;
+  const experienceReadinessPresentation = resolveDynamicsExperienceReadinessPresentation({
+    experienceState,
+    inputReadiness: dynamicsInputReadiness,
+    motherPresentation,
+  });
+  const displayExperienceState = experienceReadinessPresentation.experienceState;
   const currentHexagramPresentation = useMemo(
     () => resolveDynamicsCurrentHexagramPresentation({
       formation: currentHexagramFormation,
@@ -2347,24 +2339,6 @@ function HexagramCodeDeliveryShell() {
     }),
     [currentHexagramFormation, motherPresentation],
   );
-  const hasLockedPressureSeed = dynamicsInputReadiness.hasPressureContext;
-  const displayExperienceState: ExperienceState = !hasLockedPressureSeed
-    ? {
-        ...experienceState,
-        loopLabel: "六个空间预览",
-        headline: "等待这一局压力被看见。",
-        supportingCopy: "当前为安全预览状态，缺少本局上下文。",
-        pressureCopy: "等待这一颗压力进入。",
-        beastCopy: "六个空间将在当前压力确认后展开。",
-      }
-    : motherCodeName && experienceState.stage === "PRESSURE"
-      ? {
-        ...experienceState,
-        headline: "母码已接入。",
-        supportingCopy: "这一颗压力正在穿过你的母码。",
-        pressureCopy: "母码已接入，压力开始进入六个空间。",
-      }
-      : experienceState;
   const valueFlow = resolveValueFlow(executionSnapshot);
   const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
     pressureSeed: selectedPressureSeedSurface,
@@ -2537,7 +2511,7 @@ function HexagramCodeDeliveryShell() {
         data-product-onboarding={GUANYAO_PRODUCT_RUNTIME_DEFINITION.onboardingFlow.join("|")}
         data-product-perception={GUANYAO_PRODUCT_RUNTIME_DEFINITION.userPerception.join("|")}
         data-dynamics-mother-context={motherPersonaSnapshot ? "connected" : "missing"}
-        data-dynamics-pressure-context={dynamicsInputReadiness.hasPressureContext ? "connected" : "fallback"}
+        data-dynamics-pressure-context={experienceReadinessPresentation.pressureContextMarker}
         data-dynamics-current-hexagram={currentHexagramPresentation ? "connected" : "missing"}
         data-dynamics-mother-code={motherCodeName || "missing"}
         data-dynamics-four-beast={motherPersonaSnapshot?.fourSymbol ?? "missing"}
@@ -2587,10 +2561,12 @@ function HexagramCodeDeliveryShell() {
             {displayExperienceState.headline}
             <br />
             {displayExperienceState.supportingCopy}
-            {motherCodeName ? (
+            {experienceReadinessPresentation.motherReference.visible ? (
               <>
                 <br />
-                <span style={{ color: "rgba(199,169,107,0.66)" }}>母码：{motherCodeName}</span>
+                <span style={{ color: "rgba(199,169,107,0.66)" }}>
+                  {experienceReadinessPresentation.motherReference.label}
+                </span>
               </>
             ) : null}
             {currentHexagramPresentation ? (

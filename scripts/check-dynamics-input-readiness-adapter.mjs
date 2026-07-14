@@ -116,11 +116,15 @@ try {
   assertIncludes("readiness adapter owns mother missing reason", adapterSource, '"MOTHER_CONTEXT_MISSING"');
   assertIncludes("Gravity delegates readiness resolution", gravitySource, "resolveDynamicsInputReadiness(dynamicsInputContext)");
   assertIncludes("current hexagram formation consumes readiness", gravitySource, "resolveCurrentHexagramFormation(dynamicsInputReadiness)");
-  assertIncludes("preview state follows readiness pressure flag", gravitySource, "const hasLockedPressureSeed = dynamicsInputReadiness.hasPressureContext;");
+  assertIncludes(
+    "preview state delegates readiness presentation",
+    gravitySource,
+    "resolveDynamicsExperienceReadinessPresentation({",
+  );
   assertIncludes(
     "pressure marker follows readiness pressure flag",
     gravitySource,
-    'data-dynamics-pressure-context={dynamicsInputReadiness.hasPressureContext ? "connected" : "fallback"}',
+    "data-dynamics-pressure-context={experienceReadinessPresentation.pressureContextMarker}",
   );
   assertExcludes("Gravity no longer owns mother profile normalization", gravitySource, "function normalizeMotherCodeProfileForHexagram");
   assertExcludes("Gravity no longer infers pressure readiness with Boolean", gravitySource, "Boolean(dynamicsInputContext.selectedPressureSeedContext)");
