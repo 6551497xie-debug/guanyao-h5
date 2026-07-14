@@ -7,6 +7,8 @@ import {
   type OriginalSelfFoundationConsumption,
 } from "./originalSelfFoundationResultConsumption";
 
+export type { OriginalSelfFoundationConsumption } from "./originalSelfFoundationResultConsumption";
+
 export type OriginalSelfFoundationEndpointInput = OriginalSelfFoundationEntryInput;
 
 export function resolveOriginalSelfFoundationConsumption(

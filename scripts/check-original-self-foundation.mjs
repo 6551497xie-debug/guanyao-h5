@@ -14,6 +14,7 @@ const sourceAdapterPath = path.join(rootDir, "src/services/originalSelfFoundatio
 const entryPath = path.join(rootDir, "src/services/originalSelfFoundationEntry.ts");
 const consumptionPath = path.join(rootDir, "src/services/originalSelfFoundationResultConsumption.ts");
 const endpointPath = path.join(rootDir, "src/services/originalSelfFoundationEndpoint.ts");
+const dynamicsBridgePath = path.join(rootDir, "src/services/guanyaoDynamicsOriginalSelfFoundationAdapter.ts");
 const protocolPath = path.join(rootDir, "docs/GUANYAO_ORIGINAL_SELF_ARCHITECTURE_PROTOCOL.md");
 const packagePath = path.join(rootDir, "package.json");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-original-self-foundation-${process.pid}.mjs`);
@@ -64,6 +65,7 @@ for (const [name, filePath] of [
   ["foundation entry", entryPath],
   ["foundation result consumption", consumptionPath],
   ["foundation endpoint", endpointPath],
+  ["dynamics original self bridge", dynamicsBridgePath],
   ["architecture protocol", protocolPath],
   ["package manifest", packagePath],
 ]) {
@@ -81,6 +83,7 @@ if (failures.length === 0) {
   const entrySource = fs.readFileSync(entryPath, "utf8");
   const consumptionSource = fs.readFileSync(consumptionPath, "utf8");
   const endpointSource = fs.readFileSync(endpointPath, "utf8");
+  const dynamicsBridgeSource = fs.readFileSync(dynamicsBridgePath, "utf8");
   const protocolSource = fs.readFileSync(protocolPath, "utf8");
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   const sourceFile = ts.createSourceFile(typePath, typeSource, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS);
@@ -288,6 +291,7 @@ if (failures.length === 0) {
   );
 
   [
+    'export type { OriginalSelfFoundationConsumption } from "./originalSelfFoundationResultConsumption"',
     "export type OriginalSelfFoundationEndpointInput = OriginalSelfFoundationEntryInput",
     "export function resolveOriginalSelfFoundationConsumption",
     "consumeOriginalSelfFoundationResult(resolveOriginalSelfFoundationFromSources(input))",
@@ -312,6 +316,46 @@ if (failures.length === 0) {
     "if (",
     "switch (",
   ].forEach((marker) => assertExcludes("foundation endpoint stays composition-only", endpointSource, marker));
+
+  [
+    "export type DynamicsOriginalSelfFoundationAdapterInput",
+    "export function resolveDynamicsOriginalSelfFoundation",
+    "starBeastResult: StarbeastDerivationResult",
+    "journeyPhase: OriginalSelfJourneyPhase",
+    "currentHexagramFormation: CurrentHexagramFormationResult | null",
+    "yaoTransmissionProfile: YaoTransmissionProfile | null",
+    "crystalState: CrystalState | null",
+    "resolveOriginalSelfFoundationConsumption(",
+    "starBeastResult: input.starBeastResult",
+    "currentPhase: input.journeyPhase",
+    "formation: input.currentHexagramFormation",
+    "yao: input.yaoTransmissionProfile",
+    "crystal: input.crystalState",
+  ].forEach((marker) => assertIncludes("dynamics original self bridge contract", dynamicsBridgeSource, marker));
+
+  [
+    "resolveOriginalSelfFoundationFromSources(",
+    "consumeOriginalSelfFoundationResult(",
+    "adaptOriginalSelfFoundationSource(",
+    "resolveOriginalSelfFoundation(",
+    "adaptOriginalSelfFoundation(",
+    "validateOriginalSelfFoundation(",
+    "resolveStarbeastFromBirthDate",
+    "guanyaoStarbeastEngineService",
+    "GuanyaoRuntimeEngine",
+    "resolveRuntime",
+    "resolveCurrentHexagram",
+    "HexagramCrystalEngine",
+    "currentCrystalEndState",
+    "StarbeastFeedback",
+    "fourSymbol",
+    "localStorage",
+    "sessionStorage",
+    "fetch(",
+    'from "react"',
+    "if (",
+    "switch (",
+  ].forEach((marker) => assertExcludes("dynamics original self bridge stays formal-source-only", dynamicsBridgeSource, marker));
 
   assertOnlyAllowedSourceSites(
     "foundation adapter has no external callers",
@@ -347,6 +391,11 @@ if (failures.length === 0) {
     "foundation result consumption is only consumed by endpoint",
     /\bconsumeOriginalSelfFoundationResult\b/,
     [consumptionPath, endpointPath],
+  );
+  assertOnlyAllowedSourceSites(
+    "foundation endpoint is only consumed by dynamics bridge",
+    /\bresolveOriginalSelfFoundationConsumption\b/,
+    [endpointPath, dynamicsBridgePath],
   );
   assertOnlyAllowedSourceSites(
     "original self state has one construction site",
@@ -398,6 +447,13 @@ if (failures.length === 0) {
     "Endpoint 内部固定组合",
     "未来外部消费者不得分别调用 Entry 或 Result Consumption",
     "只获得 `OriginalSelfFoundationConsumption`",
+    "Dynamics Original Self Bridge",
+    "resolveDynamicsOriginalSelfFoundation",
+    "Dynamics 正式来源",
+    "持久化快照中的 `fourSymbol` 不能代替完整 `StarbeastDerivationResult`",
+    "`currentCrystalEndState` 不能反向伪造 `CrystalState`",
+    "缺少正式来源时，必须保持未接入",
+    "P9 只建立服务层 Bridge",
   ].forEach((marker) => assertIncludes("foundation protocol contract", protocolSource, marker));
 
   assertIncludes(
@@ -484,9 +540,20 @@ if (failures.length === 0) {
       strict: true,
     },
   });
+  const dynamicsBridgeRuntimeSource = dynamicsBridgeSource.replace(
+    /import \{\s*resolveOriginalSelfFoundationConsumption,\s*type OriginalSelfFoundationConsumption,\s*\} from "\.\/originalSelfFoundationEndpoint";\n/,
+    "",
+  );
+  const transpiledDynamicsBridge = ts.transpileModule(dynamicsBridgeRuntimeSource, {
+    compilerOptions: {
+      module: ts.ModuleKind.ES2022,
+      target: ts.ScriptTarget.ES2022,
+      strict: true,
+    },
+  });
   fs.writeFileSync(
     tempModulePath,
-    `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}\n${transpiledResolver.outputText}\n${transpiledSourceAdapter.outputText}\n${transpiledEntry.outputText}\n${transpiledConsumption.outputText}\n${transpiledEndpoint.outputText}`,
+    `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}\n${transpiledResolver.outputText}\n${transpiledSourceAdapter.outputText}\n${transpiledEntry.outputText}\n${transpiledConsumption.outputText}\n${transpiledEndpoint.outputText}\n${transpiledDynamicsBridge.outputText}`,
   );
 
   const {
@@ -496,6 +563,7 @@ if (failures.length === 0) {
     resolveOriginalSelfFoundation,
     resolveOriginalSelfFoundationConsumption,
     resolveOriginalSelfFoundationFromSources,
+    resolveDynamicsOriginalSelfFoundation,
     validateOriginalSelfFoundation,
   } = await import(`file://${tempModulePath}?t=${Date.now()}`);
   const hexagram = Object.freeze({ marker: "existing-hexagram" });
@@ -841,6 +909,43 @@ if (failures.length === 0) {
     "endpoint preserves unavailable upstream reason",
     unavailableEndpointConsumption.result.upstreamReason,
     "OUTSIDE_SUPPORTED_GREGORIAN_RANGE",
+  );
+
+  const dynamicsBridgeInput = Object.freeze({
+    starBeastResult: input.starBeast,
+    journeyPhase: "YAO",
+    currentHexagramFormation: formation,
+    yaoTransmissionProfile: yao,
+    crystalState: crystal,
+  });
+  const dynamicsBridgeInputSnapshot = JSON.stringify(dynamicsBridgeInput);
+  const dynamicsBridgeConsumption = resolveDynamicsOriginalSelfFoundation(dynamicsBridgeInput);
+  assertEqual("dynamics bridge exposes available consumption", dynamicsBridgeConsumption.status, "AVAILABLE");
+  assertEqual("dynamics bridge keeps explicit journey phase", dynamicsBridgeConsumption.state?.journey.currentPhase, "YAO");
+  assertEqual("dynamics bridge preserves formation hexagram reference", dynamicsBridgeConsumption.state?.journey.hexagram === hexagram, true);
+  assertEqual("dynamics bridge preserves yao reference", dynamicsBridgeConsumption.state?.journey.yao === yao, true);
+  assertEqual("dynamics bridge preserves crystal reference", dynamicsBridgeConsumption.state?.journey.crystal === crystal, true);
+  assertEqual("dynamics bridge freezes consumption", Object.isFrozen(dynamicsBridgeConsumption), true);
+  assertEqual("dynamics bridge does not mutate input", JSON.stringify(dynamicsBridgeInput), dynamicsBridgeInputSnapshot);
+
+  const unavailableDynamicsBridgeConsumption = resolveDynamicsOriginalSelfFoundation({
+    ...dynamicsBridgeInput,
+    starBeastResult: Object.freeze({
+      status: "CALENDAR_UNAVAILABLE",
+      protocolVersion: "GUANYAO_LUNAR_MANSION_V1",
+      reason: "CHINESE_CALENDAR_NOT_SUPPORTED",
+    }),
+  });
+  assertEqual("dynamics bridge preserves unavailable status", unavailableDynamicsBridgeConsumption.status, "UNAVAILABLE");
+  assertEqual(
+    "dynamics bridge preserves unavailable reason",
+    unavailableDynamicsBridgeConsumption.reason,
+    "STAR_BEAST_CALENDAR_UNAVAILABLE",
+  );
+  assertEqual(
+    "dynamics bridge preserves upstream reason",
+    unavailableDynamicsBridgeConsumption.result.upstreamReason,
+    "CHINESE_CALENDAR_NOT_SUPPORTED",
   );
 }
 

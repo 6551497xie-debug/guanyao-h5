@@ -1,13 +1,13 @@
 # GUANYAO Original Self Architecture Protocol
 # 观爻本我架构协议
 
-版本：Phase 1 / P8
+版本：Phase 1 / P9
 
 状态：ACTIVE FOUNDATION PROTOCOL
 
 基础施工编号：`RC-ORIGINAL-SELF-FOUNDATION-P0`
 
-当前边界校准：`RC-ORIGINAL-SELF-ENDPOINT-P8`
+当前边界校准：`RC-DYNAMICS-ORIGINAL-SELF-BRIDGE-P9`
 
 ## 00｜协议定位
 
@@ -281,7 +281,35 @@ Endpoint 不返回裸露的 READY / NOT_READY 顶层结果，只返回 AVAILABLE
 
 未来外部消费者不得分别调用 Entry 或 Result Consumption。Endpoint 不调用 Star Beast、Mother Code、Hexagram、Yao、Gravity、Crystal Engine 或任何 Runtime，不推断 Journey 阶段，不读取或写入 Storage，也不创建 UI contract。
 
-## 15｜验收
+## 15｜Dynamics Original Self Bridge
+
+Dynamics 只能通过只读 Bridge 调用 Foundation Endpoint：
+
+```text
+Dynamics 正式来源
+↓
+resolveDynamicsOriginalSelfFoundation
+↓
+resolveOriginalSelfFoundationConsumption
+↓
+OriginalSelfFoundationConsumption
+```
+
+Bridge 输入必须是既有正式类型：
+
+- `StarbeastDerivationResult`；
+- 显式 `OriginalSelfJourneyPhase`；
+- `CurrentHexagramFormationResult | null`；
+- `YaoTransmissionProfile | null`；
+- `CrystalState | null`。
+
+Bridge 只负责字段命名投影与 Endpoint 委托，不调用 Star Beast Engine、Hexagram Engine、Yao Runtime 或 Crystal Engine，不推断 Journey 阶段，也不创建任何新结果。
+
+持久化快照中的 `fourSymbol` 不能代替完整 `StarbeastDerivationResult`；运行时 `StarbeastFeedback` 不能代替星兽推导结果；`currentCrystalEndState` 不能反向伪造 `CrystalState`。缺少正式来源时，必须保持未接入，而不是用近似字段补齐。
+
+P9 只建立服务层 Bridge。Gravity 页面、Storage、Runtime 与视觉层仍未消费 Original Self Foundation。
+
+## 16｜验收
 
 Foundation 当前阶段完成的唯一标准是：
 
@@ -294,5 +322,6 @@ Foundation 当前阶段完成的唯一标准是：
 7. Foundation 内部调用顺序唯一，外部消费者不能绕过 Entry 直接生成 `OriginalSelfState`。
 8. Foundation Result 只能被只读转换为 AVAILABLE / UNAVAILABLE，任何 NOT_READY 原因都被完整保留。
 9. 外部调用只能经过 Foundation Endpoint，并只获得 `OriginalSelfFoundationConsumption`。
+10. Dynamics 只通过正式来源进入 Bridge，不以 `fourSymbol`、星兽反馈或最终展示状态伪造 Foundation 输入。
 
 满足以上条件，只代表架构地基完成，不代表任何产品页面已经接入 Original Self。
