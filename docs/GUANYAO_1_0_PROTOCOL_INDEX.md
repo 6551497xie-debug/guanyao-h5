@@ -76,6 +76,9 @@ The current GUANYAO 1.0 main chain is locked as:
 
 ### Starbeast And Lifeforce
 
+- [GUANYAO_FOUR_BEAST_LIFEFORM_PROTOCOL.md](./GUANYAO_FOUR_BEAST_LIFEFORM_PROTOCOL.md)
+  Active starbeast Life Archetype protocol. Aligns starbeast identity, derivation boundaries, mother-code independence, six-space relation, and visual direction with the V2 worldview constitution. It supersedes older "personality lifeform" semantics without changing the existing engines or user results.
+
 - [GUANYAO_1_0_BEAST_LIFEFORCE_MATRIX.md](./GUANYAO_1_0_BEAST_LIFEFORCE_MATRIX.md)  
   Starbeast lifeforce feedback matrix. Locks day-night cycle, starbeast emotion states, Finch high-stickiness principles, and the no-punishment mechanism.
 
