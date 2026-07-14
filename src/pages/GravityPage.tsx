@@ -11,7 +11,6 @@ import {
   type StarbeastFeedback,
   type StarFlowerGrowthState,
 } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
-import { resolveChangeExperienceRuntimeRoute } from "../services/changeExperienceRuntimeRoutingService";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
 import {
   createPersonalityRingLiteEntryFromCrystal,
@@ -20,7 +19,6 @@ import {
 } from "../services/personalityRingLiteService";
 import {
   resolveChangeExperienceRuntimeSmokeFixture,
-  resolveChangeExperienceRuntimeSmokeRevisionAction,
 } from "../services/fixtures/changeExperienceRuntimeSmokeFixtures";
 import { resolvePrimaryPetalDevFixture } from "../services/fixtures/primaryPetalDevFixtures";
 import { resolveStoredMotherFourSymbol } from "../services/guanyaoStoredMotherContextAdapter";
@@ -33,8 +31,7 @@ import {
   resolveCurrentHexagramFormation,
   resolveDynamicsPressureFieldLabel,
 } from "../services/guanyaoCurrentHexagramFormationAdapter";
-import { resolveDynamicsRevisionAction } from "../services/guanyaoDynamicsRevisionActionAdapter";
-import { resolveDynamicsMigrationImpact } from "../services/guanyaoDynamicsMigrationImpactAdapter";
+import { resolveDynamicsChangeExperienceRuntime } from "../services/guanyaoDynamicsChangeExperienceRuntimeAdapter";
 import {
   resolveDynamicsCurrentCrystalEndState,
   type DynamicsCurrentCrystalEndState as CurrentCrystalEndState,
@@ -2459,25 +2456,17 @@ function HexagramCodeDeliveryShell() {
     starbeastFeedbackComplete,
     pressureSeedFallbackText: selectedPressureSeedSurface,
   });
-  const singleModelRevisionAction = useMemo(
-    () =>
-      resolveChangeExperienceRuntimeSmokeRevisionAction(experienceSmokeFixture) ??
-      resolveDynamicsRevisionAction(currentHexagramFormation),
+  const changeExperienceRuntime = useMemo(
+    () => resolveDynamicsChangeExperienceRuntime({
+      formation: currentHexagramFormation,
+      experienceSmokeFixture,
+    }),
     [currentHexagramFormation, experienceSmokeFixture],
   );
-  const changeExperienceRoute = useMemo(
-    () => resolveChangeExperienceRuntimeRoute(singleModelRevisionAction, experienceSmokeFixture),
-    [singleModelRevisionAction, experienceSmokeFixture],
-  );
-  const changeExperiencePresentation = changeExperienceRoute?.presentation ?? null;
-  const crystalMigrationImpact = useMemo(
-    () =>
-      resolveDynamicsMigrationImpact({
-        action: singleModelRevisionAction,
-        changeExperienceRoute,
-      }),
-    [singleModelRevisionAction, changeExperienceRoute],
-  );
+  const singleModelRevisionAction = changeExperienceRuntime.revisionAction;
+  const changeExperienceRoute = changeExperienceRuntime.route;
+  const changeExperiencePresentation = changeExperienceRuntime.presentation;
+  const crystalMigrationImpact = changeExperienceRuntime.migrationImpact;
   const isRevisionActionPending =
     hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE" &&
     Boolean(singleModelRevisionAction) &&

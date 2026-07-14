@@ -9,10 +9,12 @@ const adapterPath = path.join(rootDir, "src/services/guanyaoDynamicsRevisionActi
 const formationAdapterPath = path.join(rootDir, "src/services/guanyaoCurrentHexagramFormationAdapter.ts");
 const typePath = path.join(rootDir, "src/types/dynamicsRevisionAction.ts");
 const gravityPath = path.join(rootDir, "src/pages/GravityPage.tsx");
+const runtimeAdapterPath = path.join(rootDir, "src/services/guanyaoDynamicsChangeExperienceRuntimeAdapter.ts");
 const smokeFixturePath = path.join(rootDir, "src/services/fixtures/changeExperienceRuntimeSmokeFixtures.ts");
 const adapterSource = fs.readFileSync(adapterPath, "utf8");
 const typeSource = fs.readFileSync(typePath, "utf8");
 const gravitySource = fs.readFileSync(gravityPath, "utf8");
+const runtimeAdapterSource = fs.readFileSync(runtimeAdapterPath, "utf8");
 const smokeFixtureSource = fs.readFileSync(smokeFixturePath, "utf8");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-dynamics-revision-action-${process.pid}.mjs`);
 
@@ -111,7 +113,8 @@ try {
   assertIncludes("revision adapter delegates yao transmission", adapterSource, "buildYaoTransmissionChain(");
   assertIncludes("revision adapter forces runtime pressure seed", adapterSource, "preferRuntimePressureSeed: true");
   assertIncludes("revision adapter selects the main cut layer", adapterSource, "yaoTransmissionChain.mainCut.yaoLayer");
-  assertIncludes("Gravity delegates revision action resolution", gravitySource, "resolveDynamicsRevisionAction(currentHexagramFormation)");
+  assertIncludes("change experience runtime delegates revision action resolution", runtimeAdapterSource, "resolveDynamicsRevisionAction(input.formation)");
+  assertIncludes("Gravity delegates change experience runtime", gravitySource, "resolveDynamicsChangeExperienceRuntime({");
   assertExcludes("Gravity no longer imports causal engine service", gravitySource, "guanyaoCausalEngineService");
   assertExcludes("Gravity no longer owns revision action resolver", gravitySource, "function resolveSingleModelRevisionAction");
   assertExcludes("Gravity no longer owns revision action type", gravitySource, "type SingleModelRevisionAction =");

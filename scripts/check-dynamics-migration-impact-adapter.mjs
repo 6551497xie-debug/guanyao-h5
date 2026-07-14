@@ -9,8 +9,10 @@ const adapterPath = path.join(rootDir, "src/services/guanyaoDynamicsMigrationImp
 const routingPath = path.join(rootDir, "src/services/changeExperienceRuntimeRoutingService.ts");
 const smokeFixturePath = path.join(rootDir, "src/services/fixtures/changeExperienceRuntimeSmokeFixtures.ts");
 const gravityPath = path.join(rootDir, "src/pages/GravityPage.tsx");
+const runtimeAdapterPath = path.join(rootDir, "src/services/guanyaoDynamicsChangeExperienceRuntimeAdapter.ts");
 const adapterSource = fs.readFileSync(adapterPath, "utf8");
 const gravitySource = fs.readFileSync(gravityPath, "utf8");
+const runtimeAdapterSource = fs.readFileSync(runtimeAdapterPath, "utf8");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-dynamics-migration-impact-${process.pid}.mjs`);
 
 const assertEqual = (name, actual, expected) => {
@@ -123,7 +125,8 @@ try {
   assertIncludes("migration adapter maps awareness stage", adapterSource, 'return "awareness"');
   assertIncludes("migration adapter uses routed recognition", adapterSource, "unit.recognition.oldReaction");
   assertIncludes("migration adapter uses routed revision", adapterSource, "unit.revision.newResponse");
-  assertIncludes("Gravity delegates migration impact", gravitySource, "resolveDynamicsMigrationImpact({");
+  assertIncludes("change experience runtime delegates migration impact", runtimeAdapterSource, "resolveDynamicsMigrationImpact({");
+  assertIncludes("Gravity consumes unified migration impact", gravitySource, "changeExperienceRuntime.migrationImpact");
   assertExcludes("Gravity no longer forms migration impact", gravitySource, "formRuntimePersonaMigrationImpact");
   assertExcludes("Gravity no longer owns yao stage mapping", gravitySource, "resolvePersonaYaoStageFromYaoName");
   assertExcludes("Gravity no longer owns migration impact resolver", gravitySource, "resolveCrystalMigrationImpactForAction");

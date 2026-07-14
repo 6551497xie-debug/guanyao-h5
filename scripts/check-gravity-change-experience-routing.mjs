@@ -8,6 +8,10 @@ import ts from "typescript";
 const rootDir = process.cwd();
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "guanyao-gravity-change-experience-routing-"));
 const gravityPageSource = fs.readFileSync(path.join(rootDir, "src/pages/GravityPage.tsx"), "utf8");
+const runtimeAdapterSource = fs.readFileSync(
+  path.join(rootDir, "src/services/guanyaoDynamicsChangeExperienceRuntimeAdapter.ts"),
+  "utf8",
+);
 const smokeFixtureSource = fs.readFileSync(
   path.join(rootDir, "src/services/fixtures/changeExperienceRuntimeSmokeFixtures.ts"),
   "utf8",
@@ -201,9 +205,9 @@ try {
   );
 
   assertIncludes(
-    "gravity consumes centralized route",
-    gravityPageSource,
-    "resolveChangeExperienceRuntimeRoute(singleModelRevisionAction, experienceSmokeFixture)",
+    "change experience runtime consumes centralized route",
+    runtimeAdapterSource,
+    "resolveChangeExperienceRuntimeRoute(",
   );
   assertIncludes(
     "gravity consumes centralized smoke fixture",
@@ -211,9 +215,14 @@ try {
     "smokeFixture: resolveChangeExperienceRuntimeSmokeFixture(experienceSmokeFixture)",
   );
   assertIncludes(
-    "gravity consumes centralized smoke revision action",
+    "change experience runtime consumes centralized smoke revision action",
+    runtimeAdapterSource,
+    "resolveChangeExperienceRuntimeSmokeRevisionAction(",
+  );
+  assertIncludes(
+    "gravity consumes unified change experience runtime",
     gravityPageSource,
-    "resolveChangeExperienceRuntimeSmokeRevisionAction(experienceSmokeFixture)",
+    "resolveDynamicsChangeExperienceRuntime({",
   );
   assertNotIncludes(
     "gravity no longer owns smoke revision routing",
