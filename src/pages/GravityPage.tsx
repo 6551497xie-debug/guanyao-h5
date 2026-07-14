@@ -26,10 +26,7 @@ import {
   resolveDynamicsInputReadiness,
   type DynamicsInputReadiness,
 } from "../services/guanyaoDynamicsInputReadinessAdapter";
-import {
-  resolveCurrentHexagramFormation,
-  resolveDynamicsPressureFieldLabel,
-} from "../services/guanyaoCurrentHexagramFormationAdapter";
+import { resolveCurrentHexagramFormation } from "../services/guanyaoCurrentHexagramFormationAdapter";
 import { resolveDynamicsChangeExperienceRuntime } from "../services/guanyaoDynamicsChangeExperienceRuntimeAdapter";
 import { resolveDynamicsMotherPresentation } from "../services/guanyaoDynamicsMotherPresentationAdapter";
 import { resolveDynamicsCurrentHexagramPresentation } from "../services/guanyaoDynamicsCurrentHexagramPresentationAdapter";
@@ -37,6 +34,7 @@ import {
   resolveDynamicsCurrentCrystalEndState,
   type DynamicsCurrentCrystalEndState as CurrentCrystalEndState,
 } from "../services/guanyaoDynamicsCrystalRuntimeAdapter";
+import { resolveDynamicsCurrentCrystalPresentation } from "../services/guanyaoDynamicsCurrentCrystalPresentationAdapter";
 import type { CurrentHexagramFormationResult } from "../types/currentHexagramFormation";
 import type { SingleModelRevisionAction } from "../types/dynamicsRevisionAction";
 import type { SelectedPressureSeedContext } from "../types/primaryPetal";
@@ -1968,41 +1966,14 @@ function TransformationMomentFocus({
   );
 }
 
-function crystalDimensionLabel(value: string | undefined) {
-  const labels: Record<string, string> = {
-    body: "身体",
-    emotion: "情绪",
-    thought: "思想",
-    behavior: "行动",
-    memory: "记忆",
-    motivation: "动机",
-  };
-
-  return labels[value ?? ""] ?? "六个空间";
-}
-
-function buildCrystalBehaviorReading(state: CurrentCrystalEndState) {
-  const motherName = state.mother.motherCodeName || state.mother.lowerTrigram;
-  const hexagramTitle = state.hexagram.hexagramName ?? state.hexagram.hexagramTitle ?? state.hexagram.hexagramCode ?? "本局定位";
-  const pressureField = `这一次压力来自${resolveDynamicsPressureFieldLabel(state.pressure.pressureField)}。`;
-  const dimensionLine = state.transmission.primaryDimension
-    ? `它优先留在${crystalDimensionLabel(state.transmission.primaryDimension)}这里。`
-    : "它已经穿过六个空间。";
-
-  return [
-    "这枚结晶不记录你的压力原句。",
-    `它留下的是压力穿过你的${motherName}母码底盘后，在「${hexagramTitle}」这一局里发生过的变化。`,
-    `${pressureField}${dimensionLine}`,
-    "当外部压力升高时，你的力量会先收束，重新确认边界，再在更精准的坐标上保留下一次行动的可能。",
-  ];
-}
-
 function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState }) {
-  const hexagramTitle = state.hexagram.hexagramName ?? state.hexagram.hexagramTitle ?? state.hexagram.hexagramCode ?? "本局定位";
+  const presentation = useMemo(
+    () => resolveDynamicsCurrentCrystalPresentation({ currentCrystalEndState: state }),
+    [state],
+  );
   const [crystalView, setCrystalView] = useState<CrystalView>("MOLD");
   const [ringLiteState, setRingLiteState] = useState(() => readPersonalityRingLite());
   const savedEntry = ringLiteState.entries.find((entry) => entry.createdAt === state.createdAt);
-  const behaviorReading = buildCrystalBehaviorReading(state);
   const isCardView = crystalView === "CARD";
 
   function saveToPersonalityRingLite() {
@@ -2100,7 +2071,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 textShadow: "0 0 24px rgba(199,169,107,0.2)",
               }}
             >
-              {hexagramTitle}
+              {presentation.hexagramTitle}
             </h1>
 
             <strong
@@ -2130,7 +2101,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
             </span>
 
             <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 13, lineHeight: 1.55 }}>
-              这一局从【{state.mother.motherCodeName || state.mother.lowerTrigram}】进入【{hexagramTitle}】。经过你的回应和变化，它留下了自己的结晶。
+              {presentation.cardJourneyCopy}
             </p>
           </article>
         ) : (
@@ -2158,7 +2129,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 letterSpacing: 0,
               }}
             >
-              本局定位：{hexagramTitle}
+              本局定位：{presentation.hexagramTitle}
             </strong>
           </>
         )}
@@ -2173,8 +2144,8 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
           }}
         >
           {[
-            ["下卦", state.hexagram.lowerTrigram],
-            ["上卦", state.hexagram.upperTrigram],
+            ["下卦", presentation.lowerTrigram],
+            ["上卦", presentation.upperTrigram],
           ].map(([label, value]) => (
             <span
               key={label}
@@ -2202,7 +2173,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
             lineHeight: 1.62,
           }}
         >
-          {isCardView ? "认领这一局留下的变化印记。它只保留人格动态，不暴露具体压力原句。" : state.crystal.copy}
+          {isCardView ? presentation.cardPrivacyCopy : presentation.crystalCopy}
         </p>
 
         {isCardView ? (
@@ -2223,7 +2194,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
             }}
           >
             <strong style={{ color: "rgba(255,226,158,0.82)", fontSize: 13 }}>行为特征解码</strong>
-            {behaviorReading.map((line) => (
+            {presentation.behaviorReading.map((line) => (
               <p key={line} style={{ margin: 0 }}>
                 {line}
               </p>
@@ -2299,7 +2270,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
               <span>这一局，已经成为你人格年轮上的一枚星点。</span>
               <span style={{ color: "rgba(199,169,107,0.58)" }}>
                 已留痕 · {ringLiteState.entries.length} 枚结晶
-                {hexagramTitle ? ` · 最近一枚：${hexagramTitle}` : ""}
+                {presentation.hexagramTitle ? ` · 最近一枚：${presentation.hexagramTitle}` : ""}
               </span>
             </div>
           ) : null}
