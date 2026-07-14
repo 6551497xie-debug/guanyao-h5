@@ -32,11 +32,11 @@ import {
 } from "../services/guanyaoCurrentHexagramFormationAdapter";
 import { resolveDynamicsChangeExperienceRuntime } from "../services/guanyaoDynamicsChangeExperienceRuntimeAdapter";
 import { resolveDynamicsMotherPresentation } from "../services/guanyaoDynamicsMotherPresentationAdapter";
+import { resolveDynamicsCurrentHexagramPresentation } from "../services/guanyaoDynamicsCurrentHexagramPresentationAdapter";
 import {
   resolveDynamicsCurrentCrystalEndState,
   type DynamicsCurrentCrystalEndState as CurrentCrystalEndState,
 } from "../services/guanyaoDynamicsCrystalRuntimeAdapter";
-import type { Trigram } from "../types/guanyaoCausalEngine";
 import type { CurrentHexagramFormationResult } from "../types/currentHexagramFormation";
 import type { SingleModelRevisionAction } from "../types/dynamicsRevisionAction";
 import type { SelectedPressureSeedContext } from "../types/primaryPetal";
@@ -80,21 +80,6 @@ function readDevExperienceSmokeFixture(): string | null {
   if (!viteEnv?.DEV || typeof window === "undefined") return null;
 
   return new URLSearchParams(window.location.search).get("__experienceSmoke");
-}
-
-function trigramSymbolLabel(value: Trigram | undefined) {
-  const symbols: Record<Trigram, string> = {
-    乾: "☰",
-    坤: "☷",
-    震: "☳",
-    巽: "☴",
-    坎: "☵",
-    离: "☲",
-    艮: "☶",
-    兑: "☱",
-  };
-
-  return value ? symbols[value] : "";
 }
 
 function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
@@ -2377,7 +2362,13 @@ function HexagramCodeDeliveryShell() {
   );
   const motherPersonaSnapshot = motherPresentation.personaSnapshot;
   const motherCodeName = motherPresentation.motherCodeName;
-  const currentHexagramProfile = currentHexagramFormation?.currentHexagramProfile ?? null;
+  const currentHexagramPresentation = useMemo(
+    () => resolveDynamicsCurrentHexagramPresentation({
+      formation: currentHexagramFormation,
+      motherPresentation,
+    }),
+    [currentHexagramFormation, motherPresentation],
+  );
   const hasLockedPressureSeed = dynamicsInputReadiness.hasPressureContext;
   const displayExperienceState: ExperienceState = !hasLockedPressureSeed
     ? {
@@ -2396,15 +2387,6 @@ function HexagramCodeDeliveryShell() {
         pressureCopy: "母码已接入，压力开始进入六个空间。",
       }
       : experienceState;
-  const currentHexagramOrientationTitle = currentHexagramProfile
-    ? currentHexagramProfile.hexagramName || currentHexagramProfile.hexagramTitle || currentHexagramProfile.hexagramCode
-    : "";
-  const currentHexagramOrientationMark = currentHexagramProfile
-    ? `${trigramSymbolLabel(currentHexagramProfile.lowerTrigram)}${trigramSymbolLabel(currentHexagramProfile.upperTrigram)}`
-    : "";
-  const currentHexagramOrientationBeast = motherPersonaSnapshot?.fourSymbol && currentHexagramProfile?.lowerTrigram
-    ? `${motherPersonaSnapshot.fourSymbol}入${currentHexagramProfile.lowerTrigram}`
-    : "";
   const valueFlow = resolveValueFlow(executionSnapshot);
   const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
     pressureSeed: selectedPressureSeedSurface,
@@ -2578,11 +2560,11 @@ function HexagramCodeDeliveryShell() {
         data-product-perception={GUANYAO_PRODUCT_RUNTIME_DEFINITION.userPerception.join("|")}
         data-dynamics-mother-context={motherPersonaSnapshot ? "connected" : "missing"}
         data-dynamics-pressure-context={dynamicsInputReadiness.hasPressureContext ? "connected" : "fallback"}
-        data-dynamics-current-hexagram={currentHexagramProfile ? "connected" : "missing"}
+        data-dynamics-current-hexagram={currentHexagramPresentation ? "connected" : "missing"}
         data-dynamics-mother-code={motherCodeName || "missing"}
         data-dynamics-four-beast={motherPersonaSnapshot?.fourSymbol ?? "missing"}
-        data-dynamics-lower-trigram={currentHexagramProfile?.lowerTrigram ?? "missing"}
-        data-dynamics-upper-trigram={currentHexagramProfile?.upperTrigram ?? "missing"}
+        data-dynamics-lower-trigram={currentHexagramPresentation?.lowerTrigram ?? "missing"}
+        data-dynamics-upper-trigram={currentHexagramPresentation?.upperTrigram ?? "missing"}
         style={{
           minHeight: "100dvh",
           width: "100%",
@@ -2633,7 +2615,7 @@ function HexagramCodeDeliveryShell() {
                 <span style={{ color: "rgba(199,169,107,0.66)" }}>母码：{motherCodeName}</span>
               </>
             ) : null}
-            {currentHexagramProfile ? (
+            {currentHexagramPresentation ? (
               <>
                 <br />
                 <span
@@ -2648,15 +2630,15 @@ function HexagramCodeDeliveryShell() {
                     本局卦象定位
                   </span>
                   <span style={{ color: "rgba(245,245,245,0.82)", fontSize: 16, fontWeight: 680, letterSpacing: 0 }}>
-                    {currentHexagramOrientationTitle}
-                    {currentHexagramOrientationMark ? ` ${currentHexagramOrientationMark}` : ""}
+                    {currentHexagramPresentation.title}
+                    {currentHexagramPresentation.trigramMark ? ` ${currentHexagramPresentation.trigramMark}` : ""}
                   </span>
                   <span style={{ color: "rgba(245,245,245,0.56)", fontSize: 13, lineHeight: 1.5 }}>
                     你被推到一个需要重新选择方向的位置。
                   </span>
-                  {currentHexagramOrientationBeast ? (
+                  {currentHexagramPresentation.starbeastIngress ? (
                     <span style={{ color: "rgba(199,169,107,0.62)", fontSize: 12 }}>
-                      {currentHexagramOrientationBeast}
+                      {currentHexagramPresentation.starbeastIngress}
                     </span>
                   ) : null}
                 </span>
