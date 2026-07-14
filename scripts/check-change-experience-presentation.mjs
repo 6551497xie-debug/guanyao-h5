@@ -97,6 +97,11 @@ try {
   );
 
   presentationCases.forEach(({ name, presentation }) => {
+    assertEqual(
+      `${name} first response label`,
+      presentation.recognition.firstResponseLabel,
+      "这一刻首先出现的回应",
+    );
     const validResult = validateChangeExperiencePresentation(presentation);
     assertEqual(
       name,
@@ -104,6 +109,19 @@ try {
       "VALID_CHANGE_EXPERIENCE_PRESENTATION",
     );
   });
+
+  const missingFirstResponseLabelResult = validateChangeExperiencePresentation({
+    ...bodyAwarenessChangeExperiencePresentation,
+    recognition: {
+      ...bodyAwarenessChangeExperiencePresentation.recognition,
+      firstResponseLabel: "",
+    },
+  });
+  assertEqual(
+    "first response label is required",
+    missingFirstResponseLabelResult.reasons.includes("RECOGNITION_INCOMPLETE"),
+    true,
+  );
 
   presentationCases.forEach(({ name, presentation }) => {
     const invalidBoundaryResult = validateChangeExperiencePresentation({

@@ -294,6 +294,21 @@ try {
     gravityPageSource,
     "function resolvePersonaDimensionFromLayerLabel",
   );
+  assertIncludes(
+    "gravity consumes formal first response label",
+    gravityPageSource,
+    "presentation?.recognition.firstResponseLabel ?? CHANGE_EXPERIENCE_FIRST_RESPONSE_LABEL",
+  );
+  assertNotIncludes(
+    "gravity removes familiar reaction label",
+    gravityPageSource,
+    "熟悉的反应：",
+  );
+  assertNotIncludes(
+    "gravity does not own first response label copy",
+    gravityPageSource,
+    "这一刻首先出现的回应",
+  );
 
   console.log("[GRAVITY CHANGE EXPERIENCE ROUTING] PASS");
 } finally {

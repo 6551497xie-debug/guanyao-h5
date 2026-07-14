@@ -79,7 +79,12 @@ export const validateChangeExperiencePresentation = (
   }
 
   const recognition = presentation.recognition;
-  if (!isRecord(recognition) || !hasText(recognition.oldReaction) || !hasText(recognition.protectionMeaning)) {
+  if (
+    !isRecord(recognition) ||
+    !hasText(recognition.firstResponseLabel) ||
+    !hasText(recognition.oldReaction) ||
+    !hasText(recognition.protectionMeaning)
+  ) {
     reasons.push("RECOGNITION_INCOMPLETE");
   }
 

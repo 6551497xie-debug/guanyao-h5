@@ -24,6 +24,7 @@ import {
 } from "../services/guanyaoDynamicsInputReadinessAdapter";
 import { resolveCurrentHexagramFormation } from "../services/guanyaoCurrentHexagramFormationAdapter";
 import { resolveDynamicsChangeExperienceRuntime } from "../services/guanyaoDynamicsChangeExperienceRuntimeAdapter";
+import { CHANGE_EXPERIENCE_FIRST_RESPONSE_LABEL } from "../services/changeExperiencePresentationAdapter";
 import { resolveDynamicsMotherPresentation } from "../services/guanyaoDynamicsMotherPresentationAdapter";
 import { resolveDynamicsExperienceState } from "../services/guanyaoDynamicsExperienceStateAdapter";
 import { resolveDynamicsExperienceReadinessPresentation } from "../services/guanyaoDynamicsExperienceReadinessPresentationAdapter";
@@ -1169,7 +1170,8 @@ function SingleModelRevisionActionFocus({
 }) {
   const hasPresentation = Boolean(presentation);
   const supportingLine = presentation?.recognition.protectionMeaning ?? `你在${action.layerLabel}这里，看见了一种熟悉的保护方式。`;
-  const recognitionLine = presentation ? `熟悉的反应：${presentation.recognition.oldReaction}` : `熟悉的反应：${action.sourceReason}`;
+  const firstResponseLabel = presentation?.recognition.firstResponseLabel ?? CHANGE_EXPERIENCE_FIRST_RESPONSE_LABEL;
+  const recognitionLine = `${firstResponseLabel}：${presentation?.recognition.oldReaction ?? action.sourceReason}`;
   const microActionLine = presentation?.revision.newResponse ?? action.actionLine;
   const beastCueLine = presentation?.visual.starbeast?.cueLine;
   const traceLine = presentation?.meaning.crystalImprint ?? "不用解决全局。只是这一局，你先留下一个新的回应方式。";

@@ -52,6 +52,7 @@ export type ChangeExperiencePresentationContext = Readonly<{
 }>;
 
 export type ChangeExperiencePresentationRecognition = Readonly<{
+  firstResponseLabel: string;
   oldReaction: string;
   protectionMeaning: string;
 }>;

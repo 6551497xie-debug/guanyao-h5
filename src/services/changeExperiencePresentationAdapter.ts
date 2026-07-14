@@ -6,6 +6,8 @@ import type {
 
 const hasText = (value: string | undefined): value is string => typeof value === "string" && value.trim().length > 0;
 
+export const CHANGE_EXPERIENCE_FIRST_RESPONSE_LABEL = "这一刻首先出现的回应";
+
 const resolveVisual = (
   input: ChangeExperiencePresentationInput,
   fallbackVisual?: ChangeExperiencePresentationVisual,
@@ -38,6 +40,7 @@ export const adaptChangeExperiencePresentation = (
     currentSituation: input.changeExperience.context.currentSituation,
   },
   recognition: {
+    firstResponseLabel: CHANGE_EXPERIENCE_FIRST_RESPONSE_LABEL,
     oldReaction: input.changeExperience.recognition.oldReaction,
     protectionMeaning: input.changeExperience.recognition.protectionMeaning,
   },
