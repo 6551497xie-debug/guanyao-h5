@@ -38,7 +38,7 @@ The current GUANYAO 1.0 main chain is locked as:
 
 ```text
 时空调频
-→ 母码卡 / 本命原力 IP
+→ 母码卡 / 原始生命倾向
 → 压力种子 / 引力扰动
 → Cosmic Botanics 六维花冠
 → 主修花瓣 6 节点调频
@@ -51,7 +51,7 @@ The current GUANYAO 1.0 main chain is locked as:
 | Layer | Product Meaning | Runtime Role |
 | --- | --- | --- |
 | 时空调频 | 用户确认自己的出生时间与出生地 | Chrono + Geo input |
-| 母码卡 / 本命原力 IP | 用户看见自己的初始人格结构 | Mother identity artifact |
+| 母码卡 / 原始生命倾向 | 用户看见生命最自然的起势方式 | Mother life-tendency expression |
 | 压力种子 / 引力扰动 | 当前现实压力被温和看见 | Pressure context |
 | Cosmic Botanics 六维花冠 | 压力落入人格空间后的调频场 | Six-dimensional interaction field |
 | 主修花瓣 6 节点调频 | 用户完成一个小而真实的回应动作 | Six-node micro-tuning |
@@ -93,13 +93,16 @@ The current GUANYAO 1.0 main chain is locked as:
 - [R8_ENGINE_FULL_PIPELINE_AUDIT.md](./R8_ENGINE_FULL_PIPELINE_AUDIT.md)  
   Full pipeline audit reference for checking whether the running chain remains structurally coherent.
 
-### Mother Code And Persona Asset
+### Mother Code And Original Life Tendency
+
+- [GUANYAO_MOTHER_CODE_LIFE_TENDENCY_PROTOCOL.md](./GUANYAO_MOTHER_CODE_LIFE_TENDENCY_PROTOCOL.md)
+  Active mother-code semantic protocol. Defines Mother Code as the original life tendency, locks the lunar year-month-day plus hour-branch modulo-eight chain, and preserves independence from starbeast and location.
 
 - [R8_ENGINE_PERSONALITY_ASSET.md](./R8_ENGINE_PERSONALITY_ASSET.md)  
-  Personality asset protocol. Defines how generated personality output becomes an asset rather than a temporary UI result.
+  Legacy personality asset reference. It remains available for engineering history but does not define the active Mother Code worldview semantics.
 
 - [docs/protocols/three-code-system.md](./protocols/three-code-system.md)  
-  Three-code system reference. Use only as protocol context; do not re-open frozen generation paths without explicit unfreeze.
+  Historical three-code system reference. Its "Mother Code 64" wording does not override the active 8 Mother Code structure or reopen frozen generation paths.
 
 ### Hexagram Asset And 64-Code Card
 
