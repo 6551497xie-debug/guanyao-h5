@@ -1,13 +1,13 @@
 # GUANYAO Original Self Architecture Protocol
 # 观爻本我架构协议
 
-版本：Phase 1 / P6
+版本：Phase 1 / P7
 
 状态：ACTIVE FOUNDATION PROTOCOL
 
 基础施工编号：`RC-ORIGINAL-SELF-FOUNDATION-P0`
 
-当前边界校准：`RC-ORIGINAL-SELF-FLOW-P6`
+当前边界校准：`RC-ORIGINAL-SELF-CONSUMPTION-P7`
 
 ## 00｜协议定位
 
@@ -235,7 +235,27 @@ Foundation 内部职责严格分离：
 
 这条路径是 Foundation 的生成边界，不改变任何既有业务引擎的推导职责，也不代表页面或 Runtime 已经接入。
 
-## 13｜验收
+## 13｜Foundation Result Consumption
+
+`OriginalSelfFoundationResult` 进入未来消费者之前，必须经过只读消费边界：
+
+```text
+OriginalSelfFoundationResult
+↓
+consumeOriginalSelfFoundationResult
+↓
+OriginalSelfFoundationConsumption
+├─ AVAILABLE
+└─ UNAVAILABLE
+```
+
+`AVAILABLE` 只暴露 Result 中已经存在的同一份 `OriginalSelfState` 引用，不重新建立状态，不复制 Journey，也不改变星兽、卦象、爻或 Crystal。
+
+`UNAVAILABLE` 必须保留原始 `OriginalSelfFoundationNotReady` Result。`STAR_BEAST_INVALID_DATE`、`STAR_BEAST_CALENDAR_UNAVAILABLE`、`FOUNDATION_VALIDATION_FAILED` 以及对应的上游原因或 validation reasons 均不得被吞掉、改写或降级为无原因的 `null`。
+
+Result Consumption 不调用 Entry、Source Adapter、Resolver、Validator、Foundation Adapter 或任何业务引擎；不生成 fallback Foundation，不推断阶段，不渲染 UI，不推进 Runtime，也不写入 Storage。
+
+## 14｜验收
 
 Foundation 当前阶段完成的唯一标准是：
 
@@ -246,5 +266,6 @@ Foundation 当前阶段完成的唯一标准是：
 5. Foundation 不依赖 UI、Storage、AI 或视觉实现；
 6. foundation gate、release gate 与 build 通过。
 7. Foundation 内部调用顺序唯一，外部消费者不能绕过 Entry 直接生成 `OriginalSelfState`。
+8. Foundation Result 只能被只读转换为 AVAILABLE / UNAVAILABLE，任何 NOT_READY 原因都被完整保留。
 
 满足以上条件，只代表架构地基完成，不代表任何产品页面已经接入 Original Self。

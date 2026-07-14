@@ -12,6 +12,7 @@ const validatorPath = path.join(rootDir, "src/services/validators/originalSelfFo
 const resolverPath = path.join(rootDir, "src/services/originalSelfFoundationResolver.ts");
 const sourceAdapterPath = path.join(rootDir, "src/services/originalSelfFoundationSourceAdapter.ts");
 const entryPath = path.join(rootDir, "src/services/originalSelfFoundationEntry.ts");
+const consumptionPath = path.join(rootDir, "src/services/originalSelfFoundationResultConsumption.ts");
 const protocolPath = path.join(rootDir, "docs/GUANYAO_ORIGINAL_SELF_ARCHITECTURE_PROTOCOL.md");
 const packagePath = path.join(rootDir, "package.json");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-original-self-foundation-${process.pid}.mjs`);
@@ -60,6 +61,7 @@ for (const [name, filePath] of [
   ["foundation resolver", resolverPath],
   ["foundation source adapter", sourceAdapterPath],
   ["foundation entry", entryPath],
+  ["foundation result consumption", consumptionPath],
   ["architecture protocol", protocolPath],
   ["package manifest", packagePath],
 ]) {
@@ -75,6 +77,7 @@ if (failures.length === 0) {
   const resolverSource = fs.readFileSync(resolverPath, "utf8");
   const sourceAdapterSource = fs.readFileSync(sourceAdapterPath, "utf8");
   const entrySource = fs.readFileSync(entryPath, "utf8");
+  const consumptionSource = fs.readFileSync(consumptionPath, "utf8");
   const protocolSource = fs.readFileSync(protocolPath, "utf8");
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   const sourceFile = ts.createSourceFile(typePath, typeSource, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS);
@@ -246,6 +249,41 @@ if (failures.length === 0) {
     "switch (",
   ].forEach((marker) => assertExcludes("foundation entry stays composition-only", entrySource, marker));
 
+  [
+    "export type OriginalSelfFoundationAvailable",
+    "export type OriginalSelfFoundationUnavailable",
+    "export type OriginalSelfFoundationConsumption",
+    "export function consumeOriginalSelfFoundationResult",
+    'status: "AVAILABLE"',
+    'status: "UNAVAILABLE"',
+    'source: "original_self_foundation_consumption"',
+    "result: OriginalSelfFoundationReady",
+    "result: OriginalSelfFoundationNotReady",
+    'reason: OriginalSelfFoundationNotReady["reason"]',
+    "state: result.state",
+    "reason: result.reason",
+  ].forEach((marker) => assertIncludes("foundation result consumption contract", consumptionSource, marker));
+
+  [
+    "resolveOriginalSelfFoundationFromSources(",
+    "adaptOriginalSelfFoundationSource(",
+    "resolveOriginalSelfFoundation(",
+    "adaptOriginalSelfFoundation(",
+    "validateOriginalSelfFoundation(",
+    "resolveStarbeastFromBirthDate",
+    "guanyaoStarbeastEngineService",
+    "GuanyaoRuntimeEngine",
+    "resolveRuntime",
+    "resolveCurrentHexagram",
+    "HexagramCrystalEngine",
+    "localStorage",
+    "sessionStorage",
+    "fetch(",
+    'from "react"',
+  ].forEach((marker) =>
+    assertExcludes("foundation result consumption stays result-only", consumptionSource, marker),
+  );
+
   assertOnlyAllowedSourceSites(
     "foundation adapter has no external callers",
     /\badaptOriginalSelfFoundation\b/,
@@ -265,6 +303,11 @@ if (failures.length === 0) {
     "foundation source adapter has no external callers",
     /\badaptOriginalSelfFoundationSource\b/,
     [sourceAdapterPath, entryPath],
+  );
+  assertOnlyAllowedSourceSites(
+    "foundation result stays inside entry-consumption boundary",
+    /\bOriginalSelfFoundationResult\b/,
+    [resolverPath, entryPath, consumptionPath],
   );
   assertOnlyAllowedSourceSites(
     "original self state has one construction site",
@@ -304,6 +347,13 @@ if (failures.length === 0) {
     "resolveOriginalSelfFoundationFromSources",
     "未来消费者不得绕过 Entry",
     "消费者只能接收 `OriginalSelfFoundationResult`",
+    "Foundation Result Consumption",
+    "consumeOriginalSelfFoundationResult",
+    "OriginalSelfFoundationConsumption",
+    "AVAILABLE",
+    "UNAVAILABLE",
+    "原始 `OriginalSelfFoundationNotReady` Result",
+    "不得被吞掉、改写或降级为无原因的 `null`",
   ].forEach((marker) => assertIncludes("foundation protocol contract", protocolSource, marker));
 
   assertIncludes(
@@ -367,14 +417,22 @@ if (failures.length === 0) {
       strict: true,
     },
   });
+  const transpiledConsumption = ts.transpileModule(consumptionSource, {
+    compilerOptions: {
+      module: ts.ModuleKind.ES2022,
+      target: ts.ScriptTarget.ES2022,
+      strict: true,
+    },
+  });
   fs.writeFileSync(
     tempModulePath,
-    `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}\n${transpiledResolver.outputText}\n${transpiledSourceAdapter.outputText}\n${transpiledEntry.outputText}`,
+    `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}\n${transpiledResolver.outputText}\n${transpiledSourceAdapter.outputText}\n${transpiledEntry.outputText}\n${transpiledConsumption.outputText}`,
   );
 
   const {
     adaptOriginalSelfFoundation,
     adaptOriginalSelfFoundationSource,
+    consumeOriginalSelfFoundationResult,
     resolveOriginalSelfFoundation,
     resolveOriginalSelfFoundationFromSources,
     validateOriginalSelfFoundation,
@@ -636,6 +694,62 @@ if (failures.length === 0) {
     invalidEntryResult.reason,
     "STAR_BEAST_CALENDAR_UNAVAILABLE",
   );
+
+  const readyConsumptionInputSnapshot = JSON.stringify(entryResult);
+  const readyConsumption = consumeOriginalSelfFoundationResult(entryResult);
+  assertEqual("consumption exposes ready result", readyConsumption.status, "AVAILABLE");
+  assertEqual("consumption identifies its source", readyConsumption.source, "original_self_foundation_consumption");
+  assertEqual("consumption preserves ready result reference", readyConsumption.result === entryResult, true);
+  assertEqual("consumption preserves original self reference", readyConsumption.state === entryResult.state, true);
+  assertEqual("consumption freezes available output", Object.isFrozen(readyConsumption), true);
+  assertEqual("consumption does not mutate ready result", JSON.stringify(entryResult), readyConsumptionInputSnapshot);
+
+  const invalidDateConsumption = consumeOriginalSelfFoundationResult(invalidDateResult);
+  assertEqual("consumption exposes invalid date as unavailable", invalidDateConsumption.status, "UNAVAILABLE");
+  assertEqual("consumption preserves invalid date result reference", invalidDateConsumption.result === invalidDateResult, true);
+  assertEqual("consumption preserves invalid date reason", invalidDateConsumption.reason, "STAR_BEAST_INVALID_DATE");
+  assertEqual(
+    "consumption preserves invalid date upstream reason",
+    invalidDateConsumption.result.upstreamReason,
+    "INVALID_GREGORIAN_BIRTH_DATE",
+  );
+
+  const calendarUnavailableConsumption = consumeOriginalSelfFoundationResult(invalidEntryResult);
+  assertEqual("consumption exposes calendar failure as unavailable", calendarUnavailableConsumption.status, "UNAVAILABLE");
+  assertEqual(
+    "consumption preserves calendar failure result reference",
+    calendarUnavailableConsumption.result === invalidEntryResult,
+    true,
+  );
+  assertEqual(
+    "consumption preserves calendar failure reason",
+    calendarUnavailableConsumption.reason,
+    "STAR_BEAST_CALENDAR_UNAVAILABLE",
+  );
+  assertEqual(
+    "consumption preserves calendar upstream reason",
+    calendarUnavailableConsumption.result.upstreamReason,
+    "CHINESE_CALENDAR_NOT_SUPPORTED",
+  );
+
+  const validationFailureConsumption = consumeOriginalSelfFoundationResult(invalidFoundationResult);
+  assertEqual("consumption exposes validation failure as unavailable", validationFailureConsumption.status, "UNAVAILABLE");
+  assertEqual(
+    "consumption preserves validation failure result reference",
+    validationFailureConsumption.result === invalidFoundationResult,
+    true,
+  );
+  assertEqual(
+    "consumption preserves validation failure reason",
+    validationFailureConsumption.reason,
+    "FOUNDATION_VALIDATION_FAILED",
+  );
+  assertEqual(
+    "consumption preserves validation reasons reference",
+    validationFailureConsumption.result.validationReasons === invalidFoundationResult.validationReasons,
+    true,
+  );
+  assertEqual("consumption freezes unavailable output", Object.isFrozen(validationFailureConsumption), true);
 }
 
 fs.rmSync(tempModulePath, { force: true });
