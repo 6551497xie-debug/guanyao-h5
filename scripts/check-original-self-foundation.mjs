@@ -16,6 +16,15 @@ const protocolPath = path.join(rootDir, "docs/GUANYAO_ORIGINAL_SELF_ARCHITECTURE
 const packagePath = path.join(rootDir, "package.json");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-original-self-foundation-${process.pid}.mjs`);
 
+const collectTypeScriptSourcePaths = (directoryPath) =>
+  fs.readdirSync(directoryPath, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = path.join(directoryPath, entry.name);
+    if (entry.isDirectory()) return collectTypeScriptSourcePaths(entryPath);
+    return /\.tsx?$/.test(entry.name) ? [entryPath] : [];
+  });
+
+const typeScriptSourcePaths = collectTypeScriptSourcePaths(path.join(rootDir, "src"));
+
 const failures = [];
 
 const assertIncludes = (name, source, expected) => {
@@ -31,6 +40,16 @@ const assertExcludes = (name, source, forbidden) => {
 const assertEqual = (name, actual, expected) => {
   if (actual !== expected) failures.push(`${name} expected=${expected} actual=${actual}`);
   else console.log(`PASS | ${name} | expected=${expected} | actual=${actual}`);
+};
+
+const assertOnlyAllowedSourceSites = (name, pattern, allowedPaths) => {
+  const violations = typeScriptSourcePaths
+    .filter((filePath) => !allowedPaths.includes(filePath))
+    .filter((filePath) => pattern.test(fs.readFileSync(filePath, "utf8")))
+    .map((filePath) => path.relative(rootDir, filePath));
+
+  if (violations.length > 0) failures.push(`${name} forbidden-sites=${violations.join(",")}`);
+  else console.log(`PASS | ${name} | forbidden-sites=none`);
 };
 
 for (const [name, filePath] of [
@@ -227,6 +246,32 @@ if (failures.length === 0) {
     "switch (",
   ].forEach((marker) => assertExcludes("foundation entry stays composition-only", entrySource, marker));
 
+  assertOnlyAllowedSourceSites(
+    "foundation adapter has no external callers",
+    /\badaptOriginalSelfFoundation\b/,
+    [adapterPath, resolverPath],
+  );
+  assertOnlyAllowedSourceSites(
+    "foundation validator has no external callers",
+    /\bvalidateOriginalSelfFoundation\b/,
+    [validatorPath, resolverPath],
+  );
+  assertOnlyAllowedSourceSites(
+    "foundation resolver has no external callers",
+    /\bresolveOriginalSelfFoundation\b/,
+    [resolverPath, entryPath],
+  );
+  assertOnlyAllowedSourceSites(
+    "foundation source adapter has no external callers",
+    /\badaptOriginalSelfFoundationSource\b/,
+    [sourceAdapterPath, entryPath],
+  );
+  assertOnlyAllowedSourceSites(
+    "original self state has one construction site",
+    /semanticRole:\s*"ORIGINAL_SELF",/,
+    [adapterPath],
+  );
+
   ["localStorage", "sessionStorage", "fetch(", 'from "react"', "JSX.", "HTMLElement", "CurrentHexagramProfile {", "CrystalState = Readonly"].forEach(
     (marker) => assertExcludes("foundation stays implementation-neutral", typeSource, marker),
   );
@@ -250,6 +295,15 @@ if (failures.length === 0) {
     "Storage schema",
     "AI prompt",
     "视觉组件",
+    "Foundation 唯一合法生成路径",
+    "OriginalSelfFoundationSourceInput",
+    "adaptOriginalSelfFoundationSource",
+    "OriginalSelfFoundationResolverInput",
+    "resolveOriginalSelfFoundation",
+    "OriginalSelfFoundationResult",
+    "resolveOriginalSelfFoundationFromSources",
+    "未来消费者不得绕过 Entry",
+    "消费者只能接收 `OriginalSelfFoundationResult`",
   ].forEach((marker) => assertIncludes("foundation protocol contract", protocolSource, marker));
 
   assertIncludes(

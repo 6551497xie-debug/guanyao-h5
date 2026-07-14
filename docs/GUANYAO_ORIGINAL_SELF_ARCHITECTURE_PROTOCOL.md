@@ -1,11 +1,13 @@
 # GUANYAO Original Self Architecture Protocol
 # 观爻本我架构协议
 
-版本：Phase 1 / P0
+版本：Phase 1 / P6
 
 状态：ACTIVE FOUNDATION PROTOCOL
 
-施工编号：`RC-ORIGINAL-SELF-FOUNDATION-P0`
+基础施工编号：`RC-ORIGINAL-SELF-FOUNDATION-P0`
+
+当前边界校准：`RC-ORIGINAL-SELF-FLOW-P6`
 
 ## 00｜协议定位
 
@@ -195,9 +197,47 @@ P0 不创建：
 
 这些字段是架构边界，不是运行时功能开关。
 
-## 12｜验收
+## 12｜Foundation 唯一合法生成路径
 
-Foundation P0 完成的唯一标准是：
+Original Self Foundation 的工程生成路径固定为：
+
+```text
+既有只读来源
+↓
+OriginalSelfFoundationSourceInput
+↓
+adaptOriginalSelfFoundationSource
+↓
+OriginalSelfFoundationResolverInput
+↓
+resolveOriginalSelfFoundation
+↓
+OriginalSelfFoundationResult
+```
+
+对未来消费方开放的唯一合法生成入口是：
+
+```text
+resolveOriginalSelfFoundationFromSources
+```
+
+该 Entry 只组合 Source Adapter 与 Resolver，不调用 Star Beast、Mother Code、Hexagram、Yao、Gravity 或 Crystal Engine，不推断 `JourneyState.currentPhase`，不写入 Storage，也不触发 UI 或 Runtime。
+
+Foundation 内部职责严格分离：
+
+- Source Adapter 只将既有来源投影为 Resolver Input；
+- Adapter 只建立 `OriginalSelfState`；
+- Validator 只验证 Foundation 语义和引用边界；
+- Resolver 只处理 READY、NOT_READY 与验证结果；
+- Entry 只按固定顺序组合 Source Adapter 与 Resolver。
+
+未来消费者不得绕过 Entry 直接调用 Foundation Adapter、Validator、Resolver 或 Source Adapter，也不得自行拼装 `OriginalSelfState`。消费者只能接收 `OriginalSelfFoundationResult`，并根据其 READY / NOT_READY 状态决定是否读取既有 Foundation 状态。
+
+这条路径是 Foundation 的生成边界，不改变任何既有业务引擎的推导职责，也不代表页面或 Runtime 已经接入。
+
+## 13｜验收
+
+Foundation 当前阶段完成的唯一标准是：
 
 1. 三个基础状态类型存在并从类型入口导出；
 2. 最高语义链在类型与协议中一致；
@@ -205,5 +245,6 @@ Foundation P0 完成的唯一标准是：
 4. 现有 Hexagram、Yao 与 Crystal 类型只被引用，不被复制或重写；
 5. Foundation 不依赖 UI、Storage、AI 或视觉实现；
 6. foundation gate、release gate 与 build 通过。
+7. Foundation 内部调用顺序唯一，外部消费者不能绕过 Entry 直接生成 `OriginalSelfState`。
 
 满足以上条件，只代表架构地基完成，不代表任何产品页面已经接入 Original Self。
