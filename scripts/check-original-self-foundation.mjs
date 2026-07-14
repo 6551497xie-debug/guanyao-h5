@@ -10,6 +10,7 @@ const typeIndexPath = path.join(rootDir, "src/types/index.ts");
 const adapterPath = path.join(rootDir, "src/services/originalSelfFoundationAdapter.ts");
 const validatorPath = path.join(rootDir, "src/services/validators/originalSelfFoundationValidator.ts");
 const resolverPath = path.join(rootDir, "src/services/originalSelfFoundationResolver.ts");
+const sourceAdapterPath = path.join(rootDir, "src/services/originalSelfFoundationSourceAdapter.ts");
 const protocolPath = path.join(rootDir, "docs/GUANYAO_ORIGINAL_SELF_ARCHITECTURE_PROTOCOL.md");
 const packagePath = path.join(rootDir, "package.json");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-original-self-foundation-${process.pid}.mjs`);
@@ -37,6 +38,7 @@ for (const [name, filePath] of [
   ["foundation adapter", adapterPath],
   ["foundation validator", validatorPath],
   ["foundation resolver", resolverPath],
+  ["foundation source adapter", sourceAdapterPath],
   ["architecture protocol", protocolPath],
   ["package manifest", packagePath],
 ]) {
@@ -50,6 +52,7 @@ if (failures.length === 0) {
   const adapterSource = fs.readFileSync(adapterPath, "utf8");
   const validatorSource = fs.readFileSync(validatorPath, "utf8");
   const resolverSource = fs.readFileSync(resolverPath, "utf8");
+  const sourceAdapterSource = fs.readFileSync(sourceAdapterPath, "utf8");
   const protocolSource = fs.readFileSync(protocolPath, "utf8");
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   const sourceFile = ts.createSourceFile(typePath, typeSource, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS);
@@ -170,6 +173,34 @@ if (failures.length === 0) {
     'from "react"',
   ].forEach((marker) => assertExcludes("foundation resolver stays result-only", resolverSource, marker));
 
+  [
+    "export type OriginalSelfFoundationSourceInput",
+    "export function adaptOriginalSelfFoundationSource",
+    "starBeast: input.starBeastResult",
+    "currentPhase: input.currentPhase",
+    "hexagram: input.formation?.currentHexagramProfile ?? null",
+    "yao: input.yao",
+    "crystal: input.crystal",
+  ].forEach((marker) => assertIncludes("foundation source adapter contract", sourceAdapterSource, marker));
+
+  [
+    "resolveOriginalSelfFoundation(",
+    "adaptOriginalSelfFoundation(",
+    "validateOriginalSelfFoundation(",
+    "resolveStarbeastFromBirthDate",
+    "guanyaoStarbeastEngineService",
+    "GuanyaoRuntimeEngine",
+    "resolveRuntime",
+    "resolveCurrentHexagram",
+    "HexagramCrystalEngine",
+    "localStorage",
+    "sessionStorage",
+    "fetch(",
+    'from "react"',
+    "if (",
+    "switch (",
+  ].forEach((marker) => assertExcludes("foundation source adapter stays reference-only", sourceAdapterSource, marker));
+
   ["localStorage", "sessionStorage", "fetch(", 'from "react"', "JSX.", "HTMLElement", "CurrentHexagramProfile {", "CrystalState = Readonly"].forEach(
     (marker) => assertExcludes("foundation stays implementation-neutral", typeSource, marker),
   );
@@ -233,13 +264,21 @@ if (failures.length === 0) {
       strict: true,
     },
   });
+  const transpiledSourceAdapter = ts.transpileModule(sourceAdapterSource, {
+    compilerOptions: {
+      module: ts.ModuleKind.ES2022,
+      target: ts.ScriptTarget.ES2022,
+      strict: true,
+    },
+  });
   fs.writeFileSync(
     tempModulePath,
-    `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}\n${transpiledResolver.outputText}`,
+    `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}\n${transpiledResolver.outputText}\n${transpiledSourceAdapter.outputText}`,
   );
 
   const {
     adaptOriginalSelfFoundation,
+    adaptOriginalSelfFoundationSource,
     resolveOriginalSelfFoundation,
     validateOriginalSelfFoundation,
   } = await import(`file://${tempModulePath}?t=${Date.now()}`);
@@ -426,6 +465,53 @@ if (failures.length === 0) {
     "resolver freezes validation reasons",
     Object.isFrozen(invalidFoundationResult.validationReasons),
     true,
+  );
+
+  const formation = Object.freeze({
+    source: "dynamics",
+    currentHexagramProfile: hexagram,
+  });
+  const sourceInput = Object.freeze({
+    starBeastResult: input.starBeast,
+    currentPhase: "HEXAGRAM",
+    formation,
+    yao,
+    crystal,
+  });
+  const sourceInputSnapshot = JSON.stringify(sourceInput);
+  const resolverInput = adaptOriginalSelfFoundationSource(sourceInput);
+  assertEqual("source adapter preserves star beast result", resolverInput.starBeast === input.starBeast, true);
+  assertEqual("source adapter keeps explicit phase", resolverInput.currentPhase, "HEXAGRAM");
+  assertEqual("source adapter extracts current hexagram reference", resolverInput.hexagram === hexagram, true);
+  assertEqual("source adapter preserves yao reference", resolverInput.yao === yao, true);
+  assertEqual("source adapter preserves crystal reference", resolverInput.crystal === crystal, true);
+  assertEqual("source adapter freezes resolver input", Object.isFrozen(resolverInput), true);
+  assertEqual("source adapter does not mutate input", JSON.stringify(sourceInput), sourceInputSnapshot);
+  assertEqual(
+    "source adapter output resolves without an engine call",
+    resolveOriginalSelfFoundation(resolverInput).status,
+    "READY",
+  );
+
+  const withoutFormation = adaptOriginalSelfFoundationSource({
+    ...sourceInput,
+    formation: null,
+  });
+  assertEqual("source adapter keeps missing formation nullable", withoutFormation.hexagram, null);
+
+  const invalidSourceResult = adaptOriginalSelfFoundationSource({
+    ...sourceInput,
+    starBeastResult: Object.freeze({
+      status: "INVALID_DATE",
+      protocolVersion: "GUANYAO_LUNAR_MANSION_V1",
+      reason: "OUTSIDE_SUPPORTED_GREGORIAN_RANGE",
+    }),
+  });
+  assertEqual("source adapter preserves invalid star beast result", invalidSourceResult.starBeast.status, "INVALID_DATE");
+  assertEqual(
+    "resolver keeps source adapter invalid result not ready",
+    resolveOriginalSelfFoundation(invalidSourceResult).reason,
+    "STAR_BEAST_INVALID_DATE",
   );
 }
 
