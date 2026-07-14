@@ -7,8 +7,10 @@ import { build } from "esbuild";
 const rootDir = process.cwd();
 const adapterPath = path.join(rootDir, "src/services/guanyaoDynamicsCurrentCrystalPresentationAdapter.ts");
 const gravityPath = path.join(rootDir, "src/pages/GravityPage.tsx");
+const depositAdapterPath = path.join(rootDir, "src/services/guanyaoDynamicsPersonalityRingDepositAdapter.ts");
 const adapterSource = fs.readFileSync(adapterPath, "utf8");
 const gravitySource = fs.readFileSync(gravityPath, "utf8");
+const depositAdapterSource = fs.readFileSync(depositAdapterPath, "utf8");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-current-crystal-presentation-${process.pid}.mjs`);
 
 const assertEqual = (name, actual, expected) => {
@@ -185,14 +187,19 @@ try {
   assertExcludes("Gravity no longer reads raw hexagram for presentation", gravitySource, "state.hexagram.");
   assertExcludes("Gravity no longer reads raw crystal copy for presentation", gravitySource, "state.crystal.copy");
   assertIncludes(
-    "Gravity keeps raw crystal entry formation",
-    gravitySource,
-    "createPersonalityRingLiteEntryFromCrystal(state)",
+    "deposit adapter keeps raw crystal entry formation",
+    depositAdapterSource,
+    "createPersonalityRingLiteEntryFromCrystal(input.currentCrystalEndState)",
   );
   assertIncludes(
-    "Gravity keeps explicit personality ring deposition",
-    gravitySource,
+    "deposit adapter keeps explicit personality ring deposition",
+    depositAdapterSource,
     "savePersonalityRingLiteEntry(entry)",
+  );
+  assertIncludes(
+    "Gravity delegates user-triggered ring deposition",
+    gravitySource,
+    "depositDynamicsCurrentCrystalToPersonalityRing({",
   );
 
   console.log("\n[DYNAMICS CURRENT CRYSTAL PRESENTATION ADAPTER] PASS");

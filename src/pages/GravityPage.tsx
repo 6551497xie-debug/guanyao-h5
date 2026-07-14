@@ -12,11 +12,7 @@ import {
   type StarFlowerGrowthState,
 } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
-import {
-  createPersonalityRingLiteEntryFromCrystal,
-  readPersonalityRingLite,
-  savePersonalityRingLiteEntry,
-} from "../services/personalityRingLiteService";
+import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import {
   resolveChangeExperienceRuntimeSmokeFixture,
 } from "../services/fixtures/changeExperienceRuntimeSmokeFixtures";
@@ -35,6 +31,7 @@ import {
   type DynamicsCurrentCrystalEndState as CurrentCrystalEndState,
 } from "../services/guanyaoDynamicsCrystalRuntimeAdapter";
 import { resolveDynamicsCurrentCrystalPresentation } from "../services/guanyaoDynamicsCurrentCrystalPresentationAdapter";
+import { depositDynamicsCurrentCrystalToPersonalityRing } from "../services/guanyaoDynamicsPersonalityRingDepositAdapter";
 import type { CurrentHexagramFormationResult } from "../types/currentHexagramFormation";
 import type { SingleModelRevisionAction } from "../types/dynamicsRevisionAction";
 import type { SelectedPressureSeedContext } from "../types/primaryPetal";
@@ -1977,10 +1974,10 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
   const isCardView = crystalView === "CARD";
 
   function saveToPersonalityRingLite() {
-    const entry = createPersonalityRingLiteEntryFromCrystal(state);
-    if (!entry) return;
-
-    setRingLiteState(savePersonalityRingLiteEntry(entry));
+    const depositResult = depositDynamicsCurrentCrystalToPersonalityRing({
+      currentCrystalEndState: state,
+    });
+    setRingLiteState(depositResult.state);
   }
 
   return (

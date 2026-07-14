@@ -7,9 +7,11 @@ import { build } from "esbuild";
 const rootDir = process.cwd();
 const persistencePath = path.join(rootDir, "src/services/guanyaoPersonalityRingLitePersistenceAdapter.ts");
 const servicePath = path.join(rootDir, "src/services/personalityRingLiteService.ts");
+const depositAdapterPath = path.join(rootDir, "src/services/guanyaoDynamicsPersonalityRingDepositAdapter.ts");
 const gravityPath = path.join(rootDir, "src/pages/GravityPage.tsx");
 const persistenceSource = fs.readFileSync(persistencePath, "utf8");
 const serviceSource = fs.readFileSync(servicePath, "utf8");
+const depositAdapterSource = fs.readFileSync(depositAdapterPath, "utf8");
 const gravitySource = fs.readFileSync(gravityPath, "utf8");
 const tempModulePath = path.join(
   os.tmpdir(),
@@ -104,14 +106,19 @@ try {
   assertExcludes("domain service does not own persistence key", serviceSource, "guanyao:personalityRingLite");
   assertExcludes("domain service stays localStorage neutral", serviceSource, "localStorage");
   assertIncludes(
-    "Gravity keeps explicit crystal entry formation",
-    gravitySource,
-    "createPersonalityRingLiteEntryFromCrystal(state)",
+    "deposit adapter keeps explicit crystal entry formation",
+    depositAdapterSource,
+    "createPersonalityRingLiteEntryFromCrystal(input.currentCrystalEndState)",
   );
   assertIncludes(
-    "Gravity keeps explicit personality ring deposition",
-    gravitySource,
+    "deposit adapter keeps explicit personality ring deposition",
+    depositAdapterSource,
     "savePersonalityRingLiteEntry(entry)",
+  );
+  assertIncludes(
+    "Gravity delegates user-triggered personality ring deposition",
+    gravitySource,
+    "depositDynamicsCurrentCrystalToPersonalityRing({",
   );
   assertIncludes(
     "adapter owns personality ring storage key",

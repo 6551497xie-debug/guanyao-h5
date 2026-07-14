@@ -99,6 +99,10 @@ const formCurrentCrystalEndState = ({
 
 try {
   const gravityPageSource = fs.readFileSync(path.join(rootDir, "src/pages/GravityPage.tsx"), "utf8");
+  const depositAdapterSource = fs.readFileSync(
+    path.join(rootDir, "src/services/guanyaoDynamicsPersonalityRingDepositAdapter.ts"),
+    "utf8",
+  );
   assertIncludes(
     "gravity final endpoint delegates to Dynamics crystal adapter",
     gravityPageSource,
@@ -155,14 +159,19 @@ try {
     "writeJsonToStorage",
   );
   assertIncludes(
-    "gravity keeps explicit personality ring deposition adapter",
-    gravityPageSource,
-    "createPersonalityRingLiteEntryFromCrystal(state)",
+    "deposit adapter keeps explicit personality ring entry formation",
+    depositAdapterSource,
+    "createPersonalityRingLiteEntryFromCrystal(input.currentCrystalEndState)",
   );
   assertIncludes(
-    "gravity keeps explicit personality ring persistence",
-    gravityPageSource,
+    "deposit adapter keeps explicit personality ring persistence",
+    depositAdapterSource,
     "savePersonalityRingLiteEntry(entry)",
+  );
+  assertIncludes(
+    "gravity delegates personality ring deposition",
+    gravityPageSource,
+    "depositDynamicsCurrentCrystalToPersonalityRing({",
   );
 
   sourceFiles.forEach(transpileToTemp);
