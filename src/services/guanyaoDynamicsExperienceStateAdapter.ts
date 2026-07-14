@@ -121,9 +121,9 @@ export function resolveDynamicsExperienceState(
       nodeCopy: {
         title: "六个空间已经走完",
         text: "你走完了六层。",
-        actionText: "本局正在等待新的回应被确认。",
+        actionText: "准备好时，你可以认领一个新的回应。",
       },
-      crystalCopy: "你走完了六层，本局正在等待新的回应留下印记。",
+      crystalCopy: "你走完了六层。准备好时，你可以认领一个新的回应，让这一局的变化留下印记。",
     });
   }
 
@@ -151,7 +151,7 @@ export function resolveDynamicsExperienceState(
       pressureCopy: "这颗压力正在进入当前空间。",
       beastCopy: "你的反应正在随着触点出现。",
       nodeCopy,
-      crystalCopy: "完成六维后，本局会等待一次新的回应。",
+      crystalCopy: "完成六维后，准备好时，你可以认领一个新的回应。",
     });
   }
 
@@ -165,7 +165,7 @@ export function resolveDynamicsExperienceState(
       pressureCopy: "这一颗压力，被看见了。",
       beastCopy: "六个空间即将展开。",
       nodeCopy,
-      crystalCopy: "完成六维后，本局会等待一次新的回应。",
+      crystalCopy: "完成六维后，准备好时，你可以认领一个新的回应。",
     });
   }
 

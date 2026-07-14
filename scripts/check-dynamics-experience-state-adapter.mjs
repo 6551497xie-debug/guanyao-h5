@@ -72,6 +72,11 @@ try {
   assertEqual("node running maps to action", action.stage, "ACTION");
   assertEqual("action focuses dimension flow", action.primaryFocus, "DIMENSION_FLOW");
   assertEqual("third node title remains unchanged", action.nodeCopy.title, "你开始解释这件事");
+  assertEqual(
+    "action previews a user-owned response",
+    action.crystalCopy,
+    "完成六维后，准备好时，你可以认领一个新的回应。",
+  );
 
   const transformation = resolveDynamicsExperienceState(baseInput({ completedNodeCount: 5, currentNode: 6 }));
   assertEqual("five completed nodes map to transformation", transformation.stage, "TRANSFORMATION");
@@ -86,7 +91,16 @@ try {
     crystalByCount.supportingCopy,
     "当你愿意认领一个新的回应，这一局会留下它发生过的变化印记。",
   );
-  assertEqual("crystal copy remains unchanged", crystalByCount.crystalCopy, "你走完了六层，本局正在等待新的回应留下印记。");
+  assertEqual(
+    "crystal action leaves timing with the user",
+    crystalByCount.nodeCopy.actionText,
+    "准备好时，你可以认领一个新的回应。",
+  );
+  assertEqual(
+    "crystal copy frames imprint as a user-owned response",
+    crystalByCount.crystalCopy,
+    "你走完了六层。准备好时，你可以认领一个新的回应，让这一局的变化留下印记。",
+  );
 
   const crystalByEngine = resolveDynamicsExperienceState(baseInput({ enginePhase: "COMPLETE" }));
   assertEqual("complete engine maps to crystal", crystalByEngine.stage, "CRYSTAL");
@@ -123,6 +137,8 @@ try {
     2,
   );
   assertExcludes("experience adapter removes conditional imprint language", adapterSource, "才会留下变化印记");
+  assertExcludes("experience adapter removes passive response waiting", adapterSource, "等待新的回应");
+  assertExcludes("experience adapter removes passive confirmation language", adapterSource, "新的回应被确认");
   assertExcludes("Gravity removes crystallization gate language", gravitySource, "本局才会结晶");
   assertExcludes("Gravity no longer owns experience resolver", gravitySource, "function resolveExperienceState");
   assertExcludes("Gravity no longer owns dimension response copy", gravitySource, "SIX_DIMENSION_RESPONSE_COPY");
