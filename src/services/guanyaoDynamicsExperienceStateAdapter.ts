@@ -115,7 +115,7 @@ export function resolveDynamicsExperienceState(
       primaryFocus,
       loopLabel: input.loopLabel,
       headline: "六个空间已经走完。",
-      supportingCopy: "确认新的回应后，这一局才会留下变化印记。",
+      supportingCopy: "当你愿意认领一个新的回应，这一局会留下它发生过的变化印记。",
       pressureCopy: "这一颗压力已经被你看过一遍。",
       beastCopy: "你的反应正在安定下来。",
       nodeCopy: {

@@ -2173,7 +2173,7 @@ function HexagramCodeDeliveryShell() {
             </span>
           ) : isRevisionActionPending ? (
             <span style={{ display: "block", textAlign: "center", color: "rgba(199,169,107,0.54)" }}>
-              确认一次新的回应后，本局才会结晶
+              {displayExperienceState.supportingCopy}
             </span>
           ) : cosmicNarrativePhase === "node_complete" &&
             hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE"

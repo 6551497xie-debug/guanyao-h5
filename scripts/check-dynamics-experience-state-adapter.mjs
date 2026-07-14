@@ -81,6 +81,11 @@ try {
   const crystalByCount = resolveDynamicsExperienceState(baseInput({ completedNodeCount: 6 }));
   assertEqual("six completed nodes map to crystal", crystalByCount.stage, "CRYSTAL");
   assertEqual("crystal focuses crystallization", crystalByCount.primaryFocus, "CRYSTALLIZATION");
+  assertEqual(
+    "crystal transition preserves user agency",
+    crystalByCount.supportingCopy,
+    "当你愿意认领一个新的回应，这一局会留下它发生过的变化印记。",
+  );
   assertEqual("crystal copy remains unchanged", crystalByCount.crystalCopy, "你走完了六层，本局正在等待新的回应留下印记。");
 
   const crystalByEngine = resolveDynamicsExperienceState(baseInput({ enginePhase: "COMPLETE" }));
@@ -112,6 +117,13 @@ try {
   assertIncludes("Gravity passes completed node count", gravitySource, "completedNodeCount: executionSnapshot.node.completed.length");
   assertIncludes("Gravity passes focal dimension", gravitySource, "focalDimension: visualState.focalDimension");
   assertIncludes("Gravity passes timeline coordinate", gravitySource, "timelineCurrent: visualState.timeline.current");
+  assertEqual(
+    "Gravity reuses experience supporting copy in both presentation positions",
+    gravitySource.split("displayExperienceState.supportingCopy").length - 1,
+    2,
+  );
+  assertExcludes("experience adapter removes conditional imprint language", adapterSource, "才会留下变化印记");
+  assertExcludes("Gravity removes crystallization gate language", gravitySource, "本局才会结晶");
   assertExcludes("Gravity no longer owns experience resolver", gravitySource, "function resolveExperienceState");
   assertExcludes("Gravity no longer owns dimension response copy", gravitySource, "SIX_DIMENSION_RESPONSE_COPY");
   assertExcludes("Gravity no longer owns semantic stage copy", gravitySource, "YAO_SEMANTIC_STAGES");
