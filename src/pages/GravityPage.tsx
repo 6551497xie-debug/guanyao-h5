@@ -27,6 +27,7 @@ import { resolveDynamicsChangeExperienceRuntime } from "../services/guanyaoDynam
 import { resolveDynamicsMotherPresentation } from "../services/guanyaoDynamicsMotherPresentationAdapter";
 import { resolveDynamicsExperienceState } from "../services/guanyaoDynamicsExperienceStateAdapter";
 import { resolveDynamicsExperienceReadinessPresentation } from "../services/guanyaoDynamicsExperienceReadinessPresentationAdapter";
+import { resolveDynamicsValueFlow } from "../services/guanyaoDynamicsValueFlowAdapter";
 import { resolveDynamicsCurrentHexagramPresentation } from "../services/guanyaoDynamicsCurrentHexagramPresentationAdapter";
 import {
   resolveDynamicsCurrentCrystalEndState,
@@ -252,20 +253,6 @@ type VisualState = Readonly<{
   };
 }>;
 
-type BehaviorSignal = "NODE_PROGRESS" | "NODE_STALL" | "NODE_BREAKTHROUGH" | "COMPLETION_EVENT";
-type PressureState = "LOW" | "MEDIUM" | "HIGH";
-type EmotionalState = "CALM" | "TENSION" | "STRUGGLE" | "BREAKTHROUGH" | "CRYSTALLIZATION";
-type AssetTrigger = "NONE" | "SEED_ASSET" | "EMOTIONAL_PEAK_ASSET" | "64_HEXAGRAM_CRYSTAL_ASSET";
-type MonetizationEvent = "NONE" | "UNLOCK_ENHANCEMENT_OFFER" | "ASSET_UPGRADE_OFFER" | "HOURGLASS_INVERSION_OFFER";
-type ValueFlowState = Readonly<{
-  behaviorSignals: readonly BehaviorSignal[];
-  pressureState: PressureState;
-  emotionalState: EmotionalState;
-  assetTrigger: AssetTrigger;
-  monetizationEvent: MonetizationEvent;
-  hourglassLoopClosed: boolean;
-  nonInvasive: true;
-}>;
 type ProductRuntimeDefinition = Readonly<{
   officialDefinition: string;
   threeSecondModel: string;
@@ -406,101 +393,6 @@ function resolveVisualState(snapshot: ExecutionSnapshot, projection: RuntimeProj
     },
     timeline,
   } satisfies VisualState);
-}
-
-function resolveBehaviorSignals(snapshot: ExecutionSnapshot): readonly BehaviorSignal[] {
-  const signals: BehaviorSignal[] = [];
-  const completedNodeCount = snapshot.node.completed.length;
-
-  if (completedNodeCount > 0) signals.push("NODE_PROGRESS");
-  if (snapshot.node.locked || (snapshot.runtime.enginePhase === "NODE_RUNNING" && completedNodeCount === 0)) {
-    signals.push("NODE_STALL");
-  }
-  if (snapshot.runtime.enginePhase === "NODE_RUNNING" && completedNodeCount > 0 && completedNodeCount < 6) {
-    signals.push("NODE_BREAKTHROUGH");
-  }
-  if (snapshot.runtime.enginePhase === "COMPLETE" || completedNodeCount >= 6) signals.push("COMPLETION_EVENT");
-
-  return Object.freeze(signals);
-}
-
-function resolveValuePressureState(snapshot: ExecutionSnapshot, behaviorSignals: readonly BehaviorSignal[]): PressureState {
-  const seedIntensity = Math.min(1, Math.max(0, snapshot.seed.intensity ?? 0));
-  const structuralStallBoost = behaviorSignals.includes("NODE_STALL") ? 0.22 : 0;
-  const externalConflictBoost = snapshot.seed.category ? 0.08 : 0;
-  const pressureScore = Math.min(1, seedIntensity + structuralStallBoost + externalConflictBoost);
-
-  if (pressureScore >= 0.72) return "HIGH";
-  if (pressureScore >= 0.38) return "MEDIUM";
-  return "LOW";
-}
-
-function resolveValueEmotionalState({
-  pressureState,
-  completedNodeCount,
-  enginePhase,
-}: {
-  pressureState: PressureState;
-  completedNodeCount: number;
-  enginePhase: ExecutionSnapshot["runtime"]["enginePhase"];
-}): EmotionalState {
-  if (enginePhase === "COMPLETE" || completedNodeCount >= 6) return "CRYSTALLIZATION";
-  if (completedNodeCount >= 5) return "BREAKTHROUGH";
-  if (pressureState === "HIGH") return "STRUGGLE";
-  if (pressureState === "MEDIUM") return "TENSION";
-  return "CALM";
-}
-
-function resolveAssetTrigger(snapshot: ExecutionSnapshot): AssetTrigger {
-  const completedNodeCount = snapshot.node.completed.length;
-
-  if (snapshot.runtime.enginePhase === "COMPLETE" || completedNodeCount >= 6) return "64_HEXAGRAM_CRYSTAL_ASSET";
-  if (completedNodeCount >= 5) return "EMOTIONAL_PEAK_ASSET";
-  if (completedNodeCount >= 3) return "SEED_ASSET";
-  return "NONE";
-}
-
-function resolveMonetizationEvent({
-  emotionalState,
-  pressureState,
-  completedNodeCount,
-  behaviorSignals,
-}: {
-  emotionalState: EmotionalState;
-  pressureState: PressureState;
-  completedNodeCount: number;
-  behaviorSignals: readonly BehaviorSignal[];
-}): MonetizationEvent {
-  if (emotionalState === "BREAKTHROUGH" && completedNodeCount === 5) return "UNLOCK_ENHANCEMENT_OFFER";
-  if (emotionalState === "CRYSTALLIZATION" && completedNodeCount >= 6) return "ASSET_UPGRADE_OFFER";
-  if (pressureState === "HIGH" && behaviorSignals.includes("NODE_STALL")) return "HOURGLASS_INVERSION_OFFER";
-  return "NONE";
-}
-
-function resolveValueFlow(snapshot: ExecutionSnapshot): ValueFlowState {
-  const behaviorSignals = resolveBehaviorSignals(snapshot);
-  const completedNodeCount = snapshot.node.completed.length;
-  const pressureState = resolveValuePressureState(snapshot, behaviorSignals);
-  const emotionalState = resolveValueEmotionalState({
-    pressureState,
-    completedNodeCount,
-    enginePhase: snapshot.runtime.enginePhase,
-  });
-
-  return Object.freeze({
-    behaviorSignals,
-    pressureState,
-    emotionalState,
-    assetTrigger: resolveAssetTrigger(snapshot),
-    monetizationEvent: resolveMonetizationEvent({
-      emotionalState,
-      pressureState,
-      completedNodeCount,
-      behaviorSignals,
-    }),
-    hourglassLoopClosed: true,
-    nonInvasive: true,
-  } satisfies ValueFlowState);
 }
 
 function CosmicPageStarField() {
@@ -2176,7 +2068,13 @@ function HexagramCodeDeliveryShell() {
     }),
     [currentHexagramFormation, motherPresentation],
   );
-  const valueFlow = resolveValueFlow(executionSnapshot);
+  const valueFlow = resolveDynamicsValueFlow({
+    seedIntensity: executionSnapshot.seed.intensity,
+    hasSeedCategory: Boolean(executionSnapshot.seed.category),
+    completedNodeCount: executionSnapshot.node.completed.length,
+    nodeLocked: executionSnapshot.node.locked,
+    enginePhase: executionSnapshot.runtime.enginePhase,
+  });
   const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
     pressureSeed: selectedPressureSeedSurface,
     sixDimensionState: cosmicSixDimensionState,
