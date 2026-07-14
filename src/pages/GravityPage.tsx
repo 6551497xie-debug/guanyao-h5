@@ -1452,7 +1452,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
 
   return (
     <section
-      aria-label={isCardView ? "本局变化印记" : "本局结晶承接态"}
+      aria-label={isCardView ? "本局生命印记" : "本局生命印记形成"}
       data-crystal-view={crystalView}
       style={{
         minHeight: isCardView ? 548 : 424,
@@ -1509,12 +1509,12 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
         }}
       >
         <GuanyaoText size="eyebrow" tone="gold">
-          {isCardView ? "本局变化印记" : "变化已经留痕"}
+          {isCardView ? "本局生命印记" : "这一局，变化已经留痕"}
         </GuanyaoText>
 
         {isCardView ? (
           <article
-            aria-label="本局变化印记内容"
+            aria-label="本局生命印记内容"
             style={{
               width: "100%",
               display: "grid",
@@ -1550,7 +1550,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 fontWeight: 650,
               }}
             >
-              本局定位承载的变化
+              这次经历留下的变化
             </strong>
 
             <span
@@ -1564,7 +1564,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 fontWeight: 650,
               }}
             >
-              本局定位 · 变化印记
+              本局卦象 · 生命印记
             </span>
 
             <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 13, lineHeight: 1.55 }}>
@@ -1584,7 +1584,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 textShadow: "0 0 24px rgba(199,169,107,0.18)",
               }}
             >
-              这一局留下了变化印记
+              这一局，留下了一枚生命印记
             </h1>
 
             <strong
@@ -1596,7 +1596,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 letterSpacing: 0,
               }}
             >
-              本局定位：{presentation.hexagramTitle}
+              本局卦象：{presentation.hexagramTitle}
             </strong>
           </>
         )}
@@ -1645,7 +1645,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
 
         {isCardView ? (
           <section
-            aria-label="行为特征解码"
+            aria-label="这次变化留下了什么"
             style={{
               display: "grid",
               gap: 8,
@@ -1660,7 +1660,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
               lineHeight: 1.56,
             }}
           >
-            <strong style={{ color: "rgba(255,226,158,0.82)", fontSize: 13 }}>行为特征解码</strong>
+            <strong style={{ color: "rgba(255,226,158,0.82)", fontSize: 13 }}>这次变化留下了什么</strong>
             {presentation.behaviorReading.map((line) => (
               <p key={line} style={{ margin: 0 }}>
                 {line}
@@ -1720,7 +1720,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 boxShadow: "0 0 24px rgba(199,169,107,0.14)",
               }}
             >
-              提取这次改变的印记
+              查看这次留下的印记
             </button>
           )}
 

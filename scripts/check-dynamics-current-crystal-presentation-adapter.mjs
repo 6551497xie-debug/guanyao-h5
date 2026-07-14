@@ -95,14 +95,24 @@ try {
   assertEqual(
     "presentation forms card journey",
     presentation.cardJourneyCopy,
-    "这一局从【兑｜连接者】进入【天泽履】。经过你的回应和变化，它留下了自己的结晶。",
+    "这一局从【兑｜连接者】进入【天泽履】。经过你的回应和变化，它留下了一枚生命印记。",
   );
   assertEqual(
     "presentation forms privacy copy",
     presentation.cardPrivacyCopy,
-    "认领这一局留下的变化印记。它只保留人格动态，不暴露具体压力原句。",
+    "看看这一局留下的生命印记。它只保留这次变化，不暴露具体压力原句。",
   );
   assertEqual("presentation behavior reading count", presentation.behaviorReading.length, 4);
+  assertEqual(
+    "presentation frames the artifact as a life imprint",
+    presentation.behaviorReading[0],
+    "这枚生命印记不记录你的压力原句。",
+  );
+  assertEqual(
+    "presentation explains original tendency meeting reality",
+    presentation.behaviorReading[1],
+    "它留下的是【兑｜连接者】这份原始生命倾向，在「天泽履」这一局中与现实相遇后发生的变化。",
+  );
   assertEqual(
     "presentation behavior reading keeps pressure and dimension",
     presentation.behaviorReading[2],
@@ -182,6 +192,15 @@ try {
   );
   assertIncludes("Gravity consumes crystal presentation title", gravitySource, "presentation.hexagramTitle");
   assertIncludes("Gravity consumes crystal presentation reading", gravitySource, "presentation.behaviorReading.map");
+  assertIncludes("Gravity presents current-round life imprint", gravitySource, "本局生命印记");
+  assertIncludes("Gravity explains what this change leaves", gravitySource, "这次变化留下了什么");
+  assertIncludes("Gravity keeps imprint in current hexagram", gravitySource, "本局卦象 · 生命印记");
+  assertIncludes("Gravity offers imprint viewing", gravitySource, "查看这次留下的印记");
+  assertExcludes("Gravity removes crystallization carrier wording", gravitySource, "本局结晶承接态");
+  assertExcludes("Gravity removes behavior decoding wording", gravitySource, "行为特征解码");
+  assertExcludes("crystal presentation removes persona dynamics wording", adapterSource, "人格动态");
+  assertExcludes("crystal presentation removes owned crystallization wording", adapterSource, "自己的结晶");
+  assertExcludes("crystal presentation removes crystal-object wording", adapterSource, "这枚结晶");
   assertExcludes("Gravity no longer owns crystal dimension labels", gravitySource, "function crystalDimensionLabel");
   assertExcludes("Gravity no longer owns crystal behavior reading", gravitySource, "function buildCrystalBehaviorReading");
   assertExcludes("Gravity no longer reads raw hexagram for presentation", gravitySource, "state.hexagram.");
