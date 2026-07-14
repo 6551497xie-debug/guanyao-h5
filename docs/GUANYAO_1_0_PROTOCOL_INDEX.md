@@ -42,6 +42,7 @@ The current GUANYAO 1.0 main chain is locked as:
 → 压力种子 / 环境力量
 → Gravity / 六维生命体验
 → 当前生命界面 6 节点观察
+→ Choice / 重新取得方向
 → 星兽反馈
 → 64卦人格资产卡结晶
 ```
@@ -55,7 +56,8 @@ The current GUANYAO 1.0 main chain is locked as:
 | 压力种子 / 环境力量 | 用户看见生命正在遇到的现实力量 | Environment force context |
 | Gravity / 六维生命体验 | 现实力量的牵引通过完整生命的六个界面被看见 | Reality pull through six-space experience |
 | 当前生命界面 6 节点观察 | 用户在一个入口中看见反应，并为新选择留出空间 | Six-node observation rhythm |
-| 星兽反馈 | 星兽接住动作，并把光送回人格结构 | Starbeast lifeforce feedback |
+| Choice / 重新取得方向 | 用户决定是否认领、修改、暂停或拒绝一个新的回应方向 | User-owned direction signal |
+| 星兽反馈 | 星兽回应用户重新取得的方向，让生命姿态重新显现 | Starbeast direction feedback |
 | 64卦人格资产卡结晶 | 本局留下的可收藏人格资产 | Hexagram asset output |
 
 ## 2. Core Protocol Directory
@@ -105,6 +107,11 @@ The current GUANYAO 1.0 main chain is locked as:
 
 - [GUANYAO_GRAVITY_REALITY_PULL_PROTOCOL.md](./GUANYAO_GRAVITY_REALITY_PULL_PROTOCOL.md)
   Active Gravity semantic protocol. Defines Gravity as reality's pull on life, distinguishes it from Pressure Seed and `gravityValue`, and preserves trigram formation, six-space Runtime, ChangeExperience, and Crystal boundaries.
+
+### Choice And Life Direction
+
+- [GUANYAO_CHOICE_LIFE_DIRECTION_PROTOCOL.md](./GUANYAO_CHOICE_LIFE_DIRECTION_PROTOCOL.md)
+  Active Choice semantic protocol. Defines Choice as user-owned life direction, distinguishes it from breach selection, sixth-yao encoding, and revision confirmation, and preserves current Runtime, persistence, route, and Crystal gates.
 
 ### Mother Code And Original Life Tendency
 
@@ -219,8 +226,9 @@ The following constraints are mandatory across all GUANYAO 1.0 front-stage UI, c
 3. 黑洞是现实引力的视觉隐喻，不是用户罪责或生命缺陷。
 4. 压力种子用于看见现实，不用于审判用户。
 5. 六节点不是任务打卡，而是生命观察的节奏。
-6. 卦码卡不是吉凶判词，而是人格资产结晶。
-7. 前台禁止吉凶、失败、惩罚、能量不足、未完成羞耻等表达。
+6. Choice 属于用户，系统只能呈现可能，不能提供唯一正确答案。
+7. 卦码卡不是吉凶判词，而是人格资产结晶。
+8. 前台禁止吉凶、失败、惩罚、能量不足、未完成羞耻等表达。
 
 ### Front-Stage Forbidden Tone
 
@@ -232,6 +240,9 @@ Do not use language that implies:
 - Gravity intensity is a measure of the user's weakness;
 - the starbeast is damaged when the user does not continue;
 - the user must defeat or eliminate reality's pull;
+- the system owns the user's correct Choice;
+- pause, refusal, or non-action means the user failed;
+- route navigation or a stored code proves that change occurred;
 - unfinished action equals moral weakness;
 - anxiety must be intensified to create engagement;
 - the hexagram asset is a judgment of good or bad fortune.
