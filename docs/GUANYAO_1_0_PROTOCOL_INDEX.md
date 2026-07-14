@@ -40,8 +40,8 @@ The current GUANYAO 1.0 main chain is locked as:
 时空调频
 → 母码卡 / 原始生命倾向
 → 压力种子 / 环境力量
-→ Cosmic Botanics 六维花冠
-→ 主修花瓣 6 节点调频
+→ 六维生命体验
+→ 当前生命界面 6 节点观察
 → 星兽反馈
 → 64卦人格资产卡结晶
 ```
@@ -53,8 +53,8 @@ The current GUANYAO 1.0 main chain is locked as:
 | 时空调频 | 用户确认自己的出生时间与出生地 | Chrono + Geo input |
 | 母码卡 / 原始生命倾向 | 用户看见生命最自然的起势方式 | Mother life-tendency expression |
 | 压力种子 / 环境力量 | 用户看见生命正在遇到的现实力量 | Environment force context |
-| Cosmic Botanics 六维花冠 | 压力落入人格空间后的调频场 | Six-dimensional interaction field |
-| 主修花瓣 6 节点调频 | 用户完成一个小而真实的回应动作 | Six-node micro-tuning |
+| 六维生命体验 | 环境力量通过完整生命的六个界面被感受 | Six-space life experience |
+| 当前生命界面 6 节点观察 | 用户在一个入口中看见反应，并为新选择留出空间 | Six-node observation rhythm |
 | 星兽反馈 | 星兽接住动作，并把光送回人格结构 | Starbeast lifeforce feedback |
 | 64卦人格资产卡结晶 | 本局留下的可收藏人格资产 | Hexagram asset output |
 
@@ -95,6 +95,11 @@ The current GUANYAO 1.0 main chain is locked as:
 
 - [R8_ENGINE_FULL_PIPELINE_AUDIT.md](./R8_ENGINE_FULL_PIPELINE_AUDIT.md)  
   Full pipeline audit reference for checking whether the running chain remains structurally coherent.
+
+### Six-Space Life Experience
+
+- [GUANYAO_SIX_SPACE_LIFE_EXPERIENCE_PROTOCOL.md](./GUANYAO_SIX_SPACE_LIFE_EXPERIENCE_PROTOCOL.md)
+  Active six-space semantic protocol. Defines the six spaces as six life experience interfaces, calibrates Primary Petal and six-node meaning, and preserves the current mapping, runtime sequence, completion state, and Crystal chain.
 
 ### Mother Code And Original Life Tendency
 
@@ -208,7 +213,7 @@ The following constraints are mandatory across all GUANYAO 1.0 front-stage UI, c
 2. 未完成不等于失败。
 3. 黑洞是外部扰动，不是用户罪责。
 4. 压力种子用于看见现实，不用于审判用户。
-5. 六节点不是任务打卡，而是微小调频。
+5. 六节点不是任务打卡，而是生命观察的节奏。
 6. 卦码卡不是吉凶判词，而是人格资产结晶。
 7. 前台禁止吉凶、失败、惩罚、能量不足、未完成羞耻等表达。
 
@@ -231,7 +236,7 @@ Current implementation priority is locked as:
 
 ```text
 压力种子
-→ 主修花瓣映射
+→ 当前生命界面映射
 → 6节点完成态
 → 卦码资产结晶出口
 ```
