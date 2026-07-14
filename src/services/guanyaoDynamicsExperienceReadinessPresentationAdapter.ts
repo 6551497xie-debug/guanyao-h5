@@ -65,9 +65,9 @@ export function resolveDynamicsExperienceReadinessPresentation(
       mode: "MOTHER_CONNECTED",
       experienceState: {
         ...experienceState,
-        headline: "母码已接入。",
-        supportingCopy: "这一颗压力正在穿过你的母码。",
-        pressureCopy: "母码已接入，压力开始进入六个空间。",
+        headline: "你的原始生命倾向正在回应这一刻。",
+        supportingCopy: "这一颗压力，正在与你带来的生命倾向相遇。",
+        pressureCopy: "从这里开始，看见你会怎样感受和回应。",
       },
       pressureContextMarker: "connected",
       motherReference,

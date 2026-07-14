@@ -126,16 +126,20 @@ try {
     motherPresentation,
   });
   assertEqual("pressure stage exposes mother connection", motherConnected.mode, "MOTHER_CONNECTED");
-  assertEqual("mother connection keeps headline", motherConnected.experienceState.headline, "母码已接入。");
   assertEqual(
-    "mother connection keeps supporting copy",
-    motherConnected.experienceState.supportingCopy,
-    "这一颗压力正在穿过你的母码。",
+    "mother connection presents original life tendency",
+    motherConnected.experienceState.headline,
+    "你的原始生命倾向正在回应这一刻。",
   );
   assertEqual(
-    "mother connection keeps pressure copy",
+    "mother connection frames pressure as meeting life tendency",
+    motherConnected.experienceState.supportingCopy,
+    "这一颗压力，正在与你带来的生命倾向相遇。",
+  );
+  assertEqual(
+    "mother connection invites observation across six spaces",
     motherConnected.experienceState.pressureCopy,
-    "母码已接入，压力开始进入六个空间。",
+    "从这里开始，看见你会怎样感受和回应。",
   );
   assertEqual("mother reference is visible", motherConnected.motherReference.visible, true);
   assertEqual("mother reference keeps name", motherConnected.motherReference.name, "兑｜连接者");
@@ -172,6 +176,8 @@ try {
   assertExcludes("safe preview removes missing-context copy", adapterSource, "缺少本局上下文");
   assertExcludes("safe preview removes pressure waiting copy", adapterSource, "等待这一颗压力进入");
   assertExcludes("safe preview removes confirmation-gated copy", adapterSource, "压力确认后展开");
+  assertExcludes("mother connection removes system attachment language", adapterSource, "母码已接入");
+  assertExcludes("mother connection removes pressure-through-code language", adapterSource, "穿过你的母码");
   assertIncludes(
     "Gravity delegates readiness presentation",
     gravitySource,
@@ -194,7 +200,7 @@ try {
   );
   assertExcludes("Gravity no longer owns pressure readiness alias", gravitySource, "hasLockedPressureSeed");
   assertExcludes("Gravity does not own preview invitation", gravitySource, "这一局还没有开始。");
-  assertExcludes("Gravity no longer owns mother connection headline", gravitySource, "母码已接入。");
+  assertExcludes("Gravity does not own mother connection headline", gravitySource, "你的原始生命倾向正在回应这一刻。");
 
   console.log("\n[DYNAMICS EXPERIENCE READINESS PRESENTATION ADAPTER] PASS");
 } catch (error) {
