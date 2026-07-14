@@ -8,7 +8,7 @@ The active worldview constitution is:
 
 - [GUANYAO_WORLDVIEW_CONSTITUTION_V2.md](./GUANYAO_WORLDVIEW_CONSTITUTION_V2.md)
 
-It defines why GUANYAO exists and is the highest semantic source for product meaning, front-stage language, starbeast identity, six-space experience, Gravity, Choice, Crystal, and visual emotional direction.
+It defines why GUANYAO exists and is the highest semantic source for product meaning, front-stage language, starbeast identity, One Light continuity, six-space experience, Gravity, Choice, Crystal, and visual emotional direction.
 
 This registration is a documentation clarification, not a new candidate stage and not an unfreeze of the runtime or generation architecture. Existing causal, calculation, persistence, and release protocols remain authoritative inside their technical scopes.
 
@@ -47,6 +47,15 @@ The current GUANYAO 1.0 main chain is locked as:
 → Crystal / 本局生命印记
 ```
 
+One Light is the semantic and visual throughline across this chain:
+
+```text
+一光 / 生命轨迹
+贯穿：出生 → 经历 → 迷失 → 觉察 → 选择 → 回归
+```
+
+It is not an additional Runtime stage, route, candidate layer, progress rail, or persistence requirement.
+
 ### Layer Definition
 
 | Layer | Product Meaning | Runtime Role |
@@ -83,6 +92,11 @@ The current GUANYAO 1.0 main chain is locked as:
 
 - [GUANYAO_1_0_BEAST_LIFEFORCE_MATRIX.md](./GUANYAO_1_0_BEAST_LIFEFORCE_MATRIX.md)  
   Starbeast lifeforce feedback matrix. Locks day-night cycle, starbeast emotion states, Finch high-stickiness principles, and the no-punishment mechanism.
+
+### One Light And Life Trajectory
+
+- [GUANYAO_ONE_LIGHT_LIFE_TRAJECTORY_PROTOCOL.md](./GUANYAO_ONE_LIGHT_LIFE_TRAJECTORY_PROTOCOL.md)
+  Active One Light semantic protocol. Defines One Light as the continuity of a life moving through time and reality, distinguishes it from Axis Line, task progress, legacy yao trajectory, migration traces, return-page history, and stored life data, and preserves all current Runtime, visual, route, and persistence boundaries.
 
 ### Pressure Seed And Main Chain
 
@@ -233,7 +247,8 @@ The following constraints are mandatory across all GUANYAO 1.0 front-stage UI, c
 5. 六节点不是任务打卡，而是生命观察的节奏。
 6. Choice 属于用户，系统只能呈现可能，不能提供唯一正确答案。
 7. Crystal 不是吉凶判词、评分或奖励，而是本局生命体验留下的星辰印记。
-8. 前台禁止吉凶、失败、惩罚、能量不足、未完成羞耻等表达。
+8. 一光是生命连续性的表达，不是任务进度、系统控制线或完整生命数据。
+9. 前台禁止吉凶、失败、惩罚、能量不足、未完成羞耻等表达。
 
 ### Front-Stage Forbidden Tone
 
@@ -251,6 +266,9 @@ Do not use language that implies:
 - the current hexagram is already the final Crystal;
 - Crystal count, collection, or rarity measures the user's value;
 - saving to Personality Ring Lite is required to make change real;
+- route progress, streaks, or stored trajectory points measure life progress;
+- pausing, leaving, or declining causes One Light to break or disappear;
+- the system knows the user's one correct or complete life trajectory;
 - unfinished action equals moral weakness;
 - anxiety must be intensified to create engagement;
 - the hexagram asset is a judgment of good or bad fortune.
