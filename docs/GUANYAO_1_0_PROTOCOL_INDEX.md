@@ -44,7 +44,7 @@ The current GUANYAO 1.0 main chain is locked as:
 → 当前生命界面 6 节点观察
 → Choice / 重新取得方向
 → 星兽反馈
-→ 64卦人格资产卡结晶
+→ Crystal / 本局生命印记
 ```
 
 ### Layer Definition
@@ -58,7 +58,7 @@ The current GUANYAO 1.0 main chain is locked as:
 | 当前生命界面 6 节点观察 | 用户在一个入口中看见反应，并为新选择留出空间 | Six-node observation rhythm |
 | Choice / 重新取得方向 | 用户决定是否认领、修改、暂停或拒绝一个新的回应方向 | User-owned direction signal |
 | 星兽反馈 | 星兽回应用户重新取得的方向，让生命姿态重新显现 | Starbeast direction feedback |
-| 64卦人格资产卡结晶 | 本局留下的可收藏人格资产 | Hexagram asset output |
+| Crystal / 本局生命印记 | 这次被看见并真实发生的变化留下星辰印记 | Current-round life imprint expression |
 
 ## 2. Core Protocol Directory
 
@@ -112,6 +112,11 @@ The current GUANYAO 1.0 main chain is locked as:
 
 - [GUANYAO_CHOICE_LIFE_DIRECTION_PROTOCOL.md](./GUANYAO_CHOICE_LIFE_DIRECTION_PROTOCOL.md)
   Active Choice semantic protocol. Defines Choice as user-owned life direction, distinguishes it from breach selection, sixth-yao encoding, and revision confirmation, and preserves current Runtime, persistence, route, and Crystal gates.
+
+### Crystal And Life Imprint
+
+- [GUANYAO_CRYSTAL_LIFE_IMPRINT_PROTOCOL.md](./GUANYAO_CRYSTAL_LIFE_IMPRINT_PROTOCOL.md)
+  Active Crystal semantic protocol. Defines Crystal as the star imprint left by one life experience, distinguishes it from the current hexagram, completion, card, collection, and Personality Ring Lite, and preserves the established Crystal Runtime and persistence boundaries.
 
 ### Mother Code And Original Life Tendency
 
@@ -227,7 +232,7 @@ The following constraints are mandatory across all GUANYAO 1.0 front-stage UI, c
 4. 压力种子用于看见现实，不用于审判用户。
 5. 六节点不是任务打卡，而是生命观察的节奏。
 6. Choice 属于用户，系统只能呈现可能，不能提供唯一正确答案。
-7. 卦码卡不是吉凶判词，而是人格资产结晶。
+7. Crystal 不是吉凶判词、评分或奖励，而是本局生命体验留下的星辰印记。
 8. 前台禁止吉凶、失败、惩罚、能量不足、未完成羞耻等表达。
 
 ### Front-Stage Forbidden Tone
@@ -243,6 +248,9 @@ Do not use language that implies:
 - the system owns the user's correct Choice;
 - pause, refusal, or non-action means the user failed;
 - route navigation or a stored code proves that change occurred;
+- the current hexagram is already the final Crystal;
+- Crystal count, collection, or rarity measures the user's value;
+- saving to Personality Ring Lite is required to make change real;
 - unfinished action equals moral weakness;
 - anxiety must be intensified to create engagement;
 - the hexagram asset is a judgment of good or bad fortune.
@@ -257,7 +265,7 @@ Current implementation priority is locked as:
 压力种子
 → 当前生命界面映射
 → 6节点完成态
-→ 卦码资产结晶出口
+→ Crystal 生命印记表达出口
 ```
 
 Goal: make the active 1.0 chain structurally complete before adding more surface variation.
