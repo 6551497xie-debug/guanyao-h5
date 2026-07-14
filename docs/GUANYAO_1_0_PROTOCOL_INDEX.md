@@ -8,7 +8,7 @@ The active worldview constitution is:
 
 - [GUANYAO_WORLDVIEW_CONSTITUTION_V2.md](./GUANYAO_WORLDVIEW_CONSTITUTION_V2.md)
 
-It defines why GUANYAO exists and is the highest semantic source for product meaning, front-stage language, starbeast identity, One Light continuity, six-space experience, Gravity, Choice, Crystal, and visual emotional direction.
+It defines why GUANYAO exists and is the highest semantic source for product meaning, front-stage language, starbeast identity, One Light continuity, hexagram change structure, six-space experience, Gravity, Choice, Crystal, and visual emotional direction.
 
 This registration is a documentation clarification, not a new candidate stage and not an unfreeze of the runtime or generation architecture. Existing causal, calculation, persistence, and release protocols remain authoritative inside their technical scopes.
 
@@ -56,6 +56,16 @@ One Light is the semantic and visual throughline across this chain:
 
 It is not an additional Runtime stage, route, candidate layer, progress rail, or persistence requirement.
 
+The current-round hexagram structure inside the locked chain remains:
+
+```text
+母码 / 原始生命倾向 → 下卦
+压力种子语义分类 / 环境力量 → 上卦
+下卦 + 上卦 → currentHexagramProfile / 本局变化结构
+```
+
+`currentHexagramProfile` is a structural orientation for this round. It is not a final result, personality label, changed hexagram, or Crystal.
+
 ### Layer Definition
 
 | Layer | Product Meaning | Runtime Role |
@@ -97,6 +107,11 @@ It is not an additional Runtime stage, route, candidate layer, progress rail, or
 
 - [GUANYAO_ONE_LIGHT_LIFE_TRAJECTORY_PROTOCOL.md](./GUANYAO_ONE_LIGHT_LIFE_TRAJECTORY_PROTOCOL.md)
   Active One Light semantic protocol. Defines One Light as the continuity of a life moving through time and reality, distinguishes it from Axis Line, task progress, legacy yao trajectory, migration traces, return-page history, and stored life data, and preserves all current Runtime, visual, route, and persistence boundaries.
+
+### Hexagram And Change Pattern
+
+- [GUANYAO_HEXAGRAM_CHANGE_PATTERN_PROTOCOL.md](./GUANYAO_HEXAGRAM_CHANGE_PATTERN_PROTOCOL.md)
+  Active Hexagram semantic protocol. Defines Hexagram as the current-round structural expression of how original life tendency and environment force meet, distinguishes it from fate, personality identity, formal changed-hexagram calculation, and Crystal, and preserves formation, matrix, yao-transmission, glyph, card, Runtime, and persistence boundaries.
 
 ### Pressure Seed And Main Chain
 
@@ -248,7 +263,8 @@ The following constraints are mandatory across all GUANYAO 1.0 front-stage UI, c
 6. Choice 属于用户，系统只能呈现可能，不能提供唯一正确答案。
 7. Crystal 不是吉凶判词、评分或奖励，而是本局生命体验留下的星辰印记。
 8. 一光是生命连续性的表达，不是任务进度、系统控制线或完整生命数据。
-9. 前台禁止吉凶、失败、惩罚、能量不足、未完成羞耻等表达。
+9. 卦象是本局力量关系的变化结构，不是命运预测、人格定论或最终结果。
+10. 前台禁止吉凶、失败、惩罚、能量不足、未完成羞耻等表达。
 
 ### Front-Stage Forbidden Tone
 
@@ -269,6 +285,9 @@ Do not use language that implies:
 - route progress, streaks, or stored trajectory points measure life progress;
 - pausing, leaving, or declining causes One Light to break or disappear;
 - the system knows the user's one correct or complete life trajectory;
+- the current hexagram predicts a fixed future or defines the user's permanent identity;
+- yao transmission or `changedLineContext` already produced a formal changed hexagram;
+- one hexagram is better, stronger, rarer, or more valuable than another;
 - unfinished action equals moral weakness;
 - anxiety must be intensified to create engagement;
 - the hexagram asset is a judgment of good or bad fortune.
