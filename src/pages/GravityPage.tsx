@@ -28,6 +28,7 @@ import { resolveDynamicsMotherPresentation } from "../services/guanyaoDynamicsMo
 import { resolveDynamicsExperienceState } from "../services/guanyaoDynamicsExperienceStateAdapter";
 import { resolveDynamicsExperienceReadinessPresentation } from "../services/guanyaoDynamicsExperienceReadinessPresentationAdapter";
 import { resolveDynamicsValueFlow } from "../services/guanyaoDynamicsValueFlowAdapter";
+import { resolveDynamicsVisualState } from "../services/guanyaoDynamicsVisualStateAdapter";
 import { resolveDynamicsCurrentHexagramPresentation } from "../services/guanyaoDynamicsCurrentHexagramPresentationAdapter";
 import {
   resolveDynamicsCurrentCrystalEndState,
@@ -39,6 +40,7 @@ import { resolveDynamicsPersonalityRingPresentation } from "../services/guanyaoD
 import type { CurrentHexagramFormationResult } from "../types/currentHexagramFormation";
 import type { SingleModelRevisionAction } from "../types/dynamicsRevisionAction";
 import type { DynamicsExperienceState as ExperienceState } from "../types/dynamicsExperiencePresentation";
+import type { DynamicsVisualState as VisualState } from "../types/dynamicsVisualState";
 import type { SelectedPressureSeedContext } from "../types/primaryPetal";
 import {
   GuanyaoRuntimeEngine,
@@ -117,23 +119,6 @@ function countCompletedSixDimensions(snapshot: ExecutionSnapshot) {
   return snapshot.node.completed.filter((node) => node >= 1 && node <= 6).length;
 }
 
-function alignVisualStateToSequentialDimension(
-  visualState: VisualState,
-  focalDimension: SixSpaceId,
-): VisualState {
-  return Object.freeze({
-    ...visualState,
-    focalDimension,
-    primitives: {
-      ...visualState.primitives,
-      DIMENSION: {
-        ...visualState.primitives.DIMENSION,
-        activeDimension: focalDimension,
-      },
-    },
-  } satisfies VisualState);
-}
-
 function createNodeRunningExecutionSnapshot(context: SelectedPressureSeedContext | null) {
   const seedSnapshot = GuanyaoRuntimeEngine.createSnapshot(context);
   const engineReadySnapshot = GuanyaoRuntimeEngine.run(seedSnapshot, {
@@ -209,50 +194,6 @@ function buildRuntimeBaiHuCoreStars(snapshot: ExecutionSnapshot, projection: Run
 
 type CosmicNarrativePhase = "field_intro" | "seed_visible" | "beast_guide" | "node_active" | "node_complete";
 
-type VisualDepthState = "background_calm" | "structural_activation" | "entity_emergence" | "interaction_focus" | "crystallization";
-type VisualPrimitive = "BEAST" | "PRESSURE" | "DIMENSION" | "PARTICLE";
-type VisualPrimitiveState = Readonly<{
-  primitive: VisualPrimitive;
-  intensity: number;
-  meaning: "state_container" | "tension_metric" | "behavioral_structure" | "execution_feedback";
-}>;
-type VisualState = Readonly<{
-  nodeIndex: number;
-  visualDepthState: VisualDepthState;
-  colorTemperature: string;
-  spatialComposition: "calm_state" | "blackhole_activation" | "beast_emergence" | "node_focus_collapse" | "supernova_crystallization";
-  focalDimension: SixSpaceId;
-  primitives: {
-    BEAST: VisualPrimitiveState & {
-      coherence: number;
-      stability: number;
-    };
-    PRESSURE: VisualPrimitiveState & {
-      instability: number;
-      urgency: number;
-    };
-    DIMENSION: VisualPrimitiveState & {
-      activeDimension: SixSpaceId;
-      state: "active" | "dormant" | "destabilized";
-    };
-    PARTICLE: VisualPrimitiveState & {
-      transitionEnergy: number;
-      nodeActivity: number;
-    };
-  };
-  zDepth: {
-    background: number;
-    structural: number;
-    entity: number;
-    interaction: number;
-    narrative: number;
-  };
-  timeline: {
-    current: "T0.0" | "T0.95" | "T2.4" | "T3.6" | "completion";
-    label: string;
-  };
-}>;
-
 type ProductRuntimeDefinition = Readonly<{
   officialDefinition: string;
   threeSecondModel: string;
@@ -287,113 +228,6 @@ const GUANYAO_PRODUCT_RUNTIME_DEFINITION = Object.freeze({
   ]),
   positioning: "当前压力下的自我改变体验",
 } satisfies ProductRuntimeDefinition);
-
-const VISUAL_TIMELINE_SYNC = Object.freeze({
-  calm: "T0.0 -> calm state",
-  blackhole: "T0.95 -> blackhole activation",
-  beast: "T2.4 -> beast emergence",
-  node: "T3.6 -> node focus collapse",
-  completion: "completion -> supernova crystallization",
-});
-
-function resolveVisualColorTemperature(dimension: SixSpaceId, beastTone: ExecutionSnapshot["beast"]["tone"]) {
-  if (beastTone === "sovereign") return "222,196,154";
-  if (beastTone === "charge") return "199,169,107";
-  if (beastTone === "strain") return "176,210,206";
-
-  const toneByDimension: Record<SixSpaceId, string> = {
-    body: "176,210,206",
-    emotion: "199,169,107",
-    thought: "184,200,224",
-    action: "222,196,154",
-    memory: "190,178,214",
-    goal: "210,190,150",
-  };
-
-  return toneByDimension[dimension];
-}
-
-function resolveVisualState(snapshot: ExecutionSnapshot, projection: RuntimeProjection): VisualState {
-  const nodeProgress = Math.min(1, Math.max(0, snapshot.node.completed.length / 6));
-  const resonance = Math.min(1, Math.max(0, snapshot.beast.resonance));
-  const pressureIntensity = Math.min(1, snapshot.seed.intensity ?? 0.32);
-  const visualDepthState: VisualDepthState =
-    snapshot.runtime.uiPhase === "COMPLETE"
-      ? "crystallization"
-      : snapshot.runtime.uiPhase === "NODE_RUNNING"
-        ? "interaction_focus"
-        : snapshot.runtime.uiPhase === "DIMENSION_LOCKED"
-          ? "entity_emergence"
-          : snapshot.runtime.uiPhase === "SEED_ACTIVE"
-            ? "structural_activation"
-            : "background_calm";
-  const spatialComposition: VisualState["spatialComposition"] =
-    visualDepthState === "crystallization"
-      ? "supernova_crystallization"
-      : visualDepthState === "interaction_focus"
-        ? "node_focus_collapse"
-        : visualDepthState === "entity_emergence"
-          ? "beast_emergence"
-          : visualDepthState === "structural_activation"
-            ? "blackhole_activation"
-            : "calm_state";
-  const timeline: VisualState["timeline"] =
-    visualDepthState === "crystallization"
-      ? { current: "completion", label: VISUAL_TIMELINE_SYNC.completion }
-      : visualDepthState === "interaction_focus"
-        ? { current: "T3.6", label: VISUAL_TIMELINE_SYNC.node }
-        : visualDepthState === "entity_emergence"
-          ? { current: "T2.4", label: VISUAL_TIMELINE_SYNC.beast }
-          : visualDepthState === "structural_activation"
-            ? { current: "T0.95", label: VISUAL_TIMELINE_SYNC.blackhole }
-            : { current: "T0.0", label: VISUAL_TIMELINE_SYNC.calm };
-
-  return Object.freeze({
-    nodeIndex: snapshot.node.current,
-    visualDepthState,
-    colorTemperature: resolveVisualColorTemperature(projection.currentPrimarySpaceId, snapshot.beast.tone),
-    spatialComposition,
-    focalDimension: projection.currentPrimarySpaceId,
-    primitives: {
-      BEAST: {
-        primitive: "BEAST",
-        meaning: "state_container",
-        intensity: pressureIntensity,
-        coherence: resonance,
-        stability: snapshot.beast.tone === "sovereign" ? 1 : snapshot.beast.tone === "charge" ? 0.74 : snapshot.beast.tone === "calm" ? 0.58 : 0.32,
-      },
-      PRESSURE: {
-        primitive: "PRESSURE",
-        meaning: "tension_metric",
-        intensity: pressureIntensity,
-        instability: snapshot.runtime.enginePhase === "COMPLETE" ? 0 : Math.min(1, pressureIntensity * (1 - nodeProgress * 0.42)),
-        urgency: snapshot.runtime.enginePhase === "NODE_RUNNING" ? pressureIntensity : pressureIntensity * 0.72,
-      },
-      DIMENSION: {
-        primitive: "DIMENSION",
-        meaning: "behavioral_structure",
-        intensity: visualDepthState === "background_calm" ? 0.28 : 0.62 + nodeProgress * 0.28,
-        activeDimension: projection.currentPrimarySpaceId,
-        state: visualDepthState === "background_calm" ? "dormant" : pressureIntensity > 0.72 && nodeProgress < 0.34 ? "destabilized" : "active",
-      },
-      PARTICLE: {
-        primitive: "PARTICLE",
-        meaning: "execution_feedback",
-        intensity: Math.min(1, 0.18 + nodeProgress * 0.54 + resonance * 0.28),
-        transitionEnergy: visualDepthState === "crystallization" ? 1 : visualDepthState === "interaction_focus" ? nodeProgress : resonance * 0.42,
-        nodeActivity: nodeProgress,
-      },
-    },
-    zDepth: {
-      background: 0,
-      structural: 1,
-      entity: 2,
-      interaction: 3,
-      narrative: 4,
-    },
-    timeline,
-  } satisfies VisualState);
-}
 
 function CosmicPageStarField() {
   return (
@@ -2036,10 +1870,17 @@ function HexagramCodeDeliveryShell() {
   const currentInnerNodeCount = countCompletedSixDimensions(executionSnapshot);
   const sequentialCurrentSpaceId = activeDimensionId;
   const sequentialCurrentSpaceConfig = sixSpaceConfigs.find((config) => config.id === sequentialCurrentSpaceId) ?? sixSpaceConfigs[0];
-  const visualState = alignVisualStateToSequentialDimension(
-    resolveVisualState(executionSnapshot, runtimeProjection),
-    sequentialCurrentSpaceId,
-  );
+  const visualState = resolveDynamicsVisualState({
+    completedNodeCount: executionSnapshot.node.completed.length,
+    currentNode: executionSnapshot.node.current,
+    seedIntensity: executionSnapshot.seed.intensity,
+    beastResonance: executionSnapshot.beast.resonance,
+    beastTone: executionSnapshot.beast.tone,
+    enginePhase: executionSnapshot.runtime.enginePhase,
+    uiPhase: executionSnapshot.runtime.uiPhase,
+    runtimePrimaryDimension: runtimeProjection.currentPrimarySpaceId,
+    sequentialFocalDimension: sequentialCurrentSpaceId,
+  });
   const experienceState = resolveDynamicsExperienceState({
     completedNodeCount: executionSnapshot.node.completed.length,
     currentNode: executionSnapshot.node.current,
