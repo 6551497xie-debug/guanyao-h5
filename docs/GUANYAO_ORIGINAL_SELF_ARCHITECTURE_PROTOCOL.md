@@ -1,13 +1,13 @@
 # GUANYAO Original Self Architecture Protocol
 # 观爻本我架构协议
 
-版本：Phase 1 / P9
+版本：Phase 1 / P10
 
 状态：ACTIVE FOUNDATION PROTOCOL
 
 基础施工编号：`RC-ORIGINAL-SELF-FOUNDATION-P0`
 
-当前边界校准：`RC-DYNAMICS-ORIGINAL-SELF-BRIDGE-P9`
+当前边界校准：`RC-DYNAMICS-ORIGINAL-SELF-READINESS-P10`
 
 ## 00｜协议定位
 
@@ -309,7 +309,36 @@ Bridge 只负责字段命名投影与 Endpoint 委托，不调用 Star Beast Eng
 
 P9 只建立服务层 Bridge。Gravity 页面、Storage、Runtime 与视觉层仍未消费 Original Self Foundation。
 
-## 16｜验收
+## 16｜Dynamics Original Self Readiness
+
+Dynamics 在进入 Bridge 前，必须先经过只读 Readiness：
+
+```text
+Dynamics 可选正式来源
+↓
+resolveDynamicsOriginalSelfFoundationReadiness
+↓
+NOT_READY + 缺口原因
+或
+READY_FOR_ORIGINAL_SELF_FOUNDATION
+↓
+resolveDynamicsOriginalSelfFoundation
+```
+
+Readiness 只检查正式来源是否满足当前显式 Journey 阶段，不执行任何推导：
+
+- `StarbeastDerivationResult` 与显式 `OriginalSelfJourneyPhase` 在所有阶段都必须存在；
+- `HEXAGRAM`、`YAO`、`CRYSTAL` 阶段必须存在正式 `CurrentHexagramFormationResult`；
+- `YAO`、`CRYSTAL` 阶段必须存在正式 `YaoTransmissionProfile`；
+- `CRYSTAL` 阶段必须存在正式 `CrystalState`。
+
+未进入某一阶段时，该阶段之后的来源允许保持 `null`。Readiness 不得为了满足检查而提前创建 Hexagram、Yao 或 Crystal。
+
+正式 `StarbeastDerivationResult` 即使表达 INVALID_DATE 或 CALENDAR_UNAVAILABLE，也代表来源已经接入；其业务不可用原因继续由 Foundation Endpoint 原样转换为 UNAVAILABLE，不得在 Readiness 层吞掉或改写。
+
+P10 仍只建立服务层合同。Gravity 页面、Storage、Runtime 与视觉层不读取 Readiness 结果。
+
+## 17｜验收
 
 Foundation 当前阶段完成的唯一标准是：
 
@@ -323,5 +352,6 @@ Foundation 当前阶段完成的唯一标准是：
 8. Foundation Result 只能被只读转换为 AVAILABLE / UNAVAILABLE，任何 NOT_READY 原因都被完整保留。
 9. 外部调用只能经过 Foundation Endpoint，并只获得 `OriginalSelfFoundationConsumption`。
 10. Dynamics 只通过正式来源进入 Bridge，不以 `fourSymbol`、星兽反馈或最终展示状态伪造 Foundation 输入。
+11. Dynamics 必须先按显式 Journey 阶段完成来源就绪检查，只有 READY 才能进入 Bridge。
 
 满足以上条件，只代表架构地基完成，不代表任何产品页面已经接入 Original Self。

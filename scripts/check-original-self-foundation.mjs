@@ -15,6 +15,7 @@ const entryPath = path.join(rootDir, "src/services/originalSelfFoundationEntry.t
 const consumptionPath = path.join(rootDir, "src/services/originalSelfFoundationResultConsumption.ts");
 const endpointPath = path.join(rootDir, "src/services/originalSelfFoundationEndpoint.ts");
 const dynamicsBridgePath = path.join(rootDir, "src/services/guanyaoDynamicsOriginalSelfFoundationAdapter.ts");
+const dynamicsReadinessPath = path.join(rootDir, "src/services/guanyaoDynamicsOriginalSelfFoundationReadinessAdapter.ts");
 const protocolPath = path.join(rootDir, "docs/GUANYAO_ORIGINAL_SELF_ARCHITECTURE_PROTOCOL.md");
 const packagePath = path.join(rootDir, "package.json");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-original-self-foundation-${process.pid}.mjs`);
@@ -66,6 +67,7 @@ for (const [name, filePath] of [
   ["foundation result consumption", consumptionPath],
   ["foundation endpoint", endpointPath],
   ["dynamics original self bridge", dynamicsBridgePath],
+  ["dynamics original self readiness", dynamicsReadinessPath],
   ["architecture protocol", protocolPath],
   ["package manifest", packagePath],
 ]) {
@@ -84,6 +86,7 @@ if (failures.length === 0) {
   const consumptionSource = fs.readFileSync(consumptionPath, "utf8");
   const endpointSource = fs.readFileSync(endpointPath, "utf8");
   const dynamicsBridgeSource = fs.readFileSync(dynamicsBridgePath, "utf8");
+  const dynamicsReadinessSource = fs.readFileSync(dynamicsReadinessPath, "utf8");
   const protocolSource = fs.readFileSync(protocolPath, "utf8");
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   const sourceFile = ts.createSourceFile(typePath, typeSource, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS);
@@ -357,6 +360,44 @@ if (failures.length === 0) {
     "switch (",
   ].forEach((marker) => assertExcludes("dynamics original self bridge stays formal-source-only", dynamicsBridgeSource, marker));
 
+  [
+    "export type DynamicsOriginalSelfFoundationReadinessInput",
+    "export type DynamicsOriginalSelfFoundationNotReadyReason",
+    "export type DynamicsOriginalSelfFoundationReadiness",
+    "export function resolveDynamicsOriginalSelfFoundationReadiness",
+    "starBeastResult: StarbeastDerivationResult | null",
+    "journeyPhase: OriginalSelfJourneyPhase | null",
+    '"STAR_BEAST_RESULT_MISSING"',
+    '"JOURNEY_PHASE_MISSING"',
+    '"CURRENT_HEXAGRAM_FORMATION_MISSING"',
+    '"YAO_TRANSMISSION_PROFILE_MISSING"',
+    '"CRYSTAL_STATE_MISSING"',
+    'readiness: "READY_FOR_ORIGINAL_SELF_FOUNDATION"',
+    "requiresHexagram(input.journeyPhase)",
+    "requiresYao(input.journeyPhase)",
+    'input.journeyPhase === "CRYSTAL"',
+    "resolveDynamicsOriginalSelfFoundation(bridgeInput)",
+  ].forEach((marker) => assertIncludes("dynamics original self readiness contract", dynamicsReadinessSource, marker));
+
+  [
+    "resolveOriginalSelfFoundationConsumption(",
+    "resolveOriginalSelfFoundationFromSources(",
+    "consumeOriginalSelfFoundationResult(",
+    "resolveStarbeastFromBirthDate",
+    "guanyaoStarbeastEngineService",
+    "GuanyaoRuntimeEngine",
+    "resolveRuntime",
+    "resolveCurrentHexagram",
+    "HexagramCrystalEngine",
+    "currentCrystalEndState",
+    "StarbeastFeedback",
+    "fourSymbol",
+    "localStorage",
+    "sessionStorage",
+    "fetch(",
+    'from "react"',
+  ].forEach((marker) => assertExcludes("dynamics original self readiness stays source-only", dynamicsReadinessSource, marker));
+
   assertOnlyAllowedSourceSites(
     "foundation adapter has no external callers",
     /\badaptOriginalSelfFoundation\b/,
@@ -396,6 +437,11 @@ if (failures.length === 0) {
     "foundation endpoint is only consumed by dynamics bridge",
     /\bresolveOriginalSelfFoundationConsumption\b/,
     [endpointPath, dynamicsBridgePath],
+  );
+  assertOnlyAllowedSourceSites(
+    "dynamics foundation bridge is only consumed by readiness",
+    /\bresolveDynamicsOriginalSelfFoundation\b/,
+    [dynamicsBridgePath, dynamicsReadinessPath],
   );
   assertOnlyAllowedSourceSites(
     "original self state has one construction site",
@@ -454,6 +500,13 @@ if (failures.length === 0) {
     "`currentCrystalEndState` 不能反向伪造 `CrystalState`",
     "缺少正式来源时，必须保持未接入",
     "P9 只建立服务层 Bridge",
+    "Dynamics Original Self Readiness",
+    "resolveDynamicsOriginalSelfFoundationReadiness",
+    "READY_FOR_ORIGINAL_SELF_FOUNDATION",
+    "Readiness 只检查正式来源是否满足当前显式 Journey 阶段",
+    "未进入某一阶段时，该阶段之后的来源允许保持 `null`",
+    "其业务不可用原因继续由 Foundation Endpoint 原样转换为 UNAVAILABLE",
+    "P10 仍只建立服务层合同",
   ].forEach((marker) => assertIncludes("foundation protocol contract", protocolSource, marker));
 
   assertIncludes(
@@ -551,9 +604,20 @@ if (failures.length === 0) {
       strict: true,
     },
   });
+  const dynamicsReadinessRuntimeSource = dynamicsReadinessSource.replace(
+    /import \{\s*resolveDynamicsOriginalSelfFoundation,\s*type DynamicsOriginalSelfFoundationAdapterInput,\s*\} from "\.\/guanyaoDynamicsOriginalSelfFoundationAdapter";\n/,
+    "",
+  );
+  const transpiledDynamicsReadiness = ts.transpileModule(dynamicsReadinessRuntimeSource, {
+    compilerOptions: {
+      module: ts.ModuleKind.ES2022,
+      target: ts.ScriptTarget.ES2022,
+      strict: true,
+    },
+  });
   fs.writeFileSync(
     tempModulePath,
-    `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}\n${transpiledResolver.outputText}\n${transpiledSourceAdapter.outputText}\n${transpiledEntry.outputText}\n${transpiledConsumption.outputText}\n${transpiledEndpoint.outputText}\n${transpiledDynamicsBridge.outputText}`,
+    `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}\n${transpiledResolver.outputText}\n${transpiledSourceAdapter.outputText}\n${transpiledEntry.outputText}\n${transpiledConsumption.outputText}\n${transpiledEndpoint.outputText}\n${transpiledDynamicsBridge.outputText}\n${transpiledDynamicsReadiness.outputText}`,
   );
 
   const {
@@ -564,6 +628,7 @@ if (failures.length === 0) {
     resolveOriginalSelfFoundationConsumption,
     resolveOriginalSelfFoundationFromSources,
     resolveDynamicsOriginalSelfFoundation,
+    resolveDynamicsOriginalSelfFoundationReadiness,
     validateOriginalSelfFoundation,
   } = await import(`file://${tempModulePath}?t=${Date.now()}`);
   const hexagram = Object.freeze({ marker: "existing-hexagram" });
@@ -946,6 +1011,97 @@ if (failures.length === 0) {
     "dynamics bridge preserves upstream reason",
     unavailableDynamicsBridgeConsumption.result.upstreamReason,
     "CHINESE_CALENDAR_NOT_SUPPORTED",
+  );
+
+  const emptyDynamicsReadinessInput = Object.freeze({
+    starBeastResult: null,
+    journeyPhase: null,
+    currentHexagramFormation: null,
+    yaoTransmissionProfile: null,
+    crystalState: null,
+  });
+  const missingStarBeastReadiness = resolveDynamicsOriginalSelfFoundationReadiness(emptyDynamicsReadinessInput);
+  assertEqual("readiness blocks missing star beast result", missingStarBeastReadiness.status, "NOT_READY");
+  assertEqual("readiness reports missing star beast result", missingStarBeastReadiness.reason, "STAR_BEAST_RESULT_MISSING");
+  assertEqual("readiness freezes missing result", Object.isFrozen(missingStarBeastReadiness), true);
+
+  const missingPhaseReadiness = resolveDynamicsOriginalSelfFoundationReadiness({
+    ...emptyDynamicsReadinessInput,
+    starBeastResult: input.starBeast,
+  });
+  assertEqual("readiness blocks missing journey phase", missingPhaseReadiness.status, "NOT_READY");
+  assertEqual("readiness reports missing journey phase", missingPhaseReadiness.reason, "JOURNEY_PHASE_MISSING");
+
+  const lifeArchetypeReadiness = resolveDynamicsOriginalSelfFoundationReadiness({
+    ...emptyDynamicsReadinessInput,
+    starBeastResult: input.starBeast,
+    journeyPhase: "LIFE_ARCHETYPE",
+  });
+  assertEqual("readiness permits null future sources", lifeArchetypeReadiness.status, "READY");
+  assertEqual("readiness exposes formal ready marker", lifeArchetypeReadiness.readiness, "READY_FOR_ORIGINAL_SELF_FOUNDATION");
+  assertEqual("readiness delegates early phase to bridge", lifeArchetypeReadiness.consumption?.status, "AVAILABLE");
+
+  const missingFormationReadiness = resolveDynamicsOriginalSelfFoundationReadiness({
+    ...emptyDynamicsReadinessInput,
+    starBeastResult: input.starBeast,
+    journeyPhase: "HEXAGRAM",
+  });
+  assertEqual("readiness blocks hexagram without formation", missingFormationReadiness.status, "NOT_READY");
+  assertEqual(
+    "readiness reports missing formation",
+    missingFormationReadiness.reason,
+    "CURRENT_HEXAGRAM_FORMATION_MISSING",
+  );
+
+  const missingYaoReadiness = resolveDynamicsOriginalSelfFoundationReadiness({
+    ...emptyDynamicsReadinessInput,
+    starBeastResult: input.starBeast,
+    journeyPhase: "YAO",
+    currentHexagramFormation: formation,
+  });
+  assertEqual("readiness blocks yao phase without yao", missingYaoReadiness.status, "NOT_READY");
+  assertEqual("readiness reports missing yao", missingYaoReadiness.reason, "YAO_TRANSMISSION_PROFILE_MISSING");
+
+  const missingCrystalReadiness = resolveDynamicsOriginalSelfFoundationReadiness({
+    ...emptyDynamicsReadinessInput,
+    starBeastResult: input.starBeast,
+    journeyPhase: "CRYSTAL",
+    currentHexagramFormation: formation,
+    yaoTransmissionProfile: yao,
+  });
+  assertEqual("readiness blocks crystal phase without crystal", missingCrystalReadiness.status, "NOT_READY");
+  assertEqual("readiness reports missing crystal", missingCrystalReadiness.reason, "CRYSTAL_STATE_MISSING");
+
+  const readyDynamicsReadinessInput = Object.freeze({
+    starBeastResult: input.starBeast,
+    journeyPhase: "CRYSTAL",
+    currentHexagramFormation: formation,
+    yaoTransmissionProfile: yao,
+    crystalState: crystal,
+  });
+  const readyDynamicsReadinessInputSnapshot = JSON.stringify(readyDynamicsReadinessInput);
+  const readyDynamicsReadiness = resolveDynamicsOriginalSelfFoundationReadiness(readyDynamicsReadinessInput);
+  assertEqual("readiness accepts phase-complete formal sources", readyDynamicsReadiness.status, "READY");
+  assertEqual("readiness delegates ready sources to bridge", readyDynamicsReadiness.consumption?.status, "AVAILABLE");
+  assertEqual("readiness preserves crystal phase", readyDynamicsReadiness.consumption?.state?.journey.currentPhase, "CRYSTAL");
+  assertEqual("readiness freezes ready result", Object.isFrozen(readyDynamicsReadiness), true);
+  assertEqual("readiness does not mutate input", JSON.stringify(readyDynamicsReadinessInput), readyDynamicsReadinessInputSnapshot);
+
+  const unavailableStarBeastReadiness = resolveDynamicsOriginalSelfFoundationReadiness({
+    ...emptyDynamicsReadinessInput,
+    starBeastResult: Object.freeze({
+      status: "CALENDAR_UNAVAILABLE",
+      protocolVersion: "GUANYAO_LUNAR_MANSION_V1",
+      reason: "CHINESE_CALENDAR_NOT_SUPPORTED",
+    }),
+    journeyPhase: "STAR_BEAST",
+  });
+  assertEqual("readiness accepts present unavailable source", unavailableStarBeastReadiness.status, "READY");
+  assertEqual("readiness preserves foundation unavailability", unavailableStarBeastReadiness.consumption?.status, "UNAVAILABLE");
+  assertEqual(
+    "readiness preserves foundation unavailable reason",
+    unavailableStarBeastReadiness.consumption?.reason,
+    "STAR_BEAST_CALENDAR_UNAVAILABLE",
   );
 }
 
