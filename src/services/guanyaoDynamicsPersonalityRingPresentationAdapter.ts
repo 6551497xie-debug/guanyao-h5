@@ -67,7 +67,7 @@ export function resolveDynamicsPersonalityRingPresentation(
       visible: isDeposited,
       title: "人格年轮已点亮",
       copy: "这一局，已经成为你人格年轮上的一枚星点。",
-      summary: `已留痕 · ${entryCount} 枚结晶${recentHexagramTitle ? ` · 最近一枚：${recentHexagramTitle}` : ""}`,
+      summary: `已留痕 · ${entryCount} 枚生命印记 · 供你回望${recentHexagramTitle ? ` · 最近一枚：${recentHexagramTitle}` : ""}`,
     },
     guardrails: {
       readOnly: true,

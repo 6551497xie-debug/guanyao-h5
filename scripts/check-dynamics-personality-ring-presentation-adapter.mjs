@@ -124,9 +124,9 @@ try {
     "这一局，已经成为你人格年轮上的一枚星点。",
   );
   assertEqual(
-    "confirmation summary remains unchanged",
+    "confirmation summary frames count as revisitable life imprints",
     deposited.confirmation.summary,
-    "已留痕 · 1 枚结晶 · 最近一枚：天泽履",
+    "已留痕 · 1 枚生命印记 · 供你回望 · 最近一枚：天泽履",
   );
 
   const otherCrystalState = state([entry("2026-07-14T01:00:00.000Z", "风山渐")]);
@@ -148,9 +148,9 @@ try {
   assertEqual("matching entry can appear anywhere", multiEntry.isDeposited, true);
   assertEqual("multi-entry count remains exact", multiEntry.entryCount, 2);
   assertEqual(
-    "multi-entry summary keeps current crystal title",
+    "multi-entry summary keeps life imprint count and current crystal title",
     multiEntry.confirmation.summary,
-    "已留痕 · 2 枚结晶 · 最近一枚：天泽履",
+    "已留痕 · 2 枚生命印记 · 供你回望 · 最近一枚：天泽履",
   );
 
   const fallbackTitle = resolveDynamicsPersonalityRingPresentation({
@@ -182,6 +182,12 @@ try {
   assertIncludes("ring presentation adapter declares read-only guardrail", adapterSource, "readOnly: true");
   assertIncludes("ring presentation adapter blocks storage writes", adapterSource, "writesStorage: false");
   assertIncludes("ring presentation adapter blocks deposits", adapterSource, "depositsCrystal: false");
+  assertIncludes(
+    "ring presentation adapter frames count as revisitable life imprints",
+    adapterSource,
+    "枚生命印记 · 供你回望",
+  );
+  assertExcludes("ring presentation adapter does not count crystals", adapterSource, "枚结晶");
   assertExcludes("ring presentation adapter stays localStorage neutral", adapterSource, "localStorage");
   assertExcludes("ring presentation adapter does not read persistence", adapterSource, "readPersonalityRingLite");
   assertExcludes("ring presentation adapter does not save persistence", adapterSource, "savePersonalityRingLiteEntry");
