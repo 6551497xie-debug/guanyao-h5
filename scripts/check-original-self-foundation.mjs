@@ -16,6 +16,8 @@ const consumptionPath = path.join(rootDir, "src/services/originalSelfFoundationR
 const endpointPath = path.join(rootDir, "src/services/originalSelfFoundationEndpoint.ts");
 const dynamicsBridgePath = path.join(rootDir, "src/services/guanyaoDynamicsOriginalSelfFoundationAdapter.ts");
 const dynamicsReadinessPath = path.join(rootDir, "src/services/guanyaoDynamicsOriginalSelfFoundationReadinessAdapter.ts");
+const launchStarbeastSourcePath = path.join(rootDir, "src/services/guanyaoLaunchStarbeastDerivationSourceAdapter.ts");
+const launchOriginMotherAdapterPath = path.join(rootDir, "src/services/guanyaoLaunchOriginMotherInputAdapter.ts");
 const protocolPath = path.join(rootDir, "docs/GUANYAO_ORIGINAL_SELF_ARCHITECTURE_PROTOCOL.md");
 const packagePath = path.join(rootDir, "package.json");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-original-self-foundation-${process.pid}.mjs`);
@@ -68,6 +70,8 @@ for (const [name, filePath] of [
   ["foundation endpoint", endpointPath],
   ["dynamics original self bridge", dynamicsBridgePath],
   ["dynamics original self readiness", dynamicsReadinessPath],
+  ["launch starbeast derivation source", launchStarbeastSourcePath],
+  ["launch origin mother adapter", launchOriginMotherAdapterPath],
   ["architecture protocol", protocolPath],
   ["package manifest", packagePath],
 ]) {
@@ -87,6 +91,8 @@ if (failures.length === 0) {
   const endpointSource = fs.readFileSync(endpointPath, "utf8");
   const dynamicsBridgeSource = fs.readFileSync(dynamicsBridgePath, "utf8");
   const dynamicsReadinessSource = fs.readFileSync(dynamicsReadinessPath, "utf8");
+  const launchStarbeastSource = fs.readFileSync(launchStarbeastSourcePath, "utf8");
+  const launchOriginMotherAdapterSource = fs.readFileSync(launchOriginMotherAdapterPath, "utf8");
   const protocolSource = fs.readFileSync(protocolPath, "utf8");
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   const sourceFile = ts.createSourceFile(typePath, typeSource, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS);
@@ -398,6 +404,45 @@ if (failures.length === 0) {
     'from "react"',
   ].forEach((marker) => assertExcludes("dynamics original self readiness stays source-only", dynamicsReadinessSource, marker));
 
+  [
+    "export type LaunchStarbeastDerivationSourceCarrier",
+    "export function resolveLaunchStarbeastDerivationSource",
+    "input: GregorianBirthDateInput",
+    'source: "launch_starbeast_derivation_source"',
+    "starBeastResult: StarbeastDerivationResult",
+    "starBeastResult: resolveStarbeastFromBirthDate(input)",
+    "Object.freeze({",
+  ].forEach((marker) => assertIncludes("launch starbeast source carrier contract", launchStarbeastSource, marker));
+
+  [
+    "GeoLayerInput",
+    "hourBranch",
+    "periodIndex",
+    "fourSymbol:",
+    "MotherCode",
+    "runGeoChronoMotherFusionEngine",
+    "localStorage",
+    "sessionStorage",
+    "fetch(",
+    'from "react"',
+  ].forEach((marker) => assertExcludes("launch starbeast source stays birth-date-only", launchStarbeastSource, marker));
+
+  assertIncludes(
+    "launch mother consumes starbeast source carrier",
+    launchOriginMotherAdapterSource,
+    "resolveLaunchStarbeastDerivationSource(birthDate)",
+  );
+  assertIncludes(
+    "launch mother reads formal starbeast result",
+    launchOriginMotherAdapterSource,
+    "starbeastSource.starBeastResult",
+  );
+  assertExcludes(
+    "launch mother no longer calls starbeast engine directly",
+    launchOriginMotherAdapterSource,
+    "resolveStarbeastFromBirthDate",
+  );
+
   assertOnlyAllowedSourceSites(
     "foundation adapter has no external callers",
     /\badaptOriginalSelfFoundation\b/,
@@ -442,6 +487,11 @@ if (failures.length === 0) {
     "dynamics foundation bridge is only consumed by readiness",
     /\bresolveDynamicsOriginalSelfFoundation\b/,
     [dynamicsBridgePath, dynamicsReadinessPath],
+  );
+  assertOnlyAllowedSourceSites(
+    "launch starbeast source is only consumed by launch mother adapter",
+    /\bresolveLaunchStarbeastDerivationSource\b/,
+    [launchStarbeastSourcePath, launchOriginMotherAdapterPath],
   );
   assertOnlyAllowedSourceSites(
     "original self state has one construction site",
@@ -507,6 +557,14 @@ if (failures.length === 0) {
     "未进入某一阶段时，该阶段之后的来源允许保持 `null`",
     "其业务不可用原因继续由 Foundation Endpoint 原样转换为 UNAVAILABLE",
     "P10 仍只建立服务层合同",
+    "Launch Starbeast Derivation Source Carrier",
+    "resolveLaunchStarbeastDerivationSource",
+    "LaunchStarbeastDerivationSourceCarrier",
+    "Source Carrier 必须保留完整 `StarbeastDerivationResult`",
+    "只接收公历年、月、日",
+    "Launch Origin Mother Adapter 不再直接调用 Star Beast Engine",
+    "P11 不把 Source Carrier 写入 Storage",
+    "尚未完成 Dynamics 传递",
   ].forEach((marker) => assertIncludes("foundation protocol contract", protocolSource, marker));
 
   assertIncludes(

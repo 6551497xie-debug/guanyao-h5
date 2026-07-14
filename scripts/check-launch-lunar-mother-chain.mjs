@@ -11,9 +11,11 @@ const starbeastPath = path.join(rootDir, "src/services/guanyaoStarbeastEngineSer
 const visualPath = path.join(rootDir, "src/data/fourBeastTrigramVisualGrammar.ts");
 const launchPath = path.join(rootDir, "src/pages/LaunchLab.tsx");
 const adapterPath = path.join(rootDir, "src/services/guanyaoLaunchOriginMotherInputAdapter.ts");
+const starbeastSourcePath = path.join(rootDir, "src/services/guanyaoLaunchStarbeastDerivationSourceAdapter.ts");
 const fusionSource = fs.readFileSync(fusionPath, "utf8");
 const launchSource = fs.readFileSync(launchPath, "utf8");
 const adapterSource = fs.readFileSync(adapterPath, "utf8");
+const starbeastSource = fs.readFileSync(starbeastSourcePath, "utf8");
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "guanyao-launch-mother-chain-"));
 
 const assertEqual = (name, actual, expected) => {
@@ -65,7 +67,9 @@ try {
   const { getFourBeastTrigramVisualGrammar } = visualModule;
 
   assertIncludes("adapter consumes lunar trigram resolver", adapterSource, "resolveLunarTrigramLanding");
-  assertIncludes("adapter consumes birth-date starbeast resolver", adapterSource, "resolveStarbeastFromBirthDate");
+  assertIncludes("adapter consumes launch starbeast source", adapterSource, "resolveLaunchStarbeastDerivationSource");
+  assertExcludes("adapter no longer consumes starbeast engine directly", adapterSource, "resolveStarbeastFromBirthDate");
+  assertIncludes("launch starbeast source consumes birth-date resolver", starbeastSource, "resolveStarbeastFromBirthDate(input)");
   assertIncludes("adapter feeds resolved trigram landing", adapterSource, "trigramLanding,");
   assertIncludes("adapter feeds resolved four symbol", adapterSource, "fourSymbol: starbeastDerivation.fourSymbol");
   assertIncludes("launch delegates origin mother resolution", launchSource, "resolveLaunchOriginMother({");

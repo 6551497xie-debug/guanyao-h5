@@ -4,8 +4,8 @@ import type {
 } from "../types/guanyaoGeoChronoMotherFusion";
 import type { LaunchOriginMotherInput } from "../types/guanyaoLaunchOriginMother";
 import { runGeoChronoMotherFusionEngine } from "./guanyaoGeoChronoMotherFusionEngine";
+import { resolveLaunchStarbeastDerivationSource } from "./guanyaoLaunchStarbeastDerivationSourceAdapter";
 import { resolveLunarTrigramLanding } from "./guanyaoLunarTrigramLandingResolver";
-import { resolveStarbeastFromBirthDate } from "./guanyaoStarbeastEngineService";
 
 export function adaptLaunchOriginMotherInput(
   input: LaunchOriginMotherInput,
@@ -16,7 +16,8 @@ export function adaptLaunchOriginMotherInput(
     ...birthDate,
     hourBranch,
   });
-  const starbeastDerivation = resolveStarbeastFromBirthDate(birthDate);
+  const starbeastSource = resolveLaunchStarbeastDerivationSource(birthDate);
+  const starbeastDerivation = starbeastSource.starBeastResult;
 
   if (starbeastDerivation.status !== "READY") {
     throw new Error(`STARBEAST_DERIVATION_NOT_READY:${starbeastDerivation.reason}`);
