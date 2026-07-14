@@ -120,7 +120,26 @@ try {
   const transformation = resolveDynamicsExperienceState(baseInput({ completedNodeCount: 5, currentNode: 6 }));
   assertEqual("five completed nodes map to transformation", transformation.stage, "TRANSFORMATION");
   assertEqual("transformation focuses dimension flow", transformation.primaryFocus, "DIMENSION_FLOW");
-  assertEqual("transformation headline remains unchanged", transformation.headline, "这一局正在收束。");
+  assertEqual(
+    "transformation headline recognizes multiple perspectives",
+    transformation.headline,
+    "你已经从多个方向看见这件事。",
+  );
+  assertEqual(
+    "transformation supporting copy lets a different response approach",
+    transformation.supportingCopy,
+    "有些感受开始连在一起，一个不同的回应正在靠近。",
+  );
+  assertEqual(
+    "transformation pressure copy recalls several spaces",
+    transformation.pressureCopy,
+    "这件事已经被你从几个空间看过。",
+  );
+  assertEqual(
+    "transformation beast copy leaves direction with the user",
+    transformation.beastCopy,
+    "你与星兽正在一起辨认，这一次愿意往哪里走。",
+  );
   assertEqual(
     "transformation stage keeps change in progress without demanding an answer",
     transformation.crystalCopy,
@@ -193,6 +212,10 @@ try {
   assertExcludes("experience adapter removes touch instruction copy", adapterSource, "每一次轻触");
   assertExcludes("experience adapter removes pressure-entry process copy", adapterSource, "压力正在进入当前空间");
   assertExcludes("experience adapter removes touch-trigger reaction copy", adapterSource, "随着触点出现");
+  assertExcludes("experience adapter removes convergence process headline", adapterSource, "这一局正在收束");
+  assertExcludes("experience adapter removes familiar-reaction transition copy", adapterSource, "你已经看见熟悉的反应");
+  assertExcludes("experience adapter removes layered-pressure count copy", adapterSource, "压力已经被你看过几层");
+  assertExcludes("experience adapter removes reaction-stabilization copy", adapterSource, "反应正在趋稳");
   assertExcludes("Gravity removes crystallization gate language", gravitySource, "本局才会结晶");
   assertExcludes("Gravity no longer owns experience resolver", gravitySource, "function resolveExperienceState");
   assertExcludes("Gravity no longer owns dimension response copy", gravitySource, "SIX_DIMENSION_RESPONSE_COPY");
@@ -200,6 +223,7 @@ try {
   assertExcludes("Gravity does not own pressure headline", gravitySource, "这一刻，你的感受和回应正在出现。");
   assertExcludes("Gravity does not own awareness headline", gravitySource, "你已经停下来，看见这一刻。");
   assertExcludes("Gravity does not own action headline", gravitySource, "你正在看见，回应是怎样一层层发生的。");
+  assertExcludes("Gravity does not own transformation headline", gravitySource, "你已经从多个方向看见这件事。");
 
   console.log("\n[DYNAMICS EXPERIENCE STATE ADAPTER] PASS");
 } catch (error) {
