@@ -30,6 +30,10 @@ import { resolveDynamicsExperienceReadinessPresentation } from "../services/guan
 import { resolveDynamicsValueFlow } from "../services/guanyaoDynamicsValueFlowAdapter";
 import { resolveDynamicsVisualState } from "../services/guanyaoDynamicsVisualStateAdapter";
 import { resolveDynamicsBaiHuCoreStars } from "../services/guanyaoDynamicsBaiHuCoreStarsAdapter";
+import {
+  DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS,
+  resolveDynamicsSixSpaceProgress,
+} from "../services/guanyaoDynamicsSixSpaceProgressAdapter";
 import { resolveDynamicsCurrentHexagramPresentation } from "../services/guanyaoDynamicsCurrentHexagramPresentationAdapter";
 import {
   resolveDynamicsCurrentCrystalEndState,
@@ -79,19 +83,6 @@ function readDevExperienceSmokeFixture(): string | null {
   return new URLSearchParams(window.location.search).get("__experienceSmoke");
 }
 
-function buildSpaceRecord<T>(value: T): Record<SixSpaceId, T> {
-  return {
-    body: value,
-    emotion: value,
-    thought: value,
-    action: value,
-    memory: value,
-    goal: value,
-  };
-}
-
-const SEQUENTIAL_SIX_SPACE_IDS: readonly SixSpaceId[] = ["body", "emotion", "thought", "action", "memory", "goal"];
-
 const SIX_SPACE_DISPLAY_NAME: Record<SixSpaceId, string> = {
   body: "身体空间",
   emotion: "情绪空间",
@@ -109,10 +100,6 @@ const SIX_SPACE_SHORT_LABELS: Record<SixSpaceId, string> = {
   memory: "记忆",
   goal: "动机",
 };
-
-function countCompletedSixDimensions(snapshot: ExecutionSnapshot) {
-  return snapshot.node.completed.filter((node) => node >= 1 && node <= 6).length;
-}
 
 function createNodeRunningExecutionSnapshot(context: SelectedPressureSeedContext | null) {
   const seedSnapshot = GuanyaoRuntimeEngine.createSnapshot(context);
@@ -1796,15 +1783,20 @@ function HexagramCodeDeliveryShell() {
     pressureSeedContext,
     starbeastFeedback,
   } = runtimeProjection;
-  const activeDimensionId = SEQUENTIAL_SIX_SPACE_IDS[Math.max(0, Math.min(SEQUENTIAL_SIX_SPACE_IDS.length - 1, activeDimensionIndex))];
-  const completedDimensionSet = new Set(completedDimensionIds);
-  if (executionSnapshot.runtime.enginePhase === "COMPLETE") {
-    SEQUENTIAL_SIX_SPACE_IDS.forEach((dimensionId) => completedDimensionSet.add(dimensionId));
-  }
-  const completedSixDimensionCount = completedDimensionSet.size;
-  const currentInnerNodeCount = countCompletedSixDimensions(executionSnapshot);
-  const sequentialCurrentSpaceId = activeDimensionId;
-  const sequentialCurrentSpaceConfig = sixSpaceConfigs.find((config) => config.id === sequentialCurrentSpaceId) ?? sixSpaceConfigs[0];
+  const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
+    pressureSeed: selectedPressureSeedSurface,
+    sixDimensionState: cosmicSixDimensionState,
+  });
+  const sixSpaceProgress = resolveDynamicsSixSpaceProgress({
+    activeDimensionIndex,
+    completedDimensionIds,
+    completedNodeNumbers: executionSnapshot.node.completed,
+    enginePhase: executionSnapshot.runtime.enginePhase,
+    spaceConfigs: sixSpaceConfigs,
+    sixDimensionState: cosmicBotanicsRuntime.sixDimensionState,
+  });
+  const sequentialCurrentSpaceId = sixSpaceProgress.currentSpaceId;
+  const completedSixDimensionCount = sixSpaceProgress.completedSpaceCount;
   const visualState = resolveDynamicsVisualState({
     completedNodeCount: executionSnapshot.node.completed.length,
     currentNode: executionSnapshot.node.current,
@@ -1851,10 +1843,6 @@ function HexagramCodeDeliveryShell() {
     nodeLocked: executionSnapshot.node.locked,
     enginePhase: executionSnapshot.runtime.enginePhase,
   });
-  const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
-    pressureSeed: selectedPressureSeedSurface,
-    sixDimensionState: cosmicSixDimensionState,
-  });
   const baiHuCoreStars = resolveDynamicsBaiHuCoreStars({
     seedId: executionSnapshot.seed.id,
     seedText: executionSnapshot.seed.text,
@@ -1867,23 +1855,12 @@ function HexagramCodeDeliveryShell() {
     selectedPressureSeedSurface,
   });
 
-  const visiblePetalStates = sixSpaceConfigs.reduce<Record<SixSpaceId, CosmicPetalState>>((acc, config, index) => {
-    const isCompleted = completedDimensionSet.has(config.id);
-    const isCurrent = config.id === sequentialCurrentSpaceId;
-    acc[config.id] = isCompleted ? "blooming" : isCurrent ? "active" : "dormant";
-    return acc;
-  }, buildSpaceRecord<CosmicPetalState>("dormant"));
-  const cosmicPollenBursts = sixSpaceConfigs.reduce<Record<SixSpaceId, number>>((acc, config) => {
-    acc[config.id] = cosmicBotanicsRuntime.sixDimensionState[config.id].bloomCount;
-    return acc;
-  }, buildSpaceRecord(0));
-  const starbeastFeedbackComplete = executionSnapshot.runtime.enginePhase === "COMPLETE" && completedSixDimensionCount >= 6;
   const hexagramAssetCandidate = resolveHexagramAssetCandidate({
     personaSnapshot: motherPersonaSnapshot,
     selectedPressureSeedContext: pressureSeedContext,
     currentPrimarySpaceId: sequentialCurrentSpaceId,
     completedNodeCount: completedSixDimensionCount,
-    starbeastFeedbackComplete,
+    starbeastFeedbackComplete: sixSpaceProgress.starbeastFeedbackComplete,
     pressureSeedFallbackText: selectedPressureSeedSurface,
   });
   const changeExperienceRuntime = useMemo(
@@ -1958,8 +1935,8 @@ function HexagramCodeDeliveryShell() {
       previous.includes(sequentialCurrentSpaceId) ? previous : [...previous, sequentialCurrentSpaceId],
     );
 
-    if (activeDimensionIndex < SEQUENTIAL_SIX_SPACE_IDS.length - 1) {
-      setActiveDimensionIndex((previous) => Math.min(SEQUENTIAL_SIX_SPACE_IDS.length - 1, previous + 1));
+    if (activeDimensionIndex < DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS.length - 1) {
+      setActiveDimensionIndex((previous) => Math.min(DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS.length - 1, previous + 1));
       setExecutionSnapshot(createNodeRunningExecutionSnapshot(dynamicsInputContext.selectedPressureSeedContext));
       return;
     }
@@ -2147,14 +2124,14 @@ function HexagramCodeDeliveryShell() {
             <CosmicBotanicsField
               configs={sixSpaceConfigs}
               currentStep={executionSnapshot.node.current}
-              activeDimensionStep={sequentialCurrentSpaceConfig.no}
+              activeDimensionStep={sixSpaceProgress.currentSpaceStep}
               pressureSeedSurface={selectedPressureSeedSurface}
-              petalStates={visiblePetalStates}
-              pollenBursts={cosmicPollenBursts}
+              petalStates={sixSpaceProgress.petalStates}
+              pollenBursts={sixSpaceProgress.pollenBursts}
               starbeast={starbeastFeedback}
               starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
               hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}
-              activeNodeIndex={currentInnerNodeCount}
+              activeNodeIndex={sixSpaceProgress.completedInnerNodeCount}
               narrativePhase={cosmicNarrativePhase}
               onNodeBloom={bloomCosmicNode}
               coreStars={baiHuCoreStars.coreStars}
