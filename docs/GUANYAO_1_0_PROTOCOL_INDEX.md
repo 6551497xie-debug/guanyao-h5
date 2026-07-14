@@ -8,7 +8,7 @@ The active worldview constitution is:
 
 - [GUANYAO_WORLDVIEW_CONSTITUTION_V2.md](./GUANYAO_WORLDVIEW_CONSTITUTION_V2.md)
 
-It defines why GUANYAO exists and is the highest semantic source for product meaning, front-stage language, starbeast identity, six-space experience, Choice, Crystal, and visual emotional direction.
+It defines why GUANYAO exists and is the highest semantic source for product meaning, front-stage language, starbeast identity, six-space experience, Gravity, Choice, Crystal, and visual emotional direction.
 
 This registration is a documentation clarification, not a new candidate stage and not an unfreeze of the runtime or generation architecture. Existing causal, calculation, persistence, and release protocols remain authoritative inside their technical scopes.
 
@@ -40,7 +40,7 @@ The current GUANYAO 1.0 main chain is locked as:
 时空调频
 → 母码卡 / 原始生命倾向
 → 压力种子 / 环境力量
-→ 六维生命体验
+→ Gravity / 六维生命体验
 → 当前生命界面 6 节点观察
 → 星兽反馈
 → 64卦人格资产卡结晶
@@ -53,7 +53,7 @@ The current GUANYAO 1.0 main chain is locked as:
 | 时空调频 | 用户确认自己的出生时间与出生地 | Chrono + Geo input |
 | 母码卡 / 原始生命倾向 | 用户看见生命最自然的起势方式 | Mother life-tendency expression |
 | 压力种子 / 环境力量 | 用户看见生命正在遇到的现实力量 | Environment force context |
-| 六维生命体验 | 环境力量通过完整生命的六个界面被感受 | Six-space life experience |
+| Gravity / 六维生命体验 | 现实力量的牵引通过完整生命的六个界面被看见 | Reality pull through six-space experience |
 | 当前生命界面 6 节点观察 | 用户在一个入口中看见反应，并为新选择留出空间 | Six-node observation rhythm |
 | 星兽反馈 | 星兽接住动作，并把光送回人格结构 | Starbeast lifeforce feedback |
 | 64卦人格资产卡结晶 | 本局留下的可收藏人格资产 | Hexagram asset output |
@@ -100,6 +100,11 @@ The current GUANYAO 1.0 main chain is locked as:
 
 - [GUANYAO_SIX_SPACE_LIFE_EXPERIENCE_PROTOCOL.md](./GUANYAO_SIX_SPACE_LIFE_EXPERIENCE_PROTOCOL.md)
   Active six-space semantic protocol. Defines the six spaces as six life experience interfaces, calibrates Primary Petal and six-node meaning, and preserves the current mapping, runtime sequence, completion state, and Crystal chain.
+
+### Gravity And Reality Pull
+
+- [GUANYAO_GRAVITY_REALITY_PULL_PROTOCOL.md](./GUANYAO_GRAVITY_REALITY_PULL_PROTOCOL.md)
+  Active Gravity semantic protocol. Defines Gravity as reality's pull on life, distinguishes it from Pressure Seed and `gravityValue`, and preserves trigram formation, six-space Runtime, ChangeExperience, and Crystal boundaries.
 
 ### Mother Code And Original Life Tendency
 
@@ -211,7 +216,7 @@ The following constraints are mandatory across all GUANYAO 1.0 front-stage UI, c
 
 1. 星兽永不惩罚用户。
 2. 未完成不等于失败。
-3. 黑洞是外部扰动，不是用户罪责。
+3. 黑洞是现实引力的视觉隐喻，不是用户罪责或生命缺陷。
 4. 压力种子用于看见现实，不用于审判用户。
 5. 六节点不是任务打卡，而是生命观察的节奏。
 6. 卦码卡不是吉凶判词，而是人格资产结晶。
@@ -224,6 +229,9 @@ Do not use language that implies:
 - the user failed the system;
 - the starbeast is disappointed;
 - the pressure seed is the user's fault;
+- Gravity intensity is a measure of the user's weakness;
+- the starbeast is damaged when the user does not continue;
+- the user must defeat or eliminate reality's pull;
 - unfinished action equals moral weakness;
 - anxiety must be intensified to create engagement;
 - the hexagram asset is a judgment of good or bad fortune.
