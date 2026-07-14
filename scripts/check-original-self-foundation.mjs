@@ -11,6 +11,7 @@ const adapterPath = path.join(rootDir, "src/services/originalSelfFoundationAdapt
 const validatorPath = path.join(rootDir, "src/services/validators/originalSelfFoundationValidator.ts");
 const resolverPath = path.join(rootDir, "src/services/originalSelfFoundationResolver.ts");
 const sourceAdapterPath = path.join(rootDir, "src/services/originalSelfFoundationSourceAdapter.ts");
+const entryPath = path.join(rootDir, "src/services/originalSelfFoundationEntry.ts");
 const protocolPath = path.join(rootDir, "docs/GUANYAO_ORIGINAL_SELF_ARCHITECTURE_PROTOCOL.md");
 const packagePath = path.join(rootDir, "package.json");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-original-self-foundation-${process.pid}.mjs`);
@@ -39,6 +40,7 @@ for (const [name, filePath] of [
   ["foundation validator", validatorPath],
   ["foundation resolver", resolverPath],
   ["foundation source adapter", sourceAdapterPath],
+  ["foundation entry", entryPath],
   ["architecture protocol", protocolPath],
   ["package manifest", packagePath],
 ]) {
@@ -53,6 +55,7 @@ if (failures.length === 0) {
   const validatorSource = fs.readFileSync(validatorPath, "utf8");
   const resolverSource = fs.readFileSync(resolverPath, "utf8");
   const sourceAdapterSource = fs.readFileSync(sourceAdapterPath, "utf8");
+  const entrySource = fs.readFileSync(entryPath, "utf8");
   const protocolSource = fs.readFileSync(protocolPath, "utf8");
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   const sourceFile = ts.createSourceFile(typePath, typeSource, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS);
@@ -201,6 +204,29 @@ if (failures.length === 0) {
     "switch (",
   ].forEach((marker) => assertExcludes("foundation source adapter stays reference-only", sourceAdapterSource, marker));
 
+  [
+    "export type OriginalSelfFoundationEntryInput = OriginalSelfFoundationSourceInput",
+    "export function resolveOriginalSelfFoundationFromSources",
+    "resolveOriginalSelfFoundation(adaptOriginalSelfFoundationSource(input))",
+  ].forEach((marker) => assertIncludes("foundation entry contract", entrySource, marker));
+
+  [
+    "adaptOriginalSelfFoundation(",
+    "validateOriginalSelfFoundation(",
+    "resolveStarbeastFromBirthDate",
+    "guanyaoStarbeastEngineService",
+    "GuanyaoRuntimeEngine",
+    "resolveRuntime",
+    "resolveCurrentHexagram",
+    "HexagramCrystalEngine",
+    "localStorage",
+    "sessionStorage",
+    "fetch(",
+    'from "react"',
+    "if (",
+    "switch (",
+  ].forEach((marker) => assertExcludes("foundation entry stays composition-only", entrySource, marker));
+
   ["localStorage", "sessionStorage", "fetch(", 'from "react"', "JSX.", "HTMLElement", "CurrentHexagramProfile {", "CrystalState = Readonly"].forEach(
     (marker) => assertExcludes("foundation stays implementation-neutral", typeSource, marker),
   );
@@ -271,15 +297,32 @@ if (failures.length === 0) {
       strict: true,
     },
   });
+  const entryRuntimeSource = entrySource
+    .replace(
+      /import \{\s*resolveOriginalSelfFoundation,\s*type OriginalSelfFoundationResult,\s*\} from "\.\/originalSelfFoundationResolver";\n/,
+      "",
+    )
+    .replace(
+      /import \{\s*adaptOriginalSelfFoundationSource,\s*type OriginalSelfFoundationSourceInput,\s*\} from "\.\/originalSelfFoundationSourceAdapter";\n/,
+      "",
+    );
+  const transpiledEntry = ts.transpileModule(entryRuntimeSource, {
+    compilerOptions: {
+      module: ts.ModuleKind.ES2022,
+      target: ts.ScriptTarget.ES2022,
+      strict: true,
+    },
+  });
   fs.writeFileSync(
     tempModulePath,
-    `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}\n${transpiledResolver.outputText}\n${transpiledSourceAdapter.outputText}`,
+    `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}\n${transpiledResolver.outputText}\n${transpiledSourceAdapter.outputText}\n${transpiledEntry.outputText}`,
   );
 
   const {
     adaptOriginalSelfFoundation,
     adaptOriginalSelfFoundationSource,
     resolveOriginalSelfFoundation,
+    resolveOriginalSelfFoundationFromSources,
     validateOriginalSelfFoundation,
   } = await import(`file://${tempModulePath}?t=${Date.now()}`);
   const hexagram = Object.freeze({ marker: "existing-hexagram" });
@@ -512,6 +555,32 @@ if (failures.length === 0) {
     "resolver keeps source adapter invalid result not ready",
     resolveOriginalSelfFoundation(invalidSourceResult).reason,
     "STAR_BEAST_INVALID_DATE",
+  );
+
+  const entryInputSnapshot = JSON.stringify(sourceInput);
+  const entryResult = resolveOriginalSelfFoundationFromSources(sourceInput);
+  assertEqual("entry resolves ready sources", entryResult.status, "READY");
+  assertEqual("entry returns foundation result source", entryResult.source, "original_self_foundation");
+  assertEqual("entry preserves explicit journey phase", entryResult.state?.journey.currentPhase, "HEXAGRAM");
+  assertEqual("entry preserves source hexagram reference", entryResult.state?.journey.hexagram === hexagram, true);
+  assertEqual("entry preserves source yao reference", entryResult.state?.journey.yao === yao, true);
+  assertEqual("entry preserves source crystal reference", entryResult.state?.journey.crystal === crystal, true);
+  assertEqual("entry returns frozen resolver result", Object.isFrozen(entryResult), true);
+  assertEqual("entry does not mutate source input", JSON.stringify(sourceInput), entryInputSnapshot);
+
+  const invalidEntryResult = resolveOriginalSelfFoundationFromSources({
+    ...sourceInput,
+    starBeastResult: Object.freeze({
+      status: "CALENDAR_UNAVAILABLE",
+      protocolVersion: "GUANYAO_LUNAR_MANSION_V1",
+      reason: "CHINESE_CALENDAR_NOT_SUPPORTED",
+    }),
+  });
+  assertEqual("entry preserves not-ready status", invalidEntryResult.status, "NOT_READY");
+  assertEqual(
+    "entry preserves upstream not-ready reason",
+    invalidEntryResult.reason,
+    "STAR_BEAST_CALENDAR_UNAVAILABLE",
   );
 }
 
