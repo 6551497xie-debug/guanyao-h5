@@ -8,6 +8,7 @@ const rootDir = process.cwd();
 const typePath = path.join(rootDir, "src/types/originalSelf.ts");
 const typeIndexPath = path.join(rootDir, "src/types/index.ts");
 const adapterPath = path.join(rootDir, "src/services/originalSelfFoundationAdapter.ts");
+const validatorPath = path.join(rootDir, "src/services/validators/originalSelfFoundationValidator.ts");
 const protocolPath = path.join(rootDir, "docs/GUANYAO_ORIGINAL_SELF_ARCHITECTURE_PROTOCOL.md");
 const packagePath = path.join(rootDir, "package.json");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-original-self-foundation-${process.pid}.mjs`);
@@ -33,6 +34,7 @@ for (const [name, filePath] of [
   ["original self type", typePath],
   ["type index", typeIndexPath],
   ["foundation adapter", adapterPath],
+  ["foundation validator", validatorPath],
   ["architecture protocol", protocolPath],
   ["package manifest", packagePath],
 ]) {
@@ -44,6 +46,7 @@ if (failures.length === 0) {
   const typeSource = fs.readFileSync(typePath, "utf8");
   const typeIndexSource = fs.readFileSync(typeIndexPath, "utf8");
   const adapterSource = fs.readFileSync(adapterPath, "utf8");
+  const validatorSource = fs.readFileSync(validatorPath, "utf8");
   const protocolSource = fs.readFileSync(protocolPath, "utf8");
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   const sourceFile = ts.createSourceFile(typePath, typeSource, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS);
@@ -115,6 +118,31 @@ if (failures.length === 0) {
     "switch (",
   ].forEach((marker) => assertExcludes("foundation adapter stays projection-only", adapterSource, marker));
 
+  [
+    "export type OriginalSelfFoundationValidationStatus",
+    "export type OriginalSelfFoundationValidationReason",
+    "export const validateOriginalSelfFoundation",
+    '"FOUR_SYMBOL_MISMATCH"',
+    '"LIFE_ARCHETYPE_SOURCE_MISMATCH"',
+    '"SEMANTIC_PATH_INVALID"',
+    '"JOURNEY_PHASE_INVALID"',
+    '"JOURNEY_REFERENCE_INVALID"',
+    '"STAR_BEAST_BOUNDARY_INVALID"',
+    '"FOUNDATION_GUARDRAILS_INVALID"',
+    '"FOUNDATION_IMMUTABILITY_INVALID"',
+  ].forEach((marker) => assertIncludes("foundation validator contract", validatorSource, marker));
+
+  [
+    "localStorage",
+    "sessionStorage",
+    "fetch(",
+    'from "react"',
+    "GuanyaoRuntimeEngine",
+    "resolveRuntime",
+    "resolveCurrentHexagram",
+    "HexagramCrystalEngine",
+  ].forEach((marker) => assertExcludes("foundation validator stays validation-only", validatorSource, marker));
+
   ["localStorage", "sessionStorage", "fetch(", 'from "react"', "JSX.", "HTMLElement", "CurrentHexagramProfile {", "CrystalState = Readonly"].forEach(
     (marker) => assertExcludes("foundation stays implementation-neutral", typeSource, marker),
   );
@@ -158,9 +186,18 @@ if (failures.length === 0) {
       strict: true,
     },
   });
-  fs.writeFileSync(tempModulePath, transpiledAdapter.outputText);
+  const transpiledValidator = ts.transpileModule(validatorSource, {
+    compilerOptions: {
+      module: ts.ModuleKind.ES2022,
+      target: ts.ScriptTarget.ES2022,
+      strict: true,
+    },
+  });
+  fs.writeFileSync(tempModulePath, `${transpiledAdapter.outputText}\n${transpiledValidator.outputText}`);
 
-  const { adaptOriginalSelfFoundation } = await import(`file://${tempModulePath}?t=${Date.now()}`);
+  const { adaptOriginalSelfFoundation, validateOriginalSelfFoundation } = await import(
+    `file://${tempModulePath}?t=${Date.now()}`
+  );
   const hexagram = Object.freeze({ marker: "existing-hexagram" });
   const yao = Object.freeze({ marker: "existing-yao" });
   const crystal = Object.freeze({ marker: "existing-crystal" });
@@ -202,6 +239,82 @@ if (failures.length === 0) {
   assertEqual("adapter freezes life archetype", Object.isFrozen(state.starBeast.lifeArchetype), true);
   assertEqual("adapter freezes journey", Object.isFrozen(state.journey), true);
   assertEqual("adapter does not mutate input", JSON.stringify(input), inputSnapshot);
+
+  const validValidation = validateOriginalSelfFoundation(state);
+  assertEqual("validator accepts adapter state", validValidation.status, "VALID_ORIGINAL_SELF_FOUNDATION");
+  assertEqual("validator returns no valid-state reasons", validValidation.reasons.length, 0);
+
+  const mismatchedFourSymbol = {
+    ...state,
+    starBeast: {
+      ...state.starBeast,
+      lifeArchetype: {
+        ...state.starBeast.lifeArchetype,
+        fourSymbol: "白虎",
+      },
+    },
+  };
+  assertEqual(
+    "validator rejects four-symbol mismatch",
+    validateOriginalSelfFoundation(mismatchedFourSymbol).reasons.includes("FOUR_SYMBOL_MISMATCH"),
+    true,
+  );
+
+  const detachedLifeArchetype = {
+    ...state,
+    journey: {
+      ...state.journey,
+      lifeArchetype: { ...state.journey.lifeArchetype },
+    },
+  };
+  assertEqual(
+    "validator rejects detached life archetype",
+    validateOriginalSelfFoundation(detachedLifeArchetype).reasons.includes("LIFE_ARCHETYPE_SOURCE_MISMATCH"),
+    true,
+  );
+
+  const invalidPath = {
+    ...state,
+    journey: {
+      ...state.journey,
+      semanticPath: ["ORIGINAL_SELF", "STAR_BEAST", "CRYSTAL"],
+    },
+  };
+  assertEqual(
+    "validator rejects invalid semantic path",
+    validateOriginalSelfFoundation(invalidPath).reasons.includes("SEMANTIC_PATH_INVALID"),
+    true,
+  );
+
+  const invalidReference = {
+    ...state,
+    journey: {
+      ...state.journey,
+      hexagram: "generated-hexagram",
+    },
+  };
+  assertEqual(
+    "validator rejects invented journey reference",
+    validateOriginalSelfFoundation(invalidReference).reasons.includes("JOURNEY_REFERENCE_INVALID"),
+    true,
+  );
+
+  const invalidGuardrails = {
+    ...state,
+    guardrails: {
+      ...state.guardrails,
+      noStorageWrite: false,
+    },
+  };
+  assertEqual(
+    "validator rejects opened guardrail",
+    validateOriginalSelfFoundation(invalidGuardrails).reasons.includes("FOUNDATION_GUARDRAILS_INVALID"),
+    true,
+  );
+
+  const validationSnapshot = JSON.stringify(state);
+  validateOriginalSelfFoundation(state);
+  assertEqual("validator does not mutate state", JSON.stringify(state), validationSnapshot);
 }
 
 fs.rmSync(tempModulePath, { force: true });
