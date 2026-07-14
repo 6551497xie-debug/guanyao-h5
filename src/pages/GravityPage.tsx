@@ -29,6 +29,7 @@ import { resolveDynamicsExperienceState } from "../services/guanyaoDynamicsExper
 import { resolveDynamicsExperienceReadinessPresentation } from "../services/guanyaoDynamicsExperienceReadinessPresentationAdapter";
 import { resolveDynamicsValueFlow } from "../services/guanyaoDynamicsValueFlowAdapter";
 import { resolveDynamicsVisualState } from "../services/guanyaoDynamicsVisualStateAdapter";
+import { resolveDynamicsBaiHuCoreStars } from "../services/guanyaoDynamicsBaiHuCoreStarsAdapter";
 import { resolveDynamicsCurrentHexagramPresentation } from "../services/guanyaoDynamicsCurrentHexagramPresentationAdapter";
 import {
   resolveDynamicsCurrentCrystalEndState,
@@ -40,12 +41,12 @@ import { resolveDynamicsPersonalityRingPresentation } from "../services/guanyaoD
 import type { CurrentHexagramFormationResult } from "../types/currentHexagramFormation";
 import type { SingleModelRevisionAction } from "../types/dynamicsRevisionAction";
 import type { DynamicsExperienceState as ExperienceState } from "../types/dynamicsExperiencePresentation";
+import type { DynamicsBaiHuCoreStar as RuntimeCoreStar } from "../types/dynamicsBaiHuCoreStars";
 import type { DynamicsVisualState as VisualState } from "../types/dynamicsVisualState";
 import type { SelectedPressureSeedContext } from "../types/primaryPetal";
 import {
   GuanyaoRuntimeEngine,
   type ExecutionSnapshot,
-  type RuntimeProjection,
   type SixSpaceConfig,
   type SixSpaceId,
   type SpatialIntent,
@@ -57,12 +58,6 @@ import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
 const LEGACY_DYNAMICS_FLOW_ISOLATED = true;
 
-type PressureBeastSeed = {
-  index: number;
-  intensity: number;
-  resonance: number;
-};
-type RuntimeCoreStar = readonly [number, number, number];
 function readDevPrimaryPetalFixture(): SelectedPressureSeedContext | null {
   const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
   if (!viteEnv?.DEV || typeof window === "undefined") return null;
@@ -129,66 +124,6 @@ function createNodeRunningExecutionSnapshot(context: SelectedPressureSeedContext
   return GuanyaoRuntimeEngine.run(engineReadySnapshot, {
     type: "SET_UI_PHASE",
     payload: { uiPhase: "NODE_RUNNING" },
-  });
-}
-
-function hashPressureBeastInput(input: string) {
-  let hash = 2166136261;
-
-  for (let index = 0; index < input.length; index += 1) {
-    hash ^= input.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-
-  return Math.abs(hash >>> 0);
-}
-
-function resolvePressureBeastSeed(snapshot: ExecutionSnapshot, projection: RuntimeProjection): PressureBeastSeed {
-  const fallbackSeed = hashPressureBeastInput(
-    [
-      snapshot.seed.id,
-      snapshot.seed.text,
-      snapshot.primaryDimension,
-      snapshot.beast.tone,
-      snapshot.node.current,
-      projection.currentPrimarySpaceId,
-    ].join("|"),
-  );
-
-  return {
-    index: fallbackSeed % 28,
-    intensity: Math.max(1, Math.min(7, Math.round(snapshot.beast.resonance * 7) || ((fallbackSeed % 7) + 1))),
-    resonance: Math.max(1, Math.min(5, Math.round((snapshot.seed.intensity ?? 0.5) * 5) || ((fallbackSeed % 5) + 1))),
-  };
-}
-
-function buildRuntimeBaiHuCoreStars(snapshot: ExecutionSnapshot, projection: RuntimeProjection): RuntimeCoreStar[] {
-  const beastSeed = resolvePressureBeastSeed(snapshot, projection);
-  const pressureSeed = hashPressureBeastInput(`${snapshot.seed.id}|${snapshot.seed.text}|${projection.selectedPressureSeedSurface}`);
-  const phase = (beastSeed.index % 7) - 3;
-  const lift = (beastSeed.resonance - 3) * 0.72;
-  const stretch = 1 + (beastSeed.intensity - 4) * 0.012;
-  const tailRise = (pressureSeed % 4) * 0.8;
-  const baseStars: RuntimeCoreStar[] = [
-    [20, 42, 6.2],
-    [31, 35, 5.2],
-    [44, 31, 5.6],
-    [58, 28, 6.8],
-    [70, 31, 5.4],
-    [79, 36, 5.8],
-    [86, 42, 5.2],
-  ];
-
-  return baseStars.map(([x, y, size], index) => {
-    const spineWave = Math.sin((index + phase) * 0.84) * 1.8;
-    const tailBias = index >= 5 ? -tailRise * (index - 4) : 0;
-    const shoulderBias = index === 1 || index === 2 ? -beastSeed.intensity * 0.16 : 0;
-
-    return [
-      50 + (x - 50) * stretch,
-      y + spineWave + lift + tailBias + shoulderBias,
-      size + (index === beastSeed.index % 7 ? 1.1 : 0),
-    ] as RuntimeCoreStar;
   });
 }
 
@@ -711,7 +646,7 @@ type BaiHuConstellationLayerProps = {
   activeNodeIndex: number;
   activeDimensionName: string;
   onCoreStarClick: () => void;
-  coreStars: RuntimeCoreStar[];
+  coreStars: readonly RuntimeCoreStar[];
   showInteractionHint: boolean;
 };
 
@@ -723,7 +658,7 @@ function CoreStarInteractionLayer({
   coreGlow,
   onCoreStarClick,
 }: {
-  coreStars: RuntimeCoreStar[];
+  coreStars: readonly RuntimeCoreStar[];
   toneColor: string;
   reveal: number;
   nodeCharge: number;
@@ -1072,7 +1007,7 @@ function CosmicBotanicsField({
   activeNodeIndex: number;
   narrativePhase: CosmicNarrativePhase;
   onNodeBloom: () => void;
-  coreStars: RuntimeCoreStar[];
+  coreStars: readonly RuntimeCoreStar[];
   visualState: VisualState;
   experienceState: ExperienceState;
 }) {
@@ -1920,7 +1855,17 @@ function HexagramCodeDeliveryShell() {
     pressureSeed: selectedPressureSeedSurface,
     sixDimensionState: cosmicSixDimensionState,
   });
-  const baiHuRuntimeCoreStars = buildRuntimeBaiHuCoreStars(executionSnapshot, runtimeProjection);
+  const baiHuCoreStars = resolveDynamicsBaiHuCoreStars({
+    seedId: executionSnapshot.seed.id,
+    seedText: executionSnapshot.seed.text,
+    primaryDimension: executionSnapshot.primaryDimension,
+    beastTone: executionSnapshot.beast.tone,
+    currentNode: executionSnapshot.node.current,
+    runtimePrimarySpaceId: runtimeProjection.currentPrimarySpaceId,
+    beastResonance: executionSnapshot.beast.resonance,
+    seedIntensity: executionSnapshot.seed.intensity,
+    selectedPressureSeedSurface,
+  });
 
   const visiblePetalStates = sixSpaceConfigs.reduce<Record<SixSpaceId, CosmicPetalState>>((acc, config, index) => {
     const isCompleted = completedDimensionSet.has(config.id);
@@ -2212,7 +2157,7 @@ function HexagramCodeDeliveryShell() {
               activeNodeIndex={currentInnerNodeCount}
               narrativePhase={cosmicNarrativePhase}
               onNodeBloom={bloomCosmicNode}
-              coreStars={baiHuRuntimeCoreStars}
+              coreStars={baiHuCoreStars.coreStars}
               visualState={visualState}
               experienceState={displayExperienceState}
             />
