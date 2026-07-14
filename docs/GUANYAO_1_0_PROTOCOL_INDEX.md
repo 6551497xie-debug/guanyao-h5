@@ -2,6 +2,18 @@
 
 This document is the protocol index for GUANYAO 1.0.
 
+## HIGHEST WORLDVIEW SEMANTIC SOURCE
+
+The active worldview constitution is:
+
+- [GUANYAO_WORLDVIEW_CONSTITUTION_V2.md](./GUANYAO_WORLDVIEW_CONSTITUTION_V2.md)
+
+It defines why GUANYAO exists and is the highest semantic source for product meaning, front-stage language, starbeast identity, six-space experience, Choice, Crystal, and visual emotional direction.
+
+This registration is a documentation clarification, not a new candidate stage and not an unfreeze of the runtime or generation architecture. Existing causal, calculation, persistence, and release protocols remain authoritative inside their technical scopes.
+
+When older product wording conflicts with the V2 worldview constitution, future construction must align that wording incrementally with the constitution without rewriting the active causal chain in one step.
+
 ## ACTIVE FREEZE NOTICE
 
 GUANYAO 1.0 protocol expansion is now frozen.
