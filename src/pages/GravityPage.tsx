@@ -133,20 +133,20 @@ const GUANYAO_PRODUCT_RUNTIME_DEFINITION = Object.freeze({
   experienceLoop: Object.freeze([
     "确认当前压力",
     "进入六个空间",
-    "看见熟悉反应",
+    "看见当下回应",
     "走完六层",
     "留下变化印记",
   ]),
   onboardingFlow: Object.freeze([
     "确认当前压力",
     "进入六个空间",
-    "逐层看见反应",
+    "从不同空间看见回应",
     "完成后留下变化印记",
   ]),
   userPerception: Object.freeze([
     "当前压力入口",
     "六个空间",
-    "熟悉反应被看见",
+    "从不同空间看见当下回应",
     "变化留痕过程",
   ]),
   positioning: "当前压力下的自我改变体验",

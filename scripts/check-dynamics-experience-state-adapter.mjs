@@ -194,6 +194,9 @@ try {
   assertIncludes("Gravity passes completed node count", gravitySource, "completedNodeCount: executionSnapshot.node.completed.length");
   assertIncludes("Gravity passes focal dimension", gravitySource, "focalDimension: visualState.focalDimension");
   assertIncludes("Gravity passes timeline coordinate", gravitySource, "timelineCurrent: visualState.timeline.current");
+  assertIncludes("Gravity product loop names the present response", gravitySource, '"看见当下回应"');
+  assertIncludes("Gravity onboarding observes across spaces", gravitySource, '"从不同空间看见回应"');
+  assertIncludes("Gravity user perception keeps the response present", gravitySource, '"从不同空间看见当下回应"');
   assertEqual(
     "Gravity reuses experience supporting copy in both presentation positions",
     gravitySource.split("displayExperienceState.supportingCopy").length - 1,
@@ -224,6 +227,9 @@ try {
   assertExcludes("Gravity does not own awareness headline", gravitySource, "你已经停下来，看见这一刻。");
   assertExcludes("Gravity does not own action headline", gravitySource, "你正在看见，回应是怎样一层层发生的。");
   assertExcludes("Gravity does not own transformation headline", gravitySource, "你已经从多个方向看见这件事。");
+  assertExcludes("Gravity product loop removes familiar-reaction wording", gravitySource, "看见熟悉反应");
+  assertExcludes("Gravity onboarding removes layer-by-layer reaction wording", gravitySource, "逐层看见反应");
+  assertExcludes("Gravity user perception removes passive familiar-reaction wording", gravitySource, "熟悉反应被看见");
 
   console.log("\n[DYNAMICS EXPERIENCE STATE ADAPTER] PASS");
 } catch (error) {
