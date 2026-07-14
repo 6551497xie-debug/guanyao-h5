@@ -32,6 +32,7 @@ import {
 } from "../services/guanyaoDynamicsCrystalRuntimeAdapter";
 import { resolveDynamicsCurrentCrystalPresentation } from "../services/guanyaoDynamicsCurrentCrystalPresentationAdapter";
 import { depositDynamicsCurrentCrystalToPersonalityRing } from "../services/guanyaoDynamicsPersonalityRingDepositAdapter";
+import { resolveDynamicsPersonalityRingPresentation } from "../services/guanyaoDynamicsPersonalityRingPresentationAdapter";
 import type { CurrentHexagramFormationResult } from "../types/currentHexagramFormation";
 import type { SingleModelRevisionAction } from "../types/dynamicsRevisionAction";
 import type { SelectedPressureSeedContext } from "../types/primaryPetal";
@@ -1970,7 +1971,13 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
   );
   const [crystalView, setCrystalView] = useState<CrystalView>("MOLD");
   const [ringLiteState, setRingLiteState] = useState(() => readPersonalityRingLite());
-  const savedEntry = ringLiteState.entries.find((entry) => entry.createdAt === state.createdAt);
+  const ringPresentation = useMemo(
+    () => resolveDynamicsPersonalityRingPresentation({
+      state: ringLiteState,
+      currentCrystalEndState: state,
+    }),
+    [ringLiteState, state],
+  );
   const isCardView = crystalView === "CARD";
 
   function saveToPersonalityRingLite() {
@@ -2211,24 +2218,26 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
             <button
               type="button"
               onClick={saveToPersonalityRingLite}
-              disabled={Boolean(savedEntry)}
+              disabled={ringPresentation.button.disabled}
               style={{
                 appearance: "none",
                 border: "1px solid rgba(255,226,158,0.42)",
                 borderRadius: 999,
                 padding: "10px 18px",
-                background: savedEntry
+                background: ringPresentation.button.status === "DEPOSITED"
                   ? "rgba(199,169,107,0.16)"
                   : "linear-gradient(135deg, rgba(255,226,158,0.18), rgba(199,169,107,0.07))",
                 color: "rgba(255,236,184,0.92)",
                 fontSize: 14,
                 fontWeight: 650,
                 letterSpacing: 0,
-                cursor: savedEntry ? "default" : "pointer",
-                boxShadow: savedEntry ? "0 0 18px rgba(199,169,107,0.1)" : "0 0 24px rgba(199,169,107,0.14)",
+                cursor: ringPresentation.button.disabled ? "default" : "pointer",
+                boxShadow: ringPresentation.button.status === "DEPOSITED"
+                  ? "0 0 18px rgba(199,169,107,0.1)"
+                  : "0 0 24px rgba(199,169,107,0.14)",
               }}
             >
-              {savedEntry ? "已留痕" : "保存入人格年轮"}
+              {ringPresentation.button.label}
             </button>
           ) : (
             <button
@@ -2252,7 +2261,7 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
             </button>
           )}
 
-          {isCardView && savedEntry ? (
+          {isCardView && ringPresentation.confirmation.visible ? (
             <div
               style={{
                 display: "grid",
@@ -2263,11 +2272,12 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
                 lineHeight: 1.55,
               }}
             >
-              <strong style={{ color: "rgba(255,226,158,0.84)", fontSize: 14, fontWeight: 650 }}>人格年轮已点亮</strong>
-              <span>这一局，已经成为你人格年轮上的一枚星点。</span>
+              <strong style={{ color: "rgba(255,226,158,0.84)", fontSize: 14, fontWeight: 650 }}>
+                {ringPresentation.confirmation.title}
+              </strong>
+              <span>{ringPresentation.confirmation.copy}</span>
               <span style={{ color: "rgba(199,169,107,0.58)" }}>
-                已留痕 · {ringLiteState.entries.length} 枚结晶
-                {presentation.hexagramTitle ? ` · 最近一枚：${presentation.hexagramTitle}` : ""}
+                {ringPresentation.confirmation.summary}
               </span>
             </div>
           ) : null}
