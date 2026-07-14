@@ -1,0 +1,183 @@
+import type { SixSpaceId } from "../runtime/guanyaoRuntimeEngine";
+import type {
+  DynamicsExperiencePrimaryFocus,
+  DynamicsExperienceStage,
+  DynamicsExperienceState,
+} from "../types/dynamicsExperiencePresentation";
+
+export type DynamicsExperienceStateAdapterInput = Readonly<{
+  completedNodeCount: number;
+  currentNode: number;
+  enginePhase: "INIT" | "SEED_ACTIVE" | "NODE_RUNNING" | "COMPLETE";
+  uiPhase: "INIT" | "SEED_ACTIVE" | "DIMENSION_LOCKED" | "NODE_RUNNING" | "COMPLETE";
+  focalDimension: SixSpaceId;
+  timelineCurrent: "T0.0" | "T0.95" | "T2.4" | "T3.6" | "completion";
+  loopLabel: string;
+}>;
+
+const SIX_DIMENSION_RESPONSE_COPY: Record<SixSpaceId, string> = {
+  body: "压力先落在身体里。",
+  emotion: "情绪先到了。",
+  thought: "解释开始成形。",
+  action: "回应的方向露出来了。",
+  memory: "旧经验被带到了现在。",
+  goal: "守护的核心露出来了。",
+};
+
+const SIX_DIMENSION_INSIGHT_COPY: Record<SixSpaceId, string> = {
+  body: "身体比意识更早知道压力来了。",
+  emotion: "你正在经历的感受，可能让这件事看起来更重。",
+  thought: "你看见的不只是事情，还有你给它的意义。",
+  action: "结果还不确定时，你会先用行动把局面拉回掌控。",
+  memory: "过去正在参与此刻，让现在像曾经的某一幕。",
+  goal: "这些反应背后，有一个你不想失去的重要东西。",
+};
+
+const SIX_DIMENSION_UNDERSTANDING_COPY: Record<SixSpaceId, string> = {
+  body: "先感到它，是身体在帮你准备回应。",
+  emotion: "它不是问题，它是在提醒你哪里需要被照看。",
+  thought: "这种解释曾帮你抓住确定感。",
+  action: "行动力是能力，现在需要先判断再出手。",
+  memory: "它曾保护你，这一次可以只作为参考。",
+  goal: "动机不是计划，是你正在保护的价值感。",
+};
+
+const YAO_SEMANTIC_STAGES: Record<number, DynamicsExperienceState["nodeCopy"]> = {
+  1: {
+    title: "压力刚开始出现",
+    text: "你开始注意到这一层的反应。",
+    actionText: "先看见它从哪里开始。",
+  },
+  2: {
+    title: "熟悉的反应正在出现",
+    text: "你可能正在回到以前常用的方式。",
+    actionText: "你正在回到熟悉的保护方式。",
+  },
+  3: {
+    title: "你开始解释这件事",
+    text: "你开始用过去的方式解释现在。",
+    actionText: "先看见脑中的那句话。",
+  },
+  4: {
+    title: "这个反应正在变熟悉",
+    text: "这个反应逐渐成为习惯。",
+    actionText: "它快要变成惯常动作。",
+  },
+  5: {
+    title: "你开始看见自己",
+    text: "你开始看见自己熟悉的反应。",
+    actionText: "这个反应被你看见了。",
+  },
+  6: {
+    title: "新的回应开始出现",
+    text: "新的回应开始出现。",
+    actionText: "这一层，可以留下新的走法。",
+  },
+};
+
+export function resolveDynamicsExperienceState(
+  input: DynamicsExperienceStateAdapterInput,
+): DynamicsExperienceState {
+  const nodeNumber = Math.min(6, Math.max(1, input.currentNode));
+  const stage: DynamicsExperienceStage =
+    input.enginePhase === "COMPLETE" || input.completedNodeCount >= 6
+      ? "CRYSTAL"
+      : input.completedNodeCount >= 5
+        ? "TRANSFORMATION"
+        : input.uiPhase === "NODE_RUNNING"
+          ? "ACTION"
+          : input.uiPhase === "DIMENSION_LOCKED"
+            ? "AWARENESS"
+            : "PRESSURE";
+  const primaryFocus: DynamicsExperiencePrimaryFocus =
+    stage === "CRYSTAL"
+      ? "CRYSTALLIZATION"
+      : stage === "TRANSFORMATION" || stage === "ACTION"
+        ? "DIMENSION_FLOW"
+        : stage === "AWARENESS"
+          ? "BEAST_AND_DIMENSION"
+          : input.timelineCurrent === "T0.95"
+            ? "PRESSURE_AND_BEAST"
+            : "PRESSURE_FIELD";
+  const yaoStageCopy = YAO_SEMANTIC_STAGES[nodeNumber] ?? YAO_SEMANTIC_STAGES[1];
+  const dimensionResponse = SIX_DIMENSION_RESPONSE_COPY[input.focalDimension] ?? "这一层，留下了痕迹。";
+  const nodeCopy = {
+    title: yaoStageCopy.title,
+    text: `${yaoStageCopy.text}\n${dimensionResponse}`,
+    dimensionInsight: SIX_DIMENSION_INSIGHT_COPY[input.focalDimension],
+    dimensionUnderstanding: SIX_DIMENSION_UNDERSTANDING_COPY[input.focalDimension],
+    actionText: yaoStageCopy.actionText,
+  };
+
+  if (stage === "CRYSTAL") {
+    return Object.freeze({
+      stage,
+      primaryFocus,
+      loopLabel: input.loopLabel,
+      headline: "六个空间已经走完。",
+      supportingCopy: "确认新的回应后，这一局才会留下变化印记。",
+      pressureCopy: "这一颗压力已经被你看过一遍。",
+      beastCopy: "你的反应正在安定下来。",
+      nodeCopy: {
+        title: "六个空间已经走完",
+        text: "你走完了六层。",
+        actionText: "本局正在等待新的回应被确认。",
+      },
+      crystalCopy: "你走完了六层，本局正在等待新的回应留下印记。",
+    });
+  }
+
+  if (stage === "TRANSFORMATION") {
+    return Object.freeze({
+      stage,
+      primaryFocus,
+      loopLabel: input.loopLabel,
+      headline: "这一局正在收束。",
+      supportingCopy: "你已经看见熟悉的反应，正在靠近一次新的回应。",
+      pressureCopy: "这颗压力已经被你看过几层。",
+      beastCopy: "你的反应正在趋稳。",
+      nodeCopy,
+      crystalCopy: "尚未留下变化印记。",
+    });
+  }
+
+  if (stage === "ACTION") {
+    return Object.freeze({
+      stage,
+      primaryFocus,
+      loopLabel: input.loopLabel,
+      headline: "这一局开始变清楚。",
+      supportingCopy: "每一次轻触，只看见一个空间里的反应。",
+      pressureCopy: "这颗压力正在进入当前空间。",
+      beastCopy: "你的反应正在随着触点出现。",
+      nodeCopy,
+      crystalCopy: "完成六维后，本局会等待一次新的回应。",
+    });
+  }
+
+  if (stage === "AWARENESS") {
+    return Object.freeze({
+      stage,
+      primaryFocus,
+      loopLabel: input.loopLabel,
+      headline: "这一颗压力，被看见了。",
+      supportingCopy: "它将穿过身体、情绪、思想、行动、记忆与动机。",
+      pressureCopy: "这一颗压力，被看见了。",
+      beastCopy: "六个空间即将展开。",
+      nodeCopy,
+      crystalCopy: "完成六维后，本局会等待一次新的回应。",
+    });
+  }
+
+  return Object.freeze({
+    stage,
+    primaryFocus,
+    loopLabel: input.loopLabel,
+    headline: "你的压力正在穿过你。",
+    supportingCopy: "这一局开始让你看见，压力来到时你会怎么回应。",
+    pressureCopy: "当前压力正在进入。",
+    beastCopy: "你的反应即将出现。",
+    nodeCopy,
+    crystalCopy: "尚未留下变化印记。",
+  });
+}
