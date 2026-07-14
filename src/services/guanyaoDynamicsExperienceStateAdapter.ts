@@ -137,7 +137,7 @@ export function resolveDynamicsExperienceState(
       pressureCopy: "这颗压力已经被你看过几层。",
       beastCopy: "你的反应正在趋稳。",
       nodeCopy,
-      crystalCopy: "尚未留下变化印记。",
+      crystalCopy: "这一局的变化正在发生，还不需要得出答案。",
     });
   }
 
@@ -178,6 +178,6 @@ export function resolveDynamicsExperienceState(
     pressureCopy: "当前压力正在进入。",
     beastCopy: "你的反应即将出现。",
     nodeCopy,
-    crystalCopy: "尚未留下变化印记。",
+    crystalCopy: "这一局刚刚开始，先看见此刻的回应。",
   });
 }

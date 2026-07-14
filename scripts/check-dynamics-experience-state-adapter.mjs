@@ -56,6 +56,11 @@ try {
   assertEqual("initial runtime maps to pressure", pressure.stage, "PRESSURE");
   assertEqual("initial timeline focuses pressure field", pressure.primaryFocus, "PRESSURE_FIELD");
   assertEqual("pressure headline remains unchanged", pressure.headline, "你的压力正在穿过你。");
+  assertEqual(
+    "pressure stage begins with observation instead of a missing result",
+    pressure.crystalCopy,
+    "这一局刚刚开始，先看见此刻的回应。",
+  );
   assertEqual("product loop label passes through", pressure.loopLabel, pressureInput.loopLabel);
   assertEqual("experience state is frozen", Object.isFrozen(pressure), true);
   assertEqual("adapter does not mutate input", JSON.stringify(pressureInput), pressureSnapshot);
@@ -82,6 +87,11 @@ try {
   assertEqual("five completed nodes map to transformation", transformation.stage, "TRANSFORMATION");
   assertEqual("transformation focuses dimension flow", transformation.primaryFocus, "DIMENSION_FLOW");
   assertEqual("transformation headline remains unchanged", transformation.headline, "这一局正在收束。");
+  assertEqual(
+    "transformation stage keeps change in progress without demanding an answer",
+    transformation.crystalCopy,
+    "这一局的变化正在发生，还不需要得出答案。",
+  );
 
   const crystalByCount = resolveDynamicsExperienceState(baseInput({ completedNodeCount: 6 }));
   assertEqual("six completed nodes map to crystal", crystalByCount.stage, "CRYSTAL");
@@ -139,6 +149,7 @@ try {
   assertExcludes("experience adapter removes conditional imprint language", adapterSource, "才会留下变化印记");
   assertExcludes("experience adapter removes passive response waiting", adapterSource, "等待新的回应");
   assertExcludes("experience adapter removes passive confirmation language", adapterSource, "新的回应被确认");
+  assertExcludes("experience adapter removes missing-imprint framing", adapterSource, "尚未留下变化印记");
   assertExcludes("Gravity removes crystallization gate language", gravitySource, "本局才会结晶");
   assertExcludes("Gravity no longer owns experience resolver", gravitySource, "function resolveExperienceState");
   assertExcludes("Gravity no longer owns dimension response copy", gravitySource, "SIX_DIMENSION_RESPONSE_COPY");
