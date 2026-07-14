@@ -1,5 +1,5 @@
 import type { CurrentHexagramProfile, YaoTransmissionProfile } from "./guanyaoCausalEngine";
-import type { FourSymbol, TwentyEightMansion } from "./guanyaoStarbeast";
+import type { FourSymbol, StarbeastDerivationReady, TwentyEightMansion } from "./guanyaoStarbeast";
 import type { CrystalState } from "./personaTransmission";
 
 export type OriginalSelfSemanticPath = readonly [
@@ -54,6 +54,14 @@ export type OriginalSelfFoundationGuardrails = Readonly<{
   noStorageWrite: true;
   noUIContract: true;
   noAIDependency: true;
+}>;
+
+export type OriginalSelfFoundationInput = Readonly<{
+  starBeast: StarbeastDerivationReady;
+  currentPhase: OriginalSelfJourneyPhase;
+  hexagram: CurrentHexagramProfile | null;
+  yao: YaoTransmissionProfile | null;
+  crystal: CrystalState | null;
 }>;
 
 export type OriginalSelfState = Readonly<{

@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import ts from "typescript";
@@ -6,8 +7,10 @@ import ts from "typescript";
 const rootDir = process.cwd();
 const typePath = path.join(rootDir, "src/types/originalSelf.ts");
 const typeIndexPath = path.join(rootDir, "src/types/index.ts");
+const adapterPath = path.join(rootDir, "src/services/originalSelfFoundationAdapter.ts");
 const protocolPath = path.join(rootDir, "docs/GUANYAO_ORIGINAL_SELF_ARCHITECTURE_PROTOCOL.md");
 const packagePath = path.join(rootDir, "package.json");
+const tempModulePath = path.join(os.tmpdir(), `guanyao-original-self-foundation-${process.pid}.mjs`);
 
 const failures = [];
 
@@ -21,9 +24,15 @@ const assertExcludes = (name, source, forbidden) => {
   else console.log(`PASS | ${name} | forbidden=absent`);
 };
 
+const assertEqual = (name, actual, expected) => {
+  if (actual !== expected) failures.push(`${name} expected=${expected} actual=${actual}`);
+  else console.log(`PASS | ${name} | expected=${expected} | actual=${actual}`);
+};
+
 for (const [name, filePath] of [
   ["original self type", typePath],
   ["type index", typeIndexPath],
+  ["foundation adapter", adapterPath],
   ["architecture protocol", protocolPath],
   ["package manifest", packagePath],
 ]) {
@@ -34,6 +43,7 @@ for (const [name, filePath] of [
 if (failures.length === 0) {
   const typeSource = fs.readFileSync(typePath, "utf8");
   const typeIndexSource = fs.readFileSync(typeIndexPath, "utf8");
+  const adapterSource = fs.readFileSync(adapterPath, "utf8");
   const protocolSource = fs.readFileSync(protocolPath, "utf8");
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   const sourceFile = ts.createSourceFile(typePath, typeSource, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS);
@@ -46,6 +56,7 @@ if (failures.length === 0) {
 
   [
     "export type OriginalSelfState",
+    "export type OriginalSelfFoundationInput",
     "export type StarBeastState",
     "export type JourneyState",
     "export type LifeArchetypeState",
@@ -73,9 +84,36 @@ if (failures.length === 0) {
   ].forEach((marker) => assertIncludes("foundation type contract", typeSource, marker));
 
   assertIncludes("foundation reuses current hexagram type", typeSource, "import type { CurrentHexagramProfile, YaoTransmissionProfile }");
-  assertIncludes("foundation reuses starbeast types", typeSource, "import type { FourSymbol, TwentyEightMansion }");
+  assertIncludes("foundation reuses ready starbeast types", typeSource, "StarbeastDerivationReady");
   assertIncludes("foundation reuses crystal state", typeSource, 'import type { CrystalState } from "./personaTransmission"');
   assertIncludes("type index exports original self foundation", typeIndexSource, 'from "./originalSelf"');
+  assertIncludes("type index exports foundation input", typeIndexSource, "OriginalSelfFoundationInput");
+
+  [
+    "export const ORIGINAL_SELF_SEMANTIC_PATH",
+    "export function adaptOriginalSelfFoundation",
+    "input: OriginalSelfFoundationInput",
+    "fourSymbol: input.starBeast.fourSymbol",
+    "currentPhase: input.currentPhase",
+    "hexagram: input.hexagram",
+    "yao: input.yao",
+    "crystal: input.crystal",
+    "semanticRole: \"ORIGINAL_SELF_LIFE_MANIFESTATION\"",
+    "nonFinalIdentity: true",
+  ].forEach((marker) => assertIncludes("foundation adapter contract", adapterSource, marker));
+
+  [
+    "localStorage",
+    "sessionStorage",
+    "fetch(",
+    'from "react"',
+    "GuanyaoRuntimeEngine",
+    "resolveRuntime",
+    "resolveCurrentHexagram",
+    "HexagramCrystalEngine",
+    "if (",
+    "switch (",
+  ].forEach((marker) => assertExcludes("foundation adapter stays projection-only", adapterSource, marker));
 
   ["localStorage", "sessionStorage", "fetch(", 'from "react"', "JSX.", "HTMLElement", "CurrentHexagramProfile {", "CrystalState = Readonly"].forEach(
     (marker) => assertExcludes("foundation stays implementation-neutral", typeSource, marker),
@@ -112,7 +150,61 @@ if (failures.length === 0) {
     packageJson.scripts?.["check:release"] ?? "",
     "npm run check:original-self-foundation",
   );
+
+  const transpiledAdapter = ts.transpileModule(adapterSource, {
+    compilerOptions: {
+      module: ts.ModuleKind.ES2022,
+      target: ts.ScriptTarget.ES2022,
+      strict: true,
+    },
+  });
+  fs.writeFileSync(tempModulePath, transpiledAdapter.outputText);
+
+  const { adaptOriginalSelfFoundation } = await import(`file://${tempModulePath}?t=${Date.now()}`);
+  const hexagram = Object.freeze({ marker: "existing-hexagram" });
+  const yao = Object.freeze({ marker: "existing-yao" });
+  const crystal = Object.freeze({ marker: "existing-crystal" });
+  const input = Object.freeze({
+    starBeast: Object.freeze({
+      status: "READY",
+      protocolVersion: "GUANYAO_LUNAR_MANSION_V1",
+      calculationBasis: "GREGORIAN_TO_LUNAR_MONTH_DAY_MANSION",
+      gregorianBirthDate: "1979-04-15",
+      lunarBirthDate: Object.freeze({ relatedYear: 1979, month: 3, day: 19, isLeapMonth: false }),
+      mansionIndex: 6,
+      mansion: "箕",
+      fourSymbol: "青龙",
+      direction: "东",
+      symbolicTrigram: "震",
+      locationIndependent: true,
+      birthTimeIndependent: true,
+    }),
+    currentPhase: "YAO",
+    hexagram,
+    yao,
+    crystal,
+  });
+  const inputSnapshot = JSON.stringify(input);
+  const state = adaptOriginalSelfFoundation(input);
+
+  assertEqual("adapter returns original self", state.semanticRole, "ORIGINAL_SELF");
+  assertEqual("adapter projects star beast manifestation", state.starBeast.semanticRole, "ORIGINAL_SELF_LIFE_MANIFESTATION");
+  assertEqual("adapter preserves four symbol", state.starBeast.fourSymbol, "青龙");
+  assertEqual("adapter preserves mansion", state.starBeast.mansion, "箕");
+  assertEqual("adapter shares one life archetype", state.starBeast.lifeArchetype === state.journey.lifeArchetype, true);
+  assertEqual("adapter keeps explicit phase", state.journey.currentPhase, "YAO");
+  assertEqual("adapter keeps semantic path", state.journey.semanticPath.join(" → "), "ORIGINAL_SELF → STAR_BEAST → LIFE_ARCHETYPE → HEXAGRAM → YAO → CRYSTAL");
+  assertEqual("adapter preserves hexagram reference", state.journey.hexagram === hexagram, true);
+  assertEqual("adapter preserves yao reference", state.journey.yao === yao, true);
+  assertEqual("adapter preserves crystal reference", state.journey.crystal === crystal, true);
+  assertEqual("adapter freezes original self", Object.isFrozen(state), true);
+  assertEqual("adapter freezes star beast", Object.isFrozen(state.starBeast), true);
+  assertEqual("adapter freezes life archetype", Object.isFrozen(state.starBeast.lifeArchetype), true);
+  assertEqual("adapter freezes journey", Object.isFrozen(state.journey), true);
+  assertEqual("adapter does not mutate input", JSON.stringify(input), inputSnapshot);
 }
+
+fs.rmSync(tempModulePath, { force: true });
 
 if (failures.length > 0) {
   console.error("[ORIGINAL SELF FOUNDATION] FAIL");

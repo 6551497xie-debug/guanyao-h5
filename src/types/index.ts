@@ -29,6 +29,7 @@ export type {
 export type {
   JourneyState,
   LifeArchetypeState,
+  OriginalSelfFoundationInput,
   OriginalSelfFoundationGuardrails,
   OriginalSelfJourneyPhase,
   OriginalSelfSemanticPath,
