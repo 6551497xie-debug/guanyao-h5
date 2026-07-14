@@ -92,17 +92,21 @@ try {
   assertEqual("missing pressure enters safe preview", preview.mode, "SAFE_PREVIEW");
   assertEqual("safe preview exposes fallback marker", preview.pressureContextMarker, "fallback");
   assertEqual("safe preview keeps loop label", preview.experienceState.loopLabel, "六个空间预览");
-  assertEqual("safe preview keeps headline", preview.experienceState.headline, "等待这一局压力被看见。");
+  assertEqual("safe preview opens without waiting language", preview.experienceState.headline, "这一局还没有开始。");
   assertEqual(
-    "safe preview keeps supporting copy",
+    "safe preview leaves entry timing with the user",
     preview.experienceState.supportingCopy,
-    "当前为安全预览状态，缺少本局上下文。",
+    "准备好时，选择此刻最想看清的一件事。",
   );
-  assertEqual("safe preview keeps pressure copy", preview.experienceState.pressureCopy, "等待这一颗压力进入。");
   assertEqual(
-    "safe preview keeps beast copy",
+    "safe preview does not demand an explanation or answer",
+    preview.experienceState.pressureCopy,
+    "先不用解释，也不需要立刻得出答案。",
+  );
+  assertEqual(
+    "safe preview brings user and starbeast into six spaces together",
     preview.experienceState.beastCopy,
-    "六个空间将在当前压力确认后展开。",
+    "你与星兽会从这里一起走进六个空间。",
   );
   assertEqual("presentation does not mutate base state", JSON.stringify(pressureExperienceState), stateSnapshot);
 
@@ -164,6 +168,10 @@ try {
   assertExcludes("presentation stays localStorage neutral", adapterSource, "localStorage");
   assertExcludes("presentation does not advance runtime", adapterSource, "GuanyaoRuntimeEngine");
   assertExcludes("presentation does not deposit crystal", adapterSource, "depositDynamics");
+  assertExcludes("safe preview removes technical preview copy", adapterSource, "当前为安全预览状态");
+  assertExcludes("safe preview removes missing-context copy", adapterSource, "缺少本局上下文");
+  assertExcludes("safe preview removes pressure waiting copy", adapterSource, "等待这一颗压力进入");
+  assertExcludes("safe preview removes confirmation-gated copy", adapterSource, "压力确认后展开");
   assertIncludes(
     "Gravity delegates readiness presentation",
     gravitySource,
@@ -185,7 +193,7 @@ try {
     "experienceReadinessPresentation.motherReference.label",
   );
   assertExcludes("Gravity no longer owns pressure readiness alias", gravitySource, "hasLockedPressureSeed");
-  assertExcludes("Gravity no longer owns preview headline", gravitySource, "等待这一局压力被看见。");
+  assertExcludes("Gravity does not own preview invitation", gravitySource, "这一局还没有开始。");
   assertExcludes("Gravity no longer owns mother connection headline", gravitySource, "母码已接入。");
 
   console.log("\n[DYNAMICS EXPERIENCE READINESS PRESENTATION ADAPTER] PASS");
