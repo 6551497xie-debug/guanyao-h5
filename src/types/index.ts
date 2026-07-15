@@ -141,7 +141,16 @@ export type {
   StarBeastRendererReadinessUnavailableReason,
 } from "./starBeastRendererReadiness";
 export type {
+  StarBeastRendererBackendCapability,
+  StarBeastRendererBackendCapabilityAvailable,
+  StarBeastRendererBackendCapabilityDeclaration,
+  StarBeastRendererBackendCapabilityDeclarationInput,
   StarBeastRendererBackendCapabilityReference,
+  StarBeastRendererBackendCapabilityResult,
+  StarBeastRendererBackendCapabilityUnavailable,
+  StarBeastRendererBackendCapabilityUnavailableReason,
+} from "./starBeastRendererBackendCapability";
+export type {
   StarBeastRendererImplementationCandidate,
   StarBeastRendererImplementationCandidateAvailable,
   StarBeastRendererImplementationCandidateInput,

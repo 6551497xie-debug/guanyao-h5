@@ -92,6 +92,8 @@ UNAVAILABLE 不补默认引用，不创建 Candidate，不调用 P45 Resolver。
 
 Backend Capability Reference 不是后端选择。它只指向未来独立协议提供的能力声明。
 
+P47 `StarBeastRendererBackendCapabilitySchema` 已成为该 Reference 的唯一语义所有者。P46 只从 P47 导入 Reference，仍不读取 Declaration、不校验能力集合，也不调用 P47 Resolver。
+
 ## 06｜冻结调用拓扑
 
 ```text
@@ -99,6 +101,7 @@ P43 Result → only P45 Readiness
 P45 Result → only P46 Candidate
 P45 Resolver → no direct external caller
 P46 Candidate Resolver → no downstream consumer
+P47 Backend Capability Resolver → no downstream consumer
 ```
 
 P46 禁止直接调用 P41、P42、P43 或 P45，不得绕过 P44 Freeze Protocol。

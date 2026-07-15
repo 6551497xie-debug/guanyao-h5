@@ -4,14 +4,10 @@ import type {
   StarBeastRendererReadinessResult,
   StarBeastRendererReadinessUnavailable,
 } from "./starBeastRendererReadiness";
+import type { StarBeastRendererBackendCapabilityReference } from "./starBeastRendererBackendCapability";
 
 export type StarBeastRendererImplementationRequestReference = Readonly<{
   referenceType: "STAR_BEAST_RENDERER_IMPLEMENTATION_REQUEST";
-  referenceId: string;
-}>;
-
-export type StarBeastRendererBackendCapabilityReference = Readonly<{
-  referenceType: "STAR_BEAST_RENDERER_BACKEND_CAPABILITY_DECLARATION";
   referenceId: string;
 }>;
 

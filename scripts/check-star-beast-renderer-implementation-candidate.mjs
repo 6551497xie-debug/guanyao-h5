@@ -9,6 +9,10 @@ const candidateTypePath = path.join(
   rootDir,
   "src/types/starBeastRendererImplementationCandidate.ts",
 );
+const backendCapabilityTypePath = path.join(
+  rootDir,
+  "src/types/starBeastRendererBackendCapability.ts",
+);
 const candidateServicePath = path.join(
   rootDir,
   "src/services/starBeastRendererImplementationCandidateService.ts",
@@ -85,6 +89,7 @@ const collectTypeScriptSourcePaths = (directoryPath) =>
 
 for (const [name, filePath] of [
   ["implementation candidate type", candidateTypePath],
+  ["backend capability type", backendCapabilityTypePath],
   ["implementation candidate service", candidateServicePath],
   ["renderer readiness service", readinessServicePath],
   ["render plan endpoint", endpointPath],
@@ -102,6 +107,10 @@ for (const [name, filePath] of [
 
 if (failures.length === 0) {
   const candidateTypeSource = fs.readFileSync(candidateTypePath, "utf8");
+  const backendCapabilityTypeSource = fs.readFileSync(
+    backendCapabilityTypePath,
+    "utf8",
+  );
   const candidateServiceSource = fs.readFileSync(candidateServicePath, "utf8");
   const typeIndexSource = fs.readFileSync(typeIndexPath, "utf8");
   const protocolSource = fs.readFileSync(protocolPath, "utf8");
@@ -126,8 +135,7 @@ if (failures.length === 0) {
   [
     "export type StarBeastRendererImplementationRequestReference",
     'referenceType: "STAR_BEAST_RENDERER_IMPLEMENTATION_REQUEST"',
-    "export type StarBeastRendererBackendCapabilityReference",
-    'referenceType: "STAR_BEAST_RENDERER_BACKEND_CAPABILITY_DECLARATION"',
+    'from "./starBeastRendererBackendCapability"',
     "export type StarBeastRendererImplementationCandidateInput",
     "readinessResult: StarBeastRendererReadinessResult | null",
     "implementationRequestReference: StarBeastRendererImplementationRequestReference | null",
@@ -149,6 +157,18 @@ if (failures.length === 0) {
     "export type StarBeastRendererImplementationCandidateResult",
   ].forEach((marker) =>
     assertIncludes("implementation candidate type contract", candidateTypeSource, marker),
+  );
+
+  [
+    "export type StarBeastRendererBackendCapabilityReference",
+    'referenceType: "STAR_BEAST_RENDERER_BACKEND_CAPABILITY_DECLARATION"',
+  ].forEach((marker) =>
+    assertIncludes("P47 owns backend capability reference", backendCapabilityTypeSource, marker),
+  );
+  assertExcludes(
+    "P46 does not duplicate P47 backend capability reference",
+    candidateTypeSource,
+    "export type StarBeastRendererBackendCapabilityReference",
   );
 
   [
@@ -219,6 +239,7 @@ if (failures.length === 0) {
     "StarBeastRendererImplementationCandidateResult",
     "StarBeastRendererImplementationRequestReference",
     'from "./starBeastRendererImplementationCandidate"',
+    'from "./starBeastRendererBackendCapability"',
   ].forEach((marker) =>
     assertIncludes("type index exports implementation candidate", typeIndexSource, marker),
   );

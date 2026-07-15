@@ -18,6 +18,10 @@ const files = Object.freeze({
   candidateType: "src/types/starBeastRendererImplementationCandidate.ts",
   candidateService:
     "src/services/starBeastRendererImplementationCandidateService.ts",
+  backendCapabilityType:
+    "src/types/starBeastRendererBackendCapability.ts",
+  backendCapabilityService:
+    "src/services/starBeastRendererBackendCapabilityService.ts",
   endpointProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDER_PLAN_ENDPOINT_PROTOCOL.md",
   freezeProtocol:
@@ -26,6 +30,8 @@ const files = Object.freeze({
     "docs/GUANYAO_STAR_BEAST_RENDERER_READINESS_PROTOCOL.md",
   candidateProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_CANDIDATE_PROTOCOL.md",
+  backendCapabilityProtocol:
+    "docs/GUANYAO_STAR_BEAST_RENDERER_BACKEND_CAPABILITY_SCHEMA_PROTOCOL.md",
   packageManifest: "package.json",
 });
 
@@ -117,6 +123,11 @@ if (failures.length === 0) {
     "P46 candidate has no downstream consumer",
     "resolveStarBeastRendererImplementationCandidate(",
     [files.candidateService],
+  );
+  assertCallSites(
+    "P47 backend capability resolver has no downstream consumer",
+    "resolveStarBeastRendererBackendCapabilityDeclaration(",
+    [files.backendCapabilityService],
   );
 
   [
@@ -280,6 +291,37 @@ if (failures.length === 0) {
   );
 
   [
+    "export type StarBeastRendererBackendCapabilityReference",
+    "export type StarBeastRendererBackendCapabilityDeclaration",
+    'semanticRole: "STAR_BEAST_RENDERER_BACKEND_CAPABILITY_DECLARATION"',
+    "backendUnspecified: true",
+    "noBackendSelection: true",
+    "noDeviceDetection: true",
+    "noRuntimeProbe: true",
+    "noRenderExecution: true",
+  ].forEach((marker) =>
+    assertIncludes("P47 backend capability remains schema-only", sources.backendCapabilityType, marker),
+  );
+
+  [
+    "export function resolveStarBeastRendererBackendCapabilityDeclaration",
+    "STAR_BEAST_REQUIRED_BACKEND_CAPABILITIES.every",
+    '"BACKEND_CAPABILITY_SET_INCOMPLETE"',
+    "backendUnspecified: true",
+    "noBackendSelection: true",
+    "noDeviceDetection: true",
+    "noRenderExecution: true",
+  ].forEach((marker) =>
+    assertIncludes("P47 resolver validates declarations only", sources.backendCapabilityService, marker),
+  );
+
+  assertIncludes(
+    "P46 imports P47 backend capability reference",
+    sources.candidateType,
+    'from "./starBeastRendererBackendCapability"',
+  );
+
+  [
     "adaptStarBeastRendererInputToRenderPlan(",
     "consumeStarBeastRenderPlan(",
     "resolveStarBeastRenderPlanConsumption(",
@@ -301,6 +343,8 @@ if (failures.length === 0) {
     sources.readinessService,
     sources.candidateType,
     sources.candidateService,
+    sources.backendCapabilityType,
+    sources.backendCapabilityService,
   ].join("\n");
 
   [
@@ -347,6 +391,9 @@ if (failures.length === 0) {
     "P46 Renderer Implementation Candidate Extension",
     "P46 是 P45 Result 的唯一授权消费者",
     "resolveStarBeastRendererImplementationCandidate",
+    "P47 Backend Capability Schema Extension",
+    "P46 只导入 Reference，不调用 P47 Resolver",
+    "resolveStarBeastRendererBackendCapabilityDeclaration",
     "P44 不修改 P39–P43 类型或服务源码",
     "Canvas、WebGL、Three.js",
     "不修改 Foundation、Dynamics、Crystal、UI、Storage",
@@ -382,6 +429,14 @@ if (failures.length === 0) {
     "P46 禁止直接调用 P41、P42、P43 或 P45",
   ].forEach((marker) =>
     assertIncludes("P46 candidate protocol extends P45 only", sources.candidateProtocol, marker),
+  );
+
+  [
+    "RC-STAR-BEAST-RENDERER-BACKEND-CAPABILITY-SCHEMA-P47",
+    "P46 只保存 P47 声明引用",
+    "不选择后端、不探测设备、不执行渲染",
+  ].forEach((marker) =>
+    assertIncludes("P47 protocol owns capability source only", sources.backendCapabilityProtocol, marker),
   );
 
   assertIncludes(
