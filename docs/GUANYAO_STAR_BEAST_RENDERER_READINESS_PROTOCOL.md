@@ -141,3 +141,11 @@ P45 只新增：
 5. P45 不调用 P41、P42 或 P43，不实现 Renderer；
 6. P44 调用拓扑保持冻结；
 7. readiness gate、P39–P44 gates、release、build 与 `git diff --check` 通过。
+
+## 09｜P46 Implementation Candidate
+
+P46 `StarBeastRendererImplementationCandidate` 是 P45 Result 的唯一授权消费者。
+
+P46 只接收由上位调用方提供的 P45 Result、Implementation Request Reference 与 Backend Capability Reference，不直接调用 P45 Resolver，也不选择渲染后端。
+
+P45 Resolver 继续保持无外部直接调用者；P45 Result 只允许流向 P46 Candidate。P46 之后仍没有 Renderer、UI 或 Runtime 消费者。

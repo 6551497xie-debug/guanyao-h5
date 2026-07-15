@@ -249,6 +249,9 @@ if (failures.length === 0) {
     "P45 不调用 P41、P42 或 P43",
     "Canvas、WebGL、Three.js",
     "UI、Launch、Gravity、Crystal 页面接入",
+    "P46 `StarBeastRendererImplementationCandidate` 是 P45 Result 的唯一授权消费者",
+    "P45 Resolver 继续保持无外部直接调用者",
+    "P45 Result 只允许流向 P46 Candidate",
   ].forEach((marker) =>
     assertIncludes("renderer readiness protocol", protocolSource, marker),
   );

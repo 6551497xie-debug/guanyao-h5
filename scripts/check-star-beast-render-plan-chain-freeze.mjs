@@ -15,12 +15,17 @@ const files = Object.freeze({
   endpoint: "src/services/starBeastRenderPlanEndpoint.ts",
   readinessType: "src/types/starBeastRendererReadiness.ts",
   readinessService: "src/services/starBeastRendererReadinessService.ts",
+  candidateType: "src/types/starBeastRendererImplementationCandidate.ts",
+  candidateService:
+    "src/services/starBeastRendererImplementationCandidateService.ts",
   endpointProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDER_PLAN_ENDPOINT_PROTOCOL.md",
   freezeProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDER_PLAN_CHAIN_FREEZE_PROTOCOL.md",
   readinessProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDERER_READINESS_PROTOCOL.md",
+  candidateProtocol:
+    "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_CANDIDATE_PROTOCOL.md",
   packageManifest: "package.json",
 });
 
@@ -107,6 +112,11 @@ if (failures.length === 0) {
     "P45 readiness has no Renderer UI or Runtime consumer",
     "resolveStarBeastRendererReadiness(",
     [files.readinessService],
+  );
+  assertCallSites(
+    "P46 candidate has no downstream consumer",
+    "resolveStarBeastRendererImplementationCandidate(",
+    [files.candidateService],
   );
 
   [
@@ -240,6 +250,45 @@ if (failures.length === 0) {
     assertExcludes("P45 does not bypass or invoke the frozen chain", sources.readinessService, marker),
   );
 
+  [
+    "readinessResult: StarBeastRendererReadinessResult | null",
+    'semanticRole: "STAR_BEAST_RENDERER_IMPLEMENTATION_CANDIDATE"',
+    "implementationRequestReference:",
+    "backendCapabilityReference:",
+    "candidateOnly: true",
+    "backendAgnostic: true",
+    "noBackendSelection: true",
+    "rendererImplementationDeferred: true",
+    "noRenderExecution: true",
+  ].forEach((marker) =>
+    assertIncludes("P46 candidate type remains reference-only", sources.candidateType, marker),
+  );
+
+  [
+    "export function resolveStarBeastRendererImplementationCandidate",
+    "const readinessResult = input.readinessResult",
+    'readinessResult.status === "UNAVAILABLE"',
+    'readinessResult.status === "NOT_READY"',
+    'reason: "RENDERER_READINESS_NOT_READY"',
+    'semanticRole: "STAR_BEAST_RENDERER_IMPLEMENTATION_CANDIDATE"',
+    "sourceReadinessReference: readinessResult",
+    "renderPlanReference: readinessResult.renderPlanReference",
+    "implementationRequestReference: input.implementationRequestReference",
+    "backendCapabilityReference: input.backendCapabilityReference",
+  ].forEach((marker) =>
+    assertIncludes("P46 consumes only P45 result and explicit references", sources.candidateService, marker),
+  );
+
+  [
+    "adaptStarBeastRendererInputToRenderPlan(",
+    "consumeStarBeastRenderPlan(",
+    "resolveStarBeastRenderPlanConsumption(",
+    "resolveStarBeastRendererReadiness(",
+    "mapStarBeastLifeStateToVisualState(",
+  ].forEach((marker) =>
+    assertExcludes("P46 does not bypass or invoke the frozen chain", sources.candidateService, marker),
+  );
+
   const frozenTypeAndServiceSource = [
     sources.visualStateType,
     sources.visualMapping,
@@ -250,6 +299,8 @@ if (failures.length === 0) {
     sources.endpoint,
     sources.readinessType,
     sources.readinessService,
+    sources.candidateType,
+    sources.candidateService,
   ].join("\n");
 
   [
@@ -293,6 +344,9 @@ if (failures.length === 0) {
     "P43 Resolver 必须继续保持无外部直接调用者",
     "P45 是 P43 Result 的唯一授权消费者",
     "resolveStarBeastRendererReadiness",
+    "P46 Renderer Implementation Candidate Extension",
+    "P46 是 P45 Result 的唯一授权消费者",
+    "resolveStarBeastRendererImplementationCandidate",
     "P44 不修改 P39–P43 类型或服务源码",
     "Canvas、WebGL、Three.js",
     "不修改 Foundation、Dynamics、Crystal、UI、Storage",
@@ -318,6 +372,16 @@ if (failures.length === 0) {
     "P45 不调用 P41、P42 或 P43",
   ].forEach((marker) =>
     assertIncludes("P45 readiness protocol extends the frozen exit", sources.readinessProtocol, marker),
+  );
+
+  [
+    "RC-STAR-BEAST-RENDERER-IMPLEMENTATION-CANDIDATE-P46",
+    "P45 StarBeastRendererReadinessResult",
+    "STAR_BEAST_RENDERER_IMPLEMENTATION_CANDIDATE",
+    "P45 Result → only P46 Candidate",
+    "P46 禁止直接调用 P41、P42、P43 或 P45",
+  ].forEach((marker) =>
+    assertIncludes("P46 candidate protocol extends P45 only", sources.candidateProtocol, marker),
   );
 
   assertIncludes(

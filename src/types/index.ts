@@ -141,6 +141,17 @@ export type {
   StarBeastRendererReadinessUnavailableReason,
 } from "./starBeastRendererReadiness";
 export type {
+  StarBeastRendererBackendCapabilityReference,
+  StarBeastRendererImplementationCandidate,
+  StarBeastRendererImplementationCandidateAvailable,
+  StarBeastRendererImplementationCandidateInput,
+  StarBeastRendererImplementationCandidateNotReady,
+  StarBeastRendererImplementationCandidateResult,
+  StarBeastRendererImplementationCandidateUnavailable,
+  StarBeastRendererImplementationCandidateUnavailableReason,
+  StarBeastRendererImplementationRequestReference,
+} from "./starBeastRendererImplementationCandidate";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,
