@@ -100,8 +100,9 @@ Authority Declaration Result Consumption
 
 - P34 Resolver 继续是 P21 Declaration 的唯一构造边界；
 - P35 Consumption 是 P34 Resolver Result 的唯一正式消费边界；
-- P35 当前没有下游业务消费者；
-- 后续若组合 Resolver 与 Consumption，必须建立独立 Endpoint，不得在 P35 内反向调用 Resolver。
+- P35 Consumption 函数只由 P36 Authority Declaration Endpoint 调用；
+- P36 Endpoint 当前没有下游业务消费者；
+- P35 内仍不得反向调用 Resolver。
 
 ## 08｜验收
 

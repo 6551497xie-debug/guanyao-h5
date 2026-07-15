@@ -122,9 +122,14 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "authority declaration resolver has no downstream consumer",
+    "authority declaration resolver is only called by endpoint",
     resolverCallSites.join(","),
-    "src/services/lifeJourneyStageAuthorityDeclarationResolver.ts",
+    [
+      "src/services/lifeJourneyStageAuthorityDeclarationEndpoint.ts",
+      "src/services/lifeJourneyStageAuthorityDeclarationResolver.ts",
+    ]
+      .sort()
+      .join(","),
   );
 
   const commandCallSites = typeScriptSourcePaths
@@ -147,9 +152,10 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "P21 authority declaration is constructed by P34 and only consumed by P35",
+    "P21 authority declaration is constructed by P34 and exposed through P36",
     declarationReferences.join(","),
     [
+      "src/services/lifeJourneyStageAuthorityDeclarationEndpoint.ts",
       "src/services/lifeJourneyStageAuthorityDeclarationResultConsumption.ts",
       "src/services/lifeJourneyStageAuthorityDeclarationResolver.ts",
       "src/types/index.ts",
@@ -174,7 +180,8 @@ if (failures.length === 0) {
     "P33 Command 只由 P34 Resolver 直接调用",
     "P21 Authority Declaration 只由 P34 Resolver 构造",
     "P34 Resolver Result 只允许由 P35 Declaration Result Consumption 消费",
-    "P34 Resolver 函数当前仍没有下游组合调用者",
+    "P34 Resolver 函数只由 P36 Authority Declaration Endpoint 调用",
+    "P36 Endpoint 当前没有下游业务消费者",
   ].forEach((marker) => assertIncludes("authority declaration resolver protocol", protocolSource, marker));
 
   assertIncludes(

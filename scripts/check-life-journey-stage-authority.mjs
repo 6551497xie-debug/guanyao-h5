@@ -121,9 +121,10 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "authority declaration is constructed by P34 and only consumed by P35",
+    "authority declaration is constructed by P34 and exposed through P36",
     authorityReferences.join(","),
     [
+      "src/services/lifeJourneyStageAuthorityDeclarationEndpoint.ts",
       "src/services/lifeJourneyStageAuthorityDeclarationResultConsumption.ts",
       "src/services/lifeJourneyStageAuthorityDeclarationResolver.ts",
       "src/types/index.ts",

@@ -126,3 +126,9 @@ Resolver 不得绕过主体 Command，也不得仅凭 Review、Readiness、Runti
 P35 在不修改 P21 类型的前提下，建立 P34 Authority Declaration Resolver Result 的正式消费边界。
 
 P35 只保留 READY、NOT_APPLICABLE 与 NOT_READY 的结果语义及原始引用；它不重新构造 Declaration，不调用 Resolver，不生成 `LifeJourneyStageSourceInput`，也不表示 Journey Stage 已推进。
+
+## 09｜P36 组合入口扩展
+
+P36 只组合 P34 Authority Declaration Resolver 与 P35 Result Consumption。它不增加判断或结果类型，不生成 `LifeJourneyStageSourceInput`，也不推进 Journey Stage。
+
+P34 Resolver 与 P35 Consumption 只允许由 P36 Endpoint 调用；P36 当前没有下游业务消费者。

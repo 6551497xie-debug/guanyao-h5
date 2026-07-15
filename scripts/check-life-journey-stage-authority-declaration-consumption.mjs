@@ -112,9 +112,12 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "authority declaration consumption has no downstream consumer",
+    "authority declaration consumption is only called by endpoint",
     consumptionCallSites.join(","),
-    "src/services/lifeJourneyStageAuthorityDeclarationResultConsumption.ts",
+    [
+      "src/services/lifeJourneyStageAuthorityDeclarationEndpoint.ts",
+      "src/services/lifeJourneyStageAuthorityDeclarationResultConsumption.ts",
+    ].sort().join(","),
   );
 
   const resolverCallSites = typeScriptSourcePaths
@@ -122,9 +125,12 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "P35 does not call the authority declaration resolver",
+    "authority declaration resolver is only called by endpoint",
     resolverCallSites.join(","),
-    "src/services/lifeJourneyStageAuthorityDeclarationResolver.ts",
+    [
+      "src/services/lifeJourneyStageAuthorityDeclarationEndpoint.ts",
+      "src/services/lifeJourneyStageAuthorityDeclarationResolver.ts",
+    ].sort().join(","),
   );
 
   [
@@ -137,7 +143,8 @@ if (failures.length === 0) {
     "不重新执行 Resolver",
     "不生成 Stage Source，不推进 Journey Stage",
     "P35 Consumption 是 P34 Resolver Result 的唯一正式消费边界",
-    "P35 当前没有下游业务消费者",
+    "P35 Consumption 函数只由 P36 Authority Declaration Endpoint 调用",
+    "P36 Endpoint 当前没有下游业务消费者",
     "不修改 P0–P34 Foundation 与 Life Schema 链路",
   ].forEach((marker) => assertIncludes("authority declaration consumption protocol", protocolSource, marker));
 
