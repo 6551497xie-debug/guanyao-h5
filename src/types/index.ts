@@ -190,6 +190,16 @@ export type {
   StarBeastRendererImplementationAuthorityReference,
 } from "./starBeastRendererExplicitImplementationAuthorizationCommand";
 export type {
+  StarBeastRendererImplementationAuthorization,
+  StarBeastRendererImplementationAuthorizationAuthorized,
+  StarBeastRendererImplementationAuthorizationInput,
+  StarBeastRendererImplementationAuthorizationNotReady,
+  StarBeastRendererImplementationAuthorizationNotReadyReason,
+  StarBeastRendererImplementationAuthorizationResult,
+  StarBeastRendererImplementationAuthorizationUnavailable,
+  StarBeastRendererImplementationAuthorizationUnavailableReason,
+} from "./starBeastRendererImplementationAuthorization";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,

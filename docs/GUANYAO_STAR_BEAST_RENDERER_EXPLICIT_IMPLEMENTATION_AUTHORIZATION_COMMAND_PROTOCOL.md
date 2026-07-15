@@ -94,9 +94,11 @@ P49 UNAVAILABLE 或缺失：
 P49 Result → only P50 Explicit Authorization Command
 P49 Resolver → no direct external caller
 P50 Command Resolver → no downstream consumer
+P50 Command Result → only P51 Implementation Authorization Resolver
 ```
 
 P50 只消费调用方提供的 P49 Result，不调用 P41–P49 Resolver。
+P51 只消费调用方提供的 P50 Result，不反向调用 P50 Resolver。
 
 ## 07｜严格禁止
 
