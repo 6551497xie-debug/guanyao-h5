@@ -372,6 +372,15 @@ export type {
   StarBeastRendererExecutionProtocolAuthorizationConsumptionUnavailableReason,
 } from "./starBeastRendererExecutionProtocolAuthorizationConsumption";
 export type {
+  StarBeastRendererExecutionProtocolAuthorizationEndpoint,
+  StarBeastRendererExecutionProtocolAuthorizationEndpointAvailable,
+  StarBeastRendererExecutionProtocolAuthorizationEndpointInput,
+  StarBeastRendererExecutionProtocolAuthorizationEndpointNotReady,
+  StarBeastRendererExecutionProtocolAuthorizationEndpointResult,
+  StarBeastRendererExecutionProtocolAuthorizationEndpointUnavailable,
+  StarBeastRendererExecutionProtocolAuthorizationEndpointUnavailableReason,
+} from "./starBeastRendererExecutionProtocolAuthorizationEndpoint";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,

@@ -65,6 +65,17 @@ P70 Authorization Consumption → no direct external caller
 
 P70 只读取上位调用方提供的 P69 Result，不反向调用 P67–P69，也不调用 P61–P65。
 
+P71 固定该唯一调用所有权：
+
+```text
+P70 Consumption Result → only P71 Execution Protocol Authorization Endpoint
+P70 Consumption Service → no direct external caller
+P71 Authorization Endpoint → no downstream consumer before P72 chain freeze
+P71 Endpoint Result → governance terminal pending P72 freeze
+```
+
+P71 只消费调用方提供的 P70 Result。Endpoint 只形成治理交接，不激活执行协议、不选择 Backend、不创建 Renderer、不执行 Render。
+
 ## 05｜冻结与执行边界
 
 P70 不解除 P54/P60/P66 三重冻结，不消费 P65 Result。Consumption 只允许进入未来独立 Endpoint，不构成 Runtime 执行许可。

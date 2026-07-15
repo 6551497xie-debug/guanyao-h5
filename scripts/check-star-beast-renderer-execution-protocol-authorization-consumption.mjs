@@ -172,6 +172,10 @@ if (failures.length === 0) {
     "P70 只读取上位调用方提供的 P69 Result",
     "P70 不解除 P54/P60/P66 三重冻结",
     "不选择 Backend、不创建 Renderer、不执行 Render",
+    "P70 Consumption Result → only P71 Execution Protocol Authorization Endpoint",
+    "P71 Authorization Endpoint → no downstream consumer before P72 chain freeze",
+    "P71 Endpoint Result → governance terminal pending P72 freeze",
+    "P71 只消费调用方提供的 P70 Result",
   ].forEach((marker) => assertIncludes("P70 protocol", protocolSource, marker));
   [
     "P69 Authorization Result → only P70 Authorization Consumption",
