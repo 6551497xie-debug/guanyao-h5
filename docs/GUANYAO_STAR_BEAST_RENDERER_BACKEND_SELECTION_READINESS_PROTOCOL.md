@@ -70,6 +70,17 @@ P73 Result → no consumer before explicit renderer backend selection command
 
 P73 Resolver 当前只允许其自身 Service 文件持有。下一层必须建立独立显式指令契约，不得直接将 READY 交给 Backend、Renderer、UI 或 Runtime。
 
+P74 固定该唯一调用所有权：
+
+```text
+P73 Readiness Result → only P74 Explicit Backend Selection Command
+P73 Readiness Resolver → no direct external caller
+P74 只消费调用方提供的 P73 Result
+P74 Command Result → no consumer before P75 formal Backend Selection Resolver
+```
+
+P74 Command 只保存主体、决定与不透明候选引用，不是正式 Backend Selection，不解析或选择具体技术。
+
 ## 05｜严格禁止
 
 本刀禁止：

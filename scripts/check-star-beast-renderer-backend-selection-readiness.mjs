@@ -150,6 +150,11 @@ if (failures.length === 0) {
     "P71 opaque governance reference → only P73 readiness input",
     "P73 Result → no consumer before explicit renderer backend selection command",
     "P73 不产生候选技术，不选择 Backend，不运行能力或设备探测",
+    "P73 Readiness Result → only P74 Explicit Backend Selection Command",
+    "P73 Readiness Resolver → no direct external caller",
+    "P74 只消费调用方提供的 P73 Result",
+    "P74 Command Result → no consumer before P75 formal Backend Selection Resolver",
+    "P74 Command 只保存主体、决定与不透明候选引用",
   ].forEach((marker) => assertIncludes("P73 protocol", protocolSource, marker));
 
   [

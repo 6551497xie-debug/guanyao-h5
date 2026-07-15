@@ -389,6 +389,17 @@ export type {
   StarBeastRendererExecutionProtocolAuthorizationEndpointGovernanceReference,
 } from "./starBeastRendererBackendSelectionReadiness";
 export type {
+  StarBeastRendererExplicitBackendSelectionCommand,
+  StarBeastRendererExplicitBackendSelectionCommandAvailable,
+  StarBeastRendererExplicitBackendSelectionCommandInput,
+  StarBeastRendererExplicitBackendSelectionCommandNotReady,
+  StarBeastRendererExplicitBackendSelectionCommandNotReadyReason,
+  StarBeastRendererExplicitBackendSelectionCommandResult,
+  StarBeastRendererExplicitBackendSelectionCommandUnavailable,
+  StarBeastRendererExplicitBackendSelectionCommandUnavailableReason,
+  StarBeastRendererExplicitBackendSelectionDecision,
+} from "./starBeastRendererExplicitBackendSelectionCommand";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,
