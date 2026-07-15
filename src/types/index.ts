@@ -58,6 +58,11 @@ export type {
   LifeJourneyStageTriggerCode,
 } from "./lifeJourneyStageTrigger";
 export type {
+  LifeJourneyStageTriggerEvidenceBoundary,
+  LifeJourneyStageTriggerEvidenceCandidate,
+  LifeJourneyStageTriggerEvidenceSource,
+} from "./lifeJourneyStageTriggerEvidence";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,
