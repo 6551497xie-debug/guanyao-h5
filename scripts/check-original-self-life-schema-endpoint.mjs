@@ -97,9 +97,12 @@ if (failures.length === 0) {
     .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("resolveOriginalSelfLifeSchemaConsumption"))
     .map((filePath) => path.relative(rootDir, filePath));
   assertEqual(
-    "endpoint has no runtime or UI consumer",
-    endpointCallSites.join(","),
-    "src/services/originalSelfLifeSchemaEndpoint.ts",
+    "endpoint is only consumed by readiness",
+    endpointCallSites.sort().join(","),
+    [
+      "src/services/originalSelfLifeSchemaEndpoint.ts",
+      "src/services/originalSelfLifeSchemaReadiness.ts",
+    ].sort().join(","),
   );
 
   const entryCallSites = typeScriptSourcePaths
