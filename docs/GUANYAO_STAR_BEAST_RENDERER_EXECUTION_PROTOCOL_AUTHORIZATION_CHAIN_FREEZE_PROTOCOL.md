@@ -120,3 +120,15 @@ P72 不新增或修改业务类型、Service、Resolver、Endpoint、UI、Runtim
 5. 冻结源文件不包含 Backend、Renderer、UI、Runtime 或 Storage 实现；
 6. P71/P66 协议声明四重冻结终止出口；
 7. P72 Gate、P71 Gate、P70 Gate、P69 Gate、P66 Freeze Gate、release、build 与 `git diff --check` 通过。
+
+## 08｜P73 独立 Backend Selection Readiness
+
+P73 位于 P72 冻结链之外，只允许接收 P71 的 opaque governance reference，不消费 P71 Endpoint Result，也不调用 P67–P71：
+
+```text
+P71 opaque governance reference
+→ P73 Backend Selection Readiness
+→ READY_FOR_EXPLICIT_RENDERER_BACKEND_SELECTION
+```
+
+P73 READY 只表示可以进入未来显式 Renderer Backend Selection，不产生候选技术、不选择 Backend、不运行 Capability 或 Device Probe。P73 不解除 P54/P60/P66/P72 四重冻结，P71 Result 仍保持无消费者。

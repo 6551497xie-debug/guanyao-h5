@@ -138,6 +138,12 @@ if (failures.length === 0) {
     "P71 Execution Protocol Authorization Endpoint Result → P72 frozen terminal",
     "未来真实 Renderer 执行必须建立新的独立 Renderer Execution Activation Protocol",
     "P72 不新增或修改业务类型、Service、Resolver、Endpoint、UI、Runtime、Storage 或视觉资产",
+    "P73 独立 Backend Selection Readiness",
+    "P73 位于 P72 冻结链之外",
+    "P71 的 opaque governance reference",
+    "READY_FOR_EXPLICIT_RENDERER_BACKEND_SELECTION",
+    "P73 READY 只表示可以进入未来显式 Renderer Backend Selection",
+    "P73 不解除 P54/P60/P66/P72 四重冻结",
   ].forEach((marker) => assertIncludes("P72 freeze protocol", sources.p72Protocol, marker));
 
   [
