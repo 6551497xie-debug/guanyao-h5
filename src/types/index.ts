@@ -125,6 +125,12 @@ export type {
 } from "./starBeastRendererContract";
 export type { StarBeastPrototypeRenderProjection } from "./starBeastRendererPrototypeAdapter";
 export type {
+  StarBeastPrototypeCoreStar,
+  StarBeastPrototypeGeometryPath,
+  StarBeastPrototypeGeometryPoint,
+  StarBeastPrototypeGeometryProfile,
+} from "./starBeastPrototypeGeometry";
+export type {
   StarBeastRenderPlanConsumption,
   StarBeastRenderPlanConsumptionAvailable,
   StarBeastRenderPlanConsumptionInput,

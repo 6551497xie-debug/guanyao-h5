@@ -5,7 +5,7 @@
 //
 // 新脊柱验证（星兽系统协议 + 阴阳平衡）：
 //   脊柱不再是冷的一字线，而是「同一束星光」——
-//     聚为兽（阳·陪你）：七宿光点聚成四象兽（此处青龙｜陪你启动）。
+//     聚为兽（阳·陪你）：七宿光点聚成四象兽（此处白虎｜安静在场）。
 //     张为线（阴·你操作）：要动手时，同一组星把曲线的兽身「张成」一根你握住的线。
 //     动完收回成兽（阳）：光收回成兽、亮得暖一点、留下一点光（沉积成光=正反馈）。
 //   一种星光、一个在场，线只是它的出手形态 → 不分裂。
@@ -17,6 +17,7 @@ import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import { resolveStarBeastRenderPlanConsumption } from "../services/starBeastRenderPlanEndpoint";
+import { resolveBaihuPrototypeGeometryProfile } from "../services/starBeastPrototypeGeometryService";
 import { adaptStarBeastRenderPlanToPrototype } from "../services/starBeastRendererPrototypeAdapter";
 import { mapStarBeastLifeStateToVisualState } from "../services/starBeastVisualStateMapping";
 import type {
@@ -34,7 +35,7 @@ const PROTOTYPE_VISUAL_STATE = mapStarBeastLifeStateToVisualState(
       referenceId: "starbeast-lab:life-state",
       identityReference: Object.freeze({
         referenceType: "STAR_BEAST_IDENTITY",
-        referenceId: "starbeast-lab:qinglong",
+        referenceId: "starbeast-lab:baihu-prototype",
       }),
       archetypeReference: Object.freeze({
         referenceType: "LIFE_ARCHETYPE",
@@ -89,16 +90,10 @@ const PROTOTYPE_PROJECTION = adaptStarBeastRenderPlanToPrototype(
   PROTOTYPE_PLAN_RESULT.consumption.renderPlanReference,
 );
 
-// 青龙七宿（东方·陪你启动）。x=屏宽分数；dy=兽身曲线 y 分数。心宿=本命宿(最亮)。
-const DRAGON = [
-  { x: 0.16, dy: 0.43 },
-  { x: 0.28, dy: 0.52 },
-  { x: 0.4, dy: 0.46 },
-  { x: 0.52, dy: 0.55 },
-  { x: 0.63, dy: 0.47, heart: true },
-  { x: 0.75, dy: 0.56 },
-  { x: 0.86, dy: 0.49 },
-];
+const PROTOTYPE_GEOMETRY = resolveBaihuPrototypeGeometryProfile(
+  PROTOTYPE_PROJECTION,
+);
+const CORE_STARS = PROTOTYPE_GEOMETRY.coreStars;
 const LINE_Y = 0.53; // 张成线时的水平位置（低伏）
 
 const CFG = {
@@ -200,7 +195,7 @@ export function StarbeastLab() {
       state: "VOID" as "VOID" | "GATHER" | "PRESENT" | "OFFER" | "HOLD" | "RETURN",
       t: 0,
       pulsed: false,
-      gatherLit: DRAGON.map(() => 0), // 每星点亮进度
+      gatherLit: CORE_STARS.map(() => 0), // 每星点亮进度
       glow: PROTOTYPE_PROJECTION.layers.starCore.intensity * 0.58, // RenderPlan 驱动的星核亮度
       straighten: 0, // 0=兽 1=线
       pull: 0,
@@ -238,16 +233,22 @@ export function StarbeastLab() {
     }
 
     function starXY(i: number) {
-      const d = DRAGON[i]!;
+      const d = CORE_STARS[i]!;
       const x = d.x * m.w;
-      const y = lerp(d.dy, LINE_Y, m.straighten) * m.h;
+      const y = lerp(d.y, LINE_Y, m.straighten) * m.h;
       return { x, y };
     }
+    function geometryXY(point: { x: number; y: number }) {
+      return {
+        x: point.x * m.w,
+        y: lerp(point.y, LINE_Y, m.straighten) * m.h,
+      };
+    }
     function lineX0() {
-      return DRAGON[0]!.x * m.w;
+      return CORE_STARS[0]!.x * m.w;
     }
     function lineX1() {
-      return DRAGON[DRAGON.length - 1]!.x * m.w;
+      return CORE_STARS[CORE_STARS.length - 1]!.x * m.w;
     }
 
     function step(dt: number) {
@@ -273,8 +274,8 @@ export function StarbeastLab() {
         }
         case "GATHER": {
           // 七宿逐个点亮 + 连线
-          DRAGON.forEach((_, i) => {
-            const at = CFG.fieldMs + (i / DRAGON.length) * CFG.gatherMs;
+          CORE_STARS.forEach((_, i) => {
+            const at = CFG.fieldMs + (i / CORE_STARS.length) * CFG.gatherMs;
             const target = m.t > at ? 1 : 0;
             if (target && m.gatherLit[i]! < 0.02) audio.tick(330 + i * 40);
             m.gatherLit[i] = clamp((m.gatherLit[i] ?? 0) + dt / 0.4, 0, 1);
@@ -354,7 +355,36 @@ export function StarbeastLab() {
         return;
       }
 
-      // 连线（兽身 / 张成的线）——暖光，亮度随 glow
+      // 兽形边界：归一化 Geometry Profile 提供轮廓，Projection 只提供表达强度。
+      const geometryReveal =
+        m.gatherLit.reduce((sum, lit) => sum + lit, 0) /
+        Math.max(1, m.gatherLit.length);
+      const boundaryAlpha =
+        geometryReveal *
+        (1 - m.straighten) *
+        PROTOTYPE_PROJECTION.layers.boundaryLight.opacity;
+      ctx.globalAlpha = boundaryAlpha;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "rgba(244,236,216,0.82)";
+      ctx.lineWidth =
+        0.7 + PROTOTYPE_PROJECTION.layers.starPattern.lineWeight * 0.55;
+      ctx.shadowColor = "rgba(232,200,138,0.5)";
+      ctx.shadowBlur = PROTOTYPE_PROJECTION.layers.boundaryLight.blurRadius;
+      PROTOTYPE_GEOMETRY.silhouettePaths.forEach((geometryPath) => {
+        ctx.beginPath();
+        geometryPath.points.forEach((point, index) => {
+          const p = geometryXY(point);
+          if (index === 0) ctx.moveTo(p.x, p.y);
+          else ctx.lineTo(p.x, p.y);
+        });
+        if (geometryPath.closed) ctx.closePath();
+        ctx.stroke();
+      });
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
+
+      // 七宿星纹骨架 / 张成的线——同一束暖光。
       ctx.lineCap = "round";
       ctx.strokeStyle = `rgba(232,200,138,${(
         PROTOTYPE_PROJECTION.layers.starPattern.opacity *
@@ -370,7 +400,7 @@ export function StarbeastLab() {
         PROTOTYPE_PROJECTION.layers.boundaryLight.blurRadius *
         (0.75 + m.glow * 0.25);
       ctx.beginPath();
-      for (let i = 0; i < DRAGON.length; i++) {
+      for (let i = 0; i < CORE_STARS.length; i++) {
         const p = starXY(i);
         const lit = m.gatherLit[i] ?? 0;
         if (i === 0) ctx.moveTo(p.x, p.y);
@@ -384,7 +414,7 @@ export function StarbeastLab() {
         8 + PROTOTYPE_PROJECTION.layers.internalStardust.density * 28,
       );
       for (let i = 0; i < dustCount; i++) {
-        const segment = i % (DRAGON.length - 1);
+        const segment = i % (CORE_STARS.length - 1);
         const from = starXY(segment);
         const to = starXY(segment + 1);
         const phase =
@@ -410,11 +440,11 @@ export function StarbeastLab() {
       }
 
       // 七宿星点
-      for (let i = 0; i < DRAGON.length; i++) {
+      for (let i = 0; i < CORE_STARS.length; i++) {
         const p = starXY(i);
         const lit = m.gatherLit[i] ?? 0;
         if (lit < 0.02) continue;
-        const heart = DRAGON[i]!.heart;
+        const heart = CORE_STARS[i]!.role === "STAR_CORE";
         const baseR = heart ? 3.4 : 2.4;
         const r =
           (baseR + (heart ? m.heartPulse * 1.4 : 0) + m.glow * 0.8) *
@@ -433,7 +463,7 @@ export function StarbeastLab() {
       }
 
       // 沉积的光（绕心宿）
-      const heartP = starXY(4);
+      const heartP = starXY(PROTOTYPE_GEOMETRY.crystalAnchorIndex);
       for (let k = 0; k < m.motes; k++) {
         const ang = now * 0.5 + (k / Math.max(1, m.motes)) * Math.PI * 2;
         const rad = 16 + (k % 3) * 5;
@@ -505,7 +535,7 @@ export function StarbeastLab() {
       ctx.textAlign = "left";
       ctx.fillStyle = "rgba(232,200,138,0.55)";
       ctx.font = `${Math.min(11, m.w * 0.028)}px ${MONO}`;
-      ctx.fillText("东方青龙 ｜ 陪你启动", m.w * 0.1, m.h * 0.1);
+      ctx.fillText("西方白虎 ｜ 安静在场", m.w * 0.1, m.h * 0.1);
 
       if (m.debug) {
         ctx.fillStyle = "rgba(232,200,138,0.9)";
