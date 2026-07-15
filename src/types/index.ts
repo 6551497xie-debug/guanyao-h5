@@ -70,6 +70,10 @@ export type {
   LifeJourneyStageEvidenceReviewBoundary,
 } from "./lifeJourneyStageEvidenceReview";
 export type {
+  LifeJourneyStageAuthorityEvidenceInput,
+  LifeJourneyStageAuthorityEvidenceInputBoundary,
+} from "./lifeJourneyStageAuthorityEvidenceInput";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,
