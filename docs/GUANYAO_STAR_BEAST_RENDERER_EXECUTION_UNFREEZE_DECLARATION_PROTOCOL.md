@@ -61,11 +61,13 @@ P63 必须验证：
 ```text
 P62 Command Result → only P63 Execution Unfreeze Declaration Resolver
 P62 Command Resolver → no direct external caller
-P63 Declaration Result → no downstream consumer
-P63 Declaration Resolver → owner-only
+P63 Declaration Result → only P64 Declaration Consumption
+P63 Declaration Resolver → no direct external caller
 ```
 
 P63 不消费 P53/P59 Endpoint Result，两条冻结链仍保持终止状态。
+
+P64 只消费调用方提供的 P63 Result，不得直接调用 P63 Resolver。Consumption 仍不构成实际执行解冻。
 
 ## 05｜严格禁止
 

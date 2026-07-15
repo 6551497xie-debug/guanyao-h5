@@ -167,8 +167,9 @@ if (failures.length === 0) {
     "P63 只消费调用方提供的 P62 Result",
     "DECLARED_FOR_RENDERER_EXECUTION_UNFREEZE_PROTOCOL",
     "P62 Command Result → only P63 Execution Unfreeze Declaration Resolver",
-    "P63 Declaration Result → no downstream consumer",
-    "P63 Declaration Resolver → owner-only",
+    "P63 Declaration Result → only P64 Declaration Consumption",
+    "P63 Declaration Resolver → no direct external caller",
+    "P64 只消费调用方提供的 P63 Result",
     "P63 不消费 P53/P59 Endpoint Result",
   ].forEach((marker) => assertIncludes("P63 protocol", protocolSource, marker));
   [
