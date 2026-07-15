@@ -64,9 +64,10 @@ Consumption 不复制 Plan 通道，不增加视觉参数或生命事实。
 - P39 Mapping 函数仍没有业务下游调用者；
 - P41 是具体 Render Plan 的唯一构造边界；
 - P42 是 P41 Renderer Output 的唯一正式消费边界；
+- P42 Consumption Result 只允许由 P43 Render Plan Endpoint 对外提供；
 - P42 当前没有 Renderer 业务消费者。
 
-Future Renderer 必须在后续独立施工中消费 P42 AVAILABLE 结果，不得绕过 P42 直接读取 P41 Plan。
+P43 只闭合 P41 / P42 调用链，不实现 Renderer。Future Renderer 必须消费 P43 Endpoint 的 AVAILABLE 结果，不得绕过 P43 直接调用 P41 或自行组装 P42 Input。
 
 ## 05｜严格禁止
 

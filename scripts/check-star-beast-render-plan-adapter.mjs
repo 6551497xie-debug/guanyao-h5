@@ -128,9 +128,12 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "render plan adapter has no downstream consumer",
+    "render plan adapter is only composed by P43 endpoint",
     adapterCallSites.join(","),
-    "src/services/starBeastRenderPlanAdapter.ts",
+    [
+      "src/services/starBeastRenderPlanAdapter.ts",
+      "src/services/starBeastRenderPlanEndpoint.ts",
+    ].sort().join(","),
   );
 
   const visualMappingCallSites = collectTypeScriptSourcePaths(path.join(rootDir, "src"))
@@ -153,6 +156,7 @@ if (failures.length === 0) {
     [
       "src/services/starBeastRenderPlanAdapter.ts",
       "src/services/starBeastRenderPlanConsumptionService.ts",
+      "src/services/starBeastRenderPlanEndpoint.ts",
       "src/types/index.ts",
       "src/types/starBeastRenderPlanConsumption.ts",
       "src/types/starBeastRendererContract.ts",
@@ -170,9 +174,10 @@ if (failures.length === 0) {
     "五个通道",
     "P41 是具体 `StarBeastRenderPlan` 的唯一正式构造边界",
     "P41 Renderer Output 只允许由 P42 Render Plan Consumption 消费",
+    "P41 Adapter 只允许由 P43 Render Plan Endpoint 组合调用",
     "P41 当前没有 Renderer 业务消费者",
-    "P42 只建立稳定消费边界，不实现 Renderer",
-    "Future Renderer 只能在后续独立边界中消费 P42 AVAILABLE 结果",
+    "P42 只建立稳定消费边界，P43 只闭合调用链，二者都不实现 Renderer",
+    "Future Renderer 只能在后续独立边界中消费 P43 Endpoint 的 AVAILABLE 结果",
     "Canvas、WebGL、Three.js",
     "不修改 P0–P40",
   ].forEach((marker) => assertIncludes("render plan adapter protocol", protocolSource, marker));
