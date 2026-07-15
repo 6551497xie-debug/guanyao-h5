@@ -170,6 +170,14 @@ export type {
   StarBeastRendererImplementationCapabilityBindingUnavailableReason,
 } from "./starBeastRendererImplementationCapabilityBinding";
 export type {
+  StarBeastRendererImplementationAuthorizationReadinessInput,
+  StarBeastRendererImplementationAuthorizationReadinessNotReady,
+  StarBeastRendererImplementationAuthorizationReadinessReady,
+  StarBeastRendererImplementationAuthorizationReadinessResult,
+  StarBeastRendererImplementationAuthorizationReadinessUnavailable,
+  StarBeastRendererImplementationAuthorizationReadinessUnavailableReason,
+} from "./starBeastRendererImplementationAuthorizationReadiness";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,

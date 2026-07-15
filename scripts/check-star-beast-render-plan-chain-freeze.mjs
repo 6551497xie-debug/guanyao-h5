@@ -26,6 +26,10 @@ const files = Object.freeze({
     "src/types/starBeastRendererImplementationCapabilityBinding.ts",
   capabilityBindingService:
     "src/services/starBeastRendererImplementationCapabilityBindingService.ts",
+  authorizationReadinessType:
+    "src/types/starBeastRendererImplementationAuthorizationReadiness.ts",
+  authorizationReadinessService:
+    "src/services/starBeastRendererImplementationAuthorizationReadinessService.ts",
   endpointProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDER_PLAN_ENDPOINT_PROTOCOL.md",
   freezeProtocol:
@@ -38,6 +42,8 @@ const files = Object.freeze({
     "docs/GUANYAO_STAR_BEAST_RENDERER_BACKEND_CAPABILITY_SCHEMA_PROTOCOL.md",
   capabilityBindingProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_CAPABILITY_BINDING_PROTOCOL.md",
+  authorizationReadinessProtocol:
+    "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_AUTHORIZATION_READINESS_PROTOCOL.md",
   packageManifest: "package.json",
 });
 
@@ -139,6 +145,11 @@ if (failures.length === 0) {
     "P48 capability binding resolver has no downstream consumer",
     "resolveStarBeastRendererImplementationCapabilityBinding(",
     [files.capabilityBindingService],
+  );
+  assertCallSites(
+    "P49 authorization readiness resolver has no downstream consumer",
+    "resolveStarBeastRendererImplementationAuthorizationReadiness(",
+    [files.authorizationReadinessService],
   );
 
   [
@@ -369,6 +380,39 @@ if (failures.length === 0) {
   );
 
   [
+    "bindingResult: StarBeastRendererImplementationCapabilityBindingResult | null",
+    'readiness: "READY_FOR_EXPLICIT_RENDERER_IMPLEMENTATION_AUTHORIZATION"',
+    "explicitAuthorizationRequired: true",
+    "authorizationDeferred: true",
+    "noAuthorizationIssued: true",
+    "noBackendSelection: true",
+    "noRenderExecution: true",
+  ].forEach((marker) =>
+    assertIncludes("P49 readiness remains authorization-free", sources.authorizationReadinessType, marker),
+  );
+
+  [
+    "export function resolveStarBeastRendererImplementationAuthorizationReadiness",
+    "const bindingResult = input.bindingResult",
+    'bindingResult.status === "UNAVAILABLE"',
+    'bindingResult.status === "NOT_READY"',
+    '"CAPABILITY_BINDING_NOT_READY"',
+    '"CAPABILITY_BINDING_UNAVAILABLE"',
+    "bindingReference: bindingResult.binding",
+    "noAuthorizationIssued: true",
+  ].forEach((marker) =>
+    assertIncludes("P49 readiness consumes supplied P48 result only", sources.authorizationReadinessService, marker),
+  );
+
+  [
+    "resolveStarBeastRendererImplementationCapabilityBinding(",
+    "resolveStarBeastRendererImplementationCandidate(",
+    "resolveStarBeastRendererBackendCapabilityDeclaration(",
+  ].forEach((marker) =>
+    assertExcludes("P49 does not invoke upstream resolvers", sources.authorizationReadinessService, marker),
+  );
+
+  [
     "adaptStarBeastRendererInputToRenderPlan(",
     "consumeStarBeastRenderPlan(",
     "resolveStarBeastRenderPlanConsumption(",
@@ -394,6 +438,8 @@ if (failures.length === 0) {
     sources.backendCapabilityService,
     sources.capabilityBindingType,
     sources.capabilityBindingService,
+    sources.authorizationReadinessType,
+    sources.authorizationReadinessService,
   ].join("\n");
 
   [
@@ -446,6 +492,9 @@ if (failures.length === 0) {
     "P48 Implementation Capability Binding Extension",
     "P46/P47 Result 只由 P48 Capability Binding 消费",
     "resolveStarBeastRendererImplementationCapabilityBinding",
+    "P49 Implementation Authorization Readiness Extension",
+    "P48 Result 只允许由 P49 Authorization Readiness 消费",
+    "resolveStarBeastRendererImplementationAuthorizationReadiness",
     "P44 不修改 P39–P43 类型或服务源码",
     "Canvas、WebGL、Three.js",
     "不修改 Foundation、Dynamics、Crystal、UI、Storage",
@@ -498,6 +547,15 @@ if (failures.length === 0) {
     "P48 禁止直接调用 P41–P47",
   ].forEach((marker) =>
     assertIncludes("P48 protocol binds only P46 and P47 results", sources.capabilityBindingProtocol, marker),
+  );
+
+  [
+    "RC-STAR-BEAST-RENDERER-IMPLEMENTATION-AUTHORIZATION-READINESS-P49",
+    "READY_FOR_EXPLICIT_RENDERER_IMPLEMENTATION_AUTHORIZATION",
+    "P48 Result → only P49 Authorization Readiness",
+    "P49 禁止直接调用 P41–P48",
+  ].forEach((marker) =>
+    assertIncludes("P49 protocol exposes readiness only", sources.authorizationReadinessProtocol, marker),
   );
 
   assertIncludes(
