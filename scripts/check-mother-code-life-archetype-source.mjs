@@ -130,11 +130,15 @@ if (failures.length === 0) {
 
   const sourceCallSites = collectTypeScriptSourcePaths(path.join(rootDir, "src"))
     .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("resolveLifeArchetypeProfileFromMotherCode"))
-    .map((filePath) => path.relative(rootDir, filePath));
+    .map((filePath) => path.relative(rootDir, filePath))
+    .sort();
   assertEqual(
-    "source bridge has no runtime consumers",
+    "source bridge is only consumed by schema entry",
     sourceCallSites.join(","),
-    "src/services/motherCodeLifeArchetypeSource.ts",
+    [
+      "src/services/motherCodeLifeArchetypeSource.ts",
+      "src/services/originalSelfLifeSchemaEntry.ts",
+    ].sort().join(","),
   );
 
   [
