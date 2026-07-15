@@ -105,7 +105,22 @@ P60 只允许：
 
 P60 不新增或修改业务类型、Service、Resolver、Endpoint、UI、Runtime、Storage 或视觉资产。
 
-## 07｜验收
+## 07｜P61 Execution Unfreeze Readiness Extension
+
+P61 位于 P60 冻结链之外，只接受 P59/P53 opaque governance reference 与执行治理材料：
+
+```text
+P59/P53 governance references
++ execution scope
++ runtime boundary
++ rollback strategy
++ acceptance scope
+→ P61 Execution Unfreeze Readiness
+```
+
+P61 不消费 P59/P53 Result，不调用 P55–P59，不解除双重冻结。READY 只允许进入未来主体显式执行解冻声明流程。
+
+## 08｜验收
 
 1. P55–P59 职责与调用所有权保持完整；
 2. P55–P59 函数无外部直接调用者；
@@ -113,4 +128,5 @@ P60 不新增或修改业务类型、Service、Resolver、Endpoint、UI、Runtim
 4. P53 Result 继续保持 P54 冻结且未被 P55–P59 消费；
 5. 冻结源文件不包含后端、Renderer、UI、Runtime 或 Storage 实现；
 6. P59/P54 协议声明双重冻结终止出口与独立执行解冻要求；
-7. P60 gate、P59 gate、P54 gate、release、build 与 `git diff --check` 通过。
+7. P61 只能使用 opaque governance reference，不得消费 P53/P59 Result；
+8. P60 gate、P59 gate、P54 gate、release、build 与 `git diff --check` 通过。

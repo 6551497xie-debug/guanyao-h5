@@ -126,6 +126,10 @@ if (failures.length === 0) {
     "P55–P59 Declaration Governance Chain → separate frozen terminal at P59",
     "未来真实 Renderer 施工必须先建立新的独立执行解冻协议",
     "P60 不新增或修改业务类型、Service、Resolver、Endpoint、UI、Runtime、Storage 或视觉资产",
+    "P61 Execution Unfreeze Readiness Extension",
+    "P61 位于 P60 冻结链之外",
+    "P61 不消费 P59/P53 Result",
+    "READY 只允许进入未来主体显式执行解冻声明流程",
   ].forEach((marker) => assertIncludes("P60 freeze protocol", sources.p60Protocol, marker));
 
   [
