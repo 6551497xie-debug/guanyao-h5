@@ -130,6 +130,15 @@ export type {
   StarBeastPrototypeFrameState,
 } from "./starBeastPrototypeFrame";
 export type {
+  StarBeastAssetArchitectureResult,
+  StarBeastAssetArchetypeReference,
+  StarBeastAssetDefinition,
+  StarBeastAssetIdentityReference,
+  StarBeastAssetNormalizedAnchor,
+  StarBeastVisualLayer,
+  StarBeastVisualLayerKind,
+} from "./starBeastAssetArchitecture";
+export type {
   StarBeastPrototypeCoreStar,
   StarBeastPrototypeGeometryPath,
   StarBeastPrototypeGeometryPoint,
