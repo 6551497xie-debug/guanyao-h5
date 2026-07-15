@@ -124,6 +124,7 @@ export type {
   StarBeastRendererUnavailableReason,
 } from "./starBeastRendererContract";
 export type { StarBeastPrototypeRenderProjection } from "./starBeastRendererPrototypeAdapter";
+export type { StarBeastPrototypeMotionProfile } from "./starBeastPrototypeMotion";
 export type {
   StarBeastPrototypeCoreStar,
   StarBeastPrototypeGeometryPath,

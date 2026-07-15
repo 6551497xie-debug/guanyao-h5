@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import { resolveStarBeastRenderPlanConsumption } from "../services/starBeastRenderPlanEndpoint";
 import { resolveBaihuPrototypeGeometryProfile } from "../services/starBeastPrototypeGeometryService";
+import { adaptStarBeastPrototypeProjectionToMotion } from "../services/starBeastPrototypeMotionAdapter";
 import { adaptStarBeastRenderPlanToPrototype } from "../services/starBeastRendererPrototypeAdapter";
 import { mapStarBeastLifeStateToVisualState } from "../services/starBeastVisualStateMapping";
 import type {
@@ -91,6 +92,9 @@ const PROTOTYPE_PROJECTION = adaptStarBeastRenderPlanToPrototype(
 );
 
 const PROTOTYPE_GEOMETRY = resolveBaihuPrototypeGeometryProfile(
+  PROTOTYPE_PROJECTION,
+);
+const PROTOTYPE_MOTION = adaptStarBeastPrototypeProjectionToMotion(
   PROTOTYPE_PROJECTION,
 );
 const CORE_STARS = PROTOTYPE_GEOMETRY.coreStars;
@@ -205,6 +209,7 @@ export function StarbeastLab() {
       retT: 0,
       motes: PROTOTYPE_PROJECTION.layers.crystalNodes.count,
       heartPulse: 0,
+      renderTime: 0,
       field: [] as FieldStar[],
       msgPhase: 0,
       debug: false,
@@ -234,14 +239,43 @@ export function StarbeastLab() {
 
     function starXY(i: number) {
       const d = CORE_STARS[i]!;
+      const breathingOffset =
+        Math.sin(
+          m.renderTime * Math.PI * 2 * PROTOTYPE_MOTION.breathing.frequencyHz,
+        ) *
+        PROTOTYPE_MOTION.breathing.amplitude *
+        (1 - m.straighten);
       const x = d.x * m.w;
-      const y = lerp(d.y, LINE_Y, m.straighten) * m.h;
+      const y =
+        (lerp(d.y, LINE_Y, m.straighten) + breathingOffset) * m.h;
       return { x, y };
     }
-    function geometryXY(point: { x: number; y: number }) {
+    function geometryXY(
+      point: { x: number; y: number },
+      pathId: string,
+    ) {
+      const presence = 1 - m.straighten;
+      const breathingOffset =
+        Math.sin(
+          m.renderTime * Math.PI * 2 * PROTOTYPE_MOTION.breathing.frequencyHz,
+        ) *
+        PROTOTYPE_MOTION.breathing.amplitude *
+        presence;
+      const tailOffset =
+        pathId === "tail-spiral"
+          ? Math.sin(
+              m.renderTime * Math.PI * 2 * PROTOTYPE_MOTION.tail.frequencyHz +
+                point.y * 8 +
+                PROTOTYPE_MOTION.tail.phaseOffset,
+            ) *
+            PROTOTYPE_MOTION.tail.amplitude *
+            m.w *
+            presence
+          : 0;
       return {
-        x: point.x * m.w,
-        y: lerp(point.y, LINE_Y, m.straighten) * m.h,
+        x: point.x * m.w + tailOffset,
+        y:
+          (lerp(point.y, LINE_Y, m.straighten) + breathingOffset) * m.h,
       };
     }
     function lineX0() {
@@ -257,8 +291,10 @@ export function StarbeastLab() {
         0.5 +
         0.5 *
           Math.sin(
-            (performance.now() / 700) *
-              PROTOTYPE_PROJECTION.layers.starCore.pulseRate,
+            (performance.now() / 1000) *
+              Math.PI *
+              2 *
+              PROTOTYPE_MOTION.breathing.frequencyHz,
           );
       switch (m.state) {
         case "VOID": {
@@ -327,6 +363,7 @@ export function StarbeastLab() {
 
       // 星河（深蓝微光，缓闪）
       const now = performance.now() / 1000;
+      m.renderTime = now;
       m.field.forEach((s) => {
         const a =
           0.08 +
@@ -337,7 +374,7 @@ export function StarbeastLab() {
                 Math.sin(
                   now *
                     s.sp *
-                    PROTOTYPE_PROJECTION.layers.internalStardust.driftRate +
+                    PROTOTYPE_MOTION.stardust.driftRate +
                     s.ph,
                 ));
         ctx.fillStyle = `rgba(${COLOR.field},${a.toFixed(3)})`;
@@ -362,7 +399,15 @@ export function StarbeastLab() {
       const boundaryAlpha =
         geometryReveal *
         (1 - m.straighten) *
-        PROTOTYPE_PROJECTION.layers.boundaryLight.opacity;
+        PROTOTYPE_PROJECTION.layers.boundaryLight.opacity *
+        (1 +
+          Math.sin(
+            now *
+              Math.PI *
+              2 *
+              PROTOTYPE_MOTION.boundaryShimmer.frequencyHz,
+          ) *
+            PROTOTYPE_MOTION.boundaryShimmer.amplitude);
       ctx.globalAlpha = boundaryAlpha;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
@@ -374,7 +419,7 @@ export function StarbeastLab() {
       PROTOTYPE_GEOMETRY.silhouettePaths.forEach((geometryPath) => {
         ctx.beginPath();
         geometryPath.points.forEach((point, index) => {
-          const p = geometryXY(point);
+          const p = geometryXY(point, geometryPath.pathId);
           if (index === 0) ctx.moveTo(p.x, p.y);
           else ctx.lineTo(p.x, p.y);
         });
@@ -421,9 +466,11 @@ export function StarbeastLab() {
           (i * 0.618 +
             now *
               0.035 *
-              PROTOTYPE_PROJECTION.layers.internalStardust.driftRate) %
+              PROTOTYPE_MOTION.stardust.driftRate) %
           1;
-        const offset = Math.sin(i * 2.17 + now * 0.3) * (3 + (i % 4));
+        const offset =
+          Math.sin(i * 2.17 + now * PROTOTYPE_MOTION.stardust.driftRate) *
+          (PROTOTYPE_MOTION.stardust.orbitAmplitude + (i % 4));
         ctx.fillStyle = `rgba(244,236,216,${(
           0.1 +
           PROTOTYPE_PROJECTION.layers.internalStardust.density * 0.32
@@ -465,11 +512,29 @@ export function StarbeastLab() {
       // 沉积的光（绕心宿）
       const heartP = starXY(PROTOTYPE_GEOMETRY.crystalAnchorIndex);
       for (let k = 0; k < m.motes; k++) {
-        const ang = now * 0.5 + (k / Math.max(1, m.motes)) * Math.PI * 2;
+        const crystalPulse = PROTOTYPE_MOTION.crystalPulse.enabled
+          ? 1 +
+            Math.sin(
+              now *
+                Math.PI *
+                2 *
+                PROTOTYPE_MOTION.crystalPulse.frequencyHz,
+            ) *
+              PROTOTYPE_MOTION.crystalPulse.amplitude
+          : 1;
+        const ang =
+          now * PROTOTYPE_MOTION.stardust.driftRate * 0.5 +
+          (k / Math.max(1, m.motes)) * Math.PI * 2;
         const rad = 16 + (k % 3) * 5;
-        ctx.fillStyle = `rgba(255,243,208,0.7)`;
+        ctx.fillStyle = `rgba(255,243,208,${Math.min(1, 0.55 + crystalPulse * 0.22).toFixed(3)})`;
         ctx.beginPath();
-        ctx.arc(heartP.x + Math.cos(ang) * rad, heartP.y + Math.sin(ang) * rad, 1.4, 0, Math.PI * 2);
+        ctx.arc(
+          heartP.x + Math.cos(ang) * rad,
+          heartP.y + Math.sin(ang) * rad,
+          1.1 + crystalPulse * 0.35,
+          0,
+          Math.PI * 2,
+        );
         ctx.fill();
       }
 
