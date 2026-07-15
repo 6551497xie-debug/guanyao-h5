@@ -106,9 +106,12 @@ if (failures.length === 0) {
     .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("resolveOriginalSelfLifeSchemaFromSources"))
     .map((filePath) => path.relative(rootDir, filePath));
   assertEqual(
-    "composed entry has no runtime consumers",
-    entryCallSites.join(","),
-    "src/services/originalSelfLifeSchemaEntry.ts",
+    "composed entry is only consumed by endpoint",
+    entryCallSites.sort().join(","),
+    [
+      "src/services/originalSelfLifeSchemaEndpoint.ts",
+      "src/services/originalSelfLifeSchemaEntry.ts",
+    ].sort().join(","),
   );
 
   [

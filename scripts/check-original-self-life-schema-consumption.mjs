@@ -107,9 +107,12 @@ if (failures.length === 0) {
     .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("consumeOriginalSelfLifeSchemaResult"))
     .map((filePath) => path.relative(rootDir, filePath));
   assertEqual(
-    "consumption has no endpoint or runtime consumer",
-    consumptionCallSites.join(","),
-    "src/services/originalSelfLifeSchemaResultConsumption.ts",
+    "consumption is only consumed by endpoint",
+    consumptionCallSites.sort().join(","),
+    [
+      "src/services/originalSelfLifeSchemaEndpoint.ts",
+      "src/services/originalSelfLifeSchemaResultConsumption.ts",
+    ].sort().join(","),
   );
 
   [
