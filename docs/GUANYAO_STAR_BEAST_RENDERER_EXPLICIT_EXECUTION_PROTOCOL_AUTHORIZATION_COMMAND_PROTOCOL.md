@@ -73,6 +73,17 @@ P68 Command Resolver → no direct external caller
 
 P68 不能反向调用 P67，也不能消费 P65 Endpoint Result。未来 P69 只能消费调用方提供的 P68 Result。
 
+P69 固定该唯一调用所有权：
+
+```text
+P68 Command Result → only P69 Execution Protocol Authorization Resolver
+P68 Command Resolver → no direct external caller
+P69 Authorization Result → no consumer before P70 Authorization Consumption
+P69 Authorization Resolver → no direct external caller
+```
+
+P69 正式 Authorization 只开放独立 Execution Protocol，仍不选择 Backend、不创建 Renderer、不执行 Render。
+
 ## 05｜非授权、非执行边界
 
 Command 不是正式 Execution Protocol Authorization，也不是实际 Renderer Execution。P68 禁止：

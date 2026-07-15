@@ -158,6 +158,10 @@ if (failures.length === 0) {
     "P68 只消费调用方提供的 P67 Result",
     "P68 Command Result → no consumer before P69 formal Execution Protocol Authorization Resolver",
     "P68 Command Resolver → no direct external caller",
+    "P68 Command Result → only P69 Execution Protocol Authorization Resolver",
+    "P69 Authorization Result → no consumer before P70 Authorization Consumption",
+    "P69 Authorization Resolver → no direct external caller",
+    "P69 正式 Authorization 只开放独立 Execution Protocol",
   ].forEach((marker) => assertIncludes("P68 protocol", protocolSource, marker));
   [
     "P67 Readiness Result → only P68 Explicit Execution Protocol Authorization Command",
