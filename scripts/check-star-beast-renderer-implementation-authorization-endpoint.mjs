@@ -26,6 +26,10 @@ const freezeProtocolPath = path.join(
   rootDir,
   "docs/GUANYAO_STAR_BEAST_RENDER_PLAN_CHAIN_FREEZE_PROTOCOL.md",
 );
+const authorizationChainFreezeProtocolPath = path.join(
+  rootDir,
+  "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_AUTHORIZATION_CHAIN_FREEZE_PROTOCOL.md",
+);
 const packagePath = path.join(rootDir, "package.json");
 const tempModulePath = path.join(
   os.tmpdir(),
@@ -66,6 +70,7 @@ for (const [name, filePath] of [
   ["authorization endpoint protocol", protocolPath],
   ["P52 consumption protocol", consumptionProtocolPath],
   ["render plan chain freeze protocol", freezeProtocolPath],
+  ["authorization chain freeze protocol", authorizationChainFreezeProtocolPath],
   ["package manifest", packagePath],
 ]) {
   if (!fs.existsSync(filePath)) failures.push(`${name} file missing=${filePath}`);
@@ -82,6 +87,10 @@ if (failures.length === 0) {
     "utf8",
   );
   const freezeProtocolSource = fs.readFileSync(freezeProtocolPath, "utf8");
+  const authorizationChainFreezeProtocolSource = fs.readFileSync(
+    authorizationChainFreezeProtocolPath,
+    "utf8",
+  );
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
 
   [
@@ -211,6 +220,22 @@ if (failures.length === 0) {
     "resolveStarBeastRendererImplementationAuthorizationEndpoint",
   ].forEach((marker) =>
     assertIncludes("freeze protocol extends through P53", freezeProtocolSource, marker),
+  );
+
+  [
+    "## 07｜P54 Authorization Chain Freeze",
+    "P53 Result 是当前冻结终止出口",
+    "显式解冻前不得新增下游消费者",
+  ].forEach((marker) =>
+    assertIncludes("P53 protocol declares P54 freeze", protocolSource, marker),
+  );
+
+  [
+    "RC-STAR-BEAST-RENDERER-IMPLEMENTATION-AUTHORIZATION-CHAIN-FREEZE-P54",
+    "P53 Result → no consumer before explicit unfreeze",
+    "P53 Endpoint Result 是当前授权链的冻结终止出口",
+  ].forEach((marker) =>
+    assertIncludes("P54 freezes P53 terminal", authorizationChainFreezeProtocolSource, marker),
   );
 
   assertIncludes(

@@ -68,6 +68,8 @@ const files = Object.freeze({
     "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_AUTHORIZATION_CONSUMPTION_PROTOCOL.md",
   implementationAuthorizationEndpointProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_AUTHORIZATION_ENDPOINT_PROTOCOL.md",
+  implementationAuthorizationChainFreezeProtocol:
+    "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_AUTHORIZATION_CHAIN_FREEZE_PROTOCOL.md",
   packageManifest: "package.json",
 });
 
@@ -687,6 +689,9 @@ if (failures.length === 0) {
     "P53 Implementation Authorization Endpoint Extension",
     "P52 Result 只允许由 P53 Implementation Authorization Endpoint 消费",
     "resolveStarBeastRendererImplementationAuthorizationEndpoint",
+    "P54 Implementation Authorization Chain Freeze",
+    "P53 Endpoint Result 是冻结终止出口",
+    "显式解冻前禁止任何下游消费",
     "P44 不修改 P39–P43 类型或服务源码",
     "Canvas、WebGL、Three.js",
     "不修改 Foundation、Dynamics、Crystal、UI、Storage",
@@ -786,6 +791,15 @@ if (failures.length === 0) {
     assertIncludes("P53 protocol exposes handoff only", sources.implementationAuthorizationEndpointProtocol, marker),
   );
 
+  [
+    "RC-STAR-BEAST-RENDERER-IMPLEMENTATION-AUTHORIZATION-CHAIN-FREEZE-P54",
+    "IMPLEMENTATION AUTHORIZATION CHAIN FROZEN",
+    "P53 Result → no consumer before explicit unfreeze",
+    "未来真实 Renderer 施工必须先建立独立解冻协议",
+  ].forEach((marker) =>
+    assertIncludes("P54 protocol freezes authorization chain", sources.implementationAuthorizationChainFreezeProtocol, marker),
+  );
+
   assertIncludes(
     "render plan chain freeze gate command is registered",
     packageJson.scripts?.["check:star-beast-render-plan-chain-freeze"] ?? "",
@@ -795,6 +809,11 @@ if (failures.length === 0) {
     "render plan chain freeze gate participates in release",
     packageJson.scripts?.["check:release"] ?? "",
     "npm run check:star-beast-render-plan-chain-freeze",
+  );
+  assertIncludes(
+    "P54 freeze gate participates in release",
+    packageJson.scripts?.["check:release"] ?? "",
+    "npm run check:star-beast-renderer-implementation-authorization-chain-freeze",
   );
 }
 

@@ -57,6 +57,7 @@ Endpoint 只保留：
 P52 Consumption Result → only P53 Implementation Authorization Endpoint
 P52 Consumption Service → no direct external caller
 P53 Authorization Endpoint → no downstream consumer
+P53 Endpoint Result → frozen terminal until explicit unfreeze
 ```
 
 P53 只读取上位调用方提供的 P52 Result，不调用 P41–P52 Resolver 或 Service。
@@ -83,3 +84,15 @@ Endpoint 必须保持 `authorizationHandoffOnly`、`implementationDeferred`、`n
 4. P53 不调用 P41–P52 Resolver 或 Service；
 5. Endpoint 不选择后端、不创建 Renderer、不执行渲染；
 6. P53 gate、P52 gate、freeze gate、release、build 与 `git diff --check` 通过。
+
+## 07｜P54 Authorization Chain Freeze
+
+P54 冻结 P45–P53 Implementation Authorization Chain。
+
+- P53 Result 是当前冻结终止出口；
+- 显式解冻前不得新增下游消费者；
+- 未来真实 Renderer 施工必须通过独立协议解冻；
+- 解冻后的唯一合法上游输入必须是 P53 `AVAILABLE` Result；
+- 不得绕过 P53 直接消费 P45–P52 任一中间结果。
+
+P54 不改变 P53 Endpoint 类型、状态或既有用户结果。
