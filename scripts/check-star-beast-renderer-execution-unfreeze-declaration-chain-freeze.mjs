@@ -135,6 +135,11 @@ if (failures.length === 0) {
     "P65 Execution Unfreeze Declaration Endpoint Result → P66 frozen terminal",
     "未来真实 Renderer 施工必须建立新的独立 Renderer Execution Protocol",
     "P66 不新增或修改业务类型、Service、Resolver、Endpoint、UI、Runtime、Storage 或视觉资产",
+    "P67 独立 Execution Protocol Readiness",
+    "P67 位于 P66 冻结链之外",
+    "P65 的 opaque governance reference",
+    "P67 READY 只表示可以进入未来显式 Execution Protocol Authorization",
+    "P67 不解除 P54/P60/P66 三重冻结",
   ].forEach((marker) => assertIncludes("P66 freeze protocol", sources.p66Protocol, marker));
 
   [

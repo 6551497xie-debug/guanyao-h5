@@ -116,3 +116,18 @@ P66 不新增或修改业务类型、Service、Resolver、Endpoint、UI、Runtim
 5. 冻结源文件不包含后端、Renderer、UI、Runtime 或 Storage 实现；
 6. P65/P60 协议声明三重冻结终止出口；
 7. P66 gate、P65 gate、P60 gate、P54 gate、release、build 与 `git diff --check` 通过。
+
+## 08｜P67 独立 Execution Protocol Readiness
+
+P67 位于 P66 冻结链之外，只允许接收 P65 的 opaque governance reference，不消费 P65 Endpoint Result，也不调用 P61–P65：
+
+```text
+P65 opaque governance reference
++ Backend Selection Authority reference
++ first reversible Execution Slice reference
++ Failure Stop / Rollback / Acceptance references
+→ P67 Execution Protocol Readiness
+→ READY_FOR_EXPLICIT_RENDERER_EXECUTION_PROTOCOL_AUTHORIZATION
+```
+
+P67 READY 只表示可以进入未来显式 Execution Protocol Authorization，不是授权本身，不选择 Backend，不创建 Renderer，不执行 Render。P67 不解除 P54/P60/P66 三重冻结，P65 Result 仍保持无消费者。
