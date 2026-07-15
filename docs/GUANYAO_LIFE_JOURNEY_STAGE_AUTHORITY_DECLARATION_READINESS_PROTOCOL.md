@@ -78,16 +78,18 @@ P32 不得：
 正式调用方向更新为：
 
 ```text
-Explicit Authority Declaration Readiness
-└─ Authority Evidence Input Adapter
-   └─ Review Outcome Readiness
-      └─ Review Endpoint
-         ├─ Resolver
-         └─ Result Consumption
+Explicit Declaration Command
+└─ Explicit Authority Declaration Readiness
+   └─ Authority Evidence Input Adapter
+      └─ Review Outcome Readiness
+         └─ Review Endpoint
+            ├─ Resolver
+            └─ Result Consumption
 ```
 
 - P31 Adapter 只由 P32 Explicit Authority Readiness 调用；
-- P32 Readiness 当前没有下游业务消费者；
+- P32 Readiness 只由 P33 Explicit Declaration Command 直接调用；
+- P33 Command 仍需主体显式 DECLARE，不能从 READY 自动生成；
 - 后续声明 Resolver 必须通过独立协议与 gate 获得授权。
 
 ## 06｜P32 施工范围

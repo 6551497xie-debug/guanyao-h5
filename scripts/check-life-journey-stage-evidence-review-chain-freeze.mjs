@@ -13,6 +13,7 @@ const files = Object.freeze({
   authorityEvidenceInputType: "src/types/lifeJourneyStageAuthorityEvidenceInput.ts",
   authorityEvidenceInputAdapter: "src/services/lifeJourneyStageAuthorityEvidenceInputAdapter.ts",
   explicitAuthorityReadiness: "src/services/lifeJourneyStageExplicitAuthorityReadiness.ts",
+  explicitDeclarationCommand: "src/services/lifeJourneyStageExplicitDeclarationCommand.ts",
   authorityType: "src/types/lifeJourneyStageAuthority.ts",
   stageSource: "src/services/lifeJourneyStageSource.ts",
   foundationType: "src/types/originalSelf.ts",
@@ -94,6 +95,11 @@ if (failures.length === 0) {
     "adaptLifeJourneyStageAuthorityEvidenceInput(",
     [files.authorityEvidenceInputAdapter, files.explicitAuthorityReadiness],
   );
+  assertCallSites(
+    "explicit authority readiness is only consumed by declaration command",
+    "resolveLifeJourneyStageExplicitAuthorityReadiness(",
+    [files.explicitAuthorityReadiness, files.explicitDeclarationCommand],
+  );
 
   [
     'status: "ACCEPTED"',
@@ -159,6 +165,25 @@ if (failures.length === 0) {
   );
 
   [
+    'export type LifeJourneyStageDeclarationSubject = "life_subject"',
+    'export type LifeJourneyStageExplicitDeclarationDecision = "DECLARE"',
+    "const readiness = resolveLifeJourneyStageExplicitAuthorityReadiness(input.readinessInput)",
+    'if (input.subject !== "life_subject")',
+    'if (input.decision !== "DECLARE")',
+    "targetStage: readiness.authorityEvidenceInput.proposedStage",
+    "authorityEvidenceInput: readiness.authorityEvidenceInput",
+    "evidenceReview: readiness.authorityEvidenceInput.review",
+    "notAuthorityDeclaration: true",
+    "notStageSourceInput: true",
+  ].forEach((marker) =>
+    assertIncludes(
+      "explicit declaration command is the authorized readiness consumer",
+      sources.explicitDeclarationCommand,
+      marker,
+    ),
+  );
+
+  [
     'readiness: "READY_FOR_EXPLICIT_AUTHORITY_DECLARATION"',
     'readiness: "NOT_APPLICABLE_FOR_AUTHORITY_DECLARATION"',
     'readiness: "NOT_READY"',
@@ -204,6 +229,7 @@ if (failures.length === 0) {
     sources.readiness,
     sources.authorityEvidenceInputAdapter,
     sources.explicitAuthorityReadiness,
+    sources.explicitDeclarationCommand,
   ].join("\n");
 
   [
@@ -241,8 +267,10 @@ if (failures.length === 0) {
     "Endpoint → 只由 Readiness 调用",
     "Readiness → 只由 Authority Evidence Input Adapter 调用",
     "Authority Evidence Input Adapter → 只由 Explicit Authority Declaration Readiness 调用",
+    "Explicit Authority Declaration Readiness → 只由 Explicit Declaration Command 调用",
     "Adapter 不生成 Authority Declaration",
     "Readiness 不生成 Authority Declaration",
+    "Command 不生成 Authority Declaration",
     "Review Outcome 等同于 Stage Declaration",
     "P29 不修改 P0–P28",
   ].forEach((marker) => assertIncludes("review chain freeze protocol", sources.protocol, marker));

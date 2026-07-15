@@ -107,9 +107,14 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "explicit authority readiness has no downstream consumer",
+    "explicit authority readiness is only consumed by declaration command",
     readinessCallSites.join(","),
-    "src/services/lifeJourneyStageExplicitAuthorityReadiness.ts",
+    [
+      "src/services/lifeJourneyStageExplicitAuthorityReadiness.ts",
+      "src/services/lifeJourneyStageExplicitDeclarationCommand.ts",
+    ]
+      .sort()
+      .join(","),
   );
 
   const adapterCallSites = typeScriptSourcePaths
@@ -137,7 +142,7 @@ if (failures.length === 0) {
     "P31 UNAVAILABLE 必须形成 NOT_READY",
     "不生成 Authority Declaration，也不生成 Stage Source",
     "P31 Adapter 只由 P32 Explicit Authority Readiness 调用",
-    "P32 Readiness 当前没有下游业务消费者",
+    "P32 Readiness 只由 P33 Explicit Declaration Command 直接调用",
   ].forEach((marker) => assertIncludes("authority declaration readiness protocol", protocolSource, marker));
 
   assertIncludes(
