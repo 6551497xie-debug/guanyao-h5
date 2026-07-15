@@ -120,3 +120,9 @@ life_subject 显式 DECLARE Command
 ```
 
 Resolver 不得绕过主体 Command，也不得仅凭 Review、Readiness、Runtime 或页面状态生成 Declaration。P34 Declaration 仍不是 `LifeJourneyStageSourceInput`，不表示 Journey Stage 已推进。
+
+## 08｜P35 消费扩展
+
+P35 在不修改 P21 类型的前提下，建立 P34 Authority Declaration Resolver Result 的正式消费边界。
+
+P35 只保留 READY、NOT_APPLICABLE 与 NOT_READY 的结果语义及原始引用；它不重新构造 Declaration，不调用 Resolver，不生成 `LifeJourneyStageSourceInput`，也不表示 Journey Stage 已推进。

@@ -120,8 +120,9 @@ Authority Declaration Resolver
 
 - P33 Command 只由 P34 Resolver 直接调用；
 - P21 Authority Declaration 只由 P34 Resolver 构造；
-- P34 Resolver 当前没有下游业务消费者；
-- 后续 Declaration Consumption 或 Stage Source Adapter 必须独立授权。
+- P34 Resolver Result 只允许由 P35 Declaration Result Consumption 消费；
+- P34 Resolver 函数当前仍没有下游组合调用者；
+- 后续 Resolver + Consumption Endpoint 或 Stage Source Adapter 必须独立授权。
 
 ## 08｜P34 施工范围
 

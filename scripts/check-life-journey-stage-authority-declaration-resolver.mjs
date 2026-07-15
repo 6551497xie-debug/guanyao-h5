@@ -147,9 +147,10 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "P21 authority declaration is only constructed by P34 resolver",
+    "P21 authority declaration is constructed by P34 and only consumed by P35",
     declarationReferences.join(","),
     [
+      "src/services/lifeJourneyStageAuthorityDeclarationResultConsumption.ts",
       "src/services/lifeJourneyStageAuthorityDeclarationResolver.ts",
       "src/types/index.ts",
       "src/types/lifeJourneyStageAuthority.ts",
@@ -172,7 +173,8 @@ if (failures.length === 0) {
     "不生成 Stage Source，不推进 Journey Stage",
     "P33 Command 只由 P34 Resolver 直接调用",
     "P21 Authority Declaration 只由 P34 Resolver 构造",
-    "P34 Resolver 当前没有下游业务消费者",
+    "P34 Resolver Result 只允许由 P35 Declaration Result Consumption 消费",
+    "P34 Resolver 函数当前仍没有下游组合调用者",
   ].forEach((marker) => assertIncludes("authority declaration resolver protocol", protocolSource, marker));
 
   assertIncludes(

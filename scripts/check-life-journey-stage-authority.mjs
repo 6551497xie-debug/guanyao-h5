@@ -121,9 +121,10 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "authority declaration is only constructed by explicit authority declaration resolver",
+    "authority declaration is constructed by P34 and only consumed by P35",
     authorityReferences.join(","),
     [
+      "src/services/lifeJourneyStageAuthorityDeclarationResultConsumption.ts",
       "src/services/lifeJourneyStageAuthorityDeclarationResolver.ts",
       "src/types/index.ts",
       "src/types/lifeJourneyStageAuthority.ts",
