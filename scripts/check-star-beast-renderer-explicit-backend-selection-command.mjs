@@ -170,6 +170,11 @@ if (failures.length === 0) {
     "P74 Command Result → no consumer before P75 formal Backend Selection Resolver",
     "P74 Command Resolver → no direct external caller",
     "P74 不能反向调用 P73，也不能消费 P71 Endpoint Result",
+    "P74 Command Result → only P75 Backend Selection Resolver",
+    "P74 Command Resolver → no direct external caller",
+    "P75 Selection Result → no consumer before P76 Backend Selection Consumption",
+    "P75 Selection Resolver → no direct external caller",
+    "P75 正式 Selection 只选择 Candidate opaque reference",
   ].forEach((marker) => assertIncludes("P74 protocol", protocolSource, marker));
   [
     "P73 Readiness Result → only P74 Explicit Backend Selection Command",

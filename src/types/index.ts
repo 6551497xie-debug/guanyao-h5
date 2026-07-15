@@ -400,6 +400,16 @@ export type {
   StarBeastRendererExplicitBackendSelectionDecision,
 } from "./starBeastRendererExplicitBackendSelectionCommand";
 export type {
+  StarBeastRendererBackendSelection,
+  StarBeastRendererBackendSelectionInput,
+  StarBeastRendererBackendSelectionNotReady,
+  StarBeastRendererBackendSelectionNotReadyReason,
+  StarBeastRendererBackendSelectionResult,
+  StarBeastRendererBackendSelectionSelected,
+  StarBeastRendererBackendSelectionUnavailable,
+  StarBeastRendererBackendSelectionUnavailableReason,
+} from "./starBeastRendererBackendSelection";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,

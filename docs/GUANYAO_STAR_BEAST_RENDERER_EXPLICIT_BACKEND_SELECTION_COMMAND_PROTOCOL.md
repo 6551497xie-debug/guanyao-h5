@@ -76,6 +76,17 @@ P74 Command Resolver → no direct external caller
 
 P74 不能反向调用 P73，也不能消费 P71 Endpoint Result。未来 P75 只能消费调用方提供的 P74 Result。
 
+P75 固定该唯一调用所有权：
+
+```text
+P74 Command Result → only P75 Backend Selection Resolver
+P74 Command Resolver → no direct external caller
+P75 Selection Result → no consumer before P76 Backend Selection Consumption
+P75 Selection Resolver → no direct external caller
+```
+
+P75 正式 Selection 只选择 Candidate opaque reference，仍不解析具体技术、不激活 Backend、不创建 Renderer、不执行 Render。
+
 ## 05｜非选择、非执行边界
 
 Command 不是正式 Backend Selection，也不是 Renderer Execution。P74 禁止：
