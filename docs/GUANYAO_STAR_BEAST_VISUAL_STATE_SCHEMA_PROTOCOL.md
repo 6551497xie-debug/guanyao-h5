@@ -144,6 +144,7 @@ P39 禁止：
 - P39 Mapping 函数当前没有下游调用者；
 - P39 `StarBeastVisualState` 输出类型只允许作为 P40 Renderer Input 来源；
 - P40 只建立 Renderer Contract，不实现 Planner 或 Renderer；
+- P41 只建立 Render Plan Adapter，不实现 Renderer；
 - Renderer 不得反向修改 Visual Mapping Input 或 Life State。
 
 ## 09｜施工范围

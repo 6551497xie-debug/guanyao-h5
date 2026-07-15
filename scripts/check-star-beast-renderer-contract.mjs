@@ -204,7 +204,9 @@ if (failures.length === 0) {
     "UNAVAILABLE",
     "不实现 PLANNED / UNAVAILABLE Resolver",
     "P39 Mapping 函数当前仍没有下游调用者",
-    "P40 当前没有 Planner 或 Renderer 业务消费者",
+    "P40 Renderer Input / Output Contract 只由 P41 Render Plan Adapter 实现",
+    "P41 是具体 `StarBeastRenderPlan` 的唯一正式构造边界",
+    "P41 当前没有 Renderer 业务消费者",
     "Canvas、WebGL、Three.js 实现",
     "不修改 P0–P39",
   ].forEach((marker) => assertIncludes("renderer contract protocol", protocolSource, marker));

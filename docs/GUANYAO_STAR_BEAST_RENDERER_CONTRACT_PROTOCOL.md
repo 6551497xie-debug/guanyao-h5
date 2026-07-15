@@ -95,7 +95,7 @@ P40 负责定义：
 Visual State → Renderer Input → Render Plan Contract
 ```
 
-Future Planner 才负责把 Renderer Input 组装为 Render Plan。Future Renderer Implementation 才负责解释 Render Plan。
+P41 Render Plan Adapter 负责把 Renderer Input 组装为 Render Plan。Future Renderer Implementation 才负责解释 Render Plan。
 
 Renderer、Planner 与 Render Plan 都不得反向修改 P39 Visual State 或 Life State。
 
@@ -116,8 +116,9 @@ P40 禁止：
 
 - P39 Mapping 函数当前仍没有下游调用者；
 - P39 Visual State 输出类型只允许作为 P40 Renderer Input 来源；
-- P40 当前没有 Planner 或 Renderer 业务消费者；
-- 后续必须先建立独立 Render Plan Adapter，才能形成具体 `StarBeastRenderPlan`。
+- P40 Renderer Input / Output Contract 只由 P41 Render Plan Adapter 实现；
+- P41 是具体 `StarBeastRenderPlan` 的唯一正式构造边界；
+- P41 当前没有 Renderer 业务消费者。
 
 ## 08｜施工范围
 
