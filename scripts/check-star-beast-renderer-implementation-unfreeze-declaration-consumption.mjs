@@ -146,7 +146,9 @@ if (failures.length === 0) {
     "P58 只消费调用方提供的 P57 Result",
     "AVAILABLE_FOR_FUTURE_IMPLEMENTATION_UNFREEZE_ENDPOINT",
     "P57 Declaration Result → only P58 Declaration Consumption",
-    "P58 Consumption Service → no downstream consumer",
+    "P58 Consumption Result → only P59 Unfreeze Declaration Endpoint",
+    "P58 Consumption Service → no direct external caller",
+    "P59 只消费调用方提供的 P58 Result",
     "不消费 `StarBeastRendererImplementationAuthorizationEndpointResult`",
   ].forEach((marker) => assertIncludes("P58 protocol", protocolSource, marker));
   [

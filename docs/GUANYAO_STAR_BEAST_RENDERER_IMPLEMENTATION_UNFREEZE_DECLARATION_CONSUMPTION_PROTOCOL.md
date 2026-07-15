@@ -58,10 +58,13 @@ Consumption 必须保持：
 ```text
 P57 Declaration Result → only P58 Declaration Consumption
 P57 Declaration Resolver → no direct external caller
-P58 Consumption Service → no downstream consumer
+P58 Consumption Result → only P59 Unfreeze Declaration Endpoint
+P58 Consumption Service → no direct external caller
 ```
 
 P58 不消费 `StarBeastRendererImplementationAuthorizationEndpointResult`，P53 Runtime Result 仍无解冻后的消费者。
+
+P59 只消费调用方提供的 P58 Result，不得直接调用 P58 Service。Consumption 不因拥有治理出口而实际解除冻结。
 
 ## 05｜严格禁止
 
@@ -80,4 +83,5 @@ P58 不消费 `StarBeastRendererImplementationAuthorizationEndpointResult`，P53
 2. NOT_READY、UNAVAILABLE 与缺失结果均不形成 Consumption；
 3. AVAILABLE 保留原始引用并继续延迟实际解冻；
 4. P58 不调用 P57 Resolver、不消费 P53 Result；
-5. P58 gate、P57 gate、P56 gate、P55 gate、P54 freeze gate、release、build 与 `git diff --check` 通过。
+5. P58 Result 只允许由 P59 Unfreeze Declaration Endpoint 消费；
+6. P58 gate、P57 gate、P56 gate、P55 gate、P54 freeze gate、release、build 与 `git diff --check` 通过。
