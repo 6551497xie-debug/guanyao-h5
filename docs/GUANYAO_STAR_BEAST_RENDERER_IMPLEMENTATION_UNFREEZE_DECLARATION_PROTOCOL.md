@@ -58,10 +58,13 @@ P57 必须验证：
 ```text
 P56 Command Result → only P57 Implementation Unfreeze Declaration Resolver
 P56 Command Resolver → no direct external caller
-P57 Declaration Resolver → no downstream consumer
+P57 Declaration Result → only P58 Declaration Consumption
+P57 Declaration Resolver → no direct external caller
 ```
 
 P57 不消费 `StarBeastRendererImplementationAuthorizationEndpointResult`，P53 仍是冻结 Runtime 链的终止出口。
+
+P58 只消费调用方提供的 P57 Result，不得直接调用 P57 Resolver。Declaration 不因拥有合法下游而实际解除冻结。
 
 ## 05｜严格禁止
 
@@ -81,4 +84,5 @@ P57 不消费 `StarBeastRendererImplementationAuthorizationEndpointResult`，P53
 2. NOT_READY、UNAVAILABLE 与非法 Command 均不生成 Declaration；
 3. Declaration 保留所有原始引用且不实际解冻；
 4. P57 不调用 P56 Resolver、不消费 P53 Result；
-5. P57 gate、P56 gate、P55 gate、P54 freeze gate、release、build 与 `git diff --check` 通过。
+5. P57 Result 只允许由 P58 Declaration Consumption 消费；
+6. P57 gate、P56 gate、P55 gate、P54 freeze gate、release、build 与 `git diff --check` 通过。

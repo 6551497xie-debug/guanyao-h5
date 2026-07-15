@@ -182,8 +182,10 @@ if (failures.length === 0) {
     "P57 只消费调用方提供的 P56 Result",
     "DECLARED_FOR_IMPLEMENTATION_UNFREEZE_PROTOCOL",
     "P56 Command Result → only P57 Implementation Unfreeze Declaration Resolver",
-    "P57 Declaration Resolver → no downstream consumer",
+    "P57 Declaration Result → only P58 Declaration Consumption",
+    "P57 Declaration Resolver → no direct external caller",
     "不消费 `StarBeastRendererImplementationAuthorizationEndpointResult`",
+    "P58 只消费调用方提供的 P57 Result",
   ].forEach((marker) => assertIncludes("P57 protocol", protocolSource, marker));
   [
     "P56 Command Result → only P57 Implementation Unfreeze Declaration Resolver",
