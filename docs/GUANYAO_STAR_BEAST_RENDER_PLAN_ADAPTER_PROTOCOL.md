@@ -78,9 +78,12 @@ Plan、channels 与每个 channel 均为不可变对象，并继续保持：
 - P39 Mapping 函数仍没有业务下游调用者；
 - P40 定义 Renderer Input、Output 与 Render Plan 类型；
 - P41 是具体 `StarBeastRenderPlan` 的唯一正式构造边界；
+- P41 Renderer Output 只允许由 P42 Render Plan Consumption 消费；
 - P41 当前没有 Renderer 业务消费者。
 
-Future Renderer 只能在后续独立边界中消费 P41 的稳定结果，不得绕过 P41 直接解释 P39 Visual State。
+P42 只建立稳定消费边界，不实现 Renderer。
+
+Future Renderer 只能在后续独立边界中消费 P42 AVAILABLE 结果，不得绕过 P42 直接读取 P41 Plan，也不得绕过 P41 解释 P39 Visual State。
 
 ## 05｜严格禁止
 

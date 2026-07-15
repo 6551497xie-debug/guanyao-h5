@@ -124,6 +124,14 @@ export type {
   StarBeastRendererUnavailableReason,
 } from "./starBeastRendererContract";
 export type {
+  StarBeastRenderPlanConsumption,
+  StarBeastRenderPlanConsumptionAvailable,
+  StarBeastRenderPlanConsumptionInput,
+  StarBeastRenderPlanConsumptionResult,
+  StarBeastRenderPlanConsumptionUnavailable,
+  StarBeastRenderPlanConsumptionUnavailableReason,
+} from "./starBeastRenderPlanConsumption";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,
