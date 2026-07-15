@@ -177,7 +177,9 @@ if (failures.length === 0) {
     "Command 不是正式 Unfreeze Declaration，也不是实际 Unfreeze",
     "P55 Readiness Result → only P56 Explicit Unfreeze Declaration Command",
     "P56 只消费调用方提供的 P55 Result",
-    "P56 Command Resolver → no downstream consumer",
+    "P56 Command Result → only P57 Implementation Unfreeze Declaration Resolver",
+    "P56 Command Resolver → no direct external caller",
+    "P57 只消费调用方提供的 P56 Result",
   ].forEach((marker) => assertIncludes("P56 protocol", protocolSource, marker));
   [
     "P55 Readiness Result → only P56 Explicit Unfreeze Declaration Command",
