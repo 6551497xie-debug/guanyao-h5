@@ -76,9 +76,11 @@ P61 不修改 P39–P60，不解除 P54/P60 双重冻结：
 - 只建立未来显式执行解冻声明的准备度。
 
 ```text
-P61 Execution Unfreeze Readiness → no downstream consumer
-P61 Readiness Resolver → owner-only
+P61 Execution Unfreeze Readiness Result → only P62 Explicit Execution Unfreeze Declaration Command
+P61 Readiness Resolver → no direct external caller
 ```
+
+P62 只消费调用方提供的 P61 Result，不得调用 P61 Resolver。P61 READY 仍不构成执行解冻。
 
 ## 05｜严格禁止
 

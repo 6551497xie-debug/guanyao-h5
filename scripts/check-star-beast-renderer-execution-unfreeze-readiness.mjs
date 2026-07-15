@@ -143,7 +143,9 @@ if (failures.length === 0) {
     "P61 不导入、复制、拼接或消费两个冻结 Endpoint Result",
     "系统不得根据 READY 自动执行解冻",
     "P61 不修改 P39–P60，不解除 P54/P60 双重冻结",
-    "P61 Execution Unfreeze Readiness → no downstream consumer",
+    "P61 Execution Unfreeze Readiness Result → only P62 Explicit Execution Unfreeze Declaration Command",
+    "P61 Readiness Resolver → no direct external caller",
+    "P62 只消费调用方提供的 P61 Result",
   ].forEach((marker) => assertIncludes("P61 protocol", protocolSource, marker));
   [
     "P61 Execution Unfreeze Readiness Extension",
