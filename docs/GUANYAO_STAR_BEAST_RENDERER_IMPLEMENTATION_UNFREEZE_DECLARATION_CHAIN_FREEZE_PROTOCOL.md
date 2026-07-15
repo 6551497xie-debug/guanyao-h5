@@ -120,7 +120,19 @@ P59/P53 governance references
 
 P61 不消费 P59/P53 Result，不调用 P55–P59，不解除双重冻结。READY 只允许进入未来主体显式执行解冻声明流程。
 
-## 08｜验收
+## 08｜P66 Execution Unfreeze Declaration Chain Freeze
+
+P61–P65 已建立并由 P66 冻结为独立的执行解冻声明治理链：
+
+```text
+P54 → P53 frozen terminal
+P60 → P59 frozen terminal
+P66 → P65 frozen terminal
+```
+
+P65 Result 是执行解冻声明治理链冻结终止出口。P66 不解除 P54/P60，也不允许 P53、P59、P65 Result 被拼接或解释为 Runtime 可执行许可。
+
+## 09｜验收
 
 1. P55–P59 职责与调用所有权保持完整；
 2. P55–P59 函数无外部直接调用者；
@@ -129,4 +141,5 @@ P61 不消费 P59/P53 Result，不调用 P55–P59，不解除双重冻结。REA
 5. 冻结源文件不包含后端、Renderer、UI、Runtime 或 Storage 实现；
 6. P59/P54 协议声明双重冻结终止出口与独立执行解冻要求；
 7. P61 只能使用 opaque governance reference，不得消费 P53/P59 Result；
-8. P60 gate、P59 gate、P54 gate、release、build 与 `git diff --check` 通过。
+8. P61–P65 由 P66 冻结，P65 Result 成为第三个独立冻结终止出口；
+9. P60 gate、P59 gate、P66 gate、P54 gate、release、build 与 `git diff --check` 通过。

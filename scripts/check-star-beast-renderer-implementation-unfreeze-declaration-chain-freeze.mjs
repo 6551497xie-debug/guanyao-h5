@@ -130,6 +130,10 @@ if (failures.length === 0) {
     "P61 位于 P60 冻结链之外",
     "P61 不消费 P59/P53 Result",
     "READY 只允许进入未来主体显式执行解冻声明流程",
+    "P66 Execution Unfreeze Declaration Chain Freeze",
+    "P61–P65 已建立并由 P66 冻结为独立的执行解冻声明治理链",
+    "P65 Result 是执行解冻声明治理链冻结终止出口",
+    "P66 不解除 P54/P60",
   ].forEach((marker) => assertIncludes("P60 freeze protocol", sources.p60Protocol, marker));
 
   [

@@ -161,6 +161,9 @@ if (failures.length === 0) {
     "P65 Endpoint Result → no downstream consumer",
     "P65 不消费 P53/P59 Endpoint Result",
     "P65 AVAILABLE 不是 Runtime 可执行许可",
+    "P66 Execution Unfreeze Declaration Chain Freeze",
+    "P65 Result 是当前执行解冻声明治理链的冻结终止出口",
+    "独立 Renderer Execution Protocol 建立前不得新增下游消费者",
   ].forEach((marker) => assertIncludes("P65 protocol", protocolSource, marker));
   [
     "P64 Consumption Result → only P65 Execution Unfreeze Declaration Endpoint",
