@@ -13,10 +13,14 @@ const files = Object.freeze({
   consumptionService:
     "src/services/starBeastRenderPlanConsumptionService.ts",
   endpoint: "src/services/starBeastRenderPlanEndpoint.ts",
+  readinessType: "src/types/starBeastRendererReadiness.ts",
+  readinessService: "src/services/starBeastRendererReadinessService.ts",
   endpointProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDER_PLAN_ENDPOINT_PROTOCOL.md",
   freezeProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDER_PLAN_CHAIN_FREEZE_PROTOCOL.md",
+  readinessProtocol:
+    "docs/GUANYAO_STAR_BEAST_RENDERER_READINESS_PROTOCOL.md",
   packageManifest: "package.json",
 });
 
@@ -95,9 +99,14 @@ if (failures.length === 0) {
     [files.consumptionService, files.endpoint],
   );
   assertCallSites(
-    "P43 endpoint has no external consumer",
+    "P43 resolver has no external direct caller",
     "resolveStarBeastRenderPlanConsumption(",
     [files.endpoint],
+  );
+  assertCallSites(
+    "P45 readiness has no Renderer UI or Runtime consumer",
+    "resolveStarBeastRendererReadiness(",
+    [files.readinessService],
   );
 
   [
@@ -194,6 +203,43 @@ if (failures.length === 0) {
     assertIncludes("P43 remains the sole composition endpoint", sources.endpoint, marker),
   );
 
+  [
+    "endpointResult: StarBeastRenderPlanConsumptionResult | null",
+    'readiness: "READY_FOR_RENDERER_IMPLEMENTATION_PROTOCOL"',
+    'status: "NOT_READY"',
+    'status: "UNAVAILABLE"',
+    "rendererImplementationDeferred: true",
+    "noRenderExecution: true",
+    "noUIIntegration: true",
+    "noRuntimeIntegration: true",
+    "noStorageWrite: true",
+  ].forEach((marker) =>
+    assertIncludes("P45 readiness type remains qualification-only", sources.readinessType, marker),
+  );
+
+  [
+    "export function resolveStarBeastRendererReadiness",
+    "const endpointResult = input.endpointResult",
+    'endpointResult.status === "UNAVAILABLE"',
+    'reason: "RENDER_PLAN_CONSUMPTION_NOT_AVAILABLE"',
+    'reason: "RENDER_PLAN_ENDPOINT_RESULT_REQUIRED"',
+    "sourceConsumptionUnavailableReason: endpointResult.reason",
+    "sourceRendererUnavailableReason: endpointResult.sourceUnavailableReason",
+    "renderPlanConsumptionReference: endpointResult.consumption",
+    "renderPlanReference: endpointResult.consumption.renderPlanReference",
+  ].forEach((marker) =>
+    assertIncludes("P45 consumes only P43 result references", sources.readinessService, marker),
+  );
+
+  [
+    "adaptStarBeastRendererInputToRenderPlan(",
+    "consumeStarBeastRenderPlan(",
+    "resolveStarBeastRenderPlanConsumption(",
+    "mapStarBeastLifeStateToVisualState(",
+  ].forEach((marker) =>
+    assertExcludes("P45 does not bypass or invoke the frozen chain", sources.readinessService, marker),
+  );
+
   const frozenTypeAndServiceSource = [
     sources.visualStateType,
     sources.visualMapping,
@@ -202,6 +248,8 @@ if (failures.length === 0) {
     sources.consumptionType,
     sources.consumptionService,
     sources.endpoint,
+    sources.readinessType,
+    sources.readinessService,
   ].join("\n");
 
   [
@@ -241,8 +289,10 @@ if (failures.length === 0) {
     "固定调用拓扑",
     "唯一授权出口",
     "StarBeastRenderPlanConsumptionResult",
-    "P43 必须保持无外部消费者",
-    "后续 Renderer Readiness",
+    "P45 Renderer Readiness Extension",
+    "P43 Resolver 必须继续保持无外部直接调用者",
+    "P45 是 P43 Result 的唯一授权消费者",
+    "resolveStarBeastRendererReadiness",
     "P44 不修改 P39–P43 类型或服务源码",
     "Canvas、WebGL、Three.js",
     "不修改 Foundation、Dynamics、Crystal、UI、Storage",
@@ -254,9 +304,20 @@ if (failures.length === 0) {
     "## 08｜P44 Chain Freeze",
     "P44 冻结 P39–P43 的类型边界、调用所有权与禁止绕行规则",
     "StarBeastRenderPlanConsumptionResult` 是冻结链唯一授权出口",
-    "后续 Renderer Readiness 必须通过独立施工协议消费 P43",
+    "P45 Renderer Readiness 已通过独立施工协议成为该 Result 的唯一消费者",
+    "P43 Resolver 继续保持无外部直接调用者",
   ].forEach((marker) =>
     assertIncludes("P43 protocol declares the frozen exit", sources.endpointProtocol, marker),
+  );
+
+  [
+    "RC-STAR-BEAST-RENDERER-READINESS-P45",
+    "P43 StarBeastRenderPlanConsumptionResult",
+    "READY_FOR_RENDERER_IMPLEMENTATION_PROTOCOL",
+    "P45 是 P44 Freeze Protocol 授权的唯一 Result Consumer",
+    "P45 不调用 P41、P42 或 P43",
+  ].forEach((marker) =>
+    assertIncludes("P45 readiness protocol extends the frozen exit", sources.readinessProtocol, marker),
   );
 
   assertIncludes(

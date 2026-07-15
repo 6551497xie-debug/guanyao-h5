@@ -160,6 +160,7 @@ if (failures.length === 0) {
       "src/types/index.ts",
       "src/types/starBeastRenderPlanConsumption.ts",
       "src/types/starBeastRendererContract.ts",
+      "src/types/starBeastRendererReadiness.ts",
     ].sort().join(","),
   );
 

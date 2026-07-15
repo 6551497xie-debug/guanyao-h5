@@ -111,4 +111,12 @@ P43 不修改 P0–P42 类型结构、计算结果、Foundation Runtime、Visual
 
 P44 冻结 P39–P43 的类型边界、调用所有权与禁止绕行规则。
 
-P43 `StarBeastRenderPlanConsumptionResult` 是冻结链唯一授权出口，当前仍没有外部消费者。后续 Renderer Readiness 必须通过独立施工协议消费 P43，不得直接调用 P41、P42 或修改 P39 Visual State。
+P43 `StarBeastRenderPlanConsumptionResult` 是冻结链唯一授权出口。P45 Renderer Readiness 已通过独立施工协议成为该 Result 的唯一消费者，且不得直接调用 P41、P42 或修改 P39 Visual State。
+
+## 09｜P45 Renderer Readiness
+
+P45 `StarBeastRendererReadiness` 是 P43 Result 的唯一授权消费者。
+
+P45 只接收由上位调用方提供的同一份 `StarBeastRenderPlanConsumptionResult` 引用，不直接调用 P43 Resolver，不直接调用 P41/P42，也不重算 Render Plan。
+
+P43 Resolver 继续保持无外部直接调用者；P43 Result 只允许流向 P45 Readiness。P45 之后仍没有 Renderer、UI 或 Runtime 消费者。

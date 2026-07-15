@@ -172,6 +172,9 @@ if (failures.length === 0) {
     "Future Renderer 必须消费 P43 Endpoint 的 AVAILABLE 结果",
     "P44 冻结 P39–P43 的类型边界、调用所有权与禁止绕行规则",
     "StarBeastRenderPlanConsumptionResult` 是冻结链唯一授权出口",
+    "P45 Renderer Readiness 已通过独立施工协议成为该 Result 的唯一消费者",
+    "P43 Resolver 继续保持无外部直接调用者",
+    "P43 Result 只允许流向 P45 Readiness",
     "Canvas、WebGL、Three.js",
     "不修改 P0–P42",
   ].forEach((marker) => assertIncludes("render plan endpoint protocol", protocolSource, marker));
