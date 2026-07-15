@@ -10,6 +10,8 @@ const files = Object.freeze({
   consumption: "src/services/lifeJourneyStageEvidenceReviewResultConsumption.ts",
   endpoint: "src/services/lifeJourneyStageEvidenceReviewEndpoint.ts",
   readiness: "src/services/lifeJourneyStageEvidenceReviewReadiness.ts",
+  authorityEvidenceInputType: "src/types/lifeJourneyStageAuthorityEvidenceInput.ts",
+  authorityEvidenceInputAdapter: "src/services/lifeJourneyStageAuthorityEvidenceInputAdapter.ts",
   authorityType: "src/types/lifeJourneyStageAuthority.ts",
   stageSource: "src/services/lifeJourneyStageSource.ts",
   foundationType: "src/types/originalSelf.ts",
@@ -82,9 +84,9 @@ if (failures.length === 0) {
     [files.endpoint, files.readiness],
   );
   assertCallSites(
-    "review readiness has no runtime consumer",
+    "review readiness is only consumed by authority evidence input adapter",
     "resolveLifeJourneyStageEvidenceReviewReadiness(",
-    [files.readiness],
+    [files.readiness, files.authorityEvidenceInputAdapter],
   );
 
   [
@@ -132,6 +134,25 @@ if (failures.length === 0) {
   ].forEach((marker) => assertIncludes("review outcome readiness remains frozen", sources.readiness, marker));
 
   [
+    "LifeJourneyStageAuthorityEvidenceInput<LifeJourneyStageEvidenceAccepted>",
+    'status: "AVAILABLE"',
+    'status: "NOT_APPLICABLE"',
+    'reason: "REVIEW_REJECTED"',
+    'status: "UNAVAILABLE"',
+    "const readiness = resolveLifeJourneyStageEvidenceReviewReadiness(input)",
+    "authority: review.reviewer",
+    "proposedStage: review.candidate.trigger.semanticStage",
+    "notAuthorityDeclaration: true",
+    "notStageSourceInput: true",
+  ].forEach((marker) =>
+    assertIncludes(
+      "authority evidence input adapter is the authorized frozen-chain exit",
+      sources.authorityEvidenceInputAdapter,
+      marker,
+    ),
+  );
+
+  [
     'export type LifeJourneyStageAuthority = "original_self_life_journey_orchestrator"',
     "exclusiveAuthority: true",
     "noStageTransition: true",
@@ -159,6 +180,7 @@ if (failures.length === 0) {
     sources.consumption,
     sources.endpoint,
     sources.readiness,
+    sources.authorityEvidenceInputAdapter,
   ].join("\n");
 
   [
@@ -194,6 +216,8 @@ if (failures.length === 0) {
     "REJECTED 是有效完成的审查结果",
     "Resolver → 只由 Endpoint 调用",
     "Endpoint → 只由 Readiness 调用",
+    "Readiness → 只由 Authority Evidence Input Adapter 调用",
+    "Adapter 不生成 Authority Declaration",
     "Review Outcome 等同于 Stage Declaration",
     "P29 不修改 P0–P28",
   ].forEach((marker) => assertIncludes("review chain freeze protocol", sources.protocol, marker));

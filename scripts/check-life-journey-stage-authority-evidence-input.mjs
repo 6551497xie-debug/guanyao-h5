@@ -119,9 +119,15 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "authority evidence input has no service or runtime consumer",
+    "authority evidence input is only consumed by authority evidence input adapter",
     inputReferences.join(","),
-    ["src/types/index.ts", "src/types/lifeJourneyStageAuthorityEvidenceInput.ts"].sort().join(","),
+    [
+      "src/services/lifeJourneyStageAuthorityEvidenceInputAdapter.ts",
+      "src/types/index.ts",
+      "src/types/lifeJourneyStageAuthorityEvidenceInput.ts",
+    ]
+      .sort()
+      .join(","),
   );
 
   [

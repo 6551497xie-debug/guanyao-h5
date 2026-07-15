@@ -96,7 +96,16 @@ if (failures.length === 0) {
     .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("resolveLifeJourneyStageEvidenceReviewReadiness"))
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
-  assertEqual("review readiness has no downstream consumer", readinessCallSites.join(","), "src/services/lifeJourneyStageEvidenceReviewReadiness.ts");
+  assertEqual(
+    "review readiness is only consumed by authority evidence input adapter",
+    readinessCallSites.join(","),
+    [
+      "src/services/lifeJourneyStageAuthorityEvidenceInputAdapter.ts",
+      "src/services/lifeJourneyStageEvidenceReviewReadiness.ts",
+    ]
+      .sort()
+      .join(","),
+  );
 
   const endpointCallSites = typeScriptSourcePaths
     .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("resolveLifeJourneyStageEvidenceReviewConsumption"))

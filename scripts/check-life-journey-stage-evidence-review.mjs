@@ -142,13 +142,14 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "evidence review is only consumed by resolver, result consumption, endpoint, and readiness",
+    "evidence review is only consumed by the frozen review chain and authority evidence input adapter",
     reviewReferences.join(","),
     [
       "src/services/lifeJourneyStageEvidenceReviewResolver.ts",
       "src/services/lifeJourneyStageEvidenceReviewEndpoint.ts",
       "src/services/lifeJourneyStageEvidenceReviewReadiness.ts",
       "src/services/lifeJourneyStageEvidenceReviewResultConsumption.ts",
+      "src/services/lifeJourneyStageAuthorityEvidenceInputAdapter.ts",
       "src/types/index.ts",
       "src/types/lifeJourneyStageEvidenceReview.ts",
     ]
