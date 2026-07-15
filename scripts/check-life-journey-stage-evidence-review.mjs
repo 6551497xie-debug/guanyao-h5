@@ -142,11 +142,12 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "evidence review is only consumed by resolver, result consumption, and endpoint",
+    "evidence review is only consumed by resolver, result consumption, endpoint, and readiness",
     reviewReferences.join(","),
     [
       "src/services/lifeJourneyStageEvidenceReviewResolver.ts",
       "src/services/lifeJourneyStageEvidenceReviewEndpoint.ts",
+      "src/services/lifeJourneyStageEvidenceReviewReadiness.ts",
       "src/services/lifeJourneyStageEvidenceReviewResultConsumption.ts",
       "src/types/index.ts",
       "src/types/lifeJourneyStageEvidenceReview.ts",

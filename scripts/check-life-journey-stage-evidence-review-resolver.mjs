@@ -120,7 +120,7 @@ if (failures.length === 0) {
   assertExcludes("P15 source does not consume review resolver", stageSource, "resolveLifeJourneyStageEvidenceReview");
 
   const resolverCallSites = collectTypeScriptSourcePaths(path.join(rootDir, "src"))
-    .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("resolveLifeJourneyStageEvidenceReview"))
+    .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("resolveLifeJourneyStageEvidenceReview("))
     .map((filePath) => path.relative(rootDir, filePath));
   assertEqual(
     "review resolver is only consumed by endpoint",
