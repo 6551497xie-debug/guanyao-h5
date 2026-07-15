@@ -61,11 +61,13 @@ Command 必须保持 P61 的原始引用：
 ```text
 P61 Readiness Result → only P62 Explicit Execution Unfreeze Declaration Command
 P61 Readiness Resolver → no direct external caller
-P62 Command Result → no downstream consumer
-P62 Command Resolver → owner-only
+P62 Command Result → only P63 Execution Unfreeze Declaration Resolver
+P62 Command Resolver → no direct external caller
 ```
 
 P62 不能反向调用 P61，也不能消费 P53/P59 Runtime Result。Command 不会自动成为正式 Declaration。
+
+P63 只消费调用方提供的 P62 Result，不得直接调用 P62 Resolver。Declaration 仍不构成实际执行解冻。
 
 ## 04｜非声明、非解冻边界
 

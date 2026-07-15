@@ -159,8 +159,9 @@ if (failures.length === 0) {
     "Command 不是正式 Execution Unfreeze Declaration，也不是实际 Execution Unfreeze",
     "P61 Readiness Result → only P62 Explicit Execution Unfreeze Declaration Command",
     "P62 只消费调用方提供的 P61 Result",
-    "P62 Command Result → no downstream consumer",
-    "P62 Command Resolver → owner-only",
+    "P62 Command Result → only P63 Execution Unfreeze Declaration Resolver",
+    "P62 Command Resolver → no direct external caller",
+    "P63 只消费调用方提供的 P62 Result",
   ].forEach((marker) => assertIncludes("P62 protocol", protocolSource, marker));
   [
     "P61 Execution Unfreeze Readiness Result → only P62 Explicit Execution Unfreeze Declaration Command",
