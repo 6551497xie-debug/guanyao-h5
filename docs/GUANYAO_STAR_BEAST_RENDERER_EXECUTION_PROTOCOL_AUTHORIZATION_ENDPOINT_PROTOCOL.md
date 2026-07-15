@@ -58,8 +58,8 @@ Endpoint 原样保留：
 ```text
 P70 Consumption Result → only P71 Execution Protocol Authorization Endpoint
 P70 Consumption Service → no direct external caller
-P71 Authorization Endpoint → no downstream consumer before P72 chain freeze
-P71 Endpoint Result → governance terminal pending P72 freeze
+P71 Authorization Endpoint → no downstream consumer after P72 chain freeze
+P71 Endpoint Result → P72 frozen governance terminal
 ```
 
 P71 只读取调用方提供的 P70 Result，不反向调用 P67–P70，也不调用 P61–P65。
@@ -80,7 +80,13 @@ P71 不解除 P54/P60/P66 三重冻结，不消费 P65 Result。Endpoint AVAILAB
 
 Endpoint 必须保持 `noP65ResultConsumption`、`noFrozenEndpointResultConsumption`、`noBackendSelection`、`noRendererCreation`、`noRenderExecution`、`noUIIntegration`、`noRuntimeIntegration` 与 `noStorageWrite`。
 
-## 06｜验收
+## 06｜P72 Execution Protocol Authorization Chain Freeze
+
+P67–P71 已由 P72 冻结为完整的执行协议授权治理链。P71 Endpoint Result 是执行协议授权治理链的冻结终止出口，P72 冻结后禁止任何下游消费。
+
+P72 不解除 P54/P60/P66，P53、P59、P65 与 P71 Result 分别保持各自冻结终点。未来真实执行必须建立新的独立 Renderer Execution Activation Protocol，不得反向修改或绕过 P67–P71。
+
+## 07｜验收
 
 1. 只有 P70 AVAILABLE Result 形成 Endpoint；
 2. Endpoint 保持 Consumption、Authorization、Command、Authority、Readiness 与全部治理引用；

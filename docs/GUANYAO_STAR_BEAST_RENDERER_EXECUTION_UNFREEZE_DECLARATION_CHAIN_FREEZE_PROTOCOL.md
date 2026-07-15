@@ -131,3 +131,16 @@ P65 opaque governance reference
 ```
 
 P67 READY 只表示可以进入未来显式 Execution Protocol Authorization，不是授权本身，不选择 Backend，不创建 Renderer，不执行 Render。P67 不解除 P54/P60/P66 三重冻结，P65 Result 仍保持无消费者。
+
+## 09｜P72 Execution Protocol Authorization Chain Freeze
+
+P67–P71 已建立并由 P72 冻结为独立的执行协议授权治理链。该链只持有 P65 opaque governance reference，不消费 P65 Endpoint Result。
+
+P71 Result 是执行协议授权治理链冻结终止出口。P72 不解除 P54/P60/P66，形成以下四重冻结边界：
+
+```text
+P53 Result → P54 frozen terminal
+P59 Result → P60 frozen terminal
+P65 Result → P66 frozen terminal
+P71 Result → P72 frozen terminal
+```

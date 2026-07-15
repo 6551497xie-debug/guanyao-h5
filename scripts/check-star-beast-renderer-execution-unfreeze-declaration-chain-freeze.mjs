@@ -140,6 +140,10 @@ if (failures.length === 0) {
     "P65 的 opaque governance reference",
     "P67 READY 只表示可以进入未来显式 Execution Protocol Authorization",
     "P67 不解除 P54/P60/P66 三重冻结",
+    "P72 Execution Protocol Authorization Chain Freeze",
+    "P67–P71 已建立并由 P72 冻结为独立的执行协议授权治理链",
+    "P71 Result 是执行协议授权治理链冻结终止出口",
+    "P72 不解除 P54/P60/P66",
   ].forEach((marker) => assertIncludes("P66 freeze protocol", sources.p66Protocol, marker));
 
   [

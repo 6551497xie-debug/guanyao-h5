@@ -172,10 +172,14 @@ if (failures.length === 0) {
     "AVAILABLE_FOR_RENDERER_EXECUTION_PROTOCOL_GOVERNANCE_HANDOFF",
     "Endpoint 是授权治理交接边界，不是 Execution Protocol Activation，不是 Backend Selection，也不是 Renderer Execution",
     "P70 Consumption Result → only P71 Execution Protocol Authorization Endpoint",
-    "P71 Authorization Endpoint → no downstream consumer before P72 chain freeze",
+    "P71 Authorization Endpoint → no downstream consumer after P72 chain freeze",
+    "P71 Endpoint Result → P72 frozen governance terminal",
     "P71 只读取调用方提供的 P70 Result",
     "P71 不解除 P54/P60/P66 三重冻结",
     "不激活协议、不选择 Backend、不创建 Renderer、不执行 Render",
+    "P72 Execution Protocol Authorization Chain Freeze",
+    "P71 Endpoint Result 是执行协议授权治理链的冻结终止出口",
+    "P72 冻结后禁止任何下游消费",
   ].forEach((marker) => assertIncludes("P71 protocol", protocolSource, marker));
   [
     "P70 Consumption Result → only P71 Execution Protocol Authorization Endpoint",
