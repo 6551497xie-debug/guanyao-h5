@@ -121,7 +121,7 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "authority declaration is constructed by P34 and exposed through P36",
+    "authority declaration is constructed by P34 and referenced by P37 eligibility",
     authorityReferences.join(","),
     [
       "src/services/lifeJourneyStageAuthorityDeclarationEndpoint.ts",
@@ -129,6 +129,7 @@ if (failures.length === 0) {
       "src/services/lifeJourneyStageAuthorityDeclarationResolver.ts",
       "src/types/index.ts",
       "src/types/lifeJourneyStageAuthority.ts",
+      "src/types/starBeastMemoryEligibility.ts",
     ]
       .sort()
       .join(","),

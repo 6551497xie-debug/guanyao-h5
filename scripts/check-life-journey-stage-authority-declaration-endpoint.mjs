@@ -136,7 +136,8 @@ if (failures.length === 0) {
     "NOT_APPLICABLE → NOT_APPLICABLE / REVIEW_REJECTED",
     "P34 Resolver 只由 P36 Endpoint 调用",
     "P35 Result Consumption 只由 P36 Endpoint 调用",
-    "P36 Endpoint 当前没有下游业务消费者",
+    "P36 Endpoint 函数当前没有下游业务调用者",
+    "P36 输出契约只作为 P37 Star Beast Memory Eligibility Input 的类型来源",
     "不表示 Journey Stage 已推进",
     "修改 P0–P35 的语义类型和结果规则",
   ].forEach((marker) => assertIncludes("authority declaration endpoint protocol", protocolSource, marker));

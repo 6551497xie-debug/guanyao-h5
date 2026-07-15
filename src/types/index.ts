@@ -74,6 +74,21 @@ export type {
   LifeJourneyStageAuthorityEvidenceInputBoundary,
 } from "./lifeJourneyStageAuthorityEvidenceInput";
 export type {
+  StarBeastMemoryCandidate,
+  StarBeastMemoryCrystalReference,
+  StarBeastMemoryEligibilityAvailable,
+  StarBeastMemoryEligibilityInput,
+  StarBeastMemoryEligibilityNotApplicable,
+  StarBeastMemoryEligibilityReason,
+  StarBeastMemoryEligibilityResult,
+  StarBeastMemoryEligibilityUnavailable,
+  StarBeastMemoryEligibilityUnavailableReason,
+  StarBeastMemoryJourneyReference,
+  StarBeastMemoryLifeSubjectReference,
+  StarBeastMemoryReference,
+  StarBeastMemoryReferenceKind,
+} from "./starBeastMemoryEligibility";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,

@@ -45,9 +45,10 @@ P36 不解释结果，不折叠 NOT_APPLICABLE，也不修改 Declaration、Comm
 
 - P34 Resolver 只由 P36 Endpoint 调用；
 - P35 Result Consumption 只由 P36 Endpoint 调用；
-- P36 Endpoint 当前没有下游业务消费者。
+- P36 Endpoint 函数当前没有下游业务调用者；
+- P36 输出契约只作为 P37 Star Beast Memory Eligibility Input 的类型来源。
 
-任何后续 Readiness、Adapter 或 Stage Source 桥接都必须独立授权，不得绕过 Endpoint 分别调用 Resolver 或 Consumption。
+P37 不调用 Endpoint 函数，只接收由外部提供的既成 Consumption Result。任何后续 Readiness、Adapter 或 Stage Source 桥接都必须独立授权，不得绕过 Endpoint 分别调用 Resolver 或 Consumption。
 
 ## 03｜组合不增加判断
 
