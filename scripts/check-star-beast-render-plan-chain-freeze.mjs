@@ -1,0 +1,280 @@
+import fs from "node:fs";
+import path from "node:path";
+import process from "node:process";
+
+const rootDir = process.cwd();
+
+const files = Object.freeze({
+  visualStateType: "src/types/starBeastVisualState.ts",
+  visualMapping: "src/services/starBeastVisualStateMapping.ts",
+  rendererContract: "src/types/starBeastRendererContract.ts",
+  renderPlanAdapter: "src/services/starBeastRenderPlanAdapter.ts",
+  consumptionType: "src/types/starBeastRenderPlanConsumption.ts",
+  consumptionService:
+    "src/services/starBeastRenderPlanConsumptionService.ts",
+  endpoint: "src/services/starBeastRenderPlanEndpoint.ts",
+  endpointProtocol:
+    "docs/GUANYAO_STAR_BEAST_RENDER_PLAN_ENDPOINT_PROTOCOL.md",
+  freezeProtocol:
+    "docs/GUANYAO_STAR_BEAST_RENDER_PLAN_CHAIN_FREEZE_PROTOCOL.md",
+  packageManifest: "package.json",
+});
+
+const failures = [];
+
+const assertIncludes = (name, source, expected) => {
+  if (!source.includes(expected)) failures.push(`${name} missing=${expected}`);
+  else console.log(`PASS | ${name} | includes=${expected}`);
+};
+
+const assertExcludes = (name, source, forbidden) => {
+  if (source.includes(forbidden)) failures.push(`${name} forbidden=${forbidden}`);
+  else console.log(`PASS | ${name} | forbidden=absent`);
+};
+
+const assertEqual = (name, actual, expected) => {
+  if (actual !== expected) {
+    failures.push(`${name} expected=${expected} actual=${actual}`);
+  } else {
+    console.log(`PASS | ${name} | expected=${expected} | actual=${actual}`);
+  }
+};
+
+const collectTypeScriptSourcePaths = (directoryPath) =>
+  fs.readdirSync(directoryPath, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = path.join(directoryPath, entry.name);
+    if (entry.isDirectory()) return collectTypeScriptSourcePaths(entryPath);
+    return /\.tsx?$/.test(entry.name) ? [entryPath] : [];
+  });
+
+const absolutePathByName = Object.fromEntries(
+  Object.entries(files).map(([name, relativePath]) => [
+    name,
+    path.join(rootDir, relativePath),
+  ]),
+);
+
+for (const [name, filePath] of Object.entries(absolutePathByName)) {
+  if (!fs.existsSync(filePath)) failures.push(`${name} file missing=${filePath}`);
+  else console.log(`PASS | ${name} file exists`);
+}
+
+if (failures.length === 0) {
+  const sources = Object.fromEntries(
+    Object.entries(absolutePathByName).map(([name, filePath]) => [
+      name,
+      fs.readFileSync(filePath, "utf8"),
+    ]),
+  );
+  const packageJson = JSON.parse(sources.packageManifest);
+  const typeScriptSourcePaths = collectTypeScriptSourcePaths(
+    path.join(rootDir, "src"),
+  );
+
+  const assertCallSites = (name, symbol, expectedRelativePaths) => {
+    const actual = typeScriptSourcePaths
+      .filter((filePath) => fs.readFileSync(filePath, "utf8").includes(symbol))
+      .map((filePath) => path.relative(rootDir, filePath))
+      .sort();
+    assertEqual(name, actual.join(","), [...expectedRelativePaths].sort().join(","));
+  };
+
+  assertCallSites(
+    "P39 visual mapping has no business consumer",
+    "mapStarBeastLifeStateToVisualState(",
+    [files.visualMapping],
+  );
+  assertCallSites(
+    "P41 adapter is only composed by P43 endpoint",
+    "adaptStarBeastRendererInputToRenderPlan(",
+    [files.renderPlanAdapter, files.endpoint],
+  );
+  assertCallSites(
+    "P42 consumption is only composed by P43 endpoint",
+    "consumeStarBeastRenderPlan(",
+    [files.consumptionService, files.endpoint],
+  );
+  assertCallSites(
+    "P43 endpoint has no external consumer",
+    "resolveStarBeastRenderPlanConsumption(",
+    [files.endpoint],
+  );
+
+  [
+    'semanticRole: "STAR_BEAST_VISUAL_STATE"',
+    "visualMappingOnly: true",
+    "noLifeStateMutation: true",
+    "noRendering: true",
+    "noMemoryGrowthInference: true",
+  ].forEach((marker) =>
+    assertIncludes("P39 visual state boundary remains frozen", sources.visualStateType, marker),
+  );
+
+  [
+    "STAR_BEAST_VISUAL_PHASE_PROJECTIONS",
+    "export function mapStarBeastLifeStateToVisualState",
+    "sourceReferences: Object.freeze({",
+    "visualMappingOnly: true",
+    "noRendering: true",
+  ].forEach((marker) =>
+    assertIncludes("P39 visual mapping remains semantic-only", sources.visualMapping, marker),
+  );
+
+  [
+    "export type StarBeastRendererInput",
+    "export type StarBeastRenderPlan",
+    "export type StarBeastRendererOutput",
+    "MANIFESTATION_LAYER",
+    "ENERGY_FLOW_CHANNEL",
+    "LIGHT_FLOW_CHANNEL",
+    "BREATHING_CHANNEL",
+    "STAR_FIELD_CHANNEL",
+    "CRYSTAL_PRESENCE_CHANNEL",
+    "rendererNeutral: true",
+    "semanticChannelsOnly: true",
+    "noPixelOutput: true",
+    "noDrawCommands: true",
+    "noAssetGeneration: true",
+  ].forEach((marker) =>
+    assertIncludes("P40 renderer contract remains type-only", sources.rendererContract, marker),
+  );
+  assertExcludes(
+    "P40 renderer contract contains no executable function",
+    sources.rendererContract,
+    "function ",
+  );
+
+  [
+    "STAR_BEAST_REQUIRED_RENDERER_CAPABILITIES.every",
+    "input.capabilityDeclaration.capabilities.includes",
+    'status: "UNAVAILABLE"',
+    'reason: "RENDERER_CAPABILITY_UNAVAILABLE"',
+    'semanticRole: "STAR_BEAST_RENDER_PLAN"',
+    "manifestation: Object.freeze({",
+    "energy: Object.freeze({",
+    "light: Object.freeze({",
+    "starField: Object.freeze({",
+    "crystal: Object.freeze({",
+    'status: "PLANNED"',
+  ].forEach((marker) =>
+    assertIncludes("P41 adapter remains sole plan constructor", sources.renderPlanAdapter, marker),
+  );
+
+  [
+    'semanticRole: "STAR_BEAST_RENDER_PLAN_CONSUMPTION"',
+    'consumptionStatus: "AVAILABLE_FOR_FUTURE_RENDERER"',
+    "sourceRendererOutput: StarBeastRendererPlannedOutput",
+    "sourceRequestReference:",
+    "noRenderExecution: true",
+    "noPlanMutation: true",
+  ].forEach((marker) =>
+    assertIncludes("P42 consumption contract remains reference-only", sources.consumptionType, marker),
+  );
+
+  [
+    "export function consumeStarBeastRenderPlan",
+    'sourceRendererOutput.status === "UNAVAILABLE"',
+    'input.renderPlanReference === null',
+    "input.renderPlanReference !== sourceRendererOutput.plan",
+    'status: "AVAILABLE"',
+    "renderPlanReference: input.renderPlanReference",
+    "noRenderExecution: true",
+  ].forEach((marker) =>
+    assertIncludes("P42 consumption service remains a stable boundary", sources.consumptionService, marker),
+  );
+
+  [
+    "export type StarBeastRenderPlanEndpointInput = StarBeastRendererInput",
+    "export function resolveStarBeastRenderPlanConsumption",
+    "const rendererOutput = adaptStarBeastRendererInputToRenderPlan(input)",
+    "return consumeStarBeastRenderPlan(",
+    'rendererOutput.status === "PLANNED" ? rendererOutput.plan : null',
+    "StarBeastRenderPlanConsumptionResult",
+  ].forEach((marker) =>
+    assertIncludes("P43 remains the sole composition endpoint", sources.endpoint, marker),
+  );
+
+  const frozenTypeAndServiceSource = [
+    sources.visualStateType,
+    sources.visualMapping,
+    sources.rendererContract,
+    sources.renderPlanAdapter,
+    sources.consumptionType,
+    sources.consumptionService,
+    sources.endpoint,
+  ].join("\n");
+
+  [
+    "HTMLCanvasElement",
+    "CanvasRenderingContext",
+    "WebGLRenderingContext",
+    "requestAnimationFrame",
+    "drawImage(",
+    "getContext(",
+    'from "three"',
+    'from "@react-three',
+    'from "react"',
+    "/pages/",
+    "/components/",
+    "localStorage",
+    "sessionStorage",
+    "fetch(",
+    "textureUrl",
+    "assetUrl",
+    "fourSymbol",
+    "FourSymbol",
+    "Hexagram",
+    "personality",
+    "Persona",
+  ].forEach((marker) =>
+    assertExcludes("frozen chain has no forbidden implementation dependency", frozenTypeAndServiceSource, marker),
+  );
+
+  [
+    "RC-STAR-BEAST-RENDER-PLAN-CHAIN-FREEZE-P44",
+    "RENDER PLAN CHAIN FROZEN",
+    "P39 StarBeastVisualState",
+    "P40 StarBeastRendererContract",
+    "P41 Render Plan Adapter",
+    "P42 Render Plan Consumption",
+    "P43 Render Plan Endpoint",
+    "固定调用拓扑",
+    "唯一授权出口",
+    "StarBeastRenderPlanConsumptionResult",
+    "P43 必须保持无外部消费者",
+    "后续 Renderer Readiness",
+    "P44 不修改 P39–P43 类型或服务源码",
+    "Canvas、WebGL、Three.js",
+    "不修改 Foundation、Dynamics、Crystal、UI、Storage",
+  ].forEach((marker) =>
+    assertIncludes("P44 freeze protocol", sources.freezeProtocol, marker),
+  );
+
+  [
+    "## 08｜P44 Chain Freeze",
+    "P44 冻结 P39–P43 的类型边界、调用所有权与禁止绕行规则",
+    "StarBeastRenderPlanConsumptionResult` 是冻结链唯一授权出口",
+    "后续 Renderer Readiness 必须通过独立施工协议消费 P43",
+  ].forEach((marker) =>
+    assertIncludes("P43 protocol declares the frozen exit", sources.endpointProtocol, marker),
+  );
+
+  assertIncludes(
+    "render plan chain freeze gate command is registered",
+    packageJson.scripts?.["check:star-beast-render-plan-chain-freeze"] ?? "",
+    "node scripts/check-star-beast-render-plan-chain-freeze.mjs",
+  );
+  assertIncludes(
+    "render plan chain freeze gate participates in release",
+    packageJson.scripts?.["check:release"] ?? "",
+    "npm run check:star-beast-render-plan-chain-freeze",
+  );
+}
+
+if (failures.length > 0) {
+  console.error("\nStar Beast render plan chain freeze gate failed:");
+  failures.forEach((failure) => console.error(`- ${failure}`));
+  process.exit(1);
+}
+
+console.log("\nStar Beast render plan chain freeze gate passed.");

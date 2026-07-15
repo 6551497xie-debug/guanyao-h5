@@ -106,3 +106,9 @@ P43 不修改 P0–P42 类型结构、计算结果、Foundation Runtime、Visual
 4. 外部调用者只能获得 P42 Consumption Result；
 5. Endpoint 不调用 P39 Mapping，不实现 Renderer；
 6. P43 gate、P42 gate、P41 gate、P40 gate、P39 gate、release、build 与 `git diff --check` 通过。
+
+## 08｜P44 Chain Freeze
+
+P44 冻结 P39–P43 的类型边界、调用所有权与禁止绕行规则。
+
+P43 `StarBeastRenderPlanConsumptionResult` 是冻结链唯一授权出口，当前仍没有外部消费者。后续 Renderer Readiness 必须通过独立施工协议消费 P43，不得直接调用 P41、P42 或修改 P39 Visual State。

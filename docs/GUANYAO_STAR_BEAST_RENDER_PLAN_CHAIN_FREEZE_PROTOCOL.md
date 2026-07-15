@@ -1,0 +1,130 @@
+# GUANYAO Star Beast Render Plan Chain Freeze Protocol
+# 观爻星兽语义渲染计划链冻结协议
+
+版本：Evolution Phase 2 / P44
+
+状态：RENDER PLAN CHAIN FROZEN
+
+施工编号：`RC-STAR-BEAST-RENDER-PLAN-CHAIN-FREEZE-P44`
+
+## 00｜冻结目标
+
+P44 冻结 P39–P43 已完成的星兽视觉语义计划链：
+
+```text
+P39 StarBeastVisualState
+↓ type-only source
+P40 StarBeastRendererContract
+↓
+P41 Render Plan Adapter
+↓
+P42 Render Plan Consumption
+↓
+P43 Render Plan Endpoint
+```
+
+冻结对象是类型边界、职责边界、调用所有权和禁止绕行规则，不是视觉实现。
+
+## 01｜冻结语义
+
+### P39 Visual State
+
+- Visual State 仍是生命状态的表达映射，不是生命事实；
+- Mapping 函数当前仍没有业务下游调用者；
+- 不读取 fourSymbol、人格标签、卦名文本或 UI 文案。
+
+### P40 Renderer Contract
+
+- 只定义 Renderer Input、Capability、Render Plan 与 Output；
+- 不包含 Planner、Renderer 或绘制实现；
+- P39 Visual State 仍是唯一合法视觉语义输入。
+
+### P41 Render Plan Adapter
+
+- 仍是具体 `StarBeastRenderPlan` 的唯一构造边界；
+- 只校验六项语义能力并投影五个通道；
+- 只允许由 P43 Endpoint 组合调用。
+
+### P42 Render Plan Consumption
+
+- 仍是 P41 Renderer Output 的唯一正式消费边界；
+- 只保存原始 Output、Plan 与 Request 引用；
+- 只允许由 P43 Endpoint 组合调用。
+
+### P43 Render Plan Endpoint
+
+- 仍是 P40–P42 链唯一正式入口；
+- 只返回 P42 Consumption Result；
+- 当前没有 Renderer、UI 或 Runtime 消费者。
+
+## 02｜固定调用拓扑
+
+必须保持：
+
+```text
+adaptStarBeastRendererInputToRenderPlan
+  owner: P41
+  only composition caller: P43
+
+consumeStarBeastRenderPlan
+  owner: P42
+  only composition caller: P43
+
+resolveStarBeastRenderPlanConsumption
+  owner: P43
+  external callers: none
+```
+
+P39 `mapStarBeastLifeStateToVisualState` 当前仍只存在于自身定义文件，没有业务调用者。
+
+## 03｜唯一授权出口
+
+冻结链唯一允许面向未来扩展的出口是：
+
+```text
+P43 StarBeastRenderPlanConsumptionResult
+```
+
+后续 Renderer Readiness 若要消费该出口，必须：
+
+1. 以独立施工协议显式声明；
+2. 只读取 P43 Endpoint Result；
+3. 不直接调用 P41 或 P42；
+4. 不反向修改 P39 Visual State 或 P40 Contract；
+5. 同步校准本 freeze gate。
+
+在此之前，P43 必须保持无外部消费者。
+
+## 04｜冻结后禁止
+
+没有独立解冻或扩展协议时，禁止：
+
+- 绕过 P43 直接调用 P41 Adapter；
+- 绕过 P43 自行组装 P42 Consumption Input；
+- 绕过 P41 直接把 Visual State 解释为 Render Plan；
+- 修改六项 Capability 或五个 Plan Channel；
+- 把 Visual State、Render Plan 或 Consumption 当作生命事实；
+- 接入 Canvas、WebGL、Three.js、shader、动画或视觉资产；
+- 接入 UI、Launch、Gravity、Crystal 页面；
+- 接入 Runtime、Persistence、Storage、网络或 AI；
+- 创建 Memory、Growth、Archive 或改变 Journey Stage。
+
+## 05｜P44 施工范围
+
+P44 只新增：
+
+- 本冻结协议；
+- `check-star-beast-render-plan-chain-freeze`；
+- P43 唯一出口声明；
+- release gate 注册。
+
+P44 不修改 P39–P43 类型或服务源码，不修改 Foundation、Dynamics、Crystal、UI、Storage 或现有用户结果。
+
+## 06｜验收
+
+1. P39–P43 类型与服务职责标记完整；
+2. P41、P42 只由 P43 组合调用；
+3. P43 没有外部消费者；
+4. P39 Mapping 没有业务调用者；
+5. 冻结链不包含 Renderer、UI、Runtime 或 Storage 实现；
+6. freeze gate、P39–P43 gates、release、build 与 `git diff --check` 通过。
