@@ -169,6 +169,7 @@ if (failures.length === 0) {
     "P51 AUTHORIZED Result",
     "AVAILABLE_FOR_FUTURE_IMPLEMENTATION_ENDPOINT",
     "P51 Authorization Result → only P52 Authorization Consumption",
+    "P52 Consumption Result → only P53 Implementation Authorization Endpoint",
     "P52 只读取上位调用方提供的 P51 Result",
     "不选择后端、不创建 Renderer、不执行渲染",
   ].forEach((marker) =>
@@ -183,6 +184,7 @@ if (failures.length === 0) {
   [
     "P52 Implementation Authorization Consumption Extension",
     "P51 Result 只允许由 P52 Authorization Consumption 消费",
+    "P52 Result 只允许由 P53 Implementation Authorization Endpoint 消费",
     "P52 是 P51 Result 的唯一授权消费者",
     "consumeStarBeastRendererImplementationAuthorization",
   ].forEach((marker) =>

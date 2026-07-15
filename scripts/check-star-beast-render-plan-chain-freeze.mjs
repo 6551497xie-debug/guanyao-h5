@@ -42,6 +42,10 @@ const files = Object.freeze({
     "src/types/starBeastRendererImplementationAuthorizationConsumption.ts",
   implementationAuthorizationConsumptionService:
     "src/services/starBeastRendererImplementationAuthorizationConsumptionService.ts",
+  implementationAuthorizationEndpointType:
+    "src/types/starBeastRendererImplementationAuthorizationEndpoint.ts",
+  implementationAuthorizationEndpointService:
+    "src/services/starBeastRendererImplementationAuthorizationEndpoint.ts",
   endpointProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDER_PLAN_ENDPOINT_PROTOCOL.md",
   freezeProtocol:
@@ -62,6 +66,8 @@ const files = Object.freeze({
     "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_AUTHORIZATION_RESOLVER_PROTOCOL.md",
   implementationAuthorizationConsumptionProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_AUTHORIZATION_CONSUMPTION_PROTOCOL.md",
+  implementationAuthorizationEndpointProtocol:
+    "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_AUTHORIZATION_ENDPOINT_PROTOCOL.md",
   packageManifest: "package.json",
 });
 
@@ -183,6 +189,11 @@ if (failures.length === 0) {
     "P52 implementation authorization consumption has no downstream consumer",
     "consumeStarBeastRendererImplementationAuthorization(",
     [files.implementationAuthorizationConsumptionService],
+  );
+  assertCallSites(
+    "P53 implementation authorization endpoint has no downstream consumer",
+    "resolveStarBeastRendererImplementationAuthorizationEndpoint(",
+    [files.implementationAuthorizationEndpointService],
   );
 
   [
@@ -547,6 +558,39 @@ if (failures.length === 0) {
   );
 
   [
+    "consumptionResult: StarBeastRendererImplementationAuthorizationConsumptionResult | null",
+    'semanticRole: "STAR_BEAST_RENDERER_IMPLEMENTATION_AUTHORIZATION_ENDPOINT"',
+    'endpointStatus: "AVAILABLE_FOR_IMPLEMENTATION_PROTOCOL_HANDOFF"',
+    "authorizationHandoffOnly: true",
+    "implementationDeferred: true",
+    "noBackendSelection: true",
+    "noRendererCreation: true",
+    "noRenderExecution: true",
+  ].forEach((marker) =>
+    assertIncludes("P53 endpoint remains handoff-only", sources.implementationAuthorizationEndpointType, marker),
+  );
+
+  [
+    "export function resolveStarBeastRendererImplementationAuthorizationEndpoint",
+    "const sourceConsumptionResult = input.consumptionResult",
+    'sourceConsumptionResult.status === "UNAVAILABLE"',
+    'sourceConsumptionResult.status === "NOT_READY"',
+    "sourceConsumptionResult.consumption",
+    "authorizationConsumptionReference,",
+    "authorizationHandoffOnly: true",
+  ].forEach((marker) =>
+    assertIncludes("P53 consumes supplied P52 result only", sources.implementationAuthorizationEndpointService, marker),
+  );
+
+  [
+    "consumeStarBeastRendererImplementationAuthorization(",
+    "resolveStarBeastRendererImplementationAuthorization(",
+    "resolveStarBeastRendererExplicitImplementationAuthorizationCommand(",
+  ].forEach((marker) =>
+    assertExcludes("P53 does not invoke upstream resolvers or services", sources.implementationAuthorizationEndpointService, marker),
+  );
+
+  [
     "adaptStarBeastRendererInputToRenderPlan(",
     "consumeStarBeastRenderPlan(",
     "resolveStarBeastRenderPlanConsumption(",
@@ -640,6 +684,9 @@ if (failures.length === 0) {
     "P52 Implementation Authorization Consumption Extension",
     "P51 Result 只允许由 P52 Authorization Consumption 消费",
     "consumeStarBeastRendererImplementationAuthorization",
+    "P53 Implementation Authorization Endpoint Extension",
+    "P52 Result 只允许由 P53 Implementation Authorization Endpoint 消费",
+    "resolveStarBeastRendererImplementationAuthorizationEndpoint",
     "P44 不修改 P39–P43 类型或服务源码",
     "Canvas、WebGL、Three.js",
     "不修改 Foundation、Dynamics、Crystal、UI、Storage",
@@ -728,6 +775,15 @@ if (failures.length === 0) {
     "P52 只读取上位调用方提供的 P51 Result",
   ].forEach((marker) =>
     assertIncludes("P52 protocol consumes P51 result only", sources.implementationAuthorizationConsumptionProtocol, marker),
+  );
+
+  [
+    "RC-STAR-BEAST-RENDERER-IMPLEMENTATION-AUTHORIZATION-ENDPOINT-P53",
+    "P52 Consumption Result → only P53 Implementation Authorization Endpoint",
+    "AVAILABLE_FOR_IMPLEMENTATION_PROTOCOL_HANDOFF",
+    "P53 只读取上位调用方提供的 P52 Result",
+  ].forEach((marker) =>
+    assertIncludes("P53 protocol exposes handoff only", sources.implementationAuthorizationEndpointProtocol, marker),
   );
 
   assertIncludes(

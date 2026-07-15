@@ -56,10 +56,12 @@ Consumption 只保留：
 ```text
 P51 Authorization Result → only P52 Authorization Consumption
 P51 Authorization Resolver → no direct external caller
-P52 Authorization Consumption → no downstream consumer
+P52 Consumption Result → only P53 Implementation Authorization Endpoint
+P52 Authorization Consumption → no direct external caller
 ```
 
 P52 只读取上位调用方提供的 P51 Result，不调用 P41–P51 Resolver。
+P53 只消费调用方提供的 P52 Result，不反向调用 P52 Service。
 
 ## 05｜严格禁止
 
