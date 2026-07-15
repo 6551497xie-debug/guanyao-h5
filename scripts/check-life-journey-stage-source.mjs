@@ -106,17 +106,20 @@ if (failures.length === 0) {
   ].forEach((marker) => assertIncludes("existing life journey stage contract", schemaTypeSource, marker));
 
   assertExcludes("foundation does not own life journey source", foundationTypeSource, "LifeJourneyStageSource");
-  assertIncludes("P14 keeps explicit stage input", entrySource, "lifeJourneyStage: LifeJourneyStage");
-  assertExcludes("P14 is not changed to consume P15", entrySource, "resolveLifeJourneyStageSource");
+  assertIncludes("entry consumes explicit stage source input", entrySource, "lifeJourneyStageSource: LifeJourneyStageSourceInput");
+  assertIncludes("entry resolves P15 source", entrySource, "resolveLifeJourneyStageSource(input.lifeJourneyStageSource)");
 
   const sourceCallSites = collectTypeScriptSourcePaths(path.join(rootDir, "src"))
     .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("resolveLifeJourneyStageSource"))
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "stage source has no runtime or entry consumer",
+    "stage source is only consumed by schema entry",
     sourceCallSites.join(","),
-    "src/services/lifeJourneyStageSource.ts",
+    [
+      "src/services/lifeJourneyStageSource.ts",
+      "src/services/originalSelfLifeSchemaEntry.ts",
+    ].sort().join(","),
   );
 
   [

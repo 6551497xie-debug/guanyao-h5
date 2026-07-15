@@ -7,6 +7,7 @@ import { build } from "esbuild";
 const rootDir = process.cwd();
 const entryPath = path.join(rootDir, "src/services/originalSelfLifeSchemaEntry.ts");
 const sourcePath = path.join(rootDir, "src/services/motherCodeLifeArchetypeSource.ts");
+const stageSourcePath = path.join(rootDir, "src/services/lifeJourneyStageSource.ts");
 const mappingPath = path.join(rootDir, "src/services/originalSelfLifeSchemaMapping.ts");
 const foundationTypePath = path.join(rootDir, "src/types/originalSelf.ts");
 const registryPath = path.join(rootDir, "src/data/guanyaoMotherCodeRegistry.ts");
@@ -42,6 +43,7 @@ const collectTypeScriptSourcePaths = (directoryPath) =>
 for (const [name, filePath] of [
   ["life schema entry", entryPath],
   ["mother code source", sourcePath],
+  ["life journey stage source", stageSourcePath],
   ["life schema mapping", mappingPath],
   ["foundation type", foundationTypePath],
   ["mother code registry", registryPath],
@@ -61,18 +63,22 @@ if (failures.length === 0) {
   [
     "export type OriginalSelfLifeSchemaEntryInput",
     "motherCodeProfile: MotherCodeProfile",
-    "lifeJourneyStage: LifeJourneyStage",
+    "lifeJourneyStageSource: LifeJourneyStageSourceInput",
     "lifeArchetypeState: LifeArchetypeState",
     "foundationJourneyPhase: OriginalSelfJourneyPhase",
     "export type OriginalSelfLifeSchemaEntryResult",
     "export function resolveOriginalSelfLifeSchemaFromSources",
     "resolveLifeArchetypeProfileFromMotherCode(input.motherCodeProfile)",
+    "resolveLifeJourneyStageSource(input.lifeJourneyStageSource)",
     'source: "original_self_life_schema_entry"',
-    "reason: sourceResult.reason",
-    "sourceResult,",
+    'sourceBoundary: "mother_code"',
+    'sourceBoundary: "life_journey_stage"',
+    "reason: motherCodeSourceResult.reason",
+    "reason: lifeJourneyStageSourceResult.reason",
+    "sourceResults: Object.freeze({",
     "mapOriginalSelfLifeSchemaToFoundation(",
-    "lifeArchetypeProfile: sourceResult.lifeArchetypeProfile",
-    "lifeJourneyStage: input.lifeJourneyStage",
+    "lifeArchetypeProfile: motherCodeSourceResult.lifeArchetypeProfile",
+    "lifeJourneyStage: lifeJourneyStageSourceResult.stageSource.currentStage",
     "lifeArchetypeState: input.lifeArchetypeState",
     "foundationJourneyPhase: input.foundationJourneyPhase",
   ].forEach((marker) => assertIncludes("life schema entry contract", entrySource, marker));
@@ -183,7 +189,10 @@ if (failures.length === 0) {
   });
   const input = Object.freeze({
     motherCodeProfile,
-    lifeJourneyStage: "PRESSURE",
+    lifeJourneyStageSource: Object.freeze({
+      source: "upper_schema_caller",
+      lifeJourneyStage: "PRESSURE",
+    }),
     lifeArchetypeState,
     foundationJourneyPhase: "HEXAGRAM",
   });
@@ -192,7 +201,8 @@ if (failures.length === 0) {
 
   assertEqual("entry resolves ready source", result.status, "READY");
   assertEqual("entry identifies its source", result.source, "original_self_life_schema_entry");
-  assertEqual("entry preserves mother source result", result.sourceResult?.motherCodeProfile === motherCodeProfile, true);
+  assertEqual("entry preserves mother source result", result.sourceResults?.motherCode.motherCodeProfile === motherCodeProfile, true);
+  assertEqual("entry preserves stage source input", result.sourceResults?.lifeJourneyStage.input === input.lifeJourneyStageSource, true);
   assertEqual("entry preserves QIAN profile", result.mapping?.schema.lifeArchetypeProfile.code, "QIAN");
   assertEqual("entry preserves explicit life stage", result.mapping?.schema.journey.currentStage, "PRESSURE");
   assertEqual("entry preserves foundation state reference", result.mapping?.foundation.lifeArchetypeState === lifeArchetypeState, true);
@@ -211,9 +221,32 @@ if (failures.length === 0) {
   });
   assertEqual("entry preserves not-ready status", notReady.status, "NOT_READY");
   assertEqual("entry preserves source reason", notReady.reason, "MOTHER_CODE_LIFE_SEMANTICS_MISSING");
+  assertEqual("entry identifies mother source boundary", notReady.sourceBoundary, "mother_code");
   assertEqual("entry preserves original source result", notReady.sourceResult?.motherCodeProfile === incompleteMotherCodeProfile, true);
   assertEqual("entry does not create partial mapping", "mapping" in notReady, false);
   assertEqual("entry freezes not-ready result", Object.isFrozen(notReady), true);
+
+  const missingStage = resolveOriginalSelfLifeSchemaFromSources({
+    ...input,
+    lifeJourneyStageSource: Object.freeze({ source: "upper_schema_caller" }),
+  });
+  assertEqual("entry blocks missing stage", missingStage.status, "NOT_READY");
+  assertEqual("entry preserves missing stage reason", missingStage.reason, "LIFE_JOURNEY_STAGE_MISSING");
+  assertEqual("entry identifies stage source boundary", missingStage.sourceBoundary, "life_journey_stage");
+  assertEqual("entry preserves missing stage source result", missingStage.sourceResult?.input.lifeJourneyStage, undefined);
+  assertEqual("entry does not map missing stage", "mapping" in missingStage, false);
+
+  const invalidStage = resolveOriginalSelfLifeSchemaFromSources({
+    ...input,
+    lifeJourneyStageSource: Object.freeze({
+      source: "upper_schema_caller",
+      lifeJourneyStage: "HEXAGRAM",
+    }),
+  });
+  assertEqual("entry blocks invalid stage", invalidStage.status, "NOT_READY");
+  assertEqual("entry preserves invalid stage reason", invalidStage.reason, "LIFE_JOURNEY_STAGE_INVALID");
+  assertEqual("entry identifies invalid stage boundary", invalidStage.sourceBoundary, "life_journey_stage");
+  assertEqual("entry does not map invalid stage", "mapping" in invalidStage, false);
 }
 
 fs.rmSync(tempEntryModulePath, { force: true });
