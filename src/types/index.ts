@@ -112,6 +112,18 @@ export type {
   StarBeastVisualState,
 } from "./starBeastVisualState";
 export type {
+  StarBeastRenderPlan,
+  StarBeastRenderRequestReference,
+  StarBeastRendererBoundary,
+  StarBeastRendererCapability,
+  StarBeastRendererCapabilityDeclaration,
+  StarBeastRendererInput,
+  StarBeastRendererOutput,
+  StarBeastRendererPlanned,
+  StarBeastRendererUnavailable,
+  StarBeastRendererUnavailableReason,
+} from "./starBeastRendererContract";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,

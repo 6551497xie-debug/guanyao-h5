@@ -205,8 +205,9 @@ if (failures.length === 0) {
     "Crystal",
     "Memory Reference 仅作为可选引用被原样保留",
     "不模拟成长",
-    "P39 Mapping 当前没有下游业务消费者",
-    "Future Renderer 可以消费 `StarBeastVisualState`",
+    "P39 Mapping 函数当前没有下游调用者",
+    "P39 `StarBeastVisualState` 输出类型只允许作为 P40 Renderer Input 来源",
+    "P40 只建立 Renderer Contract，不实现 Planner 或 Renderer",
     "Canvas、WebGL、Three.js",
     "不修改 P0–P38",
   ].forEach((marker) => assertIncludes("star beast visual state protocol", protocolSource, marker));

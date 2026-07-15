@@ -141,8 +141,9 @@ P39 禁止：
 
 ## 08｜调用所有权
 
-- P39 Mapping 当前没有下游业务消费者；
-- Future Renderer 可以消费 `StarBeastVisualState`，但必须由后续独立 Renderer 协议授权；
+- P39 Mapping 函数当前没有下游调用者；
+- P39 `StarBeastVisualState` 输出类型只允许作为 P40 Renderer Input 来源；
+- P40 只建立 Renderer Contract，不实现 Planner 或 Renderer；
 - Renderer 不得反向修改 Visual Mapping Input 或 Life State。
 
 ## 09｜施工范围
