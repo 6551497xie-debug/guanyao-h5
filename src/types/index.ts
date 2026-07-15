@@ -48,6 +48,11 @@ export type {
   OriginalSelfLifeSchemaMappingInput,
 } from "./originalSelfLifeSchema";
 export type {
+  LifeJourneyStageAuthority,
+  LifeJourneyStageAuthorityBoundary,
+  LifeJourneyStageAuthorityDeclaration,
+} from "./lifeJourneyStageAuthority";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,
