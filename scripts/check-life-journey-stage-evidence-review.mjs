@@ -142,9 +142,15 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "evidence review has no resolver or runtime consumer",
+    "evidence review is only consumed by its resolver",
     reviewReferences.join(","),
-    ["src/types/index.ts", "src/types/lifeJourneyStageEvidenceReview.ts"].sort().join(","),
+    [
+      "src/services/lifeJourneyStageEvidenceReviewResolver.ts",
+      "src/types/index.ts",
+      "src/types/lifeJourneyStageEvidenceReview.ts",
+    ]
+      .sort()
+      .join(","),
   );
 
   [
