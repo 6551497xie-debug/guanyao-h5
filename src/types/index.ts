@@ -53,6 +53,11 @@ export type {
   LifeJourneyStageAuthorityDeclaration,
 } from "./lifeJourneyStageAuthority";
 export type {
+  LifeJourneyStageTrigger,
+  LifeJourneyStageTriggerBoundary,
+  LifeJourneyStageTriggerCode,
+} from "./lifeJourneyStageTrigger";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,
