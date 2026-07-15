@@ -70,7 +70,13 @@ if (failures.length === 0) {
     'LifeArchetypeProfileFor<"LI", "离">',
     'LifeArchetypeProfileFor<"GEN", "艮">',
     'LifeArchetypeProfileFor<"DUI", "兑">',
+    'source: "mother_code_profile"',
+    "sourceMotherCodeId: string",
     'semanticRole: "ORIGINAL_LIFE_FORCE"',
+    "originalForce: string",
+    "lifeIntention: string",
+    "shadowPattern: string",
+    "awakeningDirection: string",
     "nonFinalIdentity: true",
     "notHexagram: true",
     "notPersonalityLabel: true",
@@ -180,9 +186,15 @@ if (failures.length === 0) {
     `file://${tempModulePath}?t=${Date.now()}`
   );
   const profile = Object.freeze({
+    source: "mother_code_profile",
+    sourceMotherCodeId: "mother-qian-creator",
     code: "QIAN",
     trigram: "乾",
     semanticRole: "ORIGINAL_LIFE_FORCE",
+    originalForce: "原始力量",
+    lifeIntention: "生命意图",
+    shadowPattern: "阴影惯性",
+    awakeningDirection: "觉醒方向",
     nonFinalIdentity: true,
     notHexagram: true,
     notPersonalityLabel: true,
@@ -206,6 +218,7 @@ if (failures.length === 0) {
   assertEqual("life journey path is fixed", LIFE_JOURNEY_SCHEMA_PATH.join(" → "), "ORIGIN → AWAKENING → REALITY → PRESSURE → CHOICE → CRYSTAL → ARCHIVE");
   assertEqual("mapping identifies its source", mapping.source, "original_self_life_schema_mapping");
   assertEqual("mapping preserves explicit profile reference", mapping.schema.lifeArchetypeProfile === profile, true);
+  assertEqual("mapping preserves profile original force", mapping.schema.lifeArchetypeProfile.originalForce, "原始力量");
   assertEqual("mapping preserves explicit life stage", mapping.schema.journey.currentStage, "PRESSURE");
   assertEqual("mapping preserves foundation state reference", mapping.foundation.lifeArchetypeState === foundationState, true);
   assertEqual("mapping preserves independent foundation phase", mapping.foundation.journeyPhase, "HEXAGRAM");

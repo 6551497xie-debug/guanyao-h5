@@ -34,9 +34,15 @@ type LifeArchetypeProfileFor<
   Code extends LifeArchetypeCode,
   ArchetypeTrigram extends Trigram,
 > = Readonly<{
+  source: "mother_code_profile";
+  sourceMotherCodeId: string;
   code: Code;
   trigram: ArchetypeTrigram;
   semanticRole: "ORIGINAL_LIFE_FORCE";
+  originalForce: string;
+  lifeIntention: string;
+  shadowPattern: string;
+  awakeningDirection: string;
   nonFinalIdentity: true;
   notHexagram: true;
   notPersonalityLabel: true;
