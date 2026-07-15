@@ -161,6 +161,15 @@ export type {
   StarBeastRendererImplementationRequestReference,
 } from "./starBeastRendererImplementationCandidate";
 export type {
+  StarBeastRendererImplementationCapabilityBinding,
+  StarBeastRendererImplementationCapabilityBindingAvailable,
+  StarBeastRendererImplementationCapabilityBindingInput,
+  StarBeastRendererImplementationCapabilityBindingNotReady,
+  StarBeastRendererImplementationCapabilityBindingResult,
+  StarBeastRendererImplementationCapabilityBindingUnavailable,
+  StarBeastRendererImplementationCapabilityBindingUnavailableReason,
+} from "./starBeastRendererImplementationCapabilityBinding";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,

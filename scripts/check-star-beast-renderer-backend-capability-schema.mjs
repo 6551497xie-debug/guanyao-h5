@@ -219,7 +219,8 @@ if (failures.length === 0) {
     "BACKEND_CAPABILITY_SET_INCOMPLETE",
     "P46 只从 P47 导入 Reference",
     "不选择后端、不探测设备、不执行渲染",
-    "Declaration 与 Candidate 的正式组合留给未来独立协议",
+    "P47 Result 只允许由 P48 Capability Binding 消费",
+    "Declaration 与 Candidate 的正式组合由 P48 独立协议完成",
   ].forEach((marker) =>
     assertIncludes("backend capability protocol", protocolSource, marker),
   );

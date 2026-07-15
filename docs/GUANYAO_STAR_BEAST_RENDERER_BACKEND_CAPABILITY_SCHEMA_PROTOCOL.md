@@ -89,8 +89,9 @@ P47 只校准 P46 Backend Capability Reference 的正式语义来源，不改变
 - P46 仍只检查引用是否存在；
 - P46 不读取能力集合；
 - P46 不调用 P47 Resolver；
-- P47 Resolver 当前没有下游消费者；
-- Declaration 与 Candidate 的正式组合留给未来独立协议。
+- P47 Resolver 仍没有外部直接调用者；
+- P47 Result 只允许由 P48 Capability Binding 消费；
+- Declaration 与 Candidate 的正式组合由 P48 独立协议完成。
 
 ## 06｜严格禁止
 
@@ -111,6 +112,7 @@ P47 只校准 P46 Backend Capability Reference 的正式语义来源，不改变
 3. 缺少引用或能力时返回 UNAVAILABLE；
 4. P47 不选择后端、不探测设备、不执行渲染；
 5. P46 只导入 Reference，行为保持不变；
-6. P47 Resolver 没有下游消费者；
-7. P39–P46 冻结链保持稳定；
-8. P47 gate、P46 gate、freeze gate、release、build 与 `git diff --check` 通过。
+6. P47 Resolver 没有外部直接调用者；
+7. P47 Result 只由 P48 消费；
+8. P39–P47 冻结链保持稳定；
+9. P47 gate、P46 gate、freeze gate、release、build 与 `git diff --check` 通过。

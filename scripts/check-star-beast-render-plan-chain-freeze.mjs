@@ -22,6 +22,10 @@ const files = Object.freeze({
     "src/types/starBeastRendererBackendCapability.ts",
   backendCapabilityService:
     "src/services/starBeastRendererBackendCapabilityService.ts",
+  capabilityBindingType:
+    "src/types/starBeastRendererImplementationCapabilityBinding.ts",
+  capabilityBindingService:
+    "src/services/starBeastRendererImplementationCapabilityBindingService.ts",
   endpointProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDER_PLAN_ENDPOINT_PROTOCOL.md",
   freezeProtocol:
@@ -32,6 +36,8 @@ const files = Object.freeze({
     "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_CANDIDATE_PROTOCOL.md",
   backendCapabilityProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDERER_BACKEND_CAPABILITY_SCHEMA_PROTOCOL.md",
+  capabilityBindingProtocol:
+    "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_CAPABILITY_BINDING_PROTOCOL.md",
   packageManifest: "package.json",
 });
 
@@ -128,6 +134,11 @@ if (failures.length === 0) {
     "P47 backend capability resolver has no downstream consumer",
     "resolveStarBeastRendererBackendCapabilityDeclaration(",
     [files.backendCapabilityService],
+  );
+  assertCallSites(
+    "P48 capability binding resolver has no downstream consumer",
+    "resolveStarBeastRendererImplementationCapabilityBinding(",
+    [files.capabilityBindingService],
   );
 
   [
@@ -322,6 +333,42 @@ if (failures.length === 0) {
   );
 
   [
+    "candidateResult: StarBeastRendererImplementationCandidateResult | null",
+    "backendCapabilityResult: StarBeastRendererBackendCapabilityResult | null",
+    'semanticRole: "STAR_BEAST_RENDERER_IMPLEMENTATION_CAPABILITY_BINDING"',
+    'bindingStatus: "BACKEND_CAPABILITY_REFERENCE_MATCHED"',
+    "bindingOnly: true",
+    "noImplementationAuthorization: true",
+    "noBackendSelection: true",
+    "noRenderExecution: true",
+  ].forEach((marker) =>
+    assertIncludes("P48 binding remains qualification-only", sources.capabilityBindingType, marker),
+  );
+
+  [
+    "export function resolveStarBeastRendererImplementationCapabilityBinding",
+    'candidateResult.status === "UNAVAILABLE"',
+    'candidateResult.status === "NOT_READY"',
+    'backendCapabilityResult.status === "UNAVAILABLE"',
+    "candidateCapabilityReference.referenceType ===",
+    "candidateCapabilityReference.referenceId ===",
+    '"BACKEND_CAPABILITY_REFERENCE_MISMATCH"',
+    "sourceCandidateReference: candidateResult.candidate",
+    "sourceCapabilityDeclarationReference:",
+  ].forEach((marker) =>
+    assertIncludes("P48 binding checks supplied references only", sources.capabilityBindingService, marker),
+  );
+
+  [
+    "resolveStarBeastRendererImplementationCandidate(",
+    "resolveStarBeastRendererBackendCapabilityDeclaration(",
+    "resolveStarBeastRendererReadiness(",
+    "resolveStarBeastRenderPlanConsumption(",
+  ].forEach((marker) =>
+    assertExcludes("P48 does not invoke upstream resolvers", sources.capabilityBindingService, marker),
+  );
+
+  [
     "adaptStarBeastRendererInputToRenderPlan(",
     "consumeStarBeastRenderPlan(",
     "resolveStarBeastRenderPlanConsumption(",
@@ -345,6 +392,8 @@ if (failures.length === 0) {
     sources.candidateService,
     sources.backendCapabilityType,
     sources.backendCapabilityService,
+    sources.capabilityBindingType,
+    sources.capabilityBindingService,
   ].join("\n");
 
   [
@@ -394,6 +443,9 @@ if (failures.length === 0) {
     "P47 Backend Capability Schema Extension",
     "P46 只导入 Reference，不调用 P47 Resolver",
     "resolveStarBeastRendererBackendCapabilityDeclaration",
+    "P48 Implementation Capability Binding Extension",
+    "P46/P47 Result 只由 P48 Capability Binding 消费",
+    "resolveStarBeastRendererImplementationCapabilityBinding",
     "P44 不修改 P39–P43 类型或服务源码",
     "Canvas、WebGL、Three.js",
     "不修改 Foundation、Dynamics、Crystal、UI、Storage",
@@ -437,6 +489,15 @@ if (failures.length === 0) {
     "不选择后端、不探测设备、不执行渲染",
   ].forEach((marker) =>
     assertIncludes("P47 protocol owns capability source only", sources.backendCapabilityProtocol, marker),
+  );
+
+  [
+    "RC-STAR-BEAST-RENDERER-IMPLEMENTATION-CAPABILITY-BINDING-P48",
+    "P46 Result → only P48 Binding",
+    "P47 Result → only P48 Binding",
+    "P48 禁止直接调用 P41–P47",
+  ].forEach((marker) =>
+    assertIncludes("P48 protocol binds only P46 and P47 results", sources.capabilityBindingProtocol, marker),
   );
 
   assertIncludes(

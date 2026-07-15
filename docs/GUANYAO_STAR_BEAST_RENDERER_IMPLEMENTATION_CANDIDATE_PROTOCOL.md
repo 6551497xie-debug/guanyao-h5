@@ -102,9 +102,12 @@ P45 Result → only P46 Candidate
 P45 Resolver → no direct external caller
 P46 Candidate Resolver → no downstream consumer
 P47 Backend Capability Resolver → no downstream consumer
+P46 Candidate Result → only P48 Capability Binding
 ```
 
 P46 禁止直接调用 P41、P42、P43 或 P45，不得绕过 P44 Freeze Protocol。
+
+P48 只消费调用方提供的 P46 Result，不直接调用 P46 Resolver；P46 Result 不允许被其他 Renderer、UI 或 Runtime 消费者绕行使用。
 
 ## 07｜严格禁止
 
