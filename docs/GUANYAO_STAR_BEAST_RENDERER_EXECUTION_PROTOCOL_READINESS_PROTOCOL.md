@@ -86,6 +86,17 @@ P67 Result → no consumer before explicit execution protocol authorization comm
 
 P67 Resolver 当前只允许其自身 Service 文件持有。下一层必须建立独立显式指令契约，禁止直接将 READY 交给 Backend、Renderer、UI 或 Runtime。
 
+P68 固定该唯一调用所有权：
+
+```text
+P67 Readiness Result → only P68 Explicit Execution Protocol Authorization Command
+P67 Readiness Resolver → no direct external caller
+P68 只消费调用方提供的 P67 Result
+P68 Command Result → no consumer before P69 formal Execution Protocol Authorization Resolver
+```
+
+P68 Command 不是正式 Authorization，不解除三重冻结，也不产生 Backend Selection 或 Render Execution。
+
 ## 06｜严格禁止
 
 本刀禁止：

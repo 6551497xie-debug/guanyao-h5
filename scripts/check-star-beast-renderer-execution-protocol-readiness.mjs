@@ -143,6 +143,11 @@ if (failures.length === 0) {
     "不解除 P54/P60/P66 三重冻结",
     "P67 Result → no consumer before explicit execution protocol authorization command",
     "P67 不消费 P65 Result，不调用 P61–P65",
+    "P67 Readiness Result → only P68 Explicit Execution Protocol Authorization Command",
+    "P67 Readiness Resolver → no direct external caller",
+    "P68 只消费调用方提供的 P67 Result",
+    "P68 Command Result → no consumer before P69 formal Execution Protocol Authorization Resolver",
+    "P68 Command 不是正式 Authorization",
   ].forEach((marker) => assertIncludes("P67 protocol", protocolSource, marker));
 
   [
