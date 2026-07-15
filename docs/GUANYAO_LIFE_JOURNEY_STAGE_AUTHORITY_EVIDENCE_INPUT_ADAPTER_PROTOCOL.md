@@ -77,16 +77,19 @@ P31 不得：
 正式调用所有权更新为：
 
 ```text
-Authority Evidence Input Adapter
-└─ Review Outcome Readiness
-   └─ Review Endpoint
-      ├─ Resolver
-      └─ Result Consumption
+Explicit Authority Declaration Readiness
+└─ Authority Evidence Input Adapter
+   └─ Review Outcome Readiness
+      └─ Review Endpoint
+         ├─ Resolver
+         └─ Result Consumption
 ```
 
 - P28 Readiness 只由 P31 Adapter 直接调用；
 - P30 Authority Evidence Input 只由 P31 Adapter 构造；
-- P31 Adapter 当前没有下游业务消费者。
+- P31 Adapter 只由 P32 Explicit Authority Readiness 直接调用。
+
+P32 只读取 P31 结果并判断显式声明是否就绪；它不改变 P31 的投影语义，也不生成 Authority Declaration。
 
 ## 06｜P31 施工范围
 

@@ -101,7 +101,16 @@ if (failures.length === 0) {
     .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("adaptLifeJourneyStageAuthorityEvidenceInput("))
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
-  assertEqual("authority evidence input adapter has no downstream consumer", adapterCallSites.join(","), "src/services/lifeJourneyStageAuthorityEvidenceInputAdapter.ts");
+  assertEqual(
+    "authority evidence input adapter is only consumed by explicit authority readiness",
+    adapterCallSites.join(","),
+    [
+      "src/services/lifeJourneyStageAuthorityEvidenceInputAdapter.ts",
+      "src/services/lifeJourneyStageExplicitAuthorityReadiness.ts",
+    ]
+      .sort()
+      .join(","),
+  );
 
   const readinessCallSites = typeScriptSourcePaths
     .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("resolveLifeJourneyStageEvidenceReviewReadiness("))

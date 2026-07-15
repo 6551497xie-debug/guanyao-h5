@@ -123,6 +123,7 @@ if (failures.length === 0) {
     inputReferences.join(","),
     [
       "src/services/lifeJourneyStageAuthorityEvidenceInputAdapter.ts",
+      "src/services/lifeJourneyStageExplicitAuthorityReadiness.ts",
       "src/types/index.ts",
       "src/types/lifeJourneyStageAuthorityEvidenceInput.ts",
     ]

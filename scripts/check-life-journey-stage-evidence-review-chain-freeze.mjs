@@ -12,6 +12,7 @@ const files = Object.freeze({
   readiness: "src/services/lifeJourneyStageEvidenceReviewReadiness.ts",
   authorityEvidenceInputType: "src/types/lifeJourneyStageAuthorityEvidenceInput.ts",
   authorityEvidenceInputAdapter: "src/services/lifeJourneyStageAuthorityEvidenceInputAdapter.ts",
+  explicitAuthorityReadiness: "src/services/lifeJourneyStageExplicitAuthorityReadiness.ts",
   authorityType: "src/types/lifeJourneyStageAuthority.ts",
   stageSource: "src/services/lifeJourneyStageSource.ts",
   foundationType: "src/types/originalSelf.ts",
@@ -88,6 +89,11 @@ if (failures.length === 0) {
     "resolveLifeJourneyStageEvidenceReviewReadiness(",
     [files.readiness, files.authorityEvidenceInputAdapter],
   );
+  assertCallSites(
+    "authority evidence input adapter is only consumed by explicit authority readiness",
+    "adaptLifeJourneyStageAuthorityEvidenceInput(",
+    [files.authorityEvidenceInputAdapter, files.explicitAuthorityReadiness],
+  );
 
   [
     'status: "ACCEPTED"',
@@ -153,6 +159,22 @@ if (failures.length === 0) {
   );
 
   [
+    'readiness: "READY_FOR_EXPLICIT_AUTHORITY_DECLARATION"',
+    'readiness: "NOT_APPLICABLE_FOR_AUTHORITY_DECLARATION"',
+    'readiness: "NOT_READY"',
+    "const adapterResult = adaptLifeJourneyStageAuthorityEvidenceInput(input)",
+    "authorityEvidenceInput: adapterResult.authorityEvidenceInput",
+    "notAuthorityDeclaration: true",
+    "notStageSourceInput: true",
+  ].forEach((marker) =>
+    assertIncludes(
+      "explicit authority readiness is the authorized adapter consumer",
+      sources.explicitAuthorityReadiness,
+      marker,
+    ),
+  );
+
+  [
     'export type LifeJourneyStageAuthority = "original_self_life_journey_orchestrator"',
     "exclusiveAuthority: true",
     "noStageTransition: true",
@@ -181,6 +203,7 @@ if (failures.length === 0) {
     sources.endpoint,
     sources.readiness,
     sources.authorityEvidenceInputAdapter,
+    sources.explicitAuthorityReadiness,
   ].join("\n");
 
   [
@@ -217,7 +240,9 @@ if (failures.length === 0) {
     "Resolver → 只由 Endpoint 调用",
     "Endpoint → 只由 Readiness 调用",
     "Readiness → 只由 Authority Evidence Input Adapter 调用",
+    "Authority Evidence Input Adapter → 只由 Explicit Authority Declaration Readiness 调用",
     "Adapter 不生成 Authority Declaration",
+    "Readiness 不生成 Authority Declaration",
     "Review Outcome 等同于 Stage Declaration",
     "P29 不修改 P0–P28",
   ].forEach((marker) => assertIncludes("review chain freeze protocol", sources.protocol, marker));
