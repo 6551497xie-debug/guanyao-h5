@@ -60,11 +60,13 @@ Consumption 必须保持：
 ```text
 P63 Declaration Result → only P64 Declaration Consumption
 P63 Declaration Resolver → no direct external caller
-P64 Consumption Result → no downstream consumer
-P64 Consumption Service → owner-only
+P64 Consumption Result → only P65 Execution Unfreeze Declaration Endpoint
+P64 Consumption Service → no direct external caller
 ```
 
 P64 不消费 P53/P59 Endpoint Result，两条冻结链仍无 Runtime 消费者。
+
+P65 只消费调用方提供的 P64 Result，不得直接调用 P64 Service。Endpoint 仍不构成 Runtime 可执行许可。
 
 ## 05｜严格禁止
 

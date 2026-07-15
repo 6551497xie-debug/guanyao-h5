@@ -154,8 +154,9 @@ if (failures.length === 0) {
     "P64 只消费调用方提供的 P63 Result",
     "AVAILABLE_FOR_FUTURE_RENDERER_EXECUTION_UNFREEZE_ENDPOINT",
     "P63 Declaration Result → only P64 Declaration Consumption",
-    "P64 Consumption Result → no downstream consumer",
-    "P64 Consumption Service → owner-only",
+    "P64 Consumption Result → only P65 Execution Unfreeze Declaration Endpoint",
+    "P64 Consumption Service → no direct external caller",
+    "P65 只消费调用方提供的 P64 Result",
     "P64 不消费 P53/P59 Endpoint Result",
   ].forEach((marker) => assertIncludes("P64 protocol", protocolSource, marker));
   [
