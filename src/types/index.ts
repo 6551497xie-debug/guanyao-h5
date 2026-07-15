@@ -126,6 +126,10 @@ export type {
 export type { StarBeastPrototypeRenderProjection } from "./starBeastRendererPrototypeAdapter";
 export type { StarBeastPrototypeMotionProfile } from "./starBeastPrototypeMotion";
 export type {
+  StarBeastPrototypeFrameInput,
+  StarBeastPrototypeFrameState,
+} from "./starBeastPrototypeFrame";
+export type {
   StarBeastPrototypeCoreStar,
   StarBeastPrototypeGeometryPath,
   StarBeastPrototypeGeometryPoint,

@@ -17,6 +17,7 @@ import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import { resolveStarBeastRenderPlanConsumption } from "../services/starBeastRenderPlanEndpoint";
+import { sampleStarBeastPrototypeFrame } from "../services/starBeastPrototypeFrameSampler";
 import { resolveBaihuPrototypeGeometryProfile } from "../services/starBeastPrototypeGeometryService";
 import { adaptStarBeastPrototypeProjectionToMotion } from "../services/starBeastPrototypeMotionAdapter";
 import { adaptStarBeastRenderPlanToPrototype } from "../services/starBeastRendererPrototypeAdapter";
@@ -25,6 +26,7 @@ import type {
   StarBeastRendererCapability,
   StarBeastRendererInput,
 } from "../types/starBeastRendererContract";
+import type { StarBeastPrototypeFrameState } from "../types/starBeastPrototypeFrame";
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
@@ -209,7 +211,6 @@ export function StarbeastLab() {
       retT: 0,
       motes: PROTOTYPE_PROJECTION.layers.crystalNodes.count,
       heartPulse: 0,
-      renderTime: 0,
       field: [] as FieldStar[],
       msgPhase: 0,
       debug: false,
@@ -237,14 +238,9 @@ export function StarbeastLab() {
       m.h = rect.height;
     }
 
-    function starXY(i: number) {
+    function starXY(i: number, frame: StarBeastPrototypeFrameState) {
       const d = CORE_STARS[i]!;
-      const breathingOffset =
-        Math.sin(
-          m.renderTime * Math.PI * 2 * PROTOTYPE_MOTION.breathing.frequencyHz,
-        ) *
-        PROTOTYPE_MOTION.breathing.amplitude *
-        (1 - m.straighten);
+      const breathingOffset = frame.breathingOffset * (1 - m.straighten);
       const x = d.x * m.w;
       const y =
         (lerp(d.y, LINE_Y, m.straighten) + breathingOffset) * m.h;
@@ -253,22 +249,14 @@ export function StarbeastLab() {
     function geometryXY(
       point: { x: number; y: number },
       pathId: string,
+      frame: StarBeastPrototypeFrameState,
     ) {
       const presence = 1 - m.straighten;
-      const breathingOffset =
-        Math.sin(
-          m.renderTime * Math.PI * 2 * PROTOTYPE_MOTION.breathing.frequencyHz,
-        ) *
-        PROTOTYPE_MOTION.breathing.amplitude *
-        presence;
+      const breathingOffset = frame.breathingOffset * presence;
       const tailOffset =
-        pathId === "tail-spiral"
-          ? Math.sin(
-              m.renderTime * Math.PI * 2 * PROTOTYPE_MOTION.tail.frequencyHz +
-                point.y * 8 +
-                PROTOTYPE_MOTION.tail.phaseOffset,
-            ) *
-            PROTOTYPE_MOTION.tail.amplitude *
+        pathId === frame.tail.pathId
+          ? Math.sin(frame.tail.phase + point.y * 8) *
+            frame.tail.amplitude *
             m.w *
             presence
           : 0;
@@ -287,15 +275,6 @@ export function StarbeastLab() {
 
     function step(dt: number) {
       m.t += dt;
-      m.heartPulse =
-        0.5 +
-        0.5 *
-          Math.sin(
-            (performance.now() / 1000) *
-              Math.PI *
-              2 *
-              PROTOTYPE_MOTION.breathing.frequencyHz,
-          );
       switch (m.state) {
         case "VOID": {
           if (!m.pulsed && m.t > 0.16) {
@@ -363,7 +342,12 @@ export function StarbeastLab() {
 
       // 星河（深蓝微光，缓闪）
       const now = performance.now() / 1000;
-      m.renderTime = now;
+      const prototypeFrame = sampleStarBeastPrototypeFrame({
+        geometryProfile: PROTOTYPE_GEOMETRY,
+        motionProfile: PROTOTYPE_MOTION,
+        timeSeconds: now,
+      });
+      m.heartPulse = prototypeFrame.starCorePulse;
       m.field.forEach((s) => {
         const a =
           0.08 +
@@ -372,9 +356,7 @@ export function StarbeastLab() {
             (0.5 +
               0.5 *
                 Math.sin(
-                  now *
-                    s.sp *
-                    PROTOTYPE_MOTION.stardust.driftRate +
+                  prototypeFrame.stardust.flowPhase * s.sp +
                     s.ph,
                 ));
         ctx.fillStyle = `rgba(${COLOR.field},${a.toFixed(3)})`;
@@ -400,14 +382,7 @@ export function StarbeastLab() {
         geometryReveal *
         (1 - m.straighten) *
         PROTOTYPE_PROJECTION.layers.boundaryLight.opacity *
-        (1 +
-          Math.sin(
-            now *
-              Math.PI *
-              2 *
-              PROTOTYPE_MOTION.boundaryShimmer.frequencyHz,
-          ) *
-            PROTOTYPE_MOTION.boundaryShimmer.amplitude);
+        prototypeFrame.boundaryShimmerScale;
       ctx.globalAlpha = boundaryAlpha;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
@@ -419,7 +394,11 @@ export function StarbeastLab() {
       PROTOTYPE_GEOMETRY.silhouettePaths.forEach((geometryPath) => {
         ctx.beginPath();
         geometryPath.points.forEach((point, index) => {
-          const p = geometryXY(point, geometryPath.pathId);
+          const p = geometryXY(
+            point,
+            geometryPath.pathId,
+            prototypeFrame,
+          );
           if (index === 0) ctx.moveTo(p.x, p.y);
           else ctx.lineTo(p.x, p.y);
         });
@@ -446,7 +425,7 @@ export function StarbeastLab() {
         (0.75 + m.glow * 0.25);
       ctx.beginPath();
       for (let i = 0; i < CORE_STARS.length; i++) {
-        const p = starXY(i);
+        const p = starXY(i, prototypeFrame);
         const lit = m.gatherLit[i] ?? 0;
         if (i === 0) ctx.moveTo(p.x, p.y);
         else if (lit > 0.3) ctx.lineTo(p.x, p.y);
@@ -460,17 +439,15 @@ export function StarbeastLab() {
       );
       for (let i = 0; i < dustCount; i++) {
         const segment = i % (CORE_STARS.length - 1);
-        const from = starXY(segment);
-        const to = starXY(segment + 1);
+        const from = starXY(segment, prototypeFrame);
+        const to = starXY(segment + 1, prototypeFrame);
         const phase =
           (i * 0.618 +
-            now *
-              0.035 *
-              PROTOTYPE_MOTION.stardust.driftRate) %
+            prototypeFrame.stardust.flowPhase * 0.035) %
           1;
         const offset =
-          Math.sin(i * 2.17 + now * PROTOTYPE_MOTION.stardust.driftRate) *
-          (PROTOTYPE_MOTION.stardust.orbitAmplitude + (i % 4));
+          Math.sin(i * 2.17 + prototypeFrame.stardust.flowPhase) *
+          (prototypeFrame.stardust.orbitAmplitude + (i % 4));
         ctx.fillStyle = `rgba(244,236,216,${(
           0.1 +
           PROTOTYPE_PROJECTION.layers.internalStardust.density * 0.32
@@ -488,7 +465,7 @@ export function StarbeastLab() {
 
       // 七宿星点
       for (let i = 0; i < CORE_STARS.length; i++) {
-        const p = starXY(i);
+        const p = starXY(i, prototypeFrame);
         const lit = m.gatherLit[i] ?? 0;
         if (lit < 0.02) continue;
         const heart = CORE_STARS[i]!.role === "STAR_CORE";
@@ -510,20 +487,14 @@ export function StarbeastLab() {
       }
 
       // 沉积的光（绕心宿）
-      const heartP = starXY(PROTOTYPE_GEOMETRY.crystalAnchorIndex);
+      const heartP = starXY(
+        PROTOTYPE_GEOMETRY.crystalAnchorIndex,
+        prototypeFrame,
+      );
       for (let k = 0; k < m.motes; k++) {
-        const crystalPulse = PROTOTYPE_MOTION.crystalPulse.enabled
-          ? 1 +
-            Math.sin(
-              now *
-                Math.PI *
-                2 *
-                PROTOTYPE_MOTION.crystalPulse.frequencyHz,
-            ) *
-              PROTOTYPE_MOTION.crystalPulse.amplitude
-          : 1;
+        const crystalPulse = prototypeFrame.crystal.pulseScale;
         const ang =
-          now * PROTOTYPE_MOTION.stardust.driftRate * 0.5 +
+          prototypeFrame.stardust.flowPhase * 0.5 +
           (k / Math.max(1, m.motes)) * Math.PI * 2;
         const rad = 16 + (k % 3) * 5;
         ctx.fillStyle = `rgba(255,243,208,${Math.min(1, 0.55 + crystalPulse * 0.22).toFixed(3)})`;

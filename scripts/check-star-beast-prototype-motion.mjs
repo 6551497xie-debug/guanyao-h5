@@ -8,6 +8,7 @@ const rootDir = process.cwd();
 const files = Object.freeze({
   type: "src/types/starBeastPrototypeMotion.ts",
   service: "src/services/starBeastPrototypeMotionAdapter.ts",
+  frameSampler: "src/services/starBeastPrototypeFrameSampler.ts",
   lab: "src/pages/StarbeastLab.tsx",
   protocol: "docs/GUANYAO_STAR_BEAST_PROTOTYPE_MOTION_PROTOCOL.md",
   typeIndex: "src/types/index.ts",
@@ -40,6 +41,7 @@ for (const [name, filePath] of Object.entries(absolute)) {
 if (failures.length === 0) {
   const typeSource = fs.readFileSync(absolute.type, "utf8");
   const serviceSource = fs.readFileSync(absolute.service, "utf8");
+  const frameSamplerSource = fs.readFileSync(absolute.frameSampler, "utf8");
   const labSource = fs.readFileSync(absolute.lab, "utf8");
   const protocolSource = fs.readFileSync(absolute.protocol, "utf8");
   const typeIndexSource = fs.readFileSync(absolute.typeIndex, "utf8");
@@ -103,12 +105,16 @@ if (failures.length === 0) {
 
   [
     "adaptStarBeastPrototypeProjectionToMotion(",
-    "PROTOTYPE_MOTION.breathing",
-    "PROTOTYPE_MOTION.tail",
-    "PROTOTYPE_MOTION.stardust",
-    "PROTOTYPE_MOTION.crystalPulse",
-    "PROTOTYPE_MOTION.boundaryShimmer",
+    "motionProfile: PROTOTYPE_MOTION",
   ].forEach((marker) => assertIncludes("StarbeastLab consumes motion", labSource, marker));
+
+  [
+    "motionProfile.breathing",
+    "motionProfile.tail",
+    "motionProfile.stardust",
+    "motionProfile.crystalPulse",
+    "motionProfile.boundaryShimmer",
+  ].forEach((marker) => assertIncludes("P80 frame sampler consumes motion channels", frameSamplerSource, marker));
 
   ["localStorage", "sessionStorage", 'from "three"', "WebGLRenderingContext"].forEach(
     (marker) => assertExcludes("StarbeastLab keeps P79 isolated", labSource, marker),
