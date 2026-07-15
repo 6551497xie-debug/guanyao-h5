@@ -89,10 +89,13 @@ Renderer Implementation 不能由系统根据 READY 自动宣布。
 ```text
 P48 Result → only P49 Authorization Readiness
 P48 Resolver → no direct external caller
-P49 Readiness Resolver → no downstream consumer
+P49 Readiness Resolver → no direct external caller
+P49 Readiness Result → only P50 Explicit Authorization Command
 ```
 
 P49 禁止直接调用 P41–P48，不得绕过冻结链重新生成 Binding。
+
+P50 只消费调用方提供的 P49 Result，不直接调用 P49 Resolver；P49 Result 不允许被 Renderer、UI 或 Runtime 绕行消费。
 
 ## 07｜严格禁止
 
@@ -114,6 +117,7 @@ P49 禁止直接调用 P41–P48，不得绕过冻结链重新生成 Binding。
 3. P48 UNAVAILABLE 或缺失保持 UNAVAILABLE 并保留原因；
 4. READY 明确要求未来显式授权；
 5. P49 不生成 Command 或 Authorization；
-6. P49 不调用 P41–P48；
-7. P49 不选择后端、不创建 Renderer、不执行渲染；
-8. P49 gate、P48 gate、freeze gate、release、build 与 `git diff --check` 通过。
+6. P49 Result 只由 P50 Explicit Authorization Command 消费；
+7. P49 不调用 P41–P48；
+8. P49 不选择后端、不创建 Renderer、不执行渲染；
+9. P49 gate、P48 gate、freeze gate、release、build 与 `git diff --check` 通过。

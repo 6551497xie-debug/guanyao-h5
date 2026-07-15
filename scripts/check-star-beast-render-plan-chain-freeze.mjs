@@ -30,6 +30,10 @@ const files = Object.freeze({
     "src/types/starBeastRendererImplementationAuthorizationReadiness.ts",
   authorizationReadinessService:
     "src/services/starBeastRendererImplementationAuthorizationReadinessService.ts",
+  explicitAuthorizationCommandType:
+    "src/types/starBeastRendererExplicitImplementationAuthorizationCommand.ts",
+  explicitAuthorizationCommandService:
+    "src/services/starBeastRendererExplicitImplementationAuthorizationCommandService.ts",
   endpointProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDER_PLAN_ENDPOINT_PROTOCOL.md",
   freezeProtocol:
@@ -44,6 +48,8 @@ const files = Object.freeze({
     "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_CAPABILITY_BINDING_PROTOCOL.md",
   authorizationReadinessProtocol:
     "docs/GUANYAO_STAR_BEAST_RENDERER_IMPLEMENTATION_AUTHORIZATION_READINESS_PROTOCOL.md",
+  explicitAuthorizationCommandProtocol:
+    "docs/GUANYAO_STAR_BEAST_RENDERER_EXPLICIT_IMPLEMENTATION_AUTHORIZATION_COMMAND_PROTOCOL.md",
   packageManifest: "package.json",
 });
 
@@ -150,6 +156,11 @@ if (failures.length === 0) {
     "P49 authorization readiness resolver has no downstream consumer",
     "resolveStarBeastRendererImplementationAuthorizationReadiness(",
     [files.authorizationReadinessService],
+  );
+  assertCallSites(
+    "P50 explicit authorization command resolver has no downstream consumer",
+    "resolveStarBeastRendererExplicitImplementationAuthorizationCommand(",
+    [files.explicitAuthorizationCommandService],
   );
 
   [
@@ -413,6 +424,42 @@ if (failures.length === 0) {
   );
 
   [
+    "readinessResult: StarBeastRendererImplementationAuthorizationReadinessResult | null",
+    'referenceType: "STAR_BEAST_RENDERER_IMPLEMENTATION_AUTHORITY"',
+    'semanticRole: "STAR_BEAST_RENDERER_EXPLICIT_IMPLEMENTATION_AUTHORIZATION_COMMAND"',
+    "commandOnly: true",
+    "notAuthorization: true",
+    "noAutomaticImplementation: true",
+    "noBackendSelection: true",
+    "noRendererCreation: true",
+    "noRenderExecution: true",
+  ].forEach((marker) =>
+    assertIncludes("P50 command remains authorization-free", sources.explicitAuthorizationCommandType, marker),
+  );
+
+  [
+    "export function resolveStarBeastRendererExplicitImplementationAuthorizationCommand",
+    "const readiness = input.readinessResult",
+    'readiness.status === "UNAVAILABLE"',
+    'readiness.status === "NOT_READY"',
+    "input.authorityReference === null",
+    'input.decision !== "AUTHORIZE"',
+    "readinessReference: readiness",
+    "bindingReference: readiness.bindingReference",
+    "notAuthorization: true",
+  ].forEach((marker) =>
+    assertIncludes("P50 consumes explicit supplied references only", sources.explicitAuthorizationCommandService, marker),
+  );
+
+  [
+    "resolveStarBeastRendererImplementationAuthorizationReadiness(",
+    "resolveStarBeastRendererImplementationCapabilityBinding(",
+    "resolveStarBeastRendererImplementationCandidate(",
+  ].forEach((marker) =>
+    assertExcludes("P50 does not invoke upstream resolvers", sources.explicitAuthorizationCommandService, marker),
+  );
+
+  [
     "adaptStarBeastRendererInputToRenderPlan(",
     "consumeStarBeastRenderPlan(",
     "resolveStarBeastRenderPlanConsumption(",
@@ -440,6 +487,8 @@ if (failures.length === 0) {
     sources.capabilityBindingService,
     sources.authorizationReadinessType,
     sources.authorizationReadinessService,
+    sources.explicitAuthorizationCommandType,
+    sources.explicitAuthorizationCommandService,
   ].join("\n");
 
   [
@@ -495,6 +544,9 @@ if (failures.length === 0) {
     "P49 Implementation Authorization Readiness Extension",
     "P48 Result 只允许由 P49 Authorization Readiness 消费",
     "resolveStarBeastRendererImplementationAuthorizationReadiness",
+    "P50 Explicit Implementation Authorization Command Extension",
+    "P49 Result 只允许由 P50 Explicit Authorization Command 消费",
+    "resolveStarBeastRendererExplicitImplementationAuthorizationCommand",
     "P44 不修改 P39–P43 类型或服务源码",
     "Canvas、WebGL、Three.js",
     "不修改 Foundation、Dynamics、Crystal、UI、Storage",
@@ -556,6 +608,15 @@ if (failures.length === 0) {
     "P49 禁止直接调用 P41–P48",
   ].forEach((marker) =>
     assertIncludes("P49 protocol exposes readiness only", sources.authorizationReadinessProtocol, marker),
+  );
+
+  [
+    "RC-STAR-BEAST-RENDERER-EXPLICIT-IMPLEMENTATION-AUTHORIZATION-COMMAND-P50",
+    "P49 Result → only P50 Explicit Authorization Command",
+    "P50 只消费调用方提供的 P49 Result",
+    "Command 不是 Authorization",
+  ].forEach((marker) =>
+    assertIncludes("P50 protocol creates command only", sources.explicitAuthorizationCommandProtocol, marker),
   );
 
   assertIncludes(
