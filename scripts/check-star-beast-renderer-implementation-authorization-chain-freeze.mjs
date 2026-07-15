@@ -188,6 +188,10 @@ if (failures.length === 0) {
     "P53 Endpoint Result 是当前授权链的冻结终止出口",
     "未来真实 Renderer 施工必须先建立独立解冻协议",
     "P54 不新增或修改业务类型、Service、Resolver、Endpoint、UI、Runtime、Storage 或视觉资产",
+    "P60 Declaration Governance Chain Freeze",
+    "P55–P59 已建立并冻结为独立的解冻声明治理链",
+    "P53 Result 仍是实现授权 Runtime 链冻结终止出口",
+    "P59 Result 是解冻声明治理链冻结终止出口",
   ].forEach((marker) =>
     assertIncludes("P54 freeze protocol", sources.p54FreezeProtocol, marker),
   );

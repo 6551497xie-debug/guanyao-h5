@@ -63,7 +63,13 @@ P59 Endpoint Result → no downstream consumer
 
 P59 不消费 `StarBeastRendererImplementationAuthorizationEndpointResult`。P53 Runtime Result 仍无解冻后的消费者。
 
-## 05｜严格禁止
+## 05｜P60 Unfreeze Declaration Chain Freeze
+
+P59 Result 是当前解冻声明治理链的冻结终止出口。执行解冻前不得新增下游消费者。
+
+P60 冻结 P55–P59 的职责、引用身份与调用所有权。未来 Renderer 施工必须先建立独立执行解冻协议，不能把 P59 AVAILABLE 直接解释为 Runtime 可执行许可。
+
+## 06｜严格禁止
 
 本刀禁止：
 
@@ -74,10 +80,11 @@ P59 不消费 `StarBeastRendererImplementationAuthorizationEndpointResult`。P53
 - UI、Launch、Gravity、Crystal、Storage、网络或 AI 接入；
 - 修改 P39–P58 与现有用户结果。
 
-## 06｜验收
+## 07｜验收
 
 1. 只有 P58 AVAILABLE 才形成 Endpoint；
 2. NOT_READY、UNAVAILABLE 与缺失结果均不形成 Endpoint；
 3. Endpoint 保留原始引用并继续延迟实际解冻；
 4. P59 不调用 P58 Service、不消费 P53 Result；
-5. P59 gate、P58 gate、P57 gate、P56 gate、P55 gate、P54 freeze gate、release、build 与 `git diff --check` 通过。
+5. P59 Result 作为 P60 冻结终止出口，无执行解冻前消费者；
+6. P59 gate、P58 gate、P57 gate、P56 gate、P55 gate、P54 freeze gate、release、build 与 `git diff --check` 通过。

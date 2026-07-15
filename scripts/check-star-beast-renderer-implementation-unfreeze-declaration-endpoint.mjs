@@ -152,6 +152,9 @@ if (failures.length === 0) {
     "P58 Consumption Result → only P59 Unfreeze Declaration Endpoint",
     "P59 Endpoint Result → no downstream consumer",
     "不消费 `StarBeastRendererImplementationAuthorizationEndpointResult`",
+    "P60 Unfreeze Declaration Chain Freeze",
+    "P59 Result 是当前解冻声明治理链的冻结终止出口",
+    "执行解冻前不得新增下游消费者",
   ].forEach((marker) => assertIncludes("P59 protocol", protocolSource, marker));
   [
     "P58 Consumption Result → only P59 Unfreeze Declaration Endpoint",
