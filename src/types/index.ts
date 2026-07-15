@@ -99,6 +99,19 @@ export type {
   StarBeastMemoryCandidateConsumptionUnavailableReason,
 } from "./starBeastMemoryCandidateConsumption";
 export type {
+  StarBeastArchetypeReference,
+  StarBeastCrystalVisualReference,
+  StarBeastIdentityReference,
+  StarBeastLifeStateReference,
+  StarBeastMemoryVisualReference,
+  StarBeastVisualExpression,
+  StarBeastVisualJourneyState,
+  StarBeastVisualMappingInput,
+  StarBeastVisualReference,
+  StarBeastVisualReferenceKind,
+  StarBeastVisualState,
+} from "./starBeastVisualState";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,
