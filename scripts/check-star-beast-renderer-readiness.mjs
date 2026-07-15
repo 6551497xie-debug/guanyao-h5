@@ -205,9 +205,12 @@ if (failures.length === 0) {
   );
 
   assertCallSites(
-    "P39 mapping still has no business consumer",
+    "P39 mapping only opens the P77 isolated lab consumer",
     "mapStarBeastLifeStateToVisualState(",
-    ["src/services/starBeastVisualStateMapping.ts"],
+    [
+      "src/pages/StarbeastLab.tsx",
+      "src/services/starBeastVisualStateMapping.ts",
+    ],
   );
   assertCallSites(
     "P41 adapter remains owned by P43",
@@ -226,9 +229,12 @@ if (failures.length === 0) {
     ],
   );
   assertCallSites(
-    "P43 resolver still has no external direct caller",
+    "P43 resolver only opens the P77 isolated lab caller",
     "resolveStarBeastRenderPlanConsumption(",
-    ["src/services/starBeastRenderPlanEndpoint.ts"],
+    [
+      "src/pages/StarbeastLab.tsx",
+      "src/services/starBeastRenderPlanEndpoint.ts",
+    ],
   );
   assertCallSites(
     "P45 readiness has no Renderer UI or Runtime consumer",

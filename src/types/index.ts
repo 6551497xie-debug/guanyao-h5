@@ -123,6 +123,7 @@ export type {
   StarBeastRendererUnavailable,
   StarBeastRendererUnavailableReason,
 } from "./starBeastRendererContract";
+export type { StarBeastPrototypeRenderProjection } from "./starBeastRendererPrototypeAdapter";
 export type {
   StarBeastRenderPlanConsumption,
   StarBeastRenderPlanConsumptionAvailable,

@@ -116,9 +116,12 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "render plan endpoint has no external consumer",
+    "render plan endpoint only opens the P77 isolated lab consumer",
     endpointCallSites.join(","),
-    "src/services/starBeastRenderPlanEndpoint.ts",
+    [
+      "src/pages/StarbeastLab.tsx",
+      "src/services/starBeastRenderPlanEndpoint.ts",
+    ].sort().join(","),
   );
 
   const adapterCallSites = collectTypeScriptSourcePaths(path.join(rootDir, "src"))
@@ -152,9 +155,12 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "P43 does not invoke P39 visual mapping",
+    "P39 mapping only opens the P77 isolated lab consumer",
     visualMappingCallSites.join(","),
-    "src/services/starBeastVisualStateMapping.ts",
+    [
+      "src/pages/StarbeastLab.tsx",
+      "src/services/starBeastVisualStateMapping.ts",
+    ].sort().join(","),
   );
 
   [

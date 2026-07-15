@@ -166,3 +166,7 @@ P39 不修改 P0–P38 Foundation、Authority、Memory Candidate、Dynamics、Cr
 4. Memory Reference 不触发成长或视觉变化；
 5. Mapping 不修改 Life State，不创建 Memory，不执行渲染；
 6. visual state schema gate、release、build 与 `git diff --check` 通过。
+
+## 11｜P77 Isolated Prototype Extension
+
+P77 只授权 `src/pages/StarbeastLab.tsx` 调用 P39 Mapping，以固定原型引用形成 Visual State 并验证后续 RenderPlan 驱动。P39 仍不接业务资料、产品 UI、Runtime 或 Storage，Visual State 仍只是生命状态的表达映射。

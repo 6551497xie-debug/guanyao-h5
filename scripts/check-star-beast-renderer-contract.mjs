@@ -183,9 +183,12 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "renderer contract does not call P39 mapping",
+    "P39 mapping only opens the P77 isolated lab consumer",
     mappingCallSites.join(","),
-    "src/services/starBeastVisualStateMapping.ts",
+    [
+      "src/pages/StarbeastLab.tsx",
+      "src/services/starBeastVisualStateMapping.ts",
+    ].sort().join(","),
   );
 
   [

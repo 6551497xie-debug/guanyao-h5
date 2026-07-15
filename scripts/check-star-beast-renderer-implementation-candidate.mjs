@@ -261,9 +261,12 @@ if (failures.length === 0) {
     ],
   );
   assertCallSites(
-    "P43 resolver has no external direct caller",
+    "P43 resolver only opens the P77 isolated lab caller",
     "resolveStarBeastRenderPlanConsumption(",
-    ["src/services/starBeastRenderPlanEndpoint.ts"],
+    [
+      "src/pages/StarbeastLab.tsx",
+      "src/services/starBeastRenderPlanEndpoint.ts",
+    ],
   );
   assertCallSites(
     "P45 resolver has no external direct caller",

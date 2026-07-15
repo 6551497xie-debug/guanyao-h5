@@ -16,9 +16,78 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
+import { resolveStarBeastRenderPlanConsumption } from "../services/starBeastRenderPlanEndpoint";
+import { adaptStarBeastRenderPlanToPrototype } from "../services/starBeastRendererPrototypeAdapter";
+import { mapStarBeastLifeStateToVisualState } from "../services/starBeastVisualStateMapping";
+import type {
+  StarBeastRendererCapability,
+  StarBeastRendererInput,
+} from "../types/starBeastRendererContract";
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+
+const PROTOTYPE_VISUAL_STATE = mapStarBeastLifeStateToVisualState(
+  Object.freeze({
+    lifeStateReference: Object.freeze({
+      referenceType: "STAR_BEAST_LIFE_STATE",
+      referenceId: "starbeast-lab:life-state",
+      identityReference: Object.freeze({
+        referenceType: "STAR_BEAST_IDENTITY",
+        referenceId: "starbeast-lab:qinglong",
+      }),
+      archetypeReference: Object.freeze({
+        referenceType: "LIFE_ARCHETYPE",
+        referenceId: "starbeast-lab:prototype-reference",
+      }),
+      journeyState: "CRYSTAL",
+    }),
+    memoryReference: null,
+    crystalReference: Object.freeze({
+      referenceType: "CRYSTAL",
+      referenceId: "starbeast-lab:prototype-crystal",
+    }),
+  }),
+);
+
+const PROTOTYPE_RENDERER_CAPABILITIES: readonly StarBeastRendererCapability[] =
+  Object.freeze([
+    "MANIFESTATION_LAYER",
+    "ENERGY_FLOW_CHANNEL",
+    "LIGHT_FLOW_CHANNEL",
+    "BREATHING_CHANNEL",
+    "STAR_FIELD_CHANNEL",
+    "CRYSTAL_PRESENCE_CHANNEL",
+  ]);
+
+const PROTOTYPE_RENDERER_INPUT: StarBeastRendererInput = Object.freeze({
+  requestReference: Object.freeze({
+    referenceType: "STAR_BEAST_RENDER_REQUEST",
+    referenceId: "starbeast-lab:canvas2d-prototype",
+  }),
+  visualStateReference: PROTOTYPE_VISUAL_STATE,
+  capabilityDeclaration: Object.freeze({
+    capabilities: PROTOTYPE_RENDERER_CAPABILITIES,
+    consumesVisualStateOnly: true,
+    producesRenderPlanOnly: true,
+    noLifeStateInference: true,
+    noLifeStateMutation: true,
+    noMemoryInference: true,
+    noGrowthInference: true,
+  }),
+});
+
+const PROTOTYPE_PLAN_RESULT = resolveStarBeastRenderPlanConsumption(
+  PROTOTYPE_RENDERER_INPUT,
+);
+
+if (PROTOTYPE_PLAN_RESULT.status !== "AVAILABLE") {
+  throw new Error("StarbeastLab prototype RenderPlan is unavailable");
+}
+
+const PROTOTYPE_PROJECTION = adaptStarBeastRenderPlanToPrototype(
+  PROTOTYPE_PLAN_RESULT.consumption.renderPlanReference,
+);
 
 // 青龙七宿（东方·陪你启动）。x=屏宽分数；dy=兽身曲线 y 分数。心宿=本命宿(最亮)。
 const DRAGON = [
@@ -40,7 +109,9 @@ const CFG = {
   morphMs: 0.8, // 兽↔线 形变时长
   pullTravelFrac: 0.42,
   returnMs: 0.9,
-  starfield: 90,
+  starfield: Math.round(
+    48 + PROTOTYPE_PROJECTION.layers.internalStardust.density * 96,
+  ),
 };
 
 const COLOR = {
@@ -130,14 +201,14 @@ export function StarbeastLab() {
       t: 0,
       pulsed: false,
       gatherLit: DRAGON.map(() => 0), // 每星点亮进度
-      glow: 0.4, // 星兽整体暖亮度（正反馈随之升）
+      glow: PROTOTYPE_PROJECTION.layers.starCore.intensity * 0.58, // RenderPlan 驱动的星核亮度
       straighten: 0, // 0=兽 1=线
       pull: 0,
       dragging: false,
       lastX: 0,
       dz: 0,
       retT: 0,
-      motes: 1, // 已沉积的光（默认 1，演示）
+      motes: PROTOTYPE_PROJECTION.layers.crystalNodes.count,
       heartPulse: 0,
       field: [] as FieldStar[],
       msgPhase: 0,
@@ -181,7 +252,13 @@ export function StarbeastLab() {
 
     function step(dt: number) {
       m.t += dt;
-      m.heartPulse = 0.5 + 0.5 * Math.sin(performance.now() / 700);
+      m.heartPulse =
+        0.5 +
+        0.5 *
+          Math.sin(
+            (performance.now() / 700) *
+              PROTOTYPE_PROJECTION.layers.starCore.pulseRate,
+          );
       switch (m.state) {
         case "VOID": {
           if (!m.pulsed && m.t > 0.16) {
@@ -250,7 +327,18 @@ export function StarbeastLab() {
       // 星河（深蓝微光，缓闪）
       const now = performance.now() / 1000;
       m.field.forEach((s) => {
-        const a = 0.12 + 0.18 * (0.5 + 0.5 * Math.sin(now * s.sp + s.ph));
+        const a =
+          0.08 +
+          PROTOTYPE_PROJECTION.layers.internalStardust.density *
+            0.2 *
+            (0.5 +
+              0.5 *
+                Math.sin(
+                  now *
+                    s.sp *
+                    PROTOTYPE_PROJECTION.layers.internalStardust.driftRate +
+                    s.ph,
+                ));
         ctx.fillStyle = `rgba(${COLOR.field},${a.toFixed(3)})`;
         ctx.beginPath();
         ctx.arc(s.x * m.w, s.y * m.h, s.r, 0, Math.PI * 2);
@@ -268,10 +356,19 @@ export function StarbeastLab() {
 
       // 连线（兽身 / 张成的线）——暖光，亮度随 glow
       ctx.lineCap = "round";
-      ctx.strokeStyle = `rgba(232,200,138,${(0.25 + m.glow * 0.35).toFixed(3)})`;
-      ctx.lineWidth = lerp(1.6, 1.3, m.straighten);
+      ctx.strokeStyle = `rgba(232,200,138,${(
+        PROTOTYPE_PROJECTION.layers.starPattern.opacity *
+        (0.7 + m.glow * 0.3)
+      ).toFixed(3)})`;
+      ctx.lineWidth = lerp(
+        PROTOTYPE_PROJECTION.layers.starPattern.lineWeight,
+        1.3,
+        m.straighten,
+      );
       ctx.shadowColor = "rgba(232,200,138,0.4)";
-      ctx.shadowBlur = 6 + m.glow * 6;
+      ctx.shadowBlur =
+        PROTOTYPE_PROJECTION.layers.boundaryLight.blurRadius *
+        (0.75 + m.glow * 0.25);
       ctx.beginPath();
       for (let i = 0; i < DRAGON.length; i++) {
         const p = starXY(i);
@@ -282,6 +379,36 @@ export function StarbeastLab() {
       ctx.stroke();
       ctx.shadowBlur = 0;
 
+      // 内部星尘：由 RenderPlan 的 starField / energy 通道投影，不承载生命事实。
+      const dustCount = Math.round(
+        8 + PROTOTYPE_PROJECTION.layers.internalStardust.density * 28,
+      );
+      for (let i = 0; i < dustCount; i++) {
+        const segment = i % (DRAGON.length - 1);
+        const from = starXY(segment);
+        const to = starXY(segment + 1);
+        const phase =
+          (i * 0.618 +
+            now *
+              0.035 *
+              PROTOTYPE_PROJECTION.layers.internalStardust.driftRate) %
+          1;
+        const offset = Math.sin(i * 2.17 + now * 0.3) * (3 + (i % 4));
+        ctx.fillStyle = `rgba(244,236,216,${(
+          0.1 +
+          PROTOTYPE_PROJECTION.layers.internalStardust.density * 0.32
+        ).toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(
+          lerp(from.x, to.x, phase),
+          lerp(from.y, to.y, phase) + offset,
+          0.45 + (i % 3) * 0.22,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+      }
+
       // 七宿星点
       for (let i = 0; i < DRAGON.length; i++) {
         const p = starXY(i);
@@ -289,11 +416,15 @@ export function StarbeastLab() {
         if (lit < 0.02) continue;
         const heart = DRAGON[i]!.heart;
         const baseR = heart ? 3.4 : 2.4;
-        const r = baseR + (heart ? m.heartPulse * 1.4 : 0) + m.glow * 0.8;
+        const r =
+          (baseR + (heart ? m.heartPulse * 1.4 : 0) + m.glow * 0.8) *
+          PROTOTYPE_PROJECTION.layers.starCore.radiusScale;
         ctx.globalAlpha = lit;
         ctx.fillStyle = COLOR.warmBright;
         ctx.shadowColor = "rgba(255,243,208,0.7)";
-        ctx.shadowBlur = heart ? 14 : 8;
+        ctx.shadowBlur =
+          (heart ? 14 : 8) *
+          PROTOTYPE_PROJECTION.layers.boundaryLight.opacity;
         ctx.beginPath();
         ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
         ctx.fill();

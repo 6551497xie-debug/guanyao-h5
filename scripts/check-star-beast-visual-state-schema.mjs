@@ -186,9 +186,12 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "visual mapping has no downstream consumer",
+    "visual mapping only opens the P77 isolated lab consumer",
     mappingCallSites.join(","),
-    "src/services/starBeastVisualStateMapping.ts",
+    [
+      "src/pages/StarbeastLab.tsx",
+      "src/services/starBeastVisualStateMapping.ts",
+    ].sort().join(","),
   );
 
   [

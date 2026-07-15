@@ -149,3 +149,7 @@ P46 `StarBeastRendererImplementationCandidate` 是 P45 Result 的唯一授权消
 P46 只接收由上位调用方提供的 P45 Result、Implementation Request Reference 与 Backend Capability Reference，不直接调用 P45 Resolver，也不选择渲染后端。
 
 P45 Resolver 继续保持无外部直接调用者；P45 Result 只允许流向 P46 Candidate。P46 之后仍没有 Renderer、UI 或 Runtime 消费者。
+
+## 10｜P77 Isolated Reality Slice Extension
+
+P77 不消费或修改 P45 Readiness。它仅在 `/starbeast-lab` 内调用 P39 Mapping 与 P43 Endpoint，取得同一份不可变 RenderPlan 后交给 Prototype Adapter。P45–P76 正式治理链仍无产品 UI、Runtime、Storage 或正式 Renderer 消费者。

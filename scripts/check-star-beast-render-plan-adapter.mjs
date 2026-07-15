@@ -141,9 +141,12 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "P41 does not call P39 visual mapping",
+    "P39 mapping only opens the P77 isolated lab consumer",
     visualMappingCallSites.join(","),
-    "src/services/starBeastVisualStateMapping.ts",
+    [
+      "src/pages/StarbeastLab.tsx",
+      "src/services/starBeastVisualStateMapping.ts",
+    ].sort().join(","),
   );
 
   const renderPlanReferences = collectTypeScriptSourcePaths(path.join(rootDir, "src"))
@@ -151,15 +154,18 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "render plan is only owned by P40 and constructed by P41",
+    "render plan ownership includes only P40-P45 and the P77 isolated adapter",
     renderPlanReferences.join(","),
     [
       "src/services/starBeastRenderPlanAdapter.ts",
       "src/services/starBeastRenderPlanConsumptionService.ts",
       "src/services/starBeastRenderPlanEndpoint.ts",
+      "src/pages/StarbeastLab.tsx",
+      "src/services/starBeastRendererPrototypeAdapter.ts",
       "src/types/index.ts",
       "src/types/starBeastRenderPlanConsumption.ts",
       "src/types/starBeastRendererContract.ts",
+      "src/types/starBeastRendererPrototypeAdapter.ts",
       "src/types/starBeastRendererReadiness.ts",
     ].sort().join(","),
   );

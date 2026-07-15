@@ -120,3 +120,9 @@ P45 `StarBeastRendererReadiness` 是 P43 Result 的唯一授权消费者。
 P45 只接收由上位调用方提供的同一份 `StarBeastRenderPlanConsumptionResult` 引用，不直接调用 P43 Resolver，不直接调用 P41/P42，也不重算 Render Plan。
 
 P43 Resolver 继续保持无外部直接调用者；P43 Result 只允许流向 P45 Readiness。P45 之后仍没有 Renderer、UI 或 Runtime 消费者。
+
+## 10｜P77 Isolated Prototype Adapter Extension
+
+P77 以独立 Reality Slice 授权 `/starbeast-lab` 成为 P43 Resolver 的唯一隔离原型调用者。该调用只为取得同一份 AVAILABLE Render Plan 并交给 Prototype Renderer Adapter；不改变 P41/P42 所有权，不形成正式 Renderer、产品 UI、Runtime 或 Storage 消费。
+
+P39 Mapping 同步只开放给同一 StarbeastLab 原型场景，用于验证 `Life State Reference → Visual State → RenderPlan` 的真实单向链路。此授权不扩展到 LaunchLab、Gravity、Dynamics 或 Crystal UI。
