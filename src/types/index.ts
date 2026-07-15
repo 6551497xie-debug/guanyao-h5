@@ -232,6 +232,18 @@ export type {
   StarBeastRendererImplementationUnfreezeReadinessUnavailableReason,
 } from "./starBeastRendererImplementationUnfreezeReadiness";
 export type {
+  StarBeastRendererExplicitImplementationUnfreezeDecision,
+  StarBeastRendererExplicitImplementationUnfreezeDeclarationCommand,
+  StarBeastRendererExplicitImplementationUnfreezeDeclarationCommandAvailable,
+  StarBeastRendererExplicitImplementationUnfreezeDeclarationCommandInput,
+  StarBeastRendererExplicitImplementationUnfreezeDeclarationCommandNotReady,
+  StarBeastRendererExplicitImplementationUnfreezeDeclarationCommandNotReadyReason,
+  StarBeastRendererExplicitImplementationUnfreezeDeclarationCommandResult,
+  StarBeastRendererExplicitImplementationUnfreezeDeclarationCommandUnavailable,
+  StarBeastRendererExplicitImplementationUnfreezeDeclarationCommandUnavailableReason,
+  StarBeastRendererImplementationUnfreezeAuthorityReference,
+} from "./starBeastRendererExplicitImplementationUnfreezeDeclarationCommand";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,

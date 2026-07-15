@@ -200,6 +200,9 @@ if (failures.length === 0) {
     "P55 不修改 P39–P54，不解除 P54 冻结",
     "不导入 `StarBeastRendererImplementationAuthorizationEndpointResult`",
     "不成为 P53 Runtime Result 消费者",
+    "P55 Readiness Result → only P56 Explicit Unfreeze Declaration Command",
+    "P55 Readiness Resolver → no direct external caller",
+    "P56 只消费调用方提供的 P55 Result",
   ].forEach((marker) =>
     assertIncludes("P55 protocol", protocolSource, marker),
   );

@@ -65,6 +65,15 @@ READY 必须保持：
 
 系统不得根据 READY 自动解冻，最终决定必须由主体显式声明。
 
+P55 的唯一允许下游为 P56 显式解冻声明指令：
+
+```text
+P55 Readiness Result → only P56 Explicit Unfreeze Declaration Command
+P55 Readiness Resolver → no direct external caller
+```
+
+P56 只消费调用方提供的 P55 Result，不得直接调用 P55 Resolver。READY 本身仍不等于 Command、Declaration 或 Unfreeze。
+
 ## 04｜状态规则
 
 P53 治理引用缺失或非法：
@@ -106,4 +115,5 @@ P55 不修改 P39–P54，不解除 P54 冻结：
 3. 其他材料缺失或候选引用非法返回 NOT_READY；
 4. READY 不实际解冻、不选择最终后端；
 5. P55 不导入或消费 P53 Result，不调用 P45–P53；
-6. P55 gate、P54 freeze gate、release、build 与 `git diff --check` 通过。
+6. P55 Result 只允许由 P56 Explicit Unfreeze Declaration Command 消费；
+7. P55 gate、P54 freeze gate、release、build 与 `git diff --check` 通过。
