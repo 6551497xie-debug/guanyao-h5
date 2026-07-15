@@ -57,10 +57,12 @@ P51 不复制 Render Plan 通道或能力集合，不重新计算 P46–P50。
 ```text
 P50 Command Result → only P51 Implementation Authorization Resolver
 P50 Command Resolver → no direct external caller
-P51 Authorization Resolver → no downstream consumer
+P51 Authorization Result → only P52 Authorization Consumption
+P51 Authorization Resolver → no direct external caller
 ```
 
 P51 只读取上位调用方提供的 P50 Result，不调用 P41–P50 Resolver。
+P52 只消费调用方提供的 P51 Result，不反向调用 P51 Resolver。
 
 ## 05｜严格禁止
 

@@ -173,6 +173,7 @@ if (failures.length === 0) {
     "AUTHORIZED_FOR_IMPLEMENTATION_PROTOCOL",
     "EXPLICIT_AUTHORIZATION_COMMAND_INVALID",
     "P50 Command Result → only P51 Implementation Authorization Resolver",
+    "P51 Authorization Result → only P52 Authorization Consumption",
     "P51 只读取上位调用方提供的 P50 Result",
     "不选择后端、不创建 Renderer、不执行渲染",
   ].forEach((marker) =>
@@ -187,6 +188,7 @@ if (failures.length === 0) {
   [
     "P51 Implementation Authorization Resolver Extension",
     "P50 Result 只允许由 P51 Implementation Authorization Resolver 消费",
+    "P51 Result 只允许由 P52 Authorization Consumption 消费",
     "正式 Authorization 只开放未来实现协议",
     "resolveStarBeastRendererImplementationAuthorization",
   ].forEach((marker) =>

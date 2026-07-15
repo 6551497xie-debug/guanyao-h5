@@ -200,6 +200,15 @@ export type {
   StarBeastRendererImplementationAuthorizationUnavailableReason,
 } from "./starBeastRendererImplementationAuthorization";
 export type {
+  StarBeastRendererImplementationAuthorizationConsumption,
+  StarBeastRendererImplementationAuthorizationConsumptionAvailable,
+  StarBeastRendererImplementationAuthorizationConsumptionInput,
+  StarBeastRendererImplementationAuthorizationConsumptionNotReady,
+  StarBeastRendererImplementationAuthorizationConsumptionResult,
+  StarBeastRendererImplementationAuthorizationConsumptionUnavailable,
+  StarBeastRendererImplementationAuthorizationConsumptionUnavailableReason,
+} from "./starBeastRendererImplementationAuthorizationConsumption";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,
