@@ -126,9 +126,12 @@ if (failures.length === 0) {
     )
     .map((filePath) => path.relative(rootDir, filePath));
   assertEqual(
-    "review consumption has no runtime or UI consumer",
-    consumptionCallSites.join(","),
-    "src/services/lifeJourneyStageEvidenceReviewResultConsumption.ts",
+    "review consumption is only consumed by endpoint",
+    consumptionCallSites.sort().join(","),
+    [
+      "src/services/lifeJourneyStageEvidenceReviewEndpoint.ts",
+      "src/services/lifeJourneyStageEvidenceReviewResultConsumption.ts",
+    ].sort().join(","),
   );
 
   [

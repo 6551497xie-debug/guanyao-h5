@@ -123,9 +123,12 @@ if (failures.length === 0) {
     .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("resolveLifeJourneyStageEvidenceReview"))
     .map((filePath) => path.relative(rootDir, filePath));
   assertEqual(
-    "review resolver has no runtime or UI consumer",
-    resolverCallSites.join(","),
-    "src/services/lifeJourneyStageEvidenceReviewResolver.ts",
+    "review resolver is only consumed by endpoint",
+    resolverCallSites.sort().join(","),
+    [
+      "src/services/lifeJourneyStageEvidenceReviewEndpoint.ts",
+      "src/services/lifeJourneyStageEvidenceReviewResolver.ts",
+    ].sort().join(","),
   );
 
   [
