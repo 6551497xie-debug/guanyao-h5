@@ -173,6 +173,10 @@ if (failures.length === 0) {
     "P69 只读取上位调用方提供的 P68 Result",
     "P69 的正式授权不解除 P54/P60/P66 三重冻结",
     "不选择 Backend、不创建 Renderer、不执行 Render",
+    "P69 Authorization Result → only P70 Authorization Consumption",
+    "P70 Consumption Result → no consumer before P71 Execution Protocol Authorization Endpoint",
+    "P70 Authorization Consumption → no direct external caller",
+    "P70 只消费调用方提供的 P69 Result",
   ].forEach((marker) => assertIncludes("P69 protocol", protocolSource, marker));
   [
     "P68 Command Result → only P69 Execution Protocol Authorization Resolver",

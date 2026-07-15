@@ -64,6 +64,17 @@ P69 Authorization Resolver → no direct external caller
 
 P69 只读取上位调用方提供的 P68 Result，不反向调用 P67/P68，也不调用 P61–P65。
 
+P70 固定该唯一调用所有权：
+
+```text
+P69 Authorization Result → only P70 Authorization Consumption
+P69 Authorization Resolver → no direct external caller
+P70 Consumption Result → no consumer before P71 Execution Protocol Authorization Endpoint
+P70 Authorization Consumption → no direct external caller
+```
+
+P70 只消费调用方提供的 P69 Result。Consumption 不激活 Execution Protocol，不选择 Backend、不创建 Renderer、不执行 Render。
+
 ## 05｜冻结与执行边界
 
 P69 的正式授权不解除 P54/P60/P66 三重冻结。P65 Result 继续保持无直接消费者；P69 仅沿用 P67 建立的不透明治理引用。
