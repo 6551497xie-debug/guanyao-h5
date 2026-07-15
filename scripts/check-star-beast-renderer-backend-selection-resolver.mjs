@@ -182,6 +182,11 @@ if (failures.length === 0) {
     "P75 只读取上位调用方提供的 P74 Result",
     "P75 的正式 Selection 不解除 P54/P60/P66/P72 四重冻结",
     "Selection 不解析候选、不探测设备、不激活 Backend",
+    "P75 Selection Result → only P76 Backend Selection Consumption",
+    "P75 Selection Resolver → no direct external caller",
+    "P76 Consumption Result → no consumer before P77 Backend Selection Endpoint",
+    "P76 Consumption Service → no direct external caller",
+    "P76 只消费调用方提供的 P75 Result",
   ].forEach((marker) => assertIncludes("P75 protocol", protocolSource, marker));
   [
     "P74 Command Result → only P75 Backend Selection Resolver",

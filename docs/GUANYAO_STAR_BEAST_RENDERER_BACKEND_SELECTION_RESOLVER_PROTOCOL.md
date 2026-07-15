@@ -67,6 +67,17 @@ P75 Selection Resolver → no direct external caller
 
 P75 只读取上位调用方提供的 P74 Result，不反向调用 P73/P74，也不调用 P67–P71。
 
+P76 固定该唯一调用所有权：
+
+~~~text
+P75 Selection Result → only P76 Backend Selection Consumption
+P75 Selection Resolver → no direct external caller
+P76 Consumption Result → no consumer before P77 Backend Selection Endpoint
+P76 Consumption Service → no direct external caller
+~~~
+
+P76 只消费调用方提供的 P75 Result。Consumption 不解析 Candidate、不激活 Backend、不创建 Renderer、不执行 Render。
+
 ## 05｜冻结与执行边界
 
 P75 的正式 Selection 不解除 P54/P60/P66/P72 四重冻结。P71 Result 继续保持无直接消费者；P75 仅沿用 P73 建立的不透明治理引用。

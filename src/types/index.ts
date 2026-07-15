@@ -410,6 +410,15 @@ export type {
   StarBeastRendererBackendSelectionUnavailableReason,
 } from "./starBeastRendererBackendSelection";
 export type {
+  StarBeastRendererBackendSelectionConsumption,
+  StarBeastRendererBackendSelectionConsumptionAvailable,
+  StarBeastRendererBackendSelectionConsumptionInput,
+  StarBeastRendererBackendSelectionConsumptionNotReady,
+  StarBeastRendererBackendSelectionConsumptionResult,
+  StarBeastRendererBackendSelectionConsumptionUnavailable,
+  StarBeastRendererBackendSelectionConsumptionUnavailableReason,
+} from "./starBeastRendererBackendSelectionConsumption";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,
