@@ -107,8 +107,9 @@ P37 不得：
 
 - P36 Endpoint 输出契约只作为 P37 Input 的类型来源；
 - P37 Service 不调用 P36 Endpoint 函数；
-- P37 Eligibility 当前没有下游业务消费者；
-- Future Star Beast Memory 必须通过后续独立 Candidate Consumption / Memory Write 协议授权。
+- P37 Eligibility Service 当前没有下游函数调用者；
+- P37 Eligibility Result 只作为 P38 Candidate Consumption Input 的类型来源；
+- Future Star Beast Memory 必须通过后续独立 Memory Engine 协议授权。
 
 ## 08｜施工范围
 

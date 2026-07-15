@@ -188,7 +188,8 @@ if (failures.length === 0) {
     "这不是错误",
     "UNAVAILABLE 表示信息不足、等待未来补充",
     "P37 Service 不调用 P36 Endpoint 函数",
-    "P37 Eligibility 当前没有下游业务消费者",
+    "P37 Eligibility Service 当前没有下游函数调用者",
+    "P37 Eligibility Result 只作为 P38 Candidate Consumption Input 的类型来源",
     "不写入 Memory",
     "不执行 Growth",
   ].forEach((marker) => assertIncludes("memory eligibility protocol", protocolSource, marker));

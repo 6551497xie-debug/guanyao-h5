@@ -89,6 +89,16 @@ export type {
   StarBeastMemoryReferenceKind,
 } from "./starBeastMemoryEligibility";
 export type {
+  StarBeastMemoryCandidateConsumption,
+  StarBeastMemoryCandidateConsumptionAvailable,
+  StarBeastMemoryCandidateConsumptionInput,
+  StarBeastMemoryCandidateConsumptionNotApplicable,
+  StarBeastMemoryCandidateConsumptionReason,
+  StarBeastMemoryCandidateConsumptionResult,
+  StarBeastMemoryCandidateConsumptionUnavailable,
+  StarBeastMemoryCandidateConsumptionUnavailableReason,
+} from "./starBeastMemoryCandidateConsumption";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,
