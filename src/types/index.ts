@@ -63,6 +63,13 @@ export type {
   LifeJourneyStageTriggerEvidenceSource,
 } from "./lifeJourneyStageTriggerEvidence";
 export type {
+  LifeJourneyStageEvidenceAccepted,
+  LifeJourneyStageEvidenceRejected,
+  LifeJourneyStageEvidenceRejectionReason,
+  LifeJourneyStageEvidenceReview,
+  LifeJourneyStageEvidenceReviewBoundary,
+} from "./lifeJourneyStageEvidenceReview";
+export type {
   CrystalEndStateAdapterBoundary,
   CrystalEndStateAdapterInput,
   CrystalEndStateAdapterNotReady,

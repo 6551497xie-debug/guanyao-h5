@@ -141,9 +141,15 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "evidence candidate has no service or runtime consumer",
+    "evidence candidate is only consumed by the review contract",
     evidenceReferences.join(","),
-    ["src/types/index.ts", "src/types/lifeJourneyStageTriggerEvidence.ts"].sort().join(","),
+    [
+      "src/types/index.ts",
+      "src/types/lifeJourneyStageEvidenceReview.ts",
+      "src/types/lifeJourneyStageTriggerEvidence.ts",
+    ]
+      .sort()
+      .join(","),
   );
 
   [
