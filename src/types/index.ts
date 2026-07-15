@@ -139,6 +139,17 @@ export type {
   StarBeastVisualLayerKind,
 } from "./starBeastAssetArchitecture";
 export type {
+  StarBeastAssetPrototypeReadinessBlocked,
+  StarBeastAssetPrototypeReadinessBlockedReason,
+  StarBeastAssetPrototypeReadinessInput,
+  StarBeastAssetPrototypeReadinessReady,
+  StarBeastAssetPrototypeReadinessResult,
+  StarBeastAssetPrototypeReadinessUnavailable,
+  StarBeastAssetPrototypeReadinessUnavailableReason,
+  StarBeastAssetVisualCompatibilityReference,
+  StarBeastRendererContractReference,
+} from "./starBeastAssetPrototypeReadiness";
+export type {
   StarBeastPrototypeCoreStar,
   StarBeastPrototypeGeometryPath,
   StarBeastPrototypeGeometryPoint,
