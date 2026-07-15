@@ -99,15 +99,17 @@ P33 不得：
 正式调用方向更新为：
 
 ```text
-Explicit Declaration Command
-└─ Explicit Authority Declaration Readiness
-   └─ Authority Evidence Input Adapter
-      └─ Review Outcome Readiness
+Authority Declaration Resolver
+└─ Explicit Declaration Command
+   └─ Explicit Authority Declaration Readiness
+      └─ Authority Evidence Input Adapter
+         └─ Review Outcome Readiness
 ```
 
 - P32 Readiness 只由 P33 Command 直接调用；
-- P33 Command 当前没有下游业务消费者；
-- 后续 Authority Declaration Resolver 必须通过独立协议与 gate 获得授权。
+- P33 Command 只由 P34 Authority Declaration Resolver 直接调用；
+- P34 必须再次验证唯一正式 Authority，不能仅凭 Command 自动形成 Declaration；
+- 后续 Declaration Consumption 或 Stage Source Adapter 必须通过独立协议与 gate 获得授权。
 
 ## 08｜P33 施工范围
 

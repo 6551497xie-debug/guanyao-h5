@@ -14,6 +14,7 @@ const files = Object.freeze({
   authorityEvidenceInputAdapter: "src/services/lifeJourneyStageAuthorityEvidenceInputAdapter.ts",
   explicitAuthorityReadiness: "src/services/lifeJourneyStageExplicitAuthorityReadiness.ts",
   explicitDeclarationCommand: "src/services/lifeJourneyStageExplicitDeclarationCommand.ts",
+  authorityDeclarationResolver: "src/services/lifeJourneyStageAuthorityDeclarationResolver.ts",
   authorityType: "src/types/lifeJourneyStageAuthority.ts",
   stageSource: "src/services/lifeJourneyStageSource.ts",
   foundationType: "src/types/originalSelf.ts",
@@ -100,6 +101,11 @@ if (failures.length === 0) {
     "resolveLifeJourneyStageExplicitAuthorityReadiness(",
     [files.explicitAuthorityReadiness, files.explicitDeclarationCommand],
   );
+  assertCallSites(
+    "explicit declaration command is only consumed by authority declaration resolver",
+    "resolveLifeJourneyStageExplicitDeclarationCommand(",
+    [files.explicitDeclarationCommand, files.authorityDeclarationResolver],
+  );
 
   [
     'status: "ACCEPTED"',
@@ -160,6 +166,22 @@ if (failures.length === 0) {
     assertIncludes(
       "authority evidence input adapter is the authorized frozen-chain exit",
       sources.authorityEvidenceInputAdapter,
+      marker,
+    ),
+  );
+
+  [
+    "LifeJourneyStageAuthorityDeclaration",
+    "const commandResult = resolveLifeJourneyStageExplicitDeclarationCommand(input.commandInput)",
+    "if (input.authority === null)",
+    "if (input.authority !== commandResult.command.authorityEvidenceInput.authority)",
+    "lifeJourneyStage: commandResult.command.targetStage",
+    "notStageSourceInput: true",
+    "noStageTransition: true",
+  ].forEach((marker) =>
+    assertIncludes(
+      "authority declaration resolver is the authorized command consumer outside the frozen evidence chain",
+      sources.authorityDeclarationResolver,
       marker,
     ),
   );
@@ -268,9 +290,11 @@ if (failures.length === 0) {
     "Readiness → 只由 Authority Evidence Input Adapter 调用",
     "Authority Evidence Input Adapter → 只由 Explicit Authority Declaration Readiness 调用",
     "Explicit Authority Declaration Readiness → 只由 Explicit Declaration Command 调用",
+    "Explicit Declaration Command → 只由 Authority Declaration Resolver 调用",
     "Adapter 不生成 Authority Declaration",
     "Readiness 不生成 Authority Declaration",
     "Command 不生成 Authority Declaration",
+    "Authority Declaration Resolver 位于冻结证据链之外",
     "Review Outcome 等同于 Stage Declaration",
     "P29 不修改 P0–P28",
   ].forEach((marker) => assertIncludes("review chain freeze protocol", sources.protocol, marker));

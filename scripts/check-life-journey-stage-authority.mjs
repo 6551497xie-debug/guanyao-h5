@@ -121,9 +121,15 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "authority declaration has no service or runtime consumer",
+    "authority declaration is only constructed by explicit authority declaration resolver",
     authorityReferences.join(","),
-    ["src/types/index.ts", "src/types/lifeJourneyStageAuthority.ts"].sort().join(","),
+    [
+      "src/services/lifeJourneyStageAuthorityDeclarationResolver.ts",
+      "src/types/index.ts",
+      "src/types/lifeJourneyStageAuthority.ts",
+    ]
+      .sort()
+      .join(","),
   );
 
   [

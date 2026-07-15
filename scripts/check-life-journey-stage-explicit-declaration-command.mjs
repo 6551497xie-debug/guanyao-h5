@@ -120,9 +120,14 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "explicit declaration command has no downstream consumer",
+    "explicit declaration command is only consumed by authority declaration resolver",
     commandCallSites.join(","),
-    "src/services/lifeJourneyStageExplicitDeclarationCommand.ts",
+    [
+      "src/services/lifeJourneyStageAuthorityDeclarationResolver.ts",
+      "src/services/lifeJourneyStageExplicitDeclarationCommand.ts",
+    ]
+      .sort()
+      .join(","),
   );
 
   const readinessCallSites = typeScriptSourcePaths
@@ -153,7 +158,7 @@ if (failures.length === 0) {
     "P32 NOT_APPLICABLE",
     "P32 NOT_READY",
     "P32 Readiness 只由 P33 Command 直接调用",
-    "P33 Command 当前没有下游业务消费者",
+    "P33 Command 只由 P34 Authority Declaration Resolver 直接调用",
   ].forEach((marker) => assertIncludes("explicit declaration command protocol", protocolSource, marker));
 
   assertIncludes(

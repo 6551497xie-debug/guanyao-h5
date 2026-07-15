@@ -103,6 +103,20 @@ P21 不修改：
 1. Authority 身份唯一且属于上位 Life Journey Orchestrator；
 2. Declaration 必须显式携带七阶段之一；
 3. Declaration 明确禁止自动推进、Runtime 推断和 Foundation phase 推断；
-4. P21 类型没有 Service、Runtime、Persistence 或 UI 消费者；
+4. P21 Declaration 只允许由显式 Authority Declaration Resolver 构造；
 5. P15 Source 与 P12–P20 调用拓扑保持不变；
 6. authority gate、P12–P20 gates、release、build 与 `git diff --check` 通过。
+
+## 07｜P34 授权扩展
+
+P34 在不修改 P21 类型的前提下，建立 `LifeJourneyStageAuthorityDeclaration` 的唯一正式构造边界。
+
+固定前提为：
+
+```text
+life_subject 显式 DECLARE Command
++ original_self_life_journey_orchestrator
+→ LifeJourneyStageAuthorityDeclaration
+```
+
+Resolver 不得绕过主体 Command，也不得仅凭 Review、Readiness、Runtime 或页面状态生成 Declaration。P34 Declaration 仍不是 `LifeJourneyStageSourceInput`，不表示 Journey Stage 已推进。
