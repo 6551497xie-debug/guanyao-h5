@@ -14,7 +14,8 @@ export function AppShell({ children }: AppShellProps) {
     location.pathname === "/" ||
     location.pathname === "/launch" ||
     location.pathname === "/launch-lab" ||
-    location.pathname === "/launch-lab-preview";
+    location.pathname === "/launch-lab-preview" ||
+    location.pathname === "/starbeast-genesis-renderer-slice-preview";
   const isProductionDynamics = location.pathname === "/dynamics";
 
   if (isLaunchEntry || isProductionDynamics) {

@@ -151,6 +151,14 @@ export type {
   WesternSevenMansion,
 } from "./starBeastGenesisPrototypeAsset";
 export type {
+  GenesisVisualStage,
+  StarBeastGenesisExpressionChannelReference,
+  StarBeastGenesisRendererPrototypeInput,
+  StarBeastGenesisRendererPrototypeResult,
+  StarBeastGenesisStageExpression,
+  StarBeastGenesisVisualState,
+} from "./starBeastGenesisVisualState";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,

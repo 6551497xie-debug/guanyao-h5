@@ -16,6 +16,7 @@ const files = Object.freeze({
   gravity: "src/pages/GravityPage.tsx",
   lab: "src/pages/StarbeastLab.tsx",
   genesisPreview: "src/pages/StarBeastGenesisPreview.tsx",
+  rendererSlicePreview: "src/pages/StarBeastGenesisRendererSlicePreview.tsx",
   packageManifest: "package.json",
 });
 
@@ -148,7 +149,11 @@ if (failures.length === 0) {
     .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("resolveWhiteTigerGenGenesisPrototypeAsset("))
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
-  assertEqual("asset resolver has no product consumer", callSites.join(","), files.service);
+  assertEqual(
+    "asset resolver is consumed only by the isolated P85 preview",
+    callSites.join(","),
+    [files.rendererSlicePreview, files.service].sort().join(","),
+  );
 
   assertIncludes(
     "genesis prototype asset gate registered",
