@@ -18,6 +18,11 @@ import "../styles/personal-star-beast-webgl-prototype-harness.css";
 type FirstImpressionPhase = "ARRIVAL" | "FORMATION" | "PRESENCE";
 type HarnessState = "STARTING" | "RENDERING" | "FALLBACK" | "UNAVAILABLE";
 
+const FIRST_IMPRESSION_TIMING = Object.freeze({
+  arrivalEndMs: 1400,
+  presenceStartMs: 3800,
+});
+
 const FORMAL_PLAN_RESULTS = Object.freeze([
   adaptPersonalStarBeastSceneModelToRenderPlan(
     PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.sceneModelReference,
@@ -248,8 +253,14 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     }
     if (rendererResult.status === "FALLBACK_REQUIRED") {
       setHarnessState("FALLBACK");
-      const formationTimer = window.setTimeout(() => setPhase("FORMATION"), 1400);
-      const presenceTimer = window.setTimeout(() => setPhase("PRESENCE"), 3300);
+      const formationTimer = window.setTimeout(
+        () => setPhase("FORMATION"),
+        FIRST_IMPRESSION_TIMING.arrivalEndMs,
+      );
+      const presenceTimer = window.setTimeout(
+        () => setPhase("PRESENCE"),
+        FIRST_IMPRESSION_TIMING.presenceStartMs,
+      );
       return () => {
         window.clearTimeout(formationTimer);
         window.clearTimeout(presenceTimer);
@@ -265,9 +276,9 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     const animate = (timestamp: number) => {
       const elapsed = timestamp - startedAt;
       const nextPhase: FirstImpressionPhase =
-        elapsed >= 5200
+        elapsed >= FIRST_IMPRESSION_TIMING.presenceStartMs
           ? "PRESENCE"
-          : elapsed >= 2100
+          : elapsed >= FIRST_IMPRESSION_TIMING.arrivalEndMs
             ? "FORMATION"
             : "ARRIVAL";
       if (nextPhase !== activePhase) {
