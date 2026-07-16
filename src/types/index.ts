@@ -281,6 +281,17 @@ export type {
   ProductionIdentitySourceConsumerContractUnavailableReason,
 } from "./productionIdentitySourceConsumerContract";
 export type {
+  ProductionIdentitySourceConsumerImplementationAuthorizationAuthorized,
+  ProductionIdentitySourceConsumerImplementationAuthorizationBlocked,
+  ProductionIdentitySourceConsumerImplementationAuthorizationBlockedReason,
+  ProductionIdentitySourceConsumerImplementationAuthorizationBoundary,
+  ProductionIdentitySourceConsumerImplementationAuthorizationInput,
+  ProductionIdentitySourceConsumerImplementationAuthorizationReference,
+  ProductionIdentitySourceConsumerImplementationAuthorizationResult,
+  ProductionIdentitySourceConsumerImplementationAuthorizationUnavailable,
+  ProductionIdentitySourceConsumerImplementationAuthorizationUnavailableReason,
+} from "./productionIdentitySourceConsumerImplementationAuthorization";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
