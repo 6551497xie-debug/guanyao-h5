@@ -487,6 +487,19 @@ export type {
   PersonalStarBeastIdentityProductReadinessUnavailableReason,
 } from "./personalStarBeastIdentityProductReadiness";
 export type {
+  PersonalStarBeastIdentityProductConsumptionContractBlocked,
+  PersonalStarBeastIdentityProductConsumptionContractBlockedReason,
+  PersonalStarBeastIdentityProductConsumptionContractBoundary,
+  PersonalStarBeastIdentityProductConsumptionContractInput,
+  PersonalStarBeastIdentityProductConsumptionInputContract,
+  PersonalStarBeastIdentityProductConsumptionOutputContract,
+  PersonalStarBeastIdentityProductConsumptionContractReady,
+  PersonalStarBeastIdentityProductConsumptionContractReference,
+  PersonalStarBeastIdentityProductConsumptionContractResult,
+  PersonalStarBeastIdentityProductConsumptionContractUnavailable,
+  PersonalStarBeastIdentityProductConsumptionContractUnavailableReason,
+} from "./personalStarBeastIdentityProductConsumptionContract";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
