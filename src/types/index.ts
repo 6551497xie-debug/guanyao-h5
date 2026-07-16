@@ -266,6 +266,15 @@ export type {
 export type { PersonalStarBeastLifePresenceProjection } from "./personalStarBeastLifePresenceProjection";
 export type { PersonalStarBeastLifeStarCoreProjection } from "./personalStarBeastLifeStarCoreProjection";
 export type {
+  GenesisTimeSequenceRecognitionBlockedReason,
+  GenesisTimeSequenceRecognitionInput,
+  GenesisTimeSequenceRecognitionProjection,
+  GenesisTimeSequenceRecognitionProjectionResult,
+  GenesisTimeSequenceRecognitionStage,
+  GenesisTimeSequenceRecognitionUnavailableReason,
+  GenesisTimeSequenceReference,
+} from "./genesisTimeSequenceRecognitionProjection";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,

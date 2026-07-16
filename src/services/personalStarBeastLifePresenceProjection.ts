@@ -1,5 +1,6 @@
 import { createIsolatedWebGLPrototypeRenderPlanReference } from "./isolatedWebGLPrototypeRenderPlanReference";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
+import type { GenesisTimeSequenceRecognitionProjection } from "../types/genesisTimeSequenceRecognitionProjection";
 import type { PersonalStarBeastLifePresenceProjection } from "../types/personalStarBeastLifePresenceProjection";
 
 const hashReference = (referenceId: string): number => {
@@ -27,6 +28,7 @@ const resolveMorphologicalMode = (
 
 export function projectPersonalStarBeastRenderPlanToLifePresence(
   plan: PersonalStarBeastRenderPlan,
+  timeSequenceProjection: GenesisTimeSequenceRecognitionProjection | null = null,
 ): PersonalStarBeastLifePresenceProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
@@ -83,6 +85,18 @@ export function projectPersonalStarBeastRenderPlanToLifePresence(
       postureBias: (flowUnit - 0.5) * 0.86,
       nodeDistributionBias: 0.72 + boundaryUnit * 0.48,
     }),
+    timeSequenceResponse: Object.freeze({
+      recognitionStage: timeSequenceProjection?.recognitionStage ?? "WAITING",
+      cosmicResponseStrength:
+        timeSequenceProjection?.cosmicResponseExpression.responseStrength ?? 0,
+      fieldGathering:
+        timeSequenceProjection?.cosmicResponseExpression.fieldGathering ?? 0,
+      temporalPhase: timeSequenceProjection?.temporalRhythm.phaseOffset ?? 0,
+      presenceIntensity: timeSequenceProjection?.presenceIntensity ?? 0,
+      sourceProjectionReferenceId:
+        timeSequenceProjection?.timeSequenceReferenceId ?? null,
+    }),
+    timeSequenceProjectionReference: timeSequenceProjection,
     sourcePlanSemanticRole: plan.semanticRole,
     renderPlanOnly: true,
     rendererParametersOnly: true,

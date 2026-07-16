@@ -22,6 +22,7 @@ import {
 import { createIsolatedWebGLPrototypeRenderPlanReference } from "../services/isolatedWebGLPrototypeRenderPlanReference";
 import { projectPersonalStarBeastRenderPlanToLifePresence } from "../services/personalStarBeastLifePresenceProjection";
 import { projectLifePresenceToLifeStarCore } from "../services/personalStarBeastLifeStarCoreProjection";
+import type { GenesisTimeSequenceRecognitionProjection } from "../types/genesisTimeSequenceRecognitionProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type {
   IsolatedWebGLRendererPrototypeBoundary,
@@ -72,10 +73,14 @@ const createSeededRandom = (seed: number): (() => number) => {
 
 export function projectPersonalStarBeastRenderPlanToWebGLScene(
   plan: PersonalStarBeastRenderPlan,
+  timeSequenceRecognition: GenesisTimeSequenceRecognitionProjection | null = null,
 ): IsolatedWebGLRendererPrototypeSceneProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
-  const lifePresence = projectPersonalStarBeastRenderPlanToLifePresence(plan);
+  const lifePresence = projectPersonalStarBeastRenderPlanToLifePresence(
+    plan,
+    timeSequenceRecognition,
+  );
   const lifeStarCore = projectLifePresenceToLifeStarCore(lifePresence);
   const structureUnit = referenceUnit(
     plan.spatialExpression.structureDensity.referenceId,
@@ -127,6 +132,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
     }),
     lifePresence,
     lifeStarCore,
+    timeSequenceRecognition,
     rendererParametersOnly: true,
     identityBlind: true,
     noLifeFactCopy: true,
@@ -246,7 +252,10 @@ export function createIsolatedWebGLRendererPrototype(
     });
   }
 
-  const sceneProjection = projectPersonalStarBeastRenderPlanToWebGLScene(plan);
+  const sceneProjection = projectPersonalStarBeastRenderPlanToWebGLScene(
+    plan,
+    input.timeSequenceRecognitionProjection ?? null,
+  );
   if (input.reducedMotion) {
     return fallback(sceneProjection, "REDUCED_MOTION_REQUESTED");
   }
@@ -326,10 +335,12 @@ export function createIsolatedWebGLRendererPrototype(
     depthWrite: false,
   });
   const cosmicField = new Points(cosmicGeometry, cosmicMaterial);
+  const cosmicPointMaterial = cosmicField.material as PointsMaterial;
   root.add(cosmicField);
 
   const lifePresence = sceneProjection.lifePresence;
   const lifeStarCore = sceneProjection.lifeStarCore;
+  const timeSequenceRecognition = sceneProjection.timeSequenceRecognition;
   const spineSegments = lifePresence.stellarSkeleton.spineSegments;
   const branchCount = lifePresence.stellarSkeleton.branchCount;
   const fieldPoseScale =
@@ -563,6 +574,38 @@ export function createIsolatedWebGLRendererPrototype(
           : 0) / 1000;
       root.rotation.y =
         elapsedSeconds * sceneProjection.motion.rotationSpeed;
+      if (timeSequenceRecognition !== null) {
+        const recognitionPhase =
+          (elapsedSeconds /
+            timeSequenceRecognition.temporalRhythm.periodSeconds) *
+            Math.PI *
+            2 +
+          timeSequenceRecognition.temporalRhythm.phaseOffset;
+        const recognitionBreath =
+          1 +
+          Math.sin(recognitionPhase) *
+            timeSequenceRecognition.temporalRhythm.breathingAmplitude;
+        cosmicField.rotation.z =
+          timeSequenceRecognition.cosmicResponseExpression.directionalDrift *
+            0.018 +
+          Math.sin(recognitionPhase * 0.35) * 0.006;
+        cosmicField.scale.setScalar(
+          1 +
+            timeSequenceRecognition.cosmicResponseExpression.fieldGathering *
+              0.08 *
+              recognitionBreath,
+        );
+        cosmicPointMaterial.opacity =
+          sceneProjection.cosmicField.opacity *
+          (0.92 +
+            timeSequenceRecognition.cosmicResponseExpression.responseStrength *
+              0.16 *
+              recognitionBreath);
+      } else {
+        cosmicField.rotation.z = elapsedSeconds * 0.004;
+        cosmicField.scale.setScalar(1);
+        cosmicPointMaterial.opacity = sceneProjection.cosmicField.opacity;
+      }
       const rhythmPhase =
         (elapsedSeconds / lifeStarCore.temporalRhythm.periodSeconds) *
         Math.PI *
@@ -593,6 +636,7 @@ export function createIsolatedWebGLRendererPrototype(
           (1 +
             sceneProjection.lifePresence.morphologicalField.spatialContraction *
               0.22) *
+          (1 + lifePresence.timeSequenceResponse.presenceIntensity * 0.045) *
           1.45 *
           structureInfluence,
       );

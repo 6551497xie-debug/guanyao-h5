@@ -6,6 +6,7 @@ import {
 import { createIsolatedWebGLRendererPrototype } from "../prototypes/isolatedWebGLRendererPrototype";
 import { authorizeIsolatedWebGLRendererPrototype } from "../services/isolatedWebGLRendererPrototypeAuthorizationService";
 import { adaptPersonalStarBeastSceneModelToRenderPlan } from "../services/personalStarBeastRenderPlanAdapter";
+import { projectGenesisTimeSequenceRecognition } from "../services/genesisTimeSequenceRecognitionProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import "../styles/personal-star-beast-webgl-prototype-harness.css";
 
@@ -41,6 +42,29 @@ const PROTOTYPE_AUTHORIZATION = authorizeIsolatedWebGLRendererPrototype(
     prototypeScope: "ISOLATED_WEBGL_RENDERER_PROTOTYPE_ONLY",
   }),
 );
+
+const LIFE_ARRIVAL_COORDINATE_REFERENCE = Object.freeze({
+  referenceType: "STAR_BEAST_GENESIS_ORIGIN_COORDINATE" as const,
+  referenceId: "prototype:life-arrival:shared",
+  sourceRole: "SHARED_TEMPORAL_BIRTH_COORDINATE" as const,
+  birthLocationContextOnly: true as const,
+  birthLocationExcludedFromStarBeastDerivation: true as const,
+});
+
+const TIME_SEQUENCE_RECOGNITION_RESULT = projectGenesisTimeSequenceRecognition(
+  Object.freeze({
+    originCoordinateReference: LIFE_ARRIVAL_COORDINATE_REFERENCE,
+    timeSequenceReference: Object.freeze({
+      referenceType: "GENESIS_TIME_SEQUENCE_REFERENCE" as const,
+      referenceId: "prototype:time-sequence:arrival",
+    }),
+  }),
+);
+
+const TIME_SEQUENCE_RECOGNITION_PROJECTION =
+  TIME_SEQUENCE_RECOGNITION_RESULT.status === "AVAILABLE"
+    ? TIME_SEQUENCE_RECOGNITION_RESULT.projection
+    : null;
 
 const PHASE_COPY: Readonly<
   Record<
@@ -103,6 +127,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
         height: Math.max(1, bounds.height),
         pixelRatio: window.devicePixelRatio || 1,
         reducedMotion,
+        timeSequenceRecognitionProjection: TIME_SEQUENCE_RECOGNITION_PROJECTION,
       }),
     );
 

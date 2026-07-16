@@ -1,4 +1,8 @@
 import type { PersonalStarBeastRenderPlan } from "./personalStarBeastRenderPlan";
+import type {
+  GenesisTimeSequenceRecognitionProjection,
+  GenesisTimeSequenceRecognitionStage,
+} from "./genesisTimeSequenceRecognitionProjection";
 
 export type PersonalStarBeastLifePresenceProjection = Readonly<{
   semanticRole: "PERSONAL_STAR_BEAST_LIFE_PRESENCE_PROJECTION";
@@ -31,6 +35,15 @@ export type PersonalStarBeastLifePresenceProjection = Readonly<{
     postureBias: number;
     nodeDistributionBias: number;
   }>;
+  timeSequenceResponse: Readonly<{
+    recognitionStage: GenesisTimeSequenceRecognitionStage;
+    cosmicResponseStrength: number;
+    fieldGathering: number;
+    temporalPhase: number;
+    presenceIntensity: number;
+    sourceProjectionReferenceId: string | null;
+  }>;
+  timeSequenceProjectionReference: GenesisTimeSequenceRecognitionProjection | null;
   sourcePlanSemanticRole: PersonalStarBeastRenderPlan["semanticRole"];
   renderPlanOnly: true;
   rendererParametersOnly: true;
