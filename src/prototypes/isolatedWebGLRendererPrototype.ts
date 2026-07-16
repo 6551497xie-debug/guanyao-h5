@@ -67,6 +67,13 @@ const hashReference = (referenceId: string): number => {
 const referenceUnit = (referenceId: string): number =>
   hashReference(referenceId) / 0xffffffff;
 
+const FIRST_IMPRESSION_MOTION_CALIBRATION = Object.freeze({
+  rotationBase: 0.06,
+  rotationRange: 0.14,
+  fieldFlowBase: 0.18,
+  fieldFlowBendScale: 0.22,
+});
+
 const createSeededRandom = (seed: number): (() => number) => {
   let state = seed || 1;
   return () => {
@@ -122,7 +129,10 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
     formField: Object.freeze({
       hue: 0.08 + fieldUnit * 0.52,
       boundaryScale: lifePresence.morphologicalField.fieldScale,
-      flowSpeed: 0.035 + Math.abs(lifePresence.morphologicalField.bend) * 0.075,
+      flowSpeed:
+        FIRST_IMPRESSION_MOTION_CALIBRATION.fieldFlowBase +
+        Math.abs(lifePresence.morphologicalField.bend) *
+          FIRST_IMPRESSION_MOTION_CALIBRATION.fieldFlowBendScale,
     }),
     lifeCore: Object.freeze({
       hue: 0.06 + lightUnit * 0.12,
@@ -130,7 +140,9 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
       breathingAmplitude: lifePresence.corePresence.breathingAmplitude,
     }),
     motion: Object.freeze({
-      rotationSpeed: 0.018 + flowUnit * 0.042,
+      rotationSpeed:
+        FIRST_IMPRESSION_MOTION_CALIBRATION.rotationBase +
+        flowUnit * FIRST_IMPRESSION_MOTION_CALIBRATION.rotationRange,
       driftAmplitude:
         0.025 + Math.abs(lifePresence.morphologicalField.bend) * 0.055,
     }),
