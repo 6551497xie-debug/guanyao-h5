@@ -7,6 +7,8 @@ const rootDir = process.cwd();
 const files = Object.freeze({
   motherCodeSource: "src/services/motherCodeLifeArchetypeSource.ts",
   isolatedGenesisPreview: "src/pages/StarBeastGenesisPreview.tsx",
+  isolatedGenesisRendererPreview:
+    "src/pages/StarBeastGenesisRendererSlicePreview.tsx",
   stageSource: "src/services/lifeJourneyStageSource.ts",
   mapping: "src/services/originalSelfLifeSchemaMapping.ts",
   entry: "src/services/originalSelfLifeSchemaEntry.ts",
@@ -68,9 +70,14 @@ if (failures.length === 0) {
   };
 
   assertCallSites(
-    "mother code source is owned by entry and isolated genesis preview",
+    "mother code source is owned by entry and isolated genesis previews",
     "resolveLifeArchetypeProfileFromMotherCode",
-    [files.motherCodeSource, files.entry, files.isolatedGenesisPreview],
+    [
+      files.motherCodeSource,
+      files.entry,
+      files.isolatedGenesisPreview,
+      files.isolatedGenesisRendererPreview,
+    ],
   );
   assertCallSites(
     "explicit stage source is owned by entry",

@@ -176,6 +176,19 @@ export type {
   StarBeastStellarFleshState,
 } from "./starBeastStellarFlesh";
 export type {
+  GenesisManifestationSequence,
+  GenesisManifestationStage,
+  StarBeastGenesisFourSymbolResultReference,
+  StarBeastGenesisIdentityReference,
+  StarBeastGenesisMansionResultReference,
+  StarBeastGenesisMotherCodeProfileReference,
+  StarBeastGenesisSourceCalibrationBlockedReason,
+  StarBeastGenesisSourceCalibrationInput,
+  StarBeastGenesisSourceCalibrationResult,
+  StarBeastGenesisSourceCalibrationUnavailableReason,
+  StarBeastGenesisSourceIdentity,
+} from "./starBeastGenesisSourceIdentity";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,

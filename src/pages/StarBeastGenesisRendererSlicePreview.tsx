@@ -1,14 +1,16 @@
 import { useMemo, useState } from "react";
 import { StarBeastGenesisRendererPrototypeCanvas } from "../components/StarBeastGenesisRendererPrototypeCanvas";
+import { runMotherCodeLandingEngine } from "../services/guanyaoLunarMotherCodeLandingAdapter";
+import { resolveStarbeastFromBirthDate } from "../services/guanyaoStarbeastEngineService";
+import { resolveLifeArchetypeProfileFromMotherCode } from "../services/motherCodeLifeArchetypeSource";
 import { resolveStarBeastCosmicConsciousness } from "../services/starBeastCosmicConsciousnessMapping";
 import { resolveWhiteTigerGenGenesisPrototypeAsset } from "../services/starBeastGenesisPrototypeAsset";
 import {
   resolveStarBeastGenesisRendererPrototype,
   STAR_BEAST_GENESIS_STAGE_ORDER,
 } from "../services/starBeastGenesisRendererPrototype";
+import { calibrateStarBeastGenesisSource } from "../services/starBeastGenesisSourceCalibration";
 import { resolveStarBeastStellarFlesh } from "../services/starBeastStellarFleshMapping";
-import type { LifeArchetypeProfile } from "../types/originalSelfLifeSchema";
-import type { StarbeastDerivationReady } from "../types/guanyaoStarbeast";
 import type {
   GenesisVisualStage,
   StarBeastGenesisExpressionChannelReference,
@@ -17,35 +19,30 @@ import type {
 import type { StarBeastRendererContractReference } from "../types/starBeastAssetPrototypeReadiness";
 import "../styles/starbeast-genesis-renderer-slice.css";
 
-const WESTERN_MANSION_REFERENCE: StarbeastDerivationReady = Object.freeze({
-  status: "READY",
-  protocolVersion: "GUANYAO_LUNAR_MANSION_V1",
-  calculationBasis: "GREGORIAN_TO_LUNAR_MONTH_DAY_MANSION",
-  gregorianBirthDate: "1979-04-15",
-  lunarBirthDate: Object.freeze({ relatedYear: 1979, month: 3, day: 19, isLeapMonth: false }),
-  mansionIndex: 14,
-  mansion: "奎",
-  fourSymbol: "白虎",
-  direction: "西",
-  symbolicTrigram: "兑",
-  locationIndependent: true,
-  birthTimeIndependent: true,
+const DEMO_BIRTH = Object.freeze({
+  year: 1979,
+  month: 3,
+  day: 28,
+  hourBranch: "未时" as const,
 });
 
-const GEN_ARCHETYPE_REFERENCE: LifeArchetypeProfile = Object.freeze({
-  source: "mother_code_profile",
-  sourceMotherCodeId: "prototype:mother-gen-watcher",
-  code: "GEN",
-  trigram: "艮",
-  semanticRole: "ORIGINAL_LIFE_FORCE",
-  originalForce: "守望",
-  lifeIntention: "稳定边界",
-  shadowPattern: "停滞",
-  awakeningDirection: "稳定而不僵化",
-  nonFinalIdentity: true,
-  notHexagram: true,
-  notPersonalityLabel: true,
+const ORIGIN_COORDINATE_REFERENCE = Object.freeze({
+  referenceType: "STAR_BEAST_GENESIS_ORIGIN_COORDINATE" as const,
+  referenceId: "prototype:1979-03-28:wei",
+  sourceRole: "SHARED_TEMPORAL_BIRTH_COORDINATE" as const,
+  birthLocationContextOnly: true as const,
+  birthLocationExcludedFromStarBeastDerivation: true as const,
 });
+
+const STARBEAST_DERIVATION_RESULT = resolveStarbeastFromBirthDate(DEMO_BIRTH);
+const MOTHER_CODE_LANDING_RESULT = runMotherCodeLandingEngine(DEMO_BIRTH);
+const SOURCE_CALIBRATION = calibrateStarBeastGenesisSource(
+  Object.freeze({
+    originCoordinateReference: ORIGIN_COORDINATE_REFERENCE,
+    starbeastDerivationResultReference: STARBEAST_DERIVATION_RESULT,
+    motherCodeLandingResultReference: MOTHER_CODE_LANDING_RESULT,
+  }),
+);
 
 const EXPRESSION_CHANNEL_REFERENCE: StarBeastGenesisExpressionChannelReference =
   Object.freeze({
@@ -59,12 +56,23 @@ const RENDERER_CONTRACT_REFERENCE: StarBeastRendererContractReference =
     referenceId: "STAR_BEAST_RENDERER_CONTRACT_V1",
   });
 
-const ASSET_RESULT = resolveWhiteTigerGenGenesisPrototypeAsset(
-  Object.freeze({
-    westernMansionReference: WESTERN_MANSION_REFERENCE,
-    lifeArchetypeProfileReference: GEN_ARCHETYPE_REFERENCE,
-  }),
-);
+const ASSET_RESULT = (() => {
+  if (SOURCE_CALIBRATION.status !== "AVAILABLE") return null;
+
+  const sourceIdentity = SOURCE_CALIBRATION.sourceIdentity;
+  const lifeArchetypeSource = resolveLifeArchetypeProfileFromMotherCode(
+    sourceIdentity.motherCodeProfileReference.profileReference,
+  );
+  if (lifeArchetypeSource.status !== "READY") return null;
+
+  return resolveWhiteTigerGenGenesisPrototypeAsset(
+    Object.freeze({
+      westernMansionReference:
+        sourceIdentity.fourSymbolResultReference.resultReference,
+      lifeArchetypeProfileReference: lifeArchetypeSource.lifeArchetypeProfile,
+    }),
+  );
+})();
 
 const STAGE_PRESENTATION: Readonly<
   Record<GenesisVisualStage, Readonly<{ index: string; title: string; note: string }>>
@@ -79,7 +87,7 @@ const STAGE_PRESENTATION: Readonly<
 export function StarBeastGenesisRendererSlicePreview() {
   const [stage, setStage] = useState<GenesisVisualStage>("COSMIC_FIELD");
   const model = useMemo(() => {
-    if (ASSET_RESULT.status !== "AVAILABLE") return null;
+    if (ASSET_RESULT?.status !== "AVAILABLE") return null;
     const visualState: StarBeastGenesisVisualState = Object.freeze({
       semanticRole: "STAR_BEAST_GENESIS_VISUAL_STATE",
       stage,
