@@ -245,6 +245,17 @@ export type {
   ProductionIdentitySourceAdapterReference,
 } from "./productionIdentitySourceAdapterReadiness";
 export type {
+  ProductionIdentitySourceAdapterAvailable,
+  ProductionIdentitySourceAdapterBlocked,
+  ProductionIdentitySourceAdapterBlockedReason,
+  ProductionIdentitySourceAdapterBoundary,
+  ProductionIdentitySourceAdapterFormalReference,
+  ProductionIdentitySourceAdapterInput,
+  ProductionIdentitySourceAdapterResult,
+  ProductionIdentitySourceAdapterUnavailable,
+  ProductionIdentitySourceAdapterUnavailableReason,
+} from "./productionIdentitySourceAdapter";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
