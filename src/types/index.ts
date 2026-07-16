@@ -227,6 +227,13 @@ export type {
   PersonalStarBeastSceneQualityProfileReference,
 } from "./personalStarBeastSceneModel";
 export type {
+  PersonalStarBeastSceneModelFixture,
+  PersonalStarBeastSceneModelFixtureDifference,
+  PersonalStarBeastSceneModelFixtureValidationBoundary,
+  PersonalStarBeastSceneModelFixtureValidationReason,
+  PersonalStarBeastSceneModelFixtureValidationResult,
+} from "./personalStarBeastSceneModelFixture";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,

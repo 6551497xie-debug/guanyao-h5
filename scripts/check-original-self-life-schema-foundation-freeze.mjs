@@ -6,6 +6,7 @@ const rootDir = process.cwd();
 
 const files = Object.freeze({
   motherCodeSource: "src/services/motherCodeLifeArchetypeSource.ts",
+  isolatedSceneModelFixture: "src/mocks/starBeastSceneModelFixtures.ts",
   isolatedGenesisPreview: "src/pages/StarBeastGenesisPreview.tsx",
   isolatedGenesisRendererPreview:
     "src/pages/StarBeastGenesisRendererSlicePreview.tsx",
@@ -70,11 +71,12 @@ if (failures.length === 0) {
   };
 
   assertCallSites(
-    "mother code source is owned by entry and isolated genesis previews",
+    "mother code source is owned by entry and isolated genesis previews plus isolated scene model fixtures",
     "resolveLifeArchetypeProfileFromMotherCode",
     [
       files.motherCodeSource,
       files.entry,
+      files.isolatedSceneModelFixture,
       files.isolatedGenesisPreview,
       files.isolatedGenesisRendererPreview,
     ],
