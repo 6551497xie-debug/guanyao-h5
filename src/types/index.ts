@@ -410,6 +410,17 @@ export type {
   ProductionIdentitySourceEngineConsumerReadinessUnavailableReason,
 } from "./productionIdentitySourceEngineConsumerReadiness";
 export type {
+  ProductionIdentitySourceEngineConsumerContractBlocked,
+  ProductionIdentitySourceEngineConsumerContractBlockedReason,
+  ProductionIdentitySourceEngineConsumerContractBoundary,
+  ProductionIdentitySourceEngineConsumerContractInput,
+  ProductionIdentitySourceEngineConsumerContractReady,
+  ProductionIdentitySourceEngineConsumerContractReference,
+  ProductionIdentitySourceEngineConsumerContractResult,
+  ProductionIdentitySourceEngineConsumerContractUnavailable,
+  ProductionIdentitySourceEngineConsumerContractUnavailableReason,
+} from "./productionIdentitySourceEngineConsumerContract";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
