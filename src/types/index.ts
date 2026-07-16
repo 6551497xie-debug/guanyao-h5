@@ -292,6 +292,18 @@ export type {
   ProductionIdentitySourceConsumerImplementationAuthorizationUnavailableReason,
 } from "./productionIdentitySourceConsumerImplementationAuthorization";
 export type {
+  ProductionIdentitySourceInputNormalizationBoundary,
+  ProductionIdentitySourceInputNormalizationPolicy,
+  ProductionIdentitySourceInputNormalizationReviewBlocked,
+  ProductionIdentitySourceInputNormalizationReviewBlockedReason,
+  ProductionIdentitySourceInputNormalizationReviewInput,
+  ProductionIdentitySourceInputNormalizationReviewReady,
+  ProductionIdentitySourceInputNormalizationReviewReference,
+  ProductionIdentitySourceInputNormalizationReviewResult,
+  ProductionIdentitySourceInputNormalizationReviewUnavailable,
+  ProductionIdentitySourceInputNormalizationReviewUnavailableReason,
+} from "./productionIdentitySourceInputNormalizationReview";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
