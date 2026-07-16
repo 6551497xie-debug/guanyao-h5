@@ -138,7 +138,7 @@ if (failures.length === 0) {
     "new Scene()",
     "new PerspectiveCamera",
     "new Points",
-    "new LineLoop",
+    "new Line",
     "new Mesh",
     "new PointLight",
     "renderer.render(scene, camera)",

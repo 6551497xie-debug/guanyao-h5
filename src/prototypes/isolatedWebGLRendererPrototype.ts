@@ -5,8 +5,9 @@ import {
   Color,
   Float32BufferAttribute,
   Group,
+  Line,
   LineBasicMaterial,
-  LineLoop,
+  LineSegments,
   Mesh,
   MeshBasicMaterial,
   PerspectiveCamera,
@@ -19,6 +20,7 @@ import {
   WebGLRenderer,
 } from "three";
 import { createIsolatedWebGLPrototypeRenderPlanReference } from "../services/isolatedWebGLPrototypeRenderPlanReference";
+import { projectPersonalStarBeastRenderPlanToLifePresence } from "../services/personalStarBeastLifePresenceProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type {
   IsolatedWebGLRendererPrototypeBoundary,
@@ -72,51 +74,43 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
 ): IsolatedWebGLRendererPrototypeSceneProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
+  const lifePresence = projectPersonalStarBeastRenderPlanToLifePresence(plan);
   const structureUnit = referenceUnit(
     plan.spatialExpression.structureDensity.referenceId,
   );
-  const anchorUnit = referenceUnit(
-    plan.spatialExpression.anchorBehavior.referenceId,
-  );
   const fieldUnit = referenceUnit(plan.fieldBehavior.spatialBias.referenceId);
-  const boundaryUnit = referenceUnit(
-    plan.fieldBehavior.boundaryBehavior.referenceId,
-  );
   const flowUnit = referenceUnit(plan.fieldBehavior.flowDirection.referenceId);
   const lightUnit = referenceUnit(plan.lightExpression.coreLight.referenceId);
-  const rhythmUnit = referenceUnit(
-    plan.motionExpression.energyRhythm.referenceId,
-  );
-  const motionUnit = referenceUnit(
-    plan.motionExpression.aggregationMode.referenceId,
-  );
 
   return Object.freeze({
     semanticRole: "ISOLATED_WEBGL_LIFE_MANIFESTATION_SCENE",
     sourceRenderPlanReferenceId: planReference.referenceId,
     cosmicField: Object.freeze({
       particleCount: 160 + Math.round(structureUnit * 160),
-      spread: 7 + anchorUnit * 3,
+      spread: 7 + structureUnit * 3,
       opacity: 0.28 + lightUnit * 0.24,
     }),
     mansionStructure: Object.freeze({
-      anchorCount: 9 + Math.round(structureUnit * 9),
-      radius: 1.35 + anchorUnit * 0.8,
-      lineOpacity: 0.24 + boundaryUnit * 0.34,
+      anchorCount:
+        lifePresence.stellarSkeleton.spineSegments +
+        lifePresence.stellarSkeleton.branchCount,
+      radius: lifePresence.stellarSkeleton.spineLength,
+      lineOpacity: 0.24 + lifePresence.corePresence.coherence * 0.34,
     }),
     formField: Object.freeze({
       hue: 0.08 + fieldUnit * 0.52,
-      boundaryScale: 1.05 + boundaryUnit * 0.42,
-      flowSpeed: 0.035 + flowUnit * 0.075,
+      boundaryScale: lifePresence.morphologicalField.fieldScale,
+      flowSpeed: 0.035 + Math.abs(lifePresence.morphologicalField.bend) * 0.075,
     }),
     lifeCore: Object.freeze({
       hue: 0.06 + lightUnit * 0.12,
-      intensity: 0.75 + lightUnit * 1.1,
-      breathingAmplitude: 0.035 + rhythmUnit * 0.055,
+      intensity: 0.75 + lifePresence.corePresence.lightReach,
+      breathingAmplitude: lifePresence.corePresence.breathingAmplitude,
     }),
     motion: Object.freeze({
       rotationSpeed: 0.018 + flowUnit * 0.042,
-      driftAmplitude: 0.025 + motionUnit * 0.055,
+      driftAmplitude:
+        0.025 + Math.abs(lifePresence.morphologicalField.bend) * 0.055,
     }),
     crystal: Object.freeze({
       visible: plan.crystalExpression !== null,
@@ -129,6 +123,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
               ) * 4,
             ),
     }),
+    lifePresence,
     rendererParametersOnly: true,
     identityBlind: true,
     noLifeFactCopy: true,
@@ -330,35 +325,97 @@ export function createIsolatedWebGLRendererPrototype(
   const cosmicField = new Points(cosmicGeometry, cosmicMaterial);
   root.add(cosmicField);
 
-  const anchorPositions = new Float32Array(
-    sceneProjection.mansionStructure.anchorCount * 3,
-  );
-  for (
-    let index = 0;
-    index < sceneProjection.mansionStructure.anchorCount;
-    index += 1
-  ) {
-    const ratio = index / sceneProjection.mansionStructure.anchorCount;
-    const angle = ratio * Math.PI * 2 + (random() - 0.5) * 0.45;
-    const radius =
-      sceneProjection.mansionStructure.radius * (0.72 + random() * 0.36);
+  const lifePresence = sceneProjection.lifePresence;
+  const spineSegments = lifePresence.stellarSkeleton.spineSegments;
+  const branchCount = lifePresence.stellarSkeleton.branchCount;
+  const axisX = Math.cos(lifePresence.stellarSkeleton.axisAngle);
+  const axisY = Math.sin(lifePresence.stellarSkeleton.axisAngle);
+  const perpendicularX = -axisY;
+  const perpendicularY = axisX;
+  const spinePositions = new Float32Array(spineSegments * 3);
+  const nodePositions = new Float32Array((spineSegments + branchCount) * 3);
+  const branchPositions = new Float32Array(branchCount * 12);
+  const getSpinePoint = (progress: number): [number, number, number] => {
+    const offset =
+      (progress - 0.45) * lifePresence.stellarSkeleton.spineLength;
+    const bend =
+      Math.sin(progress * Math.PI) * lifePresence.morphologicalField.bend;
+    const depth =
+      Math.sin(progress * Math.PI * 2) *
+      lifePresence.morphologicalField.enclosure *
+      0.08;
+    return [
+      axisX * offset + perpendicularX * bend,
+      axisY * offset + perpendicularY * bend,
+      depth,
+    ];
+  };
+
+  for (let index = 0; index < spineSegments; index += 1) {
+    const progress = index / Math.max(1, spineSegments - 1);
+    const point = getSpinePoint(progress);
     const offset = index * 3;
-    anchorPositions[offset] = Math.cos(angle) * radius;
-    anchorPositions[offset + 1] = Math.sin(angle) * radius * 0.62;
-    anchorPositions[offset + 2] = (random() - 0.5) * 0.55;
+    spinePositions[offset] = point[0];
+    spinePositions[offset + 1] = point[1];
+    spinePositions[offset + 2] = point[2];
+    nodePositions[offset] = point[0];
+    nodePositions[offset + 1] = point[1];
+    nodePositions[offset + 2] = point[2];
   }
-  const anchorGeometry = new BufferGeometry();
-  anchorGeometry.setAttribute(
+
+  for (let index = 0; index < branchCount; index += 1) {
+    const originIndex = index % Math.max(1, spineSegments - 1);
+    const originOffset = originIndex * 3;
+    const origin: [number, number, number] = [
+      spinePositions[originOffset],
+      spinePositions[originOffset + 1],
+      spinePositions[originOffset + 2],
+    ];
+    const side = index % 2 === 0 ? 1 : -1;
+    const branchLength =
+      lifePresence.stellarSkeleton.branchSpread * (0.74 + (index % 3) * 0.12);
+    const branchCurl =
+      lifePresence.morphologicalField.bend * (0.35 + index * 0.06);
+    const mid: [number, number, number] = [
+      origin[0] + perpendicularX * side * branchLength * 0.42 + axisX * branchCurl,
+      origin[1] + perpendicularY * side * branchLength * 0.42 + axisY * branchCurl,
+      origin[2] + (random() - 0.5) * 0.18,
+    ];
+    const tip: [number, number, number] = [
+      origin[0] + perpendicularX * side * branchLength + axisX * branchCurl * 1.8,
+      origin[1] + perpendicularY * side * branchLength + axisY * branchCurl * 1.8,
+      origin[2] + (random() - 0.5) * 0.3,
+    ];
+    const branchOffset = index * 12;
+    branchPositions.set([...origin, ...mid, ...mid, ...tip], branchOffset);
+    const nodeOffset = (spineSegments + index) * 3;
+    nodePositions[nodeOffset] = tip[0];
+    nodePositions[nodeOffset + 1] = tip[1];
+    nodePositions[nodeOffset + 2] = tip[2];
+  }
+
+  const spineGeometry = new BufferGeometry();
+  spineGeometry.setAttribute(
     "position",
-    new Float32BufferAttribute(anchorPositions, 3),
+    new Float32BufferAttribute(spinePositions, 3),
+  );
+  const branchGeometry = new BufferGeometry();
+  branchGeometry.setAttribute(
+    "position",
+    new Float32BufferAttribute(branchPositions, 3),
+  );
+  const nodeGeometry = new BufferGeometry();
+  nodeGeometry.setAttribute(
+    "position",
+    new Float32BufferAttribute(nodePositions, 3),
   );
   const anchorColor = new Color().setHSL(
     sceneProjection.lifeCore.hue,
     0.72,
     0.76,
   );
-  const structureLine = new LineLoop(
-    anchorGeometry,
+  const spineLine = new Line(
+    spineGeometry,
     new LineBasicMaterial({
       color: anchorColor,
       transparent: true,
@@ -366,11 +423,20 @@ export function createIsolatedWebGLRendererPrototype(
       blending: AdditiveBlending,
     }),
   );
+  const branchLines = new LineSegments(
+    branchGeometry,
+    new LineBasicMaterial({
+      color: anchorColor,
+      transparent: true,
+      opacity: sceneProjection.mansionStructure.lineOpacity * 0.78,
+      blending: AdditiveBlending,
+    }),
+  );
   const structurePoints = new Points(
-    anchorGeometry,
+    nodeGeometry,
     new PointsMaterial({
       color: anchorColor,
-      size: 0.075,
+      size: lifePresence.stellarSkeleton.nodeScale,
       transparent: true,
       opacity: 0.86,
       blending: AdditiveBlending,
@@ -378,8 +444,11 @@ export function createIsolatedWebGLRendererPrototype(
     }),
   );
   const structureGroup = new Group();
-  structureGroup.scale.setScalar(sceneProjection.formField.boundaryScale);
-  structureGroup.add(structureLine, structurePoints);
+  structureGroup.scale.setScalar(
+    sceneProjection.formField.boundaryScale * 1.45,
+  );
+  structureGroup.rotation.z = lifePresence.morphologicalField.bend * 0.12;
+  structureGroup.add(spineLine, branchLines, structurePoints);
   root.add(structureGroup);
 
   const coreColor = new Color().setHSL(
@@ -388,12 +457,30 @@ export function createIsolatedWebGLRendererPrototype(
     0.7,
   );
   const core = new Mesh(
-    new SphereGeometry(0.12, 20, 20),
+    new SphereGeometry(
+      0.1 + lifePresence.corePresence.influenceRadius * 0.08,
+      20,
+      20,
+    ),
     new MeshBasicMaterial({
       color: coreColor,
       transparent: true,
       opacity: 0.92,
       blending: AdditiveBlending,
+    }),
+  );
+  const coreHalo = new Mesh(
+    new SphereGeometry(
+      0.22 + lifePresence.corePresence.influenceRadius * 0.16,
+      18,
+      18,
+    ),
+    new MeshBasicMaterial({
+      color: coreColor,
+      transparent: true,
+      opacity: 0.08 + lifePresence.corePresence.coherence * 0.08,
+      blending: AdditiveBlending,
+      depthWrite: false,
     }),
   );
   const coreLight = new PointLight(
@@ -403,6 +490,7 @@ export function createIsolatedWebGLRendererPrototype(
     1.7,
   );
   core.add(coreLight);
+  root.add(coreHalo);
   root.add(core);
 
   let frameCount = 0;
@@ -432,14 +520,27 @@ export function createIsolatedWebGLRendererPrototype(
           : 0) / 1000;
       root.rotation.y =
         elapsedSeconds * sceneProjection.motion.rotationSpeed;
-      structureGroup.rotation.z =
-        Math.sin(elapsedSeconds * sceneProjection.formField.flowSpeed) *
-        sceneProjection.motion.driftAmplitude;
       const breath =
         1 +
-        Math.sin(elapsedSeconds * 0.72) *
-          sceneProjection.lifeCore.breathingAmplitude;
+          Math.sin(elapsedSeconds * 0.72) *
+            sceneProjection.lifeCore.breathingAmplitude;
+      const structureInfluence =
+        1 +
+        (breath - 1) *
+          sceneProjection.lifePresence.corePresence.aggregationStrength;
       core.scale.setScalar(breath);
+      coreHalo.scale.setScalar(0.92 + breath * 0.08);
+      structureGroup.scale.setScalar(
+        sceneProjection.formField.boundaryScale * 1.45 * structureInfluence,
+      );
+      structureGroup.rotation.z =
+        sceneProjection.lifePresence.morphologicalField.bend * 0.12 +
+        Math.sin(elapsedSeconds * sceneProjection.formField.flowSpeed) *
+          sceneProjection.motion.driftAmplitude;
+      coreLight.intensity =
+        sceneProjection.lifeCore.intensity *
+        (0.92 +
+          sceneProjection.lifePresence.corePresence.coherence * 0.08 * breath);
       renderer.render(scene, camera);
       frameCount += 1;
     },
