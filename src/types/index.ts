@@ -221,6 +221,19 @@ export type {
   StarBeastPrototypeRendererExecutionReadinessUnavailableReason,
 } from "./starBeastPrototypeRendererExecutionReadiness";
 export type {
+  StarBeastPrototypeExecutionAuthorityReference,
+  StarBeastPrototypeExplicitExecutionAuthorizationCommand,
+  StarBeastPrototypeExplicitExecutionAuthorizationCommandAvailable,
+  StarBeastPrototypeExplicitExecutionAuthorizationCommandBlocked,
+  StarBeastPrototypeExplicitExecutionAuthorizationCommandInput,
+  StarBeastPrototypeExplicitExecutionAuthorizationCommandNotReady,
+  StarBeastPrototypeExplicitExecutionAuthorizationCommandNotReadyReason,
+  StarBeastPrototypeExplicitExecutionAuthorizationCommandResult,
+  StarBeastPrototypeExplicitExecutionAuthorizationCommandUnavailable,
+  StarBeastPrototypeExplicitExecutionAuthorizationCommandUnavailableReason,
+  StarBeastPrototypeExplicitExecutionAuthorizationDecision,
+} from "./starBeastPrototypeExplicitExecutionAuthorizationCommand";
+export type {
   StarBeastPrototypeCoreStar,
   StarBeastPrototypeGeometryPath,
   StarBeastPrototypeGeometryPoint,
