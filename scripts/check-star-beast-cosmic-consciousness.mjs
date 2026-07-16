@@ -183,11 +183,20 @@ if (failures.length === 0) {
     [files.page, files.service].sort().join(","),
   );
 
+  const isolatedConsciousnessChainFiles = Object.freeze([
+    absolute.page,
+    absolute.service,
+    absolute.type,
+    absolute.canvas,
+    absolute.typeIndex,
+    path.join(rootDir, "src/types/starBeastStellarFlesh.ts"),
+    path.join(rootDir, "src/services/starBeastStellarFleshMapping.ts"),
+  ]);
   const productSurfaceReferences = collectTypeScript(path.join(rootDir, "src"))
-    .filter((filePath) => ![absolute.page, absolute.service, absolute.type, absolute.canvas, absolute.typeIndex].includes(filePath))
+    .filter((filePath) => !isolatedConsciousnessChainFiles.includes(filePath))
     .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("StarBeastCosmicConsciousness"))
     .map((filePath) => path.relative(rootDir, filePath));
-  assertEqual("product surfaces do not consume P86", productSurfaceReferences.join(","), "");
+  assertEqual("product surfaces do not consume the isolated P86/P87 chain", productSurfaceReferences.join(","), "");
 
   const outputDirectory = path.join(os.tmpdir(), `guanyao-cosmic-consciousness-${process.pid}`);
   await build({

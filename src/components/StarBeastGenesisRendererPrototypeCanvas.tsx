@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "react";
 import type { StarBeastCosmicConsciousnessState } from "../types/starBeastCosmicConsciousness";
 import type { StarBeastGenesisRendererPrototypeInput } from "../types/starBeastGenesisVisualState";
+import type { StarBeastStellarFleshState } from "../types/starBeastStellarFlesh";
 
 type Props = Readonly<{
   input: StarBeastGenesisRendererPrototypeInput;
   consciousnessState: StarBeastCosmicConsciousnessState;
+  stellarFleshState: StarBeastStellarFleshState;
 }>;
 
 const STAGE_DEPTH = Object.freeze({
@@ -37,6 +39,32 @@ const MANSION_CONNECTIONS = Object.freeze([
   [2, 5],
 ] as const);
 
+const STELLAR_FLESH_POINTS = Object.freeze([
+  [184, 238],
+  [225, 214],
+  [271, 192],
+  [318, 180],
+  [365, 194],
+  [412, 177],
+  [459, 198],
+  [507, 190],
+  [552, 211],
+  [596, 236],
+  [218, 270],
+  [267, 252],
+  [315, 271],
+  [362, 244],
+  [409, 267],
+  [456, 244],
+  [503, 273],
+  [551, 256],
+  [595, 282],
+  [279, 314],
+  [367, 319],
+  [459, 316],
+  [536, 306],
+] as const);
+
 function drawGlow(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -54,22 +82,7 @@ function drawGlow(
   ctx.fill();
 }
 
-function drawTigerPresence(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  pulse: number,
-) {
-  const scale = Math.min(width / 820, height / 570);
-  const offsetX = (width - 820 * scale) / 2;
-  const offsetY = (height - 570 * scale) / 2 + height * 0.035;
-
-  ctx.save();
-  ctx.translate(offsetX, offsetY);
-  ctx.scale(scale, scale);
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
-
+function createTigerBoundary() {
   const boundary = new Path2D();
   boundary.moveTo(184, 276);
   boundary.bezierCurveTo(145, 268, 124, 238, 135, 202);
@@ -92,6 +105,26 @@ function drawTigerPresence(
   boundary.lineTo(226, 453);
   boundary.lineTo(234, 329);
   boundary.bezierCurveTo(208, 317, 189, 302, 184, 276);
+  return boundary;
+}
+
+function drawTigerPresence(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  pulse: number,
+) {
+  const scale = Math.min(width / 820, height / 570);
+  const offsetX = (width - 820 * scale) / 2;
+  const offsetY = (height - 570 * scale) / 2 + height * 0.035;
+
+  ctx.save();
+  ctx.translate(offsetX, offsetY);
+  ctx.scale(scale, scale);
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+
+  const boundary = createTigerBoundary();
 
   ctx.shadowColor = "rgba(229, 206, 158, 0.74)";
   ctx.shadowBlur = 22 + pulse * 9;
@@ -102,6 +135,70 @@ function drawTigerPresence(
   ctx.strokeStyle = "rgba(255, 246, 222, 0.42)";
   ctx.lineWidth = 0.55;
   ctx.stroke(boundary);
+  ctx.restore();
+}
+
+function drawStellarFleshField(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  seconds: number,
+  breath: number,
+  stellarFleshState: StarBeastStellarFleshState,
+) {
+  const scale = Math.min(width / 820, height / 570);
+  const offsetX = (width - 820 * scale) / 2;
+  const offsetY = (height - 570 * scale) / 2 + height * 0.035;
+  const isThin = stellarFleshState.fleshMode === "THIN_FIELD";
+  const isSettling = stellarFleshState.fleshMode === "SETTLING_FIELD";
+  const densityLimit = isThin ? 11 : isSettling ? 18 : STELLAR_FLESH_POINTS.length;
+  const fieldAlpha = isThin ? 0.065 : isSettling ? 0.105 : 0.13;
+
+  ctx.save();
+  ctx.translate(offsetX, offsetY);
+  ctx.scale(scale, scale);
+  if (stellarFleshState.fleshMode === "STABLE_LIVING_FIELD") {
+    ctx.clip(createTigerBoundary());
+  } else {
+    const latentField = new Path2D();
+    latentField.ellipse(408, 247, 265, 126, -0.02, 0, Math.PI * 2);
+    ctx.clip(latentField);
+  }
+  ctx.globalCompositeOperation = "screen";
+
+  const centralField = ctx.createRadialGradient(390, 242, 12, 390, 242, 255);
+  centralField.addColorStop(0, `rgba(213, 198, 169, ${fieldAlpha + breath * 0.012})`);
+  centralField.addColorStop(0.44, `rgba(125, 132, 151, ${fieldAlpha * 0.52})`);
+  centralField.addColorStop(0.76, `rgba(75, 83, 108, ${fieldAlpha * 0.24})`);
+  centralField.addColorStop(1, "rgba(34, 38, 55, 0)");
+  ctx.fillStyle = centralField;
+  ctx.fillRect(105, 80, 620, 390);
+
+  const settledField = ctx.createRadialGradient(470, 284, 8, 470, 284, 190);
+  settledField.addColorStop(0, `rgba(205, 178, 121, ${fieldAlpha * 0.62})`);
+  settledField.addColorStop(0.56, `rgba(105, 112, 132, ${fieldAlpha * 0.34})`);
+  settledField.addColorStop(1, "rgba(38, 42, 59, 0)");
+  ctx.fillStyle = settledField;
+  ctx.fillRect(220, 105, 450, 330);
+
+  for (let index = 0; index < densityLimit; index += 1) {
+    const [baseX, baseY] = STELLAR_FLESH_POINTS[index];
+    const drift = Math.sin(seconds * 0.18 + index * 1.73) * (isThin ? 1.2 : 2.2);
+    const depth = 0.22 + ((index * 7) % 9) * 0.032;
+    ctx.fillStyle = `rgba(232, 222, 201, ${depth * (isThin ? 0.55 : 0.78)})`;
+    ctx.beginPath();
+    ctx.arc(baseX, baseY + drift, index % 5 === 0 ? 1.35 : 0.72, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.strokeStyle = `rgba(188, 180, 165, ${isThin ? 0.035 : 0.065})`;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.ellipse(408, 245, 214, 76, -0.05, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(423, 271, 168, 53, 0.04, 0, Math.PI * 2);
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -187,6 +284,7 @@ function drawSilentPresenceField(
 export function StarBeastGenesisRendererPrototypeCanvas({
   input,
   consciousnessState,
+  stellarFleshState,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -250,6 +348,19 @@ export function StarBeastGenesisRendererPrototypeCanvas({
         "SILENT_PRESENCE"
       ) {
         drawSilentPresenceField(context, width, height);
+      }
+
+      if (
+        stellarFleshState.innerFieldReference.expressionState !== "ABSENT"
+      ) {
+        drawStellarFleshField(
+          context,
+          width,
+          height,
+          seconds,
+          slowBreath,
+          stellarFleshState,
+        );
       }
 
       if (stageDepth >= 1) {
@@ -345,7 +456,7 @@ export function StarBeastGenesisRendererPrototypeCanvas({
       observer.disconnect();
       window.cancelAnimationFrame(animationFrame);
     };
-  }, [consciousnessState, input]);
+  }, [consciousnessState, input, stellarFleshState]);
 
   return (
     <canvas
@@ -353,6 +464,7 @@ export function StarBeastGenesisRendererPrototypeCanvas({
       className="gy-genesis-renderer-slice__canvas"
       aria-label={`艮之白虎隔离视觉原型：${input.visualStateReference.stage}`}
       data-consciousness-mode={consciousnessState.consciousnessMode}
+      data-stellar-flesh-mode={stellarFleshState.fleshMode}
     />
   );
 }

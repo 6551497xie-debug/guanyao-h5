@@ -6,6 +6,7 @@ import {
   resolveStarBeastGenesisRendererPrototype,
   STAR_BEAST_GENESIS_STAGE_ORDER,
 } from "../services/starBeastGenesisRendererPrototype";
+import { resolveStarBeastStellarFlesh } from "../services/starBeastStellarFleshMapping";
 import type { LifeArchetypeProfile } from "../types/originalSelfLifeSchema";
 import type { StarbeastDerivationReady } from "../types/guanyaoStarbeast";
 import type {
@@ -97,7 +98,9 @@ export function StarBeastGenesisRendererSlicePreview() {
     if (renderer.status !== "AVAILABLE" || consciousness.status !== "AVAILABLE") {
       return null;
     }
-    return Object.freeze({ renderer, consciousness });
+    const stellarFlesh = resolveStarBeastStellarFlesh(consciousness.state);
+    if (stellarFlesh.status !== "AVAILABLE") return null;
+    return Object.freeze({ renderer, consciousness, stellarFlesh });
   }, [stage]);
 
   if (!model) {
@@ -117,15 +120,17 @@ export function StarBeastGenesisRendererSlicePreview() {
       data-prototype-scope="ISOLATED_PROTOTYPE_ONLY"
       data-genesis-stage={stage}
       data-consciousness-mode={model.consciousness.state.consciousnessMode}
+      data-stellar-flesh-mode={model.stellarFlesh.state.fleshMode}
     >
       <StarBeastGenesisRendererPrototypeCanvas
         input={model.renderer.input}
         consciousnessState={model.consciousness.state}
+        stellarFleshState={model.stellarFlesh.state}
       />
       <div className="gy-genesis-renderer-slice__veil" aria-hidden="true" />
 
       <header className="gy-genesis-renderer-slice__header">
-        <span>GUANYAO · GENESIS PROTOTYPE / P85 + P86</span>
+        <span>GUANYAO · GENESIS PROTOTYPE / P85 + P86 + P87</span>
         <span>ISOLATED</span>
       </header>
 

@@ -168,6 +168,14 @@ export type {
   StarBeastStarDustFlowReference,
 } from "./starBeastCosmicConsciousness";
 export type {
+  StarBeastStellarFleshBoundaryFieldReference,
+  StarBeastStellarFleshDensityReference,
+  StarBeastStellarFleshInnerFieldReference,
+  StarBeastStellarFleshMode,
+  StarBeastStellarFleshResult,
+  StarBeastStellarFleshState,
+} from "./starBeastStellarFlesh";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,
