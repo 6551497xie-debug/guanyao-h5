@@ -250,6 +250,17 @@ export type {
   StarBeastGenesisStage,
 } from "./starBeastGenesisExperience";
 export type {
+  StarBeastGenesisExperiencePresentationReadinessBlocked,
+  StarBeastGenesisExperiencePresentationReadinessBlockedReason,
+  StarBeastGenesisExperiencePresentationReadinessInput,
+  StarBeastGenesisExperiencePresentationReadinessReady,
+  StarBeastGenesisExperiencePresentationReadinessResult,
+  StarBeastGenesisExperiencePresentationReadinessUnavailable,
+  StarBeastGenesisExperiencePresentationReadinessUnavailableReason,
+  StarBeastGenesisManualAcceptanceReference,
+  StarBeastGenesisPreviewScopeReference,
+} from "./starBeastGenesisExperiencePresentationReadiness";
+export type {
   StarBeastPrototypeCoreStar,
   StarBeastPrototypeGeometryPath,
   StarBeastPrototypeGeometryPoint,
