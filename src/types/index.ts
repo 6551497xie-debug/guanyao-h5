@@ -215,6 +215,18 @@ export type {
   PersonalStarBeastManifestationReadinessUnavailableReason,
 } from "./personalStarBeastManifestationReadiness";
 export type {
+  PersonalStarBeastFourSymbolSpatialFieldReference,
+  PersonalStarBeastLifeForceModulationReference,
+  PersonalStarBeastManifestationGrammarReference,
+  PersonalStarBeastManifestationReadinessReference,
+  PersonalStarBeastManifestationStageReference,
+  PersonalStarBeastMansionSeedStructureReference,
+  PersonalStarBeastSceneModel,
+  PersonalStarBeastSceneModelBoundary,
+  PersonalStarBeastSceneModelInput,
+  PersonalStarBeastSceneQualityProfileReference,
+} from "./personalStarBeastSceneModel";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,
