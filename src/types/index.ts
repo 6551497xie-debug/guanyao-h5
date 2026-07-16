@@ -330,6 +330,20 @@ export type {
   ProductionIdentitySourceInputNormalizerImplementationScope,
 } from "./productionIdentitySourceInputNormalizerImplementationReadiness";
 export type {
+  ProductionIdentitySourceBirthLocationContextInput,
+  ProductionIdentitySourceBirthLocationContextReference,
+  ProductionIdentitySourceInputNormalizationReference,
+  ProductionIdentitySourceInputNormalizerBlocked,
+  ProductionIdentitySourceInputNormalizerBlockedReason,
+  ProductionIdentitySourceInputNormalizerBoundary,
+  ProductionIdentitySourceInputNormalizerInput,
+  ProductionIdentitySourceInputNormalizerInputShape,
+  ProductionIdentitySourceInputNormalizerResult,
+  ProductionIdentitySourceInputNormalizerReady,
+  ProductionIdentitySourceInputNormalizerUnavailable,
+  ProductionIdentitySourceInputNormalizerUnavailableReason,
+} from "./productionIdentitySourceInputNormalizer";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
