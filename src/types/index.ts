@@ -139,6 +139,18 @@ export type {
   StarBeastVisualLayerKind,
 } from "./starBeastAssetArchitecture";
 export type {
+  GenLifeArchetypeProfile,
+  StarBeastGenesisPrototypeAsset,
+  StarBeastGenesisPrototypeAssetBlockedReason,
+  StarBeastGenesisPrototypeAssetInput,
+  StarBeastGenesisPrototypeAssetResult,
+  StarBeastGenesisPrototypeExpressionLayer,
+  StarBeastGenesisPrototypeExpressionLayerKind,
+  StarBeastGenesisPrototypeStage,
+  StarBeastGenesisPrototypeStageDefinition,
+  WesternSevenMansion,
+} from "./starBeastGenesisPrototypeAsset";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,
