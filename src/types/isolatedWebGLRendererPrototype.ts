@@ -1,5 +1,6 @@
 import type { IsolatedWebGLRendererPrototypeAuthorization } from "./isolatedWebGLRendererPrototypeAuthorization";
 import type { PersonalStarBeastLifePresenceProjection } from "./personalStarBeastLifePresenceProjection";
+import type { PersonalStarBeastLifeStarCoreProjection } from "./personalStarBeastLifeStarCoreProjection";
 import type { PersonalStarBeastRenderPlan } from "./personalStarBeastRenderPlan";
 
 export type IsolatedWebGLRendererPrototypeSceneProjection = Readonly<{
@@ -16,6 +17,7 @@ export type IsolatedWebGLRendererPrototypeSceneProjection = Readonly<{
     lineOpacity: number;
   }>;
   lifePresence: PersonalStarBeastLifePresenceProjection;
+  lifeStarCore: PersonalStarBeastLifeStarCoreProjection;
   formField: Readonly<{
     hue: number;
     boundaryScale: number;

@@ -27,6 +27,9 @@ export type PersonalStarBeastLifePresenceProjection = Readonly<{
     enclosure: number;
     flowDirection: number;
     boundarySoftness: number;
+    spatialContraction: number;
+    postureBias: number;
+    nodeDistributionBias: number;
   }>;
   sourcePlanSemanticRole: PersonalStarBeastRenderPlan["semanticRole"];
   renderPlanOnly: true;

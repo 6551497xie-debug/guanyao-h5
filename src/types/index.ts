@@ -264,6 +264,7 @@ export type {
   IsolatedWebGLRendererPrototypeSnapshot,
 } from "./isolatedWebGLRendererPrototype";
 export type { PersonalStarBeastLifePresenceProjection } from "./personalStarBeastLifePresenceProjection";
+export type { PersonalStarBeastLifeStarCoreProjection } from "./personalStarBeastLifeStarCoreProjection";
 export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,

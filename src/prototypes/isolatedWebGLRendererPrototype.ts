@@ -21,6 +21,7 @@ import {
 } from "three";
 import { createIsolatedWebGLPrototypeRenderPlanReference } from "../services/isolatedWebGLPrototypeRenderPlanReference";
 import { projectPersonalStarBeastRenderPlanToLifePresence } from "../services/personalStarBeastLifePresenceProjection";
+import { projectLifePresenceToLifeStarCore } from "../services/personalStarBeastLifeStarCoreProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type {
   IsolatedWebGLRendererPrototypeBoundary,
@@ -75,6 +76,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
   const lifePresence = projectPersonalStarBeastRenderPlanToLifePresence(plan);
+  const lifeStarCore = projectLifePresenceToLifeStarCore(lifePresence);
   const structureUnit = referenceUnit(
     plan.spatialExpression.structureDensity.referenceId,
   );
@@ -124,6 +126,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
             ),
     }),
     lifePresence,
+    lifeStarCore,
     rendererParametersOnly: true,
     identityBlind: true,
     noLifeFactCopy: true,
@@ -326,8 +329,17 @@ export function createIsolatedWebGLRendererPrototype(
   root.add(cosmicField);
 
   const lifePresence = sceneProjection.lifePresence;
+  const lifeStarCore = sceneProjection.lifeStarCore;
   const spineSegments = lifePresence.stellarSkeleton.spineSegments;
   const branchCount = lifePresence.stellarSkeleton.branchCount;
+  const fieldPoseScale =
+    lifePresence.morphologicalField.mode === "EXPANSIVE"
+      ? 1.16
+      : lifePresence.morphologicalField.mode === "CONVERGING"
+        ? 0.92
+        : lifePresence.morphologicalField.mode === "WRAPPED"
+          ? 0.84
+          : 1;
   const axisX = Math.cos(lifePresence.stellarSkeleton.axisAngle);
   const axisY = Math.sin(lifePresence.stellarSkeleton.axisAngle);
   const perpendicularX = -axisY;
@@ -339,7 +351,9 @@ export function createIsolatedWebGLRendererPrototype(
     const offset =
       (progress - 0.45) * lifePresence.stellarSkeleton.spineLength;
     const bend =
-      Math.sin(progress * Math.PI) * lifePresence.morphologicalField.bend;
+      Math.sin(progress * Math.PI) *
+      (lifePresence.morphologicalField.bend +
+        lifePresence.morphologicalField.postureBias * 0.5);
     const depth =
       Math.sin(progress * Math.PI * 2) *
       lifePresence.morphologicalField.enclosure *
@@ -364,7 +378,10 @@ export function createIsolatedWebGLRendererPrototype(
   }
 
   for (let index = 0; index < branchCount; index += 1) {
-    const originIndex = index % Math.max(1, spineSegments - 1);
+    const originIndex =
+      Math.floor(
+        index * lifePresence.morphologicalField.nodeDistributionBias,
+      ) % Math.max(1, spineSegments - 1);
     const originOffset = originIndex * 3;
     const origin: [number, number, number] = [
       spinePositions[originOffset],
@@ -373,9 +390,14 @@ export function createIsolatedWebGLRendererPrototype(
     ];
     const side = index % 2 === 0 ? 1 : -1;
     const branchLength =
-      lifePresence.stellarSkeleton.branchSpread * (0.74 + (index % 3) * 0.12);
+      lifePresence.stellarSkeleton.branchSpread *
+      fieldPoseScale *
+      (1 + lifePresence.morphologicalField.spatialContraction * 0.32) *
+      (0.74 + (index % 3) * 0.12);
     const branchCurl =
-      lifePresence.morphologicalField.bend * (0.35 + index * 0.06);
+      (lifePresence.morphologicalField.bend +
+        lifePresence.morphologicalField.postureBias * 0.5) *
+      (0.35 + index * 0.06);
     const mid: [number, number, number] = [
       origin[0] + perpendicularX * side * branchLength * 0.42 + axisX * branchCurl,
       origin[1] + perpendicularY * side * branchLength * 0.42 + axisY * branchCurl,
@@ -443,11 +465,18 @@ export function createIsolatedWebGLRendererPrototype(
       depthWrite: false,
     }),
   );
+  const structurePointMaterial = structurePoints.material as PointsMaterial;
   const structureGroup = new Group();
   structureGroup.scale.setScalar(
-    sceneProjection.formField.boundaryScale * 1.45,
+    sceneProjection.formField.boundaryScale *
+      fieldPoseScale *
+      (1 + lifePresence.morphologicalField.spatialContraction * 0.22) *
+      1.45,
   );
-  structureGroup.rotation.z = lifePresence.morphologicalField.bend * 0.12;
+  structureGroup.rotation.z =
+    lifePresence.morphologicalField.bend * 0.12 +
+    lifePresence.morphologicalField.postureBias * 0.08 +
+    lifePresence.morphologicalField.flowDirection * 0.04;
   structureGroup.add(spineLine, branchLines, structurePoints);
   root.add(structureGroup);
 
@@ -456,41 +485,55 @@ export function createIsolatedWebGLRendererPrototype(
     0.76,
     0.7,
   );
+  const coreRadius =
+    0.1 + lifeStarCore.surfacePresence.innerLayerDepth * 0.42;
   const core = new Mesh(
+    new SphereGeometry(coreRadius, 20, 20),
+    new MeshBasicMaterial({
+      color: coreColor,
+      transparent: true,
+      opacity: 0.72 + lifeStarCore.surfacePresence.surfaceVariation * 0.7,
+      blending: AdditiveBlending,
+    }),
+  );
+  const coreSurface = new Mesh(
     new SphereGeometry(
-      0.1 + lifePresence.corePresence.influenceRadius * 0.08,
-      20,
-      20,
+      coreRadius * (1.18 + lifeStarCore.surfacePresence.surfaceVariation * 0.4),
+      18,
+      18,
     ),
     new MeshBasicMaterial({
       color: coreColor,
       transparent: true,
-      opacity: 0.92,
+      opacity: 0.08 + lifeStarCore.surfacePresence.surfaceVariation * 0.34,
       blending: AdditiveBlending,
+      depthWrite: false,
     }),
   );
   const coreHalo = new Mesh(
     new SphereGeometry(
-      0.22 + lifePresence.corePresence.influenceRadius * 0.16,
+      coreRadius * lifeStarCore.surfacePresence.atmosphereRadius,
       18,
       18,
     ),
     new MeshBasicMaterial({
       color: coreColor,
       transparent: true,
-      opacity: 0.08 + lifePresence.corePresence.coherence * 0.08,
+      opacity: lifeStarCore.surfacePresence.atmosphereOpacity,
       blending: AdditiveBlending,
       depthWrite: false,
     }),
   );
   const coreLight = new PointLight(
     coreColor,
-    sceneProjection.lifeCore.intensity,
+    sceneProjection.lifeCore.intensity *
+      lifeStarCore.coreInfluence.lightFlowReach,
     6,
     1.7,
   );
   core.add(coreLight);
   root.add(coreHalo);
+  root.add(coreSurface);
   root.add(core);
 
   let frameCount = 0;
@@ -520,25 +563,56 @@ export function createIsolatedWebGLRendererPrototype(
           : 0) / 1000;
       root.rotation.y =
         elapsedSeconds * sceneProjection.motion.rotationSpeed;
+      const rhythmPhase =
+        (elapsedSeconds / lifeStarCore.temporalRhythm.periodSeconds) *
+        Math.PI *
+        2;
       const breath =
         1 +
-          Math.sin(elapsedSeconds * 0.72) *
-            sceneProjection.lifeCore.breathingAmplitude;
+          Math.sin(rhythmPhase) *
+            lifeStarCore.temporalRhythm.breathingAmplitude;
       const structureInfluence =
         1 +
         (breath - 1) *
-          sceneProjection.lifePresence.corePresence.aggregationStrength;
+          (lifeStarCore.coreInfluence.structureResponse +
+            sceneProjection.lifePresence.corePresence.aggregationStrength *
+              0.04);
+      const surfaceVariation =
+        0.96 +
+        Math.sin(rhythmPhase * 0.72 + 0.8) *
+          lifeStarCore.temporalRhythm.variationAmount;
       core.scale.setScalar(breath);
-      coreHalo.scale.setScalar(0.92 + breath * 0.08);
+      coreSurface.scale.setScalar(surfaceVariation);
+      coreHalo.scale.setScalar(
+        lifeStarCore.surfacePresence.atmosphereRadius *
+          (0.94 + breath * 0.06),
+      );
       structureGroup.scale.setScalar(
-        sceneProjection.formField.boundaryScale * 1.45 * structureInfluence,
+        sceneProjection.formField.boundaryScale *
+          fieldPoseScale *
+          (1 +
+            sceneProjection.lifePresence.morphologicalField.spatialContraction *
+              0.22) *
+          1.45 *
+          structureInfluence,
       );
       structureGroup.rotation.z =
         sceneProjection.lifePresence.morphologicalField.bend * 0.12 +
+        sceneProjection.lifePresence.morphologicalField.postureBias * 0.08 +
+        sceneProjection.lifePresence.morphologicalField.flowDirection * 0.04 +
         Math.sin(elapsedSeconds * sceneProjection.formField.flowSpeed) *
           sceneProjection.motion.driftAmplitude;
+      structurePointMaterial.opacity =
+        0.74 +
+        lifeStarCore.coreInfluence.nodeBreathCoupling *
+          0.16 *
+          (0.94 + (breath - 1) * 2);
+      structurePointMaterial.size =
+        lifePresence.stellarSkeleton.nodeScale *
+        (0.96 + lifeStarCore.coreInfluence.nodeBreathCoupling * 0.12 * breath);
       coreLight.intensity =
         sceneProjection.lifeCore.intensity *
+        lifeStarCore.coreInfluence.lightFlowReach *
         (0.92 +
           sceneProjection.lifePresence.corePresence.coherence * 0.08 * breath);
       renderer.render(scene, camera);
