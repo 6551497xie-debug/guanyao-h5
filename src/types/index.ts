@@ -199,6 +199,17 @@ export type {
   StarBeastPrototypeRendererInputReference,
 } from "./starBeastPrototypeExpressionChannelConsumption";
 export type {
+  StarBeastPrototypeRendererInputContract,
+  StarBeastPrototypeRendererInputContractAvailable,
+  StarBeastPrototypeRendererInputContractBlocked,
+  StarBeastPrototypeRendererInputContractBlockedReason,
+  StarBeastPrototypeRendererInputContractInput,
+  StarBeastPrototypeRendererInputContractResult,
+  StarBeastPrototypeRendererInputContractUnavailable,
+  StarBeastPrototypeRendererInputContractUnavailableReason,
+  StarBeastPrototypeRendererRequestReference,
+} from "./starBeastPrototypeRendererInputContract";
+export type {
   StarBeastPrototypeCoreStar,
   StarBeastPrototypeGeometryPath,
   StarBeastPrototypeGeometryPoint,
