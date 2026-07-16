@@ -465,6 +465,17 @@ export type {
   ProductionIdentitySourceConvergenceAuthorizationUnavailableReason,
 } from "./productionIdentitySourceConvergenceAuthorization";
 export type {
+  ProductionIdentitySourceConvergenceAvailable,
+  ProductionIdentitySourceConvergenceBlocked,
+  ProductionIdentitySourceConvergenceBlockedReason,
+  ProductionIdentitySourceConvergenceBoundary,
+  ProductionIdentitySourceConvergenceInput,
+  ProductionIdentitySourceConvergenceReference,
+  ProductionIdentitySourceConvergenceResult,
+  ProductionIdentitySourceConvergenceUnavailable,
+  ProductionIdentitySourceConvergenceUnavailableReason,
+} from "./productionIdentitySourceConvergence";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,

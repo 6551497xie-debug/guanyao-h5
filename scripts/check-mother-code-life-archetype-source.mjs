@@ -133,7 +133,7 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "source bridge is only consumed by schema entry and isolated genesis previews plus isolated scene model fixtures",
+    "source bridge is only consumed by schema entry, isolated genesis previews, scene model fixtures, and formal identity convergence",
     sourceCallSites.join(","),
     [
       "src/mocks/starBeastSceneModelFixtures.ts",
@@ -141,6 +141,7 @@ if (failures.length === 0) {
       "src/pages/StarBeastGenesisRendererSlicePreview.tsx",
       "src/services/motherCodeLifeArchetypeSource.ts",
       "src/services/originalSelfLifeSchemaEntry.ts",
+      "src/services/productionIdentitySourceConvergence.ts",
     ].sort().join(","),
   );
 

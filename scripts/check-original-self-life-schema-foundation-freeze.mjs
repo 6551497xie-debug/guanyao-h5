@@ -71,7 +71,7 @@ if (failures.length === 0) {
   };
 
   assertCallSites(
-    "mother code source is owned by entry and isolated genesis previews plus isolated scene model fixtures",
+    "mother code source is owned by entry, isolated genesis previews, scene model fixtures, and formal identity convergence",
     "resolveLifeArchetypeProfileFromMotherCode",
     [
       files.motherCodeSource,
@@ -79,6 +79,7 @@ if (failures.length === 0) {
       files.isolatedSceneModelFixture,
       files.isolatedGenesisPreview,
       files.isolatedGenesisRendererPreview,
+      "src/services/productionIdentitySourceConvergence.ts",
     ],
   );
   assertCallSites(

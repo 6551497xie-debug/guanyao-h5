@@ -226,7 +226,7 @@ if (failures.length === 0) {
   assertIncludes(
     "P13 bridge allowlist remains explicit",
     source.motherCodeSourceGate,
-    "source bridge is only consumed by schema entry and isolated genesis previews plus isolated scene model fixtures",
+    "source bridge is only consumed by schema entry, isolated genesis previews, scene model fixtures, and formal identity convergence",
   );
   assertIncludes(
     "P20 foundation freeze allows only the isolated P96 fixture consumer",
@@ -241,7 +241,7 @@ if (failures.length === 0) {
   assertIncludes(
     "P20 foundation freeze allowlist remains explicit",
     source.foundationFreezeGate,
-    "mother code source is owned by entry and isolated genesis previews plus isolated scene model fixtures",
+    "mother code source is owned by entry, isolated genesis previews, scene model fixtures, and formal identity convergence",
   );
 
   [

@@ -116,12 +116,12 @@ if (failures.length === 0) {
   assertIncludes(
     "Mother Code source gate allows only schema entry and isolated preview",
     motherSourceGateSource,
-    "source bridge is only consumed by schema entry and isolated genesis preview",
+    "source bridge is only consumed by schema entry, isolated genesis previews, scene model fixtures, and formal identity convergence",
   );
   assertIncludes(
     "foundation freeze allows only entry and isolated preview",
     foundationFreezeGateSource,
-    "mother code source is owned by entry and isolated genesis preview",
+    "mother code source is owned by entry, isolated genesis previews, scene model fixtures, and formal identity convergence",
   );
   assertIncludes(
     "asset architecture allows only isolated preview consumption",
