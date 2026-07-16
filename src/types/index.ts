@@ -189,6 +189,22 @@ export type {
   StarBeastGenesisSourceIdentity,
 } from "./starBeastGenesisSourceIdentity";
 export type {
+  PersonalStarBeastIdentityReference,
+  StarBeastFourSymbolFieldSource,
+  StarBeastIdentitySource,
+  StarBeastLifeArchetypeForceSource,
+  StarBeastMansionSeedSource,
+} from "./starBeastIdentitySource";
+export type {
+  StarMansionLifeTrajectoryPath,
+  StarMansionLifeTrajectorySource,
+  StarMansionLifeTrajectorySourceFreezeBlockedReason,
+  StarMansionLifeTrajectorySourceFreezeInput,
+  StarMansionLifeTrajectorySourceFreezeResult,
+  StarMansionLifeTrajectorySourceFreezeUnavailableReason,
+  StarMansionLifeTrajectoryStage,
+} from "./starMansionLifeTrajectory";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,
