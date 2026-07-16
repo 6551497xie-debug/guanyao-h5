@@ -388,6 +388,17 @@ export type {
   ProductionIdentitySourceAdapterImplementationAuthorizationUnavailableReason,
 } from "./productionIdentitySourceAdapterImplementationAuthorization";
 export type {
+  ProductionIdentitySourceNormalizedReferenceAdapterAvailable,
+  ProductionIdentitySourceNormalizedReferenceAdapterBlocked,
+  ProductionIdentitySourceNormalizedReferenceAdapterBlockedReason,
+  ProductionIdentitySourceNormalizedReferenceAdapterBoundary,
+  ProductionIdentitySourceNormalizedReferenceAdapterInput,
+  ProductionIdentitySourceNormalizedReferenceAdapterReference,
+  ProductionIdentitySourceNormalizedReferenceAdapterResult,
+  ProductionIdentitySourceNormalizedReferenceAdapterUnavailable,
+  ProductionIdentitySourceNormalizedReferenceAdapterUnavailableReason,
+} from "./productionIdentitySourceNormalizedReferenceAdapter";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
