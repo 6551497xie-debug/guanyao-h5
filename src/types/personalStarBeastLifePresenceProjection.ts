@@ -6,6 +6,7 @@ import type {
 import type { GenesisBirthMansionIgnitionProjection } from "./genesisBirthMansionIgnitionProjection";
 import type { GenesisFourSymbolAlignmentProjection } from "./genesisFourSymbolAlignmentProjection";
 import type { GenesisLifeForceInfusionProjection } from "./genesisLifeForceInfusionProjection";
+import type { GenesisPersonalRevealProjection } from "./genesisPersonalRevealProjection";
 
 export type PersonalStarBeastLifePresenceProjection = Readonly<{
   semanticRole: "PERSONAL_STAR_BEAST_LIFE_PRESENCE_PROJECTION";
@@ -72,6 +73,13 @@ export type PersonalStarBeastLifePresenceProjection = Readonly<{
     sourceProjectionReferenceId: string | null;
   }>;
   lifeForceInfusionProjectionReference: GenesisLifeForceInfusionProjection | null;
+  personalRevealResponse: Readonly<{
+    revealStage: "WAITING_FOR_FORCE_INFUSION" | "PERSONAL_FORM_EMERGING" | "PERSONAL_STAR_BEAST_REVEALED";
+    presenceMode: "SEED_CONTINUITY" | "FIELD_FORCE_COHERENCE" | "PERSONAL_PRESENCE";
+    revealOpacity: number;
+    sourceProjectionReferenceId: string | null;
+  }>;
+  personalRevealProjectionReference: GenesisPersonalRevealProjection | null;
   sourcePlanSemanticRole: PersonalStarBeastRenderPlan["semanticRole"];
   renderPlanOnly: true;
   rendererParametersOnly: true;

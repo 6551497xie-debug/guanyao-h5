@@ -4,6 +4,7 @@ import type { GenesisTimeSequenceRecognitionProjection } from "../types/genesisT
 import type { GenesisBirthMansionIgnitionProjection } from "../types/genesisBirthMansionIgnitionProjection";
 import type { GenesisFourSymbolAlignmentProjection } from "../types/genesisFourSymbolAlignmentProjection";
 import type { GenesisLifeForceInfusionProjection } from "../types/genesisLifeForceInfusionProjection";
+import type { GenesisPersonalRevealProjection } from "../types/genesisPersonalRevealProjection";
 import type { PersonalStarBeastLifePresenceProjection } from "../types/personalStarBeastLifePresenceProjection";
 
 const hashReference = (referenceId: string): number => {
@@ -35,6 +36,7 @@ export function projectPersonalStarBeastRenderPlanToLifePresence(
   birthMansionIgnitionProjection: GenesisBirthMansionIgnitionProjection | null = null,
   morphologicalFieldAlignmentProjection: GenesisFourSymbolAlignmentProjection | null = null,
   lifeForceInfusionProjection: GenesisLifeForceInfusionProjection | null = null,
+  personalRevealProjection: GenesisPersonalRevealProjection | null = null,
 ): PersonalStarBeastLifePresenceProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
@@ -145,6 +147,18 @@ export function projectPersonalStarBeastRenderPlanToLifePresence(
         lifeForceInfusionProjection?.motherCodeProfileReferenceId ?? null,
     }),
     lifeForceInfusionProjectionReference: lifeForceInfusionProjection,
+    personalRevealResponse: Object.freeze({
+      revealStage:
+        personalRevealProjection?.revealStage ??
+        "WAITING_FOR_FORCE_INFUSION",
+      presenceMode:
+        personalRevealProjection?.revealExpression.presenceMode ??
+        "SEED_CONTINUITY",
+      revealOpacity: personalRevealProjection?.revealExpression.revealOpacity ?? 0,
+      sourceProjectionReferenceId:
+        personalRevealProjection?.identityReferenceId ?? null,
+    }),
+    personalRevealProjectionReference: personalRevealProjection,
     sourcePlanSemanticRole: plan.semanticRole,
     renderPlanOnly: true,
     rendererParametersOnly: true,

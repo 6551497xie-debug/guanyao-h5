@@ -301,6 +301,15 @@ export type {
   GenesisLifeForceInfusionUnavailableReason,
 } from "./genesisLifeForceInfusionProjection";
 export type {
+  GenesisPersonalRevealBlockedReason,
+  GenesisPersonalRevealInput,
+  GenesisPersonalRevealPresenceMode,
+  GenesisPersonalRevealProjection,
+  GenesisPersonalRevealProjectionResult,
+  GenesisPersonalRevealStage,
+  GenesisPersonalRevealUnavailableReason,
+} from "./genesisPersonalRevealProjection";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,

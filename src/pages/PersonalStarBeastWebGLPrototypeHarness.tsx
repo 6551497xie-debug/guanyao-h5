@@ -10,6 +10,7 @@ import { projectGenesisTimeSequenceRecognition } from "../services/genesisTimeSe
 import { projectGenesisBirthMansionIgnition } from "../services/genesisBirthMansionIgnitionProjection";
 import { projectGenesisFourSymbolAlignment } from "../services/genesisFourSymbolAlignmentProjection";
 import { projectGenesisLifeForceInfusion } from "../services/genesisLifeForceInfusionProjection";
+import { projectGenesisPersonalReveal } from "../services/genesisPersonalRevealProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import "../styles/personal-star-beast-webgl-prototype-harness.css";
 
@@ -130,6 +131,25 @@ const LIFE_FORCE_INFUSION_PROJECTION =
     ? LIFE_FORCE_INFUSION_RESULT.projection
     : null;
 
+const PERSONAL_STAR_BEAST_IDENTITY_REFERENCE =
+  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.identitySourceReference
+    .personalStarBeastReference;
+
+const PERSONAL_REVEAL_RESULT = projectGenesisPersonalReveal(
+  Object.freeze({
+    birthMansionIgnitionProjection: BIRTH_MANSION_IGNITION_PROJECTION,
+    morphologicalFieldAlignmentProjection: FOUR_SYMBOL_ALIGNMENT_PROJECTION,
+    lifeForceInfusionProjection: LIFE_FORCE_INFUSION_PROJECTION,
+    personalStarBeastIdentityReference:
+      PERSONAL_STAR_BEAST_IDENTITY_REFERENCE,
+  }),
+);
+
+const PERSONAL_REVEAL_PROJECTION =
+  PERSONAL_REVEAL_RESULT.status === "AVAILABLE"
+    ? PERSONAL_REVEAL_RESULT.projection
+    : null;
+
 const PHASE_COPY: Readonly<
   Record<
     FirstImpressionPhase,
@@ -195,6 +215,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
         birthMansionIgnitionProjection: BIRTH_MANSION_IGNITION_PROJECTION,
         morphologicalFieldAlignmentProjection: FOUR_SYMBOL_ALIGNMENT_PROJECTION,
         lifeForceInfusionProjection: LIFE_FORCE_INFUSION_PROJECTION,
+        personalRevealProjection: PERSONAL_REVEAL_PROJECTION,
       }),
     );
 
