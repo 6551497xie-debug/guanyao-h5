@@ -178,6 +178,16 @@ export type {
   StarBeastPrototypeVisualStateReference,
 } from "./starBeastAssetPrototypeAdapter";
 export type {
+  StarBeastPrototypeExpressionChannelReadinessBlocked,
+  StarBeastPrototypeExpressionChannelReadinessBlockedReason,
+  StarBeastPrototypeExpressionChannelReadinessInput,
+  StarBeastPrototypeExpressionChannelReadinessReady,
+  StarBeastPrototypeExpressionChannelReadinessResult,
+  StarBeastPrototypeExpressionChannelReadinessUnavailable,
+  StarBeastPrototypeExpressionChannelReadinessUnavailableReason,
+  StarBeastPrototypeIsolationScopeReference,
+} from "./starBeastPrototypeExpressionChannelReadiness";
+export type {
   StarBeastPrototypeCoreStar,
   StarBeastPrototypeGeometryPath,
   StarBeastPrototypeGeometryPoint,
