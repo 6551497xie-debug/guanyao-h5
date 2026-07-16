@@ -253,6 +253,17 @@ export type {
   IsolatedWebGLRendererPrototypeAuthorizationUnavailableReason,
 } from "./isolatedWebGLRendererPrototypeAuthorization";
 export type {
+  IsolatedWebGLRendererPrototypeBlockedReason,
+  IsolatedWebGLRendererPrototypeBoundary,
+  IsolatedWebGLRendererPrototypeContextState,
+  IsolatedWebGLRendererPrototypeController,
+  IsolatedWebGLRendererPrototypeFallback,
+  IsolatedWebGLRendererPrototypeInput,
+  IsolatedWebGLRendererPrototypeResult,
+  IsolatedWebGLRendererPrototypeSceneProjection,
+  IsolatedWebGLRendererPrototypeSnapshot,
+} from "./isolatedWebGLRendererPrototype";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,

@@ -189,13 +189,16 @@ if (failures.length === 0) {
     ...(packageJson.dependencies ?? {}),
     ...(packageJson.devDependencies ?? {}),
   });
-  ["three", "@react-three/fiber"].forEach((dependency) => {
-    if (Object.hasOwn(dependencies, dependency)) {
-      failures.push(`WebGL dependency must remain absent=${dependency}`);
-    } else {
-      console.log(`PASS | WebGL dependency remains absent | ${dependency}`);
-    }
-  });
+  if (!Object.hasOwn(dependencies, "three")) {
+    failures.push("P99 authorized Three.js dependency is required");
+  } else {
+    console.log("PASS | Three.js activation is owned by isolated P99");
+  }
+  if (Object.hasOwn(dependencies, "@react-three/fiber")) {
+    failures.push("React Three Fiber remains unauthorized");
+  } else {
+    console.log("PASS | React Three Fiber remains absent");
+  }
 
   assertIncludes(
     "Scene Model gate registered",

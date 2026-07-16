@@ -33,7 +33,6 @@ const files = Object.freeze({
 const forbiddenImplementationPaths = Object.freeze([
   "src/renderers/personalStarBeastWebGLRenderer.ts",
   "src/renderers/isolatedWebGLRendererPrototype.ts",
-  "src/prototypes/isolatedWebGLRendererPrototype.ts",
   "src/services/personalStarBeastWebGLRenderer.ts",
 ]);
 
@@ -242,13 +241,16 @@ if (failures.length === 0) {
     ...(packageJson.dependencies ?? {}),
     ...(packageJson.devDependencies ?? {}),
   });
-  ["three", "@react-three/fiber"].forEach((dependency) => {
-    if (Object.hasOwn(dependencies, dependency)) {
-      failures.push(`P98 must not install dependency=${dependency}`);
-    } else {
-      console.log(`PASS | WebGL dependency remains absent | ${dependency}`);
-    }
-  });
+  if (!Object.hasOwn(dependencies, "three")) {
+    failures.push("P99 authorized Three.js dependency is required");
+  } else {
+    console.log("PASS | P98 authorization enables only isolated P99 Three.js");
+  }
+  if (Object.hasOwn(dependencies, "@react-three/fiber")) {
+    failures.push("React Three Fiber remains outside P99 authorization");
+  } else {
+    console.log("PASS | React Three Fiber remains absent");
+  }
 
   [source.starbeastLab, source.genesisPreview].forEach((pageSource, index) => {
     const pageName = index === 0 ? "StarbeastLab" : "Genesis Preview";

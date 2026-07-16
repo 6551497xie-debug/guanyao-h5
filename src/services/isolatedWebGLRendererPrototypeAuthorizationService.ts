@@ -1,11 +1,11 @@
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type {
-  IsolatedWebGLPrototypeRenderPlanReference,
   IsolatedWebGLRendererPrototypeAuthorizationBlockedReason,
   IsolatedWebGLRendererPrototypeAuthorizationInput,
   IsolatedWebGLRendererPrototypeAuthorizationResult,
   IsolatedWebGLRendererPrototypeAuthorizationUnavailableReason,
 } from "../types/isolatedWebGLRendererPrototypeAuthorization";
+import { createIsolatedWebGLPrototypeRenderPlanReference } from "./isolatedWebGLPrototypeRenderPlanReference";
 
 const AUTHORIZATION_BOUNDARY = Object.freeze({
   explicitAuthorizationOnly: true,
@@ -49,30 +49,6 @@ const blocked = (
     input,
     noAuthorization: true,
     boundary: AUTHORIZATION_BOUNDARY,
-  });
-
-const createOpaquePlanReferenceId = (
-  plan: PersonalStarBeastRenderPlan,
-): string => {
-  const input = JSON.stringify(plan);
-  let hash = 2166136261;
-  for (let index = 0; index < input.length; index += 1) {
-    hash ^= input.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-  return `isolated-webgl-plan:${(hash >>> 0).toString(36)}`;
-};
-
-const createPlanReference = (
-  plan: PersonalStarBeastRenderPlan,
-): IsolatedWebGLPrototypeRenderPlanReference =>
-  Object.freeze({
-    referenceType: "ISOLATED_WEBGL_PROTOTYPE_RENDER_PLAN",
-    referenceId: createOpaquePlanReferenceId(plan),
-    source: "personal_star_beast_scene_model_adapter",
-    sourceSemanticRole: plan.semanticRole,
-    identityBlind: true,
-    rendererNeutral: true,
   });
 
 const isAuthorizedPlan = (plan: PersonalStarBeastRenderPlan): boolean =>
@@ -144,8 +120,12 @@ export function authorizeIsolatedWebGLRendererPrototype(
     return blocked(input, "RENDER_PLAN_BOUNDARY_INVALID");
   }
 
-  const leftReference = createPlanReference(leftResult.plan);
-  const rightReference = createPlanReference(rightResult.plan);
+  const leftReference = createIsolatedWebGLPrototypeRenderPlanReference(
+    leftResult.plan,
+  );
+  const rightReference = createIsolatedWebGLPrototypeRenderPlanReference(
+    rightResult.plan,
+  );
   if (leftReference.referenceId === rightReference.referenceId) {
     return blocked(input, "RENDER_PLAN_PAIR_NOT_DISTINCT");
   }

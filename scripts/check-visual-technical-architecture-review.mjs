@@ -32,12 +32,34 @@ const assertExcludes = (name, source, forbidden) => {
   if (source.includes(forbidden)) failures.push(`${name} forbidden=${forbidden}`);
   else console.log(`PASS | ${name} | forbidden=absent`);
 };
-const assertDependencyAbsent = (packageJson, dependency) => {
-  const present =
-    Object.hasOwn(packageJson.dependencies ?? {}, dependency) ||
-    Object.hasOwn(packageJson.devDependencies ?? {}, dependency);
-  if (present) failures.push(`dependency must remain absent=${dependency}`);
-  else console.log(`PASS | dependency remains uninstalled | ${dependency}`);
+const assertP99DependencyBoundary = (packageJson) => {
+  if (!Object.hasOwn(packageJson.dependencies ?? {}, "three")) {
+    failures.push("P99 authorized Three.js dependency is required");
+  } else {
+    console.log("PASS | Three.js exists only after P98 authorization");
+  }
+  if (!Object.hasOwn(packageJson.devDependencies ?? {}, "@types/three")) {
+    failures.push("P99 Three.js type dependency is required");
+  } else {
+    console.log("PASS | Three.js types support the isolated module");
+  }
+  if (Object.hasOwn(packageJson.dependencies ?? {}, "@react-three/fiber")) {
+    failures.push("React Three Fiber remains unauthorized");
+  } else {
+    console.log("PASS | React Three Fiber remains absent");
+  }
+  if (
+    !fs.existsSync(
+      path.join(
+        rootDir,
+        "docs/GUANYAO_ISOLATED_WEBGL_RENDERER_PROTOTYPE_SLICE_PROTOCOL.md",
+      ),
+    )
+  ) {
+    failures.push("P99 isolated Renderer protocol is required");
+  } else {
+    console.log("PASS | P99 owns the post-review dependency activation");
+  }
 };
 
 const absolute = Object.fromEntries(
@@ -146,8 +168,7 @@ if (failures.length === 0) {
     "PERSONAL_STAR_BEAST_SOURCE_VALIDATION",
   );
 
-  assertDependencyAbsent(packageJson, "three");
-  assertDependencyAbsent(packageJson, "@react-three/fiber");
+  assertP99DependencyBoundary(packageJson);
 
   [
     "CanvasRenderingContext2D",
