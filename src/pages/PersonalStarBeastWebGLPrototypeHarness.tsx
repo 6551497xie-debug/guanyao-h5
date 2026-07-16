@@ -9,6 +9,7 @@ import { adaptPersonalStarBeastSceneModelToRenderPlan } from "../services/person
 import { projectGenesisTimeSequenceRecognition } from "../services/genesisTimeSequenceRecognitionProjection";
 import { projectGenesisBirthMansionIgnition } from "../services/genesisBirthMansionIgnitionProjection";
 import { projectGenesisFourSymbolAlignment } from "../services/genesisFourSymbolAlignmentProjection";
+import { projectGenesisLifeForceInfusion } from "../services/genesisLifeForceInfusionProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import "../styles/personal-star-beast-webgl-prototype-harness.css";
 
@@ -108,6 +109,27 @@ const FOUR_SYMBOL_ALIGNMENT_PROJECTION =
     ? FOUR_SYMBOL_ALIGNMENT_RESULT.projection
     : null;
 
+const MOTHER_CODE_PROFILE_REFERENCE =
+  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.identitySourceReference
+    .lifeArchetypeForce.sourceMotherCodeProfileReference;
+
+const LIFE_ARCHETYPE_PROFILE_REFERENCE =
+  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.identitySourceReference
+    .lifeArchetypeForce.sourceLifeArchetypeProfileReference;
+
+const LIFE_FORCE_INFUSION_RESULT = projectGenesisLifeForceInfusion(
+  Object.freeze({
+    morphologicalFieldAlignmentProjection: FOUR_SYMBOL_ALIGNMENT_PROJECTION,
+    motherCodeProfileReference: MOTHER_CODE_PROFILE_REFERENCE,
+    lifeArchetypeProfileReference: LIFE_ARCHETYPE_PROFILE_REFERENCE,
+  }),
+);
+
+const LIFE_FORCE_INFUSION_PROJECTION =
+  LIFE_FORCE_INFUSION_RESULT.status === "AVAILABLE"
+    ? LIFE_FORCE_INFUSION_RESULT.projection
+    : null;
+
 const PHASE_COPY: Readonly<
   Record<
     FirstImpressionPhase,
@@ -172,6 +194,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
         timeSequenceRecognitionProjection: TIME_SEQUENCE_RECOGNITION_PROJECTION,
         birthMansionIgnitionProjection: BIRTH_MANSION_IGNITION_PROJECTION,
         morphologicalFieldAlignmentProjection: FOUR_SYMBOL_ALIGNMENT_PROJECTION,
+        lifeForceInfusionProjection: LIFE_FORCE_INFUSION_PROJECTION,
       }),
     );
 

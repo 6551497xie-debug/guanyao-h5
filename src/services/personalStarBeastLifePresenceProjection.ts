@@ -3,6 +3,7 @@ import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRend
 import type { GenesisTimeSequenceRecognitionProjection } from "../types/genesisTimeSequenceRecognitionProjection";
 import type { GenesisBirthMansionIgnitionProjection } from "../types/genesisBirthMansionIgnitionProjection";
 import type { GenesisFourSymbolAlignmentProjection } from "../types/genesisFourSymbolAlignmentProjection";
+import type { GenesisLifeForceInfusionProjection } from "../types/genesisLifeForceInfusionProjection";
 import type { PersonalStarBeastLifePresenceProjection } from "../types/personalStarBeastLifePresenceProjection";
 
 const hashReference = (referenceId: string): number => {
@@ -33,6 +34,7 @@ export function projectPersonalStarBeastRenderPlanToLifePresence(
   timeSequenceProjection: GenesisTimeSequenceRecognitionProjection | null = null,
   birthMansionIgnitionProjection: GenesisBirthMansionIgnitionProjection | null = null,
   morphologicalFieldAlignmentProjection: GenesisFourSymbolAlignmentProjection | null = null,
+  lifeForceInfusionProjection: GenesisLifeForceInfusionProjection | null = null,
 ): PersonalStarBeastLifePresenceProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
@@ -130,6 +132,19 @@ export function projectPersonalStarBeastRenderPlanToLifePresence(
         morphologicalFieldAlignmentProjection?.sourceResultReferenceId ?? null,
     }),
     morphologicalFieldAlignmentProjectionReference: morphologicalFieldAlignmentProjection,
+    lifeForceInfusionResponse: Object.freeze({
+      infusionStage:
+        lifeForceInfusionProjection?.infusionStage ??
+        "WAITING_FOR_FIELD_ALIGNMENT",
+      corePull: lifeForceInfusionProjection?.lifeForceExpression.corePull ?? 0,
+      aggregationStrength:
+        lifeForceInfusionProjection?.lifeForceExpression.aggregationStrength ?? 0,
+      stability: lifeForceInfusionProjection?.lifeForceExpression.stability ?? 0,
+      presenceIntensity: lifeForceInfusionProjection?.presenceIntensity ?? 0,
+      sourceProjectionReferenceId:
+        lifeForceInfusionProjection?.motherCodeProfileReferenceId ?? null,
+    }),
+    lifeForceInfusionProjectionReference: lifeForceInfusionProjection,
     sourcePlanSemanticRole: plan.semanticRole,
     renderPlanOnly: true,
     rendererParametersOnly: true,

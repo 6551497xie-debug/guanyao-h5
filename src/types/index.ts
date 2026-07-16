@@ -292,6 +292,15 @@ export type {
   GenesisFourSymbolFieldMode,
 } from "./genesisFourSymbolAlignmentProjection";
 export type {
+  GenesisLifeForceExpressionMode,
+  GenesisLifeForceInfusionBlockedReason,
+  GenesisLifeForceInfusionInput,
+  GenesisLifeForceInfusionProjection,
+  GenesisLifeForceInfusionProjectionResult,
+  GenesisLifeForceInfusionStage,
+  GenesisLifeForceInfusionUnavailableReason,
+} from "./genesisLifeForceInfusionProjection";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,

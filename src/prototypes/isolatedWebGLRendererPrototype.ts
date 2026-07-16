@@ -25,6 +25,7 @@ import { projectLifePresenceToLifeStarCore } from "../services/personalStarBeast
 import type { GenesisTimeSequenceRecognitionProjection } from "../types/genesisTimeSequenceRecognitionProjection";
 import type { GenesisBirthMansionIgnitionProjection } from "../types/genesisBirthMansionIgnitionProjection";
 import type { GenesisFourSymbolAlignmentProjection } from "../types/genesisFourSymbolAlignmentProjection";
+import type { GenesisLifeForceInfusionProjection } from "../types/genesisLifeForceInfusionProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type {
   IsolatedWebGLRendererPrototypeBoundary,
@@ -78,6 +79,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
   timeSequenceRecognition: GenesisTimeSequenceRecognitionProjection | null = null,
   birthMansionIgnition: GenesisBirthMansionIgnitionProjection | null = null,
   morphologicalFieldAlignment: GenesisFourSymbolAlignmentProjection | null = null,
+  lifeForceInfusion: GenesisLifeForceInfusionProjection | null = null,
 ): IsolatedWebGLRendererPrototypeSceneProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
@@ -86,6 +88,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
     timeSequenceRecognition,
     birthMansionIgnition,
     morphologicalFieldAlignment,
+    lifeForceInfusion,
   );
   const lifeStarCore = projectLifePresenceToLifeStarCore(lifePresence);
   const structureUnit = referenceUnit(
@@ -141,6 +144,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
     timeSequenceRecognition,
     birthMansionIgnition,
     morphologicalFieldAlignment,
+    lifeForceInfusion,
     rendererParametersOnly: true,
     identityBlind: true,
     noLifeFactCopy: true,
@@ -265,6 +269,7 @@ export function createIsolatedWebGLRendererPrototype(
     input.timeSequenceRecognitionProjection ?? null,
     input.birthMansionIgnitionProjection ?? null,
     input.morphologicalFieldAlignmentProjection ?? null,
+    input.lifeForceInfusionProjection ?? null,
   );
   if (input.reducedMotion) {
     return fallback(sceneProjection, "REDUCED_MOTION_REQUESTED");
@@ -353,11 +358,17 @@ export function createIsolatedWebGLRendererPrototype(
   const timeSequenceRecognition = sceneProjection.timeSequenceRecognition;
   const birthMansionIgnition = sceneProjection.birthMansionIgnition;
   const morphologicalFieldAlignment = sceneProjection.morphologicalFieldAlignment;
+  const lifeForceInfusion = sceneProjection.lifeForceInfusion;
   const fieldAlignment =
     morphologicalFieldAlignment?.morphologicalFieldExpression ?? null;
   const fieldEnvelopeScale = fieldAlignment?.envelopeScale ?? 1;
   const fieldDirectionalFlow = fieldAlignment?.directionalFlow ?? 0;
   const fieldPostureBias = fieldAlignment?.postureBias ?? 0;
+  const forceExpression = lifeForceInfusion?.lifeForceExpression ?? null;
+  const forceCorePull = forceExpression?.corePull ?? 0;
+  const forceAggregation = forceExpression?.aggregationStrength ?? 0;
+  const forceStability = forceExpression?.stability ?? 0;
+  const forceDirectionalBias = forceExpression?.directionalBias ?? 0;
   const spineSegments = lifePresence.stellarSkeleton.spineSegments;
   const branchCount = lifePresence.stellarSkeleton.branchCount;
   const fieldPoseScale =
@@ -382,7 +393,8 @@ export function createIsolatedWebGLRendererPrototype(
       Math.sin(progress * Math.PI) *
       (lifePresence.morphologicalField.bend +
         lifePresence.morphologicalField.postureBias * 0.5 +
-        fieldPostureBias * 0.28);
+        fieldPostureBias * 0.28 +
+        (forceCorePull - 0.5) * 0.18);
     const depth =
       Math.sin(progress * Math.PI * 2) *
       lifePresence.morphologicalField.enclosure *
@@ -426,7 +438,8 @@ export function createIsolatedWebGLRendererPrototype(
     const branchCurl =
       (lifePresence.morphologicalField.bend +
         lifePresence.morphologicalField.postureBias * 0.5 +
-        fieldPostureBias * 0.22) *
+        fieldPostureBias * 0.22 +
+        (forceDirectionalBias + forceCorePull - 0.5) * 0.12) *
       (0.35 + index * 0.06);
     const mid: [number, number, number] = [
       origin[0] + perpendicularX * side * branchLength * 0.42 + axisX * branchCurl,
@@ -502,13 +515,14 @@ export function createIsolatedWebGLRendererPrototype(
       fieldPoseScale *
       (1 + lifePresence.morphologicalField.spatialContraction * 0.22) *
       (1 + (fieldEnvelopeScale - 1) * 0.32) *
+      (1 + (forceAggregation - 0.5) * 0.18) *
       1.45,
   );
   structureGroup.rotation.z =
     lifePresence.morphologicalField.bend * 0.12 +
     lifePresence.morphologicalField.postureBias * 0.08 +
     lifePresence.morphologicalField.flowDirection * 0.04;
-  structureGroup.rotation.z += fieldDirectionalFlow * 0.03;
+  structureGroup.rotation.z += fieldDirectionalFlow * 0.03 + forceDirectionalBias * 0.04;
   structureGroup.add(spineLine, branchLines, structurePoints);
   root.add(structureGroup);
 
@@ -680,6 +694,7 @@ export function createIsolatedWebGLRendererPrototype(
             sceneProjection.lifePresence.morphologicalField.spatialContraction *
               0.22) *
           (1 + (fieldEnvelopeScale - 1) * 0.32) *
+          (1 + (forceAggregation - 0.5) * 0.18) *
           (1 + lifePresence.timeSequenceResponse.presenceIntensity * 0.045) *
           (1 + lifePresence.birthMansionIgnitionResponse.presenceIntensity * 0.04) *
           1.45 *
@@ -690,6 +705,7 @@ export function createIsolatedWebGLRendererPrototype(
         sceneProjection.lifePresence.morphologicalField.postureBias * 0.08 +
         sceneProjection.lifePresence.morphologicalField.flowDirection * 0.04 +
         fieldDirectionalFlow * 0.03 +
+        forceDirectionalBias * 0.04 +
         Math.sin(elapsedSeconds * sceneProjection.formField.flowSpeed) *
           sceneProjection.motion.driftAmplitude;
       structurePointMaterial.opacity =
@@ -703,6 +719,7 @@ export function createIsolatedWebGLRendererPrototype(
       coreLight.intensity =
         sceneProjection.lifeCore.intensity *
         lifeStarCore.coreInfluence.lightFlowReach *
+        (0.94 + forceStability * 0.08) *
         (0.92 +
           sceneProjection.lifePresence.corePresence.coherence * 0.08 * breath);
       renderer.render(scene, camera);
