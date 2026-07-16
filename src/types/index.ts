@@ -205,6 +205,16 @@ export type {
   StarMansionLifeTrajectoryStage,
 } from "./starMansionLifeTrajectory";
 export type {
+  PersonalStarBeastManifestationReadinessBlocked,
+  PersonalStarBeastManifestationReadinessBlockedReason,
+  PersonalStarBeastManifestationReadinessBoundary,
+  PersonalStarBeastManifestationReadinessInput,
+  PersonalStarBeastManifestationReadinessReady,
+  PersonalStarBeastManifestationReadinessResult,
+  PersonalStarBeastManifestationReadinessUnavailable,
+  PersonalStarBeastManifestationReadinessUnavailableReason,
+} from "./personalStarBeastManifestationReadiness";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,
