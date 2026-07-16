@@ -10,6 +10,7 @@ const files = Object.freeze({
   service: "src/services/starBeastGenesisExperiencePresentationReadiness.ts",
   protocol: "docs/GUANYAO_STAR_BEAST_GENESIS_EXPERIENCE_PRESENTATION_READINESS_PROTOCOL.md",
   typeIndex: "src/types/index.ts",
+  preview: "src/pages/StarBeastGenesisPreview.tsx",
   lab: "src/pages/StarbeastLab.tsx",
   launch: "src/pages/LaunchLab.tsx",
   packageManifest: "package.json",
@@ -107,7 +108,11 @@ if (failures.length === 0) {
     }
   };
   collect(path.join(rootDir, "src"));
-  assertEqual("readiness has no runtime consumer", callSites.join(","), files.service);
+  assertEqual(
+    "readiness consumer stays isolated preview only",
+    callSites.join(","),
+    [files.preview, files.service].join(","),
+  );
 
   [
     "RC-STAR-BEAST-GENESIS-EXPERIENCE-PRESENTATION-READINESS-P87",

@@ -133,9 +133,10 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "source bridge is only consumed by schema entry",
+    "source bridge is only consumed by schema entry and isolated genesis preview",
     sourceCallSites.join(","),
     [
+      "src/pages/StarBeastGenesisPreview.tsx",
       "src/services/motherCodeLifeArchetypeSource.ts",
       "src/services/originalSelfLifeSchemaEntry.ts",
     ].sort().join(","),

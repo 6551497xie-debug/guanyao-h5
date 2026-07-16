@@ -11,6 +11,7 @@ const files = Object.freeze({
   protocol: "docs/GUANYAO_STAR_BEAST_ASSET_ARCHITECTURE_PROTOCOL.md",
   typeIndex: "src/types/index.ts",
   lab: "src/pages/StarbeastLab.tsx",
+  isolatedGenesisPreview: "src/pages/StarBeastGenesisPreview.tsx",
   packageManifest: "package.json",
 });
 const failures = [];
@@ -128,9 +129,9 @@ if (failures.length === 0) {
   };
   collect(path.join(rootDir, "src"));
   assertEqual(
-    "asset mapping has no runtime or UI consumer",
+    "asset mapping is consumed only by the isolated genesis preview",
     mappingCallSites.join(","),
-    files.service,
+    [files.isolatedGenesisPreview, files.service].join(","),
   );
 
   [

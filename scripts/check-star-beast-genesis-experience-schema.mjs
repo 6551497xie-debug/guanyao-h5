@@ -14,6 +14,7 @@ const files = Object.freeze({
   protocol: "docs/GUANYAO_STAR_BEAST_GENESIS_EXPERIENCE_SCHEMA_PROTOCOL.md",
   existingP83: "docs/GUANYAO_STAR_BEAST_PROTOTYPE_RENDERER_INPUT_CONTRACT_PROTOCOL.md",
   typeIndex: "src/types/index.ts",
+  preview: "src/pages/StarBeastGenesisPreview.tsx",
   lab: "src/pages/StarbeastLab.tsx",
   launch: "src/pages/LaunchLab.tsx",
   packageManifest: "package.json",
@@ -151,7 +152,11 @@ if (failures.length === 0) {
     }
   };
   collect(path.join(rootDir, "src"));
-  assertEqual("mapping has no runtime consumer", callSites.join(","), files.service);
+  assertEqual(
+    "mapping consumer stays isolated preview only",
+    callSites.join(","),
+    [files.preview, files.service].join(","),
+  );
 
   [
     "RC-STAR-BEAST-GENESIS-EXPERIENCE-SCHEMA-P86",
