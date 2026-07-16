@@ -23,6 +23,7 @@ import { createIsolatedWebGLPrototypeRenderPlanReference } from "../services/iso
 import { projectPersonalStarBeastRenderPlanToLifePresence } from "../services/personalStarBeastLifePresenceProjection";
 import { projectLifePresenceToLifeStarCore } from "../services/personalStarBeastLifeStarCoreProjection";
 import type { GenesisTimeSequenceRecognitionProjection } from "../types/genesisTimeSequenceRecognitionProjection";
+import type { GenesisBirthMansionIgnitionProjection } from "../types/genesisBirthMansionIgnitionProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type {
   IsolatedWebGLRendererPrototypeBoundary,
@@ -74,12 +75,14 @@ const createSeededRandom = (seed: number): (() => number) => {
 export function projectPersonalStarBeastRenderPlanToWebGLScene(
   plan: PersonalStarBeastRenderPlan,
   timeSequenceRecognition: GenesisTimeSequenceRecognitionProjection | null = null,
+  birthMansionIgnition: GenesisBirthMansionIgnitionProjection | null = null,
 ): IsolatedWebGLRendererPrototypeSceneProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
   const lifePresence = projectPersonalStarBeastRenderPlanToLifePresence(
     plan,
     timeSequenceRecognition,
+    birthMansionIgnition,
   );
   const lifeStarCore = projectLifePresenceToLifeStarCore(lifePresence);
   const structureUnit = referenceUnit(
@@ -133,6 +136,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
     lifePresence,
     lifeStarCore,
     timeSequenceRecognition,
+    birthMansionIgnition,
     rendererParametersOnly: true,
     identityBlind: true,
     noLifeFactCopy: true,
@@ -255,6 +259,7 @@ export function createIsolatedWebGLRendererPrototype(
   const sceneProjection = projectPersonalStarBeastRenderPlanToWebGLScene(
     plan,
     input.timeSequenceRecognitionProjection ?? null,
+    input.birthMansionIgnitionProjection ?? null,
   );
   if (input.reducedMotion) {
     return fallback(sceneProjection, "REDUCED_MOTION_REQUESTED");
@@ -341,6 +346,7 @@ export function createIsolatedWebGLRendererPrototype(
   const lifePresence = sceneProjection.lifePresence;
   const lifeStarCore = sceneProjection.lifeStarCore;
   const timeSequenceRecognition = sceneProjection.timeSequenceRecognition;
+  const birthMansionIgnition = sceneProjection.birthMansionIgnition;
   const spineSegments = lifePresence.stellarSkeleton.spineSegments;
   const branchCount = lifePresence.stellarSkeleton.branchCount;
   const fieldPoseScale =
@@ -574,6 +580,8 @@ export function createIsolatedWebGLRendererPrototype(
           : 0) / 1000;
       root.rotation.y =
         elapsedSeconds * sceneProjection.motion.rotationSpeed;
+      let cosmicFieldScale = 1;
+      let cosmicFieldOpacity = sceneProjection.cosmicField.opacity;
       if (timeSequenceRecognition !== null) {
         const recognitionPhase =
           (elapsedSeconds /
@@ -589,13 +597,12 @@ export function createIsolatedWebGLRendererPrototype(
           timeSequenceRecognition.cosmicResponseExpression.directionalDrift *
             0.018 +
           Math.sin(recognitionPhase * 0.35) * 0.006;
-        cosmicField.scale.setScalar(
+        cosmicFieldScale =
           1 +
-            timeSequenceRecognition.cosmicResponseExpression.fieldGathering *
-              0.08 *
-              recognitionBreath,
-        );
-        cosmicPointMaterial.opacity =
+          timeSequenceRecognition.cosmicResponseExpression.fieldGathering *
+            0.08 *
+            recognitionBreath;
+        cosmicFieldOpacity =
           sceneProjection.cosmicField.opacity *
           (0.92 +
             timeSequenceRecognition.cosmicResponseExpression.responseStrength *
@@ -603,9 +610,30 @@ export function createIsolatedWebGLRendererPrototype(
               recognitionBreath);
       } else {
         cosmicField.rotation.z = elapsedSeconds * 0.004;
-        cosmicField.scale.setScalar(1);
-        cosmicPointMaterial.opacity = sceneProjection.cosmicField.opacity;
       }
+      if (birthMansionIgnition !== null) {
+        const ignitionPhase =
+          (elapsedSeconds / birthMansionIgnition.temporalRhythm.periodSeconds) *
+            Math.PI *
+            2 +
+          birthMansionIgnition.temporalRhythm.phaseOffset;
+        const claimBreath =
+          1 +
+          Math.sin(ignitionPhase) *
+            birthMansionIgnition.temporalRhythm.breathingAmplitude;
+        cosmicFieldScale *=
+          1 +
+          birthMansionIgnition.cosmicRecognitionExpression.fieldConvergence *
+            0.06 *
+            claimBreath;
+        cosmicFieldOpacity *=
+          1 - birthMansionIgnition.cosmicRecognitionExpression.backgroundAttenuation;
+        cosmicField.rotation.z +=
+          birthMansionIgnition.cosmicRecognitionExpression.responseDirection *
+          0.008;
+      }
+      cosmicField.scale.setScalar(cosmicFieldScale);
+      cosmicPointMaterial.opacity = cosmicFieldOpacity;
       const rhythmPhase =
         (elapsedSeconds / lifeStarCore.temporalRhythm.periodSeconds) *
         Math.PI *
@@ -637,6 +665,7 @@ export function createIsolatedWebGLRendererPrototype(
             sceneProjection.lifePresence.morphologicalField.spatialContraction *
               0.22) *
           (1 + lifePresence.timeSequenceResponse.presenceIntensity * 0.045) *
+          (1 + lifePresence.birthMansionIgnitionResponse.presenceIntensity * 0.04) *
           1.45 *
           structureInfluence,
       );

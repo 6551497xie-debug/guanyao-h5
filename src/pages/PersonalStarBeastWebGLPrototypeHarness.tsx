@@ -7,6 +7,7 @@ import { createIsolatedWebGLRendererPrototype } from "../prototypes/isolatedWebG
 import { authorizeIsolatedWebGLRendererPrototype } from "../services/isolatedWebGLRendererPrototypeAuthorizationService";
 import { adaptPersonalStarBeastSceneModelToRenderPlan } from "../services/personalStarBeastRenderPlanAdapter";
 import { projectGenesisTimeSequenceRecognition } from "../services/genesisTimeSequenceRecognitionProjection";
+import { projectGenesisBirthMansionIgnition } from "../services/genesisBirthMansionIgnitionProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import "../styles/personal-star-beast-webgl-prototype-harness.css";
 
@@ -64,6 +65,26 @@ const TIME_SEQUENCE_RECOGNITION_RESULT = projectGenesisTimeSequenceRecognition(
 const TIME_SEQUENCE_RECOGNITION_PROJECTION =
   TIME_SEQUENCE_RECOGNITION_RESULT.status === "AVAILABLE"
     ? TIME_SEQUENCE_RECOGNITION_RESULT.projection
+    : null;
+
+const BIRTH_MANSION_RESULT_REFERENCE = Object.freeze({
+  referenceType: "STAR_BEAST_GENESIS_MANSION" as const,
+  referenceId: "prototype:birth-mansion:case-a",
+  sourceStarbeastDerivationReference:
+    PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.mansionSeedReference
+      .sourceMansionResultReference.resultReference,
+});
+
+const BIRTH_MANSION_IGNITION_RESULT = projectGenesisBirthMansionIgnition(
+  Object.freeze({
+    timeSequenceRecognitionProjection: TIME_SEQUENCE_RECOGNITION_PROJECTION,
+    mansionResultReference: BIRTH_MANSION_RESULT_REFERENCE,
+  }),
+);
+
+const BIRTH_MANSION_IGNITION_PROJECTION =
+  BIRTH_MANSION_IGNITION_RESULT.status === "AVAILABLE"
+    ? BIRTH_MANSION_IGNITION_RESULT.projection
     : null;
 
 const PHASE_COPY: Readonly<
@@ -128,6 +149,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
         pixelRatio: window.devicePixelRatio || 1,
         reducedMotion,
         timeSequenceRecognitionProjection: TIME_SEQUENCE_RECOGNITION_PROJECTION,
+        birthMansionIgnitionProjection: BIRTH_MANSION_IGNITION_PROJECTION,
       }),
     );
 

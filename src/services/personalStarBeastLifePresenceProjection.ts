@@ -1,6 +1,7 @@
 import { createIsolatedWebGLPrototypeRenderPlanReference } from "./isolatedWebGLPrototypeRenderPlanReference";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type { GenesisTimeSequenceRecognitionProjection } from "../types/genesisTimeSequenceRecognitionProjection";
+import type { GenesisBirthMansionIgnitionProjection } from "../types/genesisBirthMansionIgnitionProjection";
 import type { PersonalStarBeastLifePresenceProjection } from "../types/personalStarBeastLifePresenceProjection";
 
 const hashReference = (referenceId: string): number => {
@@ -29,6 +30,7 @@ const resolveMorphologicalMode = (
 export function projectPersonalStarBeastRenderPlanToLifePresence(
   plan: PersonalStarBeastRenderPlan,
   timeSequenceProjection: GenesisTimeSequenceRecognitionProjection | null = null,
+  birthMansionIgnitionProjection: GenesisBirthMansionIgnitionProjection | null = null,
 ): PersonalStarBeastLifePresenceProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
@@ -97,6 +99,20 @@ export function projectPersonalStarBeastRenderPlanToLifePresence(
         timeSequenceProjection?.timeSequenceReferenceId ?? null,
     }),
     timeSequenceProjectionReference: timeSequenceProjection,
+    birthMansionIgnitionResponse: Object.freeze({
+      ignitionStage:
+        birthMansionIgnitionProjection?.ignitionStage ??
+        "WAITING_FOR_TIME_RECOGNITION",
+      claimStrength:
+        birthMansionIgnitionProjection?.seedClaimExpression.claimStrength ?? 0,
+      fieldConvergence:
+        birthMansionIgnitionProjection?.cosmicRecognitionExpression.fieldConvergence ??
+        0,
+      presenceIntensity: birthMansionIgnitionProjection?.presenceIntensity ?? 0,
+      sourceProjectionReferenceId:
+        birthMansionIgnitionProjection?.mansionSeedReferenceId ?? null,
+    }),
+    birthMansionIgnitionProjectionReference: birthMansionIgnitionProjection,
     sourcePlanSemanticRole: plan.semanticRole,
     renderPlanOnly: true,
     rendererParametersOnly: true,

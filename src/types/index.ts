@@ -275,6 +275,14 @@ export type {
   GenesisTimeSequenceReference,
 } from "./genesisTimeSequenceRecognitionProjection";
 export type {
+  GenesisBirthMansionIgnitionBlockedReason,
+  GenesisBirthMansionIgnitionInput,
+  GenesisBirthMansionIgnitionProjection,
+  GenesisBirthMansionIgnitionProjectionResult,
+  GenesisBirthMansionIgnitionStage,
+  GenesisBirthMansionIgnitionUnavailableReason,
+} from "./genesisBirthMansionIgnitionProjection";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,

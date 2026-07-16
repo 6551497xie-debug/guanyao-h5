@@ -3,6 +3,7 @@ import type {
   GenesisTimeSequenceRecognitionProjection,
   GenesisTimeSequenceRecognitionStage,
 } from "./genesisTimeSequenceRecognitionProjection";
+import type { GenesisBirthMansionIgnitionProjection } from "./genesisBirthMansionIgnitionProjection";
 
 export type PersonalStarBeastLifePresenceProjection = Readonly<{
   semanticRole: "PERSONAL_STAR_BEAST_LIFE_PRESENCE_PROJECTION";
@@ -44,6 +45,14 @@ export type PersonalStarBeastLifePresenceProjection = Readonly<{
     sourceProjectionReferenceId: string | null;
   }>;
   timeSequenceProjectionReference: GenesisTimeSequenceRecognitionProjection | null;
+  birthMansionIgnitionResponse: Readonly<{
+    ignitionStage: "WAITING_FOR_TIME_RECOGNITION" | "SEED_APPROACHING" | "SEED_CLAIMED";
+    claimStrength: number;
+    fieldConvergence: number;
+    presenceIntensity: number;
+    sourceProjectionReferenceId: string | null;
+  }>;
+  birthMansionIgnitionProjectionReference: GenesisBirthMansionIgnitionProjection | null;
   sourcePlanSemanticRole: PersonalStarBeastRenderPlan["semanticRole"];
   renderPlanOnly: true;
   rendererParametersOnly: true;
