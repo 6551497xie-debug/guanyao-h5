@@ -27,6 +27,7 @@ import type { GenesisBirthMansionIgnitionProjection } from "../types/genesisBirt
 import type { GenesisFourSymbolAlignmentProjection } from "../types/genesisFourSymbolAlignmentProjection";
 import type { GenesisLifeForceInfusionProjection } from "../types/genesisLifeForceInfusionProjection";
 import type { GenesisPersonalRevealProjection } from "../types/genesisPersonalRevealProjection";
+import type { GenesisRealityPressureProjection } from "../types/genesisRealityPressureProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type {
   IsolatedWebGLRendererPrototypeBoundary,
@@ -82,6 +83,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
   morphologicalFieldAlignment: GenesisFourSymbolAlignmentProjection | null = null,
   lifeForceInfusion: GenesisLifeForceInfusionProjection | null = null,
   personalReveal: GenesisPersonalRevealProjection | null = null,
+  realityPressure: GenesisRealityPressureProjection | null = null,
 ): IsolatedWebGLRendererPrototypeSceneProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
@@ -92,6 +94,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
     morphologicalFieldAlignment,
     lifeForceInfusion,
     personalReveal,
+    realityPressure,
   );
   const lifeStarCore = projectLifePresenceToLifeStarCore(lifePresence);
   const structureUnit = referenceUnit(
@@ -149,6 +152,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
     morphologicalFieldAlignment,
     lifeForceInfusion,
     personalReveal,
+    realityPressure,
     rendererParametersOnly: true,
     identityBlind: true,
     noLifeFactCopy: true,
@@ -275,6 +279,7 @@ export function createIsolatedWebGLRendererPrototype(
     input.morphologicalFieldAlignmentProjection ?? null,
     input.lifeForceInfusionProjection ?? null,
     input.personalRevealProjection ?? null,
+    input.realityPressureProjection ?? null,
   );
   if (input.reducedMotion) {
     return fallback(sceneProjection, "REDUCED_MOTION_REQUESTED");
@@ -365,6 +370,7 @@ export function createIsolatedWebGLRendererPrototype(
   const morphologicalFieldAlignment = sceneProjection.morphologicalFieldAlignment;
   const lifeForceInfusion = sceneProjection.lifeForceInfusion;
   const personalReveal = sceneProjection.personalReveal;
+  const realityPressure = sceneProjection.realityPressure;
   const fieldAlignment =
     morphologicalFieldAlignment?.morphologicalFieldExpression ?? null;
   const fieldEnvelopeScale = fieldAlignment?.envelopeScale ?? 1;
@@ -379,6 +385,11 @@ export function createIsolatedWebGLRendererPrototype(
   const revealOpacity = revealExpression?.revealOpacity ?? 0;
   const revealCoreConvergence = revealExpression?.coreConvergence ?? 0;
   const revealFieldIntegration = revealExpression?.fieldIntegration ?? 0;
+  const pressureExpression = realityPressure?.pressureExpression ?? null;
+  const pressureFieldCompression = pressureExpression?.fieldCompression ?? 0;
+  const pressureBoundaryLoad = pressureExpression?.boundaryLoad ?? 0;
+  const pressureCoreResistance = pressureExpression?.coreResistance ?? 0;
+  const pressureFlowDeflection = pressureExpression?.flowDeflection ?? 0;
   const spineSegments = lifePresence.stellarSkeleton.spineSegments;
   const branchCount = lifePresence.stellarSkeleton.branchCount;
   const fieldPoseScale =
@@ -496,7 +507,7 @@ export function createIsolatedWebGLRendererPrototype(
       transparent: true,
       opacity:
         sceneProjection.mansionStructure.lineOpacity *
-        (0.82 + revealOpacity * 0.18),
+        (0.82 + revealOpacity * 0.18 - pressureBoundaryLoad * 0.08),
       blending: AdditiveBlending,
     }),
   );
@@ -507,7 +518,7 @@ export function createIsolatedWebGLRendererPrototype(
       transparent: true,
       opacity:
         sceneProjection.mansionStructure.lineOpacity *
-        (0.68 + revealOpacity * 0.2),
+        (0.68 + revealOpacity * 0.2 - pressureBoundaryLoad * 0.12),
       blending: AdditiveBlending,
     }),
   );
@@ -517,7 +528,7 @@ export function createIsolatedWebGLRendererPrototype(
       color: anchorColor,
       size: lifePresence.stellarSkeleton.nodeScale,
       transparent: true,
-      opacity: 0.7 + revealOpacity * 0.16,
+      opacity: 0.7 + revealOpacity * 0.16 - pressureBoundaryLoad * 0.08,
       blending: AdditiveBlending,
       depthWrite: false,
     }),
@@ -531,12 +542,14 @@ export function createIsolatedWebGLRendererPrototype(
       (1 + (fieldEnvelopeScale - 1) * 0.32) *
       (1 + (forceAggregation - 0.5) * 0.18) *
       (1 + revealCoreConvergence * 0.1) *
+      (1 - pressureFieldCompression * 0.08) *
       1.45,
   );
   structureGroup.rotation.z =
     lifePresence.morphologicalField.bend * 0.12 +
     lifePresence.morphologicalField.postureBias * 0.08 +
-    lifePresence.morphologicalField.flowDirection * 0.04;
+    lifePresence.morphologicalField.flowDirection * 0.04 +
+    pressureFlowDeflection * 0.025;
   structureGroup.rotation.z += fieldDirectionalFlow * 0.03 + forceDirectionalBias * 0.04;
   structureGroup.add(spineLine, branchLines, structurePoints);
   root.add(structureGroup);
@@ -556,7 +569,8 @@ export function createIsolatedWebGLRendererPrototype(
       opacity:
         0.72 +
         revealOpacity * 0.12 +
-        lifeStarCore.surfacePresence.surfaceVariation * 0.7,
+        lifeStarCore.surfacePresence.surfaceVariation * 0.7 -
+        pressureCoreResistance * 0.04,
       blending: AdditiveBlending,
     }),
   );
@@ -714,6 +728,7 @@ export function createIsolatedWebGLRendererPrototype(
           (1 + (fieldEnvelopeScale - 1) * 0.32) *
           (1 + (forceAggregation - 0.5) * 0.18) *
           (1 + revealCoreConvergence * 0.1) *
+          (1 - pressureFieldCompression * 0.08) *
           (1 + lifePresence.timeSequenceResponse.presenceIntensity * 0.045) *
           (1 + lifePresence.birthMansionIgnitionResponse.presenceIntensity * 0.04) *
           1.45 *
@@ -726,13 +741,15 @@ export function createIsolatedWebGLRendererPrototype(
         fieldDirectionalFlow * 0.03 +
         forceDirectionalBias * 0.04 +
         revealFieldIntegration * 0.018 +
+        pressureFlowDeflection * 0.025 +
         Math.sin(elapsedSeconds * sceneProjection.formField.flowSpeed) *
           sceneProjection.motion.driftAmplitude;
       structurePointMaterial.opacity =
         0.74 +
         lifeStarCore.coreInfluence.nodeBreathCoupling *
           0.16 *
-          (0.94 + (breath - 1) * 2);
+          (0.94 + (breath - 1) * 2) -
+        pressureBoundaryLoad * 0.06;
       structurePointMaterial.size =
         lifePresence.stellarSkeleton.nodeScale *
         (0.96 + lifeStarCore.coreInfluence.nodeBreathCoupling * 0.12 * breath);

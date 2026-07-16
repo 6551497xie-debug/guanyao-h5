@@ -11,6 +11,7 @@ import { projectGenesisBirthMansionIgnition } from "../services/genesisBirthMans
 import { projectGenesisFourSymbolAlignment } from "../services/genesisFourSymbolAlignmentProjection";
 import { projectGenesisLifeForceInfusion } from "../services/genesisLifeForceInfusionProjection";
 import { projectGenesisPersonalReveal } from "../services/genesisPersonalRevealProjection";
+import { projectGenesisRealityPressure } from "../services/genesisRealityPressureProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import "../styles/personal-star-beast-webgl-prototype-harness.css";
 
@@ -150,6 +151,26 @@ const PERSONAL_REVEAL_PROJECTION =
     ? PERSONAL_REVEAL_RESULT.projection
     : null;
 
+const REALITY_PRESSURE_REFERENCE = Object.freeze({
+  referenceType: "GENESIS_REALITY_PRESSURE_REFERENCE" as const,
+  referenceId: "prototype:reality-pressure:entry" as const,
+  sourceRole: "REALITY_PRESSURE_ENGINE_REFERENCE" as const,
+  pressureReferenceOnly: true as const,
+  noRawPressureCopy: true as const,
+});
+
+const REALITY_PRESSURE_RESULT = projectGenesisRealityPressure(
+  Object.freeze({
+    personalRevealProjection: PERSONAL_REVEAL_PROJECTION,
+    realityPressureReference: REALITY_PRESSURE_REFERENCE,
+  }),
+);
+
+const REALITY_PRESSURE_PROJECTION =
+  REALITY_PRESSURE_RESULT.status === "AVAILABLE"
+    ? REALITY_PRESSURE_RESULT.projection
+    : null;
+
 const PHASE_COPY: Readonly<
   Record<
     FirstImpressionPhase,
@@ -216,6 +237,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
         morphologicalFieldAlignmentProjection: FOUR_SYMBOL_ALIGNMENT_PROJECTION,
         lifeForceInfusionProjection: LIFE_FORCE_INFUSION_PROJECTION,
         personalRevealProjection: PERSONAL_REVEAL_PROJECTION,
+        realityPressureProjection: REALITY_PRESSURE_PROJECTION,
       }),
     );
 

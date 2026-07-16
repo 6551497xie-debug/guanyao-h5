@@ -5,6 +5,7 @@ import type { GenesisBirthMansionIgnitionProjection } from "../types/genesisBirt
 import type { GenesisFourSymbolAlignmentProjection } from "../types/genesisFourSymbolAlignmentProjection";
 import type { GenesisLifeForceInfusionProjection } from "../types/genesisLifeForceInfusionProjection";
 import type { GenesisPersonalRevealProjection } from "../types/genesisPersonalRevealProjection";
+import type { GenesisRealityPressureProjection } from "../types/genesisRealityPressureProjection";
 import type { PersonalStarBeastLifePresenceProjection } from "../types/personalStarBeastLifePresenceProjection";
 
 const hashReference = (referenceId: string): number => {
@@ -37,6 +38,7 @@ export function projectPersonalStarBeastRenderPlanToLifePresence(
   morphologicalFieldAlignmentProjection: GenesisFourSymbolAlignmentProjection | null = null,
   lifeForceInfusionProjection: GenesisLifeForceInfusionProjection | null = null,
   personalRevealProjection: GenesisPersonalRevealProjection | null = null,
+  realityPressureProjection: GenesisRealityPressureProjection | null = null,
 ): PersonalStarBeastLifePresenceProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
@@ -159,6 +161,24 @@ export function projectPersonalStarBeastRenderPlanToLifePresence(
         personalRevealProjection?.identityReferenceId ?? null,
     }),
     personalRevealProjectionReference: personalRevealProjection,
+    realityPressureResponse: Object.freeze({
+      pressureStage:
+        realityPressureProjection?.pressureStage ??
+        "WAITING_FOR_PERSONAL_REVEAL",
+      fieldCompression:
+        realityPressureProjection?.pressureExpression.fieldCompression ?? 0,
+      boundaryLoad:
+        realityPressureProjection?.pressureExpression.boundaryLoad ?? 0,
+      coreResistance:
+        realityPressureProjection?.pressureExpression.coreResistance ?? 0,
+      flowDeflection:
+        realityPressureProjection?.pressureExpression.flowDeflection ?? 0,
+      presenceIntensity:
+        realityPressureProjection?.presenceResponse.pressureAttention ?? 0,
+      sourceProjectionReferenceId:
+        realityPressureProjection?.pressureReferenceId ?? null,
+    }),
+    realityPressureProjectionReference: realityPressureProjection,
     sourcePlanSemanticRole: plan.semanticRole,
     renderPlanOnly: true,
     rendererParametersOnly: true,

@@ -310,6 +310,15 @@ export type {
   GenesisPersonalRevealUnavailableReason,
 } from "./genesisPersonalRevealProjection";
 export type {
+  GenesisRealityPressureBlockedReason,
+  GenesisRealityPressureInput,
+  GenesisRealityPressureProjection,
+  GenesisRealityPressureProjectionResult,
+  GenesisRealityPressureReference,
+  GenesisRealityPressureStage,
+  GenesisRealityPressureUnavailableReason,
+} from "./genesisRealityPressureProjection";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,
