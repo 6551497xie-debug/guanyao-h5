@@ -160,6 +160,24 @@ export type {
   StarBeastAssetPrototypeConsumptionUnavailableReason,
 } from "./starBeastAssetPrototypeConsumption";
 export type {
+  StarBeastAssetPrototypeAdapterAvailable,
+  StarBeastAssetPrototypeAdapterBlocked,
+  StarBeastAssetPrototypeAdapterBlockedReason,
+  StarBeastAssetPrototypeAdapterInput,
+  StarBeastAssetPrototypeAdapterResult,
+  StarBeastAssetPrototypeAdapterUnavailable,
+  StarBeastAssetPrototypeAdapterUnavailableReason,
+  StarBeastPrototypeCoreBoneChannel,
+  StarBeastPrototypeCosmicConsciousnessChannel,
+  StarBeastPrototypeCrystalImprintChannel,
+  StarBeastPrototypeExpressionChannel,
+  StarBeastPrototypeExpressionChannels,
+  StarBeastPrototypeLightBoundaryChannel,
+  StarBeastPrototypeStarCoreChannel,
+  StarBeastPrototypeStarPatternChannel,
+  StarBeastPrototypeVisualStateReference,
+} from "./starBeastAssetPrototypeAdapter";
+export type {
   StarBeastPrototypeCoreStar,
   StarBeastPrototypeGeometryPath,
   StarBeastPrototypeGeometryPoint,
