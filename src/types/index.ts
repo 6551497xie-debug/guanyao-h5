@@ -355,6 +355,17 @@ export type {
   ProductionIdentitySourceNormalizedReferenceBridgeUnavailableReason,
 } from "./productionIdentitySourceNormalizedReferenceBridge";
 export type {
+  ProductionIdentitySourceAdapterBridgeImplementationReadinessBlocked,
+  ProductionIdentitySourceAdapterBridgeImplementationReadinessBlockedReason,
+  ProductionIdentitySourceAdapterBridgeImplementationReadinessBoundary,
+  ProductionIdentitySourceAdapterBridgeImplementationReadinessInput,
+  ProductionIdentitySourceAdapterBridgeImplementationReadinessReady,
+  ProductionIdentitySourceAdapterBridgeImplementationReadinessResult,
+  ProductionIdentitySourceAdapterBridgeImplementationReadinessUnavailable,
+  ProductionIdentitySourceAdapterBridgeImplementationReadinessUnavailableReason,
+  ProductionIdentitySourceAdapterBridgeImplementationReference,
+} from "./productionIdentitySourceAdapterBridgeImplementationReadiness";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
