@@ -234,6 +234,14 @@ export type {
   PersonalStarBeastSceneModelFixtureValidationResult,
 } from "./personalStarBeastSceneModelFixture";
 export type {
+  PersonalStarBeastRenderExpressionChannel,
+  PersonalStarBeastRenderExpressionReference,
+  PersonalStarBeastRenderPlan,
+  PersonalStarBeastRenderPlanAdapterBlockedReason,
+  PersonalStarBeastRenderPlanAdapterBoundary,
+  PersonalStarBeastRenderPlanAdapterResult,
+} from "./personalStarBeastRenderPlan";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,

@@ -150,11 +150,17 @@ if (failures.length === 0) {
   );
 
   const renderPlanReferences = collectTypeScriptSourcePaths(path.join(rootDir, "src"))
-    .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("StarBeastRenderPlan"))
+    .filter((filePath) =>
+      fs
+        .readFileSync(filePath, "utf8")
+        .replaceAll("PersonalStarBeastRenderPlan", "")
+        .replaceAll("personalStarBeastRenderPlan", "")
+        .includes("StarBeastRenderPlan"),
+    )
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "render plan ownership includes only P40-P45 and the P77 isolated adapter",
+    "P40 render plan family ownership includes only P40-P45 and the P77 isolated adapter",
     renderPlanReferences.join(","),
     [
       "src/services/starBeastRenderPlanAdapter.ts",
