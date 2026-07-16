@@ -283,9 +283,14 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "P98 authorization has no Production consumer",
+    "P98 authorization has no Production consumer and only isolated Harness consumer",
     authorizationCallSites.join(","),
-    files.authorizationService,
+    [
+      files.authorizationService,
+      "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
+    ]
+      .sort()
+      .join(","),
   );
 
   assertIncludes(

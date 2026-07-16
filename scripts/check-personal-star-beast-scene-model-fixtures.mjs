@@ -286,9 +286,9 @@ if (failures.length === 0) {
     )
     .map((filePath) => path.relative(rootDir, filePath));
   assertEqual(
-    "fixture has no Production consumer",
+    "fixture has no Production consumer and only isolated consumers",
     fixtureConsumers.join(","),
-    "",
+    "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
   );
 
   assertIncludes(

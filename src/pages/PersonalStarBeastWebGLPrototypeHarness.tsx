@@ -1,0 +1,222 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A,
+  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B,
+} from "../mocks/starBeastSceneModelFixtures";
+import { createIsolatedWebGLRendererPrototype } from "../prototypes/isolatedWebGLRendererPrototype";
+import { authorizeIsolatedWebGLRendererPrototype } from "../services/isolatedWebGLRendererPrototypeAuthorizationService";
+import { adaptPersonalStarBeastSceneModelToRenderPlan } from "../services/personalStarBeastRenderPlanAdapter";
+import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
+import "../styles/personal-star-beast-webgl-prototype-harness.css";
+
+type FirstImpressionPhase = "ARRIVAL" | "FORMATION" | "PRESENCE";
+type HarnessState = "STARTING" | "RENDERING" | "FALLBACK" | "UNAVAILABLE";
+
+const FORMAL_PLAN_RESULTS = Object.freeze([
+  adaptPersonalStarBeastSceneModelToRenderPlan(
+    PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.sceneModelReference,
+  ),
+  adaptPersonalStarBeastSceneModelToRenderPlan(
+    PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B.sceneModelReference,
+  ),
+] as const);
+
+const PROTOTYPE_AUTHORIZATION = authorizeIsolatedWebGLRendererPrototype(
+  Object.freeze({
+    authorizationReviewReference: Object.freeze({
+      referenceType: "ISOLATED_WEBGL_PROTOTYPE_AUTHORIZATION_REVIEW",
+      protocolId: "RC-EXPLICIT-WEBGL-PROTOTYPE-AUTHORIZATION-REVIEW-P95",
+      recommendation:
+        "RECOMMENDED_FOR_EXPLICIT_ISOLATED_WEBGL_PROTOTYPE_AUTHORIZATION",
+      priorExecutionStatus: "NOT_AUTHORIZED_PENDING_TOTAL_CONTROL_DECISION",
+    }),
+    explicitAuthorityReference: Object.freeze({
+      referenceType: "ISOLATED_WEBGL_PROTOTYPE_EXPLICIT_AUTHORITY",
+      authority: "TOTAL_CONTROL_EXPLICIT_DECISION",
+      decision: "AUTHORIZE_FIRST_ISOLATED_WEBGL_RENDERER_PROTOTYPE",
+      decisionReferenceId:
+        "RC-ISOLATED-WEBGL-RENDERER-PROTOTYPE-AUTHORIZATION-P98",
+    }),
+    renderPlanResults: FORMAL_PLAN_RESULTS,
+    prototypeScope: "ISOLATED_WEBGL_RENDERER_PROTOTYPE_ONLY",
+  }),
+);
+
+const PHASE_COPY: Readonly<
+  Record<
+    FirstImpressionPhase,
+    Readonly<{ prelude: string; title: string; note: string }>
+  >
+> = Object.freeze({
+  ARRIVAL: Object.freeze({
+    prelude: "在你看见它以前",
+    title: "它已经沿着时间，向你走来。",
+    note: "",
+  }),
+  FORMATION: Object.freeze({
+    prelude: "星辰正在聚成一种存在",
+    title: "先别急着认出它。",
+    note: "让它慢慢靠近。",
+  }),
+  PRESENCE: Object.freeze({
+    prelude: "你的生命显化",
+    title: "原来，它一直在这里。",
+    note: "它不是答案。它会陪你经历，你正在成为谁。",
+  }),
+});
+
+const resolvePlan = (index: number): PersonalStarBeastRenderPlan | null => {
+  const result = FORMAL_PLAN_RESULTS[index];
+  return result?.status === "PLANNED" ? result.plan : null;
+};
+
+export function PersonalStarBeastWebGLPrototypeHarness() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [formalCaseIndex, setFormalCaseIndex] = useState(0);
+  const [replayKey, setReplayKey] = useState(0);
+  const [phase, setPhase] = useState<FirstImpressionPhase>("ARRIVAL");
+  const [harnessState, setHarnessState] = useState<HarnessState>("STARTING");
+  const presentation = PHASE_COPY[phase];
+  const plan = useMemo(() => resolvePlan(formalCaseIndex), [formalCaseIndex]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (
+      canvas === null ||
+      plan === null ||
+      PROTOTYPE_AUTHORIZATION.status !== "AUTHORIZED"
+    ) {
+      setHarnessState("UNAVAILABLE");
+      return undefined;
+    }
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const bounds = canvas.getBoundingClientRect();
+    const rendererResult = createIsolatedWebGLRendererPrototype(
+      Object.freeze({
+        canvas,
+        renderPlan: plan,
+        authorization: PROTOTYPE_AUTHORIZATION.authorization,
+        width: Math.max(1, bounds.width),
+        height: Math.max(1, bounds.height),
+        pixelRatio: window.devicePixelRatio || 1,
+        reducedMotion,
+      }),
+    );
+
+    setPhase("ARRIVAL");
+    if (rendererResult.status === "BLOCKED") {
+      setHarnessState("UNAVAILABLE");
+      return undefined;
+    }
+    if (rendererResult.status === "FALLBACK_REQUIRED") {
+      setHarnessState("FALLBACK");
+      const formationTimer = window.setTimeout(() => setPhase("FORMATION"), 1400);
+      const presenceTimer = window.setTimeout(() => setPhase("PRESENCE"), 3300);
+      return () => {
+        window.clearTimeout(formationTimer);
+        window.clearTimeout(presenceTimer);
+      };
+    }
+
+    setHarnessState("RENDERING");
+    const controller = rendererResult.controller;
+    let animationFrame = 0;
+    let activePhase: FirstImpressionPhase = "ARRIVAL";
+    const startedAt = performance.now();
+
+    const animate = (timestamp: number) => {
+      const elapsed = timestamp - startedAt;
+      const nextPhase: FirstImpressionPhase =
+        elapsed >= 5200
+          ? "PRESENCE"
+          : elapsed >= 2100
+            ? "FORMATION"
+            : "ARRIVAL";
+      if (nextPhase !== activePhase) {
+        activePhase = nextPhase;
+        setPhase(nextPhase);
+      }
+      controller.renderFrame(elapsed);
+      animationFrame = window.requestAnimationFrame(animate);
+    };
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      controller.resize(
+        Math.max(1, entry.contentRect.width),
+        Math.max(1, entry.contentRect.height),
+        window.devicePixelRatio || 1,
+      );
+    });
+    resizeObserver.observe(canvas);
+    animationFrame = window.requestAnimationFrame(animate);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      resizeObserver.disconnect();
+      controller.dispose();
+    };
+  }, [plan, replayKey]);
+
+  const revealComplete = phase === "PRESENCE";
+  const replay = () => setReplayKey((current) => current + 1);
+  const revealAnotherLife = () => {
+    setFormalCaseIndex((current) => (current === 0 ? 1 : 0));
+    setReplayKey((current) => current + 1);
+  };
+
+  return (
+    <main
+      className={`gy-p100 gy-p100--${phase.toLowerCase()}`}
+      data-prototype-scope="ISOLATED_WEBGL_RENDERER_PROTOTYPE_ONLY"
+      data-harness-state={harnessState}
+      data-first-impression-phase={phase}
+    >
+      <div className="gy-p100__cosmic-depth" aria-hidden="true" />
+      <canvas ref={canvasRef} className="gy-p100__canvas" aria-hidden="true" />
+      <div className="gy-p100__life-halo" aria-hidden="true" />
+      <div className="gy-p100__veil" aria-hidden="true" />
+
+      {harnessState === "FALLBACK" ? (
+        <div className="gy-p100__static-presence" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </div>
+      ) : null}
+
+      <header className="gy-p100__brand" aria-label="观爻">
+        <span>观爻</span>
+        <i />
+      </header>
+
+      <section className="gy-p100__words" aria-live="polite">
+        <p className="gy-p100__prelude">{presentation.prelude}</p>
+        <h1>{presentation.title}</h1>
+        <p className="gy-p100__note">{presentation.note}</p>
+      </section>
+
+      {harnessState === "UNAVAILABLE" ? (
+        <p className="gy-p100__unavailable" role="status">
+          这束光暂时没有抵达。
+        </p>
+      ) : null}
+
+      <nav
+        className={`gy-p100__actions ${revealComplete ? "is-visible" : ""}`}
+        aria-label="显化体验控制"
+      >
+        <button type="button" onClick={replay}>再看一次</button>
+        <button type="button" onClick={revealAnotherLife}>看看另一种生命</button>
+      </nav>
+
+      <div className="gy-p100__breath-mark" aria-hidden="true">
+        <i />
+      </div>
+    </main>
+  );
+}

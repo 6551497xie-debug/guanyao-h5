@@ -271,9 +271,11 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "P97 adapter has no Production consumer",
+    "P97 adapter has no Production consumer and only isolated consumers",
     adapterCallSites.join(","),
-    files.adapter,
+    [files.adapter, "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx"]
+      .sort()
+      .join(","),
   );
 
   assertIncludes(
