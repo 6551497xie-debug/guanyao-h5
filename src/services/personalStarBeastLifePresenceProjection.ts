@@ -2,6 +2,7 @@ import { createIsolatedWebGLPrototypeRenderPlanReference } from "./isolatedWebGL
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type { GenesisTimeSequenceRecognitionProjection } from "../types/genesisTimeSequenceRecognitionProjection";
 import type { GenesisBirthMansionIgnitionProjection } from "../types/genesisBirthMansionIgnitionProjection";
+import type { GenesisFourSymbolAlignmentProjection } from "../types/genesisFourSymbolAlignmentProjection";
 import type { PersonalStarBeastLifePresenceProjection } from "../types/personalStarBeastLifePresenceProjection";
 
 const hashReference = (referenceId: string): number => {
@@ -31,6 +32,7 @@ export function projectPersonalStarBeastRenderPlanToLifePresence(
   plan: PersonalStarBeastRenderPlan,
   timeSequenceProjection: GenesisTimeSequenceRecognitionProjection | null = null,
   birthMansionIgnitionProjection: GenesisBirthMansionIgnitionProjection | null = null,
+  morphologicalFieldAlignmentProjection: GenesisFourSymbolAlignmentProjection | null = null,
 ): PersonalStarBeastLifePresenceProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
@@ -113,6 +115,21 @@ export function projectPersonalStarBeastRenderPlanToLifePresence(
         birthMansionIgnitionProjection?.mansionSeedReferenceId ?? null,
     }),
     birthMansionIgnitionProjectionReference: birthMansionIgnitionProjection,
+    morphologicalFieldAlignmentResponse: Object.freeze({
+      alignmentStage:
+        morphologicalFieldAlignmentProjection?.alignmentStage ??
+        "WAITING_FOR_SEED_CLAIM",
+      fieldVisibility:
+        morphologicalFieldAlignmentProjection?.cosmicRecognitionExpression.fieldVisibility ??
+        0,
+      envelopeScale:
+        morphologicalFieldAlignmentProjection?.morphologicalFieldExpression.envelopeScale ??
+        1,
+      presenceIntensity: morphologicalFieldAlignmentProjection?.presenceIntensity ?? 0,
+      sourceProjectionReferenceId:
+        morphologicalFieldAlignmentProjection?.sourceResultReferenceId ?? null,
+    }),
+    morphologicalFieldAlignmentProjectionReference: morphologicalFieldAlignmentProjection,
     sourcePlanSemanticRole: plan.semanticRole,
     renderPlanOnly: true,
     rendererParametersOnly: true,

@@ -283,6 +283,15 @@ export type {
   GenesisBirthMansionIgnitionUnavailableReason,
 } from "./genesisBirthMansionIgnitionProjection";
 export type {
+  GenesisFourSymbolAlignmentBlockedReason,
+  GenesisFourSymbolAlignmentInput,
+  GenesisFourSymbolAlignmentProjection,
+  GenesisFourSymbolAlignmentProjectionResult,
+  GenesisFourSymbolAlignmentStage,
+  GenesisFourSymbolAlignmentUnavailableReason,
+  GenesisFourSymbolFieldMode,
+} from "./genesisFourSymbolAlignmentProjection";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,

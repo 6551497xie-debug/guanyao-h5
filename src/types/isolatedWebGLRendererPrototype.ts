@@ -1,6 +1,7 @@
 import type { IsolatedWebGLRendererPrototypeAuthorization } from "./isolatedWebGLRendererPrototypeAuthorization";
 import type { GenesisTimeSequenceRecognitionProjection } from "./genesisTimeSequenceRecognitionProjection";
 import type { GenesisBirthMansionIgnitionProjection } from "./genesisBirthMansionIgnitionProjection";
+import type { GenesisFourSymbolAlignmentProjection } from "./genesisFourSymbolAlignmentProjection";
 import type { PersonalStarBeastLifePresenceProjection } from "./personalStarBeastLifePresenceProjection";
 import type { PersonalStarBeastLifeStarCoreProjection } from "./personalStarBeastLifeStarCoreProjection";
 import type { PersonalStarBeastRenderPlan } from "./personalStarBeastRenderPlan";
@@ -22,6 +23,7 @@ export type IsolatedWebGLRendererPrototypeSceneProjection = Readonly<{
   lifeStarCore: PersonalStarBeastLifeStarCoreProjection;
   timeSequenceRecognition: GenesisTimeSequenceRecognitionProjection | null;
   birthMansionIgnition: GenesisBirthMansionIgnitionProjection | null;
+  morphologicalFieldAlignment: GenesisFourSymbolAlignmentProjection | null;
   formField: Readonly<{
     hue: number;
     boundaryScale: number;
@@ -55,6 +57,7 @@ export type IsolatedWebGLRendererPrototypeInput = Readonly<{
   reducedMotion: boolean;
   timeSequenceRecognitionProjection?: GenesisTimeSequenceRecognitionProjection | null;
   birthMansionIgnitionProjection?: GenesisBirthMansionIgnitionProjection | null;
+  morphologicalFieldAlignmentProjection?: GenesisFourSymbolAlignmentProjection | null;
 }>;
 
 export type IsolatedWebGLRendererPrototypeContextState =

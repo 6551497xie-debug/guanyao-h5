@@ -8,6 +8,7 @@ import { authorizeIsolatedWebGLRendererPrototype } from "../services/isolatedWeb
 import { adaptPersonalStarBeastSceneModelToRenderPlan } from "../services/personalStarBeastRenderPlanAdapter";
 import { projectGenesisTimeSequenceRecognition } from "../services/genesisTimeSequenceRecognitionProjection";
 import { projectGenesisBirthMansionIgnition } from "../services/genesisBirthMansionIgnitionProjection";
+import { projectGenesisFourSymbolAlignment } from "../services/genesisFourSymbolAlignmentProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import "../styles/personal-star-beast-webgl-prototype-harness.css";
 
@@ -87,6 +88,26 @@ const BIRTH_MANSION_IGNITION_PROJECTION =
     ? BIRTH_MANSION_IGNITION_RESULT.projection
     : null;
 
+const FOUR_SYMBOL_RESULT_REFERENCE = Object.freeze({
+  referenceType: "STAR_BEAST_GENESIS_FOUR_SYMBOL_ENGINE_RESULT" as const,
+  sourceEngine: "guanyao_starbeast_engine" as const,
+  resultReference:
+    PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.fourSymbolFieldReference
+      .sourceFourSymbolResultReference.resultReference,
+});
+
+const FOUR_SYMBOL_ALIGNMENT_RESULT = projectGenesisFourSymbolAlignment(
+  Object.freeze({
+    birthMansionIgnitionProjection: BIRTH_MANSION_IGNITION_PROJECTION,
+    fourSymbolResultReference: FOUR_SYMBOL_RESULT_REFERENCE,
+  }),
+);
+
+const FOUR_SYMBOL_ALIGNMENT_PROJECTION =
+  FOUR_SYMBOL_ALIGNMENT_RESULT.status === "AVAILABLE"
+    ? FOUR_SYMBOL_ALIGNMENT_RESULT.projection
+    : null;
+
 const PHASE_COPY: Readonly<
   Record<
     FirstImpressionPhase,
@@ -150,6 +171,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
         reducedMotion,
         timeSequenceRecognitionProjection: TIME_SEQUENCE_RECOGNITION_PROJECTION,
         birthMansionIgnitionProjection: BIRTH_MANSION_IGNITION_PROJECTION,
+        morphologicalFieldAlignmentProjection: FOUR_SYMBOL_ALIGNMENT_PROJECTION,
       }),
     );
 
