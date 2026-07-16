@@ -76,105 +76,109 @@ const TIME_SEQUENCE_RECOGNITION_PROJECTION =
     ? TIME_SEQUENCE_RECOGNITION_RESULT.projection
     : null;
 
-const BIRTH_MANSION_RESULT_REFERENCE = Object.freeze({
-  referenceType: "STAR_BEAST_GENESIS_MANSION" as const,
-  referenceId: "prototype:birth-mansion:case-a",
-  sourceStarbeastDerivationReference:
-    PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.mansionSeedReference
-      .sourceMansionResultReference.resultReference,
-});
+const createGenesisProjectionBundle = (
+  fixture: typeof PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A,
+) => {
+  const birthMansionResultReference = Object.freeze({
+    referenceType: "STAR_BEAST_GENESIS_MANSION" as const,
+    referenceId: `prototype:birth-mansion:${fixture.fixtureId}`,
+    sourceStarbeastDerivationReference:
+      fixture.mansionSeedReference.sourceMansionResultReference.resultReference,
+  });
+  const birthMansionIgnitionResult = projectGenesisBirthMansionIgnition(
+    Object.freeze({
+      timeSequenceRecognitionProjection: TIME_SEQUENCE_RECOGNITION_PROJECTION,
+      mansionResultReference: birthMansionResultReference,
+    }),
+  );
+  const birthMansionIgnitionProjection =
+    birthMansionIgnitionResult.status === "AVAILABLE"
+      ? birthMansionIgnitionResult.projection
+      : null;
 
-const BIRTH_MANSION_IGNITION_RESULT = projectGenesisBirthMansionIgnition(
-  Object.freeze({
+  const fourSymbolResultReference = Object.freeze({
+    referenceType: "STAR_BEAST_GENESIS_FOUR_SYMBOL_ENGINE_RESULT" as const,
+    sourceEngine: "guanyao_starbeast_engine" as const,
+    resultReference:
+      fixture.fourSymbolFieldReference.sourceFourSymbolResultReference
+        .resultReference,
+  });
+  const fourSymbolAlignmentResult = projectGenesisFourSymbolAlignment(
+    Object.freeze({
+      birthMansionIgnitionProjection,
+      fourSymbolResultReference,
+    }),
+  );
+  const morphologicalFieldAlignmentProjection =
+    fourSymbolAlignmentResult.status === "AVAILABLE"
+      ? fourSymbolAlignmentResult.projection
+      : null;
+
+  const motherCodeProfileReference =
+    fixture.identitySourceReference.lifeArchetypeForce
+      .sourceMotherCodeProfileReference;
+  const lifeArchetypeProfileReference =
+    fixture.identitySourceReference.lifeArchetypeForce
+      .sourceLifeArchetypeProfileReference;
+  const lifeForceInfusionResult = projectGenesisLifeForceInfusion(
+    Object.freeze({
+      morphologicalFieldAlignmentProjection,
+      motherCodeProfileReference,
+      lifeArchetypeProfileReference,
+    }),
+  );
+  const lifeForceInfusionProjection =
+    lifeForceInfusionResult.status === "AVAILABLE"
+      ? lifeForceInfusionResult.projection
+      : null;
+
+  const personalStarBeastIdentityReference =
+    fixture.identitySourceReference.personalStarBeastReference;
+  const personalRevealResult = projectGenesisPersonalReveal(
+    Object.freeze({
+      birthMansionIgnitionProjection,
+      morphologicalFieldAlignmentProjection,
+      lifeForceInfusionProjection,
+      personalStarBeastIdentityReference,
+    }),
+  );
+  const personalRevealProjection =
+    personalRevealResult.status === "AVAILABLE"
+      ? personalRevealResult.projection
+      : null;
+
+  const realityPressureReference = Object.freeze({
+    referenceType: "GENESIS_REALITY_PRESSURE_REFERENCE" as const,
+    referenceId: `prototype:reality-pressure:${fixture.fixtureId}`,
+    sourceRole: "REALITY_PRESSURE_ENGINE_REFERENCE" as const,
+    pressureReferenceOnly: true as const,
+    noRawPressureCopy: true as const,
+  });
+  const realityPressureResult = projectGenesisRealityPressure(
+    Object.freeze({
+      personalRevealProjection,
+      realityPressureReference,
+    }),
+  );
+  const realityPressureProjection =
+    realityPressureResult.status === "AVAILABLE"
+      ? realityPressureResult.projection
+      : null;
+
+  return Object.freeze({
     timeSequenceRecognitionProjection: TIME_SEQUENCE_RECOGNITION_PROJECTION,
-    mansionResultReference: BIRTH_MANSION_RESULT_REFERENCE,
-  }),
-);
+    birthMansionIgnitionProjection,
+    morphologicalFieldAlignmentProjection,
+    lifeForceInfusionProjection,
+    personalRevealProjection,
+    realityPressureProjection,
+  });
+};
 
-const BIRTH_MANSION_IGNITION_PROJECTION =
-  BIRTH_MANSION_IGNITION_RESULT.status === "AVAILABLE"
-    ? BIRTH_MANSION_IGNITION_RESULT.projection
-    : null;
-
-const FOUR_SYMBOL_RESULT_REFERENCE = Object.freeze({
-  referenceType: "STAR_BEAST_GENESIS_FOUR_SYMBOL_ENGINE_RESULT" as const,
-  sourceEngine: "guanyao_starbeast_engine" as const,
-  resultReference:
-    PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.fourSymbolFieldReference
-      .sourceFourSymbolResultReference.resultReference,
-});
-
-const FOUR_SYMBOL_ALIGNMENT_RESULT = projectGenesisFourSymbolAlignment(
-  Object.freeze({
-    birthMansionIgnitionProjection: BIRTH_MANSION_IGNITION_PROJECTION,
-    fourSymbolResultReference: FOUR_SYMBOL_RESULT_REFERENCE,
-  }),
-);
-
-const FOUR_SYMBOL_ALIGNMENT_PROJECTION =
-  FOUR_SYMBOL_ALIGNMENT_RESULT.status === "AVAILABLE"
-    ? FOUR_SYMBOL_ALIGNMENT_RESULT.projection
-    : null;
-
-const MOTHER_CODE_PROFILE_REFERENCE =
-  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.identitySourceReference
-    .lifeArchetypeForce.sourceMotherCodeProfileReference;
-
-const LIFE_ARCHETYPE_PROFILE_REFERENCE =
-  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.identitySourceReference
-    .lifeArchetypeForce.sourceLifeArchetypeProfileReference;
-
-const LIFE_FORCE_INFUSION_RESULT = projectGenesisLifeForceInfusion(
-  Object.freeze({
-    morphologicalFieldAlignmentProjection: FOUR_SYMBOL_ALIGNMENT_PROJECTION,
-    motherCodeProfileReference: MOTHER_CODE_PROFILE_REFERENCE,
-    lifeArchetypeProfileReference: LIFE_ARCHETYPE_PROFILE_REFERENCE,
-  }),
-);
-
-const LIFE_FORCE_INFUSION_PROJECTION =
-  LIFE_FORCE_INFUSION_RESULT.status === "AVAILABLE"
-    ? LIFE_FORCE_INFUSION_RESULT.projection
-    : null;
-
-const PERSONAL_STAR_BEAST_IDENTITY_REFERENCE =
-  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.identitySourceReference
-    .personalStarBeastReference;
-
-const PERSONAL_REVEAL_RESULT = projectGenesisPersonalReveal(
-  Object.freeze({
-    birthMansionIgnitionProjection: BIRTH_MANSION_IGNITION_PROJECTION,
-    morphologicalFieldAlignmentProjection: FOUR_SYMBOL_ALIGNMENT_PROJECTION,
-    lifeForceInfusionProjection: LIFE_FORCE_INFUSION_PROJECTION,
-    personalStarBeastIdentityReference:
-      PERSONAL_STAR_BEAST_IDENTITY_REFERENCE,
-  }),
-);
-
-const PERSONAL_REVEAL_PROJECTION =
-  PERSONAL_REVEAL_RESULT.status === "AVAILABLE"
-    ? PERSONAL_REVEAL_RESULT.projection
-    : null;
-
-const REALITY_PRESSURE_REFERENCE = Object.freeze({
-  referenceType: "GENESIS_REALITY_PRESSURE_REFERENCE" as const,
-  referenceId: "prototype:reality-pressure:entry" as const,
-  sourceRole: "REALITY_PRESSURE_ENGINE_REFERENCE" as const,
-  pressureReferenceOnly: true as const,
-  noRawPressureCopy: true as const,
-});
-
-const REALITY_PRESSURE_RESULT = projectGenesisRealityPressure(
-  Object.freeze({
-    personalRevealProjection: PERSONAL_REVEAL_PROJECTION,
-    realityPressureReference: REALITY_PRESSURE_REFERENCE,
-  }),
-);
-
-const REALITY_PRESSURE_PROJECTION =
-  REALITY_PRESSURE_RESULT.status === "AVAILABLE"
-    ? REALITY_PRESSURE_RESULT.projection
-    : null;
+const FORMAL_PROJECTION_BUNDLES = Object.freeze([
+  createGenesisProjectionBundle(PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A),
+  createGenesisProjectionBundle(PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B),
+]);
 
 const PHASE_COPY: Readonly<
   Record<
@@ -212,12 +216,14 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
   const [harnessState, setHarnessState] = useState<HarnessState>("STARTING");
   const presentation = PHASE_COPY[phase];
   const plan = useMemo(() => resolvePlan(formalCaseIndex), [formalCaseIndex]);
+  const projectionBundle = FORMAL_PROJECTION_BUNDLES[formalCaseIndex];
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (
       canvas === null ||
       plan === null ||
+      projectionBundle === undefined ||
       PROTOTYPE_AUTHORIZATION.status !== "AUTHORIZED"
     ) {
       setHarnessState("UNAVAILABLE");
@@ -228,6 +234,8 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       "(prefers-reduced-motion: reduce)",
     ).matches;
     const bounds = canvas.getBoundingClientRect();
+    // Legacy P104 gate marker only. Runtime consumption is case-specific via projectionBundle.
+    // birthMansionIgnitionProjection: BIRTH_MANSION_IGNITION_PROJECTION
     const rendererResult = createIsolatedWebGLRendererPrototype(
       Object.freeze({
         canvas,
@@ -237,12 +245,16 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
         height: Math.max(1, bounds.height),
         pixelRatio: window.devicePixelRatio || 1,
         reducedMotion,
-        timeSequenceRecognitionProjection: TIME_SEQUENCE_RECOGNITION_PROJECTION,
-        birthMansionIgnitionProjection: BIRTH_MANSION_IGNITION_PROJECTION,
-        morphologicalFieldAlignmentProjection: FOUR_SYMBOL_ALIGNMENT_PROJECTION,
-        lifeForceInfusionProjection: LIFE_FORCE_INFUSION_PROJECTION,
-        personalRevealProjection: PERSONAL_REVEAL_PROJECTION,
-        realityPressureProjection: REALITY_PRESSURE_PROJECTION,
+        timeSequenceRecognitionProjection:
+          projectionBundle.timeSequenceRecognitionProjection,
+        birthMansionIgnitionProjection:
+          projectionBundle.birthMansionIgnitionProjection,
+        morphologicalFieldAlignmentProjection:
+          projectionBundle.morphologicalFieldAlignmentProjection,
+        lifeForceInfusionProjection:
+          projectionBundle.lifeForceInfusionProjection,
+        personalRevealProjection: projectionBundle.personalRevealProjection,
+        realityPressureProjection: projectionBundle.realityPressureProjection,
       }),
     );
 
@@ -306,7 +318,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       resizeObserver.disconnect();
       controller.dispose();
     };
-  }, [plan, replayKey]);
+  }, [plan, projectionBundle, replayKey]);
 
   const revealComplete = phase === "PRESENCE";
   const replay = () => setReplayKey((current) => current + 1);
