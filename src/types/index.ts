@@ -476,6 +476,17 @@ export type {
   ProductionIdentitySourceConvergenceUnavailableReason,
 } from "./productionIdentitySourceConvergence";
 export type {
+  PersonalStarBeastIdentityProductReadinessBlocked,
+  PersonalStarBeastIdentityProductReadinessBlockedReason,
+  PersonalStarBeastIdentityProductReadinessBoundary,
+  PersonalStarBeastIdentityProductReadinessInput,
+  PersonalStarBeastIdentityProductReadinessReady,
+  PersonalStarBeastIdentityProductReadinessReference,
+  PersonalStarBeastIdentityProductReadinessResult,
+  PersonalStarBeastIdentityProductReadinessUnavailable,
+  PersonalStarBeastIdentityProductReadinessUnavailableReason,
+} from "./personalStarBeastIdentityProductReadiness";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
