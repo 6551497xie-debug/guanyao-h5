@@ -234,6 +234,22 @@ export type {
   StarBeastPrototypeExplicitExecutionAuthorizationDecision,
 } from "./starBeastPrototypeExplicitExecutionAuthorizationCommand";
 export type {
+  StarBeastGenesisAssetReference,
+  StarBeastGenesisExperienceInput,
+  StarBeastGenesisExperienceState,
+  StarBeastGenesisFourSymbolReference,
+  StarBeastGenesisLifeArchetypeReference,
+  StarBeastGenesisMansionReference,
+  StarBeastGenesisOriginCoordinateReference,
+  StarBeastGenesisRevealBlocked,
+  StarBeastGenesisRevealBlockedReason,
+  StarBeastGenesisRevealReady,
+  StarBeastGenesisRevealResult,
+  StarBeastGenesisRevealUnavailable,
+  StarBeastGenesisRevealUnavailableReason,
+  StarBeastGenesisStage,
+} from "./starBeastGenesisExperience";
+export type {
   StarBeastPrototypeCoreStar,
   StarBeastPrototypeGeometryPath,
   StarBeastPrototypeGeometryPoint,
