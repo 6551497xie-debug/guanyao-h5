@@ -150,6 +150,16 @@ export type {
   StarBeastRendererContractReference,
 } from "./starBeastAssetPrototypeReadiness";
 export type {
+  StarBeastAssetPrototypeConsumption,
+  StarBeastAssetPrototypeConsumptionAvailable,
+  StarBeastAssetPrototypeConsumptionBlocked,
+  StarBeastAssetPrototypeConsumptionBlockedReason,
+  StarBeastAssetPrototypeConsumptionInput,
+  StarBeastAssetPrototypeConsumptionResult,
+  StarBeastAssetPrototypeConsumptionUnavailable,
+  StarBeastAssetPrototypeConsumptionUnavailableReason,
+} from "./starBeastAssetPrototypeConsumption";
+export type {
   StarBeastPrototypeCoreStar,
   StarBeastPrototypeGeometryPath,
   StarBeastPrototypeGeometryPoint,
