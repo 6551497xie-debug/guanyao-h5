@@ -242,6 +242,17 @@ export type {
   PersonalStarBeastRenderPlanAdapterResult,
 } from "./personalStarBeastRenderPlan";
 export type {
+  IsolatedWebGLPrototypeAuthorizationReviewReference,
+  IsolatedWebGLPrototypeExplicitAuthorityReference,
+  IsolatedWebGLPrototypeRenderPlanReference,
+  IsolatedWebGLRendererPrototypeAuthorization,
+  IsolatedWebGLRendererPrototypeAuthorizationBlockedReason,
+  IsolatedWebGLRendererPrototypeAuthorizationBoundary,
+  IsolatedWebGLRendererPrototypeAuthorizationInput,
+  IsolatedWebGLRendererPrototypeAuthorizationResult,
+  IsolatedWebGLRendererPrototypeAuthorizationUnavailableReason,
+} from "./isolatedWebGLRendererPrototypeAuthorization";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,
