@@ -159,6 +159,15 @@ export type {
   StarBeastGenesisVisualState,
 } from "./starBeastGenesisVisualState";
 export type {
+  StarBeastConsciousnessMode,
+  StarBeastCoreBreathReference,
+  StarBeastCosmicConsciousnessResult,
+  StarBeastCosmicConsciousnessState,
+  StarBeastInnerLightReference,
+  StarBeastPresenceReference,
+  StarBeastStarDustFlowReference,
+} from "./starBeastCosmicConsciousness";
+export type {
   StarBeastAssetPrototypeReadinessBlocked,
   StarBeastAssetPrototypeReadinessBlockedReason,
   StarBeastAssetPrototypeReadinessInput,

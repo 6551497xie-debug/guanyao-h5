@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
+import type { StarBeastCosmicConsciousnessState } from "../types/starBeastCosmicConsciousness";
 import type { StarBeastGenesisRendererPrototypeInput } from "../types/starBeastGenesisVisualState";
 
 type Props = Readonly<{
   input: StarBeastGenesisRendererPrototypeInput;
+  consciousnessState: StarBeastCosmicConsciousnessState;
 }>;
 
 const STAGE_DEPTH = Object.freeze({
@@ -103,7 +105,89 @@ function drawTigerPresence(
   ctx.restore();
 }
 
-export function StarBeastGenesisRendererPrototypeCanvas({ input }: Props) {
+function drawSparseConsciousnessFlow(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  seconds: number,
+) {
+  for (let index = 0; index < 9; index += 1) {
+    const [from, to] = MANSION_CONNECTIONS[index];
+    const [fromX, fromY] = MANSION_POINTS[from];
+    const [toX, toY] = MANSION_POINTS[to];
+    const progress = (seconds * 0.035 + index * 0.137) % 1;
+    const x = (fromX + (toX - fromX) * progress) * width;
+    const y = (fromY + (toY - fromY) * progress) * height;
+    drawGlow(ctx, x, y, 9, 0.16);
+    ctx.fillStyle = "rgba(255, 238, 199, 0.62)";
+    ctx.beginPath();
+    ctx.arc(x, y, index % 3 === 0 ? 1.25 : 0.72, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawInnerLight(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  breath: number,
+) {
+  const coreX = width * MANSION_POINTS[2][0];
+  const coreY = height * MANSION_POINTS[2][1];
+  const radius = Math.min(width, height) * 0.255;
+  const light = ctx.createRadialGradient(coreX, coreY, 0, coreX, coreY, radius);
+  light.addColorStop(0, `rgba(226, 194, 128, ${0.09 + breath * 0.025})`);
+  light.addColorStop(0.5, `rgba(156, 151, 145, ${0.035 + breath * 0.012})`);
+  light.addColorStop(1, "rgba(81, 91, 119, 0)");
+  ctx.fillStyle = light;
+  ctx.beginPath();
+  ctx.arc(coreX, coreY, radius, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawCoreBreath(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  breath: number,
+  faint: boolean,
+) {
+  const coreX = width * MANSION_POINTS[2][0];
+  const coreY = height * MANSION_POINTS[2][1];
+  const baseRadius = Math.min(width, height) * (faint ? 0.075 : 0.12);
+  drawGlow(
+    ctx,
+    coreX,
+    coreY,
+    baseRadius * (0.96 + breath * 0.05),
+    faint ? 0.12 + breath * 0.05 : 0.24 + breath * 0.09,
+  );
+}
+
+function drawSilentPresenceField(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+) {
+  const presence = ctx.createRadialGradient(
+    width * 0.46,
+    height * 0.65,
+    0,
+    width * 0.46,
+    height * 0.65,
+    Math.min(width, height) * 0.37,
+  );
+  presence.addColorStop(0, "rgba(212, 190, 143, 0.055)");
+  presence.addColorStop(0.46, "rgba(112, 112, 121, 0.025)");
+  presence.addColorStop(1, "rgba(5, 5, 11, 0)");
+  ctx.fillStyle = presence;
+  ctx.fillRect(0, 0, width, height);
+}
+
+export function StarBeastGenesisRendererPrototypeCanvas({
+  input,
+  consciousnessState,
+}: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -130,7 +214,8 @@ export function StarBeastGenesisRendererPrototypeCanvas({ input }: Props) {
 
     const draw = (time: number) => {
       const seconds = time / 1000;
-      const pulse = (Math.sin(seconds * 1.3) + 1) / 2;
+      const structurePulse = (Math.sin(seconds * 0.8) + 1) / 2;
+      const slowBreath = (Math.sin(seconds * 0.55 - Math.PI / 2) + 1) / 2;
       context.clearRect(0, 0, width, height);
 
       const field = context.createRadialGradient(
@@ -160,6 +245,13 @@ export function StarBeastGenesisRendererPrototypeCanvas({ input }: Props) {
 
       drawGlow(context, width * 0.5, height * 0.47, Math.min(width, height) * 0.18, 0.05 + stageDepth * 0.018);
 
+      if (
+        consciousnessState.presenceReference.expressionState ===
+        "SILENT_PRESENCE"
+      ) {
+        drawSilentPresenceField(context, width, height);
+      }
+
       if (stageDepth >= 1) {
         context.save();
         context.lineCap = "round";
@@ -177,7 +269,7 @@ export function StarBeastGenesisRendererPrototypeCanvas({ input }: Props) {
         }
 
         MANSION_POINTS.forEach(([x, y], index) => {
-          const radius = index === 2 ? 5.5 + pulse * 1.4 : 2.8 + ((index + 1) % 3);
+          const radius = index === 2 ? 5.5 + structurePulse * 1.1 : 2.8 + ((index + 1) % 3);
           drawGlow(context, x * width, y * height, radius * 6.5, 0.18 + stageDepth * 0.06);
           context.fillStyle = "rgba(255, 242, 207, 0.96)";
           context.beginPath();
@@ -200,9 +292,6 @@ export function StarBeastGenesisRendererPrototypeCanvas({ input }: Props) {
       }
 
       if (stageDepth >= 3) {
-        const coreX = width * 0.43;
-        const coreY = height * 0.45;
-        drawGlow(context, coreX, coreY, Math.min(width, height) * (0.14 + pulse * 0.018), 0.32);
         context.save();
         context.strokeStyle = "rgba(197, 175, 122, 0.12)";
         context.lineWidth = 1;
@@ -214,8 +303,35 @@ export function StarBeastGenesisRendererPrototypeCanvas({ input }: Props) {
         context.restore();
       }
 
+      if (
+        consciousnessState.innerLightReference.expressionState ===
+        "STABLE_SETTLING_FLOW"
+      ) {
+        drawInnerLight(context, width, height, slowBreath);
+      }
+
+      if (
+        consciousnessState.starDustFlowReference.expressionState ===
+        "SPARSE_CONTINUOUS_FLOW"
+      ) {
+        drawSparseConsciousnessFlow(context, width, height, seconds);
+      }
+
+      if (
+        consciousnessState.coreBreathReference.expressionState !== "DORMANT"
+      ) {
+        drawCoreBreath(
+          context,
+          width,
+          height,
+          slowBreath,
+          consciousnessState.coreBreathReference.expressionState ===
+            "FAINT_BREATH",
+        );
+      }
+
       if (stageDepth >= 4) {
-        drawTigerPresence(context, width, height, pulse);
+        drawTigerPresence(context, width, height, slowBreath);
       }
 
       animationFrame = window.requestAnimationFrame(draw);
@@ -229,13 +345,14 @@ export function StarBeastGenesisRendererPrototypeCanvas({ input }: Props) {
       observer.disconnect();
       window.cancelAnimationFrame(animationFrame);
     };
-  }, [input]);
+  }, [consciousnessState, input]);
 
   return (
     <canvas
       ref={canvasRef}
       className="gy-genesis-renderer-slice__canvas"
       aria-label={`艮之白虎隔离视觉原型：${input.visualStateReference.stage}`}
+      data-consciousness-mode={consciousnessState.consciousnessMode}
     />
   );
 }

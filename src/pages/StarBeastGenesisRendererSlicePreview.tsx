@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { StarBeastGenesisRendererPrototypeCanvas } from "../components/StarBeastGenesisRendererPrototypeCanvas";
+import { resolveStarBeastCosmicConsciousness } from "../services/starBeastCosmicConsciousnessMapping";
 import { resolveWhiteTigerGenGenesisPrototypeAsset } from "../services/starBeastGenesisPrototypeAsset";
 import {
   resolveStarBeastGenesisRendererPrototype,
@@ -91,10 +92,15 @@ export function StarBeastGenesisRendererSlicePreview() {
       noAnimationParameterCopy: true,
       noLifeFactCopy: true,
     });
-    return resolveStarBeastGenesisRendererPrototype(visualState);
+    const renderer = resolveStarBeastGenesisRendererPrototype(visualState);
+    const consciousness = resolveStarBeastCosmicConsciousness(visualState);
+    if (renderer.status !== "AVAILABLE" || consciousness.status !== "AVAILABLE") {
+      return null;
+    }
+    return Object.freeze({ renderer, consciousness });
   }, [stage]);
 
-  if (!model || model.status !== "AVAILABLE") {
+  if (!model) {
     return <main className="gy-genesis-renderer-slice gy-genesis-renderer-slice--error">Prototype unavailable.</main>;
   }
 
@@ -110,12 +116,16 @@ export function StarBeastGenesisRendererSlicePreview() {
       className="gy-genesis-renderer-slice"
       data-prototype-scope="ISOLATED_PROTOTYPE_ONLY"
       data-genesis-stage={stage}
+      data-consciousness-mode={model.consciousness.state.consciousnessMode}
     >
-      <StarBeastGenesisRendererPrototypeCanvas input={model.input} />
+      <StarBeastGenesisRendererPrototypeCanvas
+        input={model.renderer.input}
+        consciousnessState={model.consciousness.state}
+      />
       <div className="gy-genesis-renderer-slice__veil" aria-hidden="true" />
 
       <header className="gy-genesis-renderer-slice__header">
-        <span>GUANYAO · GENESIS PROTOTYPE / P85</span>
+        <span>GUANYAO · GENESIS PROTOTYPE / P85 + P86</span>
         <span>ISOLATED</span>
       </header>
 
