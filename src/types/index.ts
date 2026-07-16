@@ -234,6 +234,17 @@ export type {
   PersonalStarBeastSceneModelFixtureValidationResult,
 } from "./personalStarBeastSceneModelFixture";
 export type {
+  ProductionIdentitySourceAdapterReadinessBlocked,
+  ProductionIdentitySourceAdapterReadinessBlockedReason,
+  ProductionIdentitySourceAdapterReadinessBoundary,
+  ProductionIdentitySourceAdapterReadinessInput,
+  ProductionIdentitySourceAdapterReadinessReady,
+  ProductionIdentitySourceAdapterReadinessResult,
+  ProductionIdentitySourceAdapterReadinessUnavailable,
+  ProductionIdentitySourceAdapterReadinessUnavailableReason,
+  ProductionIdentitySourceAdapterReference,
+} from "./productionIdentitySourceAdapterReadiness";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
