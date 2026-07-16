@@ -188,6 +188,17 @@ export type {
   StarBeastPrototypeIsolationScopeReference,
 } from "./starBeastPrototypeExpressionChannelReadiness";
 export type {
+  StarBeastPrototypeExpressionChannelConsumption,
+  StarBeastPrototypeExpressionChannelConsumptionAvailable,
+  StarBeastPrototypeExpressionChannelConsumptionBlocked,
+  StarBeastPrototypeExpressionChannelConsumptionBlockedReason,
+  StarBeastPrototypeExpressionChannelConsumptionInput,
+  StarBeastPrototypeExpressionChannelConsumptionResult,
+  StarBeastPrototypeExpressionChannelConsumptionUnavailable,
+  StarBeastPrototypeExpressionChannelConsumptionUnavailableReason,
+  StarBeastPrototypeRendererInputReference,
+} from "./starBeastPrototypeExpressionChannelConsumption";
+export type {
   StarBeastPrototypeCoreStar,
   StarBeastPrototypeGeometryPath,
   StarBeastPrototypeGeometryPoint,
