@@ -304,6 +304,20 @@ export type {
   ProductionIdentitySourceInputNormalizationReviewUnavailableReason,
 } from "./productionIdentitySourceInputNormalizationReview";
 export type {
+  ProductionIdentitySourceInputNormalizerContractBlocked,
+  ProductionIdentitySourceInputNormalizerContractBlockedReason,
+  ProductionIdentitySourceInputNormalizerContractBoundary,
+  ProductionIdentitySourceInputNormalizerContractInput,
+  ProductionIdentitySourceInputNormalizerContractReady,
+  ProductionIdentitySourceInputNormalizerContractReference,
+  ProductionIdentitySourceInputNormalizerContractResult,
+  ProductionIdentitySourceInputNormalizerContractUnavailable,
+  ProductionIdentitySourceInputNormalizerContractUnavailableReason,
+  ProductionIdentitySourceInputNormalizerErrorContract,
+  ProductionIdentitySourceInputNormalizerInputContract,
+  ProductionIdentitySourceInputNormalizerOutputContract,
+} from "./productionIdentitySourceInputNormalizerContract";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
