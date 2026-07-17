@@ -2157,3 +2157,16 @@ export type {
   GenesisExperienceRuntimeReviewResult,
   GenesisExperienceRuntimeBoundary,
 } from "./genesisExperienceRuntimeReview";
+
+export type {
+  GenesisCompletionState,
+  GenesisRecognitionMoment,
+  GenesisPresenceStability,
+  GenesisTransitionReadiness,
+  GenesisEmotionalClosure,
+  GenesisToRealityBoundary,
+  GenesisCompletionMomentReview,
+  GenesisCompletionMomentReviewInput,
+  GenesisCompletionMomentReviewResult,
+  GenesisCompletionRuntimeBoundary,
+} from "./genesisCompletionMomentReview";
