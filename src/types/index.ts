@@ -859,6 +859,23 @@ export type {
   GenesisSymbolicRhythm,
 } from "./genesisSymbolVisualState";
 export type {
+  GenesisChangePatternPresence,
+  GenesisChangeRhythmMode,
+  GenesisHexagramVisualMappingBlocked,
+  GenesisHexagramVisualMappingBlockedReason,
+  GenesisHexagramVisualMappingBoundary,
+  GenesisHexagramVisualMappingInput,
+  GenesisHexagramVisualMappingReady,
+  GenesisHexagramVisualMappingResult,
+  GenesisHexagramVisualMappingUnavailable,
+  GenesisHexagramVisualMappingUnavailableReason,
+  GenesisHexagramVisualState,
+  GenesisImprintState,
+  GenesisTransformationTrace,
+  GenesisYaoStructureExpression,
+  GenesisYinYangRhythmExpression,
+} from "./genesisHexagramVisualState";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
