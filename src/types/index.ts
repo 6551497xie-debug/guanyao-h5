@@ -2212,3 +2212,13 @@ export type {
   GenesisTransitionTimelineInput,
   GenesisTransitionTimelineResult,
 } from "./genesisTransitionTimeline";
+
+export type {
+  GenesisRendererRenderIntent,
+  GenesisRendererVisualStateReference,
+  GenesisRendererVisualStateReferences,
+  GenesisRendererConsumerBoundary,
+  GenesisRendererConsumerInput,
+  GenesisRendererConsumerContract,
+  GenesisRendererConsumerResult,
+} from "./genesisRendererConsumerContract";
