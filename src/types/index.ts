@@ -630,6 +630,19 @@ export type {
   PersonalStarBeastIdentityExplicitUserBindingExecutionAuthorizationConfirmationUnavailableReason,
 } from "./personalStarBeastIdentityExplicitUserBindingExecutionAuthorizationConfirmation";
 export type {
+  PersonalStarBeastIdentityExplicitUserBindingExecutionBlocked,
+  PersonalStarBeastIdentityExplicitUserBindingExecutionBlockedReason,
+  PersonalStarBeastIdentityExplicitUserBindingExecutionBoundary,
+  PersonalStarBeastIdentityExplicitUserBindingExecutionInput,
+  PersonalStarBeastIdentityExplicitUserBindingExecutionInputContract,
+  PersonalStarBeastIdentityExplicitUserBindingExecutionOutputContract,
+  PersonalStarBeastIdentityExplicitUserBindingExecutionBound,
+  PersonalStarBeastIdentityExplicitUserBindingReference,
+  PersonalStarBeastIdentityExplicitUserBindingExecutionResult,
+  PersonalStarBeastIdentityExplicitUserBindingExecutionUnavailable,
+  PersonalStarBeastIdentityExplicitUserBindingExecutionUnavailableReason,
+} from "./personalStarBeastIdentityExplicitUserBindingExecution";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
