@@ -778,6 +778,18 @@ export type {
   PersonalStarBeastRealUserSystemStorageRecordKind,
 } from "./personalStarBeastRealUserSystemInterfaceContract";
 export type {
+  GenesisVisualSemanticLayer,
+  GenesisVisualSemanticMapping,
+  GenesisVisualSemanticMappingBlocked,
+  GenesisVisualSemanticMappingBlockedReason,
+  GenesisVisualSemanticMappingReviewBoundary,
+  GenesisVisualSemanticMappingReviewInput,
+  GenesisVisualSemanticMappingReviewResult,
+  GenesisVisualSemanticMappingUnavailable,
+  GenesisVisualSemanticMappingUnavailableReason,
+  GenesisVisualSemanticMappingReady,
+} from "./genesisVisualSemanticMapping";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
