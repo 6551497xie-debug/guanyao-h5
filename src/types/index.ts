@@ -825,6 +825,22 @@ export type {
   GenesisStellarOrderExpression,
 } from "./genesisStarRiverVisualState";
 export type {
+  GenesisTimeAlignmentState,
+  GenesisTimeResonanceVisualMappingBlocked,
+  GenesisTimeResonanceVisualMappingBlockedReason,
+  GenesisTimeResonanceVisualMappingBoundary,
+  GenesisTimeResonanceVisualMappingInput,
+  GenesisTimeResonanceVisualMappingReady,
+  GenesisTimeResonanceVisualMappingResult,
+  GenesisTimeResonanceVisualMappingUnavailable,
+  GenesisTimeResonanceVisualMappingUnavailableReason,
+  GenesisTimeResonanceVisualState,
+  GenesisTimeTemporalRhythm,
+  GenesisMoonPhaseTransitionExpression,
+  GenesisStarFieldResponse,
+  GenesisTemporalEntryState,
+} from "./genesisTimeResonanceVisualState";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
