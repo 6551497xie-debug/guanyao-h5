@@ -841,6 +841,24 @@ export type {
   GenesisTemporalEntryState,
 } from "./genesisTimeResonanceVisualState";
 export type {
+  GenesisCelestialSkeleton,
+  GenesisSevenMansionAggregation,
+  GenesisSpatialMorphology,
+  GenesisSymbolAlignmentState,
+  GenesisSymbolFieldPresence,
+  GenesisSymbolVisualMappingBlocked,
+  GenesisSymbolVisualMappingBlockedReason,
+  GenesisSymbolVisualMappingBoundary,
+  GenesisSymbolVisualMappingInput,
+  GenesisSymbolVisualMappingReady,
+  GenesisSymbolVisualMappingResult,
+  GenesisSymbolVisualMappingUnavailable,
+  GenesisSymbolVisualMappingUnavailableReason,
+  GenesisSymbolVisualState,
+  GenesisSymbolicMotionProfile,
+  GenesisSymbolicRhythm,
+} from "./genesisSymbolVisualState";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
