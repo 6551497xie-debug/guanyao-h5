@@ -2118,3 +2118,10 @@ export type GuanyaoAsset = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type {
+  GenesisLifeForceVisualState,
+  GenesisLifeForceVisualMappingInput,
+  GenesisLifeForceVisualMappingResult,
+  GenesisLifeForceVisualMappingBoundary,
+} from "./genesisLifeForceVisualState";
