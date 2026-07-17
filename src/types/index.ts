@@ -808,6 +808,23 @@ export type {
   GenesisMoonTemporalRhythm,
 } from "./genesisMoonOriginVisualState";
 export type {
+  GenesisCelestialMotionRhythm,
+  GenesisMansionGroupExpression,
+  GenesisObservationState,
+  GenesisSpatialDepthExpression,
+  GenesisStarFieldPresence,
+  GenesisStarRiverVisualMappingBlocked,
+  GenesisStarRiverVisualMappingBlockedReason,
+  GenesisStarRiverVisualMappingBoundary,
+  GenesisStarRiverVisualMappingInput,
+  GenesisStarRiverVisualMappingReady,
+  GenesisStarRiverVisualMappingResult,
+  GenesisStarRiverVisualMappingUnavailable,
+  GenesisStarRiverVisualMappingUnavailableReason,
+  GenesisStarRiverVisualState,
+  GenesisStellarOrderExpression,
+} from "./genesisStarRiverVisualState";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
