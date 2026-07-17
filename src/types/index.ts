@@ -2125,3 +2125,10 @@ export type {
   GenesisLifeForceVisualMappingResult,
   GenesisLifeForceVisualMappingBoundary,
 } from "./genesisLifeForceVisualState";
+
+export type {
+  GenesisPersonalStarBeastRevealVisualState,
+  GenesisPersonalStarBeastRevealVisualMappingInput,
+  GenesisPersonalStarBeastRevealVisualMappingResult,
+  GenesisPersonalStarBeastRevealVisualMappingBoundary,
+} from "./genesisPersonalStarBeastRevealVisualState";
