@@ -2198,3 +2198,17 @@ export type {
   GenesisRuntimeStateMachineOperation,
   GenesisRuntimeStateMachineResult,
 } from "./genesisRuntimeStateMachine";
+
+export type {
+  GenesisRhythmProfile,
+  GenesisStageDuration,
+  GenesisTransitionDuration,
+  GenesisTransitionEasing,
+  GenesisUserPauseWindow,
+  GenesisCompletionHold,
+  GenesisTransitionTimelineStage,
+  GenesisTransitionTimelineBoundary,
+  GenesisTransitionTimeline,
+  GenesisTransitionTimelineInput,
+  GenesisTransitionTimelineResult,
+} from "./genesisTransitionTimeline";
