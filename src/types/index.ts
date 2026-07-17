@@ -761,6 +761,23 @@ export type {
   PersonalStarBeastIdentityRealUserStorageImplementationReadinessUnavailableReason,
 } from "./personalStarBeastIdentityRealUserStorageImplementationReadiness";
 export type {
+  PersonalStarBeastRealUserSystemAuthenticationBoundary,
+  PersonalStarBeastRealUserSystemIdentityBindingBoundary,
+  PersonalStarBeastRealUserSystemInterfaceContract,
+  PersonalStarBeastRealUserSystemInterfaceContractBlocked,
+  PersonalStarBeastRealUserSystemInterfaceContractBlockedReason,
+  PersonalStarBeastRealUserSystemInterfaceContractBoundary,
+  PersonalStarBeastRealUserSystemInterfaceContractInput,
+  PersonalStarBeastRealUserSystemInterfaceContractNotAuthorized,
+  PersonalStarBeastRealUserSystemInterfaceContractReady,
+  PersonalStarBeastRealUserSystemInterfaceContractReference,
+  PersonalStarBeastRealUserSystemInterfaceContractResult,
+  PersonalStarBeastRealUserSystemInterfaceContractUnavailable,
+  PersonalStarBeastRealUserSystemInterfaceContractUnavailableReason,
+  PersonalStarBeastRealUserSystemStorageBoundary,
+  PersonalStarBeastRealUserSystemStorageRecordKind,
+} from "./personalStarBeastRealUserSystemInterfaceContract";
+export type {
   PersonalStarBeastRenderExpressionChannel,
   PersonalStarBeastRenderExpressionReference,
   PersonalStarBeastRenderPlan,
