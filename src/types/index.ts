@@ -2185,3 +2185,16 @@ export type {
   GenesisRuntimeExperienceReadinessResult,
   GenesisRuntimeExperienceReadinessBoundary,
 } from "./genesisRuntimeExperienceReadiness";
+
+export type {
+  GenesisRuntimeStage,
+  GenesisRuntimeTransitionState,
+  GenesisRuntimeSequenceStatus,
+  GenesisRuntimeTransitionTrigger,
+  GenesisRuntimeStateMachineBoundary,
+  GenesisRuntimeStateMachine,
+  GenesisRuntimeStateMachineInput,
+  GenesisRuntimeStageTransitionInput,
+  GenesisRuntimeStateMachineOperation,
+  GenesisRuntimeStateMachineResult,
+} from "./genesisRuntimeStateMachine";
