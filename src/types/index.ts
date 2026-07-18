@@ -3027,6 +3027,17 @@ export type {
 } from "./realityPressureSeedCandidateSource";
 
 export type {
+  RealityPressureCrossFieldBundleGroup,
+  RealityPressureCrossFieldBundleCursor,
+  RealityPressureCrossFieldCandidateSlot,
+  RealityPressureCrossFieldCandidateBundlePlan,
+  RealityPressureCrossFieldCandidateBundleBlockedReason,
+  RealityPressureCrossFieldCandidateBundlePlanResult,
+  RealityPressureCrossFieldCandidateBundleBoundary,
+  RealityPressureCrossFieldCandidateBundleContract,
+} from "./realityPressureCrossFieldCandidateBundleContract";
+
+export type {
   RealityPressureSeedCaptureAdapterBoundary,
   RealityPressureSeedCaptureAdapterInput,
   RealityPressureSeedCaptureAdapterResult,
