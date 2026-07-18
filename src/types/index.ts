@@ -2346,3 +2346,23 @@ export type {
   RealityPressureRecognitionArchitectureBlocked,
   RealityPressureRecognitionArchitectureResult,
 } from "./realityPressureRecognitionArchitecture";
+
+export type {
+  GravityEntryState,
+  InertiaObservationLayer,
+  AutomaticResponseLayer,
+  PatternRecognitionLayer,
+  InertiaTensionLayer,
+  ChoicePreparationBoundary,
+  GravityExperienceInterventionBoundary,
+  GravityExperienceReadiness,
+  RealityGravityExperienceArchitecture,
+  RealityGravityExperienceArchitectureInput,
+  RealityGravityExperienceArchitectureUnavailableReason,
+  RealityGravityExperienceArchitectureBlockedReason,
+  RealityGravityExperienceArchitectureBoundary,
+  RealityGravityExperienceArchitectureReady,
+  RealityGravityExperienceArchitectureUnavailable,
+  RealityGravityExperienceArchitectureBlocked,
+  RealityGravityExperienceArchitectureResult,
+} from "./realityGravityExperienceArchitecture";
