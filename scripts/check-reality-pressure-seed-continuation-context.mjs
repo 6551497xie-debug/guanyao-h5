@@ -53,6 +53,7 @@ try {
   [
     "createRealityPressureSeedContinuationContext",
     "attachRealityPressureSeedSessionToContinuationContext",
+    "advanceRealityPressureSeedContinuationContext",
     'phase: "READY_FOR_CONSUMER_INITIALIZATION"',
     'phase: "ACTIVE"',
     "pressureSeedSession: null",
@@ -97,8 +98,8 @@ try {
     source.routeType,
     "pressureSeedContinuationContextRequired: true",
   );
-  assertExcludes(
-    "Host remains disconnected from continuation context",
+  assertIncludes(
+    "Host receives continuation context only through the explicit production prop",
     source.host,
     "RealityPressureSeedContinuationContext",
   );
@@ -222,6 +223,50 @@ try {
   assertEqual("active phase is explicit", active.context.phase, "ACTIVE");
   assertEqual("V2 session is forwarded by identity", active.context.pressureSeedSession, pressureSeedSession);
   assertEqual("active context is immutable", Object.isFrozen(active.context), true);
+
+  const nextBundleReferenceId = "bundle:work-004d:2";
+  const nextRequestContext = Object.freeze({
+    sourceReferenceId,
+    activationContextReferenceId: activationReferenceId,
+  });
+  const nextDeliverySession = Object.freeze({
+    sourceReferenceId,
+    currentBundleReferenceId: nextBundleReferenceId,
+  });
+  const nextCandidateSourceContext = Object.freeze({
+    sourceReferenceId,
+    bundleReferenceId: nextBundleReferenceId,
+  });
+  const nextConsumerInput = Object.freeze({});
+  const nextPressureSeedSession = Object.freeze({
+    sourceReferenceId,
+    candidateBundleReferenceId: nextBundleReferenceId,
+  });
+  const advanced = runtime.advanceRealityPressureSeedContinuationContext({
+    context: active.context,
+    activationRequestResult: Object.freeze({
+      status: "READY",
+      context: nextRequestContext,
+    }),
+    deliveryResult: Object.freeze({
+      status: "READY",
+      operation: "ADVANCE",
+      sourceReferenceId,
+      activationContextReferenceId: activationReferenceId,
+      deliverySession: nextDeliverySession,
+      candidateSourceContext: nextCandidateSourceContext,
+      consumerInput: nextConsumerInput,
+    }),
+    consumerResult: Object.freeze({
+      status: "READY",
+      operation: "ADVANCE",
+      session: nextPressureSeedSession,
+    }),
+  });
+  assertEqual("next delivery advances continuation", advanced.status, "READY");
+  assertEqual("next delivery remains active", advanced.context.phase, "ACTIVE");
+  assertEqual("next bundle becomes continuous", advanced.context.pressureSeedSession, nextPressureSeedSession);
+  assertEqual("next delivery session is forwarded", advanced.context.deliverySession, nextDeliverySession);
 
   const sourceMismatch = runtime.createRealityPressureSeedContinuationContext({
     routeAuthorization,

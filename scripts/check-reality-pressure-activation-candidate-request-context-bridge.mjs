@@ -65,7 +65,7 @@ try {
     assertExcludes("bridge performs no Candidate Source, recognition, Gravity, UI, clock, or storage work", source.service, marker),
   );
   assertExcludes("existing Candidate Source is not duplicated", source.source, "ActivationCandidateRequestBridge");
-  assertExcludes("Production Host remains unchanged", source.host, "ActivationCandidateRequestBridge");
+  assertIncludes("Atomic V2 Host uses the existing activation request bridge", source.host, "ActivationCandidateRequestBridge");
   assertExcludes("Gravity remains unchanged", source.gravity, "ActivationCandidateRequestBridge");
 
   const packageJson = JSON.parse(source.packageManifest);

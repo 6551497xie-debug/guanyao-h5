@@ -1,5 +1,6 @@
 import type { RealityProductionRouteActivationAuthorization } from "./realityProductionRouteAuthorization";
 import type { RealityProductionPressureHostInput } from "./realityProductionPressureHostInputContract";
+import type { RealityPressureSeedContinuationContext } from "./realityPressureSeedContinuationContext";
 
 export type RealityProductionRouteEntryBoundary = Readonly<{
   productionRouteEntryOnly: true;
@@ -31,30 +32,24 @@ export type RealityProductionRouteEntryBoundary = Readonly<{
 export type RealityProductionHostBoundary = Readonly<{
   productionRealityHostOnly: true;
   authorizedRealitySourceOnly: true;
-  productionPressureConsumerOnly: true;
+  productionPressureSeedConsumerOnly: true;
   productionPressureHostInputRequired: true;
-  pressureSeedConsumerInputReadOnly: true;
-  pressureSeedConsumerNotActivated: true;
-  sharedFrozenPressurePresentationOnly: true;
-  explicitPressureObservationOnly: true;
-  productionGravityConsumerOnly: true;
-  sharedFrozenGravityPresentationOnly: true;
-  explicitGravityObservationOnly: true;
-  productionChoiceConsumerOnly: true;
-  sharedFrozenChoicePresentationOnly: true;
-  explicitChoiceActiveResponseOnly: true;
-  crystalReadinessHoldOnly: true;
+  pressureSeedContinuationContextRequired: true;
+  pressureSeedConsumerActivated: true;
+  v1PressureConsumerForbidden: true;
+  v2PressureSeedPresentationOnly: true;
+  explicitPressureSeedRecognitionOnly: true;
+  explicitNextBundleRequestOnly: true;
+  gravityReadinessHoldOnly: true;
   noFixtureSource: true;
   noPrototypeSource: true;
   noDefaultSource: true;
   noEngineInvocation: true;
   noPressureEngine: true;
   noPressureSeedMatching: true;
-  noPressureResult: true;
-  noInertiaEngine: true;
-  noBehaviorEngine: true;
-  noRecommendedAction: true;
-  noBestChoice: true;
+  noAutomaticSelection: true;
+  noGravityExecution: true;
+  noChoiceExecution: true;
   noCrystalExecution: true;
   noRendererInvocation: true;
   noLegacyDynamicsRuntime: true;
@@ -70,4 +65,8 @@ export type RealityProductionHostProps = Readonly<{
     { status: "READY" }
   >;
   pressureSeedHostInput: RealityProductionPressureHostInput;
+  pressureSeedContinuationContext: Extract<
+    RealityPressureSeedContinuationContext,
+    { phase: "READY_FOR_CONSUMER_INITIALIZATION" }
+  >;
 }>;

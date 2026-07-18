@@ -105,13 +105,13 @@ try {
     source.routeType,
     "pressureSeedHostInput: RealityProductionPressureHostInput",
   );
-  assertExcludes(
-    "Host does not initialize V2 Consumer",
+  assertIncludes(
+    "Atomic V2 Host initializes Consumer from the validated input",
     source.host,
     "initializeRealityProductionPressureSeedConsumer",
   );
-  assertExcludes(
-    "Host does not advance V2 Consumer",
+  assertIncludes(
+    "Atomic V2 Host advances Consumer only after explicit events",
     source.host,
     "advanceRealityProductionPressureSeedConsumer",
   );

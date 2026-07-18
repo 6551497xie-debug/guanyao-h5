@@ -125,8 +125,8 @@ try {
     source.legacyPressureConsumer,
     "GUANYAO_REALITY_PRODUCTION_PRESSURE_SEED_SESSION_V2",
   );
-  assertExcludes(
-    "Production Host does not consume V2 session in WORK-003D",
+  assertIncludes(
+    "Production Host consumes the frozen V2 session after atomic cutover",
     source.productionHost,
     "initializeRealityProductionPressureSeedConsumer",
   );

@@ -1,9 +1,12 @@
 import type { RealityPressureActivationCandidateRequestContext } from "./realityPressureActivationCandidateRequestBridge";
+import type { RealityPressureActivationCandidateRequestBridgeResult } from "./realityPressureActivationCandidateRequestBridge";
+import type { RealityPressureActivationDeliveryOrchestrationBridgeResult } from "./realityPressureActivationDeliveryOrchestrationBridge";
 import type { RealityPressureCandidateActivationContext } from "./realityPressureCandidateActivationContext";
 import type { RealityPressureCandidateDeliverySession } from "./realityPressureCandidateDeliverySession";
 import type { RealityPressureSeedCandidateSourceContext } from "./realityPressureSeedCandidateSource";
 import type {
   RealityProductionPressureSeedConsumerInitializeInput,
+  RealityProductionPressureSeedConsumerAdvanceInput,
   RealityProductionPressureSeedConsumerResult,
   RealityProductionPressureSeedSession,
 } from "./realityProductionPressureSeedConsumer";
@@ -58,7 +61,6 @@ type RealityPressureSeedContinuationContextCommon = Readonly<{
   activationRequestContext: RealityPressureActivationCandidateRequestContext;
   deliverySession: RealityPressureCandidateDeliverySession;
   candidateSourceContext: RealityPressureSeedCandidateSourceContext;
-  consumerInput: RealityProductionPressureSeedConsumerInitializeInput;
   provenance: Readonly<{
     routeCandidateActivationSource: "REALITY_ROUTE_PRESSURE_CANDIDATE_ACTIVATION_BRIDGE";
     routeCandidateRequestSource: "REALITY_ROUTE_CANDIDATE_REQUEST_CONTEXT_BRIDGE";
@@ -74,11 +76,15 @@ export type RealityPressureSeedContinuationContext =
   | (RealityPressureSeedContinuationContextCommon &
       Readonly<{
         phase: "READY_FOR_CONSUMER_INITIALIZATION";
+        consumerInput: RealityProductionPressureSeedConsumerInitializeInput;
         pressureSeedSession: null;
       }>)
   | (RealityPressureSeedContinuationContextCommon &
       Readonly<{
         phase: "ACTIVE";
+        consumerInput:
+          | RealityProductionPressureSeedConsumerInitializeInput
+          | RealityProductionPressureSeedConsumerAdvanceInput;
         pressureSeedSession: RealityProductionPressureSeedSession;
       }>);
 
@@ -94,6 +100,13 @@ export type RealityPressureSeedContinuationSessionInput = Readonly<{
   consumerResult: RealityProductionPressureSeedConsumerResult;
 }>;
 
+export type RealityPressureSeedContinuationAdvanceInput = Readonly<{
+  context: Extract<RealityPressureSeedContinuationContext, { phase: "ACTIVE" }>;
+  activationRequestResult: RealityPressureActivationCandidateRequestBridgeResult;
+  deliveryResult: RealityPressureActivationDeliveryOrchestrationBridgeResult;
+  consumerResult: RealityProductionPressureSeedConsumerResult;
+}>;
+
 export type RealityPressureSeedContinuationContextBlockedReason =
   | "REALITY_ROUTE_AUTHORIZATION_REQUIRED"
   | "ROUTE_CANDIDATE_ACTIVATION_NOT_READY"
@@ -101,6 +114,8 @@ export type RealityPressureSeedContinuationContextBlockedReason =
   | "ROUTE_DELIVERY_NOT_READY"
   | "CONTINUATION_CONTEXT_INVALID"
   | "PRESSURE_SEED_SESSION_NOT_READY"
+  | "ACTIVATION_REQUEST_NOT_READY"
+  | "DELIVERY_ADVANCE_NOT_READY"
   | "FORBIDDEN_SOURCE_REFERENCE"
   | "SOURCE_REFERENCE_MISMATCH"
   | "ACTIVATION_REFERENCE_MISMATCH"

@@ -98,7 +98,9 @@ export function RealityProductionRouteEntry() {
     candidateRequestResult?.status !== "READY" ||
     deliveryResult?.status !== "READY" ||
     pressureHostInputResult?.status !== "READY" ||
-    pressureSeedContinuationResult?.status !== "READY"
+    pressureSeedContinuationResult?.status !== "READY" ||
+    pressureSeedContinuationResult.context.phase !==
+      "READY_FOR_CONSUMER_INITIALIZATION"
   ) {
     return (
       <main
@@ -143,6 +145,7 @@ export function RealityProductionRouteEntry() {
     <RealityProductionHost
       routeAuthorization={authorization}
       pressureSeedHostInput={pressureHostInputResult.input}
+      pressureSeedContinuationContext={pressureSeedContinuationResult.context}
     />
   );
 }

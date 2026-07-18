@@ -65,7 +65,7 @@ try {
     assertExcludes("bridge performs no direct source, recognition, consumer, Gravity, UI, or storage execution", source.service, marker),
   );
   assertExcludes("Pressure Consumer remains unchanged", source.consumer, "ActivationDeliveryOrchestration");
-  assertExcludes("Production Host remains unchanged", source.host, "ActivationDeliveryOrchestration");
+  assertIncludes("Atomic V2 Host uses the existing delivery orchestration bridge", source.host, "ActivationDeliveryOrchestration");
   assertExcludes("Gravity remains unchanged", source.gravity, "ActivationDeliveryOrchestration");
 
   const packageJson = JSON.parse(source.packageManifest);

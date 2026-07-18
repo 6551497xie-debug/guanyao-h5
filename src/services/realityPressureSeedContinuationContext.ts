@@ -4,6 +4,7 @@ import type {
   RealityPressureSeedContinuationContextBoundary,
   RealityPressureSeedContinuationContextInput,
   RealityPressureSeedContinuationContextResult,
+  RealityPressureSeedContinuationAdvanceInput,
   RealityPressureSeedContinuationSessionInput,
 } from "../types/realityPressureSeedContinuationContext";
 
@@ -224,6 +225,79 @@ export function attachRealityPressureSeedSessionToContinuationContext(
       ...context,
       phase: "ACTIVE" as const,
       pressureSeedSession,
+    }),
+  );
+}
+
+export function advanceRealityPressureSeedContinuationContext(
+  input: RealityPressureSeedContinuationAdvanceInput,
+): RealityPressureSeedContinuationContextResult {
+  const context = input?.context;
+  if (
+    !context ||
+    context.phase !== "ACTIVE" ||
+    !Object.isFrozen(context) ||
+    context.boundary !== REALITY_PRESSURE_SEED_CONTINUATION_CONTEXT_BOUNDARY
+  ) {
+    return unavailable("BLOCKED", "CONTINUATION_CONTEXT_INVALID");
+  }
+  const requestResult = input.activationRequestResult;
+  if (requestResult?.status !== "READY") {
+    return unavailable("SOURCE_NOT_READY", "ACTIVATION_REQUEST_NOT_READY");
+  }
+  const deliveryResult = input.deliveryResult;
+  if (
+    deliveryResult?.status !== "READY" ||
+    deliveryResult.operation !== "ADVANCE"
+  ) {
+    return unavailable("SOURCE_NOT_READY", "DELIVERY_ADVANCE_NOT_READY");
+  }
+  const consumerResult = input.consumerResult;
+  if (
+    consumerResult?.status !== "READY" ||
+    consumerResult.operation !== "ADVANCE" ||
+    !Object.isFrozen(consumerResult.session)
+  ) {
+    return unavailable("SOURCE_NOT_READY", "PRESSURE_SEED_SESSION_NOT_READY");
+  }
+  const sourceReferenceId = context.sourceReferenceId;
+  if (
+    requestResult.context.sourceReferenceId !== sourceReferenceId ||
+    deliveryResult.sourceReferenceId !== sourceReferenceId ||
+    deliveryResult.deliverySession.sourceReferenceId !== sourceReferenceId ||
+    deliveryResult.candidateSourceContext.sourceReferenceId !==
+      sourceReferenceId ||
+    consumerResult.session.sourceReferenceId !== sourceReferenceId
+  ) {
+    return unavailable("BLOCKED", "SOURCE_REFERENCE_MISMATCH");
+  }
+  if (
+    requestResult.context.activationContextReferenceId !==
+      context.candidateActivationContext.contextReferenceId ||
+    deliveryResult.activationContextReferenceId !==
+      context.candidateActivationContext.contextReferenceId
+  ) {
+    return unavailable("BLOCKED", "ACTIVATION_REFERENCE_MISMATCH");
+  }
+  if (
+    deliveryResult.deliverySession.currentBundleReferenceId !==
+      deliveryResult.candidateSourceContext.bundleReferenceId ||
+    consumerResult.session.candidateBundleReferenceId !==
+      deliveryResult.candidateSourceContext.bundleReferenceId
+  ) {
+    return unavailable("BLOCKED", "BUNDLE_REFERENCE_MISMATCH");
+  }
+
+  return ready(
+    Object.freeze({
+      ...context,
+      contextReferenceId: `reality-pressure-continuation:${sourceReferenceId}:${deliveryResult.candidateSourceContext.bundleReferenceId}`,
+      phase: "ACTIVE" as const,
+      activationRequestContext: requestResult.context,
+      deliverySession: deliveryResult.deliverySession,
+      candidateSourceContext: deliveryResult.candidateSourceContext,
+      consumerInput: deliveryResult.consumerInput,
+      pressureSeedSession: consumerResult.session,
     }),
   );
 }

@@ -94,8 +94,8 @@ try {
     ),
   );
 
-  assertExcludes(
-    "Production Host does not activate V2 presentation",
+  assertIncludes(
+    "Production Host activates the frozen V2 presentation",
     source.host,
     "RealityPressureSeedPresentation",
   );
@@ -160,9 +160,9 @@ try {
     assertExcludes("presentation bundle excludes runtime service", bundle, marker),
   );
   assertEqual(
-    "Host remains free of V2 presentation activation",
+    "Host owns the V2 presentation activation boundary",
     source.host.includes("<RealityPressureSeedPresentation"),
-    false,
+    true,
   );
 
   console.log("\n[REALITY PRESSURE SEED PRESENTATION CONTRACT] PASS");

@@ -1,20 +1,18 @@
 import { useState } from "react";
-import { RealityChoicePresentation } from "./RealityChoicePresentation";
-import { RealityGravityPresentation } from "./RealityGravityPresentation";
-import { RealityPressurePresentation } from "./RealityPressurePresentation";
-import {
-  advanceRealityProductionChoiceConsumer,
-  initializeRealityProductionChoiceConsumer,
-} from "../services/realityProductionChoiceConsumer";
-import {
-  advanceRealityProductionGravityConsumer,
-  initializeRealityProductionGravityConsumer,
-} from "../services/realityProductionGravityConsumer";
-import {
-  advanceRealityProductionPressureConsumer,
-  initializeRealityProductionPressureConsumer,
-} from "../services/realityProductionPressureConsumer";
+import { RealityPressureSeedPresentation } from "./RealityPressureSeedPresentation";
+import { bridgeRealityPressureActivationCandidateRequestContext } from "../services/realityPressureActivationCandidateRequestBridge";
+import { advanceRealityPressureActivationDeliveryOrchestration } from "../services/realityPressureActivationDeliveryOrchestrationBridge";
 import { isRealityProductionPressureHostInputReady } from "../services/realityProductionPressureHostInputContract";
+import {
+  advanceRealityPressureSeedContinuationContext,
+  attachRealityPressureSeedSessionToContinuationContext,
+} from "../services/realityPressureSeedContinuationContext";
+import {
+  advanceRealityProductionPressureSeedConsumer,
+  initializeRealityProductionPressureSeedConsumer,
+} from "../services/realityProductionPressureSeedConsumer";
+import type { RealityPressureSeedContinuationContextResult } from "../types/realityPressureSeedContinuationContext";
+import type { RealityProductionPressureSeedConsumerResult } from "../types/realityProductionPressureSeedConsumer";
 import type {
   RealityProductionHostBoundary,
   RealityProductionHostProps,
@@ -24,30 +22,24 @@ export const REALITY_PRODUCTION_HOST_BOUNDARY:
   RealityProductionHostBoundary = Object.freeze({
     productionRealityHostOnly: true,
     authorizedRealitySourceOnly: true,
-    productionPressureConsumerOnly: true,
+    productionPressureSeedConsumerOnly: true,
     productionPressureHostInputRequired: true,
-    pressureSeedConsumerInputReadOnly: true,
-    pressureSeedConsumerNotActivated: true,
-    sharedFrozenPressurePresentationOnly: true,
-    explicitPressureObservationOnly: true,
-    productionGravityConsumerOnly: true,
-    sharedFrozenGravityPresentationOnly: true,
-    explicitGravityObservationOnly: true,
-    productionChoiceConsumerOnly: true,
-    sharedFrozenChoicePresentationOnly: true,
-    explicitChoiceActiveResponseOnly: true,
-    crystalReadinessHoldOnly: true,
+    pressureSeedContinuationContextRequired: true,
+    pressureSeedConsumerActivated: true,
+    v1PressureConsumerForbidden: true,
+    v2PressureSeedPresentationOnly: true,
+    explicitPressureSeedRecognitionOnly: true,
+    explicitNextBundleRequestOnly: true,
+    gravityReadinessHoldOnly: true,
     noFixtureSource: true,
     noPrototypeSource: true,
     noDefaultSource: true,
     noEngineInvocation: true,
     noPressureEngine: true,
     noPressureSeedMatching: true,
-    noPressureResult: true,
-    noInertiaEngine: true,
-    noBehaviorEngine: true,
-    noRecommendedAction: true,
-    noBestChoice: true,
+    noAutomaticSelection: true,
+    noGravityExecution: true,
+    noChoiceExecution: true,
     noCrystalExecution: true,
     noRendererInvocation: true,
     noLegacyDynamicsRuntime: true,
@@ -57,31 +49,56 @@ export const REALITY_PRODUCTION_HOST_BOUNDARY:
     noNavigationMutation: true,
   });
 
+type RealityPressureHostState = Readonly<{
+  consumerResult: RealityProductionPressureSeedConsumerResult;
+  continuationResult: RealityPressureSeedContinuationContextResult;
+}>;
+
+const initializePressureHostState = (
+  pressureSeedContinuationContext: RealityProductionHostProps["pressureSeedContinuationContext"],
+): RealityPressureHostState => {
+  const consumerResult = initializeRealityProductionPressureSeedConsumer(
+    pressureSeedContinuationContext.consumerInput,
+  );
+  const continuationResult =
+    attachRealityPressureSeedSessionToContinuationContext({
+      context: pressureSeedContinuationContext,
+      consumerResult,
+    });
+  return Object.freeze({ consumerResult, continuationResult });
+};
+
 export function RealityProductionHost({
   routeAuthorization,
   pressureSeedHostInput,
+  pressureSeedContinuationContext,
 }: RealityProductionHostProps) {
   const sourceContext = routeAuthorization.sourceContext;
-  const [pressureResult, setPressureResult] = useState(() =>
-    initializeRealityProductionPressureConsumer({ routeAuthorization }),
-  );
-  const [gravityResult, setGravityResult] = useState<
-    ReturnType<typeof initializeRealityProductionGravityConsumer> | null
-  >(null);
-  const [choiceResult, setChoiceResult] = useState<
-    ReturnType<typeof initializeRealityProductionChoiceConsumer> | null
-  >(null);
+  const [pressureHostState, setPressureHostState] =
+    useState<RealityPressureHostState>(() =>
+      initializePressureHostState(pressureSeedContinuationContext),
+    );
   const pressureSeedHostInputReady =
     isRealityProductionPressureHostInputReady(
       pressureSeedHostInput,
       routeAuthorization.sourceReferenceId,
     );
+  const continuationResult = pressureHostState.continuationResult;
+  const consumerResult = pressureHostState.consumerResult;
 
   if (
     !pressureSeedHostInputReady ||
-    pressureResult.status !== "READY" ||
-    gravityResult?.status === "BLOCKED" ||
-    choiceResult?.status === "BLOCKED"
+    pressureSeedContinuationContext.phase !==
+      "READY_FOR_CONSUMER_INITIALIZATION" ||
+    pressureSeedContinuationContext.sourceReferenceId !==
+      routeAuthorization.sourceReferenceId ||
+    pressureSeedHostInput.deliverySession !==
+      pressureSeedContinuationContext.deliverySession ||
+    pressureSeedHostInput.consumerInput !==
+      pressureSeedContinuationContext.consumerInput ||
+    consumerResult.status !== "READY" ||
+    continuationResult.status !== "READY" ||
+    continuationResult.context.phase !== "ACTIVE"
   ) {
     return (
       <main
@@ -89,11 +106,11 @@ export function RealityProductionHost({
         data-guard-reason={
           !pressureSeedHostInputReady
             ? "PRESSURE_SEED_HOST_INPUT_NOT_READY"
-            : pressureResult.status === "BLOCKED"
-            ? pressureResult.reason
-            : gravityResult?.status === "BLOCKED"
-            ? gravityResult.reason
-            : choiceResult?.reason
+            : consumerResult.status !== "READY"
+              ? consumerResult.reason
+              : continuationResult.status !== "READY"
+                ? continuationResult.reason
+                : "PRESSURE_SEED_CONTINUATION_NOT_READY"
         }
       >
         <p role="status">SOURCE_NOT_READY</p>
@@ -101,61 +118,129 @@ export function RealityProductionHost({
     );
   }
 
-  const pressureSession = pressureResult.session;
-  const gravitySession =
-    gravityResult?.status === "READY" ? gravityResult.session : null;
-  const choiceSession =
-    choiceResult?.status === "READY" ? choiceResult.session : null;
-  const confirmPressureObservation = () => {
+  const continuationContext = continuationResult.context;
+  const pressureSeedSession = continuationContext.pressureSeedSession;
+
+  const applyConsumerResult = (
+    nextConsumerResult: RealityProductionPressureSeedConsumerResult,
+  ) => {
+    setPressureHostState(
+      Object.freeze({
+        consumerResult: nextConsumerResult,
+        continuationResult:
+          attachRealityPressureSeedSessionToContinuationContext({
+            context: continuationContext,
+            consumerResult: nextConsumerResult,
+          }),
+      }),
+    );
+  };
+
+  const recognizePressureSeed = (candidateReferenceId: string) => {
     if (
-      pressureSession.interactionAvailability !==
-      "PRESSURE_OBSERVATION_CONFIRM"
+      !pressureSeedSession.availableEvents.includes(
+        "PRESSURE_SEED_RECOGNIZE",
+      )
     ) {
       return;
     }
-    const nextPressureResult = advanceRealityProductionPressureConsumer({
-      session: pressureSession,
-      event: "PRESSURE_OBSERVATION_CONFIRM",
-    });
-    setPressureResult(nextPressureResult);
-    if (nextPressureResult.status === "READY") {
-      setGravityResult(
-        initializeRealityProductionGravityConsumer({
-          pressureSession: nextPressureResult.session,
+    applyConsumerResult(
+      advanceRealityProductionPressureSeedConsumer({
+        session: pressureSeedSession,
+        candidateSourceContext: continuationContext.candidateSourceContext,
+        command: Object.freeze({
+          event: "PRESSURE_SEED_RECOGNIZE" as const,
+          sourceReferenceId: pressureSeedSession.sourceReferenceId,
+          candidateBundleReferenceId:
+            pressureSeedSession.candidateBundleReferenceId,
+          recognizedCandidateReferenceId: candidateReferenceId,
+        }),
+      }),
+    );
+  };
+
+  const pausePressureSeed = () => {
+    if (!pressureSeedSession.availableEvents.includes("PRESSURE_SEED_PAUSE")) {
+      return;
+    }
+    applyConsumerResult(
+      advanceRealityProductionPressureSeedConsumer({
+        session: pressureSeedSession,
+        candidateSourceContext: continuationContext.candidateSourceContext,
+        command: Object.freeze({
+          event: "PRESSURE_SEED_PAUSE" as const,
+          sourceReferenceId: pressureSeedSession.sourceReferenceId,
+          candidateBundleReferenceId:
+            pressureSeedSession.candidateBundleReferenceId,
+          recognizedCandidateReferenceId: null,
+        }),
+      }),
+    );
+  };
+
+  const requestNextPressureSeedBundle = () => {
+    if (
+      !pressureSeedSession.availableEvents.includes(
+        "PRESSURE_SEED_REQUEST_NEXT_BUNDLE",
+      )
+    ) {
+      return;
+    }
+    const requestResult =
+      bridgeRealityPressureActivationCandidateRequestContext({
+        activationContext: continuationContext.candidateActivationContext,
+        deliverySession: continuationContext.deliverySession,
+      });
+    if (requestResult.status !== "READY") {
+      setPressureHostState(
+        Object.freeze({
+          consumerResult,
+          continuationResult: Object.freeze({
+            status: "SOURCE_NOT_READY" as const,
+            context: null,
+            reason: "ACTIVATION_REQUEST_NOT_READY" as const,
+            boundary: continuationResult.boundary,
+          }),
         }),
       );
-    }
-  };
-  const confirmGravityObservation = () => {
-    if (
-      gravitySession?.interactionAvailability !==
-      "GRAVITY_OBSERVATION_CONFIRM"
-    ) {
       return;
     }
-    const nextGravityResult = advanceRealityProductionGravityConsumer({
-      session: gravitySession,
-      event: "GRAVITY_OBSERVATION_CONFIRM",
-    });
-    setGravityResult(nextGravityResult);
-    if (nextGravityResult.status === "READY") {
-      setChoiceResult(
-        initializeRealityProductionChoiceConsumer({
-          gravitySession: nextGravityResult.session,
+    const deliveryResult =
+      advanceRealityPressureActivationDeliveryOrchestration({
+        deliverySession: continuationContext.deliverySession,
+        pressureSeedSession,
+        activationRequestContext: requestResult.context,
+      });
+    if (
+      deliveryResult.status !== "READY" ||
+      deliveryResult.operation !== "ADVANCE"
+    ) {
+      setPressureHostState(
+        Object.freeze({
+          consumerResult,
+          continuationResult: Object.freeze({
+            status: "SOURCE_NOT_READY" as const,
+            context: null,
+            reason: "DELIVERY_ADVANCE_NOT_READY" as const,
+            boundary: continuationResult.boundary,
+          }),
         }),
       );
-    }
-  };
-  const activateChoiceResponse = () => {
-    if (
-      choiceSession?.interactionAvailability !== "CHOICE_ACTIVE_RESPONSE"
-    ) {
       return;
     }
-    setChoiceResult(
-      advanceRealityProductionChoiceConsumer({
-        session: choiceSession,
-        event: "CHOICE_ACTIVE_RESPONSE",
+    const nextConsumerResult =
+      advanceRealityProductionPressureSeedConsumer(
+        deliveryResult.consumerInput,
+      );
+    setPressureHostState(
+      Object.freeze({
+        consumerResult: nextConsumerResult,
+        continuationResult: advanceRealityPressureSeedContinuationContext({
+          context: continuationContext,
+          activationRequestResult: requestResult,
+          deliveryResult,
+          consumerResult: nextConsumerResult,
+        }),
       }),
     );
   };
@@ -164,79 +249,34 @@ export function RealityProductionHost({
     <main
       data-production-reality-status="AUTHORIZED_PRODUCTION_REALITY_SOURCE"
       data-reality-production-host-state={
-        choiceSession?.crystalReadiness === "READY"
-          ? "CRYSTAL_READY_HOLD"
-          : choiceSession
-          ? "CHOICE_RESPONSE_SPACE"
-          : gravitySession
-          ? "GRAVITY_OBSERVATION"
-          : "PRESSURE_OBSERVATION"
+        pressureSeedSession.gravityReadiness === "READY"
+          ? "GRAVITY_READY_HOLD"
+          : "PRESSURE_SEED_RECOGNITION"
       }
       data-source-experience-mode={sourceContext.sourceExperienceMode}
       data-source-provenance={sourceContext.sourceProvenance}
       data-source-reference-id={sourceContext.sourceReferenceId}
+      data-pressure-runtime="V2_PRESSURE_SEED_ONLY"
       data-pressure-seed-host-input="READY"
+      data-pressure-seed-continuation="ACTIVE"
       data-pressure-seed-delivery-reference={
-        pressureSeedHostInput.deliverySession.currentBundleReferenceId
+        continuationContext.deliverySession.currentBundleReferenceId
       }
-      data-pressure-recognition-state={pressureSession.pressureStageState}
-      data-pressure-observation-state={pressureSession.observationState}
-      data-pressure-tension-awareness={pressureSession.tensionAwareness}
-      data-gravity-readiness={pressureSession.gravityReadiness}
-      data-pressure-interaction={pressureSession.interactionAvailability}
-      data-gravity-stage={gravitySession?.gravityStageState ?? "NOT_STARTED"}
-      data-automatic-response-state={
-        gravitySession?.automaticResponseState ?? "WAITING_FOR_GRAVITY"
+      data-pressure-seed-capture-state={pressureSeedSession.captureState}
+      data-pressure-seed-bundle-reference={
+        pressureSeedSession.candidateBundleReferenceId
       }
-      data-pattern-awareness={
-        gravitySession?.patternAwarenessState ?? "UNSEEN"
-      }
-      data-choice-readiness={gravitySession?.choiceReadiness ?? "NOT_READY"}
-      data-gravity-interaction={
-        gravitySession?.interactionAvailability ?? "NONE"
-      }
-      data-choice-stage={choiceSession?.choiceStageState ?? "NOT_STARTED"}
-      data-response-gap-state={
-        choiceSession?.responseGapState ?? "WAITING_FOR_GRAVITY"
-      }
-      data-alternative-response-state={
-        choiceSession?.alternativeResponseState ?? "UNSEEN"
-      }
-      data-crystal-readiness={
-        choiceSession?.crystalReadiness ?? "NOT_READY"
-      }
-      data-choice-interaction={
-        choiceSession?.interactionAvailability ?? "NONE"
-      }
+      data-gravity-readiness={pressureSeedSession.gravityReadiness}
+      data-gravity-stage="NOT_STARTED"
+      data-choice-stage="NOT_STARTED"
+      data-crystal-readiness="NOT_READY"
     >
-      {choiceSession ? (
-        <RealityChoicePresentation
-          choiceActiveResponseConfirmed={
-            choiceSession.choiceActiveResponseConfirmed
-          }
-          interactionAvailability={choiceSession.interactionAvailability}
-          crystalReadiness={choiceSession.crystalReadiness}
-          onActivate={activateChoiceResponse}
-        />
-      ) : gravitySession ? (
-        <RealityGravityPresentation
-          gravityObservationConfirmed={
-            gravitySession.gravityObservationConfirmed
-          }
-          interactionAvailability={gravitySession.interactionAvailability}
-          choiceReadiness={gravitySession.choiceReadiness}
-          onConfirm={confirmGravityObservation}
-        />
-      ) : (
-        <RealityPressurePresentation
-          pressureObservationConfirmed={
-            pressureSession.pressureObservationConfirmed
-          }
-          interactionAvailability={pressureSession.interactionAvailability}
-          gravityReadiness={pressureSession.gravityReadiness}
-          onConfirm={confirmPressureObservation}
-        />
-      )}
+      <RealityPressureSeedPresentation
+        session={pressureSeedSession}
+        onRecognize={recognizePressureSeed}
+        onRequestNextBundle={requestNextPressureSeedBundle}
+        onPause={pausePressureSeed}
+      />
     </main>
   );
 }

@@ -3190,6 +3190,7 @@ export type {
   RealityPressureSeedContinuationContext,
   RealityPressureSeedContinuationContextInput,
   RealityPressureSeedContinuationSessionInput,
+  RealityPressureSeedContinuationAdvanceInput,
   RealityPressureSeedContinuationContextBlockedReason,
   RealityPressureSeedContinuationContextResult,
 } from "./realityPressureSeedContinuationContext";
