@@ -2254,6 +2254,24 @@ export type {
 } from "./genesisPerspectiveCalibration";
 
 export type {
+  GenesisPresenceRecognitionLayer,
+  GenesisPresenceSubjectHierarchy,
+  GenesisLifeCenterState,
+  GenesisCosmicSupportState,
+  GenesisPresenceRecognitionState,
+  GenesisPresenceStabilityState,
+  GenesisPresenceRecognitionCalibration,
+  GenesisPresenceRecognitionCalibrationInput,
+  GenesisPresenceRecognitionCalibrationUnavailableReason,
+  GenesisPresenceRecognitionCalibrationBlockedReason,
+  GenesisPresenceRecognitionCalibrationBoundary,
+  GenesisPresenceRecognitionCalibrationReady,
+  GenesisPresenceRecognitionCalibrationUnavailable,
+  GenesisPresenceRecognitionCalibrationBlocked,
+  GenesisPresenceRecognitionCalibrationResult,
+} from "./genesisPresenceRecognitionCalibration";
+
+export type {
   GenesisVisualHarnessMode,
   GenesisVisualHarnessLifecycle,
   GenesisVisualHarnessStep,

@@ -26,20 +26,52 @@ const timelineStageFor = (stage: GenesisRuntimeStage) =>
 
 const createConsumer = (stage: GenesisRuntimeStage): GenesisRendererConsumerContract => {
   const timelineState = timelineStageFor(stage);
+  const visualState =
+    stage === "COMPLETION"
+      ? Object.freeze({
+          completionState: "GENESIS_PRESENCE_STABILIZED",
+          recognitionMoment: "PERSONAL_STAR_BEAST_RECOGNITION_OPEN",
+          presenceStability: "QUIET_PRESENCE_STABLE",
+          transitionReadiness: "REALITY_ENTRY_REVIEW_PENDING",
+          emotionalClosure: "GENESIS_CLOSURE_OPEN_NOT_FINAL",
+          genesisToRealityBoundary: "GENESIS_TO_REALITY_BOUNDARY_HELD",
+          runtimeBoundary: Object.freeze({
+            completionReviewOnly: true,
+            genesisLayerOnly: true,
+            realityEntryBoundaryHeld: true,
+            noRealityCalculation: true,
+            noPressureAnalysis: true,
+            noGravity: true,
+            noChoice: true,
+            noCrystal: true,
+            noStorage: true,
+            noUserProfile: true,
+            noIdentityMutation: true,
+            noEngineInvocation: true,
+            noRendererInvocation: true,
+            noUiFlowMutation: true,
+            noVisualStateMutation: true,
+            noNewGenesisLayer: true,
+          }),
+        })
+      : Object.freeze({
+          visualOnly: true,
+          identityBlind: true,
+          noIdentity: true,
+          noEngineInvocation: true,
+          noSceneModelInvocation: true,
+          noRenderPlanInvocation: true,
+          noRendererInvocation: true,
+        });
   return Object.freeze({
     runtimeStage: stage,
     visualStateReference: Object.freeze({
       stage,
-      referenceType: "MOON_ORIGIN_VISUAL_STATE" as const,
-      state: Object.freeze({
-        visualOnly: true,
-        identityBlind: true,
-        noIdentity: true,
-        noEngineInvocation: true,
-        noSceneModelInvocation: true,
-        noRenderPlanInvocation: true,
-        noRendererInvocation: true,
-      }),
+      referenceType:
+        stage === "COMPLETION"
+          ? ("GENESIS_COMPLETION_MOMENT_REVIEW" as const)
+          : ("MOON_ORIGIN_VISUAL_STATE" as const),
+      state: visualState,
     }) as GenesisRendererConsumerContract["visualStateReference"],
     timelineState,
     renderIntent:

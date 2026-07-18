@@ -32,6 +32,7 @@ import type { GenesisRealityPressureProjection } from "../types/genesisRealityPr
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type { GenesisRendererVisualRealization } from "../types/genesisRendererVisualRealization";
 import type { GenesisPerspectiveCalibration } from "../types/genesisPerspectiveCalibration";
+import type { GenesisPresenceRecognitionCalibration } from "../types/genesisPresenceRecognitionCalibration";
 import type {
   IsolatedWebGLRendererPrototypeBoundary,
   IsolatedWebGLRendererPrototypeController,
@@ -96,6 +97,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
   realityPressure: GenesisRealityPressureProjection | null = null,
   genesisVisualRealization: GenesisRendererVisualRealization | null = null,
   genesisPerspectiveCalibration: GenesisPerspectiveCalibration | null = null,
+  genesisPresenceRecognitionCalibration: GenesisPresenceRecognitionCalibration | null = null,
 ): IsolatedWebGLRendererPrototypeSceneProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
@@ -172,6 +174,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
     realityPressure,
     genesisVisualRealization,
     genesisPerspectiveCalibration,
+    genesisPresenceRecognitionCalibration,
     rendererParametersOnly: true,
     identityBlind: true,
     noLifeFactCopy: true,
@@ -301,6 +304,7 @@ export function createIsolatedWebGLRendererPrototype(
     input.realityPressureProjection ?? null,
     input.genesisVisualRealization ?? null,
     input.genesisPerspectiveCalibration ?? null,
+    input.genesisPresenceRecognitionCalibration ?? null,
   );
   if (input.reducedMotion) {
     return fallback(sceneProjection, "REDUCED_MOTION_REQUESTED");
@@ -354,6 +358,8 @@ export function createIsolatedWebGLRendererPrototype(
   const genesisVisualRealization = sceneProjection.genesisVisualRealization;
   const genesisPerspectiveCalibration =
     sceneProjection.genesisPerspectiveCalibration;
+  const presenceRecognitionCalibration =
+    sceneProjection.genesisPresenceRecognitionCalibration;
   const activeVisualLayer = genesisVisualRealization?.activeVisualLayer ?? null;
   const isMoonOrigin = activeVisualLayer === "MOON_ORIGIN";
   const isStarRiver = activeVisualLayer === "STAR_RIVER";
@@ -395,6 +401,19 @@ export function createIsolatedWebGLRendererPrototype(
     perspectiveBalance?.completionStillness ?? 0;
   const perspectiveRecognitionStability =
     perspectiveBalance?.recognitionStability ?? 0;
+  const recognitionSubjectWeight =
+    presenceRecognitionCalibration?.subjectWeight ?? 1;
+  const recognitionCosmicSupportWeight =
+    presenceRecognitionCalibration?.cosmicSupportWeight ?? 1;
+  const recognitionCenterInfluence =
+    presenceRecognitionCalibration?.centerInfluence ?? 1;
+  const recognitionHold =
+    presenceRecognitionCalibration?.recognitionHold ?? 0;
+  const recognitionStillness =
+    presenceRecognitionCalibration?.stillness ?? 0;
+  const recognitionCoreVisibility = isPresenceStage
+    ? 0.48 + recognitionCenterInfluence * 0.08
+    : 1;
   const perspectiveCoreDimming =
     isMoonOrigin || isStarRiver || isTimeResonance
       ? 1 - perspectiveCoreSuppression * 0.42
@@ -428,7 +447,10 @@ export function createIsolatedWebGLRendererPrototype(
             : isLifeForce
               ? Math.round(sceneProjection.cosmicField.particleCount * 1.04)
               : isPresenceStage
-                ? Math.round(sceneProjection.cosmicField.particleCount * 1.08)
+                ? Math.round(
+                    sceneProjection.cosmicField.particleCount *
+                      (0.78 + recognitionCosmicSupportWeight * 0.22),
+                  )
               : sceneProjection.cosmicField.particleCount;
   const cosmicPositions = new Float32Array(cosmicParticleCount * 3);
   const moonCosmicSpread =
@@ -689,7 +711,8 @@ export function createIsolatedWebGLRendererPrototype(
   const formationContinuityScale =
     0.96 + perspectiveFormationContinuity * 0.04;
   const subjectForegroundScale = isPresenceStage
-    ? 0.96 + perspectiveSubjectForeground * 0.12
+    ? 0.96 + perspectiveSubjectForeground * 0.12 +
+      (recognitionSubjectWeight - 1) * 0.24
     : 1;
   const symbolicFieldScale = isSymbolReveal ? 1.08 + realizationProgress * 0.12 : 1;
   const changeImprintScale = isHexagramImprint ? 1.02 + realizationProgress * 0.06 : 1;
@@ -712,6 +735,7 @@ export function createIsolatedWebGLRendererPrototype(
         subjectForegroundScale *
         (1 + perspectiveBodyCohesion * 0.14) *
         (1 + perspectiveSubjectAxisStrength * 0.3) *
+        (isPresenceStage ? 1 + (recognitionSubjectWeight - 1) * 0.34 : 1) *
         (0.82 + revealOpacity * 0.18 - pressureBoundaryLoad * 0.08),
       blending: AdditiveBlending,
     }),
@@ -728,6 +752,7 @@ export function createIsolatedWebGLRendererPrototype(
         formationContinuityScale *
         subjectForegroundScale *
         (1 + perspectiveBodyCohesion * 0.14) *
+        (isPresenceStage ? 1 + (recognitionSubjectWeight - 1) * 0.26 : 1) *
         (0.82 + perspectiveBodyCohesion * 0.18) *
         (0.68 + revealOpacity * 0.2 - pressureBoundaryLoad * 0.12),
       blending: AdditiveBlending,
@@ -745,6 +770,7 @@ export function createIsolatedWebGLRendererPrototype(
         formationContinuityScale *
         subjectForegroundScale *
         (1 + perspectiveBodyCohesion * 0.14) *
+        (isPresenceStage ? 1 + (recognitionSubjectWeight - 1) * 0.3 : 1) *
         (0.7 + revealOpacity * 0.16 - pressureBoundaryLoad * 0.08),
       blending: AdditiveBlending,
       depthWrite: false,
@@ -754,7 +780,8 @@ export function createIsolatedWebGLRendererPrototype(
   const bodyFieldPositions = new Float32Array(spineSegments * 12);
   const bodyFieldWidth =
     (0.05 + lifePresence.morphologicalField.enclosure * 0.08) *
-    (0.72 + perspectiveBodyCohesion * 0.8);
+    (0.72 + perspectiveBodyCohesion * 0.8) *
+    (isPresenceStage ? 1 + (recognitionSubjectWeight - 1) * 0.8 : 1);
   for (let index = 0; index < spineSegments; index += 1) {
     const sourceOffset = index * 3;
     const targetOffset = index * 12;
@@ -777,10 +804,13 @@ export function createIsolatedWebGLRendererPrototype(
   );
   const bodyFieldMaterial = new PointsMaterial({
     color: anchorColor,
-    size: lifePresence.stellarSkeleton.nodeScale * 0.82,
+    size:
+      lifePresence.stellarSkeleton.nodeScale *
+      (1.04 + (isPresenceStage ? (recognitionSubjectWeight - 1) * 0.34 : 0)),
     transparent: true,
     opacity: isPresenceStage
-      ? 0.08 + perspectiveBodyCohesion * 0.12
+      ? 0.14 + perspectiveBodyCohesion * 0.24 +
+        (recognitionSubjectWeight - 1) * 0.18
       : 0,
     blending: AdditiveBlending,
     depthWrite: false,
@@ -803,6 +833,7 @@ export function createIsolatedWebGLRendererPrototype(
       formationContinuityScale *
       subjectForegroundScale *
       (1 + perspectiveBodyCohesion * 0.08) *
+      (isPresenceStage ? 1 + (recognitionSubjectWeight - 1) * 0.55 : 1) *
       1.45,
   );
   structureGroup.rotation.z =
@@ -816,7 +847,8 @@ export function createIsolatedWebGLRendererPrototype(
     (isLifeForce ? perspectiveInnerMotionDifference * 0.02 : 0) +
     (isPresenceStage ? perspectiveSubjectAxisStrength * 0.04 : 0);
   structureGroup.position.z = isPresenceStage
-    ? 0.08 + perspectiveSubjectForeground * 0.12
+    ? 0.08 + perspectiveSubjectForeground * 0.12 +
+      (recognitionSubjectWeight - 1) * 0.08
     : 0;
   structureGroup.rotation.x = isSymbolReveal
     ? fieldDirectionalFlow * 0.06
@@ -913,7 +945,9 @@ export function createIsolatedWebGLRendererPrototype(
         revealOpacity * 0.12 +
         lifeStarCore.surfacePresence.surfaceVariation *
           (isMoonOrigin ? 0.22 : 0.7) -
-        pressureCoreResistance * 0.04) * perspectiveCoreDimming,
+        pressureCoreResistance * 0.04) *
+        recognitionCoreVisibility *
+        perspectiveCoreDimming,
       blending: AdditiveBlending,
     }),
   );
@@ -930,6 +964,7 @@ export function createIsolatedWebGLRendererPrototype(
         ((isMoonOrigin ? 0.14 : 0.08) +
           lifeStarCore.surfacePresence.surfaceVariation *
             (isMoonOrigin ? 0.18 : 0.34)) *
+        recognitionCoreVisibility *
         perspectiveCoreDimming,
       blending: AdditiveBlending,
       depthWrite: false,
@@ -947,6 +982,7 @@ export function createIsolatedWebGLRendererPrototype(
       opacity:
         lifeStarCore.surfacePresence.atmosphereOpacity *
         (isMoonOrigin ? 0.58 : 1) *
+        recognitionCoreVisibility *
         perspectiveCoreDimming,
       blending: AdditiveBlending,
       depthWrite: false,
@@ -1021,10 +1057,11 @@ export function createIsolatedWebGLRendererPrototype(
           ? Math.max(0, elapsedMilliseconds)
           : 0) / 1000;
       const presenceRotation = isCompletion
-        ? 0.004 * (1 - perspectiveCompletionStillness * 0.78)
+        ? 0.004 *
+          (1 - perspectiveCompletionStillness * 0.78 - recognitionStillness * 0.06)
         : isStarBeastReveal
           ? sceneProjection.motion.rotationSpeed *
-            (0.18 - perspectiveRecognitionStability * 0.035)
+            (0.18 - perspectiveRecognitionStability * 0.035 - recognitionHold * 0.018)
           : sceneProjection.motion.rotationSpeed;
       root.rotation.y = elapsedSeconds * presenceRotation;
       let cosmicFieldScale = 1;
@@ -1110,6 +1147,10 @@ export function createIsolatedWebGLRendererPrototype(
         cosmicField.rotation.z *= 0.16 - perspectiveCompletionStillness * 0.04;
         cosmicFieldScale *= 1.01 + perspectiveRecognitionStability * 0.01;
         cosmicFieldOpacity *= 0.96 + perspectiveRecognitionStability * 0.04;
+      }
+      if (isPresenceStage) {
+        cosmicFieldOpacity *= 0.82 + recognitionCosmicSupportWeight * 0.12;
+        cosmicFieldScale *= 0.99 + recognitionCosmicSupportWeight * 0.01;
       }
       if (birthMansionIgnition !== null) {
         const ignitionPhase =
@@ -1296,6 +1337,7 @@ export function createIsolatedWebGLRendererPrototype(
             : 0.74;
       structurePointMaterial.opacity =
         stagePointOpacity +
+        (isPresenceStage ? (recognitionSubjectWeight - 1) * 0.1 : 0) +
         lifeStarCore.coreInfluence.nodeBreathCoupling *
           0.16 *
           (0.94 + (breath - 1) * 2) -
@@ -1309,10 +1351,11 @@ export function createIsolatedWebGLRendererPrototype(
           lifeStarCore.coreInfluence.nodeBreathCoupling * 0.12 * breath +
           (isPresenceStage ? perspectiveBodyCohesion * 0.34 : 0));
       bodyFieldMaterial.opacity = isPresenceStage
-        ? 0.08 +
-          perspectiveBodyCohesion * 0.12 +
+        ? 0.14 +
+          perspectiveBodyCohesion * 0.24 +
+          (recognitionSubjectWeight - 1) * 0.18 +
           Math.sin(rhythmPhase * 0.72 + 0.5) *
-            (0.006 + perspectivePresenceBreath * 0.01)
+            (0.008 + perspectivePresenceBreath * 0.012)
         : 0;
       bodyField.scale.setScalar(
         isPresenceStage
@@ -1343,6 +1386,9 @@ export function createIsolatedWebGLRendererPrototype(
         (0.92 +
           sceneProjection.lifePresence.corePresence.coherence * 0.08 * breath);
       coreLight.intensity *= perspectiveCoreDimming;
+      coreLight.intensity *= isPresenceStage
+        ? (0.72 + recognitionCenterInfluence * 0.04) * recognitionCoreVisibility
+        : 1;
       if (timeRing !== null) {
         timeRing.rotation.z = elapsedSeconds * 0.035;
         timeRing.scale.setScalar(
