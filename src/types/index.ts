@@ -3033,6 +3033,15 @@ export type {
 } from "./realityPressureSeedCaptureAdapter";
 
 export type {
+  RealityProductionPressureSeedConsumerBoundary,
+  RealityProductionPressureSeedSession,
+  RealityProductionPressureSeedConsumerInitializeInput,
+  RealityProductionPressureSeedConsumerAdvanceInput,
+  RealityProductionPressureSeedConsumerBlockedReason,
+  RealityProductionPressureSeedConsumerResult,
+} from "./realityProductionPressureSeedConsumer";
+
+export type {
   RealityPressurePresentationBoundary,
   RealityPressurePresentationProps,
 } from "./realityPressurePresentation";
