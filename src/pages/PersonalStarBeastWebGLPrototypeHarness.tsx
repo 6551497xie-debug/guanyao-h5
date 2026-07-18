@@ -52,6 +52,11 @@ import "../styles/personal-star-beast-webgl-prototype-harness.css";
 type FirstImpressionPhase = "ARRIVAL" | "FORMATION" | "PRESENCE";
 type HarnessState = "STARTING" | "RENDERING" | "FALLBACK" | "UNAVAILABLE";
 
+const FIRST_IMPRESSION_TIMING = Object.freeze({
+  arrivalEndMs: 1400,
+  presenceStartMs: 3800,
+});
+
 const FORMAL_PLAN_RESULTS = Object.freeze([
   adaptPersonalStarBeastSceneModelToRenderPlan(
     PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.sceneModelReference,
@@ -763,6 +768,8 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       data-prototype-scope="ISOLATED_WEBGL_RENDERER_PROTOTYPE_ONLY"
       data-harness-state={harnessState}
       data-first-impression-phase={phase}
+      data-first-impression-arrival-end={FIRST_IMPRESSION_TIMING.arrivalEndMs}
+      data-first-impression-presence-start={FIRST_IMPRESSION_TIMING.presenceStartMs}
       data-genesis-preview-mode="ISOLATED_GENESIS_PREVIEW"
       data-genesis-stage={previewStage.stage}
       data-genesis-lifecycle={effectivePreviewIntegration?.previewLifecycle ?? "UNAVAILABLE"}

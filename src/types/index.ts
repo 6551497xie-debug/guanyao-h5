@@ -2815,3 +2815,18 @@ export type {
   FirstImpressionExperienceCalibrationBlocked,
   FirstImpressionExperienceCalibrationResult,
 } from "./firstImpressionExperienceCalibration";
+
+export type {
+  ReleaseBaselineGateReference,
+  ReleaseBaselineTimingContract,
+  ReleaseBaselineAlignmentState,
+  ReleaseBaselineAlignmentBoundary,
+  ReleaseBaselineAlignmentInput,
+  ReleaseBaselineAlignment,
+  ReleaseBaselineAlignmentReady,
+  ReleaseBaselineAlignmentUnavailableReason,
+  ReleaseBaselineAlignmentBlockedReason,
+  ReleaseBaselineAlignmentUnavailable,
+  ReleaseBaselineAlignmentBlocked,
+  ReleaseBaselineAlignmentResult,
+} from "./releaseBaselineAlignment";

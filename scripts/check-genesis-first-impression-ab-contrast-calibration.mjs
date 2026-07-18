@@ -70,7 +70,7 @@ if (failures.length === 0) {
     "projectionBundle.lifeForceInfusionProjection",
     "projectionBundle.personalRevealProjection",
     "projectionBundle.realityPressureProjection",
-    "}, [plan, projectionBundle, replayKey]);",
+    "    replayKey,\n  ]);",
   ].forEach((marker) =>
     assertIncludes("P110 per-case projection binding", source.harness, marker),
   );
