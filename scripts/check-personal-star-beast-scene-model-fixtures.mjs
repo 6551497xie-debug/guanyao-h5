@@ -16,6 +16,8 @@ const files = Object.freeze({
   fixtureProtocol:
     "docs/GUANYAO_PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_PROTOCOL.md",
   fixtureType: "src/types/personalStarBeastSceneModelFixture.ts",
+  adapterType: "src/types/realLifeVisualSourceAdapter.ts",
+  adapterService: "src/services/realLifeVisualSourceAdapter.ts",
   sceneModelType: "src/types/personalStarBeastSceneModel.ts",
   fixtureData: "src/mocks/starBeastSceneModelFixtures.ts",
   validationService:
@@ -107,6 +109,7 @@ if (failures.length === 0) {
     "fourSymbolFieldReference: StarBeastFourSymbolFieldSource",
     "lifeArchetypeReference: StarBeastLifeArchetypeForceSource",
     "sceneModelReference: PersonalStarBeastSceneModel",
+    "visualSourceReference: RealLifeVisualSource",
     'validationScope: "ISOLATED_PROTOTYPE_ONLY"',
     "export type PersonalStarBeastSceneModelFixtureValidationResult",
     'validation: "SAME_GRAMMAR_DIFFERENT_LIFE_CONFIRMED"',
@@ -122,24 +125,66 @@ if (failures.length === 0) {
   [
     "resolveStarbeastFromBirthDate",
     "runMotherCodeLandingEngine",
+    "adaptRealLifeVisualSource",
+    "starbeastDerivationResult: starbeastResult",
+    "motherCodeLandingResult",
+    "const visualSourceReference = adapted.visualSource",
+    "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A",
+    "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B",
+    "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURES",
+    'validationScope: "ISOLATED_PROTOTYPE_ONLY"',
+  ].forEach((marker) =>
+    assertIncludes("fixture supplies adapter inputs", source.fixtureData, marker),
+  );
+
+  [
     "calibrateStarBeastGenesisSource",
     "resolveLifeArchetypeProfileFromMotherCode",
     "freezeStarMansionLifeTrajectorySource",
     "resolvePersonalStarBeastManifestationReadiness",
-    "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A",
-    "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B",
-    "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURES",
     'referenceId: MANIFESTATION_GRAMMAR_REFERENCE_ID',
     'protocolVersion: "GUANYAO_VISUAL_MANIFESTATION_GRAMMAR_V1"',
     "sourceIdentityReference: identityReference",
-    'validationScope: "ISOLATED_PROTOTYPE_ONLY"',
     "rendererNeutral: true",
     "noLifeFactCopy: true",
     "noIdentityCalculation: true",
     "noDrawCommands: true",
     "noRendererInvocation: true",
   ].forEach((marker) =>
-    assertIncludes("formal fixture source", source.fixtureData, marker),
+    assertIncludes("adapter owns visual source assembly", source.adapterService, marker),
+  );
+
+  [
+    "calibrateStarBeastGenesisSource",
+    "resolveLifeArchetypeProfileFromMotherCode",
+    "freezeStarMansionLifeTrajectorySource",
+    "resolvePersonalStarBeastManifestationReadiness",
+    "adaptPersonalStarBeastSceneModelToRenderPlan",
+    "projectGenesisTimeSequenceRecognition",
+    "projectGenesisBirthMansionIgnition",
+    "projectGenesisFourSymbolAlignment",
+    "projectGenesisLifeForceInfusion",
+    "projectGenesisPersonalReveal",
+    "projectGenesisRealityPressure",
+    "const sceneModel:",
+  ].forEach((marker) =>
+    assertExcludes("fixture contains no visual source assembly", source.fixtureData, marker),
+  );
+
+  [
+    "RealLifeVisualSourceAdapterInput",
+    "StarbeastDerivationReady",
+    "LunarMotherCodeLandingResult",
+    "SelectedPressureSeedContext",
+    "PersonalStarBeastSceneModel",
+    "PersonalStarBeastRenderPlan",
+    "RealLifeVisualProjectionBundle",
+    "RealLifeVisualSourceProvenance",
+    "noEngineInvocation: true",
+    "noIdentityRecalculation: true",
+    "noRendererInvocation: true",
+  ].forEach((marker) =>
+    assertIncludes("adapter contract", source.adapterType, marker),
   );
 
   [
@@ -219,29 +264,29 @@ if (failures.length === 0) {
   );
 
   assertIncludes(
-    "P13 bridge allows only the isolated P96 fixture consumer",
+    "P13 bridge allows the visual source adapter consumer",
     source.motherCodeSourceGate,
-    '"src/mocks/starBeastSceneModelFixtures.ts"',
+    '"src/services/realLifeVisualSourceAdapter.ts"',
   );
   assertIncludes(
     "P13 bridge allowlist remains explicit",
     source.motherCodeSourceGate,
-    "source bridge is only consumed by schema entry, isolated genesis previews, scene model fixtures, and formal identity convergence",
+    "source bridge is only consumed by schema entry, isolated genesis previews, real life visual adapter, and formal identity convergence",
   );
   assertIncludes(
-    "P20 foundation freeze allows only the isolated P96 fixture consumer",
+    "P20 foundation freeze allows the visual source adapter consumer",
     source.foundationFreezeGate,
-    'isolatedSceneModelFixture: "src/mocks/starBeastSceneModelFixtures.ts"',
+    'realLifeVisualSourceAdapter: "src/services/realLifeVisualSourceAdapter.ts"',
   );
   assertIncludes(
-    "P90 readiness allows only the isolated P96 fixture consumer",
+    "P90 readiness allows the visual source adapter consumer",
     source.manifestationReadinessGate,
-    'isolatedSceneModelFixture: "src/mocks/starBeastSceneModelFixtures.ts"',
+    'realLifeVisualSourceAdapter: "src/services/realLifeVisualSourceAdapter.ts"',
   );
   assertIncludes(
     "P20 foundation freeze allowlist remains explicit",
     source.foundationFreezeGate,
-    "mother code source is owned by entry, isolated genesis previews, scene model fixtures, and formal identity convergence",
+    "mother code source is owned by entry, isolated genesis previews, real life visual adapter, and formal identity convergence",
   );
 
   [

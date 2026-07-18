@@ -122,7 +122,7 @@ if (failures.length === 0) {
   assertIncludes("P107 presence service accepts reveal", source.presenceService, "personalRevealProjection");
   assertIncludes("P107 renderer consumes reveal", source.renderer, "personalReveal");
   assertIncludes("P107 renderer receives reveal", source.renderer, "personalRevealProjection");
-  assertIncludes("P107 harness supplies reveal", source.harness, "projectGenesisPersonalReveal");
+  assertIncludes("P107 harness consumes adapter reveal", source.harness, "projectionBundle.personalRevealProjection");
   assertIncludes("P107 renderer contract carries reveal", source.rendererType, "personalReveal: GenesisPersonalRevealProjection | null");
   assertIncludes("P107 gate registered", packageJson.scripts?.["check-genesis-personal-star-beast-reveal-projection"] ?? "", "node scripts/check-genesis-personal-star-beast-reveal-projection.mjs");
   assertIncludes("release includes P107 gate", packageJson.scripts?.["postcheck:release"] ?? "", "npm run check-genesis-personal-star-beast-reveal-projection");

@@ -6,7 +6,7 @@ const rootDir = process.cwd();
 
 const files = Object.freeze({
   motherCodeSource: "src/services/motherCodeLifeArchetypeSource.ts",
-  isolatedSceneModelFixture: "src/mocks/starBeastSceneModelFixtures.ts",
+  realLifeVisualSourceAdapter: "src/services/realLifeVisualSourceAdapter.ts",
   isolatedGenesisPreview: "src/pages/StarBeastGenesisPreview.tsx",
   isolatedGenesisRendererPreview:
     "src/pages/StarBeastGenesisRendererSlicePreview.tsx",
@@ -71,12 +71,12 @@ if (failures.length === 0) {
   };
 
   assertCallSites(
-    "mother code source is owned by entry, isolated genesis previews, scene model fixtures, and formal identity convergence",
+    "mother code source is owned by entry, isolated genesis previews, real life visual adapter, and formal identity convergence",
     "resolveLifeArchetypeProfileFromMotherCode",
     [
       files.motherCodeSource,
       files.entry,
-      files.isolatedSceneModelFixture,
+      files.realLifeVisualSourceAdapter,
       files.isolatedGenesisPreview,
       files.isolatedGenesisRendererPreview,
       "src/services/productionIdentitySourceConvergence.ts",

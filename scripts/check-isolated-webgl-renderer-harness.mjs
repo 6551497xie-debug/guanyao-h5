@@ -14,6 +14,7 @@ const files = Object.freeze({
   prototype: "src/prototypes/isolatedWebGLRendererPrototype.ts",
   fixtureData: "src/mocks/starBeastSceneModelFixtures.ts",
   renderPlanAdapter: "src/services/personalStarBeastRenderPlanAdapter.ts",
+  visualSourceAdapter: "src/services/realLifeVisualSourceAdapter.ts",
   authorizationService:
     "src/services/isolatedWebGLRendererPrototypeAuthorizationService.ts",
   packageManifest: "package.json",
@@ -110,7 +111,9 @@ if (failures.length === 0) {
   [
     "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A",
     "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B",
-    "adaptPersonalStarBeastSceneModelToRenderPlan",
+    ".visualSourceReference",
+    ".renderPlanResult",
+    ".projectionBundle",
     "authorizeIsolatedWebGLRendererPrototype",
     "createIsolatedWebGLRendererPrototype",
     'prototypeScope: "ISOLATED_WEBGL_RENDERER_PROTOTYPE_ONLY"',

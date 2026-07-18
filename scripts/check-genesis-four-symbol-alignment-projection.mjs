@@ -122,7 +122,7 @@ if (failures.length === 0) {
   assertIncludes("P105 presence service accepts alignment", source.presenceService, "morphologicalFieldAlignmentProjection");
   assertIncludes("P105 renderer consumes alignment", source.renderer, "morphologicalFieldAlignment");
   assertIncludes("P105 renderer receives alignment", source.renderer, "morphologicalFieldAlignmentProjection");
-  assertIncludes("P105 harness supplies alignment", source.harness, "projectGenesisFourSymbolAlignment");
+  assertIncludes("P105 harness consumes adapter alignment", source.harness, "projectionBundle.morphologicalFieldAlignmentProjection");
   assertIncludes("P105 renderer contract carries alignment", source.rendererType, "morphologicalFieldAlignment: GenesisFourSymbolAlignmentProjection | null");
   assertIncludes("P105 gate registered", packageJson.scripts?.["check-genesis-four-symbol-alignment-projection"] ?? "", "node scripts/check-genesis-four-symbol-alignment-projection.mjs");
   assertIncludes("release includes P105 gate", packageJson.scripts?.["postcheck:release"] ?? "", "npm run check-genesis-four-symbol-alignment-projection");

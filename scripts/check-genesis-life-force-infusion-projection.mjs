@@ -122,7 +122,7 @@ if (failures.length === 0) {
   assertIncludes("P106 presence service accepts infusion", source.presenceService, "lifeForceInfusionProjection");
   assertIncludes("P106 renderer consumes infusion", source.renderer, "lifeForceInfusion");
   assertIncludes("P106 renderer receives infusion", source.renderer, "lifeForceInfusionProjection");
-  assertIncludes("P106 harness supplies infusion", source.harness, "projectGenesisLifeForceInfusion");
+  assertIncludes("P106 harness consumes adapter infusion", source.harness, "projectionBundle.lifeForceInfusionProjection");
   assertIncludes("P106 renderer contract carries infusion", source.rendererType, "lifeForceInfusion: GenesisLifeForceInfusionProjection | null");
   assertIncludes("P106 gate registered", packageJson.scripts?.["check-genesis-life-force-infusion-projection"] ?? "", "node scripts/check-genesis-life-force-infusion-projection.mjs");
   assertIncludes("release includes P106 gate", packageJson.scripts?.["postcheck:release"] ?? "", "npm run check-genesis-life-force-infusion-projection");

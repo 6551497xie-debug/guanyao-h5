@@ -132,12 +132,12 @@ if (failures.length === 0) {
   assertIncludes(
     "P103 harness supplies projection",
     source.harness,
-    "projectGenesisTimeSequenceRecognition",
+    ".projectionBundle",
   );
   assertIncludes(
     "P103 harness remains prototype-only",
     source.harness,
-    "timeSequenceRecognitionProjection: TIME_SEQUENCE_RECOGNITION_PROJECTION",
+    "projectionBundle.timeSequenceRecognitionProjection",
   );
   assertIncludes(
     "P103 renderer contract carries projection",

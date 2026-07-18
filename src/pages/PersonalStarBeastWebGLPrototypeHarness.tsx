@@ -5,13 +5,6 @@ import {
 } from "../mocks/starBeastSceneModelFixtures";
 import { createIsolatedWebGLRendererPrototype } from "../prototypes/isolatedWebGLRendererPrototype";
 import { authorizeIsolatedWebGLRendererPrototype } from "../services/isolatedWebGLRendererPrototypeAuthorizationService";
-import { adaptPersonalStarBeastSceneModelToRenderPlan } from "../services/personalStarBeastRenderPlanAdapter";
-import { projectGenesisTimeSequenceRecognition } from "../services/genesisTimeSequenceRecognitionProjection";
-import { projectGenesisBirthMansionIgnition } from "../services/genesisBirthMansionIgnitionProjection";
-import { projectGenesisFourSymbolAlignment } from "../services/genesisFourSymbolAlignmentProjection";
-import { projectGenesisLifeForceInfusion } from "../services/genesisLifeForceInfusionProjection";
-import { projectGenesisPersonalReveal } from "../services/genesisPersonalRevealProjection";
-import { projectGenesisRealityPressure } from "../services/genesisRealityPressureProjection";
 import {
   completeGenesisPreviewIntegration,
   initializeGenesisPreviewIntegration,
@@ -58,12 +51,10 @@ const FIRST_IMPRESSION_TIMING = Object.freeze({
 });
 
 const FORMAL_PLAN_RESULTS = Object.freeze([
-  adaptPersonalStarBeastSceneModelToRenderPlan(
-    PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.sceneModelReference,
-  ),
-  adaptPersonalStarBeastSceneModelToRenderPlan(
-    PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B.sceneModelReference,
-  ),
+  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.visualSourceReference
+    .renderPlanResult,
+  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B.visualSourceReference
+    .renderPlanResult,
 ] as const);
 
 const PROTOTYPE_AUTHORIZATION = authorizeIsolatedWebGLRendererPrototype(
@@ -87,131 +78,11 @@ const PROTOTYPE_AUTHORIZATION = authorizeIsolatedWebGLRendererPrototype(
   }),
 );
 
-const LIFE_ARRIVAL_COORDINATE_REFERENCE = Object.freeze({
-  referenceType: "STAR_BEAST_GENESIS_ORIGIN_COORDINATE" as const,
-  referenceId: "prototype:life-arrival:shared",
-  sourceRole: "SHARED_TEMPORAL_BIRTH_COORDINATE" as const,
-  birthLocationContextOnly: true as const,
-  birthLocationExcludedFromStarBeastDerivation: true as const,
-});
-
-const TIME_SEQUENCE_RECOGNITION_RESULT = projectGenesisTimeSequenceRecognition(
-  Object.freeze({
-    originCoordinateReference: LIFE_ARRIVAL_COORDINATE_REFERENCE,
-    timeSequenceReference: Object.freeze({
-      referenceType: "GENESIS_TIME_SEQUENCE_REFERENCE" as const,
-      referenceId: "prototype:time-sequence:arrival",
-    }),
-  }),
-);
-
-const TIME_SEQUENCE_RECOGNITION_PROJECTION =
-  TIME_SEQUENCE_RECOGNITION_RESULT.status === "AVAILABLE"
-    ? TIME_SEQUENCE_RECOGNITION_RESULT.projection
-    : null;
-
-const createGenesisProjectionBundle = (
-  fixture: typeof PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A,
-) => {
-  const birthMansionResultReference = Object.freeze({
-    referenceType: "STAR_BEAST_GENESIS_MANSION" as const,
-    referenceId: `prototype:birth-mansion:${fixture.fixtureId}`,
-    sourceStarbeastDerivationReference:
-      fixture.mansionSeedReference.sourceMansionResultReference.resultReference,
-  });
-  const birthMansionIgnitionResult = projectGenesisBirthMansionIgnition(
-    Object.freeze({
-      timeSequenceRecognitionProjection: TIME_SEQUENCE_RECOGNITION_PROJECTION,
-      mansionResultReference: birthMansionResultReference,
-    }),
-  );
-  const birthMansionIgnitionProjection =
-    birthMansionIgnitionResult.status === "AVAILABLE"
-      ? birthMansionIgnitionResult.projection
-      : null;
-
-  const fourSymbolResultReference = Object.freeze({
-    referenceType: "STAR_BEAST_GENESIS_FOUR_SYMBOL_ENGINE_RESULT" as const,
-    sourceEngine: "guanyao_starbeast_engine" as const,
-    resultReference:
-      fixture.fourSymbolFieldReference.sourceFourSymbolResultReference
-        .resultReference,
-  });
-  const fourSymbolAlignmentResult = projectGenesisFourSymbolAlignment(
-    Object.freeze({
-      birthMansionIgnitionProjection,
-      fourSymbolResultReference,
-    }),
-  );
-  const morphologicalFieldAlignmentProjection =
-    fourSymbolAlignmentResult.status === "AVAILABLE"
-      ? fourSymbolAlignmentResult.projection
-      : null;
-
-  const motherCodeProfileReference =
-    fixture.identitySourceReference.lifeArchetypeForce
-      .sourceMotherCodeProfileReference;
-  const lifeArchetypeProfileReference =
-    fixture.identitySourceReference.lifeArchetypeForce
-      .sourceLifeArchetypeProfileReference;
-  const lifeForceInfusionResult = projectGenesisLifeForceInfusion(
-    Object.freeze({
-      morphologicalFieldAlignmentProjection,
-      motherCodeProfileReference,
-      lifeArchetypeProfileReference,
-    }),
-  );
-  const lifeForceInfusionProjection =
-    lifeForceInfusionResult.status === "AVAILABLE"
-      ? lifeForceInfusionResult.projection
-      : null;
-
-  const personalStarBeastIdentityReference =
-    fixture.identitySourceReference.personalStarBeastReference;
-  const personalRevealResult = projectGenesisPersonalReveal(
-    Object.freeze({
-      birthMansionIgnitionProjection,
-      morphologicalFieldAlignmentProjection,
-      lifeForceInfusionProjection,
-      personalStarBeastIdentityReference,
-    }),
-  );
-  const personalRevealProjection =
-    personalRevealResult.status === "AVAILABLE"
-      ? personalRevealResult.projection
-      : null;
-
-  const realityPressureReference = Object.freeze({
-    referenceType: "GENESIS_REALITY_PRESSURE_REFERENCE" as const,
-    referenceId: `prototype:reality-pressure:${fixture.fixtureId}`,
-    sourceRole: "REALITY_PRESSURE_ENGINE_REFERENCE" as const,
-    pressureReferenceOnly: true as const,
-    noRawPressureCopy: true as const,
-  });
-  const realityPressureResult = projectGenesisRealityPressure(
-    Object.freeze({
-      personalRevealProjection,
-      realityPressureReference,
-    }),
-  );
-  const realityPressureProjection =
-    realityPressureResult.status === "AVAILABLE"
-      ? realityPressureResult.projection
-      : null;
-
-  return Object.freeze({
-    timeSequenceRecognitionProjection: TIME_SEQUENCE_RECOGNITION_PROJECTION,
-    birthMansionIgnitionProjection,
-    morphologicalFieldAlignmentProjection,
-    lifeForceInfusionProjection,
-    personalRevealProjection,
-    realityPressureProjection,
-  });
-};
-
 const FORMAL_PROJECTION_BUNDLES = Object.freeze([
-  createGenesisProjectionBundle(PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A),
-  createGenesisProjectionBundle(PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B),
+  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.visualSourceReference
+    .projectionBundle,
+  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B.visualSourceReference
+    .projectionBundle,
 ]);
 
 const PHASE_COPY: Readonly<

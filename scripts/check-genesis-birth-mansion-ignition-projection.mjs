@@ -118,11 +118,11 @@ if (failures.length === 0) {
   assertIncludes("P104 presence service accepts ignition", source.presenceService, "birthMansionIgnitionProjection");
   assertIncludes("P104 renderer consumes ignition", source.renderer, "birthMansionIgnition");
   assertIncludes("P104 renderer receives ignition", source.renderer, "birthMansionIgnitionProjection");
-  assertIncludes("P104 harness supplies ignition", source.harness, "projectGenesisBirthMansionIgnition");
+  assertIncludes("P104 harness consumes adapter ignition", source.harness, ".projectionBundle");
   assertIncludes(
     "P104 harness remains prototype-only",
     source.harness,
-    "birthMansionIgnitionProjection: BIRTH_MANSION_IGNITION_PROJECTION",
+    "projectionBundle.birthMansionIgnitionProjection",
   );
   assertIncludes(
     "P104 renderer contract carries ignition",

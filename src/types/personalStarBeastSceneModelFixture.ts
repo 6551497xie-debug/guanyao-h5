@@ -7,6 +7,7 @@ import type {
   StarBeastLifeArchetypeForceSource,
   StarBeastMansionSeedSource,
 } from "./starBeastIdentitySource";
+import type { RealLifeVisualSource } from "./realLifeVisualSourceAdapter";
 
 export type PersonalStarBeastSceneModelFixture = Readonly<{
   fixtureId: string;
@@ -15,6 +16,7 @@ export type PersonalStarBeastSceneModelFixture = Readonly<{
   fourSymbolFieldReference: StarBeastFourSymbolFieldSource;
   lifeArchetypeReference: StarBeastLifeArchetypeForceSource;
   sceneModelReference: PersonalStarBeastSceneModel;
+  visualSourceReference: RealLifeVisualSource;
   validationScope: "ISOLATED_PROTOTYPE_ONLY";
 }>;
 

@@ -273,7 +273,7 @@ if (failures.length === 0) {
   assertEqual(
     "P97 adapter has no Production consumer and only isolated consumers",
     adapterCallSites.join(","),
-    [files.adapter, "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx"]
+    [files.adapter, "src/services/realLifeVisualSourceAdapter.ts"]
       .sort()
       .join(","),
   );

@@ -116,7 +116,7 @@ if (failures.length === 0) {
   assertIncludes("P108 presence accepts pressure", source.presenceService, "realityPressureProjection");
   assertIncludes("P108 renderer consumes pressure", source.renderer, "realityPressure");
   assertIncludes("P108 renderer receives pressure", source.renderer, "realityPressureProjection");
-  assertIncludes("P108 harness supplies pressure", source.harness, "projectGenesisRealityPressure");
+  assertIncludes("P108 harness consumes adapter pressure", source.harness, "projectionBundle.realityPressureProjection");
   assertIncludes("P108 renderer contract carries pressure", source.rendererType, "realityPressure: GenesisRealityPressureProjection | null");
   assertIncludes(
     "P108 gate registered",

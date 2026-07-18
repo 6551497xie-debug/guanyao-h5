@@ -8,7 +8,7 @@ const rootDir = process.cwd();
 const files = Object.freeze({
   type: "src/types/personalStarBeastManifestationReadiness.ts",
   service: "src/services/personalStarBeastManifestationReadiness.ts",
-  isolatedSceneModelFixture: "src/mocks/starBeastSceneModelFixtures.ts",
+  realLifeVisualSourceAdapter: "src/services/realLifeVisualSourceAdapter.ts",
   protocol:
     "docs/GUANYAO_PERSONAL_STAR_BEAST_MANIFESTATION_READINESS_PROTOCOL.md",
   p89Type: "src/types/starMansionLifeTrajectory.ts",
@@ -189,9 +189,9 @@ if (failures.length === 0) {
   };
   collectCallSites(path.join(rootDir, "src"));
   assertEqual(
-    "readiness is consumed only by its service and isolated scene model fixtures",
+    "readiness is consumed only by its service and real life visual adapter",
     callSites.sort().join(","),
-    [files.isolatedSceneModelFixture, files.service].sort().join(","),
+    [files.realLifeVisualSourceAdapter, files.service].sort().join(","),
   );
 
   const modulePath = path.join(

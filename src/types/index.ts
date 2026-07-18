@@ -234,6 +234,16 @@ export type {
   PersonalStarBeastSceneModelFixtureValidationResult,
 } from "./personalStarBeastSceneModelFixture";
 export type {
+  RealLifeVisualProjectionBundle,
+  RealLifeVisualSource,
+  RealLifeVisualSourceAdapterBlockedReason,
+  RealLifeVisualSourceAdapterBoundary,
+  RealLifeVisualSourceAdapterInput,
+  RealLifeVisualSourceAdapterResult,
+  RealLifeVisualSourceKind,
+  RealLifeVisualSourceProvenance,
+} from "./realLifeVisualSourceAdapter";
+export type {
   ProductionIdentitySourceAdapterReadinessBlocked,
   ProductionIdentitySourceAdapterReadinessBlockedReason,
   ProductionIdentitySourceAdapterReadinessBoundary,
