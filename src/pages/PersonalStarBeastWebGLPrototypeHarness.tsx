@@ -27,6 +27,7 @@ import { resolveRealityEntrySpaceUIRuntime } from "../services/realityEntrySpace
 import { resolvePressureRecognitionUIRuntime } from "../services/pressureRecognitionUIRuntime";
 import { resolveGravityExperienceUIRuntime } from "../services/gravityExperienceUIRuntime";
 import { resolveChoiceExperienceUIRuntime } from "../services/choiceExperienceUIRuntime";
+import { resolveCrystalExperienceUIRuntime } from "../services/crystalExperienceUIRuntime";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type { GenesisPreviewIntegration } from "../types/genesisPreviewIntegration";
 import type { GenesisRuntimeStage } from "../types/genesisRuntimeStateMachine";
@@ -36,6 +37,7 @@ import type { RealityEntrySpaceUIRuntime } from "../types/realityEntrySpaceUIRun
 import type { PressureRecognitionUIRuntime } from "../types/pressureRecognitionUIRuntime";
 import type { GravityExperienceUIRuntime } from "../types/gravityExperienceUIRuntime";
 import type { ChoiceExperienceUIRuntime } from "../types/choiceExperienceUIRuntime";
+import type { CrystalExperienceUIRuntime } from "../types/crystalExperienceUIRuntime";
 import "../styles/personal-star-beast-webgl-prototype-harness.css";
 
 type FirstImpressionPhase = "ARRIVAL" | "FORMATION" | "PRESENCE";
@@ -289,6 +291,8 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     useState(false);
   const [choiceActiveResponseConfirmed, setChoiceActiveResponseConfirmed] =
     useState(false);
+  const [crystalRecognitionConfirmed, setCrystalRecognitionConfirmed] =
+    useState(false);
   const [previewIntegration, setPreviewIntegration] =
     useState<GenesisPreviewIntegration | null>(() =>
       createPreviewIntegration(GENESIS_PREVIEW_STAGES[0].stage),
@@ -372,7 +376,21 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     });
     return result.status === "READY" ? result.uiRuntime : null;
   }, [choiceActiveResponseConfirmed, choiceReady]);
-  const experiencePresentation = choiceActiveResponseConfirmed
+  const crystalReady = choiceExperienceUIRuntime?.crystalReadiness === "READY";
+  const crystalExperienceUIRuntime = useMemo<CrystalExperienceUIRuntime | null>(() => {
+    const result = resolveCrystalExperienceUIRuntime({
+      crystalReady,
+      crystalRecognitionConfirmed,
+    });
+    return result.status === "READY" ? result.uiRuntime : null;
+  }, [crystalRecognitionConfirmed, crystalReady]);
+  const experiencePresentation = crystalRecognitionConfirmed
+    ? Object.freeze({
+        prelude: "变化沉积",
+        title: "这次变化，留下了什么。",
+        note: "这份变化会与你同行，而不是成为一个标签。",
+      })
+    : choiceActiveResponseConfirmed
     ? Object.freeze({
         prelude: "主动回应",
         title: "这次回应已经发生。",
@@ -541,6 +559,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     setPressureObservationConfirmed(false);
     setGravityObservationConfirmed(false);
     setChoiceActiveResponseConfirmed(false);
+    setCrystalRecognitionConfirmed(false);
     setPreviewIntegration(
       createPreviewIntegration(GENESIS_PREVIEW_STAGES[0].stage),
     );
@@ -571,6 +590,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     setPressureObservationConfirmed(false);
     setGravityObservationConfirmed(false);
     setChoiceActiveResponseConfirmed(false);
+    setCrystalRecognitionConfirmed(false);
   };
   const confirmRecognition = () => {
     if (
@@ -590,6 +610,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     setPressureObservationConfirmed(false);
     setGravityObservationConfirmed(false);
     setChoiceActiveResponseConfirmed(false);
+    setCrystalRecognitionConfirmed(false);
   };
   const confirmPressureObservation = () => {
     if (
@@ -617,6 +638,15 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       return;
     }
     setChoiceActiveResponseConfirmed(true);
+  };
+  const confirmCrystalRecognition = () => {
+    if (
+      crystalExperienceUIRuntime?.interactionAvailability !==
+      "CRYSTAL_RECOGNITION_CONFIRM"
+    ) {
+      return;
+    }
+    setCrystalRecognitionConfirmed(true);
   };
   const revealAnotherLife = () => {
     setFormalCaseIndex((current) => (current === 0 ? 1 : 0));
@@ -724,6 +754,25 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       }
       data-choice-interaction={
         choiceExperienceUIRuntime?.interactionAvailability ?? "NONE"
+      }
+      data-crystal-space={choiceActiveResponseConfirmed ? "CRYSTAL_SPACE" : "NOT_ENTERED"}
+      data-crystal-stage={
+        crystalExperienceUIRuntime?.crystalStageState ?? "NOT_READY"
+      }
+      data-transformation-reference-state={
+        crystalExperienceUIRuntime?.transformationReference ?? "NOT_READY"
+      }
+      data-life-imprint-state={
+        crystalExperienceUIRuntime?.lifeImprintState ?? "UNSEEN"
+      }
+      data-crystal-presence-state={
+        crystalExperienceUIRuntime?.crystalPresenceState ?? "ABSENT"
+      }
+      data-future-carry-state={
+        crystalExperienceUIRuntime?.futureCarryState ?? "NOT_READY"
+      }
+      data-crystal-interaction={
+        crystalExperienceUIRuntime?.interactionAvailability ?? "NONE"
       }
     >
       <div className="gy-p100__cosmic-depth" aria-hidden="true" />
@@ -967,7 +1016,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
         </section>
       ) : null}
 
-      {gravityObservationConfirmed ? (
+      {gravityObservationConfirmed && !choiceActiveResponseConfirmed ? (
         <section
           className="gy-p38__choice-space"
           aria-label="Choice Experience Space回应空间"
@@ -1008,6 +1057,50 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
           {choiceExperienceUIRuntime?.crystalReadiness === "READY" ? (
             <p className="gy-p38__crystal-ready" role="status">
               Crystal Experience 已准备好。
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
+      {choiceActiveResponseConfirmed ? (
+        <section
+          className="gy-p39__crystal-space"
+          aria-label="Crystal Experience Space变化沉积"
+          data-crystal-experience-space-panel="CRYSTAL_EXPERIENCE_SPACE"
+        >
+          <div className="gy-p39__crystal-head">
+            <span>变化沉积</span>
+            <strong>{crystalRecognitionConfirmed ? "已完成" : "沉积"}</strong>
+          </div>
+          <h2>
+            {crystalRecognitionConfirmed
+              ? "这份变化会与你同行。"
+              : "这次回应，留下了什么。"}
+          </h2>
+          <p>
+            {crystalRecognitionConfirmed
+              ? "变化已经被看见。它不定义你，只成为未来的一部分。"
+              : "新的回应已经发生。它不是奖励，而是经历留下的结构印记。"}
+          </p>
+          <div className="gy-p39__imprint-list" aria-label="变化沉积范围">
+            <span>新的回应</span>
+            <span>生命印记</span>
+            <span>未来携带</span>
+          </div>
+          <small>Crystal Ready · 不保存、不奖励化</small>
+          {crystalExperienceUIRuntime?.interactionAvailability ===
+          "CRYSTAL_RECOGNITION_CONFIRM" ? (
+            <button
+              type="button"
+              data-interaction="CRYSTAL_RECOGNITION_CONFIRM"
+              onClick={confirmCrystalRecognition}
+            >
+              确认这次变化
+            </button>
+          ) : null}
+          {crystalExperienceUIRuntime?.crystalStageState === "JOURNEY_COMPLETE" ? (
+            <p className="gy-p39__journey-complete" role="status">
+              生命旅程的这次变化已完成。
             </p>
           ) : null}
         </section>

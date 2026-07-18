@@ -2629,3 +2629,22 @@ export type {
   ChoiceExperienceUIRuntimeBlocked,
   ChoiceExperienceUIRuntimeResult,
 } from "./choiceExperienceUIRuntime";
+
+export type {
+  CrystalExperienceStageState,
+  CrystalTransformationReference,
+  LifeImprintState,
+  CrystalPresenceState,
+  FutureCarryState,
+  CrystalExperienceInteractionAvailability,
+  CrystalExperienceUIRuntimeBoundary,
+  CrystalExperienceUIRuntime,
+  CrystalExperienceUIRuntimeInput,
+  CrystalExperienceUIRuntimeUnavailableReason,
+  CrystalExperienceUIRuntimeBlockedReason,
+  CrystalExperienceUIRuntimeReviewBoundary,
+  CrystalExperienceUIRuntimeReady,
+  CrystalExperienceUIRuntimeUnavailable,
+  CrystalExperienceUIRuntimeBlocked,
+  CrystalExperienceUIRuntimeResult,
+} from "./crystalExperienceUIRuntime";
