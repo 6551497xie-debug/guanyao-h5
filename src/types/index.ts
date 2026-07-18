@@ -2425,3 +2425,24 @@ export type {
   LifeJourneyArchitectureBlocked,
   LifeJourneyArchitectureResult,
 } from "./lifeJourneyArchitecture";
+
+export type {
+  FirstLifeJourneyStage,
+  FirstLifeJourneyEntryExperience,
+  FirstLifeJourneyGenesisJourney,
+  FirstLifeJourneyRecognitionMoment,
+  FirstLifeJourneyRealityTransition,
+  FirstLifeJourneyRealityJourney,
+  FirstLifeJourneyTransformationMoment,
+  FirstLifeJourneyCompletionState,
+  FirstLifeJourneyExperienceBoundary,
+  FirstLifeJourneyExperienceFlow,
+  FirstLifeJourneyExperienceFlowInput,
+  FirstLifeJourneyExperienceFlowUnavailableReason,
+  FirstLifeJourneyExperienceFlowBlockedReason,
+  FirstLifeJourneyExperienceFlowBoundary,
+  FirstLifeJourneyExperienceFlowReady,
+  FirstLifeJourneyExperienceFlowUnavailable,
+  FirstLifeJourneyExperienceFlowBlocked,
+  FirstLifeJourneyExperienceFlowResult,
+} from "./firstLifeJourneyExperienceFlow";
