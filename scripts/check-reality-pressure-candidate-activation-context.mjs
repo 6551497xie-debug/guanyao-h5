@@ -71,7 +71,16 @@ try {
   assertExcludes("Matrix remains unchanged", source.matrix, "CandidateActivationContext");
   assertExcludes("Candidate Source remains unchanged", source.candidateSource, "CandidateActivationContext");
   assertExcludes("Reality Host remains unchanged", source.host, "CandidateActivationContext");
-  assertExcludes("Reality Route remains unchanged", source.route, "CandidateActivationContext");
+  assertExcludes(
+    "Reality Route cannot create Candidate Activation directly",
+    source.route,
+    "createRealityPressureCandidateActivationContext",
+  );
+  assertIncludes(
+    "Reality Route uses the dedicated activation bridge",
+    source.route,
+    "bridgeRealityRouteToPressureCandidateActivation",
+  );
   assertExcludes("Gravity remains unchanged", source.gravity, "CandidateActivationContext");
 
   const packageJson = JSON.parse(source.packageManifest);

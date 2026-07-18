@@ -6,6 +6,7 @@ import {
   REALITY_PRODUCTION_ROUTE_TARGET,
 } from "../services/realityProductionRouteAuthorization";
 import { readRealityRouteActivationSourceContext } from "../services/realityRouteActivationSourceContext";
+import { bridgeRealityRouteToPressureCandidateActivation } from "../services/realityRoutePressureCandidateActivationBridge";
 import type { RealityProductionRouteEntryBoundary } from "../types/realityProductionRouteEntry";
 
 export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
@@ -14,6 +15,7 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
     exactRealityRouteOnly: true,
     inMemoryRealityEntryContextOnly: true,
     realityRouteActivationSourceContextRequired: true,
+    pressureCandidateActivationContextRequired: true,
     routeAuthorizationRequired: true,
     sourceNotReadyRecoveryRequired: true,
     sourceReferenceExcludedFromUrl: true,
@@ -41,12 +43,20 @@ export function RealityProductionRouteEntry() {
     routeTarget: REALITY_PRODUCTION_ROUTE_TARGET,
     sourceReferenceId: entryContext?.sourceReferenceId ?? null,
   });
+  const candidateActivationResult =
+    authorization.status === "READY" && activationSourceContext !== null
+      ? bridgeRealityRouteToPressureCandidateActivation({
+          routeAuthorization: authorization,
+          routeActivationSourceContext: activationSourceContext,
+        })
+      : null;
 
   if (
     authorization.status !== "READY" ||
     activationSourceContext === null ||
     activationSourceContext.sourceReferenceId !==
-      authorization.sourceReferenceId
+      authorization.sourceReferenceId ||
+    candidateActivationResult?.status !== "READY"
   ) {
     return (
       <main
@@ -54,7 +64,14 @@ export function RealityProductionRouteEntry() {
         data-guard-reason={
           authorization.status !== "READY"
             ? authorization.guardReason
-            : "REALITY_ACTIVATION_SOURCE_CONTEXT_NOT_AVAILABLE"
+            : activationSourceContext === null ||
+              activationSourceContext.sourceReferenceId !==
+                authorization.sourceReferenceId
+            ? "REALITY_ACTIVATION_SOURCE_CONTEXT_NOT_AVAILABLE"
+            : candidateActivationResult?.status !== "READY"
+            ? candidateActivationResult?.reason ??
+              "PRESSURE_CANDIDATE_ACTIVATION_NOT_READY"
+            : null
         }
       >
         <p role="status">SOURCE_NOT_READY</p>

@@ -3149,3 +3149,10 @@ export type {
   RealityRouteActivationSourceContextResult,
   RealityExplicitRequestDateSourceInput,
 } from "./realityRouteActivationSourceContext";
+
+export type {
+  RealityRoutePressureCandidateActivationBridgeBoundary,
+  RealityRoutePressureCandidateActivationBridgeInput,
+  RealityRoutePressureCandidateActivationBridgeBlockedReason,
+  RealityRoutePressureCandidateActivationBridgeResult,
+} from "./realityRoutePressureCandidateActivationBridge";
