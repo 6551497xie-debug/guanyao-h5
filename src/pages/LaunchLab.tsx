@@ -34,6 +34,7 @@ import {
   resolveLaunchOriginMotherSourceResults,
 } from "../services/guanyaoLaunchOriginMotherInputAdapter";
 import { createLaunchLifeSourceSession } from "../services/launchLifeSourceSession";
+import { resolveLaunchGenesisProductionRouteHandoff } from "../services/launchGenesisProductionRouteHandoff";
 import { resolveLaunchLifeVisualSource } from "../services/launchLifeVisualSourceResolver";
 import {
   activateRealUserGenesisVisualSourceContext,
@@ -205,6 +206,7 @@ type LaunchInteractionState =
   | "PRESSURE_CANVAS_ACTIVE"
   | "SEED_SELECTED"
   | "SNAPSHOT_GENERATED"
+  | "GENESIS_HANDOFF"
   | "DYNAMICS_HANDOFF";
 type SceneState = "ENTRY" | "NODE_1" | "NODE_2" | "HANDOFF";
 type EntryHandoffMode = "NEW_USER" | "OLD_USER";
@@ -1396,6 +1398,19 @@ export function LaunchLab() {
         console.warn("[LaunchLab] failed to persist launch mother assets", error);
       }
     }
+    function enterProductionGenesis() {
+      const lifeSourceSession = captureLaunchLifeSourceSession();
+      const handoff = resolveLaunchGenesisProductionRouteHandoff({
+        lifeSourceSession,
+      });
+      if (handoff.status !== "READY") {
+        throw new Error(
+          `LAUNCH_GENESIS_PRODUCTION_HANDOFF_BLOCKED:${handoff.guardReason}`,
+        );
+      }
+      setLaunchInteractionState("GENESIS_HANDOFF");
+      navigate(handoff.routeTarget);
+    }
     function buildEntryTransitionSnapshot(): EntryTransitionSnapshot {
       return {
         chrono: "光痕已显现",
@@ -1600,7 +1615,11 @@ export function LaunchLab() {
             vibrate(8);
             return;
           }
-          openMotherCodeReveal();
+          if (DEBUG_TIMELINE) {
+            openMotherCodeReveal();
+            return;
+          }
+          enterProductionGenesis();
           return;
         }
         completeEntryCanvasHandoff();
@@ -3237,7 +3256,7 @@ export function LaunchLab() {
       canvas.removeEventListener("pointercancel", onUp);
       entryHandoffRef.current = null;
     };
-  }, [commitPressureSeedCapture, setSceneState, triggerClickFlash]);
+  }, [commitPressureSeedCapture, navigate, setLaunchInteractionState, setSceneState, triggerClickFlash]);
 
   return (
     <GyMobilePreviewFrame background="#070512">

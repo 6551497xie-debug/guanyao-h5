@@ -119,6 +119,7 @@
     "check-genesis-production-timeline-orchestration": "node scripts/check-genesis-production-timeline-orchestration.mjs",
     "check-genesis-explicit-route-activation-authorization": "node scripts/check-genesis-explicit-route-activation-authorization.mjs",
     "check-genesis-production-route-entry": "node scripts/check-genesis-production-route-entry.mjs",
+    "check-launch-genesis-production-route-handoff": "node scripts/check-launch-genesis-production-route-handoff.mjs",
     "check-genesis-production-recognition-reality-entry": "node scripts/check-genesis-production-recognition-reality-entry.mjs",
     "check-reality-production-route-authorization": "node scripts/check-reality-production-route-authorization.mjs",
     "check-reality-production-route-entry": "node scripts/check-reality-production-route-entry.mjs",

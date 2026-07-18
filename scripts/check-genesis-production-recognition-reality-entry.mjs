@@ -85,7 +85,8 @@ try {
   assertIncludes("production page navigates only to authorized handoff target", source.page, "navigate(handoff.routeTarget)");
   assertExcludes("production page starts no Pressure runtime", source.page, "resolvePressureRecognitionUIRuntime");
   assertIncludes("Reality route is now registered behind its own authorization", source.routes, 'reality: "/reality"');
-  assertExcludes("Launch to Genesis remains deferred", source.launch, "GUANYAO_ROUTES.genesis");
+  assertIncludes("Launch to Genesis is explicitly connected", source.launch, "resolveLaunchGenesisProductionRouteHandoff");
+  assertIncludes("Launch follows only the handoff target", source.launch, "navigate(handoff.routeTarget)");
 
   const packageJson = JSON.parse(source.packageManifest);
   assertIncludes("recognition reality gate is registered", packageJson.scripts?.["check-genesis-production-recognition-reality-entry"] ?? "", "node scripts/check-genesis-production-recognition-reality-entry.mjs");

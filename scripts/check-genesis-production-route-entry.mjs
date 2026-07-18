@@ -77,7 +77,8 @@ try {
   assertIncludes("App registers exact formal route", source.app, "path={GUANYAO_ROUTES.genesis}");
   assertIncludes("App renders guarded route entry", source.app, "<GenesisProductionRouteEntry />");
   assertIncludes("Genesis receives fullscreen shell", source.shell, 'location.pathname === "/genesis"');
-  assertExcludes("Launch still has no Genesis navigation", source.launch, "GUANYAO_ROUTES.genesis");
+  assertIncludes("Launch resolves the guarded Genesis handoff", source.launch, "resolveLaunchGenesisProductionRouteHandoff");
+  assertIncludes("Launch navigates only to the guarded target", source.launch, "navigate(handoff.routeTarget)");
   assertExcludes("Launch does not hardcode Genesis navigation", source.launch, 'navigate("/genesis"');
 
   const packageJson = JSON.parse(source.packageManifest);

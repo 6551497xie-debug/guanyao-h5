@@ -61,7 +61,9 @@ try {
   assertIncludes("formal route target is registered", source.routes, 'genesis: "/genesis"');
   assertIncludes("App mounts the guarded route entry", source.app, "GenesisProductionRouteEntry");
   assertIncludes("AppShell grants Genesis fullscreen", source.shell, 'location.pathname === "/genesis"');
-  assertExcludes("Launch navigation remains unchanged", source.launch, 'navigate("/genesis"');
+  assertIncludes("Launch resolves the explicit Genesis handoff", source.launch, "resolveLaunchGenesisProductionRouteHandoff");
+  assertIncludes("Launch navigates only to the authorized handoff target", source.launch, "navigate(handoff.routeTarget)");
+  assertExcludes("Launch does not hardcode Genesis navigation", source.launch, 'navigate("/genesis"');
 
   const packageJson = JSON.parse(source.packageManifest);
   assertIncludes("explicit activation gate is registered", packageJson.scripts?.["check-genesis-explicit-route-activation-authorization"] ?? "", "node scripts/check-genesis-explicit-route-activation-authorization.mjs");
