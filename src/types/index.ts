@@ -3002,6 +3002,23 @@ export type {
 } from "./realityProductionPressureConsumer";
 
 export type {
+  RealityPressureSeedCandidateSource,
+  RealityPressureSeedRecognitionSource,
+  RealityPressureSeedCandidateRequest,
+  RealityPressureSeedCandidate,
+  RealityPressureSeedCandidateBundleProvenance,
+  RealityPressureSeedCandidateBundle,
+  RealityPressureSeedCaptureEvent,
+  RealityPressureSeedCaptureState,
+  RealityPressureSeedCaptureCommand,
+  RealityPressureSeedCaptureProvenance,
+  RealityPressureSeedCaptureBlockedReason,
+  RealityPressureSeedCaptureResult,
+  RealityPressureSeedCaptureContractBoundary,
+  RealityPressureSeedCaptureContract,
+} from "./realityPressureSeedCaptureContract";
+
+export type {
   RealityPressurePresentationBoundary,
   RealityPressurePresentationProps,
 } from "./realityPressurePresentation";
