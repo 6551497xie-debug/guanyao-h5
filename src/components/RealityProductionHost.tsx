@@ -14,6 +14,7 @@ import {
   advanceRealityProductionPressureConsumer,
   initializeRealityProductionPressureConsumer,
 } from "../services/realityProductionPressureConsumer";
+import { isRealityProductionPressureHostInputReady } from "../services/realityProductionPressureHostInputContract";
 import type {
   RealityProductionHostBoundary,
   RealityProductionHostProps,
@@ -24,6 +25,9 @@ export const REALITY_PRODUCTION_HOST_BOUNDARY:
     productionRealityHostOnly: true,
     authorizedRealitySourceOnly: true,
     productionPressureConsumerOnly: true,
+    productionPressureHostInputRequired: true,
+    pressureSeedConsumerInputReadOnly: true,
+    pressureSeedConsumerNotActivated: true,
     sharedFrozenPressurePresentationOnly: true,
     explicitPressureObservationOnly: true,
     productionGravityConsumerOnly: true,
@@ -55,6 +59,7 @@ export const REALITY_PRODUCTION_HOST_BOUNDARY:
 
 export function RealityProductionHost({
   routeAuthorization,
+  pressureSeedHostInput,
 }: RealityProductionHostProps) {
   const sourceContext = routeAuthorization.sourceContext;
   const [pressureResult, setPressureResult] = useState(() =>
@@ -66,8 +71,14 @@ export function RealityProductionHost({
   const [choiceResult, setChoiceResult] = useState<
     ReturnType<typeof initializeRealityProductionChoiceConsumer> | null
   >(null);
+  const pressureSeedHostInputReady =
+    isRealityProductionPressureHostInputReady(
+      pressureSeedHostInput,
+      routeAuthorization.sourceReferenceId,
+    );
 
   if (
+    !pressureSeedHostInputReady ||
     pressureResult.status !== "READY" ||
     gravityResult?.status === "BLOCKED" ||
     choiceResult?.status === "BLOCKED"
@@ -76,7 +87,9 @@ export function RealityProductionHost({
       <main
         data-production-reality-status="SOURCE_NOT_READY"
         data-guard-reason={
-          pressureResult.status === "BLOCKED"
+          !pressureSeedHostInputReady
+            ? "PRESSURE_SEED_HOST_INPUT_NOT_READY"
+            : pressureResult.status === "BLOCKED"
             ? pressureResult.reason
             : gravityResult?.status === "BLOCKED"
             ? gravityResult.reason
@@ -162,6 +175,10 @@ export function RealityProductionHost({
       data-source-experience-mode={sourceContext.sourceExperienceMode}
       data-source-provenance={sourceContext.sourceProvenance}
       data-source-reference-id={sourceContext.sourceReferenceId}
+      data-pressure-seed-host-input="READY"
+      data-pressure-seed-delivery-reference={
+        pressureSeedHostInput.deliverySession.currentBundleReferenceId
+      }
       data-pressure-recognition-state={pressureSession.pressureStageState}
       data-pressure-observation-state={pressureSession.observationState}
       data-pressure-tension-awareness={pressureSession.tensionAwareness}

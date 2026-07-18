@@ -1,4 +1,5 @@
 import type { RealityProductionRouteActivationAuthorization } from "./realityProductionRouteAuthorization";
+import type { RealityProductionPressureHostInput } from "./realityProductionPressureHostInputContract";
 
 export type RealityProductionRouteEntryBoundary = Readonly<{
   productionRouteEntryOnly: true;
@@ -30,6 +31,9 @@ export type RealityProductionHostBoundary = Readonly<{
   productionRealityHostOnly: true;
   authorizedRealitySourceOnly: true;
   productionPressureConsumerOnly: true;
+  productionPressureHostInputRequired: true;
+  pressureSeedConsumerInputReadOnly: true;
+  pressureSeedConsumerNotActivated: true;
   sharedFrozenPressurePresentationOnly: true;
   explicitPressureObservationOnly: true;
   productionGravityConsumerOnly: true;
@@ -64,4 +68,5 @@ export type RealityProductionHostProps = Readonly<{
     RealityProductionRouteActivationAuthorization,
     { status: "READY" }
   >;
+  pressureSeedHostInput: RealityProductionPressureHostInput;
 }>;

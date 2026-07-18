@@ -3170,3 +3170,11 @@ export type {
   RealityRouteDeliveryOrchestrationBridgeBlockedReason,
   RealityRouteDeliveryOrchestrationBridgeResult,
 } from "./realityRouteDeliveryOrchestrationBridge";
+
+export type {
+  RealityProductionPressureHostInputContractBoundary,
+  RealityProductionPressureHostInputContractInput,
+  RealityProductionPressureHostInput,
+  RealityProductionPressureHostInputBlockedReason,
+  RealityProductionPressureHostInputContractResult,
+} from "./realityProductionPressureHostInputContract";

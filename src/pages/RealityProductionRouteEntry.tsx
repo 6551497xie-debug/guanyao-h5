@@ -9,6 +9,7 @@ import { readRealityRouteActivationSourceContext } from "../services/realityRout
 import { bridgeRealityRouteToPressureCandidateActivation } from "../services/realityRoutePressureCandidateActivationBridge";
 import { bridgeRealityRouteCandidateRequestContext } from "../services/realityRouteCandidateRequestContextBridge";
 import { bridgeRealityRouteDeliveryOrchestration } from "../services/realityRouteDeliveryOrchestrationBridge";
+import { resolveRealityProductionPressureHostInput } from "../services/realityProductionPressureHostInputContract";
 import type { RealityProductionRouteEntryBoundary } from "../types/realityProductionRouteEntry";
 
 export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
@@ -66,6 +67,13 @@ export function RealityProductionRouteEntry() {
           routeCandidateRequestResult: candidateRequestResult,
         })
       : null;
+  const pressureHostInputResult =
+    authorization.status === "READY" && deliveryResult
+      ? resolveRealityProductionPressureHostInput({
+          routeAuthorization: authorization,
+          routeDeliveryResult: deliveryResult,
+        })
+      : null;
 
   if (
     authorization.status !== "READY" ||
@@ -75,6 +83,7 @@ export function RealityProductionRouteEntry() {
     candidateActivationResult?.status !== "READY"
     || candidateRequestResult?.status !== "READY" ||
     deliveryResult?.status !== "READY"
+    || pressureHostInputResult?.status !== "READY"
   ) {
     return (
       <main
@@ -95,6 +104,9 @@ export function RealityProductionRouteEntry() {
             : deliveryResult?.status !== "READY"
             ? deliveryResult?.reason ??
               "PRESSURE_DELIVERY_ORCHESTRATION_NOT_READY"
+            : pressureHostInputResult?.status !== "READY"
+            ? pressureHostInputResult?.reason ??
+              "PRESSURE_HOST_INPUT_NOT_READY"
             : null
         }
       >
@@ -109,5 +121,10 @@ export function RealityProductionRouteEntry() {
     );
   }
 
-  return <RealityProductionHost routeAuthorization={authorization} />;
+  return (
+    <RealityProductionHost
+      routeAuthorization={authorization}
+      pressureSeedHostInput={pressureHostInputResult.input}
+    />
+  );
 }
