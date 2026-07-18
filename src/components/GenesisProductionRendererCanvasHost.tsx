@@ -31,6 +31,7 @@ export const GENESIS_PRODUCTION_CANVAS_HOST_BOUNDARY:
 export function GenesisProductionRendererCanvasHost({
   routeAuthorization,
   consumerSourceResult,
+  visualCalibrationBundle,
   onStateChange,
 }: GenesisProductionRendererCanvasHostProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -59,6 +60,14 @@ export function GenesisProductionRendererCanvasHost({
       reducedMotion: window.matchMedia(
         "(prefers-reduced-motion: reduce)",
       ).matches,
+      genesisVisualRealization:
+        visualCalibrationBundle.genesisVisualRealization,
+      genesisPerspectiveCalibration:
+        visualCalibrationBundle.genesisPerspectiveCalibration,
+      genesisPresenceRecognitionCalibration:
+        visualCalibrationBundle.genesisPresenceRecognitionCalibration,
+      genesisSpatialDistanceCalibration:
+        visualCalibrationBundle.genesisSpatialDistanceCalibration,
     });
 
     if (rendererResult.status === "BLOCKED") {
@@ -95,7 +104,7 @@ export function GenesisProductionRendererCanvasHost({
       resizeObserver.disconnect();
       controller.dispose();
     };
-  }, [consumerSourceResult, onStateChange, routeAuthorization]);
+  }, [consumerSourceResult, onStateChange, routeAuthorization, visualCalibrationBundle]);
 
   return (
     <canvas
@@ -108,6 +117,7 @@ export function GenesisProductionRendererCanvasHost({
       data-source-reference-id={
         consumerSourceResult.consumerSource.sourceReferenceId
       }
+      data-genesis-runtime-stage={visualCalibrationBundle.runtimeStage}
       aria-hidden="true"
     />
   );

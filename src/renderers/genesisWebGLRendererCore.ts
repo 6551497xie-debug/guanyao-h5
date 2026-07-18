@@ -30,10 +30,12 @@ import type { GenesisLifeForceInfusionProjection } from "../types/genesisLifeFor
 import type { GenesisPersonalRevealProjection } from "../types/genesisPersonalRevealProjection";
 import type { GenesisRealityPressureProjection } from "../types/genesisRealityPressureProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
-import type { GenesisRendererVisualRealization } from "../types/genesisRendererVisualRealization";
-import type { GenesisPerspectiveCalibration } from "../types/genesisPerspectiveCalibration";
-import type { GenesisPresenceRecognitionCalibration } from "../types/genesisPresenceRecognitionCalibration";
-import type { GenesisSpatialDistanceCalibration } from "../types/genesisSpatialDistanceCalibration";
+import type {
+  GenesisPerspectiveCalibrationCore,
+  GenesisPresenceRecognitionCalibrationCore,
+  GenesisRendererVisualRealizationCore,
+  GenesisSpatialDistanceCalibrationCore,
+} from "../types/genesisProductionVisualCalibrationBridge";
 import type {
   GenesisWebGLRendererCoreBoundary,
   GenesisWebGLRendererCoreController,
@@ -95,10 +97,10 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
   lifeForceInfusion: GenesisLifeForceInfusionProjection | null = null,
   personalReveal: GenesisPersonalRevealProjection | null = null,
   realityPressure: GenesisRealityPressureProjection | null = null,
-  genesisVisualRealization: GenesisRendererVisualRealization | null = null,
-  genesisPerspectiveCalibration: GenesisPerspectiveCalibration | null = null,
-  genesisPresenceRecognitionCalibration: GenesisPresenceRecognitionCalibration | null = null,
-  genesisSpatialDistanceCalibration: GenesisSpatialDistanceCalibration | null = null,
+  genesisVisualRealization: GenesisRendererVisualRealizationCore | null = null,
+  genesisPerspectiveCalibration: GenesisPerspectiveCalibrationCore | null = null,
+  genesisPresenceRecognitionCalibration: GenesisPresenceRecognitionCalibrationCore | null = null,
+  genesisSpatialDistanceCalibration: GenesisSpatialDistanceCalibrationCore | null = null,
 ): GenesisWebGLRendererCoreSceneProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);

@@ -143,7 +143,7 @@ try {
     source.routeAuthorization,
     'authorizationState: "AUTHORIZED_PRODUCTION_GENESIS"',
   );
-  assertExcludes("production page connection is deferred", source.page, "genesisProductionRuntimeConsumer");
+  assertIncludes("production page initializes the production runtime", source.page, "initializeGenesisProductionRuntime");
   assertExcludes("production host stays runtime blind", source.host, "genesisProductionRuntimeConsumer");
   assertIncludes(
     "prototype remains forbidden",

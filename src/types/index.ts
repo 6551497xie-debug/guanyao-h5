@@ -2939,3 +2939,13 @@ export type {
   GenesisProductionRuntimeBlockedReason,
   GenesisProductionRuntimeConsumerResult,
 } from "./genesisProductionRuntimeConsumer";
+
+export type {
+  GenesisRendererVisualRealizationCore,
+  GenesisPerspectiveCalibrationCore,
+  GenesisPresenceRecognitionCalibrationCore,
+  GenesisSpatialDistanceCalibrationCore,
+  GenesisProductionVisualCalibrationBundle,
+  GenesisProductionVisualCalibrationBridgeBoundary,
+  GenesisProductionVisualCalibrationBridgeResult,
+} from "./genesisProductionVisualCalibrationBridge";

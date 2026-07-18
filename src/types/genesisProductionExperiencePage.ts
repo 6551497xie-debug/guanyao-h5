@@ -1,4 +1,5 @@
 import type { GenesisProductionRouteActivationAuthorization } from "./genesisProductionRouteAuthorization";
+import type { GenesisProductionVisualCalibrationBundle } from "./genesisProductionVisualCalibrationBridge";
 import type { GenesisVisualConsumerSourceResult } from "./genesisVisualConsumerSource";
 
 export type GenesisProductionCanvasHostState =
@@ -37,6 +38,7 @@ export type GenesisProductionRendererCanvasHostProps = Readonly<{
     GenesisVisualConsumerSourceResult,
     { status: "READY" }
   >;
+  visualCalibrationBundle: GenesisProductionVisualCalibrationBundle;
   onStateChange?: (state: GenesisProductionCanvasHostState) => void;
 }>;
 

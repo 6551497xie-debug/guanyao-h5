@@ -2,11 +2,13 @@ import type { GenesisBirthMansionIgnitionProjection } from "./genesisBirthMansio
 import type { GenesisFourSymbolAlignmentProjection } from "./genesisFourSymbolAlignmentProjection";
 import type { GenesisLifeForceInfusionProjection } from "./genesisLifeForceInfusionProjection";
 import type { GenesisPersonalRevealProjection } from "./genesisPersonalRevealProjection";
-import type { GenesisPerspectiveCalibration } from "./genesisPerspectiveCalibration";
-import type { GenesisPresenceRecognitionCalibration } from "./genesisPresenceRecognitionCalibration";
 import type { GenesisRealityPressureProjection } from "./genesisRealityPressureProjection";
-import type { GenesisRendererVisualRealization } from "./genesisRendererVisualRealization";
-import type { GenesisSpatialDistanceCalibration } from "./genesisSpatialDistanceCalibration";
+import type {
+  GenesisPerspectiveCalibrationCore,
+  GenesisPresenceRecognitionCalibrationCore,
+  GenesisRendererVisualRealizationCore,
+  GenesisSpatialDistanceCalibrationCore,
+} from "./genesisProductionVisualCalibrationBridge";
 import type { GenesisTimeSequenceRecognitionProjection } from "./genesisTimeSequenceRecognitionProjection";
 import type { PersonalStarBeastLifePresenceProjection } from "./personalStarBeastLifePresenceProjection";
 import type { PersonalStarBeastLifeStarCoreProjection } from "./personalStarBeastLifeStarCoreProjection";
@@ -33,10 +35,10 @@ export type GenesisWebGLRendererCoreSceneProjection = Readonly<{
   lifeForceInfusion: GenesisLifeForceInfusionProjection | null;
   personalReveal: GenesisPersonalRevealProjection | null;
   realityPressure: GenesisRealityPressureProjection | null;
-  genesisVisualRealization: GenesisRendererVisualRealization | null;
-  genesisPerspectiveCalibration: GenesisPerspectiveCalibration | null;
-  genesisPresenceRecognitionCalibration: GenesisPresenceRecognitionCalibration | null;
-  genesisSpatialDistanceCalibration: GenesisSpatialDistanceCalibration | null;
+  genesisVisualRealization: GenesisRendererVisualRealizationCore | null;
+  genesisPerspectiveCalibration: GenesisPerspectiveCalibrationCore | null;
+  genesisPresenceRecognitionCalibration: GenesisPresenceRecognitionCalibrationCore | null;
+  genesisSpatialDistanceCalibration: GenesisSpatialDistanceCalibrationCore | null;
   formField: Readonly<{
     hue: number;
     boundaryScale: number;
@@ -73,10 +75,10 @@ export type GenesisWebGLRendererCoreInput = Readonly<{
   lifeForceInfusionProjection?: GenesisLifeForceInfusionProjection | null;
   personalRevealProjection?: GenesisPersonalRevealProjection | null;
   realityPressureProjection?: GenesisRealityPressureProjection | null;
-  genesisVisualRealization?: GenesisRendererVisualRealization | null;
-  genesisPerspectiveCalibration?: GenesisPerspectiveCalibration | null;
-  genesisPresenceRecognitionCalibration?: GenesisPresenceRecognitionCalibration | null;
-  genesisSpatialDistanceCalibration?: GenesisSpatialDistanceCalibration | null;
+  genesisVisualRealization?: GenesisRendererVisualRealizationCore | null;
+  genesisPerspectiveCalibration?: GenesisPerspectiveCalibrationCore | null;
+  genesisPresenceRecognitionCalibration?: GenesisPresenceRecognitionCalibrationCore | null;
+  genesisSpatialDistanceCalibration?: GenesisSpatialDistanceCalibrationCore | null;
 }>;
 
 export type GenesisWebGLRendererCoreContextState =

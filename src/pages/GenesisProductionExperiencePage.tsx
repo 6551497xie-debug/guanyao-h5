@@ -4,6 +4,8 @@ import {
   authorizeGenesisProductionRoute,
   GENESIS_PRODUCTION_ROUTE_TARGET,
 } from "../services/genesisProductionRouteAuthorization";
+import { initializeGenesisProductionRuntime } from "../services/genesisProductionRuntimeConsumer";
+import { bridgeGenesisProductionRuntimeToVisualCalibration } from "../services/genesisProductionVisualCalibrationBridge";
 import { resolveRealGenesisVisualConsumerSource } from "../services/realGenesisVisualConsumerSource";
 import type {
   GenesisProductionCanvasHostState,
@@ -52,12 +54,32 @@ export function GenesisProductionExperiencePage({
         : null,
     [routeAuthorization],
   );
+  const productionRuntimeResult = useMemo(
+    () => routeAuthorization.status === "READY"
+      ? initializeGenesisProductionRuntime({ routeAuthorization })
+      : null,
+    [routeAuthorization],
+  );
+  const visualCalibrationResult = useMemo(
+    () => productionRuntimeResult?.status === "READY"
+      ? bridgeGenesisProductionRuntimeToVisualCalibration(
+          productionRuntimeResult.session,
+        )
+      : null,
+    [productionRuntimeResult],
+  );
 
   if (
     routeAuthorization.status !== "READY" ||
     consumerSourceResult === null ||
     consumerSourceResult.status !== "READY" ||
+    productionRuntimeResult === null ||
+    productionRuntimeResult.status !== "READY" ||
+    visualCalibrationResult === null ||
+    visualCalibrationResult.status !== "READY" ||
     consumerSourceResult.consumerSource.sourceReferenceId !==
+      routeAuthorization.sourceReferenceId ||
+    visualCalibrationResult.bundle.sourceReferenceId !==
       routeAuthorization.sourceReferenceId
   ) {
     return (
@@ -79,10 +101,12 @@ export function GenesisProductionExperiencePage({
       data-source-provenance={routeAuthorization.sourceProvenance}
       data-source-reference-id={routeAuthorization.sourceReferenceId}
       data-production-renderer-host-state={canvasHostState}
+      data-genesis-runtime-stage={visualCalibrationResult.bundle.runtimeStage}
     >
       <GenesisProductionRendererCanvasHost
         routeAuthorization={routeAuthorization}
         consumerSourceResult={consumerSourceResult}
+        visualCalibrationBundle={visualCalibrationResult.bundle}
         onStateChange={setCanvasHostState}
       />
     </main>
