@@ -6,6 +6,7 @@ export type RealityProductionRouteEntryBoundary = Readonly<{
   inMemoryRealityEntryContextOnly: true;
   realityRouteActivationSourceContextRequired: true;
   pressureCandidateActivationContextRequired: true;
+  pressureCandidateRequestContextRequired: true;
   routeAuthorizationRequired: true;
   sourceNotReadyRecoveryRequired: true;
   sourceReferenceExcludedFromUrl: true;

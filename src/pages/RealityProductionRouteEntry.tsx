@@ -7,6 +7,7 @@ import {
 } from "../services/realityProductionRouteAuthorization";
 import { readRealityRouteActivationSourceContext } from "../services/realityRouteActivationSourceContext";
 import { bridgeRealityRouteToPressureCandidateActivation } from "../services/realityRoutePressureCandidateActivationBridge";
+import { bridgeRealityRouteCandidateRequestContext } from "../services/realityRouteCandidateRequestContextBridge";
 import type { RealityProductionRouteEntryBoundary } from "../types/realityProductionRouteEntry";
 
 export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
@@ -16,6 +17,7 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
     inMemoryRealityEntryContextOnly: true,
     realityRouteActivationSourceContextRequired: true,
     pressureCandidateActivationContextRequired: true,
+    pressureCandidateRequestContextRequired: true,
     routeAuthorizationRequired: true,
     sourceNotReadyRecoveryRequired: true,
     sourceReferenceExcludedFromUrl: true,
@@ -50,6 +52,11 @@ export function RealityProductionRouteEntry() {
           routeActivationSourceContext: activationSourceContext,
         })
       : null;
+  const candidateRequestResult = candidateActivationResult
+    ? bridgeRealityRouteCandidateRequestContext({
+        routeCandidateActivationResult: candidateActivationResult,
+      })
+    : null;
 
   if (
     authorization.status !== "READY" ||
@@ -57,6 +64,7 @@ export function RealityProductionRouteEntry() {
     activationSourceContext.sourceReferenceId !==
       authorization.sourceReferenceId ||
     candidateActivationResult?.status !== "READY"
+    || candidateRequestResult?.status !== "READY"
   ) {
     return (
       <main
@@ -71,6 +79,9 @@ export function RealityProductionRouteEntry() {
             : candidateActivationResult?.status !== "READY"
             ? candidateActivationResult?.reason ??
               "PRESSURE_CANDIDATE_ACTIVATION_NOT_READY"
+            : candidateRequestResult?.status !== "READY"
+            ? candidateRequestResult?.reason ??
+              "PRESSURE_CANDIDATE_REQUEST_NOT_READY"
             : null
         }
       >

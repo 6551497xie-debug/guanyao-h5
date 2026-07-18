@@ -3156,3 +3156,10 @@ export type {
   RealityRoutePressureCandidateActivationBridgeBlockedReason,
   RealityRoutePressureCandidateActivationBridgeResult,
 } from "./realityRoutePressureCandidateActivationBridge";
+
+export type {
+  RealityRouteCandidateRequestContextBridgeBoundary,
+  RealityRouteCandidateRequestContextBridgeInput,
+  RealityRouteCandidateRequestContextBridgeBlockedReason,
+  RealityRouteCandidateRequestContextBridgeResult,
+} from "./realityRouteCandidateRequestContextBridge";
