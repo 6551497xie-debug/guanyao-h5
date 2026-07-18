@@ -26,11 +26,6 @@ import "../styles/personal-star-beast-webgl-prototype-harness.css";
 type FirstImpressionPhase = "ARRIVAL" | "FORMATION" | "PRESENCE";
 type HarnessState = "STARTING" | "RENDERING" | "FALLBACK" | "UNAVAILABLE";
 
-const FIRST_IMPRESSION_TIMING = Object.freeze({
-  arrivalEndMs: 1400,
-  presenceStartMs: 3800,
-});
-
 const FORMAL_PLAN_RESULTS = Object.freeze([
   adaptPersonalStarBeastSceneModelToRenderPlan(
     PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.sceneModelReference,
@@ -227,6 +222,16 @@ const GENESIS_PREVIEW_STAGES: ReadonlyArray<{
   { stage: "COMPLETION", symbol: "认领", title: "认领停驻", note: "停在这里，看见它与你的关系。" },
 ]);
 
+const phaseForGenesisStage = (stage: GenesisRuntimeStage): FirstImpressionPhase => {
+  if (stage === "MOON_ORIGIN" || stage === "STAR_RIVER" || stage === "TIME_RESONANCE") {
+    return "ARRIVAL";
+  }
+  if (stage === "SYMBOL_REVEAL" || stage === "HEXAGRAM_IMPRINT" || stage === "LIFE_FORCE") {
+    return "FORMATION";
+  }
+  return "PRESENCE";
+};
+
 const createPreviewIntegration = (
   stage: GenesisRuntimeStage,
 ): GenesisPreviewIntegration | null => {
@@ -303,41 +308,26 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       }),
     );
 
-    setPhase("ARRIVAL");
+    const stagePhase = phaseForGenesisStage(previewStage.stage);
+    setPhase(stagePhase);
     if (rendererResult.status === "BLOCKED") {
       setHarnessState("UNAVAILABLE");
       return undefined;
     }
     if (rendererResult.status === "FALLBACK_REQUIRED") {
       setHarnessState("FALLBACK");
-      const formationTimer = window.setTimeout(
-        () => setPhase("FORMATION"),
-        FIRST_IMPRESSION_TIMING.arrivalEndMs,
-      );
-      const presenceTimer = window.setTimeout(
-        () => setPhase("PRESENCE"),
-        FIRST_IMPRESSION_TIMING.presenceStartMs,
-      );
-      return () => {
-        window.clearTimeout(formationTimer);
-        window.clearTimeout(presenceTimer);
-      };
+      return undefined;
     }
 
     setHarnessState("RENDERING");
     const controller = rendererResult.controller;
     let animationFrame = 0;
-    let activePhase: FirstImpressionPhase = "ARRIVAL";
+    let activePhase: FirstImpressionPhase = stagePhase;
     const startedAt = performance.now();
 
     const animate = (timestamp: number) => {
       const elapsed = timestamp - startedAt;
-      const nextPhase: FirstImpressionPhase =
-        elapsed >= FIRST_IMPRESSION_TIMING.presenceStartMs
-          ? "PRESENCE"
-          : elapsed >= FIRST_IMPRESSION_TIMING.arrivalEndMs
-            ? "FORMATION"
-            : "ARRIVAL";
+      const nextPhase = stagePhase;
       if (nextPhase !== activePhase) {
         activePhase = nextPhase;
         setPhase(nextPhase);
@@ -363,11 +353,11 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       resizeObserver.disconnect();
       controller.dispose();
     };
-  }, [plan, projectionBundle, replayKey]);
+  }, [plan, previewStage.stage, projectionBundle, replayKey]);
 
   const revealComplete = phase === "PRESENCE";
   const replay = () => {
-    setPhase("ARRIVAL");
+    setPhase(phaseForGenesisStage(previewStage.stage));
     setReplayKey((current) => current + 1);
   };
   const restartGenesisPreview = () => {
