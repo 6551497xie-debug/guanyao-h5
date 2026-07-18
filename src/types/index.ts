@@ -2504,3 +2504,22 @@ export type {
   LifeJourneyUIRuntimeReadinessBlocked,
   LifeJourneyUIRuntimeReadinessResult,
 } from "./lifeJourneyUIRuntimeReadiness";
+
+export type {
+  LifeJourneyUIExperienceSpaceArchitecture,
+  LifeJourneyUIExperienceStagePresentation,
+  LifeJourneyUIExperienceInteractionMapping,
+  LifeJourneyUIExperienceRuntimeConsumption,
+  LifeJourneyUIExperienceVisualConsumption,
+  LifeJourneyUIExperienceImplementationBoundary,
+  LifeJourneyUIExperienceImplementationScope,
+  LifeJourneyUIExperienceImplementationPlan,
+  LifeJourneyUIExperienceImplementationPlanInput,
+  LifeJourneyUIExperienceImplementationPlanUnavailableReason,
+  LifeJourneyUIExperienceImplementationPlanBlockedReason,
+  LifeJourneyUIExperienceImplementationPlanReviewBoundary,
+  LifeJourneyUIExperienceImplementationPlanReady,
+  LifeJourneyUIExperienceImplementationPlanUnavailable,
+  LifeJourneyUIExperienceImplementationPlanBlocked,
+  LifeJourneyUIExperienceImplementationPlanResult,
+} from "./lifeJourneyUIExperienceImplementationPlan";
