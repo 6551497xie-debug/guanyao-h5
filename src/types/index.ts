@@ -2235,3 +2235,13 @@ export type {
   GenesisVisualHarnessOperation,
   GenesisVisualHarnessResult,
 } from "./genesisVisualHarness";
+
+export type {
+  GenesisPreviewMode,
+  GenesisPreviewLifecycle,
+  GenesisPreviewIntegrationBoundary,
+  GenesisPreviewIntegration,
+  GenesisPreviewIntegrationInput,
+  GenesisPreviewIntegrationOperation,
+  GenesisPreviewIntegrationResult,
+} from "./genesisPreviewIntegration";
