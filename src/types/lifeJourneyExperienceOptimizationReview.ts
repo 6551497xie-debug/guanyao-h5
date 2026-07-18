@@ -19,7 +19,9 @@ export type LifeJourneyOptimizationIssueType =
   | "LIFE_PRESENCE_WEAK"
   | "REALITY_TRANSITION_WEAK"
   | "CHOICE_AGENCY_WEAK"
-  | "CRYSTAL_MEANING_WEAK";
+  | "CRYSTAL_MEANING_WEAK"
+  | "PRESENCE_CARRY_BREAK"
+  | "DISTANCE_LANGUAGE_MISMATCH";
 
 export type LifeJourneyOptimizationReviewDimension =
   | "PENDING"

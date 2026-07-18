@@ -2703,3 +2703,20 @@ export type {
   RecognitionRealityEntryBridgeFixBlocked,
   RecognitionRealityEntryBridgeFixResult,
 } from "./recognitionRealityEntryBridgeFix";
+
+export type {
+  LifeJourneyFullLoopRevalidationDimension,
+  LifeJourneyFullLoopRevalidationOverallState,
+  LifeJourneyFullLoopRevalidationStatus,
+  LifeJourneyFullLoopRevalidationIssue,
+  LifeJourneyFullLoopRevalidationBoundary,
+  LifeJourneyFullLoopRevalidationInput,
+  LifeJourneyFullLoopRevalidationReview,
+  LifeJourneyFullLoopRevalidation,
+  LifeJourneyFullLoopRevalidationReady,
+  LifeJourneyFullLoopRevalidationUnavailableReason,
+  LifeJourneyFullLoopRevalidationBlockedReason,
+  LifeJourneyFullLoopRevalidationUnavailable,
+  LifeJourneyFullLoopRevalidationBlocked,
+  LifeJourneyFullLoopRevalidationResult,
+} from "./lifeJourneyFullLoopRevalidation";
