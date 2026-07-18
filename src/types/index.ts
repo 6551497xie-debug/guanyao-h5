@@ -2955,3 +2955,7 @@ export type {
   GenesisProductionTimelineOrchestratorBoundary,
   GenesisProductionTimelineOrchestrationResult,
 } from "./genesisProductionTimelineOrchestrator";
+
+export type {
+  GenesisProductionRouteEntryBoundary,
+} from "./genesisProductionRouteEntry";

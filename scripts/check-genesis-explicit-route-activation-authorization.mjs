@@ -58,9 +58,9 @@ try {
   }
 
   assertIncludes("guard still owns no route registration", source.routeType, "noRouteRegistration: true");
-  assertExcludes("formal route remains absent", source.routes, 'genesis: "/genesis"');
-  assertExcludes("App still does not mount production page", source.app, "GenesisProductionExperiencePage");
-  assertExcludes("AppShell remains unchanged", source.shell, 'location.pathname === "/genesis"');
+  assertIncludes("formal route target is registered", source.routes, 'genesis: "/genesis"');
+  assertIncludes("App mounts the guarded route entry", source.app, "GenesisProductionRouteEntry");
+  assertIncludes("AppShell grants Genesis fullscreen", source.shell, 'location.pathname === "/genesis"');
   assertExcludes("Launch navigation remains unchanged", source.launch, 'navigate("/genesis"');
 
   const packageJson = JSON.parse(source.packageManifest);

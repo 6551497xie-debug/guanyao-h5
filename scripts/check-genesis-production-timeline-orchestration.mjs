@@ -68,7 +68,7 @@ try {
   ["fixtureGenesisVisualConsumerSource", "genesisPreviewIntegration", "createIsolatedWebGLRendererPrototype", "resolveStarbeastFromBirthDate", "runMotherCodeLandingEngine", "useNavigate", "localStorage", "sessionStorage"].forEach(
     (marker) => assertExcludes("production page remains source and route isolated", source.page, marker),
   );
-  assertExcludes("formal route remains unregistered", source.routes, 'genesis: "/genesis"');
+  assertIncludes("formal route target is registered", source.routes, 'genesis: "/genesis"');
   assertExcludes("app does not mount production page", source.app, "GenesisProductionExperiencePage");
   assertExcludes("launch navigation remains unchanged", source.launch, "GenesisProductionExperiencePage");
 

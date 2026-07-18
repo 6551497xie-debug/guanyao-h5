@@ -1,5 +1,6 @@
 export const GUANYAO_ROUTES = {
   launch: "/launch",
+  genesis: "/genesis",
   // DEPRECATED / ISOLATED. Kept as a named path only; /launch-lab owns the active 1.0 mother-card flow.
   motherCode: "/mother-code",
   // DEPRECATED / ISOLATED. Kept as a named path only; not active in the forward user flow.

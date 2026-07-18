@@ -150,7 +150,7 @@ try {
     source.prototype,
     'authorization.productionStatus !== "FORBIDDEN"',
   );
-  assertExcludes("formal route remains unregistered", source.routes, 'genesis: "/genesis"');
+  assertIncludes("formal route target is registered", source.routes, 'genesis: "/genesis"');
   assertExcludes("app does not mount production page", source.app, "GenesisProductionExperiencePage");
   assertExcludes("launch navigation remains unchanged", source.launch, "GenesisProductionExperiencePage");
 

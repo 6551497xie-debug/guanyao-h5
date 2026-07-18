@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { AxisLinePage } from "./pages/AxisLinePage";
@@ -15,6 +16,12 @@ import { StarbeastLab } from "./pages/StarbeastLab";
 import { VisualSystemLabPage } from "./pages/VisualSystemLabPage";
 import { previewRoutes } from "./router/previewRoutes";
 import { GUANYAO_ROUTES, LEGACY_ROUTE_REDIRECTS } from "./routes/guanyaoRoutes";
+
+const GenesisProductionRouteEntry = lazy(() =>
+  import("./pages/GenesisProductionRouteEntry").then((module) => ({
+    default: module.GenesisProductionRouteEntry,
+  })),
+);
 
 function LegacyRedirect({ to }: { to: string }) {
   return <Navigate to={to} replace />;
@@ -60,6 +67,14 @@ export default function App() {
         <Route path="/breach-lab" element={<BreachLab />} />
         <Route path="/starbeast-lab" element={<StarbeastLab />} />
         <Route path="/launch-lab" element={<LaunchLab />} />
+        <Route
+          path={GUANYAO_ROUTES.genesis}
+          element={
+            <Suspense fallback={null}>
+              <GenesisProductionRouteEntry />
+            </Suspense>
+          }
+        />
         {previewRoutes.map((route) => (
           <Route key={route.path} path={route.path} element={route.element} />
         ))}

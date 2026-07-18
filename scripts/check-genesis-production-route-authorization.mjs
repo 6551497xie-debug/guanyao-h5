@@ -116,7 +116,7 @@ try {
     source.prototype,
     'authorization.productionStatus !== "FORBIDDEN"',
   );
-  assertExcludes("formal route is not registered", source.routes, 'genesis: "/genesis"');
+  assertIncludes("formal route target is registered", source.routes, 'genesis: "/genesis"');
   assertExcludes("app has no production page", source.app, "GenesisProductionExperience");
   assertExcludes("launch navigation remains unchanged", source.launch, "authorizeGenesisProductionRoute");
 
