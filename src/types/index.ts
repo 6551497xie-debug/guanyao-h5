@@ -2790,3 +2790,28 @@ export type {
   RealityFullExperienceAcceptanceBlocked,
   RealityFullExperienceAcceptanceResult,
 } from "./realityFullExperienceAcceptance";
+
+export type {
+  FirstImpressionAtmosphere,
+  FirstImpressionExpectationAlignment,
+  FirstImpressionIdentityDistance,
+  FirstImpressionCuriosityState,
+  FirstImpressionFirstActionClarity,
+  FirstImpressionCalibrationQuality,
+  FirstImpressionCalibrationStatus,
+  FirstImpressionStage,
+  FirstImpressionUpstreamReviewReference,
+  FirstImpressionJourneyStage,
+  FirstImpressionIssueType,
+  FirstImpressionCalibrationIssue,
+  FirstImpressionExperienceCalibrationBoundary,
+  FirstImpressionExperienceCalibrationInput,
+  FirstImpressionExperienceCalibrationReview,
+  FirstImpressionExperienceCalibration,
+  FirstImpressionExperienceCalibrationReady,
+  FirstImpressionExperienceCalibrationUnavailableReason,
+  FirstImpressionExperienceCalibrationBlockedReason,
+  FirstImpressionExperienceCalibrationUnavailable,
+  FirstImpressionExperienceCalibrationBlocked,
+  FirstImpressionExperienceCalibrationResult,
+} from "./firstImpressionExperienceCalibration";
