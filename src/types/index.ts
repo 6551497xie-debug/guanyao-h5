@@ -2720,3 +2720,21 @@ export type {
   LifeJourneyFullLoopRevalidationBlocked,
   LifeJourneyFullLoopRevalidationResult,
 } from "./lifeJourneyFullLoopRevalidation";
+
+export type {
+  GenesisSpatialDistanceLayer,
+  GenesisSpatialDepth,
+  GenesisCelestialDistance,
+  GenesisLifePresenceDistance,
+  GenesisFocusTransition,
+  GenesisApproachState,
+  GenesisSpatialDistanceCalibration,
+  GenesisSpatialDistanceCalibrationInput,
+  GenesisSpatialDistanceCalibrationUnavailableReason,
+  GenesisSpatialDistanceCalibrationBlockedReason,
+  GenesisSpatialDistanceCalibrationBoundary,
+  GenesisSpatialDistanceCalibrationReady,
+  GenesisSpatialDistanceCalibrationUnavailable,
+  GenesisSpatialDistanceCalibrationBlocked,
+  GenesisSpatialDistanceCalibrationResult,
+} from "./genesisSpatialDistanceCalibration";

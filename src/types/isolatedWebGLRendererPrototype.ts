@@ -11,6 +11,7 @@ import type { PersonalStarBeastRenderPlan } from "./personalStarBeastRenderPlan"
 import type { GenesisRendererVisualRealization } from "./genesisRendererVisualRealization";
 import type { GenesisPerspectiveCalibration } from "./genesisPerspectiveCalibration";
 import type { GenesisPresenceRecognitionCalibration } from "./genesisPresenceRecognitionCalibration";
+import type { GenesisSpatialDistanceCalibration } from "./genesisSpatialDistanceCalibration";
 
 export type IsolatedWebGLRendererPrototypeSceneProjection = Readonly<{
   semanticRole: "ISOLATED_WEBGL_LIFE_MANIFESTATION_SCENE";
@@ -36,6 +37,7 @@ export type IsolatedWebGLRendererPrototypeSceneProjection = Readonly<{
   genesisVisualRealization: GenesisRendererVisualRealization | null;
   genesisPerspectiveCalibration: GenesisPerspectiveCalibration | null;
   genesisPresenceRecognitionCalibration: GenesisPresenceRecognitionCalibration | null;
+  genesisSpatialDistanceCalibration: GenesisSpatialDistanceCalibration | null;
   formField: Readonly<{
     hue: number;
     boundaryScale: number;
@@ -76,6 +78,7 @@ export type IsolatedWebGLRendererPrototypeInput = Readonly<{
   genesisVisualRealization?: GenesisRendererVisualRealization | null;
   genesisPerspectiveCalibration?: GenesisPerspectiveCalibration | null;
   genesisPresenceRecognitionCalibration?: GenesisPresenceRecognitionCalibration | null;
+  genesisSpatialDistanceCalibration?: GenesisSpatialDistanceCalibration | null;
 }>;
 
 export type IsolatedWebGLRendererPrototypeContextState =

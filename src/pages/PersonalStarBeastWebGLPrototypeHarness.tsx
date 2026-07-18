@@ -21,6 +21,7 @@ import { createGenesisPreviewIntegrationFixture } from "../services/genesisPrevi
 import { mapGenesisRendererVisualRealization } from "../services/genesisRendererVisualRealization";
 import { mapGenesisPerspectiveCalibration } from "../services/genesisPerspectiveCalibration";
 import { mapGenesisPresenceRecognitionCalibration } from "../services/genesisPresenceRecognitionCalibration";
+import { mapGenesisSpatialDistanceCalibration } from "../services/genesisSpatialDistanceCalibration";
 import { resolveGenesisSpaceUIRuntime } from "../services/genesisSpaceUIRuntime";
 import { resolveRecognitionSpaceUIRuntime } from "../services/recognitionSpaceUIRuntime";
 import { resolveRecognitionRealityEntryBridgeFix } from "../services/recognitionRealityEntryBridgeFix";
@@ -346,6 +347,18 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     });
     return result.status === "READY" ? result.calibration : null;
   }, [rendererPerspectiveCalibration]);
+  const rendererSpatialDistanceCalibration = useMemo(() => {
+    const result = mapGenesisSpatialDistanceCalibration({
+      visualRealization: rendererVisualRealization,
+      perspectiveCalibration: rendererPerspectiveCalibration,
+      presenceRecognitionCalibration: rendererPresenceRecognitionCalibration,
+    });
+    return result.status === "READY" ? result.calibration : null;
+  }, [
+    rendererVisualRealization,
+    rendererPerspectiveCalibration,
+    rendererPresenceRecognitionCalibration,
+  ]);
   const genesisSpaceUIRuntime = useMemo<GenesisSpaceUIRuntime | null>(() => {
     const result = resolveGenesisSpaceUIRuntime({
       currentGenesisStage: previewStage.stage,
@@ -501,6 +514,8 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
         genesisPerspectiveCalibration: rendererPerspectiveCalibration,
         genesisPresenceRecognitionCalibration:
           rendererPresenceRecognitionCalibration,
+        genesisSpatialDistanceCalibration:
+          rendererSpatialDistanceCalibration,
       }),
     );
 
@@ -556,6 +571,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     rendererVisualRealization,
     rendererPerspectiveCalibration,
     rendererPresenceRecognitionCalibration,
+    rendererSpatialDistanceCalibration,
     replayKey,
   ]);
 
@@ -710,6 +726,9 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       }
       data-genesis-presence-recognition-calibration={
         rendererPresenceRecognitionCalibration?.activeLayer ?? "UNAVAILABLE"
+      }
+      data-genesis-spatial-distance-calibration={
+        rendererSpatialDistanceCalibration?.activeLayer ?? "UNAVAILABLE"
       }
       data-genesis-space="GENESIS_SPACE"
       data-genesis-ui-runtime-stage={
