@@ -127,6 +127,7 @@
     "check-reality-production-pressure-host": "node scripts/check-reality-production-pressure-host.mjs",
     "check-reality-production-gravity-consumer": "node scripts/check-reality-production-gravity-consumer.mjs",
     "check-reality-production-gravity-host": "node scripts/check-reality-production-gravity-host.mjs",
+    "check-reality-production-choice-consumer": "node scripts/check-reality-production-choice-consumer.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",

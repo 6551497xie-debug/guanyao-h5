@@ -3021,3 +3021,14 @@ export type {
   RealityGravityPresentationBoundary,
   RealityGravityPresentationProps,
 } from "./realityGravityPresentation";
+
+export type {
+  RealityProductionChoiceEvent,
+  RealityProductionChoiceConsumerBoundary,
+  RealityProductionChoiceGravitySessionReference,
+  RealityProductionChoiceSession,
+  RealityProductionChoiceConsumerInitializeInput,
+  RealityProductionChoiceConsumerAdvanceInput,
+  RealityProductionChoiceConsumerBlockedReason,
+  RealityProductionChoiceConsumerResult,
+} from "./realityProductionChoiceConsumer";
