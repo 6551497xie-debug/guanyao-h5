@@ -254,6 +254,13 @@ export type {
 export type { LaunchLifeSourceVisualAdapterInputBridgeBoundary } from "./launchLifeSourceVisualAdapterInputBridge";
 export type { LaunchLifeVisualSourceResolverBoundary } from "./launchLifeVisualSourceResolver";
 export type {
+  RealUserGenesisVisualSourceContext,
+  RealUserGenesisVisualSourceContextActivationResult,
+  RealUserGenesisVisualSourceContextBlockedReason,
+  RealUserGenesisVisualSourceContextBoundary,
+  RealUserGenesisVisualSourceContextInput,
+} from "./realUserGenesisVisualSourceContext";
+export type {
   ProductionIdentitySourceAdapterReadinessBlocked,
   ProductionIdentitySourceAdapterReadinessBlockedReason,
   ProductionIdentitySourceAdapterReadinessBoundary,

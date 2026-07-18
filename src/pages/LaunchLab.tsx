@@ -34,6 +34,11 @@ import {
   resolveLaunchOriginMotherSourceResults,
 } from "../services/guanyaoLaunchOriginMotherInputAdapter";
 import { createLaunchLifeSourceSession } from "../services/launchLifeSourceSession";
+import { resolveLaunchLifeVisualSource } from "../services/launchLifeVisualSourceResolver";
+import {
+  activateRealUserGenesisVisualSourceContext,
+  clearRealUserGenesisVisualSourceContext,
+} from "../services/realUserGenesisVisualSourceContext";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
 import { writePersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
@@ -1354,6 +1359,24 @@ export function LaunchLab() {
         throw new Error(`LAUNCH_LIFE_SOURCE_SESSION_BLOCKED:${sessionResult.reason}`);
       }
 
+      const visualSourceResult = resolveLaunchLifeVisualSource(sessionResult.session);
+      if (visualSourceResult.status !== "AVAILABLE") {
+        throw new Error(
+          `LAUNCH_LIFE_VISUAL_SOURCE_BLOCKED:${visualSourceResult.reason}`,
+        );
+      }
+
+      const visualContextResult = activateRealUserGenesisVisualSourceContext({
+        lifeSourceSession: sessionResult.session,
+        visualSourceAdapterInput: visualSourceResult.input,
+        visualSource: visualSourceResult.visualSource,
+      });
+      if (visualContextResult.status !== "AVAILABLE") {
+        throw new Error(
+          `REAL_USER_GENESIS_VISUAL_SOURCE_CONTEXT_BLOCKED:${visualContextResult.reason}`,
+        );
+      }
+
       m.lifeSourceSession = sessionResult.session;
       return sessionResult.session;
     }
@@ -1401,6 +1424,7 @@ export function LaunchLab() {
       m.chronoStep = 0;
       m.geoStep = 0;
       m.lifeSourceSession = null;
+      clearRealUserGenesisVisualSourceContext();
       m.originMotherContextPersistenceAttempted = false;
       dynamicsMotherHandoffRef.current = null;
       m.railProgress = 0;
