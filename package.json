@@ -122,6 +122,7 @@
     "check-genesis-production-recognition-reality-entry": "node scripts/check-genesis-production-recognition-reality-entry.mjs",
     "check-reality-production-route-authorization": "node scripts/check-reality-production-route-authorization.mjs",
     "check-reality-production-route-entry": "node scripts/check-reality-production-route-entry.mjs",
+    "check-genesis-reality-explicit-route-handoff": "node scripts/check-genesis-reality-explicit-route-handoff.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",

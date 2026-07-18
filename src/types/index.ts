@@ -2984,3 +2984,9 @@ export type {
   RealityProductionHostBoundary,
   RealityProductionHostProps,
 } from "./realityProductionRouteEntry";
+
+export type {
+  GenesisProductionRealityRouteHandoffBoundary,
+  GenesisProductionRealityRouteHandoffInput,
+  GenesisProductionRealityRouteHandoffResult,
+} from "./genesisProductionRealityRouteHandoff";

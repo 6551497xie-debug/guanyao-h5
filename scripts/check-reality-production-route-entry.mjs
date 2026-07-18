@@ -130,7 +130,8 @@ try {
   assertIncludes("App registers exact Reality route", source.app, "path={GUANYAO_ROUTES.reality}");
   assertIncludes("App renders guarded Reality entry", source.app, "<RealityProductionRouteEntry />");
   assertIncludes("Reality receives fullscreen shell", source.shell, 'location.pathname === "/reality"');
-  assertExcludes("Genesis still performs no automatic Reality navigation", source.genesisPage, "GUANYAO_ROUTES.reality");
+  assertIncludes("Genesis resolves explicit Reality handoff", source.genesisPage, "resolveGenesisProductionRealityRouteHandoff");
+  assertIncludes("Genesis navigates only to the authorized handoff target", source.genesisPage, "navigate(handoff.routeTarget)");
   assertExcludes("Genesis does not hardcode Reality navigation", source.genesisPage, 'navigate("/reality"');
   assertIncludes("legacy Dynamics remains isolated", source.dynamics, "LEGACY_DYNAMICS_FLOW_ISOLATED");
   assertIncludes("route entry uses formal authorization", source.authorization, "authorizeRealityProductionRoute");

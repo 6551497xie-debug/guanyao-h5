@@ -55,6 +55,11 @@ export type GenesisProductionExperiencePageBoundary = Readonly<{
   completionRecognitionHoldRequired: true;
   productionRecognitionRealityBridgeOnly: true;
   explicitRealityEntryRequired: true;
+  productionRealityRouteHandoffOnly: true;
+  realityEntryContextRequiredBeforeNavigation: true;
+  explicitUserConfirmedRealityNavigationOnly: true;
+  sourceReferenceExcludedFromUrl: true;
+  noAutomaticRealityNavigation: true;
   noAutomaticRealityEntry: true;
   sourceNotReadyStopsRendering: true;
   noFixtureFallback: true;
@@ -62,7 +67,6 @@ export type GenesisProductionExperiencePageBoundary = Readonly<{
   noPreviewRuntime: true;
   noEngineInvocation: true;
   noRouteRegistration: true;
-  noNavigationMutation: true;
   noReality: true;
   noPressure: true;
   noGravity: true;

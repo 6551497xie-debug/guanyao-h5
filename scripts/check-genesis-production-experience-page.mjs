@@ -56,6 +56,10 @@ try {
     "noFixtureFallback: true",
     "noPreviewRuntime: true",
     "noRouteRegistration: true",
+    "productionRealityRouteHandoffOnly: true",
+    "realityEntryContextRequiredBeforeNavigation: true",
+    "explicitUserConfirmedRealityNavigationOnly: true",
+    "noAutomaticRealityNavigation: true",
   ].forEach((marker) => assertIncludes("production experience page", source.page, marker));
 
   [
@@ -66,11 +70,16 @@ try {
     "PersonalStarBeastWebGLPrototypeHarness",
     "createIsolatedWebGLRendererPrototype",
     "resolveGenesisVisualConsumerSource",
-    "react-router-dom",
-    "useNavigate",
     "localStorage",
     "sessionStorage",
-  ].forEach((marker) => assertExcludes("page owns no preview, fixture, route, or storage", source.page, marker));
+  ].forEach((marker) => assertExcludes("page owns no preview, fixture, source route, or storage", source.page, marker));
+
+  [
+    "useNavigate",
+    "resolveGenesisProductionRealityRouteHandoff",
+    "activateGenesisProductionRealityEntryContext",
+    'navigate(handoff.routeTarget)',
+  ].forEach((marker) => assertIncludes("page owns only explicit authorized Reality navigation", source.page, marker));
 
   [
     "export function GenesisProductionRendererCanvasHost",

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { GenesisProductionRendererCanvasHost } from "../components/GenesisProductionRendererCanvasHost";
 import {
   authorizeGenesisProductionRoute,
@@ -15,6 +16,9 @@ import {
   clearGenesisProductionRealityEntryContext,
   initializeGenesisProductionRecognitionRealityEntry,
 } from "../services/genesisProductionRecognitionRealityEntry";
+import {
+  resolveGenesisProductionRealityRouteHandoff,
+} from "../services/genesisProductionRealityRouteHandoff";
 import { bridgeGenesisProductionRuntimeToVisualCalibration } from "../services/genesisProductionVisualCalibrationBridge";
 import { resolveRealGenesisVisualConsumerSource } from "../services/realGenesisVisualConsumerSource";
 import type {
@@ -35,6 +39,11 @@ export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
     completionRecognitionHoldRequired: true,
     productionRecognitionRealityBridgeOnly: true,
     explicitRealityEntryRequired: true,
+    productionRealityRouteHandoffOnly: true,
+    realityEntryContextRequiredBeforeNavigation: true,
+    explicitUserConfirmedRealityNavigationOnly: true,
+    sourceReferenceExcludedFromUrl: true,
+    noAutomaticRealityNavigation: true,
     noAutomaticRealityEntry: true,
     sourceNotReadyStopsRendering: true,
     noFixtureFallback: true,
@@ -42,7 +51,6 @@ export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
     noPreviewRuntime: true,
     noEngineInvocation: true,
     noRouteRegistration: true,
-    noNavigationMutation: true,
     noReality: true,
     noPressure: true,
     noGravity: true,
@@ -54,6 +62,7 @@ export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
 export function GenesisProductionExperiencePage({
   sourceReferenceId,
 }: GenesisProductionExperiencePageProps) {
+  const navigate = useNavigate();
   const [canvasHostState, setCanvasHostState] =
     useState<GenesisProductionCanvasHostState>("STARTING");
   const routeAuthorization = useMemo(
@@ -186,7 +195,15 @@ export function GenesisProductionExperiencePage({
     );
     setRecognitionRealityResult(result);
     if (result.status === "READY") {
-      activateGenesisProductionRealityEntryContext(result.session);
+      const entryContext =
+        activateGenesisProductionRealityEntryContext(result.session);
+      const handoff = resolveGenesisProductionRealityRouteHandoff({
+        entryContext,
+        sourceReferenceId: result.session.sourceReferenceId,
+      });
+      if (handoff.status === "READY") {
+        navigate(handoff.routeTarget);
+      }
     }
   };
 
