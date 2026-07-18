@@ -3027,6 +3027,12 @@ export type {
 } from "./realityPressureSeedCandidateSource";
 
 export type {
+  RealityPressureSeedCaptureAdapterBoundary,
+  RealityPressureSeedCaptureAdapterInput,
+  RealityPressureSeedCaptureAdapterResult,
+} from "./realityPressureSeedCaptureAdapter";
+
+export type {
   RealityPressurePresentationBoundary,
   RealityPressurePresentationProps,
 } from "./realityPressurePresentation";

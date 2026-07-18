@@ -126,6 +126,7 @@
     "check-reality-production-pressure-consumer": "node scripts/check-reality-production-pressure-consumer.mjs",
     "check-reality-pressure-seed-capture-contract": "node scripts/check-reality-pressure-seed-capture-contract.mjs",
     "check-reality-pressure-seed-candidate-source": "node scripts/check-reality-pressure-seed-candidate-source.mjs",
+    "check-reality-pressure-seed-capture-adapter": "node scripts/check-reality-pressure-seed-capture-adapter.mjs",
     "check-reality-production-pressure-host": "node scripts/check-reality-production-pressure-host.mjs",
     "check-reality-production-gravity-consumer": "node scripts/check-reality-production-gravity-consumer.mjs",
     "check-reality-production-gravity-host": "node scripts/check-reality-production-gravity-host.mjs",
