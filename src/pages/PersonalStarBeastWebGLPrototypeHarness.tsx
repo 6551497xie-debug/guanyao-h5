@@ -27,6 +27,7 @@ import { resolveRecognitionSpaceUIRuntime } from "../services/recognitionSpaceUI
 import { resolveRecognitionRealityEntryBridgeFix } from "../services/recognitionRealityEntryBridgeFix";
 import { resolveRealityEntrySpaceUIRuntime } from "../services/realityEntrySpaceUIRuntime";
 import { resolvePressureRecognitionUIRuntime } from "../services/pressureRecognitionUIRuntime";
+import { resolvePresenceCarryRealityTransition } from "../services/presenceCarryRealityTransition";
 import { resolveGravityExperienceUIRuntime } from "../services/gravityExperienceUIRuntime";
 import { resolveChoiceExperienceUIRuntime } from "../services/choiceExperienceUIRuntime";
 import { resolveCrystalExperienceUIRuntime } from "../services/crystalExperienceUIRuntime";
@@ -38,6 +39,7 @@ import type { RecognitionSpaceUIRuntime } from "../types/recognitionSpaceUIRunti
 import type { RecognitionRealityEntryBridgeFix } from "../types/recognitionRealityEntryBridgeFix";
 import type { RealityEntrySpaceUIRuntime } from "../types/realityEntrySpaceUIRuntime";
 import type { PressureRecognitionUIRuntime } from "../types/pressureRecognitionUIRuntime";
+import type { PresenceCarryRealityTransition } from "../types/presenceCarryRealityTransition";
 import type { GravityExperienceUIRuntime } from "../types/gravityExperienceUIRuntime";
 import type { ChoiceExperienceUIRuntime } from "../types/choiceExperienceUIRuntime";
 import type { CrystalExperienceUIRuntime } from "../types/crystalExperienceUIRuntime";
@@ -409,6 +411,26 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     });
     return result.status === "READY" ? result.uiRuntime : null;
   }, [pressureObservationConfirmed, realityReady]);
+  const presenceCarryRealityTransition = useMemo<PresenceCarryRealityTransition | null>(() => {
+    const result = resolvePresenceCarryRealityTransition({
+      recognitionSpaceRuntime: recognitionSpaceUIRuntime,
+      bridgeFix: recognitionRealityEntryBridgeFix,
+      realityEntryRuntime: realityEntrySpaceUIRuntime,
+      pressureRuntime: pressureRecognitionUIRuntime,
+      recognitionEntered,
+      realityEntryConfirmed,
+      pressureObservationConfirmed,
+    });
+    return result.status === "READY" ? result.transition : null;
+  }, [
+    recognitionSpaceUIRuntime,
+    recognitionRealityEntryBridgeFix,
+    realityEntrySpaceUIRuntime,
+    pressureRecognitionUIRuntime,
+    recognitionEntered,
+    realityEntryConfirmed,
+    pressureObservationConfirmed,
+  ]);
   const gravityReady = pressureRecognitionUIRuntime?.gravityReadiness === "READY";
   const gravityExperienceUIRuntime = useMemo<GravityExperienceUIRuntime | null>(() => {
     const result = resolveGravityExperienceUIRuntime({
@@ -790,6 +812,15 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       data-pressure-interaction={
         pressureRecognitionUIRuntime?.interactionAvailability ?? "NONE"
       }
+      data-presence-carry-state={
+        presenceCarryRealityTransition?.transitionCarryState ?? "NOT_STARTED"
+      }
+      data-presence-carry-continuity={
+        presenceCarryRealityTransition?.presenceContinuity ?? "NOT_READY"
+      }
+      data-presence-carry-arrival={
+        presenceCarryRealityTransition?.realityArrivalState ?? "NOT_READY"
+      }
       data-gravity-space={pressureObservationConfirmed ? "GRAVITY_SPACE" : "NOT_ENTERED"}
       data-gravity-stage={
         gravityExperienceUIRuntime?.gravityStageState ?? "NOT_READY"
@@ -845,6 +876,15 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       <div className="gy-p100__cosmic-depth" aria-hidden="true" />
       <canvas ref={canvasRef} className="gy-p100__canvas" aria-hidden="true" />
       <div className="gy-p100__life-halo" aria-hidden="true" />
+      {presenceCarryRealityTransition ? (
+        <div
+          className="gy-p45__presence-carry"
+          aria-hidden="true"
+          data-presence-carry-layer={
+            presenceCarryRealityTransition.visualCarryMode
+          }
+        />
+      ) : null}
       <div className="gy-p100__veil" aria-hidden="true" />
 
       {harnessState === "FALLBACK" ? (

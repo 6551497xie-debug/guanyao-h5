@@ -2738,3 +2738,19 @@ export type {
   GenesisSpatialDistanceCalibrationBlocked,
   GenesisSpatialDistanceCalibrationResult,
 } from "./genesisSpatialDistanceCalibration";
+
+export type {
+  PresenceCarryRecognitionPresenceState,
+  PresenceCarryTransitionState,
+  PresenceCarryRealityArrivalState,
+  PresenceCarryContinuity,
+  PresenceCarryRealityTransitionBoundary,
+  PresenceCarryRealityTransitionInput,
+  PresenceCarryRealityTransition,
+  PresenceCarryRealityTransitionReady,
+  PresenceCarryRealityTransitionUnavailableReason,
+  PresenceCarryRealityTransitionBlockedReason,
+  PresenceCarryRealityTransitionUnavailable,
+  PresenceCarryRealityTransitionBlocked,
+  PresenceCarryRealityTransitionResult,
+} from "./presenceCarryRealityTransition";

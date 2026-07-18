@@ -28,6 +28,7 @@
     radial-gradient(circle at 86% 68%, rgba(163, 117, 62, 0.08), transparent 26%),
     linear-gradient(118deg, rgba(33, 35, 59, 0.08), transparent 36%, rgba(135, 100, 58, 0.04));
   opacity: 0.72;
+  transition: opacity 1600ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .gy-p100__cosmic-depth::after {
@@ -85,6 +86,49 @@
 
 .gy-p100--formation .gy-p100__life-halo { opacity: 0.7; transform: scale(0.94); }
 .gy-p100--presence .gy-p100__life-halo { opacity: 1; transform: scale(1); }
+
+.gy-p45__presence-carry {
+  position: absolute;
+  inset: 17% 14% 16%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(1.5%) scale(0.96);
+  background:
+    radial-gradient(ellipse 23% 19% at 50% 54%, rgba(239, 212, 157, 0.1), transparent 68%),
+    radial-gradient(ellipse 42% 34% at 50% 54%, rgba(122, 130, 181, 0.055), transparent 76%);
+  mix-blend-mode: screen;
+  transition: opacity 1200ms ease, transform 1800ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-presence-carry-continuity="HELD"] .gy-p45__presence-carry {
+  opacity: 0.46;
+}
+
+[data-presence-carry-continuity="CONTINUOUS"] .gy-p45__presence-carry {
+  opacity: 0.68;
+  transform: translateY(0) scale(1);
+}
+
+[data-presence-carry-arrival="REALITY_APPROACHING"] .gy-p45__presence-carry {
+  opacity: 0.74;
+  transform: translateY(-1.2%) scale(1.035);
+}
+
+[data-presence-carry-arrival="REALITY_PRESENT"] .gy-p45__presence-carry,
+[data-presence-carry-arrival="PRESSURE_CONTEXT_READY"] .gy-p45__presence-carry {
+  opacity: 0.56;
+  transform: translateY(-1.8%) scale(1.06);
+}
+
+[data-presence-carry-arrival="REALITY_APPROACHING"] .gy-p100__cosmic-depth {
+  opacity: 0.58;
+}
+
+[data-presence-carry-arrival="REALITY_PRESENT"] .gy-p100__cosmic-depth,
+[data-presence-carry-arrival="PRESSURE_CONTEXT_READY"] .gy-p100__cosmic-depth {
+  opacity: 0.44;
+}
 
 .gy-p100__veil {
   z-index: 3;
