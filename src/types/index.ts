@@ -3055,6 +3055,16 @@ export type {
 } from "./realityPressureCandidateDeliveryOrchestration";
 
 export type {
+  RealityPressureExplicitRequestDateSource,
+  RealityPressureCandidateActivationContextBoundary,
+  RealityPressureCandidateActivationContext,
+  RealityPressureCandidateActivationContextInput,
+  RealityPressureCandidateActivationContextBlockedReason,
+  RealityPressureCandidateActivationContextResult,
+  RealityPressureCandidateActivationContextContract,
+} from "./realityPressureCandidateActivationContext";
+
+export type {
   RealityPressureSeedCaptureAdapterBoundary,
   RealityPressureSeedCaptureAdapterInput,
   RealityPressureSeedCaptureAdapterResult,
