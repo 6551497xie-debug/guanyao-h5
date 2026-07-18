@@ -129,6 +129,7 @@
     "check-reality-pressure-seed-capture-adapter": "node scripts/check-reality-pressure-seed-capture-adapter.mjs",
     "check-reality-production-pressure-seed-consumer": "node scripts/check-reality-production-pressure-seed-consumer.mjs",
     "check-reality-pressure-candidate-request-context-bridge": "node scripts/check-reality-pressure-candidate-request-context-bridge.mjs",
+    "check-pressure-seed-matrix-age-coverage-contract": "node scripts/check-pressure-seed-matrix-age-coverage-contract.mjs",
     "check-reality-production-pressure-host": "node scripts/check-reality-production-pressure-host.mjs",
     "check-reality-production-gravity-consumer": "node scripts/check-reality-production-gravity-consumer.mjs",
     "check-reality-production-gravity-host": "node scripts/check-reality-production-gravity-host.mjs",
