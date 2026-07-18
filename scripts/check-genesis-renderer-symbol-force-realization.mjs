@@ -61,7 +61,7 @@ if (failures.length === 0) {
     "SYMBOLIC_FIELD",
     "CHANGE_IMPRINT",
     "LIFE_FORCE_MOTION",
-    "P17_B_LAYER_OUT_OF_SCOPE",
+    "P17_C_LAYER_OUT_OF_SCOPE",
   ].forEach((marker) => assertIncludes("P17-B realization service", source.service, marker));
 
   [
@@ -168,11 +168,11 @@ if (failures.length === 0) {
   }
 
   const beast = runtime.mapGenesisRendererVisualRealization({
-    rendererConsumerContract: contractFor("STAR_BEAST_REVEAL", "LIFE_PRESENCE"),
+    rendererConsumerContract: contractFor("UNKNOWN", "RECOGNITION_HOLD"),
   });
   assertEqual("兽层 remains outside P17-B", beast.status, "BLOCKED");
   if (beast.status === "BLOCKED") {
-    assertEqual("兽层 boundary reason", beast.reason, "P17_B_LAYER_OUT_OF_SCOPE");
+    assertEqual("later layer boundary reason", beast.reason, "P17_C_LAYER_OUT_OF_SCOPE");
   }
 }
 

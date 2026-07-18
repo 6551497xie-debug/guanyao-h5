@@ -6,7 +6,9 @@ export type GenesisRendererVisualRealizationLayer =
   | "TIME_RESONANCE"
   | "SYMBOL_REVEAL"
   | "HEXAGRAM_IMPRINT"
-  | "LIFE_FORCE";
+  | "LIFE_FORCE"
+  | "STAR_BEAST_REVEAL"
+  | "COMPLETION";
 
 export type GenesisRendererVisualExpressionMode =
   | "TAIYIN_MOON_ENTRY"
@@ -14,7 +16,9 @@ export type GenesisRendererVisualExpressionMode =
   | "TIME_RESONANCE"
   | "SYMBOLIC_FIELD"
   | "CHANGE_IMPRINT"
-  | "LIFE_FORCE_MOTION";
+  | "LIFE_FORCE_MOTION"
+  | "LIFE_PRESENCE"
+  | "RECOGNITION_HOLD";
 
 export type GenesisRendererEnvironmentalState = Readonly<{
   cosmicDepth:
@@ -22,21 +26,30 @@ export type GenesisRendererEnvironmentalState = Readonly<{
     | "DEEP_LAYERED_COSMOS"
     | "SYMBOLIC_FIELD_SPACE"
     | "CHANGE_LAYERED_SPACE"
-    | "LIFE_FORCE_SPACE";
-  moonlight: "SOFT_TAIYIN_FIELD" | "MOONLIGHT_GATHERS_TO_TIME";
+    | "LIFE_FORCE_SPACE"
+    | "LIFE_PRESENCE_SPACE"
+    | "STABLE_COSMOS";
+  moonlight:
+    | "SOFT_TAIYIN_FIELD"
+    | "MOONLIGHT_GATHERS_TO_TIME"
+    | "MOONLIGHT_STABLE";
   stellarOrder:
     | "QUIET_BACKGROUND"
     | "ORDERED_RELATIONS"
     | "MORPHOLOGICAL_RELATIONS"
     | "CHANGE_SEDIMENTATION"
-    | "FORCE_RESPONSIVE";
+    | "FORCE_RESPONSIVE"
+    | "LIFE_PRESENCE_RELATIONS"
+    | "STABLE_RELATIONS";
   temporalResponse:
     | "SLOW_ENTRY"
     | "SLOW_DRIFT"
     | "TIME_GATHERING"
     | "SYMBOLIC_AGGREGATION"
     | "CHANGE_SEDIMENTATION"
-    | "LIFE_FORCE_AWAKENING";
+    | "LIFE_FORCE_AWAKENING"
+    | "LIFE_PRESENCE_BREATH"
+    | "RECOGNITION_HOLD";
 }>;
 
 export type GenesisRendererFocalElementState = Readonly<{
@@ -46,7 +59,9 @@ export type GenesisRendererFocalElementState = Readonly<{
     | "TIME_ALIGNMENT"
     | "SYMBOLIC_FIELD"
     | "CHANGE_IMPRINT"
-    | "LIFE_FORCE";
+    | "LIFE_FORCE"
+    | "LIFE_PRESENCE"
+    | "RECOGNITION_HOLD";
   coreLightSuppression: number;
   ambientFocus: number;
 }>;
@@ -84,6 +99,7 @@ export type GenesisRendererVisualRealizationBlockedReason =
   | "CONSUMER_BOUNDARY_INVALID"
   | "P17_A_LAYER_OUT_OF_SCOPE"
   | "P17_B_LAYER_OUT_OF_SCOPE"
+  | "P17_C_LAYER_OUT_OF_SCOPE"
   | "CONSUMER_STAGE_REFERENCE_MISMATCH"
   | "TRANSITION_PROGRESS_INVALID";
 

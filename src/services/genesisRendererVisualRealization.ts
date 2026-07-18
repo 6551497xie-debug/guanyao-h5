@@ -59,6 +59,19 @@ const hasConsumerBoundary = (
     string,
     unknown
   >;
+  if (contract.runtimeStage === "COMPLETION") {
+    const runtimeBoundary = state.runtimeBoundary as Record<string, unknown> | undefined;
+    return (
+      runtimeBoundary?.genesisLayerOnly === true &&
+      runtimeBoundary.noIdentityMutation === true &&
+      runtimeBoundary.noEngineInvocation === true &&
+      runtimeBoundary.noRendererInvocation === true &&
+      runtimeBoundary.noVisualStateMutation === true &&
+      runtimeBoundary.noRealityCalculation === true &&
+      runtimeBoundary.noCrystal === true &&
+      runtimeBoundary.noStorage === true
+    );
+  }
   return (
     contract.visualStateReference.stage === contract.runtimeStage &&
     contract.timelineState.stage === contract.runtimeStage &&
@@ -261,5 +274,57 @@ export function mapGenesisRendererVisualRealization(
     });
   }
 
-  return blocked(input, "P17_B_LAYER_OUT_OF_SCOPE");
+  if (contract.runtimeStage === "STAR_BEAST_REVEAL") {
+    return Object.freeze({
+      status: "READY" as const,
+      realizationStatus: "GENESIS_RENDERER_VISUAL_REALIZATION_READY" as const,
+      source: "genesis_renderer_visual_realization" as const,
+      input,
+      realization: Object.freeze({
+        ...common,
+        activeVisualLayer: "STAR_BEAST_REVEAL" as const,
+        visualExpressionMode: "LIFE_PRESENCE" as const,
+        environmentalState: Object.freeze({
+          cosmicDepth: "LIFE_PRESENCE_SPACE" as const,
+          moonlight: "MOONLIGHT_GATHERS_TO_TIME" as const,
+          stellarOrder: "LIFE_PRESENCE_RELATIONS" as const,
+          temporalResponse: "LIFE_PRESENCE_BREATH" as const,
+        }),
+        focalElementState: Object.freeze({
+          focalElement: "LIFE_PRESENCE" as const,
+          coreLightSuppression: 0.12,
+          ambientFocus: 1,
+        }),
+      }),
+      boundary: GENESIS_RENDERER_VISUAL_REALIZATION_BOUNDARY,
+    });
+  }
+
+  if (contract.runtimeStage === "COMPLETION") {
+    return Object.freeze({
+      status: "READY" as const,
+      realizationStatus: "GENESIS_RENDERER_VISUAL_REALIZATION_READY" as const,
+      source: "genesis_renderer_visual_realization" as const,
+      input,
+      realization: Object.freeze({
+        ...common,
+        activeVisualLayer: "COMPLETION" as const,
+        visualExpressionMode: "RECOGNITION_HOLD" as const,
+        environmentalState: Object.freeze({
+          cosmicDepth: "STABLE_COSMOS" as const,
+          moonlight: "MOONLIGHT_STABLE" as const,
+          stellarOrder: "STABLE_RELATIONS" as const,
+          temporalResponse: "RECOGNITION_HOLD" as const,
+        }),
+        focalElementState: Object.freeze({
+          focalElement: "RECOGNITION_HOLD" as const,
+          coreLightSuppression: 0.1,
+          ambientFocus: 0.96,
+        }),
+      }),
+      boundary: GENESIS_RENDERER_VISUAL_REALIZATION_BOUNDARY,
+    });
+  }
+
+  return blocked(input, "P17_C_LAYER_OUT_OF_SCOPE");
 }
