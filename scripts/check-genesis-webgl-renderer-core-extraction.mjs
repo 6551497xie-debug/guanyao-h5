@@ -104,15 +104,23 @@ try {
   };
   collect(srcRoot);
   const coreConsumers = sources
-    .filter((file) =>
-      fs.readFileSync(file, "utf8").includes("../renderers/genesisWebGLRendererCore"),
-    )
+    .filter((file) => {
+      const fileSource = fs.readFileSync(file, "utf8");
+      return (
+        path.relative(rootDir, file) !== files.core &&
+        fileSource.includes("createGenesisWebGLRendererCore") &&
+        fileSource.includes("genesisWebGLRendererCore")
+      );
+    })
     .map((file) => path.relative(rootDir, file))
     .sort();
   assertEqual(
-    "only prototype facade consumes shared core",
+    "only authorized facades consume shared core",
     coreConsumers.join(","),
-    "src/prototypes/isolatedWebGLRendererPrototype.ts",
+    [
+      "src/prototypes/isolatedWebGLRendererPrototype.ts",
+      "src/renderers/genesisProductionRendererHost.ts",
+    ].join(","),
   );
 
   console.log("\n[GENESIS WEBGL RENDERER CORE EXTRACTION] PASS");

@@ -2902,3 +2902,11 @@ export type {
   GenesisWebGLRendererCoreBoundary,
   GenesisWebGLRendererCoreResult,
 } from "./genesisWebGLRendererCore";
+
+export type {
+  GenesisProductionRendererHostAuthorization,
+  GenesisProductionRendererHostInput,
+  GenesisProductionRendererHostBlockedReason,
+  GenesisProductionRendererHostBoundary,
+  GenesisProductionRendererHostResult,
+} from "./genesisProductionRendererHost";
