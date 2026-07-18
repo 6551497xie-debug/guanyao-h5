@@ -23,6 +23,7 @@ import { mapGenesisPerspectiveCalibration } from "../services/genesisPerspective
 import { mapGenesisPresenceRecognitionCalibration } from "../services/genesisPresenceRecognitionCalibration";
 import { resolveGenesisSpaceUIRuntime } from "../services/genesisSpaceUIRuntime";
 import { resolveRecognitionSpaceUIRuntime } from "../services/recognitionSpaceUIRuntime";
+import { resolveRecognitionRealityEntryBridgeFix } from "../services/recognitionRealityEntryBridgeFix";
 import { resolveRealityEntrySpaceUIRuntime } from "../services/realityEntrySpaceUIRuntime";
 import { resolvePressureRecognitionUIRuntime } from "../services/pressureRecognitionUIRuntime";
 import { resolveGravityExperienceUIRuntime } from "../services/gravityExperienceUIRuntime";
@@ -33,6 +34,7 @@ import type { GenesisPreviewIntegration } from "../types/genesisPreviewIntegrati
 import type { GenesisRuntimeStage } from "../types/genesisRuntimeStateMachine";
 import type { GenesisSpaceUIRuntime } from "../types/genesisSpaceUIRuntime";
 import type { RecognitionSpaceUIRuntime } from "../types/recognitionSpaceUIRuntime";
+import type { RecognitionRealityEntryBridgeFix } from "../types/recognitionRealityEntryBridgeFix";
 import type { RealityEntrySpaceUIRuntime } from "../types/realityEntrySpaceUIRuntime";
 import type { PressureRecognitionUIRuntime } from "../types/pressureRecognitionUIRuntime";
 import type { GravityExperienceUIRuntime } from "../types/gravityExperienceUIRuntime";
@@ -300,14 +302,38 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
   const presentation = PHASE_COPY[phase];
   const plan = useMemo(() => resolvePlan(formalCaseIndex), [formalCaseIndex]);
   const projectionBundle = FORMAL_PROJECTION_BUNDLES[formalCaseIndex];
-  const previewStage = GENESIS_PREVIEW_STAGES[previewStageIndex];
+  const rawPreviewStage =
+    GENESIS_PREVIEW_STAGES[previewStageIndex] ?? GENESIS_PREVIEW_STAGES[0];
+  const genesisCompletionHeld =
+    rawPreviewStage.stage === "COMPLETION" ||
+    recognitionEntered ||
+    recognitionConfirmed ||
+    realityEntryConfirmed ||
+    pressureObservationConfirmed ||
+    gravityObservationConfirmed ||
+    choiceActiveResponseConfirmed ||
+    crystalRecognitionConfirmed;
+  const effectivePreviewStageIndex = genesisCompletionHeld
+    ? GENESIS_PREVIEW_STAGES.length - 1
+    : previewStageIndex;
+  const previewStage = GENESIS_PREVIEW_STAGES[effectivePreviewStageIndex];
   const isCompletionStage = previewStage.stage === "COMPLETION";
+  const effectivePreviewIntegration = useMemo(() => {
+    if (
+      !genesisCompletionHeld ||
+      previewIntegration?.rendererConsumerState.runtimeStage === "COMPLETION"
+    ) {
+      return previewIntegration;
+    }
+    return createPreviewIntegration("COMPLETION");
+  }, [genesisCompletionHeld, previewIntegration]);
   const rendererVisualRealization = useMemo(() => {
     const result = mapGenesisRendererVisualRealization({
-      rendererConsumerContract: previewIntegration?.rendererConsumerState ?? null,
+      rendererConsumerContract:
+        effectivePreviewIntegration?.rendererConsumerState ?? null,
     });
     return result.status === "READY" ? result.realization : null;
-  }, [previewIntegration]);
+  }, [effectivePreviewIntegration]);
   const rendererPerspectiveCalibration = useMemo(() => {
     const result = mapGenesisPerspectiveCalibration({
       visualRealization: rendererVisualRealization,
@@ -323,7 +349,8 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
   const genesisSpaceUIRuntime = useMemo<GenesisSpaceUIRuntime | null>(() => {
     const result = resolveGenesisSpaceUIRuntime({
       currentGenesisStage: previewStage.stage,
-      previewLifecycle: previewIntegration?.previewLifecycle ?? "INITIALIZED",
+      previewLifecycle:
+        effectivePreviewIntegration?.previewLifecycle ?? "INITIALIZED",
       timeDelivered,
       recognitionEntered,
       visualStateAvailable: rendererVisualRealization !== null,
@@ -331,19 +358,28 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     return result.status === "READY" ? result.uiRuntime : null;
   }, [
     previewStage.stage,
-    previewIntegration?.previewLifecycle,
+    effectivePreviewIntegration?.previewLifecycle,
     timeDelivered,
     recognitionEntered,
     rendererVisualRealization,
   ]);
+  const recognitionRealityEntryBridgeFix = useMemo<RecognitionRealityEntryBridgeFix | null>(() => {
+    const result = resolveRecognitionRealityEntryBridgeFix({
+      genesisCompleted: genesisCompletionHeld,
+      recognitionConfirmed,
+      realityEntryConfirmed,
+      sessionContinuityState: "CONTINUOUS",
+    });
+    return result.status === "READY" ? result.bridge : null;
+  }, [genesisCompletionHeld, recognitionConfirmed, realityEntryConfirmed]);
   const recognitionSpaceUIRuntime = useMemo<RecognitionSpaceUIRuntime | null>(() => {
     const result = resolveRecognitionSpaceUIRuntime({
-      genesisCompleted: isCompletionStage,
+      genesisCompleted: genesisCompletionHeld,
       presenceAvailable: rendererPresenceRecognitionCalibration !== null,
       recognitionConfirmed,
     });
     return result.status === "READY" ? result.uiRuntime : null;
-  }, [isCompletionStage, rendererPresenceRecognitionCalibration, recognitionConfirmed]);
+  }, [genesisCompletionHeld, rendererPresenceRecognitionCalibration, recognitionConfirmed]);
   const realityEntrySpaceUIRuntime = useMemo<RealityEntrySpaceUIRuntime | null>(() => {
     const result = resolveRealityEntrySpaceUIRuntime({
       recognitionConfirmed,
@@ -545,12 +581,15 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     return () => window.clearTimeout(timeout);
   }, [genesisSpaceUIRuntime, previewStage.stage, previewStageIndex]);
 
-  const revealComplete = recognitionEntered;
+  const revealComplete = crystalRecognitionConfirmed;
   const replay = () => {
     setPhase(phaseForGenesisStage(previewStage.stage));
     setReplayKey((current) => current + 1);
   };
   const restartGenesisPreview = () => {
+    if (recognitionEntered && !crystalRecognitionConfirmed) {
+      return;
+    }
     setPreviewStageIndex(0);
     setTimeDelivered(false);
     setRecognitionEntered(false);
@@ -594,7 +633,9 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
   };
   const confirmRecognition = () => {
     if (
-      recognitionSpaceUIRuntime?.interactionAvailability !== "RECOGNITION_CONFIRM"
+      recognitionSpaceUIRuntime?.interactionAvailability !== "RECOGNITION_CONFIRM" ||
+      recognitionRealityEntryBridgeFix?.transitionEventState !==
+        "RECOGNITION_CONFIRM"
     ) {
       return;
     }
@@ -602,7 +643,8 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
   };
   const enterReality = () => {
     if (
-      realityEntrySpaceUIRuntime?.interactionAvailability !== "ENTER_REALITY"
+      realityEntrySpaceUIRuntime?.interactionAvailability !== "ENTER_REALITY" ||
+      recognitionRealityEntryBridgeFix?.transitionEventState !== "ENTER_REALITY"
     ) {
       return;
     }
@@ -661,7 +703,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       data-first-impression-phase={phase}
       data-genesis-preview-mode="ISOLATED_GENESIS_PREVIEW"
       data-genesis-stage={previewStage.stage}
-      data-genesis-lifecycle={previewIntegration?.previewLifecycle ?? "UNAVAILABLE"}
+      data-genesis-lifecycle={effectivePreviewIntegration?.previewLifecycle ?? "UNAVAILABLE"}
       data-genesis-visual-realization={rendererVisualRealization?.activeVisualLayer ?? "UNAVAILABLE"}
       data-genesis-perspective-calibration={
         rendererPerspectiveCalibration?.activeVisualLayer ?? "UNAVAILABLE"
@@ -706,6 +748,12 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       }
       data-reality-entry-interaction={
         realityEntrySpaceUIRuntime?.interactionAvailability ?? "NONE"
+      }
+      data-recognition-reality-bridge-state={
+        recognitionRealityEntryBridgeFix?.bridgeState ?? "UNAVAILABLE"
+      }
+      data-recognition-reality-bridge-integrity={
+        recognitionRealityEntryBridgeFix?.bridgeIntegrity ?? "UNAVAILABLE"
       }
       data-pressure-space={realityEntryConfirmed ? "PRESSURE_SPACE" : "NOT_ENTERED"}
       data-pressure-stage={
@@ -825,7 +873,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
           ))}
         </div>
         <small>
-          {previewStageIndex + 1} / {GENESIS_PREVIEW_STAGES.length} · {previewIntegration?.previewLifecycle ?? "UNAVAILABLE"}
+          {effectivePreviewStageIndex + 1} / {GENESIS_PREVIEW_STAGES.length} · {effectivePreviewIntegration?.previewLifecycle ?? "UNAVAILABLE"}
         </small>
         {genesisSpaceUIRuntime?.interactionAvailability === "TIME_DELIVERY" ? (
           <button type="button" onClick={advanceGenesisPreview}>

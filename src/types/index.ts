@@ -2684,3 +2684,22 @@ export type {
   LifeJourneyExperienceOptimizationReviewBlocked,
   LifeJourneyExperienceOptimizationReviewResult,
 } from "./lifeJourneyExperienceOptimizationReview";
+
+export type {
+  RecognitionCompletionState,
+  RecognitionRealityEntryTransitionEvent,
+  RecognitionRealityEntryState,
+  RecognitionRealityEntryPressureReadiness,
+  RecognitionRealityEntrySessionContinuityState,
+  RecognitionRealityEntryBridgeState,
+  RecognitionRealityEntryBridgeIntegrity,
+  RecognitionRealityEntryBridgeBoundary,
+  RecognitionRealityEntryBridgeFixInput,
+  RecognitionRealityEntryBridgeFix,
+  RecognitionRealityEntryBridgeFixReady,
+  RecognitionRealityEntryBridgeFixUnavailableReason,
+  RecognitionRealityEntryBridgeFixBlockedReason,
+  RecognitionRealityEntryBridgeFixUnavailable,
+  RecognitionRealityEntryBridgeFixBlocked,
+  RecognitionRealityEntryBridgeFixResult,
+} from "./recognitionRealityEntryBridgeFix";
