@@ -2990,3 +2990,13 @@ export type {
   GenesisProductionRealityRouteHandoffInput,
   GenesisProductionRealityRouteHandoffResult,
 } from "./genesisProductionRealityRouteHandoff";
+
+export type {
+  RealityProductionPressureEvent,
+  RealityProductionPressureConsumerBoundary,
+  RealityProductionPressureSession,
+  RealityProductionPressureConsumerInitializeInput,
+  RealityProductionPressureConsumerAdvanceInput,
+  RealityProductionPressureConsumerBlockedReason,
+  RealityProductionPressureConsumerResult,
+} from "./realityProductionPressureConsumer";
