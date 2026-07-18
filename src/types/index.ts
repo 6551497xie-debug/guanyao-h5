@@ -3016,3 +3016,8 @@ export type {
   RealityProductionGravityConsumerBlockedReason,
   RealityProductionGravityConsumerResult,
 } from "./realityProductionGravityConsumer";
+
+export type {
+  RealityGravityPresentationBoundary,
+  RealityGravityPresentationProps,
+} from "./realityGravityPresentation";

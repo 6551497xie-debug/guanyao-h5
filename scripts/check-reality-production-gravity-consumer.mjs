@@ -150,15 +150,25 @@ try {
     source.pressureService,
     "initializeRealityProductionGravityConsumer",
   );
-  assertExcludes(
-    "Production Host remains at Gravity readiness hold",
+  assertIncludes(
+    "Production Host initializes the authorized Gravity consumer",
     source.host,
     "initializeRealityProductionGravityConsumer",
   );
   assertIncludes(
-    "Production Host still declares Gravity readiness hold",
+    "Production Host advances only explicit Gravity confirmation",
     source.host,
-    '"GRAVITY_READY_HOLD"',
+    "advanceRealityProductionGravityConsumer",
+  );
+  assertIncludes(
+    "Production Host stops at Choice readiness",
+    source.host,
+    '"CHOICE_READY_HOLD"',
+  );
+  assertExcludes(
+    "Production Host does not call the review resolver directly",
+    source.host,
+    "resolveGravityExperienceUIRuntime",
   );
   assertIncludes(
     "Prototype Harness still uses frozen Gravity resolver",

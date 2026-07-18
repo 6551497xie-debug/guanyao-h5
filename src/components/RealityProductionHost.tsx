@@ -1,5 +1,10 @@
 import { useState } from "react";
+import { RealityGravityPresentation } from "./RealityGravityPresentation";
 import { RealityPressurePresentation } from "./RealityPressurePresentation";
+import {
+  advanceRealityProductionGravityConsumer,
+  initializeRealityProductionGravityConsumer,
+} from "../services/realityProductionGravityConsumer";
 import {
   advanceRealityProductionPressureConsumer,
   initializeRealityProductionPressureConsumer,
@@ -16,7 +21,10 @@ export const REALITY_PRODUCTION_HOST_BOUNDARY:
     productionPressureConsumerOnly: true,
     sharedFrozenPressurePresentationOnly: true,
     explicitPressureObservationOnly: true,
-    gravityReadinessHoldOnly: true,
+    productionGravityConsumerOnly: true,
+    sharedFrozenGravityPresentationOnly: true,
+    explicitGravityObservationOnly: true,
+    choiceReadinessHoldOnly: true,
     noFixtureSource: true,
     noPrototypeSource: true,
     noDefaultSource: true,
@@ -24,7 +32,7 @@ export const REALITY_PRODUCTION_HOST_BOUNDARY:
     noPressureEngine: true,
     noPressureSeedMatching: true,
     noPressureResult: true,
-    noGravityExecution: true,
+    noInertiaEngine: true,
     noChoiceExecution: true,
     noCrystalExecution: true,
     noRendererInvocation: true,
@@ -42,12 +50,22 @@ export function RealityProductionHost({
   const [pressureResult, setPressureResult] = useState(() =>
     initializeRealityProductionPressureConsumer({ routeAuthorization }),
   );
+  const [gravityResult, setGravityResult] = useState<
+    ReturnType<typeof initializeRealityProductionGravityConsumer> | null
+  >(null);
 
-  if (pressureResult.status !== "READY") {
+  if (
+    pressureResult.status !== "READY" ||
+    gravityResult?.status === "BLOCKED"
+  ) {
     return (
       <main
         data-production-reality-status="SOURCE_NOT_READY"
-        data-guard-reason={pressureResult.reason}
+        data-guard-reason={
+          pressureResult.status === "BLOCKED"
+            ? pressureResult.reason
+            : gravityResult?.reason
+        }
       >
         <p role="status">SOURCE_NOT_READY</p>
       </main>
@@ -55,6 +73,8 @@ export function RealityProductionHost({
   }
 
   const pressureSession = pressureResult.session;
+  const gravitySession =
+    gravityResult?.status === "READY" ? gravityResult.session : null;
   const confirmPressureObservation = () => {
     if (
       pressureSession.interactionAvailability !==
@@ -62,10 +82,30 @@ export function RealityProductionHost({
     ) {
       return;
     }
-    setPressureResult(
-      advanceRealityProductionPressureConsumer({
-        session: pressureSession,
-        event: "PRESSURE_OBSERVATION_CONFIRM",
+    const nextPressureResult = advanceRealityProductionPressureConsumer({
+      session: pressureSession,
+      event: "PRESSURE_OBSERVATION_CONFIRM",
+    });
+    setPressureResult(nextPressureResult);
+    if (nextPressureResult.status === "READY") {
+      setGravityResult(
+        initializeRealityProductionGravityConsumer({
+          pressureSession: nextPressureResult.session,
+        }),
+      );
+    }
+  };
+  const confirmGravityObservation = () => {
+    if (
+      gravitySession?.interactionAvailability !==
+      "GRAVITY_OBSERVATION_CONFIRM"
+    ) {
+      return;
+    }
+    setGravityResult(
+      advanceRealityProductionGravityConsumer({
+        session: gravitySession,
+        event: "GRAVITY_OBSERVATION_CONFIRM",
       }),
     );
   };
@@ -74,8 +114,10 @@ export function RealityProductionHost({
     <main
       data-production-reality-status="AUTHORIZED_PRODUCTION_REALITY_SOURCE"
       data-reality-production-host-state={
-        pressureSession.gravityReadiness === "READY"
-          ? "GRAVITY_READY_HOLD"
+        gravitySession?.choiceReadiness === "READY"
+          ? "CHOICE_READY_HOLD"
+          : gravitySession
+          ? "GRAVITY_OBSERVATION"
           : "PRESSURE_OBSERVATION"
       }
       data-source-experience-mode={sourceContext.sourceExperienceMode}
@@ -86,15 +128,37 @@ export function RealityProductionHost({
       data-pressure-tension-awareness={pressureSession.tensionAwareness}
       data-gravity-readiness={pressureSession.gravityReadiness}
       data-pressure-interaction={pressureSession.interactionAvailability}
+      data-gravity-stage={gravitySession?.gravityStageState ?? "NOT_STARTED"}
+      data-automatic-response-state={
+        gravitySession?.automaticResponseState ?? "WAITING_FOR_GRAVITY"
+      }
+      data-pattern-awareness={
+        gravitySession?.patternAwarenessState ?? "UNSEEN"
+      }
+      data-choice-readiness={gravitySession?.choiceReadiness ?? "NOT_READY"}
+      data-gravity-interaction={
+        gravitySession?.interactionAvailability ?? "NONE"
+      }
     >
-      <RealityPressurePresentation
-        pressureObservationConfirmed={
-          pressureSession.pressureObservationConfirmed
-        }
-        interactionAvailability={pressureSession.interactionAvailability}
-        gravityReadiness={pressureSession.gravityReadiness}
-        onConfirm={confirmPressureObservation}
-      />
+      {gravitySession ? (
+        <RealityGravityPresentation
+          gravityObservationConfirmed={
+            gravitySession.gravityObservationConfirmed
+          }
+          interactionAvailability={gravitySession.interactionAvailability}
+          choiceReadiness={gravitySession.choiceReadiness}
+          onConfirm={confirmGravityObservation}
+        />
+      ) : (
+        <RealityPressurePresentation
+          pressureObservationConfirmed={
+            pressureSession.pressureObservationConfirmed
+          }
+          interactionAvailability={pressureSession.interactionAvailability}
+          gravityReadiness={pressureSession.gravityReadiness}
+          onConfirm={confirmPressureObservation}
+        />
+      )}
     </main>
   );
 }

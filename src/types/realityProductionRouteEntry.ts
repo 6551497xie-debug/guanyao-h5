@@ -28,7 +28,10 @@ export type RealityProductionHostBoundary = Readonly<{
   productionPressureConsumerOnly: true;
   sharedFrozenPressurePresentationOnly: true;
   explicitPressureObservationOnly: true;
-  gravityReadinessHoldOnly: true;
+  productionGravityConsumerOnly: true;
+  sharedFrozenGravityPresentationOnly: true;
+  explicitGravityObservationOnly: true;
+  choiceReadinessHoldOnly: true;
   noFixtureSource: true;
   noPrototypeSource: true;
   noDefaultSource: true;
@@ -36,7 +39,7 @@ export type RealityProductionHostBoundary = Readonly<{
   noPressureEngine: true;
   noPressureSeedMatching: true;
   noPressureResult: true;
-  noGravityExecution: true;
+  noInertiaEngine: true;
   noChoiceExecution: true;
   noCrystalExecution: true;
   noRendererInvocation: true;

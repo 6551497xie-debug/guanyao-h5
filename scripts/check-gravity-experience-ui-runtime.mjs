@@ -8,8 +8,9 @@ const rootDir = process.cwd();
 const files = Object.freeze({
   type: "src/types/gravityExperienceUIRuntime.ts",
   service: "src/services/gravityExperienceUIRuntime.ts",
+  presentation: "src/components/RealityGravityPresentation.tsx",
   harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
-  styles: "src/styles/personal-star-beast-webgl-prototype-harness.css",
+  styles: "src/styles/reality-gravity-presentation.css",
   typeIndex: "src/types/index.ts",
   packageManifest: "package.json",
 });
@@ -93,18 +94,16 @@ if (failures.length === 0) {
   ].forEach((marker) => assertExcludes("P37 service stays observation-only", source.service, marker));
 
   [
-    "resolveGravityExperienceUIRuntime",
-    "data-gravity-space",
-    "data-gravity-stage",
-    "data-inertia-observation-state",
-    "data-pattern-awareness",
-    "data-choice-readiness",
-    "data-gravity-interaction",
+    "export function RealityGravityPresentation",
     'data-interaction="GRAVITY_OBSERVATION_CONFIRM"',
     "Gravity Experience Space惯性观察",
     "看见惯性如何带动你。",
     "Choice Experience 已准备好",
-  ].forEach((marker) => assertIncludes("P37 Gravity Experience UI", source.harness, marker));
+  ].forEach((marker) => assertIncludes("P37 Gravity Experience UI", source.presentation, marker));
+
+  assertIncludes("P37 Harness consumes shared presentation", source.harness, "<RealityGravityPresentation");
+  assertIncludes("P37 Harness still owns fixture state resolver", source.harness, "resolveGravityExperienceUIRuntime");
+  assertExcludes("P37 Harness no longer owns duplicate presentation markup", source.harness, 'className="gy-p37__gravity-space"');
 
   [
     ".gy-p37__gravity-space",
