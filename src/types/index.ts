@@ -2830,3 +2830,27 @@ export type {
   ReleaseBaselineAlignmentBlocked,
   ReleaseBaselineAlignmentResult,
 } from "./releaseBaselineAlignment";
+
+export type {
+  FirstImpressionWalkthroughJourneyStage,
+  FirstImpressionWalkthroughDimension,
+  FirstImpressionWalkthroughStatus,
+  FirstImpressionEntryFirstView,
+  FirstImpressionGenesisJourneyFeeling,
+  FirstImpressionTimeDeliveryClarity,
+  FirstImpressionRecognitionFeeling,
+  FirstImpressionRealityTransitionFeeling,
+  FirstImpressionWalkthroughIssueType,
+  FirstImpressionWalkthroughIssue,
+  FirstImpressionWalkthroughBoundary,
+  FirstImpressionWalkthroughUpstreamReference,
+  FirstImpressionBrowserWalkthroughInput,
+  FirstImpressionBrowserWalkthroughReview,
+  FirstImpressionBrowserWalkthrough,
+  FirstImpressionBrowserWalkthroughReady,
+  FirstImpressionBrowserWalkthroughUnavailableReason,
+  FirstImpressionBrowserWalkthroughBlockedReason,
+  FirstImpressionBrowserWalkthroughUnavailable,
+  FirstImpressionBrowserWalkthroughBlocked,
+  FirstImpressionBrowserWalkthroughResult,
+} from "./firstImpressionBrowserWalkthrough";
