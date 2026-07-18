@@ -2523,3 +2523,19 @@ export type {
   LifeJourneyUIExperienceImplementationPlanBlocked,
   LifeJourneyUIExperienceImplementationPlanResult,
 } from "./lifeJourneyUIExperienceImplementationPlan";
+
+export type {
+  GenesisSpaceUIRuntimePresentationState,
+  GenesisSpaceUIInteractionAvailability,
+  GenesisSpaceUIRecognitionEntryState,
+  GenesisSpaceUIRuntimeContractBoundary,
+  GenesisSpaceUIRuntime,
+  GenesisSpaceUIRuntimeInput,
+  GenesisSpaceUIRuntimeUnavailableReason,
+  GenesisSpaceUIRuntimeBlockedReason,
+  GenesisSpaceUIRuntimeBoundary,
+  GenesisSpaceUIRuntimeReady,
+  GenesisSpaceUIRuntimeUnavailable,
+  GenesisSpaceUIRuntimeBlocked,
+  GenesisSpaceUIRuntimeResult,
+} from "./genesisSpaceUIRuntime";

@@ -302,6 +302,24 @@
   cursor: default;
 }
 
+.gy-p33__runtime-panel {
+  border-color: rgba(224, 191, 124, 0.22);
+  box-shadow: 0 18px 58px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 245, 218, 0.04);
+}
+
+.gy-p33__interaction-hint,
+.gy-p33__recognition-status {
+  min-height: 0;
+  margin-top: 10px !important;
+  color: rgba(224, 191, 124, 0.62) !important;
+  font-size: 9px !important;
+  letter-spacing: 0.08em;
+}
+
+.gy-p33__recognition-status {
+  color: rgba(241, 225, 189, 0.78) !important;
+}
+
 .gy-p100__breath-mark {
   bottom: 23px;
   left: 50%;
