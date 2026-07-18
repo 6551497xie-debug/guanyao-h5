@@ -3178,3 +3178,9 @@ export type {
   RealityProductionPressureHostInputBlockedReason,
   RealityProductionPressureHostInputContractResult,
 } from "./realityProductionPressureHostInputContract";
+
+export type {
+  RealityPressureSeedPresentationBoundary,
+  RealityPressureSeedPresentationProps,
+  RealityPressureSeedCandidatePresentationProps,
+} from "./realityPressureSeedPresentation";
