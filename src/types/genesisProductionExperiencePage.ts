@@ -50,6 +50,9 @@ export type GenesisProductionExperiencePageBoundary = Readonly<{
   productionExperiencePageOnly: true;
   productionRouteAuthorizationRequired: true;
   realUserSourceResolutionOnly: true;
+  productionTimelineOrchestrationOnly: true;
+  timeDeliveryOnlyInteraction: true;
+  completionRecognitionHoldRequired: true;
   sourceNotReadyStopsRendering: true;
   noFixtureFallback: true;
   noPrototypeHarness: true;

@@ -4,6 +4,7 @@ import {
   getFixtureGenesisVisualConsumerAuthorizationPlanResults,
 } from "../services/fixtureGenesisVisualConsumerSource";
 import { resolveGenesisVisualConsumerSource } from "../services/genesisVisualConsumerSourceResolver";
+import { GENESIS_FROZEN_STAGE_HOLD_MS } from "../services/genesisFrozenTimelineTiming";
 import { authorizeIsolatedWebGLRendererPrototype } from "../services/isolatedWebGLRendererPrototypeAuthorizationService";
 import {
   completeGenesisPreviewIntegration,
@@ -508,7 +509,9 @@ export function PersonalStarBeastWebGLPrototypeHarness({
     ) {
       return undefined;
     }
-    const delay = previewStage.stage === "MOON_ORIGIN" ? 2200 : 1800;
+    const delay = GENESIS_FROZEN_STAGE_HOLD_MS[
+      previewStage.stage as keyof typeof GENESIS_FROZEN_STAGE_HOLD_MS
+    ];
     const timeout = window.setTimeout(() => {
       const nextIndex = previewStageIndex + 1;
       const nextStage = GENESIS_PREVIEW_STAGES[nextIndex];

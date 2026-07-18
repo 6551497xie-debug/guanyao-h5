@@ -116,6 +116,7 @@
     "check-genesis-production-experience-page": "node scripts/check-genesis-production-experience-page.mjs",
     "check-genesis-production-runtime-consumer": "node scripts/check-genesis-production-runtime-consumer.mjs",
     "check-genesis-production-visual-calibration-bridge": "node scripts/check-genesis-production-visual-calibration-bridge.mjs",
+    "check-genesis-production-timeline-orchestration": "node scripts/check-genesis-production-timeline-orchestration.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",
