@@ -25,13 +25,17 @@ export type RealityProductionRouteEntryBoundary = Readonly<{
 export type RealityProductionHostBoundary = Readonly<{
   productionRealityHostOnly: true;
   authorizedRealitySourceOnly: true;
-  entryReadyPresentationOnly: true;
-  pressureRecognitionNotStarted: true;
+  productionPressureConsumerOnly: true;
+  sharedFrozenPressurePresentationOnly: true;
+  explicitPressureObservationOnly: true;
+  gravityReadinessHoldOnly: true;
   noFixtureSource: true;
   noPrototypeSource: true;
   noDefaultSource: true;
   noEngineInvocation: true;
-  noPressureExecution: true;
+  noPressureEngine: true;
+  noPressureSeedMatching: true;
+  noPressureResult: true;
   noGravityExecution: true;
   noChoiceExecution: true;
   noCrystalExecution: true;

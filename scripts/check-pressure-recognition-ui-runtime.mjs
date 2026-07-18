@@ -9,7 +9,8 @@ const files = Object.freeze({
   type: "src/types/pressureRecognitionUIRuntime.ts",
   service: "src/services/pressureRecognitionUIRuntime.ts",
   harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
-  styles: "src/styles/personal-star-beast-webgl-prototype-harness.css",
+  presentation: "src/components/RealityPressurePresentation.tsx",
+  styles: "src/styles/reality-pressure-presentation.css",
   typeIndex: "src/types/index.ts",
   packageManifest: "package.json",
 });
@@ -102,11 +103,15 @@ if (failures.length === 0) {
     "data-pressure-tension-awareness",
     "data-gravity-readiness",
     "data-pressure-interaction",
+    "RealityPressurePresentation",
+  ].forEach((marker) => assertIncludes("P36 Pressure Recognition UI", source.harness, marker));
+
+  [
     'data-interaction="PRESSURE_OBSERVATION_CONFIRM"',
     "Pressure Recognition Space现实作用观察",
     "先看见，什么正在作用于你。",
     "Gravity Experience 已准备好",
-  ].forEach((marker) => assertIncludes("P36 Pressure Recognition UI", source.harness, marker));
+  ].forEach((marker) => assertIncludes("P36 shared Pressure presentation", source.presentation, marker));
 
   [
     ".gy-p36__pressure-space",

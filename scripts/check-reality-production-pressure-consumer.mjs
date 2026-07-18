@@ -119,7 +119,9 @@ try {
   assertIncludes("existing Pressure resolver still owns frozen transition", source.pressureService, "resolvePressureRecognitionUIRuntime");
   assertIncludes("Prototype Harness still uses the same resolver", source.harness, "resolvePressureRecognitionUIRuntime");
   assertIncludes("Prototype Harness remains fixture-only", source.harness, 'sourceExperienceMode !== "FIXTURE_PREVIEW_ONLY"');
-  assertExcludes("Production Host is not activated in this knife", source.host, "RealityProductionPressureConsumer");
+  assertIncludes("Production Host initializes the authorized Pressure consumer", source.host, "initializeRealityProductionPressureConsumer");
+  assertIncludes("Production Host advances only explicit Pressure confirmation", source.host, "advanceRealityProductionPressureConsumer");
+  assertExcludes("Production Host does not call the review resolver directly", source.host, "resolvePressureRecognitionUIRuntime");
   assertIncludes("legacy Dynamics remains isolated", source.dynamics, "LEGACY_DYNAMICS_FLOW_ISOLATED");
 
   const packageJson = JSON.parse(source.packageManifest);

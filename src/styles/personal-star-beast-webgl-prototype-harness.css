@@ -557,108 +557,6 @@
   letter-spacing: 0.08em;
 }
 
-.gy-p36__pressure-space {
-  position: absolute;
-  z-index: 4;
-  bottom: clamp(68px, 11vh, 116px);
-  left: 50%;
-  width: min(440px, 80vw);
-  padding: 18px 20px 19px;
-  border: 1px solid rgba(169, 182, 209, 0.24);
-  border-radius: 18px;
-  background: rgba(7, 9, 16, 0.72);
-  box-shadow: 0 22px 76px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(222, 231, 250, 0.05);
-  backdrop-filter: blur(18px);
-  transform: translateX(-50%);
-  text-align: center;
-}
-
-.gy-p36__pressure-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: rgba(184, 197, 226, 0.7);
-  font-size: 9px;
-  letter-spacing: 0.16em;
-}
-
-.gy-p36__pressure-head strong {
-  color: rgba(242, 240, 234, 0.92);
-  font-family: var(--gy-font-serif);
-  font-size: 18px;
-  font-weight: 400;
-}
-
-.gy-p36__pressure-space h2 {
-  margin: 13px 0 8px;
-  color: rgba(246, 243, 235, 0.94);
-  font-family: var(--gy-font-serif);
-  font-size: clamp(18px, 3vw, 25px);
-  font-weight: 400;
-  letter-spacing: 0.05em;
-}
-
-.gy-p36__pressure-space p {
-  margin: 0;
-  color: rgba(229, 229, 225, 0.64);
-  font-size: 11px;
-  line-height: 1.75;
-}
-
-.gy-p36__signal-list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 7px;
-  margin: 14px 0 0;
-}
-
-.gy-p36__signal-list span {
-  border: 1px solid rgba(157, 173, 207, 0.14);
-  border-radius: 999px;
-  padding: 7px 5px;
-  color: rgba(214, 221, 237, 0.58);
-  font-size: 8px;
-  letter-spacing: 0.04em;
-}
-
-.gy-p36__pressure-space small {
-  display: block;
-  margin-top: 12px;
-  color: rgba(203, 211, 229, 0.44);
-  font-size: 8px;
-  letter-spacing: 0.08em;
-}
-
-.gy-p36__pressure-space button {
-  width: 100%;
-  margin-top: 14px;
-  border: 1px solid rgba(174, 190, 226, 0.44);
-  border-radius: 999px;
-  padding: 10px 12px;
-  background: rgba(31, 40, 60, 0.4);
-  color: rgba(235, 239, 247, 0.9);
-  font: inherit;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  cursor: pointer;
-  transition: background 240ms ease, border-color 240ms ease, color 240ms ease;
-}
-
-.gy-p36__pressure-space button:hover,
-.gy-p36__pressure-space button:focus-visible {
-  border-color: rgba(196, 211, 245, 0.7);
-  background: rgba(53, 65, 93, 0.46);
-  color: rgba(248, 249, 253, 0.98);
-  outline: none;
-}
-
-.gy-p36__gravity-ready {
-  margin-top: 12px !important;
-  color: rgba(190, 207, 240, 0.84) !important;
-  font-size: 10px !important;
-  letter-spacing: 0.08em;
-}
-
 .gy-p37__gravity-space {
   position: absolute;
   z-index: 4;
@@ -1031,7 +929,6 @@
   .gy-p100--presence .gy-p100__canvas { transform: translateY(8vh) scale(1.1); }
   .gy-p34__recognition-space { bottom: 70px; width: 78vw; }
   .gy-p35__reality-entry-space { bottom: 66px; width: 80vw; }
-  .gy-p36__pressure-space { bottom: 66px; width: 80vw; }
   .gy-p37__gravity-space { bottom: 66px; width: 80vw; }
   .gy-p38__choice-space { bottom: 66px; width: 80vw; }
   .gy-p39__crystal-space { bottom: 66px; width: 80vw; }

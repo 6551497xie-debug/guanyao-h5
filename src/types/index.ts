@@ -3000,3 +3000,8 @@ export type {
   RealityProductionPressureConsumerBlockedReason,
   RealityProductionPressureConsumerResult,
 } from "./realityProductionPressureConsumer";
+
+export type {
+  RealityPressurePresentationBoundary,
+  RealityPressurePresentationProps,
+} from "./realityPressurePresentation";
