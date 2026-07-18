@@ -2387,3 +2387,22 @@ export type {
   RealityChoiceExperienceArchitectureBlocked,
   RealityChoiceExperienceArchitectureResult,
 } from "./realityChoiceExperienceArchitecture";
+
+export type {
+  TransformationEntryState,
+  ResponseChangeLayer,
+  LifeImprintLayer,
+  CrystalFormationLayer,
+  FutureCarryLayer,
+  CrystalExperienceInterventionBoundary,
+  CrystalExperienceReadiness,
+  RealityCrystalExperienceArchitecture,
+  RealityCrystalExperienceArchitectureInput,
+  RealityCrystalExperienceArchitectureUnavailableReason,
+  RealityCrystalExperienceArchitectureBlockedReason,
+  RealityCrystalExperienceArchitectureBoundary,
+  RealityCrystalExperienceArchitectureReady,
+  RealityCrystalExperienceArchitectureUnavailable,
+  RealityCrystalExperienceArchitectureBlocked,
+  RealityCrystalExperienceArchitectureResult,
+} from "./realityCrystalExperienceArchitecture";
