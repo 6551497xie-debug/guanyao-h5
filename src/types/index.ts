@@ -2310,3 +2310,19 @@ export type {
   GenesisFullExperienceAcceptanceBlocked,
   GenesisFullExperienceAcceptanceResult,
 } from "./genesisFullExperienceAcceptance";
+
+export type {
+  GenesisRealityEntryRecognitionState,
+  GenesisRealityEntryReadiness,
+  GenesisRealityEntryTransitionIntent,
+  GenesisRealityEntryBridgeState,
+  GenesisRealityEntryBridgeBoundary,
+  GenesisRealityEntryBridge,
+  GenesisRealityEntryBridgeInput,
+  GenesisRealityEntryBridgeUnavailableReason,
+  GenesisRealityEntryBridgeBlockedReason,
+  GenesisRealityEntryBridgeReady,
+  GenesisRealityEntryBridgeUnavailable,
+  GenesisRealityEntryBridgeBlocked,
+  GenesisRealityEntryBridgeResult,
+} from "./genesisRealityEntryBridge";
