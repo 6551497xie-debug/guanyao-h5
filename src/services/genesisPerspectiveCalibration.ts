@@ -84,6 +84,12 @@ const balanceByLayer = (
       forceRhythm: 0.16,
       innerMotionDifference: 0.08,
       formationContinuity: 0.86,
+      subjectAxisStrength: 0.04,
+      bodyCohesion: 0.12,
+      presenceBreath: 0.18,
+      subjectForeground: 0.08,
+      completionStillness: 0.36,
+      recognitionStability: 0.28,
     });
   }
   if (layer === "STAR_RIVER") {
@@ -100,6 +106,12 @@ const balanceByLayer = (
       forceRhythm: 0.28,
       innerMotionDifference: 0.16,
       formationContinuity: 0.92,
+      subjectAxisStrength: 0.12,
+      bodyCohesion: 0.24,
+      presenceBreath: 0.28,
+      subjectForeground: 0.18,
+      completionStillness: 0.32,
+      recognitionStability: 0.4,
     });
   }
   if (layer === "TIME_RESONANCE") {
@@ -116,6 +128,12 @@ const balanceByLayer = (
       forceRhythm: 0.64,
       innerMotionDifference: 0.3,
       formationContinuity: 0.96,
+      subjectAxisStrength: 0.24,
+      bodyCohesion: 0.38,
+      presenceBreath: 0.5,
+      subjectForeground: 0.28,
+      completionStillness: 0.26,
+      recognitionStability: 0.56,
     });
   }
   if (layer === "SYMBOLIC_FORMATION") {
@@ -132,6 +150,12 @@ const balanceByLayer = (
       forceRhythm: 0.34,
       innerMotionDifference: 0.28,
       formationContinuity: 0.96,
+      subjectAxisStrength: 0.92,
+      bodyCohesion: 0.54,
+      presenceBreath: 0.42,
+      subjectForeground: 0.46,
+      completionStillness: 0.22,
+      recognitionStability: 0.62,
     });
   }
   if (layer === "CHANGE_MEMORY") {
@@ -148,6 +172,12 @@ const balanceByLayer = (
       forceRhythm: 0.52,
       innerMotionDifference: 0.58,
       formationContinuity: 0.98,
+      subjectAxisStrength: 0.76,
+      bodyCohesion: 0.7,
+      presenceBreath: 0.58,
+      subjectForeground: 0.58,
+      completionStillness: 0.38,
+      recognitionStability: 0.74,
     });
   }
   if (layer === "LIFE_MOVEMENT") {
@@ -164,6 +194,56 @@ const balanceByLayer = (
       forceRhythm: 0.96,
       innerMotionDifference: 0.94,
       formationContinuity: 0.99,
+      subjectAxisStrength: 0.88,
+      bodyCohesion: 0.82,
+      presenceBreath: 0.78,
+      subjectForeground: 0.74,
+      completionStillness: 0.48,
+      recognitionStability: 0.82,
+    });
+  }
+  if (layer === "BEAST_SUBJECT_FORMATION") {
+    return Object.freeze({
+      moonWeight: 0.24,
+      starWeight: 0.54,
+      timeResponseWeight: 0.5,
+      coreSuppression: 0.3,
+      backgroundDepth: 0.62,
+      responseIntensity: 0.72,
+      lifeAxisStrength: 0.98,
+      morphologicalTension: 0.72,
+      memorySedimentation: 0.78,
+      forceRhythm: 0.82,
+      innerMotionDifference: 0.76,
+      formationContinuity: 1,
+      subjectAxisStrength: 0.98,
+      bodyCohesion: 0.96,
+      presenceBreath: 0.86,
+      subjectForeground: 0.98,
+      completionStillness: 0.62,
+      recognitionStability: 0.84,
+    });
+  }
+  if (layer === "PRESENCE_RECOGNITION") {
+    return Object.freeze({
+      moonWeight: 0.2,
+      starWeight: 0.42,
+      timeResponseWeight: 0.42,
+      coreSuppression: 0.34,
+      backgroundDepth: 0.56,
+      responseIntensity: 0.48,
+      lifeAxisStrength: 0.9,
+      morphologicalTension: 0.66,
+      memorySedimentation: 0.84,
+      forceRhythm: 0.7,
+      innerMotionDifference: 0.58,
+      formationContinuity: 1,
+      subjectAxisStrength: 0.92,
+      bodyCohesion: 0.98,
+      presenceBreath: 0.72,
+      subjectForeground: 1,
+      completionStillness: 0.98,
+      recognitionStability: 1,
     });
   }
   return Object.freeze({
@@ -179,6 +259,12 @@ const balanceByLayer = (
     forceRhythm: 0.64,
     innerMotionDifference: 0.3,
     formationContinuity: 0.96,
+    subjectAxisStrength: 0.24,
+    bodyCohesion: 0.38,
+    presenceBreath: 0.5,
+    subjectForeground: 0.28,
+    completionStillness: 0.26,
+    recognitionStability: 0.56,
   });
 };
 
@@ -206,14 +292,20 @@ export function mapGenesisPerspectiveCalibration(
         ? "CHANGE_MEMORY"
         : layer === "LIFE_FORCE"
           ? "LIFE_MOVEMENT"
-          : layer;
+          : layer === "STAR_BEAST_REVEAL"
+            ? "BEAST_SUBJECT_FORMATION"
+            : layer === "COMPLETION"
+              ? "PRESENCE_RECOGNITION"
+              : layer;
   if (
     calibrationLayer !== "MOON_ORIGIN" &&
     calibrationLayer !== "STAR_RIVER" &&
     calibrationLayer !== "TIME_RESONANCE" &&
     calibrationLayer !== "SYMBOLIC_FORMATION" &&
     calibrationLayer !== "CHANGE_MEMORY" &&
-    calibrationLayer !== "LIFE_MOVEMENT"
+    calibrationLayer !== "LIFE_MOVEMENT" &&
+    calibrationLayer !== "BEAST_SUBJECT_FORMATION" &&
+    calibrationLayer !== "PRESENCE_RECOGNITION"
   ) {
     return blocked(input, "P18_LAYER_OUT_OF_SCOPE");
   }

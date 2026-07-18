@@ -51,12 +51,20 @@ if (failures.length === 0) {
     "SYMBOLIC_FORMATION",
     "CHANGE_MEMORY",
     "LIFE_MOVEMENT",
+    "BEAST_SUBJECT_FORMATION",
+    "PRESENCE_RECOGNITION",
     "lifeAxisStrength",
     "morphologicalTension",
     "memorySedimentation",
     "forceRhythm",
     "innerMotionDifference",
     "formationContinuity",
+    "subjectAxisStrength",
+    "bodyCohesion",
+    "presenceBreath",
+    "subjectForeground",
+    "completionStillness",
+    "recognitionStability",
     "noSemanticMutation",
     "isolatedPrototypeOnly",
   ].forEach((marker) => assertIncludes("P18 perspective type", source.type, marker));
@@ -71,6 +79,10 @@ if (failures.length === 0) {
     "SYMBOLIC_FORMATION",
     "CHANGE_MEMORY",
     "LIFE_MOVEMENT",
+    "STAR_BEAST_REVEAL",
+    "COMPLETION",
+    "BEAST_SUBJECT_FORMATION",
+    "PRESENCE_RECOGNITION",
     "P18_LAYER_OUT_OF_SCOPE",
     "balanceByLayer",
     "PERSPECTIVE_BOUNDARY_INVALID",
@@ -91,6 +103,12 @@ if (failures.length === 0) {
     "perspectiveForceRhythm",
     "perspectiveInnerMotionDifference",
     "perspectiveFormationContinuity",
+    "perspectiveSubjectAxisStrength",
+    "perspectiveBodyCohesion",
+    "perspectivePresenceBreath",
+    "perspectiveSubjectForeground",
+    "perspectiveCompletionStillness",
+    "perspectiveRecognitionStability",
   ].forEach((marker) => assertIncludes("P18 renderer weighting", source.renderer, marker));
 
   [
@@ -195,6 +213,8 @@ if (failures.length === 0) {
     ["SYMBOL_REVEAL", "SYMBOLIC_FORMATION"],
     ["HEXAGRAM_IMPRINT", "CHANGE_MEMORY"],
     ["LIFE_FORCE", "LIFE_MOVEMENT"],
+    ["STAR_BEAST_REVEAL", "BEAST_SUBJECT_FORMATION"],
+    ["COMPLETION", "PRESENCE_RECOGNITION"],
   ]) {
     const formation = runtime.mapGenesisPerspectiveCalibration({
       visualRealization: realizationFor(layer),
@@ -206,11 +226,11 @@ if (failures.length === 0) {
     }
   }
   const outOfScope = runtime.mapGenesisPerspectiveCalibration({
-    visualRealization: realizationFor("STAR_BEAST_REVEAL"),
+    visualRealization: realizationFor("UNSUPPORTED_LAYER"),
   });
-  assertEqual("beast layer remains out of P18-B scope", outOfScope.status, "BLOCKED");
+  assertEqual("unsupported layer remains blocked", outOfScope.status, "BLOCKED");
   if (outOfScope.status === "BLOCKED") {
-    assertEqual("beast layer block reason", outOfScope.reason, "P18_LAYER_OUT_OF_SCOPE");
+    assertEqual("unsupported layer block reason", outOfScope.reason, "P18_LAYER_OUT_OF_SCOPE");
   }
   const invalidProgress = runtime.mapGenesisPerspectiveCalibration({
     visualRealization: realizationFor("MOON_ORIGIN", 1.2),

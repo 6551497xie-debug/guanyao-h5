@@ -6,7 +6,9 @@ export type GenesisPerspectiveCalibrationLayer =
   | "TIME_RESONANCE"
   | "SYMBOLIC_FORMATION"
   | "CHANGE_MEMORY"
-  | "LIFE_MOVEMENT";
+  | "LIFE_MOVEMENT"
+  | "BEAST_SUBJECT_FORMATION"
+  | "PRESENCE_RECOGNITION";
 
 export type GenesisCosmicPerspective = "TAIYIN_MOTHER_COSMOS";
 
@@ -31,6 +33,12 @@ export type GenesisPerspectivePresenceBalance = Readonly<{
   forceRhythm: number;
   innerMotionDifference: number;
   formationContinuity: number;
+  subjectAxisStrength: number;
+  bodyCohesion: number;
+  presenceBreath: number;
+  subjectForeground: number;
+  completionStillness: number;
+  recognitionStability: number;
 }>;
 
 export type GenesisPerspectiveCalibration = Readonly<{
