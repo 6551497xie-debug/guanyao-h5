@@ -3047,6 +3047,14 @@ export type {
 } from "./realityPressureCandidateDeliverySession";
 
 export type {
+  RealityPressureCandidateDeliveryOrchestrationBoundary,
+  RealityPressureCandidateDeliveryOrchestrationInitializeInput,
+  RealityPressureCandidateDeliveryOrchestrationAdvanceInput,
+  RealityPressureCandidateDeliveryOrchestrationBlockedReason,
+  RealityPressureCandidateDeliveryOrchestrationResult,
+} from "./realityPressureCandidateDeliveryOrchestration";
+
+export type {
   RealityPressureSeedCaptureAdapterBoundary,
   RealityPressureSeedCaptureAdapterInput,
   RealityPressureSeedCaptureAdapterResult,
