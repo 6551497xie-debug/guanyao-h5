@@ -2959,3 +2959,13 @@ export type {
 export type {
   GenesisProductionRouteEntryBoundary,
 } from "./genesisProductionRouteEntry";
+
+export type {
+  GenesisProductionRealityEntryEvent,
+  GenesisProductionRealityEntryPhase,
+  GenesisProductionRealityEntryInteraction,
+  GenesisProductionRecognitionRealityBoundary,
+  GenesisProductionRealityEntrySession,
+  GenesisProductionRecognitionRealityResult,
+  GenesisProductionRealityEntryContext,
+} from "./genesisProductionRecognitionRealityEntry";

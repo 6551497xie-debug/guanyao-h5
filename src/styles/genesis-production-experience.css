@@ -15,7 +15,8 @@
   height: 100%;
 }
 
-.gy-genesis-production-experience__time-delivery {
+.gy-genesis-production-experience__time-delivery,
+.gy-genesis-production-experience__completion-action {
   position: absolute;
   z-index: 1;
   left: 50%;
@@ -29,6 +30,19 @@
   color: #eee2c6;
   background: rgb(8 11 18 / 64%);
   font: inherit;
+}
+
+.gy-genesis-production-experience__reality-ready {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: max(48px, env(safe-area-inset-bottom));
+  margin: 0;
+  transform: translateX(-50%);
+  color: #eee2c6;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
 }
 
 .gy-genesis-production-experience--source-not-ready {

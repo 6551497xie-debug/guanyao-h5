@@ -9,6 +9,12 @@ import {
   initializeGenesisProductionRuntime,
 } from "../services/genesisProductionRuntimeConsumer";
 import { orchestrateGenesisProductionTimeline } from "../services/genesisProductionTimelineOrchestrator";
+import {
+  activateGenesisProductionRealityEntryContext,
+  advanceGenesisProductionRecognitionRealityEntry,
+  clearGenesisProductionRealityEntryContext,
+  initializeGenesisProductionRecognitionRealityEntry,
+} from "../services/genesisProductionRecognitionRealityEntry";
 import { bridgeGenesisProductionRuntimeToVisualCalibration } from "../services/genesisProductionVisualCalibrationBridge";
 import { resolveRealGenesisVisualConsumerSource } from "../services/realGenesisVisualConsumerSource";
 import type {
@@ -16,6 +22,7 @@ import type {
   GenesisProductionExperiencePageBoundary,
   GenesisProductionExperiencePageProps,
 } from "../types/genesisProductionExperiencePage";
+import type { GenesisProductionRecognitionRealityResult } from "../types/genesisProductionRecognitionRealityEntry";
 import "../styles/genesis-production-experience.css";
 
 export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
@@ -26,6 +33,9 @@ export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
     productionTimelineOrchestrationOnly: true,
     timeDeliveryOnlyInteraction: true,
     completionRecognitionHoldRequired: true,
+    productionRecognitionRealityBridgeOnly: true,
+    explicitRealityEntryRequired: true,
+    noAutomaticRealityEntry: true,
     sourceNotReadyStopsRendering: true,
     noFixtureFallback: true,
     noPrototypeHarness: true,
@@ -87,6 +97,28 @@ export function GenesisProductionExperiencePage({
       : null,
     [productionRuntimeResult],
   );
+  const [recognitionRealityResult, setRecognitionRealityResult] =
+    useState<GenesisProductionRecognitionRealityResult | null>(null);
+
+  useEffect(() => {
+    clearGenesisProductionRealityEntryContext();
+    setRecognitionRealityResult(null);
+  }, [routeAuthorization.sourceReferenceId]);
+
+  useEffect(() => {
+    if (
+      recognitionRealityResult !== null ||
+      productionRuntimeResult?.status !== "READY" ||
+      productionRuntimeResult.session.currentStage !== "COMPLETION"
+    ) {
+      return;
+    }
+    setRecognitionRealityResult(
+      initializeGenesisProductionRecognitionRealityEntry(
+        productionRuntimeResult.session,
+      ),
+    );
+  }, [productionRuntimeResult, recognitionRealityResult]);
 
   useEffect(() => {
     if (
@@ -124,6 +156,40 @@ export function GenesisProductionExperiencePage({
     );
   };
 
+  const confirmRecognition = () => {
+    if (
+      recognitionRealityResult?.status !== "READY" ||
+      recognitionRealityResult.session.interactionAvailability !==
+        "RECOGNITION_CONFIRM"
+    ) {
+      return;
+    }
+    setRecognitionRealityResult(
+      advanceGenesisProductionRecognitionRealityEntry(
+        recognitionRealityResult.session,
+        "RECOGNITION_CONFIRM",
+      ),
+    );
+  };
+
+  const enterReality = () => {
+    if (
+      recognitionRealityResult?.status !== "READY" ||
+      recognitionRealityResult.session.interactionAvailability !==
+        "ENTER_REALITY"
+    ) {
+      return;
+    }
+    const result = advanceGenesisProductionRecognitionRealityEntry(
+      recognitionRealityResult.session,
+      "ENTER_REALITY",
+    );
+    setRecognitionRealityResult(result);
+    if (result.status === "READY") {
+      activateGenesisProductionRealityEntryContext(result.session);
+    }
+  };
+
   if (
     routeAuthorization.status !== "READY" ||
     consumerSourceResult === null ||
@@ -159,6 +225,11 @@ export function GenesisProductionExperiencePage({
       data-source-reference-id={routeAuthorization.sourceReferenceId}
       data-production-renderer-host-state={canvasHostState}
       data-genesis-runtime-stage={visualCalibrationResult.bundle.runtimeStage}
+      data-reality-entry-eligibility={
+        recognitionRealityResult?.status === "READY"
+          ? recognitionRealityResult.session.realityEntryEligibility
+          : "NOT_ELIGIBLE"
+      }
     >
       <GenesisProductionRendererCanvasHost
         routeAuthorization={routeAuthorization}
@@ -175,6 +246,40 @@ export function GenesisProductionExperiencePage({
         >
           把时间交给星河
         </button>
+      ) : null}
+      {recognitionRealityResult?.status === "READY" &&
+      recognitionRealityResult.session.interactionAvailability ===
+        "RECOGNITION_CONFIRM" ? (
+        <button
+          type="button"
+          className="gy-genesis-production-experience__completion-action"
+          data-interaction="RECOGNITION_CONFIRM"
+          onClick={confirmRecognition}
+        >
+          带着这份看见进入现实准备
+        </button>
+      ) : null}
+      {recognitionRealityResult?.status === "READY" &&
+      recognitionRealityResult.session.interactionAvailability ===
+        "ENTER_REALITY" ? (
+        <button
+          type="button"
+          className="gy-genesis-production-experience__completion-action"
+          data-interaction="ENTER_REALITY"
+          onClick={enterReality}
+        >
+          进入现实观察
+        </button>
+      ) : null}
+      {recognitionRealityResult?.status === "READY" &&
+      recognitionRealityResult.session.realityEntryEligibility ===
+        "ELIGIBLE" ? (
+        <p
+          className="gy-genesis-production-experience__reality-ready"
+          role="status"
+        >
+          Reality Entry 已准备好。
+        </p>
       ) : null}
     </main>
   );
