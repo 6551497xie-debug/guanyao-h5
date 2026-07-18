@@ -252,6 +252,7 @@ export type {
   LaunchLifeSourceSessionResult,
 } from "./launchLifeSourceSession";
 export type { LaunchLifeSourceVisualAdapterInputBridgeBoundary } from "./launchLifeSourceVisualAdapterInputBridge";
+export type { LaunchLifeVisualSourceResolverBoundary } from "./launchLifeVisualSourceResolver";
 export type {
   ProductionIdentitySourceAdapterReadinessBlocked,
   ProductionIdentitySourceAdapterReadinessBlockedReason,

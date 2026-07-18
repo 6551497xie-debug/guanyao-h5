@@ -234,6 +234,7 @@
     "check:launch-origin-mother-adapter": "node scripts/check-launch-origin-mother-adapter.mjs",
     "check:launch-life-source-session": "node scripts/check-launch-life-source-session.mjs",
     "check:launch-life-source-visual-adapter-input-bridge": "node scripts/check-launch-life-source-visual-adapter-input-bridge.mjs",
+    "check:launch-life-visual-source-resolver": "node scripts/check-launch-life-visual-source-resolver.mjs",
     "check:mother-code-profile-persistence-semantics": "node scripts/check-mother-code-profile-persistence-semantics.mjs",
     "check:mother-context-persistence-semantics": "node scripts/check-mother-context-persistence-semantics.mjs",
     "check:persona-snapshot-persistence-semantics": "node scripts/check-persona-snapshot-persistence-semantics.mjs",
