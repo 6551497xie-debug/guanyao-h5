@@ -67,7 +67,7 @@ if (failures.length === 0) {
     "MOON_DISC",
     "STELLAR_RELATIONS",
     "TIME_ALIGNMENT",
-    "P17_A_LAYER_OUT_OF_SCOPE",
+    "P17_B_LAYER_OUT_OF_SCOPE",
     "CONSUMER_BOUNDARY_INVALID",
     "TRANSITION_PROGRESS_INVALID",
   ].forEach((marker) => assertIncludes("P17-A realization service", source.service, marker));
@@ -174,11 +174,11 @@ if (failures.length === 0) {
     }
   }
   const outOfScope = runtime.mapGenesisRendererVisualRealization({
-    rendererConsumerContract: contractFor("SYMBOL_REVEAL", "SYMBOLIC_FIELD"),
+    rendererConsumerContract: contractFor("STAR_BEAST_REVEAL", "LIFE_PRESENCE"),
   });
   assertEqual("later layers stay out of P17-A", outOfScope.status, "BLOCKED");
   if (outOfScope.status === "BLOCKED") {
-    assertEqual("later layer reason", outOfScope.reason, "P17_A_LAYER_OUT_OF_SCOPE");
+    assertEqual("later layer reason", outOfScope.reason, "P17_B_LAYER_OUT_OF_SCOPE");
   }
   const invalidProgress = runtime.mapGenesisRendererVisualRealization({
     rendererConsumerContract: Object.freeze({

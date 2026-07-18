@@ -183,5 +183,83 @@ export function mapGenesisRendererVisualRealization(
     });
   }
 
-  return blocked(input, "P17_A_LAYER_OUT_OF_SCOPE");
+  if (contract.runtimeStage === "SYMBOL_REVEAL") {
+    return Object.freeze({
+      status: "READY" as const,
+      realizationStatus: "GENESIS_RENDERER_VISUAL_REALIZATION_READY" as const,
+      source: "genesis_renderer_visual_realization" as const,
+      input,
+      realization: Object.freeze({
+        ...common,
+        activeVisualLayer: "SYMBOL_REVEAL" as const,
+        visualExpressionMode: "SYMBOLIC_FIELD" as const,
+        environmentalState: Object.freeze({
+          cosmicDepth: "SYMBOLIC_FIELD_SPACE" as const,
+          moonlight: "SOFT_TAIYIN_FIELD" as const,
+          stellarOrder: "MORPHOLOGICAL_RELATIONS" as const,
+          temporalResponse: "SYMBOLIC_AGGREGATION" as const,
+        }),
+        focalElementState: Object.freeze({
+          focalElement: "SYMBOLIC_FIELD" as const,
+          coreLightSuppression: 0.4,
+          ambientFocus: 0.86,
+        }),
+      }),
+      boundary: GENESIS_RENDERER_VISUAL_REALIZATION_BOUNDARY,
+    });
+  }
+
+  if (contract.runtimeStage === "HEXAGRAM_IMPRINT") {
+    return Object.freeze({
+      status: "READY" as const,
+      realizationStatus: "GENESIS_RENDERER_VISUAL_REALIZATION_READY" as const,
+      source: "genesis_renderer_visual_realization" as const,
+      input,
+      realization: Object.freeze({
+        ...common,
+        activeVisualLayer: "HEXAGRAM_IMPRINT" as const,
+        visualExpressionMode: "CHANGE_IMPRINT" as const,
+        environmentalState: Object.freeze({
+          cosmicDepth: "CHANGE_LAYERED_SPACE" as const,
+          moonlight: "SOFT_TAIYIN_FIELD" as const,
+          stellarOrder: "CHANGE_SEDIMENTATION" as const,
+          temporalResponse: "CHANGE_SEDIMENTATION" as const,
+        }),
+        focalElementState: Object.freeze({
+          focalElement: "CHANGE_IMPRINT" as const,
+          coreLightSuppression: 0.28,
+          ambientFocus: 0.92,
+        }),
+      }),
+      boundary: GENESIS_RENDERER_VISUAL_REALIZATION_BOUNDARY,
+    });
+  }
+
+  if (contract.runtimeStage === "LIFE_FORCE") {
+    return Object.freeze({
+      status: "READY" as const,
+      realizationStatus: "GENESIS_RENDERER_VISUAL_REALIZATION_READY" as const,
+      source: "genesis_renderer_visual_realization" as const,
+      input,
+      realization: Object.freeze({
+        ...common,
+        activeVisualLayer: "LIFE_FORCE" as const,
+        visualExpressionMode: "LIFE_FORCE_MOTION" as const,
+        environmentalState: Object.freeze({
+          cosmicDepth: "LIFE_FORCE_SPACE" as const,
+          moonlight: "MOONLIGHT_GATHERS_TO_TIME" as const,
+          stellarOrder: "FORCE_RESPONSIVE" as const,
+          temporalResponse: "LIFE_FORCE_AWAKENING" as const,
+        }),
+        focalElementState: Object.freeze({
+          focalElement: "LIFE_FORCE" as const,
+          coreLightSuppression: 0.2,
+          ambientFocus: 0.98,
+        }),
+      }),
+      boundary: GENESIS_RENDERER_VISUAL_REALIZATION_BOUNDARY,
+    });
+  }
+
+  return blocked(input, "P17_B_LAYER_OUT_OF_SCOPE");
 }

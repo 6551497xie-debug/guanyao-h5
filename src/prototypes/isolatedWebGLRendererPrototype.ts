@@ -352,13 +352,22 @@ export function createIsolatedWebGLRendererPrototype(
   const isMoonOrigin = activeVisualLayer === "MOON_ORIGIN";
   const isStarRiver = activeVisualLayer === "STAR_RIVER";
   const isTimeResonance = activeVisualLayer === "TIME_RESONANCE";
+  const isSymbolReveal = activeVisualLayer === "SYMBOL_REVEAL";
+  const isHexagramImprint = activeVisualLayer === "HEXAGRAM_IMPRINT";
+  const isLifeForce = activeVisualLayer === "LIFE_FORCE";
   const realizationProgress = genesisVisualRealization?.transitionProgress ?? 0;
   const random = createSeededRandom(hashReference(planReference.referenceId));
   const cosmicParticleCount = isMoonOrigin
     ? Math.round(sceneProjection.cosmicField.particleCount * 0.62)
     : isStarRiver
       ? Math.round(sceneProjection.cosmicField.particleCount * 1.18)
-      : sceneProjection.cosmicField.particleCount;
+      : isSymbolReveal
+        ? Math.round(sceneProjection.cosmicField.particleCount * 1.28)
+        : isHexagramImprint
+          ? Math.round(sceneProjection.cosmicField.particleCount * 1.12)
+          : isLifeForce
+            ? Math.round(sceneProjection.cosmicField.particleCount * 1.04)
+            : sceneProjection.cosmicField.particleCount;
   const cosmicPositions = new Float32Array(cosmicParticleCount * 3);
   for (
     let index = 0;
@@ -366,7 +375,7 @@ export function createIsolatedWebGLRendererPrototype(
     index += 1
   ) {
     const offset = index * 3;
-    if (isStarRiver || isTimeResonance) {
+    if (isStarRiver || isTimeResonance || isSymbolReveal || isHexagramImprint || isLifeForce) {
       const angle = random() * Math.PI * 2;
       const radius = 1.25 + random() * 2.5;
       cosmicPositions[offset] = Math.cos(angle) * radius;
@@ -387,11 +396,33 @@ export function createIsolatedWebGLRendererPrototype(
   );
   const cosmicMaterial = new PointsMaterial({
     color: new Color().setHSL(sceneProjection.formField.hue, 0.42, 0.7),
-    size: isMoonOrigin ? 0.018 : isStarRiver ? 0.022 : 0.02,
+    size: isMoonOrigin
+      ? 0.018
+      : isStarRiver
+        ? 0.022
+        : isSymbolReveal
+          ? 0.024
+          : isHexagramImprint
+            ? 0.021
+            : isLifeForce
+              ? 0.022
+              : 0.02,
     transparent: true,
     opacity:
       sceneProjection.cosmicField.opacity *
-      (isMoonOrigin ? 0.7 : isStarRiver ? 1.12 : isTimeResonance ? 0.96 : 1),
+      (isMoonOrigin
+        ? 0.7
+        : isStarRiver
+          ? 1.12
+          : isTimeResonance
+            ? 0.96
+            : isSymbolReveal
+              ? 1.06
+              : isHexagramImprint
+                ? 0.9
+                : isLifeForce
+                  ? 0.98
+                  : 1),
     blending: AdditiveBlending,
     depthWrite: false,
   });
@@ -536,7 +567,22 @@ export function createIsolatedWebGLRendererPrototype(
     0.72,
     0.76,
   );
-  const structureOpacityScale = isMoonOrigin ? 0.06 : isStarRiver ? 1.16 : 0.94;
+  const structureOpacityScale = isMoonOrigin
+    ? 0.06
+    : isStarRiver
+      ? 1.16
+      : isTimeResonance
+        ? 0.94
+        : isSymbolReveal
+          ? 1.24
+          : isHexagramImprint
+            ? 1.08
+            : isLifeForce
+              ? 1.14
+              : 0.94;
+  const symbolicFieldScale = isSymbolReveal ? 1.08 + realizationProgress * 0.12 : 1;
+  const changeImprintScale = isHexagramImprint ? 1.02 + realizationProgress * 0.06 : 1;
+  const lifeForceScale = isLifeForce ? 1.02 + realizationProgress * 0.1 : 1;
   const spineLine = new Line(
     spineGeometry,
     new LineBasicMaterial({
@@ -584,6 +630,9 @@ export function createIsolatedWebGLRendererPrototype(
       (1 + (forceAggregation - 0.5) * 0.18) *
       (1 + revealCoreConvergence * 0.1) *
       (1 - pressureFieldCompression * 0.08) *
+      symbolicFieldScale *
+      changeImprintScale *
+      lifeForceScale *
       1.45,
   );
   structureGroup.rotation.z =
@@ -592,9 +641,60 @@ export function createIsolatedWebGLRendererPrototype(
     lifePresence.morphologicalField.flowDirection * 0.04 +
     pressureFlowDeflection * 0.025;
   structureGroup.rotation.z += fieldDirectionalFlow * 0.03 + forceDirectionalBias * 0.04;
+  structureGroup.rotation.x = isSymbolReveal
+    ? fieldDirectionalFlow * 0.06
+    : isHexagramImprint
+      ? Math.sin(realizationProgress * Math.PI) * 0.035
+      : isLifeForce
+        ? forceDirectionalBias * 0.08
+        : 0;
   structureGroup.add(spineLine, branchLines, structurePoints);
   structureGroup.visible = !isMoonOrigin;
   root.add(structureGroup);
+
+  const imprintTraceGroup = new Group();
+  if (isHexagramImprint) {
+    for (let index = 0; index < 6; index += 1) {
+      const startProgress = 0.08 + index * 0.14;
+      const first = getSpinePoint(startProgress);
+      const second = getSpinePoint(Math.min(0.98, startProgress + 0.07));
+      const third = getSpinePoint(Math.min(0.99, startProgress + 0.14));
+      const offset = index % 2 === 0 ? 1 : -1;
+      const offsetX = perpendicularX * offset * 0.08;
+      const offsetY = perpendicularY * offset * 0.08;
+      const imprintGeometry = new BufferGeometry();
+      imprintGeometry.setAttribute(
+        "position",
+        new Float32BufferAttribute(
+          [
+            first[0] + offsetX,
+            first[1] + offsetY,
+            first[2] + index * 0.012,
+            second[0] + offsetX * 1.15,
+            second[1] + offsetY * 1.15,
+            second[2] + index * 0.012,
+            third[0] + offsetX * 0.72,
+            third[1] + offsetY * 0.72,
+            third[2] + index * 0.012,
+          ],
+          3,
+        ),
+      );
+      imprintTraceGroup.add(
+        new Line(
+          imprintGeometry,
+          new LineBasicMaterial({
+            color: new Color(0xb8a36e),
+            transparent: true,
+            opacity: 0.22 + index * 0.012,
+            blending: AdditiveBlending,
+          }),
+        ),
+      );
+    }
+    imprintTraceGroup.position.z = 0.04;
+    root.add(imprintTraceGroup);
+  }
 
   const coreColor = isMoonOrigin
     ? new Color(0xd8d2c4)
@@ -602,13 +702,26 @@ export function createIsolatedWebGLRendererPrototype(
   const coreRadius = isMoonOrigin
     ? 0.34 + lifeStarCore.surfacePresence.innerLayerDepth * 0.12
     : 0.1 + lifeStarCore.surfacePresence.innerLayerDepth * 0.42;
+  const coreStageOpacity = isMoonOrigin
+    ? 0.46
+    : isStarRiver
+      ? 0.48
+      : isTimeResonance
+        ? 0.54
+        : isSymbolReveal
+          ? 0.58
+          : isHexagramImprint
+            ? 0.52
+            : isLifeForce
+              ? 0.66
+              : 0.72;
   const core = new Mesh(
     new SphereGeometry(coreRadius, 20, 20),
     new MeshBasicMaterial({
       color: coreColor,
       transparent: true,
       opacity:
-        (isMoonOrigin ? 0.46 : isStarRiver ? 0.48 : isTimeResonance ? 0.54 : 0.72) +
+        coreStageOpacity +
         revealOpacity * 0.12 +
         lifeStarCore.surfacePresence.surfaceVariation *
           (isMoonOrigin ? 0.22 : 0.7) -
@@ -653,7 +766,19 @@ export function createIsolatedWebGLRendererPrototype(
     coreColor,
     sceneProjection.lifeCore.intensity *
       lifeStarCore.coreInfluence.lightFlowReach *
-      (isMoonOrigin ? 0.28 : isStarRiver ? 0.52 : 0.68),
+      (isMoonOrigin
+        ? 0.28
+        : isStarRiver
+          ? 0.52
+          : isTimeResonance
+            ? 0.68
+            : isSymbolReveal
+              ? 0.74
+              : isHexagramImprint
+                ? 0.66
+                : isLifeForce
+                  ? 0.86
+                  : 0.68),
     6,
     1.7,
   );
@@ -750,6 +875,21 @@ export function createIsolatedWebGLRendererPrototype(
         cosmicFieldScale *= timeGathering;
         cosmicFieldOpacity *= 0.94 + realizationProgress * 0.1;
       }
+      if (isSymbolReveal) {
+        cosmicField.rotation.z += elapsedSeconds * 0.0035;
+        cosmicFieldScale *= 1.03 + Math.sin(elapsedSeconds * 0.16) * 0.018;
+        cosmicFieldOpacity *= 1.04;
+      }
+      if (isHexagramImprint) {
+        cosmicField.rotation.z += elapsedSeconds * 0.0018;
+        cosmicFieldScale *= 0.99 + Math.sin(elapsedSeconds * 0.18) * 0.014;
+        cosmicFieldOpacity *= 0.92 + realizationProgress * 0.08;
+      }
+      if (isLifeForce) {
+        cosmicField.rotation.z += elapsedSeconds * 0.0042;
+        cosmicFieldScale *= 1.01 + Math.sin(elapsedSeconds * 0.42) * 0.022;
+        cosmicFieldOpacity *= 1.02;
+      }
       if (birthMansionIgnition !== null) {
         const ignitionPhase =
           (elapsedSeconds / birthMansionIgnition.temporalRhythm.periodSeconds) *
@@ -812,8 +952,26 @@ export function createIsolatedWebGLRendererPrototype(
           (1 + lifePresence.timeSequenceResponse.presenceIntensity * 0.045) *
           (1 + lifePresence.birthMansionIgnitionResponse.presenceIntensity * 0.04) *
           1.45 *
+          symbolicFieldScale *
+          changeImprintScale *
+          lifeForceScale *
+          (isLifeForce
+            ? 1 + Math.sin(elapsedSeconds * 0.42) * (0.028 + realizationProgress * 0.025)
+            : 1) *
           structureInfluence,
       );
+      if (isSymbolReveal) {
+        structureGroup.scale.x *= 1.16;
+        structureGroup.scale.y *= 0.86;
+      }
+      if (isHexagramImprint) {
+        structureGroup.scale.x *= 0.98;
+        structureGroup.scale.y *= 1.04;
+      }
+      if (isLifeForce) {
+        structureGroup.scale.x *= 0.94;
+        structureGroup.scale.y *= 1.08;
+      }
       structureGroup.rotation.z =
         sceneProjection.lifePresence.morphologicalField.bend * 0.12 +
         sceneProjection.lifePresence.morphologicalField.postureBias * 0.08 +
@@ -824,8 +982,36 @@ export function createIsolatedWebGLRendererPrototype(
         pressureFlowDeflection * 0.025 +
         Math.sin(elapsedSeconds * sceneProjection.formField.flowSpeed) *
           sceneProjection.motion.driftAmplitude;
+      if (isSymbolReveal) {
+        structureGroup.rotation.x =
+          fieldDirectionalFlow * 0.06 + Math.sin(elapsedSeconds * 0.16) * 0.012;
+      }
+      if (isHexagramImprint) {
+        structureGroup.rotation.x =
+          Math.sin(elapsedSeconds * 0.12) * 0.035;
+        imprintTraceGroup.rotation.z = elapsedSeconds * 0.012;
+        imprintTraceGroup.scale.setScalar(
+          0.98 + realizationProgress * 0.05 + Math.sin(elapsedSeconds * 0.18) * 0.012,
+        );
+        imprintTraceGroup.children.forEach((child, index) => {
+          const material = (child as Line).material as LineBasicMaterial;
+          material.opacity =
+            0.16 + index * 0.012 + Math.sin(elapsedSeconds * 0.18 + index * 0.3) * 0.028;
+        });
+      }
+      if (isLifeForce) {
+        structureGroup.rotation.x =
+          forceDirectionalBias * 0.08 + Math.sin(elapsedSeconds * 0.24) * 0.018;
+      }
+      const stagePointOpacity = isSymbolReveal
+        ? 0.86
+        : isHexagramImprint
+          ? 0.78
+          : isLifeForce
+            ? 0.92
+            : 0.74;
       structurePointMaterial.opacity =
-        0.74 +
+        stagePointOpacity +
         lifeStarCore.coreInfluence.nodeBreathCoupling *
           0.16 *
           (0.94 + (breath - 1) * 2) -
@@ -836,7 +1022,19 @@ export function createIsolatedWebGLRendererPrototype(
       coreLight.intensity =
         sceneProjection.lifeCore.intensity *
         lifeStarCore.coreInfluence.lightFlowReach *
-        (isMoonOrigin ? 0.28 : isStarRiver ? 0.52 : 0.68) *
+        (isMoonOrigin
+          ? 0.28
+          : isStarRiver
+            ? 0.52
+            : isTimeResonance
+              ? 0.68
+              : isSymbolReveal
+                ? 0.74
+                : isHexagramImprint
+                  ? 0.66
+                  : isLifeForce
+                    ? 0.86
+                    : 0.68) *
         (0.94 + forceStability * 0.08) *
         (0.92 +
           sceneProjection.lifePresence.corePresence.coherence * 0.08 * breath);
