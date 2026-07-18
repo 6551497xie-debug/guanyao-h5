@@ -109,8 +109,8 @@ try {
     assertExcludes("guard starts no engine, Reality runtime, renderer, route, storage, or legacy flow", source.service, marker),
   );
 
-  assertExcludes("Reality route remains unregistered", source.routes, 'reality: "/reality"');
-  assertExcludes("App mounts no Reality production host", source.app, "RealityProduction");
+  assertIncludes("Reality route is registered after authorization contract", source.routes, 'reality: "/reality"');
+  assertIncludes("App mounts only the guarded Reality route entry", source.app, "RealityProductionRouteEntry");
   assertIncludes("legacy dynamics remains isolated", source.dynamics, "LEGACY_DYNAMICS_FLOW_ISOLATED");
   assertIncludes("entry bridge still forbids route activation", source.entryType, "noRealityRouteActivation: true");
   assertIncludes("pressure architecture remains review only", source.pressureType, "noProductionIntegration: true");

@@ -15,6 +15,7 @@ export function AppShell({ children }: AppShellProps) {
     location.pathname === "/launch" ||
     location.pathname === "/launch-lab" ||
     location.pathname === "/genesis" ||
+    location.pathname === "/reality" ||
     location.pathname === "/launch-lab-preview" ||
     location.pathname === "/starbeast-genesis-renderer-slice-preview" ||
     location.pathname === "/personal-star-beast-webgl-prototype";

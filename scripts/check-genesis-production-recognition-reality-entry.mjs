@@ -83,7 +83,7 @@ try {
   ].forEach((marker) => assertIncludes("production page owns explicit completion interactions", source.page, marker));
   assertExcludes("production page performs no Reality navigation", source.page, "useNavigate");
   assertExcludes("production page starts no Pressure runtime", source.page, "resolvePressureRecognitionUIRuntime");
-  assertExcludes("Reality route remains unregistered", source.routes, 'reality: "/reality"');
+  assertIncludes("Reality route is now registered behind its own authorization", source.routes, 'reality: "/reality"');
   assertExcludes("Launch to Genesis remains deferred", source.launch, "GUANYAO_ROUTES.genesis");
 
   const packageJson = JSON.parse(source.packageManifest);

@@ -2978,3 +2978,9 @@ export type {
   RealityProductionSourceContext,
   RealityProductionRouteActivationAuthorization,
 } from "./realityProductionRouteAuthorization";
+
+export type {
+  RealityProductionRouteEntryBoundary,
+  RealityProductionHostBoundary,
+  RealityProductionHostProps,
+} from "./realityProductionRouteEntry";

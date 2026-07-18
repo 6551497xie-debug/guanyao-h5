@@ -23,6 +23,12 @@ const GenesisProductionRouteEntry = lazy(() =>
   })),
 );
 
+const RealityProductionRouteEntry = lazy(() =>
+  import("./pages/RealityProductionRouteEntry").then((module) => ({
+    default: module.RealityProductionRouteEntry,
+  })),
+);
+
 function LegacyRedirect({ to }: { to: string }) {
   return <Navigate to={to} replace />;
 }
@@ -72,6 +78,14 @@ export default function App() {
           element={
             <Suspense fallback={null}>
               <GenesisProductionRouteEntry />
+            </Suspense>
+          }
+        />
+        <Route
+          path={GUANYAO_ROUTES.reality}
+          element={
+            <Suspense fallback={null}>
+              <RealityProductionRouteEntry />
             </Suspense>
           }
         />
