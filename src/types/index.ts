@@ -3019,6 +3019,14 @@ export type {
 } from "./realityPressureSeedCaptureContract";
 
 export type {
+  RealityPressureSeedCandidateSourceBoundary,
+  RealityPressureSeedCandidateSourceRecord,
+  RealityPressureSeedCandidateSourceContext,
+  RealityPressureSeedCandidateSourceBlockedReason,
+  RealityPressureSeedCandidateSourceResult,
+} from "./realityPressureSeedCandidateSource";
+
+export type {
   RealityPressurePresentationBoundary,
   RealityPressurePresentationProps,
 } from "./realityPressurePresentation";
