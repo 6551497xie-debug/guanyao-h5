@@ -8,6 +8,7 @@ import {
 import { readRealityRouteActivationSourceContext } from "../services/realityRouteActivationSourceContext";
 import { bridgeRealityRouteToPressureCandidateActivation } from "../services/realityRoutePressureCandidateActivationBridge";
 import { bridgeRealityRouteCandidateRequestContext } from "../services/realityRouteCandidateRequestContextBridge";
+import { bridgeRealityRouteDeliveryOrchestration } from "../services/realityRouteDeliveryOrchestrationBridge";
 import type { RealityProductionRouteEntryBoundary } from "../types/realityProductionRouteEntry";
 
 export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
@@ -18,6 +19,7 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
     realityRouteActivationSourceContextRequired: true,
     pressureCandidateActivationContextRequired: true,
     pressureCandidateRequestContextRequired: true,
+    pressureDeliveryOrchestrationRequired: true,
     routeAuthorizationRequired: true,
     sourceNotReadyRecoveryRequired: true,
     sourceReferenceExcludedFromUrl: true,
@@ -57,6 +59,13 @@ export function RealityProductionRouteEntry() {
         routeCandidateActivationResult: candidateActivationResult,
       })
     : null;
+  const deliveryResult =
+    authorization.status === "READY" && candidateRequestResult
+      ? bridgeRealityRouteDeliveryOrchestration({
+          routeAuthorization: authorization,
+          routeCandidateRequestResult: candidateRequestResult,
+        })
+      : null;
 
   if (
     authorization.status !== "READY" ||
@@ -64,7 +73,8 @@ export function RealityProductionRouteEntry() {
     activationSourceContext.sourceReferenceId !==
       authorization.sourceReferenceId ||
     candidateActivationResult?.status !== "READY"
-    || candidateRequestResult?.status !== "READY"
+    || candidateRequestResult?.status !== "READY" ||
+    deliveryResult?.status !== "READY"
   ) {
     return (
       <main
@@ -82,6 +92,9 @@ export function RealityProductionRouteEntry() {
             : candidateRequestResult?.status !== "READY"
             ? candidateRequestResult?.reason ??
               "PRESSURE_CANDIDATE_REQUEST_NOT_READY"
+            : deliveryResult?.status !== "READY"
+            ? deliveryResult?.reason ??
+              "PRESSURE_DELIVERY_ORCHESTRATION_NOT_READY"
             : null
         }
       >
