@@ -2539,3 +2539,19 @@ export type {
   GenesisSpaceUIRuntimeBlocked,
   GenesisSpaceUIRuntimeResult,
 } from "./genesisSpaceUIRuntime";
+
+export type {
+  RecognitionSpaceRecognitionState,
+  RecognitionSpaceRealityEntryAvailability,
+  RecognitionSpaceInteractionAvailability,
+  RecognitionSpaceUIRuntimeBoundary,
+  RecognitionSpaceUIRuntimeReviewBoundary,
+  RecognitionSpaceUIRuntime,
+  RecognitionSpaceUIRuntimeInput,
+  RecognitionSpaceUIRuntimeUnavailableReason,
+  RecognitionSpaceUIRuntimeBlockedReason,
+  RecognitionSpaceUIRuntimeReady,
+  RecognitionSpaceUIRuntimeUnavailable,
+  RecognitionSpaceUIRuntimeBlocked,
+  RecognitionSpaceUIRuntimeResult,
+} from "./recognitionSpaceUIRuntime";

@@ -320,6 +320,92 @@
   color: rgba(241, 225, 189, 0.78) !important;
 }
 
+.gy-p34__recognition-space {
+  position: absolute;
+  z-index: 4;
+  bottom: clamp(74px, 12vh, 126px);
+  left: 50%;
+  width: min(420px, 78vw);
+  padding: 17px 19px 18px;
+  border: 1px solid rgba(223, 207, 177, 0.2);
+  border-radius: 18px;
+  background: rgba(5, 7, 13, 0.68);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 245, 218, 0.05);
+  backdrop-filter: blur(18px);
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.gy-p34__recognition-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: rgba(222, 193, 135, 0.68);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+.gy-p34__recognition-head strong {
+  color: rgba(248, 240, 222, 0.92);
+  font-family: var(--gy-font-serif);
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.gy-p34__recognition-space h2 {
+  margin: 13px 0 8px;
+  color: rgba(248, 243, 233, 0.94);
+  font-family: var(--gy-font-serif);
+  font-size: clamp(18px, 3vw, 24px);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+}
+
+.gy-p34__recognition-space p {
+  margin: 0;
+  color: rgba(232, 223, 205, 0.62);
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+.gy-p34__recognition-space small {
+  display: block;
+  margin-top: 12px;
+  color: rgba(226, 214, 187, 0.42);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.gy-p34__recognition-space button {
+  width: 100%;
+  margin-top: 14px;
+  border: 1px solid rgba(224, 191, 124, 0.38);
+  border-radius: 999px;
+  padding: 10px 12px;
+  background: rgba(31, 25, 19, 0.34);
+  color: rgba(247, 235, 207, 0.86);
+  font: inherit;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: background 240ms ease, border-color 240ms ease, color 240ms ease;
+}
+
+.gy-p34__recognition-space button:hover,
+.gy-p34__recognition-space button:focus-visible {
+  border-color: rgba(224, 191, 124, 0.6);
+  background: rgba(63, 48, 29, 0.42);
+  color: rgba(255, 246, 222, 0.98);
+  outline: none;
+}
+
+.gy-p34__reality-ready {
+  margin-top: 12px !important;
+  color: rgba(224, 191, 124, 0.78) !important;
+  font-size: 10px !important;
+  letter-spacing: 0.08em;
+}
+
 .gy-p100__breath-mark {
   bottom: 23px;
   left: 50%;
@@ -384,6 +470,7 @@
   .gy-p100__canvas { transform: translateY(8vh) scale(1.02); }
   .gy-p100--formation .gy-p100__canvas { transform: translateY(8vh) scale(1.06); }
   .gy-p100--presence .gy-p100__canvas { transform: translateY(8vh) scale(1.1); }
+  .gy-p34__recognition-space { bottom: 70px; width: 78vw; }
 }
 
 @media (prefers-reduced-motion: reduce) {

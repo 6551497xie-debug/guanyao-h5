@@ -22,10 +22,12 @@ import { mapGenesisRendererVisualRealization } from "../services/genesisRenderer
 import { mapGenesisPerspectiveCalibration } from "../services/genesisPerspectiveCalibration";
 import { mapGenesisPresenceRecognitionCalibration } from "../services/genesisPresenceRecognitionCalibration";
 import { resolveGenesisSpaceUIRuntime } from "../services/genesisSpaceUIRuntime";
+import { resolveRecognitionSpaceUIRuntime } from "../services/recognitionSpaceUIRuntime";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type { GenesisPreviewIntegration } from "../types/genesisPreviewIntegration";
 import type { GenesisRuntimeStage } from "../types/genesisRuntimeStateMachine";
 import type { GenesisSpaceUIRuntime } from "../types/genesisSpaceUIRuntime";
+import type { RecognitionSpaceUIRuntime } from "../types/recognitionSpaceUIRuntime";
 import "../styles/personal-star-beast-webgl-prototype-harness.css";
 
 type FirstImpressionPhase = "ARRIVAL" | "FORMATION" | "PRESENCE";
@@ -271,6 +273,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
   const [previewStageIndex, setPreviewStageIndex] = useState(0);
   const [timeDelivered, setTimeDelivered] = useState(false);
   const [recognitionEntered, setRecognitionEntered] = useState(false);
+  const [recognitionConfirmed, setRecognitionConfirmed] = useState(false);
   const [previewIntegration, setPreviewIntegration] =
     useState<GenesisPreviewIntegration | null>(() =>
       createPreviewIntegration(GENESIS_PREVIEW_STAGES[0].stage),
@@ -314,7 +317,21 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     recognitionEntered,
     rendererVisualRealization,
   ]);
-  const experiencePresentation = recognitionEntered
+  const recognitionSpaceUIRuntime = useMemo<RecognitionSpaceUIRuntime | null>(() => {
+    const result = resolveRecognitionSpaceUIRuntime({
+      genesisCompleted: isCompletionStage,
+      presenceAvailable: rendererPresenceRecognitionCalibration !== null,
+      recognitionConfirmed,
+    });
+    return result.status === "READY" ? result.uiRuntime : null;
+  }, [isCompletionStage, rendererPresenceRecognitionCalibration, recognitionConfirmed]);
+  const experiencePresentation = recognitionConfirmed
+    ? Object.freeze({
+        prelude: "现实入口",
+        title: "带着这份看见，进入下一段。",
+        note: "入口已经准备好，现实体验尚未开始。",
+      })
+    : recognitionEntered
     ? Object.freeze({
         prelude: "生命认领",
         title: "它已经在这里。",
@@ -452,6 +469,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     setPreviewStageIndex(0);
     setTimeDelivered(false);
     setRecognitionEntered(false);
+    setRecognitionConfirmed(false);
     setPreviewIntegration(
       createPreviewIntegration(GENESIS_PREVIEW_STAGES[0].stage),
     );
@@ -477,6 +495,15 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       return;
     }
     setRecognitionEntered(true);
+    setRecognitionConfirmed(false);
+  };
+  const confirmRecognition = () => {
+    if (
+      recognitionSpaceUIRuntime?.interactionAvailability !== "RECOGNITION_CONFIRM"
+    ) {
+      return;
+    }
+    setRecognitionConfirmed(true);
   };
   const revealAnotherLife = () => {
     setFormalCaseIndex((current) => (current === 0 ? 1 : 0));
@@ -511,6 +538,16 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       }
       data-genesis-recognition-entry={
         genesisSpaceUIRuntime?.recognitionEntryState ?? "NOT_READY"
+      }
+      data-recognition-space={recognitionEntered ? "RECOGNITION_SPACE" : "NOT_ENTERED"}
+      data-recognition-state={
+        recognitionSpaceUIRuntime?.recognitionState ?? "NOT_READY"
+      }
+      data-reality-entry-availability={
+        recognitionSpaceUIRuntime?.realityEntryAvailability ?? "NOT_READY"
+      }
+      data-recognition-interaction={
+        recognitionSpaceUIRuntime?.interactionAvailability ?? "NONE"
       }
     >
       <div className="gy-p100__cosmic-depth" aria-hidden="true" />
@@ -587,6 +624,41 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
           </p>
         ) : null}
       </section>
+
+      {recognitionEntered ? (
+        <section
+          className="gy-p34__recognition-space"
+          aria-label="Recognition Space生命认领"
+          data-recognition-space-panel="RECOGNITION_SPACE"
+        >
+          <div className="gy-p34__recognition-head">
+            <span>生命认领空间</span>
+            <strong>{recognitionConfirmed ? "准备" : "相遇"}</strong>
+          </div>
+          <h2>{recognitionConfirmed ? "这份看见，随你进入下一段。" : "它仍然在这里。"}</h2>
+          <p>
+            {recognitionConfirmed
+              ? "Reality Entry 已准备好；这里不解释，也不替你决定。"
+              : "不领取结果，不解释命运，只让这份生命存在被看见。"}
+          </p>
+          <small>Genesis 已完成 · 生命存在持续停驻</small>
+          {recognitionSpaceUIRuntime?.interactionAvailability ===
+          "RECOGNITION_CONFIRM" ? (
+            <button
+              type="button"
+              data-interaction="RECOGNITION_CONFIRM"
+              onClick={confirmRecognition}
+            >
+              带着这份看见进入现实准备
+            </button>
+          ) : null}
+          {recognitionSpaceUIRuntime?.realityEntryAvailability === "READY" ? (
+            <p className="gy-p34__reality-ready" role="status">
+              Reality Entry 已准备好。
+            </p>
+          ) : null}
+        </section>
+      ) : null}
 
       <nav
         className={`gy-p100__actions ${revealComplete ? "is-visible" : ""}`}
