@@ -3042,6 +3042,15 @@ export type {
 } from "./realityProductionPressureSeedConsumer";
 
 export type {
+  RealityPressureCandidateCatalogRequest,
+  RealityPressureCandidateRequestContextBridgeBoundary,
+  RealityPressureCandidateRequestContextBridgeInput,
+  RealityPressureCandidateRequestContext,
+  RealityPressureCandidateRequestContextBridgeBlockedReason,
+  RealityPressureCandidateRequestContextBridgeResult,
+} from "./realityPressureCandidateRequestContextBridge";
+
+export type {
   RealityPressurePresentationBoundary,
   RealityPressurePresentationProps,
 } from "./realityPressurePresentation";
