@@ -12,7 +12,15 @@ import { projectGenesisFourSymbolAlignment } from "../services/genesisFourSymbol
 import { projectGenesisLifeForceInfusion } from "../services/genesisLifeForceInfusionProjection";
 import { projectGenesisPersonalReveal } from "../services/genesisPersonalRevealProjection";
 import { projectGenesisRealityPressure } from "../services/genesisRealityPressureProjection";
+import {
+  completeGenesisPreviewIntegration,
+  initializeGenesisPreviewIntegration,
+  startGenesisPreviewIntegration,
+} from "../services/genesisPreviewIntegration";
+import { createGenesisPreviewIntegrationFixture } from "../services/genesisPreviewIntegrationFixture";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
+import type { GenesisPreviewIntegration } from "../types/genesisPreviewIntegration";
+import type { GenesisRuntimeStage } from "../types/genesisRuntimeStateMachine";
 import "../styles/personal-star-beast-webgl-prototype-harness.css";
 
 type FirstImpressionPhase = "ARRIVAL" | "FORMATION" | "PRESENCE";
@@ -203,6 +211,36 @@ const PHASE_COPY: Readonly<
   }),
 });
 
+const GENESIS_PREVIEW_STAGES: ReadonlyArray<{
+  stage: GenesisRuntimeStage;
+  symbol: string;
+  title: string;
+  note: string;
+}> = Object.freeze([
+  { stage: "MOON_ORIGIN", symbol: "月", title: "太阴入口", note: "进入太阴之境。" },
+  { stage: "STAR_RIVER", symbol: "星", title: "星河秩序", note: "星辰开始显出关系。" },
+  { stage: "TIME_RESONANCE", symbol: "时", title: "生命时序", note: "把时间交给星河。" },
+  { stage: "SYMBOL_REVEAL", symbol: "象", title: "形态显影", note: "星辰关系形成生命姿态。" },
+  { stage: "HEXAGRAM_IMPRINT", symbol: "卦", title: "变化印记", note: "变化留下连续的痕迹。" },
+  { stage: "LIFE_FORCE", symbol: "力", title: "生命原力", note: "生命开始以自己的方式运行。" },
+  { stage: "STAR_BEAST_REVEAL", symbol: "兽", title: "个人星兽归来", note: "它不是生成，只是终于被看见。" },
+  { stage: "COMPLETION", symbol: "认领", title: "认领停驻", note: "停在这里，看见它与你的关系。" },
+]);
+
+const createPreviewIntegration = (
+  stage: GenesisRuntimeStage,
+): GenesisPreviewIntegration | null => {
+  const input = createGenesisPreviewIntegrationFixture(stage);
+  const initialized = initializeGenesisPreviewIntegration(input);
+  if (initialized.status !== "READY") return null;
+  if (stage === "COMPLETION") {
+    const completed = completeGenesisPreviewIntegration(initialized.integration);
+    return completed.status === "READY" ? completed.integration : null;
+  }
+  const started = startGenesisPreviewIntegration(initialized.integration);
+  return started.status === "READY" ? started.integration : null;
+};
+
 const resolvePlan = (index: number): PersonalStarBeastRenderPlan | null => {
   const result = FORMAL_PLAN_RESULTS[index];
   return result?.status === "PLANNED" ? result.plan : null;
@@ -214,9 +252,16 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
   const [replayKey, setReplayKey] = useState(0);
   const [phase, setPhase] = useState<FirstImpressionPhase>("ARRIVAL");
   const [harnessState, setHarnessState] = useState<HarnessState>("STARTING");
+  const [previewStageIndex, setPreviewStageIndex] = useState(0);
+  const [previewIntegration, setPreviewIntegration] =
+    useState<GenesisPreviewIntegration | null>(() =>
+      createPreviewIntegration(GENESIS_PREVIEW_STAGES[0].stage),
+    );
   const presentation = PHASE_COPY[phase];
   const plan = useMemo(() => resolvePlan(formalCaseIndex), [formalCaseIndex]);
   const projectionBundle = FORMAL_PROJECTION_BUNDLES[formalCaseIndex];
+  const previewStage = GENESIS_PREVIEW_STAGES[previewStageIndex];
+  const isCompletionStage = previewStage.stage === "COMPLETION";
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -321,7 +366,26 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
   }, [plan, projectionBundle, replayKey]);
 
   const revealComplete = phase === "PRESENCE";
-  const replay = () => setReplayKey((current) => current + 1);
+  const replay = () => {
+    setPhase("ARRIVAL");
+    setReplayKey((current) => current + 1);
+  };
+  const restartGenesisPreview = () => {
+    setPreviewStageIndex(0);
+    setPreviewIntegration(
+      createPreviewIntegration(GENESIS_PREVIEW_STAGES[0].stage),
+    );
+    replay();
+  };
+  const advanceGenesisPreview = () => {
+    if (isCompletionStage) return;
+    const nextIndex = previewStageIndex + 1;
+    const nextStage = GENESIS_PREVIEW_STAGES[nextIndex];
+    if (!nextStage) return;
+    setPreviewStageIndex(nextIndex);
+    setPreviewIntegration(createPreviewIntegration(nextStage.stage));
+    replay();
+  };
   const revealAnotherLife = () => {
     setFormalCaseIndex((current) => (current === 0 ? 1 : 0));
     setReplayKey((current) => current + 1);
@@ -333,6 +397,9 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       data-prototype-scope="ISOLATED_WEBGL_RENDERER_PROTOTYPE_ONLY"
       data-harness-state={harnessState}
       data-first-impression-phase={phase}
+      data-genesis-preview-mode="ISOLATED_GENESIS_PREVIEW"
+      data-genesis-stage={previewStage.stage}
+      data-genesis-lifecycle={previewIntegration?.previewLifecycle ?? "UNAVAILABLE"}
     >
       <div className="gy-p100__cosmic-depth" aria-hidden="true" />
       <canvas ref={canvasRef} className="gy-p100__canvas" aria-hidden="true" />
@@ -364,11 +431,40 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
         </p>
       ) : null}
 
+      <section className="gy-p100__runtime-panel" aria-label="Genesis完整预览">
+        <div className="gy-p100__runtime-panel-head">
+          <span>GENESIS / ISOLATED PREVIEW</span>
+          <strong>{previewStage.symbol}</strong>
+        </div>
+        <h2>{previewStage.title}</h2>
+        <p>{previewStage.note}</p>
+        <div className="gy-p100__runtime-progress" aria-label="Genesis阶段进度">
+          {GENESIS_PREVIEW_STAGES.map((item, index) => (
+            <i
+              key={item.stage}
+              className={index <= previewStageIndex ? "is-active" : ""}
+              aria-hidden="true"
+            />
+          ))}
+        </div>
+        <small>
+          {previewStageIndex + 1} / {GENESIS_PREVIEW_STAGES.length} · {previewIntegration?.previewLifecycle ?? "UNAVAILABLE"}
+        </small>
+        <button
+          type="button"
+          onClick={advanceGenesisPreview}
+          disabled={isCompletionStage || previewIntegration === null}
+        >
+          {isCompletionStage ? "停驻认领" : `进入${GENESIS_PREVIEW_STAGES[previewStageIndex + 1]?.symbol ?? "下一阶段"}`}
+        </button>
+      </section>
+
       <nav
         className={`gy-p100__actions ${revealComplete ? "is-visible" : ""}`}
         aria-label="显化体验控制"
       >
-        <button type="button" onClick={replay}>再看一次</button>
+        <button type="button" onClick={restartGenesisPreview}>重新开始Genesis</button>
+        <button type="button" onClick={replay}>重看当前阶段</button>
         <button type="button" onClick={revealAnotherLife}>看看另一种生命</button>
       </nav>
 
