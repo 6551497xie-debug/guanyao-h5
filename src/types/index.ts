@@ -2572,3 +2572,22 @@ export type {
   RealityEntrySpaceUIRuntimeBlocked,
   RealityEntrySpaceUIRuntimeResult,
 } from "./realityEntrySpaceUIRuntime";
+
+export type {
+  PressureRecognitionStageState,
+  RealitySignalReference,
+  PressureObservationState,
+  PressureTensionAwareness,
+  PressureRecognitionGravityReadiness,
+  PressureRecognitionInteractionAvailability,
+  PressureRecognitionUIRuntimeBoundary,
+  PressureRecognitionUIRuntime,
+  PressureRecognitionUIRuntimeInput,
+  PressureRecognitionUIRuntimeUnavailableReason,
+  PressureRecognitionUIRuntimeBlockedReason,
+  PressureRecognitionUIRuntimeReviewBoundary,
+  PressureRecognitionUIRuntimeReady,
+  PressureRecognitionUIRuntimeUnavailable,
+  PressureRecognitionUIRuntimeBlocked,
+  PressureRecognitionUIRuntimeResult,
+} from "./pressureRecognitionUIRuntime";
