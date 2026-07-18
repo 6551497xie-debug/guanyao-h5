@@ -430,7 +430,7 @@ if (failures.length === 0) {
   assertIncludes(
     "launch mother consumes starbeast source carrier",
     launchOriginMotherAdapterSource,
-    "resolveLaunchStarbeastDerivationSource(birthDate)",
+    "resolveLaunchStarbeastDerivationSource({",
   );
   assertIncludes(
     "launch mother reads formal starbeast result",

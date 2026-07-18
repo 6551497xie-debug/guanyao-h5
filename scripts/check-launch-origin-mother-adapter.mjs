@@ -64,7 +64,7 @@ try {
   assertIncludes("neutral input type owns launch adapter input", inputTypeSource, "export type LaunchOriginMotherInput");
   assertExcludes("neutral launch input does not import services", inputTypeSource, 'from "../services/');
   assertIncludes("adapter consumes neutral launch input", adapterSource, 'from "../types/guanyaoLaunchOriginMother"');
-  assertIncludes("adapter delegates lunar trigram derivation", adapterSource, "resolveLunarTrigramLanding");
+  assertIncludes("adapter delegates full mother code landing", adapterSource, "runMotherCodeLandingEngine");
   assertIncludes("adapter delegates starbeast source carrier", adapterSource, "resolveLaunchStarbeastDerivationSource");
   assertExcludes("adapter no longer calls starbeast engine directly", adapterSource, "resolveStarbeastFromBirthDate");
   assertIncludes("adapter delegates mother fusion", adapterSource, "runGeoChronoMotherFusionEngine");
@@ -76,7 +76,8 @@ try {
   assertExcludes("adapter does not depend on Launch state", adapterSource, "m.coords");
   assertExcludes("adapter does not depend on visual nodes", adapterSource, "NODES");
   assertExcludes("adapter does not own eight-division arithmetic", adapterSource, "fieldSeed");
-  assertIncludes("launch calls single origin mother adapter", launchSource, "resolveLaunchOriginMother({");
+  assertIncludes("launch captures complete origin source results", launchSource, "resolveLaunchOriginMotherSourceResults(launchInput)");
+  assertIncludes("launch stores immutable life source session", launchSource, "createLaunchLifeSourceSession({");
   assertExcludes("launch does not call fusion engine", launchSource, "runGeoChronoMotherFusionEngine");
   assertExcludes("launch does not call trigram resolver", launchSource, "resolveLunarTrigramLanding");
   assertExcludes("launch does not call starbeast resolver", launchSource, "resolveStarbeastFromBirthDate");

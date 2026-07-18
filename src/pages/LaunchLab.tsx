@@ -24,10 +24,16 @@ import { resolveStarbeastRenderState } from "../runtime/starbeast/starbeastRende
 import { buildSelectedPressureSeedContext } from "../services/guanyaoPressureSeedSceneBindingService";
 import { getPressureSeedSceneTriplet } from "../services/guanyaoPressureSeedSceneBindingService";
 import type { GeoChronoMotherFusionResult } from "../types/guanyaoGeoChronoMotherFusion";
+import type { LaunchLifeSourceSession } from "../types/launchLifeSourceSession";
+import type { LaunchOriginMotherInput } from "../types/guanyaoLaunchOriginMother";
 import type { FourSymbol } from "../types/guanyaoStarbeast";
 import type { DynamicsHandoffState, DynamicsMotherHandoff } from "../types/gravityRuntimeInput";
 import { buildDynamicsMotherHandoff } from "../services/guanyaoDynamicsMotherHandoffAdapter";
-import { resolveLaunchOriginMother } from "../services/guanyaoLaunchOriginMotherInputAdapter";
+import {
+  resolveLaunchOriginMother,
+  resolveLaunchOriginMotherSourceResults,
+} from "../services/guanyaoLaunchOriginMotherInputAdapter";
+import { createLaunchLifeSourceSession } from "../services/launchLifeSourceSession";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
 import { writePersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
@@ -1063,6 +1069,7 @@ export function LaunchLab() {
       chronoStep: 0,
       geo: { provinceIndex: DEFAULT_PROVINCE_INDEX >= 0 ? DEFAULT_PROVINCE_INDEX : 0, cityIndex: DEFAULT_CITY_INDEX >= 0 ? DEFAULT_CITY_INDEX : 0 },
       geoStep: 0,
+      lifeSourceSession: null as LaunchLifeSourceSession | null,
       originMotherContextPersistenceAttempted: false,
       dialFloat: 1995,
       railProgress: 0,
@@ -1302,8 +1309,8 @@ export function LaunchLab() {
     function originCoordinateSummary() {
       return `${m.coords.year}/${pad2(m.coords.month)}/${pad2(m.coords.day)} ${hourToPeriodLabel(m.coords.hour)} · ${currentProvinceName()}`;
     }
-    function resolveOriginMotherCode(): GeoChronoMotherFusionResult {
-      return resolveLaunchOriginMother({
+    function buildLaunchOriginMotherInput(): LaunchOriginMotherInput {
+      return {
         birth: {
           year: m.coords.year,
           month: m.coords.month,
@@ -1320,7 +1327,35 @@ export function LaunchLab() {
           primaryNodeIndex: Math.max(0, Math.min(NODES.length - 1, Math.round((m.precisionY / 20) * (NODES.length - 1)))),
           originLightTrace: "28光兽入口",
         },
+      };
+    }
+    function resolveOriginMotherCode(): GeoChronoMotherFusionResult {
+      return m.lifeSourceSession?.originMotherResult
+        ?? resolveLaunchOriginMother(buildLaunchOriginMotherInput());
+    }
+    function captureLaunchLifeSourceSession(): LaunchLifeSourceSession {
+      if (m.lifeSourceSession) return m.lifeSourceSession;
+
+      const launchInput = buildLaunchOriginMotherInput();
+      const sourceResults = resolveLaunchOriginMotherSourceResults(launchInput);
+      const sessionResult = createLaunchLifeSourceSession({
+        sourceReferenceId: [
+          "launch",
+          `${launchInput.birth.year}-${pad2(launchInput.birth.month)}-${pad2(launchInput.birth.day)}`,
+          launchInput.birth.hourBranch,
+          launchInput.geo.province,
+          launchInput.geo.city,
+        ].join(":"),
+        birthCoordinate: launchInput.birth,
+        ...sourceResults,
       });
+
+      if (sessionResult.status !== "AVAILABLE") {
+        throw new Error(`LAUNCH_LIFE_SOURCE_SESSION_BLOCKED:${sessionResult.reason}`);
+      }
+
+      m.lifeSourceSession = sessionResult.session;
+      return sessionResult.session;
     }
     function persistOriginMotherContext(reveal: GeoChronoMotherFusionResult) {
       if (m.pendingAxisMode !== "NEW_USER" || m.originMotherContextPersistenceAttempted) return;
@@ -1365,6 +1400,7 @@ export function LaunchLab() {
     function resetOriginTuningFlow() {
       m.chronoStep = 0;
       m.geoStep = 0;
+      m.lifeSourceSession = null;
       m.originMotherContextPersistenceAttempted = false;
       dynamicsMotherHandoffRef.current = null;
       m.railProgress = 0;
@@ -1408,7 +1444,7 @@ export function LaunchLab() {
       }, ENTRY_HANDOFF_DELAY_MS);
     }
     function openMotherCodeReveal() {
-      const originMother = resolveOriginMotherCode();
+      const originMother = captureLaunchLifeSourceSession().originMotherResult;
       persistOriginMotherContext(originMother);
       m.railProgress = 0;
       m.phaseX = 0;

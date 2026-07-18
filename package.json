@@ -232,6 +232,7 @@
     "check:launch-lunar-mother-chain": "node scripts/check-launch-lunar-mother-chain.mjs",
     "check:mother-fusion-type-isolation": "node scripts/check-mother-fusion-type-isolation.mjs",
     "check:launch-origin-mother-adapter": "node scripts/check-launch-origin-mother-adapter.mjs",
+    "check:launch-life-source-session": "node scripts/check-launch-life-source-session.mjs",
     "check:mother-code-profile-persistence-semantics": "node scripts/check-mother-code-profile-persistence-semantics.mjs",
     "check:mother-context-persistence-semantics": "node scripts/check-mother-context-persistence-semantics.mjs",
     "check:persona-snapshot-persistence-semantics": "node scripts/check-persona-snapshot-persistence-semantics.mjs",

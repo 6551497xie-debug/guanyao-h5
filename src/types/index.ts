@@ -244,6 +244,14 @@ export type {
   RealLifeVisualSourceProvenance,
 } from "./realLifeVisualSourceAdapter";
 export type {
+  LaunchLifeSourceSession,
+  LaunchLifeSourceSessionBlockedReason,
+  LaunchLifeSourceSessionBoundary,
+  LaunchLifeSourceSessionInput,
+  LaunchLifeSourceSessionProvenance,
+  LaunchLifeSourceSessionResult,
+} from "./launchLifeSourceSession";
+export type {
   ProductionIdentitySourceAdapterReadinessBlocked,
   ProductionIdentitySourceAdapterReadinessBlockedReason,
   ProductionIdentitySourceAdapterReadinessBoundary,

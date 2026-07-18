@@ -66,13 +66,13 @@ try {
   const { resolveStarbeastFromBirthDate } = starbeastModule;
   const { getFourBeastTrigramVisualGrammar } = visualModule;
 
-  assertIncludes("adapter consumes lunar trigram resolver", adapterSource, "resolveLunarTrigramLanding");
+  assertIncludes("adapter consumes full mother code landing", adapterSource, "runMotherCodeLandingEngine");
   assertIncludes("adapter consumes launch starbeast source", adapterSource, "resolveLaunchStarbeastDerivationSource");
   assertExcludes("adapter no longer consumes starbeast engine directly", adapterSource, "resolveStarbeastFromBirthDate");
   assertIncludes("launch starbeast source consumes birth-date resolver", starbeastSource, "resolveStarbeastFromBirthDate(input)");
-  assertIncludes("adapter feeds resolved trigram landing", adapterSource, "trigramLanding,");
-  assertIncludes("adapter feeds resolved four symbol", adapterSource, "fourSymbol: starbeastDerivation.fourSymbol");
-  assertIncludes("launch delegates origin mother resolution", launchSource, "resolveLaunchOriginMother({");
+  assertIncludes("adapter feeds resolved trigram landing", adapterSource, "trigramLanding: sources.motherCodeLandingResult.trigramLanding");
+  assertIncludes("adapter feeds resolved four symbol", adapterSource, "fourSymbol: sources.starbeastDerivationResult.fourSymbol");
+  assertIncludes("launch captures origin mother source results", launchSource, "resolveLaunchOriginMotherSourceResults(launchInput)");
   assertExcludes("launch no longer calls lunar trigram resolver", launchSource, "resolveLunarTrigramLanding");
   assertExcludes("launch no longer calls starbeast resolver", launchSource, "resolveStarbeastFromBirthDate");
   assertExcludes("launch no longer calls fusion engine", launchSource, "runGeoChronoMotherFusionEngine");
