@@ -2918,3 +2918,11 @@ export type {
   GenesisProductionRouteAuthorizationBoundary,
   GenesisProductionRouteActivationAuthorization,
 } from "./genesisProductionRouteAuthorization";
+
+export type {
+  GenesisProductionCanvasHostState,
+  GenesisProductionCanvasHostBoundary,
+  GenesisProductionRendererCanvasHostProps,
+  GenesisProductionExperiencePageProps,
+  GenesisProductionExperiencePageBoundary,
+} from "./genesisProductionExperiencePage";
