@@ -2406,3 +2406,22 @@ export type {
   RealityCrystalExperienceArchitectureBlocked,
   RealityCrystalExperienceArchitectureResult,
 } from "./realityCrystalExperienceArchitecture";
+
+export type {
+  LifeJourneyGenesisLayer,
+  LifeJourneyRealityLayer,
+  LifeJourneyTransformationLayer,
+  LifeJourneyCrystalLayer,
+  LifeJourneyArchiveBoundary,
+  LifeJourneyGenesisReference,
+  LifeJourneyRealityReference,
+  LifeJourneyArchitectureBoundary,
+  LifeJourneyArchitecture,
+  LifeJourneyArchitectureInput,
+  LifeJourneyArchitectureUnavailableReason,
+  LifeJourneyArchitectureBlockedReason,
+  LifeJourneyArchitectureReady,
+  LifeJourneyArchitectureUnavailable,
+  LifeJourneyArchitectureBlocked,
+  LifeJourneyArchitectureResult,
+} from "./lifeJourneyArchitecture";
