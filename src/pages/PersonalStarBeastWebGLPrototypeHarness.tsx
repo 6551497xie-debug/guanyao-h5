@@ -25,6 +25,7 @@ import { resolveGenesisSpaceUIRuntime } from "../services/genesisSpaceUIRuntime"
 import { resolveRecognitionSpaceUIRuntime } from "../services/recognitionSpaceUIRuntime";
 import { resolveRealityEntrySpaceUIRuntime } from "../services/realityEntrySpaceUIRuntime";
 import { resolvePressureRecognitionUIRuntime } from "../services/pressureRecognitionUIRuntime";
+import { resolveGravityExperienceUIRuntime } from "../services/gravityExperienceUIRuntime";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type { GenesisPreviewIntegration } from "../types/genesisPreviewIntegration";
 import type { GenesisRuntimeStage } from "../types/genesisRuntimeStateMachine";
@@ -32,6 +33,7 @@ import type { GenesisSpaceUIRuntime } from "../types/genesisSpaceUIRuntime";
 import type { RecognitionSpaceUIRuntime } from "../types/recognitionSpaceUIRuntime";
 import type { RealityEntrySpaceUIRuntime } from "../types/realityEntrySpaceUIRuntime";
 import type { PressureRecognitionUIRuntime } from "../types/pressureRecognitionUIRuntime";
+import type { GravityExperienceUIRuntime } from "../types/gravityExperienceUIRuntime";
 import "../styles/personal-star-beast-webgl-prototype-harness.css";
 
 type FirstImpressionPhase = "ARRIVAL" | "FORMATION" | "PRESENCE";
@@ -281,6 +283,8 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
   const [realityEntryConfirmed, setRealityEntryConfirmed] = useState(false);
   const [pressureObservationConfirmed, setPressureObservationConfirmed] =
     useState(false);
+  const [gravityObservationConfirmed, setGravityObservationConfirmed] =
+    useState(false);
   const [previewIntegration, setPreviewIntegration] =
     useState<GenesisPreviewIntegration | null>(() =>
       createPreviewIntegration(GENESIS_PREVIEW_STAGES[0].stage),
@@ -348,7 +352,21 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     });
     return result.status === "READY" ? result.uiRuntime : null;
   }, [pressureObservationConfirmed, realityReady]);
-  const experiencePresentation = pressureObservationConfirmed
+  const gravityReady = pressureRecognitionUIRuntime?.gravityReadiness === "READY";
+  const gravityExperienceUIRuntime = useMemo<GravityExperienceUIRuntime | null>(() => {
+    const result = resolveGravityExperienceUIRuntime({
+      gravityReady,
+      gravityObservationConfirmed,
+    });
+    return result.status === "READY" ? result.uiRuntime : null;
+  }, [gravityObservationConfirmed, gravityReady]);
+  const experiencePresentation = gravityObservationConfirmed
+    ? Object.freeze({
+        prelude: "惯性观察",
+        title: "反应间隙已经打开。",
+        note: "Choice 已准备好；新的回应尚未执行。",
+      })
+    : pressureObservationConfirmed
     ? Object.freeze({
         prelude: "压力观察",
         title: "现实正在作用于你。",
@@ -503,6 +521,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     setRecognitionConfirmed(false);
     setRealityEntryConfirmed(false);
     setPressureObservationConfirmed(false);
+    setGravityObservationConfirmed(false);
     setPreviewIntegration(
       createPreviewIntegration(GENESIS_PREVIEW_STAGES[0].stage),
     );
@@ -531,6 +550,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     setRecognitionConfirmed(false);
     setRealityEntryConfirmed(false);
     setPressureObservationConfirmed(false);
+    setGravityObservationConfirmed(false);
   };
   const confirmRecognition = () => {
     if (
@@ -548,6 +568,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     }
     setRealityEntryConfirmed(true);
     setPressureObservationConfirmed(false);
+    setGravityObservationConfirmed(false);
   };
   const confirmPressureObservation = () => {
     if (
@@ -557,6 +578,15 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       return;
     }
     setPressureObservationConfirmed(true);
+  };
+  const confirmGravityObservation = () => {
+    if (
+      gravityExperienceUIRuntime?.interactionAvailability !==
+      "GRAVITY_OBSERVATION_CONFIRM"
+    ) {
+      return;
+    }
+    setGravityObservationConfirmed(true);
   };
   const revealAnotherLife = () => {
     setFormalCaseIndex((current) => (current === 0 ? 1 : 0));
@@ -632,6 +662,22 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       }
       data-pressure-interaction={
         pressureRecognitionUIRuntime?.interactionAvailability ?? "NONE"
+      }
+      data-gravity-space={pressureObservationConfirmed ? "GRAVITY_SPACE" : "NOT_ENTERED"}
+      data-gravity-stage={
+        gravityExperienceUIRuntime?.gravityStageState ?? "NOT_READY"
+      }
+      data-inertia-observation-state={
+        gravityExperienceUIRuntime?.automaticResponseState ?? "WAITING_FOR_GRAVITY"
+      }
+      data-pattern-awareness={
+        gravityExperienceUIRuntime?.patternAwarenessState ?? "UNSEEN"
+      }
+      data-choice-readiness={
+        gravityExperienceUIRuntime?.choiceReadiness ?? "NOT_READY"
+      }
+      data-gravity-interaction={
+        gravityExperienceUIRuntime?.interactionAvailability ?? "NONE"
       }
     >
       <div className="gy-p100__cosmic-depth" aria-hidden="true" />
@@ -783,7 +829,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
         </section>
       ) : null}
 
-      {realityEntryConfirmed ? (
+      {realityEntryConfirmed && !pressureObservationConfirmed ? (
         <section
           className="gy-p36__pressure-space"
           aria-label="Pressure Recognition Space现实作用观察"
@@ -824,6 +870,52 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
           {pressureRecognitionUIRuntime?.gravityReadiness === "READY" ? (
             <p className="gy-p36__gravity-ready" role="status">
               Gravity Experience 已准备好。
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
+      {pressureObservationConfirmed ? (
+        <section
+          className="gy-p37__gravity-space"
+          aria-label="Gravity Experience Space惯性观察"
+          data-gravity-experience-space-panel="GRAVITY_EXPERIENCE_SPACE"
+        >
+          <div className="gy-p37__gravity-head">
+            <span>惯性观察</span>
+            <strong>
+              {gravityObservationConfirmed ? "已看见" : "觉察"}
+            </strong>
+          </div>
+          <h2>
+            {gravityObservationConfirmed
+              ? "反应间隙已经打开。"
+              : "看见惯性如何带动你。"}
+          </h2>
+          <p>
+            {gravityObservationConfirmed
+              ? "新的回应空间已经准备好；Choice 尚未执行。"
+              : "刺激抵达之后，身体、情绪与行动往往先于解释发生。先观察，不急着改变。"}
+          </p>
+          <div className="gy-p37__response-list" aria-label="惯性观察范围">
+            <span>刺激</span>
+            <span>自动回应</span>
+            <span>重复路径</span>
+          </div>
+          <small>Gravity Ready · 不生成行为结论</small>
+          {gravityExperienceUIRuntime?.interactionAvailability ===
+          "GRAVITY_OBSERVATION_CONFIRM" ? (
+            <button
+              type="button"
+              data-interaction="GRAVITY_OBSERVATION_CONFIRM"
+              onClick={confirmGravityObservation}
+            >
+              确认这份惯性观察
+            </button>
+          ) : null}
+          {gravityExperienceUIRuntime?.choiceReadiness === "READY" ? (
+            <p className="gy-p37__choice-ready" role="status">
+              Choice Experience 已准备好。
             </p>
           ) : null}
         </section>

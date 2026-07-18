@@ -594,6 +594,108 @@
   letter-spacing: 0.08em;
 }
 
+.gy-p37__gravity-space {
+  position: absolute;
+  z-index: 4;
+  bottom: clamp(68px, 11vh, 116px);
+  left: 50%;
+  width: min(440px, 80vw);
+  padding: 18px 20px 19px;
+  border: 1px solid rgba(183, 171, 199, 0.24);
+  border-radius: 18px;
+  background: rgba(9, 7, 16, 0.74);
+  box-shadow: 0 22px 76px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(235, 224, 246, 0.05);
+  backdrop-filter: blur(18px);
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.gy-p37__gravity-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: rgba(199, 190, 216, 0.72);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+.gy-p37__gravity-head strong {
+  color: rgba(244, 239, 246, 0.92);
+  font-family: var(--gy-font-serif);
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.gy-p37__gravity-space h2 {
+  margin: 13px 0 8px;
+  color: rgba(247, 243, 247, 0.95);
+  font-family: var(--gy-font-serif);
+  font-size: clamp(18px, 3vw, 25px);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+}
+
+.gy-p37__gravity-space p {
+  margin: 0;
+  color: rgba(232, 228, 234, 0.66);
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+.gy-p37__response-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  margin: 14px 0 0;
+}
+
+.gy-p37__response-list span {
+  border: 1px solid rgba(186, 170, 207, 0.16);
+  border-radius: 999px;
+  padding: 7px 5px;
+  color: rgba(223, 213, 230, 0.6);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+}
+
+.gy-p37__gravity-space small {
+  display: block;
+  margin-top: 12px;
+  color: rgba(216, 207, 225, 0.46);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.gy-p37__gravity-space button {
+  width: 100%;
+  margin-top: 14px;
+  border: 1px solid rgba(202, 188, 218, 0.44);
+  border-radius: 999px;
+  padding: 10px 12px;
+  background: rgba(47, 37, 58, 0.42);
+  color: rgba(241, 236, 247, 0.9);
+  font: inherit;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: background 240ms ease, border-color 240ms ease, color 240ms ease;
+}
+
+.gy-p37__gravity-space button:hover,
+.gy-p37__gravity-space button:focus-visible {
+  border-color: rgba(224, 211, 239, 0.7);
+  background: rgba(73, 58, 87, 0.5);
+  color: rgba(251, 249, 253, 0.98);
+  outline: none;
+}
+
+.gy-p37__choice-ready {
+  margin-top: 12px !important;
+  color: rgba(211, 197, 229, 0.86) !important;
+  font-size: 10px !important;
+  letter-spacing: 0.08em;
+}
+
 .gy-p100__breath-mark {
   bottom: 23px;
   left: 50%;
@@ -661,6 +763,7 @@
   .gy-p34__recognition-space { bottom: 70px; width: 78vw; }
   .gy-p35__reality-entry-space { bottom: 66px; width: 80vw; }
   .gy-p36__pressure-space { bottom: 66px; width: 80vw; }
+  .gy-p37__gravity-space { bottom: 66px; width: 80vw; }
 }
 
 @media (prefers-reduced-motion: reduce) {

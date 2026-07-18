@@ -2591,3 +2591,22 @@ export type {
   PressureRecognitionUIRuntimeBlocked,
   PressureRecognitionUIRuntimeResult,
 } from "./pressureRecognitionUIRuntime";
+
+export type {
+  GravityExperienceStageState,
+  InertiaObservationReference,
+  AutomaticResponseState,
+  PatternAwarenessState,
+  GravityChoiceReadiness,
+  GravityExperienceInteractionAvailability,
+  GravityExperienceUIRuntimeBoundary,
+  GravityExperienceUIRuntime,
+  GravityExperienceUIRuntimeInput,
+  GravityExperienceUIRuntimeUnavailableReason,
+  GravityExperienceUIRuntimeBlockedReason,
+  GravityExperienceUIRuntimeReviewBoundary,
+  GravityExperienceUIRuntimeReady,
+  GravityExperienceUIRuntimeUnavailable,
+  GravityExperienceUIRuntimeBlocked,
+  GravityExperienceUIRuntimeResult,
+} from "./gravityExperienceUIRuntime";
