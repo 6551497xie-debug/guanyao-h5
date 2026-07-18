@@ -3073,6 +3073,14 @@ export type {
 } from "./realityPressureActivationCandidateRequestBridge";
 
 export type {
+  RealityPressureActivationDeliveryOrchestrationBridgeBoundary,
+  RealityPressureActivationDeliveryOrchestrationInitializeInput,
+  RealityPressureActivationDeliveryOrchestrationAdvanceInput,
+  RealityPressureActivationDeliveryOrchestrationBridgeBlockedReason,
+  RealityPressureActivationDeliveryOrchestrationBridgeResult,
+} from "./realityPressureActivationDeliveryOrchestrationBridge";
+
+export type {
   RealityPressureSeedCaptureAdapterBoundary,
   RealityPressureSeedCaptureAdapterInput,
   RealityPressureSeedCaptureAdapterResult,
