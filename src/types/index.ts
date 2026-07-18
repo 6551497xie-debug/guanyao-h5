@@ -2771,3 +2771,22 @@ export type {
   RealityExperienceContinuityOptimizationBlocked,
   RealityExperienceContinuityOptimizationResult,
 } from "./realityExperienceContinuityOptimization";
+
+export type {
+  RealityFullExperienceAcceptanceStage,
+  RealityFullExperienceAcceptanceQuality,
+  RealityFullExperienceAcceptanceOverallState,
+  RealityFullExperienceAcceptanceStatus,
+  RealityFullExperienceAcceptanceIssueType,
+  RealityFullExperienceAcceptanceIssue,
+  RealityFullExperienceAcceptanceBoundary,
+  RealityFullExperienceAcceptanceInput,
+  RealityFullExperienceAcceptanceReview,
+  RealityFullExperienceAcceptance,
+  RealityFullExperienceAcceptanceReady,
+  RealityFullExperienceAcceptanceUnavailableReason,
+  RealityFullExperienceAcceptanceBlockedReason,
+  RealityFullExperienceAcceptanceUnavailable,
+  RealityFullExperienceAcceptanceBlocked,
+  RealityFullExperienceAcceptanceResult,
+} from "./realityFullExperienceAcceptance";
