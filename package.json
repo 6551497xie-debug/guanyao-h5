@@ -144,6 +144,7 @@
     "check-reality-pressure-candidate-activation-context": "node scripts/check-reality-pressure-candidate-activation-context.mjs",
     "check-reality-pressure-activation-candidate-request-context-bridge": "node scripts/check-reality-pressure-activation-candidate-request-context-bridge.mjs",
     "check-reality-pressure-activation-delivery-orchestration-bridge": "node scripts/check-reality-pressure-activation-delivery-orchestration-bridge.mjs",
+    "check-reality-route-activation-source-context": "node scripts/check-reality-route-activation-source-context.mjs",
     "check-reality-production-pressure-host": "node scripts/check-reality-production-pressure-host.mjs",
     "check-reality-production-gravity-consumer": "node scripts/check-reality-production-gravity-consumer.mjs",
     "check-reality-production-gravity-host": "node scripts/check-reality-production-gravity-host.mjs",

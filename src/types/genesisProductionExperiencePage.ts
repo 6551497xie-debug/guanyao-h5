@@ -57,6 +57,8 @@ export type GenesisProductionExperiencePageBoundary = Readonly<{
   explicitRealityEntryRequired: true;
   productionRealityRouteHandoffOnly: true;
   realityEntryContextRequiredBeforeNavigation: true;
+  realityRouteActivationSourceRequiredBeforeNavigation: true;
+  explicitRealityRequestDateCaptureOnly: true;
   explicitUserConfirmedRealityNavigationOnly: true;
   sourceReferenceExcludedFromUrl: true;
   noAutomaticRealityNavigation: true;

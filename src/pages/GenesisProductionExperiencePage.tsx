@@ -19,6 +19,12 @@ import {
 import {
   resolveGenesisProductionRealityRouteHandoff,
 } from "../services/genesisProductionRealityRouteHandoff";
+import { readRealUserGenesisVisualSourceContext } from "../services/realUserGenesisVisualSourceContext";
+import {
+  activateRealityRouteActivationSourceContext,
+  captureExplicitRealityRequestDateSource,
+  clearRealityRouteActivationSourceContext,
+} from "../services/realityRouteActivationSourceContext";
 import { bridgeGenesisProductionRuntimeToVisualCalibration } from "../services/genesisProductionVisualCalibrationBridge";
 import { resolveRealGenesisVisualConsumerSource } from "../services/realGenesisVisualConsumerSource";
 import type {
@@ -41,6 +47,8 @@ export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
     explicitRealityEntryRequired: true,
     productionRealityRouteHandoffOnly: true,
     realityEntryContextRequiredBeforeNavigation: true,
+    realityRouteActivationSourceRequiredBeforeNavigation: true,
+    explicitRealityRequestDateCaptureOnly: true,
     explicitUserConfirmedRealityNavigationOnly: true,
     sourceReferenceExcludedFromUrl: true,
     noAutomaticRealityNavigation: true,
@@ -111,6 +119,7 @@ export function GenesisProductionExperiencePage({
 
   useEffect(() => {
     clearGenesisProductionRealityEntryContext();
+    clearRealityRouteActivationSourceContext();
     setRecognitionRealityResult(null);
   }, [routeAuthorization.sourceReferenceId]);
 
@@ -197,11 +206,27 @@ export function GenesisProductionExperiencePage({
     if (result.status === "READY") {
       const entryContext =
         activateGenesisProductionRealityEntryContext(result.session);
+      const realUserContext = readRealUserGenesisVisualSourceContext();
+      const requestDateSource = captureExplicitRealityRequestDateSource({
+        sourceReferenceId: result.session.sourceReferenceId,
+        calendarInstant: new Date(),
+      });
+      const activationSourceContext =
+        entryContext && realUserContext && requestDateSource
+          ? activateRealityRouteActivationSourceContext({
+              realityEntryContext: entryContext,
+              lifeSourceSession: realUserContext.lifeSourceSession,
+              requestDateSource,
+            })
+          : null;
       const handoff = resolveGenesisProductionRealityRouteHandoff({
         entryContext,
         sourceReferenceId: result.session.sourceReferenceId,
       });
-      if (handoff.status === "READY") {
+      if (
+        handoff.status === "READY" &&
+        activationSourceContext?.status === "AVAILABLE"
+      ) {
         navigate(handoff.routeTarget);
       }
     }

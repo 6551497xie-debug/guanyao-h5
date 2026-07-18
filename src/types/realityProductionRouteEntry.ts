@@ -4,6 +4,7 @@ export type RealityProductionRouteEntryBoundary = Readonly<{
   productionRouteEntryOnly: true;
   exactRealityRouteOnly: true;
   inMemoryRealityEntryContextOnly: true;
+  realityRouteActivationSourceContextRequired: true;
   routeAuthorizationRequired: true;
   sourceNotReadyRecoveryRequired: true;
   sourceReferenceExcludedFromUrl: true;

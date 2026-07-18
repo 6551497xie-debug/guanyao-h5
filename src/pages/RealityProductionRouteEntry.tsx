@@ -5,6 +5,7 @@ import {
   authorizeRealityProductionRoute,
   REALITY_PRODUCTION_ROUTE_TARGET,
 } from "../services/realityProductionRouteAuthorization";
+import { readRealityRouteActivationSourceContext } from "../services/realityRouteActivationSourceContext";
 import type { RealityProductionRouteEntryBoundary } from "../types/realityProductionRouteEntry";
 
 export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
@@ -12,6 +13,7 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
     productionRouteEntryOnly: true,
     exactRealityRouteOnly: true,
     inMemoryRealityEntryContextOnly: true,
+    realityRouteActivationSourceContextRequired: true,
     routeAuthorizationRequired: true,
     sourceNotReadyRecoveryRequired: true,
     sourceReferenceExcludedFromUrl: true,
@@ -33,16 +35,27 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
 export function RealityProductionRouteEntry() {
   const navigate = useNavigate();
   const entryContext = readGenesisProductionRealityEntryContext();
+  const activationSourceContext =
+    readRealityRouteActivationSourceContext();
   const authorization = authorizeRealityProductionRoute({
     routeTarget: REALITY_PRODUCTION_ROUTE_TARGET,
     sourceReferenceId: entryContext?.sourceReferenceId ?? null,
   });
 
-  if (authorization.status !== "READY") {
+  if (
+    authorization.status !== "READY" ||
+    activationSourceContext === null ||
+    activationSourceContext.sourceReferenceId !==
+      authorization.sourceReferenceId
+  ) {
     return (
       <main
         data-production-reality-status="SOURCE_NOT_READY"
-        data-guard-reason={authorization.guardReason}
+        data-guard-reason={
+          authorization.status !== "READY"
+            ? authorization.guardReason
+            : "REALITY_ACTIVATION_SOURCE_CONTEXT_NOT_AVAILABLE"
+        }
       >
         <p role="status">SOURCE_NOT_READY</p>
         <button

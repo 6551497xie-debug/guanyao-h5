@@ -3140,3 +3140,12 @@ export type {
   RealityChoicePresentationBoundary,
   RealityChoicePresentationProps,
 } from "./realityChoicePresentation";
+
+export type {
+  RealityRouteActivationSourceContextBoundary,
+  RealityRouteActivationSourceContext,
+  RealityRouteActivationSourceContextInput,
+  RealityRouteActivationSourceContextBlockedReason,
+  RealityRouteActivationSourceContextResult,
+  RealityExplicitRequestDateSourceInput,
+} from "./realityRouteActivationSourceContext";
