@@ -2648,3 +2648,21 @@ export type {
   CrystalExperienceUIRuntimeBlocked,
   CrystalExperienceUIRuntimeResult,
 } from "./crystalExperienceUIRuntime";
+
+export type {
+  LifeJourneyFullLoopStage,
+  LifeJourneyFullLoopAction,
+  LifeJourneyExperienceIssueCategory,
+  LifeJourneyAcceptanceDimension,
+  LifeJourneyFullLoopAcceptanceStatus,
+  LifeJourneyFullLoopAcceptanceBoundary,
+  LifeJourneyFullLoopAcceptanceInput,
+  LifeJourneyFullLoopAcceptanceReview,
+  LifeJourneyFullLoopAcceptance,
+  LifeJourneyFullLoopAcceptanceReady,
+  LifeJourneyFullLoopAcceptanceUnavailableReason,
+  LifeJourneyFullLoopAcceptanceBlockedReason,
+  LifeJourneyFullLoopAcceptanceUnavailable,
+  LifeJourneyFullLoopAcceptanceBlocked,
+  LifeJourneyFullLoopAcceptanceResult,
+} from "./lifeJourneyFullLoopAcceptance";
