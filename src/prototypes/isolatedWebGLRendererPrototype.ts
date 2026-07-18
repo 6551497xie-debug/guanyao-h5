@@ -17,6 +17,7 @@ import {
   Scene,
   SphereGeometry,
   SRGBColorSpace,
+  TorusGeometry,
   WebGLRenderer,
 } from "three";
 import { createIsolatedWebGLPrototypeRenderPlanReference } from "../services/isolatedWebGLPrototypeRenderPlanReference";
@@ -29,6 +30,7 @@ import type { GenesisLifeForceInfusionProjection } from "../types/genesisLifeFor
 import type { GenesisPersonalRevealProjection } from "../types/genesisPersonalRevealProjection";
 import type { GenesisRealityPressureProjection } from "../types/genesisRealityPressureProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
+import type { GenesisRendererVisualRealization } from "../types/genesisRendererVisualRealization";
 import type {
   IsolatedWebGLRendererPrototypeBoundary,
   IsolatedWebGLRendererPrototypeController,
@@ -91,6 +93,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
   lifeForceInfusion: GenesisLifeForceInfusionProjection | null = null,
   personalReveal: GenesisPersonalRevealProjection | null = null,
   realityPressure: GenesisRealityPressureProjection | null = null,
+  genesisVisualRealization: GenesisRendererVisualRealization | null = null,
 ): IsolatedWebGLRendererPrototypeSceneProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
@@ -165,6 +168,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
     lifeForceInfusion,
     personalReveal,
     realityPressure,
+    genesisVisualRealization,
     rendererParametersOnly: true,
     identityBlind: true,
     noLifeFactCopy: true,
@@ -292,6 +296,7 @@ export function createIsolatedWebGLRendererPrototype(
     input.lifeForceInfusionProjection ?? null,
     input.personalRevealProjection ?? null,
     input.realityPressureProjection ?? null,
+    input.genesisVisualRealization ?? null,
   );
   if (input.reducedMotion) {
     return fallback(sceneProjection, "REDUCED_MOTION_REQUESTED");
@@ -342,21 +347,38 @@ export function createIsolatedWebGLRendererPrototype(
   scene.add(root);
   scene.add(new AmbientLight(0xb9c6ff, 0.18));
 
+  const genesisVisualRealization = sceneProjection.genesisVisualRealization;
+  const activeVisualLayer = genesisVisualRealization?.activeVisualLayer ?? null;
+  const isMoonOrigin = activeVisualLayer === "MOON_ORIGIN";
+  const isStarRiver = activeVisualLayer === "STAR_RIVER";
+  const isTimeResonance = activeVisualLayer === "TIME_RESONANCE";
+  const realizationProgress = genesisVisualRealization?.transitionProgress ?? 0;
   const random = createSeededRandom(hashReference(planReference.referenceId));
-  const cosmicPositions = new Float32Array(
-    sceneProjection.cosmicField.particleCount * 3,
-  );
+  const cosmicParticleCount = isMoonOrigin
+    ? Math.round(sceneProjection.cosmicField.particleCount * 0.62)
+    : isStarRiver
+      ? Math.round(sceneProjection.cosmicField.particleCount * 1.18)
+      : sceneProjection.cosmicField.particleCount;
+  const cosmicPositions = new Float32Array(cosmicParticleCount * 3);
   for (
     let index = 0;
-    index < sceneProjection.cosmicField.particleCount;
+    index < cosmicParticleCount;
     index += 1
   ) {
     const offset = index * 3;
-    cosmicPositions[offset] =
-      (random() - 0.5) * sceneProjection.cosmicField.spread;
-    cosmicPositions[offset + 1] =
-      (random() - 0.5) * sceneProjection.cosmicField.spread * 0.72;
-    cosmicPositions[offset + 2] = (random() - 0.5) * 4;
+    if (isStarRiver || isTimeResonance) {
+      const angle = random() * Math.PI * 2;
+      const radius = 1.25 + random() * 2.5;
+      cosmicPositions[offset] = Math.cos(angle) * radius;
+      cosmicPositions[offset + 1] = Math.sin(angle) * radius * 0.48;
+      cosmicPositions[offset + 2] = (random() - 0.5) * 3.4;
+    } else {
+      cosmicPositions[offset] =
+        (random() - 0.5) * sceneProjection.cosmicField.spread;
+      cosmicPositions[offset + 1] =
+        (random() - 0.5) * sceneProjection.cosmicField.spread * 0.72;
+      cosmicPositions[offset + 2] = (random() - 0.5) * 4;
+    }
   }
   const cosmicGeometry = new BufferGeometry();
   cosmicGeometry.setAttribute(
@@ -365,9 +387,11 @@ export function createIsolatedWebGLRendererPrototype(
   );
   const cosmicMaterial = new PointsMaterial({
     color: new Color().setHSL(sceneProjection.formField.hue, 0.42, 0.7),
-    size: 0.025,
+    size: isMoonOrigin ? 0.018 : isStarRiver ? 0.022 : 0.02,
     transparent: true,
-    opacity: sceneProjection.cosmicField.opacity,
+    opacity:
+      sceneProjection.cosmicField.opacity *
+      (isMoonOrigin ? 0.7 : isStarRiver ? 1.12 : isTimeResonance ? 0.96 : 1),
     blending: AdditiveBlending,
     depthWrite: false,
   });
@@ -512,6 +536,7 @@ export function createIsolatedWebGLRendererPrototype(
     0.72,
     0.76,
   );
+  const structureOpacityScale = isMoonOrigin ? 0.06 : isStarRiver ? 1.16 : 0.94;
   const spineLine = new Line(
     spineGeometry,
     new LineBasicMaterial({
@@ -519,6 +544,7 @@ export function createIsolatedWebGLRendererPrototype(
       transparent: true,
       opacity:
         sceneProjection.mansionStructure.lineOpacity *
+        structureOpacityScale *
         (0.82 + revealOpacity * 0.18 - pressureBoundaryLoad * 0.08),
       blending: AdditiveBlending,
     }),
@@ -530,6 +556,7 @@ export function createIsolatedWebGLRendererPrototype(
       transparent: true,
       opacity:
         sceneProjection.mansionStructure.lineOpacity *
+        structureOpacityScale *
         (0.68 + revealOpacity * 0.2 - pressureBoundaryLoad * 0.12),
       blending: AdditiveBlending,
     }),
@@ -540,7 +567,9 @@ export function createIsolatedWebGLRendererPrototype(
       color: anchorColor,
       size: lifePresence.stellarSkeleton.nodeScale,
       transparent: true,
-      opacity: 0.7 + revealOpacity * 0.16 - pressureBoundaryLoad * 0.08,
+      opacity:
+        structureOpacityScale *
+        (0.7 + revealOpacity * 0.16 - pressureBoundaryLoad * 0.08),
       blending: AdditiveBlending,
       depthWrite: false,
     }),
@@ -564,24 +593,25 @@ export function createIsolatedWebGLRendererPrototype(
     pressureFlowDeflection * 0.025;
   structureGroup.rotation.z += fieldDirectionalFlow * 0.03 + forceDirectionalBias * 0.04;
   structureGroup.add(spineLine, branchLines, structurePoints);
+  structureGroup.visible = !isMoonOrigin;
   root.add(structureGroup);
 
-  const coreColor = new Color().setHSL(
-    sceneProjection.lifeCore.hue,
-    0.76,
-    0.7,
-  );
-  const coreRadius =
-    0.1 + lifeStarCore.surfacePresence.innerLayerDepth * 0.42;
+  const coreColor = isMoonOrigin
+    ? new Color(0xd8d2c4)
+    : new Color().setHSL(sceneProjection.lifeCore.hue, 0.76, 0.7);
+  const coreRadius = isMoonOrigin
+    ? 0.34 + lifeStarCore.surfacePresence.innerLayerDepth * 0.12
+    : 0.1 + lifeStarCore.surfacePresence.innerLayerDepth * 0.42;
   const core = new Mesh(
     new SphereGeometry(coreRadius, 20, 20),
     new MeshBasicMaterial({
       color: coreColor,
       transparent: true,
       opacity:
-        0.72 +
+        (isMoonOrigin ? 0.46 : isStarRiver ? 0.48 : isTimeResonance ? 0.54 : 0.72) +
         revealOpacity * 0.12 +
-        lifeStarCore.surfacePresence.surfaceVariation * 0.7 -
+        lifeStarCore.surfacePresence.surfaceVariation *
+          (isMoonOrigin ? 0.22 : 0.7) -
         pressureCoreResistance * 0.04,
       blending: AdditiveBlending,
     }),
@@ -595,7 +625,10 @@ export function createIsolatedWebGLRendererPrototype(
     new MeshBasicMaterial({
       color: coreColor,
       transparent: true,
-      opacity: 0.08 + lifeStarCore.surfacePresence.surfaceVariation * 0.34,
+      opacity:
+        (isMoonOrigin ? 0.14 : 0.08) +
+        lifeStarCore.surfacePresence.surfaceVariation *
+          (isMoonOrigin ? 0.18 : 0.34),
       blending: AdditiveBlending,
       depthWrite: false,
     }),
@@ -609,7 +642,9 @@ export function createIsolatedWebGLRendererPrototype(
     new MeshBasicMaterial({
       color: coreColor,
       transparent: true,
-      opacity: lifeStarCore.surfacePresence.atmosphereOpacity,
+      opacity:
+        lifeStarCore.surfacePresence.atmosphereOpacity *
+        (isMoonOrigin ? 0.58 : 1),
       blending: AdditiveBlending,
       depthWrite: false,
     }),
@@ -617,14 +652,28 @@ export function createIsolatedWebGLRendererPrototype(
   const coreLight = new PointLight(
     coreColor,
     sceneProjection.lifeCore.intensity *
-      lifeStarCore.coreInfluence.lightFlowReach,
+      lifeStarCore.coreInfluence.lightFlowReach *
+      (isMoonOrigin ? 0.28 : isStarRiver ? 0.52 : 0.68),
     6,
     1.7,
   );
+  const timeRing = isTimeResonance
+    ? new Mesh(
+        new TorusGeometry(coreRadius * 1.72, 0.012, 8, 96),
+        new MeshBasicMaterial({
+          color: new Color(0xcdbb8f),
+          transparent: true,
+          opacity: 0.32,
+          blending: AdditiveBlending,
+          depthWrite: false,
+        }),
+      )
+    : null;
   core.add(coreLight);
   root.add(coreHalo);
   root.add(coreSurface);
   root.add(core);
+  if (timeRing !== null) root.add(timeRing);
 
   let frameCount = 0;
   let disposed = false;
@@ -684,6 +733,23 @@ export function createIsolatedWebGLRendererPrototype(
       } else {
         cosmicField.rotation.z = elapsedSeconds * 0.004;
       }
+      if (isStarRiver) {
+        cosmicField.rotation.z += elapsedSeconds * 0.0025;
+        cosmicFieldScale *= 1.02 + realizationProgress * 0.04;
+        cosmicFieldOpacity *= 1.08;
+      }
+      if (isMoonOrigin) {
+        cosmicField.rotation.z *= 0.35;
+        cosmicFieldOpacity *= 0.72;
+      }
+      if (isTimeResonance) {
+        const timeGathering =
+          1 +
+          Math.sin(elapsedSeconds * 0.22) * 0.035 +
+          realizationProgress * 0.06;
+        cosmicFieldScale *= timeGathering;
+        cosmicFieldOpacity *= 0.94 + realizationProgress * 0.1;
+      }
       if (birthMansionIgnition !== null) {
         const ignitionPhase =
           (elapsedSeconds / birthMansionIgnition.temporalRhythm.periodSeconds) *
@@ -725,7 +791,9 @@ export function createIsolatedWebGLRendererPrototype(
         0.96 +
         Math.sin(rhythmPhase * 0.72 + 0.8) *
           lifeStarCore.temporalRhythm.variationAmount;
-      core.scale.setScalar(breath);
+      core.scale.setScalar(
+        breath * (isMoonOrigin ? 1.02 : isStarRiver ? 0.86 : 0.92),
+      );
       coreSurface.scale.setScalar(surfaceVariation);
       coreHalo.scale.setScalar(
         lifeStarCore.surfacePresence.atmosphereRadius *
@@ -768,9 +836,20 @@ export function createIsolatedWebGLRendererPrototype(
       coreLight.intensity =
         sceneProjection.lifeCore.intensity *
         lifeStarCore.coreInfluence.lightFlowReach *
+        (isMoonOrigin ? 0.28 : isStarRiver ? 0.52 : 0.68) *
         (0.94 + forceStability * 0.08) *
         (0.92 +
           sceneProjection.lifePresence.corePresence.coherence * 0.08 * breath);
+      if (timeRing !== null) {
+        timeRing.rotation.z = elapsedSeconds * 0.035;
+        timeRing.scale.setScalar(
+          0.96 +
+            Math.sin(elapsedSeconds * 0.22) * 0.025 +
+            realizationProgress * 0.05,
+        );
+        (timeRing.material as MeshBasicMaterial).opacity =
+          0.24 + Math.sin(elapsedSeconds * 0.22) * 0.04;
+      }
       renderer.render(scene, camera);
       frameCount += 1;
     },

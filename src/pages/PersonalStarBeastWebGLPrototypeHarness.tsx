@@ -18,6 +18,7 @@ import {
   startGenesisPreviewIntegration,
 } from "../services/genesisPreviewIntegration";
 import { createGenesisPreviewIntegrationFixture } from "../services/genesisPreviewIntegrationFixture";
+import { mapGenesisRendererVisualRealization } from "../services/genesisRendererVisualRealization";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type { GenesisPreviewIntegration } from "../types/genesisPreviewIntegration";
 import type { GenesisRuntimeStage } from "../types/genesisRuntimeStateMachine";
@@ -223,10 +224,16 @@ const GENESIS_PREVIEW_STAGES: ReadonlyArray<{
 ]);
 
 const phaseForGenesisStage = (stage: GenesisRuntimeStage): FirstImpressionPhase => {
-  if (stage === "MOON_ORIGIN" || stage === "STAR_RIVER" || stage === "TIME_RESONANCE") {
+  if (stage === "MOON_ORIGIN") {
     return "ARRIVAL";
   }
-  if (stage === "SYMBOL_REVEAL" || stage === "HEXAGRAM_IMPRINT" || stage === "LIFE_FORCE") {
+  if (
+    stage === "STAR_RIVER" ||
+    stage === "TIME_RESONANCE" ||
+    stage === "SYMBOL_REVEAL" ||
+    stage === "HEXAGRAM_IMPRINT" ||
+    stage === "LIFE_FORCE"
+  ) {
     return "FORMATION";
   }
   return "PRESENCE";
@@ -267,6 +274,12 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
   const projectionBundle = FORMAL_PROJECTION_BUNDLES[formalCaseIndex];
   const previewStage = GENESIS_PREVIEW_STAGES[previewStageIndex];
   const isCompletionStage = previewStage.stage === "COMPLETION";
+  const rendererVisualRealization = useMemo(() => {
+    const result = mapGenesisRendererVisualRealization({
+      rendererConsumerContract: previewIntegration?.rendererConsumerState ?? null,
+    });
+    return result.status === "READY" ? result.realization : null;
+  }, [previewIntegration]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -305,6 +318,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
           projectionBundle.lifeForceInfusionProjection,
         personalRevealProjection: projectionBundle.personalRevealProjection,
         realityPressureProjection: projectionBundle.realityPressureProjection,
+        genesisVisualRealization: rendererVisualRealization,
       }),
     );
 
@@ -353,7 +367,13 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       resizeObserver.disconnect();
       controller.dispose();
     };
-  }, [plan, previewStage.stage, projectionBundle, replayKey]);
+  }, [
+    plan,
+    previewStage.stage,
+    projectionBundle,
+    rendererVisualRealization,
+    replayKey,
+  ]);
 
   const revealComplete = phase === "PRESENCE";
   const replay = () => {
@@ -390,6 +410,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       data-genesis-preview-mode="ISOLATED_GENESIS_PREVIEW"
       data-genesis-stage={previewStage.stage}
       data-genesis-lifecycle={previewIntegration?.previewLifecycle ?? "UNAVAILABLE"}
+      data-genesis-visual-realization={rendererVisualRealization?.activeVisualLayer ?? "UNAVAILABLE"}
     >
       <div className="gy-p100__cosmic-depth" aria-hidden="true" />
       <canvas ref={canvasRef} className="gy-p100__canvas" aria-hidden="true" />

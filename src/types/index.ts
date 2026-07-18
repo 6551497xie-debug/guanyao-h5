@@ -2224,6 +2224,17 @@ export type {
 } from "./genesisRendererConsumerContract";
 
 export type {
+  GenesisRendererVisualRealizationLayer,
+  GenesisRendererVisualExpressionMode,
+  GenesisRendererEnvironmentalState,
+  GenesisRendererFocalElementState,
+  GenesisRendererVisualRealization,
+  GenesisRendererVisualRealizationInput,
+  GenesisRendererVisualRealizationResult,
+  GenesisRendererVisualRealizationBoundary,
+} from "./genesisRendererVisualRealization";
+
+export type {
   GenesisVisualHarnessMode,
   GenesisVisualHarnessLifecycle,
   GenesisVisualHarnessStep,
