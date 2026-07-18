@@ -2326,3 +2326,23 @@ export type {
   GenesisRealityEntryBridgeBlocked,
   GenesisRealityEntryBridgeResult,
 } from "./genesisRealityEntryBridge";
+
+export type {
+  RealityPressureEntryState,
+  RealitySignalLayer,
+  RealityPressureObservationScope,
+  PressureObservationLayer,
+  InertiaPreparationLayer,
+  PressureRecognitionInterventionBoundary,
+  RealityExperienceArchitectureReference,
+  RealityPressureRecognitionReadiness,
+  RealityPressureRecognitionArchitecture,
+  RealityPressureRecognitionArchitectureInput,
+  RealityPressureRecognitionArchitectureUnavailableReason,
+  RealityPressureRecognitionArchitectureBlockedReason,
+  RealityPressureRecognitionArchitectureBoundary,
+  RealityPressureRecognitionArchitectureReady,
+  RealityPressureRecognitionArchitectureUnavailable,
+  RealityPressureRecognitionArchitectureBlocked,
+  RealityPressureRecognitionArchitectureResult,
+} from "./realityPressureRecognitionArchitecture";
