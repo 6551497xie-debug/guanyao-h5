@@ -3038,6 +3038,15 @@ export type {
 } from "./realityPressureCrossFieldCandidateBundleContract";
 
 export type {
+  RealityPressureCandidateDeliverySessionBoundary,
+  RealityPressureCandidateDeliverySession,
+  RealityPressureCandidateDeliverySessionInitializeInput,
+  RealityPressureCandidateDeliverySessionAdvanceInput,
+  RealityPressureCandidateDeliverySessionBlockedReason,
+  RealityPressureCandidateDeliverySessionResult,
+} from "./realityPressureCandidateDeliverySession";
+
+export type {
   RealityPressureSeedCaptureAdapterBoundary,
   RealityPressureSeedCaptureAdapterInput,
   RealityPressureSeedCaptureAdapterResult,
