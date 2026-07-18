@@ -2465,3 +2465,22 @@ export type {
   ProductExperienceImplementationReadinessBlocked,
   ProductExperienceImplementationReadinessResult,
 } from "./productExperienceImplementationReadiness";
+
+export type {
+  FirstLifeJourneyProductFlowEntryStage,
+  FirstLifeJourneyProductFlowGenesisStage,
+  FirstLifeJourneyProductFlowRealityTransitionStage,
+  FirstLifeJourneyProductFlowRealityExperienceStage,
+  FirstLifeJourneyProductFlowTransformationStage,
+  FirstLifeJourneyProductFlowCompletionStage,
+  FirstLifeJourneyProductFlowBoundary,
+  FirstLifeJourneyProductFlow,
+  FirstLifeJourneyProductFlowInput,
+  FirstLifeJourneyProductFlowUnavailableReason,
+  FirstLifeJourneyProductFlowBlockedReason,
+  FirstLifeJourneyProductFlowReviewBoundary,
+  FirstLifeJourneyProductFlowReady,
+  FirstLifeJourneyProductFlowUnavailable,
+  FirstLifeJourneyProductFlowBlocked,
+  FirstLifeJourneyProductFlowResult,
+} from "./firstLifeJourneyProductFlow";
