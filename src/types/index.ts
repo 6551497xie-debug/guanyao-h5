@@ -2969,3 +2969,12 @@ export type {
   GenesisProductionRecognitionRealityResult,
   GenesisProductionRealityEntryContext,
 } from "./genesisProductionRecognitionRealityEntry";
+
+export type {
+  RealityProductionRouteTarget,
+  RealityProductionRouteAuthorizationInput,
+  RealityProductionRouteGuardReason,
+  RealityProductionRouteAuthorizationBoundary,
+  RealityProductionSourceContext,
+  RealityProductionRouteActivationAuthorization,
+} from "./realityProductionRouteAuthorization";
