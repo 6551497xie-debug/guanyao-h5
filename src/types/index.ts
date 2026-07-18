@@ -2555,3 +2555,20 @@ export type {
   RecognitionSpaceUIRuntimeBlocked,
   RecognitionSpaceUIRuntimeResult,
 } from "./recognitionSpaceUIRuntime";
+
+export type {
+  RealityEntrySpaceEntryState,
+  RealityEntrySpaceTransitionPresentation,
+  RealityEntrySpaceReadiness,
+  RealityEntrySpaceInteractionAvailability,
+  RealityEntrySpaceUIRuntimeBoundary,
+  RealityEntrySpaceUIRuntime,
+  RealityEntrySpaceUIRuntimeInput,
+  RealityEntrySpaceUIRuntimeUnavailableReason,
+  RealityEntrySpaceUIRuntimeBlockedReason,
+  RealityEntrySpaceUIRuntimeReviewBoundary,
+  RealityEntrySpaceUIRuntimeReady,
+  RealityEntrySpaceUIRuntimeUnavailable,
+  RealityEntrySpaceUIRuntimeBlocked,
+  RealityEntrySpaceUIRuntimeResult,
+} from "./realityEntrySpaceUIRuntime";

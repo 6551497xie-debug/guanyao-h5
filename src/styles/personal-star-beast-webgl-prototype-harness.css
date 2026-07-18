@@ -406,6 +406,92 @@
   letter-spacing: 0.08em;
 }
 
+.gy-p35__reality-entry-space {
+  position: absolute;
+  z-index: 4;
+  bottom: clamp(68px, 11vh, 116px);
+  left: 50%;
+  width: min(440px, 80vw);
+  padding: 18px 20px 19px;
+  border: 1px solid rgba(156, 169, 196, 0.22);
+  border-radius: 18px;
+  background: rgba(5, 7, 13, 0.68);
+  box-shadow: 0 22px 76px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(218, 229, 255, 0.05);
+  backdrop-filter: blur(18px);
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.gy-p35__reality-entry-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: rgba(184, 197, 226, 0.7);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+.gy-p35__reality-entry-head strong {
+  color: rgba(240, 239, 232, 0.9);
+  font-family: var(--gy-font-serif);
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.gy-p35__reality-entry-space h2 {
+  margin: 13px 0 8px;
+  color: rgba(246, 243, 235, 0.94);
+  font-family: var(--gy-font-serif);
+  font-size: clamp(18px, 3vw, 25px);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+}
+
+.gy-p35__reality-entry-space p {
+  margin: 0;
+  color: rgba(229, 229, 225, 0.62);
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+.gy-p35__reality-entry-space small {
+  display: block;
+  margin-top: 12px;
+  color: rgba(203, 211, 229, 0.44);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.gy-p35__reality-entry-space button {
+  width: 100%;
+  margin-top: 14px;
+  border: 1px solid rgba(166, 182, 218, 0.42);
+  border-radius: 999px;
+  padding: 10px 12px;
+  background: rgba(28, 35, 52, 0.38);
+  color: rgba(235, 239, 247, 0.88);
+  font: inherit;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: background 240ms ease, border-color 240ms ease, color 240ms ease;
+}
+
+.gy-p35__reality-entry-space button:hover,
+.gy-p35__reality-entry-space button:focus-visible {
+  border-color: rgba(190, 208, 246, 0.66);
+  background: rgba(49, 61, 87, 0.44);
+  color: rgba(248, 249, 253, 0.98);
+  outline: none;
+}
+
+.gy-p35__pressure-ready {
+  margin-top: 12px !important;
+  color: rgba(181, 199, 235, 0.82) !important;
+  font-size: 10px !important;
+  letter-spacing: 0.08em;
+}
+
 .gy-p100__breath-mark {
   bottom: 23px;
   left: 50%;
@@ -471,6 +557,7 @@
   .gy-p100--formation .gy-p100__canvas { transform: translateY(8vh) scale(1.06); }
   .gy-p100--presence .gy-p100__canvas { transform: translateY(8vh) scale(1.1); }
   .gy-p34__recognition-space { bottom: 70px; width: 78vw; }
+  .gy-p35__reality-entry-space { bottom: 66px; width: 80vw; }
 }
 
 @media (prefers-reduced-motion: reduce) {

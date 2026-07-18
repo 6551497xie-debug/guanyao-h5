@@ -23,11 +23,13 @@ import { mapGenesisPerspectiveCalibration } from "../services/genesisPerspective
 import { mapGenesisPresenceRecognitionCalibration } from "../services/genesisPresenceRecognitionCalibration";
 import { resolveGenesisSpaceUIRuntime } from "../services/genesisSpaceUIRuntime";
 import { resolveRecognitionSpaceUIRuntime } from "../services/recognitionSpaceUIRuntime";
+import { resolveRealityEntrySpaceUIRuntime } from "../services/realityEntrySpaceUIRuntime";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type { GenesisPreviewIntegration } from "../types/genesisPreviewIntegration";
 import type { GenesisRuntimeStage } from "../types/genesisRuntimeStateMachine";
 import type { GenesisSpaceUIRuntime } from "../types/genesisSpaceUIRuntime";
 import type { RecognitionSpaceUIRuntime } from "../types/recognitionSpaceUIRuntime";
+import type { RealityEntrySpaceUIRuntime } from "../types/realityEntrySpaceUIRuntime";
 import "../styles/personal-star-beast-webgl-prototype-harness.css";
 
 type FirstImpressionPhase = "ARRIVAL" | "FORMATION" | "PRESENCE";
@@ -274,6 +276,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
   const [timeDelivered, setTimeDelivered] = useState(false);
   const [recognitionEntered, setRecognitionEntered] = useState(false);
   const [recognitionConfirmed, setRecognitionConfirmed] = useState(false);
+  const [realityEntryConfirmed, setRealityEntryConfirmed] = useState(false);
   const [previewIntegration, setPreviewIntegration] =
     useState<GenesisPreviewIntegration | null>(() =>
       createPreviewIntegration(GENESIS_PREVIEW_STAGES[0].stage),
@@ -325,11 +328,21 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     });
     return result.status === "READY" ? result.uiRuntime : null;
   }, [isCompletionStage, rendererPresenceRecognitionCalibration, recognitionConfirmed]);
+  const realityEntrySpaceUIRuntime = useMemo<RealityEntrySpaceUIRuntime | null>(() => {
+    const result = resolveRealityEntrySpaceUIRuntime({
+      recognitionConfirmed,
+      presenceAvailable: rendererPresenceRecognitionCalibration !== null,
+      realityEntryConfirmed,
+    });
+    return result.status === "READY" ? result.uiRuntime : null;
+  }, [recognitionConfirmed, rendererPresenceRecognitionCalibration, realityEntryConfirmed]);
   const experiencePresentation = recognitionConfirmed
     ? Object.freeze({
         prelude: "现实入口",
         title: "带着这份看见，进入下一段。",
-        note: "入口已经准备好，现实体验尚未开始。",
+        note: realityEntryConfirmed
+          ? "入口已经打开，压力体验尚未开始。"
+          : "入口已经准备好，现实体验尚未开始。",
       })
     : recognitionEntered
     ? Object.freeze({
@@ -470,6 +483,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     setTimeDelivered(false);
     setRecognitionEntered(false);
     setRecognitionConfirmed(false);
+    setRealityEntryConfirmed(false);
     setPreviewIntegration(
       createPreviewIntegration(GENESIS_PREVIEW_STAGES[0].stage),
     );
@@ -496,6 +510,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     }
     setRecognitionEntered(true);
     setRecognitionConfirmed(false);
+    setRealityEntryConfirmed(false);
   };
   const confirmRecognition = () => {
     if (
@@ -504,6 +519,14 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       return;
     }
     setRecognitionConfirmed(true);
+  };
+  const enterReality = () => {
+    if (
+      realityEntrySpaceUIRuntime?.interactionAvailability !== "ENTER_REALITY"
+    ) {
+      return;
+    }
+    setRealityEntryConfirmed(true);
   };
   const revealAnotherLife = () => {
     setFormalCaseIndex((current) => (current === 0 ? 1 : 0));
@@ -548,6 +571,21 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       }
       data-recognition-interaction={
         recognitionSpaceUIRuntime?.interactionAvailability ?? "NONE"
+      }
+      data-reality-entry-space={
+        recognitionConfirmed ? "REALITY_ENTRY_SPACE" : "NOT_ENTERED"
+      }
+      data-reality-entry-state={
+        realityEntrySpaceUIRuntime?.entryState ?? "NOT_READY"
+      }
+      data-reality-readiness={
+        realityEntrySpaceUIRuntime?.realityReadiness ?? "NOT_READY"
+      }
+      data-pressure-readiness={
+        realityEntrySpaceUIRuntime?.pressureReadiness ?? "NOT_READY"
+      }
+      data-reality-entry-interaction={
+        realityEntrySpaceUIRuntime?.interactionAvailability ?? "NONE"
       }
     >
       <div className="gy-p100__cosmic-depth" aria-hidden="true" />
@@ -625,7 +663,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
         ) : null}
       </section>
 
-      {recognitionEntered ? (
+      {recognitionEntered && !recognitionConfirmed ? (
         <section
           className="gy-p34__recognition-space"
           aria-label="Recognition Space生命认领"
@@ -655,6 +693,45 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
           {recognitionSpaceUIRuntime?.realityEntryAvailability === "READY" ? (
             <p className="gy-p34__reality-ready" role="status">
               Reality Entry 已准备好。
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
+      {recognitionConfirmed ? (
+        <section
+          className="gy-p35__reality-entry-space"
+          aria-label="Reality Entry Space现实入口"
+          data-reality-entry-space-panel="REALITY_ENTRY_SPACE"
+        >
+          <div className="gy-p35__reality-entry-head">
+            <span>现实入口</span>
+            <strong>{realityEntryConfirmed ? "已打开" : "过渡"}</strong>
+          </div>
+          <h2>
+            {realityEntryConfirmed
+              ? "入口已经打开。"
+              : "带着这份看见，进入你的现实。"}
+          </h2>
+          <p>
+            {realityEntryConfirmed
+              ? "Pressure Experience 已准备好；压力识别尚未开始。"
+              : "不是测试，也不是分析。先让陪伴继续，再靠近现实。"}
+          </p>
+          <small>Recognition 已确认 · 不反向解释生命</small>
+          {realityEntrySpaceUIRuntime?.interactionAvailability ===
+          "ENTER_REALITY" ? (
+            <button
+              type="button"
+              data-interaction="ENTER_REALITY"
+              onClick={enterReality}
+            >
+              进入现实观察
+            </button>
+          ) : null}
+          {realityEntrySpaceUIRuntime?.pressureReadiness === "READY" ? (
+            <p className="gy-p35__pressure-ready" role="status">
+              Pressure Experience 已准备好。
             </p>
           ) : null}
         </section>
