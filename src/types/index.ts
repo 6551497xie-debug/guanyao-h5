@@ -3005,3 +3005,14 @@ export type {
   RealityPressurePresentationBoundary,
   RealityPressurePresentationProps,
 } from "./realityPressurePresentation";
+
+export type {
+  RealityProductionGravityEvent,
+  RealityProductionGravityConsumerBoundary,
+  RealityProductionGravityPressureSessionReference,
+  RealityProductionGravitySession,
+  RealityProductionGravityConsumerInitializeInput,
+  RealityProductionGravityConsumerAdvanceInput,
+  RealityProductionGravityConsumerBlockedReason,
+  RealityProductionGravityConsumerResult,
+} from "./realityProductionGravityConsumer";
