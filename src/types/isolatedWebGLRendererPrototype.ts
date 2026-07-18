@@ -1,120 +1,33 @@
+import type {
+  GenesisWebGLRendererCoreController,
+  GenesisWebGLRendererCoreFallback,
+  GenesisWebGLRendererCoreInput,
+  GenesisWebGLRendererCoreSceneProjection,
+  GenesisWebGLRendererCoreSnapshot,
+  GenesisWebGLRendererCoreContextState,
+} from "./genesisWebGLRendererCore";
 import type { IsolatedWebGLRendererPrototypeAuthorization } from "./isolatedWebGLRendererPrototypeAuthorization";
-import type { GenesisTimeSequenceRecognitionProjection } from "./genesisTimeSequenceRecognitionProjection";
-import type { GenesisBirthMansionIgnitionProjection } from "./genesisBirthMansionIgnitionProjection";
-import type { GenesisFourSymbolAlignmentProjection } from "./genesisFourSymbolAlignmentProjection";
-import type { GenesisLifeForceInfusionProjection } from "./genesisLifeForceInfusionProjection";
-import type { GenesisPersonalRevealProjection } from "./genesisPersonalRevealProjection";
-import type { GenesisRealityPressureProjection } from "./genesisRealityPressureProjection";
-import type { PersonalStarBeastLifePresenceProjection } from "./personalStarBeastLifePresenceProjection";
-import type { PersonalStarBeastLifeStarCoreProjection } from "./personalStarBeastLifeStarCoreProjection";
-import type { PersonalStarBeastRenderPlan } from "./personalStarBeastRenderPlan";
-import type { GenesisRendererVisualRealization } from "./genesisRendererVisualRealization";
-import type { GenesisPerspectiveCalibration } from "./genesisPerspectiveCalibration";
-import type { GenesisPresenceRecognitionCalibration } from "./genesisPresenceRecognitionCalibration";
-import type { GenesisSpatialDistanceCalibration } from "./genesisSpatialDistanceCalibration";
 
-export type IsolatedWebGLRendererPrototypeSceneProjection = Readonly<{
-  semanticRole: "ISOLATED_WEBGL_LIFE_MANIFESTATION_SCENE";
-  sourceRenderPlanReferenceId: string;
-  cosmicField: Readonly<{
-    particleCount: number;
-    spread: number;
-    opacity: number;
-  }>;
-  mansionStructure: Readonly<{
-    anchorCount: number;
-    radius: number;
-    lineOpacity: number;
-  }>;
-  lifePresence: PersonalStarBeastLifePresenceProjection;
-  lifeStarCore: PersonalStarBeastLifeStarCoreProjection;
-  timeSequenceRecognition: GenesisTimeSequenceRecognitionProjection | null;
-  birthMansionIgnition: GenesisBirthMansionIgnitionProjection | null;
-  morphologicalFieldAlignment: GenesisFourSymbolAlignmentProjection | null;
-  lifeForceInfusion: GenesisLifeForceInfusionProjection | null;
-  personalReveal: GenesisPersonalRevealProjection | null;
-  realityPressure: GenesisRealityPressureProjection | null;
-  genesisVisualRealization: GenesisRendererVisualRealization | null;
-  genesisPerspectiveCalibration: GenesisPerspectiveCalibration | null;
-  genesisPresenceRecognitionCalibration: GenesisPresenceRecognitionCalibration | null;
-  genesisSpatialDistanceCalibration: GenesisSpatialDistanceCalibration | null;
-  formField: Readonly<{
-    hue: number;
-    boundaryScale: number;
-    flowSpeed: number;
-  }>;
-  lifeCore: Readonly<{
-    hue: number;
-    intensity: number;
-    breathingAmplitude: number;
-  }>;
-  motion: Readonly<{
-    rotationSpeed: number;
-    driftAmplitude: number;
-  }>;
-  crystal: Readonly<{
-    visible: boolean;
-    nodeCount: number;
-  }>;
-  rendererParametersOnly: true;
-  identityBlind: true;
-  noLifeFactCopy: true;
-}>;
+export type IsolatedWebGLRendererPrototypeSceneProjection =
+  GenesisWebGLRendererCoreSceneProjection;
 
-export type IsolatedWebGLRendererPrototypeInput = Readonly<{
-  canvas: HTMLCanvasElement | null;
-  renderPlan: PersonalStarBeastRenderPlan | null;
-  authorization: IsolatedWebGLRendererPrototypeAuthorization | null;
-  width: number;
-  height: number;
-  pixelRatio: number;
-  reducedMotion: boolean;
-  timeSequenceRecognitionProjection?: GenesisTimeSequenceRecognitionProjection | null;
-  birthMansionIgnitionProjection?: GenesisBirthMansionIgnitionProjection | null;
-  morphologicalFieldAlignmentProjection?: GenesisFourSymbolAlignmentProjection | null;
-  lifeForceInfusionProjection?: GenesisLifeForceInfusionProjection | null;
-  personalRevealProjection?: GenesisPersonalRevealProjection | null;
-  realityPressureProjection?: GenesisRealityPressureProjection | null;
-  genesisVisualRealization?: GenesisRendererVisualRealization | null;
-  genesisPerspectiveCalibration?: GenesisPerspectiveCalibration | null;
-  genesisPresenceRecognitionCalibration?: GenesisPresenceRecognitionCalibration | null;
-  genesisSpatialDistanceCalibration?: GenesisSpatialDistanceCalibration | null;
-}>;
+export type IsolatedWebGLRendererPrototypeInput =
+  GenesisWebGLRendererCoreInput &
+    Readonly<{
+      authorization: IsolatedWebGLRendererPrototypeAuthorization | null;
+    }>;
 
 export type IsolatedWebGLRendererPrototypeContextState =
-  | "ACTIVE"
-  | "LOST"
-  | "RESTORED"
-  | "DISPOSED";
+  GenesisWebGLRendererCoreContextState;
 
-export type IsolatedWebGLRendererPrototypeSnapshot = Readonly<{
-  sourceRenderPlanReferenceId: string;
-  contextState: IsolatedWebGLRendererPrototypeContextState;
-  frameCount: number;
-  width: number;
-  height: number;
-  disposed: boolean;
-}>;
+export type IsolatedWebGLRendererPrototypeSnapshot =
+  GenesisWebGLRendererCoreSnapshot;
 
-export type IsolatedWebGLRendererPrototypeController = Readonly<{
-  sceneProjection: IsolatedWebGLRendererPrototypeSceneProjection;
-  renderFrame: (elapsedMilliseconds: number) => void;
-  resize: (width: number, height: number, pixelRatio?: number) => void;
-  getSnapshot: () => IsolatedWebGLRendererPrototypeSnapshot;
-  dispose: () => void;
-}>;
+export type IsolatedWebGLRendererPrototypeController =
+  GenesisWebGLRendererCoreController;
 
-export type IsolatedWebGLRendererPrototypeFallback = Readonly<{
-  mode: "SEMANTIC_STATIC_FALLBACK";
-  reason:
-    | "CANVAS_REQUIRED"
-    | "WEBGL2_UNAVAILABLE"
-    | "REDUCED_MOTION_REQUESTED"
-    | "RENDERER_INITIALIZATION_FAILED";
-  sceneProjection: IsolatedWebGLRendererPrototypeSceneProjection;
-  preservesRenderPlanSemantics: true;
-  noIdentityRecalculation: true;
-}>;
+export type IsolatedWebGLRendererPrototypeFallback =
+  GenesisWebGLRendererCoreFallback;
 
 export type IsolatedWebGLRendererPrototypeBlockedReason =
   | "AUTHORIZATION_REQUIRED"

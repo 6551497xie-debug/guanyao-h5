@@ -8,7 +8,7 @@ const rootDir = process.cwd();
 const files = Object.freeze({
   type: "src/types/genesisRendererVisualRealization.ts",
   service: "src/services/genesisRendererVisualRealization.ts",
-  renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
+  renderer: "src/renderers/genesisWebGLRendererCore.ts",
   previousGate: "scripts/check-genesis-renderer-visual-realization.mjs",
   packageManifest: "package.json",
 });

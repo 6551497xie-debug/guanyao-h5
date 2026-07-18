@@ -8,7 +8,7 @@ const rootDir = process.cwd();
 const files = Object.freeze({
   type: "src/types/genesisPerspectiveCalibration.ts",
   service: "src/services/genesisPerspectiveCalibration.ts",
-  renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
+  renderer: "src/renderers/genesisWebGLRendererCore.ts",
   packageManifest: "package.json",
 });
 const failures = [];

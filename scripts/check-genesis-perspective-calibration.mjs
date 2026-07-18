@@ -8,8 +8,8 @@ const rootDir = process.cwd();
 const files = Object.freeze({
   type: "src/types/genesisPerspectiveCalibration.ts",
   service: "src/services/genesisPerspectiveCalibration.ts",
-  rendererType: "src/types/isolatedWebGLRendererPrototype.ts",
-  renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
+  rendererType: "src/types/genesisWebGLRendererCore.ts",
+  renderer: "src/renderers/genesisWebGLRendererCore.ts",
   harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
   packageManifest: "package.json",
 });

@@ -2890,3 +2890,15 @@ export type {
   GenesisVisualConsumerSourceResult,
   GenesisVisualConsumerSourceResolutionInput,
 } from "./genesisVisualConsumerSource";
+
+export type {
+  GenesisWebGLRendererCoreSceneProjection,
+  GenesisWebGLRendererCoreInput,
+  GenesisWebGLRendererCoreContextState,
+  GenesisWebGLRendererCoreSnapshot,
+  GenesisWebGLRendererCoreController,
+  GenesisWebGLRendererCoreFallback,
+  GenesisWebGLRendererCoreBlockedReason,
+  GenesisWebGLRendererCoreBoundary,
+  GenesisWebGLRendererCoreResult,
+} from "./genesisWebGLRendererCore";

@@ -8,8 +8,8 @@ const rootDir = process.cwd();
 const files = Object.freeze({
   type: "src/types/genesisSpatialDistanceCalibration.ts",
   service: "src/services/genesisSpatialDistanceCalibration.ts",
-  rendererType: "src/types/isolatedWebGLRendererPrototype.ts",
-  renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
+  rendererType: "src/types/genesisWebGLRendererCore.ts",
+  renderer: "src/renderers/genesisWebGLRendererCore.ts",
   harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
   typeIndex: "src/types/index.ts",
   packageManifest: "package.json",

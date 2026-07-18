@@ -8,7 +8,7 @@ const rootDir = process.cwd();
 const files = Object.freeze({
   type: "src/types/genesisPresenceRecognitionCalibration.ts",
   service: "src/services/genesisPresenceRecognitionCalibration.ts",
-  renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
+  renderer: "src/renderers/genesisWebGLRendererCore.ts",
   harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
   fixture: "src/services/genesisPreviewIntegrationFixture.ts",
   typeIndex: "src/types/index.ts",

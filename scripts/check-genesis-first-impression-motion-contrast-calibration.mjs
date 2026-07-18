@@ -6,7 +6,7 @@ const rootDir = process.cwd();
 const files = Object.freeze({
   protocol:
     "docs/GUANYAO_P111_FIRST_IMPRESSION_MOTION_CONTRAST_CALIBRATION_PROTOCOL.md",
-  renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
+  renderer: "src/renderers/genesisWebGLRendererCore.ts",
   harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
   p110Protocol:
     "docs/GUANYAO_P110_FIRST_IMPRESSION_AB_CONTRAST_CALIBRATION_PROTOCOL.md",

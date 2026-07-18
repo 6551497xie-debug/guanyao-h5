@@ -16,8 +16,11 @@ const files = Object.freeze({
   protocol:
     "docs/GUANYAO_ISOLATED_WEBGL_RENDERER_PROTOTYPE_SLICE_PROTOCOL.md",
   prototypeType: "src/types/isolatedWebGLRendererPrototype.ts",
+  rendererCoreType: "src/types/genesisWebGLRendererCore.ts",
   prototype:
     "src/prototypes/isolatedWebGLRendererPrototype.ts",
+  rendererCore:
+    "src/renderers/genesisWebGLRendererCore.ts",
   planReference:
     "src/services/isolatedWebGLPrototypeRenderPlanReference.ts",
   authorizationService:
@@ -126,12 +129,15 @@ if (failures.length === 0) {
     "noRuntimeIntegration: true",
     "noStorageWrite: true",
   ].forEach((marker) =>
-    assertIncludes("P99 prototype contract", source.prototypeType, marker),
+    assertIncludes(
+      "P99 prototype-compatible shared contract",
+      `${source.prototypeType}\n${source.rendererCoreType}`,
+      marker,
+    ),
   );
 
   [
     "export function projectPersonalStarBeastRenderPlanToWebGLScene",
-    "export function createIsolatedWebGLRendererPrototype",
     'from "three"',
     "new WebGLRenderer",
     'getContext("webgl2"',
@@ -148,10 +154,17 @@ if (failures.length === 0) {
     "resize:",
     "dispose:",
     'status: "FALLBACK_REQUIRED"',
-    'reason: "AUTHORIZATION_REQUIRED"',
-    'reason: "RENDER_PLAN_NOT_AUTHORIZED"',
   ].forEach((marker) =>
-    assertIncludes("P99 isolated renderer", source.prototype, marker),
+    assertIncludes("P99 shared visual implementation", source.rendererCore, marker),
+  );
+
+  [
+    "export function createIsolatedWebGLRendererPrototype",
+    "createGenesisWebGLRendererCore",
+    'return blocked("AUTHORIZATION_REQUIRED")',
+    'return blocked("RENDER_PLAN_NOT_AUTHORIZED")',
+  ].forEach((marker) =>
+    assertIncludes("P99 isolated renderer facade", source.prototype, marker),
   );
 
   [
@@ -172,7 +185,11 @@ if (failures.length === 0) {
     "朱雀",
     "玄武",
   ].forEach((marker) =>
-    assertExcludes("P99 Renderer stays identity blind", source.prototype, marker),
+    assertExcludes(
+      "P99 Renderer stays identity blind",
+      `${source.prototype}\n${source.rendererCore}`,
+      marker,
+    ),
   );
 
   [
@@ -230,9 +247,9 @@ if (failures.length === 0) {
     .map((filePath) => path.relative(rootDir, filePath))
     .sort();
   assertEqual(
-    "Three.js exists only in isolated P99 module",
+    "Three.js exists only in shared P99 renderer core",
     threeImportSites.join(","),
-    files.prototype,
+    files.rendererCore,
   );
 
   [

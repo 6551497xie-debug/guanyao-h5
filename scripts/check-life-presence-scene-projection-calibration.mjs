@@ -11,8 +11,8 @@ const files = Object.freeze({
   projectionType: "src/types/personalStarBeastLifePresenceProjection.ts",
   projectionService:
     "src/services/personalStarBeastLifePresenceProjection.ts",
-  renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
-  rendererType: "src/types/isolatedWebGLRendererPrototype.ts",
+  renderer: "src/renderers/genesisWebGLRendererCore.ts",
+  rendererType: "src/types/genesisWebGLRendererCore.ts",
   fixtures: "src/mocks/starBeastSceneModelFixtures.ts",
   planAdapter: "src/services/personalStarBeastRenderPlanAdapter.ts",
   packageManifest: "package.json",

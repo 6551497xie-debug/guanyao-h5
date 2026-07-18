@@ -8,7 +8,7 @@ const rootDir = process.cwd();
 const files = Object.freeze({
   type: "src/types/genesisPerspectiveCalibration.ts",
   service: "src/services/genesisPerspectiveCalibration.ts",
-  renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
+  renderer: "src/renderers/genesisWebGLRendererCore.ts",
   packageManifest: "package.json",
 });
 const failures = [];
@@ -149,7 +149,14 @@ if (failures.length === 0) {
   const beast = runtime.mapGenesisPerspectiveCalibration({
     visualRealization: realizationFor("STAR_BEAST_REVEAL"),
   });
-  assertEqual("beast layer not entered", beast.status, "BLOCKED");
+  assertEqual("beast layer remains available after P18-C", beast.status, "READY");
+  if (beast.status === "READY") {
+    assertEqual(
+      "beast layer remains P18-C subject formation",
+      beast.calibration.activeVisualLayer,
+      "BEAST_SUBJECT_FORMATION",
+    );
+  }
 }
 
 if (failures.length > 0) {

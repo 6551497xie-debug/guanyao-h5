@@ -110,6 +110,7 @@
     "check-personal-star-beast-render-plan-adapter": "node scripts/check-personal-star-beast-render-plan-adapter.mjs",
     "check-isolated-webgl-renderer-prototype-authorization": "node scripts/check-isolated-webgl-renderer-prototype-authorization.mjs",
     "check-isolated-webgl-renderer-prototype-slice": "node scripts/check-isolated-webgl-renderer-prototype-slice.mjs",
+    "check-genesis-webgl-renderer-core-extraction": "node scripts/check-genesis-webgl-renderer-core-extraction.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",
