@@ -3184,3 +3184,12 @@ export type {
   RealityPressureSeedPresentationProps,
   RealityPressureSeedCandidatePresentationProps,
 } from "./realityPressureSeedPresentation";
+
+export type {
+  RealityPressureSeedContinuationContextBoundary,
+  RealityPressureSeedContinuationContext,
+  RealityPressureSeedContinuationContextInput,
+  RealityPressureSeedContinuationSessionInput,
+  RealityPressureSeedContinuationContextBlockedReason,
+  RealityPressureSeedContinuationContextResult,
+} from "./realityPressureSeedContinuationContext";

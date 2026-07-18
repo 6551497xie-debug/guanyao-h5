@@ -10,6 +10,7 @@ import { bridgeRealityRouteToPressureCandidateActivation } from "../services/rea
 import { bridgeRealityRouteCandidateRequestContext } from "../services/realityRouteCandidateRequestContextBridge";
 import { bridgeRealityRouteDeliveryOrchestration } from "../services/realityRouteDeliveryOrchestrationBridge";
 import { resolveRealityProductionPressureHostInput } from "../services/realityProductionPressureHostInputContract";
+import { createRealityPressureSeedContinuationContext } from "../services/realityPressureSeedContinuationContext";
 import type { RealityProductionRouteEntryBoundary } from "../types/realityProductionRouteEntry";
 
 export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
@@ -21,6 +22,7 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
     pressureCandidateActivationContextRequired: true,
     pressureCandidateRequestContextRequired: true,
     pressureDeliveryOrchestrationRequired: true,
+    pressureSeedContinuationContextRequired: true,
     routeAuthorizationRequired: true,
     sourceNotReadyRecoveryRequired: true,
     sourceReferenceExcludedFromUrl: true,
@@ -74,16 +76,29 @@ export function RealityProductionRouteEntry() {
           routeDeliveryResult: deliveryResult,
         })
       : null;
+  const pressureSeedContinuationResult =
+    authorization.status === "READY" &&
+    candidateActivationResult &&
+    candidateRequestResult &&
+    deliveryResult
+      ? createRealityPressureSeedContinuationContext({
+          routeAuthorization: authorization,
+          routeCandidateActivationResult: candidateActivationResult,
+          routeCandidateRequestResult: candidateRequestResult,
+          routeDeliveryResult: deliveryResult,
+        })
+      : null;
 
   if (
     authorization.status !== "READY" ||
     activationSourceContext === null ||
     activationSourceContext.sourceReferenceId !==
       authorization.sourceReferenceId ||
-    candidateActivationResult?.status !== "READY"
-    || candidateRequestResult?.status !== "READY" ||
-    deliveryResult?.status !== "READY"
-    || pressureHostInputResult?.status !== "READY"
+    candidateActivationResult?.status !== "READY" ||
+    candidateRequestResult?.status !== "READY" ||
+    deliveryResult?.status !== "READY" ||
+    pressureHostInputResult?.status !== "READY" ||
+    pressureSeedContinuationResult?.status !== "READY"
   ) {
     return (
       <main
@@ -107,6 +122,9 @@ export function RealityProductionRouteEntry() {
             : pressureHostInputResult?.status !== "READY"
             ? pressureHostInputResult?.reason ??
               "PRESSURE_HOST_INPUT_NOT_READY"
+            : pressureSeedContinuationResult?.status !== "READY"
+            ? pressureSeedContinuationResult?.reason ??
+              "PRESSURE_SEED_CONTINUATION_NOT_READY"
             : null
         }
       >

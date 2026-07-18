@@ -9,6 +9,7 @@ export type RealityProductionRouteEntryBoundary = Readonly<{
   pressureCandidateActivationContextRequired: true;
   pressureCandidateRequestContextRequired: true;
   pressureDeliveryOrchestrationRequired: true;
+  pressureSeedContinuationContextRequired: true;
   routeAuthorizationRequired: true;
   sourceNotReadyRecoveryRequired: true;
   sourceReferenceExcludedFromUrl: true;
