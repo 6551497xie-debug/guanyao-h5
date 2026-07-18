@@ -71,10 +71,10 @@ try {
     assertExcludes("contract performs no source, capture, engine, runtime, UI, or storage work", source.service, marker),
   );
 
-  assertExcludes(
-    "current Candidate Source is not switched by contract knife",
+  assertIncludes(
+    "Candidate Source consumes the contract without reversing ownership",
     source.candidateSource,
-    "realityPressureCrossFieldCandidateBundleContract",
+    "resolveRealityPressureCrossFieldCandidateBundlePlan",
   );
   assertExcludes(
     "Capture Adapter is not changed by contract knife",

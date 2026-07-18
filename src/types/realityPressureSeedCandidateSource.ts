@@ -7,6 +7,8 @@ import type {
 export type RealityPressureSeedCandidateSourceBoundary = Readonly<{
   productionCandidateSourceOnly: true;
   existingMatrixResolverOnly: true;
+  crossFieldBundleContractRequired: true;
+  explicitCatalogExhaustionRequired: true;
   explicitCatalogRoutingContextRequired: true;
   sourceReferenceContinuityRequired: true;
   immutableSourceContextOnly: true;
@@ -57,6 +59,7 @@ export type RealityPressureSeedCandidateSourceBlockedReason =
   | "CANDIDATE_CURSOR_MISMATCH"
   | "EXCLUDED_CANDIDATE_REFERENCES_INVALID"
   | "CANDIDATE_BUNDLE_NOT_AVAILABLE"
+  | "CANDIDATE_CATALOG_EXHAUSTED"
   | "CANDIDATE_SOURCE_AGE_SEGMENT_MISMATCH"
   | "CANDIDATE_SOURCE_FALLBACK_DETECTED";
 

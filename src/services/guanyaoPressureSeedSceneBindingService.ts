@@ -62,6 +62,12 @@ export interface GuanyaoPressureSeedTriplet {
   };
 }
 
+export interface GuanyaoPressureSeedMatrixSlotContext {
+  ageSegment: GuanyaoAgeSegment;
+  pressureField: GuanyaoPressureField;
+  fieldSeedOffset: number;
+}
+
 export interface GuanyaoSelectedPressureSeedContext {
   selectedPressureSeedId: string;
   engineSource: "BEHAVIORAL_INERTIA_COMPRESSION_ENGINE";
@@ -485,6 +491,25 @@ export function getPressureSeedSceneTriplet(
       },
     },
   };
+}
+
+export function getPressureSeedSceneCandidateAtMatrixSlot(
+  context: GuanyaoPressureSeedMatrixSlotContext,
+): GuanyaoPressureSeed | undefined {
+  if (
+    !Number.isInteger(context.fieldSeedOffset) ||
+    context.fieldSeedOffset < 0
+  ) {
+    return undefined;
+  }
+
+  const node = findMatrixNode(context.ageSegment, context.pressureField);
+  if (!node || node.status !== "locked") return undefined;
+
+  const matrixSeed = node.seeds[context.fieldSeedOffset];
+  return matrixSeed
+    ? toPressureSeedCandidateFromMatrixSeed(node, matrixSeed)
+    : undefined;
 }
 
 export function derivePressureSeedIntensity(

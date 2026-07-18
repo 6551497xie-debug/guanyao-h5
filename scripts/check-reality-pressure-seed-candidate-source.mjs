@@ -51,6 +51,7 @@ try {
     '"CATALOG_ROUTING_ROLE_REQUIRED"',
     '"CANDIDATE_CURSOR_MISMATCH"',
     '"CANDIDATE_SOURCE_FALLBACK_DETECTED"',
+    '"CANDIDATE_CATALOG_EXHAUSTED"',
   ].forEach((marker) =>
     assertIncludes("candidate source type contract", source.type, marker),
   );
@@ -58,6 +59,8 @@ try {
   [
     "productionCandidateSourceOnly: true",
     "existingMatrixResolverOnly: true",
+    "crossFieldBundleContractRequired: true",
+    "explicitCatalogExhaustionRequired: true",
     "explicitCatalogRoutingContextRequired: true",
     "presentationSafeBundleOnly: true",
     "internalCandidateRecordsIsolated: true",
@@ -81,9 +84,9 @@ try {
 
   [
     "export function resolveRealityPressureSeedCandidateSource",
-    "getPressureSeedSceneTriplet({",
-    "ageSegment: request.ageSegment",
-    "excludeSeedIds: excludedCandidateReferenceIds",
+    "resolveRealityPressureCrossFieldCandidateBundlePlan(",
+    "getPressureSeedSceneCandidateAtMatrixSlot({",
+    "request.ageSegment",
     'ageSegmentRole !== "CATALOG_ROUTING_ONLY"',
     'selectionMode: "USER_RECOGNITION_REQUIRED"',
     'candidateSource: "PRESSURE_SEED_MATRIX_V2"',
@@ -192,11 +195,11 @@ try {
   assertEqual("cursor mismatch is explicit", wrongCursor.reason, "CANDIDATE_CURSOR_MISMATCH");
 
   const unavailableAge = resolve({ ...baseRequest, ageSegment: "MID_LIFE" });
-  assertEqual("missing age catalog never falls back", unavailableAge.status, "BLOCKED");
+  assertEqual("missing age catalog never falls back", unavailableAge.status, "SOURCE_NOT_READY");
   assertEqual(
     "age catalog mismatch is explicit",
     unavailableAge.reason,
-    "CANDIDATE_SOURCE_AGE_SEGMENT_MISMATCH",
+    "CANDIDATE_BUNDLE_NOT_AVAILABLE",
   );
 
   const ready = resolve(baseRequest);
@@ -213,6 +216,11 @@ try {
   assertEqual("no candidate is automatically selected", ready.context.candidateBundle.provenance.noAutomaticSelection, true);
   assertEqual("bundle reference remains continuous", ready.context.bundleReferenceId, ready.context.candidateBundle.bundleReferenceId);
   assertEqual("source reference remains continuous", ready.context.sourceReferenceId, baseRequest.sourceReferenceId);
+  assertEqual(
+    "first bundle is cross-field Group A",
+    ready.context.candidateRecords.map((record) => record.seed.pressureField).join(","),
+    "POWER,RELATION,FAMILY",
+  );
 
   for (const candidate of ready.context.candidateBundle.candidates) {
     assertEqual("presentation candidate exposes only three fields", Object.keys(candidate).sort().join(","), "candidateReferenceId,shell,surface");
@@ -230,6 +238,11 @@ try {
     excludedCandidateReferenceIds: currentIds,
   });
   assertEqual("next bundle resolves through explicit cursor", next.status, "READY");
+  assertEqual(
+    "second bundle is cross-field Group B",
+    next.context.candidateRecords.map((record) => record.seed.pressureField).join(","),
+    "EXISTENCE,INTEREST,SOCIAL",
+  );
   assertEqual(
     "next bundle does not reuse excluded candidates",
     next.context.candidateBundle.candidates.some((candidate) =>

@@ -137,6 +137,7 @@
     "check-establishing-pressure-seed-social-calibration": "node scripts/check-establishing-pressure-seed-social-calibration.mjs",
     "check-establishing-pressure-seed-existence-calibration": "node scripts/check-establishing-pressure-seed-existence-calibration.mjs",
     "check-reality-pressure-cross-field-candidate-bundle-contract": "node scripts/check-reality-pressure-cross-field-candidate-bundle-contract.mjs",
+    "check-reality-pressure-cross-field-candidate-source-assembly": "node scripts/check-reality-pressure-cross-field-candidate-source-assembly.mjs",
     "check-reality-production-pressure-host": "node scripts/check-reality-production-pressure-host.mjs",
     "check-reality-production-gravity-consumer": "node scripts/check-reality-production-gravity-consumer.mjs",
     "check-reality-production-gravity-host": "node scripts/check-reality-production-gravity-host.mjs",

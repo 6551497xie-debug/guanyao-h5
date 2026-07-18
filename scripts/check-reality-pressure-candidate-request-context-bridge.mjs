@@ -256,8 +256,8 @@ try {
   const unavailableCatalog = runtime.resolveRealityPressureSeedCandidateSource(
     midLife.context.candidateRequest,
   );
-  assertEqual("missing mid-life catalog never falls back", unavailableCatalog.status, "BLOCKED");
-  assertEqual("catalog mismatch remains explicit", unavailableCatalog.reason, "CANDIDATE_SOURCE_AGE_SEGMENT_MISMATCH");
+  assertEqual("missing mid-life catalog never falls back", unavailableCatalog.status, "SOURCE_NOT_READY");
+  assertEqual("catalog absence remains explicit", unavailableCatalog.reason, "CANDIDATE_BUNDLE_NOT_AVAILABLE");
 
   assertEqual("bridge boundary is frozen", Object.isFrozen(establishing.boundary), true);
   assertEqual("bridge uses no system clock", establishing.boundary.noSystemClock, true);

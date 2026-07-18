@@ -1,17 +1,24 @@
 import type { GuanyaoPressureSeed } from "../types/guanyaoPressureSeed";
 import type { RealityPressureSeedCandidateRequest } from "../types/realityPressureSeedCaptureContract";
+import type { RealityPressureCrossFieldCandidateBundlePlan } from "../types/realityPressureCrossFieldCandidateBundleContract";
 import type {
   RealityPressureSeedCandidateSourceBlockedReason,
   RealityPressureSeedCandidateSourceBoundary,
   RealityPressureSeedCandidateSourceContext,
   RealityPressureSeedCandidateSourceResult,
 } from "../types/realityPressureSeedCandidateSource";
-import { getPressureSeedSceneTriplet } from "./guanyaoPressureSeedSceneBindingService";
+import {
+  createRealityPressureCrossFieldBundleCursor,
+  resolveRealityPressureCrossFieldCandidateBundlePlan,
+} from "./realityPressureCrossFieldCandidateBundleContract";
+import { getPressureSeedSceneCandidateAtMatrixSlot } from "./guanyaoPressureSeedSceneBindingService";
 
 export const REALITY_PRESSURE_SEED_CANDIDATE_SOURCE_BOUNDARY:
   RealityPressureSeedCandidateSourceBoundary = Object.freeze({
     productionCandidateSourceOnly: true,
     existingMatrixResolverOnly: true,
+    crossFieldBundleContractRequired: true,
+    explicitCatalogExhaustionRequired: true,
     explicitCatalogRoutingContextRequired: true,
     sourceReferenceContinuityRequired: true,
     immutableSourceContextOnly: true,
@@ -91,6 +98,22 @@ const freezeSeed = (seed: GuanyaoPressureSeed): Readonly<GuanyaoPressureSeed> =>
     tags: freezeArray(seed.tags),
   });
 
+const resolvePlanSeeds = (
+  ageSegment: NonNullable<RealityPressureSeedCandidateRequest["ageSegment"]>,
+  plan: RealityPressureCrossFieldCandidateBundlePlan,
+): GuanyaoPressureSeed[] | null => {
+  const seeds = plan.slots.map((slot) =>
+    getPressureSeedSceneCandidateAtMatrixSlot({
+      ageSegment,
+      pressureField: slot.pressureField,
+      fieldSeedOffset: slot.fieldSeedOffset,
+    }),
+  );
+  return seeds.some((seed) => !seed)
+    ? null
+    : seeds.filter((seed): seed is GuanyaoPressureSeed => Boolean(seed));
+};
+
 export function resolveRealityPressureSeedCandidateSource(
   request: RealityPressureSeedCandidateRequest,
 ): RealityPressureSeedCandidateSourceResult {
@@ -117,7 +140,8 @@ export function resolveRealityPressureSeedCandidateSource(
   if (
     excludedCandidateReferenceIds.some((reference) => !reference.trim()) ||
     new Set(excludedCandidateReferenceIds).size !==
-      excludedCandidateReferenceIds.length
+      excludedCandidateReferenceIds.length ||
+    excludedCandidateReferenceIds.length % 3 !== 0
   ) {
     return blocked(request, "EXCLUDED_CANDIDATE_REFERENCES_INVALID");
   }
@@ -128,18 +152,80 @@ export function resolveRealityPressureSeedCandidateSource(
     return blocked(request, "CANDIDATE_CURSOR_MISMATCH");
   }
 
-  const triplet = getPressureSeedSceneTriplet({
-    ageSegment: request.ageSegment,
-    excludeSeedIds: excludedCandidateReferenceIds,
-  });
-  if (triplet.seeds.length !== 3) {
+  const initialCursor = createRealityPressureCrossFieldBundleCursor(
+    sourceReferenceId,
+    request.ageSegment,
+  );
+  const bundleSequence = excludedCandidateReferenceIds.length / 3;
+  const expectedExcludedCandidateReferenceIds: string[] = [];
+  for (let sequence = 0; sequence < bundleSequence; sequence += 1) {
+    const previousPlanResult =
+      resolveRealityPressureCrossFieldCandidateBundlePlan(
+        Object.freeze({
+          ...initialCursor,
+          nextBundleSequence: sequence,
+          nextFieldGroup: sequence % 2 === 0 ? "GROUP_A" : "GROUP_B",
+        }),
+      );
+    if (previousPlanResult.status !== "READY") {
+      return blocked(request, "CANDIDATE_CURSOR_MISMATCH");
+    }
+    const previousSeeds = resolvePlanSeeds(
+      request.ageSegment,
+      previousPlanResult.plan,
+    );
+    if (!previousSeeds) {
+      return sourceNotReady(request, "CANDIDATE_BUNDLE_NOT_AVAILABLE");
+    }
+    expectedExcludedCandidateReferenceIds.push(
+      ...previousSeeds.map((seed) => seed.id),
+    );
+  }
+  if (
+    expectedExcludedCandidateReferenceIds.some(
+      (reference, index) =>
+        reference !== excludedCandidateReferenceIds[index],
+    )
+  ) {
+    return blocked(request, "CANDIDATE_CURSOR_MISMATCH");
+  }
+
+  const bundlePlanResult = resolveRealityPressureCrossFieldCandidateBundlePlan(
+    Object.freeze({
+      ...initialCursor,
+      nextBundleSequence: bundleSequence,
+      nextFieldGroup: bundleSequence % 2 === 0 ? "GROUP_A" : "GROUP_B",
+    }),
+  );
+  if (
+    bundlePlanResult.status === "SOURCE_NOT_READY" &&
+    bundlePlanResult.reason === "CANDIDATE_CATALOG_EXHAUSTED"
+  ) {
+    return sourceNotReady(request, "CANDIDATE_CATALOG_EXHAUSTED");
+  }
+  if (bundlePlanResult.status !== "READY") {
+    return blocked(request, "CANDIDATE_CURSOR_MISMATCH");
+  }
+
+  const resolvedSeeds = resolvePlanSeeds(
+    request.ageSegment,
+    bundlePlanResult.plan,
+  );
+  if (!resolvedSeeds) {
     return sourceNotReady(request, "CANDIDATE_BUNDLE_NOT_AVAILABLE");
   }
-  if (triplet.seeds.some((seed) => seed.primaryAge !== request.ageSegment)) {
+  if (
+    resolvedSeeds.some(
+      (seed, index) =>
+        seed.primaryAge !== request.ageSegment ||
+        seed.pressureField !==
+          bundlePlanResult.plan.slots[index]?.pressureField,
+    )
+  ) {
     return blocked(request, "CANDIDATE_SOURCE_AGE_SEGMENT_MISMATCH");
   }
   if (
-    triplet.seeds.some(
+    resolvedSeeds.some(
       (seed) =>
         !seed.id.trim() ||
         !seed.surface.trim() ||
@@ -150,7 +236,7 @@ export function resolveRealityPressureSeedCandidateSource(
     return blocked(request, "CANDIDATE_SOURCE_FALLBACK_DETECTED");
   }
 
-  const candidateIds = triplet.seeds.map((seed) => seed.id);
+  const candidateIds = resolvedSeeds.map((seed) => seed.id);
   if (new Set(candidateIds).size !== candidateIds.length) {
     return blocked(request, "CANDIDATE_SOURCE_FALLBACK_DETECTED");
   }
@@ -165,7 +251,7 @@ export function resolveRealityPressureSeedCandidateSource(
     excludedCandidateReferenceIds.length + candidateIds.length,
   );
   const candidates = Object.freeze(
-    triplet.seeds.map((seed) =>
+    resolvedSeeds.map((seed) =>
       Object.freeze({
         candidateReferenceId: seed.id,
         surface: seed.surface,
@@ -174,7 +260,7 @@ export function resolveRealityPressureSeedCandidateSource(
     ),
   );
   const candidateRecords = Object.freeze(
-    triplet.seeds.map((seed) =>
+    resolvedSeeds.map((seed) =>
       Object.freeze({
         candidateReferenceId: seed.id,
         seed: freezeSeed(seed),
