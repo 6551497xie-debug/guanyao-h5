@@ -85,6 +85,10 @@ try {
     '"SOURCE_REFERENCE_MISMATCH"',
     'authorizationState: "AUTHORIZED_PRODUCTION_GENESIS"',
     'authorizedTarget: "GENESIS_PRODUCTION_RENDERER_HOST"',
+    'authorizedRouteTarget: GENESIS_PRODUCTION_ROUTE_TARGET',
+    'routeActivationEligibility: "ELIGIBLE"',
+    'routeIntegrationStatus:',
+    '"AUTHORIZED_EXPLICIT_ROUTE_ACTIVATION"',
   ].forEach((marker) => assertIncludes("production route guard", source.service, marker));
 
   [
@@ -222,6 +226,9 @@ try {
   assertEqual("provenance is real session", ready.sourceProvenance, "REAL_USER_SESSION");
   assertEqual("source reference remains continuous", ready.sourceReferenceId, sourceReferenceId);
   assertEqual("host authorization is emitted", ready.productionRendererAuthorization.authorizedTarget, "GENESIS_PRODUCTION_RENDERER_HOST");
+  assertEqual("route target is explicitly authorized", ready.productionRendererAuthorization.authorizedRouteTarget, "/genesis");
+  assertEqual("route activation is eligible", ready.productionRendererAuthorization.routeActivationEligibility, "ELIGIBLE");
+  assertEqual("route integration is explicitly authorized", ready.productionRendererAuthorization.routeIntegrationStatus, "AUTHORIZED_EXPLICIT_ROUTE_ACTIVATION");
   assertEqual("host authorization binds same source", ready.productionRendererAuthorization.authorizedSourceReferenceId, sourceReferenceId);
   assertEqual("prototype authorization is not accepted", ready.productionRendererAuthorization.prototypeAuthorizationStatus, "NOT_ACCEPTED");
   assertEqual("fixture source is forbidden", ready.productionRendererAuthorization.fixtureSourceStatus, "FORBIDDEN");

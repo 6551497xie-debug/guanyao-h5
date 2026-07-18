@@ -6,8 +6,10 @@ import type {
 import type { GenesisVisualConsumerSourceResult } from "./genesisVisualConsumerSource";
 
 export type GenesisProductionRendererHostAuthorization = Readonly<{
-  authorizationId: "GUANYAO_GENESIS_PRODUCTION_RENDERER_HOST_AUTHORIZATION_V1";
+  authorizationId: "GUANYAO_GENESIS_PRODUCTION_RENDERER_HOST_AUTHORIZATION_V2";
   classification: "PRODUCTION";
+  authorizedRouteTarget: "/genesis";
+  routeActivationEligibility: "ELIGIBLE";
   authorizedTarget: "GENESIS_PRODUCTION_RENDERER_HOST";
   authorizedRendererCore: "GENESIS_WEBGL_RENDERER_CORE";
   authorizedSourceMode: "REAL_USER_EXPERIENCE";
@@ -17,7 +19,7 @@ export type GenesisProductionRendererHostAuthorization = Readonly<{
   formalUserSourceStatus: "AUTHORIZED";
   fixtureSourceStatus: "FORBIDDEN";
   prototypeAuthorizationStatus: "NOT_ACCEPTED";
-  routeIntegrationStatus: "FORBIDDEN_PENDING_EXPLICIT_ROUTE_ACTIVATION";
+  routeIntegrationStatus: "AUTHORIZED_EXPLICIT_ROUTE_ACTIVATION";
   fallbackRequired: true;
 }>;
 

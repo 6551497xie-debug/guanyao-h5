@@ -131,8 +131,10 @@ export function authorizeGenesisProductionRoute(
   const productionRendererAuthorization:
     GenesisProductionRendererHostAuthorization = Object.freeze({
       authorizationId:
-        "GUANYAO_GENESIS_PRODUCTION_RENDERER_HOST_AUTHORIZATION_V1",
+        "GUANYAO_GENESIS_PRODUCTION_RENDERER_HOST_AUTHORIZATION_V2",
       classification: "PRODUCTION",
+      authorizedRouteTarget: GENESIS_PRODUCTION_ROUTE_TARGET,
+      routeActivationEligibility: "ELIGIBLE",
       authorizedTarget: "GENESIS_PRODUCTION_RENDERER_HOST",
       authorizedRendererCore: "GENESIS_WEBGL_RENDERER_CORE",
       authorizedSourceMode: "REAL_USER_EXPERIENCE",
@@ -143,7 +145,7 @@ export function authorizeGenesisProductionRoute(
       fixtureSourceStatus: "FORBIDDEN",
       prototypeAuthorizationStatus: "NOT_ACCEPTED",
       routeIntegrationStatus:
-        "FORBIDDEN_PENDING_EXPLICIT_ROUTE_ACTIVATION",
+        "AUTHORIZED_EXPLICIT_ROUTE_ACTIVATION",
       fallbackRequired: true,
     });
 

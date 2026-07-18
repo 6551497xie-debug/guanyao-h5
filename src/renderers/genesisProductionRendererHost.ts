@@ -46,8 +46,10 @@ const isAuthorizationValid = (
   authorization: GenesisProductionRendererHostAuthorization,
 ): boolean =>
   authorization.authorizationId ===
-    "GUANYAO_GENESIS_PRODUCTION_RENDERER_HOST_AUTHORIZATION_V1" &&
+    "GUANYAO_GENESIS_PRODUCTION_RENDERER_HOST_AUTHORIZATION_V2" &&
   authorization.classification === "PRODUCTION" &&
+  authorization.authorizedRouteTarget === "/genesis" &&
+  authorization.routeActivationEligibility === "ELIGIBLE" &&
   authorization.authorizedTarget === "GENESIS_PRODUCTION_RENDERER_HOST" &&
   authorization.authorizedRendererCore === "GENESIS_WEBGL_RENDERER_CORE" &&
   authorization.authorizedSourceMode === "REAL_USER_EXPERIENCE" &&
@@ -58,7 +60,7 @@ const isAuthorizationValid = (
   authorization.fixtureSourceStatus === "FORBIDDEN" &&
   authorization.prototypeAuthorizationStatus === "NOT_ACCEPTED" &&
   authorization.routeIntegrationStatus ===
-    "FORBIDDEN_PENDING_EXPLICIT_ROUTE_ACTIVATION" &&
+    "AUTHORIZED_EXPLICIT_ROUTE_ACTIVATION" &&
   authorization.fallbackRequired === true;
 
 export function createGenesisProductionRendererHost(

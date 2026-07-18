@@ -82,7 +82,9 @@ try {
     'authorizedRendererCore: "GENESIS_WEBGL_RENDERER_CORE"',
     'authorizedSourceMode: "REAL_USER_EXPERIENCE"',
     'authorizedSourceProvenance: "REAL_USER_SESSION"',
-    'routeIntegrationStatus: "FORBIDDEN_PENDING_EXPLICIT_ROUTE_ACTIVATION"',
+    'authorizedRouteTarget: "/genesis"',
+    'routeActivationEligibility: "ELIGIBLE"',
+    'routeIntegrationStatus: "AUTHORIZED_EXPLICIT_ROUTE_ACTIVATION"',
     "noPrototypeAuthorization: true",
     "noFixtureSource: true",
     "noSourceFallback: true",
@@ -137,8 +139,10 @@ try {
     fixtureCaseIndex: 0,
   });
   const pendingAuthorization = Object.freeze({
-    authorizationId: "GUANYAO_GENESIS_PRODUCTION_RENDERER_HOST_AUTHORIZATION_V1",
+    authorizationId: "GUANYAO_GENESIS_PRODUCTION_RENDERER_HOST_AUTHORIZATION_V2",
     classification: "PRODUCTION",
+    authorizedRouteTarget: "/genesis",
+    routeActivationEligibility: "ELIGIBLE",
     authorizedTarget: "GENESIS_PRODUCTION_RENDERER_HOST",
     authorizedRendererCore: "GENESIS_WEBGL_RENDERER_CORE",
     authorizedSourceMode: "REAL_USER_EXPERIENCE",
@@ -148,7 +152,7 @@ try {
     formalUserSourceStatus: "AUTHORIZED",
     fixtureSourceStatus: "FORBIDDEN",
     prototypeAuthorizationStatus: "NOT_ACCEPTED",
-    routeIntegrationStatus: "FORBIDDEN_PENDING_EXPLICIT_ROUTE_ACTIVATION",
+    routeIntegrationStatus: "AUTHORIZED_EXPLICIT_ROUTE_ACTIVATION",
     fallbackRequired: true,
   });
   const baseHostInput = Object.freeze({
