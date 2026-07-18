@@ -2910,3 +2910,11 @@ export type {
   GenesisProductionRendererHostBoundary,
   GenesisProductionRendererHostResult,
 } from "./genesisProductionRendererHost";
+
+export type {
+  GenesisProductionRouteTarget,
+  GenesisProductionRouteAuthorizationInput,
+  GenesisProductionRouteGuardReason,
+  GenesisProductionRouteAuthorizationBoundary,
+  GenesisProductionRouteActivationAuthorization,
+} from "./genesisProductionRouteAuthorization";

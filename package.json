@@ -112,6 +112,7 @@
     "check-isolated-webgl-renderer-prototype-slice": "node scripts/check-isolated-webgl-renderer-prototype-slice.mjs",
     "check-genesis-webgl-renderer-core-extraction": "node scripts/check-genesis-webgl-renderer-core-extraction.mjs",
     "check-genesis-production-renderer-host-boundary": "node scripts/check-genesis-production-renderer-host-boundary.mjs",
+    "check-genesis-production-route-authorization": "node scripts/check-genesis-production-route-authorization.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",
