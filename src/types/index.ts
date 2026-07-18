@@ -2666,3 +2666,21 @@ export type {
   LifeJourneyFullLoopAcceptanceBlocked,
   LifeJourneyFullLoopAcceptanceResult,
 } from "./lifeJourneyFullLoopAcceptance";
+
+export type {
+  LifeJourneyOptimizationStage,
+  LifeJourneyOptimizationIssueType,
+  LifeJourneyOptimizationReviewDimension,
+  LifeJourneyOptimizationIssue,
+  LifeJourneyExperienceOptimizationReviewBoundary,
+  LifeJourneyExperienceOptimizationReviewInput,
+  LifeJourneyExperienceOptimizationReviewStatus,
+  LifeJourneyExperienceOptimizationReviewState,
+  LifeJourneyExperienceOptimizationReview,
+  LifeJourneyExperienceOptimizationReviewReady,
+  LifeJourneyExperienceOptimizationReviewUnavailableReason,
+  LifeJourneyExperienceOptimizationReviewBlockedReason,
+  LifeJourneyExperienceOptimizationReviewUnavailable,
+  LifeJourneyExperienceOptimizationReviewBlocked,
+  LifeJourneyExperienceOptimizationReviewResult,
+} from "./lifeJourneyExperienceOptimizationReview";
