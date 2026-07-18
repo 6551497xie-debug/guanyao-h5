@@ -26,6 +26,7 @@ import { resolveRecognitionSpaceUIRuntime } from "../services/recognitionSpaceUI
 import { resolveRealityEntrySpaceUIRuntime } from "../services/realityEntrySpaceUIRuntime";
 import { resolvePressureRecognitionUIRuntime } from "../services/pressureRecognitionUIRuntime";
 import { resolveGravityExperienceUIRuntime } from "../services/gravityExperienceUIRuntime";
+import { resolveChoiceExperienceUIRuntime } from "../services/choiceExperienceUIRuntime";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type { GenesisPreviewIntegration } from "../types/genesisPreviewIntegration";
 import type { GenesisRuntimeStage } from "../types/genesisRuntimeStateMachine";
@@ -34,6 +35,7 @@ import type { RecognitionSpaceUIRuntime } from "../types/recognitionSpaceUIRunti
 import type { RealityEntrySpaceUIRuntime } from "../types/realityEntrySpaceUIRuntime";
 import type { PressureRecognitionUIRuntime } from "../types/pressureRecognitionUIRuntime";
 import type { GravityExperienceUIRuntime } from "../types/gravityExperienceUIRuntime";
+import type { ChoiceExperienceUIRuntime } from "../types/choiceExperienceUIRuntime";
 import "../styles/personal-star-beast-webgl-prototype-harness.css";
 
 type FirstImpressionPhase = "ARRIVAL" | "FORMATION" | "PRESENCE";
@@ -285,6 +287,8 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     useState(false);
   const [gravityObservationConfirmed, setGravityObservationConfirmed] =
     useState(false);
+  const [choiceActiveResponseConfirmed, setChoiceActiveResponseConfirmed] =
+    useState(false);
   const [previewIntegration, setPreviewIntegration] =
     useState<GenesisPreviewIntegration | null>(() =>
       createPreviewIntegration(GENESIS_PREVIEW_STAGES[0].stage),
@@ -360,7 +364,21 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     });
     return result.status === "READY" ? result.uiRuntime : null;
   }, [gravityObservationConfirmed, gravityReady]);
-  const experiencePresentation = gravityObservationConfirmed
+  const choiceReady = gravityExperienceUIRuntime?.choiceReadiness === "READY";
+  const choiceExperienceUIRuntime = useMemo<ChoiceExperienceUIRuntime | null>(() => {
+    const result = resolveChoiceExperienceUIRuntime({
+      choiceReady,
+      choiceActiveResponseConfirmed,
+    });
+    return result.status === "READY" ? result.uiRuntime : null;
+  }, [choiceActiveResponseConfirmed, choiceReady]);
+  const experiencePresentation = choiceActiveResponseConfirmed
+    ? Object.freeze({
+        prelude: "主动回应",
+        title: "这次回应已经发生。",
+        note: "Crystal 已准备好；变化尚未沉积。",
+      })
+    : gravityObservationConfirmed
     ? Object.freeze({
         prelude: "惯性观察",
         title: "反应间隙已经打开。",
@@ -522,6 +540,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     setRealityEntryConfirmed(false);
     setPressureObservationConfirmed(false);
     setGravityObservationConfirmed(false);
+    setChoiceActiveResponseConfirmed(false);
     setPreviewIntegration(
       createPreviewIntegration(GENESIS_PREVIEW_STAGES[0].stage),
     );
@@ -551,6 +570,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     setRealityEntryConfirmed(false);
     setPressureObservationConfirmed(false);
     setGravityObservationConfirmed(false);
+    setChoiceActiveResponseConfirmed(false);
   };
   const confirmRecognition = () => {
     if (
@@ -569,6 +589,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     setRealityEntryConfirmed(true);
     setPressureObservationConfirmed(false);
     setGravityObservationConfirmed(false);
+    setChoiceActiveResponseConfirmed(false);
   };
   const confirmPressureObservation = () => {
     if (
@@ -587,6 +608,15 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       return;
     }
     setGravityObservationConfirmed(true);
+  };
+  const activateChoiceResponse = () => {
+    if (
+      choiceExperienceUIRuntime?.interactionAvailability !==
+      "CHOICE_ACTIVE_RESPONSE"
+    ) {
+      return;
+    }
+    setChoiceActiveResponseConfirmed(true);
   };
   const revealAnotherLife = () => {
     setFormalCaseIndex((current) => (current === 0 ? 1 : 0));
@@ -678,6 +708,22 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       }
       data-gravity-interaction={
         gravityExperienceUIRuntime?.interactionAvailability ?? "NONE"
+      }
+      data-choice-space={gravityObservationConfirmed ? "CHOICE_SPACE" : "NOT_ENTERED"}
+      data-choice-stage={
+        choiceExperienceUIRuntime?.choiceStageState ?? "NOT_READY"
+      }
+      data-response-gap-state={
+        choiceExperienceUIRuntime?.responseGapState ?? "WAITING_FOR_GRAVITY"
+      }
+      data-alternative-response-state={
+        choiceExperienceUIRuntime?.alternativeResponseState ?? "UNSEEN"
+      }
+      data-crystal-readiness={
+        choiceExperienceUIRuntime?.crystalReadiness ?? "NOT_READY"
+      }
+      data-choice-interaction={
+        choiceExperienceUIRuntime?.interactionAvailability ?? "NONE"
       }
     >
       <div className="gy-p100__cosmic-depth" aria-hidden="true" />
@@ -875,7 +921,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
         </section>
       ) : null}
 
-      {pressureObservationConfirmed ? (
+      {pressureObservationConfirmed && !gravityObservationConfirmed ? (
         <section
           className="gy-p37__gravity-space"
           aria-label="Gravity Experience Space惯性观察"
@@ -916,6 +962,52 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
           {gravityExperienceUIRuntime?.choiceReadiness === "READY" ? (
             <p className="gy-p37__choice-ready" role="status">
               Choice Experience 已准备好。
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
+      {gravityObservationConfirmed ? (
+        <section
+          className="gy-p38__choice-space"
+          aria-label="Choice Experience Space回应空间"
+          data-choice-experience-space-panel="CHOICE_EXPERIENCE_SPACE"
+        >
+          <div className="gy-p38__choice-head">
+            <span>回应空间</span>
+            <strong>
+              {choiceActiveResponseConfirmed ? "已发生" : "开放"}
+            </strong>
+          </div>
+          <h2>
+            {choiceActiveResponseConfirmed
+              ? "这次回应已经发生。"
+              : "反应间隙已经打开。"}
+          </h2>
+          <p>
+            {choiceActiveResponseConfirmed
+              ? "Crystal 已准备好；这次变化尚未沉积。"
+              : "你不一定必须沿着旧路径回应。除了旧路径，还有其他可能。"}
+          </p>
+          <div className="gy-p38__possibility-list" aria-label="回应可能观察范围">
+            <span>旧路径</span>
+            <span>反应间隙</span>
+            <span>其他可能</span>
+          </div>
+          <small>Choice Ready · 不提供唯一答案</small>
+          {choiceExperienceUIRuntime?.interactionAvailability ===
+          "CHOICE_ACTIVE_RESPONSE" ? (
+            <button
+              type="button"
+              data-interaction="CHOICE_ACTIVE_RESPONSE"
+              onClick={activateChoiceResponse}
+            >
+              主动产生新的回应
+            </button>
+          ) : null}
+          {choiceExperienceUIRuntime?.crystalReadiness === "READY" ? (
+            <p className="gy-p38__crystal-ready" role="status">
+              Crystal Experience 已准备好。
             </p>
           ) : null}
         </section>

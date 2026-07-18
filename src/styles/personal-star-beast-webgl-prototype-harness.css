@@ -696,6 +696,108 @@
   letter-spacing: 0.08em;
 }
 
+.gy-p38__choice-space {
+  position: absolute;
+  z-index: 4;
+  bottom: clamp(68px, 11vh, 116px);
+  left: 50%;
+  width: min(440px, 80vw);
+  padding: 18px 20px 19px;
+  border: 1px solid rgba(198, 180, 158, 0.26);
+  border-radius: 18px;
+  background: rgba(12, 9, 9, 0.74);
+  box-shadow: 0 22px 76px rgba(0, 0, 0, 0.44), inset 0 1px 0 rgba(247, 233, 214, 0.05);
+  backdrop-filter: blur(18px);
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.gy-p38__choice-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: rgba(215, 198, 179, 0.72);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+.gy-p38__choice-head strong {
+  color: rgba(248, 239, 229, 0.93);
+  font-family: var(--gy-font-serif);
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.gy-p38__choice-space h2 {
+  margin: 13px 0 8px;
+  color: rgba(249, 243, 235, 0.96);
+  font-family: var(--gy-font-serif);
+  font-size: clamp(18px, 3vw, 25px);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+}
+
+.gy-p38__choice-space p {
+  margin: 0;
+  color: rgba(237, 229, 222, 0.67);
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+.gy-p38__possibility-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  margin: 14px 0 0;
+}
+
+.gy-p38__possibility-list span {
+  border: 1px solid rgba(208, 183, 157, 0.18);
+  border-radius: 999px;
+  padding: 7px 5px;
+  color: rgba(231, 216, 201, 0.62);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+}
+
+.gy-p38__choice-space small {
+  display: block;
+  margin-top: 12px;
+  color: rgba(224, 208, 190, 0.48);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.gy-p38__choice-space button {
+  width: 100%;
+  margin-top: 14px;
+  border: 1px solid rgba(219, 194, 167, 0.46);
+  border-radius: 999px;
+  padding: 10px 12px;
+  background: rgba(67, 48, 35, 0.44);
+  color: rgba(248, 239, 230, 0.92);
+  font: inherit;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: background 240ms ease, border-color 240ms ease, color 240ms ease;
+}
+
+.gy-p38__choice-space button:hover,
+.gy-p38__choice-space button:focus-visible {
+  border-color: rgba(240, 216, 190, 0.74);
+  background: rgba(91, 64, 45, 0.52);
+  color: rgba(255, 250, 245, 0.99);
+  outline: none;
+}
+
+.gy-p38__crystal-ready {
+  margin-top: 12px !important;
+  color: rgba(228, 205, 180, 0.88) !important;
+  font-size: 10px !important;
+  letter-spacing: 0.08em;
+}
+
 .gy-p100__breath-mark {
   bottom: 23px;
   left: 50%;
@@ -764,6 +866,7 @@
   .gy-p35__reality-entry-space { bottom: 66px; width: 80vw; }
   .gy-p36__pressure-space { bottom: 66px; width: 80vw; }
   .gy-p37__gravity-space { bottom: 66px; width: 80vw; }
+  .gy-p38__choice-space { bottom: 66px; width: 80vw; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -2610,3 +2610,22 @@ export type {
   GravityExperienceUIRuntimeBlocked,
   GravityExperienceUIRuntimeResult,
 } from "./gravityExperienceUIRuntime";
+
+export type {
+  ChoiceExperienceStageState,
+  ChoiceInertiaReference,
+  ResponseGapState,
+  AlternativeResponseState,
+  ChoiceCrystalReadiness,
+  ChoiceExperienceInteractionAvailability,
+  ChoiceExperienceUIRuntimeBoundary,
+  ChoiceExperienceUIRuntime,
+  ChoiceExperienceUIRuntimeInput,
+  ChoiceExperienceUIRuntimeUnavailableReason,
+  ChoiceExperienceUIRuntimeBlockedReason,
+  ChoiceExperienceUIRuntimeReviewBoundary,
+  ChoiceExperienceUIRuntimeReady,
+  ChoiceExperienceUIRuntimeUnavailable,
+  ChoiceExperienceUIRuntimeBlocked,
+  ChoiceExperienceUIRuntimeResult,
+} from "./choiceExperienceUIRuntime";
