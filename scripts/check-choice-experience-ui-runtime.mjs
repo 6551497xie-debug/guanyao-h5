@@ -8,8 +8,9 @@ const rootDir = process.cwd();
 const files = Object.freeze({
   type: "src/types/choiceExperienceUIRuntime.ts",
   service: "src/services/choiceExperienceUIRuntime.ts",
+  presentation: "src/components/RealityChoicePresentation.tsx",
   harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
-  styles: "src/styles/personal-star-beast-webgl-prototype-harness.css",
+  styles: "src/styles/reality-choice-presentation.css",
   typeIndex: "src/types/index.ts",
   packageManifest: "package.json",
 });
@@ -93,18 +94,16 @@ if (failures.length === 0) {
   ].forEach((marker) => assertExcludes("P38 service stays response-space-only", source.service, marker));
 
   [
-    "resolveChoiceExperienceUIRuntime",
-    "data-choice-space",
-    "data-choice-stage",
-    "data-response-gap-state",
-    "data-alternative-response-state",
-    "data-crystal-readiness",
-    "data-choice-interaction",
+    "export function RealityChoicePresentation",
     'data-interaction="CHOICE_ACTIVE_RESPONSE"',
     "Choice Experience Space回应空间",
     "反应间隙已经打开。",
     "Crystal Experience 已准备好",
-  ].forEach((marker) => assertIncludes("P38 Choice Experience UI", source.harness, marker));
+  ].forEach((marker) => assertIncludes("P38 Choice Experience UI", source.presentation, marker));
+
+  assertIncludes("P38 Harness consumes shared presentation", source.harness, "<RealityChoicePresentation");
+  assertIncludes("P38 Harness still owns fixture state resolver", source.harness, "resolveChoiceExperienceUIRuntime");
+  assertExcludes("P38 Harness no longer owns duplicate presentation markup", source.harness, 'className="gy-p38__choice-space"');
 
   [
     ".gy-p38__choice-space",

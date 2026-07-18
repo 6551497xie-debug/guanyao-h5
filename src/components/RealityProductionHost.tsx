@@ -1,6 +1,11 @@
 import { useState } from "react";
+import { RealityChoicePresentation } from "./RealityChoicePresentation";
 import { RealityGravityPresentation } from "./RealityGravityPresentation";
 import { RealityPressurePresentation } from "./RealityPressurePresentation";
+import {
+  advanceRealityProductionChoiceConsumer,
+  initializeRealityProductionChoiceConsumer,
+} from "../services/realityProductionChoiceConsumer";
 import {
   advanceRealityProductionGravityConsumer,
   initializeRealityProductionGravityConsumer,
@@ -24,7 +29,10 @@ export const REALITY_PRODUCTION_HOST_BOUNDARY:
     productionGravityConsumerOnly: true,
     sharedFrozenGravityPresentationOnly: true,
     explicitGravityObservationOnly: true,
-    choiceReadinessHoldOnly: true,
+    productionChoiceConsumerOnly: true,
+    sharedFrozenChoicePresentationOnly: true,
+    explicitChoiceActiveResponseOnly: true,
+    crystalReadinessHoldOnly: true,
     noFixtureSource: true,
     noPrototypeSource: true,
     noDefaultSource: true,
@@ -33,7 +41,9 @@ export const REALITY_PRODUCTION_HOST_BOUNDARY:
     noPressureSeedMatching: true,
     noPressureResult: true,
     noInertiaEngine: true,
-    noChoiceExecution: true,
+    noBehaviorEngine: true,
+    noRecommendedAction: true,
+    noBestChoice: true,
     noCrystalExecution: true,
     noRendererInvocation: true,
     noLegacyDynamicsRuntime: true,
@@ -53,10 +63,14 @@ export function RealityProductionHost({
   const [gravityResult, setGravityResult] = useState<
     ReturnType<typeof initializeRealityProductionGravityConsumer> | null
   >(null);
+  const [choiceResult, setChoiceResult] = useState<
+    ReturnType<typeof initializeRealityProductionChoiceConsumer> | null
+  >(null);
 
   if (
     pressureResult.status !== "READY" ||
-    gravityResult?.status === "BLOCKED"
+    gravityResult?.status === "BLOCKED" ||
+    choiceResult?.status === "BLOCKED"
   ) {
     return (
       <main
@@ -64,7 +78,9 @@ export function RealityProductionHost({
         data-guard-reason={
           pressureResult.status === "BLOCKED"
             ? pressureResult.reason
-            : gravityResult?.reason
+            : gravityResult?.status === "BLOCKED"
+            ? gravityResult.reason
+            : choiceResult?.reason
         }
       >
         <p role="status">SOURCE_NOT_READY</p>
@@ -75,6 +91,8 @@ export function RealityProductionHost({
   const pressureSession = pressureResult.session;
   const gravitySession =
     gravityResult?.status === "READY" ? gravityResult.session : null;
+  const choiceSession =
+    choiceResult?.status === "READY" ? choiceResult.session : null;
   const confirmPressureObservation = () => {
     if (
       pressureSession.interactionAvailability !==
@@ -102,10 +120,29 @@ export function RealityProductionHost({
     ) {
       return;
     }
-    setGravityResult(
-      advanceRealityProductionGravityConsumer({
-        session: gravitySession,
-        event: "GRAVITY_OBSERVATION_CONFIRM",
+    const nextGravityResult = advanceRealityProductionGravityConsumer({
+      session: gravitySession,
+      event: "GRAVITY_OBSERVATION_CONFIRM",
+    });
+    setGravityResult(nextGravityResult);
+    if (nextGravityResult.status === "READY") {
+      setChoiceResult(
+        initializeRealityProductionChoiceConsumer({
+          gravitySession: nextGravityResult.session,
+        }),
+      );
+    }
+  };
+  const activateChoiceResponse = () => {
+    if (
+      choiceSession?.interactionAvailability !== "CHOICE_ACTIVE_RESPONSE"
+    ) {
+      return;
+    }
+    setChoiceResult(
+      advanceRealityProductionChoiceConsumer({
+        session: choiceSession,
+        event: "CHOICE_ACTIVE_RESPONSE",
       }),
     );
   };
@@ -114,8 +151,10 @@ export function RealityProductionHost({
     <main
       data-production-reality-status="AUTHORIZED_PRODUCTION_REALITY_SOURCE"
       data-reality-production-host-state={
-        gravitySession?.choiceReadiness === "READY"
-          ? "CHOICE_READY_HOLD"
+        choiceSession?.crystalReadiness === "READY"
+          ? "CRYSTAL_READY_HOLD"
+          : choiceSession
+          ? "CHOICE_RESPONSE_SPACE"
           : gravitySession
           ? "GRAVITY_OBSERVATION"
           : "PRESSURE_OBSERVATION"
@@ -139,8 +178,30 @@ export function RealityProductionHost({
       data-gravity-interaction={
         gravitySession?.interactionAvailability ?? "NONE"
       }
+      data-choice-stage={choiceSession?.choiceStageState ?? "NOT_STARTED"}
+      data-response-gap-state={
+        choiceSession?.responseGapState ?? "WAITING_FOR_GRAVITY"
+      }
+      data-alternative-response-state={
+        choiceSession?.alternativeResponseState ?? "UNSEEN"
+      }
+      data-crystal-readiness={
+        choiceSession?.crystalReadiness ?? "NOT_READY"
+      }
+      data-choice-interaction={
+        choiceSession?.interactionAvailability ?? "NONE"
+      }
     >
-      {gravitySession ? (
+      {choiceSession ? (
+        <RealityChoicePresentation
+          choiceActiveResponseConfirmed={
+            choiceSession.choiceActiveResponseConfirmed
+          }
+          interactionAvailability={choiceSession.interactionAvailability}
+          crystalReadiness={choiceSession.crystalReadiness}
+          onActivate={activateChoiceResponse}
+        />
+      ) : gravitySession ? (
         <RealityGravityPresentation
           gravityObservationConfirmed={
             gravitySession.gravityObservationConfirmed

@@ -135,8 +135,10 @@ try {
   assertIncludes("existing Choice resolver still owns frozen transition", source.choiceService, "resolveChoiceExperienceUIRuntime");
   assertIncludes("Gravity session remains Choice-readiness-only", source.gravityType, "choiceReadinessOutputOnly: true");
   assertExcludes("Gravity consumer does not activate Choice", source.gravityService, "initializeRealityProductionChoiceConsumer");
-  assertExcludes("Production Host remains at Choice readiness hold", source.host, "initializeRealityProductionChoiceConsumer");
-  assertIncludes("Production Host still declares Choice readiness hold", source.host, '"CHOICE_READY_HOLD"');
+  assertIncludes("Production Host initializes the authorized Choice consumer", source.host, "initializeRealityProductionChoiceConsumer");
+  assertIncludes("Production Host advances only explicit active response", source.host, "advanceRealityProductionChoiceConsumer");
+  assertIncludes("Production Host stops at Crystal readiness", source.host, '"CRYSTAL_READY_HOLD"');
+  assertExcludes("Production Host does not call the review resolver directly", source.host, "resolveChoiceExperienceUIRuntime");
   assertIncludes("Prototype Harness still uses frozen Choice resolver", source.harness, "resolveChoiceExperienceUIRuntime");
   assertIncludes("Prototype Harness remains fixture-only", source.harness, 'sourceExperienceMode !== "FIXTURE_PREVIEW_ONLY"');
   assertIncludes("legacy Choice remains persistence-bound and isolated", source.legacyChoice, "writeBreachSelectionState");

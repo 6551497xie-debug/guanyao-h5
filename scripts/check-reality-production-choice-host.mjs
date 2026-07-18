@@ -7,12 +7,12 @@ const rootDir = process.cwd();
 const paths = {
   host: "src/components/RealityProductionHost.tsx",
   hostType: "src/types/realityProductionRouteEntry.ts",
-  presentation: "src/components/RealityGravityPresentation.tsx",
-  presentationType: "src/types/realityGravityPresentation.ts",
-  presentationStyles: "src/styles/reality-gravity-presentation.css",
+  presentation: "src/components/RealityChoicePresentation.tsx",
+  presentationType: "src/types/realityChoicePresentation.ts",
+  presentationStyles: "src/styles/reality-choice-presentation.css",
   prototypeStyles: "src/styles/personal-star-beast-webgl-prototype-harness.css",
   harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
-  consumer: "src/services/realityProductionGravityConsumer.ts",
+  consumer: "src/services/realityProductionChoiceConsumer.ts",
   routeEntry: "src/pages/RealityProductionRouteEntry.tsx",
   packageManifest: "package.json",
 };
@@ -40,31 +40,29 @@ const assertExcludes = (name, text, marker) => {
 
 try {
   [
-    "initializeRealityProductionGravityConsumer",
-    "advanceRealityProductionGravityConsumer",
-    "RealityGravityPresentation",
-    'gravityResult?.status === "BLOCKED"',
+    "initializeRealityProductionChoiceConsumer",
+    "advanceRealityProductionChoiceConsumer",
+    "RealityChoicePresentation",
+    'choiceResult?.status === "BLOCKED"',
     'data-production-reality-status="SOURCE_NOT_READY"',
-    '"GRAVITY_OBSERVATION"',
     '"CHOICE_RESPONSE_SPACE"',
     '"CRYSTAL_READY_HOLD"',
-    "data-gravity-stage={gravitySession?.gravityStageState",
-    "gravitySession?.automaticResponseState",
-    "gravitySession?.patternAwarenessState",
-    "gravitySession?.choiceReadiness",
-    "gravitySession?.interactionAvailability",
-    'event: "GRAVITY_OBSERVATION_CONFIRM"',
+    "data-choice-stage={choiceSession?.choiceStageState",
+    "choiceSession?.responseGapState",
+    "choiceSession?.alternativeResponseState",
+    "choiceSession?.crystalReadiness",
+    "choiceSession?.interactionAvailability",
+    'event: "CHOICE_ACTIVE_RESPONSE"',
   ].forEach((marker) =>
-    assertIncludes("Production Reality Host consumes Gravity session", source.host, marker),
+    assertIncludes("Production Reality Host consumes Choice session", source.host, marker),
   );
 
   [
-    "resolveGravityExperienceUIRuntime",
-    "reviewRealityGravityExperienceArchitecture",
     "resolveChoiceExperienceUIRuntime",
+    "reviewRealityChoiceExperienceArchitecture",
     "resolveCrystalExperienceUIRuntime",
     "GuanyaoRuntimeEngine",
-    "GravityPage",
+    "ChoicePage",
     "PersonalStarBeastWebGLPrototypeHarness",
     "isolatedWebGLRendererPrototype",
     "SelectedPressureSeedContext",
@@ -76,89 +74,90 @@ try {
   );
 
   [
-    "productionGravityConsumerOnly: true",
-    "sharedFrozenGravityPresentationOnly: true",
-    "explicitGravityObservationOnly: true",
     "productionChoiceConsumerOnly: true",
     "sharedFrozenChoicePresentationOnly: true",
+    "explicitChoiceActiveResponseOnly: true",
     "crystalReadinessHoldOnly: true",
-    "noInertiaEngine: true",
     "noBehaviorEngine: true",
+    "noRecommendedAction: true",
+    "noBestChoice: true",
     "noCrystalExecution: true",
   ].forEach((marker) =>
-    assertIncludes("Production Gravity Host boundary", source.hostType, marker),
+    assertIncludes("Production Choice Host boundary", source.hostType, marker),
   );
 
   [
-    "export function RealityGravityPresentation",
-    'className="gy-p37__gravity-space"',
-    'data-gravity-experience-space-panel="GRAVITY_EXPERIENCE_SPACE"',
-    "Gravity Experience Space惯性观察",
-    "看见惯性如何带动你。",
+    "export function RealityChoicePresentation",
+    'className="gy-p38__choice-space"',
+    'data-choice-experience-space-panel="CHOICE_EXPERIENCE_SPACE"',
+    "Choice Experience Space回应空间",
     "反应间隙已经打开。",
-    "刺激抵达之后，身体、情绪与行动往往先于解释发生。先观察，不急着改变。",
-    "新的回应空间已经准备好；Choice 尚未执行。",
-    "Gravity Ready · 不生成行为结论",
-    'data-interaction="GRAVITY_OBSERVATION_CONFIRM"',
-    "确认这份惯性观察",
-    "Choice Experience 已准备好。",
+    "这次回应已经发生。",
+    "你不一定必须沿着旧路径回应。除了旧路径，还有其他可能。",
+    "Crystal 已准备好；这次变化尚未沉积。",
+    "Choice Ready · 不提供唯一答案",
+    'data-interaction="CHOICE_ACTIVE_RESPONSE"',
+    "主动产生新的回应",
+    "Crystal Experience 已准备好。",
   ].forEach((marker) =>
-    assertIncludes("shared frozen Gravity presentation", source.presentation, marker),
+    assertIncludes("shared frozen Choice presentation", source.presentation, marker),
   );
 
   [
     "useState",
     "useEffect",
-    "resolveGravityExperienceUIRuntime",
-    "initializeRealityProductionGravityConsumer",
+    "resolveChoiceExperienceUIRuntime",
+    "initializeRealityProductionChoiceConsumer",
     "REAL_USER_SESSION",
     "FIXTURE_PREVIEW_ONLY",
     "fetch(",
     "localStorage",
     "sessionStorage",
   ].forEach((marker) =>
-    assertExcludes("shared Gravity presentation remains stateless and source-neutral", source.presentation, marker),
+    assertExcludes("shared Choice presentation remains stateless and source-neutral", source.presentation, marker),
   );
 
   [
-    "sharedFrozenGravityPresentationOnly: true",
+    "sharedFrozenChoicePresentationOnly: true",
     "statelessPresentationOnly: true",
-    "explicitConfirmationCallbackOnly: true",
+    "explicitActiveResponseCallbackOnly: true",
+    "userOwnedResponseOnly: true",
     "noSourceResolution: true",
-    "noInertiaCalculation: true",
-    "noBehaviorScoring: true",
-    "noChoiceExecution: true",
+    "noBehaviorGeneration: true",
+    "noRecommendedAction: true",
+    "noBestChoice: true",
+    "noCrystalExecution: true",
   ].forEach((marker) =>
-    assertIncludes("shared Gravity presentation contract", source.presentationType, marker),
+    assertIncludes("shared Choice presentation contract", source.presentationType, marker),
   );
 
   [
     "bottom: clamp(68px, 11vh, 116px)",
     "width: min(440px, 80vw)",
     "padding: 18px 20px 19px",
-    "border: 1px solid rgba(183, 171, 199, 0.24)",
-    "background: rgba(9, 7, 16, 0.74)",
+    "border: 1px solid rgba(198, 180, 158, 0.26)",
+    "background: rgba(12, 9, 9, 0.74)",
     "backdrop-filter: blur(18px)",
     "font-size: clamp(18px, 3vw, 25px)",
     "transition: background 240ms ease, border-color 240ms ease, color 240ms ease",
-    ".gy-p37__choice-ready",
+    ".gy-p38__crystal-ready",
     "@media (max-width: 560px)",
-    ".gy-p37__gravity-space { bottom: 66px; width: 80vw; }",
+    ".gy-p38__choice-space { bottom: 66px; width: 80vw; }",
   ].forEach((marker) =>
-    assertIncludes("frozen P37 visual calibration is unchanged", source.presentationStyles, marker),
+    assertIncludes("frozen P38 visual calibration is unchanged", source.presentationStyles, marker),
   );
 
-  assertIncludes("Prototype uses shared Gravity presentation", source.harness, "<RealityGravityPresentation");
-  assertExcludes("Prototype no longer owns duplicate Gravity markup", source.harness, 'className="gy-p37__gravity-space"');
-  assertExcludes("Prototype stylesheet no longer owns duplicate P37 base calibration", source.prototypeStyles, "background: rgba(9, 7, 16, 0.74)");
-  assertIncludes("Production Host uses authorized Gravity consumer", source.consumer, "confirmedPressureSessionOnly: true");
+  assertIncludes("Prototype uses shared Choice presentation", source.harness, "<RealityChoicePresentation");
+  assertExcludes("Prototype no longer owns duplicate Choice markup", source.harness, 'className="gy-p38__choice-space"');
+  assertExcludes("Prototype stylesheet no longer owns duplicate P38 base calibration", source.prototypeStyles, "background: rgba(12, 9, 9, 0.74)");
+  assertIncludes("Production Host uses authorized Choice consumer", source.consumer, "confirmedGravitySessionOnly: true");
   assertIncludes("Reality route remains guarded", source.routeEntry, "authorizeRealityProductionRoute({");
 
   const packageJson = JSON.parse(source.packageManifest);
   assertIncludes(
-    "Production Gravity Host gate is registered",
-    packageJson.scripts?.["check-reality-production-gravity-host"] ?? "",
-    "node scripts/check-reality-production-gravity-host.mjs",
+    "Production Choice Host gate is registered",
+    packageJson.scripts?.["check-reality-production-choice-host"] ?? "",
+    "node scripts/check-reality-production-choice-host.mjs",
   );
 
   const compileResult = await build({
@@ -172,7 +171,7 @@ try {
     logLevel: "silent",
     loader: { ".css": "empty" },
   });
-  assertEqual("Production Gravity Host compiles independently", compileResult.errors.length, 0);
+  assertEqual("Production Choice Host compiles independently", compileResult.errors.length, 0);
   const bundleInputs = Object.keys(compileResult.metafile.inputs);
   for (const requiredInput of [
     "RealityPressurePresentation.tsx",
@@ -195,8 +194,9 @@ try {
     "PersonalStarBeastWebGLPrototypeHarness",
     "isolatedWebGLRendererPrototype.ts",
     "GravityPage",
+    "ChoicePage",
     "guanyaoRuntimeEngine",
-    "realityGravityExperienceArchitecture.ts",
+    "realityChoiceExperienceArchitecture.ts",
     "crystalExperienceUIRuntime.ts",
     "fixtureGenesisVisualConsumerSource",
   ]) {
@@ -207,9 +207,9 @@ try {
     );
   }
 
-  console.log("\n[REALITY PRODUCTION GRAVITY HOST] PASS");
+  console.log("\n[REALITY PRODUCTION CHOICE HOST] PASS");
 } catch (error) {
-  console.error("[REALITY PRODUCTION GRAVITY HOST] FAIL");
+  console.error("[REALITY PRODUCTION CHOICE HOST] FAIL");
   console.error(error instanceof Error ? error.message : error);
   process.exit(1);
 }

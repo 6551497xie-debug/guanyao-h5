@@ -3032,3 +3032,8 @@ export type {
   RealityProductionChoiceConsumerBlockedReason,
   RealityProductionChoiceConsumerResult,
 } from "./realityProductionChoiceConsumer";
+
+export type {
+  RealityChoicePresentationBoundary,
+  RealityChoicePresentationProps,
+} from "./realityChoicePresentation";

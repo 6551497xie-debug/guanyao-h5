@@ -31,7 +31,10 @@ export type RealityProductionHostBoundary = Readonly<{
   productionGravityConsumerOnly: true;
   sharedFrozenGravityPresentationOnly: true;
   explicitGravityObservationOnly: true;
-  choiceReadinessHoldOnly: true;
+  productionChoiceConsumerOnly: true;
+  sharedFrozenChoicePresentationOnly: true;
+  explicitChoiceActiveResponseOnly: true;
+  crystalReadinessHoldOnly: true;
   noFixtureSource: true;
   noPrototypeSource: true;
   noDefaultSource: true;
@@ -40,7 +43,9 @@ export type RealityProductionHostBoundary = Readonly<{
   noPressureSeedMatching: true;
   noPressureResult: true;
   noInertiaEngine: true;
-  noChoiceExecution: true;
+  noBehaviorEngine: true;
+  noRecommendedAction: true;
+  noBestChoice: true;
   noCrystalExecution: true;
   noRendererInvocation: true;
   noLegacyDynamicsRuntime: true;
