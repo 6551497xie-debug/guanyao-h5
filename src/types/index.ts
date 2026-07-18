@@ -2275,3 +2275,20 @@ export type {
   GenesisPreviewIntegrationOperation,
   GenesisPreviewIntegrationResult,
 } from "./genesisPreviewIntegration";
+
+export type {
+  GenesisFullExperienceAcceptanceStage,
+  GenesisExperienceIssueCategory,
+  GenesisAcceptanceDimension,
+  GenesisFullExperienceAcceptanceStatus,
+  GenesisFullExperienceAcceptanceBoundary,
+  GenesisFullExperienceAcceptanceInput,
+  GenesisFullExperienceAcceptanceReview,
+  GenesisFullExperienceAcceptance,
+  GenesisFullExperienceAcceptanceReady,
+  GenesisFullExperienceAcceptanceUnavailableReason,
+  GenesisFullExperienceAcceptanceBlockedReason,
+  GenesisFullExperienceAcceptanceUnavailable,
+  GenesisFullExperienceAcceptanceBlocked,
+  GenesisFullExperienceAcceptanceResult,
+} from "./genesisFullExperienceAcceptance";
