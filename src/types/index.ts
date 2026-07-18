@@ -2881,3 +2881,12 @@ export type {
   FirstImpressionBrowserWalkthroughBlocked,
   FirstImpressionBrowserWalkthroughResult,
 } from "./firstImpressionBrowserWalkthrough";
+
+export type {
+  GenesisVisualConsumerSourceExperienceMode,
+  GenesisVisualConsumerSourceProvenance,
+  GenesisVisualConsumerSource,
+  GenesisVisualConsumerSourceBoundary,
+  GenesisVisualConsumerSourceResult,
+  GenesisVisualConsumerSourceResolutionInput,
+} from "./genesisVisualConsumerSource";

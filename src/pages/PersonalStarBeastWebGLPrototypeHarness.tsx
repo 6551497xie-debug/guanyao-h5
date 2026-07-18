@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A,
-  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B,
-} from "../mocks/starBeastSceneModelFixtures";
 import { createIsolatedWebGLRendererPrototype } from "../prototypes/isolatedWebGLRendererPrototype";
+import {
+  getFixtureGenesisVisualConsumerAuthorizationPlanResults,
+} from "../services/fixtureGenesisVisualConsumerSource";
+import { resolveGenesisVisualConsumerSource } from "../services/genesisVisualConsumerSourceResolver";
 import { authorizeIsolatedWebGLRendererPrototype } from "../services/isolatedWebGLRendererPrototypeAuthorizationService";
 import {
   completeGenesisPreviewIntegration,
@@ -25,7 +25,7 @@ import { resolveRealityExperienceContinuityOptimization } from "../services/real
 import { resolveGravityExperienceUIRuntime } from "../services/gravityExperienceUIRuntime";
 import { resolveChoiceExperienceUIRuntime } from "../services/choiceExperienceUIRuntime";
 import { resolveCrystalExperienceUIRuntime } from "../services/crystalExperienceUIRuntime";
-import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
+import type { GenesisVisualConsumerSourceExperienceMode } from "../types/genesisVisualConsumerSource";
 import type { GenesisPreviewIntegration } from "../types/genesisPreviewIntegration";
 import type { GenesisRuntimeStage } from "../types/genesisRuntimeStateMachine";
 import type { GenesisSpaceUIRuntime } from "../types/genesisSpaceUIRuntime";
@@ -50,12 +50,8 @@ const FIRST_IMPRESSION_TIMING = Object.freeze({
   presenceStartMs: 3800,
 });
 
-const FORMAL_PLAN_RESULTS = Object.freeze([
-  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.visualSourceReference
-    .renderPlanResult,
-  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B.visualSourceReference
-    .renderPlanResult,
-] as const);
+const FORMAL_PLAN_RESULTS =
+  getFixtureGenesisVisualConsumerAuthorizationPlanResults();
 
 const PROTOTYPE_AUTHORIZATION = authorizeIsolatedWebGLRendererPrototype(
   Object.freeze({
@@ -77,13 +73,6 @@ const PROTOTYPE_AUTHORIZATION = authorizeIsolatedWebGLRendererPrototype(
     prototypeScope: "ISOLATED_WEBGL_RENDERER_PROTOTYPE_ONLY",
   }),
 );
-
-const FORMAL_PROJECTION_BUNDLES = Object.freeze([
-  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.visualSourceReference
-    .projectionBundle,
-  PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B.visualSourceReference
-    .projectionBundle,
-]);
 
 const PHASE_COPY: Readonly<
   Record<
@@ -154,12 +143,13 @@ const createPreviewIntegration = (
   return started.status === "READY" ? started.integration : null;
 };
 
-const resolvePlan = (index: number): PersonalStarBeastRenderPlan | null => {
-  const result = FORMAL_PLAN_RESULTS[index];
-  return result?.status === "PLANNED" ? result.plan : null;
-};
+type PersonalStarBeastWebGLPrototypeHarnessProps = Readonly<{
+  sourceExperienceMode: GenesisVisualConsumerSourceExperienceMode;
+}>;
 
-export function PersonalStarBeastWebGLPrototypeHarness() {
+export function PersonalStarBeastWebGLPrototypeHarness({
+  sourceExperienceMode,
+}: PersonalStarBeastWebGLPrototypeHarnessProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [formalCaseIndex, setFormalCaseIndex] = useState(0);
   const [replayKey, setReplayKey] = useState(0);
@@ -183,8 +173,20 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       createPreviewIntegration(GENESIS_PREVIEW_STAGES[0].stage),
     );
   const presentation = PHASE_COPY[phase];
-  const plan = useMemo(() => resolvePlan(formalCaseIndex), [formalCaseIndex]);
-  const projectionBundle = FORMAL_PROJECTION_BUNDLES[formalCaseIndex];
+  const consumerSourceResult = useMemo(
+    () =>
+      resolveGenesisVisualConsumerSource({
+        sourceExperienceMode,
+        fixtureCaseIndex: formalCaseIndex === 0 ? 0 : 1,
+      }),
+    [formalCaseIndex, sourceExperienceMode],
+  );
+  const consumerSource =
+    consumerSourceResult.status === "READY"
+      ? consumerSourceResult.consumerSource
+      : null;
+  const plan = consumerSource?.renderPlanResult.plan ?? null;
+  const projectionBundle = consumerSource?.projectionBundle;
   const rawPreviewStage =
     GENESIS_PREVIEW_STAGES[previewStageIndex] ?? GENESIS_PREVIEW_STAGES[0];
   const genesisCompletionHeld =
@@ -629,6 +631,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     setCrystalRecognitionConfirmed(true);
   };
   const revealAnotherLife = () => {
+    if (sourceExperienceMode !== "FIXTURE_PREVIEW_ONLY") return;
     setFormalCaseIndex((current) => (current === 0 ? 1 : 0));
     setReplayKey((current) => current + 1);
   };
@@ -637,6 +640,14 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     <main
       className={`gy-p100 gy-p100--${phase.toLowerCase()}`}
       data-prototype-scope="ISOLATED_WEBGL_RENDERER_PROTOTYPE_ONLY"
+      data-source-experience-mode={sourceExperienceMode}
+      data-source-readiness={consumerSourceResult.status}
+      data-source-provenance={
+        consumerSource?.sourceProvenance ?? "SOURCE_NOT_READY"
+      }
+      data-source-reference-id={
+        consumerSource?.sourceReferenceId ?? "SOURCE_NOT_READY"
+      }
       data-harness-state={harnessState}
       data-first-impression-phase={phase}
       data-first-impression-arrival-end={FIRST_IMPRESSION_TIMING.arrivalEndMs}

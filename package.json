@@ -106,6 +106,7 @@
     "check-webgl-prototype-authorization-review": "node scripts/check-webgl-prototype-authorization-review.mjs",
     "check-personal-star-beast-scene-model-fixtures": "node scripts/check-personal-star-beast-scene-model-fixtures.mjs",
     "check-real-life-visual-source-adapter": "node scripts/check-real-life-visual-source-adapter.mjs",
+    "check-genesis-real-source-consumer-continuity": "node scripts/check-genesis-real-source-consumer-continuity.mjs",
     "check-personal-star-beast-render-plan-adapter": "node scripts/check-personal-star-beast-render-plan-adapter.mjs",
     "check-isolated-webgl-renderer-prototype-authorization": "node scripts/check-isolated-webgl-renderer-prototype-authorization.mjs",
     "check-isolated-webgl-renderer-prototype-slice": "node scripts/check-isolated-webgl-renderer-prototype-slice.mjs",

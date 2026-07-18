@@ -11,6 +11,7 @@ const files = Object.freeze({
   p111Protocol:
     "docs/GUANYAO_P111_FIRST_IMPRESSION_MOTION_CONTRAST_CALIBRATION_PROTOCOL.md",
   harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
+  fixtureConsumer: "src/services/fixtureGenesisVisualConsumerSource.ts",
   renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
   packageManifest: "package.json",
 });
@@ -80,13 +81,19 @@ if (failures.length === 0) {
   );
 
   [
-    "const FORMAL_PROJECTION_BUNDLES = Object.freeze([",
-    "createGenesisProjectionBundle(PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A)",
-    "createGenesisProjectionBundle(PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B)",
-    "const projectionBundle = FORMAL_PROJECTION_BUNDLES[formalCaseIndex]",
+    "resolveGenesisVisualConsumerSource({",
+    "fixtureCaseIndex: formalCaseIndex === 0 ? 0 : 1",
+    "consumerSource?.projectionBundle",
     "看看另一种生命",
   ].forEach((marker) =>
     assertIncludes("P112 formal A/B harness remains", source.harness, marker),
+  );
+  [
+    "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.visualSourceReference",
+    "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B.visualSourceReference",
+    "FIXTURE_VISUAL_SOURCES[fixtureCaseIndex]",
+  ].forEach((marker) =>
+    assertIncludes("P112 formal A/B fixture boundary remains", source.fixtureConsumer, marker),
   );
 
   [

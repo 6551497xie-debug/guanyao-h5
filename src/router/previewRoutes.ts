@@ -41,7 +41,9 @@ export const previewRoutes = [
           element: createElement(
             Suspense,
             { fallback: null },
-            createElement(PersonalStarBeastWebGLPrototypeHarness),
+            createElement(PersonalStarBeastWebGLPrototypeHarness, {
+              sourceExperienceMode: "FIXTURE_PREVIEW_ONLY",
+            }),
           ),
         },
       ]),

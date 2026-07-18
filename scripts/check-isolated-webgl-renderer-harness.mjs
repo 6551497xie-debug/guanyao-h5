@@ -13,6 +13,7 @@ const files = Object.freeze({
   appShell: "src/components/AppShell.tsx",
   prototype: "src/prototypes/isolatedWebGLRendererPrototype.ts",
   fixtureData: "src/mocks/starBeastSceneModelFixtures.ts",
+  fixtureConsumer: "src/services/fixtureGenesisVisualConsumerSource.ts",
   renderPlanAdapter: "src/services/personalStarBeastRenderPlanAdapter.ts",
   visualSourceAdapter: "src/services/realLifeVisualSourceAdapter.ts",
   authorizationService:
@@ -109,9 +110,6 @@ if (failures.length === 0) {
   );
 
   [
-    "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A",
-    "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B",
-    ".visualSourceReference",
     ".renderPlanResult",
     ".projectionBundle",
     "authorizeIsolatedWebGLRendererPrototype",
@@ -131,6 +129,13 @@ if (failures.length === 0) {
     "它不是答案。它会陪你经历，你正在成为谁。",
   ].forEach((marker) =>
     assertIncludes("P100 isolated Harness", source.harness, marker),
+  );
+  [
+    "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A",
+    "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B",
+    ".visualSourceReference",
+  ].forEach((marker) =>
+    assertIncludes("P100 isolated fixture source boundary", source.fixtureConsumer, marker),
   );
 
   [
@@ -175,7 +180,7 @@ if (failures.length === 0) {
   assertIncludes(
     "P100 preview route consumes isolated Harness",
     source.previewRoutes,
-    "createElement(PersonalStarBeastWebGLPrototypeHarness)",
+    "createElement(PersonalStarBeastWebGLPrototypeHarness, {",
   );
   assertIncludes(
     "P100 route is development-only",

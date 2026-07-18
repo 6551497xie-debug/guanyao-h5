@@ -102,8 +102,8 @@ if (failures.length === 0) {
   ].forEach((marker) => assertExcludes("fixture does not assemble visual sources", sources.fixture, marker));
 
   [
-    ".visualSourceReference\n    .renderPlanResult",
-    ".visualSourceReference\n    .projectionBundle",
+    "consumerSource?.renderPlanResult.plan",
+    "consumerSource?.projectionBundle",
     "renderPlan: plan",
     "timeSequenceRecognitionProjection:",
     "birthMansionIgnitionProjection:",

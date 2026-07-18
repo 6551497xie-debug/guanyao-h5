@@ -8,6 +8,7 @@ const files = Object.freeze({
     "docs/GUANYAO_P110_FIRST_IMPRESSION_AB_CONTRAST_CALIBRATION_PROTOCOL.md",
   harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
   fixtures: "src/mocks/starBeastSceneModelFixtures.ts",
+  fixtureConsumer: "src/services/fixtureGenesisVisualConsumerSource.ts",
   renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
   packageManifest: "package.json",
 });
@@ -57,15 +58,9 @@ if (failures.length === 0) {
   );
 
   [
-    "const createGenesisProjectionBundle =",
-    "const FORMAL_PROJECTION_BUNDLES = Object.freeze([",
-    "createGenesisProjectionBundle(PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A)",
-    "createGenesisProjectionBundle(PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B)",
-    "fixture.mansionSeedReference",
-    "fixture.fourSymbolFieldReference",
-    "fixture.identitySourceReference",
-    "referenceId: `prototype:reality-pressure:${fixture.fixtureId}`",
-    "const projectionBundle = FORMAL_PROJECTION_BUNDLES[formalCaseIndex]",
+    "resolveGenesisVisualConsumerSource({",
+    "fixtureCaseIndex: formalCaseIndex === 0 ? 0 : 1",
+    "consumerSource?.projectionBundle",
     "projectionBundle.morphologicalFieldAlignmentProjection",
     "projectionBundle.lifeForceInfusionProjection",
     "projectionBundle.personalRevealProjection",
@@ -74,11 +69,18 @@ if (failures.length === 0) {
   ].forEach((marker) =>
     assertIncludes("P110 per-case projection binding", source.harness, marker),
   );
+  [
+    "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A.visualSourceReference",
+    "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B.visualSourceReference",
+    "FIXTURE_VISUAL_SOURCES[fixtureCaseIndex]",
+    'sourceExperienceMode: "FIXTURE_PREVIEW_ONLY"',
+  ].forEach((marker) =>
+    assertIncludes("P110 fixture boundary keeps per-case sources", source.fixtureConsumer, marker),
+  );
 
   [
     "resolveStarbeastFromBirthDate",
     "runMotherCodeLandingEngine",
-    "resolveLifeArchetypeProfileFromMotherCode",
     "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_A",
     "PERSONAL_STAR_BEAST_SCENE_MODEL_FIXTURE_CASE_B",
   ].forEach((marker) =>

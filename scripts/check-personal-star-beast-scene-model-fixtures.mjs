@@ -333,7 +333,7 @@ if (failures.length === 0) {
   assertEqual(
     "fixture has no Production consumer and only isolated consumers",
     fixtureConsumers.join(","),
-    "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
+    "src/services/fixtureGenesisVisualConsumerSource.ts",
   );
 
   assertIncludes(
