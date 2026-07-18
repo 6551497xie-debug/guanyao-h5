@@ -19,6 +19,7 @@ import {
 } from "../services/genesisPreviewIntegration";
 import { createGenesisPreviewIntegrationFixture } from "../services/genesisPreviewIntegrationFixture";
 import { mapGenesisRendererVisualRealization } from "../services/genesisRendererVisualRealization";
+import { mapGenesisPerspectiveCalibration } from "../services/genesisPerspectiveCalibration";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type { GenesisPreviewIntegration } from "../types/genesisPreviewIntegration";
 import type { GenesisRuntimeStage } from "../types/genesisRuntimeStateMachine";
@@ -280,6 +281,12 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     });
     return result.status === "READY" ? result.realization : null;
   }, [previewIntegration]);
+  const rendererPerspectiveCalibration = useMemo(() => {
+    const result = mapGenesisPerspectiveCalibration({
+      visualRealization: rendererVisualRealization,
+    });
+    return result.status === "READY" ? result.calibration : null;
+  }, [rendererVisualRealization]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -319,6 +326,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
         personalRevealProjection: projectionBundle.personalRevealProjection,
         realityPressureProjection: projectionBundle.realityPressureProjection,
         genesisVisualRealization: rendererVisualRealization,
+        genesisPerspectiveCalibration: rendererPerspectiveCalibration,
       }),
     );
 
@@ -372,6 +380,7 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     previewStage.stage,
     projectionBundle,
     rendererVisualRealization,
+    rendererPerspectiveCalibration,
     replayKey,
   ]);
 
@@ -411,6 +420,9 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       data-genesis-stage={previewStage.stage}
       data-genesis-lifecycle={previewIntegration?.previewLifecycle ?? "UNAVAILABLE"}
       data-genesis-visual-realization={rendererVisualRealization?.activeVisualLayer ?? "UNAVAILABLE"}
+      data-genesis-perspective-calibration={
+        rendererPerspectiveCalibration?.activeVisualLayer ?? "UNAVAILABLE"
+      }
     >
       <div className="gy-p100__cosmic-depth" aria-hidden="true" />
       <canvas ref={canvasRef} className="gy-p100__canvas" aria-hidden="true" />

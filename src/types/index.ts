@@ -2235,6 +2235,25 @@ export type {
 } from "./genesisRendererVisualRealization";
 
 export type {
+  GenesisPerspectiveCalibrationLayer,
+  GenesisCosmicPerspective,
+  GenesisFocalHierarchy,
+  GenesisMoonRole,
+  GenesisStarRole,
+  GenesisTimeRole,
+  GenesisPerspectivePresenceBalance,
+  GenesisPerspectiveCalibration,
+  GenesisPerspectiveCalibrationInput,
+  GenesisPerspectiveCalibrationUnavailableReason,
+  GenesisPerspectiveCalibrationBlockedReason,
+  GenesisPerspectiveCalibrationBoundary,
+  GenesisPerspectiveCalibrationReady,
+  GenesisPerspectiveCalibrationUnavailable,
+  GenesisPerspectiveCalibrationBlocked,
+  GenesisPerspectiveCalibrationResult,
+} from "./genesisPerspectiveCalibration";
+
+export type {
   GenesisVisualHarnessMode,
   GenesisVisualHarnessLifecycle,
   GenesisVisualHarnessStep,
