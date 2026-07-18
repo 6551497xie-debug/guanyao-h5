@@ -134,6 +134,7 @@
     "check-establishing-pressure-seed-interest-calibration": "node scripts/check-establishing-pressure-seed-interest-calibration.mjs",
     "check-establishing-pressure-seed-relation-calibration": "node scripts/check-establishing-pressure-seed-relation-calibration.mjs",
     "check-establishing-pressure-seed-family-calibration": "node scripts/check-establishing-pressure-seed-family-calibration.mjs",
+    "check-establishing-pressure-seed-social-calibration": "node scripts/check-establishing-pressure-seed-social-calibration.mjs",
     "check-reality-production-pressure-host": "node scripts/check-reality-production-pressure-host.mjs",
     "check-reality-production-gravity-consumer": "node scripts/check-reality-production-gravity-consumer.mjs",
     "check-reality-production-gravity-host": "node scripts/check-reality-production-gravity-host.mjs",
