@@ -130,6 +130,27 @@
   opacity: 0.44;
 }
 
+[data-reality-flow-integrity="CONTINUOUS"] .gy-p36__pressure-space,
+[data-reality-flow-integrity="CONTINUOUS"] .gy-p37__gravity-space,
+[data-reality-flow-integrity="CONTINUOUS"] .gy-p38__choice-space {
+  transition: border-color 900ms ease, box-shadow 1200ms ease;
+}
+
+[data-reality-pressure-continuity="OBSERVING"] .gy-p36__pressure-space {
+  border-color: rgba(184, 197, 226, 0.3);
+  box-shadow: 0 22px 76px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(224, 191, 124, 0.08);
+}
+
+[data-reality-gravity-continuity="OBSERVING"] .gy-p37__gravity-space {
+  border-color: rgba(202, 188, 218, 0.3);
+  box-shadow: 0 22px 76px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(224, 211, 239, 0.08);
+}
+
+[data-reality-choice-continuity="RESPONSE_GAP_OPEN"] .gy-p38__choice-space {
+  border-color: rgba(219, 194, 167, 0.34);
+  box-shadow: 0 22px 76px rgba(0, 0, 0, 0.44), inset 0 1px 0 rgba(240, 216, 190, 0.08);
+}
+
 .gy-p100__veil {
   z-index: 3;
   pointer-events: none;

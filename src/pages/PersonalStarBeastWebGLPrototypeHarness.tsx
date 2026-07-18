@@ -28,6 +28,7 @@ import { resolveRecognitionRealityEntryBridgeFix } from "../services/recognition
 import { resolveRealityEntrySpaceUIRuntime } from "../services/realityEntrySpaceUIRuntime";
 import { resolvePressureRecognitionUIRuntime } from "../services/pressureRecognitionUIRuntime";
 import { resolvePresenceCarryRealityTransition } from "../services/presenceCarryRealityTransition";
+import { resolveRealityExperienceContinuityOptimization } from "../services/realityExperienceContinuityOptimization";
 import { resolveGravityExperienceUIRuntime } from "../services/gravityExperienceUIRuntime";
 import { resolveChoiceExperienceUIRuntime } from "../services/choiceExperienceUIRuntime";
 import { resolveCrystalExperienceUIRuntime } from "../services/crystalExperienceUIRuntime";
@@ -40,6 +41,9 @@ import type { RecognitionRealityEntryBridgeFix } from "../types/recognitionReali
 import type { RealityEntrySpaceUIRuntime } from "../types/realityEntrySpaceUIRuntime";
 import type { PressureRecognitionUIRuntime } from "../types/pressureRecognitionUIRuntime";
 import type { PresenceCarryRealityTransition } from "../types/presenceCarryRealityTransition";
+import type {
+  RealityExperienceContinuityOptimization,
+} from "../types/realityExperienceContinuityOptimization";
 import type { GravityExperienceUIRuntime } from "../types/gravityExperienceUIRuntime";
 import type { ChoiceExperienceUIRuntime } from "../types/choiceExperienceUIRuntime";
 import type { CrystalExperienceUIRuntime } from "../types/crystalExperienceUIRuntime";
@@ -447,6 +451,26 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
     });
     return result.status === "READY" ? result.uiRuntime : null;
   }, [choiceActiveResponseConfirmed, choiceReady]);
+  const realityExperienceContinuity = useMemo<RealityExperienceContinuityOptimization | null>(() => {
+    const result = resolveRealityExperienceContinuityOptimization({
+      presenceCarry: presenceCarryRealityTransition,
+      pressureRuntime: pressureRecognitionUIRuntime,
+      gravityRuntime: gravityExperienceUIRuntime,
+      choiceRuntime: choiceExperienceUIRuntime,
+      pressureObservationConfirmed,
+      gravityObservationConfirmed,
+      choiceActiveResponseConfirmed,
+    });
+    return result.status === "READY" ? result.continuity : null;
+  }, [
+    presenceCarryRealityTransition,
+    pressureRecognitionUIRuntime,
+    gravityExperienceUIRuntime,
+    choiceExperienceUIRuntime,
+    pressureObservationConfirmed,
+    gravityObservationConfirmed,
+    choiceActiveResponseConfirmed,
+  ]);
   const crystalReady = choiceExperienceUIRuntime?.crystalReadiness === "READY";
   const crystalExperienceUIRuntime = useMemo<CrystalExperienceUIRuntime | null>(() => {
     const result = resolveCrystalExperienceUIRuntime({
@@ -820,6 +844,21 @@ export function PersonalStarBeastWebGLPrototypeHarness() {
       }
       data-presence-carry-arrival={
         presenceCarryRealityTransition?.realityArrivalState ?? "NOT_READY"
+      }
+      data-reality-flow-integrity={
+        realityExperienceContinuity?.realityFlowIntegrity ?? "NOT_READY"
+      }
+      data-reality-pressure-continuity={
+        realityExperienceContinuity?.pressureContinuity ?? "NOT_READY"
+      }
+      data-reality-gravity-continuity={
+        realityExperienceContinuity?.gravityContinuity ?? "WAITING_FOR_PRESSURE"
+      }
+      data-reality-choice-continuity={
+        realityExperienceContinuity?.choiceContinuity ?? "WAITING_FOR_GRAVITY"
+      }
+      data-reality-observation-mode={
+        realityExperienceContinuity?.observationMode ?? "REALITY_SIGNAL_OBSERVATION"
       }
       data-gravity-space={pressureObservationConfirmed ? "GRAVITY_SPACE" : "NOT_ENTERED"}
       data-gravity-stage={

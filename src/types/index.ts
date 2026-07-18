@@ -2754,3 +2754,20 @@ export type {
   PresenceCarryRealityTransitionBlocked,
   PresenceCarryRealityTransitionResult,
 } from "./presenceCarryRealityTransition";
+
+export type {
+  RealityPressureContinuity,
+  RealityGravityContinuity,
+  RealityChoiceContinuity,
+  RealityExperienceFlowIntegrity,
+  RealityExperienceObservationMode,
+  RealityExperienceContinuityOptimizationBoundary,
+  RealityExperienceContinuityOptimizationInput,
+  RealityExperienceContinuityOptimization,
+  RealityExperienceContinuityOptimizationReady,
+  RealityExperienceContinuityOptimizationUnavailableReason,
+  RealityExperienceContinuityOptimizationBlockedReason,
+  RealityExperienceContinuityOptimizationUnavailable,
+  RealityExperienceContinuityOptimizationBlocked,
+  RealityExperienceContinuityOptimizationResult,
+} from "./realityExperienceContinuityOptimization";
