@@ -50,6 +50,7 @@ try {
 
   [
     "contractOnly: true",
+    "contextImplementationOnly: true",
     "authorizedRealityRouteOnly: true",
     "existingLaunchLifeSourceSessionOnly: true",
     "explicitRequestDateSourceOnly: true",

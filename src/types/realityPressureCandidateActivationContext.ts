@@ -13,6 +13,7 @@ export type RealityPressureExplicitRequestDateSource = Readonly<{
 
 export type RealityPressureCandidateActivationContextBoundary = Readonly<{
   contractOnly: true;
+  contextImplementationOnly: true;
   authorizedRealityRouteOnly: true;
   existingLaunchLifeSourceSessionOnly: true;
   explicitRequestDateSourceOnly: true;
@@ -46,16 +47,27 @@ export type RealityPressureCandidateActivationContextBoundary = Readonly<{
 export type RealityPressureCandidateActivationContext = Readonly<{
   schemaVersion: "GUANYAO_REALITY_PRESSURE_CANDIDATE_ACTIVATION_CONTEXT_V1";
   source: "reality_pressure_candidate_activation_context";
+  contextReferenceId: string;
+  sourceMode: "REAL_USER_EXPERIENCE";
   sourceExperienceMode: "REAL_USER_EXPERIENCE";
   sourceProvenance: "REAL_USER_SESSION";
   sourceReferenceId: string;
   routeTarget: "/reality";
   authorizationState: "AUTHORIZED_PRODUCTION_REALITY_SOURCE";
   activationEligibility: "ELIGIBLE";
+  activationBoundary: "REALITY_ROUTE_ACTIVATION";
   lifeSourceSession: LaunchLifeSourceSession;
   requestDateSource: RealityPressureExplicitRequestDateSource;
-  initialCandidateCursor: null;
-  initialExcludedCandidateReferenceIds: readonly [];
+  candidateCursor: null;
+  excludedCandidateIds: readonly [];
+  provenance: Readonly<{
+    routeAuthorizationSource: "REALITY_PRODUCTION_ROUTE_AUTHORIZATION";
+    lifeSource: "LAUNCH_LIFE_SOURCE_SESSION";
+    requestDateSource: "EXPLICIT_REQUEST_DATE_SOURCE";
+    sourceReferenceId: string;
+    noPressureInference: true;
+    noCandidateSelection: true;
+  }>;
   boundary: RealityPressureCandidateActivationContextBoundary;
 }>;
 

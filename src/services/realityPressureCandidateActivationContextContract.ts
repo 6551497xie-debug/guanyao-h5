@@ -6,6 +6,7 @@ import type {
 export const REALITY_PRESSURE_CANDIDATE_ACTIVATION_CONTEXT_BOUNDARY:
   RealityPressureCandidateActivationContextBoundary = Object.freeze({
     contractOnly: true,
+    contextImplementationOnly: true,
     authorizedRealityRouteOnly: true,
     existingLaunchLifeSourceSessionOnly: true,
     explicitRequestDateSourceOnly: true,
