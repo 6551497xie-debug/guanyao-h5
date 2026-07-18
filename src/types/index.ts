@@ -2366,3 +2366,24 @@ export type {
   RealityGravityExperienceArchitectureBlocked,
   RealityGravityExperienceArchitectureResult,
 } from "./realityGravityExperienceArchitecture";
+
+export type {
+  ChoiceEntryState,
+  InertiaAwarenessLayer,
+  ResponseGapLayer,
+  AlternativeResponseLayer,
+  ActiveChoiceLayer,
+  ChoiceReadinessBoundary,
+  CrystalPreparationBoundary,
+  ChoiceExperienceInterventionBoundary,
+  ChoiceExperienceReadiness,
+  RealityChoiceExperienceArchitecture,
+  RealityChoiceExperienceArchitectureInput,
+  RealityChoiceExperienceArchitectureUnavailableReason,
+  RealityChoiceExperienceArchitectureBlockedReason,
+  RealityChoiceExperienceArchitectureBoundary,
+  RealityChoiceExperienceArchitectureReady,
+  RealityChoiceExperienceArchitectureUnavailable,
+  RealityChoiceExperienceArchitectureBlocked,
+  RealityChoiceExperienceArchitectureResult,
+} from "./realityChoiceExperienceArchitecture";
