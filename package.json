@@ -184,6 +184,7 @@
     "check-genesis-renderer-symbol-force-realization": "node scripts/check-genesis-renderer-symbol-force-realization.mjs",
     "check-genesis-renderer-beast-presence-realization": "node scripts/check-genesis-renderer-beast-presence-realization.mjs",
     "check-genesis-perspective-calibration": "node scripts/check-genesis-perspective-calibration.mjs",
+    "check-genesis-life-presence-calibration": "node scripts/check-genesis-life-presence-calibration.mjs",
     "check-genesis-visual-harness": "node scripts/check-genesis-visual-harness.mjs && npm run check-genesis-preview-integration",
     "check-genesis-preview-integration": "node scripts/check-genesis-preview-integration.mjs",
     "check-life-star-core-morphological-field-calibration": "node scripts/check-life-star-core-morphological-field-calibration.mjs",

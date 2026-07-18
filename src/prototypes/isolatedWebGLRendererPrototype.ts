@@ -374,6 +374,17 @@ export function createIsolatedWebGLRendererPrototype(
   const perspectiveBackgroundDepth = perspectiveBalance?.backgroundDepth ?? 1;
   const perspectiveResponseIntensity =
     perspectiveBalance?.responseIntensity ?? 0;
+  const perspectiveLifeAxisStrength =
+    perspectiveBalance?.lifeAxisStrength ?? 0;
+  const perspectiveMorphologicalTension =
+    perspectiveBalance?.morphologicalTension ?? 0;
+  const perspectiveMemorySedimentation =
+    perspectiveBalance?.memorySedimentation ?? 0;
+  const perspectiveForceRhythm = perspectiveBalance?.forceRhythm ?? 0;
+  const perspectiveInnerMotionDifference =
+    perspectiveBalance?.innerMotionDifference ?? 0;
+  const perspectiveFormationContinuity =
+    perspectiveBalance?.formationContinuity ?? 1;
   const perspectiveCoreDimming =
     isMoonOrigin || isStarRiver || isTimeResonance
       ? 1 - perspectiveCoreSuppression * 0.42
@@ -588,6 +599,7 @@ export function createIsolatedWebGLRendererPrototype(
       lifePresence.stellarSkeleton.branchSpread *
       fieldPoseScale *
       (1 + lifePresence.morphologicalField.spatialContraction * 0.32) *
+      (isSymbolReveal ? 1 + perspectiveMorphologicalTension * 0.14 : 1) *
       (0.74 + (index % 3) * 0.12);
     const branchCurl =
       (lifePresence.morphologicalField.bend +
@@ -655,6 +667,8 @@ export function createIsolatedWebGLRendererPrototype(
     : isTimeResonance
       ? perspectiveTimeWeight
       : 1;
+  const formationContinuityScale =
+    0.96 + perspectiveFormationContinuity * 0.04;
   const symbolicFieldScale = isSymbolReveal ? 1.08 + realizationProgress * 0.12 : 1;
   const changeImprintScale = isHexagramImprint ? 1.02 + realizationProgress * 0.06 : 1;
   const lifeForceScale = isLifeForce ? 1.02 + realizationProgress * 0.1 : 1;
@@ -672,6 +686,7 @@ export function createIsolatedWebGLRendererPrototype(
         sceneProjection.mansionStructure.lineOpacity *
         structureOpacityScale *
         perspectiveStructureWeight *
+        formationContinuityScale *
         (0.82 + revealOpacity * 0.18 - pressureBoundaryLoad * 0.08),
       blending: AdditiveBlending,
     }),
@@ -685,6 +700,7 @@ export function createIsolatedWebGLRendererPrototype(
         sceneProjection.mansionStructure.lineOpacity *
         structureOpacityScale *
         perspectiveStructureWeight *
+        formationContinuityScale *
         (0.68 + revealOpacity * 0.2 - pressureBoundaryLoad * 0.12),
       blending: AdditiveBlending,
     }),
@@ -698,6 +714,7 @@ export function createIsolatedWebGLRendererPrototype(
       opacity:
         structureOpacityScale *
         perspectiveStructureWeight *
+        formationContinuityScale *
         (0.7 + revealOpacity * 0.16 - pressureBoundaryLoad * 0.08),
       blending: AdditiveBlending,
       depthWrite: false,
@@ -717,6 +734,7 @@ export function createIsolatedWebGLRendererPrototype(
       changeImprintScale *
       lifeForceScale *
       presenceScale *
+      formationContinuityScale *
       1.45,
   );
   structureGroup.rotation.z =
@@ -725,6 +743,9 @@ export function createIsolatedWebGLRendererPrototype(
     lifePresence.morphologicalField.flowDirection * 0.04 +
     pressureFlowDeflection * 0.025;
   structureGroup.rotation.z += fieldDirectionalFlow * 0.03 + forceDirectionalBias * 0.04;
+  structureGroup.rotation.z +=
+    (isSymbolReveal ? perspectiveLifeAxisStrength * 0.035 : 0) +
+    (isLifeForce ? perspectiveInnerMotionDifference * 0.02 : 0);
   structureGroup.rotation.x = isSymbolReveal
     ? fieldDirectionalFlow * 0.06
     : isHexagramImprint
@@ -774,7 +795,10 @@ export function createIsolatedWebGLRendererPrototype(
           new LineBasicMaterial({
             color: new Color(0xb8a36e),
             transparent: true,
-            opacity: 0.22 + index * 0.012,
+            opacity:
+              0.12 +
+              perspectiveMemorySedimentation * 0.18 +
+              index * (0.008 + perspectiveMemorySedimentation * 0.006),
             blending: AdditiveBlending,
           }),
         ),
@@ -1055,6 +1079,7 @@ export function createIsolatedWebGLRendererPrototype(
           lifeStarCore.temporalRhythm.variationAmount;
       core.scale.setScalar(
         breath *
+          (isLifeForce ? 1 + perspectiveForceRhythm * 0.05 : 1) *
           (isMoonOrigin
             ? 1.02
             : isStarRiver
@@ -1095,22 +1120,26 @@ export function createIsolatedWebGLRendererPrototype(
           changeImprintScale *
           lifeForceScale *
           presenceScale *
+          formationContinuityScale *
           (isLifeForce
-            ? 1 + Math.sin(elapsedSeconds * 0.42) * (0.028 + realizationProgress * 0.025)
+            ? 1 +
+              Math.sin(elapsedSeconds * (0.34 + perspectiveForceRhythm * 0.18)) *
+                (0.028 + realizationProgress * 0.025 + perspectiveForceRhythm * 0.024)
             : 1) *
           structureInfluence,
       );
       if (isSymbolReveal) {
-        structureGroup.scale.x *= 1.16;
-        structureGroup.scale.y *= 0.86;
+        structureGroup.scale.x *= 1.12 + perspectiveLifeAxisStrength * 0.12;
+        structureGroup.scale.y *= 0.9 - perspectiveMorphologicalTension * 0.06;
+        structureGroup.rotation.z += perspectiveLifeAxisStrength * 0.022;
       }
       if (isHexagramImprint) {
-        structureGroup.scale.x *= 0.98;
-        structureGroup.scale.y *= 1.04;
+        structureGroup.scale.x *= 0.98 - perspectiveMemorySedimentation * 0.025;
+        structureGroup.scale.y *= 1.02 + perspectiveMemorySedimentation * 0.05;
       }
       if (isLifeForce) {
-        structureGroup.scale.x *= 0.94;
-        structureGroup.scale.y *= 1.08;
+        structureGroup.scale.x *= 0.96 - perspectiveInnerMotionDifference * 0.04;
+        structureGroup.scale.y *= 1.04 + perspectiveForceRhythm * 0.06;
       }
       structureGroup.rotation.z =
         sceneProjection.lifePresence.morphologicalField.bend * 0.12 +
@@ -1124,7 +1153,9 @@ export function createIsolatedWebGLRendererPrototype(
           sceneProjection.motion.driftAmplitude;
       if (isSymbolReveal) {
         structureGroup.rotation.x =
-          fieldDirectionalFlow * 0.06 + Math.sin(elapsedSeconds * 0.16) * 0.012;
+          fieldDirectionalFlow * 0.06 +
+          perspectiveMorphologicalTension * 0.02 +
+          Math.sin(elapsedSeconds * 0.16) * 0.012;
       }
       if (isHexagramImprint) {
         structureGroup.rotation.x =
@@ -1136,12 +1167,19 @@ export function createIsolatedWebGLRendererPrototype(
         imprintTraceGroup.children.forEach((child, index) => {
           const material = (child as Line).material as LineBasicMaterial;
           material.opacity =
-            0.16 + index * 0.012 + Math.sin(elapsedSeconds * 0.18 + index * 0.3) * 0.028;
+            0.1 +
+            perspectiveMemorySedimentation * 0.2 +
+            index * (0.008 + perspectiveMemorySedimentation * 0.006) +
+            Math.sin(elapsedSeconds * 0.18 + index * 0.3) *
+              (0.018 + perspectiveMemorySedimentation * 0.02);
         });
       }
       if (isLifeForce) {
         structureGroup.rotation.x =
-          forceDirectionalBias * 0.08 + Math.sin(elapsedSeconds * 0.24) * 0.018;
+          forceDirectionalBias * 0.08 +
+          perspectiveInnerMotionDifference * 0.04 +
+          Math.sin(elapsedSeconds * (0.2 + perspectiveForceRhythm * 0.12)) *
+            (0.014 + perspectiveForceRhythm * 0.018);
       }
       if (isStarBeastReveal) {
         structureGroup.rotation.x =

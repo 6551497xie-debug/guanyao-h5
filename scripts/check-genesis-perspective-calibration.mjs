@@ -48,6 +48,15 @@ if (failures.length === 0) {
     "COSMIC_ORDER_FIELD",
     "LIFE_RESPONSE_TO_COSMOS",
     "presenceBalance",
+    "SYMBOLIC_FORMATION",
+    "CHANGE_MEMORY",
+    "LIFE_MOVEMENT",
+    "lifeAxisStrength",
+    "morphologicalTension",
+    "memorySedimentation",
+    "forceRhythm",
+    "innerMotionDifference",
+    "formationContinuity",
     "noSemanticMutation",
     "isolatedPrototypeOnly",
   ].forEach((marker) => assertIncludes("P18 perspective type", source.type, marker));
@@ -56,6 +65,12 @@ if (failures.length === 0) {
     "MOON_ORIGIN",
     "STAR_RIVER",
     "TIME_RESONANCE",
+    "SYMBOL_REVEAL",
+    "HEXAGRAM_IMPRINT",
+    "LIFE_FORCE",
+    "SYMBOLIC_FORMATION",
+    "CHANGE_MEMORY",
+    "LIFE_MOVEMENT",
     "P18_LAYER_OUT_OF_SCOPE",
     "balanceByLayer",
     "PERSPECTIVE_BOUNDARY_INVALID",
@@ -70,6 +85,12 @@ if (failures.length === 0) {
     "perspectiveCoreSuppression",
     "perspectiveBackgroundDepth",
     "perspectiveResponseIntensity",
+    "perspectiveLifeAxisStrength",
+    "perspectiveMorphologicalTension",
+    "perspectiveMemorySedimentation",
+    "perspectiveForceRhythm",
+    "perspectiveInnerMotionDifference",
+    "perspectiveFormationContinuity",
   ].forEach((marker) => assertIncludes("P18 renderer weighting", source.renderer, marker));
 
   [
@@ -170,12 +191,26 @@ if (failures.length === 0) {
       assertEqual(`${layer} remains isolated`, result.calibration.isolatedPrototypeOnly, true);
     }
   }
+  for (const [layer, expectedCalibrationLayer] of [
+    ["SYMBOL_REVEAL", "SYMBOLIC_FORMATION"],
+    ["HEXAGRAM_IMPRINT", "CHANGE_MEMORY"],
+    ["LIFE_FORCE", "LIFE_MOVEMENT"],
+  ]) {
+    const formation = runtime.mapGenesisPerspectiveCalibration({
+      visualRealization: realizationFor(layer),
+    });
+    assertEqual(`${layer} life presence calibration`, formation.status, "READY");
+    if (formation.status === "READY") {
+      assertEqual(`${layer} calibrated layer`, formation.calibration.activeVisualLayer, expectedCalibrationLayer);
+      assertEqual(`${layer} remains isolated`, formation.calibration.isolatedPrototypeOnly, true);
+    }
+  }
   const outOfScope = runtime.mapGenesisPerspectiveCalibration({
-    visualRealization: realizationFor("SYMBOL_REVEAL"),
+    visualRealization: realizationFor("STAR_BEAST_REVEAL"),
   });
-  assertEqual("later layers remain out of P18-A scope", outOfScope.status, "BLOCKED");
+  assertEqual("beast layer remains out of P18-B scope", outOfScope.status, "BLOCKED");
   if (outOfScope.status === "BLOCKED") {
-    assertEqual("later layer block reason", outOfScope.reason, "P18_LAYER_OUT_OF_SCOPE");
+    assertEqual("beast layer block reason", outOfScope.reason, "P18_LAYER_OUT_OF_SCOPE");
   }
   const invalidProgress = runtime.mapGenesisPerspectiveCalibration({
     visualRealization: realizationFor("MOON_ORIGIN", 1.2),

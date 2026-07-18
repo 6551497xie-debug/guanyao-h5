@@ -3,7 +3,10 @@ import type { GenesisRendererVisualRealization } from "./genesisRendererVisualRe
 export type GenesisPerspectiveCalibrationLayer =
   | "MOON_ORIGIN"
   | "STAR_RIVER"
-  | "TIME_RESONANCE";
+  | "TIME_RESONANCE"
+  | "SYMBOLIC_FORMATION"
+  | "CHANGE_MEMORY"
+  | "LIFE_MOVEMENT";
 
 export type GenesisCosmicPerspective = "TAIYIN_MOTHER_COSMOS";
 
@@ -22,6 +25,12 @@ export type GenesisPerspectivePresenceBalance = Readonly<{
   coreSuppression: number;
   backgroundDepth: number;
   responseIntensity: number;
+  lifeAxisStrength: number;
+  morphologicalTension: number;
+  memorySedimentation: number;
+  forceRhythm: number;
+  innerMotionDifference: number;
+  formationContinuity: number;
 }>;
 
 export type GenesisPerspectiveCalibration = Readonly<{
