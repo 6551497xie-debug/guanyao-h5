@@ -2446,3 +2446,22 @@ export type {
   FirstLifeJourneyExperienceFlowBlocked,
   FirstLifeJourneyExperienceFlowResult,
 } from "./firstLifeJourneyExperienceFlow";
+
+export type {
+  ProductExperienceRuntimeBoundary,
+  ProductExperienceUIConsumptionBoundary,
+  ProductExperienceSessionBoundary,
+  ProductExperiencePersistenceBoundary,
+  ProductExperienceUserOwnershipBoundary,
+  ProductExperienceImplementationBoundary,
+  ProductExperienceReadinessState,
+  ProductExperienceImplementationReadiness,
+  ProductExperienceImplementationReadinessInput,
+  ProductExperienceImplementationReadinessUnavailableReason,
+  ProductExperienceImplementationReadinessBlockedReason,
+  ProductExperienceImplementationReadinessBoundary,
+  ProductExperienceImplementationReadinessReady,
+  ProductExperienceImplementationReadinessUnavailable,
+  ProductExperienceImplementationReadinessBlocked,
+  ProductExperienceImplementationReadinessResult,
+} from "./productExperienceImplementationReadiness";
