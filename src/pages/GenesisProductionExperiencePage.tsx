@@ -38,6 +38,7 @@ import {
 import type { GenesisTimeDeliveryResponseCalibration } from "../types/genesisTimeDeliveryResponseCalibration";
 import type { GenesisManifestationExperienceStateResult } from "../types/genesisManifestationExperienceState";
 import { realizeGenesisStarBeastPresence } from "../services/genesisStarBeastPresenceVisualRealization";
+import { activateGenesisPresenceApproachContinuity } from "../services/genesisPresenceApproachContinuityActivation";
 import {
   activateGenesisRealityPresenceContinuityContext,
   clearGenesisRealityPresenceContinuityContext,
@@ -208,6 +209,19 @@ export function GenesisProductionExperiencePage({
         })
       : null;
   }, [lifeForceManifestationBridge, presenceRecognitionPhase, productionRuntimeResult]);
+  const presenceApproachContinuityResult = useMemo(
+    () =>
+      manifestationExperienceResult?.status === "READY" &&
+      presenceVisualRealizationResult?.status === "READY"
+        ? activateGenesisPresenceApproachContinuity({
+            manifestationExperienceSession:
+              manifestationExperienceResult.session,
+            presenceVisualRealization:
+              presenceVisualRealizationResult.realization,
+          })
+        : null,
+    [manifestationExperienceResult, presenceVisualRealizationResult],
+  );
 
   useEffect(() => {
     clearGenesisProductionRealityEntryContext();
@@ -272,6 +286,38 @@ export function GenesisProductionExperiencePage({
   }, [
     lifeForceManifestationBridge,
     manifestationExperienceResult,
+    productionRuntimeResult,
+  ]);
+
+  useEffect(() => {
+    if (
+      productionRuntimeResult?.status !== "READY" ||
+      productionRuntimeResult.session.currentStage !== "STAR_BEAST_REVEAL" ||
+      manifestationExperienceResult?.status !== "READY" ||
+      manifestationExperienceResult.session.currentState !==
+        "FORCE_CONDENSING" ||
+      presenceVisualRealizationResult?.status !== "READY" ||
+      presenceVisualRealizationResult.realization.visualPresenceState !==
+        "APPROACHING"
+    ) {
+      return;
+    }
+    const approachResult = advanceGenesisManifestationExperienceState({
+      session: manifestationExperienceResult.session,
+      runtimeSession: productionRuntimeResult.session,
+      lifeForceManifestationBridge,
+      trigger: "AUTO_ADVANCE",
+    });
+    if (
+      approachResult.status === "READY" &&
+      approachResult.session.currentState === "PRESENCE_APPROACHING"
+    ) {
+      setManifestationExperienceResult(approachResult);
+    }
+  }, [
+    lifeForceManifestationBridge,
+    manifestationExperienceResult,
+    presenceVisualRealizationResult,
     productionRuntimeResult,
   ]);
 
@@ -534,6 +580,11 @@ export function GenesisProductionExperiencePage({
           ? presenceVisualRealizationResult.realization.visualPresenceState
           : "DORMANT"
       }
+      data-genesis-presence-approach-continuity={
+        presenceApproachContinuityResult?.status === "READY"
+          ? "READY"
+          : "NOT_ACTIVE"
+      }
     >
       <GenesisProductionRendererCanvasHost
         routeAuthorization={routeAuthorization}
@@ -591,7 +642,10 @@ export function GenesisProductionExperiencePage({
       ) : null}
       {presenceVisualRealizationResult?.status === "READY" &&
       presenceVisualRealizationResult.realization.visualPresenceState !==
-        "DORMANT" ? (
+        "DORMANT" &&
+      (presenceVisualRealizationResult.realization.visualPresenceState !==
+        "APPROACHING" ||
+        presenceApproachContinuityResult?.status === "READY") ? (
         <p className="gy-genesis-production-experience__presence-response" role="status">
           {presenceVisualRealizationResult.realization.visualPresenceState ===
           "APPROACHING"
