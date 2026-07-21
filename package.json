@@ -126,6 +126,7 @@
     "check-genesis-starbeast-presence-visual-realization": "node scripts/check-genesis-starbeast-presence-visual-realization.mjs",
     "check-genesis-presence-approach-continuity-activation": "node scripts/check-genesis-presence-approach-continuity-activation.mjs",
     "check-genesis-presence-recognition-continuity-activation": "node scripts/check-genesis-presence-recognition-continuity-activation.mjs",
+    "check-genesis-manifestation-experience-e2e-acceptance": "node scripts/check-genesis-manifestation-experience-e2e-acceptance.mjs",
     "check-genesis-reality-presence-continuity-bridge": "node scripts/check-genesis-reality-presence-continuity-bridge.mjs",
     "check-genesis-explicit-route-activation-authorization": "node scripts/check-genesis-explicit-route-activation-authorization.mjs",
     "check-genesis-production-route-entry": "node scripts/check-genesis-production-route-entry.mjs",
