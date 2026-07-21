@@ -2996,6 +2996,19 @@ export type {
 } from "./genesisProductionRuntimeConsumer";
 
 export type {
+  GenesisManifestationExperienceState,
+  GenesisManifestationExperienceTrigger,
+  GenesisManifestationExperienceCopyKey,
+  GenesisManifestationExperienceStateBoundary,
+  GenesisManifestationExperienceStateSession,
+  GenesisManifestationExperienceStateInput,
+  GenesisManifestationExperienceAdvanceInput,
+  GenesisManifestationExperienceStateOperation,
+  GenesisManifestationExperienceStateBlockedReason,
+  GenesisManifestationExperienceStateResult,
+} from "./genesisManifestationExperienceState";
+
+export type {
   GenesisRendererVisualRealizationCore,
   GenesisPerspectiveCalibrationCore,
   GenesisPresenceRecognitionCalibrationCore,
