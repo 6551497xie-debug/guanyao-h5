@@ -244,6 +244,15 @@ export type {
   RealLifeVisualSourceProvenance,
 } from "./realLifeVisualSourceAdapter";
 export type {
+  GenesisMansionCoordinateSourceKind,
+  GenesisTwentyEightMansionCoordinateProjection,
+  GenesisTwentyEightMansionCoordinateProjectionBlockedReason,
+  GenesisTwentyEightMansionCoordinateProjectionBoundary,
+  GenesisTwentyEightMansionCoordinateProjectionInput,
+  GenesisTwentyEightMansionCoordinateProjectionResult,
+  GenesisTwentyEightMansionCoordinateSlot,
+} from "./genesisTwentyEightMansionCoordinateProjection";
+export type {
   LaunchLifeSourceSession,
   LaunchLifeSourceSessionBlockedReason,
   LaunchLifeSourceSessionBoundary,

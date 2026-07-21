@@ -10,7 +10,7 @@ const files = Object.freeze({
   adapterService: "src/services/realLifeVisualSourceAdapter.ts",
   fixture: "src/mocks/starBeastSceneModelFixtures.ts",
   harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
-  rendererInput: "src/types/isolatedWebGLRendererPrototype.ts",
+  rendererInput: "src/types/genesisWebGLRendererCore.ts",
   packageManifest: "package.json",
 });
 

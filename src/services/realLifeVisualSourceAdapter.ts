@@ -18,6 +18,7 @@ import { projectGenesisLifeForceInfusion } from "./genesisLifeForceInfusionProje
 import { projectGenesisPersonalReveal } from "./genesisPersonalRevealProjection";
 import { projectGenesisRealityPressure } from "./genesisRealityPressureProjection";
 import { projectGenesisTimeSequenceRecognition } from "./genesisTimeSequenceRecognitionProjection";
+import { projectGenesisTwentyEightMansionCoordinates } from "./genesisTwentyEightMansionCoordinateProjection";
 import { resolveLifeArchetypeProfileFromMotherCode } from "./motherCodeLifeArchetypeSource";
 import { resolvePersonalStarBeastManifestationReadiness } from "./personalStarBeastManifestationReadiness";
 import { adaptPersonalStarBeastSceneModelToRenderPlan } from "./personalStarBeastRenderPlanAdapter";
@@ -135,6 +136,18 @@ export function adaptRealLifeVisualSource(
   );
   if (calibration.status !== "AVAILABLE") {
     return blocked(input, "SOURCE_CALIBRATION_FAILED");
+  }
+
+  const mansionCoordinateResult = projectGenesisTwentyEightMansionCoordinates(
+    Object.freeze({
+      sourceKind: input.sourceKind,
+      sourceReferenceId,
+      mansionResultReference:
+        calibration.sourceIdentity.mansionResultReference,
+    }),
+  );
+  if (mansionCoordinateResult.status !== "AVAILABLE") {
+    return blocked(input, "MANSION_COORDINATE_PROJECTION_FAILED");
   }
 
   const archetype = resolveLifeArchetypeProfileFromMotherCode(
@@ -367,6 +380,8 @@ export function adaptRealLifeVisualSource(
       renderPlan: renderPlanResult.plan,
       renderPlanResult,
       projectionBundle: Object.freeze({
+        twentyEightMansionCoordinateProjection:
+          mansionCoordinateResult.projection,
         timeSequenceRecognitionProjection: timeSequenceResult.projection,
         birthMansionIgnitionProjection: birthMansionResult.projection,
         morphologicalFieldAlignmentProjection: fourSymbolResult.projection,

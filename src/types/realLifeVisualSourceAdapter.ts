@@ -4,6 +4,7 @@ import type { GenesisLifeForceInfusionProjection } from "./genesisLifeForceInfus
 import type { GenesisPersonalRevealProjection } from "./genesisPersonalRevealProjection";
 import type { GenesisRealityPressureProjection } from "./genesisRealityPressureProjection";
 import type { GenesisTimeSequenceRecognitionProjection } from "./genesisTimeSequenceRecognitionProjection";
+import type { GenesisTwentyEightMansionCoordinateProjection } from "./genesisTwentyEightMansionCoordinateProjection";
 import type { LunarMotherCodeLandingResult } from "./guanyaoLunarMotherCode";
 import type { StarbeastDerivationReady } from "./guanyaoStarbeast";
 import type { PersonalStarBeastRenderPlan, PersonalStarBeastRenderPlanAdapterResult } from "./personalStarBeastRenderPlan";
@@ -26,6 +27,7 @@ export type RealLifeVisualSourceAdapterInput = Readonly<{
 }>;
 
 export type RealLifeVisualProjectionBundle = Readonly<{
+  twentyEightMansionCoordinateProjection: GenesisTwentyEightMansionCoordinateProjection;
   timeSequenceRecognitionProjection: GenesisTimeSequenceRecognitionProjection;
   birthMansionIgnitionProjection: GenesisBirthMansionIgnitionProjection;
   morphologicalFieldAlignmentProjection: GenesisFourSymbolAlignmentProjection;
@@ -63,6 +65,7 @@ export type RealLifeVisualSourceAdapterBlockedReason =
   | "LIFE_ARCHETYPE_SOURCE_FAILED"
   | "TRAJECTORY_SOURCE_FAILED"
   | "MANIFESTATION_READINESS_FAILED"
+  | "MANSION_COORDINATE_PROJECTION_FAILED"
   | "TIME_SEQUENCE_PROJECTION_FAILED"
   | "BIRTH_MANSION_PROJECTION_FAILED"
   | "FOUR_SYMBOL_PROJECTION_FAILED"
