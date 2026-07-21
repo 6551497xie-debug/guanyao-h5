@@ -27,6 +27,7 @@ export type GenesisProductionRendererHostInput = Readonly<
   Omit<
     GenesisWebGLRendererCoreInput,
     | "renderPlan"
+    | "twentyEightMansionCoordinateProjection"
     | "timeSequenceRecognitionProjection"
     | "birthMansionIgnitionProjection"
     | "morphologicalFieldAlignmentProjection"
@@ -47,6 +48,7 @@ export type GenesisProductionRendererHostBlockedReason =
   | "SOURCE_PROVENANCE_INVALID"
   | "SOURCE_REFERENCE_NOT_AUTHORIZED"
   | "SOURCE_BOUNDARY_INVALID"
+  | "MANSION_COORDINATE_SOURCE_INVALID"
   | "RENDER_PLAN_REQUIRED"
   | "RENDER_PLAN_BOUNDARY_INVALID"
   | "VIEWPORT_INVALID";

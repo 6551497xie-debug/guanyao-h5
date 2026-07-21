@@ -79,13 +79,13 @@ if (failures.length === 0) {
     sources.adapter,
     "projectGenesisTwentyEightMansionCoordinates",
   );
-  assertExcludes(
-    "renderer input remains unchanged",
+  assertIncludes(
+    "renderer input uses explicit consumer bridge",
     sources.rendererType,
     "TwentyEightMansionCoordinate",
   );
-  assertExcludes(
-    "renderer implementation remains unchanged",
+  assertIncludes(
+    "renderer consumes projection through bridge",
     sources.renderer,
     "twentyEightMansionCoordinateProjection",
   );

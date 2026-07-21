@@ -10,6 +10,10 @@ import type {
   GenesisSpatialDistanceCalibrationCore,
 } from "./genesisProductionVisualCalibrationBridge";
 import type { GenesisTimeSequenceRecognitionProjection } from "./genesisTimeSequenceRecognitionProjection";
+import type {
+  GenesisTwentyEightMansionCoordinateProjection,
+  GenesisTwentyEightMansionCoordinateSlot,
+} from "./genesisTwentyEightMansionCoordinateProjection";
 import type { PersonalStarBeastLifePresenceProjection } from "./personalStarBeastLifePresenceProjection";
 import type { PersonalStarBeastLifeStarCoreProjection } from "./personalStarBeastLifeStarCoreProjection";
 import type { PersonalStarBeastRenderPlan } from "./personalStarBeastRenderPlan";
@@ -27,6 +31,15 @@ export type GenesisWebGLRendererCoreSceneProjection = Readonly<{
     radius: number;
     lineOpacity: number;
   }>;
+  mansionCoordinateField: Readonly<{
+    coordinateSystem: "GENESIS_NORMALIZED_MANSION_ORBIT";
+    coordinateCount: 28;
+    coordinates: readonly GenesisTwentyEightMansionCoordinateSlot[];
+    birthCoordinateIndex: number;
+    sourceProjectionConsumed: true;
+    noMansionName: true;
+    noIdentityCalculation: true;
+  }> | null;
   lifePresence: PersonalStarBeastLifePresenceProjection;
   lifeStarCore: PersonalStarBeastLifeStarCoreProjection;
   timeSequenceRecognition: GenesisTimeSequenceRecognitionProjection | null;
@@ -69,6 +82,7 @@ export type GenesisWebGLRendererCoreInput = Readonly<{
   height: number;
   pixelRatio: number;
   reducedMotion: boolean;
+  twentyEightMansionCoordinateProjection?: GenesisTwentyEightMansionCoordinateProjection | null;
   timeSequenceRecognitionProjection?: GenesisTimeSequenceRecognitionProjection | null;
   birthMansionIgnitionProjection?: GenesisBirthMansionIgnitionProjection | null;
   morphologicalFieldAlignmentProjection?: GenesisFourSymbolAlignmentProjection | null;
@@ -119,6 +133,7 @@ export type GenesisWebGLRendererCoreFallback = Readonly<{
 export type GenesisWebGLRendererCoreBlockedReason =
   | "RENDER_PLAN_REQUIRED"
   | "RENDER_PLAN_BOUNDARY_INVALID"
+  | "MANSION_COORDINATE_PROJECTION_INVALID"
   | "VIEWPORT_INVALID";
 
 export type GenesisWebGLRendererCoreBoundary = Readonly<{

@@ -430,6 +430,8 @@ export function PersonalStarBeastWebGLPrototypeHarness({
         height: Math.max(1, bounds.height),
         pixelRatio: window.devicePixelRatio || 1,
         reducedMotion,
+        twentyEightMansionCoordinateProjection:
+          projectionBundle.twentyEightMansionCoordinateProjection,
         timeSequenceRecognitionProjection:
           projectionBundle.timeSequenceRecognitionProjection,
         birthMansionIgnitionProjection:

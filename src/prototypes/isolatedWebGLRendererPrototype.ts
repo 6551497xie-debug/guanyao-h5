@@ -92,6 +92,8 @@ export function createIsolatedWebGLRendererPrototype(
     height: input.height,
     pixelRatio: input.pixelRatio,
     reducedMotion: input.reducedMotion,
+    twentyEightMansionCoordinateProjection:
+      input.twentyEightMansionCoordinateProjection,
     timeSequenceRecognitionProjection:
       input.timeSequenceRecognitionProjection,
     birthMansionIgnitionProjection: input.birthMansionIgnitionProjection,

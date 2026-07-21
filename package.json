@@ -163,6 +163,7 @@
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",
     "check-genesis-birth-mansion-ignition-projection": "node scripts/check-genesis-birth-mansion-ignition-projection.mjs",
     "check-genesis-28-mansion-coordinate-projection": "node scripts/check-genesis-28-mansion-coordinate-projection.mjs",
+    "check-genesis-28-mansion-renderer-consumer-bridge": "node scripts/check-genesis-28-mansion-renderer-consumer-bridge.mjs",
     "check-genesis-four-symbol-alignment-projection": "node scripts/check-genesis-four-symbol-alignment-projection.mjs",
     "check-genesis-life-force-infusion-projection": "node scripts/check-genesis-life-force-infusion-projection.mjs",
     "check-genesis-personal-star-beast-reveal-projection": "node scripts/check-genesis-personal-star-beast-reveal-projection.mjs",

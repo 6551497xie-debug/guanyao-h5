@@ -35,6 +35,7 @@ export type IsolatedWebGLRendererPrototypeBlockedReason =
   | "RENDER_PLAN_REQUIRED"
   | "RENDER_PLAN_BOUNDARY_INVALID"
   | "RENDER_PLAN_NOT_AUTHORIZED"
+  | "MANSION_COORDINATE_PROJECTION_INVALID"
   | "VIEWPORT_INVALID";
 
 export type IsolatedWebGLRendererPrototypeResult =

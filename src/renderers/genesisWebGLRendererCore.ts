@@ -29,6 +29,7 @@ import type { GenesisFourSymbolAlignmentProjection } from "../types/genesisFourS
 import type { GenesisLifeForceInfusionProjection } from "../types/genesisLifeForceInfusionProjection";
 import type { GenesisPersonalRevealProjection } from "../types/genesisPersonalRevealProjection";
 import type { GenesisRealityPressureProjection } from "../types/genesisRealityPressureProjection";
+import type { GenesisTwentyEightMansionCoordinateProjection } from "../types/genesisTwentyEightMansionCoordinateProjection";
 import type { PersonalStarBeastRenderPlan } from "../types/personalStarBeastRenderPlan";
 import type {
   GenesisPerspectiveCalibrationCore,
@@ -101,6 +102,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
   genesisPerspectiveCalibration: GenesisPerspectiveCalibrationCore | null = null,
   genesisPresenceRecognitionCalibration: GenesisPresenceRecognitionCalibrationCore | null = null,
   genesisSpatialDistanceCalibration: GenesisSpatialDistanceCalibrationCore | null = null,
+  twentyEightMansionCoordinateProjection: GenesisTwentyEightMansionCoordinateProjection | null = null,
 ): GenesisWebGLRendererCoreSceneProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
@@ -136,6 +138,21 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
       radius: lifePresence.stellarSkeleton.spineLength,
       lineOpacity: 0.24 + lifePresence.corePresence.coherence * 0.34,
     }),
+    mansionCoordinateField:
+      twentyEightMansionCoordinateProjection === null
+        ? null
+        : Object.freeze({
+            coordinateSystem: "GENESIS_NORMALIZED_MANSION_ORBIT" as const,
+            coordinateCount: 28 as const,
+            coordinates:
+              twentyEightMansionCoordinateProjection.coordinates,
+            birthCoordinateIndex:
+              twentyEightMansionCoordinateProjection.birthMansion
+                .mansionIndex,
+            sourceProjectionConsumed: true as const,
+            noMansionName: true as const,
+            noIdentityCalculation: true as const,
+          }),
     formField: Object.freeze({
       hue: 0.08 + fieldUnit * 0.52,
       boundaryScale: lifePresence.morphologicalField.fieldScale,
@@ -213,6 +230,29 @@ const isPlanBoundaryValid = (plan: PersonalStarBeastRenderPlan): boolean =>
   plan.noDrawCommands === true &&
   plan.noRendererInvocation === true;
 
+const isMansionCoordinateProjectionValid = (
+  projection: GenesisTwentyEightMansionCoordinateProjection,
+): boolean => {
+  const activeCoordinates = projection.coordinates.filter(
+    (coordinate) => coordinate.isBirthMansionCoordinate,
+  );
+  return (
+    projection.semanticRole ===
+      "GENESIS_TWENTY_EIGHT_MANSION_COORDINATE_PROJECTION" &&
+    projection.coordinateSystem === "GENESIS_NORMALIZED_MANSION_ORBIT" &&
+    projection.coordinateCount === 28 &&
+    projection.coordinates.length === 28 &&
+    activeCoordinates.length === 1 &&
+    activeCoordinates[0]?.coordinateIndex ===
+      projection.birthMansion.mansionIndex &&
+    projection.existingMansionResultOnly === true &&
+    projection.noMansionCalculation === true &&
+    projection.noIdentitySelection === true &&
+    projection.noRendererParameters === true &&
+    projection.noFallback === true
+  );
+};
+
 export function createGenesisWebGLRendererCore(
   input: GenesisWebGLRendererCoreInput,
 ): GenesisWebGLRendererCoreResult {
@@ -231,6 +271,21 @@ export function createGenesisWebGLRendererCore(
       status: "BLOCKED",
       source: "genesis_webgl_renderer_core",
       reason: "RENDER_PLAN_BOUNDARY_INVALID",
+      noRenderer: true,
+      boundary: GENESIS_WEBGL_RENDERER_CORE_BOUNDARY,
+    });
+  }
+
+  const mansionCoordinateProjection =
+    input.twentyEightMansionCoordinateProjection ?? null;
+  if (
+    mansionCoordinateProjection !== null &&
+    !isMansionCoordinateProjectionValid(mansionCoordinateProjection)
+  ) {
+    return Object.freeze({
+      status: "BLOCKED",
+      source: "genesis_webgl_renderer_core",
+      reason: "MANSION_COORDINATE_PROJECTION_INVALID",
       noRenderer: true,
       boundary: GENESIS_WEBGL_RENDERER_CORE_BOUNDARY,
     });
@@ -268,6 +323,7 @@ export function createGenesisWebGLRendererCore(
     input.genesisPerspectiveCalibration ?? null,
     input.genesisPresenceRecognitionCalibration ?? null,
     input.genesisSpatialDistanceCalibration ?? null,
+    mansionCoordinateProjection,
   );
   if (input.reducedMotion) {
     return fallback(sceneProjection, "REDUCED_MOTION_REQUESTED");

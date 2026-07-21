@@ -117,6 +117,18 @@ export function createGenesisProductionRendererHost(
   const consumerSource = sourceResult.consumerSource;
   const renderPlan = consumerSource.renderPlanResult.plan;
   const projectionBundle = consumerSource.projectionBundle;
+  const mansionCoordinateProjection =
+    projectionBundle.twentyEightMansionCoordinateProjection;
+  if (
+    mansionCoordinateProjection.sourceKind !== "REAL_ENGINE_RESULT" ||
+    mansionCoordinateProjection.sourceReferenceId !==
+      consumerSource.sourceReferenceId ||
+    mansionCoordinateProjection.coordinateCount !== 28 ||
+    mansionCoordinateProjection.existingMansionResultOnly !== true ||
+    mansionCoordinateProjection.noFallback !== true
+  ) {
+    return blocked("MANSION_COORDINATE_SOURCE_INVALID");
+  }
   const coreResult = createGenesisWebGLRendererCore({
     canvas: input.canvas,
     renderPlan,
@@ -124,6 +136,8 @@ export function createGenesisProductionRendererHost(
     height: input.height,
     pixelRatio: input.pixelRatio,
     reducedMotion: input.reducedMotion,
+    twentyEightMansionCoordinateProjection:
+      mansionCoordinateProjection,
     timeSequenceRecognitionProjection:
       projectionBundle.timeSequenceRecognitionProjection,
     birthMansionIgnitionProjection:
@@ -142,7 +156,13 @@ export function createGenesisProductionRendererHost(
       input.genesisSpatialDistanceCalibration,
   });
 
-  if (coreResult.status === "BLOCKED") return blocked(coreResult.reason);
+  if (coreResult.status === "BLOCKED") {
+    return blocked(
+      coreResult.reason === "MANSION_COORDINATE_PROJECTION_INVALID"
+        ? "MANSION_COORDINATE_SOURCE_INVALID"
+        : coreResult.reason,
+    );
+  }
 
   const sourceTrace = Object.freeze({
     sourceReferenceId: consumerSource.sourceReferenceId,
