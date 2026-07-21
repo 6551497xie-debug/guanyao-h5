@@ -3085,6 +3085,14 @@ export type {
 } from "./realityCoordinatePresenceVisualSourceProjection";
 
 export type {
+  RealityPresenceVisualCalibrationHandoffSnapshotInput,
+  RealityPresenceVisualCalibrationHandoffSnapshot,
+  RealityPresenceVisualCalibrationHandoffSnapshotBoundary,
+  RealityPresenceVisualCalibrationHandoffSnapshotBlockedReason,
+  RealityPresenceVisualCalibrationHandoffSnapshotResult,
+} from "./realityPresenceVisualCalibrationHandoffSnapshot";
+
+export type {
   RealityProductionRouteEntryBoundary,
   RealityProductionHostBoundary,
   RealityProductionHostProps,
