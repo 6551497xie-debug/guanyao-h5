@@ -27,6 +27,8 @@ import {
 } from "../services/realityRouteActivationSourceContext";
 import { bridgeGenesisProductionRuntimeToVisualCalibration } from "../services/genesisProductionVisualCalibrationBridge";
 import { resolveRealGenesisVisualConsumerSource } from "../services/realGenesisVisualConsumerSource";
+import { calibrateGenesisTimeDeliveryResponse } from "../services/genesisTimeDeliveryResponseCalibration";
+import type { GenesisTimeDeliveryResponseCalibration } from "../types/genesisTimeDeliveryResponseCalibration";
 import type {
   GenesisProductionCanvasHostState,
   GenesisProductionExperiencePageBoundary,
@@ -97,6 +99,8 @@ export function GenesisProductionExperiencePage({
   const [productionRuntimeResult, setProductionRuntimeResult] = useState(
     initializedRuntimeResult,
   );
+  const [timeDeliveryResponse, setTimeDeliveryResponse] =
+    useState<GenesisTimeDeliveryResponseCalibration | null>(null);
   useEffect(() => {
     setProductionRuntimeResult(initializedRuntimeResult);
   }, [initializedRuntimeResult]);
@@ -121,6 +125,7 @@ export function GenesisProductionExperiencePage({
     clearGenesisProductionRealityEntryContext();
     clearRealityRouteActivationSourceContext();
     setRecognitionRealityResult(null);
+    setTimeDeliveryResponse(null);
   }, [routeAuthorization.sourceReferenceId]);
 
   useEffect(() => {
@@ -171,6 +176,19 @@ export function GenesisProductionExperiencePage({
         session: productionRuntimeResult.session,
         trigger: "TIME_DELIVERY",
       }),
+    );
+    const manifestationBridge =
+      consumerSourceResult?.status === "READY"
+        ? consumerSourceResult.consumerSource.projectionBundle
+            .lifeForceManifestationBridge
+        : null;
+    const responseResult = calibrateGenesisTimeDeliveryResponse({
+      runtimeSession: productionRuntimeResult.session,
+      lifeForceManifestationBridge: manifestationBridge,
+      acceptedExperienceState: "TIME_ACCEPTED",
+    });
+    setTimeDeliveryResponse(
+      responseResult.status === "READY" ? responseResult.calibration : null,
     );
   };
 
@@ -272,6 +290,12 @@ export function GenesisProductionExperiencePage({
           ? recognitionRealityResult.session.realityEntryEligibility
           : "NOT_ELIGIBLE"
       }
+      data-genesis-time-delivery-response={
+        timeDeliveryResponse?.responseState ?? "DORMANT"
+      }
+      data-genesis-time-delivery-response-copy={
+        timeDeliveryResponse?.copyKey ?? "WAIT_FOR_TIME_DELIVERY"
+      }
     >
       <GenesisProductionRendererCanvasHost
         routeAuthorization={routeAuthorization}
@@ -288,6 +312,11 @@ export function GenesisProductionExperiencePage({
         >
           把时间交给星河
         </button>
+      ) : null}
+      {timeDeliveryResponse !== null ? (
+        <p className="gy-genesis-production-experience__time-response" role="status">
+          {timeDeliveryResponse.responseMessage}
+        </p>
       ) : null}
       {recognitionRealityResult?.status === "READY" &&
       recognitionRealityResult.session.interactionAvailability ===
