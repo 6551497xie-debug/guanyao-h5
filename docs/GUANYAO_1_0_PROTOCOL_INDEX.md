@@ -14,6 +14,13 @@ This registration is a documentation clarification, not a new candidate stage an
 
 When older product wording conflicts with the V2 worldview constitution, future construction must align that wording incrementally with the constitution without rewriting the active causal chain in one step.
 
+Active cross-layer alignment baseline:
+
+- [GUANYAO_WORLD_MODEL_ALIGNMENT_P0.md](./GUANYAO_WORLD_MODEL_ALIGNMENT_P0.md)
+- [GUANYAO_WORLD_MODEL_ALIGNMENT_CHECK_SPEC.md](./GUANYAO_WORLD_MODEL_ALIGNMENT_CHECK_SPEC.md)
+
+These documents register how existing world-model facts remain continuous from Engine Result through Session, Context, Adapter, Experience Consumer, and Renderer. They add no protocol-candidate layer and do not unfreeze Engine, Runtime, Renderer, visual calibration, routes, or UI.
+
 ## ACTIVE FREEZE NOTICE
 
 GUANYAO 1.0 protocol expansion is now frozen.

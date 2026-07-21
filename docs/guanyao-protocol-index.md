@@ -12,6 +12,7 @@
 后续 Codex 施工规则：
 
 - 任何 1.0 新施工先读 [GUANYAO_1_0_PROTOCOL_INDEX.md](./GUANYAO_1_0_PROTOCOL_INDEX.md)。
+- 涉及生命 Source、Genesis / Reality 或二十八宿显化时，同时执行 [World Model Alignment P0](./GUANYAO_WORLD_MODEL_ALIGNMENT_P0.md) 与其 [检查规范](./GUANYAO_WORLD_MODEL_ALIGNMENT_CHECK_SPEC.md)。
 - 再判断任务属于 P0 因果链 / P1 内容链 / P2 视觉链 / P3 商业化。
 - 不得绕过新索引直接按旧协议施工。
 - 触及冻结架构必须显式说明 unfreeze 范围。
