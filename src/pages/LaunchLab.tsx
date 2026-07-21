@@ -114,17 +114,17 @@ const TAILS = new Set([10, 11, 12, 13]);
 const BODY = new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 26, 27]);
 
 const COLOR = {
-  bg: "#070512",
+  bg: "#020306",
   warm: "#E8C88A",
   warmBright: "#FFF3D0",
-  field: "230,236,255", // 星河 = 冷白（阴·散光）
-  nebula: "120,70,120",
+  field: "185,203,236", // 同一星河 = 冷银蓝（阴·散光）
+  nebula: "37,48,72",
   text: "#F4ECD8",
 };
 
 // Visual tone only; user-facing meaning remains pressure transformation.
 const PAL = {
-  coolWhite: [230, 236, 255] as [number, number, number],
+  coolWhite: [185, 203, 236] as [number, number, number],
   gold: [232, 200, 138] as [number, number, number],
   cream: [255, 243, 208] as [number, number, number],
 };
@@ -2090,7 +2090,7 @@ export function LaunchLab() {
         const splitHint = lerp.starfieldFragmentation;
         const directionalHint = lerp.directionalLightShift;
 
-        ctx.fillStyle = `rgba(7,5,18,${(0.18 + mirrorIn * 0.34 + splitHint * 0.08).toFixed(3)})`;
+        ctx.fillStyle = `rgba(2,3,6,${(0.18 + mirrorIn * 0.34 + splitHint * 0.08).toFixed(3)})`;
         ctx.fillRect(0, 0, m.w, m.h);
 
         const glowX = centerX + directionalHint * m.w * 0.08;
@@ -3259,7 +3259,7 @@ export function LaunchLab() {
   }, [commitPressureSeedCapture, navigate, setLaunchInteractionState, setSceneState, triggerClickFlash]);
 
   return (
-    <GyMobilePreviewFrame background="#070512">
+    <GyMobilePreviewFrame background="#020306">
       <div
         className={`light-beast-hitbox scene-${scene.toLowerCase()}${SNAPSHOT_MODE ? " snapshot-mode" : ""}`}
         data-production-collapse={isProductionCollapse ? "true" : "false"}
@@ -3446,7 +3446,7 @@ export function LaunchLab() {
           }
           .snapshot-panel button {
             border: 1px solid rgba(232,200,138,0.42);
-            background: rgba(7,5,18,0.72);
+            background: rgba(2,3,6,0.72);
             color: rgba(255,247,228,0.92);
             font-family: ${MONO};
             font-size: 12px;

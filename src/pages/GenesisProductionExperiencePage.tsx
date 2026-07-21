@@ -510,7 +510,13 @@ export function GenesisProductionExperiencePage({
       recognitionRealityResult?.status !== "READY" ||
       recognitionRealityResult.session.interactionAvailability !==
         "ENTER_REALITY" ||
-      presenceRecognitionContinuityResult?.status !== "READY"
+      presenceRecognitionContinuityResult?.status !== "READY" ||
+      visualCalibrationResult === null ||
+      visualCalibrationResult.status !== "READY" ||
+      directionFieldCalibrationResult === null ||
+      directionFieldCalibrationResult.status !== "AVAILABLE" ||
+      archetypeForceCalibrationResult === null ||
+      archetypeForceCalibrationResult.status !== "AVAILABLE"
     ) {
       return;
     }
@@ -552,7 +558,19 @@ export function GenesisProductionExperiencePage({
               })
             : null;
         if (presenceContinuityContext !== null) {
-          navigate(handoff.routeTarget);
+          navigate(handoff.routeTarget, {
+            state: {
+              visualContinuity: Object.freeze({
+                sourceReferenceId: result.session.sourceReferenceId,
+                consumerSourceResult,
+                visualCalibrationBundle: visualCalibrationResult.bundle,
+                fourSymbolDirectionFieldVisualCalibration:
+                  directionFieldCalibrationResult.calibration,
+                lifeArchetypeForceCondensationVisualCalibration:
+                  archetypeForceCalibrationResult.calibration,
+              }),
+            },
+          });
         }
       }
     }

@@ -53,8 +53,8 @@ const CFG = {
 };
 
 const COLOR = {
-  bg: "#000000",
-  primary: "#FFEEF7",
+  bg: "#020306",
+  primary: "#EEE2C6",
   accent: "#00B8D4",
   blue: "#00B8D4",
 };
@@ -526,7 +526,7 @@ export function GenesisLab({ onComplete, mode = "full" }: { onComplete?: () => v
       const breathe = 0.5 + 0.5 * Math.sin((performance.now() / 1000 / CFG.breathePeriod) * Math.PI * 2);
       const r = Math.max(m.w, m.h) * 0.6;
       const fg = ctx.createRadialGradient(m.cx, m.logoCY, 0, m.cx, m.logoCY, r);
-      fg.addColorStop(0, `rgba(0,184,212,${(0.05 + breathe * 0.03).toFixed(3)})`);
+      fg.addColorStop(0, `rgba(0,184,212,${(0.024 + breathe * 0.014).toFixed(3)})`);
       fg.addColorStop(0.55, "rgba(0,184,212,0.015)");
       fg.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = fg;
@@ -770,7 +770,7 @@ export function GenesisLab({ onComplete, mode = "full" }: { onComplete?: () => v
   }, []);
 
   return (
-    <GyMobilePreviewFrame background="#000000">
+    <GyMobilePreviewFrame background="#020306">
       <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }} />
     </GyMobilePreviewFrame>
   );

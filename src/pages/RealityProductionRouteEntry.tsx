@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { RealityProductionHost } from "../components/RealityProductionHost";
 import { readGenesisProductionRealityEntryContext } from "../services/genesisProductionRecognitionRealityEntry";
 import {
@@ -13,6 +13,7 @@ import { resolveRealityProductionPressureHostInput } from "../services/realityPr
 import { createRealityPressureSeedContinuationContext } from "../services/realityPressureSeedContinuationContext";
 import { readGenesisRealityPresenceContinuityContext } from "../services/genesisRealityPresenceContinuityBridge";
 import type { RealityProductionRouteEntryBoundary } from "../types/realityProductionRouteEntry";
+import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
 
 export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
   RealityProductionRouteEntryBoundary = Object.freeze({
@@ -46,6 +47,12 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
 
 export function RealityProductionRouteEntry() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const visualContinuity = (
+    location.state as
+      | { visualContinuity?: RealityProductionHostProps["visualContinuity"] }
+      | null
+  )?.visualContinuity ?? null;
   const entryContext = readGenesisProductionRealityEntryContext();
   const activationSourceContext =
     readRealityRouteActivationSourceContext();
@@ -110,7 +117,14 @@ export function RealityProductionRouteEntry() {
     genesisPresenceContinuityContext.sourceReferenceId !==
       authorization.sourceReferenceId ||
     genesisPresenceContinuityContext.bridge.continuityState !==
-      "CARRIED_TO_REALITY"
+      "CARRIED_TO_REALITY" ||
+    visualContinuity === null ||
+    visualContinuity.sourceReferenceId !== authorization.sourceReferenceId ||
+    visualContinuity.consumerSourceResult.consumerSource.sourceReferenceId !==
+      authorization.sourceReferenceId ||
+    visualContinuity.visualCalibrationBundle.sourceReferenceId !==
+      authorization.sourceReferenceId ||
+    visualContinuity.visualCalibrationBundle.runtimeStage !== "COMPLETION"
   ) {
     return (
       <main
@@ -142,6 +156,11 @@ export function RealityProductionRouteEntry() {
             : genesisPresenceContinuityContext.sourceReferenceId !==
                 authorization.sourceReferenceId
               ? "GENESIS_PRESENCE_CONTINUITY_SOURCE_MISMATCH"
+              : visualContinuity === null
+                ? "GENESIS_VISUAL_CONTINUITY_NOT_AVAILABLE"
+                : visualContinuity.sourceReferenceId !==
+                    authorization.sourceReferenceId
+                  ? "GENESIS_VISUAL_CONTINUITY_SOURCE_MISMATCH"
               : "GENESIS_PRESENCE_CONTINUITY_NOT_READY"
         }
       >
@@ -162,6 +181,7 @@ export function RealityProductionRouteEntry() {
       pressureSeedHostInput={pressureHostInputResult.input}
       pressureSeedContinuationContext={pressureSeedContinuationResult.context}
       genesisPresenceContinuityContext={genesisPresenceContinuityContext}
+      visualContinuity={visualContinuity}
     />
   );
 }

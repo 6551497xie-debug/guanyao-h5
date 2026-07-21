@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { RealityPressureSeedPresentation } from "./RealityPressureSeedPresentation";
+import { RealityLifeUniverseCanvas } from "./RealityLifeUniverseCanvas";
 import { bridgeRealityPressureActivationCandidateRequestContext } from "../services/realityPressureActivationCandidateRequestBridge";
 import { advanceRealityPressureActivationDeliveryOrchestration } from "../services/realityPressureActivationDeliveryOrchestrationBridge";
 import { isRealityProductionPressureHostInputReady } from "../services/realityProductionPressureHostInputContract";
@@ -73,6 +74,7 @@ export function RealityProductionHost({
   pressureSeedHostInput,
   pressureSeedContinuationContext,
   genesisPresenceContinuityContext,
+  visualContinuity,
 }: RealityProductionHostProps) {
   const sourceContext = routeAuthorization.sourceContext;
   const [pressureHostState, setPressureHostState] =
@@ -248,6 +250,7 @@ export function RealityProductionHost({
 
   return (
     <main
+      className="gy-reality-life-universe"
       data-production-reality-status="AUTHORIZED_PRODUCTION_REALITY_SOURCE"
       data-reality-production-host-state={
         pressureSeedSession.gravityReadiness === "READY"
@@ -278,6 +281,15 @@ export function RealityProductionHost({
       data-choice-stage="NOT_STARTED"
       data-crystal-readiness="NOT_READY"
     >
+      <RealityLifeUniverseCanvas visualContinuity={visualContinuity} />
+      <div className="gy-reality-life-universe__disturbance" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+      <p className="gy-reality-life-universe__continuity-copy">
+        同一束生命光，开始感受现实的重量。
+      </p>
       <RealityPressureSeedPresentation
         session={pressureSeedSession}
         onRecognize={recognizePressureSeed}

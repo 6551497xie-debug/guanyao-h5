@@ -45,7 +45,8 @@
   white-space: nowrap;
 }
 
-.gy-genesis-production-experience__time-response {
+.gy-genesis-production-experience__time-response,
+.gy-genesis-production-experience__presence-response {
   position: absolute;
   z-index: 1;
   left: 50%;
@@ -62,6 +63,14 @@
   text-align: center;
   text-shadow: 0 0 18px rgb(196 220 255 / 32%);
   pointer-events: none;
+}
+
+.gy-genesis-production-experience__presence-response {
+  bottom: max(96px, env(safe-area-inset-bottom));
+  color: rgb(238 226 198 / 78%);
+  font-family: var(--gy-font-serif);
+  font-size: 14px;
+  letter-spacing: 0.12em;
 }
 
 .gy-genesis-production-experience--source-not-ready {

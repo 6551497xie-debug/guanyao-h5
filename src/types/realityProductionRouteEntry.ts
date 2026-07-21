@@ -2,6 +2,10 @@ import type { RealityProductionRouteActivationAuthorization } from "./realityPro
 import type { RealityProductionPressureHostInput } from "./realityProductionPressureHostInputContract";
 import type { RealityPressureSeedContinuationContext } from "./realityPressureSeedContinuationContext";
 import type { GenesisRealityPresenceContinuityContext } from "./genesisRealityPresenceContinuityBridge";
+import type { GenesisVisualConsumerSourceResult } from "./genesisVisualConsumerSource";
+import type { GenesisProductionVisualCalibrationBundle } from "./genesisProductionVisualCalibrationBridge";
+import type { GenesisFourSymbolDirectionFieldVisualCalibration } from "./genesisFourSymbolDirectionFieldVisualCalibration";
+import type { GenesisLifeArchetypeForceCondensationVisualCalibration } from "./genesisLifeArchetypeForceCondensationVisualCalibration";
 
 export type RealityProductionRouteEntryBoundary = Readonly<{
   productionRouteEntryOnly: true;
@@ -73,4 +77,14 @@ export type RealityProductionHostProps = Readonly<{
     { phase: "READY_FOR_CONSUMER_INITIALIZATION" }
   >;
   genesisPresenceContinuityContext: GenesisRealityPresenceContinuityContext;
+  visualContinuity: Readonly<{
+    sourceReferenceId: string;
+    consumerSourceResult: Extract<
+      GenesisVisualConsumerSourceResult,
+      { status: "READY" }
+    >;
+    visualCalibrationBundle: GenesisProductionVisualCalibrationBundle;
+    fourSymbolDirectionFieldVisualCalibration: GenesisFourSymbolDirectionFieldVisualCalibration;
+    lifeArchetypeForceCondensationVisualCalibration: GenesisLifeArchetypeForceCondensationVisualCalibration;
+  }>;
 }>;

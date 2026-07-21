@@ -7,6 +7,7 @@ import {
   Group,
   Line,
   LineBasicMaterial,
+  LineLoop,
   LineSegments,
   Mesh,
   MeshBasicMaterial,
@@ -925,6 +926,8 @@ export function createGenesisWebGLRendererCore(
     nodePositions[offset + 2] = point[2];
   }
 
+  const positivePresenceTips: [number, number, number][] = [];
+  const negativePresenceTips: [number, number, number][] = [];
   for (let index = 0; index < branchCount; index += 1) {
     const originIndex =
       Math.floor(
@@ -962,6 +965,7 @@ export function createGenesisWebGLRendererCore(
       origin[1] + perpendicularY * side * branchLength + axisY * branchCurl * 1.8,
       origin[2] + (random() - 0.5) * 0.3,
     ];
+    (side > 0 ? positivePresenceTips : negativePresenceTips).push(tip);
     const branchOffset = index * 12;
     branchPositions.set([...origin, ...mid, ...mid, ...tip], branchOffset);
     const nodeOffset = (spineSegments + index) * 3;
@@ -1003,9 +1007,9 @@ export function createGenesisWebGLRendererCore(
             : isLifeForce
               ? 1.14
               : isStarBeastReveal
-                ? 1.7
+                ? 2.6
               : isCompletion
-                  ? 1.5
+                  ? 2.4
               : 0.94;
   const distanceStructureScale =
     (0.86 + spatialContrast * 0.14) * (0.94 + spatialEdgeDefinition * 0.06);
@@ -1024,9 +1028,9 @@ export function createGenesisWebGLRendererCore(
   const changeImprintScale = isHexagramImprint ? 1.02 + realizationProgress * 0.06 : 1;
   const lifeForceScale = isLifeForce ? 1.02 + realizationProgress * 0.1 : 1;
   const presenceScale = isStarBeastReveal
-    ? 1.06 + realizationProgress * 0.08
+    ? 1.12 + realizationProgress * 0.08
     : isCompletion
-      ? 1.02
+      ? 1.1
       : 1;
   const spineLine = new Line(
     spineGeometry,
@@ -1120,7 +1124,7 @@ export function createGenesisWebGLRendererCore(
       (1.04 + (isPresenceStage ? (recognitionSubjectWeight - 1) * 0.34 : 0)),
     transparent: true,
     opacity: isPresenceStage
-      ? 0.14 + perspectiveBodyCohesion * 0.24 +
+      ? 0.22 + perspectiveBodyCohesion * 0.3 +
         (recognitionSubjectWeight - 1) * 0.18
       : 0,
     blending: AdditiveBlending,
@@ -1128,6 +1132,32 @@ export function createGenesisWebGLRendererCore(
   });
   const bodyField = new Points(bodyFieldGeometry, bodyFieldMaterial);
   bodyField.visible = isPresenceStage;
+  const tipAxisPosition = (tip: [number, number, number]) =>
+    tip[0] * axisX + tip[1] * axisY;
+  positivePresenceTips.sort((a, b) => tipAxisPosition(a) - tipAxisPosition(b));
+  negativePresenceTips.sort((a, b) => tipAxisPosition(b) - tipAxisPosition(a));
+  const presenceEnvelopeGeometry = new BufferGeometry();
+  presenceEnvelopeGeometry.setAttribute(
+    "position",
+    new Float32BufferAttribute(
+      [...positivePresenceTips, ...negativePresenceTips].flat(),
+      3,
+    ),
+  );
+  const presenceEnvelopeMaterial = new LineBasicMaterial({
+    color: new Color(0xe7d4a1),
+    transparent: true,
+    opacity: isPresenceStage ? (isCompletion ? 0.46 : 0.36) : 0,
+    blending: AdditiveBlending,
+    depthWrite: false,
+  });
+  const presenceEnvelope = new LineLoop(
+    presenceEnvelopeGeometry,
+    presenceEnvelopeMaterial,
+  );
+  presenceEnvelope.visible = isPresenceStage;
+  presenceEnvelope.position.z = 0.12;
+  presenceEnvelope.scale.setScalar(0.42);
   const structureGroup = new Group();
   structureGroup.scale.setScalar(
     sceneProjection.formField.boundaryScale *
@@ -1175,7 +1205,13 @@ export function createGenesisWebGLRendererCore(
           : isCompletion
             ? lifePresence.morphologicalField.flowDirection * 0.012
         : 0;
-  structureGroup.add(spineLine, branchLines, structurePoints, bodyField);
+  structureGroup.add(
+    spineLine,
+    branchLines,
+    structurePoints,
+    bodyField,
+    presenceEnvelope,
+  );
   structureGroup.visible = !isMoonOrigin;
   root.add(structureGroup);
 
@@ -1232,7 +1268,7 @@ export function createGenesisWebGLRendererCore(
   const coreRadius = isMoonOrigin
     ? 0.34 + lifeStarCore.surfacePresence.innerLayerDepth * 0.12
     : (0.1 + lifeStarCore.surfacePresence.innerLayerDepth * 0.42) *
-      (isPresenceStage ? 0.78 : 1);
+      (isPresenceStage ? 0.48 : 1);
   const coreStageOpacity = isMoonOrigin
     ? 0.46
     : isStarRiver
@@ -1830,11 +1866,15 @@ export function createGenesisWebGLRendererCore(
           lifeStarCore.coreInfluence.nodeBreathCoupling * 0.12 * breath +
           (isPresenceStage ? perspectiveBodyCohesion * 0.34 : 0));
       bodyFieldMaterial.opacity = isPresenceStage
-        ? 0.14 +
-          perspectiveBodyCohesion * 0.24 +
+        ? 0.22 +
+          perspectiveBodyCohesion * 0.3 +
           (recognitionSubjectWeight - 1) * 0.18 +
           Math.sin(rhythmPhase * 0.72 + 0.5) *
             (0.008 + perspectivePresenceBreath * 0.012)
+        : 0;
+      presenceEnvelopeMaterial.opacity = isPresenceStage
+        ? (isCompletion ? 0.46 : 0.36) *
+          (0.94 + (breath - 1) * 1.8)
         : 0;
       bodyField.scale.setScalar(
         isPresenceStage

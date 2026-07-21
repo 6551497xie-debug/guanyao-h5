@@ -72,7 +72,7 @@ try {
     'trigger: "RECOGNITION_CONFIRM"',
     "activateGenesisPresenceRecognitionContinuity",
     "activateGenesisRealityPresenceContinuityContext",
-    "navigate(handoff.routeTarget)",
+    "navigate(handoff.routeTarget, {",
   ].forEach((marker) => assertIncludes("Genesis owns the complete manifestation journey", source.genesis, marker));
   [
     "readGenesisRealityPresenceContinuityContext",
