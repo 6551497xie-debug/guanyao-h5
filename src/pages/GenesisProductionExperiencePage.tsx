@@ -26,6 +26,7 @@ import {
   clearRealityRouteActivationSourceContext,
 } from "../services/realityRouteActivationSourceContext";
 import { bridgeGenesisProductionRuntimeToVisualCalibration } from "../services/genesisProductionVisualCalibrationBridge";
+import { calibrateGenesisFourSymbolDirectionField } from "../services/genesisFourSymbolDirectionFieldVisualCalibration";
 import { resolveRealGenesisVisualConsumerSource } from "../services/realGenesisVisualConsumerSource";
 import { calibrateGenesisTimeDeliveryResponse } from "../services/genesisTimeDeliveryResponseCalibration";
 import { GENESIS_COORDINATE_SEEKING_VISUAL_SETTLE_MS } from "../services/genesisTwentyEightMansionVisualLayerCalibration";
@@ -152,6 +153,21 @@ export function GenesisProductionExperiencePage({
       : null,
     [productionRuntimeResult],
   );
+  const directionFieldCalibrationResult = useMemo(
+    () =>
+      consumerSourceResult?.status === "READY" &&
+      visualCalibrationResult?.status === "READY"
+        ? calibrateGenesisFourSymbolDirectionField({
+            lifeDirectionProjection:
+              consumerSourceResult.consumerSource.projectionBundle
+                .fourSymbolLifeDirectionProjection,
+            activeVisualLayer:
+              visualCalibrationResult.bundle.genesisVisualRealization
+                .activeVisualLayer,
+          })
+        : null,
+    [consumerSourceResult, visualCalibrationResult],
+  );
   const [recognitionRealityResult, setRecognitionRealityResult] =
     useState<GenesisProductionRecognitionRealityResult | null>(null);
   const presenceRecognitionPhase: GenesisPresenceRecognitionPhase =
@@ -229,6 +245,31 @@ export function GenesisProductionExperiencePage({
     });
     if (seekingResult.status === "READY") {
       setManifestationExperienceResult(seekingResult);
+    }
+  }, [
+    lifeForceManifestationBridge,
+    manifestationExperienceResult,
+    productionRuntimeResult,
+  ]);
+
+  useEffect(() => {
+    if (
+      productionRuntimeResult?.status !== "READY" ||
+      productionRuntimeResult.session.currentStage !== "HEXAGRAM_IMPRINT" ||
+      manifestationExperienceResult?.status !== "READY" ||
+      manifestationExperienceResult.session.currentState !==
+        "COORDINATE_FOUND"
+    ) {
+      return;
+    }
+    const directionResult = advanceGenesisManifestationExperienceState({
+      session: manifestationExperienceResult.session,
+      runtimeSession: productionRuntimeResult.session,
+      lifeForceManifestationBridge,
+      trigger: "AUTO_ADVANCE",
+    });
+    if (directionResult.status === "READY") {
+      setManifestationExperienceResult(directionResult);
     }
   }, [
     lifeForceManifestationBridge,
@@ -385,11 +426,15 @@ export function GenesisProductionExperiencePage({
     timelineOrchestrationResult.status !== "READY" ||
     visualCalibrationResult === null ||
     visualCalibrationResult.status !== "READY" ||
+    directionFieldCalibrationResult === null ||
+    directionFieldCalibrationResult.status !== "AVAILABLE" ||
     consumerSourceResult.consumerSource.sourceReferenceId !==
       routeAuthorization.sourceReferenceId ||
     visualCalibrationResult.bundle.sourceReferenceId !==
       routeAuthorization.sourceReferenceId ||
     manifestationExperienceResult.session.sourceReferenceId !==
+      routeAuthorization.sourceReferenceId ||
+    directionFieldCalibrationResult.calibration.sourceReferenceId !==
       routeAuthorization.sourceReferenceId
   ) {
     return (
@@ -426,6 +471,9 @@ export function GenesisProductionExperiencePage({
       data-genesis-manifestation-experience-state={
         manifestationExperienceResult.session.currentState
       }
+      data-genesis-direction-field-phase={
+        directionFieldCalibrationResult.calibration.phase
+      }
       data-genesis-presence-visual-state={
         presenceVisualRealizationResult?.status === "READY"
           ? presenceVisualRealizationResult.realization.visualPresenceState
@@ -436,6 +484,9 @@ export function GenesisProductionExperiencePage({
         routeAuthorization={routeAuthorization}
         consumerSourceResult={consumerSourceResult}
         visualCalibrationBundle={visualCalibrationResult.bundle}
+        fourSymbolDirectionFieldVisualCalibration={
+          directionFieldCalibrationResult.calibration
+        }
         onStateChange={setCanvasHostState}
       />
       {manifestationExperienceResult.session.currentState === "DORMANT" ? (
@@ -464,6 +515,13 @@ export function GenesisProductionExperiencePage({
             "COORDINATE_FOUND" ? (
             <span>你的时间找到了位置。</span>
           ) : null}
+        </p>
+      ) : null}
+      {manifestationExperienceResult.session.currentState ===
+        "DIRECTION_AWAKENING" &&
+      directionFieldCalibrationResult.calibration.phase === "AWAKENING" ? (
+        <p className="gy-genesis-production-experience__time-response" role="status">
+          {directionFieldCalibrationResult.calibration.responseMessage}
         </p>
       ) : null}
       {presenceVisualRealizationResult?.status === "READY" &&

@@ -27,6 +27,7 @@ import { calibrateGenesisTwentyEightMansionVisualLayer } from "../services/genes
 import type { GenesisTimeSequenceRecognitionProjection } from "../types/genesisTimeSequenceRecognitionProjection";
 import type { GenesisBirthMansionIgnitionProjection } from "../types/genesisBirthMansionIgnitionProjection";
 import type { GenesisFourSymbolAlignmentProjection } from "../types/genesisFourSymbolAlignmentProjection";
+import type { GenesisFourSymbolDirectionFieldVisualCalibration } from "../types/genesisFourSymbolDirectionFieldVisualCalibration";
 import type { GenesisLifeForceInfusionProjection } from "../types/genesisLifeForceInfusionProjection";
 import type { GenesisPersonalRevealProjection } from "../types/genesisPersonalRevealProjection";
 import type { GenesisRealityPressureProjection } from "../types/genesisRealityPressureProjection";
@@ -104,6 +105,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
   genesisPresenceRecognitionCalibration: GenesisPresenceRecognitionCalibrationCore | null = null,
   genesisSpatialDistanceCalibration: GenesisSpatialDistanceCalibrationCore | null = null,
   twentyEightMansionCoordinateProjection: GenesisTwentyEightMansionCoordinateProjection | null = null,
+  fourSymbolDirectionFieldVisualCalibration: GenesisFourSymbolDirectionFieldVisualCalibration | null = null,
 ): GenesisWebGLRendererCoreSceneProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
@@ -166,6 +168,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
       mansionCoordinateVisualLayerResult.status === "AVAILABLE"
         ? mansionCoordinateVisualLayerResult.calibration
         : null,
+    fourSymbolDirectionFieldVisualCalibration,
     formField: Object.freeze({
       hue: 0.08 + fieldUnit * 0.52,
       boundaryScale: lifePresence.morphologicalField.fieldScale,
@@ -337,6 +340,7 @@ export function createGenesisWebGLRendererCore(
     input.genesisPresenceRecognitionCalibration ?? null,
     input.genesisSpatialDistanceCalibration ?? null,
     mansionCoordinateProjection,
+    input.fourSymbolDirectionFieldVisualCalibration ?? null,
   );
   if (input.reducedMotion) {
     return fallback(sceneProjection, "REDUCED_MOTION_REQUESTED");
@@ -745,6 +749,61 @@ export function createGenesisWebGLRendererCore(
       );
     }
     root.add(mansionCoordinateGroup);
+  }
+
+  const directionFieldCalibration =
+    sceneProjection.fourSymbolDirectionFieldVisualCalibration;
+  const directionFieldExpression =
+    directionFieldCalibration?.directionFieldExpression ?? null;
+  const directionFieldGroup = new Group();
+  let directionFieldMaterial: LineBasicMaterial | null = null;
+  if (
+    directionFieldCalibration !== null &&
+    directionFieldCalibration.phase !== "HIDDEN" &&
+    directionFieldExpression !== null
+  ) {
+    const axisX = directionFieldExpression.axisX;
+    const axisY = directionFieldExpression.axisY;
+    const perpendicularX = -axisY;
+    const perpendicularY = axisX;
+    const positions = new Float32Array(
+      directionFieldExpression.lineCount * 2 * 3,
+    );
+    for (
+      let index = 0;
+      index < directionFieldExpression.lineCount;
+      index += 1
+    ) {
+      const normalizedOffset =
+        index / (directionFieldExpression.lineCount - 1) - 0.5;
+      const offset =
+        normalizedOffset * directionFieldExpression.parallelSpread * 2;
+      const start = index * 6;
+      positions[start] = perpendicularX * offset - axisX * 0.42;
+      positions[start + 1] = perpendicularY * offset - axisY * 0.42;
+      positions[start + 2] = -0.72;
+      positions[start + 3] =
+        perpendicularX * offset + axisX * directionFieldExpression.fieldReach;
+      positions[start + 4] =
+        perpendicularY * offset + axisY * directionFieldExpression.fieldReach;
+      positions[start + 5] = -0.72;
+    }
+    const geometry = new BufferGeometry();
+    geometry.setAttribute(
+      "position",
+      new Float32BufferAttribute(positions, 3),
+    );
+    directionFieldMaterial = new LineBasicMaterial({
+      color: new Color(0x9ebee4),
+      transparent: true,
+      opacity: directionFieldExpression.lineOpacity,
+      blending: AdditiveBlending,
+      depthWrite: false,
+    });
+    directionFieldGroup.add(
+      new LineSegments(geometry, directionFieldMaterial),
+    );
+    root.add(directionFieldGroup);
   }
 
   const lifePresence = sceneProjection.lifePresence;
@@ -1364,6 +1423,29 @@ export function createGenesisWebGLRendererCore(
           birthRevealProgress *
           (0.94 + Math.sin(birthPhase) * 0.06);
       }
+      if (
+        directionFieldExpression !== null &&
+        directionFieldMaterial !== null
+      ) {
+        const directionPhase =
+          (elapsedSeconds /
+            directionFieldExpression.breathingPeriodSeconds) *
+          Math.PI *
+          2;
+        const responseBreath =
+          1 +
+          Math.sin(directionPhase) *
+            directionFieldExpression.breathingAmplitude;
+        const directionalDrift =
+          directionFieldExpression.driftDistance *
+          (0.5 + Math.sin(directionPhase * 0.72) * 0.5);
+        directionFieldGroup.position.x =
+          directionFieldExpression.axisX * directionalDrift;
+        directionFieldGroup.position.y =
+          directionFieldExpression.axisY * directionalDrift;
+        directionFieldMaterial.opacity =
+          directionFieldExpression.lineOpacity * responseBreath;
+      }
       const presenceRotation = isCompletion
         ? 0.004 *
           (1 - perspectiveCompletionStillness * 0.78 - recognitionStillness * 0.06)
@@ -1439,6 +1521,19 @@ export function createGenesisWebGLRendererCore(
         cosmicFieldOpacity *= 1.04;
       }
       if (isHexagramImprint) {
+        if (directionFieldExpression !== null) {
+          const fieldPulse =
+            Math.sin(
+              (elapsedSeconds /
+                directionFieldExpression.breathingPeriodSeconds) *
+                Math.PI *
+                2,
+            ) * directionFieldExpression.driftDistance;
+          cosmicField.position.x =
+            directionFieldExpression.axisX * fieldPulse;
+          cosmicField.position.y =
+            directionFieldExpression.axisY * fieldPulse;
+        }
         cosmicField.rotation.z += elapsedSeconds * 0.0018;
         cosmicFieldScale *= 0.99 + Math.sin(elapsedSeconds * 0.18) * 0.014;
         cosmicFieldOpacity *= 0.92 + realizationProgress * 0.08;

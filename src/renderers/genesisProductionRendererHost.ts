@@ -119,6 +119,8 @@ export function createGenesisProductionRendererHost(
   const projectionBundle = consumerSource.projectionBundle;
   const mansionCoordinateProjection =
     projectionBundle.twentyEightMansionCoordinateProjection;
+  const directionFieldCalibration =
+    input.fourSymbolDirectionFieldVisualCalibration ?? null;
   if (
     mansionCoordinateProjection.sourceKind !== "REAL_ENGINE_RESULT" ||
     mansionCoordinateProjection.sourceReferenceId !==
@@ -128,6 +130,23 @@ export function createGenesisProductionRendererHost(
     mansionCoordinateProjection.noFallback !== true
   ) {
     return blocked("MANSION_COORDINATE_SOURCE_INVALID");
+  }
+  if (
+    directionFieldCalibration === null ||
+    directionFieldCalibration.semanticRole !==
+      "GENESIS_FOUR_SYMBOL_DIRECTION_FIELD_VISUAL_CALIBRATION" ||
+    directionFieldCalibration.sourceReferenceId !==
+      consumerSource.sourceReferenceId ||
+    directionFieldCalibration.mansionCoordinateReferenceId !==
+      mansionCoordinateProjection.birthMansion.coordinateReferenceId ||
+    directionFieldCalibration.provenance.sourceKind !== "REAL_ENGINE_RESULT" ||
+    directionFieldCalibration.existingDirectionProjectionOnly !== true ||
+    directionFieldCalibration.noFourSymbolCalculation !== true ||
+    directionFieldCalibration.noAnimalGeometry !== true ||
+    directionFieldCalibration.noArchetypeInference !== true ||
+    directionFieldCalibration.noStarBeastAmplification !== true
+  ) {
+    return blocked("DIRECTION_FIELD_CALIBRATION_INVALID");
   }
   const coreResult = createGenesisWebGLRendererCore({
     canvas: input.canvas,
@@ -144,6 +163,7 @@ export function createGenesisProductionRendererHost(
       projectionBundle.birthMansionIgnitionProjection,
     morphologicalFieldAlignmentProjection:
       projectionBundle.morphologicalFieldAlignmentProjection,
+    fourSymbolDirectionFieldVisualCalibration: directionFieldCalibration,
     lifeForceInfusionProjection:
       projectionBundle.lifeForceInfusionProjection,
     personalRevealProjection: projectionBundle.personalRevealProjection,

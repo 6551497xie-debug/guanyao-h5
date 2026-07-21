@@ -119,6 +119,7 @@ try {
       `export * from ${JSON.stringify(path.join(rootDir, "src/services/launchLifeVisualSourceResolver.ts"))};`,
       `export * from ${JSON.stringify(path.join(rootDir, "src/services/realUserGenesisVisualSourceContext.ts"))};`,
       `export * from ${JSON.stringify(path.join(rootDir, "src/services/genesisVisualConsumerSourceResolver.ts"))};`,
+      `export * from ${JSON.stringify(path.join(rootDir, "src/services/genesisFourSymbolDirectionFieldVisualCalibration.ts"))};`,
       `export * from ${JSON.stringify(path.join(rootDir, "src/renderers/genesisProductionRendererHost.ts"))};`,
     ].join("\n"),
   );
@@ -195,6 +196,18 @@ try {
     fixtureCaseIndex: 0,
   });
   assertEqual("real consumer source is ready", realSource.status, "READY");
+  const directionFieldCalibrationResult =
+    runtime.calibrateGenesisFourSymbolDirectionField({
+      lifeDirectionProjection:
+        realSource.consumerSource.projectionBundle
+          .fourSymbolLifeDirectionProjection,
+      activeVisualLayer: "MOON_ORIGIN",
+    });
+  assertEqual(
+    "real direction field calibration is available",
+    directionFieldCalibrationResult.status,
+    "AVAILABLE",
+  );
 
   const authorization = Object.freeze({
     ...pendingAuthorization,
@@ -234,6 +247,8 @@ try {
     ...baseHostInput,
     authorization,
     consumerSourceResult: realSource,
+    fourSymbolDirectionFieldVisualCalibration:
+      directionFieldCalibrationResult.calibration,
   });
   assertEqual("real source reaches renderer host", hostResult.status, "FALLBACK_REQUIRED");
   assertEqual("host provenance remains real", hostResult.sourceProvenance, "REAL_USER_SESSION");

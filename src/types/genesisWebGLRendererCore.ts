@@ -1,5 +1,6 @@
 import type { GenesisBirthMansionIgnitionProjection } from "./genesisBirthMansionIgnitionProjection";
 import type { GenesisFourSymbolAlignmentProjection } from "./genesisFourSymbolAlignmentProjection";
+import type { GenesisFourSymbolDirectionFieldVisualCalibration } from "./genesisFourSymbolDirectionFieldVisualCalibration";
 import type { GenesisLifeForceInfusionProjection } from "./genesisLifeForceInfusionProjection";
 import type { GenesisPersonalRevealProjection } from "./genesisPersonalRevealProjection";
 import type { GenesisRealityPressureProjection } from "./genesisRealityPressureProjection";
@@ -47,6 +48,7 @@ export type GenesisWebGLRendererCoreSceneProjection = Readonly<{
   timeSequenceRecognition: GenesisTimeSequenceRecognitionProjection | null;
   birthMansionIgnition: GenesisBirthMansionIgnitionProjection | null;
   morphologicalFieldAlignment: GenesisFourSymbolAlignmentProjection | null;
+  fourSymbolDirectionFieldVisualCalibration: GenesisFourSymbolDirectionFieldVisualCalibration | null;
   lifeForceInfusion: GenesisLifeForceInfusionProjection | null;
   personalReveal: GenesisPersonalRevealProjection | null;
   realityPressure: GenesisRealityPressureProjection | null;
@@ -88,6 +90,7 @@ export type GenesisWebGLRendererCoreInput = Readonly<{
   timeSequenceRecognitionProjection?: GenesisTimeSequenceRecognitionProjection | null;
   birthMansionIgnitionProjection?: GenesisBirthMansionIgnitionProjection | null;
   morphologicalFieldAlignmentProjection?: GenesisFourSymbolAlignmentProjection | null;
+  fourSymbolDirectionFieldVisualCalibration?: GenesisFourSymbolDirectionFieldVisualCalibration | null;
   lifeForceInfusionProjection?: GenesisLifeForceInfusionProjection | null;
   personalRevealProjection?: GenesisPersonalRevealProjection | null;
   realityPressureProjection?: GenesisRealityPressureProjection | null;
