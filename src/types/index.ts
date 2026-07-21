@@ -253,6 +253,14 @@ export type {
   GenesisTwentyEightMansionCoordinateSlot,
 } from "./genesisTwentyEightMansionCoordinateProjection";
 export type {
+  GenesisTwentyEightMansionVisualCoordinate,
+  GenesisTwentyEightMansionVisualLayerCalibration,
+  GenesisTwentyEightMansionVisualLayerCalibrationBoundary,
+  GenesisTwentyEightMansionVisualLayerCalibrationInput,
+  GenesisTwentyEightMansionVisualLayerCalibrationResult,
+  GenesisTwentyEightMansionVisualLayerVisibility,
+} from "./genesisTwentyEightMansionVisualLayerCalibration";
+export type {
   LaunchLifeSourceSession,
   LaunchLifeSourceSessionBlockedReason,
   LaunchLifeSourceSessionBoundary,

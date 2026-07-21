@@ -14,6 +14,7 @@ import type {
   GenesisTwentyEightMansionCoordinateProjection,
   GenesisTwentyEightMansionCoordinateSlot,
 } from "./genesisTwentyEightMansionCoordinateProjection";
+import type { GenesisTwentyEightMansionVisualLayerCalibration } from "./genesisTwentyEightMansionVisualLayerCalibration";
 import type { PersonalStarBeastLifePresenceProjection } from "./personalStarBeastLifePresenceProjection";
 import type { PersonalStarBeastLifeStarCoreProjection } from "./personalStarBeastLifeStarCoreProjection";
 import type { PersonalStarBeastRenderPlan } from "./personalStarBeastRenderPlan";
@@ -40,6 +41,7 @@ export type GenesisWebGLRendererCoreSceneProjection = Readonly<{
     noMansionName: true;
     noIdentityCalculation: true;
   }> | null;
+  mansionCoordinateVisualLayer: GenesisTwentyEightMansionVisualLayerCalibration | null;
   lifePresence: PersonalStarBeastLifePresenceProjection;
   lifeStarCore: PersonalStarBeastLifeStarCoreProjection;
   timeSequenceRecognition: GenesisTimeSequenceRecognitionProjection | null;

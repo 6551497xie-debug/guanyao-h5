@@ -23,6 +23,7 @@ import {
 import { createIsolatedWebGLPrototypeRenderPlanReference } from "../services/isolatedWebGLPrototypeRenderPlanReference";
 import { projectPersonalStarBeastRenderPlanToLifePresence } from "../services/personalStarBeastLifePresenceProjection";
 import { projectLifePresenceToLifeStarCore } from "../services/personalStarBeastLifeStarCoreProjection";
+import { calibrateGenesisTwentyEightMansionVisualLayer } from "../services/genesisTwentyEightMansionVisualLayerCalibration";
 import type { GenesisTimeSequenceRecognitionProjection } from "../types/genesisTimeSequenceRecognitionProjection";
 import type { GenesisBirthMansionIgnitionProjection } from "../types/genesisBirthMansionIgnitionProjection";
 import type { GenesisFourSymbolAlignmentProjection } from "../types/genesisFourSymbolAlignmentProjection";
@@ -116,6 +117,14 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
     realityPressure,
   );
   const lifeStarCore = projectLifePresenceToLifeStarCore(lifePresence);
+  const mansionCoordinateVisualLayerResult =
+    calibrateGenesisTwentyEightMansionVisualLayer(
+      Object.freeze({
+        coordinateProjection: twentyEightMansionCoordinateProjection,
+        activeVisualLayer:
+          genesisVisualRealization?.activeVisualLayer ?? null,
+      }),
+    );
   const structureUnit = referenceUnit(
     plan.spatialExpression.structureDensity.referenceId,
   );
@@ -153,6 +162,10 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
             noMansionName: true as const,
             noIdentityCalculation: true as const,
           }),
+    mansionCoordinateVisualLayer:
+      mansionCoordinateVisualLayerResult.status === "AVAILABLE"
+        ? mansionCoordinateVisualLayerResult.calibration
+        : null,
     formField: Object.freeze({
       hue: 0.08 + fieldUnit * 0.52,
       boundaryScale: lifePresence.morphologicalField.fieldScale,
@@ -578,6 +591,80 @@ export function createGenesisWebGLRendererCore(
   const cosmicPointMaterial = cosmicField.material as PointsMaterial;
   cosmicField.position.z = -(spatialDepthScale - 0.78) * 0.18;
   root.add(cosmicField);
+
+  const mansionCoordinateVisualLayer =
+    sceneProjection.mansionCoordinateVisualLayer;
+  const mansionCoordinateGroup = new Group();
+  let birthMansionPointMaterial: PointsMaterial | null = null;
+  if (
+    mansionCoordinateVisualLayer !== null &&
+    mansionCoordinateVisualLayer.visibility !== "HIDDEN"
+  ) {
+    const birthCoordinateRevealed =
+      mansionCoordinateVisualLayer.visibility ===
+      "BIRTH_MANSION_COORDINATE_REVEALED";
+    const neutralCoordinates = birthCoordinateRevealed
+      ? mansionCoordinateVisualLayer.coordinates.filter(
+          (coordinate) =>
+            coordinate.visualRole === "MANSION_COORDINATE",
+        )
+      : mansionCoordinateVisualLayer.coordinates;
+    const neutralPositions = new Float32Array(neutralCoordinates.length * 3);
+    neutralCoordinates.forEach((coordinate, index) => {
+      const offset = index * 3;
+      neutralPositions[offset] = coordinate.x;
+      neutralPositions[offset + 1] = coordinate.y;
+      neutralPositions[offset + 2] = coordinate.z;
+    });
+    const neutralGeometry = new BufferGeometry();
+    neutralGeometry.setAttribute(
+      "position",
+      new Float32BufferAttribute(neutralPositions, 3),
+    );
+    mansionCoordinateGroup.add(
+      new Points(
+        neutralGeometry,
+        new PointsMaterial({
+          color: new Color(0xb9cbec),
+          size:
+            mansionCoordinateVisualLayer.fieldExpression.neutralPointSize,
+          sizeAttenuation: true,
+          transparent: true,
+          opacity:
+            mansionCoordinateVisualLayer.fieldExpression.neutralOpacity,
+          blending: AdditiveBlending,
+          depthWrite: false,
+        }),
+      ),
+    );
+
+    if (birthCoordinateRevealed) {
+      const birthCoordinate = mansionCoordinateVisualLayer.birthCoordinate;
+      const birthGeometry = new BufferGeometry();
+      birthGeometry.setAttribute(
+        "position",
+        new Float32BufferAttribute(
+          [birthCoordinate.x, birthCoordinate.y, birthCoordinate.z],
+          3,
+        ),
+      );
+      birthMansionPointMaterial = new PointsMaterial({
+        color: new Color(0xe7d4a1),
+        size:
+          mansionCoordinateVisualLayer.birthCoordinateExpression.pointSize,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity:
+          mansionCoordinateVisualLayer.birthCoordinateExpression.opacity,
+        blending: AdditiveBlending,
+        depthWrite: false,
+      });
+      mansionCoordinateGroup.add(
+        new Points(birthGeometry, birthMansionPointMaterial),
+      );
+    }
+    root.add(mansionCoordinateGroup);
+  }
 
   const lifePresence = sceneProjection.lifePresence;
   const lifeStarCore = sceneProjection.lifeStarCore;
@@ -1104,6 +1191,23 @@ export function createGenesisWebGLRendererCore(
         (Number.isFinite(elapsedMilliseconds)
           ? Math.max(0, elapsedMilliseconds)
           : 0) / 1000;
+      if (
+        birthMansionPointMaterial !== null &&
+        mansionCoordinateVisualLayer !== null
+      ) {
+        const birthExpression =
+          mansionCoordinateVisualLayer.birthCoordinateExpression;
+        const birthPhase =
+          (elapsedSeconds / birthExpression.breathingPeriodSeconds) *
+          Math.PI *
+          2;
+        const birthBreath =
+          1 + Math.sin(birthPhase) * birthExpression.breathingAmplitude;
+        birthMansionPointMaterial.size =
+          birthExpression.pointSize * birthBreath;
+        birthMansionPointMaterial.opacity =
+          birthExpression.opacity * (0.94 + Math.sin(birthPhase) * 0.06);
+      }
       const presenceRotation = isCompletion
         ? 0.004 *
           (1 - perspectiveCompletionStillness * 0.78 - recognitionStillness * 0.06)
