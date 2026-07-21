@@ -29,6 +29,7 @@ import type { GenesisBirthMansionIgnitionProjection } from "../types/genesisBirt
 import type { GenesisFourSymbolAlignmentProjection } from "../types/genesisFourSymbolAlignmentProjection";
 import type { GenesisFourSymbolDirectionFieldVisualCalibration } from "../types/genesisFourSymbolDirectionFieldVisualCalibration";
 import type { GenesisLifeForceInfusionProjection } from "../types/genesisLifeForceInfusionProjection";
+import type { GenesisLifeArchetypeForceCondensationVisualCalibration } from "../types/genesisLifeArchetypeForceCondensationVisualCalibration";
 import type { GenesisPersonalRevealProjection } from "../types/genesisPersonalRevealProjection";
 import type { GenesisRealityPressureProjection } from "../types/genesisRealityPressureProjection";
 import type { GenesisTwentyEightMansionCoordinateProjection } from "../types/genesisTwentyEightMansionCoordinateProjection";
@@ -106,6 +107,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
   genesisSpatialDistanceCalibration: GenesisSpatialDistanceCalibrationCore | null = null,
   twentyEightMansionCoordinateProjection: GenesisTwentyEightMansionCoordinateProjection | null = null,
   fourSymbolDirectionFieldVisualCalibration: GenesisFourSymbolDirectionFieldVisualCalibration | null = null,
+  lifeArchetypeForceCondensationVisualCalibration: GenesisLifeArchetypeForceCondensationVisualCalibration | null = null,
 ): GenesisWebGLRendererCoreSceneProjection {
   const planReference =
     createIsolatedWebGLPrototypeRenderPlanReference(plan);
@@ -169,6 +171,7 @@ export function projectPersonalStarBeastRenderPlanToWebGLScene(
         ? mansionCoordinateVisualLayerResult.calibration
         : null,
     fourSymbolDirectionFieldVisualCalibration,
+    lifeArchetypeForceCondensationVisualCalibration,
     formField: Object.freeze({
       hue: 0.08 + fieldUnit * 0.52,
       boundaryScale: lifePresence.morphologicalField.fieldScale,
@@ -341,6 +344,7 @@ export function createGenesisWebGLRendererCore(
     input.genesisSpatialDistanceCalibration ?? null,
     mansionCoordinateProjection,
     input.fourSymbolDirectionFieldVisualCalibration ?? null,
+    input.lifeArchetypeForceCondensationVisualCalibration ?? null,
   );
   if (input.reducedMotion) {
     return fallback(sceneProjection, "REDUCED_MOTION_REQUESTED");
@@ -804,6 +808,45 @@ export function createGenesisWebGLRendererCore(
       new LineSegments(geometry, directionFieldMaterial),
     );
     root.add(directionFieldGroup);
+  }
+
+  const archetypeForceCalibration =
+    sceneProjection.lifeArchetypeForceCondensationVisualCalibration;
+  const forceCondensationExpression =
+    archetypeForceCalibration?.forceCondensationExpression ?? null;
+  const forceCondensationGroup = new Group();
+  const forceCondensationMaterials: MeshBasicMaterial[] = [];
+  if (
+    archetypeForceCalibration !== null &&
+    archetypeForceCalibration.phase !== "HIDDEN" &&
+    forceCondensationExpression !== null
+  ) {
+    for (
+      let index = 0;
+      index < forceCondensationExpression.ringCount;
+      index += 1
+    ) {
+      const material = new MeshBasicMaterial({
+        color: new Color(0xd8c78f),
+        transparent: true,
+        opacity:
+          forceCondensationExpression.ringOpacity *
+          (1 - index * 0.16),
+        blending: AdditiveBlending,
+        depthWrite: false,
+      });
+      const ring = new Mesh(
+        new TorusGeometry(0.48 + index * 0.16, 0.006, 6, 96),
+        material,
+      );
+      ring.rotation.x =
+        forceCondensationExpression.axisTiltRadians + index * 0.08;
+      ring.rotation.y = index * 0.16;
+      forceCondensationMaterials.push(material);
+      forceCondensationGroup.add(ring);
+    }
+    forceCondensationGroup.position.z = -0.08;
+    root.add(forceCondensationGroup);
   }
 
   const lifePresence = sceneProjection.lifePresence;
@@ -1445,6 +1488,36 @@ export function createGenesisWebGLRendererCore(
           directionFieldExpression.axisY * directionalDrift;
         directionFieldMaterial.opacity =
           directionFieldExpression.lineOpacity * responseBreath;
+      }
+      if (
+        forceCondensationExpression !== null &&
+        forceCondensationMaterials.length > 0
+      ) {
+        const forcePhase =
+          (elapsedSeconds /
+            forceCondensationExpression.breathingPeriodSeconds) *
+          Math.PI *
+          2;
+        const forceBreath =
+          1 +
+          Math.sin(forcePhase) *
+            forceCondensationExpression.breathingAmplitude;
+        const radialScale =
+          (1 + forceCondensationExpression.radialBias) * forceBreath;
+        forceCondensationGroup.scale.set(
+          radialScale * forceCondensationExpression.formAspectRatio,
+          radialScale / forceCondensationExpression.formAspectRatio,
+          radialScale,
+        );
+        forceCondensationGroup.rotation.z =
+          elapsedSeconds * forceCondensationExpression.flowRotationSpeed;
+        forceCondensationMaterials.forEach((material, index) => {
+          material.opacity =
+            forceCondensationExpression.ringOpacity *
+            forceCondensationExpression.density *
+            (1 - index * 0.16) *
+            (0.9 + Math.sin(forcePhase + index * 0.72) * 0.1);
+        });
       }
       const presenceRotation = isCompletion
         ? 0.004 *

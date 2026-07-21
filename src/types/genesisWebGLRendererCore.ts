@@ -2,6 +2,7 @@ import type { GenesisBirthMansionIgnitionProjection } from "./genesisBirthMansio
 import type { GenesisFourSymbolAlignmentProjection } from "./genesisFourSymbolAlignmentProjection";
 import type { GenesisFourSymbolDirectionFieldVisualCalibration } from "./genesisFourSymbolDirectionFieldVisualCalibration";
 import type { GenesisLifeForceInfusionProjection } from "./genesisLifeForceInfusionProjection";
+import type { GenesisLifeArchetypeForceCondensationVisualCalibration } from "./genesisLifeArchetypeForceCondensationVisualCalibration";
 import type { GenesisPersonalRevealProjection } from "./genesisPersonalRevealProjection";
 import type { GenesisRealityPressureProjection } from "./genesisRealityPressureProjection";
 import type {
@@ -49,6 +50,7 @@ export type GenesisWebGLRendererCoreSceneProjection = Readonly<{
   birthMansionIgnition: GenesisBirthMansionIgnitionProjection | null;
   morphologicalFieldAlignment: GenesisFourSymbolAlignmentProjection | null;
   fourSymbolDirectionFieldVisualCalibration: GenesisFourSymbolDirectionFieldVisualCalibration | null;
+  lifeArchetypeForceCondensationVisualCalibration: GenesisLifeArchetypeForceCondensationVisualCalibration | null;
   lifeForceInfusion: GenesisLifeForceInfusionProjection | null;
   personalReveal: GenesisPersonalRevealProjection | null;
   realityPressure: GenesisRealityPressureProjection | null;
@@ -91,6 +93,7 @@ export type GenesisWebGLRendererCoreInput = Readonly<{
   birthMansionIgnitionProjection?: GenesisBirthMansionIgnitionProjection | null;
   morphologicalFieldAlignmentProjection?: GenesisFourSymbolAlignmentProjection | null;
   fourSymbolDirectionFieldVisualCalibration?: GenesisFourSymbolDirectionFieldVisualCalibration | null;
+  lifeArchetypeForceCondensationVisualCalibration?: GenesisLifeArchetypeForceCondensationVisualCalibration | null;
   lifeForceInfusionProjection?: GenesisLifeForceInfusionProjection | null;
   personalRevealProjection?: GenesisPersonalRevealProjection | null;
   realityPressureProjection?: GenesisRealityPressureProjection | null;

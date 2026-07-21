@@ -33,6 +33,7 @@ export function GenesisProductionRendererCanvasHost({
   consumerSourceResult,
   visualCalibrationBundle,
   fourSymbolDirectionFieldVisualCalibration,
+  lifeArchetypeForceCondensationVisualCalibration,
   onStateChange,
 }: GenesisProductionRendererCanvasHostProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -70,6 +71,7 @@ export function GenesisProductionRendererCanvasHost({
       genesisSpatialDistanceCalibration:
         visualCalibrationBundle.genesisSpatialDistanceCalibration,
       fourSymbolDirectionFieldVisualCalibration,
+      lifeArchetypeForceCondensationVisualCalibration,
     });
 
     if (rendererResult.status === "BLOCKED") {
@@ -106,7 +108,7 @@ export function GenesisProductionRendererCanvasHost({
       resizeObserver.disconnect();
       controller.dispose();
     };
-  }, [consumerSourceResult, fourSymbolDirectionFieldVisualCalibration, onStateChange, routeAuthorization, visualCalibrationBundle]);
+  }, [consumerSourceResult, fourSymbolDirectionFieldVisualCalibration, lifeArchetypeForceCondensationVisualCalibration, onStateChange, routeAuthorization, visualCalibrationBundle]);
 
   return (
     <canvas
@@ -122,6 +124,9 @@ export function GenesisProductionRendererCanvasHost({
       data-genesis-runtime-stage={visualCalibrationBundle.runtimeStage}
       data-genesis-direction-field-phase={
         fourSymbolDirectionFieldVisualCalibration.phase
+      }
+      data-genesis-archetype-force-phase={
+        lifeArchetypeForceCondensationVisualCalibration.phase
       }
       aria-hidden="true"
     />

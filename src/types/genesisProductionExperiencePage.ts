@@ -1,6 +1,7 @@
 import type { GenesisProductionRouteActivationAuthorization } from "./genesisProductionRouteAuthorization";
 import type { GenesisProductionVisualCalibrationBundle } from "./genesisProductionVisualCalibrationBridge";
 import type { GenesisFourSymbolDirectionFieldVisualCalibration } from "./genesisFourSymbolDirectionFieldVisualCalibration";
+import type { GenesisLifeArchetypeForceCondensationVisualCalibration } from "./genesisLifeArchetypeForceCondensationVisualCalibration";
 import type { GenesisVisualConsumerSourceResult } from "./genesisVisualConsumerSource";
 
 export type GenesisProductionCanvasHostState =
@@ -41,6 +42,7 @@ export type GenesisProductionRendererCanvasHostProps = Readonly<{
   >;
   visualCalibrationBundle: GenesisProductionVisualCalibrationBundle;
   fourSymbolDirectionFieldVisualCalibration: GenesisFourSymbolDirectionFieldVisualCalibration;
+  lifeArchetypeForceCondensationVisualCalibration: GenesisLifeArchetypeForceCondensationVisualCalibration;
   onStateChange?: (state: GenesisProductionCanvasHostState) => void;
 }>;
 

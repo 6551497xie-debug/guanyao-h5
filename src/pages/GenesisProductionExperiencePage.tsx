@@ -27,6 +27,7 @@ import {
 } from "../services/realityRouteActivationSourceContext";
 import { bridgeGenesisProductionRuntimeToVisualCalibration } from "../services/genesisProductionVisualCalibrationBridge";
 import { calibrateGenesisFourSymbolDirectionField } from "../services/genesisFourSymbolDirectionFieldVisualCalibration";
+import { calibrateGenesisLifeArchetypeForceCondensation } from "../services/genesisLifeArchetypeForceCondensationVisualCalibration";
 import { resolveRealGenesisVisualConsumerSource } from "../services/realGenesisVisualConsumerSource";
 import { calibrateGenesisTimeDeliveryResponse } from "../services/genesisTimeDeliveryResponseCalibration";
 import { GENESIS_COORDINATE_SEEKING_VISUAL_SETTLE_MS } from "../services/genesisTwentyEightMansionVisualLayerCalibration";
@@ -168,6 +169,28 @@ export function GenesisProductionExperiencePage({
         : null,
     [consumerSourceResult, visualCalibrationResult],
   );
+  const archetypeForceCalibrationResult = useMemo(
+    () =>
+      consumerSourceResult?.status === "READY" &&
+      visualCalibrationResult?.status === "READY" &&
+      directionFieldCalibrationResult?.status === "AVAILABLE"
+        ? calibrateGenesisLifeArchetypeForceCondensation({
+            lifeArchetypeProjection:
+              consumerSourceResult.consumerSource.projectionBundle
+                .lifeArchetypeProjection,
+            directionFieldCalibration:
+              directionFieldCalibrationResult.calibration,
+            activeVisualLayer:
+              visualCalibrationResult.bundle.genesisVisualRealization
+                .activeVisualLayer,
+          })
+        : null,
+    [
+      consumerSourceResult,
+      directionFieldCalibrationResult,
+      visualCalibrationResult,
+    ],
+  );
   const [recognitionRealityResult, setRecognitionRealityResult] =
     useState<GenesisProductionRecognitionRealityResult | null>(null);
   const presenceRecognitionPhase: GenesisPresenceRecognitionPhase =
@@ -245,6 +268,31 @@ export function GenesisProductionExperiencePage({
     });
     if (seekingResult.status === "READY") {
       setManifestationExperienceResult(seekingResult);
+    }
+  }, [
+    lifeForceManifestationBridge,
+    manifestationExperienceResult,
+    productionRuntimeResult,
+  ]);
+
+  useEffect(() => {
+    if (
+      productionRuntimeResult?.status !== "READY" ||
+      productionRuntimeResult.session.currentStage !== "LIFE_FORCE" ||
+      manifestationExperienceResult?.status !== "READY" ||
+      manifestationExperienceResult.session.currentState !==
+        "DIRECTION_AWAKENING"
+    ) {
+      return;
+    }
+    const forceResult = advanceGenesisManifestationExperienceState({
+      session: manifestationExperienceResult.session,
+      runtimeSession: productionRuntimeResult.session,
+      lifeForceManifestationBridge,
+      trigger: "AUTO_ADVANCE",
+    });
+    if (forceResult.status === "READY") {
+      setManifestationExperienceResult(forceResult);
     }
   }, [
     lifeForceManifestationBridge,
@@ -428,6 +476,8 @@ export function GenesisProductionExperiencePage({
     visualCalibrationResult.status !== "READY" ||
     directionFieldCalibrationResult === null ||
     directionFieldCalibrationResult.status !== "AVAILABLE" ||
+    archetypeForceCalibrationResult === null ||
+    archetypeForceCalibrationResult.status !== "AVAILABLE" ||
     consumerSourceResult.consumerSource.sourceReferenceId !==
       routeAuthorization.sourceReferenceId ||
     visualCalibrationResult.bundle.sourceReferenceId !==
@@ -435,6 +485,8 @@ export function GenesisProductionExperiencePage({
     manifestationExperienceResult.session.sourceReferenceId !==
       routeAuthorization.sourceReferenceId ||
     directionFieldCalibrationResult.calibration.sourceReferenceId !==
+      routeAuthorization.sourceReferenceId ||
+    archetypeForceCalibrationResult.calibration.sourceReferenceId !==
       routeAuthorization.sourceReferenceId
   ) {
     return (
@@ -474,6 +526,9 @@ export function GenesisProductionExperiencePage({
       data-genesis-direction-field-phase={
         directionFieldCalibrationResult.calibration.phase
       }
+      data-genesis-archetype-force-phase={
+        archetypeForceCalibrationResult.calibration.phase
+      }
       data-genesis-presence-visual-state={
         presenceVisualRealizationResult?.status === "READY"
           ? presenceVisualRealizationResult.realization.visualPresenceState
@@ -486,6 +541,9 @@ export function GenesisProductionExperiencePage({
         visualCalibrationBundle={visualCalibrationResult.bundle}
         fourSymbolDirectionFieldVisualCalibration={
           directionFieldCalibrationResult.calibration
+        }
+        lifeArchetypeForceCondensationVisualCalibration={
+          archetypeForceCalibrationResult.calibration
         }
         onStateChange={setCanvasHostState}
       />
@@ -522,6 +580,13 @@ export function GenesisProductionExperiencePage({
       directionFieldCalibrationResult.calibration.phase === "AWAKENING" ? (
         <p className="gy-genesis-production-experience__time-response" role="status">
           {directionFieldCalibrationResult.calibration.responseMessage}
+        </p>
+      ) : null}
+      {manifestationExperienceResult.session.currentState ===
+        "FORCE_CONDENSING" &&
+      archetypeForceCalibrationResult.calibration.phase === "CONDENSING" ? (
+        <p className="gy-genesis-production-experience__time-response" role="status">
+          {archetypeForceCalibrationResult.calibration.responseMessage}
         </p>
       ) : null}
       {presenceVisualRealizationResult?.status === "READY" &&

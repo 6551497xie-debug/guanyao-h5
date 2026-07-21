@@ -121,6 +121,8 @@ export function createGenesisProductionRendererHost(
     projectionBundle.twentyEightMansionCoordinateProjection;
   const directionFieldCalibration =
     input.fourSymbolDirectionFieldVisualCalibration ?? null;
+  const archetypeForceCalibration =
+    input.lifeArchetypeForceCondensationVisualCalibration ?? null;
   if (
     mansionCoordinateProjection.sourceKind !== "REAL_ENGINE_RESULT" ||
     mansionCoordinateProjection.sourceReferenceId !==
@@ -148,6 +150,26 @@ export function createGenesisProductionRendererHost(
   ) {
     return blocked("DIRECTION_FIELD_CALIBRATION_INVALID");
   }
+  if (
+    archetypeForceCalibration === null ||
+    archetypeForceCalibration.semanticRole !==
+      "GENESIS_LIFE_ARCHETYPE_FORCE_CONDENSATION_VISUAL_CALIBRATION" ||
+    archetypeForceCalibration.sourceReferenceId !==
+      consumerSource.sourceReferenceId ||
+    archetypeForceCalibration.directionSourceReferenceId !==
+      directionFieldCalibration.sourceReferenceId ||
+    archetypeForceCalibration.provenance.lifeArchetypeSource !==
+      "mother_code_profile" ||
+    archetypeForceCalibration.existingLifeArchetypeProjectionOnly !== true ||
+    archetypeForceCalibration.noLifeArchetypeCalculation !== true ||
+    archetypeForceCalibration.noMotherCodeCalculation !== true ||
+    archetypeForceCalibration.noPersonalityLabel !== true ||
+    archetypeForceCalibration.noArchetypeNameDisplay !== true ||
+    archetypeForceCalibration.noStarBeastGeneration !== true ||
+    archetypeForceCalibration.noStarBeastAmplification !== true
+  ) {
+    return blocked("ARCHETYPE_FORCE_CALIBRATION_INVALID");
+  }
   const coreResult = createGenesisWebGLRendererCore({
     canvas: input.canvas,
     renderPlan,
@@ -164,6 +186,8 @@ export function createGenesisProductionRendererHost(
     morphologicalFieldAlignmentProjection:
       projectionBundle.morphologicalFieldAlignmentProjection,
     fourSymbolDirectionFieldVisualCalibration: directionFieldCalibration,
+    lifeArchetypeForceCondensationVisualCalibration:
+      archetypeForceCalibration,
     lifeForceInfusionProjection:
       projectionBundle.lifeForceInfusionProjection,
     personalRevealProjection: projectionBundle.personalRevealProjection,

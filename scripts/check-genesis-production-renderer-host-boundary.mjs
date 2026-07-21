@@ -120,6 +120,7 @@ try {
       `export * from ${JSON.stringify(path.join(rootDir, "src/services/realUserGenesisVisualSourceContext.ts"))};`,
       `export * from ${JSON.stringify(path.join(rootDir, "src/services/genesisVisualConsumerSourceResolver.ts"))};`,
       `export * from ${JSON.stringify(path.join(rootDir, "src/services/genesisFourSymbolDirectionFieldVisualCalibration.ts"))};`,
+      `export * from ${JSON.stringify(path.join(rootDir, "src/services/genesisLifeArchetypeForceCondensationVisualCalibration.ts"))};`,
       `export * from ${JSON.stringify(path.join(rootDir, "src/renderers/genesisProductionRendererHost.ts"))};`,
     ].join("\n"),
   );
@@ -208,6 +209,18 @@ try {
     directionFieldCalibrationResult.status,
     "AVAILABLE",
   );
+  const archetypeForceCalibrationResult =
+    runtime.calibrateGenesisLifeArchetypeForceCondensation({
+      lifeArchetypeProjection:
+        realSource.consumerSource.projectionBundle.lifeArchetypeProjection,
+      directionFieldCalibration: directionFieldCalibrationResult.calibration,
+      activeVisualLayer: "MOON_ORIGIN",
+    });
+  assertEqual(
+    "real archetype force calibration is available",
+    archetypeForceCalibrationResult.status,
+    "AVAILABLE",
+  );
 
   const authorization = Object.freeze({
     ...pendingAuthorization,
@@ -249,6 +262,8 @@ try {
     consumerSourceResult: realSource,
     fourSymbolDirectionFieldVisualCalibration:
       directionFieldCalibrationResult.calibration,
+    lifeArchetypeForceCondensationVisualCalibration:
+      archetypeForceCalibrationResult.calibration,
   });
   assertEqual("real source reaches renderer host", hostResult.status, "FALLBACK_REQUIRED");
   assertEqual("host provenance remains real", hostResult.sourceProvenance, "REAL_USER_SESSION");
