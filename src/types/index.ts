@@ -997,6 +997,16 @@ export type {
   GenesisLifeArchetypeProjectionResult,
 } from "./genesisLifeArchetypeProjection";
 export type {
+  GenesisStarBeastManifestationSource,
+  GenesisStarBeastManifestationSourceBlockedReason,
+  GenesisStarBeastManifestationSourceBoundary,
+  GenesisStarBeastManifestationSourceInput,
+  GenesisStarBeastManifestationSourceProvenance,
+  GenesisStarBeastManifestationSourceResult,
+  GenesisStarBeastPresenceReference,
+  GenesisStarBeastPresenceState,
+} from "./genesisStarBeastManifestationSource";
+export type {
   GenesisLifeForceExpressionMode,
   GenesisLifeForceInfusionBlockedReason,
   GenesisLifeForceInfusionInput,

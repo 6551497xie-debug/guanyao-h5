@@ -16,6 +16,7 @@ import { projectGenesisBirthMansionIgnition } from "./genesisBirthMansionIgnitio
 import { projectGenesisFourSymbolAlignment } from "./genesisFourSymbolAlignmentProjection";
 import { projectGenesisFourSymbolLifeDirection } from "./genesisFourSymbolLifeDirectionProjection";
 import { projectGenesisLifeArchetype } from "./genesisLifeArchetypeProjection";
+import { resolveGenesisStarBeastManifestationSource } from "./genesisStarBeastManifestationSource";
 import { projectGenesisLifeForceInfusion } from "./genesisLifeForceInfusionProjection";
 import { projectGenesisPersonalReveal } from "./genesisPersonalRevealProjection";
 import { projectGenesisRealityPressure } from "./genesisRealityPressureProjection";
@@ -238,6 +239,21 @@ export function adaptRealLifeVisualSource(
     return blocked(input, "LIFE_ARCHETYPE_PROJECTION_FAILED");
   }
 
+  const starBeastManifestationSourceResult =
+    resolveGenesisStarBeastManifestationSource(
+      Object.freeze({
+        sourceReferenceId,
+        mansionCoordinateProjection: mansionCoordinateResult.projection,
+        fourSymbolDirectionProjection:
+          fourSymbolLifeDirectionResult.projection,
+        lifeArchetypeProjection: lifeArchetypeResult.projection,
+        starBeastIdentitySourceReference: identitySourceReference,
+      }),
+    );
+  if (starBeastManifestationSourceResult.status !== "AVAILABLE") {
+    return blocked(input, "STAR_BEAST_MANIFESTATION_SOURCE_FAILED");
+  }
+
   const sceneModel: PersonalStarBeastSceneModel = Object.freeze({
     semanticRole: "PERSONAL_STAR_BEAST_RENDERER_NEUTRAL_SCENE_MODEL",
     sourceIdentityReference: identityReference,
@@ -415,6 +431,8 @@ export function adaptRealLifeVisualSource(
         fourSymbolLifeDirectionProjection:
           fourSymbolLifeDirectionResult.projection,
         lifeArchetypeProjection: lifeArchetypeResult.projection,
+        starBeastManifestationSource:
+          starBeastManifestationSourceResult.source,
         timeSequenceRecognitionProjection: timeSequenceResult.projection,
         birthMansionIgnitionProjection: birthMansionResult.projection,
         morphologicalFieldAlignmentProjection: fourSymbolResult.projection,
