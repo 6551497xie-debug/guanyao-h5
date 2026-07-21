@@ -997,6 +997,15 @@ export type {
   GenesisLifeArchetypeProjectionResult,
 } from "./genesisLifeArchetypeProjection";
 export type {
+  GenesisLifeForceManifestationBridge,
+  GenesisLifeForceManifestationBridgeBlockedReason,
+  GenesisLifeForceManifestationBridgeBoundary,
+  GenesisLifeForceManifestationBridgeInput,
+  GenesisLifeForceManifestationBridgePath,
+  GenesisLifeForceManifestationBridgeProvenance,
+  GenesisLifeForceManifestationBridgeResult,
+} from "./genesisLifeForceManifestationBridge";
+export type {
   GenesisStarBeastManifestationSource,
   GenesisStarBeastManifestationSourceBlockedReason,
   GenesisStarBeastManifestationSourceBoundary,
