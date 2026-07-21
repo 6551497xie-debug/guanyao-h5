@@ -11,6 +11,7 @@ import { bridgeRealityRouteCandidateRequestContext } from "../services/realityRo
 import { bridgeRealityRouteDeliveryOrchestration } from "../services/realityRouteDeliveryOrchestrationBridge";
 import { resolveRealityProductionPressureHostInput } from "../services/realityProductionPressureHostInputContract";
 import { createRealityPressureSeedContinuationContext } from "../services/realityPressureSeedContinuationContext";
+import { readGenesisRealityPresenceContinuityContext } from "../services/genesisRealityPresenceContinuityBridge";
 import type { RealityProductionRouteEntryBoundary } from "../types/realityProductionRouteEntry";
 
 export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
@@ -23,6 +24,7 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
     pressureCandidateRequestContextRequired: true,
     pressureDeliveryOrchestrationRequired: true,
     pressureSeedContinuationContextRequired: true,
+    genesisPresenceContinuityContextRequired: true,
     routeAuthorizationRequired: true,
     sourceNotReadyRecoveryRequired: true,
     sourceReferenceExcludedFromUrl: true,
@@ -39,6 +41,7 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
     noStorageRead: true,
     noStorageWrite: true,
     noGenesisNavigationMutation: true,
+    noPresenceMutation: true,
   });
 
 export function RealityProductionRouteEntry() {
@@ -46,6 +49,8 @@ export function RealityProductionRouteEntry() {
   const entryContext = readGenesisProductionRealityEntryContext();
   const activationSourceContext =
     readRealityRouteActivationSourceContext();
+  const genesisPresenceContinuityContext =
+    readGenesisRealityPresenceContinuityContext();
   const authorization = authorizeRealityProductionRoute({
     routeTarget: REALITY_PRODUCTION_ROUTE_TARGET,
     sourceReferenceId: entryContext?.sourceReferenceId ?? null,
@@ -100,7 +105,12 @@ export function RealityProductionRouteEntry() {
     pressureHostInputResult?.status !== "READY" ||
     pressureSeedContinuationResult?.status !== "READY" ||
     pressureSeedContinuationResult.context.phase !==
-      "READY_FOR_CONSUMER_INITIALIZATION"
+      "READY_FOR_CONSUMER_INITIALIZATION" ||
+    genesisPresenceContinuityContext === null ||
+    genesisPresenceContinuityContext.sourceReferenceId !==
+      authorization.sourceReferenceId ||
+    genesisPresenceContinuityContext.bridge.continuityState !==
+      "CARRIED_TO_REALITY"
   ) {
     return (
       <main
@@ -127,7 +137,12 @@ export function RealityProductionRouteEntry() {
             : pressureSeedContinuationResult?.status !== "READY"
             ? pressureSeedContinuationResult?.reason ??
               "PRESSURE_SEED_CONTINUATION_NOT_READY"
-            : null
+            : genesisPresenceContinuityContext === null
+            ? "GENESIS_PRESENCE_CONTINUITY_NOT_AVAILABLE"
+            : genesisPresenceContinuityContext.sourceReferenceId !==
+                authorization.sourceReferenceId
+              ? "GENESIS_PRESENCE_CONTINUITY_SOURCE_MISMATCH"
+              : "GENESIS_PRESENCE_CONTINUITY_NOT_READY"
         }
       >
         <p role="status">SOURCE_NOT_READY</p>
@@ -146,6 +161,7 @@ export function RealityProductionRouteEntry() {
       routeAuthorization={authorization}
       pressureSeedHostInput={pressureHostInputResult.input}
       pressureSeedContinuationContext={pressureSeedContinuationResult.context}
+      genesisPresenceContinuityContext={genesisPresenceContinuityContext}
     />
   );
 }

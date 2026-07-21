@@ -72,6 +72,7 @@ export function RealityProductionHost({
   routeAuthorization,
   pressureSeedHostInput,
   pressureSeedContinuationContext,
+  genesisPresenceContinuityContext,
 }: RealityProductionHostProps) {
   const sourceContext = routeAuthorization.sourceContext;
   const [pressureHostState, setPressureHostState] =
@@ -256,6 +257,12 @@ export function RealityProductionHost({
       data-source-experience-mode={sourceContext.sourceExperienceMode}
       data-source-provenance={sourceContext.sourceProvenance}
       data-source-reference-id={sourceContext.sourceReferenceId}
+      data-genesis-presence-continuity={
+        genesisPresenceContinuityContext.bridge.continuityState
+      }
+      data-genesis-presence-arrival={
+        genesisPresenceContinuityContext.bridge.arrivalState
+      }
       data-pressure-runtime="V2_PRESSURE_SEED_ONLY"
       data-pressure-seed-host-input="READY"
       data-pressure-seed-continuation="ACTIVE"

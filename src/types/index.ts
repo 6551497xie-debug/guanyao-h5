@@ -3290,3 +3290,12 @@ export type {
   RealityPressureSeedContinuationContextBlockedReason,
   RealityPressureSeedContinuationContextResult,
 } from "./realityPressureSeedContinuationContext";
+
+export type {
+  GenesisRealityPresenceContinuityBridge,
+  GenesisRealityPresenceContinuityBridgeBoundary,
+  GenesisRealityPresenceContinuityBridgeInput,
+  GenesisRealityPresenceContinuityBridgeBlockedReason,
+  GenesisRealityPresenceContinuityBridgeResult,
+  GenesisRealityPresenceContinuityContext,
+} from "./genesisRealityPresenceContinuityBridge";

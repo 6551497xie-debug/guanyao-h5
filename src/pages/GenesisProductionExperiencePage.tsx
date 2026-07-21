@@ -30,6 +30,10 @@ import { resolveRealGenesisVisualConsumerSource } from "../services/realGenesisV
 import { calibrateGenesisTimeDeliveryResponse } from "../services/genesisTimeDeliveryResponseCalibration";
 import type { GenesisTimeDeliveryResponseCalibration } from "../types/genesisTimeDeliveryResponseCalibration";
 import { realizeGenesisStarBeastPresence } from "../services/genesisStarBeastPresenceVisualRealization";
+import {
+  activateGenesisRealityPresenceContinuityContext,
+  clearGenesisRealityPresenceContinuityContext,
+} from "../services/genesisRealityPresenceContinuityBridge";
 import type { GenesisPresenceRecognitionPhase } from "../types/genesisStarBeastPresenceVisualRealization";
 import type {
   GenesisProductionCanvasHostState,
@@ -146,6 +150,7 @@ export function GenesisProductionExperiencePage({
   useEffect(() => {
     clearGenesisProductionRealityEntryContext();
     clearRealityRouteActivationSourceContext();
+    clearGenesisRealityPresenceContinuityContext();
     setRecognitionRealityResult(null);
     setTimeDeliveryResponse(null);
   }, [routeAuthorization.sourceReferenceId]);
@@ -267,7 +272,17 @@ export function GenesisProductionExperiencePage({
         handoff.status === "READY" &&
         activationSourceContext?.status === "AVAILABLE"
       ) {
-        navigate(handoff.routeTarget);
+        const presenceContinuityContext =
+          presenceVisualRealizationResult?.status === "READY"
+            ? activateGenesisRealityPresenceContinuityContext({
+                presenceRealization:
+                  presenceVisualRealizationResult.realization,
+                realityEntryContext: entryContext,
+              })
+            : null;
+        if (presenceContinuityContext !== null) {
+          navigate(handoff.routeTarget);
+        }
       }
     }
   };
