@@ -3093,6 +3093,14 @@ export type {
 } from "./realityPresenceVisualCalibrationHandoffSnapshot";
 
 export type {
+  RealityPresenceRendererAuthorizationInput,
+  RealityPresenceProductionRendererHostAuthorization,
+  RealityPresenceRendererAuthorizationBoundary,
+  RealityPresenceRendererAuthorizationBlockedReason,
+  RealityPresenceRendererAuthorizationResult,
+} from "./realityPresenceRendererAuthorization";
+
+export type {
   RealityProductionRouteEntryBoundary,
   RealityProductionHostBoundary,
   RealityProductionHostProps,

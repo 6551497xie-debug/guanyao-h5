@@ -129,6 +129,7 @@
     "check-genesis-manifestation-experience-e2e-acceptance": "node scripts/check-genesis-manifestation-experience-e2e-acceptance.mjs",
     "check-reality-coordinate-presence-visual-source-projection": "node scripts/check-reality-coordinate-presence-visual-source-projection.mjs",
     "check-reality-presence-visual-calibration-handoff-snapshot": "node scripts/check-reality-presence-visual-calibration-handoff-snapshot.mjs",
+    "check-reality-presence-renderer-authorization": "node scripts/check-reality-presence-renderer-authorization.mjs",
     "check-genesis-reality-presence-continuity-bridge": "node scripts/check-genesis-reality-presence-continuity-bridge.mjs",
     "check-genesis-explicit-route-activation-authorization": "node scripts/check-genesis-explicit-route-activation-authorization.mjs",
     "check-genesis-production-route-entry": "node scripts/check-genesis-production-route-entry.mjs",
