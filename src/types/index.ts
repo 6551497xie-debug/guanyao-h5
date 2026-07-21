@@ -3077,6 +3077,14 @@ export type {
 } from "./realityProductionRouteAuthorization";
 
 export type {
+  RealityCoordinatePresenceVisualSourceProjectionInput,
+  RealityCoordinatePresenceVisualSourceProjection,
+  RealityCoordinatePresenceVisualSourceProjectionBoundary,
+  RealityCoordinatePresenceVisualSourceProjectionBlockedReason,
+  RealityCoordinatePresenceVisualSourceProjectionResult,
+} from "./realityCoordinatePresenceVisualSourceProjection";
+
+export type {
   RealityProductionRouteEntryBoundary,
   RealityProductionHostBoundary,
   RealityProductionHostProps,
