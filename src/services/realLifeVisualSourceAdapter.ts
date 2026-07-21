@@ -14,6 +14,7 @@ import type { StarBeastGenesisOriginCoordinateReference } from "../types/starBea
 import type { GenesisRealityPressureReference } from "../types/genesisRealityPressureProjection";
 import { projectGenesisBirthMansionIgnition } from "./genesisBirthMansionIgnitionProjection";
 import { projectGenesisFourSymbolAlignment } from "./genesisFourSymbolAlignmentProjection";
+import { projectGenesisFourSymbolLifeDirection } from "./genesisFourSymbolLifeDirectionProjection";
 import { projectGenesisLifeForceInfusion } from "./genesisLifeForceInfusionProjection";
 import { projectGenesisPersonalReveal } from "./genesisPersonalRevealProjection";
 import { projectGenesisRealityPressure } from "./genesisRealityPressureProjection";
@@ -148,6 +149,19 @@ export function adaptRealLifeVisualSource(
   );
   if (mansionCoordinateResult.status !== "AVAILABLE") {
     return blocked(input, "MANSION_COORDINATE_PROJECTION_FAILED");
+  }
+
+  const fourSymbolLifeDirectionResult =
+    projectGenesisFourSymbolLifeDirection(
+      Object.freeze({
+        sourceReferenceId,
+        mansionCoordinateProjection: mansionCoordinateResult.projection,
+        fourSymbolResultReference:
+          calibration.sourceIdentity.fourSymbolResultReference,
+      }),
+    );
+  if (fourSymbolLifeDirectionResult.status !== "AVAILABLE") {
+    return blocked(input, "FOUR_SYMBOL_LIFE_DIRECTION_PROJECTION_FAILED");
   }
 
   const archetype = resolveLifeArchetypeProfileFromMotherCode(
@@ -382,6 +396,8 @@ export function adaptRealLifeVisualSource(
       projectionBundle: Object.freeze({
         twentyEightMansionCoordinateProjection:
           mansionCoordinateResult.projection,
+        fourSymbolLifeDirectionProjection:
+          fourSymbolLifeDirectionResult.projection,
         timeSequenceRecognitionProjection: timeSequenceResult.projection,
         birthMansionIgnitionProjection: birthMansionResult.projection,
         morphologicalFieldAlignmentProjection: fourSymbolResult.projection,

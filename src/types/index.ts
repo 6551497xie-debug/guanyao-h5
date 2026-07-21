@@ -978,6 +978,15 @@ export type {
   GenesisFourSymbolFieldMode,
 } from "./genesisFourSymbolAlignmentProjection";
 export type {
+  GenesisFourSymbolLifeDirection,
+  GenesisFourSymbolLifeDirectionProjection,
+  GenesisFourSymbolLifeDirectionProjectionBlockedReason,
+  GenesisFourSymbolLifeDirectionProjectionBoundary,
+  GenesisFourSymbolLifeDirectionProjectionInput,
+  GenesisFourSymbolLifeDirectionProjectionResult,
+  GenesisFourSymbolLifeDirectionProvenance,
+} from "./genesisFourSymbolLifeDirectionProjection";
+export type {
   GenesisLifeForceExpressionMode,
   GenesisLifeForceInfusionBlockedReason,
   GenesisLifeForceInfusionInput,
