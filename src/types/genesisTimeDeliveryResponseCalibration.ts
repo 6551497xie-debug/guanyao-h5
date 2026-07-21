@@ -1,5 +1,6 @@
 import type { GenesisLifeForceManifestationBridge } from "./genesisLifeForceManifestationBridge";
 import type { GenesisProductionRuntimeSession } from "./genesisProductionRuntimeConsumer";
+import type { GenesisManifestationExperienceStateSession } from "./genesisManifestationExperienceState";
 
 export type GenesisTimeDeliveryResponseState = "TIME_ACCEPTED";
 export type GenesisTimeDeliveryResponseCopyKey = "STAR_RIVER_RESPONDS";
@@ -8,8 +9,11 @@ export type GenesisTimeDeliveryResponseCalibration = Readonly<{
   semanticRole: "GENESIS_TIME_DELIVERY_RESPONSE_CALIBRATION";
   sourceReferenceId: string;
   responseState: GenesisTimeDeliveryResponseState;
+  nextExperienceState: "COORDINATE_SEEKING";
   copyKey: GenesisTimeDeliveryResponseCopyKey;
+  nextCopyKey: "FIND_MY_POSITION";
   responseMessage: "星河回应：你的时间已进入时序。";
+  seekingMessage: "星河正在寻找你的位置。";
   moonPhaseResponse: "MOONLIGHT_GATHERS_TO_TIME";
   starFieldResponse: "STELLAR_RHYTHM_RESPONDS";
   temporalResponse: "TEMPORAL_MOMENT_STABILIZED";
@@ -45,7 +49,7 @@ export type GenesisTimeDeliveryResponseCalibrationBoundary = Readonly<{
 export type GenesisTimeDeliveryResponseCalibrationInput = Readonly<{
   runtimeSession: GenesisProductionRuntimeSession | null;
   lifeForceManifestationBridge: GenesisLifeForceManifestationBridge | null;
-  acceptedExperienceState: "TIME_ACCEPTED";
+  acceptedExperienceSession: GenesisManifestationExperienceStateSession | null;
 }>;
 
 export type GenesisTimeDeliveryResponseCalibrationBlockedReason =
@@ -56,6 +60,7 @@ export type GenesisTimeDeliveryResponseCalibrationBlockedReason =
   | "LIFE_FORCE_MANIFESTATION_BRIDGE_REQUIRED"
   | "LIFE_FORCE_MANIFESTATION_BRIDGE_INVALID"
   | "SOURCE_REFERENCE_MISMATCH"
+  | "EXPERIENCE_SESSION_REQUIRED"
   | "EXPERIENCE_STATE_INVALID";
 
 export type GenesisTimeDeliveryResponseCalibrationResult =

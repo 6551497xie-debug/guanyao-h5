@@ -10,8 +10,11 @@ const paths = Object.freeze({
   type: "src/types/genesisTimeDeliveryResponseCalibration.ts",
   service: "src/services/genesisTimeDeliveryResponseCalibration.ts",
   page: "src/pages/GenesisProductionExperiencePage.tsx",
+  styles: "src/styles/genesis-production-experience.css",
   runtime: "src/services/genesisProductionRuntimeConsumer.ts",
+  experience: "src/services/genesisManifestationExperienceState.ts",
   bridge: "src/services/genesisLifeForceManifestationBridge.ts",
+  realityContinuity: "src/services/genesisRealityPresenceContinuityBridge.ts",
   host: "src/renderers/genesisProductionRendererHost.ts",
   renderer: "src/renderers/genesisWebGLRendererCore.ts",
   packageManifest: "package.json",
@@ -42,7 +45,9 @@ try {
   [
     "GenesisTimeDeliveryResponseCalibration",
     "TIME_ACCEPTED",
+    "COORDINATE_SEEKING",
     "STAR_RIVER_RESPONDS",
+    "FIND_MY_POSITION",
     "MOONLIGHT_GATHERS_TO_TIME",
     "STELLAR_RHYTHM_RESPONDS",
     "TEMPORAL_MOMENT_STABILIZED",
@@ -54,7 +59,9 @@ try {
     "calibrateGenesisTimeDeliveryResponse",
     "TIME_RESONANCE",
     "TIME_DELIVERY",
-    "acceptedExperienceState !== \"TIME_ACCEPTED\"",
+    "acceptedExperienceSession",
+    "experience.currentState !== \"TIME_ACCEPTED\"",
+    "experience.nextState !== \"COORDINATE_SEEKING\"",
     "bridge.provenance.sourceKind !== \"REAL_ENGINE_RESULT\"",
     "responseMessage: \"星河回应：你的时间已进入时序。\"",
     "noRendererParameterMutation: true",
@@ -63,10 +70,17 @@ try {
   ].forEach((marker) => assertIncludes("response calibration service", source.service, marker));
   [
     "calibrateGenesisTimeDeliveryResponse",
-    "acceptedExperienceState: \"TIME_ACCEPTED\"",
+    "advanceGenesisManifestationExperienceState",
+    "acceptedExperienceSession: acceptedExperienceResult.session",
     "data-genesis-time-delivery-response",
+    "data-genesis-manifestation-experience-state",
     "timeDeliveryResponse.responseMessage",
+    "timeDeliveryResponse.seekingMessage",
   ].forEach((marker) => assertIncludes("production page consumes response calibration", source.page, marker));
+  [
+    ".gy-genesis-production-experience__time-response",
+    "pointer-events: none",
+  ].forEach((marker) => assertIncludes("time response remains presentation-only", source.styles, marker));
   [
     "resolveStarbeastFromBirthDate",
     "runFourSymbolEngine",
@@ -78,6 +92,9 @@ try {
   assertExcludes("response calibration does not alter Renderer Host", source.host, "GenesisTimeDeliveryResponseCalibration");
   assertExcludes("response calibration does not alter WebGL Core", source.renderer, "GenesisTimeDeliveryResponseCalibration");
   assertExcludes("response calibration does not alter Runtime", source.runtime, "GenesisTimeDeliveryResponseCalibration");
+  assertExcludes("response calibration does not alter Reality continuity", source.realityContinuity, "GenesisTimeDeliveryResponseCalibration");
+  assertIncludes("TIME_DELIVERY remains the only experience user action", source.experience, "timeDeliveryOnlyUserAction: true");
+  assertIncludes("Dormant waits for explicit delivery", source.experience, 'session.currentState === "DORMANT" && input.trigger !== "TIME_DELIVERY"');
 
   const packageJson = JSON.parse(source.packageManifest);
   assertEqual(
@@ -97,6 +114,7 @@ try {
       "src/services/realUserGenesisVisualSourceContext.ts",
       "src/services/genesisProductionRouteAuthorization.ts",
       "src/services/genesisProductionRuntimeConsumer.ts",
+      "src/services/genesisManifestationExperienceState.ts",
       "src/services/genesisTimeDeliveryResponseCalibration.ts",
       "src/services/genesisLifeForceManifestationBridge.ts",
       "src/services/genesisStarBeastManifestationSource.ts",
@@ -128,14 +146,28 @@ try {
   assertEqual("production route is authorized", routeAuthorization.status, "READY");
   const initialized = runtime.initializeGenesisProductionRuntime({ routeAuthorization });
   assertEqual("production runtime initializes", initialized.status, "READY");
+  const bridge = visualResult.visualSource.projectionBundle.lifeForceManifestationBridge;
+  const experienceInitialized = runtime.initializeGenesisManifestationExperienceState({ runtimeSession: initialized.session, lifeForceManifestationBridge: bridge });
+  assertEqual("experience state initializes", experienceInitialized.status, "READY");
+  let experience = experienceInitialized.session;
+  assertEqual("before delivery experience is dormant", experience.currentState, "DORMANT");
+  assertEqual("before delivery coordinate is not visible", experience.nextState, "TIME_ACCEPTED");
   let session = initialized.session;
   session = runtime.advanceGenesisProductionRuntime({ session, trigger: "AUTO_ADVANCE" }).session;
   session = runtime.advanceGenesisProductionRuntime({ session, trigger: "AUTO_ADVANCE" }).session;
   assertEqual("runtime reaches Time Resonance", session.currentStage, "TIME_RESONANCE");
-  const bridge = visualResult.visualSource.projectionBundle.lifeForceManifestationBridge;
-  const ready = runtime.calibrateGenesisTimeDeliveryResponse({ runtimeSession: session, lifeForceManifestationBridge: bridge, acceptedExperienceState: "TIME_ACCEPTED" });
+  const timeResonanceSession = session;
+  const automaticDelivery = runtime.advanceGenesisManifestationExperienceState({ session: experience, runtimeSession: session, lifeForceManifestationBridge: bridge, trigger: "AUTO_ADVANCE" });
+  assertEqual("TIME_DELIVERY is required at Dormant", automaticDelivery.status, "BLOCKED");
+  assertEqual("automatic delivery is rejected", automaticDelivery.reason, "TIME_DELIVERY_REQUIRED");
+  const acceptedExperience = runtime.advanceGenesisManifestationExperienceState({ session: experience, runtimeSession: session, lifeForceManifestationBridge: bridge, trigger: "TIME_DELIVERY" });
+  assertEqual("click enters Time Accepted", acceptedExperience.status, "READY");
+  experience = acceptedExperience.session;
+  assertEqual("accepted experience state", experience.currentState, "TIME_ACCEPTED");
+  const ready = runtime.calibrateGenesisTimeDeliveryResponse({ runtimeSession: session, lifeForceManifestationBridge: bridge, acceptedExperienceSession: experience });
   assertEqual("response calibration is ready", ready.status, "READY");
   assertEqual("response state is Time Accepted", ready.calibration.responseState, "TIME_ACCEPTED");
+  assertEqual("response points to Coordinate Seeking", ready.calibration.nextExperienceState, "COORDINATE_SEEKING");
   assertEqual("Moon response is gathered", ready.calibration.moonPhaseResponse, "MOONLIGHT_GATHERS_TO_TIME");
   assertEqual("Star response is present", ready.calibration.starFieldResponse, "STELLAR_RHYTHM_RESPONDS");
   assertEqual("temporal response is stabilized", ready.calibration.temporalResponse, "TEMPORAL_MOMENT_STABILIZED");
@@ -144,12 +176,18 @@ try {
   assertEqual("response cannot alter Renderer parameters", ready.calibration.noRendererParameterMutation, true);
   assertEqual("response cannot alter Timeline speed", ready.calibration.noTimelineSpeedMutation, true);
 
-  const missingBridge = runtime.calibrateGenesisTimeDeliveryResponse({ runtimeSession: session, lifeForceManifestationBridge: null, acceptedExperienceState: "TIME_ACCEPTED" });
+  session = runtime.advanceGenesisProductionRuntime({ session, trigger: "TIME_DELIVERY" }).session;
+  const seekingExperience = runtime.advanceGenesisManifestationExperienceState({ session: experience, runtimeSession: session, lifeForceManifestationBridge: bridge, trigger: "AUTO_ADVANCE" });
+  assertEqual("Time Accepted enters Coordinate Seeking", seekingExperience.status, "READY");
+  assertEqual("coordinate seeking state", seekingExperience.session.currentState, "COORDINATE_SEEKING");
+  assertEqual("coordinate seeking keeps source", seekingExperience.session.sourceReferenceId, sourceReferenceId);
+
+  const missingBridge = runtime.calibrateGenesisTimeDeliveryResponse({ runtimeSession: timeResonanceSession, lifeForceManifestationBridge: null, acceptedExperienceSession: experience });
   assertEqual("missing bridge is blocked", missingBridge.status, "BLOCKED");
   assertEqual("missing bridge reason", missingBridge.reason, "LIFE_FORCE_MANIFESTATION_BRIDGE_REQUIRED");
-  const wrongState = runtime.calibrateGenesisTimeDeliveryResponse({ runtimeSession: session, lifeForceManifestationBridge: bridge, acceptedExperienceState: "TIME_ACCEPTED" });
-  assertEqual("explicit accepted state remains required", wrongState.status, "READY");
-  const wrongStage = runtime.calibrateGenesisTimeDeliveryResponse({ runtimeSession: initialized.session, lifeForceManifestationBridge: bridge, acceptedExperienceState: "TIME_ACCEPTED" });
+  const missingExperience = runtime.calibrateGenesisTimeDeliveryResponse({ runtimeSession: timeResonanceSession, lifeForceManifestationBridge: bridge, acceptedExperienceSession: null });
+  assertEqual("explicit accepted session remains required", missingExperience.status, "BLOCKED");
+  const wrongStage = runtime.calibrateGenesisTimeDeliveryResponse({ runtimeSession: initialized.session, lifeForceManifestationBridge: bridge, acceptedExperienceSession: experience });
   assertEqual("response outside Time Resonance is blocked", wrongStage.status, "BLOCKED");
   assertEqual("wrong stage reason", wrongStage.reason, "TIME_RESONANCE_REQUIRED");
 

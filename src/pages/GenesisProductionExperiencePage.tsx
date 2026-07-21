@@ -28,7 +28,12 @@ import {
 import { bridgeGenesisProductionRuntimeToVisualCalibration } from "../services/genesisProductionVisualCalibrationBridge";
 import { resolveRealGenesisVisualConsumerSource } from "../services/realGenesisVisualConsumerSource";
 import { calibrateGenesisTimeDeliveryResponse } from "../services/genesisTimeDeliveryResponseCalibration";
+import {
+  advanceGenesisManifestationExperienceState,
+  initializeGenesisManifestationExperienceState,
+} from "../services/genesisManifestationExperienceState";
 import type { GenesisTimeDeliveryResponseCalibration } from "../types/genesisTimeDeliveryResponseCalibration";
+import type { GenesisManifestationExperienceStateResult } from "../types/genesisManifestationExperienceState";
 import { realizeGenesisStarBeastPresence } from "../services/genesisStarBeastPresenceVisualRealization";
 import {
   activateGenesisRealityPresenceContinuityContext,
@@ -102,14 +107,36 @@ export function GenesisProductionExperiencePage({
       : null,
     [routeAuthorization],
   );
+  const lifeForceManifestationBridge =
+    consumerSourceResult?.status === "READY"
+      ? consumerSourceResult.consumerSource.projectionBundle
+          .lifeForceManifestationBridge
+      : null;
+  const initializedManifestationExperienceResult = useMemo(
+    () =>
+      initializedRuntimeResult?.status === "READY"
+        ? initializeGenesisManifestationExperienceState({
+            runtimeSession: initializedRuntimeResult.session,
+            lifeForceManifestationBridge,
+          })
+        : null,
+    [initializedRuntimeResult, lifeForceManifestationBridge],
+  );
   const [productionRuntimeResult, setProductionRuntimeResult] = useState(
     initializedRuntimeResult,
   );
+  const [manifestationExperienceResult, setManifestationExperienceResult] =
+    useState<GenesisManifestationExperienceStateResult | null>(
+      initializedManifestationExperienceResult,
+    );
   const [timeDeliveryResponse, setTimeDeliveryResponse] =
     useState<GenesisTimeDeliveryResponseCalibration | null>(null);
   useEffect(() => {
     setProductionRuntimeResult(initializedRuntimeResult);
-  }, [initializedRuntimeResult]);
+    setManifestationExperienceResult(
+      initializedManifestationExperienceResult,
+    );
+  }, [initializedManifestationExperienceResult, initializedRuntimeResult]);
   const timelineOrchestrationResult = useMemo(
     () => productionRuntimeResult?.status === "READY"
       ? orchestrateGenesisProductionTimeline(productionRuntimeResult.session)
@@ -133,19 +160,14 @@ export function GenesisProductionExperiencePage({
         : "RECOGNITION_HOLD"
       : "NOT_REACHED";
   const presenceVisualRealizationResult = useMemo(() => {
-    const manifestationBridge =
-      consumerSourceResult?.status === "READY"
-        ? consumerSourceResult.consumerSource.projectionBundle
-            .lifeForceManifestationBridge
-        : null;
     return productionRuntimeResult?.status === "READY"
       ? realizeGenesisStarBeastPresence({
           runtimeSession: productionRuntimeResult.session,
-          lifeForceManifestationBridge: manifestationBridge,
+          lifeForceManifestationBridge,
           recognitionPhase: presenceRecognitionPhase,
         })
       : null;
-  }, [consumerSourceResult, presenceRecognitionPhase, productionRuntimeResult]);
+  }, [lifeForceManifestationBridge, presenceRecognitionPhase, productionRuntimeResult]);
 
   useEffect(() => {
     clearGenesisProductionRealityEntryContext();
@@ -189,33 +211,68 @@ export function GenesisProductionExperiencePage({
     return () => window.clearTimeout(timeout);
   }, [productionRuntimeResult, timelineOrchestrationResult]);
 
+  useEffect(() => {
+    if (
+      productionRuntimeResult?.status !== "READY" ||
+      productionRuntimeResult.session.currentStage !== "SYMBOL_REVEAL" ||
+      manifestationExperienceResult?.status !== "READY" ||
+      manifestationExperienceResult.session.currentState !== "TIME_ACCEPTED"
+    ) {
+      return;
+    }
+    const seekingResult = advanceGenesisManifestationExperienceState({
+      session: manifestationExperienceResult.session,
+      runtimeSession: productionRuntimeResult.session,
+      lifeForceManifestationBridge,
+      trigger: "AUTO_ADVANCE",
+    });
+    if (seekingResult.status === "READY") {
+      setManifestationExperienceResult(seekingResult);
+    }
+  }, [
+    lifeForceManifestationBridge,
+    manifestationExperienceResult,
+    productionRuntimeResult,
+  ]);
+
   const deliverTime = () => {
     if (
       productionRuntimeResult?.status !== "READY" ||
       timelineOrchestrationResult?.status !== "READY" ||
       timelineOrchestrationResult.directive.behavior !==
-        "WAIT_FOR_TIME_DELIVERY"
+        "WAIT_FOR_TIME_DELIVERY" ||
+      manifestationExperienceResult?.status !== "READY" ||
+      manifestationExperienceResult.session.currentState !== "DORMANT"
     ) {
       return;
     }
-    setProductionRuntimeResult(
-      advanceGenesisProductionRuntime({
-        session: productionRuntimeResult.session,
+    const acceptedExperienceResult =
+      advanceGenesisManifestationExperienceState({
+        session: manifestationExperienceResult.session,
+        runtimeSession: productionRuntimeResult.session,
+        lifeForceManifestationBridge,
         trigger: "TIME_DELIVERY",
-      }),
-    );
-    const manifestationBridge =
-      consumerSourceResult?.status === "READY"
-        ? consumerSourceResult.consumerSource.projectionBundle
-            .lifeForceManifestationBridge
-        : null;
+      });
+    if (acceptedExperienceResult.status !== "READY") return;
     const responseResult = calibrateGenesisTimeDeliveryResponse({
       runtimeSession: productionRuntimeResult.session,
-      lifeForceManifestationBridge: manifestationBridge,
-      acceptedExperienceState: "TIME_ACCEPTED",
+      lifeForceManifestationBridge,
+      acceptedExperienceSession: acceptedExperienceResult.session,
     });
+    const nextRuntimeResult = advanceGenesisProductionRuntime({
+      session: productionRuntimeResult.session,
+      trigger: "TIME_DELIVERY",
+    });
+    if (
+      responseResult.status !== "READY" ||
+      nextRuntimeResult.status !== "READY"
+    ) {
+      return;
+    }
+    setManifestationExperienceResult(acceptedExperienceResult);
+    setProductionRuntimeResult(nextRuntimeResult);
     setTimeDeliveryResponse(
-      responseResult.status === "READY" ? responseResult.calibration : null,
+      responseResult.calibration,
     );
   };
 
@@ -293,6 +350,8 @@ export function GenesisProductionExperiencePage({
     consumerSourceResult.status !== "READY" ||
     productionRuntimeResult === null ||
     productionRuntimeResult.status !== "READY" ||
+    manifestationExperienceResult === null ||
+    manifestationExperienceResult.status !== "READY" ||
     timelineOrchestrationResult === null ||
     timelineOrchestrationResult.status !== "READY" ||
     visualCalibrationResult === null ||
@@ -300,6 +359,8 @@ export function GenesisProductionExperiencePage({
     consumerSourceResult.consumerSource.sourceReferenceId !==
       routeAuthorization.sourceReferenceId ||
     visualCalibrationResult.bundle.sourceReferenceId !==
+      routeAuthorization.sourceReferenceId ||
+    manifestationExperienceResult.session.sourceReferenceId !==
       routeAuthorization.sourceReferenceId
   ) {
     return (
@@ -333,6 +394,9 @@ export function GenesisProductionExperiencePage({
       data-genesis-time-delivery-response-copy={
         timeDeliveryResponse?.copyKey ?? "WAIT_FOR_TIME_DELIVERY"
       }
+      data-genesis-manifestation-experience-state={
+        manifestationExperienceResult.session.currentState
+      }
       data-genesis-presence-visual-state={
         presenceVisualRealizationResult?.status === "READY"
           ? presenceVisualRealizationResult.realization.visualPresenceState
@@ -355,9 +419,14 @@ export function GenesisProductionExperiencePage({
           把时间交给星河
         </button>
       ) : null}
-      {timeDeliveryResponse !== null ? (
+      {timeDeliveryResponse !== null &&
+      productionRuntimeResult.session.currentStage === "SYMBOL_REVEAL" ? (
         <p className="gy-genesis-production-experience__time-response" role="status">
-          {timeDeliveryResponse.responseMessage}
+          <span>{timeDeliveryResponse.responseMessage}</span>
+          {manifestationExperienceResult.session.currentState ===
+          "COORDINATE_SEEKING" ? (
+            <span>{timeDeliveryResponse.seekingMessage}</span>
+          ) : null}
         </p>
       ) : null}
       {presenceVisualRealizationResult?.status === "READY" &&

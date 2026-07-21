@@ -45,6 +45,25 @@
   white-space: nowrap;
 }
 
+.gy-genesis-production-experience__time-response {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: max(72px, env(safe-area-inset-bottom));
+  display: grid;
+  gap: 6px;
+  width: min(82vw, 420px);
+  margin: 0;
+  transform: translateX(-50%);
+  color: rgb(238 226 198 / 86%);
+  font-size: 13px;
+  line-height: 1.7;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-shadow: 0 0 18px rgb(196 220 255 / 32%);
+  pointer-events: none;
+}
+
 .gy-genesis-production-experience--source-not-ready {
   display: grid;
   place-items: center;

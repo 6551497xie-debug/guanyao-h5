@@ -50,9 +50,6 @@ export function calibrateGenesisTimeDeliveryResponse(
   if (runtime.interactionAvailability !== "TIME_DELIVERY") {
     return blocked(input, "TIME_DELIVERY_INTERACTION_REQUIRED");
   }
-  if (input.acceptedExperienceState !== "TIME_ACCEPTED") {
-    return blocked(input, "EXPERIENCE_STATE_INVALID");
-  }
   const bridge = input.lifeForceManifestationBridge;
   if (bridge === null) return blocked(input, "LIFE_FORCE_MANIFESTATION_BRIDGE_REQUIRED");
   if (
@@ -71,7 +68,27 @@ export function calibrateGenesisTimeDeliveryResponse(
         : "LIFE_FORCE_MANIFESTATION_BRIDGE_INVALID",
     );
   }
-
+  const experience = input.acceptedExperienceSession;
+  if (experience === null) {
+    return blocked(input, "EXPERIENCE_SESSION_REQUIRED");
+  }
+  if (
+    experience.semanticRole !== "GENESIS_MANIFESTATION_EXPERIENCE_STATE" ||
+    experience.currentState !== "TIME_ACCEPTED" ||
+    experience.previousState !== "DORMANT" ||
+    experience.nextState !== "COORDINATE_SEEKING" ||
+    experience.copyKey !== "STAR_RIVER_RESPONDS" ||
+    experience.timeDeliveryAccepted !== true ||
+    experience.sourceProvenance !== "REAL_USER_SESSION" ||
+    experience.sourceReferenceId !== runtime.sourceReferenceId ||
+    experience.manifestationBridge !== bridge ||
+    experience.boundary.timeDeliveryOnlyUserAction !== true ||
+    experience.boundary.noEngineInvocation !== true ||
+    experience.boundary.noSourceMutation !== true ||
+    experience.boundary.noRendererInputMutation !== true
+  ) {
+    return blocked(input, "EXPERIENCE_STATE_INVALID");
+  }
   return Object.freeze({
     status: "READY" as const,
     source: "genesis_time_delivery_response_calibration" as const,
@@ -79,8 +96,11 @@ export function calibrateGenesisTimeDeliveryResponse(
       semanticRole: "GENESIS_TIME_DELIVERY_RESPONSE_CALIBRATION" as const,
       sourceReferenceId: runtime.sourceReferenceId,
       responseState: "TIME_ACCEPTED" as const,
+      nextExperienceState: "COORDINATE_SEEKING" as const,
       copyKey: "STAR_RIVER_RESPONDS" as const,
+      nextCopyKey: "FIND_MY_POSITION" as const,
       responseMessage: "星河回应：你的时间已进入时序。" as const,
+      seekingMessage: "星河正在寻找你的位置。" as const,
       moonPhaseResponse: "MOONLIGHT_GATHERS_TO_TIME" as const,
       starFieldResponse: "STELLAR_RHYTHM_RESPONDS" as const,
       temporalResponse: "TEMPORAL_MOMENT_STABILIZED" as const,
