@@ -17,7 +17,17 @@ const MANSION_VISUAL_CALIBRATION = Object.freeze({
   birthOpacity: 0.92,
   birthBreathingPeriodSeconds: 5.8,
   birthBreathingAmplitude: 0.12,
+  coordinateSeekingSettleMilliseconds: 1100,
+  seekingInitialRadialScale: 1.34,
+  seekingInitialAngularOffsetRadians: 0.2,
+  orbitAxisOpacity: 0.16,
+  birthAxisOpacity: 0.26,
+  axisRevealStartProgress: 0.24,
+  birthRevealStartProgress: 0.64,
 });
+
+export const GENESIS_COORDINATE_SEEKING_VISUAL_SETTLE_MS =
+  MANSION_VISUAL_CALIBRATION.coordinateSeekingSettleMilliseconds;
 
 export const GENESIS_TWENTY_EIGHT_MANSION_VISUAL_LAYER_CALIBRATION_BOUNDARY: GenesisTwentyEightMansionVisualLayerCalibrationBoundary =
   Object.freeze({
@@ -26,6 +36,10 @@ export const GENESIS_TWENTY_EIGHT_MANSION_VISUAL_LAYER_CALIBRATION_BOUNDARY: Gen
     starRiverShowsCompleteField: true,
     timeResonanceKeepsFieldUnclaimed: true,
     postTimeDeliveryRevealsBirthCoordinate: true,
+    timeAcceptedRespondsWithoutClaimingCoordinate: true,
+    coordinateSeekingMovesExistingPoints: true,
+    coordinateFoundRevealsSourceBirthCoordinate: true,
+    noStarBeastAmplification: true,
     noMansionCalculation: true,
     noIdentityCalculation: true,
     noEngineInvocation: true,
@@ -60,6 +74,24 @@ const visibilityFor = (
   return "HIDDEN";
 };
 
+const formationPhaseFor = (
+  activeVisualLayer: GenesisRendererVisualRealizationLayer | null,
+) => {
+  if (activeVisualLayer === "STAR_RIVER" || activeVisualLayer === "TIME_RESONANCE") {
+    return "UNCLAIMED_FIELD" as const;
+  }
+  if (activeVisualLayer === "SYMBOL_REVEAL") {
+    return "SEEKING_TO_FOUND" as const;
+  }
+  if (
+    activeVisualLayer !== null &&
+    BIRTH_COORDINATE_REVEAL_LAYERS.has(activeVisualLayer)
+  ) {
+    return "FOUND" as const;
+  }
+  return "HIDDEN" as const;
+};
+
 export function calibrateGenesisTwentyEightMansionVisualLayer(
   input: GenesisTwentyEightMansionVisualLayerCalibrationInput,
 ): GenesisTwentyEightMansionVisualLayerCalibrationResult {
@@ -78,6 +110,7 @@ export function calibrateGenesisTwentyEightMansionVisualLayer(
   const visibility = visibilityFor(input.activeVisualLayer);
   const revealBirthCoordinate =
     visibility === "BIRTH_MANSION_COORDINATE_REVEALED";
+  const formationPhase = formationPhaseFor(input.activeVisualLayer);
   const coordinates = Object.freeze(
     projection.coordinates.map((coordinate) => {
       const angle = coordinate.normalizedOrbitPosition * Math.PI * 2 - Math.PI / 2;
@@ -117,6 +150,28 @@ export function calibrateGenesisTwentyEightMansionVisualLayer(
           MANSION_VISUAL_CALIBRATION.birthBreathingPeriodSeconds,
         breathingAmplitude:
           MANSION_VISUAL_CALIBRATION.birthBreathingAmplitude,
+      }),
+      coordinateFormationExpression: Object.freeze({
+        phase: formationPhase,
+        settleDurationMilliseconds:
+          MANSION_VISUAL_CALIBRATION.coordinateSeekingSettleMilliseconds,
+        initialRadialScale:
+          MANSION_VISUAL_CALIBRATION.seekingInitialRadialScale,
+        initialAngularOffsetRadians:
+          MANSION_VISUAL_CALIBRATION.seekingInitialAngularOffsetRadians,
+        orbitAxisOpacity:
+          formationPhase === "SEEKING_TO_FOUND" || formationPhase === "FOUND"
+            ? MANSION_VISUAL_CALIBRATION.orbitAxisOpacity
+            : 0,
+        birthAxisOpacity:
+          formationPhase === "SEEKING_TO_FOUND" || formationPhase === "FOUND"
+            ? MANSION_VISUAL_CALIBRATION.birthAxisOpacity
+            : 0,
+        axisRevealStartProgress:
+          MANSION_VISUAL_CALIBRATION.axisRevealStartProgress,
+        birthRevealStartProgress:
+          MANSION_VISUAL_CALIBRATION.birthRevealStartProgress,
+        existingCoordinatesMoveToSourcePositions: true,
       }),
       existingProjectionOnly: true,
       noMansionName: true,

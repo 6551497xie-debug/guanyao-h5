@@ -120,6 +120,7 @@
     "check-genesis-experience-timeline-alignment": "node scripts/check-genesis-experience-timeline-alignment.mjs",
     "check-genesis-time-delivery-response-calibration": "node scripts/check-genesis-time-delivery-response-calibration.mjs",
     "check-entrance-copy-semantic-alignment": "node scripts/check-entrance-copy-semantic-alignment.mjs",
+    "check-genesis-coordinate-seeking-visual-calibration": "node scripts/check-genesis-coordinate-seeking-visual-calibration.mjs",
     "check-genesis-starbeast-presence-visual-realization": "node scripts/check-genesis-starbeast-presence-visual-realization.mjs",
     "check-genesis-reality-presence-continuity-bridge": "node scripts/check-genesis-reality-presence-continuity-bridge.mjs",
     "check-genesis-explicit-route-activation-authorization": "node scripts/check-genesis-explicit-route-activation-authorization.mjs",

@@ -28,6 +28,7 @@ import {
 import { bridgeGenesisProductionRuntimeToVisualCalibration } from "../services/genesisProductionVisualCalibrationBridge";
 import { resolveRealGenesisVisualConsumerSource } from "../services/realGenesisVisualConsumerSource";
 import { calibrateGenesisTimeDeliveryResponse } from "../services/genesisTimeDeliveryResponseCalibration";
+import { GENESIS_COORDINATE_SEEKING_VISUAL_SETTLE_MS } from "../services/genesisTwentyEightMansionVisualLayerCalibration";
 import {
   advanceGenesisManifestationExperienceState,
   initializeGenesisManifestationExperienceState,
@@ -235,6 +236,34 @@ export function GenesisProductionExperiencePage({
     productionRuntimeResult,
   ]);
 
+  useEffect(() => {
+    if (
+      productionRuntimeResult?.status !== "READY" ||
+      productionRuntimeResult.session.currentStage !== "SYMBOL_REVEAL" ||
+      manifestationExperienceResult?.status !== "READY" ||
+      manifestationExperienceResult.session.currentState !==
+        "COORDINATE_SEEKING"
+    ) {
+      return undefined;
+    }
+    const timeout = window.setTimeout(() => {
+      const foundResult = advanceGenesisManifestationExperienceState({
+        session: manifestationExperienceResult.session,
+        runtimeSession: productionRuntimeResult.session,
+        lifeForceManifestationBridge,
+        trigger: "AUTO_ADVANCE",
+      });
+      if (foundResult.status === "READY") {
+        setManifestationExperienceResult(foundResult);
+      }
+    }, GENESIS_COORDINATE_SEEKING_VISUAL_SETTLE_MS);
+    return () => window.clearTimeout(timeout);
+  }, [
+    lifeForceManifestationBridge,
+    manifestationExperienceResult,
+    productionRuntimeResult,
+  ]);
+
   const deliverTime = () => {
     if (
       productionRuntimeResult?.status !== "READY" ||
@@ -431,6 +460,9 @@ export function GenesisProductionExperiencePage({
           {manifestationExperienceResult.session.currentState ===
           "COORDINATE_SEEKING" ? (
             <span>{timeDeliveryResponse.seekingMessage}</span>
+          ) : manifestationExperienceResult.session.currentState ===
+            "COORDINATE_FOUND" ? (
+            <span>你的时间找到了位置。</span>
           ) : null}
         </p>
       ) : null}

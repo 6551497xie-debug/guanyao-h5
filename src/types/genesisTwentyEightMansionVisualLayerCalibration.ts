@@ -6,6 +6,12 @@ export type GenesisTwentyEightMansionVisualLayerVisibility =
   | "MANSION_FIELD_VISIBLE"
   | "BIRTH_MANSION_COORDINATE_REVEALED";
 
+export type GenesisMansionCoordinateFormationPhase =
+  | "HIDDEN"
+  | "UNCLAIMED_FIELD"
+  | "SEEKING_TO_FOUND"
+  | "FOUND";
+
 export type GenesisTwentyEightMansionVisualCoordinate = Readonly<{
   referenceId: string;
   coordinateIndex: number;
@@ -38,6 +44,17 @@ export type GenesisTwentyEightMansionVisualLayerCalibration = Readonly<{
     breathingPeriodSeconds: number;
     breathingAmplitude: number;
   }>;
+  coordinateFormationExpression: Readonly<{
+    phase: GenesisMansionCoordinateFormationPhase;
+    settleDurationMilliseconds: number;
+    initialRadialScale: number;
+    initialAngularOffsetRadians: number;
+    orbitAxisOpacity: number;
+    birthAxisOpacity: number;
+    axisRevealStartProgress: number;
+    birthRevealStartProgress: number;
+    existingCoordinatesMoveToSourcePositions: true;
+  }>;
   existingProjectionOnly: true;
   noMansionName: true;
   noIdentityCalculation: true;
@@ -52,6 +69,10 @@ export type GenesisTwentyEightMansionVisualLayerCalibrationBoundary = Readonly<{
   starRiverShowsCompleteField: true;
   timeResonanceKeepsFieldUnclaimed: true;
   postTimeDeliveryRevealsBirthCoordinate: true;
+  timeAcceptedRespondsWithoutClaimingCoordinate: true;
+  coordinateSeekingMovesExistingPoints: true;
+  coordinateFoundRevealsSourceBirthCoordinate: true;
+  noStarBeastAmplification: true;
   noMansionCalculation: true;
   noIdentityCalculation: true;
   noEngineInvocation: true;
