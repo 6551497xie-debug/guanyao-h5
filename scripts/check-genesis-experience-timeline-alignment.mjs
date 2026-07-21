@@ -43,7 +43,7 @@ try {
     "PRESENCE_APPROACHING",
     "PRESENCE_RECOGNIZED",
     "TIME_DELIVERY",
-    "RECOGNITION_HOLD",
+    "RECOGNITION_CONFIRM",
     "WAIT_FOR_TIME_DELIVERY",
     "STAR_RIVER_RESPONDS",
     "FIND_MY_POSITION",
@@ -171,7 +171,7 @@ try {
     ["HEXAGRAM_IMPRINT", "DIRECTION_AWAKENING", "AUTO_ADVANCE"],
     ["LIFE_FORCE", "FORCE_CONDENSING", "AUTO_ADVANCE"],
     ["STAR_BEAST_REVEAL", "PRESENCE_APPROACHING", "AUTO_ADVANCE"],
-    ["COMPLETION", "PRESENCE_RECOGNIZED", "RECOGNITION_HOLD"],
+    ["COMPLETION", "PRESENCE_RECOGNIZED", "RECOGNITION_CONFIRM"],
   ];
   for (const [runtimeStage, expected, trigger] of stageTransitions) {
     production = runtime.advanceGenesisProductionRuntime({ session: production, trigger: "AUTO_ADVANCE" }).session;

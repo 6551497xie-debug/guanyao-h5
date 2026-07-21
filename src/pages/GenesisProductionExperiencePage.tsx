@@ -39,6 +39,7 @@ import type { GenesisTimeDeliveryResponseCalibration } from "../types/genesisTim
 import type { GenesisManifestationExperienceStateResult } from "../types/genesisManifestationExperienceState";
 import { realizeGenesisStarBeastPresence } from "../services/genesisStarBeastPresenceVisualRealization";
 import { activateGenesisPresenceApproachContinuity } from "../services/genesisPresenceApproachContinuityActivation";
+import { activateGenesisPresenceRecognitionContinuity } from "../services/genesisPresenceRecognitionContinuityActivation";
 import {
   activateGenesisRealityPresenceContinuityContext,
   clearGenesisRealityPresenceContinuityContext,
@@ -221,6 +222,25 @@ export function GenesisProductionExperiencePage({
           })
         : null,
     [manifestationExperienceResult, presenceVisualRealizationResult],
+  );
+  const presenceRecognitionContinuityResult = useMemo(
+    () =>
+      manifestationExperienceResult?.status === "READY" &&
+      presenceVisualRealizationResult?.status === "READY" &&
+      recognitionRealityResult?.status === "READY"
+        ? activateGenesisPresenceRecognitionContinuity({
+            manifestationExperienceSession:
+              manifestationExperienceResult.session,
+            presenceVisualRealization:
+              presenceVisualRealizationResult.realization,
+            recognitionRealitySession: recognitionRealityResult.session,
+          })
+        : null,
+    [
+      manifestationExperienceResult,
+      presenceVisualRealizationResult,
+      recognitionRealityResult,
+    ],
   );
 
   useEffect(() => {
@@ -444,23 +464,53 @@ export function GenesisProductionExperiencePage({
     if (
       recognitionRealityResult?.status !== "READY" ||
       recognitionRealityResult.session.interactionAvailability !==
-        "RECOGNITION_CONFIRM"
+        "RECOGNITION_CONFIRM" ||
+      productionRuntimeResult?.status !== "READY" ||
+      manifestationExperienceResult?.status !== "READY" ||
+      manifestationExperienceResult.session.currentState !==
+        "PRESENCE_APPROACHING"
     ) {
       return;
     }
-    setRecognitionRealityResult(
+    const recognizedRealityResult =
       advanceGenesisProductionRecognitionRealityEntry(
         recognitionRealityResult.session,
         "RECOGNITION_CONFIRM",
-      ),
-    );
+      );
+    const recognizedExperienceResult =
+      advanceGenesisManifestationExperienceState({
+        session: manifestationExperienceResult.session,
+        runtimeSession: productionRuntimeResult.session,
+        lifeForceManifestationBridge,
+        trigger: "RECOGNITION_CONFIRM",
+      });
+    const recognizedPresenceResult = realizeGenesisStarBeastPresence({
+      runtimeSession: productionRuntimeResult.session,
+      lifeForceManifestationBridge,
+      recognitionPhase: "RECOGNIZED",
+    });
+    if (
+      recognizedRealityResult.status !== "READY" ||
+      recognizedExperienceResult.status !== "READY" ||
+      recognizedPresenceResult.status !== "READY" ||
+      activateGenesisPresenceRecognitionContinuity({
+        manifestationExperienceSession: recognizedExperienceResult.session,
+        presenceVisualRealization: recognizedPresenceResult.realization,
+        recognitionRealitySession: recognizedRealityResult.session,
+      }).status !== "READY"
+    ) {
+      return;
+    }
+    setManifestationExperienceResult(recognizedExperienceResult);
+    setRecognitionRealityResult(recognizedRealityResult);
   };
 
   const enterReality = () => {
     if (
       recognitionRealityResult?.status !== "READY" ||
       recognitionRealityResult.session.interactionAvailability !==
-        "ENTER_REALITY"
+        "ENTER_REALITY" ||
+      presenceRecognitionContinuityResult?.status !== "READY"
     ) {
       return;
     }
@@ -665,16 +715,18 @@ export function GenesisProductionExperiencePage({
           data-interaction="RECOGNITION_CONFIRM"
           onClick={confirmRecognition}
         >
-          带着这份看见进入现实准备
+          认出它一直在那里
         </button>
       ) : null}
       {recognitionRealityResult?.status === "READY" &&
       recognitionRealityResult.session.interactionAvailability ===
-        "ENTER_REALITY" ? (
+        "ENTER_REALITY" &&
+      presenceRecognitionContinuityResult?.status === "READY" ? (
         <button
           type="button"
           className="gy-genesis-production-experience__completion-action"
           data-interaction="ENTER_REALITY"
+          data-genesis-presence-recognition-continuity="READY"
           onClick={enterReality}
         >
           进入现实观察

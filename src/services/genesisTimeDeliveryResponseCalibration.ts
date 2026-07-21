@@ -82,7 +82,7 @@ export function calibrateGenesisTimeDeliveryResponse(
     experience.sourceProvenance !== "REAL_USER_SESSION" ||
     experience.sourceReferenceId !== runtime.sourceReferenceId ||
     experience.manifestationBridge !== bridge ||
-    experience.boundary.timeDeliveryOnlyUserAction !== true ||
+    experience.boundary.timeDeliveryOnlyManifestationStartAction !== true ||
     experience.boundary.noEngineInvocation !== true ||
     experience.boundary.noSourceMutation !== true ||
     experience.boundary.noRendererInputMutation !== true

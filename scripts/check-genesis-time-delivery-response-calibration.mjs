@@ -93,7 +93,7 @@ try {
   assertExcludes("response calibration does not alter WebGL Core", source.renderer, "GenesisTimeDeliveryResponseCalibration");
   assertExcludes("response calibration does not alter Runtime", source.runtime, "GenesisTimeDeliveryResponseCalibration");
   assertExcludes("response calibration does not alter Reality continuity", source.realityContinuity, "GenesisTimeDeliveryResponseCalibration");
-  assertIncludes("TIME_DELIVERY remains the only experience user action", source.experience, "timeDeliveryOnlyUserAction: true");
+  assertIncludes("TIME_DELIVERY remains the only manifestation start action", source.experience, "timeDeliveryOnlyManifestationStartAction: true");
   assertIncludes("Dormant waits for explicit delivery", source.experience, 'session.currentState === "DORMANT" && input.trigger !== "TIME_DELIVERY"');
 
   const packageJson = JSON.parse(source.packageManifest);

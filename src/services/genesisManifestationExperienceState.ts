@@ -19,7 +19,8 @@ export const GENESIS_MANIFESTATION_EXPERIENCE_STATE_BOUNDARY:
     sourceContinuityRequired: true,
     immutableSessionOnly: true,
     frozenExperienceOrderOnly: true,
-    timeDeliveryOnlyUserAction: true,
+    timeDeliveryOnlyManifestationStartAction: true,
+    explicitRecognitionOnlyCompletionAction: true,
     noEngineInvocation: true,
     noEngineResultMutation: true,
     noSourceMutation: true,
@@ -156,7 +157,7 @@ const canAdvance = (
   if (currentState === "COORDINATE_FOUND") return runtimeStage === "HEXAGRAM_IMPRINT" && trigger === "AUTO_ADVANCE";
   if (currentState === "DIRECTION_AWAKENING") return runtimeStage === "LIFE_FORCE" && trigger === "AUTO_ADVANCE";
   if (currentState === "FORCE_CONDENSING") return runtimeStage === "STAR_BEAST_REVEAL" && trigger === "AUTO_ADVANCE";
-  if (currentState === "PRESENCE_APPROACHING") return runtimeStage === "COMPLETION" && trigger === "RECOGNITION_HOLD";
+  if (currentState === "PRESENCE_APPROACHING") return runtimeStage === "COMPLETION" && trigger === "RECOGNITION_CONFIRM";
   return false;
 };
 

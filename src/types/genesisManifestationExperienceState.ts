@@ -15,7 +15,7 @@ export type GenesisManifestationExperienceState =
 export type GenesisManifestationExperienceTrigger =
   | "AUTO_ADVANCE"
   | "TIME_DELIVERY"
-  | "RECOGNITION_HOLD";
+  | "RECOGNITION_CONFIRM";
 
 export type GenesisManifestationExperienceCopyKey =
   | "WAIT_FOR_TIME_DELIVERY"
@@ -32,7 +32,8 @@ export type GenesisManifestationExperienceStateBoundary = Readonly<{
   sourceContinuityRequired: true;
   immutableSessionOnly: true;
   frozenExperienceOrderOnly: true;
-  timeDeliveryOnlyUserAction: true;
+  timeDeliveryOnlyManifestationStartAction: true;
+  explicitRecognitionOnlyCompletionAction: true;
   noEngineInvocation: true;
   noEngineResultMutation: true;
   noSourceMutation: true;

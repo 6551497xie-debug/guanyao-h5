@@ -77,7 +77,7 @@ try {
     'data-interaction="RECOGNITION_CONFIRM"',
     'data-interaction="ENTER_REALITY"',
     'data-reality-entry-eligibility=',
-    "带着这份看见进入现实准备",
+    "认出它一直在那里",
     "进入现实观察",
     "Reality Entry 已准备好。",
   ].forEach((marker) => assertIncludes("production page owns explicit completion interactions", source.page, marker));

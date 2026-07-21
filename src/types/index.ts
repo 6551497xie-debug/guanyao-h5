@@ -3030,6 +3030,14 @@ export type {
 } from "./genesisStarBeastPresenceVisualRealization";
 
 export type {
+  GenesisPresenceRecognitionContinuityActivationInput,
+  GenesisPresenceRecognitionContinuityActivation,
+  GenesisPresenceRecognitionContinuityActivationBoundary,
+  GenesisPresenceRecognitionContinuityActivationBlockedReason,
+  GenesisPresenceRecognitionContinuityActivationResult,
+} from "./genesisPresenceRecognitionContinuityActivation";
+
+export type {
   GenesisRendererVisualRealizationCore,
   GenesisPerspectiveCalibrationCore,
   GenesisPresenceRecognitionCalibrationCore,
