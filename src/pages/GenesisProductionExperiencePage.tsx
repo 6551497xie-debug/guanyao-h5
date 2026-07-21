@@ -29,6 +29,8 @@ import { bridgeGenesisProductionRuntimeToVisualCalibration } from "../services/g
 import { resolveRealGenesisVisualConsumerSource } from "../services/realGenesisVisualConsumerSource";
 import { calibrateGenesisTimeDeliveryResponse } from "../services/genesisTimeDeliveryResponseCalibration";
 import type { GenesisTimeDeliveryResponseCalibration } from "../types/genesisTimeDeliveryResponseCalibration";
+import { realizeGenesisStarBeastPresence } from "../services/genesisStarBeastPresenceVisualRealization";
+import type { GenesisPresenceRecognitionPhase } from "../types/genesisStarBeastPresenceVisualRealization";
 import type {
   GenesisProductionCanvasHostState,
   GenesisProductionExperiencePageBoundary,
@@ -120,6 +122,26 @@ export function GenesisProductionExperiencePage({
   );
   const [recognitionRealityResult, setRecognitionRealityResult] =
     useState<GenesisProductionRecognitionRealityResult | null>(null);
+  const presenceRecognitionPhase: GenesisPresenceRecognitionPhase =
+    recognitionRealityResult?.status === "READY"
+      ? recognitionRealityResult.session.recognitionConfirmed
+        ? "RECOGNIZED"
+        : "RECOGNITION_HOLD"
+      : "NOT_REACHED";
+  const presenceVisualRealizationResult = useMemo(() => {
+    const manifestationBridge =
+      consumerSourceResult?.status === "READY"
+        ? consumerSourceResult.consumerSource.projectionBundle
+            .lifeForceManifestationBridge
+        : null;
+    return productionRuntimeResult?.status === "READY"
+      ? realizeGenesisStarBeastPresence({
+          runtimeSession: productionRuntimeResult.session,
+          lifeForceManifestationBridge: manifestationBridge,
+          recognitionPhase: presenceRecognitionPhase,
+        })
+      : null;
+  }, [consumerSourceResult, presenceRecognitionPhase, productionRuntimeResult]);
 
   useEffect(() => {
     clearGenesisProductionRealityEntryContext();
@@ -296,6 +318,11 @@ export function GenesisProductionExperiencePage({
       data-genesis-time-delivery-response-copy={
         timeDeliveryResponse?.copyKey ?? "WAIT_FOR_TIME_DELIVERY"
       }
+      data-genesis-presence-visual-state={
+        presenceVisualRealizationResult?.status === "READY"
+          ? presenceVisualRealizationResult.realization.visualPresenceState
+          : "DORMANT"
+      }
     >
       <GenesisProductionRendererCanvasHost
         routeAuthorization={routeAuthorization}
@@ -316,6 +343,19 @@ export function GenesisProductionExperiencePage({
       {timeDeliveryResponse !== null ? (
         <p className="gy-genesis-production-experience__time-response" role="status">
           {timeDeliveryResponse.responseMessage}
+        </p>
+      ) : null}
+      {presenceVisualRealizationResult?.status === "READY" &&
+      presenceVisualRealizationResult.realization.visualPresenceState !==
+        "DORMANT" ? (
+        <p className="gy-genesis-production-experience__presence-response" role="status">
+          {presenceVisualRealizationResult.realization.visualPresenceState ===
+          "APPROACHING"
+            ? "它正在靠近。"
+            : presenceVisualRealizationResult.realization.visualPresenceState ===
+                "PRESENT"
+              ? "它一直在那里。"
+              : "你终于看见它。"}
         </p>
       ) : null}
       {recognitionRealityResult?.status === "READY" &&

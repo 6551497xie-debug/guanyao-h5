@@ -3019,6 +3019,17 @@ export type {
 } from "./genesisTimeDeliveryResponseCalibration";
 
 export type {
+  GenesisStarBeastPresenceVisualState,
+  GenesisPresenceRecognitionPhase,
+  GenesisStarBeastPresenceVisualCopyKey,
+  GenesisStarBeastPresenceVisualRealization,
+  GenesisStarBeastPresenceVisualRealizationBoundary,
+  GenesisStarBeastPresenceVisualRealizationInput,
+  GenesisStarBeastPresenceVisualRealizationBlockedReason,
+  GenesisStarBeastPresenceVisualRealizationResult,
+} from "./genesisStarBeastPresenceVisualRealization";
+
+export type {
   GenesisRendererVisualRealizationCore,
   GenesisPerspectiveCalibrationCore,
   GenesisPresenceRecognitionCalibrationCore,
