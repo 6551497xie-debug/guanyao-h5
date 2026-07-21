@@ -7,8 +7,8 @@
 //   VOID → 两仪(粗爻条:阳实/阴断, 会呼吸) → 撕断(B:触摸自撕 / 不碰呼吸数拍后自动撕)
 //        → 碎成等宽斜短线、按比例收细、45° 拼成上下双 X(暖白 #FFEEF7)
 //        → 停拍 → 英文字标紧贴 LOGO 下方成一体(GUANYAO/SANDBOX)
-//        → 老打字机·慢节奏·逐字硬出·上下三段带停顿
-//        → 末行「见自己…」盖章压印到最下边 → 停顿 → 沙化进入下一页
+//        → 老打字机·慢节奏·逐字硬出·入口命题与辅助语义
+//        → 末行「进入观爻」盖章压印到最下边 → 停顿 → 沙化进入下一页
 //
 // 无一字轴落位（沙化即切镜；一线贯穿由沙化粒子守恒承接）。可点击跳过。
 // ─────────────────────────────────────────────────────────────────────────────
@@ -58,6 +58,12 @@ const COLOR = {
   accent: "#00B8D4",
   blue: "#00B8D4",
 };
+
+const ENTRANCE_COPY = Object.freeze({
+  main: "你来到世界时，已经带着自己的生命坐标。",
+  supporting: "先看见它从哪里来，再看见现实如何作用于你。",
+  cta: "进入观爻",
+});
 
 function clamp(v: number, a: number, b: number) {
   return Math.min(Math.max(v, a), b);
@@ -269,12 +275,10 @@ export function GenesisLab({ onComplete, mode = "full" }: { onComplete?: () => v
         // 字标：白 GUANYAO 居中（宽追踪几何）；蓝 SANDBOX 右对齐到 GUANYAO 右缘
         { text: "GUANYAO", y: wmY, font: wmFont, color: COLOR.primary, mode: "type", track: wmTrack },
         { text: "SANDBOX", y: sbY, font: `${sbSize}px ${MONO}`, color: COLOR.accent, mode: "type", track: Math.max(3, sbSize * 0.35), alignRight: true, refText: "GUANYAO", refFont: wmFont, refTrack: wmTrack },
-        // 那句话拆三段
-        { text: "困住你的，", y: m.h * 0.57, font: `${Math.min(16, m.w * 0.04)}px ${SANS}`, color: COLOR.primary, mode: "type" },
-        { text: "不是现实，", y: m.h * 0.635, font: `${Math.min(16, m.w * 0.04)}px ${SANS}`, color: COLOR.primary, mode: "type" },
-        { text: "是你的惯性反应", y: m.h * 0.7, font: `${Math.min(16, m.w * 0.04)}px ${SANS}`, color: COLOR.primary, mode: "type" },
-        // 末行盖章压印（压在最下）
-        { text: "见自己   观变化   寻规律   破心魔", y: m.h * 0.88, font: `${Math.min(14, m.w * 0.035)}px ${MONO}`, color: COLOR.primary, mode: "stamp" },
+        { text: ENTRANCE_COPY.main, y: m.h * 0.59, font: `${Math.min(16, m.w * 0.04)}px ${SANS}`, color: COLOR.primary, mode: "type" },
+        { text: ENTRANCE_COPY.supporting, y: m.h * 0.69, font: `${Math.min(16, m.w * 0.04)}px ${SANS}`, color: COLOR.primary, mode: "type" },
+        // 末行入口邀请盖章压印（压在最下）
+        { text: ENTRANCE_COPY.cta, y: m.h * 0.88, font: `${Math.min(14, m.w * 0.035)}px ${MONO}`, color: COLOR.primary, mode: "stamp" },
       ];
       let t = 0;
       for (const d of defs) {

@@ -409,6 +409,11 @@ export function GenesisProductionExperiencePage({
         visualCalibrationBundle={visualCalibrationResult.bundle}
         onStateChange={setCanvasHostState}
       />
+      {manifestationExperienceResult.session.currentState === "DORMANT" ? (
+        <p className="gy-genesis-production-experience__time-response" role="status">
+          星河已经在那里，等待你的时间进入。
+        </p>
+      ) : null}
       {timelineOrchestrationResult.directive.behavior ===
       "WAIT_FOR_TIME_DELIVERY" ? (
         <button
