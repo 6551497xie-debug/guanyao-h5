@@ -15,6 +15,7 @@ import type { GenesisRealityPressureReference } from "../types/genesisRealityPre
 import { projectGenesisBirthMansionIgnition } from "./genesisBirthMansionIgnitionProjection";
 import { projectGenesisFourSymbolAlignment } from "./genesisFourSymbolAlignmentProjection";
 import { projectGenesisFourSymbolLifeDirection } from "./genesisFourSymbolLifeDirectionProjection";
+import { projectGenesisLifeArchetype } from "./genesisLifeArchetypeProjection";
 import { projectGenesisLifeForceInfusion } from "./genesisLifeForceInfusionProjection";
 import { projectGenesisPersonalReveal } from "./genesisPersonalRevealProjection";
 import { projectGenesisRealityPressure } from "./genesisRealityPressureProjection";
@@ -222,6 +223,21 @@ export function adaptRealLifeVisualSource(
       noIdentityCalculation: true,
     });
 
+  const lifeArchetypeResult = projectGenesisLifeArchetype(
+    Object.freeze({
+      sourceReferenceId,
+      fourSymbolDirectionProjection:
+        fourSymbolLifeDirectionResult.projection,
+      motherCodeProfileReference: trajectory.motherCodeProfileReference,
+      lifeArchetypeProfileReference:
+        trajectory.lifeArchetypeProfileReference,
+      manifestationReadinessReference: readinessReference,
+    }),
+  );
+  if (lifeArchetypeResult.status !== "AVAILABLE") {
+    return blocked(input, "LIFE_ARCHETYPE_PROJECTION_FAILED");
+  }
+
   const sceneModel: PersonalStarBeastSceneModel = Object.freeze({
     semanticRole: "PERSONAL_STAR_BEAST_RENDERER_NEUTRAL_SCENE_MODEL",
     sourceIdentityReference: identityReference,
@@ -398,6 +414,7 @@ export function adaptRealLifeVisualSource(
           mansionCoordinateResult.projection,
         fourSymbolLifeDirectionProjection:
           fourSymbolLifeDirectionResult.projection,
+        lifeArchetypeProjection: lifeArchetypeResult.projection,
         timeSequenceRecognitionProjection: timeSequenceResult.projection,
         birthMansionIgnitionProjection: birthMansionResult.projection,
         morphologicalFieldAlignmentProjection: fourSymbolResult.projection,

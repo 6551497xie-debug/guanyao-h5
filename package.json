@@ -167,6 +167,7 @@
     "check-genesis-28-mansion-visual-layer-calibration": "node scripts/check-genesis-28-mansion-visual-layer-calibration.mjs",
     "check-genesis-28-mansion-production-source-continuity": "node scripts/check-genesis-28-mansion-production-source-continuity.mjs",
     "check-genesis-four-symbol-life-direction-projection": "node scripts/check-genesis-four-symbol-life-direction-projection.mjs",
+    "check-genesis-life-archetype-projection": "node scripts/check-genesis-life-archetype-projection.mjs",
     "check-genesis-four-symbol-alignment-projection": "node scripts/check-genesis-four-symbol-alignment-projection.mjs",
     "check-genesis-life-force-infusion-projection": "node scripts/check-genesis-life-force-infusion-projection.mjs",
     "check-genesis-personal-star-beast-reveal-projection": "node scripts/check-genesis-personal-star-beast-reveal-projection.mjs",

@@ -987,6 +987,16 @@ export type {
   GenesisFourSymbolLifeDirectionProvenance,
 } from "./genesisFourSymbolLifeDirectionProjection";
 export type {
+  GenesisLifeArchetypeDirection,
+  GenesisLifeArchetypeName,
+  GenesisLifeArchetypeProjection,
+  GenesisLifeArchetypeProjectionBlockedReason,
+  GenesisLifeArchetypeProjectionBoundary,
+  GenesisLifeArchetypeProjectionInput,
+  GenesisLifeArchetypeProjectionProvenance,
+  GenesisLifeArchetypeProjectionResult,
+} from "./genesisLifeArchetypeProjection";
+export type {
   GenesisLifeForceExpressionMode,
   GenesisLifeForceInfusionBlockedReason,
   GenesisLifeForceInfusionInput,
