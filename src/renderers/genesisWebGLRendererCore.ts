@@ -463,9 +463,11 @@ export function createGenesisWebGLRendererCore(
     spatialDistanceCalibration?.approachProgress ?? 0;
   const spatialPresenceCarry =
     spatialDistanceCalibration?.presenceCarry ?? 0;
-  const recognitionCoreVisibility = isPresenceStage
-    ? 0.48 + recognitionCenterInfluence * 0.08
-    : 1;
+  const recognitionCoreVisibility = isStarBeastReveal
+    ? 0.4 + recognitionCenterInfluence * 0.05
+    : isCompletion
+      ? 0.34 + recognitionCenterInfluence * 0.04
+      : 1;
   const perspectiveCoreDimming =
     isMoonOrigin || isStarRiver || isTimeResonance
       ? 1 - perspectiveCoreSuppression * 0.42
@@ -634,21 +636,20 @@ export function createGenesisWebGLRendererCore(
       "position",
       new Float32BufferAttribute(neutralPositions, 3),
     );
+    const mansionNeutralPointMaterial = new PointsMaterial({
+      color: new Color(0xb9cbec),
+      size:
+        mansionCoordinateVisualLayer.fieldExpression.neutralPointSize,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity:
+        mansionCoordinateVisualLayer.fieldExpression.neutralOpacity *
+        (isPresenceStage ? (isCompletion ? 0.24 : 0.34) : 1),
+      blending: AdditiveBlending,
+      depthWrite: false,
+    });
     mansionCoordinateGroup.add(
-      new Points(
-        neutralGeometry,
-        new PointsMaterial({
-          color: new Color(0xb9cbec),
-          size:
-            mansionCoordinateVisualLayer.fieldExpression.neutralPointSize,
-          sizeAttenuation: true,
-          transparent: true,
-          opacity:
-            mansionCoordinateVisualLayer.fieldExpression.neutralOpacity,
-          blending: AdditiveBlending,
-          depthWrite: false,
-        }),
-      ),
+      new Points(neutralGeometry, mansionNeutralPointMaterial),
     );
 
     if (
@@ -974,6 +975,31 @@ export function createGenesisWebGLRendererCore(
     nodePositions[nodeOffset + 2] = tip[2];
   }
 
+  if (isPresenceStage) {
+    let minX = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+    for (let offset = 0; offset < nodePositions.length; offset += 3) {
+      minX = Math.min(minX, nodePositions[offset]);
+      maxX = Math.max(maxX, nodePositions[offset]);
+      minY = Math.min(minY, nodePositions[offset + 1]);
+      maxY = Math.max(maxY, nodePositions[offset + 1]);
+    }
+    const presenceCenterX = (minX + maxX) * 0.5;
+    const presenceCenterY = (minY + maxY) * 0.5;
+    [spinePositions, nodePositions, branchPositions].forEach((positions) => {
+      for (let offset = 0; offset < positions.length; offset += 3) {
+        positions[offset] -= presenceCenterX;
+        positions[offset + 1] -= presenceCenterY;
+      }
+    });
+    [...positivePresenceTips, ...negativePresenceTips].forEach((tip) => {
+      tip[0] -= presenceCenterX;
+      tip[1] -= presenceCenterY;
+    });
+  }
+
   const spineGeometry = new BufferGeometry();
   spineGeometry.setAttribute(
     "position",
@@ -1007,9 +1033,9 @@ export function createGenesisWebGLRendererCore(
             : isLifeForce
               ? 1.14
               : isStarBeastReveal
-                ? 2.6
+                ? 2
               : isCompletion
-                  ? 2.4
+                  ? 2.2
               : 0.94;
   const distanceStructureScale =
     (0.86 + spatialContrast * 0.14) * (0.94 + spatialEdgeDefinition * 0.06);
@@ -1028,26 +1054,40 @@ export function createGenesisWebGLRendererCore(
   const changeImprintScale = isHexagramImprint ? 1.02 + realizationProgress * 0.06 : 1;
   const lifeForceScale = isLifeForce ? 1.02 + realizationProgress * 0.1 : 1;
   const presenceScale = isStarBeastReveal
-    ? 1.12 + realizationProgress * 0.08
+    ? 0.22 + spatialApproachProgress * 0.08
     : isCompletion
-      ? 1.1
+      ? 0.34
       : 1;
+  const spineOpacity =
+    sceneProjection.mansionStructure.lineOpacity *
+    structureOpacityScale *
+    perspectiveStructureWeight *
+    formationContinuityScale *
+    subjectForegroundScale *
+    distanceStructureScale *
+    (1 + perspectiveBodyCohesion * 0.14) *
+    (1 + perspectiveSubjectAxisStrength * 0.3) *
+    (isPresenceStage ? 1 + (recognitionSubjectWeight - 1) * 0.34 : 1) *
+    (0.82 + revealOpacity * 0.18 - pressureBoundaryLoad * 0.08);
+  const branchOpacity =
+    sceneProjection.mansionStructure.lineOpacity *
+    structureOpacityScale *
+    perspectiveStructureWeight *
+    formationContinuityScale *
+    subjectForegroundScale *
+    distanceStructureScale *
+    (1 + perspectiveBodyCohesion * 0.14) *
+    (isPresenceStage ? 1 + (recognitionSubjectWeight - 1) * 0.26 : 1) *
+    (0.82 + perspectiveBodyCohesion * 0.18) *
+    (0.68 + revealOpacity * 0.2 - pressureBoundaryLoad * 0.12);
   const spineLine = new Line(
     spineGeometry,
     new LineBasicMaterial({
       color: anchorColor,
       transparent: true,
-      opacity:
-        sceneProjection.mansionStructure.lineOpacity *
-        structureOpacityScale *
-        perspectiveStructureWeight *
-        formationContinuityScale *
-        subjectForegroundScale *
-        distanceStructureScale *
-        (1 + perspectiveBodyCohesion * 0.14) *
-        (1 + perspectiveSubjectAxisStrength * 0.3) *
-        (isPresenceStage ? 1 + (recognitionSubjectWeight - 1) * 0.34 : 1) *
-        (0.82 + revealOpacity * 0.18 - pressureBoundaryLoad * 0.08),
+      opacity: isPresenceStage
+        ? Math.max(spineOpacity, isCompletion ? 0.5 : 0.42)
+        : spineOpacity,
       blending: AdditiveBlending,
     }),
   );
@@ -1056,17 +1096,9 @@ export function createGenesisWebGLRendererCore(
     new LineBasicMaterial({
       color: anchorColor,
       transparent: true,
-      opacity:
-        sceneProjection.mansionStructure.lineOpacity *
-        structureOpacityScale *
-        perspectiveStructureWeight *
-        formationContinuityScale *
-        subjectForegroundScale *
-        distanceStructureScale *
-        (1 + perspectiveBodyCohesion * 0.14) *
-        (isPresenceStage ? 1 + (recognitionSubjectWeight - 1) * 0.26 : 1) *
-        (0.82 + perspectiveBodyCohesion * 0.18) *
-        (0.68 + revealOpacity * 0.2 - pressureBoundaryLoad * 0.12),
+      opacity: isPresenceStage
+        ? Math.max(branchOpacity, isCompletion ? 0.4 : 0.34)
+        : branchOpacity,
       blending: AdditiveBlending,
     }),
   );
@@ -1076,7 +1108,8 @@ export function createGenesisWebGLRendererCore(
       color: anchorColor,
       size:
         lifePresence.stellarSkeleton.nodeScale *
-        (0.96 + spatialEdgeDefinition * 0.08),
+        (0.96 + spatialEdgeDefinition * 0.08) *
+        (isPresenceStage ? 0.92 : 1),
       transparent: true,
       opacity:
         structureOpacityScale *
@@ -1121,7 +1154,8 @@ export function createGenesisWebGLRendererCore(
     color: anchorColor,
     size:
       lifePresence.stellarSkeleton.nodeScale *
-      (1.04 + (isPresenceStage ? (recognitionSubjectWeight - 1) * 0.34 : 0)),
+      (1.04 + (isPresenceStage ? (recognitionSubjectWeight - 1) * 0.34 : 0)) *
+      (isPresenceStage ? 1.08 : 1),
     transparent: true,
     opacity: isPresenceStage
       ? 0.22 + perspectiveBodyCohesion * 0.3 +
@@ -1147,7 +1181,7 @@ export function createGenesisWebGLRendererCore(
   const presenceEnvelopeMaterial = new LineBasicMaterial({
     color: new Color(0xe7d4a1),
     transparent: true,
-    opacity: isPresenceStage ? (isCompletion ? 0.46 : 0.36) : 0,
+    opacity: isPresenceStage ? (isCompletion ? 0.7 : 0.58) : 0,
     blending: AdditiveBlending,
     depthWrite: false,
   });
@@ -1157,7 +1191,21 @@ export function createGenesisWebGLRendererCore(
   );
   presenceEnvelope.visible = isPresenceStage;
   presenceEnvelope.position.z = 0.12;
-  presenceEnvelope.scale.setScalar(0.42);
+  presenceEnvelope.scale.setScalar(1.15);
+  const presenceEnvelopeGlowMaterial = new LineBasicMaterial({
+    color: new Color(0xe7d4a1),
+    transparent: true,
+    opacity: isPresenceStage ? (isCompletion ? 0.2 : 0.14) : 0,
+    blending: AdditiveBlending,
+    depthWrite: false,
+  });
+  const presenceEnvelopeGlow = new LineLoop(
+    presenceEnvelopeGeometry,
+    presenceEnvelopeGlowMaterial,
+  );
+  presenceEnvelopeGlow.visible = isPresenceStage;
+  presenceEnvelopeGlow.position.z = 0.1;
+  presenceEnvelopeGlow.scale.setScalar(1.3);
   const structureGroup = new Group();
   structureGroup.scale.setScalar(
     sceneProjection.formField.boundaryScale *
@@ -1211,6 +1259,7 @@ export function createGenesisWebGLRendererCore(
     structurePoints,
     bodyField,
     presenceEnvelope,
+    presenceEnvelopeGlow,
   );
   structureGroup.visible = !isMoonOrigin;
   root.add(structureGroup);
@@ -1268,7 +1317,7 @@ export function createGenesisWebGLRendererCore(
   const coreRadius = isMoonOrigin
     ? 0.34 + lifeStarCore.surfacePresence.innerLayerDepth * 0.12
     : (0.1 + lifeStarCore.surfacePresence.innerLayerDepth * 0.42) *
-      (isPresenceStage ? 0.48 : 1);
+      (isPresenceStage ? 0.36 : 1);
   const coreStageOpacity = isMoonOrigin
     ? 0.46
     : isStarRiver
@@ -1282,9 +1331,9 @@ export function createGenesisWebGLRendererCore(
             : isLifeForce
               ? 0.66
               : isStarBeastReveal
-                ? 0.62
+                ? 0.4
                 : isCompletion
-                  ? 0.56
+                  ? 0.34
               : 0.72;
   const core = new Mesh(
     new SphereGeometry(coreRadius, 20, 20),
@@ -1471,7 +1520,8 @@ export function createGenesisWebGLRendererCore(
       ) {
         mansionOrbitMaterial.opacity =
           coordinateFormationExpression.orbitAxisOpacity *
-          axisRevealProgress;
+          axisRevealProgress *
+          (isPresenceStage ? (isCompletion ? 0.28 : 0.38) : 1);
       }
       if (
         birthCoordinateAxisMaterial !== null &&
@@ -1479,7 +1529,8 @@ export function createGenesisWebGLRendererCore(
       ) {
         birthCoordinateAxisMaterial.opacity =
           coordinateFormationExpression.birthAxisOpacity *
-          birthRevealProgress;
+          birthRevealProgress *
+          (isPresenceStage ? (isCompletion ? 0.34 : 0.44) : 1);
       }
       if (
         birthMansionPointMaterial !== null &&
@@ -1846,9 +1897,9 @@ export function createGenesisWebGLRendererCore(
           : isLifeForce
             ? 0.92
             : isStarBeastReveal
-              ? 0.98
+              ? 0.72
               : isCompletion
-                ? 0.9
+                ? 0.66
             : 0.74;
       structurePointMaterial.opacity =
         stagePointOpacity +
@@ -1864,7 +1915,8 @@ export function createGenesisWebGLRendererCore(
         lifePresence.stellarSkeleton.nodeScale *
         (0.96 +
           lifeStarCore.coreInfluence.nodeBreathCoupling * 0.12 * breath +
-          (isPresenceStage ? perspectiveBodyCohesion * 0.34 : 0));
+          (isPresenceStage ? perspectiveBodyCohesion * 0.34 : 0)) *
+        (isPresenceStage ? 0.92 : 1);
       bodyFieldMaterial.opacity = isPresenceStage
         ? 0.22 +
           perspectiveBodyCohesion * 0.3 +
@@ -1873,8 +1925,12 @@ export function createGenesisWebGLRendererCore(
             (0.008 + perspectivePresenceBreath * 0.012)
         : 0;
       presenceEnvelopeMaterial.opacity = isPresenceStage
-        ? (isCompletion ? 0.46 : 0.36) *
+        ? (isCompletion ? 0.7 : 0.58) *
           (0.94 + (breath - 1) * 1.8)
+        : 0;
+      presenceEnvelopeGlowMaterial.opacity = isPresenceStage
+        ? (isCompletion ? 0.2 : 0.14) *
+          (0.96 + (breath - 1) * 1.2)
         : 0;
       bodyField.scale.setScalar(
         isPresenceStage
