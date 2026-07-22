@@ -85,10 +85,10 @@ export function GenesisProductionRendererCanvasHost({
 
     updateState("RENDERING");
     const controller = rendererResult.controller;
-    const startedAt = performance.now();
+    const stageStartedAt = performance.now();
     let animationFrame = 0;
     const renderFrame = (timestamp: number) => {
-      controller.renderFrame(timestamp - startedAt);
+      controller.renderFrame(timestamp - stageStartedAt);
       animationFrame = window.requestAnimationFrame(renderFrame);
     };
     const resizeObserver = new ResizeObserver((entries) => {

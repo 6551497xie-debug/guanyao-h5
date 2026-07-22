@@ -44,74 +44,26 @@ import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePers
 import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
 import { writePersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
 import { writeSelectedPressureSeedContext } from "../services/guanyaoSelectedPressureSeedContextPersistenceAdapter";
+import {
+  drawLifeUniverseDeepSpace2D,
+  drawLifeUniverseCore2D,
+  LIFE_UNIVERSE_STAR_FIELD,
+  projectLifeUniverseStarToViewport,
+  resolveLifeUniverseCoreFrame,
+} from "../renderers/lifeUniverseStarField";
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
 
-// Visual points retain the existing motion layout; user-facing meaning remains
-// 光痕 -> 光兽 -> 镜面。
-const NODES: { x: number; y: number; z: number; big?: boolean }[] = [
-  { x: 0.0, y: 0.22, z: 0.0, big: true }, // 0 吻（最近，朝你）
-  { x: 0.0, y: -0.04, z: 0.1 }, // 1 头顶
-  { x: -0.15, y: -0.18, z: 0.14 }, // 2 左耳
-  { x: 0.15, y: -0.18, z: 0.14 }, // 3 右耳
-  { x: 0.0, y: 0.05, z: 0.26 }, // 4 颈（点头支点）
-  { x: 0.0, y: 0.12, z: 0.42 }, // 5 颈2
-  { x: 0.0, y: 0.16, z: 0.5, big: true }, // 6 肩/胸
-  { x: 0.0, y: 0.0, z: 0.72 }, // 7 背1
-  { x: 0.0, y: -0.05, z: 0.98 }, // 8 背2
-  { x: 0.0, y: 0.04, z: 1.22, big: true }, // 9 髋
-  { x: 0.02, y: -0.06, z: 1.36 }, // 10 尾1
-  { x: 0.06, y: -0.22, z: 1.48 }, // 11 尾2
-  { x: 0.1, y: -0.42, z: 1.55 }, // 12 尾3
-  { x: 0.12, y: -0.62, z: 1.58, big: true }, // 13 尾尖
-  { x: -0.2, y: 0.3, z: 0.48 }, // 14 左前·肩
-  { x: -0.26, y: 0.6, z: 0.44 }, // 15 左前·膝
-  { x: -0.24, y: 0.92, z: 0.4 }, // 16 左前·爪
-  { x: 0.2, y: 0.3, z: 0.48 }, // 17 右前·肩
-  { x: 0.26, y: 0.6, z: 0.44 }, // 18 右前·膝
-  { x: 0.24, y: 0.92, z: 0.4 }, // 19 右前·爪
-  { x: -0.17, y: 0.32, z: 1.15 }, // 20 左后·髋
-  { x: -0.21, y: 0.6, z: 1.14 }, // 21 左后·膝
-  { x: -0.19, y: 0.9, z: 1.12 }, // 22 左后·爪
-  { x: 0.17, y: 0.32, z: 1.15 }, // 23 右后·髋
-  { x: 0.21, y: 0.6, z: 1.14 }, // 24 右后·膝
-  { x: 0.19, y: 0.9, z: 1.12 }, // 25 右后·爪
-  { x: 0.0, y: 0.42, z: 0.52 }, // 26 胸口
-  { x: 0.0, y: 0.3, z: 0.85 }, // 27 腹
-];
-const EDGES: [number, number][] = [
-  [0, 1], [1, 2], [1, 3], [2, 3], [0, 4], [1, 4],
-  [4, 5], [5, 6], [6, 7], [7, 8], [8, 9],
-  [9, 10], [10, 11], [11, 12], [12, 13],
-  [6, 14], [14, 15], [15, 16],
-  [6, 17], [17, 18], [18, 19],
-  [9, 20], [20, 21], [21, 22],
-  [9, 23], [23, 24], [24, 25],
-  [6, 26], [26, 27], [27, 9], [14, 26], [17, 26],
-];
+const MANSION_COORDINATES = Object.freeze(
+  Array.from({ length: 28 }, (_, index) => Object.freeze({ index })),
+);
 
 const CFG = {
-  voidMs: 3.6,
-  convergeMs: 6.0,
-  cyFrac: 0.44,
-  scaleFrac: 0.62,
+  voidMs: 0.65,
+  convergeMs: 2.4,
   starfield: 420,
-  focal: 2.4, // 透视焦距（越小纵深越夸张）
-  zMid: 2.6, // 汇聚成形时的景深（在宇宙深处）
-  zNear: 0.35, // 走到你面前的景深
-  yaw: 0.3, // 偏航：正面朝你 + 一点 3/4 立体
 };
-
-// 步态：四条腿错峰迈步（对角行走）。索引→{相位, 深度:爪>膝>肩}
-const GAIT: Record<number, { ph: number; depth: number }> = {
-  14: { ph: 0, depth: 0 }, 15: { ph: 0, depth: 0.5 }, 16: { ph: 0, depth: 1 },
-  17: { ph: 0.5, depth: 0 }, 18: { ph: 0.5, depth: 0.5 }, 19: { ph: 0.5, depth: 1 },
-  20: { ph: 0.75, depth: 0 }, 21: { ph: 0.75, depth: 0.5 }, 22: { ph: 0.75, depth: 1 },
-  23: { ph: 0.25, depth: 0 }, 24: { ph: 0.25, depth: 0.5 }, 25: { ph: 0.25, depth: 1 },
-};
-const TAILS = new Set([10, 11, 12, 13]);
-const BODY = new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 26, 27]);
 
 const COLOR = {
   bg: "#020306",
@@ -141,6 +93,10 @@ function lerp(a: number, b: number, t: number) {
 function smooth(e0: number, e1: number, x: number) {
   const t = clamp((x - e0) / (e1 - e0), 0, 1);
   return t * t * (3 - 2 * t);
+}
+function lerpAngle(a: number, b: number, t: number) {
+  const delta = Math.atan2(Math.sin(b - a), Math.cos(b - a));
+  return a + delta * clamp(t, 0, 1);
 }
 
 type FieldStar = { x: number; y: number; r: number; ph: number; sp: number; vx: number; vy: number };
@@ -1052,11 +1008,11 @@ export function LaunchLab() {
       state: STATE.STARFIELD_IDLE as LaunchState,
       t: 0,
       pulsed: false,
-      chaos: NODES.map(() => ({ ox: (Math.random() - 0.5) * 2.4, oy: (Math.random() - 0.5) * 2.4, oz: (Math.random() - 0.5) * 3.0, ph: Math.random() * 6.28, sp: 0.6 + Math.random() * 0.8 })),
-      arrived: NODES.map(() => false),
+      chaos: MANSION_COORDINATES.map((_, index) => ({
+        ph: LIFE_UNIVERSE_STAR_FIELD[index]!.phase,
+        sp: LIFE_UNIVERSE_STAR_FIELD[index]!.speed,
+      })),
       presentDone: false,
-      gaitPhase: 0,
-      walk: 0,
       field: [] as FieldStar[],
       textStars: [] as TextStar[],
       entryTransitionSnapshot: null as EntryTransitionSnapshot | null,
@@ -1077,11 +1033,14 @@ export function LaunchLab() {
       geo: { provinceIndex: DEFAULT_PROVINCE_INDEX >= 0 ? DEFAULT_PROVINCE_INDEX : 0, cityIndex: DEFAULT_CITY_INDEX >= 0 ? DEFAULT_CITY_INDEX : 0 },
       geoStep: 0,
       lifeSourceSession: null as LaunchLifeSourceSession | null,
+      lifeBeastMansionIndex: null as number | null,
+      lifeBeastGroupStart: null as number | null,
       originMotherContextPersistenceAttempted: false,
       dialFloat: 1995,
       railProgress: 0,
       clutched: false,
       handoffStarted: false,
+      genesisContinuityStarted: false,
       verticalTuned: false,
       verticalDragMoved: false,
       dragging: false,
@@ -1118,18 +1077,18 @@ export function LaunchLab() {
       audio.form();
       vibrate([0, 18, 24]);
     };
-    for (let i = 0; i < CFG.starfield; i++) {
-      const isLunarMansion = i < NODES.length;
+    LIFE_UNIVERSE_STAR_FIELD.slice(0, CFG.starfield).forEach((star) => {
+      const projected = projectLifeUniverseStarToViewport(star, 1, 1, 0);
       m.field.push({
-        x: Math.random(),
-        y: Math.random(),
-        r: isLunarMansion ? 1.35 + Math.random() * 0.65 : 0.45 + Math.random() * 1.0,
-        ph: Math.random() * 6.28,
-        sp: isLunarMansion ? 0.75 + Math.random() * 0.45 : 0.5 + Math.random(),
+        x: projected.x,
+        y: projected.y,
+        r: star.radius,
+        ph: star.phase,
+        sp: star.speed,
         vx: 0,
         vy: 0,
       });
-    }
+    });
 
     function vibrate(p: number | number[]) {
       if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") navigator.vibrate(p);
@@ -1179,14 +1138,25 @@ export function LaunchLab() {
         for (let y = 0; y < off.height; y += gap) {
           for (let x = 0; x < off.width; x += gap) {
             if (data[(y * off.width + x) * 4 + 3]! > 128) {
-              const source = m.field[NODES.length + (stars.length % Math.max(1, m.field.length - NODES.length))] ?? m.field[stars.length % m.field.length];
+              const sourceIndex = MANSION_COORDINATES.length + (stars.length % Math.max(1, m.field.length - MANSION_COORDINATES.length));
+              const source = m.field[sourceIndex] ?? m.field[stars.length % m.field.length];
+              const sourceUniverseStar = LIFE_UNIVERSE_STAR_FIELD[sourceIndex]
+                ?? LIFE_UNIVERSE_STAR_FIELD[stars.length % LIFE_UNIVERSE_STAR_FIELD.length];
+              const sourcePoint = sourceUniverseStar
+                ? projectLifeUniverseStarToViewport(
+                    sourceUniverseStar,
+                    m.w,
+                    m.h,
+                    performance.now() / 1000,
+                  )
+                : null;
               stars.push({
                 tx: x,
                 ty: y,
-                ox: source ? source.x * m.w : Math.random() * m.w,
-                oy: source ? source.y * m.h : Math.random() * m.h,
-                ph: Math.random() * 6.28,
-                sp: 0.6 + Math.random(),
+                ox: sourcePoint?.x ?? (source ? source.x * m.w : m.w / 2),
+                oy: sourcePoint?.y ?? (source ? source.y * m.h : m.h * 0.48),
+                ph: source?.ph ?? 0,
+                sp: source?.sp ?? 0.8,
                 line: li,
               });
             }
@@ -1197,9 +1167,26 @@ export function LaunchLab() {
     }
 
     function nodeConv(i: number) {
-      // 每颗星的汇聚进度（错峰）
-      const start = (i / NODES.length) * (CFG.convergeMs * 0.55);
-      return smooth(start, start + 1.2, m.t);
+      const lifeBeastSlot = lifeBeastSlotForMansion(i);
+      if (lifeBeastSlot < 0) return 0;
+      if (m.state === STATE.FORMATION) {
+        const start = 0.08 + lifeBeastSlot * 0.075;
+        return smooth(start, start + 0.72, m.t);
+      }
+      if (
+        m.state === STATE.APPROACH ||
+        m.state === STATE.READY ||
+        m.state === STATE.STARBEAST_SANDIFY ||
+        isAxisState()
+      ) {
+        return 1;
+      }
+      return 0;
+    }
+    function displayLockOrbitProgress() {
+      return m.state === STATE.DISPLAY_LOCK && m.pendingAxisMode === "NEW_USER"
+        ? smooth(0.04, 0.72, m.t)
+        : 0;
     }
     function isAxisState() {
       return m.state === STATE.AXIS_EMERGENCE ||
@@ -1255,6 +1242,10 @@ export function LaunchLab() {
       if (dim === "month") {
         const dayMax = dimRange(m.coords, "day").max;
         m.coords.day = Math.min(m.coords.day, dayMax);
+      }
+      if (dim !== "hour") {
+        m.lifeBeastMansionIndex = null;
+        m.lifeBeastGroupStart = null;
       }
     }
     function dimText(dim: ChronoDim, value: number) {
@@ -1330,11 +1321,37 @@ export function LaunchLab() {
           city: currentCityName(),
         },
         starbeast: {
-          nodeCount: NODES.length,
-          primaryNodeIndex: Math.max(0, Math.min(NODES.length - 1, Math.round((m.precisionY / 20) * (NODES.length - 1)))),
+          nodeCount: MANSION_COORDINATES.length,
+          primaryNodeIndex: Math.max(0, Math.min(MANSION_COORDINATES.length - 1, Math.round((m.precisionY / 20) * (MANSION_COORDINATES.length - 1)))),
           originLightTrace: "28光兽入口",
         },
       };
+    }
+    function resolveLifeBeastMansionIdentity() {
+      if (
+        m.lifeBeastMansionIndex === null ||
+        m.lifeBeastGroupStart === null
+      ) {
+        const sourceResults = resolveLaunchOriginMotherSourceResults(
+          buildLaunchOriginMotherInput(),
+        );
+        const mansionIndex = sourceResults.starbeastDerivationResult.mansionIndex;
+        m.lifeBeastMansionIndex = mansionIndex;
+        m.lifeBeastGroupStart = Math.floor(mansionIndex / 7) * 7;
+      }
+      return {
+        birthMansionIndex: m.lifeBeastMansionIndex ?? 0,
+        groupStart: m.lifeBeastGroupStart ?? 0,
+      };
+    }
+    function activeLifeBeastMansionIndices() {
+      const { groupStart } = resolveLifeBeastMansionIdentity();
+      return Array.from({ length: 7 }, (_, index) => groupStart + index);
+    }
+    function lifeBeastSlotForMansion(mansionIndex: number) {
+      const { groupStart } = resolveLifeBeastMansionIdentity();
+      const slot = mansionIndex - groupStart;
+      return slot >= 0 && slot < 7 ? slot : -1;
     }
     function resolveOriginMotherCode(): GeoChronoMotherFusionResult {
       return m.lifeSourceSession?.originMotherResult
@@ -1410,6 +1427,20 @@ export function LaunchLab() {
       }
       setLaunchInteractionState("GENESIS_HANDOFF");
       navigate(handoff.routeTarget);
+    }
+    function beginProductionGenesisContinuity() {
+      if (m.genesisContinuityStarted) return;
+      const lifeSourceSession = captureLaunchLifeSourceSession();
+      persistOriginMotherContext(lifeSourceSession.originMotherResult);
+      m.genesisContinuityStarted = true;
+      m.railProgress = 1;
+      m.phaseX = ORIGIN_RAIL_COLS - 1;
+      m.clutched = true;
+      m.state = STATE.DISPLAY_LOCK;
+      m.t = 0;
+      audio.form();
+      vibrate([0, 18, 24]);
+      window.setTimeout(() => enterProductionGenesis(), 1450);
     }
     function buildEntryTransitionSnapshot(): EntryTransitionSnapshot {
       return {
@@ -1619,7 +1650,7 @@ export function LaunchLab() {
             openMotherCodeReveal();
             return;
           }
-          enterProductionGenesis();
+          beginProductionGenesisContinuity();
           return;
         }
         completeEntryCanvasHandoff();
@@ -1648,91 +1679,53 @@ export function LaunchLab() {
       }
       completeEntryCanvasHandoff();
     }
-    function headAngle(tp: number) {
-      const settle = smooth(0.6, 2.6, tp) * 0.05; // 缓缓侧头看你
-      let nod = 0;
-      const nodStart = 1.8;
-      if (tp > nodStart) {
-        const ph = (tp - nodStart) % 6.5; // 每隔几秒，轻轻点一次头（老朋友打招呼）
-        if (ph < 1.0) nod = Math.sin(ph * Math.PI) * 0.18;
-      }
-      return settle + nod;
-    }
     function nodePos(i: number) {
-      const formedLike =
-        m.state === STATE.FORMATION ||
-        m.state === STATE.APPROACH ||
-        m.state === STATE.READY ||
-        m.state === STATE.STARBEAST_SANDIFY ||
-        isAxisState();
-      const present =
-        m.state === STATE.APPROACH ||
-        m.state === STATE.READY ||
-        m.state === STATE.STARBEAST_SANDIFY ||
-        isAxisState();
-      const conv = formedLike ? 1 : nodeConv(i);
-      const n = NODES[i]!;
-      const t = performance.now() / 1000;
-      // 全局景深：宇宙深处(zMid) → 缓缓推近你面前(zNear)
-      const approachDepth =
-        m.state === STATE.APPROACH || m.state === STATE.READY
-          ? smooth(0.3, 4.6, m.t)
-          : m.state === STATE.STARBEAST_SANDIFY || isAxisState()
+      const universeSeconds = performance.now() / 1000;
+      const coreFrame = resolveLifeUniverseCoreFrame(
+        m.w,
+        m.h,
+        universeSeconds,
+      );
+      const orbitAngle =
+        (i / MANSION_COORDINATES.length) * Math.PI * 2 -
+        Math.PI / 2 +
+        universeSeconds * 0.025;
+      const orbitRadiusX = Math.min(m.w * 0.43, 168);
+      const orbitRadiusY = Math.min(m.w * 0.19, 74);
+      const orbitDepth = 0.5 + Math.sin(orbitAngle) * 0.18;
+      const orbitX = coreFrame.x + Math.cos(orbitAngle) * orbitRadiusX;
+      const orbitY = coreFrame.y + Math.sin(orbitAngle) * orbitRadiusY;
+      const lifeBeastSlot = lifeBeastSlotForMansion(i);
+      const activeMansion = lifeBeastSlot >= 0;
+      const motherOrbitProgress = displayLockOrbitProgress();
+      const conv = activeMansion ? nodeConv(i) : 0;
+
+      let manifestedX = orbitX;
+      let manifestedY = orbitY;
+      let perspective = orbitDepth;
+
+      const topologyToAxis =
+        m.state === STATE.STARBEAST_SANDIFY
+          ? smooth(0.04, 1.1, m.t)
+          : m.state === STATE.DISPLAY_LOCK && m.pendingAxisMode === "NEW_USER"
+            ? 1 - motherOrbitProgress
+          : isAxisState()
             ? 1
             : 0;
-      const zApproach = lerp(CFG.zMid, CFG.zNear, approachDepth);
-      let X = n.x;
-      let Y = n.y;
-      let Z = n.z;
-      // 点头：头部（吻/头/耳）绕颈(节点4)在 Y-Z 平面俯仰 → 朝你颔首
-      if (i <= 3 && present) {
-        const ang = headAngle(m.t) * m.walk;
-        const pv = NODES[4]!;
-        const dy = Y - pv.y;
-        const dz = Z - pv.z;
-        Y = pv.y + dy * Math.cos(ang) - dz * Math.sin(ang);
-        Z = pv.z + dy * Math.sin(ang) + dz * Math.cos(ang);
+      if (topologyToAxis > 0) {
+        const g = axisMetrics();
+        const axisY = lerp(g.axisTop, g.axisBottom, i / (MANSION_COORDINATES.length - 1));
+        manifestedX = lerp(manifestedX, g.axisX, topologyToAxis);
+        manifestedY = lerp(manifestedY, axisY, topologyToAxis);
+        perspective = lerp(perspective, 0.72, topologyToAxis);
       }
-      // 步态：四腿朝你迈步(Z 前后) + 抬腿(Y)
-      const g = GAIT[i];
-      if (g && present) {
-        const ph = m.gaitPhase + g.ph * Math.PI * 2;
-        Z += -Math.cos(ph) * 0.1 * g.depth * m.walk;
-        Y += -Math.max(0, Math.sin(ph)) * 0.08 * g.depth * m.walk;
-      }
-      if (TAILS.has(i) && present) {
-        X += Math.sin(m.gaitPhase * 0.7 - i * 0.5) * 0.04 * m.walk;
-        Y += -Math.abs(Math.sin(m.gaitPhase * 0.7)) * 0.03 * m.walk;
-      }
-      if (BODY.has(i) && present) {
-        Y += -Math.abs(Math.sin(m.gaitPhase)) * 0.02 * m.walk; // 身子起伏
-      }
-      // 偏航：正面朝你 + 一点点 3/4 立体 + 缓慢微摆
-      const yaw = CFG.yaw + Math.sin(t * 0.25) * 0.04;
-      const zc = Z - 0.55;
-      const Xr = X * Math.cos(yaw) + zc * Math.sin(yaw);
-      const Zr = -X * Math.sin(yaw) + zc * Math.cos(yaw) + 0.55;
-      X = Xr;
-      Z = Zr;
-      // 透视投影
-      Z = Math.max(0.05, Z + zApproach);
-      const p = CFG.focal / (CFG.focal + Z);
-      const scale = m.w * CFG.scaleFrac;
-      const cx = m.w / 2;
-      const cy = m.h * CFG.cyFrac;
-      const breathe = present ? Math.sin(performance.now() / 1100 + i * 0.3) * 0.004 : 0;
-      const targetX = cx + X * p * scale;
-      const targetY = cy + (Y + breathe) * p * scale;
-      const sourceStar = m.field[i];
-      if (!formedLike && sourceStar) {
-        return {
-          x: lerp(sourceStar.x * m.w, targetX, conv),
-          y: lerp(sourceStar.y * m.h, targetY, conv),
-          conv,
-          p,
-        };
-      }
-      return { x: targetX, y: targetY, conv, p };
+
+      return {
+        x: manifestedX,
+        y: manifestedY,
+        conv: activeMansion ? conv : 1,
+        p: perspective,
+      };
     }
 
     function isPointNearSegment(px: number, py: number, ax: number, ay: number, bx: number, by: number) {
@@ -1744,21 +1737,26 @@ export function LaunchLab() {
       return Math.hypot(px - (ax + dx * t), py - (ay + dy * t));
     }
 
-    function isBeastHit(x: number, y: number) {
-      const pos = NODES.map((_, i) => nodePos(i));
-      const nodeHit = pos.some((p) => Math.hypot(x - p.x, y - p.y) <= Math.max(22, p.p * 28));
+    function isLifeMapHit(x: number, y: number) {
+      const pos = MANSION_COORDINATES.map((_, i) => nodePos(i));
+      const activeMansions = activeLifeBeastMansionIndices();
+      const nodeHit = activeMansions.some((mansionIndex) => {
+        const point = pos[mansionIndex]!;
+        return Math.hypot(x - point.x, y - point.y) <= Math.max(22, point.p * 28);
+      });
       if (nodeHit) return true;
-      const edgeHit = EDGES.some(([a, b]) => {
-        const pa = pos[a]!;
-        const pb = pos[b]!;
+      const edgeHit = activeMansions.slice(0, -1).some((mansionIndex, index) => {
+        const pa = pos[mansionIndex]!;
+        const pb = pos[activeMansions[index + 1]!]!;
         return isPointNearSegment(x, y, pa.x, pa.y, pb.x, pb.y) <= 18;
       });
       if (edgeHit) return true;
 
-      const minX = Math.min(...pos.map((p) => p.x));
-      const maxX = Math.max(...pos.map((p) => p.x));
-      const minY = Math.min(...pos.map((p) => p.y));
-      const maxY = Math.max(...pos.map((p) => p.y));
+      const activePoints = activeMansions.map((mansionIndex) => pos[mansionIndex]!);
+      const minX = Math.min(...activePoints.map((p) => p.x));
+      const maxX = Math.max(...activePoints.map((p) => p.x));
+      const minY = Math.min(...activePoints.map((p) => p.y));
+      const maxY = Math.max(...activePoints.map((p) => p.y));
       const padX = Math.max(92, m.w * 0.18);
       const padY = Math.max(106, m.h * 0.15);
       const cx = (minX + maxX) / 2;
@@ -1785,10 +1783,6 @@ export function LaunchLab() {
       if (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY) {
         m.afterForm += dt;
       }
-      // 步态时钟一直走（慢步 ~0.4Hz）；只在成形后逐渐"起步"
-      m.gaitPhase += dt * 2.6;
-      const targetWalk = m.state === STATE.APPROACH || m.state === STATE.READY ? 1 : 0;
-      m.walk += (targetWalk - m.walk) * Math.min(1, dt * 1.4);
       if (m.entryCardFlipT < 1) {
         const prev = m.entryCardFlipT;
         m.entryCardFlipT = Math.min(1, m.entryCardFlipT + dt * 2.6);
@@ -1817,12 +1811,6 @@ export function LaunchLab() {
           break;
         }
         case STATE.ASSEMBLY: {
-          NODES.forEach((_, i) => {
-            if (!m.arrived[i] && nodeConv(i) > 0.6) {
-              m.arrived[i] = true;
-              audio.tick();
-            }
-          });
           if (m.t >= CFG.convergeMs) {
             m.state = STATE.FORMATION;
             m.t = 0;
@@ -1842,7 +1830,7 @@ export function LaunchLab() {
           break;
         }
         case STATE.APPROACH: {
-          if (m.t >= 5.0) {
+          if (m.t >= 2.8) {
             m.state = STATE.READY;
             m.t = 0;
             m.presentDone = true;
@@ -1910,16 +1898,8 @@ export function LaunchLab() {
 
     function draw(ctx: CanvasRenderingContext2D) {
       ctx.clearRect(0, 0, m.w, m.h);
-      // 星河底（黑紫 + 极淡星云）
-      ctx.fillStyle = COLOR.bg;
-      ctx.fillRect(0, 0, m.w, m.h);
-      const neb = ctx.createRadialGradient(m.w / 2, m.h * 0.5, 0, m.w / 2, m.h * 0.5, Math.max(m.w, m.h) * 0.7);
-      neb.addColorStop(0, `rgba(${COLOR.nebula},0.1)`);
-      neb.addColorStop(0.5, `rgba(${COLOR.nebula},0.03)`);
-      neb.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = neb;
-      ctx.fillRect(0, 0, m.w, m.h);
       const now = performance.now() / 1000;
+      drawLifeUniverseDeepSpace2D(ctx, m.w, m.h, now);
       const currentScene = sceneRef.current;
       const entryVisualCopyActive = currentScene === "ENTRY";
       const entryState = toStarbeastEntryState(m.state);
@@ -1928,20 +1908,93 @@ export function LaunchLab() {
       const entryStaticActive = isEntryStaticState();
       const axisActive = m.state === STATE.STARBEAST_SANDIFY || isAxisState() || convergenceActive;
       const nodeRuntimeActive = Boolean(m.node1State?.mirrorActivated) && (currentScene === "NODE_1" || currentScene === "NODE_2");
+      const enter = m.state === STATE.STARBEAST_SANDIFY
+        ? smooth(0.08, 1.1, m.t)
+        : isAxisState() || convergenceActive || entryStaticActive
+          ? 1
+          : 0;
+      const entryCelestialState =
+        m.state === STATE.ASSEMBLY ||
+        m.state === STATE.FORMATION ||
+        m.state === STATE.APPROACH ||
+        m.state === STATE.READY;
+      const sectorReveal = m.state === STATE.ASSEMBLY
+        ? smooth(0.08, 1.05, m.t)
+        : entryCelestialState
+          ? 1
+          : 0;
+      const luminaryReveal = m.state === STATE.ASSEMBLY
+        ? smooth(0.42, 1.58, m.t)
+        : entryCelestialState
+          ? 1
+          : 0;
+      const alignmentProgress = m.state === STATE.FORMATION
+        ? smooth(0.04, 0.66, m.t)
+        : m.state === STATE.APPROACH || m.state === STATE.READY
+          ? 1
+          : 0;
+      const aggregationProgress = m.state === STATE.FORMATION
+        ? smooth(0.58, 1.34, m.t)
+        : m.state === STATE.APPROACH || m.state === STATE.READY
+          ? 1
+          : 0;
+      const lifeFormationProgress = m.state === STATE.APPROACH
+        ? smooth(0.34, 2.48, m.t)
+        : m.state === STATE.READY
+          ? 1
+          : 0;
+
+      // The core is present from the first frame as a latent identity, but it
+      // becomes a life source only after luminary → mansion → quadrant
+      // alignment has completed.
+      const persistentCoreAlpha = m.state === STATE.STARFIELD_IDLE
+        ? 0.026 + smooth(0.04, CFG.voidMs, m.t) * 0.01
+        : m.state === STATE.ASSEMBLY
+          ? 0.038
+          : m.state === STATE.FORMATION
+            ? 0.045 + alignmentProgress * 0.025
+            : m.state === STATE.APPROACH
+              ? 0.075 + lifeFormationProgress * 0.265
+              : m.state === STATE.READY
+                ? 0.34
+            : 0.72;
+      drawLifeUniverseCore2D(
+        ctx,
+        m.w,
+        m.h,
+        now,
+        persistentCoreAlpha,
+        entryCelestialState || m.state === STATE.STARFIELD_IDLE
+          ? 0.36 + lifeFormationProgress * 0.46
+          : 1,
+      );
 
       if (m.state === STATE.STARFIELD_IDLE) {
-        m.field.forEach((s) => {
-          const blink = Math.pow(0.5 + 0.5 * Math.sin(now * (2.2 + s.sp * 1.8) + s.ph), 2.2);
-          const flare = Math.pow(Math.max(0, Math.sin(now * (0.9 + s.sp) + s.ph * 1.7)), 18);
-          const a = Math.min(0.95, 0.16 + 0.34 * blink + flare * 0.38) * starbeastState.starfieldDensity;
-          ctx.fillStyle = `rgba(${COLOR.field},${a.toFixed(3)})`;
-          ctx.shadowColor = "rgba(230,236,255,0.34)";
-          ctx.shadowBlur = 2.5 + flare * 6 + starbeastState.lightAggregationIntensity * 2;
+        const firstFrameCore = resolveLifeUniverseCoreFrame(m.w, m.h, now);
+        ctx.strokeStyle = "rgba(147,172,211,0.12)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.ellipse(
+          firstFrameCore.x,
+          firstFrameCore.y,
+          Math.min(m.w * 0.43, 168),
+          Math.min(m.w * 0.19, 74),
+          0,
+          0,
+          Math.PI * 2,
+        );
+        ctx.stroke();
+        MANSION_COORDINATES.forEach((_, mansionIndex) => {
+          const point = nodePos(mansionIndex);
+          const pulse = 0.78 + Math.sin(now * 1.4 + mansionIndex * 0.42) * 0.22;
+          ctx.fillStyle = `rgba(185,203,236,${(0.2 * pulse).toFixed(3)})`;
+          ctx.shadowColor = "rgba(185,203,236,0.16)";
+          ctx.shadowBlur = 2;
           ctx.beginPath();
-          ctx.arc(s.x * m.w, s.y * m.h, s.r * (0.78 + blink * 0.42 + flare * 0.55), 0, Math.PI * 2);
+          ctx.arc(point.x, point.y, 1.15, 0, Math.PI * 2);
           ctx.fill();
-          ctx.shadowBlur = 0;
         });
+        ctx.shadowBlur = 0;
 
         const topLineStarts = [0.35, 0.95];
         const topGather = 1.15;
@@ -1979,106 +2032,461 @@ export function LaunchLab() {
         return;
       }
 
-      // Visual points fill the field first; then the entry form and text resolve.
-      const enter = m.state === STATE.STARBEAST_SANDIFY
-        ? smooth(0.08, 1.1, m.t)
-        : isAxisState()
-          ? 1
-          : convergenceActive
+      const pos = MANSION_COORDINATES.map((_, i) => nodePos(i));
+      const activeMansions = activeLifeBeastMansionIndices();
+      const activeMansionSet = new Set(activeMansions);
+      const { birthMansionIndex } = resolveLifeBeastMansionIdentity();
+      const activeSectorIndex = Math.floor(birthMansionIndex / 7);
+      const motherOrbitProgress = displayLockOrbitProgress();
+      const topologyToAxis =
+        m.state === STATE.STARBEAST_SANDIFY
+          ? smooth(0.04, 1.1, m.t)
+          : m.state === STATE.DISPLAY_LOCK && m.pendingAxisMode === "NEW_USER"
+            ? 1 - motherOrbitProgress
+          : isAxisState()
             ? 1
-            : entryStaticActive
-              ? 1
-          : 0;
-      const assemblyFade =
-        m.state === STATE.ASSEMBLY
-          ? 1 - smooth(CFG.convergeMs * 0.2, CFG.convergeMs, m.t) * 0.78
-          : m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY
-              ? 0.2 * (1 - smooth(0.2, 3.0, m.afterForm)) + 0.035
-              : 0.12;
-      const fieldA = assemblyFade * starbeastState.starfieldDensity * (1 - enter * 0.55);
-      m.field.forEach((s, i) => {
-        const isLunarMansion = i < NODES.length;
-        if (isLunarMansion && m.state !== STATE.STARFIELD_IDLE) return;
-        if (m.state !== STATE.STARFIELD_IDLE && !isLunarMansion) {
-          const thinning = m.state === STATE.ASSEMBLY
-            ? smooth(CFG.convergeMs * 0.25, CFG.convergeMs, m.t)
-            : smooth(0.2, 3.0, m.afterForm);
-          const keepEvery = m.state === STATE.ASSEMBLY ? 1 + Math.floor(thinning * 2) : 4 + Math.floor(thinning * 8);
-          if ((i - NODES.length) % keepEvery !== 0) return;
-        }
-        const blink = Math.pow(0.5 + 0.5 * Math.sin(now * (2.2 + s.sp * 1.8) + s.ph), 2.2);
-        const flare = Math.pow(Math.max(0, Math.sin(now * (0.9 + s.sp) + s.ph * 1.7)), 18);
-        const base = isLunarMansion ? 0.34 : 0.16;
-        const pulse = isLunarMansion ? 0.48 : 0.34;
-        const a = Math.min(0.95, base + pulse * blink + flare * 0.38) * fieldA;
-        ctx.fillStyle = `rgba(${COLOR.field},${a.toFixed(3)})`;
-        ctx.shadowColor = isLunarMansion ? "rgba(255,243,208,0.72)" : "rgba(230,236,255,0.34)";
-        ctx.shadowBlur = (isLunarMansion ? 8 : 2.5) + flare * (isLunarMansion ? 12 : 6) + starbeastState.lightAggregationIntensity * 4;
-        ctx.beginPath();
-        ctx.arc(s.x * m.w, s.y * m.h, s.r * (0.78 + blink * 0.42 + flare * 0.55), 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      });
-
-      const pos = NODES.map((_, i) => {
-        const p = nodePos(i);
-        if (!starbeastState.collapseAnimationTrigger) return p;
-        const k = smooth(0.05, 1.15, m.t);
-        const railCols = axisMetrics().cols;
-        const gp = i % 2 === 0
-          ? railPoint(i % railCols)
-          : tunePoint(Math.min(20, 2 + Math.floor(i / 7) * 5));
-        return {
-          ...p,
-          x: lerp(p.x, gp.x, k),
-          y: lerp(p.y, gp.y, k),
-          conv: 1,
-        };
-      });
+            : 0;
       const nodeFade = nodeRuntimeActive ? 1 - smooth(0, 0.36, m.node1T) : 1;
-      const beastAlpha = (starbeastState.collapseAnimationTrigger
-        ? 1 - smooth(0.25, 1.18, m.t)
-        : isAxisState()
-          ? 0
-          : Math.max(0.2, starbeastState.beastEmergenceTiming)) * nodeFade;
+      const structureAlpha = (
+        m.state === STATE.STARBEAST_SANDIFY
+          ? 1 - smooth(0.64, 1.12, m.t)
+          : isAxisState()
+            ? 0
+            : aggregationProgress
+      ) * nodeFade;
+      const celestialCoreFrame = resolveLifeUniverseCoreFrame(m.w, m.h, now);
+      const orbitRadiusX = Math.min(m.w * 0.43, 168);
+      const orbitRadiusY = Math.min(m.w * 0.19, 74);
+      const orbitPhase = now * 0.025;
 
-      // 连线（两端都汇聚到位才显，亮度随汇聚）
-      ctx.lineCap = "round";
-      ctx.shadowColor = `rgba(232,200,138,${(0.22 + starbeastState.lightAggregationIntensity * 0.18).toFixed(3)})`;
-      ctx.shadowBlur = 4 + starbeastState.lightAggregationIntensity * 4;
-      if (beastAlpha > 0.001) EDGES.forEach(([a, b]) => {
-        const pa = pos[a]!;
-        const pb = pos[b]!;
-        const la = Math.min(pa.conv, pb.conv);
-        if (la < 0.5) return;
-        const warm = clamp((la - 0.55) / 0.45, 0, 1) * (m.state === STATE.APPROACH || m.state === STATE.READY ? 1 : 0.6);
-        ctx.strokeStyle = `rgba(${mixRGB(PAL.coolWhite, PAL.gold, warm)},${(((la - 0.5) * 0.9) * beastAlpha).toFixed(3)})`;
-        ctx.lineWidth = 1.3 * (0.5 + ((pa.p + pb.p) / 2) * 1.2);
+      // Four Symbols are four regions of the same coordinate shell. They stay
+      // on the 28-mansion plane and are differentiated by flow cadence, never
+      // by moving seven points toward a second foreground object.
+      if (sectorReveal > 0.001 && topologyToAxis < 0.98) {
+        const sectorRadiusX = orbitRadiusX * 0.89;
+        const sectorRadiusY = orbitRadiusY * 0.84;
+        ctx.save();
+        ctx.lineCap = "round";
+        for (let sectorIndex = 0; sectorIndex < 4; sectorIndex += 1) {
+          const startAngle =
+            -Math.PI / 2 + orbitPhase + sectorIndex * (Math.PI / 2);
+          const endAngle = startAngle + Math.PI / 2;
+          const activeSector =
+            sectorIndex === activeSectorIndex && alignmentProgress > 0.001;
+          const activeWarmth = activeSector ? aggregationProgress : 0;
+          const sectorAlpha =
+            sectorReveal *
+            (activeSector
+              ? 0.16 + alignmentProgress * 0.035 + activeWarmth * 0.07
+              : 0.13);
+
+          if (activeWarmth > 0.001) {
+            ctx.setLineDash([]);
+            ctx.strokeStyle = `rgba(216,197,142,${(activeWarmth * 0.035).toFixed(3)})`;
+            ctx.lineWidth = 9;
+            ctx.beginPath();
+            ctx.ellipse(
+              celestialCoreFrame.x,
+              celestialCoreFrame.y,
+              sectorRadiusX,
+              sectorRadiusY,
+              0,
+              startAngle + 0.06,
+              endAngle - 0.06,
+            );
+            ctx.stroke();
+          }
+
+          ctx.setLineDash([3 + sectorIndex * 0.8, 8 - sectorIndex * 0.55]);
+          ctx.lineDashOffset = -now * (1.8 + sectorIndex * 0.48);
+          ctx.strokeStyle = activeWarmth > 0.12
+            ? `rgba(198,186,151,${sectorAlpha.toFixed(3)})`
+            : `rgba(147,172,211,${sectorAlpha.toFixed(3)})`;
+          ctx.lineWidth = activeSector ? 1.1 : 0.78;
+          ctx.beginPath();
+          ctx.ellipse(
+            celestialCoreFrame.x,
+            celestialCoreFrame.y,
+            sectorRadiusX,
+            sectorRadiusY,
+            0,
+            startAngle + 0.045,
+            endAngle - 0.045,
+          );
+          ctx.stroke();
+
+          ctx.setLineDash([]);
+          ctx.strokeStyle = `rgba(147,172,211,${(sectorReveal * 0.14).toFixed(3)})`;
+          ctx.lineWidth = 0.72;
+          ctx.beginPath();
+          ctx.moveTo(
+            celestialCoreFrame.x + Math.cos(startAngle) * orbitRadiusX * 0.81,
+            celestialCoreFrame.y + Math.sin(startAngle) * orbitRadiusY * 0.81,
+          );
+          ctx.lineTo(
+            celestialCoreFrame.x + Math.cos(startAngle) * orbitRadiusX * 0.985,
+            celestialCoreFrame.y + Math.sin(startAngle) * orbitRadiusY * 0.985,
+          );
+          ctx.stroke();
+
+          const sectorMidAngle = (startAngle + endAngle) / 2;
+          ctx.strokeStyle = activeWarmth > 0.12
+            ? `rgba(216,197,142,${(sectorReveal * (0.16 + activeWarmth * 0.1)).toFixed(3)})`
+            : `rgba(147,172,211,${(sectorReveal * 0.15).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.moveTo(
+            celestialCoreFrame.x + Math.cos(sectorMidAngle) * orbitRadiusX * 0.81,
+            celestialCoreFrame.y + Math.sin(sectorMidAngle) * orbitRadiusY * 0.81,
+          );
+          ctx.lineTo(
+            celestialCoreFrame.x + Math.cos(sectorMidAngle) * orbitRadiusX * 0.9,
+            celestialCoreFrame.y + Math.sin(sectorMidAngle) * orbitRadiusY * 0.9,
+          );
+          ctx.stroke();
+
+          const sectorFlow = (now * (0.028 + sectorIndex * 0.004) + sectorIndex * 0.19) % 1;
+          const sectorFlowAngle = startAngle + sectorFlow * (Math.PI / 2);
+          ctx.fillStyle = activeWarmth > 0.12
+            ? `rgba(216,197,142,${(sectorReveal * 0.32).toFixed(3)})`
+            : `rgba(147,172,211,${(sectorReveal * 0.25).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.arc(
+            celestialCoreFrame.x + Math.cos(sectorFlowAngle) * sectorRadiusX,
+            celestialCoreFrame.y + Math.sin(sectorFlowAngle) * sectorRadiusY,
+            activeSector ? 1.05 : 0.82,
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+        }
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+
+      // Seven Luminaries are moving indicators, not seven life sources. One
+      // pointer resolves into the real birth mansion; the other six continue
+      // to traverse the same celestial clock.
+      if (luminaryReveal > 0.001 && topologyToAxis < 0.98) {
+        const luminaryCadences = [0.37, 0.31, 0.27, 0.23, 0.2, 0.17, 0.145];
+        const luminaryLaneScale = 0.73;
+        const selectedLuminary = birthMansionIndex % 7;
+        const birthAngle =
+          -Math.PI / 2 +
+          orbitPhase +
+          (birthMansionIndex / MANSION_COORDINATES.length) * Math.PI * 2;
+        ctx.save();
+        ctx.setLineDash([1.5, 8]);
+        ctx.lineDashOffset = -now * 1.4;
+        ctx.strokeStyle = `rgba(185,203,236,${(luminaryReveal * 0.085).toFixed(3)})`;
+        ctx.lineWidth = 0.6;
         ctx.beginPath();
-        ctx.moveTo(pa.x, pa.y);
-        ctx.lineTo(pb.x, pb.y);
+        ctx.ellipse(
+          celestialCoreFrame.x,
+          celestialCoreFrame.y,
+          orbitRadiusX * luminaryLaneScale,
+          orbitRadiusY * luminaryLaneScale,
+          0,
+          0,
+          Math.PI * 2,
+        );
         ctx.stroke();
-      });
+        ctx.setLineDash([]);
+        luminaryCadences.forEach((cadence, luminaryIndex) => {
+          const freeAngle =
+            -Math.PI / 2 +
+            orbitPhase +
+            now * 0.052 +
+            luminaryIndex * (Math.PI * 2 / 7) +
+            Math.sin(now * cadence + luminaryIndex * 0.83) * 0.11;
+          const selected = luminaryIndex === selectedLuminary;
+          const angle = selected
+            ? lerpAngle(freeAngle, birthAngle, alignmentProgress)
+            : freeAngle;
+          const laneScale = selected
+            ? lerp(luminaryLaneScale, 1, alignmentProgress)
+            : luminaryLaneScale;
+          const x = celestialCoreFrame.x + Math.cos(angle) * orbitRadiusX * laneScale;
+          const y = celestialCoreFrame.y + Math.sin(angle) * orbitRadiusY * laneScale;
+          const selectedWarmth = selected ? alignmentProgress : 0;
+          const pointerAlpha =
+            luminaryReveal * (selected ? 0.58 + alignmentProgress * 0.25 : 0.48);
+          ctx.strokeStyle = selectedWarmth > 0.08
+            ? `rgba(232,200,138,${(pointerAlpha * 0.52).toFixed(3)})`
+            : `rgba(185,203,236,${(pointerAlpha * 0.42).toFixed(3)})`;
+          ctx.lineWidth = selected ? 0.95 : 0.68;
+          ctx.beginPath();
+          ctx.ellipse(
+            celestialCoreFrame.x,
+            celestialCoreFrame.y,
+            orbitRadiusX * laneScale,
+            orbitRadiusY * laneScale,
+            0,
+            angle - (selected ? 0.12 : 0.075),
+            angle,
+          );
+          ctx.stroke();
+
+          const stemInnerScale = Math.max(0.1, laneScale - 0.032);
+          const stemOuterScale = Math.min(1.02, laneScale + (selected ? 0.052 : 0.038));
+          ctx.beginPath();
+          ctx.moveTo(
+            celestialCoreFrame.x + Math.cos(angle) * orbitRadiusX * stemInnerScale,
+            celestialCoreFrame.y + Math.sin(angle) * orbitRadiusY * stemInnerScale,
+          );
+          ctx.lineTo(
+            celestialCoreFrame.x + Math.cos(angle) * orbitRadiusX * stemOuterScale,
+            celestialCoreFrame.y + Math.sin(angle) * orbitRadiusY * stemOuterScale,
+          );
+          ctx.stroke();
+
+          if (selected && alignmentProgress > 0.02 && alignmentProgress < 0.98) {
+            const targetX = celestialCoreFrame.x + Math.cos(birthAngle) * orbitRadiusX;
+            const targetY = celestialCoreFrame.y + Math.sin(birthAngle) * orbitRadiusY;
+            ctx.setLineDash([2, 5]);
+            ctx.strokeStyle = `rgba(232,200,138,${(
+              pointerAlpha * (1 - alignmentProgress) * 0.34
+            ).toFixed(3)})`;
+            ctx.lineWidth = 0.65;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(targetX, targetY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+
+          ctx.fillStyle = selectedWarmth > 0.08
+            ? `rgba(232,200,138,${pointerAlpha.toFixed(3)})`
+            : `rgba(185,203,236,${pointerAlpha.toFixed(3)})`;
+          ctx.shadowColor = selectedWarmth > 0.08
+            ? "rgba(232,200,138,0.38)"
+            : "rgba(185,203,236,0.18)";
+          ctx.shadowBlur = selected ? 5 : 1.5;
+          ctx.beginPath();
+          ctx.arc(x, y, selected ? 1.95 : 1.15 + (luminaryIndex % 3) * 0.12, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        });
+        ctx.shadowBlur = 0;
+        ctx.restore();
+      }
+
+      // The complete 28-mansion orbit remains visible while the selected seven
+      // become recognizable. During handoff the same path turns edge-on.
+      if (topologyToAxis < 0.98) {
+        ctx.strokeStyle = `rgba(147,172,211,${(
+          0.14 *
+          (1 - topologyToAxis) *
+          nodeFade
+        ).toFixed(3)})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        pos.forEach((point, index) => {
+          if (index === 0) ctx.moveTo(point.x, point.y);
+          else ctx.lineTo(point.x, point.y);
+        });
+        ctx.closePath();
+        ctx.stroke();
+      }
+
+      // The active seven remain at their original mansion coordinates. Their
+      // sequential links and inward current reveal a collective posture
+      // without constructing a second animal-shaped constellation.
+      ctx.lineCap = "round";
+      ctx.shadowColor = "rgba(232,200,138,0.3)";
+      ctx.shadowBlur = 5;
+      if (structureAlpha > 0.001) {
+        const activePoints = activeMansions.map((mansionIndex) => pos[mansionIndex]!);
+        const sectorCentroid = activePoints.reduce(
+          (centroid, point) => ({
+            x: centroid.x + point.x / activePoints.length,
+            y: centroid.y + point.y / activePoints.length,
+          }),
+          { x: 0, y: 0 },
+        );
+        const radialX = sectorCentroid.x - celestialCoreFrame.x;
+        const radialY = sectorCentroid.y - celestialCoreFrame.y;
+        const radialLength = Math.max(1, Math.hypot(radialX, radialY));
+        const tangentX = -radialY / radialLength;
+        const tangentY = radialX / radialLength;
+        const quadrantFlowBias = [-11, 8, -6, 12][activeSectorIndex] ?? 0;
+        const forceFocus = {
+          x:
+            sectorCentroid.x +
+            (radialX / radialLength) * 10 +
+            tangentX * quadrantFlowBias,
+          y:
+            sectorCentroid.y +
+            (radialY / radialLength) * 10 +
+            tangentY * quadrantFlowBias,
+        };
+        activeMansions.slice(0, -1).forEach((mansionIndex, activeIndex) => {
+          const pa = pos[mansionIndex]!;
+          const pb = pos[activeMansions[activeIndex + 1]!]!;
+          const localReveal = Math.min(pa.conv, pb.conv) * structureAlpha;
+          if (localReveal < 0.04) return;
+          ctx.strokeStyle = `rgba(232,200,138,${(0.18 + localReveal * 0.42).toFixed(3)})`;
+          ctx.lineWidth = 0.8 + localReveal * 0.65;
+          ctx.beginPath();
+          ctx.moveTo(pa.x, pa.y);
+          ctx.lineTo(pb.x, pb.y);
+          ctx.stroke();
+        });
+        const forceStart = activePoints[0]!;
+        const forceEnd = activePoints[activePoints.length - 1]!;
+        ctx.strokeStyle = `rgba(232,200,138,${(structureAlpha * 0.18).toFixed(3)})`;
+        ctx.lineWidth = 0.9;
+        ctx.beginPath();
+        ctx.moveTo(forceStart.x, forceStart.y);
+        ctx.quadraticCurveTo(forceFocus.x, forceFocus.y, forceEnd.x, forceEnd.y);
+        ctx.stroke();
+        for (let forceIndex = 0; forceIndex < 4; forceIndex += 1) {
+          const flow = (now * 0.1 + forceIndex / 4) % 1;
+          const inverseFlow = 1 - flow;
+          const flowX =
+            inverseFlow * inverseFlow * forceStart.x +
+            2 * inverseFlow * flow * forceFocus.x +
+            flow * flow * forceEnd.x;
+          const flowY =
+            inverseFlow * inverseFlow * forceStart.y +
+            2 * inverseFlow * flow * forceFocus.y +
+            flow * flow * forceEnd.y;
+          ctx.fillStyle = `rgba(232,200,138,${(structureAlpha * 0.26).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.arc(flowX, flowY, 0.72, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        activePoints.forEach((point, activeIndex) => {
+          const localReveal = point.conv * structureAlpha;
+          if (localReveal < 0.08) return;
+          ctx.strokeStyle = `rgba(232,200,138,${(localReveal * 0.115).toFixed(3)})`;
+          ctx.lineWidth = 0.65;
+          ctx.beginPath();
+          ctx.moveTo(point.x, point.y);
+          ctx.lineTo(sectorCentroid.x, sectorCentroid.y);
+          ctx.stroke();
+
+          const flow = (now * 0.18 + activeIndex * 0.13) % 1;
+          const flowX = lerp(point.x, sectorCentroid.x, flow);
+          const flowY = lerp(point.y, sectorCentroid.y, flow);
+          ctx.fillStyle = `rgba(232,200,138,${(localReveal * 0.24).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.arc(flowX, flowY, 0.75, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
       ctx.shadowBlur = 0;
 
-      // 28 颗星
-      if (beastAlpha > 0.001) pos.forEach((p, i) => {
-        const n = NODES[i]!;
+      // All 28 points survive the entire transformation. Hierarchy comes from
+      // real group membership and the birth mansion, never from random size.
+      pos.forEach((p, i) => {
         const ch = m.chaos[i]!;
         const tw = 0.7 + 0.3 * Math.sin(now * (1 + ch.sp) + ch.ph);
-        const warmth = clamp((p.conv - 0.55) / 0.45, 0, 1) * (m.state === STATE.APPROACH || m.state === STATE.READY ? 1 : 0.55);
-        const depth = 0.35 + p.p * 1.5; // 近大远小
-        const r = (n.big ? 3.2 : 2.0) * (0.5 + 0.5 * p.conv) * depth;
-        ctx.globalAlpha = clamp(p.conv * tw * beastAlpha, 0, 1);
-        ctx.fillStyle = `rgb(${mixRGB(PAL.coolWhite, PAL.cream, warmth)})`;
-        ctx.shadowColor = `rgba(${mixRGB([255, 255, 255], PAL.gold, warmth)},0.75)`;
-        ctx.shadowBlur = (n.big ? 12 : 7) * depth;
+        const active = activeMansionSet.has(i);
+        const birth = i === birthMansionIndex;
+        const activeReveal = active ? p.conv * structureAlpha : 0;
+        const birthReveal = birth ? alignmentProgress : 0;
+        const pointAlpha = birth
+          ? 0.2 + birthReveal * 0.76
+          : active
+            ? 0.18 + activeReveal * 0.64
+            : 0.18 + topologyToAxis * 0.12;
+        const pointRadius = birth
+          ? 1.2 + birthReveal * 3
+          : active
+            ? 1.2 + activeReveal * 1.6
+            : 1.2;
+        ctx.globalAlpha = clamp(pointAlpha * tw * nodeFade, 0, 1);
+        ctx.fillStyle = birthReveal > 0.06
+          ? "rgb(255,247,228)"
+          : activeReveal > 0.04
+            ? "rgb(232,200,138)"
+            : "rgb(185,203,236)";
+        ctx.shadowColor = birthReveal > 0.06
+          ? "rgba(255,247,228,0.82)"
+          : activeReveal > 0.04
+            ? "rgba(232,200,138,0.62)"
+            : "rgba(185,203,236,0.24)";
+        ctx.shadowBlur = birthReveal > 0.06 ? 18 : activeReveal > 0.04 ? 8 : 3;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, pointRadius * (0.78 + p.p * 0.34), 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
       });
+
+      // 成命：the selected mansion carries the gathered quadrant force into
+      // the already-present latent core. The core brightens; it is never
+      // replaced by a new object.
+      if (lifeFormationProgress > 0.001 && entryCelestialState) {
+        const birthPoint = pos[birthMansionIndex]!;
+        const lifeGradient = ctx.createLinearGradient(
+          birthPoint.x,
+          birthPoint.y,
+          celestialCoreFrame.x,
+          celestialCoreFrame.y,
+        );
+        lifeGradient.addColorStop(0, `rgba(255,247,228,${(lifeFormationProgress * 0.34).toFixed(3)})`);
+        lifeGradient.addColorStop(1, `rgba(232,200,138,${(lifeFormationProgress * 0.16).toFixed(3)})`);
+        ctx.strokeStyle = lifeGradient;
+        ctx.lineWidth = 0.8 + lifeFormationProgress * 0.45;
+        ctx.beginPath();
+        ctx.moveTo(birthPoint.x, birthPoint.y);
+        ctx.lineTo(celestialCoreFrame.x, celestialCoreFrame.y);
+        ctx.stroke();
+        for (let pulseIndex = 0; pulseIndex < 3; pulseIndex += 1) {
+          const pulse = (now * 0.21 + pulseIndex / 3) % 1;
+          ctx.fillStyle = `rgba(255,247,228,${(lifeFormationProgress * (0.22 + pulse * 0.14)).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.arc(
+            lerp(birthPoint.x, celestialCoreFrame.x, pulse),
+            lerp(birthPoint.y, celestialCoreFrame.y, pulse),
+            0.75 + lifeFormationProgress * 0.45,
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+        }
+      }
+
+      // Confirmation does not create a second constellation. The same 28
+      // coordinates fold back from the time axis into their mother-force
+      // orbit, while the same birth coordinate remains tethered to the same
+      // life core. Copy and controls stay out of this visual handoff frame.
+      if (
+        m.state === STATE.DISPLAY_LOCK &&
+        m.pendingAxisMode === "NEW_USER" &&
+        m.lifeSourceSession
+      ) {
+        const motherReveal = smooth(0.18, 1.16, m.t);
+        const motherCoreFrame = resolveLifeUniverseCoreFrame(m.w, m.h, now);
+        const birthPoint = pos[birthMansionIndex]!;
+        ctx.save();
+        ctx.strokeStyle = `rgba(216,197,142,${(motherReveal * 0.3).toFixed(3)})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(motherCoreFrame.x, motherCoreFrame.y);
+        ctx.lineTo(birthPoint.x, birthPoint.y);
+        ctx.stroke();
+        [42, 58, 74].forEach((radius, index) => {
+          ctx.strokeStyle = `rgba(216,199,143,${(
+            motherReveal * (0.28 - index * 0.05)
+          ).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.ellipse(
+            motherCoreFrame.x,
+            motherCoreFrame.y,
+            radius,
+            radius * (0.44 + index * 0.05),
+            index * 0.08,
+            0,
+            Math.PI * 2,
+          );
+          ctx.stroke();
+        });
+        drawLifeUniverseCore2D(ctx, m.w, m.h, now, 0.72 + motherReveal * 0.2);
+        ctx.restore();
+        return;
+      }
 
       if (nodeRuntimeActive) {
         const node1ElapsedMs = m.node1T * 1000;
@@ -2121,13 +2529,13 @@ export function LaunchLab() {
       if (axisActive) {
         const axisSeed =
           m.state === STATE.STARBEAST_SANDIFY
-            ? smooth(0.05, 0.92, m.t)
+            ? smooth(0.42, 1.02, m.t)
             : m.state === STATE.AXIS_EMERGENCE
               ? smooth(0, 1.25, m.t)
               : 1;
         const axisGrow =
           m.state === STATE.STARBEAST_SANDIFY
-            ? smooth(0.18, 1.08, m.t)
+            ? smooth(0.58, 1.12, m.t)
             : m.state === STATE.AXIS_EMERGENCE
             ? smooth(0.25, 1.25, m.t)
             : isAxisState() || convergenceActive
@@ -2148,9 +2556,10 @@ export function LaunchLab() {
         m.precisionY = range.max > range.min ? Math.round((1 - clamp(dialFrac, 0, 1)) * 20) : 10;
         const railCursor = { x: lerp(g.railX0, g.railX1, m.railProgress), y: g.railY };
         const tuneCursor = tunePoint(m.precisionY);
-        const originX = m.w / 2;
-        const originY = m.h * 0.48;
-        const originPulse = 0.72 + Math.sin(now * 2.2) * 0.12;
+        const originCoreFrame = resolveLifeUniverseCoreFrame(m.w, m.h, now);
+        const originX = originCoreFrame.x;
+        const originY = originCoreFrame.y;
+        const originPulse = 0.72 + (originCoreFrame.breath - 1) * 1.5;
         const originEmission = Math.max(axisSeed, axisGrow) * originPulse;
         const guideCycle = (now * 0.34) % 1;
         const guideStage = guideCycle < 0.54 ? "y" : "x";
@@ -2380,12 +2789,12 @@ export function LaunchLab() {
         if (convergenceActive) {
           const freeze = m.state === STATE.ENTRY_PRE_COLLAPSE ? smooth(0, 0.55, m.t) : 1;
           const converge = m.state === STATE.ENTRY_LIGHT_CONVERGENCE ? smooth(0, 0.95, m.t) : 0;
-          const centerX = m.w / 2;
-          const centerY = m.h * 0.48;
+          const convergenceCoreFrame = resolveLifeUniverseCoreFrame(m.w, m.h, now);
+          const centerX = convergenceCoreFrame.x;
+          const centerY = convergenceCoreFrame.y;
           ctx.fillStyle = `rgba(0,0,0,${(0.1 + freeze * 0.18 + converge * 0.22).toFixed(3)})`;
           ctx.fillRect(0, 0, m.w, m.h);
-          const pulse = 0.72 + Math.sin(now * 5.4) * 0.1;
-          for (let i = 0; i < NODES.length; i++) {
+          for (let i = 0; i < MANSION_COORDINATES.length; i++) {
             const from = i % 2 === 0
               ? railPoint(i % 7)
               : tunePoint(Math.min(20, 2 + Math.floor(i / 7) * 5));
@@ -2402,14 +2811,13 @@ export function LaunchLab() {
             ctx.arc(x, y, 1.2 + converge * 1.7, 0, Math.PI * 2);
             ctx.fill();
           }
-          const coreGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 58);
-          coreGradient.addColorStop(0, `rgba(${starWhiteRgb},${(0.08 + converge * 0.42 * pulse).toFixed(3)})`);
-          coreGradient.addColorStop(0.46, `rgba(${warmAxisRgb},${(0.06 + converge * 0.18).toFixed(3)})`);
-          coreGradient.addColorStop(1, "rgba(232,200,138,0)");
-          ctx.fillStyle = coreGradient;
-          ctx.beginPath();
-          ctx.arc(centerX, centerY, 58, 0, Math.PI * 2);
-          ctx.fill();
+          drawLifeUniverseCore2D(
+            ctx,
+            m.w,
+            m.h,
+            now,
+            0.18 + converge * 0.55,
+          );
           ctx.shadowBlur = 0;
           ctx.textAlign = "center";
           ctx.fillStyle = `rgba(255,247,228,${(0.18 + converge * 0.55).toFixed(3)})`;
@@ -3018,9 +3426,10 @@ export function LaunchLab() {
         m.state === STATE.FORMATION ||
         m.state === STATE.APPROACH ||
         m.state === STATE.READY;
-      if (beastClickReady && isBeastHit(x, y)) {
+      if (beastClickReady && isLifeMapHit(x, y)) {
         triggerClickFlash();
-        emitNode1MirrorActivatedEvent();
+        if (DEBUG_TIMELINE) emitNode1MirrorActivatedEvent();
+        else routeEntryFromBeastCollapseEvent();
         return;
       }
       if (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND) {

@@ -16,6 +16,12 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
+import {
+  drawLifeUniverseCore2D,
+  LIFE_UNIVERSE_CORE_IDENTITY,
+  LIFE_UNIVERSE_STAR_FIELD,
+  projectLifeUniverseStarToViewport,
+} from "../renderers/lifeUniverseStarField";
 
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
 const SANS = "-apple-system, system-ui, sans-serif";
@@ -30,7 +36,6 @@ const CFG = {
   barThick: 13, // 入场爻条厚度(小宽线)
   logoThick: 5.2, // 成 LOGO 后斜短线厚度（同比例变细，等宽粗杠）
   // 两仪 / 撕断（B）
-  breathePeriod: 3.0,
   autoTearDelay: 3.0,
   autoTearRamp: 0.6,
   tearTravel: 130,
@@ -523,7 +528,16 @@ export function GenesisLab({ onComplete, mode = "full" }: { onComplete?: () => v
       ctx.fillStyle = COLOR.bg;
       ctx.fillRect(-30, -30, m.w + 60, m.h + 60);
 
-      const breathe = 0.5 + 0.5 * Math.sin((performance.now() / 1000 / CFG.breathePeriod) * Math.PI * 2);
+      const universeSeconds = performance.now() / 1000;
+      const breathe =
+        0.5 +
+        0.5 *
+          Math.sin(
+            (universeSeconds /
+              LIFE_UNIVERSE_CORE_IDENTITY.breathPeriodSeconds) *
+              Math.PI *
+              2,
+          );
       const r = Math.max(m.w, m.h) * 0.6;
       const fg = ctx.createRadialGradient(m.cx, m.logoCY, 0, m.cx, m.logoCY, r);
       fg.addColorStop(0, `rgba(0,184,212,${(0.024 + breathe * 0.014).toFixed(3)})`);
@@ -531,6 +545,45 @@ export function GenesisLab({ onComplete, mode = "full" }: { onComplete?: () => v
       fg.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = fg;
       ctx.fillRect(0, 0, m.w, m.h);
+
+      const universeVisibility = m.state === "VOID"
+        ? smooth(0.04, CFG.voidMs, m.voidT) * 0.2
+        : m.state === "SANDIFY"
+          ? 0.2 + smooth(0.05, 0.9, m.sandT) * 0.22
+          : m.state === "PRESENT"
+            ? 0.28
+            : 0.2;
+      LIFE_UNIVERSE_STAR_FIELD.forEach((star) => {
+        const point = projectLifeUniverseStarToViewport(
+          star,
+          m.w,
+          m.h,
+          universeSeconds,
+        );
+        const twinkle = 0.62 + Math.sin(universeSeconds * star.speed + star.phase) * 0.38;
+        const alpha = universeVisibility * (0.25 + point.depth * 0.45) * twinkle;
+        ctx.fillStyle = `rgba(185,203,236,${alpha.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(
+          point.x,
+          point.y,
+          star.radius * (0.46 + point.depth * 0.34),
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+      });
+
+      // The same life light remains present beneath every entrance state. The
+      // mark, copy, and sand are temporary expressions around this fixed core.
+      const sandContinuity = m.state === "SANDIFY" ? smooth(0, 0.9, m.sandT) : 0;
+      drawLifeUniverseCore2D(
+        ctx,
+        m.w,
+        m.h,
+        universeSeconds,
+        0.11 + sandContinuity * 0.49,
+      );
 
       if (m.state === "VOID") {
         const beat = Math.abs(Math.sin(m.voidT * 16));

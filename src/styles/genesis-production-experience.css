@@ -4,7 +4,10 @@
   min-width: 320px;
   height: 100dvh;
   overflow: hidden;
-  background: #020306;
+  background:
+    radial-gradient(ellipse at 50% 46%, rgb(24 34 58 / 14%), transparent 72%),
+    radial-gradient(ellipse at 18% 20%, rgb(31 27 52 / 7.5%), transparent 62%),
+    #02040a;
   isolation: isolate;
 }
 

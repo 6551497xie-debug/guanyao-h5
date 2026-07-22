@@ -49,6 +49,10 @@ import type {
   GenesisWebGLRendererCoreResult,
   GenesisWebGLRendererCoreSceneProjection,
 } from "../types/genesisWebGLRendererCore";
+import {
+  LIFE_UNIVERSE_CORE_IDENTITY,
+  LIFE_UNIVERSE_STAR_FIELD,
+} from "./lifeUniverseStarField";
 
 const GENESIS_WEBGL_RENDERER_CORE_BOUNDARY: GenesisWebGLRendererCoreBoundary =
   Object.freeze({
@@ -393,6 +397,12 @@ export function createGenesisWebGLRendererCore(
   renderer.setSize(input.width, input.height, false);
 
   const root = new Group();
+  const lifeUniverseAnchorOffsetY =
+    2 *
+    Math.tan((camera.fov * Math.PI) / 360) *
+    camera.position.z *
+    (0.5 - LIFE_UNIVERSE_CORE_IDENTITY.anchorY);
+  root.position.y = lifeUniverseAnchorOffsetY;
   scene.add(root);
   scene.add(new AmbientLight(0xb9c6ff, 0.18));
 
@@ -477,70 +487,17 @@ export function createGenesisWebGLRendererCore(
           ? 0.84 - perspectiveRecognitionStability * 0.04
           : 1;
   const random = createSeededRandom(hashReference(planReference.referenceId));
-  const cosmicParticleCount = isMoonOrigin
-    ? Math.round(
-        sceneProjection.cosmicField.particleCount *
-          0.62 *
-          (0.86 + perspectiveMoonWeight * 0.12),
-      )
-    : isStarRiver
-      ? Math.round(
-          sceneProjection.cosmicField.particleCount *
-            1.18 *
-            (0.9 + perspectiveStarWeight * 0.2),
-        )
-      : isTimeResonance
-        ? Math.round(
-            sceneProjection.cosmicField.particleCount *
-              (0.96 + perspectiveTimeWeight * 0.1),
-          )
-      : isSymbolReveal
-        ? Math.round(sceneProjection.cosmicField.particleCount * 1.28)
-        : isHexagramImprint
-          ? Math.round(sceneProjection.cosmicField.particleCount * 1.12)
-            : isLifeForce
-              ? Math.round(sceneProjection.cosmicField.particleCount * 1.04)
-              : isPresenceStage
-                ? Math.round(
-                    sceneProjection.cosmicField.particleCount *
-                      (0.78 + recognitionCosmicSupportWeight * 0.22),
-                  )
-              : sceneProjection.cosmicField.particleCount;
+  // Geometry is intentionally stage-invariant. Density changes are expressed
+  // through opacity so the user never sees the universe get regenerated. The
+  // field itself is the same immutable topology used before Genesis.
+  const cosmicParticleCount = LIFE_UNIVERSE_STAR_FIELD.length;
   const cosmicPositions = new Float32Array(cosmicParticleCount * 3);
-  const moonCosmicSpread =
-    sceneProjection.cosmicField.spread *
-    (0.56 + perspectiveBackgroundDepth * 0.12) *
-    (0.92 + spatialDepthScale * 0.08);
-  for (
-    let index = 0;
-    index < cosmicParticleCount;
-    index += 1
-  ) {
+  LIFE_UNIVERSE_STAR_FIELD.forEach((star, index) => {
     const offset = index * 3;
-    if (
-      isStarRiver ||
-      isTimeResonance ||
-      isSymbolReveal ||
-      isHexagramImprint ||
-      isLifeForce ||
-      isPresenceStage
-    ) {
-      const angle = random() * Math.PI * 2;
-      const radius = 1.25 + random() * 2.5;
-      cosmicPositions[offset] = Math.cos(angle) * radius;
-      cosmicPositions[offset + 1] = Math.sin(angle) * radius * 0.48;
-      cosmicPositions[offset + 2] = (random() - 0.5) * 3.4;
-    } else {
-      cosmicPositions[offset] =
-        (random() - 0.5) *
-        (isMoonOrigin ? moonCosmicSpread : sceneProjection.cosmicField.spread);
-      cosmicPositions[offset + 1] =
-        (random() - 0.5) *
-        (isMoonOrigin ? moonCosmicSpread : sceneProjection.cosmicField.spread) *
-          0.72;
-      cosmicPositions[offset + 2] = (random() - 0.5) * 4;
-    }
-  }
+    cosmicPositions[offset] = star.x;
+    cosmicPositions[offset + 1] = star.y;
+    cosmicPositions[offset + 2] = star.z;
+  });
   const cosmicGeometry = new BufferGeometry();
   cosmicGeometry.setAttribute(
     "position",
@@ -549,7 +506,7 @@ export function createGenesisWebGLRendererCore(
   const cosmicMaterial = new PointsMaterial({
     color: new Color().setHSL(sceneProjection.formField.hue, 0.42, 0.7),
     size: isMoonOrigin
-      ? 0.018
+      ? 0.022
       : isStarRiver
         ? 0.022
         : isSymbolReveal
@@ -600,8 +557,11 @@ export function createGenesisWebGLRendererCore(
   });
   const cosmicField = new Points(cosmicGeometry, cosmicMaterial);
   const cosmicPointMaterial = cosmicField.material as PointsMaterial;
+  cosmicField.position.y = lifeUniverseAnchorOffsetY;
   cosmicField.position.z = -(spatialDepthScale - 0.78) * 0.18;
-  root.add(cosmicField);
+  // The universe is camera space, not a child of the manifested body. Body
+  // posture may change between stages without rotating the star topology.
+  scene.add(cosmicField);
 
   const mansionCoordinateVisualLayer =
     sceneProjection.mansionCoordinateVisualLayer;
@@ -611,24 +571,44 @@ export function createGenesisWebGLRendererCore(
   let birthMansionPointMaterial: PointsMaterial | null = null;
   const coordinateFormationExpression =
     mansionCoordinateVisualLayer?.coordinateFormationExpression ?? null;
+  const retainMotherContinuityOrbit =
+    isMoonOrigin && mansionCoordinateVisualLayer !== null;
+  const motherContinuityOrbitPhase = performance.now() / 1000 * 0.025;
+  const continuityCoordinatePosition = (coordinateIndex: number) => {
+    const angle =
+      (coordinateIndex / 28) * Math.PI * 2 -
+      Math.PI / 2 +
+      motherContinuityOrbitPhase;
+    return {
+      x: Math.cos(angle) * 2.65,
+      y: Math.sin(angle) * 1.32,
+    };
+  };
   if (
     mansionCoordinateVisualLayer !== null &&
-    mansionCoordinateVisualLayer.visibility !== "HIDDEN"
+    (mansionCoordinateVisualLayer.visibility !== "HIDDEN" ||
+      retainMotherContinuityOrbit)
   ) {
     const birthCoordinateRevealed =
       mansionCoordinateVisualLayer.visibility ===
       "BIRTH_MANSION_COORDINATE_REVEALED";
-    const neutralCoordinates = birthCoordinateRevealed
+    const birthCoordinateVisible =
+      birthCoordinateRevealed || retainMotherContinuityOrbit;
+    const neutralCoordinates = birthCoordinateVisible
       ? mansionCoordinateVisualLayer.coordinates.filter(
           (coordinate) =>
-            coordinate.visualRole === "MANSION_COORDINATE",
+            coordinate.coordinateIndex !==
+            mansionCoordinateVisualLayer.birthCoordinate.coordinateIndex,
         )
       : mansionCoordinateVisualLayer.coordinates;
     const neutralPositions = new Float32Array(neutralCoordinates.length * 3);
     neutralCoordinates.forEach((coordinate, index) => {
       const offset = index * 3;
-      neutralPositions[offset] = coordinate.x;
-      neutralPositions[offset + 1] = coordinate.y;
+      const continuityPosition = retainMotherContinuityOrbit
+        ? continuityCoordinatePosition(coordinate.coordinateIndex)
+        : coordinate;
+      neutralPositions[offset] = continuityPosition.x;
+      neutralPositions[offset + 1] = continuityPosition.y;
       neutralPositions[offset + 2] = coordinate.z;
     });
     const neutralGeometry = new BufferGeometry();
@@ -644,6 +624,7 @@ export function createGenesisWebGLRendererCore(
       transparent: true,
       opacity:
         mansionCoordinateVisualLayer.fieldExpression.neutralOpacity *
+        (retainMotherContinuityOrbit ? 0.72 : 1) *
         (isPresenceStage ? (isCompletion ? 0.24 : 0.34) : 1),
       blending: AdditiveBlending,
       depthWrite: false,
@@ -655,7 +636,8 @@ export function createGenesisWebGLRendererCore(
     if (
       coordinateFormationExpression !== null &&
       (coordinateFormationExpression.phase === "SEEKING_TO_FOUND" ||
-        coordinateFormationExpression.phase === "FOUND")
+        coordinateFormationExpression.phase === "FOUND" ||
+        retainMotherContinuityOrbit)
     ) {
       const orbitCoordinates = mansionCoordinateVisualLayer.coordinates;
       const orbitPositions = new Float32Array(
@@ -663,8 +645,11 @@ export function createGenesisWebGLRendererCore(
       );
       orbitCoordinates.forEach((coordinate, index) => {
         const offset = index * 3;
-        orbitPositions[offset] = coordinate.x;
-        orbitPositions[offset + 1] = coordinate.y;
+        const continuityPosition = retainMotherContinuityOrbit
+          ? continuityCoordinatePosition(coordinate.coordinateIndex)
+          : coordinate;
+        orbitPositions[offset] = continuityPosition.x;
+        orbitPositions[offset + 1] = continuityPosition.y;
         orbitPositions[offset + 2] = coordinate.z;
       });
       orbitPositions.set(orbitPositions.slice(0, 3), orbitCoordinates.length * 3);
@@ -677,7 +662,9 @@ export function createGenesisWebGLRendererCore(
         color: new Color(0x93acd3),
         transparent: true,
         opacity:
-          coordinateFormationExpression.phase === "FOUND"
+          retainMotherContinuityOrbit
+            ? 0.14
+            : coordinateFormationExpression.phase === "FOUND"
             ? coordinateFormationExpression.orbitAxisOpacity
             : 0,
         blending: AdditiveBlending,
@@ -688,6 +675,9 @@ export function createGenesisWebGLRendererCore(
       );
 
       const birthPosition = mansionCoordinateVisualLayer.birthCoordinate;
+      const continuityBirthPosition = retainMotherContinuityOrbit
+        ? continuityCoordinatePosition(birthPosition.coordinateIndex)
+        : birthPosition;
       const birthAxisGeometry = new BufferGeometry();
       birthAxisGeometry.setAttribute(
         "position",
@@ -696,8 +686,8 @@ export function createGenesisWebGLRendererCore(
             0,
             0,
             birthPosition.z,
-            birthPosition.x,
-            birthPosition.y,
+            continuityBirthPosition.x,
+            continuityBirthPosition.y,
             birthPosition.z,
           ],
           3,
@@ -707,7 +697,9 @@ export function createGenesisWebGLRendererCore(
         color: new Color(0xd8c58e),
         transparent: true,
         opacity:
-          coordinateFormationExpression.phase === "FOUND"
+          retainMotherContinuityOrbit
+            ? 0.18
+            : coordinateFormationExpression.phase === "FOUND"
             ? coordinateFormationExpression.birthAxisOpacity
             : 0,
         blending: AdditiveBlending,
@@ -718,13 +710,20 @@ export function createGenesisWebGLRendererCore(
       );
     }
 
-    if (birthCoordinateRevealed) {
+    if (birthCoordinateVisible) {
       const birthCoordinate = mansionCoordinateVisualLayer.birthCoordinate;
+      const continuityBirthPosition = retainMotherContinuityOrbit
+        ? continuityCoordinatePosition(birthCoordinate.coordinateIndex)
+        : birthCoordinate;
       const birthGeometry = new BufferGeometry();
       birthGeometry.setAttribute(
         "position",
         new Float32BufferAttribute(
-          [birthCoordinate.x, birthCoordinate.y, birthCoordinate.z],
+          [
+            continuityBirthPosition.x,
+            continuityBirthPosition.y,
+            birthCoordinate.z,
+          ],
           3,
         ),
       );
@@ -735,7 +734,9 @@ export function createGenesisWebGLRendererCore(
         sizeAttenuation: true,
         transparent: true,
         opacity:
-          coordinateFormationExpression?.phase === "SEEKING_TO_FOUND"
+          retainMotherContinuityOrbit
+            ? mansionCoordinateVisualLayer.birthCoordinateExpression.opacity * 0.82
+            : coordinateFormationExpression?.phase === "SEEKING_TO_FOUND"
             ? 0
             : mansionCoordinateVisualLayer.birthCoordinateExpression.opacity,
         blending: AdditiveBlending,
@@ -751,6 +752,22 @@ export function createGenesisWebGLRendererCore(
       mansionCoordinateGroup.scale.set(
         coordinateFormationExpression.initialRadialScale,
         coordinateFormationExpression.initialRadialScale,
+        1,
+      );
+    } else if (retainMotherContinuityOrbit) {
+      const coordinateDepth = Math.abs(
+        camera.position.z - mansionCoordinateVisualLayer.birthCoordinate.z,
+      );
+      const pixelsPerWorld =
+        input.height /
+        (2 * Math.tan((camera.fov * Math.PI) / 360) * coordinateDepth);
+      const continuityScaleX =
+        Math.min(input.width * 0.43, 168) / (2.65 * pixelsPerWorld);
+      const continuityScaleY =
+        Math.min(input.width * 0.19, 74) / (1.32 * pixelsPerWorld);
+      mansionCoordinateGroup.scale.set(
+        continuityScaleX,
+        -continuityScaleY,
         1,
       );
     }
@@ -1311,13 +1328,10 @@ export function createGenesisWebGLRendererCore(
     root.add(imprintTraceGroup);
   }
 
-  const coreColor = isMoonOrigin
-    ? new Color(0xd8d2c4)
-    : new Color().setHSL(sceneProjection.lifeCore.hue, 0.76, 0.7);
-  const coreRadius = isMoonOrigin
-    ? 0.34 + lifeStarCore.surfacePresence.innerLayerDepth * 0.12
-    : (0.1 + lifeStarCore.surfacePresence.innerLayerDepth * 0.42) *
-      (isPresenceStage ? 0.36 : 1);
+  const coreColor = new Color(LIFE_UNIVERSE_CORE_IDENTITY.threeColor);
+  // At the production camera distance this resolves to the same ~24px core
+  // used by the entrance and Launch at the 390px acceptance viewport.
+  const coreRadius = 0.14;
   const coreStageOpacity = isMoonOrigin
     ? 0.46
     : isStarRiver
@@ -1353,7 +1367,7 @@ export function createGenesisWebGLRendererCore(
   );
   const coreSurface = new Mesh(
     new SphereGeometry(
-      coreRadius * (1.18 + lifeStarCore.surfacePresence.surfaceVariation * 0.4),
+      coreRadius * LIFE_UNIVERSE_CORE_IDENTITY.surfaceToCoreRatio,
       18,
       18,
     ),
@@ -1373,7 +1387,7 @@ export function createGenesisWebGLRendererCore(
   );
   const coreHalo = new Mesh(
     new SphereGeometry(
-      coreRadius * lifeStarCore.surfacePresence.atmosphereRadius,
+      coreRadius * LIFE_UNIVERSE_CORE_IDENTITY.haloToCoreRatio,
       18,
       18,
     ),
@@ -1428,11 +1442,13 @@ export function createGenesisWebGLRendererCore(
         }),
       )
     : null;
+  const coreIdentityGroup = new Group();
   core.add(coreLight);
-  root.add(coreHalo);
-  root.add(coreSurface);
-  root.add(core);
-  if (timeRing !== null) root.add(timeRing);
+  coreIdentityGroup.add(coreHalo);
+  coreIdentityGroup.add(coreSurface);
+  coreIdentityGroup.add(core);
+  if (timeRing !== null) coreIdentityGroup.add(timeRing);
+  root.add(coreIdentityGroup);
 
   let frameCount = 0;
   let disposed = false;
@@ -1459,6 +1475,7 @@ export function createGenesisWebGLRendererCore(
         (Number.isFinite(elapsedMilliseconds)
           ? Math.max(0, elapsedMilliseconds)
           : 0) / 1000;
+      const universeSeconds = performance.now() / 1000;
       let coordinateFormationProgress = 1;
       if (coordinateFormationExpression?.phase === "SEEKING_TO_FOUND") {
         const rawProgress = Math.min(
@@ -1519,18 +1536,22 @@ export function createGenesisWebGLRendererCore(
         coordinateFormationExpression !== null
       ) {
         mansionOrbitMaterial.opacity =
-          coordinateFormationExpression.orbitAxisOpacity *
-          axisRevealProgress *
-          (isPresenceStage ? (isCompletion ? 0.28 : 0.38) : 1);
+          retainMotherContinuityOrbit
+            ? 0.14
+            : coordinateFormationExpression.orbitAxisOpacity *
+              axisRevealProgress *
+              (isPresenceStage ? (isCompletion ? 0.28 : 0.38) : 1);
       }
       if (
         birthCoordinateAxisMaterial !== null &&
         coordinateFormationExpression !== null
       ) {
         birthCoordinateAxisMaterial.opacity =
-          coordinateFormationExpression.birthAxisOpacity *
-          birthRevealProgress *
-          (isPresenceStage ? (isCompletion ? 0.34 : 0.44) : 1);
+          retainMotherContinuityOrbit
+            ? 0.18
+            : coordinateFormationExpression.birthAxisOpacity *
+              birthRevealProgress *
+              (isPresenceStage ? (isCompletion ? 0.34 : 0.44) : 1);
       }
       if (
         birthMansionPointMaterial !== null &&
@@ -1539,7 +1560,7 @@ export function createGenesisWebGLRendererCore(
         const birthExpression =
           mansionCoordinateVisualLayer.birthCoordinateExpression;
         const birthPhase =
-          (elapsedSeconds / birthExpression.breathingPeriodSeconds) *
+          (universeSeconds / birthExpression.breathingPeriodSeconds) *
           Math.PI *
           2;
         const birthBreath =
@@ -1547,10 +1568,12 @@ export function createGenesisWebGLRendererCore(
         birthMansionPointMaterial.size =
           birthExpression.pointSize *
           birthBreath *
-          (0.82 + birthRevealProgress * 0.18);
+          (retainMotherContinuityOrbit
+            ? 1
+            : 0.82 + birthRevealProgress * 0.18);
         birthMansionPointMaterial.opacity =
           birthExpression.opacity *
-          birthRevealProgress *
+          (retainMotherContinuityOrbit ? 0.82 : birthRevealProgress) *
           (0.94 + Math.sin(birthPhase) * 0.06);
       }
       if (
@@ -1558,7 +1581,7 @@ export function createGenesisWebGLRendererCore(
         directionFieldMaterial !== null
       ) {
         const directionPhase =
-          (elapsedSeconds /
+          (universeSeconds /
             directionFieldExpression.breathingPeriodSeconds) *
           Math.PI *
           2;
@@ -1581,7 +1604,7 @@ export function createGenesisWebGLRendererCore(
         forceCondensationMaterials.length > 0
       ) {
         const forcePhase =
-          (elapsedSeconds /
+          (universeSeconds /
             forceCondensationExpression.breathingPeriodSeconds) *
           Math.PI *
           2;
@@ -1597,7 +1620,7 @@ export function createGenesisWebGLRendererCore(
           radialScale,
         );
         forceCondensationGroup.rotation.z =
-          elapsedSeconds * forceCondensationExpression.flowRotationSpeed;
+          universeSeconds * forceCondensationExpression.flowRotationSpeed;
         forceCondensationMaterials.forEach((material, index) => {
           material.opacity =
             forceCondensationExpression.ringOpacity *
@@ -1616,12 +1639,13 @@ export function createGenesisWebGLRendererCore(
       root.rotation.y = elapsedSeconds * presenceRotation;
       let cosmicFieldScale = 1;
       let cosmicFieldOpacity = sceneProjection.cosmicField.opacity;
+      cosmicField.rotation.z = universeSeconds * 0.004;
       cosmicFieldScale *=
         0.98 + spatialDepthScale * 0.012 + spatialApproachProgress * 0.008;
       cosmicFieldOpacity *= 0.82 + spatialContrast * 0.12 + spatialApproachProgress * 0.06;
       if (timeSequenceRecognition !== null) {
         const recognitionPhase =
-          (elapsedSeconds /
+          (universeSeconds /
             timeSequenceRecognition.temporalRhythm.periodSeconds) *
             Math.PI *
             2 +
@@ -1631,6 +1655,7 @@ export function createGenesisWebGLRendererCore(
           Math.sin(recognitionPhase) *
             timeSequenceRecognition.temporalRhythm.breathingAmplitude;
         cosmicField.rotation.z =
+          universeSeconds * 0.004 +
           timeSequenceRecognition.cosmicResponseExpression.directionalDrift *
             0.018 +
           Math.sin(recognitionPhase * 0.35) * 0.006;
@@ -1645,22 +1670,18 @@ export function createGenesisWebGLRendererCore(
             timeSequenceRecognition.cosmicResponseExpression.responseStrength *
               0.16 *
               recognitionBreath);
-      } else {
-        cosmicField.rotation.z = elapsedSeconds * 0.004;
       }
       if (isStarRiver) {
-        cosmicField.rotation.z += elapsedSeconds * 0.0025;
         cosmicFieldScale *= 1.02 + realizationProgress * 0.04;
         cosmicFieldOpacity *= 1.08;
       }
       if (isMoonOrigin) {
-        cosmicField.rotation.z *= 0.35;
         cosmicFieldOpacity *= 0.72;
       }
       if (isTimeResonance) {
         const timeGathering =
           1 +
-          Math.sin(elapsedSeconds * 0.22) *
+          Math.sin(universeSeconds * 0.22) *
             (0.02 + perspectiveResponseIntensity * 0.024) +
           realizationProgress * 0.06;
         cosmicFieldScale *= timeGathering;
@@ -1676,15 +1697,14 @@ export function createGenesisWebGLRendererCore(
         cosmicFieldOpacity *= 0.96 + perspectiveStarWeight * 0.05;
       }
       if (isSymbolReveal) {
-        cosmicField.rotation.z += elapsedSeconds * 0.0035;
-        cosmicFieldScale *= 1.03 + Math.sin(elapsedSeconds * 0.16) * 0.018;
+        cosmicFieldScale *= 1.03 + Math.sin(universeSeconds * 0.16) * 0.018;
         cosmicFieldOpacity *= 1.04;
       }
       if (isHexagramImprint) {
         if (directionFieldExpression !== null) {
           const fieldPulse =
             Math.sin(
-              (elapsedSeconds /
+              (universeSeconds /
                 directionFieldExpression.breathingPeriodSeconds) *
                 Math.PI *
                 2,
@@ -1694,23 +1714,19 @@ export function createGenesisWebGLRendererCore(
           cosmicField.position.y =
             directionFieldExpression.axisY * fieldPulse;
         }
-        cosmicField.rotation.z += elapsedSeconds * 0.0018;
-        cosmicFieldScale *= 0.99 + Math.sin(elapsedSeconds * 0.18) * 0.014;
+        cosmicFieldScale *= 0.99 + Math.sin(universeSeconds * 0.18) * 0.014;
         cosmicFieldOpacity *= 0.92 + realizationProgress * 0.08;
       }
       if (isLifeForce) {
-        cosmicField.rotation.z += elapsedSeconds * 0.0042;
-        cosmicFieldScale *= 1.01 + Math.sin(elapsedSeconds * 0.42) * 0.022;
+        cosmicFieldScale *= 1.01 + Math.sin(universeSeconds * 0.42) * 0.022;
         cosmicFieldOpacity *= 1.02;
       }
       if (isStarBeastReveal) {
-        cosmicField.rotation.z += elapsedSeconds * 0.0012;
         cosmicFieldScale *=
-          1.02 + Math.sin(elapsedSeconds * 0.2) * (0.008 + perspectivePresenceBreath * 0.006);
+          1.02 + Math.sin(universeSeconds * 0.2) * (0.008 + perspectivePresenceBreath * 0.006);
         cosmicFieldOpacity *= 0.98 + perspectiveRecognitionStability * 0.04;
       }
       if (isCompletion) {
-        cosmicField.rotation.z *= 0.16 - perspectiveCompletionStillness * 0.04;
         cosmicFieldScale *= 1.01 + perspectiveRecognitionStability * 0.01;
         cosmicFieldOpacity *= 0.96 + perspectiveRecognitionStability * 0.04;
       }
@@ -1720,7 +1736,7 @@ export function createGenesisWebGLRendererCore(
       }
       if (birthMansionIgnition !== null) {
         const ignitionPhase =
-          (elapsedSeconds / birthMansionIgnition.temporalRhythm.periodSeconds) *
+          (universeSeconds / birthMansionIgnition.temporalRhythm.periodSeconds) *
             Math.PI *
             2 +
           birthMansionIgnition.temporalRhythm.phaseOffset;
@@ -1740,15 +1756,22 @@ export function createGenesisWebGLRendererCore(
           0.008;
       }
       cosmicField.scale.setScalar(cosmicFieldScale);
-      cosmicPointMaterial.opacity = cosmicFieldOpacity;
+      // The deep universe never disappears behind a stage. Early Genesis
+      // keeps a stronger floor so the retained 28-mansion foreground reads as
+      // nearer coordinates inside space, not as a diagram on black.
+      cosmicPointMaterial.opacity = Math.max(
+        cosmicFieldOpacity,
+        isMoonOrigin ? 0.2 : isStarRiver || isTimeResonance ? 0.18 : 0.12,
+      );
       const rhythmPhase =
-        (elapsedSeconds / lifeStarCore.temporalRhythm.periodSeconds) *
+        (universeSeconds /
+          LIFE_UNIVERSE_CORE_IDENTITY.breathPeriodSeconds) *
         Math.PI *
         2;
       const breath =
         1 +
           Math.sin(rhythmPhase) *
-            lifeStarCore.temporalRhythm.breathingAmplitude;
+            LIFE_UNIVERSE_CORE_IDENTITY.breathingAmplitude;
       const structureInfluence =
         1 +
         (breath - 1) *
@@ -1760,36 +1783,32 @@ export function createGenesisWebGLRendererCore(
           Math.sin(rhythmPhase * 0.72 + 0.5) *
             (0.008 + perspectivePresenceBreath * 0.018)
         : 1;
-      const surfaceVariation =
-        0.96 +
-        Math.sin(rhythmPhase * 0.72 + 0.8) *
-          lifeStarCore.temporalRhythm.variationAmount;
-      core.scale.setScalar(
+      const coreObservationScale =
+        (isLifeForce ? 1 + perspectiveForceRhythm * 0.05 : 1) *
+        (isMoonOrigin
+          ? 1.02
+          : isStarRiver
+            ? 0.86
+            : isTimeResonance
+              ? 0.92
+              : isSymbolReveal
+                ? 0.96
+                : isHexagramImprint
+                  ? 0.94
+                  : isLifeForce
+                    ? 1.02
+                    : isStarBeastReveal
+                      ? 1.06
+                      : isCompletion
+                        ? 1.02
+                        : 0.92);
+      coreIdentityGroup.scale.setScalar(
         breath *
-          (isLifeForce ? 1 + perspectiveForceRhythm * 0.05 : 1) *
-          (isMoonOrigin
-            ? 1.02
-            : isStarRiver
-              ? 0.86
-              : isTimeResonance
-                ? 0.92
-                : isSymbolReveal
-                  ? 0.96
-                  : isHexagramImprint
-                    ? 0.94
-                    : isLifeForce
-                      ? 1.02
-                      : isStarBeastReveal
-                        ? 1.06
-                        : isCompletion
-                          ? 1.02
-                          : 0.92),
+          coreObservationScale,
       );
-      coreSurface.scale.setScalar(surfaceVariation);
-      coreHalo.scale.setScalar(
-        lifeStarCore.surfacePresence.atmosphereRadius *
-          (0.94 + breath * 0.06),
-      );
+      core.scale.setScalar(1);
+      coreSurface.scale.setScalar(1);
+      coreHalo.scale.setScalar(1);
       structureGroup.scale.setScalar(
         sceneProjection.formField.boundaryScale *
           fieldPoseScale *
