@@ -123,6 +123,12 @@ export function RealityProductionHost({
 
   const continuationContext = continuationResult.context;
   const pressureSeedSession = continuationContext.pressureSeedSession;
+  const pressureVisualState =
+    pressureSeedSession.captureState === "SEED_RECOGNIZED"
+      ? "PRESSURE_RECOGNIZED"
+      : pressureSeedSession.captureState === "PAUSED"
+        ? "PRESSURE_PAUSED"
+        : "PRESSURE_OBSERVING";
 
   const applyConsumerResult = (
     nextConsumerResult: RealityProductionPressureSeedConsumerResult,
@@ -273,6 +279,7 @@ export function RealityProductionHost({
         continuationContext.deliverySession.currentBundleReferenceId
       }
       data-pressure-seed-capture-state={pressureSeedSession.captureState}
+      data-reality-pressure-visual-state={pressureVisualState}
       data-pressure-seed-bundle-reference={
         pressureSeedSession.candidateBundleReferenceId
       }
@@ -288,7 +295,11 @@ export function RealityProductionHost({
         <span />
       </div>
       <p className="gy-reality-life-universe__continuity-copy">
-        同一束生命光，开始感受现实的重量。
+        {pressureVisualState === "PRESSURE_RECOGNIZED"
+          ? "这股现实力量正在改变空间，也正在触碰它。"
+          : pressureVisualState === "PRESSURE_PAUSED"
+            ? "星河没有催促你，现实暂时停在远处。"
+            : "同一束生命光，开始感受现实的重量。"}
       </p>
       <RealityPressureSeedPresentation
         session={pressureSeedSession}

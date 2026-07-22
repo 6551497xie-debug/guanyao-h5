@@ -137,7 +137,7 @@ export function RealityPressureSeedPresentation({
       ) : null}
       {session.gravityReadiness === "READY" ? (
         <p className="gy-p36__gravity-ready" role="status">
-          Reality Pressure Seed 已完成认领。Gravity 尚未启动。
+          你已经看见这股力量，先停在这里。
         </p>
       ) : null}
     </section>

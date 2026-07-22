@@ -26,6 +26,29 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  transform-origin: 50% 45%;
+  transition:
+    transform 1100ms cubic-bezier(0.22, 0.7, 0.2, 1),
+    filter 1100ms ease,
+    opacity 800ms ease;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_OBSERVING"]
+  .gy-reality-life-universe__canvas {
+  animation: gy-reality-observation-breath 8s ease-in-out infinite alternate;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_PAUSED"]
+  .gy-reality-life-universe__canvas {
+  filter: brightness(0.78) saturate(0.82);
+  opacity: 0.72;
+  transform: scale(0.985);
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
+  .gy-reality-life-universe__canvas {
+  filter: brightness(0.9) contrast(1.12) saturate(0.9);
+  transform: translateX(-1.8%) scaleX(0.92) scaleY(1.025) rotate(-0.35deg);
 }
 
 .gy-reality-life-universe__disturbance {
@@ -34,6 +57,34 @@
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+}
+
+.gy-reality-life-universe__disturbance::before,
+.gy-reality-life-universe__disturbance::after {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  width: min(112vw, 820px);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 4%,
+    rgb(185 203 236 / 4%) 28%,
+    rgb(238 226 198 / 12%) 52%,
+    rgb(185 203 236 / 4%) 76%,
+    transparent 96%
+  );
+  content: "";
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(-12deg) scaleX(0.76);
+  transform-origin: center;
+  transition: opacity 900ms ease, transform 1100ms cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+
+.gy-reality-life-universe__disturbance::after {
+  top: 49%;
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(-17deg) scaleX(0.58);
 }
 
 .gy-reality-life-universe__disturbance span {
@@ -47,6 +98,10 @@
   box-shadow: inset 0 0 54px rgb(185 203 236 / 3%);
   transform: translate(-50%, -50%) rotate(-8deg) scaleX(0.9);
   animation: gy-reality-disturbance 9s ease-in-out infinite alternate;
+  transition:
+    opacity 900ms ease,
+    border-color 900ms ease,
+    transform 1100ms cubic-bezier(0.22, 0.7, 0.2, 1);
 }
 
 .gy-reality-life-universe__disturbance span:nth-child(2) {
@@ -61,6 +116,53 @@
   border-color: rgb(185 203 236 / 6%);
   transform: translate(-53%, -45%) rotate(2deg) scaleX(1.08);
   animation-delay: -6s;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_PAUSED"]
+  .gy-reality-life-universe__disturbance {
+  opacity: 0.3;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_PAUSED"]
+  .gy-reality-life-universe__disturbance span {
+  animation-play-state: paused;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
+  .gy-reality-life-universe__disturbance::before,
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
+  .gy-reality-life-universe__disturbance::after {
+  opacity: 0.72;
+  transform: translate(-52%, -50%) rotate(-19deg) scaleX(0.96);
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
+  .gy-reality-life-universe__disturbance::after {
+  opacity: 0.34;
+  transform: translate(-49%, -50%) rotate(-24deg) scaleX(0.72);
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
+  .gy-reality-life-universe__disturbance span {
+  animation-duration: 13s;
+  border-color: rgb(185 203 236 / 15%);
+  opacity: 0.82;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
+  .gy-reality-life-universe__disturbance span:first-child {
+  transform: translate(-54%, -50%) rotate(-17deg) scaleX(0.58) scaleY(1.12);
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
+  .gy-reality-life-universe__disturbance span:nth-child(2) {
+  border-color: rgb(238 226 198 / 15%);
+  transform: translate(-50%, -54%) rotate(20deg) scaleX(0.5) scaleY(1.2);
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
+  .gy-reality-life-universe__disturbance span:nth-child(3) {
+  transform: translate(-57%, -45%) rotate(-6deg) scaleX(0.74) scaleY(1.08);
 }
 
 .gy-reality-life-universe__continuity-copy {
@@ -79,6 +181,13 @@
   text-align: center;
   text-shadow: 0 0 18px rgb(238 226 198 / 12%);
   pointer-events: none;
+  transition: color 700ms ease, letter-spacing 900ms ease, opacity 700ms ease;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
+  .gy-reality-life-universe__continuity-copy {
+  color: rgb(238 226 198 / 72%);
+  letter-spacing: 0.09em;
 }
 
 .gy-p36__pressure-space {
@@ -90,6 +199,12 @@
   padding: 18px 0 10px;
   transform: translateX(-50%);
   text-align: center;
+  transition: transform 900ms ease, opacity 700ms ease;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
+  .gy-p36__pressure-space {
+  transform: translateX(-50%) translateY(-8px);
 }
 
 .gy-p36__pressure-head {
@@ -227,6 +342,12 @@
   to { opacity: 1; translate: 1.5% -1%; }
 }
 
+@keyframes gy-reality-observation-breath {
+  from { filter: brightness(0.94) contrast(1.01); transform: scaleX(0.99) scaleY(1.005); }
+  to { filter: brightness(1) contrast(1.04); transform: scaleX(1.005) scaleY(0.99); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gy-reality-life-universe__disturbance span { animation: none; }
+  .gy-reality-life-universe__canvas { animation: none !important; }
 }
