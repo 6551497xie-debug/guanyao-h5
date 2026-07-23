@@ -756,7 +756,9 @@ export function GenesisProductionExperiencePage({
         <p className="gy-genesis-production-experience__presence-response" role="status">
           {presenceVisualRealizationResult.realization.visualPresenceState ===
           "APPROACHING"
-            ? "它正在靠近。"
+            ? // “它正在靠近。”退为历史文案；生命并非从外部进入，
+              // 而是从同一核心与既有力量节律中逐步被看见。
+              "它正在从这束光中显现。"
             : presenceVisualRealizationResult.realization.visualPresenceState ===
                 "PRESENT"
               ? "它一直在那里。"

@@ -477,7 +477,7 @@ export function createGenesisWebGLRendererCore(
   const spatialPresenceCarry =
     spatialDistanceCalibration?.presenceCarry ?? 0;
   const recognitionCoreVisibility = isStarBeastReveal
-    ? 0.4 + recognitionCenterInfluence * 0.05
+    ? 0.7 + recognitionCenterInfluence * 0.06
     : isCompletion
       ? 0.34 + recognitionCenterInfluence * 0.04
       : 1;
@@ -1199,6 +1199,8 @@ export function createGenesisWebGLRendererCore(
       blending: AdditiveBlending,
     }),
   );
+  const spineMaterial = spineLine.material as LineBasicMaterial;
+  const spineBaseOpacity = spineMaterial.opacity;
   const branchLines = new LineSegments(
     branchGeometry,
     new LineBasicMaterial({
@@ -1210,6 +1212,8 @@ export function createGenesisWebGLRendererCore(
       blending: AdditiveBlending,
     }),
   );
+  const branchMaterial = branchLines.material as LineBasicMaterial;
+  const branchBaseOpacity = branchMaterial.opacity;
   spineLine.visible = !isContinuityPresenceStage;
   branchLines.visible = !isContinuityPresenceStage;
   const structurePoints = new Points(
@@ -1560,6 +1564,8 @@ export function createGenesisWebGLRendererCore(
         ? Math.min(1, Math.max(0, (elapsedSeconds - 0.58) / 1.42))
         : isLifeForce
           ? 1
+          : isStarBeastReveal || isCompletion
+            ? 1
           : 0;
       const directionRevealProgress =
         directionRevealRaw *
@@ -1567,6 +1573,8 @@ export function createGenesisWebGLRendererCore(
         (3 - 2 * directionRevealRaw);
       const forceTendencyRaw = isLifeForce
         ? Math.min(1, Math.max(0, (elapsedSeconds - 0.18) / 1.8))
+        : isStarBeastReveal || isCompletion
+          ? 1
         : 0;
       const forceTendencyProgress =
         forceTendencyRaw *
@@ -1579,6 +1587,8 @@ export function createGenesisWebGLRendererCore(
         Math.sin(forceAbsorptionRaw * Math.PI);
       const forceExpressionRaw = isLifeForce
         ? Math.min(1, Math.max(0, (elapsedSeconds - 0.52) / 1.18))
+        : isStarBeastReveal || isCompletion
+          ? 1
         : 0;
       const forceExpressionProgress =
         forceExpressionRaw *
@@ -1586,6 +1596,8 @@ export function createGenesisWebGLRendererCore(
         (3 - 2 * forceExpressionRaw);
       const forceRecoveryRaw = isLifeForce
         ? Math.min(1, Math.max(0, (elapsedSeconds - 1.78) / 1.42))
+        : isStarBeastReveal || isCompletion
+          ? 1
         : 0;
       const forceRecoveryProgress =
         forceRecoveryRaw *
@@ -1602,6 +1614,47 @@ export function createGenesisWebGLRendererCore(
         Math.sin(forceRhythmPhase) *
           forceExpressionBreathingAmplitude *
           forceExpressionProgress;
+      const presenceCoreTransmissionRaw = isStarBeastReveal
+        ? Math.min(1, Math.max(0, elapsedSeconds / 0.58))
+        : isCompletion
+          ? 1
+          : 0;
+      const presenceCoreTransmission =
+        presenceCoreTransmissionRaw *
+        presenceCoreTransmissionRaw *
+        (3 - 2 * presenceCoreTransmissionRaw);
+      const presenceSkeletonRevealRaw = isStarBeastReveal
+        ? Math.min(1, Math.max(0, (elapsedSeconds - 0.2) / 0.9))
+        : isCompletion
+          ? 1
+          : 0;
+      const presenceSkeletonReveal =
+        presenceSkeletonRevealRaw *
+        presenceSkeletonRevealRaw *
+        (3 - 2 * presenceSkeletonRevealRaw);
+      const presenceBodyRevealRaw = isStarBeastReveal
+        ? Math.min(1, Math.max(0, (elapsedSeconds - 0.66) / 0.82))
+        : isCompletion
+          ? 1
+          : 0;
+      const presenceBodyReveal =
+        presenceBodyRevealRaw *
+        presenceBodyRevealRaw *
+        (3 - 2 * presenceBodyRevealRaw);
+      const presenceEnvelopeRevealRaw = isStarBeastReveal
+        ? Math.min(1, Math.max(0, (elapsedSeconds - 1.22) / 0.5))
+        : isCompletion
+          ? 1
+          : 0;
+      const presenceEnvelopeReveal =
+        presenceEnvelopeRevealRaw *
+        presenceEnvelopeRevealRaw *
+        (3 - 2 * presenceEnvelopeRevealRaw);
+      const presenceSourceCarry = isStarBeastReveal
+        ? 1 - presenceBodyReveal * 0.74
+        : isCompletion
+          ? 0.12
+          : 1;
       const birthDirectionResponseRaw = isHexagramImprint
         ? Math.min(1, Math.max(0, (elapsedSeconds - 0.08) / 1.08))
         : 1;
@@ -1734,6 +1787,8 @@ export function createGenesisWebGLRendererCore(
           forceCondensationExpression?.formAspectRatio ?? 1;
         const travelSpeed = isLifeForce
           ? 0.012 + forceExpressionFlowSpeed * 0.2
+          : isStarBeastReveal || isCompletion
+            ? 0.01 + forceExpressionFlowSpeed * 0.16
           : 0.018;
         const fieldReach =
           directionSourceReach *
@@ -1799,8 +1854,15 @@ export function createGenesisWebGLRendererCore(
         }
         directionFieldPositionAttribute.needsUpdate = true;
         directionFieldMaterial.opacity =
-          (isLifeForce ? 0.24 + forceDensity * 0.08 : 0.28) *
+          (isLifeForce
+            ? 0.24 + forceDensity * 0.08
+            : isStarBeastReveal
+              ? 0.16 + forceDensity * 0.04
+              : isCompletion
+                ? 0.08
+                : 0.28) *
           directionRevealProgress *
+          presenceSourceCarry *
           (0.94 + (responseBreath - 1) * 1.5);
         directionFieldMaterial.size =
           (isLifeForce ? 0.034 + forceDensity * 0.006 : 0.03) *
@@ -1815,6 +1877,7 @@ export function createGenesisWebGLRendererCore(
             (0.018 + forceDensity * 0.008) *
             forceTendencyProgress *
             (1 - forceActionPresence * 0.55) *
+            presenceSourceCarry *
             (0.94 + (responseBreath - 1) * 1.4);
         }
       }
@@ -2193,6 +2256,11 @@ export function createGenesisWebGLRendererCore(
             : 1) *
           structureInfluence,
       );
+      if (isStarBeastReveal) {
+        structureGroup.scale.multiplyScalar(
+          0.68 + presenceSkeletonReveal * 0.32,
+        );
+      }
       if (isSymbolReveal) {
         structureGroup.scale.x *= 1.12 + perspectiveLifeAxisStrength * 0.12;
         structureGroup.scale.y *= 0.9 - perspectiveMorphologicalTension * 0.06;
@@ -2328,10 +2396,10 @@ export function createGenesisWebGLRendererCore(
         pressureTraceMaterial.size =
           lifePresence.stellarSkeleton.nodeScale *
           (0.72 + pressureCoreResponse * 0.34 + pressurePulse * 0.18);
-        (spineLine.material as LineBasicMaterial).opacity =
+        spineMaterial.opacity =
           Math.max(spineOpacity, isCompletion ? 0.5 : 0.42) *
           (0.9 + pressurePulse * 0.18);
-        (branchLines.material as LineBasicMaterial).opacity =
+        branchMaterial.opacity =
           Math.max(branchOpacity, isCompletion ? 0.4 : 0.34) *
           (0.88 + pressurePulse * 0.14);
       }
@@ -2349,15 +2417,16 @@ export function createGenesisWebGLRendererCore(
                   ? 0.28
                   : 0.74;
       structurePointMaterial.opacity =
-        stagePointOpacity +
-        (isPresenceStage ? (recognitionSubjectWeight - 1) * 0.1 : 0) +
-        lifeStarCore.coreInfluence.nodeBreathCoupling *
-          0.16 *
-          (0.94 + (breath - 1) * 2) -
-        (isPresenceStage
-          ? perspectiveBodyCohesion * 0.08 * (0.96 + (breath - 1) * 2)
-          : 0) +
-        pressureBoundaryLoad * 0.06;
+        (stagePointOpacity +
+          (isPresenceStage ? (recognitionSubjectWeight - 1) * 0.1 : 0) +
+          lifeStarCore.coreInfluence.nodeBreathCoupling *
+            0.16 *
+            (0.94 + (breath - 1) * 2) -
+          (isPresenceStage
+            ? perspectiveBodyCohesion * 0.08 * (0.96 + (breath - 1) * 2)
+            : 0) +
+          pressureBoundaryLoad * 0.06) *
+        (isStarBeastReveal ? presenceCoreTransmission : 1);
       structurePointMaterial.size =
         lifePresence.stellarSkeleton.nodeScale *
         (0.96 +
@@ -2371,6 +2440,17 @@ export function createGenesisWebGLRendererCore(
           Math.sin(rhythmPhase * 0.72 + 0.5) *
             (0.008 + perspectivePresenceBreath * 0.012)
         : 0;
+      if (isStarBeastReveal) {
+        spineMaterial.opacity =
+          spineBaseOpacity * presenceSkeletonReveal;
+        branchMaterial.opacity =
+          branchBaseOpacity *
+          Math.max(
+            0,
+            Math.min(1, (presenceSkeletonRevealRaw - 0.34) / 0.66),
+          );
+        bodyFieldMaterial.opacity *= presenceBodyReveal;
+      }
       presenceEnvelopeMaterial.opacity = isPresenceStage
         ? (isCompletion ? 0.7 : 0.58) *
           (0.94 + (breath - 1) * 1.8)
@@ -2379,6 +2459,10 @@ export function createGenesisWebGLRendererCore(
         ? (isCompletion ? 0.2 : 0.14) *
           (0.96 + (breath - 1) * 1.2)
         : 0;
+      if (isStarBeastReveal) {
+        presenceEnvelopeMaterial.opacity *= presenceEnvelopeReveal;
+        presenceEnvelopeGlowMaterial.opacity *= presenceEnvelopeReveal;
+      }
       bodyField.scale.setScalar(
         isPresenceStage
           ? 0.98 + perspectiveBodyCohesion * 0.06 + (breath - 1) * 0.4
