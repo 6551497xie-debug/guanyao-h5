@@ -575,7 +575,6 @@ function hourToPeriodLabel(hour: number) {
 }
 
 function formatLunarBirthDate(
-  relatedYear: number,
   month: number,
   day: number,
   isLeapMonth: boolean,
@@ -583,7 +582,11 @@ function formatLunarBirthDate(
 ) {
   const monthLabel = LUNAR_MONTH_LABELS[month - 1] ?? `${month}月`;
   const dayLabel = LUNAR_DAY_LABELS[day - 1] ?? `${day}日`;
-  return `农历 ${relatedYear}年${isLeapMonth ? "闰" : ""}${monthLabel}${dayLabel} · ${hourToPeriodLabel(hour)}`;
+  return `农历：${isLeapMonth ? "闰" : ""}${monthLabel}${dayLabel} · ${hourToPeriodLabel(hour)}`;
+}
+
+function formatGregorianBirthTime(coords: ChronoCoords) {
+  return `出生：${coords.year}年${pad2(coords.month)}月${pad2(coords.day)}日 ${pad2(coords.hour)}:00`;
 }
 
 function computeNodeTransitionProgress(node1ElapsedMs: number): number {
@@ -1513,10 +1516,11 @@ export function LaunchLab() {
       const rounded = Math.round(value);
       if (dim === "year") return String(rounded);
       if (dim === "month" || dim === "day") return pad2(rounded);
-      return hourToPeriodLabel(clamp(rounded, 0, 23));
+      return `${pad2(clamp(rounded, 0, 23))}:00`;
     }
     function timeWheelValueStep(dim: ChronoDim) {
-      return dim === "hour" ? 2 : 1;
+      void dim;
+      return 1;
     }
     function syncLunarTimeProjection() {
       const calendar = resolveBirthCalendarFromGregorianDate({
@@ -1530,7 +1534,6 @@ export function LaunchLab() {
       }
       m.lunarDayTarget = calendar.lunarBirthDate.day;
       m.lunarDateLabel = formatLunarBirthDate(
-        calendar.lunarBirthDate.relatedYear,
         calendar.lunarBirthDate.month,
         calendar.lunarBirthDate.day,
         calendar.lunarBirthDate.isLeapMonth,
@@ -2589,12 +2592,12 @@ export function LaunchLab() {
           m.w,
           m.h,
           now,
-          smooth(0.12, 1.12, m.t),
+          smooth(0.72, 1.65, m.t),
           moonReleaseProgress,
         );
 
-        const topLineStarts = [0.35, 0.95];
-        const topGather = 1.15;
+        const topLineStarts = [1.7, 2.05];
+        const topGather = 0.82;
         m.textStars.forEach((s, i) => {
           if (s.line > 1) return;
           const t0 = topLineStarts[s.line]!;
@@ -2617,27 +2620,32 @@ export function LaunchLab() {
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           const mainSize = Math.min(18, m.w * 0.046);
-          const titleAlpha = smooth(1.35, 2.1, m.t);
+          const titleAlpha = smooth(2.2, 2.95, m.t);
           if (titleAlpha > 0.001) {
             ctx.fillStyle = `rgba(255,247,228,${(titleAlpha * 0.95).toFixed(3)})`;
             ctx.font = `650 ${mainSize}px ${SANS}`;
             ctx.fillText(TOP_LINES[0], m.w / 2, m.h * 0.16);
             ctx.fillText(TOP_LINES[1], m.w / 2, m.h * 0.205);
           }
-          const entranceCopyAlpha =
-            smooth(1.9, 2.7, m.t) *
+          const relationCopyAlpha =
+            smooth(3.15, 3.9, m.t) *
             (1 - smooth(0, 0.38, m.moonReleaseT));
-          if (entranceCopyAlpha > 0.001) {
-            ctx.fillStyle = `rgba(255,247,228,${(entranceCopyAlpha * 0.92).toFixed(3)})`;
+          if (relationCopyAlpha > 0.001) {
+            ctx.fillStyle = `rgba(255,247,228,${(relationCopyAlpha * 0.92).toFixed(3)})`;
             ctx.font = `650 ${mainSize}px ${SANS}`;
             ctx.fillText(CTA_LINES[0], m.w / 2, m.h * 0.78);
             ctx.fillText(CTA_LINES[1], m.w / 2, m.h * 0.825);
+          }
 
-            ctx.fillStyle = `rgba(255,247,228,${(entranceCopyAlpha * 0.64).toFixed(3)})`;
+          const actionCopyAlpha =
+            smooth(4.2, 4.85, m.t) *
+            (1 - smooth(0, 0.38, m.moonReleaseT));
+          if (actionCopyAlpha > 0.001) {
+            ctx.fillStyle = `rgba(255,247,228,${(actionCopyAlpha * 0.64).toFixed(3)})`;
             ctx.font = `620 ${Math.min(13, m.w * 0.033)}px ${SANS}`;
             ctx.fillText(ENTRY_ACTION_LINE, m.w / 2, m.h * 0.89);
 
-            ctx.fillStyle = `rgba(232,200,138,${(entranceCopyAlpha * 0.42).toFixed(3)})`;
+            ctx.fillStyle = `rgba(232,200,138,${(actionCopyAlpha * 0.42).toFixed(3)})`;
             ctx.font = `${Math.min(11, m.w * 0.028)}px ${MONO}`;
             ctx.fillText("观爻 · GUANYAO", m.w / 2, m.h * 0.94);
           }
@@ -3739,14 +3747,21 @@ export function LaunchLab() {
           ctx.fillText(
             axisCopy.bodyPrimary,
             wheel.left + 4,
-            m.h * 0.145,
+            m.h * 0.13,
           );
-          ctx.fillStyle = `rgba(${coordinateTextRgb},0.66)`;
+          ctx.fillStyle = `rgba(${coordinateTextRgb},0.72)`;
           ctx.font = `540 ${Math.min(11, m.w * 0.028)}px ${SANS}`;
+          ctx.fillText(
+            formatGregorianBirthTime(m.coords),
+            wheel.left + 4,
+            m.h * 0.175,
+          );
+          ctx.fillStyle = `rgba(${coordinateTextRgb},0.54)`;
+          ctx.font = `520 ${Math.min(10.5, m.w * 0.027)}px ${SANS}`;
           ctx.fillText(
             m.lunarDateLabel,
             wheel.left + 4,
-            m.h * 0.19,
+            m.h * 0.212,
           );
 
           ctx.textAlign = "center";
