@@ -571,6 +571,9 @@ export function createGenesisWebGLRendererCore(
   const mansionCoordinateGroup = new Group();
   let birthCoordinateAxisMaterial: LineBasicMaterial | null = null;
   let birthMansionPointMaterial: PointsMaterial | null = null;
+  const seekingResponseMaterials: PointsMaterial[] = [];
+  let coordinateBaseScaleX = 1;
+  let coordinateBaseScaleY = 1;
   const coordinateFormationExpression =
     mansionCoordinateVisualLayer?.coordinateFormationExpression ?? null;
   // Launch has already delivered time. Genesis must receive the living core,
@@ -597,7 +600,20 @@ export function createGenesisWebGLRendererCore(
       "BIRTH_MANSION_COORDINATE_REVEALED";
     const birthCoordinateVisible =
       birthCoordinateRevealed || retainMotherContinuityOrbit;
-    const neutralCoordinates = birthCoordinateVisible
+    const coordinateDepth = Math.abs(
+      camera.position.z - mansionCoordinateVisualLayer.birthCoordinate.z,
+    );
+    const pixelsPerWorld =
+      input.height /
+      (2 * Math.tan((camera.fov * Math.PI) / 360) * coordinateDepth);
+    coordinateBaseScaleX =
+      Math.min(input.width * 0.43, 168) / (2.65 * pixelsPerWorld);
+    coordinateBaseScaleY =
+      Math.min(input.width * 0.19, 74) / (1.32 * pixelsPerWorld);
+    const keepBirthCoordinateInExistingField =
+      coordinateFormationExpression?.phase === "SEEKING_TO_FOUND";
+    const neutralCoordinates =
+      birthCoordinateVisible && !keepBirthCoordinateInExistingField
       ? mansionCoordinateVisualLayer.coordinates.filter(
           (coordinate) =>
             coordinate.coordinateIndex !==
@@ -623,7 +639,7 @@ export function createGenesisWebGLRendererCore(
       color: new Color(0xb9cbec),
       size:
         mansionCoordinateVisualLayer.fieldExpression.neutralPointSize *
-        (isLifeCoordinateStage ? 1.42 : isLifeDirectionStage ? 1.2 : 1),
+        (isLifeCoordinateStage ? 1.14 : isLifeDirectionStage ? 1.12 : 1),
       sizeAttenuation: true,
       transparent: true,
       opacity: Math.min(
@@ -631,9 +647,9 @@ export function createGenesisWebGLRendererCore(
         mansionCoordinateVisualLayer.fieldExpression.neutralOpacity *
         (retainMotherContinuityOrbit ? 0.72 : 1) *
           (isLifeCoordinateStage
-            ? 1.9
+            ? 1.18
             : isLifeDirectionStage
-              ? 1.45
+              ? 1.2
               : isPresenceStage
                 ? isCompletion
                   ? 0.24
@@ -646,6 +662,44 @@ export function createGenesisWebGLRendererCore(
     mansionCoordinateGroup.add(
       new Points(neutralGeometry, mansionNeutralPointMaterial),
     );
+
+    if (coordinateFormationExpression?.phase === "SEEKING_TO_FOUND") {
+      const responseOffsets = [-6, -3, 3, 6] as const;
+      responseOffsets.forEach((responseOffset) => {
+        const responseIndex =
+          (mansionCoordinateVisualLayer.birthCoordinate.coordinateIndex +
+            responseOffset +
+            mansionCoordinateVisualLayer.coordinates.length) %
+          mansionCoordinateVisualLayer.coordinates.length;
+        const responseCoordinate =
+          mansionCoordinateVisualLayer.coordinates[responseIndex]!;
+        const responseGeometry = new BufferGeometry();
+        responseGeometry.setAttribute(
+          "position",
+          new Float32BufferAttribute(
+            [
+              responseCoordinate.x,
+              responseCoordinate.y,
+              responseCoordinate.z,
+            ],
+            3,
+          ),
+        );
+        const responseMaterial = new PointsMaterial({
+          color: new Color(0xdbe6f5),
+          size: 0.044,
+          sizeAttenuation: true,
+          transparent: true,
+          opacity: 0,
+          blending: AdditiveBlending,
+          depthWrite: false,
+        });
+        seekingResponseMaterials.push(responseMaterial);
+        mansionCoordinateGroup.add(
+          new Points(responseGeometry, responseMaterial),
+        );
+      });
+    }
 
     if (
       coordinateFormationExpression !== null &&
@@ -727,26 +781,19 @@ export function createGenesisWebGLRendererCore(
     }
     if (coordinateFormationExpression?.phase === "SEEKING_TO_FOUND") {
       mansionCoordinateGroup.rotation.z =
-        coordinateFormationExpression.initialAngularOffsetRadians;
+        coordinateFormationExpression.initialAngularOffsetRadians * 0.08;
+      const quietInitialScale =
+        1 +
+        (coordinateFormationExpression.initialRadialScale - 1) * 0.12;
       mansionCoordinateGroup.scale.set(
-        coordinateFormationExpression.initialRadialScale,
-        coordinateFormationExpression.initialRadialScale,
+        coordinateBaseScaleX * quietInitialScale,
+        -coordinateBaseScaleY * quietInitialScale,
         1,
       );
-    } else if (retainMotherContinuityOrbit) {
-      const coordinateDepth = Math.abs(
-        camera.position.z - mansionCoordinateVisualLayer.birthCoordinate.z,
-      );
-      const pixelsPerWorld =
-        input.height /
-        (2 * Math.tan((camera.fov * Math.PI) / 360) * coordinateDepth);
-      const continuityScaleX =
-        Math.min(input.width * 0.43, 168) / (2.65 * pixelsPerWorld);
-      const continuityScaleY =
-        Math.min(input.width * 0.19, 74) / (1.32 * pixelsPerWorld);
+    } else {
       mansionCoordinateGroup.scale.set(
-        continuityScaleX,
-        -continuityScaleY,
+        coordinateBaseScaleX,
+        -coordinateBaseScaleY,
         1,
       );
     }
@@ -1429,6 +1476,7 @@ export function createGenesisWebGLRendererCore(
           : 0) / 1000;
       const universeSeconds = performance.now() / 1000;
       let coordinateFormationProgress = 1;
+      let coordinateIdentityBreath = 1;
       if (coordinateFormationExpression?.phase === "SEEKING_TO_FOUND") {
         const rawProgress = Math.min(
           1,
@@ -1443,13 +1491,15 @@ export function createGenesisWebGLRendererCore(
         const coordinateFieldScale =
           1 +
           (coordinateFormationExpression.initialRadialScale - 1) *
-            inverseProgress;
+            inverseProgress *
+            0.12;
         mansionCoordinateGroup.rotation.z =
           coordinateFormationExpression.initialAngularOffsetRadians *
-          inverseProgress;
+          inverseProgress *
+          0.08;
         mansionCoordinateGroup.scale.set(
-          coordinateFieldScale,
-          coordinateFieldScale,
+          coordinateBaseScaleX * coordinateFieldScale,
+          -coordinateBaseScaleY * coordinateFieldScale,
           1,
         );
       }
@@ -1468,6 +1518,20 @@ export function createGenesisWebGLRendererCore(
                 ),
               )
             : 0;
+      seekingResponseMaterials.forEach((material, responseIndex) => {
+        const responseCenter = 0.16 + responseIndex * 0.13;
+        const responseStrength = Math.max(
+          0,
+          1 -
+            Math.abs(coordinateFormationProgress - responseCenter) /
+              0.24,
+        );
+        material.opacity =
+          responseStrength *
+          0.44 *
+          (1 - birthRevealProgress * 0.72);
+        material.size = 0.044 + responseStrength * 0.024;
+      });
       if (
         birthCoordinateAxisMaterial !== null &&
         coordinateFormationExpression !== null
@@ -1491,6 +1555,11 @@ export function createGenesisWebGLRendererCore(
           2;
         const birthBreath =
           1 + Math.sin(birthPhase) * birthExpression.breathingAmplitude;
+        coordinateIdentityBreath =
+          1 +
+          (birthBreath - 1) *
+            birthRevealProgress *
+            0.5;
         birthMansionPointMaterial.size =
           birthExpression.pointSize *
           birthBreath *
@@ -1816,7 +1885,8 @@ export function createGenesisWebGLRendererCore(
                         : 0.92);
       coreIdentityGroup.scale.setScalar(
         breath *
-          coreObservationScale,
+          coreObservationScale *
+          coordinateIdentityBreath,
       );
       core.scale.setScalar(1);
       coreSurface.scale.setScalar(1);

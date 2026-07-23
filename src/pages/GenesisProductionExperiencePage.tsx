@@ -53,6 +53,11 @@ import type {
 import type { GenesisProductionRecognitionRealityResult } from "../types/genesisProductionRecognitionRealityEntry";
 import "../styles/genesis-production-experience.css";
 
+const ENTRANCE_COORDINATE_CONTINUITY_HOLD_MS = Object.freeze({
+  MOON_ORIGIN: 520,
+  STAR_RIVER: 680,
+});
+
 export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
   GenesisProductionExperiencePageBoundary = Object.freeze({
     productionExperiencePageOnly: true,
@@ -274,6 +279,13 @@ export function GenesisProductionExperiencePage({
     ) {
       return undefined;
     }
+    const runtimeStage = productionRuntimeResult.session.currentStage;
+    const consumerAlignedDelayMs =
+      runtimeStage === "MOON_ORIGIN"
+        ? ENTRANCE_COORDINATE_CONTINUITY_HOLD_MS.MOON_ORIGIN
+        : runtimeStage === "STAR_RIVER"
+          ? ENTRANCE_COORDINATE_CONTINUITY_HOLD_MS.STAR_RIVER
+          : timelineOrchestrationResult.directive.delayMs;
     const timeout = window.setTimeout(() => {
       setProductionRuntimeResult(
         advanceGenesisProductionRuntime({
@@ -281,7 +293,7 @@ export function GenesisProductionExperiencePage({
           trigger: "AUTO_ADVANCE",
         }),
       );
-    }, timelineOrchestrationResult.directive.delayMs);
+    }, consumerAlignedDelayMs);
     return () => window.clearTimeout(timeout);
   }, [productionRuntimeResult, timelineOrchestrationResult]);
 
@@ -697,14 +709,22 @@ export function GenesisProductionExperiencePage({
       {timeDeliveryResponse !== null &&
       productionRuntimeResult.session.currentStage === "SYMBOL_REVEAL" ? (
         <p className="gy-genesis-production-experience__time-response" role="status">
-          <span>{timeDeliveryResponse.responseMessage}</span>
           {manifestationExperienceResult.session.currentState ===
           "COORDINATE_SEEKING" ? (
-            <span>{timeDeliveryResponse.seekingMessage}</span>
+            <span>
+              {timeDeliveryResponse.seekingMessage.replace(
+                "你的位置",
+                "你的生命坐标",
+              )}
+            </span>
           ) : manifestationExperienceResult.session.currentState ===
             "COORDINATE_FOUND" ? (
-            <span>你的时间找到了位置。</span>
-          ) : null}
+            // “你的时间找到了位置。”退为历史文案；消费层现在明确回报
+            // 已成立的生命坐标，不展示星宿名称或知识解释。
+            <span>你的生命坐标已经找到。</span>
+          ) : (
+            <span>{timeDeliveryResponse.responseMessage}</span>
+          )}
         </p>
       ) : null}
       {manifestationExperienceResult.session.currentState ===

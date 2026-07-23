@@ -201,6 +201,7 @@ function drawTimeReceivingLifeCore(
   universeSeconds: number,
   alpha = 1,
   lunarDay = 15,
+  phaseStrength = 1,
 ) {
   const reveal = clamp(alpha, 0, 1);
   if (reveal <= 0.001) return;
@@ -250,7 +251,8 @@ function drawTimeReceivingLifeCore(
   ctx.arc(0, 0, coreRadius, 0, Math.PI * 2);
   ctx.fill();
 
-  const shadowStrength = 1 - illumination;
+  const shadowStrength =
+    (1 - illumination) * clamp(phaseStrength, 0, 1);
   if (shadowStrength > 0.012) {
     const terminatorOffset =
       (waxing ? -1 : 1) *
@@ -575,6 +577,7 @@ function hourToPeriodLabel(hour: number) {
 }
 
 function formatLunarBirthDate(
+  relatedYear: number,
   month: number,
   day: number,
   isLeapMonth: boolean,
@@ -582,11 +585,7 @@ function formatLunarBirthDate(
 ) {
   const monthLabel = LUNAR_MONTH_LABELS[month - 1] ?? `${month}月`;
   const dayLabel = LUNAR_DAY_LABELS[day - 1] ?? `${day}日`;
-  return `农历：${isLeapMonth ? "闰" : ""}${monthLabel}${dayLabel} · ${hourToPeriodLabel(hour)}`;
-}
-
-function formatGregorianBirthTime(coords: ChronoCoords) {
-  return `出生：${coords.year}年${pad2(coords.month)}月${pad2(coords.day)}日 ${pad2(coords.hour)}:00`;
+  return `阴历：${relatedYear}年${isLeapMonth ? "闰" : ""}${monthLabel}${dayLabel} · ${hourToPeriodLabel(hour)}`;
 }
 
 function computeNodeTransitionProgress(node1ElapsedMs: number): number {
@@ -1534,6 +1533,7 @@ export function LaunchLab() {
       }
       m.lunarDayTarget = calendar.lunarBirthDate.day;
       m.lunarDateLabel = formatLunarBirthDate(
+        calendar.lunarBirthDate.relatedYear,
         calendar.lunarBirthDate.month,
         calendar.lunarBirthDate.day,
         calendar.lunarBirthDate.isLeapMonth,
@@ -2672,6 +2672,7 @@ export function LaunchLab() {
           now,
           0.96 + receive * 0.04,
           m.lunarDayVisual,
+          1 - settle,
         );
 
         ctx.save();
@@ -3752,16 +3753,9 @@ export function LaunchLab() {
           ctx.fillStyle = `rgba(${coordinateTextRgb},0.72)`;
           ctx.font = `540 ${Math.min(11, m.w * 0.028)}px ${SANS}`;
           ctx.fillText(
-            formatGregorianBirthTime(m.coords),
-            wheel.left + 4,
-            m.h * 0.175,
-          );
-          ctx.fillStyle = `rgba(${coordinateTextRgb},0.54)`;
-          ctx.font = `520 ${Math.min(10.5, m.w * 0.027)}px ${SANS}`;
-          ctx.fillText(
             m.lunarDateLabel,
             wheel.left + 4,
-            m.h * 0.212,
+            m.h * 0.185,
           );
 
           ctx.textAlign = "center";

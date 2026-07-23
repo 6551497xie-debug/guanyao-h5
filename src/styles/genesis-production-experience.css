@@ -1,8 +1,10 @@
 .gy-genesis-production-experience {
   position: relative;
-  width: 100vw;
+  width: 100%;
+  max-width: 430px;
   min-width: 320px;
   height: 100dvh;
+  margin-inline: auto;
   overflow: hidden;
   background:
     radial-gradient(ellipse at 50% 46%, rgb(24 34 58 / 14%), transparent 72%),
