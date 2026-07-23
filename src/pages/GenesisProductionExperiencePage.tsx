@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GenesisProductionRendererCanvasHost } from "../components/GenesisProductionRendererCanvasHost";
 import {
@@ -419,7 +419,7 @@ export function GenesisProductionExperiencePage({
     productionRuntimeResult,
   ]);
 
-  const deliverTime = () => {
+  const deliverTime = useCallback(() => {
     if (
       productionRuntimeResult?.status !== "READY" ||
       timelineOrchestrationResult?.status !== "READY" ||
@@ -458,7 +458,35 @@ export function GenesisProductionExperiencePage({
     setTimeDeliveryResponse(
       responseResult.calibration,
     );
-  };
+  }, [
+    lifeForceManifestationBridge,
+    manifestationExperienceResult,
+    productionRuntimeResult,
+    timelineOrchestrationResult,
+  ]);
+
+  useEffect(() => {
+    if (
+      productionRuntimeResult?.status !== "READY" ||
+      productionRuntimeResult.session.currentStage !== "TIME_RESONANCE" ||
+      timelineOrchestrationResult?.status !== "READY" ||
+      timelineOrchestrationResult.directive.behavior !==
+        "WAIT_FOR_TIME_DELIVERY" ||
+      manifestationExperienceResult?.status !== "READY" ||
+      manifestationExperienceResult.session.currentState !== "DORMANT"
+    ) {
+      return;
+    }
+    // Launch has already accepted all four birth-time coordinates. Genesis
+    // consumes that completed handoff instead of asking the user to deliver
+    // the same time a second time.
+    deliverTime();
+  }, [
+    deliverTime,
+    manifestationExperienceResult,
+    productionRuntimeResult,
+    timelineOrchestrationResult,
+  ]);
 
   const confirmRecognition = () => {
     if (
@@ -666,21 +694,6 @@ export function GenesisProductionExperiencePage({
         }
         onStateChange={setCanvasHostState}
       />
-      {manifestationExperienceResult.session.currentState === "DORMANT" ? (
-        <p className="gy-genesis-production-experience__time-response" role="status">
-          星河已经在那里，等待你的时间进入。
-        </p>
-      ) : null}
-      {timelineOrchestrationResult.directive.behavior ===
-      "WAIT_FOR_TIME_DELIVERY" ? (
-        <button
-          type="button"
-          className="gy-genesis-production-experience__time-delivery"
-          onClick={deliverTime}
-        >
-          把时间交给星河
-        </button>
-      ) : null}
       {timeDeliveryResponse !== null &&
       productionRuntimeResult.session.currentStage === "SYMBOL_REVEAL" ? (
         <p className="gy-genesis-production-experience__time-response" role="status">

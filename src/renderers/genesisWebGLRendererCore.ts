@@ -18,7 +18,6 @@ import {
   Scene,
   SphereGeometry,
   SRGBColorSpace,
-  TorusGeometry,
   WebGLRenderer,
 } from "three";
 import { createIsolatedWebGLPrototypeRenderPlanReference } from "../services/isolatedWebGLPrototypeRenderPlanReference";
@@ -422,6 +421,10 @@ export function createGenesisWebGLRendererCore(
   const isLifeForce = activeVisualLayer === "LIFE_FORCE";
   const isStarBeastReveal = activeVisualLayer === "STAR_BEAST_REVEAL";
   const isCompletion = activeVisualLayer === "COMPLETION";
+  const isLifeCoordinateStage = isSymbolReveal;
+  const isLifeDirectionStage = isHexagramImprint || isLifeForce;
+  const isContinuityPresenceStage =
+    isMoonOrigin || isStarRiver || isTimeResonance;
   const isPresenceStage = isStarBeastReveal || isCompletion;
   const realizationProgress = genesisVisualRealization?.transitionProgress ?? 0;
   const perspectiveBalance = genesisPerspectiveCalibration?.presenceBalance;
@@ -566,14 +569,14 @@ export function createGenesisWebGLRendererCore(
   const mansionCoordinateVisualLayer =
     sceneProjection.mansionCoordinateVisualLayer;
   const mansionCoordinateGroup = new Group();
-  let mansionOrbitMaterial: LineBasicMaterial | null = null;
   let birthCoordinateAxisMaterial: LineBasicMaterial | null = null;
   let birthMansionPointMaterial: PointsMaterial | null = null;
   const coordinateFormationExpression =
     mansionCoordinateVisualLayer?.coordinateFormationExpression ?? null;
-  const retainMotherContinuityOrbit =
-    isMoonOrigin && mansionCoordinateVisualLayer !== null;
-  const motherContinuityOrbitPhase = performance.now() / 1000 * 0.025;
+  // Launch has already delivered time. Genesis must receive the living core,
+  // not restart it inside a rotating 28-mansion orbit.
+  const retainMotherContinuityOrbit = false;
+  const motherContinuityOrbitPhase = 0;
   const continuityCoordinatePosition = (coordinateIndex: number) => {
     const angle =
       (coordinateIndex / 28) * Math.PI * 2 -
@@ -619,13 +622,24 @@ export function createGenesisWebGLRendererCore(
     const mansionNeutralPointMaterial = new PointsMaterial({
       color: new Color(0xb9cbec),
       size:
-        mansionCoordinateVisualLayer.fieldExpression.neutralPointSize,
+        mansionCoordinateVisualLayer.fieldExpression.neutralPointSize *
+        (isLifeCoordinateStage ? 1.42 : isLifeDirectionStage ? 1.2 : 1),
       sizeAttenuation: true,
       transparent: true,
-      opacity:
+      opacity: Math.min(
+        0.78,
         mansionCoordinateVisualLayer.fieldExpression.neutralOpacity *
         (retainMotherContinuityOrbit ? 0.72 : 1) *
-        (isPresenceStage ? (isCompletion ? 0.24 : 0.34) : 1),
+          (isLifeCoordinateStage
+            ? 1.9
+            : isLifeDirectionStage
+              ? 1.45
+              : isPresenceStage
+                ? isCompletion
+                  ? 0.24
+                  : 0.34
+                : 1),
+      ),
       blending: AdditiveBlending,
       depthWrite: false,
     });
@@ -639,41 +653,6 @@ export function createGenesisWebGLRendererCore(
         coordinateFormationExpression.phase === "FOUND" ||
         retainMotherContinuityOrbit)
     ) {
-      const orbitCoordinates = mansionCoordinateVisualLayer.coordinates;
-      const orbitPositions = new Float32Array(
-        (orbitCoordinates.length + 1) * 3,
-      );
-      orbitCoordinates.forEach((coordinate, index) => {
-        const offset = index * 3;
-        const continuityPosition = retainMotherContinuityOrbit
-          ? continuityCoordinatePosition(coordinate.coordinateIndex)
-          : coordinate;
-        orbitPositions[offset] = continuityPosition.x;
-        orbitPositions[offset + 1] = continuityPosition.y;
-        orbitPositions[offset + 2] = coordinate.z;
-      });
-      orbitPositions.set(orbitPositions.slice(0, 3), orbitCoordinates.length * 3);
-      const orbitGeometry = new BufferGeometry();
-      orbitGeometry.setAttribute(
-        "position",
-        new Float32BufferAttribute(orbitPositions, 3),
-      );
-      mansionOrbitMaterial = new LineBasicMaterial({
-        color: new Color(0x93acd3),
-        transparent: true,
-        opacity:
-          retainMotherContinuityOrbit
-            ? 0.14
-            : coordinateFormationExpression.phase === "FOUND"
-            ? coordinateFormationExpression.orbitAxisOpacity
-            : 0,
-        blending: AdditiveBlending,
-        depthWrite: false,
-      });
-      mansionCoordinateGroup.add(
-        new Line(orbitGeometry, mansionOrbitMaterial),
-      );
-
       const birthPosition = mansionCoordinateVisualLayer.birthCoordinate;
       const continuityBirthPosition = retainMotherContinuityOrbit
         ? continuityCoordinatePosition(birthPosition.coordinateIndex)
@@ -779,7 +758,13 @@ export function createGenesisWebGLRendererCore(
   const directionFieldExpression =
     directionFieldCalibration?.directionFieldExpression ?? null;
   const directionFieldGroup = new Group();
-  let directionFieldMaterial: LineBasicMaterial | null = null;
+  let directionFieldMaterial: PointsMaterial | null = null;
+  let directionFieldPositions: Float32Array | null = null;
+  let directionFieldPositionAttribute: Float32BufferAttribute | null = null;
+  let directionFieldParticleCount = 0;
+  let directionOriginX = 0;
+  let directionOriginY = 0;
+  let directionOriginZ = -0.42;
   if (
     directionFieldCalibration !== null &&
     directionFieldCalibration.phase !== "HIDDEN" &&
@@ -789,43 +774,59 @@ export function createGenesisWebGLRendererCore(
     const axisY = directionFieldExpression.axisY;
     const perpendicularX = -axisY;
     const perpendicularY = axisX;
-    const positions = new Float32Array(
-      directionFieldExpression.lineCount * 2 * 3,
+    const directionOrigin =
+      mansionCoordinateVisualLayer?.birthCoordinate ?? null;
+    directionOriginX = directionOrigin?.x ?? 0;
+    directionOriginY = directionOrigin?.y ?? 0;
+    directionOriginZ = (directionOrigin?.z ?? -0.55) + 0.08;
+    directionFieldParticleCount = directionFieldExpression.lineCount * 18;
+    directionFieldPositions = new Float32Array(
+      directionFieldParticleCount * 3,
     );
-    for (
-      let index = 0;
-      index < directionFieldExpression.lineCount;
-      index += 1
-    ) {
-      const normalizedOffset =
-        index / (directionFieldExpression.lineCount - 1) - 0.5;
-      const offset =
-        normalizedOffset * directionFieldExpression.parallelSpread * 2;
-      const start = index * 6;
-      positions[start] = perpendicularX * offset - axisX * 0.42;
-      positions[start + 1] = perpendicularY * offset - axisY * 0.42;
-      positions[start + 2] = -0.72;
-      positions[start + 3] =
-        perpendicularX * offset + axisX * directionFieldExpression.fieldReach;
-      positions[start + 4] =
-        perpendicularY * offset + axisY * directionFieldExpression.fieldReach;
-      positions[start + 5] = -0.72;
+    for (let index = 0; index < directionFieldParticleCount; index += 1) {
+      const progress =
+        (((index * 37) % directionFieldParticleCount) + 0.5) /
+        directionFieldParticleCount;
+      const laneBase =
+        ((index % directionFieldExpression.lineCount) /
+          Math.max(1, directionFieldExpression.lineCount - 1) -
+          0.5) *
+        2;
+      const lane =
+        laneBase * 0.44 +
+        Math.sin(index * 1.618 + progress * Math.PI * 2) * 0.56;
+      const spread =
+        Math.sin(progress * Math.PI) *
+        directionFieldExpression.parallelSpread *
+        0.42;
+      const offset = index * 3;
+      directionFieldPositions[offset] =
+        directionOriginX +
+        axisX * directionFieldExpression.fieldReach * progress +
+        perpendicularX * lane * spread;
+      directionFieldPositions[offset + 1] =
+        directionOriginY +
+        axisY * directionFieldExpression.fieldReach * progress +
+        perpendicularY * lane * spread;
+      directionFieldPositions[offset + 2] =
+        directionOriginZ + Math.sin(progress * Math.PI) * 0.18;
     }
     const geometry = new BufferGeometry();
-    geometry.setAttribute(
-      "position",
-      new Float32BufferAttribute(positions, 3),
+    directionFieldPositionAttribute = new Float32BufferAttribute(
+      directionFieldPositions,
+      3,
     );
-    directionFieldMaterial = new LineBasicMaterial({
+    geometry.setAttribute("position", directionFieldPositionAttribute);
+    directionFieldMaterial = new PointsMaterial({
       color: new Color(0x9ebee4),
+      size: isLifeForce ? 0.038 : 0.032,
+      sizeAttenuation: true,
       transparent: true,
-      opacity: directionFieldExpression.lineOpacity,
+      opacity: isLifeForce ? 0.42 : 0.34,
       blending: AdditiveBlending,
       depthWrite: false,
     });
-    directionFieldGroup.add(
-      new LineSegments(geometry, directionFieldMaterial),
-    );
+    directionFieldGroup.add(new Points(geometry, directionFieldMaterial));
     root.add(directionFieldGroup);
   }
 
@@ -833,40 +834,6 @@ export function createGenesisWebGLRendererCore(
     sceneProjection.lifeArchetypeForceCondensationVisualCalibration;
   const forceCondensationExpression =
     archetypeForceCalibration?.forceCondensationExpression ?? null;
-  const forceCondensationGroup = new Group();
-  const forceCondensationMaterials: MeshBasicMaterial[] = [];
-  if (
-    archetypeForceCalibration !== null &&
-    archetypeForceCalibration.phase !== "HIDDEN" &&
-    forceCondensationExpression !== null
-  ) {
-    for (
-      let index = 0;
-      index < forceCondensationExpression.ringCount;
-      index += 1
-    ) {
-      const material = new MeshBasicMaterial({
-        color: new Color(0xd8c78f),
-        transparent: true,
-        opacity:
-          forceCondensationExpression.ringOpacity *
-          (1 - index * 0.16),
-        blending: AdditiveBlending,
-        depthWrite: false,
-      });
-      const ring = new Mesh(
-        new TorusGeometry(0.48 + index * 0.16, 0.006, 6, 96),
-        material,
-      );
-      ring.rotation.x =
-        forceCondensationExpression.axisTiltRadians + index * 0.08;
-      ring.rotation.y = index * 0.16;
-      forceCondensationMaterials.push(material);
-      forceCondensationGroup.add(ring);
-    }
-    forceCondensationGroup.position.z = -0.08;
-    root.add(forceCondensationGroup);
-  }
 
   const lifePresence = sceneProjection.lifePresence;
   const lifeStarCore = sceneProjection.lifeStarCore;
@@ -895,6 +862,9 @@ export function createGenesisWebGLRendererCore(
   const pressureBoundaryLoad = pressureExpression?.boundaryLoad ?? 0;
   const pressureCoreResistance = pressureExpression?.coreResistance ?? 0;
   const pressureFlowDeflection = pressureExpression?.flowDeflection ?? 0;
+  const pressureTemporalWeight = pressureExpression?.temporalWeight ?? 0;
+  const pressureStructureResponse = realityPressure?.presenceResponse.structureResponse ?? 0;
+  const pressureCoreResponse = realityPressure?.presenceResponse.coreResponse ?? 0;
   const spineSegments = lifePresence.stellarSkeleton.spineSegments;
   const branchCount = lifePresence.stellarSkeleton.branchCount;
   const fieldPoseScale =
@@ -1074,7 +1044,9 @@ export function createGenesisWebGLRendererCore(
     ? 0.22 + spatialApproachProgress * 0.08
     : isCompletion
       ? 0.34
-      : 1;
+      : isContinuityPresenceStage
+        ? 0.34
+        : 1;
   const spineOpacity =
     sceneProjection.mansionStructure.lineOpacity *
     structureOpacityScale *
@@ -1119,6 +1091,8 @@ export function createGenesisWebGLRendererCore(
       blending: AdditiveBlending,
     }),
   );
+  spineLine.visible = !isContinuityPresenceStage;
+  branchLines.visible = !isContinuityPresenceStage;
   const structurePoints = new Points(
     nodeGeometry,
     new PointsMaterial({
@@ -1183,6 +1157,27 @@ export function createGenesisWebGLRendererCore(
   });
   const bodyField = new Points(bodyFieldGeometry, bodyFieldMaterial);
   bodyField.visible = isPresenceStage;
+  const pressureTracePointCount = 5;
+  const pressureTracePositions = new Float32Array(pressureTracePointCount * 3);
+  const pressureTraceGeometry = new BufferGeometry();
+  const pressureTracePositionAttribute = new Float32BufferAttribute(
+    pressureTracePositions,
+    3,
+  );
+  pressureTraceGeometry.setAttribute("position", pressureTracePositionAttribute);
+  const pressureTraceMaterial = new PointsMaterial({
+    color: new Color(0xf2d79b),
+    size: lifePresence.stellarSkeleton.nodeScale * 0.9,
+    transparent: true,
+    opacity: 0,
+    blending: AdditiveBlending,
+    depthWrite: false,
+  });
+  const pressureTrace = new Points(
+    pressureTraceGeometry,
+    pressureTraceMaterial,
+  );
+  pressureTrace.visible = pressureExpression !== null && isPresenceStage;
   const tipAxisPosition = (tip: [number, number, number]) =>
     tip[0] * axisX + tip[1] * axisY;
   positivePresenceTips.sort((a, b) => tipAxisPosition(a) - tipAxisPosition(b));
@@ -1275,58 +1270,20 @@ export function createGenesisWebGLRendererCore(
     branchLines,
     structurePoints,
     bodyField,
+    pressureTrace,
     presenceEnvelope,
     presenceEnvelopeGlow,
   );
-  structureGroup.visible = !isMoonOrigin;
+  // At the Genesis threshold, carry only the luminous joints of the same
+  // stellar skeleton. Lines and animal outline remain absent until the later
+  // manifestation stages earn them.
+  structureGroup.visible =
+    !isLifeCoordinateStage && !isLifeDirectionStage;
   root.add(structureGroup);
 
+  // The first direction response belongs to the coordinate itself. Hexagram
+  // strokes and animal construction remain absent from these two screens.
   const imprintTraceGroup = new Group();
-  if (isHexagramImprint) {
-    for (let index = 0; index < 6; index += 1) {
-      const startProgress = 0.08 + index * 0.14;
-      const first = getSpinePoint(startProgress);
-      const second = getSpinePoint(Math.min(0.98, startProgress + 0.07));
-      const third = getSpinePoint(Math.min(0.99, startProgress + 0.14));
-      const offset = index % 2 === 0 ? 1 : -1;
-      const offsetX = perpendicularX * offset * 0.08;
-      const offsetY = perpendicularY * offset * 0.08;
-      const imprintGeometry = new BufferGeometry();
-      imprintGeometry.setAttribute(
-        "position",
-        new Float32BufferAttribute(
-          [
-            first[0] + offsetX,
-            first[1] + offsetY,
-            first[2] + index * 0.012,
-            second[0] + offsetX * 1.15,
-            second[1] + offsetY * 1.15,
-            second[2] + index * 0.012,
-            third[0] + offsetX * 0.72,
-            third[1] + offsetY * 0.72,
-            third[2] + index * 0.012,
-          ],
-          3,
-        ),
-      );
-      imprintTraceGroup.add(
-        new Line(
-          imprintGeometry,
-          new LineBasicMaterial({
-            color: new Color(0xb8a36e),
-            transparent: true,
-            opacity:
-              0.12 +
-              perspectiveMemorySedimentation * 0.18 +
-              index * (0.008 + perspectiveMemorySedimentation * 0.006),
-            blending: AdditiveBlending,
-          }),
-        ),
-      );
-    }
-    imprintTraceGroup.position.z = 0.04;
-    root.add(imprintTraceGroup);
-  }
 
   const coreColor = new Color(LIFE_UNIVERSE_CORE_IDENTITY.threeColor);
   // At the production camera distance this resolves to the same ~24px core
@@ -1396,7 +1353,13 @@ export function createGenesisWebGLRendererCore(
       transparent: true,
       opacity:
         lifeStarCore.surfacePresence.atmosphereOpacity *
-        (isMoonOrigin ? 0.58 : 1) *
+        (isLifeCoordinateStage
+          ? 0.18
+          : isLifeDirectionStage
+            ? 0.16
+            : isContinuityPresenceStage
+              ? 0.3
+              : 1) *
         recognitionCoreVisibility *
         perspectiveCoreDimming *
         (0.68 + spatialContrast * 0.32),
@@ -1430,24 +1393,13 @@ export function createGenesisWebGLRendererCore(
     6,
     1.7,
   );
-  const timeRing = isTimeResonance
-    ? new Mesh(
-        new TorusGeometry(coreRadius * 1.72, 0.012, 8, 96),
-        new MeshBasicMaterial({
-          color: new Color(0xcdbb8f),
-          transparent: true,
-          opacity: 0.32,
-          blending: AdditiveBlending,
-          depthWrite: false,
-        }),
-      )
-    : null;
+  // Time enters the existing life core as a slower change of rhythm and
+  // luminance. It must never introduce a new orbital ring around the life.
   const coreIdentityGroup = new Group();
   core.add(coreLight);
   coreIdentityGroup.add(coreHalo);
   coreIdentityGroup.add(coreSurface);
   coreIdentityGroup.add(core);
-  if (timeRing !== null) coreIdentityGroup.add(timeRing);
   root.add(coreIdentityGroup);
 
   let frameCount = 0;
@@ -1501,21 +1453,6 @@ export function createGenesisWebGLRendererCore(
           1,
         );
       }
-      const axisRevealProgress =
-        coordinateFormationExpression?.phase === "FOUND"
-          ? 1
-          : coordinateFormationExpression?.phase === "SEEKING_TO_FOUND"
-            ? Math.min(
-                1,
-                Math.max(
-                  0,
-                  (coordinateFormationProgress -
-                    coordinateFormationExpression.axisRevealStartProgress) /
-                    (1 -
-                      coordinateFormationExpression.axisRevealStartProgress),
-                ),
-              )
-            : 0;
       const birthRevealProgress =
         coordinateFormationExpression?.phase === "FOUND"
           ? 1
@@ -1531,17 +1468,6 @@ export function createGenesisWebGLRendererCore(
                 ),
               )
             : 0;
-      if (
-        mansionOrbitMaterial !== null &&
-        coordinateFormationExpression !== null
-      ) {
-        mansionOrbitMaterial.opacity =
-          retainMotherContinuityOrbit
-            ? 0.14
-            : coordinateFormationExpression.orbitAxisOpacity *
-              axisRevealProgress *
-              (isPresenceStage ? (isCompletion ? 0.28 : 0.38) : 1);
-      }
       if (
         birthCoordinateAxisMaterial !== null &&
         coordinateFormationExpression !== null
@@ -1578,7 +1504,10 @@ export function createGenesisWebGLRendererCore(
       }
       if (
         directionFieldExpression !== null &&
-        directionFieldMaterial !== null
+        directionFieldMaterial !== null &&
+        directionFieldPositions !== null &&
+        directionFieldPositionAttribute !== null &&
+        directionFieldParticleCount > 0
       ) {
         const directionPhase =
           (universeSeconds /
@@ -1589,57 +1518,153 @@ export function createGenesisWebGLRendererCore(
           1 +
           Math.sin(directionPhase) *
             directionFieldExpression.breathingAmplitude;
-        const directionalDrift =
-          directionFieldExpression.driftDistance *
-          (0.5 + Math.sin(directionPhase * 0.72) * 0.5);
-        directionFieldGroup.position.x =
-          directionFieldExpression.axisX * directionalDrift;
-        directionFieldGroup.position.y =
-          directionFieldExpression.axisY * directionalDrift;
+        const axisX = directionFieldExpression.axisX;
+        const axisY = directionFieldExpression.axisY;
+        const perpendicularX = -axisY;
+        const perpendicularY = axisX;
+        const forceDensity = forceCondensationExpression?.density ?? 0;
+        const forceAspect =
+          forceCondensationExpression?.formAspectRatio ?? 1;
+        const travelSpeed = isLifeForce
+          ? 0.018 + forceDensity * 0.006
+          : 0.014;
+        const fieldReach =
+          directionFieldExpression.fieldReach *
+          (isLifeForce ? 1.04 + forceDensity * 0.08 : 0.92);
+        const fieldNarrowing = isLifeForce
+          ? Math.max(0.46, 0.72 / forceAspect)
+          : 1;
+        for (
+          let index = 0;
+          index < directionFieldParticleCount;
+          index += 1
+        ) {
+          const seed =
+            (((index * 37) % directionFieldParticleCount) + 0.5) /
+            directionFieldParticleCount;
+          const progress = (seed + universeSeconds * travelSpeed) % 1;
+          const laneBase =
+            ((index % directionFieldExpression.lineCount) /
+              Math.max(1, directionFieldExpression.lineCount - 1) -
+              0.5) *
+            2;
+          const lane =
+            laneBase * 0.44 +
+            Math.sin(index * 1.618 + progress * Math.PI * 2) * 0.56;
+          const lateralBreath =
+            Math.sin(progress * Math.PI) *
+            directionFieldExpression.parallelSpread *
+            0.42 *
+            fieldNarrowing *
+            responseBreath;
+          const axialProgress =
+            progress * progress * (3 - 2 * progress);
+          const offset = index * 3;
+          directionFieldPositions[offset] =
+            directionOriginX +
+            axisX * (0.06 + fieldReach * axialProgress) +
+            perpendicularX * lane * lateralBreath;
+          directionFieldPositions[offset + 1] =
+            directionOriginY +
+            axisY * (0.06 + fieldReach * axialProgress) +
+            perpendicularY * lane * lateralBreath;
+          directionFieldPositions[offset + 2] =
+            directionOriginZ +
+            Math.sin(progress * Math.PI) *
+              (isLifeForce ? 0.24 : 0.18) +
+            ((index % 3) - 1) * 0.018;
+        }
+        directionFieldPositionAttribute.needsUpdate = true;
         directionFieldMaterial.opacity =
-          directionFieldExpression.lineOpacity * responseBreath;
+          (isLifeForce ? 0.38 + forceDensity * 0.12 : 0.34) *
+          (0.94 + (responseBreath - 1) * 1.8);
+        directionFieldMaterial.size =
+          (isLifeForce ? 0.038 + forceDensity * 0.008 : 0.032) *
+          (0.96 + (responseBreath - 1));
       }
-      if (
-        forceCondensationExpression !== null &&
-        forceCondensationMaterials.length > 0
-      ) {
-        const forcePhase =
-          (universeSeconds /
-            forceCondensationExpression.breathingPeriodSeconds) *
-          Math.PI *
-          2;
-        const forceBreath =
-          1 +
-          Math.sin(forcePhase) *
-            forceCondensationExpression.breathingAmplitude;
-        const radialScale =
-          (1 + forceCondensationExpression.radialBias) * forceBreath;
-        forceCondensationGroup.scale.set(
-          radialScale * forceCondensationExpression.formAspectRatio,
-          radialScale / forceCondensationExpression.formAspectRatio,
-          radialScale,
-        );
-        forceCondensationGroup.rotation.z =
-          universeSeconds * forceCondensationExpression.flowRotationSpeed;
-        forceCondensationMaterials.forEach((material, index) => {
-          material.opacity =
-            forceCondensationExpression.ringOpacity *
-            forceCondensationExpression.density *
-            (1 - index * 0.16) *
-            (0.9 + Math.sin(forcePhase + index * 0.72) * 0.1);
-        });
-      }
-      const presenceRotation = isCompletion
-        ? 0.004 *
-          (1 - perspectiveCompletionStillness * 0.78 - recognitionStillness * 0.06)
-        : isStarBeastReveal
-          ? sceneProjection.motion.rotationSpeed *
-            (0.18 - perspectiveRecognitionStability * 0.035 - recognitionHold * 0.018)
-          : sceneProjection.motion.rotationSpeed;
+      // Presence keeps its identity through breath and recovery. It never
+      // proves aliveness by orbiting the camera.
+      const presenceRotation = 0;
       root.rotation.y = elapsedSeconds * presenceRotation;
       let cosmicFieldScale = 1;
       let cosmicFieldOpacity = sceneProjection.cosmicField.opacity;
-      cosmicField.rotation.z = universeSeconds * 0.004;
+      // Continue the entrance camera language in Genesis: the stellar volume
+      // reveals depth through quiet yaw and pitch, never by spinning a flat
+      // star plate around the screen axis.
+      cosmicField.rotation.x = Math.cos(universeSeconds * 0.071) * 0.052;
+      cosmicField.rotation.y = Math.sin(universeSeconds * 0.085) * 0.075;
+      cosmicField.rotation.z = 0;
+      const lifeCoreGravity = isLifeForce
+        ? 0.28
+        : isStarBeastReveal
+          ? 0.34
+          : isCompletion
+            ? 0.26
+            : 0;
+      const realitySpacePressure =
+        pressureExpression !== null && isPresenceStage
+          ? Math.min(
+              1,
+              pressureFieldCompression * 0.34 +
+                pressureBoundaryLoad * 0.28 +
+                Math.abs(pressureFlowDeflection) * 0.22 +
+                pressureTemporalWeight * 0.16,
+            )
+          : 0;
+      const realityPressurePhase =
+        universeSeconds * (0.11 + pressureTemporalWeight * 0.08) * Math.PI * 2;
+      const realityPressurePulse =
+        0.5 + Math.sin(realityPressurePhase) * 0.5;
+      LIFE_UNIVERSE_STAR_FIELD.forEach((star, index) => {
+        const offset = index * 3;
+        const radialDistance = Math.hypot(star.x, star.y);
+        const gravityInfluence =
+          lifeCoreGravity *
+          Math.pow(Math.max(0, 1 - radialDistance / 4.2), 2) *
+          (0.62 + ((star.z + 1.7) / 3.4) * 0.38);
+        const bend =
+          gravityInfluence *
+          (0.16 + Math.sin(universeSeconds * 0.18 + star.phase) * 0.035);
+        const bendCos = Math.cos(bend);
+        const bendSin = Math.sin(bend);
+        const pull = 1 - gravityInfluence * 0.09;
+        const gravityX =
+          (star.x * bendCos - star.y * bendSin) * pull;
+        const gravityY =
+          (star.x * bendSin + star.y * bendCos) * pull;
+        const pressureDepth = (star.z + 1.7) / 3.4;
+        const pressureInfluence =
+          realitySpacePressure *
+          (0.38 + pressureDepth * 0.62) *
+          (0.52 + Math.max(0, 1 - radialDistance / 4.2) * 0.48);
+        const axialPosition = gravityX * axisX + gravityY * axisY;
+        const lateralPosition =
+          gravityX * perpendicularX + gravityY * perpendicularY;
+        const compressedAxial =
+          axialPosition *
+          (1 - pressureFieldCompression * pressureInfluence * 0.14);
+        const deflectedLateral =
+          lateralPosition +
+          pressureFlowDeflection *
+            pressureInfluence *
+            (0.12 + realityPressurePulse * 0.08) +
+          pressureBoundaryLoad *
+            pressureInfluence *
+            (0.025 + realityPressurePulse * 0.035);
+        cosmicPositions[offset] =
+          axisX * compressedAxial + perpendicularX * deflectedLateral;
+        cosmicPositions[offset + 1] =
+          axisY * compressedAxial + perpendicularY * deflectedLateral;
+        cosmicPositions[offset + 2] =
+          star.z +
+          Math.sin(universeSeconds * 0.13 + star.phase) *
+            gravityInfluence *
+            0.12 +
+          Math.sin(realityPressurePhase + star.phase) *
+            pressureInfluence *
+            0.18;
+      });
+      cosmicGeometry.getAttribute("position").needsUpdate = true;
       cosmicFieldScale *=
         0.98 + spatialDepthScale * 0.012 + spatialApproachProgress * 0.008;
       cosmicFieldOpacity *= 0.82 + spatialContrast * 0.12 + spatialApproachProgress * 0.06;
@@ -1701,19 +1726,6 @@ export function createGenesisWebGLRendererCore(
         cosmicFieldOpacity *= 1.04;
       }
       if (isHexagramImprint) {
-        if (directionFieldExpression !== null) {
-          const fieldPulse =
-            Math.sin(
-              (universeSeconds /
-                directionFieldExpression.breathingPeriodSeconds) *
-                Math.PI *
-                2,
-            ) * directionFieldExpression.driftDistance;
-          cosmicField.position.x =
-            directionFieldExpression.axisX * fieldPulse;
-          cosmicField.position.y =
-            directionFieldExpression.axisY * fieldPulse;
-        }
         cosmicFieldScale *= 0.99 + Math.sin(universeSeconds * 0.18) * 0.014;
         cosmicFieldOpacity *= 0.92 + realizationProgress * 0.08;
       }
@@ -1909,6 +1921,76 @@ export function createGenesisWebGLRendererCore(
           1.02 + perspectiveSubjectAxisStrength * 0.025;
         structureGroup.scale.y *= 1.01 + perspectiveBodyCohesion * 0.025;
       }
+      if (pressureExpression !== null && isPresenceStage) {
+        const pressurePhase =
+          elapsedSeconds * (0.11 + pressureTemporalWeight * 0.08);
+        const pressurePulse =
+          0.5 + Math.sin(pressurePhase * Math.PI * 2) * 0.5;
+        const pressureCompression =
+          pressureFieldCompression * (0.024 + pressurePulse * 0.022);
+        const pressureLift =
+          pressureCoreResistance * (0.012 + pressurePulse * 0.018);
+        structureGroup.scale.x *= 1 - pressureCompression;
+        structureGroup.scale.y *= 1 + pressureLift;
+        structureGroup.rotation.z +=
+          pressureFlowDeflection * (0.018 + pressurePulse * 0.032);
+        structureGroup.position.x =
+          perpendicularX * pressureBoundaryLoad *
+          (0.008 + pressurePulse * 0.018);
+        structureGroup.position.y =
+          perpendicularY * pressureBoundaryLoad *
+          (0.008 + pressurePulse * 0.018);
+
+        for (let index = 0; index < pressureTracePointCount; index += 1) {
+          const traceProgress =
+            ((pressurePhase * 0.38 - index * 0.045) % 1 + 1) % 1;
+          const scaledIndex = traceProgress * Math.max(1, spineSegments - 1);
+          const sourceIndex = Math.min(
+            spineSegments - 1,
+            Math.floor(scaledIndex),
+          );
+          const targetIndex = Math.min(spineSegments - 1, sourceIndex + 1);
+          const interpolation = scaledIndex - sourceIndex;
+          const sourceOffset = sourceIndex * 3;
+          const targetOffset = targetIndex * 3;
+          const traceOffset = index * 3;
+          const localDeflection =
+            Math.sin(traceProgress * Math.PI) *
+            pressureFlowDeflection *
+            (0.018 + pressurePulse * 0.026);
+          pressureTracePositions[traceOffset] =
+            spinePositions[sourceOffset] +
+            (spinePositions[targetOffset] - spinePositions[sourceOffset]) *
+              interpolation +
+            perpendicularX * localDeflection;
+          pressureTracePositions[traceOffset + 1] =
+            spinePositions[sourceOffset + 1] +
+            (spinePositions[targetOffset + 1] -
+              spinePositions[sourceOffset + 1]) *
+              interpolation +
+            perpendicularY * localDeflection;
+          pressureTracePositions[traceOffset + 2] =
+            spinePositions[sourceOffset + 2] +
+            (spinePositions[targetOffset + 2] -
+              spinePositions[sourceOffset + 2]) *
+              interpolation +
+            0.08 + index * 0.012;
+        }
+        pressureTracePositionAttribute.needsUpdate = true;
+        pressureTraceMaterial.opacity =
+          0.18 +
+          pressureStructureResponse * 0.26 +
+          pressurePulse * 0.24;
+        pressureTraceMaterial.size =
+          lifePresence.stellarSkeleton.nodeScale *
+          (0.72 + pressureCoreResponse * 0.34 + pressurePulse * 0.18);
+        (spineLine.material as LineBasicMaterial).opacity =
+          Math.max(spineOpacity, isCompletion ? 0.5 : 0.42) *
+          (0.9 + pressurePulse * 0.18);
+        (branchLines.material as LineBasicMaterial).opacity =
+          Math.max(branchOpacity, isCompletion ? 0.4 : 0.34) *
+          (0.88 + pressurePulse * 0.14);
+      }
       const stagePointOpacity = isSymbolReveal
         ? 0.86
         : isHexagramImprint
@@ -1919,7 +2001,9 @@ export function createGenesisWebGLRendererCore(
               ? 0.72
               : isCompletion
                 ? 0.66
-            : 0.74;
+                : isContinuityPresenceStage
+                  ? 0.28
+                  : 0.74;
       structurePointMaterial.opacity =
         stagePointOpacity +
         (isPresenceStage ? (recognitionSubjectWeight - 1) * 0.1 : 0) +
@@ -1983,16 +2067,6 @@ export function createGenesisWebGLRendererCore(
       coreLight.intensity *= isPresenceStage
         ? (0.72 + recognitionCenterInfluence * 0.04) * recognitionCoreVisibility
         : 1;
-      if (timeRing !== null) {
-        timeRing.rotation.z = elapsedSeconds * 0.035;
-        timeRing.scale.setScalar(
-          0.96 +
-            Math.sin(elapsedSeconds * 0.22) * 0.025 +
-            realizationProgress * 0.05,
-        );
-        (timeRing.material as MeshBasicMaterial).opacity =
-          0.24 + Math.sin(elapsedSeconds * 0.22) * 0.04;
-      }
       renderer.render(scene, camera);
       frameCount += 1;
     },
