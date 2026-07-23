@@ -1,11 +1,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // 观爻 1.0 · ENTRY MODEL —— /launch-lab
 //
-// User-facing entry language is locked to:
-// 人禀星气而生，兽承天光而现。
-//
-// This page may retain its existing visual machinery, but no user-facing copy
-// should introduce legacy onboarding, alternate lore, or secondary myths.
+// Before birth time is locked, this is a public celestial clock: 28 equal
+// coordinates, four neutral regions and seven moving luminaries. The entrance
+// light remains as one identity-blind carrier while time flows into it;
+// personal mansion, Four-Symbol seal and mother code may only appear after the
+// time coordinate has been confirmed.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -60,10 +60,18 @@ const MANSION_COORDINATES = Object.freeze(
 );
 
 const CFG = {
-  voidMs: 0.65,
+  moonReleaseSeconds: 0.92,
   convergeMs: 2.4,
   starfield: 420,
+  firstPresenceSeconds: 1.25,
 };
+
+// The existing origin adapter still accepts a geo compatibility field. The
+// production flow no longer asks for birthplace, so never fabricate a place.
+const UNCOLLECTED_BIRTH_CONTEXT = Object.freeze({
+  province: "未采集",
+  city: "未采集",
+});
 
 const COLOR = {
   bg: "#020306",
@@ -94,9 +102,195 @@ function smooth(e0: number, e1: number, x: number) {
   const t = clamp((x - e0) / (e1 - e0), 0, 1);
   return t * t * (3 - 2 * t);
 }
+
+// TAIYIN_PRESENT / QUIET_ROUND_MOON: the Moon is a time entrance, not a
+// personal identity. It shares the one universe anchor with the later life
+// core, then yields that coordinate when the user releases time into the sky.
+function drawTaiyinMoonEntrance(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  universeSeconds: number,
+  revealProgress: number,
+  releaseProgress: number,
+) {
+  const reveal = clamp(revealProgress, 0, 1);
+  const release = clamp(releaseProgress, 0, 1);
+  if (reveal <= 0.001) return;
+
+  const coreFrame = resolveLifeUniverseCoreFrame(width, height, universeSeconds);
+  const breath = 1 + Math.sin(universeSeconds * 0.58) * 0.018;
+  const moonRadius = clamp(width * 0.045, 15, 18) * breath;
+  const diskAlpha = reveal * (1 - smooth(0.16, 0.78, release));
+
+  ctx.save();
+  ctx.translate(coreFrame.x, coreFrame.y);
+
+  if (release > 0.001) {
+    const wave = smooth(0, 1, release);
+    const orbitRadius = lerp(moonRadius * 1.45, Math.min(width * 0.43, 168), wave);
+    ctx.save();
+    ctx.scale(1, 0.44);
+    const releaseHalo = ctx.createRadialGradient(0, 0, moonRadius, 0, 0, orbitRadius);
+    releaseHalo.addColorStop(0, `rgba(239,244,246,${(0.12 * (1 - wave)).toFixed(3)})`);
+    releaseHalo.addColorStop(0.68, `rgba(185,203,236,${(0.08 * (1 - Math.abs(wave - 0.58))).toFixed(3)})`);
+    releaseHalo.addColorStop(1, "rgba(147,172,211,0)");
+    ctx.fillStyle = releaseHalo;
+    ctx.beginPath();
+    ctx.arc(0, 0, orbitRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = `rgba(208,220,237,${(0.18 * Math.sin(Math.PI * wave)).toFixed(3)})`;
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    ctx.arc(0, 0, orbitRadius * 0.92, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  const haloRadius = moonRadius * (3.5 + release * 1.4);
+  const halo = ctx.createRadialGradient(0, 0, moonRadius * 0.25, 0, 0, haloRadius);
+  halo.addColorStop(0, `rgba(255,249,231,${(0.2 * diskAlpha).toFixed(3)})`);
+  halo.addColorStop(0.34, `rgba(221,229,239,${(0.105 * diskAlpha).toFixed(3)})`);
+  halo.addColorStop(1, "rgba(185,203,236,0)");
+  ctx.fillStyle = halo;
+  ctx.beginPath();
+  ctx.arc(0, 0, haloRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (diskAlpha > 0.001) {
+    const moon = ctx.createRadialGradient(
+      -moonRadius * 0.3,
+      -moonRadius * 0.34,
+      moonRadius * 0.1,
+      moonRadius * 0.08,
+      moonRadius * 0.12,
+      moonRadius * 1.12,
+    );
+    moon.addColorStop(0, `rgba(255,252,239,${(0.98 * diskAlpha).toFixed(3)})`);
+    moon.addColorStop(0.56, `rgba(232,233,223,${(0.94 * diskAlpha).toFixed(3)})`);
+    moon.addColorStop(1, `rgba(174,187,203,${(0.82 * diskAlpha).toFixed(3)})`);
+    ctx.fillStyle = moon;
+    ctx.shadowColor = `rgba(238,236,215,${(0.42 * diskAlpha).toFixed(3)})`;
+    ctx.shadowBlur = moonRadius * 0.8;
+    ctx.beginPath();
+    ctx.arc(0, 0, moonRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    const quietShade = ctx.createLinearGradient(-moonRadius, 0, moonRadius, 0);
+    quietShade.addColorStop(0, "rgba(84,101,126,0)");
+    quietShade.addColorStop(0.72, "rgba(84,101,126,0)");
+    quietShade.addColorStop(1, `rgba(84,101,126,${(0.14 * diskAlpha).toFixed(3)})`);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = quietShade;
+    ctx.beginPath();
+    ctx.arc(0, 0, moonRadius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+// TIME_RECEIVING_CORE: the Moon does not cut to a calculator. Its exact anchor,
+// scale and breath continue as one neutral light carrier while year / month /
+// day / hour establish position. This is continuity, not an identity result.
+function drawTimeReceivingLifeCore(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  universeSeconds: number,
+  alpha = 1,
+) {
+  const reveal = clamp(alpha, 0, 1);
+  if (reveal <= 0.001) return;
+
+  const coreFrame = resolveLifeUniverseCoreFrame(width, height, universeSeconds);
+  const breath = 1 + Math.sin(universeSeconds * 0.58) * 0.018;
+  const coreRadius = clamp(width * 0.045, 15, 18) * breath;
+  const haloRadius = coreRadius * 4.4;
+
+  ctx.save();
+  ctx.translate(coreFrame.x, coreFrame.y);
+  const halo = ctx.createRadialGradient(0, 0, coreRadius * 0.18, 0, 0, haloRadius);
+  halo.addColorStop(0, `rgba(255,252,239,${(0.26 * reveal).toFixed(3)})`);
+  halo.addColorStop(0.32, `rgba(221,229,239,${(0.13 * reveal).toFixed(3)})`);
+  halo.addColorStop(1, "rgba(147,172,211,0)");
+  ctx.fillStyle = halo;
+  ctx.beginPath();
+  ctx.arc(0, 0, haloRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  const core = ctx.createRadialGradient(
+    -coreRadius * 0.28,
+    -coreRadius * 0.32,
+    coreRadius * 0.08,
+    0,
+    0,
+    coreRadius,
+  );
+  core.addColorStop(0, `rgba(255,254,246,${(0.98 * reveal).toFixed(3)})`);
+  core.addColorStop(0.48, `rgba(236,241,243,${(0.94 * reveal).toFixed(3)})`);
+  core.addColorStop(1, `rgba(185,203,236,${(0.74 * reveal).toFixed(3)})`);
+  ctx.fillStyle = core;
+  ctx.shadowColor = `rgba(225,235,244,${(0.5 * reveal).toFixed(3)})`;
+  ctx.shadowBlur = coreRadius * 1.1;
+  ctx.beginPath();
+  ctx.arc(0, 0, coreRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = `rgba(255,252,239,${(0.42 * reveal).toFixed(3)})`;
+  ctx.lineWidth = 0.75;
+  ctx.beginPath();
+  ctx.arc(0, 0, coreRadius * 1.16, -1.04, 0.42);
+  ctx.stroke();
+  ctx.restore();
+}
 function lerpAngle(a: number, b: number, t: number) {
   const delta = Math.atan2(Math.sin(b - a), Math.cos(b - a));
   return a + delta * clamp(t, 0, 1);
+}
+
+const TRIGRAM_LINE_PATTERN: Record<string, readonly [boolean, boolean, boolean]> = {
+  乾: [true, true, true],
+  兑: [true, true, false],
+  离: [true, false, true],
+  震: [true, false, false],
+  巽: [false, true, true],
+  坎: [false, true, false],
+  艮: [false, false, true],
+  坤: [false, false, false],
+};
+
+function drawTrigramForceMark(
+  ctx: CanvasRenderingContext2D,
+  trigram: string,
+  x: number,
+  y: number,
+  width: number,
+  alpha: number,
+) {
+  const pattern = TRIGRAM_LINE_PATTERN[trigram] ?? TRIGRAM_LINE_PATTERN.坤!;
+  const lineGap = Math.max(5, width * 0.2);
+  const segmentGap = Math.max(4, width * 0.16);
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineWidth = Math.max(1.1, width * 0.055);
+  ctx.strokeStyle = `rgba(216,197,142,${alpha.toFixed(3)})`;
+  pattern.slice().reverse().forEach((solid, row) => {
+    const yy = y + (row - 1) * lineGap;
+    ctx.beginPath();
+    if (solid) {
+      ctx.moveTo(x - width / 2, yy);
+      ctx.lineTo(x + width / 2, yy);
+    } else {
+      ctx.moveTo(x - width / 2, yy);
+      ctx.lineTo(x - segmentGap / 2, yy);
+      ctx.moveTo(x + segmentGap / 2, yy);
+      ctx.lineTo(x + width / 2, yy);
+    }
+    ctx.stroke();
+  });
+  ctx.restore();
 }
 
 type FieldStar = { x: number; y: number; r: number; ph: number; sp: number; vx: number; vy: number };
@@ -136,9 +330,9 @@ const STATE = {
   ENTRY_STATIC_RENDER: "entry_static_render",
 } as const;
 
-const TOP_LINES = ["人禀星气而生", "兽承天光而现"];
-const CTA_LINES = ["那颗星", "自你出生之始", "一直为你而亮"];
-const ENTRY_ACTION_LINE = "轻触，认领它";
+const TOP_LINES = ["日月运行，", "星辰有序。"];
+const CTA_LINES = ["观我生，", "知进退。"];
+const ENTRY_ACTION_LINE = "轻触星河，寻找你的生命坐标";
 const BEAST_COLLAPSE_VISUAL_EVENT = "BEAST_COLLAPSE_VISUAL_EVENT";
 const NODE1_MIRROR_ACTIVATED_EVENT = "NODE1_MIRROR_ACTIVATED";
 const Node1State = {
@@ -150,7 +344,7 @@ const ENTRY_HANDOFF_DELAY_MS = 700;
 const NODE_TRANSITION_LERP_START_MS = 760;
 const NODE_TRANSITION_LERP_DURATION_MS = 900;
 const RAIL_COMMIT_THRESHOLD = 0.58;
-const ORIGIN_RAIL_COLS = 5;
+const ORIGIN_RAIL_COLS = 4;
 const PERIOD_LABELS = ["子时", "丑时", "寅时", "卯时", "辰时", "巳时", "午时", "未时", "申时", "酉时", "戌时", "亥时"] as const;
 const CHRONO_DIMS = ["year", "month", "day", "hour"] as const;
 type ChronoDim = (typeof CHRONO_DIMS)[number];
@@ -198,15 +392,15 @@ const AXIS_COPY: Record<EntryHandoffMode, {
   NEW_USER: {
     dimLabel: { year: "年份", month: "月份", day: "日期", hour: "时辰" },
     dimStageLabel: { year: "年份锁定", month: "月份对齐", day: "日期落点", hour: "时辰显影" },
-    geoLabel: { province: "省份", city: "城市落点" },
+    geoLabel: { province: "出生省份", city: "出生城市" },
     kicker: "生命坐标",
-    topPrimary: "你的时间正在寻找位置",
-    topSecondary: "确认后进入生命显化",
-    bodyPrimary: "建立你的生命坐标",
-    bodySecondary: "确认后进入生命显化",
-    actionPrimary: "上下调频，找到生命坐标",
-    actionConfirm: "右滑确认，让星河开始回应",
-    lockText: "生命坐标已定",
+    topPrimary: "时间坐标正在归档",
+    topSecondary: "时间定宿，也让母码落位",
+    bodyPrimary: "让星河记住你的出生时间",
+    bodySecondary: "年、月、日、时依次进入这颗光",
+    actionPrimary: "上下调频",
+    actionConfirm: "轻触星河，确认生命坐标",
+    lockText: "时间已定 · 母码资产显化",
   },
   OLD_USER: {
     dimLabel: { year: "压力种子", month: "压力层级", day: "压力刻度", hour: "压力锚点" },
@@ -1008,6 +1202,8 @@ export function LaunchLab() {
       state: STATE.STARFIELD_IDLE as LaunchState,
       t: 0,
       pulsed: false,
+      moonReleaseStarted: false,
+      moonReleaseT: 0,
       chaos: MANSION_COORDINATES.map((_, index) => ({
         ph: LIFE_UNIVERSE_STAR_FIELD[index]!.phase,
         sp: LIFE_UNIVERSE_STAR_FIELD[index]!.speed,
@@ -1110,14 +1306,13 @@ export function LaunchLab() {
     function buildTextStars() {
       if (!m.w || !m.h) return;
       const size = Math.min(18, m.w * 0.046);
-      const bottomCopyX = m.w / 2 - Math.min(78, m.w * 0.2);
+      const bottomCopyX = m.w / 2;
       const lines: Array<{ text: string; y: number; weight: number; x?: number; align?: CanvasTextAlign }> = [
         { text: TOP_LINES[0], y: m.h * 0.16, weight: 650 },
         { text: TOP_LINES[1], y: m.h * 0.205, weight: 650 },
-        { text: CTA_LINES[0], x: bottomCopyX, y: m.h * 0.755, weight: 650, align: "left" },
-        { text: CTA_LINES[1], x: bottomCopyX, y: m.h * 0.8, weight: 650, align: "left" },
-        { text: CTA_LINES[2], x: bottomCopyX, y: m.h * 0.845, weight: 650, align: "left" },
-        { text: ENTRY_ACTION_LINE, x: bottomCopyX, y: m.h * 0.898, weight: 620, align: "left" },
+        { text: CTA_LINES[0], x: bottomCopyX, y: m.h * 0.78, weight: 650, align: "center" },
+        { text: CTA_LINES[1], x: bottomCopyX, y: m.h * 0.825, weight: 650, align: "center" },
+        { text: ENTRY_ACTION_LINE, x: bottomCopyX, y: m.h * 0.89, weight: 620, align: "center" },
       ];
       const off = document.createElement("canvas");
       off.width = Math.max(1, Math.floor(m.w));
@@ -1182,11 +1377,6 @@ export function LaunchLab() {
         return 1;
       }
       return 0;
-    }
-    function displayLockOrbitProgress() {
-      return m.state === STATE.DISPLAY_LOCK && m.pendingAxisMode === "NEW_USER"
-        ? smooth(0.04, 0.72, m.t)
-        : 0;
     }
     function isAxisState() {
       return m.state === STATE.AXIS_EMERGENCE ||
@@ -1263,7 +1453,7 @@ export function LaunchLab() {
       }
 
       const v = Math.round(value);
-      if (dim === "year") return String(v).slice(-2);
+      if (dim === "year") return String(v);
       if (dim === "month" || dim === "day") return pad2(v);
       return `${pad2(clamp(v, 0, 23))}:00`;
     }
@@ -1305,7 +1495,7 @@ export function LaunchLab() {
       return (CITY_OPTIONS_BY_PROVINCE[province] ?? ["广州"])[m.geo.cityIndex] ?? "广州";
     }
     function originCoordinateSummary() {
-      return `${m.coords.year}/${pad2(m.coords.month)}/${pad2(m.coords.day)} ${hourToPeriodLabel(m.coords.hour)} · ${currentProvinceName()}`;
+      return `出生 ${m.coords.year}年 · ${pad2(m.coords.month)}月 · ${pad2(m.coords.day)}日 · ${hourToPeriodLabel(m.coords.hour)}`;
     }
     function buildLaunchOriginMotherInput(): LaunchOriginMotherInput {
       return {
@@ -1316,10 +1506,7 @@ export function LaunchLab() {
           hourBranch: hourToPeriodLabel(m.coords.hour),
         },
         periodIndex: hourToPeriodIndex(m.coords.hour),
-        geo: {
-          province: currentProvinceName(),
-          city: currentCityName(),
-        },
+        geo: UNCOLLECTED_BIRTH_CONTEXT,
         starbeast: {
           nodeCount: MANSION_COORDINATES.length,
           primaryNodeIndex: Math.max(0, Math.min(MANSION_COORDINATES.length - 1, Math.round((m.precisionY / 20) * (MANSION_COORDINATES.length - 1)))),
@@ -1327,30 +1514,13 @@ export function LaunchLab() {
         },
       };
     }
-    function resolveLifeBeastMansionIdentity() {
-      if (
-        m.lifeBeastMansionIndex === null ||
-        m.lifeBeastGroupStart === null
-      ) {
-        const sourceResults = resolveLaunchOriginMotherSourceResults(
-          buildLaunchOriginMotherInput(),
-        );
-        const mansionIndex = sourceResults.starbeastDerivationResult.mansionIndex;
-        m.lifeBeastMansionIndex = mansionIndex;
-        m.lifeBeastGroupStart = Math.floor(mansionIndex / 7) * 7;
-      }
-      return {
-        birthMansionIndex: m.lifeBeastMansionIndex ?? 0,
-        groupStart: m.lifeBeastGroupStart ?? 0,
-      };
-    }
     function activeLifeBeastMansionIndices() {
-      const { groupStart } = resolveLifeBeastMansionIdentity();
-      return Array.from({ length: 7 }, (_, index) => groupStart + index);
+      if (m.lifeBeastGroupStart === null) return [];
+      return Array.from({ length: 7 }, (_, index) => m.lifeBeastGroupStart! + index);
     }
     function lifeBeastSlotForMansion(mansionIndex: number) {
-      const { groupStart } = resolveLifeBeastMansionIdentity();
-      const slot = mansionIndex - groupStart;
+      if (m.lifeBeastGroupStart === null) return -1;
+      const slot = mansionIndex - m.lifeBeastGroupStart;
       return slot >= 0 && slot < 7 ? slot : -1;
     }
     function resolveOriginMotherCode(): GeoChronoMotherFusionResult {
@@ -1362,13 +1532,14 @@ export function LaunchLab() {
 
       const launchInput = buildLaunchOriginMotherInput();
       const sourceResults = resolveLaunchOriginMotherSourceResults(launchInput);
+      const mansionIndex = sourceResults.starbeastDerivationResult.mansionIndex;
+      m.lifeBeastMansionIndex = mansionIndex;
+      m.lifeBeastGroupStart = Math.floor(mansionIndex / 7) * 7;
       const sessionResult = createLaunchLifeSourceSession({
         sourceReferenceId: [
           "launch",
           `${launchInput.birth.year}-${pad2(launchInput.birth.month)}-${pad2(launchInput.birth.day)}`,
           launchInput.birth.hourBranch,
-          launchInput.geo.province,
-          launchInput.geo.city,
         ].join(":"),
         birthCoordinate: launchInput.birth,
         ...sourceResults,
@@ -1440,7 +1611,7 @@ export function LaunchLab() {
       m.t = 0;
       audio.form();
       vibrate([0, 18, 24]);
-      window.setTimeout(() => enterProductionGenesis(), 1450);
+      window.setTimeout(() => enterProductionGenesis(), CFG.firstPresenceSeconds * 1000);
     }
     function buildEntryTransitionSnapshot(): EntryTransitionSnapshot {
       return {
@@ -1470,6 +1641,8 @@ export function LaunchLab() {
       m.chronoStep = 0;
       m.geoStep = 0;
       m.lifeSourceSession = null;
+      m.lifeBeastMansionIndex = null;
+      m.lifeBeastGroupStart = null;
       clearRealUserGenesisVisualSourceContext();
       m.originMotherContextPersistenceAttempted = false;
       dynamicsMotherHandoffRef.current = null;
@@ -1489,6 +1662,19 @@ export function LaunchLab() {
       m.clutched = false;
       m.verticalDragMoved = false;
       m.dwellT = 0;
+    }
+    function enterTimeInjectionFromMoon() {
+      // One entrance gesture has one semantic result: the Moon releases time
+      // and the same universe becomes the birth-time coordinate. The former
+      // 28-mansion/recognition replay is intentionally outside this path.
+      m.pendingAxisMode = "NEW_USER";
+      resetOriginTuningFlow();
+      syncDialToCurrent();
+      m.state = STATE.TIME_CALIBRATION;
+      m.t = 0;
+      m.dwellT = 0;
+      audio.form();
+      vibrate([0, 18, 24]);
     }
     function triggerEntryTransition() {
       if (m.handoffStarted) return;
@@ -1669,12 +1855,12 @@ export function LaunchLab() {
           vibrate(8);
           return;
         }
-        m.state = STATE.GEO_BIND;
-        m.geoStep = 0;
-        resetAxisStepProgress();
-        syncDialToCurrent();
-        audio.tick();
-        vibrate(8);
+        captureLaunchLifeSourceSession();
+        if (DEBUG_TIMELINE) {
+          openMotherCodeReveal();
+          return;
+        }
+        beginProductionGenesisContinuity();
         return;
       }
       completeEntryCanvasHandoff();
@@ -1688,8 +1874,7 @@ export function LaunchLab() {
       );
       const orbitAngle =
         (i / MANSION_COORDINATES.length) * Math.PI * 2 -
-        Math.PI / 2 +
-        universeSeconds * 0.025;
+        Math.PI / 2;
       const orbitRadiusX = Math.min(m.w * 0.43, 168);
       const orbitRadiusY = Math.min(m.w * 0.19, 74);
       const orbitDepth = 0.5 + Math.sin(orbitAngle) * 0.18;
@@ -1697,7 +1882,6 @@ export function LaunchLab() {
       const orbitY = coreFrame.y + Math.sin(orbitAngle) * orbitRadiusY;
       const lifeBeastSlot = lifeBeastSlotForMansion(i);
       const activeMansion = lifeBeastSlot >= 0;
-      const motherOrbitProgress = displayLockOrbitProgress();
       const conv = activeMansion ? nodeConv(i) : 0;
 
       let manifestedX = orbitX;
@@ -1708,7 +1892,7 @@ export function LaunchLab() {
         m.state === STATE.STARBEAST_SANDIFY
           ? smooth(0.04, 1.1, m.t)
           : m.state === STATE.DISPLAY_LOCK && m.pendingAxisMode === "NEW_USER"
-            ? 1 - motherOrbitProgress
+            ? 1
           : isAxisState()
             ? 1
             : 0;
@@ -1740,6 +1924,22 @@ export function LaunchLab() {
     function isLifeMapHit(x: number, y: number) {
       const pos = MANSION_COORDINATES.map((_, i) => nodePos(i));
       const activeMansions = activeLifeBeastMansionIndices();
+      if (activeMansions.length === 0) {
+        const coreFrame = resolveLifeUniverseCoreFrame(
+          m.w,
+          m.h,
+          performance.now() / 1000,
+        );
+        const orbitRadiusX = Math.min(m.w * 0.48, 188);
+        const orbitRadiusY = Math.max(118, Math.min(m.h * 0.2, 168));
+        const orbitHit =
+          ((x - coreFrame.x) * (x - coreFrame.x)) / (orbitRadiusX * orbitRadiusX) +
+          ((y - coreFrame.y) * (y - coreFrame.y)) / (orbitRadiusY * orbitRadiusY) <= 1;
+        const ctaHit =
+          Math.abs(x - m.w / 2) <= Math.min(170, m.w * 0.42) &&
+          Math.abs(y - m.h * 0.82) <= Math.min(92, m.h * 0.12);
+        return orbitHit || ctaHit;
+      }
       const nodeHit = activeMansions.some((mansionIndex) => {
         const point = pos[mansionIndex]!;
         return Math.hypot(x - point.x, y - point.y) <= Math.max(22, point.p * 28);
@@ -1775,8 +1975,21 @@ export function LaunchLab() {
       return x >= minX - padX && x <= maxX + padX && y >= minY - padY && y <= maxY + padY;
     }
 
+    function isTimeReceivingCoreHit(x: number, y: number) {
+      const coreFrame = resolveLifeUniverseCoreFrame(
+        m.w,
+        m.h,
+        performance.now() / 1000,
+      );
+      const intakeRadius = Math.min(88, Math.max(52, m.w * 0.19));
+      return Math.hypot(x - coreFrame.x, y - coreFrame.y) <= intakeRadius;
+    }
+
     function step(dt: number) {
       m.t += dt;
+      if (m.state === STATE.STARFIELD_IDLE && m.moonReleaseStarted) {
+        m.moonReleaseT += dt;
+      }
       if (m.node1State?.mirrorActivated) {
         m.node1T += dt;
       }
@@ -1792,7 +2005,7 @@ export function LaunchLab() {
         m.pressureSeedGroupPulse = Math.max(0, m.pressureSeedGroupPulse - dt * 3.4);
       }
       if (m.originLockPulse > 0) {
-        m.originLockPulse = Math.max(0, m.originLockPulse - dt * 4.2);
+        m.originLockPulse = Math.max(0, m.originLockPulse - dt * 1.5);
       }
       if (m.motherCardFlipPulse > 0) {
         m.motherCardFlipPulse = Math.max(0, m.motherCardFlipPulse - dt * 5.2);
@@ -1803,10 +2016,8 @@ export function LaunchLab() {
             m.pulsed = true;
             vibrate([0, 12, 60]);
           }
-          if (m.t >= CFG.voidMs) {
-            m.state = STATE.ASSEMBLY;
-            m.t = 0;
-            audio.gather();
+          if (m.moonReleaseStarted && m.moonReleaseT >= CFG.moonReleaseSeconds) {
+            enterTimeInjectionFromMoon();
           }
           break;
         }
@@ -1899,7 +2110,21 @@ export function LaunchLab() {
     function draw(ctx: CanvasRenderingContext2D) {
       ctx.clearRect(0, 0, m.w, m.h);
       const now = performance.now() / 1000;
-      drawLifeUniverseDeepSpace2D(ctx, m.w, m.h, now);
+      const lifeUniverseGravity = m.lifeSourceSession === null
+        ? 0
+        : m.state === STATE.ENTRY_PRE_COLLAPSE
+          ? 0.12 + smooth(0, 0.55, m.t) * 0.12
+          : m.state === STATE.ENTRY_LIGHT_CONVERGENCE
+            ? 0.24 + smooth(0, 1.05, m.t) * 0.14
+            : 0.22;
+      drawLifeUniverseDeepSpace2D(
+        ctx,
+        m.w,
+        m.h,
+        now,
+        1,
+        lifeUniverseGravity,
+      );
       const currentScene = sceneRef.current;
       const entryVisualCopyActive = currentScene === "ENTRY";
       const entryState = toStarbeastEntryState(m.state);
@@ -1918,6 +2143,18 @@ export function LaunchLab() {
         m.state === STATE.FORMATION ||
         m.state === STATE.APPROACH ||
         m.state === STATE.READY;
+      const originIdentityLocked =
+        m.lifeSourceSession !== null &&
+        m.lifeBeastMansionIndex !== null &&
+        m.lifeBeastGroupStart !== null;
+      const originPresenceArrivalActive =
+        originIdentityLocked &&
+        m.pendingAxisMode === "NEW_USER" &&
+        m.state === STATE.DISPLAY_LOCK;
+      const timeCoordinatePending =
+        m.pendingAxisMode === "NEW_USER" &&
+        m.state === STATE.TIME_CALIBRATION &&
+        !originIdentityLocked;
       const sectorReveal = m.state === STATE.ASSEMBLY
         ? smooth(0.08, 1.05, m.t)
         : entryCelestialState
@@ -1928,73 +2165,94 @@ export function LaunchLab() {
         : entryCelestialState
           ? 1
           : 0;
-      const alignmentProgress = m.state === STATE.FORMATION
+      const alignmentProgress = !originIdentityLocked
+        ? 0
+        : m.state === STATE.FORMATION
         ? smooth(0.04, 0.66, m.t)
         : m.state === STATE.APPROACH || m.state === STATE.READY
           ? 1
           : 0;
-      const aggregationProgress = m.state === STATE.FORMATION
+      const aggregationProgress = !originIdentityLocked
+        ? 0
+        : m.state === STATE.FORMATION
         ? smooth(0.58, 1.34, m.t)
         : m.state === STATE.APPROACH || m.state === STATE.READY
           ? 1
           : 0;
-      const lifeFormationProgress = m.state === STATE.APPROACH
+      const lifeFormationProgress = !originIdentityLocked
+        ? 0
+        : m.state === STATE.APPROACH
         ? smooth(0.34, 2.48, m.t)
         : m.state === STATE.READY
           ? 1
           : 0;
 
-      // The core is present from the first frame as a latent identity, but it
-      // becomes a life source only after luminary → mansion → quadrant
-      // alignment has completed.
-      const persistentCoreAlpha = m.state === STATE.STARFIELD_IDLE
-        ? 0.026 + smooth(0.04, CFG.voidMs, m.t) * 0.01
-        : m.state === STATE.ASSEMBLY
-          ? 0.038
-          : m.state === STATE.FORMATION
-            ? 0.045 + alignmentProgress * 0.025
-            : m.state === STATE.APPROACH
-              ? 0.075 + lifeFormationProgress * 0.265
-              : m.state === STATE.READY
-                ? 0.34
-            : 0.72;
-      drawLifeUniverseCore2D(
-        ctx,
-        m.w,
-        m.h,
-        now,
-        persistentCoreAlpha,
-        entryCelestialState || m.state === STATE.STARFIELD_IDLE
-          ? 0.36 + lifeFormationProgress * 0.46
-          : 1,
-      );
+      // The identity core is deliberately absent from the Moon entrance. In
+      // time calibration the neutral carrier is drawn separately at the same
+      // anchor; identity only appears after time establishes the coordinate.
+      const dedicatedCoreActive =
+        (m.state === STATE.TIME_CALIBRATION || m.state === STATE.DISPLAY_LOCK) &&
+        m.pendingAxisMode === "NEW_USER";
+      if (m.state !== STATE.STARFIELD_IDLE && !dedicatedCoreActive) {
+        const persistentCoreAlpha = !originIdentityLocked
+          ? 0.026 + smooth(0.04, 1.8, m.t) * 0.014
+          : m.state === STATE.ASSEMBLY
+            ? 0.038
+            : m.state === STATE.FORMATION
+              ? 0.045 + alignmentProgress * 0.025
+              : m.state === STATE.APPROACH
+                ? 0.075 + lifeFormationProgress * 0.265
+                : m.state === STATE.READY
+                  ? 0.34
+                  : 0.72;
+        drawLifeUniverseCore2D(
+          ctx,
+          m.w,
+          m.h,
+          now,
+          persistentCoreAlpha,
+          !originIdentityLocked
+            ? 0.34
+            : entryCelestialState
+              ? 0.36 + lifeFormationProgress * 0.46
+              : 1,
+        );
+      }
 
       if (m.state === STATE.STARFIELD_IDLE) {
-        const firstFrameCore = resolveLifeUniverseCoreFrame(m.w, m.h, now);
-        ctx.strokeStyle = "rgba(147,172,211,0.12)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.ellipse(
-          firstFrameCore.x,
-          firstFrameCore.y,
-          Math.min(m.w * 0.43, 168),
-          Math.min(m.w * 0.19, 74),
-          0,
-          0,
-          Math.PI * 2,
+        const moonReleaseProgress = smooth(0, CFG.moonReleaseSeconds, m.moonReleaseT);
+        const firstFrameMansions = MANSION_COORDINATES.map((_, mansionIndex) =>
+          nodePos(mansionIndex),
         );
-        ctx.stroke();
         MANSION_COORDINATES.forEach((_, mansionIndex) => {
-          const point = nodePos(mansionIndex);
+          const point = firstFrameMansions[mansionIndex]!;
           const pulse = 0.78 + Math.sin(now * 1.4 + mansionIndex * 0.42) * 0.22;
-          ctx.fillStyle = `rgba(185,203,236,${(0.2 * pulse).toFixed(3)})`;
-          ctx.shadowColor = "rgba(185,203,236,0.16)";
-          ctx.shadowBlur = 2;
+          const mansionDepth = clamp((point.p - 0.32) / 0.36, 0, 1);
+          const releaseLight = Math.sin(Math.PI * moonReleaseProgress) * 0.32;
+          const pointAlpha = (0.09 + mansionDepth * 0.3) * pulse + releaseLight;
+          ctx.fillStyle = `rgba(205,216,233,${pointAlpha.toFixed(3)})`;
+          ctx.shadowColor = `rgba(205,216,233,${(0.08 + mansionDepth * 0.18 + releaseLight * 0.5).toFixed(3)})`;
+          ctx.shadowBlur = mansionDepth * 3.5 + releaseLight * 8;
           ctx.beginPath();
-          ctx.arc(point.x, point.y, 1.15, 0, Math.PI * 2);
+          ctx.arc(
+            point.x,
+            point.y,
+            0.62 + mansionDepth * 1.02 + releaseLight * 1.8,
+            0,
+            Math.PI * 2,
+          );
           ctx.fill();
         });
         ctx.shadowBlur = 0;
+
+        drawTaiyinMoonEntrance(
+          ctx,
+          m.w,
+          m.h,
+          now,
+          smooth(0.12, 1.12, m.t),
+          moonReleaseProgress,
+        );
 
         const topLineStarts = [0.35, 0.95];
         const topGather = 1.15;
@@ -2027,33 +2285,126 @@ export function LaunchLab() {
             ctx.fillText(TOP_LINES[0], m.w / 2, m.h * 0.16);
             ctx.fillText(TOP_LINES[1], m.w / 2, m.h * 0.205);
           }
+          const entranceCopyAlpha =
+            smooth(1.9, 2.7, m.t) *
+            (1 - smooth(0, 0.38, m.moonReleaseT));
+          if (entranceCopyAlpha > 0.001) {
+            ctx.fillStyle = `rgba(255,247,228,${(entranceCopyAlpha * 0.92).toFixed(3)})`;
+            ctx.font = `650 ${mainSize}px ${SANS}`;
+            ctx.fillText(CTA_LINES[0], m.w / 2, m.h * 0.78);
+            ctx.fillText(CTA_LINES[1], m.w / 2, m.h * 0.825);
+
+            ctx.fillStyle = `rgba(255,247,228,${(entranceCopyAlpha * 0.64).toFixed(3)})`;
+            ctx.font = `620 ${Math.min(13, m.w * 0.033)}px ${SANS}`;
+            ctx.fillText(ENTRY_ACTION_LINE, m.w / 2, m.h * 0.89);
+
+            ctx.fillStyle = `rgba(232,200,138,${(entranceCopyAlpha * 0.42).toFixed(3)})`;
+            ctx.font = `${Math.min(11, m.w * 0.028)}px ${MONO}`;
+            ctx.fillText("观爻 · GUANYAO", m.w / 2, m.h * 0.94);
+          }
           ctx.restore();
         }
+        return;
+      }
+
+      // All four time phases have entered the same light. Hold on that light
+      // just long enough for one quiet response, then let Genesis reveal the
+      // coordinate. No identity, animal silhouette or coordinate scaffold is
+      // allowed to appear during this handoff.
+      if (
+        m.state === STATE.DISPLAY_LOCK &&
+        m.pendingAxisMode === "NEW_USER"
+      ) {
+        const handoffCore = resolveLifeUniverseCoreFrame(m.w, m.h, now);
+        const receive = smooth(0, 0.72, m.t);
+        const settle = smooth(0.58, CFG.firstPresenceSeconds, m.t);
+        drawTimeReceivingLifeCore(
+          ctx,
+          m.w,
+          m.h,
+          now,
+          0.96 + receive * 0.04,
+        );
+
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+        for (let phaseIndex = 0; phaseIndex < 4; phaseIndex += 1) {
+          const phaseDelay = phaseIndex * 0.075;
+          const phaseProgress = smooth(
+            phaseDelay,
+            0.7 + phaseDelay,
+            m.t,
+          );
+          const startX =
+            handoffCore.x +
+            (phaseIndex - 1.5) * Math.min(31, m.w * 0.082);
+          const startY =
+            handoffCore.y -
+            Math.min(92, m.h * 0.13) -
+            Math.abs(phaseIndex - 1.5) * 7;
+          const particleX = lerp(startX, handoffCore.x, phaseProgress);
+          const particleY = lerp(startY, handoffCore.y, phaseProgress);
+          const particleAlpha =
+            (1 - smooth(0.84, 1, phaseProgress)) *
+            (0.18 + phaseIndex * 0.045);
+          ctx.fillStyle = `rgba(222,231,241,${particleAlpha.toFixed(3)})`;
+          ctx.shadowColor = `rgba(222,231,241,${(particleAlpha * 0.72).toFixed(3)})`;
+          ctx.shadowBlur = 6 + phaseProgress * 9;
+          ctx.beginPath();
+          ctx.arc(
+            particleX,
+            particleY,
+            0.9 + phaseProgress * 0.85,
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+
+        const responseAlpha =
+          smooth(0.38, 0.62, m.t) *
+          (1 - smooth(0.78, CFG.firstPresenceSeconds, m.t));
+        if (responseAlpha > 0.001) {
+          ctx.strokeStyle = `rgba(222,231,241,${(responseAlpha * 0.26).toFixed(3)})`;
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.arc(
+            handoffCore.x,
+            handoffCore.y,
+            handoffCore.coreRadius * (1.5 + settle * 1.35),
+            0,
+            Math.PI * 2,
+          );
+          ctx.stroke();
+        }
+        ctx.restore();
         return;
       }
 
       const pos = MANSION_COORDINATES.map((_, i) => nodePos(i));
       const activeMansions = activeLifeBeastMansionIndices();
       const activeMansionSet = new Set(activeMansions);
-      const { birthMansionIndex } = resolveLifeBeastMansionIdentity();
-      const activeSectorIndex = Math.floor(birthMansionIndex / 7);
-      const motherOrbitProgress = displayLockOrbitProgress();
+      const birthMansionIndex = m.lifeBeastMansionIndex;
+      const activeSectorIndex = birthMansionIndex === null
+        ? null
+        : Math.floor(birthMansionIndex / 7);
       const topologyToAxis =
         m.state === STATE.STARBEAST_SANDIFY
           ? smooth(0.04, 1.1, m.t)
-          : m.state === STATE.DISPLAY_LOCK && m.pendingAxisMode === "NEW_USER"
-            ? 1 - motherOrbitProgress
+          : originPresenceArrivalActive
+            ? 1
           : isAxisState()
             ? 1
             : 0;
       const nodeFade = nodeRuntimeActive ? 1 - smooth(0, 0.36, m.node1T) : 1;
-      const structureAlpha = (
+      const structureAlpha = (originIdentityLocked ? (
         m.state === STATE.STARBEAST_SANDIFY
           ? 1 - smooth(0.64, 1.12, m.t)
           : isAxisState()
             ? 0
             : aggregationProgress
-      ) * nodeFade;
+      ) : 0) * nodeFade;
       const celestialCoreFrame = resolveLifeUniverseCoreFrame(m.w, m.h, now);
       const orbitRadiusX = Math.min(m.w * 0.43, 168);
       const orbitRadiusY = Math.min(m.w * 0.19, 74);
@@ -2169,11 +2520,13 @@ export function LaunchLab() {
       if (luminaryReveal > 0.001 && topologyToAxis < 0.98) {
         const luminaryCadences = [0.37, 0.31, 0.27, 0.23, 0.2, 0.17, 0.145];
         const luminaryLaneScale = 0.73;
-        const selectedLuminary = birthMansionIndex % 7;
+        const selectedLuminary = birthMansionIndex === null
+          ? null
+          : birthMansionIndex % 7;
         const birthAngle =
           -Math.PI / 2 +
           orbitPhase +
-          (birthMansionIndex / MANSION_COORDINATES.length) * Math.PI * 2;
+          ((birthMansionIndex ?? 0) / MANSION_COORDINATES.length) * Math.PI * 2;
         ctx.save();
         ctx.setLineDash([1.5, 8]);
         ctx.lineDashOffset = -now * 1.4;
@@ -2198,7 +2551,7 @@ export function LaunchLab() {
             now * 0.052 +
             luminaryIndex * (Math.PI * 2 / 7) +
             Math.sin(now * cadence + luminaryIndex * 0.83) * 0.11;
-          const selected = luminaryIndex === selectedLuminary;
+          const selected = selectedLuminary !== null && luminaryIndex === selectedLuminary;
           const angle = selected
             ? lerpAngle(freeAngle, birthAngle, alignmentProgress)
             : freeAngle;
@@ -2308,7 +2661,7 @@ export function LaunchLab() {
         const radialLength = Math.max(1, Math.hypot(radialX, radialY));
         const tangentX = -radialY / radialLength;
         const tangentY = radialX / radialLength;
-        const quadrantFlowBias = [-11, 8, -6, 12][activeSectorIndex] ?? 0;
+        const quadrantFlowBias = [-11, 8, -6, 12][activeSectorIndex ?? 0] ?? 0;
         const forceFocus = {
           x:
             sectorCentroid.x +
@@ -2378,46 +2731,52 @@ export function LaunchLab() {
 
       // All 28 points survive the entire transformation. Hierarchy comes from
       // real group membership and the birth mansion, never from random size.
-      pos.forEach((p, i) => {
-        const ch = m.chaos[i]!;
-        const tw = 0.7 + 0.3 * Math.sin(now * (1 + ch.sp) + ch.ph);
-        const active = activeMansionSet.has(i);
-        const birth = i === birthMansionIndex;
-        const activeReveal = active ? p.conv * structureAlpha : 0;
-        const birthReveal = birth ? alignmentProgress : 0;
-        const pointAlpha = birth
-          ? 0.2 + birthReveal * 0.76
-          : active
-            ? 0.18 + activeReveal * 0.64
-            : 0.18 + topologyToAxis * 0.12;
-        const pointRadius = birth
-          ? 1.2 + birthReveal * 3
-          : active
-            ? 1.2 + activeReveal * 1.6
-            : 1.2;
-        ctx.globalAlpha = clamp(pointAlpha * tw * nodeFade, 0, 1);
-        ctx.fillStyle = birthReveal > 0.06
-          ? "rgb(255,247,228)"
-          : activeReveal > 0.04
-            ? "rgb(232,200,138)"
-            : "rgb(185,203,236)";
-        ctx.shadowColor = birthReveal > 0.06
-          ? "rgba(255,247,228,0.82)"
-          : activeReveal > 0.04
-            ? "rgba(232,200,138,0.62)"
-            : "rgba(185,203,236,0.24)";
-        ctx.shadowBlur = birthReveal > 0.06 ? 18 : activeReveal > 0.04 ? 8 : 3;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, pointRadius * (0.78 + p.p * 0.34), 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.globalAlpha = 1;
-      });
+      if (!originPresenceArrivalActive && !timeCoordinatePending) {
+        pos.forEach((p, i) => {
+          const ch = m.chaos[i]!;
+          const tw = 0.7 + 0.3 * Math.sin(now * (1 + ch.sp) + ch.ph);
+          const active = activeMansionSet.has(i);
+          const birth = i === birthMansionIndex;
+          const activeReveal = active ? p.conv * structureAlpha : 0;
+          const birthReveal = birth ? alignmentProgress : 0;
+          const pointAlpha = birth
+            ? 0.2 + birthReveal * 0.76
+            : active
+              ? 0.18 + activeReveal * 0.64
+              : 0.18 + topologyToAxis * 0.12;
+          const pointRadius = birth
+            ? 1.2 + birthReveal * 3
+            : active
+              ? 1.2 + activeReveal * 1.6
+              : 1.2;
+          ctx.globalAlpha = clamp(pointAlpha * tw * nodeFade, 0, 1);
+          ctx.fillStyle = birthReveal > 0.06
+            ? "rgb(255,247,228)"
+            : activeReveal > 0.04
+              ? "rgb(232,200,138)"
+              : "rgb(185,203,236)";
+          ctx.shadowColor = birthReveal > 0.06
+            ? "rgba(255,247,228,0.82)"
+            : activeReveal > 0.04
+              ? "rgba(232,200,138,0.62)"
+              : "rgba(185,203,236,0.24)";
+          ctx.shadowBlur = birthReveal > 0.06 ? 18 : activeReveal > 0.04 ? 8 : 3;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, pointRadius * (0.78 + p.p * 0.34), 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 1;
+        });
+      }
 
       // 成命：the selected mansion carries the gathered quadrant force into
       // the already-present latent core. The core brightens; it is never
       // replaced by a new object.
-      if (lifeFormationProgress > 0.001 && entryCelestialState) {
+      if (
+        lifeFormationProgress > 0.001 &&
+        entryCelestialState &&
+        birthMansionIndex !== null
+      ) {
         const birthPoint = pos[birthMansionIndex]!;
         const lifeGradient = ctx.createLinearGradient(
           birthPoint.x,
@@ -2455,35 +2814,151 @@ export function LaunchLab() {
       if (
         m.state === STATE.DISPLAY_LOCK &&
         m.pendingAxisMode === "NEW_USER" &&
-        m.lifeSourceSession
+        m.lifeSourceSession &&
+        birthMansionIndex !== null
       ) {
-        const motherReveal = smooth(0.18, 1.16, m.t);
         const motherCoreFrame = resolveLifeUniverseCoreFrame(m.w, m.h, now);
-        const birthPoint = pos[birthMansionIndex]!;
+        const originIdentity = m.lifeSourceSession.originMotherResult;
+        const fourSymbol = originIdentity.starbeast.fourSymbol;
+        const direction = fourSymbol === "青龙"
+          ? { x: 0.86, y: -0.28 }
+          : fourSymbol === "朱雀"
+            ? { x: 0.18, y: -0.92 }
+            : fourSymbol === "白虎"
+              ? { x: -0.9, y: 0.08 }
+              : { x: 0.12, y: 0.94 };
+        const directionLength = Math.max(0.001, Math.hypot(direction.x, direction.y));
+        const directionX = direction.x / directionLength;
+        const directionY = direction.y / directionLength;
+        const tangentX = -directionY;
+        const tangentY = directionX;
+        const forceOrder = "乾兑离震巽坎艮坤";
+        const forceSeed = Math.max(0, forceOrder.indexOf(originIdentity.mother.trigram));
+        const identitySeed = birthMansionIndex * 0.37 + forceSeed * 0.61;
+        const firstBreathStart = 0.62 + (forceSeed % 3) * 0.045;
+        const firstBreathDuration = 2.72 + (forceSeed % 4) * 0.09;
+        const firstBreathPhase = clamp((m.t - firstBreathStart) / firstBreathDuration, 0, 1);
+        const inhaleRatio = 0.42 + (forceSeed % 3) * 0.035;
+        const firstBreath = firstBreathPhase <= inhaleRatio
+          ? smooth(0, inhaleRatio, firstBreathPhase)
+          : 1 - smooth(inhaleRatio, 1, firstBreathPhase);
+        const settledRhythm =
+          smooth(3.45, 4.35, m.t) *
+          Math.sin((now + identitySeed * 0.11) * Math.PI * 2 / (4.8 + forceSeed * 0.13)) *
+          0.14;
+        const breathMotion = firstBreath * 0.92 + settledRhythm;
+        const fieldReveal = smooth(0.72, 2.35, m.t);
+        const bodyReveal = smooth(1.95, 3.95, m.t);
+        const skeletonReach = (0.88 + (forceSeed % 4) * 0.055) * Math.min(1, m.w / 355);
         ctx.save();
-        ctx.strokeStyle = `rgba(216,197,142,${(motherReveal * 0.3).toFixed(3)})`;
-        ctx.lineWidth = 1;
+
+        // Direction is felt as a quiet spatial bias, never drawn as a Four-
+        // Symbol badge, orbit or rotating diagram.
+        ctx.save();
+        ctx.translate(motherCoreFrame.x, motherCoreFrame.y);
+        ctx.rotate(Math.atan2(directionY, directionX));
+        ctx.scale(1.55 + breathMotion * 0.08, 0.62 + breathMotion * 0.035);
+        const presenceFieldRadius = Math.min(104, m.w * 0.29) * fieldReveal;
+        const presenceField = ctx.createRadialGradient(
+          presenceFieldRadius * 0.12,
+          0,
+          0,
+          presenceFieldRadius * 0.12,
+          0,
+          Math.max(1, presenceFieldRadius),
+        );
+        presenceField.addColorStop(0, `rgba(255,247,228,${(fieldReveal * 0.12).toFixed(3)})`);
+        presenceField.addColorStop(0.42, `rgba(185,203,236,${(fieldReveal * 0.075).toFixed(3)})`);
+        presenceField.addColorStop(1, "rgba(147,172,211,0)");
+        ctx.fillStyle = presenceField;
         ctx.beginPath();
-        ctx.moveTo(motherCoreFrame.x, motherCoreFrame.y);
-        ctx.lineTo(birthPoint.x, birthPoint.y);
-        ctx.stroke();
-        [42, 58, 74].forEach((radius, index) => {
-          ctx.strokeStyle = `rgba(216,199,143,${(
-            motherReveal * (0.28 - index * 0.05)
-          ).toFixed(3)})`;
+        ctx.arc(0, 0, Math.max(1, presenceFieldRadius), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        const longitudinal = [0, 18, 33, 49, 26, 42, 58];
+        const lateral = [0, -10, 7, -8, 17, 23, -19];
+        const presencePoints = longitudinal.map((forward, pointIndex) => {
+          const pointReveal = smooth(
+            1.02 + pointIndex * 0.17,
+            1.92 + pointIndex * 0.18,
+            m.t,
+          );
+          const postureBias = 1 + breathMotion * (0.028 + pointIndex * 0.0035);
+          const forwardDistance = forward * skeletonReach * postureBias;
+          const lateralDistance = lateral[pointIndex]! * skeletonReach * (0.82 + (forceSeed % 3) * 0.05);
+          return {
+            x: motherCoreFrame.x +
+              (directionX * forwardDistance + tangentX * lateralDistance) * pointReveal,
+            y: motherCoreFrame.y +
+              (directionY * forwardDistance + tangentY * lateralDistance) * pointReveal,
+            reveal: pointReveal,
+          };
+        });
+
+        // Body matter grows out from the core and settles around the seven
+        // bones. It trembles with breath but never follows a circular path.
+        for (let bodyIndex = 0; bodyIndex < 35; bodyIndex += 1) {
+          const bone = presencePoints[bodyIndex % presencePoints.length]!;
+          const settle = smooth(
+            1.9 + (bodyIndex % 7) * 0.09,
+            3.45 + (bodyIndex % 5) * 0.075,
+            m.t,
+          );
+          const spread = 3.5 + (bodyIndex % 6) * 1.15;
+          const offsetPhase = bodyIndex * 2.17 + identitySeed;
+          const offsetX =
+            (Math.cos(offsetPhase) * tangentX + Math.sin(offsetPhase * 0.63) * directionX * 0.42) *
+            spread;
+          const offsetY =
+            (Math.cos(offsetPhase) * tangentY + Math.sin(offsetPhase * 0.63) * directionY * 0.42) *
+            spread;
+          const stillDrift = Math.sin(now * 0.29 + bodyIndex * 0.71) * 0.42 * bodyReveal;
+          const x = lerp(motherCoreFrame.x, bone.x + offsetX, settle) + tangentX * stillDrift;
+          const y = lerp(motherCoreFrame.y, bone.y + offsetY, settle) + tangentY * stillDrift;
+          const alpha = bodyReveal * settle * (0.1 + (bodyIndex % 5) * 0.026);
+          ctx.fillStyle = `rgba(185,203,236,${alpha.toFixed(3)})`;
+          ctx.shadowColor = `rgba(185,203,236,${(alpha * 0.68).toFixed(3)})`;
+          ctx.shadowBlur = 2.4 + breathMotion * 2.2;
           ctx.beginPath();
-          ctx.ellipse(
-            motherCoreFrame.x,
-            motherCoreFrame.y,
-            radius,
-            radius * (0.44 + index * 0.05),
-            index * 0.08,
+          ctx.arc(x, y, 0.58 + (bodyIndex % 4) * 0.19, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+
+        // Skeleton is presence, not a line drawing. One slow conduction passes
+        // through seven luminous joints and then stops; it does not loop.
+        const conductionPosition = smooth(1.06, 3.12, m.t) * (presencePoints.length - 1);
+        presencePoints.forEach((point, pointIndex) => {
+          if (point.reveal <= 0.01) return;
+          const conduction = Math.exp(-Math.abs(pointIndex - conductionPosition) * 1.35);
+          const alpha = point.reveal * (0.22 + conduction * 0.54);
+          ctx.fillStyle = `rgba(255,247,228,${alpha.toFixed(3)})`;
+          ctx.shadowColor = `rgba(255,247,228,${(0.14 + conduction * 0.5).toFixed(3)})`;
+          ctx.shadowBlur = 3 + conduction * 11;
+          ctx.beginPath();
+          ctx.arc(
+            point.x,
+            point.y,
+            pointIndex === 0 ? 2.2 : 1.15 + conduction * 0.9,
             0,
             Math.PI * 2,
           );
-          ctx.stroke();
+          ctx.fill();
         });
-        drawLifeUniverseCore2D(ctx, m.w, m.h, now, 0.72 + motherReveal * 0.2);
+        ctx.shadowBlur = 0;
+
+        // Counter the shared ambient breath during the opening hush, then let
+        // this identity-specific first breath control the apparent scale.
+        const desiredCoreScale = 0.86 + firstBreath * 0.16 + settledRhythm * 0.055;
+        drawLifeUniverseCore2D(
+          ctx,
+          m.w,
+          m.h,
+          now,
+          0.72 + firstBreath * 0.18,
+          desiredCoreScale / Math.max(0.001, motherCoreFrame.breath),
+        );
         ctx.restore();
         return;
       }
@@ -2545,10 +3020,20 @@ export function LaunchLab() {
         const starWhiteRgb = "255,247,228";
         const g = axisMetrics();
         const isGeoStage = m.state === STATE.GEO_BIND;
-        const originMother = m.pendingAxisMode === "NEW_USER" ? resolveOriginMotherCode() : null;
+        const originMother = originIdentityLocked ? resolveOriginMotherCode() : null;
         const dim = activeDim();
         const geoDim = activeGeoDim();
         const isNewOriginAxis = m.pendingAxisMode === "NEW_USER" && (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND);
+        const isTimeReceivingStage = isNewOriginAxis && m.state === STATE.TIME_CALIBRATION;
+        const coordinateAxisRgb = isNewOriginAxis ? "185,203,236" : warmAxisRgb;
+        const coordinateTextRgb = isNewOriginAxis ? "205,216,233" : warmAxisRgb;
+        const activeInjectionUnit = dim === "year"
+          ? "年"
+          : dim === "month"
+            ? "月"
+            : dim === "day"
+              ? "日"
+              : "时";
         const originStepIndex = isGeoStage ? CHRONO_DIMS.length : m.chronoStep;
         const lockPulse = smooth(0, 1, m.originLockPulse);
         const range = isGeoStage ? geoRange(geoDim) : dimRange(m.coords, dim);
@@ -2572,63 +3057,200 @@ export function LaunchLab() {
         };
         ctx.save();
         ctx.globalAlpha = Math.min(1, originEmission);
-        const originGlow = ctx.createRadialGradient(originX, originY, 0, originX, originY, Math.min(m.w, m.h) * 0.22);
-        originGlow.addColorStop(0, "rgba(255,247,228,0.22)");
-        originGlow.addColorStop(0.48, "rgba(232,200,138,0.08)");
-        originGlow.addColorStop(1, "rgba(232,200,138,0)");
+        const originGlowRadius = Math.min(m.w, m.h) * (isTimeReceivingStage ? 0.28 : 0.22);
+        const originGlow = ctx.createRadialGradient(originX, originY, 0, originX, originY, originGlowRadius);
+        originGlow.addColorStop(0, `rgba(255,247,228,${isTimeReceivingStage ? "0.28" : "0.22"})`);
+        originGlow.addColorStop(0.48, `rgba(${coordinateAxisRgb},${isTimeReceivingStage ? "0.11" : "0.08"})`);
+        originGlow.addColorStop(1, `rgba(${coordinateAxisRgb},0)`);
         ctx.fillStyle = originGlow;
         ctx.beginPath();
-        ctx.arc(originX, originY, Math.min(m.w, m.h) * 0.22, 0, Math.PI * 2);
+        ctx.arc(originX, originY, originGlowRadius, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = `rgba(${warmAxisRgb},${(0.08 + originEmission * 0.24).toFixed(3)})`;
-        ctx.lineWidth = 1;
-        [0, 1, 2, 3, 4].forEach((col) => {
-          const target = railPoint(col);
-          const headX = lerp(originX, target.x, axisGrow);
-          const headY = lerp(originY, target.y, axisGrow);
+
+        if (isTimeReceivingStage) {
+          const timeIngressPoint = (
+            progress: number,
+            lane: number,
+            depthLayer: number,
+          ) => {
+            const t = clamp(progress, 0, 1);
+            const it = 1 - t;
+            const depthScale = 0.72 + depthLayer * 0.18;
+            const p0 = {
+              x: originX + lane * m.w * 0.36 * depthScale,
+              y: m.h * (0.255 - depthLayer * 0.018),
+            };
+            const p1 = {
+              x: originX + lane * m.w * 0.22,
+              y: originY - m.h * (0.19 + depthLayer * 0.018),
+            };
+            const p2 = {
+              x: originX - lane * m.w * 0.045,
+              y: originY - m.h * 0.052,
+            };
+            return {
+              x:
+                it * it * it * p0.x +
+                3 * it * it * t * p1.x +
+                3 * it * t * t * p2.x +
+                t * t * t * originX,
+              y:
+                it * it * it * p0.y +
+                3 * it * it * t * p1.y +
+                3 * it * t * t * p2.y +
+                t * t * t * originY,
+            };
+          };
+
+          const intakeTopY = m.h * 0.245;
+          const intakeVeil = ctx.createLinearGradient(
+            0,
+            intakeTopY,
+            0,
+            originY,
+          );
+          intakeVeil.addColorStop(0, `rgba(${coordinateAxisRgb},0)`);
+          intakeVeil.addColorStop(0.58, `rgba(${coordinateAxisRgb},0.025)`);
+          intakeVeil.addColorStop(0.9, `rgba(${starWhiteRgb},0.085)`);
+          intakeVeil.addColorStop(1, `rgba(${starWhiteRgb},0.14)`);
+          ctx.save();
+          ctx.globalCompositeOperation = "screen";
+          ctx.fillStyle = intakeVeil;
           ctx.beginPath();
-          ctx.moveTo(originX, originY);
-          ctx.lineTo(headX, headY);
-          ctx.stroke();
-        });
-        [2, 8, 14, 20].forEach((row) => {
-          const target = tunePoint(row);
-          const headX = lerp(originX, target.x, axisGrow);
-          const headY = lerp(originY, target.y, axisGrow);
-          ctx.beginPath();
-          ctx.moveTo(originX, originY);
-          ctx.lineTo(headX, headY);
-          ctx.stroke();
-        });
-        ctx.globalAlpha = 1;
-        ctx.globalAlpha = axisSeed;
-        pos.forEach((p, i) => {
-          const residueTarget = i % 2 === 0
-            ? railPoint(i % g.cols)
-            : tunePoint(i % 21);
-          const settle = smooth(0.1 + (i / pos.length) * 0.45, 1.0, axisSeed);
-          const x = lerp(p.x, residueTarget.x, settle);
-          const y = lerp(p.y, residueTarget.y, settle);
-          ctx.fillStyle = `rgba(232,200,138,${(0.18 + axisSeed * 0.38).toFixed(3)})`;
-          ctx.shadowColor = "rgba(232,200,138,0.32)";
-          ctx.shadowBlur = 6;
-          ctx.beginPath();
-          ctx.arc(x, y, i % 9 === 0 ? 2.2 : 1.25, 0, Math.PI * 2);
+          ctx.moveTo(originX - m.w * 0.2, intakeTopY);
+          ctx.bezierCurveTo(
+            originX - m.w * 0.13,
+            originY - m.h * 0.18,
+            originX - m.w * 0.025,
+            originY - m.h * 0.045,
+            originX - 4,
+            originY,
+          );
+          ctx.lineTo(originX + 4, originY);
+          ctx.bezierCurveTo(
+            originX + m.w * 0.025,
+            originY - m.h * 0.045,
+            originX + m.w * 0.13,
+            originY - m.h * 0.18,
+            originX + m.w * 0.2,
+            intakeTopY,
+          );
+          ctx.closePath();
           ctx.fill();
-        });
-        ctx.shadowBlur = 0;
-        ctx.globalAlpha = axisGrow;
-        ctx.strokeStyle = `rgba(${warmAxisRgb},${0.18 + axisGrow * 0.58})`;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(g.railX0, g.railY);
-        ctx.lineTo(g.railX1, g.railY);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(g.axisX, g.axisTop);
-        ctx.lineTo(g.axisX, g.axisBottom);
-        ctx.stroke();
-        for (let col = 0; col < g.cols; col++) {
+          ctx.restore();
+
+          // Birth time is matter entering the existing light. It has depth,
+          // converges, and disappears into the core; it is not a plotted axis.
+          for (let flowIndex = 0; flowIndex < 54; flowIndex += 1) {
+            const depthLayer = flowIndex % 3;
+            const laneSeed = ((flowIndex * 17) % 29) / 28;
+            const lane =
+              (laneSeed - 0.5) * 2 +
+              Math.sin(flowIndex * 1.71) * 0.12;
+            const speed = 0.018 + depthLayer * 0.007;
+            const flow =
+              (now * speed + flowIndex / 54 + m.chronoStep * 0.035) % 1;
+            const easedFlow = flow * flow * (3 - 2 * flow);
+            const point = timeIngressPoint(easedFlow, lane, depthLayer);
+            const intakeFade =
+              smooth(0.02, 0.16, flow) *
+              (1 - smooth(0.78, 1, flow));
+            const coreProximity = smooth(0.42, 0.96, flow);
+            const alpha =
+              intakeFade *
+              (0.16 + depthLayer * 0.115 + coreProximity * 0.42);
+            const radius =
+              (0.55 + depthLayer * 0.42) *
+              (0.84 + coreProximity * 0.78);
+            ctx.fillStyle = `rgba(${depthLayer === 2 ? starWhiteRgb : coordinateAxisRgb},${alpha.toFixed(3)})`;
+            ctx.shadowColor = `rgba(${coordinateAxisRgb},${(
+              0.08 +
+              depthLayer * 0.08 +
+              coreProximity * 0.34
+            ).toFixed(3)})`;
+            ctx.shadowBlur = 2 + depthLayer * 2.8 + coreProximity * 8.5;
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.shadowBlur = 0;
+
+          drawTimeReceivingLifeCore(
+            ctx,
+            m.w,
+            m.h,
+            now,
+            0.96 + lockPulse * 0.04,
+          );
+          if (lockPulse > 0.02) {
+            const responseProgress = 1 - lockPulse;
+            ctx.strokeStyle = `rgba(${starWhiteRgb},${(
+              lockPulse * 0.32
+            ).toFixed(3)})`;
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.arc(
+              originX,
+              originY,
+              originCoreFrame.coreRadius *
+                (1.35 + responseProgress * 1.9),
+              0,
+              Math.PI * 2,
+            );
+            ctx.stroke();
+          }
+        } else {
+          ctx.strokeStyle = `rgba(${coordinateAxisRgb},${(0.08 + originEmission * 0.24).toFixed(3)})`;
+          ctx.lineWidth = 1;
+          [0, 1, 2, 3].forEach((col) => {
+            const target = railPoint(col);
+            const headX = lerp(originX, target.x, axisGrow);
+            const headY = lerp(originY, target.y, axisGrow);
+            ctx.beginPath();
+            ctx.moveTo(originX, originY);
+            ctx.lineTo(headX, headY);
+            ctx.stroke();
+          });
+          [2, 8, 14, 20].forEach((row) => {
+            const target = tunePoint(row);
+            const headX = lerp(originX, target.x, axisGrow);
+            const headY = lerp(originY, target.y, axisGrow);
+            ctx.beginPath();
+            ctx.moveTo(originX, originY);
+            ctx.lineTo(headX, headY);
+            ctx.stroke();
+          });
+          ctx.globalAlpha = axisSeed;
+          pos.forEach((p, i) => {
+            const residueTarget = i % 2 === 0
+              ? railPoint(i % g.cols)
+              : tunePoint(i % 21);
+            const settle = smooth(0.1 + (i / pos.length) * 0.45, 1.0, axisSeed);
+            const x = lerp(p.x, residueTarget.x, settle);
+            const y = lerp(p.y, residueTarget.y, settle);
+            ctx.fillStyle = `rgba(${coordinateAxisRgb},${(0.18 + axisSeed * 0.38).toFixed(3)})`;
+            ctx.shadowColor = `rgba(${coordinateAxisRgb},0.32)`;
+            ctx.shadowBlur = 6;
+            ctx.beginPath();
+            ctx.arc(x, y, i % 9 === 0 ? 2.2 : 1.25, 0, Math.PI * 2);
+            ctx.fill();
+          });
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = axisGrow;
+          ctx.strokeStyle = `rgba(${coordinateAxisRgb},${0.18 + axisGrow * 0.58})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(g.railX0, g.railY);
+          ctx.lineTo(g.railX1, g.railY);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(g.axisX, g.axisTop);
+          ctx.lineTo(g.axisX, g.axisBottom);
+          ctx.stroke();
+        }
+        if (!isTimeReceivingStage) {
+          ctx.globalAlpha = axisGrow;
+          for (let col = 0; col < g.cols; col++) {
           const p = railPoint(col);
           const posOnAxis = col / (g.cols - 1);
           const completed = isNewOriginAxis && col < originStepIndex;
@@ -2640,7 +3262,15 @@ export function LaunchLab() {
           const sweep = guideStage === "x" ? comet(posOnAxis, guideProgress, 0.16) : 0;
           const dragGlow = m.dragAxis === "x" ? comet(posOnAxis, m.railProgress, 0.18) : 0;
           const flow = Math.max(sweep, dragGlow);
-          const baseAlpha = isNewOriginAxis
+          const baseAlpha = isTimeReceivingStage
+            ? current
+              ? 0.42 + lockPulse * 0.12
+              : completed
+                ? 0.26
+                : next
+                  ? 0.15
+                  : 0.08
+            : isNewOriginAxis
             ? current
               ? 0.76 + lockPulse * 0.18
               : completed
@@ -2651,7 +3281,13 @@ export function LaunchLab() {
             : lit
               ? 0.58
               : 0.2;
-          const radius = isNewOriginAxis
+          const radius = isTimeReceivingStage
+            ? current
+              ? 2.1 + lockPulse * 0.6 + flow * 0.45
+              : completed
+                ? 1.5 + flow * 0.35
+                : 0.8 + flow * 0.55
+            : isNewOriginAxis
             ? current
               ? 3.0 + lockPulse * 1.2 + flow * 1.0
               : completed
@@ -2662,13 +3298,15 @@ export function LaunchLab() {
               : 1.25 + flow * 1.25;
           ctx.fillStyle = `rgba(${starWhiteRgb},${Math.min(0.98, baseAlpha + flow * 0.34).toFixed(3)})`;
           ctx.shadowColor = `rgba(${starWhiteRgb},${(0.14 + flow * 0.62 + (current ? 0.2 + lockPulse * 0.26 : 0)).toFixed(3)})`;
-          ctx.shadowBlur = current ? 12 + lockPulse * 14 + flow * 12 : lit ? 7 + flow * 12 : 2 + flow * 12;
+          ctx.shadowBlur = isTimeReceivingStage
+            ? current ? 5 + lockPulse * 5 + flow * 5 : 1 + flow * 4
+            : current ? 12 + lockPulse * 14 + flow * 12 : lit ? 7 + flow * 12 : 2 + flow * 12;
           ctx.beginPath();
           ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
           ctx.fill();
-        }
-        ctx.shadowBlur = 0;
-        for (let row = 0; row < g.rows; row++) {
+          }
+          ctx.shadowBlur = 0;
+          for (let row = 0; row < g.rows; row++) {
           const p = tunePoint(row);
           if (row % 2 !== 0 && row !== m.precisionY) continue;
           const posOnAxis = row / (g.rows - 1);
@@ -2676,38 +3314,54 @@ export function LaunchLab() {
           const dragGlow = m.dragAxis === "y" ? comet(posOnAxis, m.precisionY / (g.rows - 1), 0.13) : 0;
           const flow = Math.max(sweep, dragGlow);
           const selected = row === m.precisionY;
-          ctx.fillStyle = `rgba(${starWhiteRgb},${(selected ? 0.72 + flow * 0.26 : 0.16 + flow * 0.58).toFixed(3)})`;
+          ctx.fillStyle = `rgba(${starWhiteRgb},${(isTimeReceivingStage
+            ? selected ? 0.38 + flow * 0.18 : 0.08 + flow * 0.24
+            : selected ? 0.72 + flow * 0.26 : 0.16 + flow * 0.58).toFixed(3)})`;
           ctx.shadowColor = `rgba(${starWhiteRgb},${(0.1 + flow * 0.68).toFixed(3)})`;
-          ctx.shadowBlur = selected ? 10 + flow * 12 : 2 + flow * 12;
+          ctx.shadowBlur = isTimeReceivingStage
+            ? selected ? 4 + flow * 5 : 1 + flow * 4
+            : selected ? 10 + flow * 12 : 2 + flow * 12;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, row === m.precisionY ? 3.1 + flow * 1.1 : 1.0 + flow * 1.2, 0, Math.PI * 2);
+          ctx.arc(
+            p.x,
+            p.y,
+            isTimeReceivingStage
+              ? row === m.precisionY ? 2.05 + flow * 0.5 : 0.72 + flow * 0.55
+              : row === m.precisionY ? 3.1 + flow * 1.1 : 1.0 + flow * 1.2,
+            0,
+            Math.PI * 2,
+          );
           ctx.fill();
+          }
+          ctx.shadowColor = `rgba(${starWhiteRgb},0.92)`;
+          ctx.shadowBlur = 18;
+          ctx.fillStyle = `rgba(${starWhiteRgb},0.98)`;
+          ctx.beginPath();
+          ctx.arc(tuneCursor.x, tuneCursor.y, m.state === STATE.DISPLAY_LOCK ? 5.2 : 4.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(railCursor.x, railCursor.y, m.state === STATE.DISPLAY_LOCK ? 5.2 : 4.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
         }
-        ctx.shadowColor = `rgba(${starWhiteRgb},0.92)`;
-        ctx.shadowBlur = 18;
-        ctx.fillStyle = `rgba(${starWhiteRgb},0.98)`;
-        ctx.beginPath();
-        ctx.arc(tuneCursor.x, tuneCursor.y, m.state === STATE.DISPLAY_LOCK ? 5.2 : 4.4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(railCursor.x, railCursor.y, m.state === STATE.DISPLAY_LOCK ? 5.2 : 4.4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
         if (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND || m.state === STATE.DISPLAY_LOCK) {
           ctx.textAlign = "left";
           const finalLocked = m.state === STATE.DISPLAY_LOCK;
           const axisCopy = AXIS_COPY[m.pendingAxisMode];
           const isNewOriginFlow = m.pendingAxisMode === "NEW_USER" && !finalLocked;
           const originLockFeedback = isNewOriginFlow && lockPulse > 0.08;
-          const fourBeastGrammar = originMother ? resolveFourBeastGrammar(originMother) : undefined;
-          const fourBeastGrammarLine = fourBeastGrammarShortLine(fourBeastGrammar);
           ctx.fillStyle = "rgba(255,247,228,0.82)";
           ctx.font = `650 ${Math.min(16, m.w * 0.041)}px ${SANS}`;
           ctx.fillText(isNewOriginFlow ? axisCopy.bodyPrimary : axisCopy.topPrimary, g.railX0, m.h * 0.15);
-          ctx.fillStyle = "rgba(232,200,138,0.72)";
+          ctx.fillStyle = `rgba(${coordinateTextRgb},0.72)`;
           ctx.font = `620 ${Math.min(13, m.w * 0.033)}px ${SANS}`;
           ctx.fillText(isNewOriginFlow ? axisCopy.bodySecondary : axisCopy.topSecondary, g.railX0, m.h * 0.195);
-          ctx.fillStyle = "rgba(232,200,138,0.82)";
+          if (isNewOriginFlow) {
+            ctx.fillStyle = `rgba(${coordinateTextRgb},0.68)`;
+            ctx.font = `600 ${Math.min(10.5, m.w * 0.027)}px ${MONO}`;
+            ctx.fillText(originCoordinateSummary(), g.railX0, m.h * 0.245);
+          }
+          ctx.fillStyle = `rgba(${coordinateTextRgb},0.82)`;
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
           if (!isNewOriginFlow) {
             ctx.fillText(finalLocked ? "［ 光痕 ］" : isGeoStage ? `［ ${axisCopy.geoLabel[geoDim]} ］` : `［ ${axisCopy.dimStageLabel[dim]} ］`, g.railX0, m.h * 0.34);
@@ -2718,34 +3372,65 @@ export function LaunchLab() {
             if (isNewOriginFlow) {
               ctx.fillText(
                 !isGeoStage && dim === "hour"
-                  ? `推导时辰：${hourToPeriodLabel(Math.round(m.dialFloat))}`
+                  ? `母码时序：${hourToPeriodLabel(Math.round(m.dialFloat))}`
                   : isGeoStage
-                  ? `四象兽归位：${originMother.starbeast.fourSymbol} · ${FOUR_BEAST_VISUAL_COPY[originMother.starbeast.fourSymbol].axis} · ${originMother.geo.province}`
+                  ? `出生地点背景：${originMother.geo.province} / ${originMother.geo.city}`
                   : `已锁定：${originCoordinateSummary()}`,
                 g.railX0,
                 m.h * 0.282
               );
+              if (isGeoStage) {
+                ctx.fillText("星宿与母码保持不变", g.railX0, m.h * 0.308);
+              }
             } else {
               ctx.fillText(`时序填装：卦符显影 ${originMother.chrono.lockPoint} · ${originMother.mother.definition.trigramSymbol}${originMother.mother.trigram}`, g.railX0, m.h * 0.252);
               ctx.fillText(`方位填装：四象兽归位 ${originMother.starbeast.fourSymbol} · ${originMother.geo.province}/${originMother.geo.city}`, g.railX0, m.h * 0.282);
             }
           }
           if (originMother && isNewOriginFlow && isGeoStage) {
-            drawFourBeastOriginMarker(
-              ctx,
-              originMother.starbeast.fourSymbol,
-              originMother.mother.trigram,
-              originMother.geo.province,
-              fourBeastGrammarLine,
-              g.railX0 + (g.railX1 - g.railX0) * 0.56,
-              m.h * 0.19,
-              (g.railX1 - g.railX0) * 0.42,
-              m.h * 0.22,
-              0.92
-            );
+            const placeX = g.railX0 + (g.railX1 - g.railX0) * 0.77;
+            const placeY = m.h * 0.225;
+            ctx.save();
+            ctx.strokeStyle = "rgba(147,172,211,0.18)";
+            ctx.fillStyle = "rgba(185,203,236,0.72)";
+            ctx.lineWidth = 0.75;
+            ctx.beginPath();
+            ctx.ellipse(placeX, placeY, 34, 13, -0.08, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(placeX - 43, placeY);
+            ctx.lineTo(placeX + 43, placeY);
+            ctx.moveTo(placeX, placeY - 25);
+            ctx.lineTo(placeX, placeY + 25);
+            ctx.stroke();
+            ctx.shadowColor = "rgba(185,203,236,0.48)";
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(placeX, placeY, 2.4 + lockPulse * 0.8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
           }
-          ctx.fillStyle = "rgba(255,247,228,0.96)";
-          const valueSize = finalLocked
+          const activePhaseLabel = dim === "year"
+            ? "年"
+            : dim === "month"
+              ? "月"
+              : dim === "day"
+                ? "日"
+                : "时";
+          const timeValueX = originX + Math.min(58, m.w * 0.165);
+          const timeValueY = originY - Math.min(68, m.h * 0.09);
+          if (isTimeReceivingStage) {
+            ctx.fillStyle = `rgba(${coordinateTextRgb},0.44)`;
+            ctx.font = `600 ${Math.min(9.5, m.w * 0.024)}px ${MONO}`;
+            ctx.textAlign = "left";
+            ctx.fillText(activePhaseLabel, timeValueX, timeValueY - 17);
+          }
+          ctx.fillStyle = isTimeReceivingStage
+            ? `rgba(${coordinateTextRgb},0.82)`
+            : "rgba(255,247,228,0.96)";
+          const valueSize = isTimeReceivingStage
+            ? Math.min(22, m.w * 0.057)
+            : finalLocked
             ? Math.min(28, m.w * 0.062)
             : !isGeoStage && dim === "hour"
               ? Math.min(36, m.w * 0.082)
@@ -2761,8 +3446,8 @@ export function LaunchLab() {
                 : isGeoStage
                   ? geoText(geoDim, m.dialFloat)
                   : dimText(dim, m.dialFloat),
-            g.railX0,
-            m.h * 0.47
+            isTimeReceivingStage ? timeValueX : g.railX0,
+            isTimeReceivingStage ? timeValueY : m.h * 0.47
           );
           ctx.shadowBlur = 0;
           if (!isNewOriginFlow) {
@@ -2772,18 +3457,40 @@ export function LaunchLab() {
             ctx.fillStyle = "rgba(232,200,138,0.74)";
             ctx.fillText(axisCopy.bodySecondary, g.railX0, m.h * 0.63);
           }
-          ctx.fillStyle = "rgba(232,200,138,0.46)";
+          ctx.fillStyle = `rgba(${coordinateTextRgb},0.58)`;
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? axisCopy.lockText : originLockFeedback ? "上一格已锁定 · 进入下一格" : axisCopy.actionPrimary, g.railX0, m.h * 0.705);
-          ctx.fillStyle = "rgba(232,200,138,0.58)";
-          ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
+          const injectionHint = isNewOriginFlow
+            ? originLockFeedback
+              ? `已确认 · 现在注入${activeInjectionUnit}`
+              : `${axisCopy.actionPrimary}  ${activeInjectionUnit}`
+            : m.state === STATE.DISPLAY_LOCK
+              ? axisCopy.lockText
+              : axisCopy.actionPrimary;
           const railHint = finalLocked
             ? axisCopy.lockText
             : axisCopy.actionConfirm;
-          ctx.fillText(railHint, g.railX0, g.railY + 30);
-          ctx.textAlign = "right";
-          ctx.fillStyle = "rgba(232,200,138,0.82)";
-          ctx.fillText(m.state === STATE.DISPLAY_LOCK ? "镜面" : "光痕", g.railX1, g.railY - 18);
+          if (isTimeReceivingStage) {
+            ctx.textAlign = "left";
+            ctx.fillText(injectionHint, g.railX0, m.h * 0.74);
+            ctx.fillStyle = `rgba(${coordinateTextRgb},0.76)`;
+            ctx.font = `620 ${Math.min(12, m.w * 0.031)}px ${SANS}`;
+            ctx.textAlign = "center";
+            ctx.fillText(axisCopy.actionConfirm, m.w / 2, m.h * 0.9);
+          } else {
+            ctx.fillText(injectionHint, g.railX0, g.railY - 18);
+            ctx.fillStyle = `rgba(${coordinateTextRgb},0.72)`;
+            ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
+            ctx.textAlign = "right";
+            ctx.fillText(
+              isNewOriginFlow
+                ? railHint
+                : m.state === STATE.DISPLAY_LOCK
+                  ? "镜面"
+                  : "光痕",
+              g.railX1,
+              g.railY - 18,
+            );
+          }
         }
 
         if (convergenceActive) {
@@ -2960,7 +3667,7 @@ export function LaunchLab() {
           ctx.textBaseline = "alphabetic";
           ctx.fillStyle = confirmed ? "rgba(255,247,228,0.86)" : active ? "rgba(232,200,138,0.9)" : "rgba(232,200,138,0.42)";
           ctx.font = `650 ${active ? Math.min(12, m.w * 0.031) : Math.min(10, m.w * 0.027)}px ${MONO}`;
-          ctx.fillText(active ? confirmed ? "中州已锁定 · 点击进入" : "横轴锁定中州" : `压力 ${index + 1}`, x, y - (active ? confirmed ? 38 : 44 : 18));
+          ctx.fillText(active ? confirmed ? "上码来源已锁定 · 点击进入" : "选择这颗现实压力" : `压力 ${index + 1}`, x, y - (active ? confirmed ? 38 : 44 : 18));
           ctx.fillStyle = confirmed ? "rgba(255,247,228,0.98)" : active ? "rgba(255,247,228,0.92)" : "rgba(255,247,228,0.48)";
           ctx.shadowColor = confirmed ? "rgba(255,247,228,0.44)" : "rgba(255,247,228,0)";
           ctx.shadowBlur = confirmed ? 10 : 0;
@@ -2988,7 +3695,7 @@ export function LaunchLab() {
         ctx.textAlign = "left";
         ctx.fillStyle = "rgba(232,200,138,0.76)";
         ctx.font = `650 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-        ctx.fillText("压力种子轴", g.railX0, m.h * 0.12);
+        ctx.fillText("现实上码取样", g.railX0, m.h * 0.12);
         ctx.fillStyle = "rgba(255,247,228,0.96)";
         ctx.font = `760 ${Math.min(28, m.w * 0.072)}px ${SANS}`;
         ctx.fillText("这一刻，什么正在压住你？", g.railX0, m.h * 0.19);
@@ -2998,7 +3705,7 @@ export function LaunchLab() {
         ctx.fillStyle = "rgba(232,200,138,0.54)";
         ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
         ctx.fillText(`当前坐标 ${pad2(m.pressureSeedCoordinateIndex + 1)} / 21 · 第 ${m.pressureSeedRound + 1} 轮`, g.railX0, m.h * 0.295);
-        ctx.fillText(m.pressureSeedLocked ? "这一颗压力，被看见了" : "横轴三光标锁定一粒", g.railX0, g.railY + 30);
+        ctx.fillText(m.pressureSeedLocked ? "这颗压力将形成上码" : "选择一颗现实压力", g.railX0, g.railY + 30);
         ctx.textAlign = "right";
         ctx.fillStyle = "rgba(232,200,138,0.72)";
         ctx.fillText(m.pressureSeedLocked ? "已锁定" : "三选一", g.railX1, g.railY - 18);
@@ -3057,13 +3764,13 @@ export function LaunchLab() {
         ctx.textBaseline = "alphabetic";
         ctx.fillStyle = "rgba(232,200,138,0.76)";
         ctx.font = `650 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
-        ctx.fillText("8 母码正在显影", g.railX0, m.h * 0.115);
+        ctx.fillText("观爻第一份本命资产", g.railX0, m.h * 0.115);
         ctx.fillStyle = "rgba(255,247,228,0.96)";
         ctx.font = `760 ${Math.min(30, m.w * 0.074)}px ${SANS}`;
-        ctx.fillText("光位已定", g.railX0, m.h * 0.19);
+        ctx.fillText("母码资产已生成", g.railX0, m.h * 0.19);
         ctx.fillStyle = "rgba(232,200,138,0.58)";
         ctx.font = `620 ${Math.min(12, m.w * 0.031)}px ${SANS}`;
-        ctx.fillText("时序与方位正在合流，8 母码开始成形", g.railX0, m.h * 0.248);
+        ctx.fillText("时间同时定宿、落母码，四象在资产中第一次显影", g.railX0, m.h * 0.248);
 
         const cardW = Math.min(g.railX1 - g.railX0, Math.min(326, m.w * 0.84));
         const cardH = Math.min(360, m.h * 0.425, cardW * 1.12);
@@ -3094,10 +3801,16 @@ export function LaunchLab() {
         ctx.roundRect?.(cardX + 7, cardY + 7, cardW - 14, cardH - 14, 16);
         if (!ctx.roundRect) ctx.rect(cardX + 7, cardY + 7, cardW - 14, cardH - 14);
         ctx.stroke();
-        drawFourBeastCardWatermark(ctx, reveal.starbeast.fourSymbol, cardX, cardY, cardW, cardH);
-
         if (m.motherCardFace === "front") {
           const [trigramName, roleName] = profile.motherCodeName.split("｜");
+          drawFourBeastCardWatermark(
+            ctx,
+            reveal.starbeast.fourSymbol,
+            cardX,
+            cardY,
+            cardW,
+            cardH,
+          );
           const assetBadgeW = Math.min(62, Math.max(48, cardW * 0.18));
           ctx.fillStyle = "rgba(232,200,138,0.07)";
           ctx.strokeStyle = "rgba(232,200,138,0.2)";
@@ -3109,11 +3822,18 @@ export function LaunchLab() {
           ctx.stroke();
           ctx.fillStyle = "rgba(232,200,138,0.44)";
           ctx.font = `600 ${Math.min(9, cardW * 0.027)}px ${MONO}`;
-          ctx.fillText("8 母码", cardX + cardPad + 7, cardY + 26);
+          ctx.fillText("8 母码｜下码", cardX + cardPad + 7, cardY + 26);
+          ctx.textAlign = "right";
+          ctx.fillStyle = "rgba(232,200,138,0.5)";
+          ctx.fillText(
+            `${reveal.starbeast.fourSymbol}七宿印`,
+            cardX + cardW - cardPad,
+            cardY + 26,
+          );
           ctx.textAlign = "center";
           ctx.fillStyle = "rgba(255,247,228,0.96)";
           ctx.font = `800 ${Math.min(28, cardW * 0.082)}px ${SANS}`;
-          ctx.fillText(`${trigramName || reveal.mother.trigram}  ${definition.trigramSymbol}  ${reveal.starbeast.fourSymbol}`, cardX + cardW / 2, cardY + cardH * 0.165);
+          ctx.fillText(`${trigramName || reveal.mother.trigram}  ${definition.trigramSymbol}`, cardX + cardW / 2, cardY + cardH * 0.165);
           ctx.fillStyle = "rgba(232,200,138,0.74)";
           ctx.font = `650 ${Math.min(15, cardW * 0.044)}px ${SANS}`;
           ctx.fillText(roleName || profile.motherCodeTitle || definition.motherCodeTitle, cardX + cardW / 2, cardY + cardH * 0.235);
@@ -3181,9 +3901,9 @@ export function LaunchLab() {
           drawDecodeBlock("转化方向", displayCopy.direction, 2);
           ctx.fillStyle = "rgba(232,200,138,0.48)";
           ctx.font = `600 ${Math.min(9.5, cardW * 0.029)}px ${MONO}`;
-          ctx.fillText(`来源：${reveal.starbeast.fourSymbol}方位 × ${reveal.mother.trigram}母码`, cardX + cardPad, cardY + cardH - 33);
+          ctx.fillText("母码来源：农历时序 · 出生宿形成四象印", cardX + cardPad, cardY + cardH - 33);
           ctx.fillStyle = "rgba(232,200,138,0.56)";
-          ctx.fillText("这张 8 母码，是你进入本局之前的内在底座", cardX + cardPad, cardY + cardH - 15);
+          ctx.fillText(`母码原型为主体 · ${reveal.starbeast.fourSymbol}为本命盖印`, cardX + cardPad, cardY + cardH - 15);
         }
         ctx.restore();
 
@@ -3195,7 +3915,7 @@ export function LaunchLab() {
         ctx.fillStyle = "rgba(232,200,138,0.52)";
         ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
         ctx.textAlign = "left";
-        ctx.fillText("收下这张 8 母码，再进入这一局现实压力", g.railX0, g.railY + 30);
+        ctx.fillText("确认本命底座，再进入这一局现实压力", g.railX0, g.railY + 30);
         ctx.textAlign = "right";
         ctx.fillStyle = "rgba(232,200,138,0.72)";
         ctx.fillText("现实压力", g.railX1, g.railY - 18);
@@ -3249,20 +3969,20 @@ export function LaunchLab() {
         ctx.textBaseline = "alphabetic";
         ctx.fillStyle = "rgba(232,200,138,0.76)";
         ctx.font = `650 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-        ctx.fillText("现实压力入口", g.railX0, m.h * 0.18);
+        ctx.fillText("现实上码入口", g.railX0, m.h * 0.18);
         ctx.fillStyle = "rgba(255,247,228,0.96)";
         ctx.font = `760 ${Math.min(34, m.w * 0.082)}px ${SANS}`;
-        ctx.fillText("现实压力开始成局", g.railX0, m.h * 0.3);
+        ctx.fillText("现实压力形成上码", g.railX0, m.h * 0.3);
         ctx.fillStyle = "rgba(232,200,138,0.82)";
         ctx.font = `650 ${Math.min(15, m.w * 0.038)}px ${SANS}`;
-        ctx.fillText("从你的当前处境中", g.railX0, m.h * 0.4);
-        ctx.fillText("选择这一局的现实压力。", g.railX0, m.h * 0.445);
+        ctx.fillText("母码仍是下码", g.railX0, m.h * 0.4);
+        ctx.fillText("二者相遇，才形成本局卦码。", g.railX0, m.h * 0.445);
         ctx.fillStyle = "rgba(232,200,138,0.52)";
         ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
-        ctx.fillText("右滑进入压力种子", g.railX0, g.railY + 30);
+        ctx.fillText("右滑选择现实压力", g.railX0, g.railY + 30);
         ctx.textAlign = "right";
         ctx.fillStyle = "rgba(232,200,138,0.72)";
-        ctx.fillText("压力种子", g.railX1, g.railY - 18);
+        ctx.fillText("上码来源", g.railX1, g.railY - 18);
         ctx.restore();
         return;
       }
@@ -3282,8 +4002,8 @@ export function LaunchLab() {
       // Text resolves after the entry form stabilizes.
       if (entryVisualCopyActive && !nodeRuntimeActive && (m.state === STATE.FORMATION || m.state === STATE.APPROACH || m.state === STATE.READY)) {
         const cx = m.w / 2;
-        const lineStarts = [0.2, 0.36, 3.1, 3.2, 3.3, 3.42];
-        const gather = 1.35;
+        const lineStarts = [0.2, 0.36, 0.35, 0.56, 0.82];
+        const gather = 0.78;
         m.textStars.forEach((s, i) => {
           if (s.line < 2) return;
           const t0 = lineStarts[s.line]!;
@@ -3304,18 +4024,17 @@ export function LaunchLab() {
         ctx.textBaseline = "middle";
         const subtitleSize = Math.min(18, m.w * 0.046);
         const actionSize = Math.min(13, m.w * 0.033);
-        const bottomCopyX = m.w / 2 - Math.min(78, m.w * 0.2);
+        const bottomCopyX = m.w / 2;
         [
-          { text: CTA_LINES[0], y: 0.755, start: lineStarts[2]!, weight: 650, size: subtitleSize, alpha: 0.92 },
-          { text: CTA_LINES[1], y: 0.8, start: lineStarts[3]!, weight: 650, size: subtitleSize, alpha: 0.92 },
-          { text: CTA_LINES[2], y: 0.845, start: lineStarts[4]!, weight: 650, size: subtitleSize, alpha: 0.92 },
-          { text: ENTRY_ACTION_LINE, y: 0.898, start: lineStarts[5]!, weight: 620, size: actionSize, alpha: 0.64 },
+          { text: CTA_LINES[0], y: 0.78, start: lineStarts[2]!, weight: 650, size: subtitleSize, alpha: 0.92 },
+          { text: CTA_LINES[1], y: 0.825, start: lineStarts[3]!, weight: 650, size: subtitleSize, alpha: 0.92 },
+          { text: ENTRY_ACTION_LINE, y: 0.89, start: lineStarts[4]!, weight: 620, size: actionSize, alpha: 0.64 },
         ].forEach((line) => {
           const solid = smooth(line.start + gather - 0.1, line.start + gather + 0.8, m.afterForm);
           if (solid <= 0.001) return;
           ctx.font = `${line.weight} ${line.size}px ${SANS}`;
           ctx.fillStyle = `rgba(255,247,228,${(solid * line.alpha * (1 - enter)).toFixed(3)})`;
-          ctx.textAlign = "left";
+          ctx.textAlign = "center";
           ctx.fillText(line.text, bottomCopyX, m.h * line.y);
         });
         const ctaSolid = smooth(lineStarts[2]! + gather - 0.1, lineStarts[2]! + gather + 0.8, m.afterForm);
@@ -3361,6 +4080,15 @@ export function LaunchLab() {
       const r = canvas!.getBoundingClientRect();
       const x = e.clientX - r.left;
       const y = e.clientY - r.top;
+      if (m.state === STATE.STARFIELD_IDLE) {
+        if (!m.moonReleaseStarted && isLifeMapHit(x, y)) {
+          m.moonReleaseStarted = true;
+          m.moonReleaseT = 0;
+          audio.gather();
+          vibrate([0, 12, 28]);
+        }
+        return;
+      }
       if (m.state === STATE.ENTRY_STATIC_RENDER) {
         m.dragging = true;
         const g = axisMetrics();
@@ -3435,8 +4163,25 @@ export function LaunchLab() {
       if (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND) {
         m.dragging = true;
         const g = axisMetrics();
-        const onVertical = Math.abs(x - g.axisX) < 52 && y >= g.axisTop - 18 && y <= g.axisBottom + 18;
-        const onHorizontal = Math.abs(y - g.railY) < 42 && x >= g.railX0 - 12 && x <= g.railX1 + 12;
+        const timeReceiving =
+          m.state === STATE.TIME_CALIBRATION &&
+          m.pendingAxisMode === "NEW_USER";
+        const coreTapCandidate =
+          timeReceiving && isTimeReceivingCoreHit(x, y);
+        const onVertical = timeReceiving
+          ? !coreTapCandidate &&
+            x >= g.railX0 - 12 &&
+            x <= g.railX1 + 12 &&
+            y >= g.axisTop - 18 &&
+            y <= g.railY + 12
+          : Math.abs(x - g.axisX) < 52 &&
+            y >= g.axisTop - 18 &&
+            y <= g.axisBottom + 18;
+        const onHorizontal =
+          !timeReceiving &&
+          Math.abs(y - g.railY) < 42 &&
+          x >= g.railX0 - 12 &&
+          x <= g.railX1 + 12;
         m.dragAxis = onVertical ? "y" : onHorizontal ? "x" : null;
         m.lastX = x;
         m.lastY = y;
@@ -3561,7 +4306,14 @@ export function LaunchLab() {
         return;
       }
       if (m.dragAxis === null && Math.hypot(dx, dy) > 10) {
-        m.dragAxis = Math.abs(dx) >= Math.abs(dy) ? "x" : "y";
+        const timeReceiving =
+          m.state === STATE.TIME_CALIBRATION &&
+          m.pendingAxisMode === "NEW_USER";
+        m.dragAxis = timeReceiving
+          ? "y"
+          : Math.abs(dx) >= Math.abs(dy)
+            ? "x"
+            : "y";
       }
       if (m.dragAxis === "x") {
         const g = axisMetrics();
@@ -3608,6 +4360,19 @@ export function LaunchLab() {
       const upX = e && rect ? e.clientX - rect.left : 0;
       const upY = e && rect ? e.clientY - rect.top : 0;
       const tapTravel = e ? Math.hypot(upX - m.lastX, upY - m.lastY) : Infinity;
+      if (
+        e &&
+        m.state === STATE.TIME_CALIBRATION &&
+        m.pendingAxisMode === "NEW_USER" &&
+        m.dragAxis === null &&
+        tapTravel < 12 &&
+        isTimeReceivingCoreHit(upX, upY)
+      ) {
+        commitCurrentDim();
+        m.dragging = false;
+        m.dragAxis = null;
+        return;
+      }
       if (e && m.state === STATE.MOTHER_CODE_REVEAL && m.dragAxis === null && tapTravel < 12 && isMotherCodeCardHit(upX, upY)) {
         flipMotherCodeCard();
         m.dragging = false;
