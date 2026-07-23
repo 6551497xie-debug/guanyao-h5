@@ -737,14 +737,14 @@ export function GenesisProductionExperiencePage({
         "DIRECTION_AWAKENING" &&
       directionFieldCalibrationResult.calibration.phase === "AWAKENING" ? (
         <p className="gy-genesis-production-experience__time-response" role="status">
-          你的生命力量，开始找到方向。
+          出生宿正在回应天地方位。
         </p>
       ) : null}
       {manifestationExperienceResult.session.currentState ===
         "FORCE_CONDENSING" &&
       archetypeForceCalibrationResult.calibration.phase === "CONDENSING" ? (
         <p className="gy-genesis-production-experience__time-response" role="status">
-          你的生命，从这里展开。
+          你的生命力量，从这里而来。
         </p>
       ) : null}
       {presenceVisualRealizationResult?.status === "READY" &&
