@@ -680,8 +680,14 @@ export function GenesisProductionExperiencePage({
       data-genesis-direction-field-phase={
         directionFieldCalibrationResult.calibration.phase
       }
+      data-genesis-direction-response={
+        directionFieldCalibrationResult.calibration.responseMessage
+      }
       data-genesis-archetype-force-phase={
         archetypeForceCalibrationResult.calibration.phase
+      }
+      data-genesis-force-response={
+        archetypeForceCalibrationResult.calibration.responseMessage
       }
       data-genesis-presence-visual-state={
         presenceVisualRealizationResult?.status === "READY"
@@ -731,14 +737,14 @@ export function GenesisProductionExperiencePage({
         "DIRECTION_AWAKENING" &&
       directionFieldCalibrationResult.calibration.phase === "AWAKENING" ? (
         <p className="gy-genesis-production-experience__time-response" role="status">
-          {directionFieldCalibrationResult.calibration.responseMessage}
+          你的生命力量，开始找到方向。
         </p>
       ) : null}
       {manifestationExperienceResult.session.currentState ===
         "FORCE_CONDENSING" &&
       archetypeForceCalibrationResult.calibration.phase === "CONDENSING" ? (
         <p className="gy-genesis-production-experience__time-response" role="status">
-          {archetypeForceCalibrationResult.calibration.responseMessage}
+          你的生命，从这里展开。
         </p>
       ) : null}
       {presenceVisualRealizationResult?.status === "READY" &&

@@ -812,6 +812,11 @@ export function createGenesisWebGLRendererCore(
   let directionOriginX = 0;
   let directionOriginY = 0;
   let directionOriginZ = -0.42;
+  const directionAxisX = directionFieldExpression?.axisX ?? 0;
+  const directionAxisY = directionFieldExpression?.axisY ?? 0;
+  let directionViewportScale = 1;
+  let directionFieldGlowMaterial: MeshBasicMaterial | null = null;
+  let directionCoreBiasMaterial: MeshBasicMaterial | null = null;
   if (
     directionFieldCalibration !== null &&
     directionFieldCalibration.phase !== "HIDDEN" &&
@@ -823,10 +828,17 @@ export function createGenesisWebGLRendererCore(
     const perpendicularY = axisX;
     const directionOrigin =
       mansionCoordinateVisualLayer?.birthCoordinate ?? null;
-    directionOriginX = directionOrigin?.x ?? 0;
-    directionOriginY = directionOrigin?.y ?? 0;
+    directionOriginX =
+      (directionOrigin?.x ?? 0) * coordinateBaseScaleX;
+    directionOriginY =
+      (directionOrigin?.y ?? 0) * -coordinateBaseScaleY;
     directionOriginZ = (directionOrigin?.z ?? -0.55) + 0.08;
-    directionFieldParticleCount = directionFieldExpression.lineCount * 18;
+    directionViewportScale =
+      Math.abs(axisX) * coordinateBaseScaleX +
+      Math.abs(axisY) * coordinateBaseScaleY;
+    const directionFieldReach =
+      directionFieldExpression.fieldReach * directionViewportScale;
+    directionFieldParticleCount = directionFieldExpression.lineCount * 11;
     directionFieldPositions = new Float32Array(
       directionFieldParticleCount * 3,
     );
@@ -849,11 +861,11 @@ export function createGenesisWebGLRendererCore(
       const offset = index * 3;
       directionFieldPositions[offset] =
         directionOriginX +
-        axisX * directionFieldExpression.fieldReach * progress +
+        axisX * directionFieldReach * progress +
         perpendicularX * lane * spread;
       directionFieldPositions[offset + 1] =
         directionOriginY +
-        axisY * directionFieldExpression.fieldReach * progress +
+        axisY * directionFieldReach * progress +
         perpendicularY * lane * spread;
       directionFieldPositions[offset + 2] =
         directionOriginZ + Math.sin(progress * Math.PI) * 0.18;
@@ -869,11 +881,57 @@ export function createGenesisWebGLRendererCore(
       size: isLifeForce ? 0.038 : 0.032,
       sizeAttenuation: true,
       transparent: true,
-      opacity: isLifeForce ? 0.42 : 0.34,
+      opacity: 0,
       blending: AdditiveBlending,
       depthWrite: false,
     });
     directionFieldGroup.add(new Points(geometry, directionFieldMaterial));
+
+    const directionFieldGlow = new Mesh(
+      new SphereGeometry(0.52, 18, 14),
+      new MeshBasicMaterial({
+        color: new Color(0xaec8ea),
+        transparent: true,
+        opacity: 0,
+        blending: AdditiveBlending,
+        depthWrite: false,
+      }),
+    );
+    directionFieldGlowMaterial =
+      directionFieldGlow.material as MeshBasicMaterial;
+    directionFieldGlow.position.set(
+      directionOriginX + axisX * directionFieldReach * 0.34,
+      directionOriginY + axisY * directionFieldReach * 0.34,
+      directionOriginZ - 0.04,
+    );
+    directionFieldGlow.rotation.z = Math.atan2(axisY, axisX);
+    directionFieldGlow.scale.set(
+      1.35 + directionViewportScale * 0.5,
+      0.34,
+      0.3,
+    );
+    directionFieldGroup.add(directionFieldGlow);
+
+    const directionCoreBias = new Mesh(
+      new SphereGeometry(0.42, 18, 14),
+      new MeshBasicMaterial({
+        color: new Color(0xfff1cf),
+        transparent: true,
+        opacity: 0,
+        blending: AdditiveBlending,
+        depthWrite: false,
+      }),
+    );
+    directionCoreBiasMaterial =
+      directionCoreBias.material as MeshBasicMaterial;
+    directionCoreBias.position.set(
+      axisX * 0.2,
+      axisY * 0.2,
+      -0.08,
+    );
+    directionCoreBias.rotation.z = Math.atan2(axisY, axisX);
+    directionCoreBias.scale.set(1.48, 0.4, 0.34);
+    directionFieldGroup.add(directionCoreBias);
     root.add(directionFieldGroup);
   }
 
@@ -1477,6 +1535,23 @@ export function createGenesisWebGLRendererCore(
       const universeSeconds = performance.now() / 1000;
       let coordinateFormationProgress = 1;
       let coordinateIdentityBreath = 1;
+      const directionRevealRaw = isHexagramImprint
+        ? Math.min(1, Math.max(0, (elapsedSeconds - 0.16) / 1.55))
+        : isLifeForce
+          ? 1
+          : 0;
+      const directionRevealProgress =
+        directionRevealRaw *
+        directionRevealRaw *
+        (3 - 2 * directionRevealRaw);
+      const forceTendencyRaw = isLifeForce
+        ? Math.min(1, Math.max(0, (elapsedSeconds - 0.18) / 1.8))
+        : 0;
+      const forceTendencyProgress =
+        forceTendencyRaw *
+        forceTendencyRaw *
+        (3 - 2 * forceTendencyRaw);
+      let directionCoreBreath = 1;
       if (coordinateFormationExpression?.phase === "SEEKING_TO_FOUND") {
         const rawProgress = Math.min(
           1,
@@ -1587,8 +1662,8 @@ export function createGenesisWebGLRendererCore(
           1 +
           Math.sin(directionPhase) *
             directionFieldExpression.breathingAmplitude;
-        const axisX = directionFieldExpression.axisX;
-        const axisY = directionFieldExpression.axisY;
+        const axisX = directionAxisX;
+        const axisY = directionAxisY;
         const perpendicularX = -axisY;
         const perpendicularY = axisX;
         const forceDensity = forceCondensationExpression?.density ?? 0;
@@ -1599,6 +1674,7 @@ export function createGenesisWebGLRendererCore(
           : 0.014;
         const fieldReach =
           directionFieldExpression.fieldReach *
+          directionViewportScale *
           (isLifeForce ? 1.04 + forceDensity * 0.08 : 0.92);
         const fieldNarrowing = isLifeForce
           ? Math.max(0.46, 0.72 / forceAspect)
@@ -1631,12 +1707,22 @@ export function createGenesisWebGLRendererCore(
           const offset = index * 3;
           directionFieldPositions[offset] =
             directionOriginX +
-            axisX * (0.06 + fieldReach * axialProgress) +
-            perpendicularX * lane * lateralBreath;
+            axisX *
+              (0.04 +
+                fieldReach * axialProgress * directionRevealProgress) +
+            perpendicularX *
+              lane *
+              lateralBreath *
+              directionRevealProgress;
           directionFieldPositions[offset + 1] =
             directionOriginY +
-            axisY * (0.06 + fieldReach * axialProgress) +
-            perpendicularY * lane * lateralBreath;
+            axisY *
+              (0.04 +
+                fieldReach * axialProgress * directionRevealProgress) +
+            perpendicularY *
+              lane *
+              lateralBreath *
+              directionRevealProgress;
           directionFieldPositions[offset + 2] =
             directionOriginZ +
             Math.sin(progress * Math.PI) *
@@ -1645,11 +1731,29 @@ export function createGenesisWebGLRendererCore(
         }
         directionFieldPositionAttribute.needsUpdate = true;
         directionFieldMaterial.opacity =
-          (isLifeForce ? 0.38 + forceDensity * 0.12 : 0.34) *
-          (0.94 + (responseBreath - 1) * 1.8);
+          (isLifeForce ? 0.24 + forceDensity * 0.08 : 0.28) *
+          directionRevealProgress *
+          (0.94 + (responseBreath - 1) * 1.5);
         directionFieldMaterial.size =
-          (isLifeForce ? 0.038 + forceDensity * 0.008 : 0.032) *
+          (isLifeForce ? 0.034 + forceDensity * 0.006 : 0.03) *
           (0.96 + (responseBreath - 1));
+        directionCoreBreath =
+          1 +
+          (responseBreath - 1) *
+            directionRevealProgress *
+            (isLifeForce ? 0.34 : 0.2);
+        if (directionFieldGlowMaterial !== null) {
+          directionFieldGlowMaterial.opacity =
+            (isHexagramImprint ? 0.05 : 0.024) *
+            directionRevealProgress *
+            (0.94 + (responseBreath - 1) * 1.2);
+        }
+        if (directionCoreBiasMaterial !== null) {
+          directionCoreBiasMaterial.opacity =
+            (0.038 + forceDensity * 0.02) *
+            forceTendencyProgress *
+            (0.94 + (responseBreath - 1) * 1.4);
+        }
       }
       // Presence keeps its identity through breath and recovery. It never
       // proves aliveness by orbiting the camera.
@@ -1701,14 +1805,35 @@ export function createGenesisWebGLRendererCore(
           (star.x * bendCos - star.y * bendSin) * pull;
         const gravityY =
           (star.x * bendSin + star.y * bendCos) * pull;
+        const directionProjection =
+          gravityX * directionAxisX + gravityY * directionAxisY;
+        const directionLateral =
+          gravityX * -directionAxisY + gravityY * directionAxisX;
+        const directionSideWeight =
+          directionRevealProgress *
+          Math.max(
+            0,
+            Math.min(1, (directionProjection + 0.25) / 2.8),
+          ) *
+          Math.max(0.18, 1 - Math.abs(directionLateral) / 3.4) *
+          (0.54 + ((star.z + 1.7) / 3.4) * 0.46);
+        const directionSpaceShift =
+          (isLifeForce ? 0.11 : isHexagramImprint ? 0.06 : 0) *
+          directionSideWeight;
+        const directedGravityX =
+          gravityX + directionAxisX * directionSpaceShift;
+        const directedGravityY =
+          gravityY + directionAxisY * directionSpaceShift;
         const pressureDepth = (star.z + 1.7) / 3.4;
         const pressureInfluence =
           realitySpacePressure *
           (0.38 + pressureDepth * 0.62) *
           (0.52 + Math.max(0, 1 - radialDistance / 4.2) * 0.48);
-        const axialPosition = gravityX * axisX + gravityY * axisY;
+        const axialPosition =
+          directedGravityX * axisX + directedGravityY * axisY;
         const lateralPosition =
-          gravityX * perpendicularX + gravityY * perpendicularY;
+          directedGravityX * perpendicularX +
+          directedGravityY * perpendicularY;
         const compressedAxial =
           axialPosition *
           (1 - pressureFieldCompression * pressureInfluence * 0.14);
@@ -1886,7 +2011,8 @@ export function createGenesisWebGLRendererCore(
       coreIdentityGroup.scale.setScalar(
         breath *
           coreObservationScale *
-          coordinateIdentityBreath,
+          coordinateIdentityBreath *
+          directionCoreBreath,
       );
       core.scale.setScalar(1);
       coreSurface.scale.setScalar(1);
