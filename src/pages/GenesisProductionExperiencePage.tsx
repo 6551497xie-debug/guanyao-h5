@@ -744,7 +744,7 @@ export function GenesisProductionExperiencePage({
         "FORCE_CONDENSING" &&
       archetypeForceCalibrationResult.calibration.phase === "CONDENSING" ? (
         <p className="gy-genesis-production-experience__time-response" role="status">
-          你的生命力量，从这里而来。
+          这股生命力量，正以自己的节律作用于世界。
         </p>
       ) : null}
       {presenceVisualRealizationResult?.status === "READY" &&
