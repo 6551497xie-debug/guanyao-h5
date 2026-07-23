@@ -44,6 +44,7 @@ import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePers
 import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
 import { writePersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
 import { writeSelectedPressureSeedContext } from "../services/guanyaoSelectedPressureSeedContextPersistenceAdapter";
+import { resolveBirthCalendarFromGregorianDate } from "../services/guanyaoBirthCalendarService";
 import {
   drawLifeUniverseDeepSpace2D,
   drawLifeUniverseCore2D,
@@ -199,10 +200,16 @@ function drawTimeReceivingLifeCore(
   height: number,
   universeSeconds: number,
   alpha = 1,
+  lunarDay = 15,
 ) {
   const reveal = clamp(alpha, 0, 1);
   if (reveal <= 0.001) return;
 
+  const normalizedLunarDay = clamp(lunarDay, 1, 30);
+  const phaseAngle =
+    ((normalizedLunarDay - 1) / 29.5) * Math.PI * 2;
+  const illumination = 0.5 - Math.cos(phaseAngle) * 0.5;
+  const waxing = normalizedLunarDay <= 15;
   const coreFrame = resolveLifeUniverseCoreFrame(width, height, universeSeconds);
   const breath = 1 + Math.sin(universeSeconds * 0.58) * 0.018;
   const coreRadius = clamp(width * 0.045, 15, 18) * breath;
@@ -211,8 +218,14 @@ function drawTimeReceivingLifeCore(
   ctx.save();
   ctx.translate(coreFrame.x, coreFrame.y);
   const halo = ctx.createRadialGradient(0, 0, coreRadius * 0.18, 0, 0, haloRadius);
-  halo.addColorStop(0, `rgba(255,252,239,${(0.26 * reveal).toFixed(3)})`);
-  halo.addColorStop(0.32, `rgba(221,229,239,${(0.13 * reveal).toFixed(3)})`);
+  halo.addColorStop(
+    0,
+    `rgba(255,252,239,${((0.17 + illumination * 0.09) * reveal).toFixed(3)})`,
+  );
+  halo.addColorStop(
+    0.32,
+    `rgba(221,229,239,${((0.09 + illumination * 0.04) * reveal).toFixed(3)})`,
+  );
   halo.addColorStop(1, "rgba(147,172,211,0)");
   ctx.fillStyle = halo;
   ctx.beginPath();
@@ -236,6 +249,50 @@ function drawTimeReceivingLifeCore(
   ctx.beginPath();
   ctx.arc(0, 0, coreRadius, 0, Math.PI * 2);
   ctx.fill();
+
+  const shadowStrength = 1 - illumination;
+  if (shadowStrength > 0.012) {
+    const terminatorOffset =
+      (waxing ? -1 : 1) *
+      coreRadius *
+      (0.08 + illumination * 1.7);
+    ctx.save();
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.arc(0, 0, coreRadius * 1.01, 0, Math.PI * 2);
+    ctx.clip();
+    const terminator = ctx.createRadialGradient(
+      terminatorOffset - coreRadius * 0.22,
+      -coreRadius * 0.2,
+      coreRadius * 0.12,
+      terminatorOffset,
+      0,
+      coreRadius * 1.06,
+    );
+    terminator.addColorStop(
+      0,
+      `rgba(5,10,19,${(shadowStrength * reveal * 0.98).toFixed(3)})`,
+    );
+    terminator.addColorStop(
+      0.78,
+      `rgba(8,15,27,${(shadowStrength * reveal * 0.94).toFixed(3)})`,
+    );
+    terminator.addColorStop(
+      1,
+      `rgba(22,31,46,${(shadowStrength * reveal * 0.72).toFixed(3)})`,
+    );
+    ctx.fillStyle = terminator;
+    ctx.beginPath();
+    ctx.arc(
+      terminatorOffset,
+      0,
+      coreRadius * 1.06,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+    ctx.restore();
+  }
 
   ctx.shadowBlur = 0;
   ctx.strokeStyle = `rgba(255,252,239,${(0.42 * reveal).toFixed(3)})`;
@@ -346,6 +403,12 @@ const NODE_TRANSITION_LERP_DURATION_MS = 900;
 const RAIL_COMMIT_THRESHOLD = 0.58;
 const ORIGIN_RAIL_COLS = 4;
 const PERIOD_LABELS = ["子时", "丑时", "寅时", "卯时", "辰时", "巳时", "午时", "未时", "申时", "酉时", "戌时", "亥时"] as const;
+const LUNAR_MONTH_LABELS = ["正月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "冬月", "腊月"] as const;
+const LUNAR_DAY_LABELS = [
+  "初一", "初二", "初三", "初四", "初五", "初六", "初七", "初八", "初九", "初十",
+  "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十",
+  "廿一", "廿二", "廿三", "廿四", "廿五", "廿六", "廿七", "廿八", "廿九", "三十",
+] as const;
 const CHRONO_DIMS = ["year", "month", "day", "hour"] as const;
 type ChronoDim = (typeof CHRONO_DIMS)[number];
 type GeoDim = "province" | "city";
@@ -397,8 +460,8 @@ const AXIS_COPY: Record<EntryHandoffMode, {
     topPrimary: "时间坐标正在归档",
     topSecondary: "时间定宿，也让母码落位",
     bodyPrimary: "让星河记住你的出生时间",
-    bodySecondary: "年、月、日、时依次进入这颗光",
-    actionPrimary: "上下调频",
+    bodySecondary: "",
+    actionPrimary: "",
     actionConfirm: "轻触星河，确认生命坐标",
     lockText: "时间已定 · 母码资产显化",
   },
@@ -509,6 +572,18 @@ function hourToPeriodRange(hour: number) {
 
 function hourToPeriodLabel(hour: number) {
   return PERIOD_LABELS[hourToPeriodIndex(hour)] ?? "子时";
+}
+
+function formatLunarBirthDate(
+  relatedYear: number,
+  month: number,
+  day: number,
+  isLeapMonth: boolean,
+  hour: number,
+) {
+  const monthLabel = LUNAR_MONTH_LABELS[month - 1] ?? `${month}月`;
+  const dayLabel = LUNAR_DAY_LABELS[day - 1] ?? `${day}日`;
+  return `农历 ${relatedYear}年${isLeapMonth ? "闰" : ""}${monthLabel}${dayLabel} · ${hourToPeriodLabel(hour)}`;
 }
 
 function computeNodeTransitionProgress(node1ElapsedMs: number): number {
@@ -1226,6 +1301,9 @@ export function LaunchLab() {
       dwellT: 0,
       coords: { year: 1995, month: 6, day: 2, hour: 17 } as ChronoCoords,
       chronoStep: 0,
+      lunarDayTarget: 15,
+      lunarDayVisual: 15,
+      lunarDateLabel: "",
       geo: { provinceIndex: DEFAULT_PROVINCE_INDEX >= 0 ? DEFAULT_PROVINCE_INDEX : 0, cityIndex: DEFAULT_CITY_INDEX >= 0 ? DEFAULT_CITY_INDEX : 0 },
       geoStep: 0,
       lifeSourceSession: null as LaunchLifeSourceSession | null,
@@ -1406,6 +1484,59 @@ export function LaunchLab() {
       const railY = m.h * 0.78;
       return { cols, rows, cl, cw, railX0, railX1, axisX, axisTop, axisBottom, railY };
     }
+    function timeWheelMetrics() {
+      const width = Math.min(m.w - 24, 408);
+      const left = (m.w - width) / 2;
+      const columnWidth = width / CHRONO_DIMS.length;
+      const top = m.h * 0.655;
+      const height = Math.min(154, m.h * 0.205);
+      const centerY = top + height * 0.57;
+      return { width, left, columnWidth, top, height, centerY };
+    }
+    function timeWheelIndexAt(x: number, y: number) {
+      const wheel = timeWheelMetrics();
+      if (
+        x < wheel.left ||
+        x > wheel.left + wheel.width ||
+        y < wheel.top - 10 ||
+        y > wheel.top + wheel.height + 10
+      ) {
+        return null;
+      }
+      return clamp(
+        Math.floor((x - wheel.left) / wheel.columnWidth),
+        0,
+        CHRONO_DIMS.length - 1,
+      );
+    }
+    function timeWheelValueLabel(dim: ChronoDim, value: number) {
+      const rounded = Math.round(value);
+      if (dim === "year") return String(rounded);
+      if (dim === "month" || dim === "day") return pad2(rounded);
+      return hourToPeriodLabel(clamp(rounded, 0, 23));
+    }
+    function timeWheelValueStep(dim: ChronoDim) {
+      return dim === "hour" ? 2 : 1;
+    }
+    function syncLunarTimeProjection() {
+      const calendar = resolveBirthCalendarFromGregorianDate({
+        year: m.coords.year,
+        month: m.coords.month,
+        day: m.coords.day,
+      });
+      if (calendar.status !== "READY") {
+        m.lunarDateLabel = "农历日期正在换算";
+        return;
+      }
+      m.lunarDayTarget = calendar.lunarBirthDate.day;
+      m.lunarDateLabel = formatLunarBirthDate(
+        calendar.lunarBirthDate.relatedYear,
+        calendar.lunarBirthDate.month,
+        calendar.lunarBirthDate.day,
+        calendar.lunarBirthDate.isLeapMonth,
+        m.coords.hour,
+      );
+    }
     function axisPoint(col: number, row: number) {
       const g = axisMetrics();
       return {
@@ -1437,6 +1568,7 @@ export function LaunchLab() {
         m.lifeBeastMansionIndex = null;
         m.lifeBeastGroupStart = null;
       }
+      syncLunarTimeProjection();
     }
     function dimText(dim: ChronoDim, value: number) {
       const v = Math.round(value);
@@ -1653,6 +1785,9 @@ export function LaunchLab() {
       m.clutched = false;
       m.verticalTuned = false;
       m.verticalDragMoved = false;
+      m.lunarDayTarget = 15;
+      m.lunarDayVisual = 15;
+      m.lunarDateLabel = "";
     }
     function resetAxisStepProgress() {
       m.railProgress = 0;
@@ -1670,6 +1805,7 @@ export function LaunchLab() {
       m.pendingAxisMode = "NEW_USER";
       resetOriginTuningFlow();
       syncDialToCurrent();
+      syncLunarTimeProjection();
       m.state = STATE.TIME_CALIBRATION;
       m.t = 0;
       m.dwellT = 0;
@@ -1847,14 +1983,9 @@ export function LaunchLab() {
       setDimValue(dim, m.dialFloat);
       if (m.pendingAxisMode === "NEW_USER") {
         m.originLockPulse = 1;
-        if (m.chronoStep < CHRONO_DIMS.length - 1) {
-          m.chronoStep += 1;
-          resetAxisStepProgress();
-          syncDialToCurrent();
-          audio.tick();
-          vibrate(8);
-          return;
-        }
+        // The four familiar wheels form one birth-time input. Confirmation
+        // accepts the complete value at once; there is no staged lesson or
+        // year → month → day → hour checkpoint sequence.
         captureLaunchLifeSourceSession();
         if (DEBUG_TIMELINE) {
           openMotherCodeReveal();
@@ -1877,9 +2008,43 @@ export function LaunchLab() {
         Math.PI / 2;
       const orbitRadiusX = Math.min(m.w * 0.43, 168);
       const orbitRadiusY = Math.min(m.w * 0.19, 74);
-      const orbitDepth = 0.5 + Math.sin(orbitAngle) * 0.18;
-      const orbitX = coreFrame.x + Math.cos(orbitAngle) * orbitRadiusX;
-      const orbitY = coreFrame.y + Math.sin(orbitAngle) * orbitRadiusY;
+      const mansionGroup = Math.floor(i / 7);
+      const mansionSlot = i % 7;
+      const entranceOrderPhase =
+        universeSeconds * 0.075 +
+        mansionGroup * 0.72 +
+        mansionSlot * 0.18;
+      const entranceDepthBreath =
+        Math.sin(
+          universeSeconds * 0.09 +
+            mansionGroup * 0.86 +
+            mansionSlot * 0.14,
+        ) * 0.035;
+      const orbitDepth =
+        0.5 +
+        Math.sin(orbitAngle) * 0.18 +
+        (m.state === STATE.STARFIELD_IDLE ? entranceDepthBreath : 0);
+      const mansionMotion = m.chaos[i]!;
+      const orderedEntrance = m.state === STATE.STARFIELD_IDLE;
+      const driftX = orderedEntrance
+        ? Math.sin(entranceOrderPhase) * (1.6 + orbitDepth * 2.2)
+        : Math.sin(
+            universeSeconds * (0.09 + mansionMotion.sp * 0.018) +
+              mansionMotion.ph,
+          ) *
+          (1.8 + orbitDepth * 2.6);
+      const driftY = orderedEntrance
+        ? Math.cos(entranceOrderPhase * 0.84) *
+          (1.05 + orbitDepth * 1.65)
+        : Math.cos(
+            universeSeconds * (0.075 + mansionMotion.sp * 0.015) +
+              mansionMotion.ph * 0.83,
+          ) *
+          (1.2 + orbitDepth * 1.9);
+      const orbitX =
+        coreFrame.x + Math.cos(orbitAngle) * orbitRadiusX + driftX;
+      const orbitY =
+        coreFrame.y + Math.sin(orbitAngle) * orbitRadiusY + driftY;
       const lifeBeastSlot = lifeBeastSlotForMansion(i);
       const activeMansion = lifeBeastSlot >= 0;
       const conv = activeMansion ? nodeConv(i) : 0;
@@ -1893,7 +2058,11 @@ export function LaunchLab() {
           ? smooth(0.04, 1.1, m.t)
           : m.state === STATE.DISPLAY_LOCK && m.pendingAxisMode === "NEW_USER"
             ? 1
-          : isAxisState()
+          : isAxisState() &&
+              !(
+                m.state === STATE.TIME_CALIBRATION &&
+                m.pendingAxisMode === "NEW_USER"
+              )
             ? 1
             : 0;
       if (topologyToAxis > 0) {
@@ -1975,18 +2144,17 @@ export function LaunchLab() {
       return x >= minX - padX && x <= maxX + padX && y >= minY - padY && y <= maxY + padY;
     }
 
-    function isTimeReceivingCoreHit(x: number, y: number) {
-      const coreFrame = resolveLifeUniverseCoreFrame(
-        m.w,
-        m.h,
-        performance.now() / 1000,
-      );
-      const intakeRadius = Math.min(88, Math.max(52, m.w * 0.19));
-      return Math.hypot(x - coreFrame.x, y - coreFrame.y) <= intakeRadius;
-    }
-
     function step(dt: number) {
       m.t += dt;
+      if (
+        m.pendingAxisMode === "NEW_USER" &&
+        (m.state === STATE.TIME_CALIBRATION ||
+          m.state === STATE.DISPLAY_LOCK)
+      ) {
+        const phaseEase = 1 - Math.exp(-dt * 0.82);
+        m.lunarDayVisual +=
+          (m.lunarDayTarget - m.lunarDayVisual) * phaseEase;
+      }
       if (m.state === STATE.STARFIELD_IDLE && m.moonReleaseStarted) {
         m.moonReleaseT += dt;
       }
@@ -2151,10 +2319,6 @@ export function LaunchLab() {
         originIdentityLocked &&
         m.pendingAxisMode === "NEW_USER" &&
         m.state === STATE.DISPLAY_LOCK;
-      const timeCoordinatePending =
-        m.pendingAxisMode === "NEW_USER" &&
-        m.state === STATE.TIME_CALIBRATION &&
-        !originIdentityLocked;
       const sectorReveal = m.state === STATE.ASSEMBLY
         ? smooth(0.08, 1.05, m.t)
         : entryCelestialState
@@ -2221,23 +2385,198 @@ export function LaunchLab() {
 
       if (m.state === STATE.STARFIELD_IDLE) {
         const moonReleaseProgress = smooth(0, CFG.moonReleaseSeconds, m.moonReleaseT);
+        const cosmicOrderPresence =
+          smooth(0.3, 1.9, m.t) *
+          (1 - smooth(0.04, 0.74, m.moonReleaseT));
+        if (cosmicOrderPresence > 0.001) {
+          ctx.save();
+          ctx.globalCompositeOperation = "screen";
+
+          // A distant directional wash suggests the movement of heaven
+          // without introducing a second celestial body or identity light.
+          const heavenGlow = ctx.createRadialGradient(
+            m.w * 0.84,
+            m.h * 0.14,
+            0,
+            m.w * 0.84,
+            m.h * 0.14,
+            Math.max(m.w, m.h) * 0.34,
+          );
+          heavenGlow.addColorStop(
+            0,
+            `rgba(179,198,226,${(cosmicOrderPresence * 0.052).toFixed(3)})`,
+          );
+          heavenGlow.addColorStop(
+            0.34,
+            `rgba(124,151,191,${(cosmicOrderPresence * 0.022).toFixed(3)})`,
+          );
+          heavenGlow.addColorStop(1, "rgba(72,94,134,0)");
+          ctx.fillStyle = heavenGlow;
+          ctx.fillRect(0, 0, m.w, m.h);
+
+          // Long, incomplete traces establish celestial time. Their slow dash
+          // drift is perceived as order, not as an orbit around the life core.
+          ctx.lineCap = "round";
+          for (let traceIndex = 0; traceIndex < 3; traceIndex += 1) {
+            ctx.strokeStyle = `rgba(146,169,207,${(
+              cosmicOrderPresence * (0.11 - traceIndex * 0.035)
+            ).toFixed(3)})`;
+            ctx.lineWidth = 0.68 + traceIndex * 0.06;
+            ctx.setLineDash([
+              7.5 - traceIndex * 1.2,
+              29 + traceIndex * 4,
+            ]);
+            ctx.lineDashOffset =
+              -now * (1.25 + traceIndex * 0.18) -
+              traceIndex * 7;
+            const traceStart = {
+              x: m.w * (0.98 + traceIndex * 0.035),
+              y: m.h * (0.11 + traceIndex * 0.055),
+            };
+            const traceControlA = {
+              x: m.w * (0.77 - traceIndex * 0.035),
+              y: m.h * (0.2 + traceIndex * 0.04),
+            };
+            const traceControlB = {
+              x: m.w * (0.43 - traceIndex * 0.025),
+              y: m.h * (0.47 + traceIndex * 0.035),
+            };
+            const traceEnd = {
+              x: m.w * (-0.04 - traceIndex * 0.035),
+              y: m.h * (0.59 + traceIndex * 0.055),
+            };
+            ctx.beginPath();
+            ctx.moveTo(traceStart.x, traceStart.y);
+            ctx.bezierCurveTo(
+              traceControlA.x,
+              traceControlA.y,
+              traceControlB.x,
+              traceControlB.y,
+              traceEnd.x,
+              traceEnd.y,
+            );
+            ctx.stroke();
+
+            const timeFlow =
+              (now * (0.012 + traceIndex * 0.0015) +
+                traceIndex * 0.29) %
+              1;
+            const inverseFlow = 1 - timeFlow;
+            const timeX =
+              inverseFlow * inverseFlow * inverseFlow * traceStart.x +
+              3 *
+                inverseFlow *
+                inverseFlow *
+                timeFlow *
+                traceControlA.x +
+              3 *
+                inverseFlow *
+                timeFlow *
+                timeFlow *
+                traceControlB.x +
+              timeFlow * timeFlow * timeFlow * traceEnd.x;
+            const timeY =
+              inverseFlow * inverseFlow * inverseFlow * traceStart.y +
+              3 *
+                inverseFlow *
+                inverseFlow *
+                timeFlow *
+                traceControlA.y +
+              3 *
+                inverseFlow *
+                timeFlow *
+                timeFlow *
+                traceControlB.y +
+              timeFlow * timeFlow * timeFlow * traceEnd.y;
+            ctx.fillStyle = `rgba(190,208,232,${(
+              cosmicOrderPresence * (0.16 - traceIndex * 0.035)
+            ).toFixed(3)})`;
+            ctx.beginPath();
+            ctx.arc(
+              timeX,
+              timeY,
+              0.72 - traceIndex * 0.08,
+              0,
+              Math.PI * 2,
+            );
+            ctx.fill();
+          }
+          ctx.setLineDash([]);
+          ctx.restore();
+        }
         const firstFrameMansions = MANSION_COORDINATES.map((_, mansionIndex) =>
           nodePos(mansionIndex),
         );
+        ctx.save();
+        ctx.lineCap = "round";
+        for (let mansionGroup = 0; mansionGroup < 4; mansionGroup += 1) {
+          const groupStart = mansionGroup * 7;
+          ctx.strokeStyle = `rgba(171,192,222,${(
+            0.026 + mansionGroup * 0.004
+          ).toFixed(3)})`;
+          ctx.lineWidth = 0.54;
+          ctx.beginPath();
+          for (let groupIndex = 0; groupIndex < 7; groupIndex += 1) {
+            const point = firstFrameMansions[groupStart + groupIndex]!;
+            if (groupIndex === 0) ctx.moveTo(point.x, point.y);
+            else ctx.lineTo(point.x, point.y);
+          }
+          ctx.stroke();
+
+          const groupFlow =
+            (now * (0.045 + mansionGroup * 0.004) +
+              mansionGroup * 0.21) %
+            1;
+          const segmentPosition = groupFlow * 6;
+          const segmentIndex = Math.min(5, Math.floor(segmentPosition));
+          const segmentProgress = segmentPosition - segmentIndex;
+          const segmentStart =
+            firstFrameMansions[groupStart + segmentIndex]!;
+          const segmentEnd =
+            firstFrameMansions[groupStart + segmentIndex + 1]!;
+          ctx.fillStyle = "rgba(220,230,242,0.34)";
+          ctx.shadowColor = "rgba(185,203,236,0.32)";
+          ctx.shadowBlur = 7;
+          ctx.beginPath();
+          ctx.arc(
+            lerp(segmentStart.x, segmentEnd.x, segmentProgress),
+            lerp(segmentStart.y, segmentEnd.y, segmentProgress),
+            0.92,
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+        }
+        ctx.restore();
         MANSION_COORDINATES.forEach((_, mansionIndex) => {
           const point = firstFrameMansions[mansionIndex]!;
-          const pulse = 0.78 + Math.sin(now * 1.4 + mansionIndex * 0.42) * 0.22;
+          const mansionGroup = Math.floor(mansionIndex / 7);
+          const mansionSlot = mansionIndex % 7;
+          const groupFlow =
+            (now * (0.045 + mansionGroup * 0.004) +
+              mansionGroup * 0.21) %
+            1;
+          const slotProgress = mansionSlot / 6;
+          const orderedDistance = Math.abs(slotProgress - groupFlow);
+          const orderedPulse = Math.exp(
+            -Math.pow(orderedDistance / 0.17, 2),
+          );
+          const groupBreath =
+            0.82 +
+            Math.sin(now * 0.28 + mansionGroup * 0.78) * 0.075;
+          const pulse = groupBreath + orderedPulse * 0.22;
           const mansionDepth = clamp((point.p - 0.32) / 0.36, 0, 1);
           const releaseLight = Math.sin(Math.PI * moonReleaseProgress) * 0.32;
-          const pointAlpha = (0.09 + mansionDepth * 0.3) * pulse + releaseLight;
+          const pointAlpha =
+            (0.14 + mansionDepth * 0.38) * pulse + releaseLight;
           ctx.fillStyle = `rgba(205,216,233,${pointAlpha.toFixed(3)})`;
-          ctx.shadowColor = `rgba(205,216,233,${(0.08 + mansionDepth * 0.18 + releaseLight * 0.5).toFixed(3)})`;
-          ctx.shadowBlur = mansionDepth * 3.5 + releaseLight * 8;
+          ctx.shadowColor = `rgba(205,216,233,${(0.1 + mansionDepth * 0.24 + releaseLight * 0.5).toFixed(3)})`;
+          ctx.shadowBlur = mansionDepth * 5 + releaseLight * 8;
           ctx.beginPath();
           ctx.arc(
             point.x,
             point.y,
-            0.62 + mansionDepth * 1.02 + releaseLight * 1.8,
+            0.72 + mansionDepth * 1.2 + releaseLight * 1.8,
             0,
             Math.PI * 2,
           );
@@ -2324,6 +2663,7 @@ export function LaunchLab() {
           m.h,
           now,
           0.96 + receive * 0.04,
+          m.lunarDayVisual,
         );
 
         ctx.save();
@@ -2626,19 +2966,67 @@ export function LaunchLab() {
       // The complete 28-mansion orbit remains visible while the selected seven
       // become recognizable. During handoff the same path turns edge-on.
       if (topologyToAxis < 0.98) {
-        ctx.strokeStyle = `rgba(147,172,211,${(
-          0.14 *
-          (1 - topologyToAxis) *
-          nodeFade
-        ).toFixed(3)})`;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        pos.forEach((point, index) => {
-          if (index === 0) ctx.moveTo(point.x, point.y);
-          else ctx.lineTo(point.x, point.y);
-        });
-        ctx.closePath();
-        ctx.stroke();
+        const continuousTimeField =
+          m.pendingAxisMode === "NEW_USER" &&
+          m.state === STATE.TIME_CALIBRATION;
+        if (continuousTimeField) {
+          ctx.save();
+          ctx.lineCap = "round";
+          for (let mansionGroup = 0; mansionGroup < 4; mansionGroup += 1) {
+            const groupStart = mansionGroup * 7;
+            ctx.strokeStyle = `rgba(147,172,211,${(
+              (0.06 + mansionGroup * 0.007) * nodeFade
+            ).toFixed(3)})`;
+            ctx.lineWidth = 0.66;
+            ctx.beginPath();
+            for (let groupIndex = 0; groupIndex < 7; groupIndex += 1) {
+              const point = pos[groupStart + groupIndex]!;
+              if (groupIndex === 0) ctx.moveTo(point.x, point.y);
+              else ctx.lineTo(point.x, point.y);
+            }
+            ctx.stroke();
+
+            const groupFlow =
+              (now * (0.045 + mansionGroup * 0.004) +
+                mansionGroup * 0.21) %
+              1;
+            const segmentPosition = groupFlow * 6;
+            const segmentIndex = Math.min(
+              5,
+              Math.floor(segmentPosition),
+            );
+            const segmentProgress = segmentPosition - segmentIndex;
+            const segmentStart = pos[groupStart + segmentIndex]!;
+            const segmentEnd = pos[groupStart + segmentIndex + 1]!;
+            ctx.fillStyle = "rgba(220,230,242,0.32)";
+            ctx.shadowColor = "rgba(185,203,236,0.3)";
+            ctx.shadowBlur = 7;
+            ctx.beginPath();
+            ctx.arc(
+              lerp(segmentStart.x, segmentEnd.x, segmentProgress),
+              lerp(segmentStart.y, segmentEnd.y, segmentProgress),
+              0.9,
+              0,
+              Math.PI * 2,
+            );
+            ctx.fill();
+          }
+          ctx.restore();
+        } else {
+          ctx.strokeStyle = `rgba(147,172,211,${(
+            0.14 *
+            (1 - topologyToAxis) *
+            nodeFade
+          ).toFixed(3)})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          pos.forEach((point, index) => {
+            if (index === 0) ctx.moveTo(point.x, point.y);
+            else ctx.lineTo(point.x, point.y);
+          });
+          ctx.closePath();
+          ctx.stroke();
+        }
       }
 
       // The active seven remain at their original mansion coordinates. Their
@@ -2731,7 +3119,7 @@ export function LaunchLab() {
 
       // All 28 points survive the entire transformation. Hierarchy comes from
       // real group membership and the birth mansion, never from random size.
-      if (!originPresenceArrivalActive && !timeCoordinatePending) {
+      if (!originPresenceArrivalActive) {
         pos.forEach((p, i) => {
           const ch = m.chaos[i]!;
           const tw = 0.7 + 0.3 * Math.sin(now * (1 + ch.sp) + ch.ph);
@@ -3027,13 +3415,6 @@ export function LaunchLab() {
         const isTimeReceivingStage = isNewOriginAxis && m.state === STATE.TIME_CALIBRATION;
         const coordinateAxisRgb = isNewOriginAxis ? "185,203,236" : warmAxisRgb;
         const coordinateTextRgb = isNewOriginAxis ? "205,216,233" : warmAxisRgb;
-        const activeInjectionUnit = dim === "year"
-          ? "年"
-          : dim === "month"
-            ? "月"
-            : dim === "day"
-              ? "日"
-              : "时";
         const originStepIndex = isGeoStage ? CHRONO_DIMS.length : m.chronoStep;
         const lockPulse = smooth(0, 1, m.originLockPulse);
         const range = isGeoStage ? geoRange(geoDim) : dimRange(m.coords, dim);
@@ -3181,6 +3562,7 @@ export function LaunchLab() {
             m.h,
             now,
             0.96 + lockPulse * 0.04,
+            m.lunarDayVisual,
           );
           if (lockPulse > 0.02) {
             const responseProgress = 1 - lockPulse;
@@ -3344,6 +3726,164 @@ export function LaunchLab() {
           ctx.fill();
           ctx.shadowBlur = 0;
         }
+        if (isTimeReceivingStage) {
+          const axisCopy = AXIS_COPY.NEW_USER;
+          const wheel = timeWheelMetrics();
+          const wheelLabels = ["年", "月", "日", "时"] as const;
+
+          ctx.globalAlpha = 1;
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = "rgba(255,247,228,0.86)";
+          ctx.font = `650 ${Math.min(17, m.w * 0.043)}px ${SANS}`;
+          ctx.fillText(
+            axisCopy.bodyPrimary,
+            wheel.left + 4,
+            m.h * 0.145,
+          );
+          ctx.fillStyle = `rgba(${coordinateTextRgb},0.66)`;
+          ctx.font = `540 ${Math.min(11, m.w * 0.028)}px ${SANS}`;
+          ctx.fillText(
+            m.lunarDateLabel,
+            wheel.left + 4,
+            m.h * 0.19,
+          );
+
+          ctx.textAlign = "center";
+          ctx.fillStyle = `rgba(${coordinateTextRgb},0.42)`;
+          ctx.font = `560 ${Math.min(10, m.w * 0.025)}px ${SANS}`;
+          ctx.fillText(
+            "按公历输入",
+            m.w / 2,
+            wheel.top - 14,
+          );
+
+          CHRONO_DIMS.forEach((wheelDim, wheelIndex) => {
+            const columnX = wheel.left + wheel.columnWidth * wheelIndex;
+            const panelInset = 3;
+            const isActiveWheel = wheelIndex === m.chronoStep;
+            const selectedValue = dimValue(m.coords, wheelDim);
+            const wheelRange = dimRange(m.coords, wheelDim);
+            const valueStep = timeWheelValueStep(wheelDim);
+            const previousValue = clamp(
+              selectedValue - valueStep,
+              wheelRange.min,
+              wheelRange.max,
+            );
+            const nextValue = clamp(
+              selectedValue + valueStep,
+              wheelRange.min,
+              wheelRange.max,
+            );
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(
+              columnX + panelInset,
+              wheel.top,
+              wheel.columnWidth - panelInset * 2,
+              wheel.height,
+            );
+            ctx.clip();
+
+            const panel = ctx.createLinearGradient(
+              0,
+              wheel.top,
+              0,
+              wheel.top + wheel.height,
+            );
+            panel.addColorStop(0, "rgba(3,6,12,0.08)");
+            panel.addColorStop(
+              0.5,
+              `rgba(9,14,24,${isActiveWheel ? "0.36" : "0.24"})`,
+            );
+            panel.addColorStop(1, "rgba(3,6,12,0.08)");
+            ctx.fillStyle = panel;
+            ctx.fillRect(
+              columnX + panelInset,
+              wheel.top,
+              wheel.columnWidth - panelInset * 2,
+              wheel.height,
+            );
+
+            const columnCenterX = columnX + wheel.columnWidth / 2;
+            ctx.textAlign = "center";
+            ctx.fillStyle = `rgba(${coordinateTextRgb},${isActiveWheel ? "0.68" : "0.46"})`;
+            ctx.font = `620 ${Math.min(12, m.w * 0.029)}px ${SANS}`;
+            ctx.fillText(
+              wheelLabels[wheelIndex]!,
+              columnCenterX,
+              wheel.top + 17,
+            );
+
+            const neighborOffset = Math.min(39, wheel.height * 0.255);
+            ctx.font = `520 ${Math.min(14, m.w * 0.035)}px ${MONO}`;
+            ctx.fillStyle = `rgba(${coordinateTextRgb},0.14)`;
+            if (previousValue !== selectedValue) {
+              ctx.fillText(
+                timeWheelValueLabel(wheelDim, previousValue),
+                columnCenterX,
+                wheel.centerY - neighborOffset,
+              );
+            }
+            if (nextValue !== selectedValue) {
+              ctx.fillText(
+                timeWheelValueLabel(wheelDim, nextValue),
+                columnCenterX,
+                wheel.centerY + neighborOffset,
+              );
+            }
+
+            const selectionGlow = ctx.createRadialGradient(
+              columnCenterX,
+              wheel.centerY,
+              0,
+              columnCenterX,
+              wheel.centerY,
+              wheel.columnWidth * 0.62,
+            );
+            selectionGlow.addColorStop(
+              0,
+              `rgba(${starWhiteRgb},${isActiveWheel ? "0.08" : "0.035"})`,
+            );
+            selectionGlow.addColorStop(1, `rgba(${starWhiteRgb},0)`);
+            ctx.fillStyle = selectionGlow;
+            ctx.fillRect(
+              columnX,
+              wheel.centerY - neighborOffset,
+              wheel.columnWidth,
+              neighborOffset * 2,
+            );
+
+            ctx.fillStyle = `rgba(${starWhiteRgb},${isActiveWheel ? "0.96" : "0.82"})`;
+            ctx.shadowColor = `rgba(${coordinateAxisRgb},${isActiveWheel ? "0.3" : "0.1"})`;
+            ctx.shadowBlur = isActiveWheel ? 10 : 3;
+            const valueSize = wheelDim === "hour"
+              ? Math.min(22, m.w * 0.052)
+              : wheelDim === "year"
+                ? Math.min(24, m.w * 0.058)
+                : Math.min(27, m.w * 0.064);
+            ctx.font = `560 ${valueSize}px ${MONO}`;
+            ctx.fillText(
+              timeWheelValueLabel(wheelDim, selectedValue),
+              columnCenterX,
+              wheel.centerY,
+            );
+            ctx.restore();
+          });
+
+          ctx.shadowBlur = 0;
+          ctx.textAlign = "center";
+          ctx.fillStyle = `rgba(${coordinateTextRgb},0.78)`;
+          ctx.font = `620 ${Math.min(12, m.w * 0.031)}px ${SANS}`;
+          ctx.fillText(
+            axisCopy.actionConfirm,
+            m.w / 2,
+            m.h * 0.92,
+          );
+          ctx.restore();
+          return;
+        }
         if (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND || m.state === STATE.DISPLAY_LOCK) {
           ctx.textAlign = "left";
           const finalLocked = m.state === STATE.DISPLAY_LOCK;
@@ -3460,9 +4000,7 @@ export function LaunchLab() {
           ctx.fillStyle = `rgba(${coordinateTextRgb},0.58)`;
           ctx.font = `600 ${Math.min(12, m.w * 0.03)}px ${MONO}`;
           const injectionHint = isNewOriginFlow
-            ? originLockFeedback
-              ? `已确认 · 现在注入${activeInjectionUnit}`
-              : `${axisCopy.actionPrimary}  ${activeInjectionUnit}`
+            ? axisCopy.actionPrimary
             : m.state === STATE.DISPLAY_LOCK
               ? axisCopy.lockText
               : axisCopy.actionPrimary;
@@ -4162,29 +4700,35 @@ export function LaunchLab() {
       }
       if (m.state === STATE.TIME_CALIBRATION || m.state === STATE.GEO_BIND) {
         m.dragging = true;
-        const g = axisMetrics();
+        m.lastX = x;
+        m.lastY = y;
         const timeReceiving =
           m.state === STATE.TIME_CALIBRATION &&
           m.pendingAxisMode === "NEW_USER";
-        const coreTapCandidate =
-          timeReceiving && isTimeReceivingCoreHit(x, y);
-        const onVertical = timeReceiving
-          ? !coreTapCandidate &&
-            x >= g.railX0 - 12 &&
-            x <= g.railX1 + 12 &&
-            y >= g.axisTop - 18 &&
-            y <= g.railY + 12
-          : Math.abs(x - g.axisX) < 52 &&
-            y >= g.axisTop - 18 &&
-            y <= g.axisBottom + 18;
+        if (timeReceiving) {
+          const wheelIndex = timeWheelIndexAt(x, y);
+          if (wheelIndex === null) {
+            m.dragAxis = null;
+          } else {
+            m.chronoStep = wheelIndex;
+            syncDialToCurrent();
+            m.dragAxis = "y";
+            m.verticalDragMoved = false;
+          }
+          m.dwellT = 0;
+          return;
+        }
+
+        const g = axisMetrics();
+        const onVertical =
+          Math.abs(x - g.axisX) < 52 &&
+          y >= g.axisTop - 18 &&
+          y <= g.axisBottom + 18;
         const onHorizontal =
-          !timeReceiving &&
           Math.abs(y - g.railY) < 42 &&
           x >= g.railX0 - 12 &&
           x <= g.railX1 + 12;
         m.dragAxis = onVertical ? "y" : onHorizontal ? "x" : null;
-        m.lastX = x;
-        m.lastY = y;
         if (m.dragAxis === "x") {
           m.railProgress = clamp((x - g.railX0) / (g.railX1 - g.railX0), 0, 1);
           m.phaseX = Math.round(m.railProgress * (g.cols - 1));
@@ -4305,15 +4849,41 @@ export function LaunchLab() {
         }
         return;
       }
+      const timeWheelStage =
+        m.state === STATE.TIME_CALIBRATION &&
+        m.pendingAxisMode === "NEW_USER";
+      if (timeWheelStage) {
+        if (m.dragAxis === "y") {
+          const dim = activeDim();
+          const { min, max } = dimRange(m.coords, dim);
+          const stepDistance = Math.min(38, m.h * 0.052);
+          const valueStep = timeWheelValueStep(dim);
+          const previousRounded = Math.round(m.dialFloat);
+          m.dialFloat = clamp(
+            m.dialFloat -
+              (dy / Math.max(24, stepDistance)) * valueStep,
+            min,
+            max,
+          );
+          setDimValue(dim, m.dialFloat);
+          const nextRounded = Math.round(m.dialFloat);
+          if (nextRounded !== previousRounded) {
+            m.originLockPulse = 1;
+            audio.tick();
+            vibrate(4);
+          }
+          if (Math.abs(y - m.lastY) > 2) {
+            m.verticalDragMoved = true;
+            m.verticalTuned = true;
+          }
+          m.lastY = y;
+          m.lastX = x;
+          m.dwellT = 0;
+        }
+        return;
+      }
       if (m.dragAxis === null && Math.hypot(dx, dy) > 10) {
-        const timeReceiving =
-          m.state === STATE.TIME_CALIBRATION &&
-          m.pendingAxisMode === "NEW_USER";
-        m.dragAxis = timeReceiving
-          ? "y"
-          : Math.abs(dx) >= Math.abs(dy)
-            ? "x"
-            : "y";
+        m.dragAxis = Math.abs(dx) >= Math.abs(dy) ? "x" : "y";
       }
       if (m.dragAxis === "x") {
         const g = axisMetrics();
@@ -4366,7 +4936,7 @@ export function LaunchLab() {
         m.pendingAxisMode === "NEW_USER" &&
         m.dragAxis === null &&
         tapTravel < 12 &&
-        isTimeReceivingCoreHit(upX, upY)
+        timeWheelIndexAt(upX, upY) === null
       ) {
         commitCurrentDim();
         m.dragging = false;
