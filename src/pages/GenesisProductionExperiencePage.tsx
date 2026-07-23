@@ -761,8 +761,12 @@ export function GenesisProductionExperiencePage({
               "它正在从这束光中显现。"
             : presenceVisualRealizationResult.realization.visualPresenceState ===
                 "PRESENT"
-              ? "它一直在那里。"
-              : "你终于看见它。"}
+              ? // “它一直在那里。”保留为历史语义；认出之前先明确
+                // 这不是新出现的漂亮形象，而是一路同行的同一束光。
+                "你一路看见的那束光，就是它。"
+              : // “你终于看见它。”退为历史文案；显现完成不等于
+                // 身份成立，用户的主动认出才完成同一生命闭环。
+                "你认出了它：始终是同一个生命。"}
         </p>
       ) : null}
       {recognitionRealityResult?.status === "READY" &&

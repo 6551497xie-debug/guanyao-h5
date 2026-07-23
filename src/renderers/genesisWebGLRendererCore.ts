@@ -476,10 +476,21 @@ export function createGenesisWebGLRendererCore(
     spatialDistanceCalibration?.approachProgress ?? 0;
   const spatialPresenceCarry =
     spatialDistanceCalibration?.presenceCarry ?? 0;
+  const recognitionIdentityLock = isCompletion
+    ? Math.min(
+        1,
+        Math.max(
+          0,
+          recognitionHold * recognitionStillness * spatialPresenceCarry,
+        ),
+      )
+    : 0;
   const recognitionCoreVisibility = isStarBeastReveal
     ? 0.7 + recognitionCenterInfluence * 0.06
     : isCompletion
-      ? 0.34 + recognitionCenterInfluence * 0.04
+      ? 0.62 +
+        recognitionCenterInfluence * 0.06 +
+        recognitionIdentityLock * 0.05
       : 1;
   const perspectiveCoreDimming =
     isMoonOrigin || isStarRiver || isTimeResonance
@@ -487,7 +498,7 @@ export function createGenesisWebGLRendererCore(
       : isStarBeastReveal
         ? 0.9 - perspectiveSubjectForeground * 0.04
         : isCompletion
-          ? 0.84 - perspectiveRecognitionStability * 0.04
+          ? 0.92 - perspectiveRecognitionStability * 0.02
           : 1;
   const random = createSeededRandom(hashReference(planReference.referenceId));
   // Geometry is intentionally stage-invariant. Density changes are expressed
@@ -1427,7 +1438,7 @@ export function createGenesisWebGLRendererCore(
               : isStarBeastReveal
                 ? 0.4
                 : isCompletion
-                  ? 0.34
+                  ? 0.44
               : 0.72;
   const core = new Mesh(
     new SphereGeometry(coreRadius, 20, 20),
@@ -1653,7 +1664,7 @@ export function createGenesisWebGLRendererCore(
       const presenceSourceCarry = isStarBeastReveal
         ? 1 - presenceBodyReveal * 0.74
         : isCompletion
-          ? 0.12
+          ? 0.2 + recognitionIdentityLock * 0.08
           : 1;
       const birthDirectionResponseRaw = isHexagramImprint
         ? Math.min(1, Math.max(0, (elapsedSeconds - 0.08) / 1.08))
@@ -1859,7 +1870,7 @@ export function createGenesisWebGLRendererCore(
             : isStarBeastReveal
               ? 0.16 + forceDensity * 0.04
               : isCompletion
-                ? 0.08
+                ? 0.1 + recognitionIdentityLock * 0.04
                 : 0.28) *
           directionRevealProgress *
           presenceSourceCarry *
@@ -2140,8 +2151,10 @@ export function createGenesisWebGLRendererCore(
               0.04);
       const presenceBreathScale = isPresenceStage
         ? 1 +
-          Math.sin(rhythmPhase * 0.72 + 0.5) *
-            (0.008 + perspectivePresenceBreath * 0.018)
+          (forceRhythmBreath - 1) *
+            (isCompletion
+              ? 0.72 + recognitionIdentityLock * 0.12
+              : 0.68)
         : 1;
       const coreObservationScale =
         (isLifeForce ? 1 + perspectiveForceRhythm * 0.05 : 1) *
