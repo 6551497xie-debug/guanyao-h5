@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createGenesisWebGLRendererCore } from "../renderers/genesisWebGLRendererCore";
+import "../styles/reality-life-entry-continuity.css";
 import type {
   GenesisProductionCanvasHostState,
 } from "../types/genesisProductionExperiencePage";
@@ -11,6 +12,21 @@ export function RealityLifeUniverseCanvas({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [rendererState, setRendererState] =
     useState<GenesisProductionCanvasHostState>("STARTING");
+  const [arrivalPhase, setArrivalPhase] = useState("IDENTITY_HOLD");
+
+  useEffect(() => {
+    setArrivalPhase("IDENTITY_HOLD");
+    const revealTimer = window.setTimeout(() => {
+      setArrivalPhase("REALITY_REVEAL");
+    }, 1500);
+    const settleTimer = window.setTimeout(() => {
+      setArrivalPhase("SETTLED");
+    }, 3000);
+    return () => {
+      window.clearTimeout(revealTimer);
+      window.clearTimeout(settleTimer);
+    };
+  }, [visualContinuity.sourceReferenceId]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -109,12 +125,31 @@ export function RealityLifeUniverseCanvas({
   }, [visualContinuity]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="gy-reality-life-universe__canvas"
-      data-reality-life-universe-renderer={rendererState}
-      data-source-reference-id={visualContinuity.sourceReferenceId}
-      aria-hidden="true"
-    />
+    <>
+      {arrivalPhase !== "SETTLED" ? (
+        <div
+          className="gy-reality-life-universe__arrival-shield"
+          data-reality-arrival-phase={arrivalPhase}
+          aria-hidden="true"
+        />
+      ) : null}
+      <canvas
+        ref={canvasRef}
+        className="gy-reality-life-universe__canvas"
+        data-reality-life-universe-renderer={rendererState}
+        data-reality-arrival-phase={arrivalPhase}
+        data-source-reference-id={visualContinuity.sourceReferenceId}
+        aria-hidden="true"
+      />
+      {arrivalPhase !== "SETTLED" ? (
+        <p
+          className="gy-reality-life-universe__arrival-copy"
+          data-reality-arrival-phase={arrivalPhase}
+          role="status"
+        >
+          同一个生命，正在进入现实。
+        </p>
+      ) : null}
+    </>
   );
 }
