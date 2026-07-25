@@ -1375,7 +1375,7 @@ export function createGenesisWebGLRendererCore(
               : isStarBeastReveal
                 ? 1.38
               : isCompletion
-                  ? 2.2
+                  ? 1.16
               : 0.94;
   const distanceStructureScale =
     (0.86 + spatialContrast * 0.14) * (0.94 + spatialEdgeDefinition * 0.06);
@@ -1428,7 +1428,7 @@ export function createGenesisWebGLRendererCore(
       color: anchorColor,
       transparent: true,
       opacity: isPresenceStage
-        ? Math.max(spineOpacity, isCompletion ? 0.5 : 0.42)
+        ? Math.max(spineOpacity, isCompletion ? 0.22 : 0.42)
         : spineOpacity,
       blending: AdditiveBlending,
     }),
@@ -1441,7 +1441,7 @@ export function createGenesisWebGLRendererCore(
       color: anchorColor,
       transparent: true,
       opacity: isPresenceStage
-        ? Math.max(branchOpacity, isCompletion ? 0.4 : 0.34)
+        ? Math.max(branchOpacity, isCompletion ? 0.12 : 0.34)
         : branchOpacity,
       blending: AdditiveBlending,
     }),
@@ -1473,29 +1473,116 @@ export function createGenesisWebGLRendererCore(
     }),
   );
   const structurePointMaterial = structurePoints.material as PointsMaterial;
-  const bodyFieldPositions = new Float32Array(spineSegments * 12);
+  const bodyFieldSpineParticleCount = Math.max(72, spineSegments * 10);
+  const bodyFieldBranchParticleCount = Math.max(56, branchCount * 8);
+  const bodyFieldParticleCount =
+    bodyFieldSpineParticleCount + bodyFieldBranchParticleCount;
+  const bodyFieldPositions = new Float32Array(bodyFieldParticleCount * 3);
+  const bodyFieldEmergence = new Float32Array(bodyFieldParticleCount);
   const bodyFieldWidth =
-    (0.05 + lifePresence.morphologicalField.enclosure * 0.08) *
-    (0.72 + perspectiveBodyCohesion * 0.8) *
+    (0.07 + lifePresence.morphologicalField.enclosure * 0.1) *
+    (0.78 + perspectiveBodyCohesion * 0.92) *
     (isPresenceStage ? 1 + (recognitionSubjectWeight - 1) * 0.8 : 1);
-  for (let index = 0; index < spineSegments; index += 1) {
-    const sourceOffset = index * 3;
-    const targetOffset = index * 12;
-    const sourceX = finalSpinePositions[sourceOffset];
-    const sourceY = finalSpinePositions[sourceOffset + 1];
-    const sourceZ = finalSpinePositions[sourceOffset + 2];
-    const offsets = [-1, -0.42, 0.42, 1];
-    offsets.forEach((offset, offsetIndex) => {
-      const offsetTarget = targetOffset + offsetIndex * 3;
-      bodyFieldPositions[offsetTarget] = sourceX + perpendicularX * bodyFieldWidth * offset;
-      bodyFieldPositions[offsetTarget + 1] =
-        sourceY + perpendicularY * bodyFieldWidth * offset;
-      bodyFieldPositions[offsetTarget + 2] = sourceZ + (offsetIndex % 2 === 0 ? 0.025 : -0.025);
-    });
+  for (let index = 0; index < bodyFieldSpineParticleCount; index += 1) {
+    const progress =
+      (index + 0.35 + random() * 0.3) / bodyFieldSpineParticleCount;
+    const scaledIndex = progress * Math.max(1, spineSegments - 1);
+    const sourceIndex = Math.min(
+      spineSegments - 1,
+      Math.floor(scaledIndex),
+    );
+    const targetIndex = Math.min(spineSegments - 1, sourceIndex + 1);
+    const interpolation = scaledIndex - sourceIndex;
+    const sourceOffset = sourceIndex * 3;
+    const targetOffset = targetIndex * 3;
+    const positionOffset = index * 3;
+    const rawLateral = random() * 2 - 1;
+    const lateral =
+      Math.sign(rawLateral) *
+      Math.pow(Math.abs(rawLateral), 1.55) *
+      bodyFieldWidth *
+      (0.86 + Math.sin(progress * Math.PI) * 0.34);
+    const axialNoise = (random() * 2 - 1) * bodyFieldWidth * 0.24;
+    bodyFieldPositions[positionOffset] =
+      finalSpinePositions[sourceOffset] +
+      (finalSpinePositions[targetOffset] -
+        finalSpinePositions[sourceOffset]) *
+        interpolation +
+      perpendicularX * lateral +
+      axisX * axialNoise;
+    bodyFieldPositions[positionOffset + 1] =
+      finalSpinePositions[sourceOffset + 1] +
+      (finalSpinePositions[targetOffset + 1] -
+        finalSpinePositions[sourceOffset + 1]) *
+        interpolation +
+      perpendicularY * lateral +
+      axisY * axialNoise;
+    bodyFieldPositions[positionOffset + 2] =
+      finalSpinePositions[sourceOffset + 2] +
+      (finalSpinePositions[targetOffset + 2] -
+        finalSpinePositions[sourceOffset + 2]) *
+        interpolation +
+      (random() * 2 - 1) * (0.045 + bodyFieldWidth * 0.28);
+    bodyFieldEmergence[index] =
+      0.04 +
+      Math.abs(progress - 0.5) * 0.46 +
+      random() * 0.12;
+  }
+  for (let index = 0; index < bodyFieldBranchParticleCount; index += 1) {
+    const particleIndex = bodyFieldSpineParticleCount + index;
+    const positionOffset = particleIndex * 3;
+    const branchIndex = index % Math.max(1, branchCount);
+    const branchOffset = branchIndex * 12;
+    const branchProgress =
+      0.12 +
+      ((Math.floor(index / Math.max(1, branchCount)) + random() * 0.62) /
+        Math.max(
+          1,
+          Math.ceil(bodyFieldBranchParticleCount / Math.max(1, branchCount)),
+        )) *
+        0.82;
+    const firstSegment = branchProgress <= 0.5;
+    const segmentProgress = firstSegment
+      ? branchProgress * 2
+      : (branchProgress - 0.5) * 2;
+    const sourceOffset = branchOffset + (firstSegment ? 0 : 6);
+    const targetOffset = branchOffset + (firstSegment ? 3 : 9);
+    const branchLateral =
+      (random() * 2 - 1) *
+      bodyFieldWidth *
+      (0.28 + Math.sin(branchProgress * Math.PI) * 0.42);
+    bodyFieldPositions[positionOffset] =
+      finalBranchPositions[sourceOffset] +
+      (finalBranchPositions[targetOffset] -
+        finalBranchPositions[sourceOffset]) *
+        segmentProgress +
+      perpendicularX * branchLateral;
+    bodyFieldPositions[positionOffset + 1] =
+      finalBranchPositions[sourceOffset + 1] +
+      (finalBranchPositions[targetOffset + 1] -
+        finalBranchPositions[sourceOffset + 1]) *
+        segmentProgress +
+      perpendicularY * branchLateral;
+    bodyFieldPositions[positionOffset + 2] =
+      finalBranchPositions[sourceOffset + 2] +
+      (finalBranchPositions[targetOffset + 2] -
+        finalBranchPositions[sourceOffset + 2]) *
+        segmentProgress +
+      (random() * 2 - 1) * (0.035 + bodyFieldWidth * 0.2);
+    bodyFieldEmergence[particleIndex] =
+      0.36 +
+      branchProgress * 0.28 +
+      (branchIndex / Math.max(1, branchCount)) * 0.08 +
+      random() * 0.08;
   }
   const finalBodyFieldPositions = bodyFieldPositions.slice();
   if (isStarBeastReveal) {
-    bodyFieldPositions.fill(0);
+    for (let index = 0; index < bodyFieldParticleCount; index += 1) {
+      const positionOffset = index * 3;
+      bodyFieldPositions[positionOffset] = 0;
+      bodyFieldPositions[positionOffset + 1] = 0;
+      bodyFieldPositions[positionOffset + 2] = 100;
+    }
   }
   const bodyFieldGeometry = new BufferGeometry();
   const bodyFieldPositionAttribute = new Float32BufferAttribute(
@@ -1510,8 +1597,8 @@ export function createGenesisWebGLRendererCore(
     color: anchorColor,
     size:
       lifePresence.stellarSkeleton.nodeScale *
-      (1.04 + (isPresenceStage ? (recognitionSubjectWeight - 1) * 0.34 : 0)) *
-      (isPresenceStage ? 1.08 : 1),
+      (0.5 + (isPresenceStage ? (recognitionSubjectWeight - 1) * 0.16 : 0)) *
+      (isCompletion ? 0.92 : 1),
     transparent: true,
     opacity: isPresenceStage
       ? 0.22 + perspectiveBodyCohesion * 0.3 +
@@ -1520,6 +1607,7 @@ export function createGenesisWebGLRendererCore(
     blending: AdditiveBlending,
     depthWrite: false,
   });
+  const bodyFieldBaseSize = bodyFieldMaterial.size;
   const bodyField = new Points(bodyFieldGeometry, bodyFieldMaterial);
   bodyField.visible = isPresenceStage;
   const pressureTracePointCount = 5;
@@ -1558,7 +1646,7 @@ export function createGenesisWebGLRendererCore(
   const presenceEnvelopeMaterial = new LineBasicMaterial({
     color: new Color(0xe7d4a1),
     transparent: true,
-    opacity: isPresenceStage ? (isCompletion ? 0.7 : 0.58) : 0,
+    opacity: isPresenceStage ? (isCompletion ? 0.075 : 0.16) : 0,
     blending: AdditiveBlending,
     depthWrite: false,
   });
@@ -1572,7 +1660,7 @@ export function createGenesisWebGLRendererCore(
   const presenceEnvelopeGlowMaterial = new LineBasicMaterial({
     color: new Color(0xe7d4a1),
     transparent: true,
-    opacity: isPresenceStage ? (isCompletion ? 0.2 : 0.14) : 0,
+    opacity: isPresenceStage ? (isCompletion ? 0.018 : 0.035) : 0,
     blending: AdditiveBlending,
     depthWrite: false,
   });
@@ -2054,29 +2142,33 @@ export function createGenesisWebGLRendererCore(
             ? tipZ
             : 100;
         }
-        for (let index = 0; index < spineSegments; index += 1) {
-          const sourceOffset = index * 3;
-          const targetOffset = index * 12;
-          const bodyReveal =
-            presenceBodyReveal * getSpineReveal(index);
-          for (let offsetIndex = 0; offsetIndex < 4; offsetIndex += 1) {
-            const offsetTarget = targetOffset + offsetIndex * 3;
-            bodyFieldPositions[offsetTarget] =
-              spinePositions[sourceOffset] +
-              (finalBodyFieldPositions[offsetTarget] -
-                finalSpinePositions[sourceOffset]) *
-                bodyReveal;
-            bodyFieldPositions[offsetTarget + 1] =
-              spinePositions[sourceOffset + 1] +
-              (finalBodyFieldPositions[offsetTarget + 1] -
-                finalSpinePositions[sourceOffset + 1]) *
-                bodyReveal;
-            bodyFieldPositions[offsetTarget + 2] =
-              spinePositions[sourceOffset + 2] +
-              (finalBodyFieldPositions[offsetTarget + 2] -
-                finalSpinePositions[sourceOffset + 2]) *
-                bodyReveal;
+        for (let index = 0; index < bodyFieldParticleCount; index += 1) {
+          const positionOffset = index * 3;
+          const emergence = bodyFieldEmergence[index];
+          const localRevealRaw = Math.min(
+            1,
+            Math.max(
+              0,
+              (presenceBodyReveal - emergence) /
+                Math.max(0.08, 1 - emergence),
+            ),
+          );
+          const localReveal =
+            localRevealRaw *
+            localRevealRaw *
+            (3 - 2 * localRevealRaw);
+          if (localReveal <= 0.002) {
+            bodyFieldPositions[positionOffset] = 0;
+            bodyFieldPositions[positionOffset + 1] = 0;
+            bodyFieldPositions[positionOffset + 2] = 100;
+            continue;
           }
+          bodyFieldPositions[positionOffset] =
+            finalBodyFieldPositions[positionOffset] * localReveal;
+          bodyFieldPositions[positionOffset + 1] =
+            finalBodyFieldPositions[positionOffset + 1] * localReveal;
+          bodyFieldPositions[positionOffset + 2] =
+            finalBodyFieldPositions[positionOffset + 2] * localReveal;
         }
         spinePositionAttribute.needsUpdate = true;
         branchPositionAttribute.needsUpdate = true;
@@ -3132,12 +3224,12 @@ export function createGenesisWebGLRendererCore(
           lifePresence.stellarSkeleton.nodeScale *
           (0.72 + pressureCoreResponse * 0.34 + pressurePulse * 0.18);
         spineMaterial.opacity =
-          Math.max(spineOpacity, isCompletion ? 0.5 : 0.42) *
+          Math.max(spineOpacity, isCompletion ? 0.22 : 0.42) *
           (1 +
             (-0.1 + pressurePulse * 0.18) *
               realityPressureEntryProgress);
         branchMaterial.opacity =
-          Math.max(branchOpacity, isCompletion ? 0.4 : 0.34) *
+          Math.max(branchOpacity, isCompletion ? 0.12 : 0.34) *
           (1 +
             (-0.12 + pressurePulse * 0.14) *
               realityPressureEntryProgress);
@@ -3151,7 +3243,7 @@ export function createGenesisWebGLRendererCore(
             : isStarBeastReveal
               ? 0.48
               : isCompletion
-                ? 0.66
+                ? 0.34
                 : isContinuityPresenceStage
                   ? 0.28
                   : 0.74;
@@ -3175,14 +3267,23 @@ export function createGenesisWebGLRendererCore(
         (0.96 +
           lifeStarCore.coreInfluence.nodeBreathCoupling * 0.12 * breath +
           (isPresenceStage ? perspectiveBodyCohesion * 0.34 : 0)) *
-        (isStarBeastReveal ? 0.64 : isPresenceStage ? 0.92 : 1);
+        (isStarBeastReveal
+          ? 0.64
+          : isCompletion
+            ? 0.68
+            : isPresenceStage
+              ? 0.92
+              : 1);
       bodyFieldMaterial.opacity = isPresenceStage
-        ? 0.22 +
-          perspectiveBodyCohesion * 0.3 +
+        ? (isCompletion ? 0.34 : 0.22) +
+          perspectiveBodyCohesion * (isCompletion ? 0.26 : 0.3) +
           (recognitionSubjectWeight - 1) * 0.18 +
           Math.sin(rhythmPhase * 0.72 + 0.5) *
             (0.008 + perspectivePresenceBreath * 0.012)
         : 0;
+      bodyFieldMaterial.size =
+        bodyFieldBaseSize *
+        (1 + (breath - 1) * (1.1 + perspectivePresenceBreath * 0.45));
       if (isStarBeastReveal) {
         spineMaterial.opacity =
           spineBaseOpacity * presenceSkeletonReveal;
@@ -3195,11 +3296,11 @@ export function createGenesisWebGLRendererCore(
         bodyFieldMaterial.opacity *= presenceBodyReveal;
       }
       presenceEnvelopeMaterial.opacity = isPresenceStage
-        ? (isCompletion ? 0.7 : 0.16) *
+        ? (isCompletion ? 0.075 : 0.16) *
           (0.94 + (breath - 1) * 1.8)
         : 0;
       presenceEnvelopeGlowMaterial.opacity = isPresenceStage
-        ? (isCompletion ? 0.2 : 0.035) *
+        ? (isCompletion ? 0.018 : 0.035) *
           (0.96 + (breath - 1) * 1.2)
         : 0;
       if (isStarBeastReveal) {
