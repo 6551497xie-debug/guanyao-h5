@@ -1861,6 +1861,7 @@ export function createGenesisWebGLRendererCore(
       (recognitionSubjectWeight - 1) * 0.08 +
       spatialFocusStrength * 0.04
     : (spatialFocusStrength - 0.5) * 0.03;
+  const structureGroupRestingDepth = structureGroup.position.z;
   structureGroup.rotation.x = isSymbolReveal
     ? fieldDirectionalFlow * 0.06
     : isHexagramImprint
@@ -2024,6 +2025,7 @@ export function createGenesisWebGLRendererCore(
   root.add(coreIdentityGroup);
 
   let frameCount = 0;
+  let recognitionResponseStartedAtMilliseconds: number | null = null;
   let disposed = false;
   let contextState: "ACTIVE" | "LOST" | "RESTORED" | "DISPOSED" =
     "ACTIVE";
@@ -2048,6 +2050,34 @@ export function createGenesisWebGLRendererCore(
         (Number.isFinite(elapsedMilliseconds)
           ? Math.max(0, elapsedMilliseconds)
           : 0) / 1000;
+      const recognitionVisualState = input.canvas
+        ?.closest("[data-genesis-presence-visual-state]")
+        ?.getAttribute("data-genesis-presence-visual-state");
+      const recognitionResponseIsActive =
+        isCompletion && recognitionVisualState === "RECOGNIZED";
+      if (
+        recognitionResponseIsActive &&
+        recognitionResponseStartedAtMilliseconds === null
+      ) {
+        recognitionResponseStartedAtMilliseconds = elapsedMilliseconds;
+      } else if (!recognitionResponseIsActive) {
+        recognitionResponseStartedAtMilliseconds = null;
+      }
+      const recognitionResponseElapsedSeconds =
+        recognitionResponseStartedAtMilliseconds === null
+          ? 0
+          : Math.max(
+              0,
+              (elapsedMilliseconds -
+                recognitionResponseStartedAtMilliseconds) /
+                1000,
+            );
+      const recognitionResponseProgress = recognitionResponseIsActive
+        ? Math.min(1, recognitionResponseElapsedSeconds / 1.05)
+        : 0;
+      const recognitionResponseWave =
+        Math.sin(recognitionResponseProgress * Math.PI) *
+        (1 - recognitionResponseProgress * 0.18);
       const universeSeconds = performance.now() / 1000;
       let coordinateFormationProgress = 1;
       let coordinateIdentityBreath = 1;
@@ -2125,6 +2155,12 @@ export function createGenesisWebGLRendererCore(
         : 0;
       const smoothReveal = (progress: number) =>
         progress * progress * (3 - 2 * progress);
+      const recognitionAttentionRaw = isCompletion
+        ? Math.min(1, Math.max(0, (elapsedSeconds - 0.62) / 1.18))
+        : 0;
+      const recognitionAttentionProgress = smoothReveal(
+        recognitionAttentionRaw,
+      );
       const presenceCoreTransmissionRaw = isStarBeastReveal
         ? Math.min(1, Math.max(0, elapsedSeconds / 0.58))
         : isCompletion
@@ -2380,10 +2416,15 @@ export function createGenesisWebGLRendererCore(
             finalY * forceExpressionPerpendicularY;
           const recoveredAxis =
             forceAxisPosition *
-            (1 + recognitionRecoveryWave * (0.72 + forceAggregation * 0.28));
+            (1 +
+              recognitionRecoveryWave * (0.72 + forceAggregation * 0.28) +
+              recognitionResponseWave *
+                (0.018 + forceAggregation * 0.014));
           const recoveredLateral =
             forceLateralPosition *
-            (1 - recognitionRecoveryWave * 0.28);
+            (1 -
+              recognitionRecoveryWave * 0.28 -
+              recognitionResponseWave * 0.008);
           bodyFieldPositions[positionOffset] =
             forceExpressionAxisX * recoveredAxis +
             forceExpressionPerpendicularX * recoveredLateral;
@@ -2392,7 +2433,9 @@ export function createGenesisWebGLRendererCore(
             forceExpressionPerpendicularY * recoveredLateral;
           bodyFieldPositions[positionOffset + 2] =
             finalBodyFieldPositions[positionOffset + 2] *
-            (1 + recognitionRecoveryWave * 0.18);
+            (1 +
+              recognitionRecoveryWave * 0.18 +
+              recognitionResponseWave * 0.025);
         }
         bodyFieldPositionAttribute.needsUpdate = true;
       }
@@ -3179,8 +3222,17 @@ export function createGenesisWebGLRendererCore(
           coordinateIdentityBreath *
           directionCoreBreath *
           forceAbsorptionScale *
-          forceRhythmBreath,
+          forceRhythmBreath *
+          (isCompletion
+            ? 1 +
+              recognitionAttentionProgress * 0.008 +
+              recognitionResponseWave * 0.018
+            : 1),
       );
+      coreIdentityGroup.position.z = isCompletion
+        ? recognitionAttentionProgress * 0.01 +
+          recognitionResponseWave * 0.016
+        : 0;
       core.scale.setScalar(1);
       // Force changes how the one core breathes; it does not project a
       // directional shield around it. Directional identity is carried by the
@@ -3322,10 +3374,25 @@ export function createGenesisWebGLRendererCore(
         structureGroup.scale.y *= 1.02 + perspectiveBodyCohesion * 0.04;
       }
       if (isCompletion) {
+        const recognitionFacingSide =
+          forceExpressionAxisX >= 0 ? 1 : -1;
         structureGroup.rotation.z *= 0.34 - perspectiveCompletionStillness * 0.08;
         structureGroup.rotation.x =
           Math.sin(elapsedSeconds * 0.14) *
           (0.004 + perspectivePresenceBreath * 0.004);
+        structureGroup.rotation.y =
+          recognitionFacingSide *
+          ((1 - recognitionAttentionProgress) * 0.105 -
+            recognitionResponseWave * 0.025);
+        structureGroup.position.z =
+          structureGroupRestingDepth +
+          recognitionAttentionProgress * 0.045 +
+          recognitionResponseWave * 0.018;
+        structureGroup.scale.multiplyScalar(
+          1 +
+            recognitionAttentionProgress * 0.018 +
+            recognitionResponseWave * 0.012,
+        );
         structureGroup.scale.x *=
           1.02 + perspectiveSubjectAxisStrength * 0.025;
         structureGroup.scale.y *= 1.01 + perspectiveBodyCohesion * 0.025;
@@ -3466,6 +3533,7 @@ export function createGenesisWebGLRendererCore(
               ? (isCompletion ? 0.34 : 0.22) +
                 perspectiveBodyCohesion * (isCompletion ? 0.26 : 0.3) +
                 (recognitionSubjectWeight - 1) * 0.18 +
+                recognitionResponseWave * 0.045 +
                 Math.sin(rhythmPhase * 0.72 + 0.5) *
                   (0.008 + perspectivePresenceBreath * 0.012)
               : 0;
@@ -3536,6 +3604,11 @@ export function createGenesisWebGLRendererCore(
       coreLight.intensity *= perspectiveCoreDimming;
       coreLight.intensity *= isPresenceStage
         ? (0.72 + recognitionCenterInfluence * 0.04) * recognitionCoreVisibility
+        : 1;
+      coreLight.intensity *= isCompletion
+        ? 1 +
+          recognitionAttentionProgress * 0.035 +
+          recognitionResponseWave * 0.08
         : 1;
       renderer.render(scene, camera);
       frameCount += 1;

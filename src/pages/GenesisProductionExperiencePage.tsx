@@ -58,6 +58,11 @@ const ENTRANCE_COORDINATE_CONTINUITY_HOLD_MS = Object.freeze({
   STAR_RIVER: 680,
 });
 
+const PRESENCE_RECOGNITION_TIMING_MS = Object.freeze({
+  QUIET_HOLD: 1_250,
+  RESPONSE_HOLD: 1_050,
+});
+
 export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
   GenesisProductionExperiencePageBoundary = Object.freeze({
     productionExperiencePageOnly: true,
@@ -200,6 +205,13 @@ export function GenesisProductionExperiencePage({
   );
   const [recognitionRealityResult, setRecognitionRealityResult] =
     useState<GenesisProductionRecognitionRealityResult | null>(null);
+  const [recognitionPromptReady, setRecognitionPromptReady] = useState(false);
+  const [recognitionResponseSettled, setRecognitionResponseSettled] =
+    useState(false);
+  const recognitionInteractionAvailability =
+    recognitionRealityResult?.status === "READY"
+      ? recognitionRealityResult.session.interactionAvailability
+      : "NONE";
   const presenceRecognitionPhase: GenesisPresenceRecognitionPhase =
     recognitionRealityResult?.status === "READY"
       ? recognitionRealityResult.session.recognitionConfirmed
@@ -254,6 +266,8 @@ export function GenesisProductionExperiencePage({
     clearGenesisRealityPresenceContinuityContext();
     setRecognitionRealityResult(null);
     setTimeDeliveryResponse(null);
+    setRecognitionPromptReady(false);
+    setRecognitionResponseSettled(false);
   }, [routeAuthorization.sourceReferenceId]);
 
   useEffect(() => {
@@ -270,6 +284,39 @@ export function GenesisProductionExperiencePage({
       ),
     );
   }, [productionRuntimeResult, recognitionRealityResult]);
+
+  useEffect(() => {
+    if (
+      productionRuntimeResult?.status !== "READY" ||
+      productionRuntimeResult.session.currentStage !== "COMPLETION" ||
+      recognitionInteractionAvailability !== "RECOGNITION_CONFIRM"
+    ) {
+      setRecognitionPromptReady(false);
+      return undefined;
+    }
+    const timeout = window.setTimeout(() => {
+      setRecognitionPromptReady(true);
+    }, PRESENCE_RECOGNITION_TIMING_MS.QUIET_HOLD);
+    return () => window.clearTimeout(timeout);
+  }, [
+    productionRuntimeResult,
+    recognitionInteractionAvailability,
+    routeAuthorization.sourceReferenceId,
+  ]);
+
+  useEffect(() => {
+    if (recognitionInteractionAvailability !== "ENTER_REALITY") {
+      setRecognitionResponseSettled(false);
+      return undefined;
+    }
+    const timeout = window.setTimeout(() => {
+      setRecognitionResponseSettled(true);
+    }, PRESENCE_RECOGNITION_TIMING_MS.RESPONSE_HOLD);
+    return () => window.clearTimeout(timeout);
+  }, [
+    recognitionInteractionAvailability,
+    routeAuthorization.sourceReferenceId,
+  ]);
 
   useEffect(() => {
     if (
@@ -512,6 +559,8 @@ export function GenesisProductionExperiencePage({
     ) {
       return;
     }
+    setRecognitionPromptReady(false);
+    setRecognitionResponseSettled(false);
     const recognizedRealityResult =
       advanceGenesisProductionRecognitionRealityEntry(
         recognitionRealityResult.session,
@@ -751,6 +800,9 @@ export function GenesisProductionExperiencePage({
       presenceVisualRealizationResult.realization.visualPresenceState !==
         "DORMANT" &&
       (presenceVisualRealizationResult.realization.visualPresenceState !==
+        "PRESENT" ||
+        recognitionPromptReady) &&
+      (presenceVisualRealizationResult.realization.visualPresenceState !==
         "APPROACHING" ||
         presenceApproachContinuityResult?.status === "READY") ? (
         <p className="gy-genesis-production-experience__presence-response" role="status">
@@ -771,7 +823,8 @@ export function GenesisProductionExperiencePage({
       ) : null}
       {recognitionRealityResult?.status === "READY" &&
       recognitionRealityResult.session.interactionAvailability ===
-        "RECOGNITION_CONFIRM" ? (
+        "RECOGNITION_CONFIRM" &&
+      recognitionPromptReady ? (
         <button
           type="button"
           className="gy-genesis-production-experience__completion-action"
@@ -784,7 +837,8 @@ export function GenesisProductionExperiencePage({
       {recognitionRealityResult?.status === "READY" &&
       recognitionRealityResult.session.interactionAvailability ===
         "ENTER_REALITY" &&
-      presenceRecognitionContinuityResult?.status === "READY" ? (
+      presenceRecognitionContinuityResult?.status === "READY" &&
+      recognitionResponseSettled ? (
         <button
           type="button"
           className="gy-genesis-production-experience__completion-action"
@@ -797,7 +851,8 @@ export function GenesisProductionExperiencePage({
       ) : null}
       {recognitionRealityResult?.status === "READY" &&
       recognitionRealityResult.session.realityEntryEligibility ===
-        "ELIGIBLE" ? (
+        "ELIGIBLE" &&
+      recognitionResponseSettled ? (
         <p
           className="gy-genesis-production-experience__reality-ready"
           role="status"
