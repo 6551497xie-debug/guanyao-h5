@@ -1298,20 +1298,62 @@ export function createGenesisWebGLRendererCore(
     });
   }
 
+  // The presence is not swapped in as a finished constellation. Keep one
+  // immutable body plan, then let the reveal stage grow that plan outward
+  // from the same Life Core that carried time, coordinate, direction and
+  // force. Completion starts from the already formed plan.
+  const finalSpinePositions = spinePositions.slice();
+  const finalNodePositions = nodePositions.slice();
+  const finalBranchPositions = branchPositions.slice();
+  let presenceCoreSpineIndex = 0;
+  let presenceCoreSpineDistance = Number.POSITIVE_INFINITY;
+  for (let index = 0; index < spineSegments; index += 1) {
+    const offset = index * 3;
+    const distance =
+      finalSpinePositions[offset] * finalSpinePositions[offset] +
+      finalSpinePositions[offset + 1] * finalSpinePositions[offset + 1];
+    if (distance < presenceCoreSpineDistance) {
+      presenceCoreSpineDistance = distance;
+      presenceCoreSpineIndex = index;
+    }
+  }
+  const presenceSpineReach = Math.max(
+    1,
+    presenceCoreSpineIndex,
+    spineSegments - 1 - presenceCoreSpineIndex,
+  );
+  if (isStarBeastReveal) {
+    spinePositions.fill(0);
+    nodePositions.fill(0);
+    branchPositions.fill(0);
+  }
+
   const spineGeometry = new BufferGeometry();
+  const spinePositionAttribute = new Float32BufferAttribute(
+    spinePositions,
+    3,
+  );
   spineGeometry.setAttribute(
     "position",
-    new Float32BufferAttribute(spinePositions, 3),
+    spinePositionAttribute,
   );
   const branchGeometry = new BufferGeometry();
+  const branchPositionAttribute = new Float32BufferAttribute(
+    branchPositions,
+    3,
+  );
   branchGeometry.setAttribute(
     "position",
-    new Float32BufferAttribute(branchPositions, 3),
+    branchPositionAttribute,
   );
   const nodeGeometry = new BufferGeometry();
+  const nodePositionAttribute = new Float32BufferAttribute(
+    nodePositions,
+    3,
+  );
   nodeGeometry.setAttribute(
     "position",
-    new Float32BufferAttribute(nodePositions, 3),
+    nodePositionAttribute,
   );
   const anchorColor = new Color().setHSL(
     sceneProjection.lifeCore.hue,
@@ -1331,7 +1373,7 @@ export function createGenesisWebGLRendererCore(
             : isLifeForce
               ? 1.14
               : isStarBeastReveal
-                ? 2
+                ? 1.38
               : isCompletion
                   ? 2.2
               : 0.94;
@@ -1439,9 +1481,9 @@ export function createGenesisWebGLRendererCore(
   for (let index = 0; index < spineSegments; index += 1) {
     const sourceOffset = index * 3;
     const targetOffset = index * 12;
-    const sourceX = spinePositions[sourceOffset];
-    const sourceY = spinePositions[sourceOffset + 1];
-    const sourceZ = spinePositions[sourceOffset + 2];
+    const sourceX = finalSpinePositions[sourceOffset];
+    const sourceY = finalSpinePositions[sourceOffset + 1];
+    const sourceZ = finalSpinePositions[sourceOffset + 2];
     const offsets = [-1, -0.42, 0.42, 1];
     offsets.forEach((offset, offsetIndex) => {
       const offsetTarget = targetOffset + offsetIndex * 3;
@@ -1451,10 +1493,18 @@ export function createGenesisWebGLRendererCore(
       bodyFieldPositions[offsetTarget + 2] = sourceZ + (offsetIndex % 2 === 0 ? 0.025 : -0.025);
     });
   }
+  const finalBodyFieldPositions = bodyFieldPositions.slice();
+  if (isStarBeastReveal) {
+    bodyFieldPositions.fill(0);
+  }
   const bodyFieldGeometry = new BufferGeometry();
+  const bodyFieldPositionAttribute = new Float32BufferAttribute(
+    bodyFieldPositions,
+    3,
+  );
   bodyFieldGeometry.setAttribute(
     "position",
-    new Float32BufferAttribute(bodyFieldPositions, 3),
+    bodyFieldPositionAttribute,
   );
   const bodyFieldMaterial = new PointsMaterial({
     color: anchorColor,
@@ -1849,10 +1899,190 @@ export function createGenesisWebGLRendererCore(
         presenceEnvelopeRevealRaw *
         (3 - 2 * presenceEnvelopeRevealRaw);
       const presenceSourceCarry = isStarBeastReveal
-        ? 1 - presenceBodyReveal * 0.74
+        ? 1 - presenceSkeletonReveal * 0.86
         : isCompletion
           ? 0.2 + recognitionIdentityLock * 0.08
           : 1;
+      if (isStarBeastReveal) {
+        // Grow the stellar skeleton from the core instead of cross-fading a
+        // finished network over it. The spine appears in both directions
+        // first; each branch can only grow after its own joint exists.
+        const getSpineReveal = (index: number) => {
+          const distanceFromCore =
+            Math.abs(index - presenceCoreSpineIndex) / presenceSpineReach;
+          const rawReveal = Math.min(
+            1,
+            Math.max(
+              0,
+              (presenceSkeletonReveal - distanceFromCore * 0.68) / 0.32,
+            ),
+          );
+          return rawReveal * rawReveal * (3 - 2 * rawReveal);
+        };
+        const negativeSpineReach = Math.max(1, presenceCoreSpineIndex);
+        const positiveSpineReach = Math.max(
+          1,
+          spineSegments - 1 - presenceCoreSpineIndex,
+        );
+        for (let index = 0; index < spineSegments; index += 1) {
+          const offset = index * 3;
+          const direction = index < presenceCoreSpineIndex ? -1 : 1;
+          const distanceFromCore = Math.abs(
+            index - presenceCoreSpineIndex,
+          );
+          const sideReach =
+            direction < 0 ? negativeSpineReach : positiveSpineReach;
+          const visibleDistance = presenceSkeletonReveal * sideReach;
+          const clampedDistance = Math.min(
+            distanceFromCore,
+            visibleDistance,
+          );
+          const sourceDistance = Math.floor(clampedDistance);
+          const targetDistance = Math.min(
+            sideReach,
+            Math.ceil(clampedDistance),
+          );
+          const interpolation = clampedDistance - sourceDistance;
+          const sourceIndex =
+            presenceCoreSpineIndex + direction * sourceDistance;
+          const targetIndex =
+            presenceCoreSpineIndex + direction * targetDistance;
+          const sourceOffset = sourceIndex * 3;
+          const targetOffset = targetIndex * 3;
+          spinePositions[offset] =
+            finalSpinePositions[sourceOffset] +
+            (finalSpinePositions[targetOffset] -
+              finalSpinePositions[sourceOffset]) *
+              interpolation;
+          spinePositions[offset + 1] =
+            finalSpinePositions[sourceOffset + 1] +
+            (finalSpinePositions[targetOffset + 1] -
+              finalSpinePositions[sourceOffset + 1]) *
+              interpolation;
+          spinePositions[offset + 2] =
+            finalSpinePositions[sourceOffset + 2] +
+            (finalSpinePositions[targetOffset + 2] -
+              finalSpinePositions[sourceOffset + 2]) *
+              interpolation;
+          const jointIsVisible =
+            distanceFromCore <= visibleDistance + 0.001;
+          nodePositions[offset] = jointIsVisible
+            ? spinePositions[offset]
+            : 0;
+          nodePositions[offset + 1] = jointIsVisible
+            ? spinePositions[offset + 1]
+            : 0;
+          nodePositions[offset + 2] = jointIsVisible
+            ? spinePositions[offset + 2]
+            : 100;
+        }
+        for (let index = 0; index < branchCount; index += 1) {
+          const originIndex =
+            Math.floor(
+              index *
+                lifePresence.morphologicalField.nodeDistributionBias,
+            ) % Math.max(1, spineSegments - 1);
+          const originOffset = originIndex * 3;
+          const branchOffset = index * 12;
+          const nodeOffset = (spineSegments + index) * 3;
+          const branchWake =
+            0.3 + (index % 4) * 0.055 + Math.floor(index / 4) * 0.025;
+          const branchRevealRaw = Math.min(
+            1,
+            Math.max(
+              0,
+              (presenceSkeletonRevealRaw - branchWake) /
+                Math.max(0.24, 1 - branchWake),
+            ),
+          );
+          const branchReveal =
+            branchRevealRaw *
+            branchRevealRaw *
+            (3 - 2 * branchRevealRaw) *
+            getSpineReveal(originIndex);
+          const originX = spinePositions[originOffset];
+          const originY = spinePositions[originOffset + 1];
+          const originZ = spinePositions[originOffset + 2];
+          const finalOriginX = finalBranchPositions[branchOffset];
+          const finalOriginY = finalBranchPositions[branchOffset + 1];
+          const finalOriginZ = finalBranchPositions[branchOffset + 2];
+          const midX =
+            originX +
+            (finalBranchPositions[branchOffset + 3] - finalOriginX) *
+              branchReveal;
+          const midY =
+            originY +
+            (finalBranchPositions[branchOffset + 4] - finalOriginY) *
+              branchReveal;
+          const midZ =
+            originZ +
+            (finalBranchPositions[branchOffset + 5] - finalOriginZ) *
+              branchReveal;
+          const tipX =
+            originX +
+            (finalNodePositions[nodeOffset] - finalOriginX) *
+              branchReveal;
+          const tipY =
+            originY +
+            (finalNodePositions[nodeOffset + 1] - finalOriginY) *
+              branchReveal;
+          const tipZ =
+            originZ +
+            (finalNodePositions[nodeOffset + 2] - finalOriginZ) *
+              branchReveal;
+          branchPositions.set(
+            [
+              originX,
+              originY,
+              originZ,
+              midX,
+              midY,
+              midZ,
+              midX,
+              midY,
+              midZ,
+              tipX,
+              tipY,
+              tipZ,
+            ],
+            branchOffset,
+          );
+          const branchJointIsVisible = branchReveal > 0.035;
+          nodePositions[nodeOffset] = branchJointIsVisible ? tipX : 0;
+          nodePositions[nodeOffset + 1] = branchJointIsVisible ? tipY : 0;
+          nodePositions[nodeOffset + 2] = branchJointIsVisible
+            ? tipZ
+            : 100;
+        }
+        for (let index = 0; index < spineSegments; index += 1) {
+          const sourceOffset = index * 3;
+          const targetOffset = index * 12;
+          const bodyReveal =
+            presenceBodyReveal * getSpineReveal(index);
+          for (let offsetIndex = 0; offsetIndex < 4; offsetIndex += 1) {
+            const offsetTarget = targetOffset + offsetIndex * 3;
+            bodyFieldPositions[offsetTarget] =
+              spinePositions[sourceOffset] +
+              (finalBodyFieldPositions[offsetTarget] -
+                finalSpinePositions[sourceOffset]) *
+                bodyReveal;
+            bodyFieldPositions[offsetTarget + 1] =
+              spinePositions[sourceOffset + 1] +
+              (finalBodyFieldPositions[offsetTarget + 1] -
+                finalSpinePositions[sourceOffset + 1]) *
+                bodyReveal;
+            bodyFieldPositions[offsetTarget + 2] =
+              spinePositions[sourceOffset + 2] +
+              (finalBodyFieldPositions[offsetTarget + 2] -
+                finalSpinePositions[sourceOffset + 2]) *
+                bodyReveal;
+          }
+        }
+        spinePositionAttribute.needsUpdate = true;
+        branchPositionAttribute.needsUpdate = true;
+        nodePositionAttribute.needsUpdate = true;
+        bodyFieldPositionAttribute.needsUpdate = true;
+      }
       const birthDirectionResponseRaw = isHexagramImprint
         ? Math.min(1, Math.max(0, (elapsedSeconds - 0.08) / 1.08))
         : 1;
@@ -2167,7 +2397,7 @@ export function createGenesisWebGLRendererCore(
       const forceRhythmStagePresence = isLifeForce
         ? forceRhythmRevealProgress
         : isStarBeastReveal
-          ? Math.max(0.18, 1 - presenceBodyReveal * 0.78)
+          ? Math.max(0.06, 1 - presenceSkeletonReveal * 0.88)
           : isCompletion
             ? 0.14 + recognitionIdentityLock * 0.04
             : 0;
@@ -2660,19 +2890,28 @@ export function createGenesisWebGLRendererCore(
         1 +
         forceExpressionRadialBias *
           forceRhythmRevealProgress *
-          0.68;
+          0.68 *
+          (isStarBeastReveal
+            ? Math.max(0.22, 1 - presenceSkeletonReveal * 0.78)
+            : 1);
       const forceHaloScaleX =
         forceRadialPresenceScale *
         (1 +
           (forceExpressionAspectRatio - 1) *
             forceRhythmRevealProgress *
-            0.92);
+            0.92 *
+            (isStarBeastReveal
+              ? Math.max(0.18, 1 - presenceSkeletonReveal * 0.82)
+              : 1));
       const forceHaloScaleY =
         forceRadialPresenceScale *
         (1 -
           (forceExpressionAspectRatio - 1) *
             forceRhythmRevealProgress *
-            0.34);
+            0.34 *
+            (isStarBeastReveal
+              ? Math.max(0.18, 1 - presenceSkeletonReveal * 0.82)
+              : 1));
       coreSurface.rotation.z = forceExpressionAxisAngle;
       coreSurface.scale.set(
         1 + (forceHaloScaleX - 1) * 0.46,
@@ -2910,7 +3149,7 @@ export function createGenesisWebGLRendererCore(
           : isLifeForce
             ? 0.92
             : isStarBeastReveal
-              ? 0.72
+              ? 0.48
               : isCompletion
                 ? 0.66
                 : isContinuityPresenceStage
@@ -2928,13 +3167,15 @@ export function createGenesisWebGLRendererCore(
           pressureBoundaryLoad *
             realityPressureEntryProgress *
             0.06) *
-        (isStarBeastReveal ? presenceCoreTransmission : 1);
+        (isStarBeastReveal
+          ? presenceCoreTransmission * presenceSkeletonReveal
+          : 1);
       structurePointMaterial.size =
         lifePresence.stellarSkeleton.nodeScale *
         (0.96 +
           lifeStarCore.coreInfluence.nodeBreathCoupling * 0.12 * breath +
           (isPresenceStage ? perspectiveBodyCohesion * 0.34 : 0)) *
-        (isPresenceStage ? 0.92 : 1);
+        (isStarBeastReveal ? 0.64 : isPresenceStage ? 0.92 : 1);
       bodyFieldMaterial.opacity = isPresenceStage
         ? 0.22 +
           perspectiveBodyCohesion * 0.3 +
@@ -2954,11 +3195,11 @@ export function createGenesisWebGLRendererCore(
         bodyFieldMaterial.opacity *= presenceBodyReveal;
       }
       presenceEnvelopeMaterial.opacity = isPresenceStage
-        ? (isCompletion ? 0.7 : 0.58) *
+        ? (isCompletion ? 0.7 : 0.16) *
           (0.94 + (breath - 1) * 1.8)
         : 0;
       presenceEnvelopeGlowMaterial.opacity = isPresenceStage
-        ? (isCompletion ? 0.2 : 0.14) *
+        ? (isCompletion ? 0.2 : 0.035) *
           (0.96 + (breath - 1) * 1.2)
         : 0;
       if (isStarBeastReveal) {
