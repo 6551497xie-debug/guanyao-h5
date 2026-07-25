@@ -12,8 +12,11 @@ import { bridgeRealityRouteDeliveryOrchestration } from "../services/realityRout
 import { resolveRealityProductionPressureHostInput } from "../services/realityProductionPressureHostInputContract";
 import { createRealityPressureSeedContinuationContext } from "../services/realityPressureSeedContinuationContext";
 import { readGenesisRealityPresenceContinuityContext } from "../services/genesisRealityPresenceContinuityBridge";
+import { writeSelectedPressureSeedContext } from "../services/guanyaoSelectedPressureSeedContextPersistenceAdapter";
+import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import type { RealityProductionRouteEntryBoundary } from "../types/realityProductionRouteEntry";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
+import type { DynamicsHandoffState } from "../types/gravityRuntimeInput";
 
 export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
   RealityProductionRouteEntryBoundary = Object.freeze({
@@ -40,7 +43,8 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
     noRendererInvocation: true,
     noSourceRecalculation: true,
     noStorageRead: true,
-    noStorageWrite: true,
+    selectedPressureSeedHandoffWriteOnly: true,
+    explicitDynamicsNavigationOnly: true,
     noGenesisNavigationMutation: true,
     noPresenceMutation: true,
   });
@@ -175,6 +179,20 @@ export function RealityProductionRouteEntry() {
     );
   }
 
+  const continueToGravity: RealityProductionHostProps["onContinueToGravity"] =
+    (selectedPressureSeedContext) => {
+      const handoffState: DynamicsHandoffState &
+        Readonly<{
+          visualContinuity: RealityProductionHostProps["visualContinuity"];
+        }> = Object.freeze({
+        selectedPressureSeedContext: writeSelectedPressureSeedContext(
+          selectedPressureSeedContext,
+        ),
+        visualContinuity,
+      });
+      navigate(GUANYAO_ROUTES.dynamics, { state: handoffState });
+    };
+
   return (
     <RealityProductionHost
       routeAuthorization={authorization}
@@ -182,6 +200,7 @@ export function RealityProductionRouteEntry() {
       pressureSeedContinuationContext={pressureSeedContinuationResult.context}
       genesisPresenceContinuityContext={genesisPresenceContinuityContext}
       visualContinuity={visualContinuity}
+      onContinueToGravity={continueToGravity}
     />
   );
 }

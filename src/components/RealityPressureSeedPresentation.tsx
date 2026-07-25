@@ -14,6 +14,7 @@ export const REALITY_PRESSURE_SEED_PRESENTATION_BOUNDARY:
     explicitRecognitionCallbackOnly: true,
     explicitNextBundleCallbackOnly: true,
     explicitPauseCallbackOnly: true,
+    explicitGravityContinuationCallbackOnly: true,
     sourceReferenceReadOnly: true,
     noFixtureSource: true,
     noPrototypeAuthorization: true,
@@ -64,6 +65,7 @@ export function RealityPressureSeedPresentation({
   onRecognize,
   onRequestNextBundle,
   onPause,
+  onContinueToGravity,
 }: RealityPressureSeedPresentationProps) {
   const recognitionAvailable = session.availableEvents.includes(
     "PRESSURE_SEED_RECOGNIZE",
@@ -136,9 +138,16 @@ export function RealityPressureSeedPresentation({
         </button>
       ) : null}
       {session.gravityReadiness === "READY" ? (
-        <p className="gy-p36__gravity-ready" role="status">
-          你已经看见这股力量，先停在这里。
-        </p>
+        <div className="gy-p36__gravity-ready">
+          <p role="status">你已经看见它。现在，观察你的生命如何回应。</p>
+          <button
+            type="button"
+            data-interaction="CONTINUE_TO_GRAVITY"
+            onClick={onContinueToGravity}
+          >
+            看看这股力量如何经过我
+          </button>
+        </div>
       ) : null}
     </section>
   );

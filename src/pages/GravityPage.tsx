@@ -2,14 +2,19 @@
  * GravityPage = passive UI visualization layer for presenting existing causal state transitions
  * without any influence on engine or data flow.
  */
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { useLocation } from "react-router-dom";
-import { GuanyaoText } from "../components/visual/GuanyaoText";
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   runCosmicBotanicsRuntimeEngine,
   type CosmicPetalState,
-  type StarbeastFeedback,
-  type StarFlowerGrowthState,
 } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
@@ -24,13 +29,12 @@ import {
 } from "../services/guanyaoDynamicsInputReadinessAdapter";
 import { resolveCurrentHexagramFormation } from "../services/guanyaoCurrentHexagramFormationAdapter";
 import { resolveDynamicsChangeExperienceRuntime } from "../services/guanyaoDynamicsChangeExperienceRuntimeAdapter";
-import { CHANGE_EXPERIENCE_FIRST_RESPONSE_LABEL } from "../services/changeExperiencePresentationAdapter";
 import { resolveDynamicsMotherPresentation } from "../services/guanyaoDynamicsMotherPresentationAdapter";
 import { resolveDynamicsExperienceState } from "../services/guanyaoDynamicsExperienceStateAdapter";
 import { resolveDynamicsExperienceReadinessPresentation } from "../services/guanyaoDynamicsExperienceReadinessPresentationAdapter";
 import { resolveDynamicsValueFlow } from "../services/guanyaoDynamicsValueFlowAdapter";
 import { resolveDynamicsVisualState } from "../services/guanyaoDynamicsVisualStateAdapter";
-import { resolveDynamicsBaiHuCoreStars } from "../services/guanyaoDynamicsBaiHuCoreStarsAdapter";
+import { readRealUserGenesisVisualSourceContext } from "../services/realUserGenesisVisualSourceContext";
 import {
   DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS,
   resolveDynamicsSixSpaceProgress,
@@ -46,7 +50,7 @@ import { resolveDynamicsPersonalityRingPresentation } from "../services/guanyaoD
 import type { CurrentHexagramFormationResult } from "../types/currentHexagramFormation";
 import type { SingleModelRevisionAction } from "../types/dynamicsRevisionAction";
 import type { DynamicsExperienceState as ExperienceState } from "../types/dynamicsExperiencePresentation";
-import type { DynamicsBaiHuCoreStar as RuntimeCoreStar } from "../types/dynamicsBaiHuCoreStars";
+import type { RealLifeVisualSource } from "../types/realLifeVisualSourceAdapter";
 import type { DynamicsVisualState as VisualState } from "../types/dynamicsVisualState";
 import type { SelectedPressureSeedContext } from "../types/primaryPetal";
 import {
@@ -57,11 +61,27 @@ import {
   type SpatialIntent,
 } from "../runtime/guanyaoRuntimeEngine";
 import type { ChangeExperiencePresentation } from "../types/changeExperience";
-import type { DynamicsInputContext } from "../types/gravityRuntimeInput";
+import type {
+  DynamicsHandoffState,
+  DynamicsInputContext,
+} from "../types/gravityRuntimeInput";
+import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
+import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
+import { RealityGravityInertiaField } from "../components/RealityGravityInertiaField";
+import {
+  LIFE_UNIVERSE_CORE_IDENTITY,
+  resolveLifeUniverseCrystalImprintGeometry,
+} from "../renderers/lifeUniverseStarField";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
+import "../styles/reality-pressure-presentation.css";
 
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
 const LEGACY_DYNAMICS_FLOW_ISOLATED = true;
+const RealityLifeUniverseCanvas = lazy(() =>
+  import("../components/RealityLifeUniverseCanvas").then((module) => ({
+    default: module.RealityLifeUniverseCanvas,
+  })),
+);
 
 function readDevPrimaryPetalFixture(): SelectedPressureSeedContext | null {
   const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
@@ -84,20 +104,11 @@ function readDevExperienceSmokeFixture(): string | null {
   return new URLSearchParams(window.location.search).get("__experienceSmoke");
 }
 
-const SIX_SPACE_DISPLAY_NAME: Record<SixSpaceId, string> = {
-  body: "身体空间",
-  emotion: "情绪空间",
-  thought: "思维空间",
-  action: "行为空间",
-  memory: "记忆空间",
-  goal: "动机空间",
-};
-
 const SIX_SPACE_SHORT_LABELS: Record<SixSpaceId, string> = {
   body: "身体",
   emotion: "情绪",
   thought: "思维",
-  action: "行为",
+  action: "行动",
   memory: "记忆",
   goal: "动机",
 };
@@ -115,6 +126,22 @@ function createNodeRunningExecutionSnapshot(context: SelectedPressureSeedContext
   });
 }
 
+function completeCurrentSpaceWithExistingEngine(
+  snapshot: ExecutionSnapshot,
+  context: SpatialIntent["payload"],
+) {
+  let observedSnapshot = snapshot;
+
+  for (let nodeStep = observedSnapshot.node.current; nodeStep < 6; nodeStep += 1) {
+    observedSnapshot = GuanyaoRuntimeEngine.run(observedSnapshot, {
+      type: "CORE_STAR_BLOOM",
+      payload: context,
+    });
+  }
+
+  return GuanyaoRuntimeEngine.advance(observedSnapshot);
+}
+
 type CosmicNarrativePhase = "field_intro" | "seed_visible" | "beast_guide" | "node_active" | "node_complete";
 
 type ProductRuntimeDefinition = Readonly<{
@@ -128,28 +155,28 @@ type ProductRuntimeDefinition = Readonly<{
 
 const GUANYAO_PRODUCT_RUNTIME_DEFINITION = Object.freeze({
   officialDefinition:
-    "观爻陪你把当前压力放进六个空间里看一遍，并在新的回应确认后留下变化印记。",
-  threeSecondModel: "当前压力 → 六个空间 → 看见反应",
+    "观爻让你看见同一个生命在现实反复作用下，如何形成惯性，并为新的回应留下间隙。",
+  threeSecondModel: "现实反复作用 → 生命重复回应 → 惯性留下痕迹",
   experienceLoop: Object.freeze([
-    "确认当前压力",
-    "进入六个空间",
-    "看见当下回应",
-    "走完六层",
-    "留下变化印记",
+    "现实压力再次抵达",
+    "同一种回应重新启动",
+    "熟悉路径留下痕迹",
+    "从六个入口观察惯性",
+    "为新的回应留出间隙",
   ]),
   onboardingFlow: Object.freeze([
-    "确认当前压力",
-    "进入六个空间",
-    "从不同空间看见回应",
-    "完成后留下变化印记",
+    "认出当前压力",
+    "看见重复回应",
+    "从一个入口观察",
+    "逐渐认出熟悉路径",
   ]),
   userPerception: Object.freeze([
-    "当前压力入口",
-    "六个空间",
-    "从不同空间看见当下回应",
-    "变化留痕过程",
+    "同一个生命仍在",
+    "现实反复经过",
+    "旧回应留下浅痕",
+    "惯性可以被看见而不是被定命",
   ]),
-  positioning: "当前压力下的自我改变体验",
+  positioning: "现实反复作用下的生命惯性觉察",
 } satisfies ProductRuntimeDefinition);
 
 function CosmicPageStarField() {
@@ -189,29 +216,6 @@ function CosmicFieldKeyframes() {
         0%, 100% { transform: translateX(-2px); opacity: 0.42; }
         50% { transform: translateX(4px); opacity: 0.78; }
       }
-      @keyframes gy-petal-bloom {
-        0% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(0.92); opacity: 0.62; }
-        45% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(1.08); opacity: 1; }
-        100% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(1); opacity: 0.88; }
-      }
-      @keyframes gy-petal-float {
-        0%, 100% { transform: translate(-50%, -50%) rotate(var(--petal-rotate)) scale(1); }
-        50% { transform: translate(-50%, calc(-50% - 4px)) rotate(var(--petal-rotate)) scale(1.03); }
-      }
-      @keyframes gy-pollen-rise {
-        0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
-        25% { opacity: 1; }
-        100% { transform: translate(calc(-50% + var(--pollen-x)), calc(-50% + var(--pollen-y))) scale(1); opacity: 0; }
-      }
-      @keyframes gy-node-pulse {
-        0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.82; }
-        50% { transform: translate(-50%, -50%) scale(1.16); opacity: 1; }
-      }
-      @keyframes gy-starbeast-ignite {
-        0% { opacity: 0.18; transform: translate(-50%, -50%) scale(0.72); }
-        55% { opacity: 1; transform: translate(-50%, -50%) scale(1.18); }
-        100% { opacity: 0.86; transform: translate(-50%, -50%) scale(1); }
-      }
       @keyframes gy-starbeast-line {
         0% { stroke-dashoffset: 220; opacity: 0; }
         100% { stroke-dashoffset: 0; opacity: 1; }
@@ -228,13 +232,46 @@ function CosmicFieldKeyframes() {
         0%, 100% { transform: translate(-50%, -50%) scale(0.82); opacity: 0.36; }
         50% { transform: translate(calc(-50% + 2px), calc(-50% - 2px)) scale(1.08); opacity: 0.86; }
       }
-      @keyframes gy-starbeast-inner-breathe {
-        0%, 100% { transform: translate(-50%, -50%) scale(0.72); opacity: 0.24; }
-        50% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.72; }
+      @keyframes gy-near-mansion-arrival {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.28); }
+        62% { opacity: 1; transform: translate(-50%, -50%) scale(calc(var(--near-mansion-depth, 1) + 0.16)); }
+        100% { opacity: 0.92; transform: translate(-50%, -50%) scale(var(--near-mansion-depth, 1)); }
+      }
+      @keyframes gy-near-mansion-breathe {
+        0%, 100% { opacity: 0.74; }
+        50% { opacity: 1; }
+      }
+      @keyframes gy-near-mansion-invitation {
+        0%, 70%, 100% { transform: translate(-50%, -50%) scale(0.78); opacity: 0; }
+        18% { opacity: 0.3; }
+        42% { transform: translate(-50%, -50%) scale(1.48); opacity: 0; }
+      }
+      [data-life-core-hit-area="TRANSPARENT"]:focus { outline: none; }
+      [data-life-core-hit-area="TRANSPARENT"]:focus-visible {
+        outline: none;
+        background: radial-gradient(
+          circle at 50% 50%,
+          transparent 0 18px,
+          rgba(255,247,220,0.46) 19px,
+          transparent 20px
+        );
+      }
+      @keyframes gy-crystal-imprint {
+        0% { stroke-dashoffset: 140; opacity: 0; }
+        42% { opacity: 1; }
+        100% { stroke-dashoffset: 0; opacity: 0.92; }
+      }
+      @keyframes gy-crystal-imprint-pulse {
+        0%, 100% { opacity: 0.52; transform: scale(0.9); }
+        50% { opacity: 1; transform: scale(1.16); }
       }
       @keyframes gy-copy-fade-in {
         from { opacity: 0; transform: translateY(6px); }
         to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes gy-gravity-continuity-arrival {
+        0%, 64% { opacity: 1; }
+        100% { opacity: 0; }
       }
     `}</style>
   );
@@ -359,199 +396,89 @@ function NodeProgressionPanel({
   visible: boolean;
   toneColor: string;
   activeNode: {
-    title: string;
     text: string;
     dimensionInsight?: string;
     dimensionUnderstanding?: string;
-    actionText: string;
   };
 }) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: 28,
-        right: 28,
-        bottom: 16,
-        gap: 5,
-        pointerEvents: "none",
-        padding: "10px 12px 9px",
-        borderRadius: 18,
-        background: "linear-gradient(180deg, rgba(5,6,7,0.34), rgba(5,6,7,0.1))",
-        border: `1px solid rgba(${toneColor},0.1)`,
-        backdropFilter: "blur(5px)",
-        boxShadow: `0 0 22px rgba(${toneColor},0.05)`,
-        display: visible ? "grid" : "none",
-        animation: "gy-copy-fade-in 360ms ease both",
-      }}
-    >
-      <GuanyaoText size="eyebrow" tone="gold">
-        {activeNode.title}
-      </GuanyaoText>
-      <p style={{ margin: 0, whiteSpace: "pre-line", color: "rgba(245,245,245,0.64)", fontSize: 11.5, lineHeight: 1.46 }}>
-        {activeNode.text}
-      </p>
-      {activeNode.dimensionInsight ? (
-        <p
-          style={{
-            margin: 0,
-            color: "rgba(255,226,158,0.72)",
-            fontSize: 12,
-            lineHeight: 1.5,
-          }}
-        >
-          {activeNode.dimensionInsight}
-        </p>
-      ) : null}
-      {activeNode.dimensionUnderstanding ? (
-        <p
-          style={{
-            margin: 0,
-            color: "rgba(245,245,245,0.52)",
-            fontSize: 11.5,
-            lineHeight: 1.48,
-          }}
-        >
-          {activeNode.dimensionUnderstanding}
-        </p>
-      ) : null}
-      <GuanyaoText size="eyebrow" tone="gold">
-        {activeNode.actionText}
-      </GuanyaoText>
-    </div>
-  );
-}
+  const [firstPauseInvitationVisible, setFirstPauseInvitationVisible] = useState(false);
+  const hasShownFirstPauseInvitationRef = useRef(false);
+  const livingSentence = activeNode.dimensionInsight ?? activeNode.text.replace(/\s*\n\s*/g, "");
 
-function StarFlowerCoreRepresentation({
-  visible,
-  activeNodeIndex,
-  nodeCount,
-  coreReadiness,
-  coreTone,
-  coreGlow,
-}: {
-  visible: boolean;
-  activeNodeIndex: number;
-  nodeCount: number;
-  coreReadiness: number;
-  coreTone: string;
-  coreGlow: number;
-}) {
+  useEffect(() => {
+    if (!visible) {
+      setFirstPauseInvitationVisible(false);
+      return undefined;
+    }
+    if (hasShownFirstPauseInvitationRef.current) return undefined;
+
+    hasShownFirstPauseInvitationRef.current = true;
+    setFirstPauseInvitationVisible(true);
+    const timer = window.setTimeout(() => {
+      setFirstPauseInvitationVisible(false);
+    }, 1800);
+
+    return () => window.clearTimeout(timer);
+  }, [visible]);
+
   return (
     <div
-      aria-hidden="true"
-      data-visual-primitive="DIMENSION"
-      data-visual-layer="dimension-six-node-core"
+      data-dynamics-node-language="LIFE_UNIVERSE_WHISPER"
+      data-dynamics-node-composition="SINGLE_LIVING_SENTENCE"
+      data-dynamics-first-pause-invitation={
+        firstPauseInvitationVisible ? "VISIBLE_ONCE" : "DELEGATED_TO_GENESIS_BREATH"
+      }
       style={{
         position: "absolute",
-        left: "50%",
-        top: "57%",
-        width: 104 + coreReadiness * 14,
-        height: 104 + coreReadiness * 14,
-        transform: `translate(-50%, -50%) scale(${visible ? 1 : 0.9})`,
+        left: 44,
+        right: 44,
+        bottom: "max(42px, calc(22px + env(safe-area-inset-bottom)))",
+        justifyItems: "center",
+        gap: 0,
         pointerEvents: "none",
-        opacity: visible ? 0.38 + coreReadiness * 0.24 : 0,
-        filter: `drop-shadow(0 0 ${14 + coreReadiness * 12}px rgba(${coreTone},${coreGlow}))`,
-        transition: "opacity 360ms ease, width 360ms ease, height 360ms ease, transform 360ms ease, filter 360ms ease",
+        padding: 0,
+        textAlign: "center",
+        textShadow: "0 0 18px rgba(2,3,6,0.96)",
+        display: visible ? "grid" : "none",
+        animation: "gy-copy-fade-in 520ms ease both",
       }}
     >
+      <p
+        style={{
+          position: "relative",
+          margin: 0,
+          maxWidth: 286,
+          color: "rgba(245,242,233,0.72)",
+          fontSize: 12.5,
+          lineHeight: 1.62,
+          textWrap: "balance",
+        }}
+      >
+        {livingSentence}
+      </p>
       <span
+        aria-hidden="true"
         style={{
           position: "absolute",
+          top: "calc(100% + 8px)",
           left: "50%",
-          top: "50%",
-          width: 18 + coreReadiness * 8,
-          height: 18 + coreReadiness * 8,
-          borderRadius: 999,
-          transform: "translate(-50%, -50%)",
-          background: `rgba(${coreTone},${0.32 + coreReadiness * 0.16})`,
-          boxShadow: `0 0 ${18 + coreReadiness * 20}px rgba(${coreTone},${coreGlow})`,
-          transition: "width 360ms ease, height 360ms ease, background 360ms ease, box-shadow 360ms ease",
+          transform: `translate(-50%, ${firstPauseInvitationVisible ? 0 : 4}px)`,
+          width: "100%",
+          color: `rgba(${toneColor},0.56)`,
+          fontSize: 9.5,
+          lineHeight: 1.5,
+          letterSpacing: "0.06em",
+          opacity: firstPauseInvitationVisible ? 1 : 0,
+          transition: "opacity 560ms ease, transform 560ms ease",
         }}
-      />
-      {Array.from({ length: 6 }).map((_, index) => {
-        const angle = -90 + index * 60;
-        const isComplete = index < activeNodeIndex;
-        const isCurrent = index === Math.min(activeNodeIndex, nodeCount - 1);
-        const nodeAlpha = isComplete ? 0.62 : isCurrent ? 0.78 : 0.2;
-        const nodeSize = isCurrent ? 9 : isComplete ? 7 : 5;
-        return (
-          <span
-            key={`flower-core-${index}`}
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              width: nodeSize,
-              height: 26 + coreReadiness * 13,
-              borderRadius: 999,
-              transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(${-28 - coreReadiness * 8}px)`,
-              transformOrigin: `50% ${28 + coreReadiness * 8}px`,
-              background: `linear-gradient(180deg, rgba(${coreTone},${nodeAlpha}), rgba(${coreTone},0.03))`,
-              boxShadow: isComplete || isCurrent ? `0 0 ${12 + coreReadiness * 10}px rgba(${coreTone},${coreGlow})` : "none",
-              transition: "width 360ms ease, height 360ms ease, transform 360ms ease, background 360ms ease, box-shadow 360ms ease",
-            }}
-          />
-        );
-      })}
+      >
+        轻触那颗正在呼吸的星
+      </span>
     </div>
   );
 }
 
-function EnergyReturnFlow({
-  visible,
-  activeNodeIndex,
-  coreReadiness,
-  coreTone,
-  coreGlow,
-}: {
-  visible: boolean;
-  activeNodeIndex: number;
-  coreReadiness: number;
-  coreTone: string;
-  coreGlow: number;
-}) {
-  if (!visible || activeNodeIndex <= 0) return null;
-
-  return (
-    <div
-      aria-hidden="true"
-      data-visual-primitive="PARTICLE"
-      data-visual-layer="particle-energy-return-flow"
-      style={{
-        position: "absolute",
-        left: "50%",
-        top: "45%",
-        width: 42,
-        height: 104,
-        transform: "translateX(-50%)",
-        pointerEvents: "none",
-        opacity: 0.34 + coreReadiness * 0.18,
-      }}
-    >
-      {Array.from({ length: Math.min(6, activeNodeIndex + 1) }).map((_, index) => (
-        <span
-          key={`return-flow-${index}`}
-          style={{
-            "--pollen-x": `${(index % 2 === 0 ? -1 : 1) * (4 + index)}px`,
-            "--pollen-y": `${-44 - index * 6}px`,
-            position: "absolute",
-            left: `${44 + ((index * 7) % 16)}%`,
-            top: `${76 - index * 13}%`,
-            width: 2 + (index % 2),
-            height: 2 + (index % 2),
-            borderRadius: 999,
-            background: `rgba(${coreTone},${0.34 + coreReadiness * 0.18})`,
-            boxShadow: `0 0 10px rgba(${coreTone},${coreGlow})`,
-            animation: `gy-pollen-rise ${900 + index * 90}ms ease-out infinite ${index * 120}ms`,
-          } as CSSProperties}
-        />
-      ))}
-    </div>
-  );
-}
-
-function SixDimensionWheel({
+function SixDimensionGravityField({
   configs,
   activeConfig,
   petalStates,
@@ -564,63 +491,221 @@ function SixDimensionWheel({
   toneColor: string;
   shortPetalNames: string[];
 }) {
+  const activeDirectionIndex = Math.max(
+    0,
+    configs.findIndex((config) => config.id === activeConfig.id),
+  );
+  const observedCount = configs.filter(
+    (config) => petalStates[config.id] === "blooming",
+  ).length;
+
+  return (
+    <div
+      aria-hidden="true"
+      data-dynamics-six-space-language="GRAVITY_DIRECTIONS"
+      data-dynamics-six-space-presentation="OBSERVATION_ENTRANCE"
+      data-dynamics-six-space-force-language="GENESIS_WEBGL_STELLAR_SKELETON"
+      data-dynamics-six-space-overlay="DIRECTION_LABELS_ONLY"
+      data-dynamics-six-space-presentation-mode="ONE_ACTIVE_ENTRANCE_ONLY"
+      data-dynamics-six-space-temporal-language="CURRENT_PAST_AFTERGLOW_FUTURE_DEEP_SPACE"
+      data-dynamics-six-space-visible-time="CURRENT_ONLY"
+      data-dynamics-six-space-past-state="PAST_AFTERGLOW"
+      data-dynamics-six-space-future-state="FUTURE_DEEP_SPACE"
+      data-dynamics-life-core-anchor="LIFE_UNIVERSE_CORE_IDENTITY"
+      data-dynamics-observed-entrance-count={observedCount}
+      data-visual-primitive="DIMENSION"
+      data-visual-layer="dimension-observation-entrance"
+      style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+    >
+      <span
+        data-six-space-temporal-state="CURRENT"
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "69%",
+          transform: "translate(-50%, -50%)",
+          color: `rgba(${toneColor},0.64)`,
+          fontSize: 9,
+          fontWeight: 540,
+          lineHeight: 1,
+          textAlign: "center",
+          letterSpacing: "0.12em",
+          whiteSpace: "nowrap",
+          textShadow: `0 0 14px rgba(${toneColor},0.26)`,
+        }}
+      >
+        观察入口 · {shortPetalNames[activeDirectionIndex]}
+      </span>
+    </div>
+  );
+}
+
+function LifeCoreInteractionLayer({
+  coreStars,
+  birthCoreSlot,
+  interactive,
+  rendererOwnsVisual,
+  toneColor,
+  reveal,
+  nodeCharge,
+  coreGlow,
+  pressureDepth,
+  onCoreStarClick,
+}: {
+  coreStars: readonly (readonly [number, number, number])[];
+  birthCoreSlot: number;
+  interactive: boolean;
+  rendererOwnsVisual: boolean;
+  toneColor: string;
+  reveal: number;
+  nodeCharge: number;
+  coreGlow: number;
+  pressureDepth: number;
+  onCoreStarClick: () => void;
+}) {
+  if (rendererOwnsVisual) {
+    return interactive ? (
+      <span
+        role="button"
+        aria-label="触碰本命生命星群，观察现实引力如何展开"
+        tabIndex={0}
+        data-life-core-hit-area="TRANSPARENT"
+        data-life-visual-authority="GENESIS_WEBGL"
+        data-life-interaction-target="WEBGL_LIFE_BODY"
+        data-mansion-near-layer="GENESIS_WEBGL_ACTIVE_SEVEN"
+        data-life-core-invitation="GENESIS_WEBGL_BREATH"
+        onClick={onCoreStarClick}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onCoreStarClick();
+          }
+        }}
+        style={{
+          position: "absolute",
+          left: `${LIFE_UNIVERSE_CORE_IDENTITY.anchorX * 100}%`,
+          top: `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`,
+          width: "min(62vw, 232px)",
+          height: "min(28vh, 196px)",
+          borderRadius: "46%",
+          transform: "translate(-50%, -50%)",
+          background: "transparent",
+          boxShadow: "none",
+          cursor: "pointer",
+          pointerEvents: "auto",
+        }}
+      />
+    ) : null;
+  }
+
   return (
     <>
-      {configs.map((config, index) => {
-        const angle = -90 + index * 60;
-        const rad = (angle * Math.PI) / 180;
-        const isActive = config.id === activeConfig.id;
-        const state = petalStates[config.id];
-        const isBlooming = state === "blooming";
-        const petalWidth = isActive ? 62 : isBlooming ? 38 : 34;
-        const petalHeight = isActive ? 22 : isBlooming ? 13 : 12;
-        const petalOpacity = isActive ? 0.82 : isBlooming ? 0.3 : 0.2;
-        const petalGlow = isActive ? `0 0 24px rgba(${toneColor},0.28), 0 0 6px rgba(245,245,245,0.08)` : isBlooming ? `0 0 10px rgba(${toneColor},0.08)` : "none";
-        const petalBorderAlpha = isActive ? 0.46 : isBlooming ? 0.16 : 0.08;
-        const petalToneAlpha = isActive ? 0.18 : isBlooming ? 0.06 : 0.028;
-        const petalLightAlpha = isActive ? 0.12 : isBlooming ? 0.05 : 0.018;
-        const left = 50 + Math.cos(rad) * 29;
-        const top = 50 + Math.sin(rad) * 15;
-
+      {coreStars.map(([left, top, size], index) => {
+        const isBirthCore = index === birthCoreSlot;
+        const visualSize =
+          size + nodeCharge * 1.2 + pressureDepth * 1.4 +
+          (isBirthCore ? 1.8 : 0);
+        const radialAngle =
+          (Math.atan2(top - 49, left - 50) * 180) / Math.PI;
+        const depthScale = 1 + pressureDepth * 0.1 + nodeCharge * 0.04;
         return (
           <span
-            key={config.id}
-            data-visual-primitive="DIMENSION"
-            data-visual-layer="dimension-six-space-petal"
+            key={`core-${index}`}
+            role={interactive ? "button" : undefined}
+            aria-label={interactive ? `本命七宿星位 ${index + 1}` : undefined}
+            tabIndex={interactive ? 0 : undefined}
+            data-life-core-hit-area="TRANSPARENT"
+            data-mansion-near-layer="ACTIVE_SEVEN_MANSION"
+            onClick={interactive ? onCoreStarClick : undefined}
+            onKeyDown={(event) => {
+              if (!interactive) return;
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onCoreStarClick();
+              }
+            }}
             style={{
-              "--petal-rotate": `${angle + 90}deg`,
               position: "absolute",
               left: `${left}%`,
               top: `${top}%`,
-              width: petalWidth,
-              height: petalHeight,
-              borderRadius: "50%",
-              transform: `translate(-50%, -50%) rotate(${angle + 90}deg)`,
-              background: `linear-gradient(90deg, rgba(${toneColor},${petalToneAlpha}), rgba(245,245,245,${petalLightAlpha}))`,
-              border: `1px solid rgba(${toneColor},${petalBorderAlpha})`,
-              boxShadow: petalGlow,
-              opacity: petalOpacity,
-              pointerEvents: "none",
-              animation: "gy-petal-float 4.6s ease-in-out infinite",
-              transition: "width 320ms ease, height 320ms ease, opacity 320ms ease, border-color 320ms ease, box-shadow 320ms ease, background 320ms ease",
-            } as CSSProperties}
+              width: 34,
+              height: 34,
+              borderRadius: 999,
+              transform: "translate(-50%, -50%)",
+              background: "transparent",
+              boxShadow: "none",
+              cursor: interactive ? "pointer" : "default",
+              pointerEvents: interactive ? "auto" : "none",
+            }}
           >
             <span
+              aria-hidden="true"
               style={{
-                display: "block",
-                transform: `rotate(${-angle - 90}deg)`,
-                color: isActive ? "rgba(245,245,245,0.74)" : isBlooming ? "rgba(245,245,245,0.28)" : "rgba(245,245,245,0.18)",
-                fontSize: isActive ? 9.5 : 8.5,
-                fontWeight: isActive ? 620 : 500,
-                lineHeight: `${petalHeight}px`,
-                textAlign: "center",
-                letterSpacing: "0.04em",
-                textShadow: isActive ? `0 0 12px rgba(${toneColor},0.28)` : "none",
-                transition: "color 320ms ease, line-height 320ms ease, text-shadow 320ms ease",
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                width: 12 + pressureDepth * 7,
+                height: 1,
+                transform: `translate(-100%, -50%) rotate(${radialAngle}deg)`,
+                transformOrigin: "100% 50%",
+                background: `linear-gradient(90deg, transparent, rgba(${toneColor},${0.12 + pressureDepth * 0.2}))`,
+                opacity: 0.36 + pressureDepth * 0.42,
+                pointerEvents: "none",
               }}
-            >
-              {shortPetalNames[index]}
-            </span>
+            />
+            <span
+              aria-hidden="true"
+              style={{
+                "--near-mansion-depth": depthScale,
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                width: visualSize,
+                height: visualSize,
+                borderRadius: 999,
+                background: `radial-gradient(circle, rgba(255,251,238,${0.72 + reveal * 0.24}) 0 34%, rgba(${toneColor},${0.28 + reveal * 0.2}) 44%, transparent 72%)`,
+                boxShadow: `0 0 ${8 + reveal * 8 + pressureDepth * 10 + (isBirthCore ? 8 : 0)}px rgba(${toneColor},${coreGlow})`,
+                animation: `gy-near-mansion-arrival 760ms ease both ${index * 90}ms, gy-near-mansion-breathe ${3.8 + index * 0.18}s ease-in-out infinite ${760 + index * 90}ms`,
+                pointerEvents: "none",
+              } as CSSProperties}
+            />
+            {isBirthCore ? (
+              <span
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: "50%",
+                  width: visualSize + 7,
+                  height: visualSize + 7,
+                  border: `1px solid rgba(${toneColor},0.36)`,
+                  borderRadius: 999,
+                  transform: "translate(-50%, -50%)",
+                  boxShadow: `0 0 12px rgba(${toneColor},0.16)`,
+                  pointerEvents: "none",
+                }}
+              />
+            ) : null}
+            {interactive ? (
+              <span
+                aria-hidden="true"
+                data-life-core-invitation="STAR_BREATH_ONLY"
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: "50%",
+                  width: visualSize + 9,
+                  height: visualSize + 9,
+                  border: `1px solid rgba(${toneColor},${isBirthCore ? 0.34 : 0.18})`,
+                  borderRadius: 999,
+                  transform: "translate(-50%, -50%) scale(0.78)",
+                  boxShadow: isBirthCore ? `0 0 14px rgba(${toneColor},0.16)` : "none",
+                  opacity: 0,
+                  animation: `gy-near-mansion-invitation 4.8s ease-out infinite ${index * 420}ms`,
+                  pointerEvents: "none",
+                }}
+              />
+            ) : null}
           </span>
         );
       })}
@@ -628,223 +713,284 @@ function SixDimensionWheel({
   );
 }
 
-type BaiHuConstellationLayerProps = {
-  toneColor: string;
-  narrativePhase: CosmicNarrativePhase;
-  activeNodeIndex: number;
-  activeDimensionName: string;
-  onCoreStarClick: () => void;
-  coreStars: readonly RuntimeCoreStar[];
-  showInteractionHint: boolean;
-};
-
-function CoreStarInteractionLayer({
-  coreStars,
-  toneColor,
-  reveal,
-  nodeCharge,
-  coreGlow,
-  onCoreStarClick,
-}: {
-  coreStars: readonly RuntimeCoreStar[];
-  toneColor: string;
-  reveal: number;
-  nodeCharge: number;
-  coreGlow: number;
-  onCoreStarClick: () => void;
-}) {
-  return (
-    <>
-      {coreStars.map(([left, top, size], index) => (
-        <span
-          key={`core-${index}`}
-          role="button"
-          aria-label="轻触光点，看看这里发生了什么。"
-          tabIndex={0}
-          onClick={onCoreStarClick}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              onCoreStarClick();
-            }
-          }}
-          style={{
-            position: "absolute",
-            left: `${left}%`,
-            top: `${top}%`,
-            width: Math.max(28, size + nodeCharge * 1.8),
-            height: Math.max(28, size + nodeCharge * 1.8),
-            borderRadius: 999,
-            transform: "translate(-50%, -50%)",
-            background: `radial-gradient(circle, rgba(255,247,220,${0.54 + reveal * 0.36}) 0 ${Math.max(2, size / 2)}px, transparent ${Math.max(3, size / 2 + 1)}px)`,
-            boxShadow: `0 0 ${10 + reveal * 14 + nodeCharge * 16}px rgba(${toneColor},${coreGlow})`,
-            animation: `gy-starbeast-ignite 760ms ease both ${index * 90}ms`,
-            cursor: "pointer",
-            pointerEvents: "auto",
-          }}
-        />
-      ))}
-    </>
-  );
-}
-
-function BaiHuConstellationLayer({
+function LifeConstellationLayer({
   toneColor,
   narrativePhase,
   activeNodeIndex,
-  activeDimensionName,
   onCoreStarClick,
-  coreStars,
-  showInteractionHint,
-}: BaiHuConstellationLayerProps) {
+  visualSource,
+  pressureIntensity,
+  interactionEnabled = true,
+  crystalImprintActive = false,
+  crystalImprintKey = "",
+}: {
+  toneColor: string;
+  narrativePhase: CosmicNarrativePhase;
+  activeNodeIndex: number;
+  onCoreStarClick: () => void;
+  visualSource: RealLifeVisualSource | null;
+  pressureIntensity: number;
+  interactionEnabled?: boolean;
+  crystalImprintActive?: boolean;
+  crystalImprintKey?: string;
+}) {
   const reveal = narrativePhase === "field_intro" ? 0.34 : narrativePhase === "seed_visible" ? 0.66 : 1;
-  const bodyAlpha = narrativePhase === "beast_guide" || narrativePhase === "node_active" || narrativePhase === "node_complete" ? 1 : 0.28;
   const nodeCharge = Math.min(1, Math.max(0, activeNodeIndex / 6));
   const coreGlow = 0.34 + reveal * 0.28 + nodeCharge * 0.26;
-  const coreLineAlpha = 0.08 + reveal * 0.18 + nodeCharge * 0.08;
-  const headShape = [
-    [7, 44, 1.7], [9, 39, 1.6], [12, 35, 1.7], [15, 32, 1.8], [19, 33, 1.6],
-    [22, 36, 1.8], [24, 40, 1.7], [23, 44, 1.5], [20, 48, 1.5], [17, 51, 1.7],
-    [13, 52, 1.6], [9, 50, 1.8], [5, 48, 1.4], [4, 43, 1.2], [6, 38, 1.3],
-    [10, 34, 1.4], [13, 29, 1.5], [17, 29, 1.4], [21, 31, 1.3], [26, 37, 1.2],
-    [6, 53, 1.2], [10, 56, 1.4], [15, 56, 1.5], [20, 53, 1.3], [20, 42, 3.3],
-    [12, 41, 1.7], [14, 45, 1.6], [16, 39, 1.4], [18, 36, 1.3],
-  ] as const;
-  const headDust = headShape.map(([left, top, size], index) => ({
-    left,
-    top,
-    size,
-    delay: (index % 8) * 115,
-    alpha: index === headShape.length - 1 ? 0.68 : 0.26 + ((index * 5) % 9) / 78,
-  }));
-  const backDust = Array.from({ length: 38 }).map((_, index) => {
-    const t = index / 37;
-    return {
-      left: 24 + t * 59,
-      top: 42 - Math.sin(t * Math.PI) * 16 + Math.sin(t * 14) * 1.2,
-      size: 1.4 + (index % 4) * 0.25,
-      delay: (index % 10) * 110,
-      alpha: 0.2 + ((index * 7) % 8) / 86,
-    };
+  const coordinateProjection = visualSource?.projectionBundle.twentyEightMansionCoordinateProjection;
+  const morphology = visualSource?.projectionBundle.morphologicalFieldAlignmentProjection.morphologicalFieldExpression;
+  const lifeArchetype = visualSource?.projectionBundle.lifeArchetypeProjection;
+  const birthMansionIndex = coordinateProjection?.birthMansion.mansionIndex ?? null;
+  const activeSectorIndex = birthMansionIndex === null ? -1 : Math.floor(birthMansionIndex / 7);
+  const activeGroupStart = activeSectorIndex < 0 ? 0 : activeSectorIndex * 7;
+  const birthCoreSlot = birthMansionIndex === null ? -1 : birthMansionIndex - activeGroupStart;
+  const fourSymbol = visualSource?.provenance.fourSymbol ?? "未定";
+  const sourceReferenceId = visualSource?.provenance.sourceReferenceId ?? "IDENTITY_UNAVAILABLE";
+  const rendererOwnsLifeVisual = visualSource !== null;
+  const envelopeScale = morphology?.envelopeScale ?? 1;
+  const postureBias = morphology?.postureBias ?? 0;
+  const pressure = Math.max(0, Math.min(1, pressureIntensity));
+  const orbitRadiusX = 43 * Math.max(0.88, Math.min(1.08, envelopeScale));
+  const orbitRadiusY = 19 + Math.abs(postureBias) * 2.4;
+  const coordinatePositions = Array.from({ length: 28 }, (_, index) => {
+    const normalizedOrbitPosition = coordinateProjection?.coordinates[index]?.normalizedOrbitPosition ?? index / 28;
+    const angle = -Math.PI / 2 + normalizedOrbitPosition * Math.PI * 2;
+    return [
+      50 + Math.cos(angle) * orbitRadiusX,
+      49 + Math.sin(angle) * orbitRadiusY,
+    ] as const;
   });
-  const bellyDust = Array.from({ length: 18 }).map((_, index) => {
-    const t = index / 17;
-    return {
-      left: 25 + t * 49,
-      top: 56 + Math.sin(t * Math.PI) * 5 + Math.cos(t * 13) * 1.8,
-      size: 1.2 + (index % 3) * 0.3,
-      delay: (index % 9) * 125,
-      alpha: 0.15 + ((index * 3) % 8) / 100,
-    };
+  const activeCoordinateIndices = birthMansionIndex === null
+    ? [0, 4, 8, 12, 16, 20, 24]
+    : Array.from({ length: 7 }, (_, index) => activeGroupStart + index);
+  const coreStars = activeCoordinateIndices.map((coordinateIndex, index) => {
+    const [left, top] = coordinatePositions[coordinateIndex]!;
+    return [left, top, index === birthCoreSlot ? 7.2 : 4.8] as const;
   });
-  const legDust = [
-    ...Array.from({ length: 9 }).map((_, index) => ({ left: 29 + index * 0.35 + Math.sin(index * 0.8) * 2, top: 56 + index * 3.4, group: 0 })),
-    ...Array.from({ length: 8 }).map((_, index) => ({ left: 42 + index * 0.75 - Math.sin(index * 0.7) * 1.7, top: 55 + index * 3.3, group: 1 })),
-    ...Array.from({ length: 10 }).map((_, index) => ({ left: 60 + index * 0.45 + Math.sin(index * 0.65) * 2.2, top: 55 + index * 3.6, group: 2 })),
-    ...Array.from({ length: 8 }).map((_, index) => ({ left: 75 + index * 0.92 - Math.sin(index * 0.75) * 1.6, top: 53 + index * 3.2, group: 3 })),
-  ].map((particle, index) => ({
-    left: particle.left,
-    top: particle.top,
-    size: 1.25 + (particle.group % 2) * 0.34,
-    delay: (index % 12) * 95,
-    alpha: 0.18 + ((index * 4) % 8) / 96,
-  }));
-  const tailDust = Array.from({ length: 38 }).map((_, index) => {
-    const t = index / 37;
-    const angle = t * Math.PI * 1.92;
-    return {
-      left: 78 + Math.sin(angle) * 13 + t * 12,
-      top: 42 - Math.sin(t * Math.PI) * 39 + Math.cos(angle) * 5,
-      size: 1.1 + (index % 4) * 0.25,
-      delay: (index % 10) * 105,
-      alpha: 0.16 + ((index * 6) % 8) / 100,
-    };
+  const activePath = birthMansionIndex === null
+    ? ""
+    : coreStars.map(([x, y], index) => `${index === 0 ? "M" : "L"} ${x} ${y}`).join(" ");
+  const crystalImprintGeometry = resolveLifeUniverseCrystalImprintGeometry({
+    identityKey: crystalImprintKey,
+    birthMansionIndex,
+    normalizedOrbitPositions: coordinateProjection?.coordinates.map(
+      (coordinate) => coordinate.normalizedOrbitPosition,
+    ) ?? [],
+    envelopeScale,
+    postureBias,
   });
-  const tailTipDust = [
-    [95, 21, 2.5],
-    [97, 17, 1.7],
-    [93, 14, 1.5],
-    [90, 18, 1.3],
-    [91, 24, 1.4],
-  ] as const;
-  const tailTipParticles = tailTipDust.map(([left, top, size], index) => ({
-    left,
-    top,
-    size,
-    delay: index * 130,
-    alpha: index === 0 ? 0.54 : 0.24 + index * 0.04,
-  }));
-  const silhouetteDust = [...headDust, ...backDust, ...bellyDust, ...legDust, ...tailDust, ...tailTipParticles];
-  const innerDust = Array.from({ length: 32 }).map((_, index) => ({
-    left: 27 + ((index * 17) % 48),
-    top: 39 + ((index * 19) % 19),
-    size: 1.2 + (index % 3) * 0.45,
-    delay: (index % 9) * 170,
-    alpha: 0.08 + nodeCharge * 0.16 + ((index * 5) % 8) / 110,
-  }));
+  const crystalImprintPath = crystalImprintGeometry?.path ?? "";
+  const orbitPath = `${coordinatePositions.map(([x, y], index) => `${index === 0 ? "M" : "L"} ${x} ${y}`).join(" ")} Z`;
+  const sectorPaths = Array.from({ length: 4 }, (_, sectorIndex) =>
+    coordinatePositions
+      .slice(sectorIndex * 7, sectorIndex * 7 + 7)
+      .map(([x, y], index) => `${index === 0 ? "M" : "L"} ${x} ${y}`)
+      .join(" "),
+  );
+  const fieldDust = coreStars.flatMap(([left, top], coreIndex) =>
+    Array.from({ length: 5 }, (_, dustIndex) => {
+      const angle = coreIndex * 1.7 + dustIndex * 1.26;
+      const distance = 4 + ((coreIndex + dustIndex) % 4) * 2.2;
+      return {
+        left: left + Math.cos(angle) * distance,
+        top: top + Math.sin(angle) * distance * 0.48,
+        size: 1 + ((coreIndex + dustIndex) % 3) * 0.34,
+        delay: (coreIndex * 5 + dustIndex) * 64,
+      };
+    }),
+  );
+  const postureRotate = birthMansionIndex === null
+    ? 0
+    : pressure * (postureBias < 0 ? -2.4 : 2.4);
+  const postureScaleX = birthMansionIndex === null ? 1 : 1 - pressure * 0.035;
+  const postureScaleY = birthMansionIndex === null ? 1 : 1 - pressure * 0.09;
 
   return (
     <div
       role="group"
-      aria-label="当前压力进入六个空间。"
+      aria-label={birthMansionIndex === null
+        ? "本命坐标待恢复，当前显示中性二十八宿与七曜。"
+        : `${fourSymbol}七宿在当前现实引力下进入六个空间。`}
       data-visual-primitive="BEAST"
-      data-visual-layer="beast-state-container"
+      data-visual-layer="origin-life-under-pressure"
+      data-life-source-reference={sourceReferenceId}
+      data-life-source-status={visualSource ? "REAL_GENESIS_SOURCE" : "IDENTITY_UNAVAILABLE"}
+      data-birth-mansion-index={birthMansionIndex ?? "unavailable"}
+      data-four-symbol={fourSymbol}
+      data-mother-code-id={visualSource?.provenance.motherCodeId ?? "unavailable"}
+      data-life-archetype={lifeArchetype?.lifeArchetype ?? "unavailable"}
+      data-original-force={lifeArchetype?.originalForce ?? "unavailable"}
+      data-four-symbol-field-mode={morphology?.fieldMode ?? "unavailable"}
+      data-pressure-effect="POSTURE_ONLY"
+      data-dynamics-core-overlay-copy="NONE"
+      data-dynamics-life-visual-authority={rendererOwnsLifeVisual ? "GENESIS_WEBGL" : "DOM_FALLBACK"}
+      data-crystal-imprint={
+        crystalImprintActive && crystalImprintPath
+          ? "ADDITIVE"
+          : crystalImprintActive
+            ? "PENDING_IDENTITY_SOURCE"
+            : "INACTIVE"
+      }
+      data-crystal-imprint-anchor="LIFE_CORE_TO_ACTIVE_SEVEN_MANSION_BODY"
+      data-crystal-imprint-topology="ATTACHED_NO_SECOND_SYMBOL"
+      data-base-structure-invariant="true"
       style={{
         position: "absolute",
-        left: "50%",
-        top: "31%",
-        width: 310,
-        height: 202,
-        transform: "translate(-50%, -50%)",
-        opacity: 0.76 + reveal * 0.22,
+        left: rendererOwnsLifeVisual ? 0 : "50%",
+        top: rendererOwnsLifeVisual ? 0 : "31%",
+        right: rendererOwnsLifeVisual ? 0 : undefined,
+        bottom: rendererOwnsLifeVisual ? 0 : undefined,
+        width: rendererOwnsLifeVisual ? "100%" : 310,
+        height: rendererOwnsLifeVisual ? "100%" : 202,
+        transform: rendererOwnsLifeVisual
+          ? "none"
+          : `translate(-50%, -50%) rotate(${postureRotate}deg) scale(${postureScaleX}, ${postureScaleY})`,
+        transformOrigin: "50% 50%",
+        transition: "transform 900ms cubic-bezier(0.2, 0.7, 0.2, 1)",
+        opacity: rendererOwnsLifeVisual ? 1 : 0.76 + reveal * 0.22,
         pointerEvents: "none",
         zIndex: 2,
       }}
     >
-      <span
+      {!rendererOwnsLifeVisual ? <span
         aria-hidden="true"
         style={{
           position: "absolute",
-          left: "54%",
-          top: "50%",
-          width: 250 + nodeCharge * 30,
-          height: 132 + nodeCharge * 18,
+          left: "50%",
+          top: "49%",
+          width: 268 + nodeCharge * 24,
+          height: 122 + nodeCharge * 16,
           borderRadius: "50%",
           transform: "translate(-50%, -50%)",
-          background: `radial-gradient(ellipse, rgba(${toneColor},${0.11 + nodeCharge * 0.1}), rgba(${toneColor},0.035) 42%, transparent 72%)`,
-          filter: "blur(4px)",
+          border: `1px solid rgba(${toneColor},${0.08 + reveal * 0.08})`,
+          background: `radial-gradient(ellipse, rgba(${toneColor},${0.08 + nodeCharge * 0.08}), rgba(${toneColor},0.025) 48%, transparent 72%)`,
+          filter: "blur(2px)",
           animation: "gy-starbeast-breathe 5.2s ease-in-out infinite",
         }}
-      />
+      /> : null}
       <svg
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
         style={{
           position: "absolute",
           inset: 0,
+          width: "100%",
+          height: "100%",
+          display: "block",
           overflow: "visible",
           filter: `drop-shadow(0 0 ${10 + nodeCharge * 14}px rgba(${toneColor},${coreGlow}))`,
         }}
       >
-        <path
-          d={coreStars.map(([x, y], index) => `${index === 0 ? "M" : "L"} ${x} ${y}`).join(" ")}
-          fill="none"
-          stroke={`rgba(${toneColor},${coreLineAlpha})`}
-          strokeWidth="0.42"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{
-            animation:
-              narrativePhase === "seed_visible" || narrativePhase === "beast_guide"
-                ? "gy-starbeast-line 680ms ease-out both"
-                : "none",
-            }}
-          />
+        {!rendererOwnsLifeVisual ? (
+          <>
+            <path
+              d={orbitPath}
+              fill="none"
+              stroke={`rgba(176,190,206,${0.08 + reveal * 0.05})`}
+              strokeWidth="0.34"
+              strokeDasharray="0.8 2.8"
+            />
+            {sectorPaths.map((path, sectorIndex) => (
+              <path
+                key={`sector-${sectorIndex}`}
+                d={path}
+                fill="none"
+                stroke={sectorIndex === activeSectorIndex
+                  ? `rgba(${toneColor},${0.18 + reveal * 0.18})`
+                  : "rgba(176,190,206,0.055)"}
+                strokeWidth={sectorIndex === activeSectorIndex ? "0.58" : "0.28"}
+              />
+            ))}
+            <path
+              d={activePath}
+              fill="none"
+              stroke={`rgba(${toneColor},${0.18 + reveal * 0.26 + nodeCharge * 0.12})`}
+              strokeWidth="0.68"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{
+                animation:
+                  narrativePhase === "seed_visible" || narrativePhase === "beast_guide"
+                    ? "gy-starbeast-line 680ms ease-out both"
+                    : "none",
+              }}
+            />
+          </>
+        ) : null}
+        {crystalImprintActive && crystalImprintPath ? (
+          <>
+            <path
+              d={crystalImprintPath}
+              fill="none"
+              stroke={`rgba(${toneColor},0.18)`}
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              filter="blur(1.2px)"
+            />
+            <path
+              d={crystalImprintPath}
+              fill="none"
+              stroke="rgba(255,239,190,0.92)"
+              strokeWidth="0.66"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeDasharray="120"
+              style={{ animation: "gy-crystal-imprint 1.65s cubic-bezier(0.2, 0.7, 0.2, 1) both" }}
+            />
+            <circle
+              cx={crystalImprintGeometry!.target[0]}
+              cy={crystalImprintGeometry!.target[1]}
+              r="1.45"
+              fill="rgba(255,239,190,0.11)"
+              style={{ transformBox: "fill-box", transformOrigin: "center", animation: "gy-crystal-imprint-pulse 2.8s ease-in-out infinite" }}
+            />
+            <rect
+              x={crystalImprintGeometry!.target[0] - 0.52}
+              y={crystalImprintGeometry!.target[1] - 0.52}
+              width="1.04"
+              height="1.04"
+              rx="0.12"
+              fill="rgba(255,247,220,0.96)"
+            />
+          </>
+        ) : null}
       </svg>
 
-      {silhouetteDust.map((particle, index) => (
+      {!rendererOwnsLifeVisual ? coordinatePositions.map(([left, top], index) => {
+        const inActiveSector = activeSectorIndex >= 0 && Math.floor(index / 7) === activeSectorIndex;
+        const isBirthCoordinate = index === birthMansionIndex;
+        return (
+          <span
+            key={`mansion-${index}`}
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              left: `${left}%`,
+              top: `${top}%`,
+              width: isBirthCoordinate ? 4.8 : inActiveSector ? 2.7 : 1.6,
+              height: isBirthCoordinate ? 4.8 : inActiveSector ? 2.7 : 1.6,
+              borderRadius: 999,
+              transform: "translate(-50%, -50%)",
+              background: isBirthCoordinate
+                ? "rgba(255,247,220,0.96)"
+                : inActiveSector
+                  ? `rgba(${toneColor},${0.48 + reveal * 0.18})`
+                  : "rgba(190,202,218,0.24)",
+              boxShadow: isBirthCoordinate
+                ? `0 0 18px rgba(${toneColor},0.72)`
+                : inActiveSector
+                  ? `0 0 8px rgba(${toneColor},0.32)`
+                  : "0 0 5px rgba(176,190,206,0.12)",
+            }}
+          />
+        );
+      }) : null}
+
+      {!rendererOwnsLifeVisual ? fieldDust.map((particle, index) => (
         <span
-          key={`silhouette-${index}`}
+          key={`field-dust-${index}`}
+          aria-hidden="true"
           style={{
             position: "absolute",
             left: `${particle.left}%`,
@@ -853,107 +999,47 @@ function BaiHuConstellationLayer({
             height: particle.size,
             borderRadius: 999,
             transform: "translate(-50%, -50%)",
-            background: `rgba(255,248,224,${particle.alpha + bodyAlpha * 0.34})`,
-            boxShadow: `0 0 ${5 + nodeCharge * 5}px rgba(${toneColor},${0.14 + bodyAlpha * 0.16})`,
+            background: `rgba(255,248,224,${0.08 + reveal * 0.12 + nodeCharge * 0.08})`,
+            boxShadow: `0 0 ${4 + nodeCharge * 4}px rgba(${toneColor},${0.1 + nodeCharge * 0.12})`,
             animation: `gy-starbeast-dust 3.4s ease-in-out infinite ${particle.delay}ms`,
           }}
         />
-      ))}
+      )) : null}
 
-      {innerDust.map((particle, index) => (
-        <span
-          key={`inner-${index}`}
-          style={{
-            position: "absolute",
-            left: `${particle.left}%`,
-            top: `${particle.top}%`,
-            width: particle.size,
-            height: particle.size,
-            borderRadius: 999,
-            transform: "translate(-50%, -50%)",
-            background: `rgba(${toneColor},${particle.alpha + reveal * 0.08})`,
-            boxShadow: `0 0 ${4 + nodeCharge * 8}px rgba(${toneColor},${0.12 + nodeCharge * 0.16})`,
-            animation: `gy-starbeast-inner-breathe 4.2s ease-in-out infinite ${particle.delay}ms`,
-          }}
-        />
-      ))}
-
-      <CoreStarInteractionLayer
+      <LifeCoreInteractionLayer
         coreStars={coreStars}
+        birthCoreSlot={birthCoreSlot}
+        interactive={interactionEnabled}
+        rendererOwnsVisual={rendererOwnsLifeVisual}
         toneColor={toneColor}
         reveal={reveal}
         nodeCharge={nodeCharge}
         coreGlow={coreGlow}
+        pressureDepth={pressure}
         onCoreStarClick={onCoreStarClick}
       />
 
-      {showInteractionHint ? (
-        <span
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            left: "50%",
-            bottom: -3,
-            transform: "translateX(-50%)",
-            color: `rgba(255,248,224,${0.28 + reveal * 0.12})`,
-            fontSize: 10,
-            lineHeight: 1,
-            letterSpacing: "0.08em",
-            whiteSpace: "nowrap",
-            pointerEvents: "none",
-            textShadow: `0 0 10px rgba(${toneColor},0.16)`,
-          }}
-        >
-          轻触光点，看看这里发生了什么。
-        </span>
-      ) : null}
-
-      {narrativePhase === "node_active" || narrativePhase === "node_complete" ? (
-        <span
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            left: "53%",
-            top: "72%",
-            transform: "translateX(-50%)",
-            padding: "4px 9px",
-            borderRadius: 999,
-            border: `1px solid rgba(${toneColor},0.18)`,
-            background: "rgba(5,6,7,0.18)",
-            color: `rgba(255,248,224,${0.5 + nodeCharge * 0.16})`,
-            fontSize: 10,
-            lineHeight: 1,
-            letterSpacing: "0.08em",
-            whiteSpace: "nowrap",
-            pointerEvents: "none",
-            textShadow: `0 0 12px rgba(${toneColor},0.18)`,
-          }}
-        >
-          {activeDimensionName.replace("空间", "")}正在出现
-        </span>
-      ) : null}
-
-      <span
+      {!rendererOwnsLifeVisual ? <span
         style={{
           position: "absolute",
-          left: "55%",
+          left: "50%",
           top: "49%",
-          width: 156 + nodeCharge * 26,
-          height: 76 + nodeCharge * 18,
+          width: 146 + nodeCharge * 24,
+          height: 66 + nodeCharge * 16,
           borderRadius: "50%",
           transform: "translate(-50%, -50%)",
-          background: `radial-gradient(ellipse, rgba(${toneColor},${0.1 + bodyAlpha * 0.14}), transparent 68%)`,
+          background: `radial-gradient(ellipse, rgba(${toneColor},${0.09 + reveal * 0.08}), transparent 68%)`,
           filter: "blur(3px)",
           animation: "gy-starbeast-breathe 4.8s ease-in-out infinite",
         }}
-      />
+      /> : null}
 
-      {narrativePhase === "node_active" || narrativePhase === "node_complete" ? (
+      {!rendererOwnsLifeVisual && (narrativePhase === "node_active" || narrativePhase === "node_complete") ? (
         <span
           style={{
             position: "absolute",
-            left: "55%",
-            top: "50%",
+            left: "50%",
+            top: "49%",
             width: 176 + nodeCharge * 24,
             height: 92 + nodeCharge * 14,
             borderRadius: "50%",
@@ -968,34 +1054,24 @@ function BaiHuConstellationLayer({
 
 function CosmicBotanicsField({
   configs,
-  currentStep,
   activeDimensionStep,
   pressureSeedSurface,
   petalStates,
-  pollenBursts,
-  starbeast,
-  starFlowerState,
-  hexagramReadiness,
   activeNodeIndex,
   narrativePhase,
   onNodeBloom,
-  coreStars,
+  visualSource,
   visualState,
   experienceState,
 }: {
   configs: SixSpaceConfig[];
-  currentStep: number;
   activeDimensionStep: number;
   pressureSeedSurface: string;
   petalStates: Record<SixSpaceId, CosmicPetalState>;
-  pollenBursts: Record<SixSpaceId, number>;
-  starbeast: StarbeastFeedback;
-  starFlowerState: StarFlowerGrowthState;
-  hexagramReadiness: number;
   activeNodeIndex: number;
   narrativePhase: CosmicNarrativePhase;
   onNodeBloom: () => void;
-  coreStars: readonly RuntimeCoreStar[];
+  visualSource: RealLifeVisualSource | null;
   visualState: VisualState;
   experienceState: ExperienceState;
 }) {
@@ -1008,10 +1084,8 @@ function CosmicBotanicsField({
   const showBeastIntro = narrativePhase === "beast_guide";
   const showNodePanel = narrativePhase === "node_active" || narrativePhase === "node_complete";
   const shortPetalNames = configs.map((config) => SIX_SPACE_SHORT_LABELS[config.id] ?? config.name.replace("空间", ""));
-  const coreReadiness = Math.max(hexagramReadiness, activeNodeIndex / 6);
   const coreVisible = narrativePhase === "node_active" || narrativePhase === "node_complete";
-  const coreGlow = 0.1 + visualState.primitives.PARTICLE.intensity * 0.14 + coreReadiness * 0.12;
-  const coreTone = starFlowerState === "blooming" || starFlowerState === "rebirth" ? toneColor : "176,210,206";
+  const rendererOwnsUniverse = visualSource !== null;
   const pressureLayerOpacity = experienceState.primaryFocus === "PRESSURE_FIELD" ? 1 : experienceState.primaryFocus === "PRESSURE_AND_BEAST" ? 0.74 : 0.24;
   const beastLayerOpacity =
     experienceState.primaryFocus === "BEAST_AND_DIMENSION" || experienceState.primaryFocus === "DIMENSION_FLOW"
@@ -1036,45 +1110,49 @@ function CosmicBotanicsField({
       data-experience-loop="当前压力_六个空间_看见反应_结晶"
       data-experience-stage={experienceState.stage}
       data-experience-focus={experienceState.primaryFocus}
+      data-life-universe-continuity="SAME_GENESIS_UNIVERSE"
+      data-dynamics-universe-background-authority={rendererOwnsUniverse ? "GENESIS_WEBGL" : "DOM_FALLBACK"}
+      data-dynamics-pressure-visual-authority={rendererOwnsUniverse ? "GENESIS_WEBGL_PROJECTION" : "DOM_FALLBACK"}
       style={{
         "--visual-beast-intensity": visualState.primitives.BEAST.intensity,
         "--visual-pressure-intensity": visualState.primitives.PRESSURE.intensity,
         "--visual-dimension-intensity": visualState.primitives.DIMENSION.intensity,
         "--visual-particle-intensity": visualState.primitives.PARTICLE.intensity,
-        position: "relative",
-        minHeight: 536,
-        border: "1px solid rgba(199,169,107,0.16)",
-        borderRadius: 24,
+        position: "absolute",
+        inset: 0,
+        minHeight: "100%",
+        border: "none",
+        borderRadius: 0,
         overflow: "hidden",
-        padding: "18px 16px",
-        background:
-          `radial-gradient(circle at 52% 24%, rgba(80,58,120,${0.12 + visualState.primitives.PRESSURE.intensity * 0.1}), transparent 28%), radial-gradient(circle at 50% 58%, rgba(${toneColor},${0.1 + visualState.primitives.BEAST.coherence * 0.08}), rgba(5,6,7,0.12) 36%, rgba(5,6,7,0.04) 100%)`,
-        boxShadow:
-          activePetalState === "blooming" || visualState.primitives.PARTICLE.transitionEnergy > 0
-            ? `0 0 ${24 + visualState.primitives.PARTICLE.transitionEnergy * 18}px rgba(${toneColor},${0.1 + visualState.primitives.BEAST.coherence * 0.08})`
+        padding: 0,
+        background: rendererOwnsUniverse
+          ? "transparent"
+          : `radial-gradient(circle at 52% 30%, rgba(80,58,120,${0.05 + visualState.primitives.PRESSURE.intensity * 0.08}), transparent 31%), radial-gradient(circle at 50% 55%, rgba(${toneColor},${0.035 + visualState.primitives.BEAST.coherence * 0.055}), transparent 42%)`,
+        boxShadow: !rendererOwnsUniverse &&
+          (activePetalState === "blooming" || visualState.primitives.PARTICLE.transitionEnergy > 0)
+            ? `inset 0 0 ${34 + visualState.primitives.PARTICLE.transitionEnergy * 22}px rgba(${toneColor},${0.04 + visualState.primitives.BEAST.coherence * 0.045})`
             : "none",
       } as CSSProperties}
     >
       <CosmicFieldKeyframes />
-      <div data-visual-primitive="PARTICLE" data-visual-layer="particle-nebula-field" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.background, pointerEvents: "none", opacity: particleLayerOpacity }}>
+      {!rendererOwnsUniverse ? <div data-visual-primitive="PARTICLE" data-visual-layer="particle-nebula-field" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.background, pointerEvents: "none", opacity: particleLayerOpacity }}>
         <CosmicNebulaScene toneColor={toneColor} />
         <CosmicAmbientStars />
-      </div>
+      </div> : null}
 
       <div style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.entity, pointerEvents: coreVisible ? "auto" : "none", opacity: beastLayerOpacity }}>
-        <BaiHuConstellationLayer
+        <LifeConstellationLayer
           toneColor={toneColor}
           narrativePhase={narrativePhase}
           activeNodeIndex={activeNodeIndex}
-          activeDimensionName={SIX_SPACE_DISPLAY_NAME[activeConfig.id] ?? activeConfig.name}
           onCoreStarClick={onNodeBloom}
-          coreStars={coreStars}
-          showInteractionHint={experienceState.primaryFocus !== "CRYSTALLIZATION"}
+          visualSource={visualSource}
+          pressureIntensity={visualState.primitives.PRESSURE.intensity}
         />
       </div>
 
-      <div data-visual-primitive="PRESSURE" data-visual-layer="pressure-blackhole-field" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.structural, pointerEvents: "none", opacity: pressureLayerOpacity }}>
-        <BlackholeVortexScene toneColor={toneColor} visible={showBlackholeStatus} status={experienceState.pressureCopy} />
+      <div data-visual-primitive="PRESSURE" data-visual-layer="pressure-blackhole-field" data-pressure-overlay={rendererOwnsUniverse ? "SUPPRESSED_BY_WEBGL_AUTHORITY" : "DOM_FALLBACK"} style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.structural, pointerEvents: "none", opacity: pressureLayerOpacity }}>
+        <BlackholeVortexScene toneColor={toneColor} visible={!rendererOwnsUniverse && showBlackholeStatus} status={experienceState.pressureCopy} />
       </div>
 
       <p
@@ -1127,24 +1205,7 @@ function CosmicBotanicsField({
       </p>
 
       <div style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.structural, pointerEvents: "none", opacity: dimensionLayerOpacity }}>
-        <StarFlowerCoreRepresentation
-          visible={coreVisible}
-          activeNodeIndex={activeNodeIndex}
-          nodeCount={6}
-          coreReadiness={coreReadiness}
-          coreTone={coreTone}
-          coreGlow={Math.min(1, coreGlow + visualState.primitives.PARTICLE.intensity * 0.04)}
-        />
-
-        <EnergyReturnFlow
-          visible={coreVisible}
-          activeNodeIndex={activeNodeIndex}
-          coreReadiness={coreReadiness}
-          coreTone={coreTone}
-          coreGlow={Math.min(1, coreGlow + visualState.primitives.PARTICLE.intensity * 0.04)}
-        />
-
-        <SixDimensionWheel
+        <SixDimensionGravityField
           configs={configs}
           activeConfig={activeConfig}
           petalStates={petalStates}
@@ -1157,40 +1218,37 @@ function CosmicBotanicsField({
   );
 }
 
-type CrystalView = "MOLD" | "CARD";
-
 function SingleModelRevisionActionFocus({
   action,
   presentation,
   onConfirm,
+  visualSource,
 }: {
   action: SingleModelRevisionAction;
   presentation?: ChangeExperiencePresentation | null;
   onConfirm: () => void;
+  visualSource: RealLifeVisualSource | null;
 }) {
   const hasPresentation = Boolean(presentation);
-  const supportingLine = presentation?.recognition.protectionMeaning ?? `你在${action.layerLabel}这里，看见了一种熟悉的保护方式。`;
-  const firstResponseLabel = presentation?.recognition.firstResponseLabel ?? CHANGE_EXPERIENCE_FIRST_RESPONSE_LABEL;
-  const recognitionLine = `${firstResponseLabel}：${presentation?.recognition.oldReaction ?? action.sourceReason}`;
-  const microActionLine = presentation?.revision.newResponse ?? action.actionLine;
-  const beastCueLine = presentation?.visual.starbeast?.cueLine;
-  const traceLine = presentation?.meaning.crystalImprint ?? "不用解决全局。只是这一局，你先留下一个新的回应方式。";
+  const responseLine = presentation?.revision.newResponse ?? action.actionLine;
+  const coreAnchorTop = visualSource
+    ? `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`
+    : "31%";
 
   return (
     <section
-      aria-label="本局修正动作"
+      aria-label="认领这一局的新回应"
       data-model-revision-action="pending"
       data-model-revision-layer={action.layerLabel}
       data-model-revision-yao={action.yaoName}
       data-model-revision-intervention={action.interventionPotential}
       data-model-revision-agency={action.userAgency}
       data-change-experience-presentation={hasPresentation ? "active" : "fallback"}
+      data-revision-visual-language="SAME_LIFE_STELLAR_DEFLECTION"
+      data-revision-copy-composition="SINGLE_RESPONSE_SENTENCE"
       style={{
-        minHeight: 430,
-        position: "relative",
-        display: "grid",
-        placeItems: "center",
-        padding: "20px 0 8px",
+        position: "absolute",
+        inset: 0,
         overflow: "hidden",
       }}
     >
@@ -1199,104 +1257,101 @@ function SingleModelRevisionActionFocus({
         style={{
           position: "absolute",
           left: "50%",
-          top: "47%",
-          width: 306,
-          height: 306,
+          top: coreAnchorTop,
+          width: 284,
+          height: 284,
           transform: "translate(-50%, -50%)",
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(255,226,158,0.14), transparent 26%), radial-gradient(circle, rgba(0,184,212,0.08), transparent 58%)",
-          filter: "blur(4px)",
-          opacity: 0.72,
+            "radial-gradient(circle, rgba(255,226,158,0.13), transparent 20%), radial-gradient(circle, rgba(199,169,107,0.055), transparent 58%)",
+          filter: "blur(5px)",
+          opacity: 0.68,
         }}
       />
 
-      <div
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, opacity: 0.9, zIndex: 0 }}>
+        <LifeConstellationLayer
+          toneColor="222,196,154"
+          narrativePhase="node_complete"
+          activeNodeIndex={6}
+          onCoreStarClick={() => undefined}
+          visualSource={visualSource}
+          pressureIntensity={0.18}
+          interactionEnabled={false}
+        />
+      </div>
+
+      <button
+        type="button"
+        aria-label={`认领新回应：${responseLine}`}
+        data-revision-claim="LIFE_CORE_TOUCH"
+        data-life-core-anchor="LIFE_UNIVERSE_CORE_IDENTITY"
+        onClick={onConfirm}
         style={{
-          position: "relative",
-          width: "min(100%, 340px)",
-          boxSizing: "border-box",
-          display: "grid",
-          justifyItems: "center",
-          gap: 18,
-          padding: "30px 22px 24px",
-          borderRadius: 28,
-          border: "1px solid rgba(199,169,107,0.28)",
-          background:
-            "linear-gradient(180deg, rgba(16,18,20,0.88), rgba(6,7,8,0.96)), radial-gradient(circle at 50% 12%, rgba(199,169,107,0.18), transparent 42%)",
-          boxShadow: "0 28px 70px rgba(0,0,0,0.38), inset 0 0 34px rgba(199,169,107,0.08)",
-          textAlign: "center",
+          appearance: "none",
+          position: "absolute",
+          left: `${LIFE_UNIVERSE_CORE_IDENTITY.anchorX * 100}%`,
+          top: coreAnchorTop,
+          zIndex: 2,
+          width: "min(64vw, 236px)",
+          height: "min(28vh, 196px)",
+          transform: "translate(-50%, -50%)",
+          border: 0,
+          borderRadius: "48%",
+          background: "transparent",
+          padding: 0,
+          cursor: "pointer",
         }}
       >
         <span
+          aria-hidden="true"
           style={{
-            color: "rgba(199,169,107,0.72)",
-            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            fontSize: 11,
-            letterSpacing: "0.14em",
-          }}
-        >
-          本局修正动作
-        </span>
-
-        <div style={{ display: "grid", justifyItems: "center", gap: 8 }}>
-          <strong style={{ color: "rgba(255,246,218,0.94)", fontSize: 22, fontWeight: 680, letterSpacing: 0 }}>
-            这一局，可以先换一种回应
-          </strong>
-          <span style={{ color: "rgba(245,245,245,0.54)", fontSize: 13, lineHeight: 1.55 }}>
-            {supportingLine}
-          </span>
-        </div>
-
-        <div
-          style={{
-            width: "100%",
-            boxSizing: "border-box",
-            display: "grid",
-            gap: 10,
-            padding: "18px 16px",
-            borderRadius: 22,
-            border: "1px solid rgba(255,226,158,0.16)",
-            background: "rgba(255,255,255,0.035)",
-          }}
-        >
-          <span style={{ color: "rgba(245,245,245,0.48)", fontSize: 12, lineHeight: 1.5 }}>
-            {recognitionLine}
-          </span>
-          <strong style={{ color: "rgba(255,226,158,0.9)", fontSize: 16, lineHeight: 1.6, fontWeight: 650 }}>
-            {microActionLine}
-          </strong>
-          {beastCueLine ? (
-            <span style={{ color: "rgba(199,169,107,0.68)", fontSize: 12, lineHeight: 1.55 }}>
-              {beastCueLine}
-            </span>
-          ) : null}
-        </div>
-
-        <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 13, lineHeight: 1.65 }}>
-          {traceLine}
-        </p>
-
-        <button
-          type="button"
-          onClick={onConfirm}
-          style={{
-            appearance: "none",
-            width: "100%",
-            minHeight: 48,
-            border: "1px solid rgba(255,226,158,0.28)",
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            width: 74,
+            height: 74,
+            transform: "translate(-50%, -50%) scale(0.78)",
+            border: "1px solid rgba(222,196,154,0.22)",
             borderRadius: 999,
-            background: "linear-gradient(135deg, rgba(255,226,158,0.16), rgba(199,169,107,0.08))",
-            color: "rgba(255,246,218,0.92)",
-            fontSize: 14,
-            fontWeight: 650,
-            letterSpacing: "0.04em",
-            cursor: "pointer",
-            boxShadow: "0 0 24px rgba(199,169,107,0.12)",
+            boxShadow: "0 0 22px rgba(199,169,107,0.1)",
+            opacity: 0,
+            animation: "gy-near-mansion-invitation 4.8s ease-out infinite",
+            pointerEvents: "none",
+          }}
+        />
+      </button>
+
+      <div
+        style={{
+          position: "absolute",
+          zIndex: 3,
+          right: 30,
+          bottom: "max(54px, calc(32px + env(safe-area-inset-bottom)))",
+          left: 30,
+          display: "grid",
+          justifyItems: "center",
+          gap: 10,
+          textAlign: "center",
+          pointerEvents: "none",
+          textShadow: "0 0 20px rgba(2,3,6,0.94)",
+        }}
+      >
+        <strong
+          style={{
+            maxWidth: 300,
+            color: "rgba(255,239,196,0.9)",
+            fontSize: 16,
+            lineHeight: 1.65,
+            fontWeight: 620,
+            textWrap: "balance",
           }}
         >
-          确认这一局的新回应
-        </button>
+          {responseLine}
+        </strong>
+        <span style={{ color: "rgba(199,169,107,0.52)", fontSize: 9.5, letterSpacing: "0.08em" }}>
+          轻触生命核心 · 认领新轨迹
+        </span>
       </div>
     </section>
   );
@@ -1305,25 +1360,27 @@ function SingleModelRevisionActionFocus({
 function TransformationMomentFocus({
   action,
   presentation,
+  visualSource,
 }: {
   action: SingleModelRevisionAction;
   presentation?: ChangeExperiencePresentation | null;
+  visualSource: RealLifeVisualSource | null;
 }) {
-  const oldReactionLine = presentation?.revision.transformationMoment ?? `你刚才看见了：${action.sourceReason}`;
-  const newResponseLine = presentation?.meaning.growthMeaning ?? action.actionLine;
-  const beastCueLine = presentation?.visual.starbeast?.cueLine ?? "星兽正在把这次移动收进光里。";
-  const traceLine = presentation?.meaning.crystalImprint ?? "这一局，你留下了一种新的回应方式。";
+  const newResponseLine = presentation?.revision.newResponse ?? action.actionLine;
+  const traceLine = action.actionLine;
+  const coreAnchorTop = visualSource
+    ? `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`
+    : "31%";
 
   return (
     <section
-      aria-label="本局变化正在发生"
+      aria-label="新回应正在写入生命星纹"
       data-transformation-moment="active"
+      data-transformation-visual-event="ADDITIVE_CRYSTAL_IMPRINT"
+      data-transformation-copy-composition="SINGLE_RESPONSE_SENTENCE"
       style={{
-        minHeight: 430,
-        position: "relative",
-        display: "grid",
-        placeItems: "center",
-        padding: "20px 0 8px",
+        position: "absolute",
+        inset: 0,
         overflow: "hidden",
       }}
     >
@@ -1332,109 +1389,77 @@ function TransformationMomentFocus({
         style={{
           position: "absolute",
           left: "50%",
-          top: "47%",
+          top: coreAnchorTop,
           width: 318,
           height: 318,
           transform: "translate(-50%, -50%)",
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(255,246,218,0.2), transparent 18%), radial-gradient(circle, rgba(199,169,107,0.12), transparent 52%)",
+            "radial-gradient(circle, rgba(255,246,218,0.22), transparent 16%), radial-gradient(circle, rgba(199,169,107,0.1), transparent 50%)",
           filter: "blur(5px)",
           opacity: 0.82,
         }}
       />
 
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, opacity: 1, zIndex: 0 }}>
+        <LifeConstellationLayer
+          toneColor="222,196,154"
+          narrativePhase="node_complete"
+          activeNodeIndex={6}
+          onCoreStarClick={() => undefined}
+          visualSource={visualSource}
+          pressureIntensity={0}
+          interactionEnabled={false}
+          crystalImprintActive
+          crystalImprintKey={traceLine}
+        />
+      </div>
+
       <div
         style={{
-          position: "relative",
-          width: "min(100%, 340px)",
-          boxSizing: "border-box",
-          display: "grid",
-          justifyItems: "center",
-          gap: 18,
-          padding: "30px 22px 26px",
-          borderRadius: 28,
-          border: "1px solid rgba(255,226,158,0.28)",
-          background:
-            "linear-gradient(180deg, rgba(18,18,18,0.9), rgba(6,7,8,0.96)), radial-gradient(circle at 50% 8%, rgba(255,226,158,0.16), transparent 42%)",
-          boxShadow: "0 28px 70px rgba(0,0,0,0.4), inset 0 0 34px rgba(255,226,158,0.07)",
+          position: "absolute",
+          zIndex: 2,
+          right: 30,
+          bottom: "max(62px, calc(38px + env(safe-area-inset-bottom)))",
+          left: 30,
           textAlign: "center",
+          pointerEvents: "none",
+          textShadow: "0 0 20px rgba(2,3,6,0.94)",
         }}
       >
-        <span
+        <strong
           style={{
-            color: "rgba(199,169,107,0.72)",
-            fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            fontSize: 11,
-            letterSpacing: "0.14em",
+            display: "inline-block",
+            maxWidth: 300,
+            color: "rgba(255,239,196,0.92)",
+            fontSize: 16,
+            lineHeight: 1.65,
+            fontWeight: 620,
+            textWrap: "balance",
           }}
         >
-          改变正在发生
-        </span>
-
-        <strong style={{ color: "rgba(255,246,218,0.94)", fontSize: 23, fontWeight: 700, letterSpacing: 0 }}>
-          你刚刚移动了一点
+          {newResponseLine}
         </strong>
-
-        <div
-          style={{
-            width: "100%",
-            display: "grid",
-            gap: 10,
-            textAlign: "left",
-          }}
-        >
-          <div
-            style={{
-              display: "grid",
-              gap: 6,
-              padding: "14px 15px",
-              borderRadius: 18,
-              border: "1px solid rgba(245,245,245,0.1)",
-              background: "rgba(255,255,255,0.03)",
-            }}
-          >
-            <span style={{ color: "rgba(245,245,245,0.42)", fontSize: 11 }}>这次移动</span>
-            <span style={{ color: "rgba(245,245,245,0.66)", fontSize: 13, lineHeight: 1.55 }}>
-              {oldReactionLine}
-            </span>
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gap: 6,
-              padding: "14px 15px",
-              borderRadius: 18,
-              border: "1px solid rgba(255,226,158,0.2)",
-              background: "rgba(255,226,158,0.055)",
-            }}
-          >
-            <span style={{ color: "rgba(199,169,107,0.72)", fontSize: 11 }}>成长回应</span>
-            <span style={{ color: "rgba(255,226,158,0.9)", fontSize: 15, lineHeight: 1.55, fontWeight: 650 }}>
-              {newResponseLine}
-            </span>
-          </div>
-        </div>
-
-        <p style={{ margin: 0, color: "rgba(199,169,107,0.7)", fontSize: 12, lineHeight: 1.6 }}>
-          {beastCueLine}
-        </p>
-
-        <p style={{ margin: 0, color: "rgba(245,245,245,0.56)", fontSize: 13, lineHeight: 1.65 }}>
-          {traceLine}
-        </p>
       </div>
     </section>
   );
 }
 
-function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState }) {
-  const presentation = useMemo(
+function CurrentCrystalEndStateFocus({
+  state,
+  visualContinuity,
+  visualSource,
+}: {
+  state: CurrentCrystalEndState;
+  visualContinuity: RealityProductionHostProps["visualContinuity"] | null;
+  visualSource: RealLifeVisualSource | null;
+}) {
+  const navigate = useNavigate();
+  const crystalPresentation = useMemo(
     () => resolveDynamicsCurrentCrystalPresentation({ currentCrystalEndState: state }),
     [state],
   );
-  const [crystalView, setCrystalView] = useState<CrystalView>("MOLD");
+  const crystalImprintLine = crystalPresentation.crystalCopy;
   const [ringLiteState, setRingLiteState] = useState(() => readPersonalityRingLite());
   const ringPresentation = useMemo(
     () => resolveDynamicsPersonalityRingPresentation({
@@ -1443,25 +1468,54 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
     }),
     [ringLiteState, state],
   );
-  const isCardView = crystalView === "CARD";
+  const coreAnchorTop = visualSource
+    ? `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`
+    : "31%";
+  const archiveVisualContinuityReady =
+    visualContinuity !== null &&
+    visualSource !== null &&
+    visualContinuity.sourceReferenceId ===
+      visualSource.provenance.sourceReferenceId &&
+    visualContinuity.consumerSourceResult.consumerSource.sourceReferenceId ===
+      visualSource.provenance.sourceReferenceId &&
+    visualContinuity.consumerSourceResult.consumerSource.sourceExperienceMode ===
+      "REAL_USER_EXPERIENCE" &&
+    visualContinuity.consumerSourceResult.consumerSource.sourceProvenance ===
+      "REAL_USER_SESSION";
 
   function saveToPersonalityRingLite() {
     const depositResult = depositDynamicsCurrentCrystalToPersonalityRing({
       currentCrystalEndState: state,
     });
     setRingLiteState(depositResult.state);
+    if (depositResult.status === "DEPOSITED" || depositResult.status === "DUPLICATE") {
+      navigate(GUANYAO_ROUTES.archive, {
+        state:
+          archiveVisualContinuityReady && visualContinuity
+            ? { visualContinuity }
+            : undefined,
+      });
+    }
   }
 
   return (
     <section
-      aria-label={isCardView ? "本局生命印记" : "本局生命印记形成"}
-      data-crystal-view={crystalView}
+      aria-label="本局生命印记"
+      data-crystal-view="LIFE_IMPRINT"
+      data-crystal-visual-form="SAME_LIFE_IMPRINT"
+      data-crystal-completion-language="NAME_AND_ARCHIVE_ONLY"
+      data-crystal-hexagram-identity={crystalPresentation.hexagramTitle}
+      data-crystal-archive-identity={state.crystal.copy}
+      data-base-structure-invariant="true"
+      data-life-source-reference={visualSource?.provenance.sourceReferenceId ?? "IDENTITY_UNAVAILABLE"}
+      data-crystal-archive-visual-handoff={
+        archiveVisualContinuityReady
+          ? "MATCHED_REAL_USER_GENESIS_IDENTITY"
+          : "IDENTITY_UNAVAILABLE_NO_VISUAL_HANDOFF"
+      }
       style={{
-        minHeight: isCardView ? 548 : 424,
-        position: "relative",
-        display: "grid",
-        placeItems: "center",
-        padding: isCardView ? "16px 0 8px" : "22px 0 8px",
+        position: "absolute",
+        inset: 0,
         overflow: "hidden",
       }}
     >
@@ -1470,291 +1524,114 @@ function CurrentCrystalEndStateFocus({ state }: { state: CurrentCrystalEndState 
         style={{
           position: "absolute",
           left: "50%",
-          top: isCardView ? "38%" : "45%",
-          width: isCardView ? 330 : 292,
-          height: isCardView ? 330 : 292,
-          borderRadius: "50%",
+          top: coreAnchorTop,
+          width: 318,
+          height: 318,
           transform: "translate(-50%, -50%)",
+          borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(255,244,205,0.2) 0 7%, rgba(199,169,107,0.14) 8% 22%, rgba(199,169,107,0.05) 23% 48%, transparent 68%)",
-          filter: "blur(0.2px)",
-          boxShadow: "0 0 60px rgba(199,169,107,0.08)",
+            "radial-gradient(circle, rgba(255,246,218,0.18), transparent 17%), radial-gradient(circle, rgba(199,169,107,0.085), transparent 52%)",
+          filter: "blur(5px)",
+          opacity: 0.78,
         }}
       />
 
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+        <LifeConstellationLayer
+          toneColor="222,196,154"
+          narrativePhase="node_complete"
+          activeNodeIndex={6}
+          onCoreStarClick={() => undefined}
+          visualSource={visualSource}
+          pressureIntensity={0}
+          interactionEnabled={false}
+          crystalImprintActive
+          crystalImprintKey={crystalImprintLine}
+        />
+      </div>
+
       <div
-        aria-hidden="true"
         style={{
           position: "absolute",
-          left: "50%",
-          top: "45%",
-          width: 108,
-          height: 108,
-          borderRadius: "42% 58% 45% 55%",
-          transform: "translate(-50%, -50%) rotate(45deg)",
-          border: "1px solid rgba(255,236,184,0.42)",
-          background:
-            "linear-gradient(135deg, rgba(255,246,216,0.3), rgba(199,169,107,0.08) 48%, rgba(245,245,245,0.04))",
-          boxShadow: "0 0 34px rgba(199,169,107,0.2), inset 0 0 28px rgba(255,246,216,0.08)",
-        }}
-      />
-
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          width: "min(100%, 342px)",
+          zIndex: 2,
+          right: 30,
+          bottom: "max(52px, calc(30px + env(safe-area-inset-bottom)))",
+          left: 30,
           display: "grid",
           justifyItems: "center",
+          gap: 14,
           textAlign: "center",
-          gap: isCardView ? 11 : 13,
+          textShadow: "0 0 20px rgba(2,3,6,0.94)",
         }}
       >
-        <GuanyaoText size="eyebrow" tone="gold">
-          {isCardView ? "本局生命印记" : "这一局，变化已经留痕"}
-        </GuanyaoText>
-
-        {isCardView ? (
-          <article
-            aria-label="本局生命印记内容"
-            style={{
-              width: "100%",
-              display: "grid",
-              gap: 12,
-              padding: "20px 18px",
-              border: "1px solid rgba(255,226,158,0.26)",
-              borderRadius: 22,
-              background:
-                "linear-gradient(160deg, rgba(255,226,158,0.1), rgba(199,169,107,0.04) 48%, rgba(5,6,7,0.38)), radial-gradient(circle at 50% 20%, rgba(255,244,205,0.14), transparent 44%)",
-              boxShadow: "0 0 38px rgba(199,169,107,0.12), inset 0 0 26px rgba(255,246,216,0.04)",
-            }}
-          >
-            <h1
-              style={{
-                margin: 0,
-                color: "rgba(255,226,158,0.96)",
-                fontSize: 30,
-                lineHeight: 1.12,
-                fontWeight: 720,
-                letterSpacing: 0,
-                textShadow: "0 0 24px rgba(199,169,107,0.2)",
-              }}
-            >
-              {presentation.hexagramTitle}
-            </h1>
-
-            <strong
-              style={{
-                margin: "-2px 0 0",
-                color: "rgba(255,226,158,0.78)",
-                fontSize: 13,
-                lineHeight: 1.4,
-                fontWeight: 650,
-              }}
-            >
-              这次经历留下的变化
-            </strong>
-
-            <span
-              style={{
-                justifySelf: "center",
-                padding: "4px 10px",
-                border: "1px solid rgba(255,226,158,0.18)",
-                borderRadius: 999,
-                color: "rgba(199,169,107,0.68)",
-                fontSize: 11,
-                fontWeight: 650,
-              }}
-            >
-              本局卦象 · 生命印记
-            </span>
-
-            <p style={{ margin: 0, color: "rgba(245,245,245,0.58)", fontSize: 13, lineHeight: 1.55 }}>
-              {presentation.cardJourneyCopy}
-            </p>
-          </article>
-        ) : (
-          <>
-            <h1
-              style={{
-                margin: "92px 0 0",
-                color: "rgba(245,245,245,0.92)",
-                fontSize: 30,
-                lineHeight: 1.16,
-                fontWeight: 720,
-                letterSpacing: 0,
-                textShadow: "0 0 24px rgba(199,169,107,0.18)",
-              }}
-            >
-              这一局，留下了一枚生命印记
-            </h1>
-
-            <strong
-              style={{
-                color: "rgba(255,226,158,0.94)",
-                fontSize: 24,
-                lineHeight: 1.18,
-                fontWeight: 680,
-                letterSpacing: 0,
-              }}
-            >
-              本局卦象：{presentation.hexagramTitle}
-            </strong>
-          </>
-        )}
-
-        <div
+        <strong
+          data-crystal-imprint-name="CRYSTAL_IMPRINT_LINE"
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 10,
-            width: "100%",
-            maxWidth: 278,
-          }}
-        >
-          {[
-            ["下卦", presentation.lowerTrigram],
-            ["上卦", presentation.upperTrigram],
-          ].map(([label, value]) => (
-            <span
-              key={label}
-              style={{
-                display: "grid",
-                gap: 3,
-                padding: "8px 10px",
-                borderTop: "1px solid rgba(199,169,107,0.3)",
-                borderBottom: "1px solid rgba(199,169,107,0.12)",
-                color: "rgba(245,245,245,0.7)",
-              }}
-            >
-              <span style={{ color: "rgba(199,169,107,0.62)", fontSize: 11 }}>{label}</span>
-              <span style={{ color: "rgba(245,245,245,0.9)", fontSize: 18, fontWeight: 650 }}>{value}</span>
-            </span>
-          ))}
-        </div>
-
-        <p
-          style={{
-            margin: "3px 0 0",
             maxWidth: 310,
-            color: "rgba(245,245,245,0.66)",
-            fontSize: 14,
-            lineHeight: 1.62,
+            color: "rgba(255,239,196,0.94)",
+            fontSize: 16,
+            lineHeight: 1.65,
+            fontWeight: 620,
+            textWrap: "balance",
           }}
         >
-          {isCardView ? presentation.cardPrivacyCopy : presentation.crystalCopy}
-        </p>
+          {crystalImprintLine}
+        </strong>
 
-        {isCardView ? (
-          <section
-            aria-label="这次变化留下了什么"
-            style={{
-              display: "grid",
-              gap: 8,
-              width: "100%",
-              maxWidth: 318,
-              textAlign: "left",
-              padding: "12px 14px",
-              borderTop: "1px solid rgba(199,169,107,0.24)",
-              borderBottom: "1px solid rgba(199,169,107,0.12)",
-              color: "rgba(245,245,245,0.68)",
-              fontSize: 13,
-              lineHeight: 1.56,
-            }}
-          >
-            <strong style={{ color: "rgba(255,226,158,0.82)", fontSize: 13 }}>这次变化留下了什么</strong>
-            {presentation.behaviorReading.map((line) => (
-              <p key={line} style={{ margin: 0 }}>
-                {line}
-              </p>
-            ))}
-          </section>
-        ) : null}
-
-        <div
+        <button
+          type="button"
+          data-crystal-archive-action="PERSONALITY_RING_DEPOSIT"
+          data-crystal-archive-transition="SAME_LIFE_UNIVERSE_TRAJECTORY"
+          data-crystal-archive-state={ringPresentation.button.status}
+          onClick={saveToPersonalityRingLite}
+          disabled={ringPresentation.button.disabled}
           style={{
-            display: "grid",
-            justifyItems: "center",
-            gap: 8,
-            marginTop: 3,
+            appearance: "none",
+            border: 0,
+            borderBottom: `1px solid rgba(199,169,107,${ringPresentation.button.disabled ? 0.16 : 0.34})`,
+            padding: "5px 2px 6px",
+            background: "transparent",
+            color: ringPresentation.button.disabled
+              ? "rgba(199,169,107,0.42)"
+              : "rgba(255,226,158,0.72)",
+            fontSize: 10,
+            lineHeight: 1.4,
+            letterSpacing: "0.08em",
+            cursor: ringPresentation.button.disabled ? "default" : "pointer",
           }}
         >
-          {isCardView ? (
-            <button
-              type="button"
-              onClick={saveToPersonalityRingLite}
-              disabled={ringPresentation.button.disabled}
-              style={{
-                appearance: "none",
-                border: "1px solid rgba(255,226,158,0.42)",
-                borderRadius: 999,
-                padding: "10px 18px",
-                background: ringPresentation.button.status === "DEPOSITED"
-                  ? "rgba(199,169,107,0.16)"
-                  : "linear-gradient(135deg, rgba(255,226,158,0.18), rgba(199,169,107,0.07))",
-                color: "rgba(255,236,184,0.92)",
-                fontSize: 14,
-                fontWeight: 650,
-                letterSpacing: 0,
-                cursor: ringPresentation.button.disabled ? "default" : "pointer",
-                boxShadow: ringPresentation.button.status === "DEPOSITED"
-                  ? "0 0 18px rgba(199,169,107,0.1)"
-                  : "0 0 24px rgba(199,169,107,0.14)",
-              }}
-            >
-              {ringPresentation.button.label}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setCrystalView("CARD")}
-              style={{
-                appearance: "none",
-                border: "1px solid rgba(255,226,158,0.42)",
-                borderRadius: 999,
-                padding: "10px 18px",
-                background: "linear-gradient(135deg, rgba(255,226,158,0.2), rgba(199,169,107,0.08))",
-                color: "rgba(255,236,184,0.94)",
-                fontSize: 14,
-                fontWeight: 650,
-                letterSpacing: 0,
-                cursor: "pointer",
-                boxShadow: "0 0 24px rgba(199,169,107,0.14)",
-              }}
-            >
-              查看这次留下的印记
-            </button>
-          )}
-
-          {isCardView && ringPresentation.confirmation.visible ? (
-            <div
-              style={{
-                display: "grid",
-                justifyItems: "center",
-                gap: 4,
-                color: "rgba(245,245,245,0.62)",
-                fontSize: 12,
-                lineHeight: 1.55,
-              }}
-            >
-              <strong style={{ color: "rgba(255,226,158,0.84)", fontSize: 14, fontWeight: 650 }}>
-                {ringPresentation.confirmation.title}
-              </strong>
-              <span>{ringPresentation.confirmation.copy}</span>
-              <span style={{ color: "rgba(199,169,107,0.58)" }}>
-                {ringPresentation.confirmation.summary}
-              </span>
-            </div>
-          ) : null}
-        </div>
+          {ringPresentation.button.label}
+        </button>
       </div>
     </section>
   );
 }
-
 function HexagramCodeDeliveryShell() {
   const location = useLocation();
   const experienceSmokeFixture = readDevExperienceSmokeFixture();
+  const [realUserGenesisVisualSourceContext] = useState(() =>
+    readRealUserGenesisVisualSourceContext(),
+  );
+  const realLifeVisualSource = realUserGenesisVisualSourceContext?.visualSource ?? null;
+  const routeVisualContinuity = (
+    location.state as
+      | (DynamicsHandoffState &
+          Readonly<{
+            visualContinuity?: RealityProductionHostProps["visualContinuity"];
+          }>)
+      | null
+  )?.visualContinuity ?? null;
+  const arrivalVisualContinuity =
+    routeVisualContinuity !== null &&
+    realLifeVisualSource !== null &&
+    routeVisualContinuity.sourceReferenceId ===
+      realLifeVisualSource.provenance.sourceReferenceId
+      ? routeVisualContinuity
+      : null;
+  const [arrivalBridgeActive, setArrivalBridgeActive] = useState(
+    () => arrivalVisualContinuity !== null,
+  );
+  const [contextWhisperVisible, setContextWhisperVisible] = useState(false);
   const [dynamicsInputContext] = useState<DynamicsInputContext>(() =>
     resolveDynamicsInputContext({
       handoffState: location.state,
@@ -1783,7 +1660,6 @@ function HexagramCodeDeliveryShell() {
     cosmicSixDimensionState,
     cosmicNarrativePhase,
     pressureSeedContext,
-    starbeastFeedback,
   } = runtimeProjection;
   const cosmicBotanicsRuntime = runCosmicBotanicsRuntimeEngine({
     pressureSeed: selectedPressureSeedSurface,
@@ -1845,18 +1721,6 @@ function HexagramCodeDeliveryShell() {
     nodeLocked: executionSnapshot.node.locked,
     enginePhase: executionSnapshot.runtime.enginePhase,
   });
-  const baiHuCoreStars = resolveDynamicsBaiHuCoreStars({
-    seedId: executionSnapshot.seed.id,
-    seedText: executionSnapshot.seed.text,
-    primaryDimension: executionSnapshot.primaryDimension,
-    beastTone: executionSnapshot.beast.tone,
-    currentNode: executionSnapshot.node.current,
-    runtimePrimarySpaceId: runtimeProjection.currentPrimarySpaceId,
-    beastResonance: executionSnapshot.beast.resonance,
-    seedIntensity: executionSnapshot.seed.intensity,
-    selectedPressureSeedSurface,
-  });
-
   const hexagramAssetCandidate = resolveHexagramAssetCandidate({
     personaSnapshot: motherPersonaSnapshot,
     selectedPressureSeedContext: pressureSeedContext,
@@ -1912,6 +1776,26 @@ function HexagramCodeDeliveryShell() {
   }, [transformationMomentActive]);
 
   useEffect(() => {
+    if (!arrivalBridgeActive || arrivalVisualContinuity === null) return;
+    const timer = window.setTimeout(() => {
+      setArrivalBridgeActive(false);
+    }, 1500);
+    return () => window.clearTimeout(timer);
+  }, [arrivalBridgeActive, arrivalVisualContinuity]);
+
+  useEffect(() => {
+    if (arrivalBridgeActive) {
+      setContextWhisperVisible(false);
+      return undefined;
+    }
+    setContextWhisperVisible(true);
+    const timer = window.setTimeout(() => {
+      setContextWhisperVisible(false);
+    }, 2200);
+    return () => window.clearTimeout(timer);
+  }, [arrivalBridgeActive]);
+
+  useEffect(() => {
     dimensionTransitionLockRef.current = false;
   }, [activeDimensionIndex, executionSnapshot.node.current, executionSnapshot.runtime.enginePhase]);
 
@@ -1920,18 +1804,19 @@ function HexagramCodeDeliveryShell() {
   }
 
   function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
-    const isDimensionBoundary =
-      eventType === "CORE_STAR_BLOOM" &&
-      executionSnapshot.node.current === 6 &&
-      executionSnapshot.runtime.enginePhase !== "COMPLETE";
-
-    if (!isDimensionBoundary) {
+    if (eventType !== "CORE_STAR_BLOOM") {
       setExecutionSnapshot((current) => GuanyaoRuntimeEngine.run(current, { type: eventType, payload: context }));
       return;
     }
 
+    if (executionSnapshot.runtime.enginePhase === "COMPLETE") return;
     if (dimensionTransitionLockRef.current) return;
     dimensionTransitionLockRef.current = true;
+
+    const completedSpaceSnapshot = completeCurrentSpaceWithExistingEngine(
+      executionSnapshot,
+      context,
+    );
 
     setCompletedDimensionIds((previous) =>
       previous.includes(sequentialCurrentSpaceId) ? previous : [...previous, sequentialCurrentSpaceId],
@@ -1943,7 +1828,7 @@ function HexagramCodeDeliveryShell() {
       return;
     }
 
-    setExecutionSnapshot(GuanyaoRuntimeEngine.advance(executionSnapshot));
+    setExecutionSnapshot(completedSpaceSnapshot);
   }
 
   function bloomCosmicNode() {
@@ -1994,15 +1879,6 @@ function HexagramCodeDeliveryShell() {
   }, []);
 
   if (USE_COSMIC_BOTANICS_SIX_SPACE || LEGACY_DYNAMICS_FLOW_ISOLATED) {
-    const cosmicTopCopyOpacity =
-      cosmicNarrativePhase === "field_intro"
-        ? 1
-        : cosmicNarrativePhase === "seed_visible"
-          ? 0.82
-          : cosmicNarrativePhase === "beast_guide"
-            ? 0.42
-            : 0;
-
     return (
       <main
         data-product-definition={GUANYAO_PRODUCT_RUNTIME_DEFINITION.officialDefinition}
@@ -2017,126 +1893,162 @@ function HexagramCodeDeliveryShell() {
         data-dynamics-four-beast={motherPersonaSnapshot?.fourSymbol ?? "missing"}
         data-dynamics-lower-trigram={currentHexagramPresentation?.lowerTrigram ?? "missing"}
         data-dynamics-upper-trigram={currentHexagramPresentation?.upperTrigram ?? "missing"}
+        data-dynamics-observation-rhythm="ONE_GESTURE_PER_SPACE"
+        data-gravity-inertia-rhythm="REPEATED_PATH_OBSERVATION"
         style={{
+          height: "100dvh",
           minHeight: "100dvh",
           width: "100%",
           boxSizing: "border-box",
-          padding: "46px 20px calc(34px + env(safe-area-inset-bottom))",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          gap: 22,
+          padding: 0,
+          display: "block",
           background:
-            "radial-gradient(circle at 50% 28%, rgba(199,169,107,0.08), transparent 32%), radial-gradient(circle at 50% 64%, rgba(0,184,212,0.05), transparent 42%), #050607",
+            "radial-gradient(circle at 50% 36%, rgba(199,169,107,0.04), transparent 34%), #020306",
           color: "#f5f5f5",
           overflow: "hidden",
           position: "relative",
         }}
       >
-        <CosmicPageStarField />
+        {arrivalVisualContinuity ? (
+          <div
+            className="gy-reality-life-universe"
+            data-dynamics-life-universe-background="PERSISTENT"
+            data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"
+            data-source-reference-id={arrivalVisualContinuity.sourceReferenceId}
+            style={{
+              position: "absolute",
+              zIndex: 0,
+              inset: 0,
+              pointerEvents: "none",
+            }}
+          >
+            <Suspense fallback={null}>
+              <RealityLifeUniverseCanvas
+                visualContinuity={arrivalVisualContinuity}
+                selectedPressureSeedContext={
+                  dynamicsInputContext.selectedPressureSeedContext
+                }
+              />
+            </Suspense>
+            <RealityGravityInertiaField
+              repetitionDepth={activeDimensionIndex + 1}
+              activeObservation={
+                SIX_SPACE_SHORT_LABELS[sequentialCurrentSpaceId]
+              }
+              visible={
+                !arrivalBridgeActive &&
+                (cosmicNarrativePhase === "node_active" ||
+                  cosmicNarrativePhase === "node_complete")
+              }
+            />
+          </div>
+        ) : (
+          <CosmicPageStarField />
+        )}
+        {arrivalBridgeActive && arrivalVisualContinuity ? (
+          <div
+            data-dynamics-arrival-bridge="REALITY_VISUAL_CONTINUITY"
+            data-source-reference-id={arrivalVisualContinuity.sourceReferenceId}
+            style={{
+              position: "fixed",
+              zIndex: 20,
+              inset: 0,
+              pointerEvents: "none",
+              animation:
+                "gy-gravity-continuity-arrival 1500ms cubic-bezier(0.22, 0.7, 0.2, 1) both",
+            }}
+          >
+            <div
+              className="gy-reality-life-universe__disturbance"
+              aria-hidden="true"
+            >
+              <span />
+              <span />
+              <span />
+            </div>
+            <p className="gy-reality-life-universe__continuity-copy">
+              同一束生命光，开始进入现实引力。
+            </p>
+          </div>
+        ) : null}
 
         <section
+          data-dynamics-context-whisper="ENTRY_ONLY_THEN_DEEP_SPACE"
+          data-dynamics-context-whisper-state={
+            contextWhisperVisible ? "VISIBLE" : "DEEP_SPACE"
+          }
           style={{
-            position: "relative",
-            zIndex: 1,
+            position: "absolute",
+            zIndex: 6,
+            top: "max(26px, env(safe-area-inset-top))",
+            left: 22,
+            right: 22,
             display: "grid",
-            gap: 18,
-            opacity: cosmicTopCopyOpacity,
-            transition: "opacity 360ms ease",
-            pointerEvents: cosmicTopCopyOpacity > 0 ? "auto" : "none",
+            justifyItems: "center",
+            gap: 7,
+            opacity: contextWhisperVisible ? 0.78 : 0,
+            transform: `translateY(${contextWhisperVisible ? 0 : -5}px)`,
+            transition:
+              "opacity 680ms ease, transform 680ms cubic-bezier(0.22, 0.7, 0.2, 1)",
+            pointerEvents: "none",
+            textAlign: "center",
           }}
         >
           <span
             style={{
-              color: "rgba(199,169,107,0.76)",
+              color: "rgba(220,205,169,0.5)",
               fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 12,
-              letterSpacing: "0.16em",
+              fontSize: 9,
+              letterSpacing: "0.14em",
             }}
           >
             {displayExperienceState.loopLabel}
           </span>
 
-          <p style={{ margin: 0, maxWidth: 292, color: "rgba(245,245,245,0.64)", fontSize: 15, lineHeight: 1.6 }}>
+          <p style={{ margin: 0, maxWidth: 286, color: "rgba(245,240,226,0.62)", fontSize: 12, lineHeight: 1.55 }}>
             {displayExperienceState.headline}
-            <br />
-            {displayExperienceState.supportingCopy}
-            {experienceReadinessPresentation.motherReference.visible ? (
-              <>
-                <br />
-                <span style={{ color: "rgba(199,169,107,0.66)" }}>
-                  {experienceReadinessPresentation.motherReference.label}
-                </span>
-              </>
-            ) : null}
-            {currentHexagramPresentation ? (
-              <>
-                <br />
-                <span
-                  style={{
-                    display: "inline-grid",
-                    gap: 4,
-                    marginTop: 8,
-                    color: "rgba(199,169,107,0.68)",
-                  }}
-                >
-                  <span style={{ fontSize: 11, fontFamily: "SFMono-Regular, Menlo, Monaco, Consolas, monospace", letterSpacing: "0.12em" }}>
-                    这一局，力量如何相遇
-                  </span>
-                  <span style={{ color: "rgba(245,245,245,0.82)", fontSize: 16, fontWeight: 680, letterSpacing: 0 }}>
-                    {currentHexagramPresentation.title}
-                    {currentHexagramPresentation.trigramMark ? ` ${currentHexagramPresentation.trigramMark}` : ""}
-                  </span>
-                  <span style={{ color: "rgba(245,245,245,0.56)", fontSize: 13, lineHeight: 1.5 }}>
-                    你的原始生命倾向，正在与此刻的环境力量相遇。这不是对你的最终定义。
-                  </span>
-                  {currentHexagramPresentation.starbeastIngress ? (
-                    <span style={{ color: "rgba(199,169,107,0.62)", fontSize: 12 }}>
-                      {currentHexagramPresentation.starbeastIngress}
-                    </span>
-                  ) : null}
-                </span>
-              </>
-            ) : null}
           </p>
         </section>
 
         <section
+          data-dynamics-visual-stage="FULLSCREEN_LIFE_UNIVERSE"
           style={{
-            position: "relative",
-            zIndex: 1,
-            display: "grid",
-            gap: 18,
+            position: "absolute",
+            zIndex: 3,
+            inset: 0,
+            opacity: arrivalBridgeActive ? 0 : 1,
+            transition: "opacity 620ms ease",
           }}
         >
           {currentCrystalEndState ? (
-            <CurrentCrystalEndStateFocus state={currentCrystalEndState} />
+            <CurrentCrystalEndStateFocus
+              state={currentCrystalEndState}
+              visualContinuity={arrivalVisualContinuity}
+              visualSource={realLifeVisualSource}
+            />
           ) : transformationMomentActive && singleModelRevisionAction ? (
             <TransformationMomentFocus
               action={singleModelRevisionAction}
               presentation={changeExperiencePresentation}
+              visualSource={realLifeVisualSource}
             />
           ) : isRevisionActionPending && singleModelRevisionAction ? (
             <SingleModelRevisionActionFocus
               action={singleModelRevisionAction}
               presentation={changeExperiencePresentation}
               onConfirm={handleRevisionActionConfirm}
+              visualSource={realLifeVisualSource}
             />
           ) : (
             <CosmicBotanicsField
               configs={sixSpaceConfigs}
-              currentStep={executionSnapshot.node.current}
               activeDimensionStep={sixSpaceProgress.currentSpaceStep}
               pressureSeedSurface={selectedPressureSeedSurface}
               petalStates={sixSpaceProgress.petalStates}
-              pollenBursts={sixSpaceProgress.pollenBursts}
-              starbeast={starbeastFeedback}
-              starFlowerState={cosmicBotanicsRuntime.starFlower.growthState}
-              hexagramReadiness={cosmicBotanicsRuntime.hexagramCardGeneration.readiness}
               activeNodeIndex={sixSpaceProgress.completedInnerNodeCount}
               narrativePhase={cosmicNarrativePhase}
               onNodeBloom={bloomCosmicNode}
-              coreStars={baiHuCoreStars.coreStars}
+              visualSource={realLifeVisualSource}
               visualState={visualState}
               experienceState={displayExperienceState}
             />
@@ -2157,27 +2069,21 @@ function HexagramCodeDeliveryShell() {
           data-value-flow-asset={valueFlow.assetTrigger}
           data-value-flow-monetization={valueFlow.monetizationEvent}
           style={{
-            position: "relative",
-            zIndex: 1,
+            position: "absolute",
+            zIndex: 7,
+            right: 22,
+            bottom: "max(16px, env(safe-area-inset-bottom))",
+            left: 22,
             display: "block",
-            color: "rgba(245,245,245,0.5)",
-            fontSize: 12,
+            color: "rgba(245,245,245,0.38)",
+            fontSize: 10,
             lineHeight: 1.55,
+            pointerEvents: "none",
+            opacity: arrivalBridgeActive ? 0 : 1,
+            transition: "opacity 520ms ease",
           }}
         >
-          {currentCrystalEndState ? (
-            <span style={{ display: "block", textAlign: "center", color: "rgba(199,169,107,0.54)" }}>
-              六个空间已经走完
-            </span>
-          ) : transformationMomentActive ? (
-            <span style={{ display: "block", textAlign: "center", color: "rgba(199,169,107,0.54)" }}>
-              新的回应正在进入这一局
-            </span>
-          ) : isRevisionActionPending ? (
-            <span style={{ display: "block", textAlign: "center", color: "rgba(199,169,107,0.54)" }}>
-              {displayExperienceState.supportingCopy}
-            </span>
-          ) : cosmicNarrativePhase === "node_complete" &&
+          {currentCrystalEndState || transformationMomentActive || isRevisionActionPending ? "" : cosmicNarrativePhase === "node_complete" &&
             hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE"
               ? displayExperienceState.crystalCopy
               : ""}

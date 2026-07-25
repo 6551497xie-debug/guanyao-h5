@@ -6,6 +6,7 @@ import type { GenesisVisualConsumerSourceResult } from "./genesisVisualConsumerS
 import type { GenesisProductionVisualCalibrationBundle } from "./genesisProductionVisualCalibrationBridge";
 import type { GenesisFourSymbolDirectionFieldVisualCalibration } from "./genesisFourSymbolDirectionFieldVisualCalibration";
 import type { GenesisLifeArchetypeForceCondensationVisualCalibration } from "./genesisLifeArchetypeForceCondensationVisualCalibration";
+import type { SelectedPressureSeedContext } from "./primaryPetal";
 
 export type RealityProductionRouteEntryBoundary = Readonly<{
   productionRouteEntryOnly: true;
@@ -31,7 +32,8 @@ export type RealityProductionRouteEntryBoundary = Readonly<{
   noRendererInvocation: true;
   noSourceRecalculation: true;
   noStorageRead: true;
-  noStorageWrite: true;
+  selectedPressureSeedHandoffWriteOnly: true;
+  explicitDynamicsNavigationOnly: true;
   noGenesisNavigationMutation: true;
   noPresenceMutation: true;
 }>;
@@ -47,7 +49,7 @@ export type RealityProductionHostBoundary = Readonly<{
   v2PressureSeedPresentationOnly: true;
   explicitPressureSeedRecognitionOnly: true;
   explicitNextBundleRequestOnly: true;
-  gravityReadinessHoldOnly: true;
+  explicitGravityContinuationCallbackOnly: true;
   noFixtureSource: true;
   noPrototypeSource: true;
   noDefaultSource: true;
@@ -87,4 +89,7 @@ export type RealityProductionHostProps = Readonly<{
     fourSymbolDirectionFieldVisualCalibration: GenesisFourSymbolDirectionFieldVisualCalibration;
     lifeArchetypeForceCondensationVisualCalibration: GenesisLifeArchetypeForceCondensationVisualCalibration;
   }>;
+  onContinueToGravity: (
+    selectedPressureSeedContext: Readonly<SelectedPressureSeedContext>,
+  ) => void;
 }>;

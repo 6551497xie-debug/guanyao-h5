@@ -31,7 +31,7 @@ export const REALITY_PRODUCTION_HOST_BOUNDARY:
     v2PressureSeedPresentationOnly: true,
     explicitPressureSeedRecognitionOnly: true,
     explicitNextBundleRequestOnly: true,
-    gravityReadinessHoldOnly: true,
+    explicitGravityContinuationCallbackOnly: true,
     noFixtureSource: true,
     noPrototypeSource: true,
     noDefaultSource: true,
@@ -75,6 +75,7 @@ export function RealityProductionHost({
   pressureSeedContinuationContext,
   genesisPresenceContinuityContext,
   visualContinuity,
+  onContinueToGravity,
 }: RealityProductionHostProps) {
   const sourceContext = routeAuthorization.sourceContext;
   const [pressureHostState, setPressureHostState] =
@@ -254,13 +255,23 @@ export function RealityProductionHost({
     );
   };
 
+  const continueToGravity = () => {
+    if (
+      pressureSeedSession.gravityReadiness !== "READY" ||
+      pressureSeedSession.selectedPressureSeedContext === null
+    ) {
+      return;
+    }
+    onContinueToGravity(pressureSeedSession.selectedPressureSeedContext);
+  };
+
   return (
     <main
       className="gy-reality-life-universe"
       data-production-reality-status="AUTHORIZED_PRODUCTION_REALITY_SOURCE"
       data-reality-production-host-state={
         pressureSeedSession.gravityReadiness === "READY"
-          ? "GRAVITY_READY_HOLD"
+          ? "GRAVITY_READY_TO_CONTINUE"
           : "PRESSURE_SEED_RECOGNITION"
       }
       data-source-experience-mode={sourceContext.sourceExperienceMode}
@@ -288,7 +299,12 @@ export function RealityProductionHost({
       data-choice-stage="NOT_STARTED"
       data-crystal-readiness="NOT_READY"
     >
-      <RealityLifeUniverseCanvas visualContinuity={visualContinuity} />
+      <RealityLifeUniverseCanvas
+        visualContinuity={visualContinuity}
+        selectedPressureSeedContext={
+          pressureSeedSession.selectedPressureSeedContext
+        }
+      />
       <div className="gy-reality-life-universe__disturbance" aria-hidden="true">
         <span />
         <span />
@@ -306,6 +322,7 @@ export function RealityProductionHost({
         onRecognize={recognizePressureSeed}
         onRequestNextBundle={requestNextPressureSeedBundle}
         onPause={pausePressureSeed}
+        onContinueToGravity={continueToGravity}
       />
     </main>
   );

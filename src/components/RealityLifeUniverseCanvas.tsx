@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createGenesisWebGLRendererCore } from "../renderers/genesisWebGLRendererCore";
+import { adaptRealLifeVisualSource } from "../services/realLifeVisualSourceAdapter";
+import { readRealUserGenesisVisualSourceContext } from "../services/realUserGenesisVisualSourceContext";
 import "../styles/reality-life-entry-continuity.css";
 import type {
   GenesisProductionCanvasHostState,
@@ -13,14 +15,69 @@ const REALITY_ARRIVAL_TIMING_MS = Object.freeze({
 
 export function RealityLifeUniverseCanvas({
   visualContinuity,
-}: Pick<RealityProductionHostProps, "visualContinuity">) {
+  selectedPressureSeedContext = null,
+}: Pick<RealityProductionHostProps, "visualContinuity"> &
+  Readonly<{
+    selectedPressureSeedContext?:
+      | Parameters<RealityProductionHostProps["onContinueToGravity"]>[0]
+      | null;
+  }>) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [rendererState, setRendererState] =
     useState<GenesisProductionCanvasHostState>("STARTING");
   const [arrivalPhase, setArrivalPhase] = useState("IDENTITY_HOLD");
+  const realityPressureConsumer = useMemo(() => {
+    const frozenProjection =
+      visualContinuity.consumerSourceResult.consumerSource.projectionBundle
+        .realityPressureProjection;
+    if (selectedPressureSeedContext === null) {
+      return Object.freeze({
+        status: "WAITING" as const,
+        projection: frozenProjection,
+      });
+    }
+
+    const sourceContext = readRealUserGenesisVisualSourceContext();
+    if (
+      sourceContext === null ||
+      sourceContext.sourceReferenceId !== visualContinuity.sourceReferenceId
+    ) {
+      return Object.freeze({
+        status: "BLOCKED" as const,
+        projection: null,
+      });
+    }
+
+    const adaptedSource = adaptRealLifeVisualSource(
+      Object.freeze({
+        ...sourceContext.visualSourceAdapterInput,
+        selectedPressureSeedContext,
+      }),
+    );
+    const projection =
+      adaptedSource.status === "AVAILABLE"
+        ? adaptedSource.visualSource.projectionBundle.realityPressureProjection
+        : null;
+    if (
+      adaptedSource.status !== "AVAILABLE" ||
+      adaptedSource.visualSource.provenance.selectedPressureSeedId !==
+        selectedPressureSeedContext.selectedPressureSeedId ||
+      projection === null
+    ) {
+      return Object.freeze({
+        status: "BLOCKED" as const,
+        projection: null,
+      });
+    }
+
+    return Object.freeze({
+      status: "RESPONDING" as const,
+      projection,
+    });
+  }, [selectedPressureSeedContext, visualContinuity]);
   const realityPressureFlowSide =
-    (visualContinuity.consumerSourceResult.consumerSource.projectionBundle
-      .realityPressureProjection?.pressureExpression.flowDeflection ?? 0) >= 0
+    (realityPressureConsumer.projection?.pressureExpression.flowDeflection ??
+      0) >= 0
       ? "RIGHT"
       : "LEFT";
 
@@ -53,7 +110,8 @@ export function RealityLifeUniverseCanvas({
       source.sourceReferenceId !== visualContinuity.sourceReferenceId ||
       visualContinuity.visualCalibrationBundle.sourceReferenceId !==
         visualContinuity.sourceReferenceId ||
-      visualContinuity.visualCalibrationBundle.runtimeStage !== "COMPLETION"
+      visualContinuity.visualCalibrationBundle.runtimeStage !== "COMPLETION" ||
+      realityPressureConsumer.status === "BLOCKED"
     ) {
       setRendererState("BLOCKED");
       return undefined;
@@ -84,7 +142,7 @@ export function RealityLifeUniverseCanvas({
       lifeForceInfusionProjection:
         projectionBundle.lifeForceInfusionProjection,
       personalRevealProjection: projectionBundle.personalRevealProjection,
-      realityPressureProjection: projectionBundle.realityPressureProjection,
+      realityPressureProjection: realityPressureConsumer.projection,
       genesisVisualRealization:
         visualContinuity.visualCalibrationBundle.genesisVisualRealization,
       genesisPerspectiveCalibration:
@@ -132,7 +190,7 @@ export function RealityLifeUniverseCanvas({
       resizeObserver.disconnect();
       controller.dispose();
     };
-  }, [visualContinuity]);
+  }, [realityPressureConsumer, visualContinuity]);
 
   return (
     <canvas

@@ -9,6 +9,7 @@ export type RealityPressureSeedPresentationBoundary = Readonly<{
   explicitRecognitionCallbackOnly: true;
   explicitNextBundleCallbackOnly: true;
   explicitPauseCallbackOnly: true;
+  explicitGravityContinuationCallbackOnly: true;
   sourceReferenceReadOnly: true;
   noFixtureSource: true;
   noPrototypeAuthorization: true;
@@ -34,6 +35,7 @@ export type RealityPressureSeedPresentationProps = Readonly<{
   onRecognize: (candidateReferenceId: string) => void;
   onRequestNextBundle: () => void;
   onPause: () => void;
+  onContinueToGravity: () => void;
 }>;
 
 export type RealityPressureSeedCandidatePresentationProps = Readonly<{
