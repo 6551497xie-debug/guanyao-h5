@@ -113,11 +113,15 @@ try {
   [
     "forceCondensationGroup",
     "forceCondensationMaterials",
-    "forceCondensationExpression.density",
-    "forceCondensationExpression.formAspectRatio",
-    "new TorusGeometry",
+    "forceRhythmPositions",
+    "forceExpressionDensity",
+    "forceExpressionAspectRatio",
+    "new Points",
   ].forEach((marker) =>
     assertIncludes("renderer realizes archetype as abstract force", source.renderer, marker),
+  );
+  ["new TorusGeometry", "forceCondensationGroup.rotation"].forEach((marker) =>
+    assertExcludes("renderer keeps force rhythm free of orbit rings", source.renderer, marker),
   );
   assertExcludes(
     "renderer remains archetype identity blind",

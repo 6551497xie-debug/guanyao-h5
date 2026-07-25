@@ -1041,6 +1041,110 @@ export function createGenesisWebGLRendererCore(
   const forceExpressionAxisY = Math.sin(forceExpressionAxisAngle);
   const forceExpressionPerpendicularX = -forceExpressionAxisY;
   const forceExpressionPerpendicularY = forceExpressionAxisX;
+  const forceCondensationGroup = new Group();
+  let forceRhythmParticleCount = 0;
+  let forceRhythmParticleSeeds: Float32Array | null = null;
+  let forceRhythmPositions: Float32Array | null = null;
+  let forceRhythmPositionAttribute: Float32BufferAttribute | null = null;
+  let forceRhythmMaterial: PointsMaterial | null = null;
+  const forceCondensationMaterials: MeshBasicMaterial[] = [];
+  let forceCondensationOuterField: Mesh | null = null;
+  let forceCondensationInnerField: Mesh | null = null;
+  if (
+    forceCondensationExpression !== null &&
+    archetypeForceCalibration !== null &&
+    archetypeForceCalibration.phase !== "HIDDEN"
+  ) {
+    forceRhythmParticleCount = Math.round(
+      96 + forceExpressionDensity * 96,
+    );
+    forceRhythmParticleSeeds = new Float32Array(
+      forceRhythmParticleCount * 5,
+    );
+    forceRhythmPositions = new Float32Array(
+      forceRhythmParticleCount * 3,
+    );
+    const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+    for (let index = 0; index < forceRhythmParticleCount; index += 1) {
+      const seedOffset = index * 5;
+      const radialSeed =
+        (Math.sin((index + 1) * 12.9898) * 43758.5453) % 1;
+      const depthSeed =
+        (Math.sin((index + 1) * 78.233) * 12345.6789) % 1;
+      forceRhythmParticleSeeds[seedOffset] = Math.abs(radialSeed);
+      forceRhythmParticleSeeds[seedOffset + 1] =
+        index * goldenAngle +
+        Math.sin(index * 0.73) * 0.18;
+      forceRhythmParticleSeeds[seedOffset + 2] =
+        (index % 7) / 6;
+      forceRhythmParticleSeeds[seedOffset + 3] =
+        ((index * 17) % forceRhythmParticleCount) /
+        forceRhythmParticleCount;
+      forceRhythmParticleSeeds[seedOffset + 4] =
+        Math.max(-1, Math.min(1, depthSeed));
+    }
+    const forceRhythmGeometry = new BufferGeometry();
+    forceRhythmPositionAttribute = new Float32BufferAttribute(
+      forceRhythmPositions,
+      3,
+    );
+    forceRhythmGeometry.setAttribute(
+      "position",
+      forceRhythmPositionAttribute,
+    );
+    forceRhythmMaterial = new PointsMaterial({
+      color: new Color(0xffe5af),
+      size: 0.042,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0,
+      blending: AdditiveBlending,
+      depthWrite: false,
+      depthTest: false,
+    });
+    forceCondensationOuterField = new Mesh(
+      new SphereGeometry(0.52, 20, 16),
+      new MeshBasicMaterial({
+        color: new Color(0xcbb98d),
+        transparent: true,
+        opacity: 0,
+        blending: AdditiveBlending,
+        depthWrite: false,
+        depthTest: false,
+      }),
+    );
+    forceCondensationInnerField = new Mesh(
+      new SphereGeometry(0.28, 18, 14),
+      new MeshBasicMaterial({
+        color: new Color(0xffe5af),
+        transparent: true,
+        opacity: 0,
+        blending: AdditiveBlending,
+        depthWrite: false,
+        depthTest: false,
+      }),
+    );
+    forceCondensationMaterials.push(
+      forceCondensationOuterField.material as MeshBasicMaterial,
+      forceCondensationInnerField.material as MeshBasicMaterial,
+    );
+    forceCondensationOuterField.rotation.z = forceExpressionAxisAngle;
+    forceCondensationInnerField.rotation.z = forceExpressionAxisAngle;
+    forceCondensationOuterField.renderOrder = 2;
+    forceCondensationInnerField.renderOrder = 3;
+    const forceRhythmPoints = new Points(
+      forceRhythmGeometry,
+      forceRhythmMaterial,
+    );
+    forceRhythmPoints.renderOrder = 4;
+    forceCondensationGroup.position.z = 0.16;
+    forceCondensationGroup.add(
+      forceCondensationOuterField,
+      forceCondensationInnerField,
+      forceRhythmPoints,
+    );
+    root.add(forceCondensationGroup);
+  }
 
   const lifePresence = sceneProjection.lifePresence;
   const lifeStarCore = sceneProjection.lifeStarCore;
@@ -1679,6 +1783,15 @@ export function createGenesisWebGLRendererCore(
         forceExpressionRaw *
         forceExpressionRaw *
         (3 - 2 * forceExpressionRaw);
+      const forceRhythmRevealRaw = isLifeForce
+        ? Math.min(1, Math.max(0, (elapsedSeconds - 0.18) / 1.1))
+        : isStarBeastReveal || isCompletion
+          ? 1
+          : 0;
+      const forceRhythmRevealProgress =
+        forceRhythmRevealRaw *
+        forceRhythmRevealRaw *
+        (3 - 2 * forceRhythmRevealRaw);
       const forceRecoveryRaw = isLifeForce
         ? Math.min(1, Math.max(0, (elapsedSeconds - 1.78) / 1.42))
         : isStarBeastReveal || isCompletion
@@ -1974,6 +2087,9 @@ export function createGenesisWebGLRendererCore(
                 ? 0.1 + recognitionIdentityLock * 0.04
                 : 0.62) *
           directionRevealProgress *
+          (isLifeForce
+            ? 1 - forceRhythmRevealProgress * 0.78
+            : 1) *
           presenceSourceCarry *
           (0.94 + (responseBreath - 1) * 1.5);
         directionFieldMaterial.size =
@@ -1999,6 +2115,9 @@ export function createGenesisWebGLRendererCore(
                 ? 0.54
                 : 0.28) *
             directionSourceWake *
+            (isLifeForce
+              ? 1 - forceRhythmRevealProgress * 0.72
+              : 1) *
             presenceSourceCarry;
           directionBirthSource.scale.setScalar(
             directionSourceBreath *
@@ -2016,6 +2135,9 @@ export function createGenesisWebGLRendererCore(
                 ? 0.08
                 : 0.045) *
             directionSourceWake *
+            (isLifeForce
+              ? 1 - forceRhythmRevealProgress * 0.72
+              : 1) *
             presenceSourceCarry *
             (0.9 + directionRevealProgress * 0.1);
           directionBirthSourceHalo.scale.setScalar(
@@ -2034,10 +2156,197 @@ export function createGenesisWebGLRendererCore(
               ? 0.045 * directionRevealProgress
               : (0.018 + forceDensity * 0.008) *
                 forceTendencyProgress) *
+            (isLifeForce
+              ? 1 - forceRhythmRevealProgress * 0.68
+              : 1) *
             (1 - forceActionPresence * 0.55) *
             presenceSourceCarry *
             (0.94 + (responseBreath - 1) * 1.4);
         }
+      }
+      const forceRhythmStagePresence = isLifeForce
+        ? forceRhythmRevealProgress
+        : isStarBeastReveal
+          ? Math.max(0.18, 1 - presenceBodyReveal * 0.78)
+          : isCompletion
+            ? 0.14 + recognitionIdentityLock * 0.04
+            : 0;
+      if (
+        forceRhythmParticleSeeds !== null &&
+        forceRhythmPositions !== null &&
+        forceRhythmPositionAttribute !== null &&
+        forceRhythmMaterial !== null &&
+        forceRhythmParticleCount > 0
+      ) {
+        const forceRhythmAspect =
+          1 +
+          (forceExpressionAspectRatio - 1) *
+            (0.92 + perspectiveForceRhythm * 0.28);
+        const forceRhythmGathering =
+          1 -
+          forceAbsorptionEnvelope *
+            (0.16 + forceExpressionDensity * 0.08);
+        for (
+          let index = 0;
+          index < forceRhythmParticleCount;
+          index += 1
+        ) {
+          const seedOffset = index * 5;
+          const radialSeed =
+            forceRhythmParticleSeeds[seedOffset];
+          const angle =
+            forceRhythmParticleSeeds[seedOffset + 1];
+          const layer =
+            forceRhythmParticleSeeds[seedOffset + 2];
+          const phaseOffset =
+            forceRhythmParticleSeeds[seedOffset + 3];
+          const depthSeed =
+            forceRhythmParticleSeeds[seedOffset + 4];
+          const baseRadius =
+            0.08 +
+            Math.pow(radialSeed, 0.72) *
+              (0.64 + forceExpressionDensity * 0.34);
+          const rhythmWave = Math.sin(
+            forceRhythmPhase -
+              radialSeed * Math.PI * 1.35 -
+              phaseOffset * Math.PI * 0.5,
+          );
+          const recoveryWave = Math.sin(
+            forceRhythmPhase * 0.5 +
+              phaseOffset * Math.PI * 2,
+          );
+          const livingPulse =
+            1 +
+            rhythmWave *
+              (0.045 +
+                forceExpressionBreathingAmplitude * 2.4) +
+            recoveryWave *
+              forceExpressionBreathingAmplitude *
+              0.42;
+          const revealScale =
+            0.12 + forceRhythmStagePresence * 0.88;
+          const radialAction =
+            (1 +
+              forceExpressionRadialBias *
+                (0.52 + layer * 0.34)) *
+            livingPulse *
+            revealScale *
+            forceRhythmGathering;
+          const axial =
+            Math.cos(angle) *
+            baseRadius *
+            forceRhythmAspect *
+            radialAction;
+          const lateral =
+            Math.sin(angle) *
+            baseRadius *
+            (2 - forceRhythmAspect) *
+            radialAction;
+          const positionOffset = index * 3;
+          forceRhythmPositions[positionOffset] =
+            forceExpressionAxisX * axial +
+            forceExpressionPerpendicularX * lateral;
+          forceRhythmPositions[positionOffset + 1] =
+            forceExpressionAxisY * axial +
+            forceExpressionPerpendicularY * lateral;
+          forceRhythmPositions[positionOffset + 2] =
+            depthSeed *
+              (0.08 + forceExpressionDensity * 0.1) *
+              revealScale +
+            rhythmWave * 0.025 * forceRhythmStagePresence;
+        }
+        forceRhythmPositionAttribute.needsUpdate = true;
+        forceRhythmMaterial.opacity =
+          (isLifeForce
+            ? 0.68 + forceExpressionDensity * 0.18
+            : isStarBeastReveal
+              ? 0.12
+              : isCompletion
+                ? 0.07
+                : 0) *
+          forceRhythmStagePresence *
+          (0.94 + (forceRhythmBreath - 1) * 1.8);
+        forceRhythmMaterial.size =
+          (0.036 + forceExpressionDensity * 0.01) *
+          (0.96 + (forceRhythmBreath - 1) * 1.2);
+      }
+      if (
+        forceCondensationOuterField !== null &&
+        forceCondensationInnerField !== null &&
+        forceCondensationMaterials.length === 2
+      ) {
+        const fieldRhythm =
+          1 +
+          (forceRhythmBreath - 1) *
+            (1.4 + perspectiveForceRhythm * 0.4);
+        const fieldAspect =
+          1 +
+          (forceExpressionAspectRatio - 1) *
+            (1.15 + perspectiveForceRhythm * 0.24);
+        const fieldCounterAspect =
+          Math.max(0.66, 2 - fieldAspect);
+        const fieldGathering =
+          1 -
+          forceAbsorptionEnvelope *
+            (0.08 + forceExpressionDensity * 0.05);
+        const fieldOffset =
+          (0.1 + Math.abs(forceExpressionRadialBias) * 0.12) *
+          forceRhythmStagePresence *
+          fieldRhythm;
+        forceCondensationOuterField.position.set(
+          forceExpressionAxisX * fieldOffset +
+            forceExpressionPerpendicularX *
+              forceExpressionRadialBias *
+              0.08,
+          forceExpressionAxisY * fieldOffset +
+            forceExpressionPerpendicularY *
+              forceExpressionRadialBias *
+              0.08,
+          -0.05,
+        );
+        forceCondensationInnerField.position.set(
+          -forceExpressionAxisX *
+              0.08 *
+              forceRhythmStagePresence +
+            forceExpressionPerpendicularX *
+              (0.035 + forceExpressionRadialBias * 0.04),
+          -forceExpressionAxisY *
+              0.08 *
+              forceRhythmStagePresence +
+            forceExpressionPerpendicularY *
+              (0.035 + forceExpressionRadialBias * 0.04),
+          -0.02,
+        );
+        forceCondensationOuterField.scale.set(
+          fieldAspect *
+            fieldRhythm *
+            fieldGathering *
+            (0.58 + forceRhythmStagePresence * 0.32),
+          fieldCounterAspect *
+            (2 - fieldRhythm) *
+            fieldGathering *
+            (0.48 + forceRhythmStagePresence * 0.28),
+          0.48 + forceRhythmStagePresence * 0.12,
+        );
+        forceCondensationInnerField.scale.set(
+          (1 + (fieldAspect - 1) * 0.62) *
+            fieldRhythm *
+            (0.54 + forceRhythmStagePresence * 0.24),
+          (1 + (fieldCounterAspect - 1) * 0.62) *
+            (2 - fieldRhythm) *
+            (0.44 + forceRhythmStagePresence * 0.2),
+          0.54 + forceRhythmStagePresence * 0.1,
+        );
+        forceCondensationMaterials[0]!.opacity =
+          (isLifeForce
+            ? 0.018 + forceExpressionDensity * 0.01
+            : 0.006) *
+          forceRhythmStagePresence;
+        forceCondensationMaterials[1]!.opacity =
+          (isLifeForce
+            ? 0.024 + forceExpressionDensity * 0.012
+            : 0.008) *
+          forceRhythmStagePresence;
       }
       // Presence keeps its identity through breath and recovery. It never
       // proves aliveness by orbiting the camera.
@@ -2326,7 +2635,7 @@ export function createGenesisWebGLRendererCore(
                 : isHexagramImprint
                   ? 0.94
                   : isLifeForce
-                    ? 1.02
+                    ? 0.98
                     : isStarBeastReveal
                       ? 1.06
                       : isCompletion
@@ -2350,20 +2659,20 @@ export function createGenesisWebGLRendererCore(
       const forceRadialPresenceScale =
         1 +
         forceExpressionRadialBias *
-          forceActionPresence *
-          0.42;
+          forceRhythmRevealProgress *
+          0.68;
       const forceHaloScaleX =
         forceRadialPresenceScale *
         (1 +
           (forceExpressionAspectRatio - 1) *
-            forceActionPresence *
-            0.38);
+            forceRhythmRevealProgress *
+            0.92);
       const forceHaloScaleY =
         forceRadialPresenceScale *
         (1 -
           (forceExpressionAspectRatio - 1) *
-            forceActionPresence *
-            0.16);
+            forceRhythmRevealProgress *
+            0.34);
       coreSurface.rotation.z = forceExpressionAxisAngle;
       coreSurface.scale.set(
         1 + (forceHaloScaleX - 1) * 0.46,
@@ -2380,7 +2689,7 @@ export function createGenesisWebGLRendererCore(
         coreBaseOpacity *
         (1 +
           forceAbsorptionEnvelope * 0.06 +
-          forceActionPresence * 0.08);
+          forceActionPresence * 0.035);
       coreSurfaceMaterial.opacity =
         coreSurfaceBaseOpacity *
         (1 +
