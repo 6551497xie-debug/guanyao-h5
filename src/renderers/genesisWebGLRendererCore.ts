@@ -1193,6 +1193,9 @@ export function createGenesisWebGLRendererCore(
   const axisY = Math.sin(lifePresence.stellarSkeleton.axisAngle);
   const perpendicularX = -axisY;
   const perpendicularY = axisX;
+  const pressureContactSign = pressureFlowDeflection >= 0 ? 1 : -1;
+  const pressureContactAxisX = perpendicularX * pressureContactSign;
+  const pressureContactAxisY = perpendicularY * pressureContactSign;
   const spinePositions = new Float32Array(spineSegments * 3);
   const nodePositions = new Float32Array((spineSegments + branchCount) * 3);
   const branchPositions = new Float32Array(branchCount * 12);
@@ -2058,15 +2061,26 @@ export function createGenesisWebGLRendererCore(
       const realityArrivalPhase = isRealityCanvas
         ? input.canvas?.getAttribute("data-reality-arrival-phase")
         : null;
-      const realityArrivalSettled =
-        !isRealityCanvas || realityArrivalPhase === "SETTLED";
+      const realityPressureCanApproach =
+        !isRealityCanvas || realityArrivalPhase !== "IDENTITY_HOLD";
+      const realityPressureVisualState = isRealityCanvas
+        ? input.canvas
+            ?.closest("[data-reality-pressure-visual-state]")
+            ?.getAttribute("data-reality-pressure-visual-state")
+        : null;
+      const realityPressureStateWeight =
+        realityPressureVisualState === "PRESSURE_PAUSED"
+          ? 0.16
+          : realityPressureVisualState === "PRESSURE_RECOGNIZED"
+            ? 1
+            : 0.72;
       if (
         isRealityCanvas &&
-        realityArrivalSettled &&
+        realityPressureCanApproach &&
         realityPressureStartedAtMilliseconds === null
       ) {
         realityPressureStartedAtMilliseconds = safeElapsedMilliseconds;
-      } else if (isRealityCanvas && !realityArrivalSettled) {
+      } else if (isRealityCanvas && !realityPressureCanApproach) {
         realityPressureStartedAtMilliseconds = null;
       }
       const realityPressureElapsedSeconds = isRealityCanvas
@@ -2140,6 +2154,28 @@ export function createGenesisWebGLRendererCore(
         realityEntryCarryProgress * Math.PI,
       );
       const universeSeconds = performance.now() / 1000;
+      const realityPressureEntryRaw =
+        pressureExpression !== null && isCompletion
+          ? realityPressureCanApproach
+            ? Math.min(
+                1,
+                Math.max(
+                  0,
+                  (realityPressureElapsedSeconds - 0.18) / 2.65,
+                ),
+              )
+            : 0
+          : pressureExpression !== null
+            ? 1
+            : 0;
+      const realityPressureEntryProgress =
+        realityPressureEntryRaw *
+        realityPressureEntryRaw *
+        (3 - 2 * realityPressureEntryRaw);
+      const realityPressurePhase =
+        universeSeconds * (0.11 + pressureTemporalWeight * 0.08) * Math.PI * 2;
+      const realityPressurePulse =
+        0.5 + Math.sin(realityPressurePhase) * 0.5;
       let coordinateFormationProgress = 1;
       let coordinateIdentityBreath = 1;
       const directionRevealRaw = isHexagramImprint
@@ -2464,9 +2500,9 @@ export function createGenesisWebGLRendererCore(
         branchPositionAttribute.needsUpdate = true;
         nodePositionAttribute.needsUpdate = true;
       } else if (isCompletion) {
-        // Completion does not freeze into a generic icon. It performs one
-        // damped recovery in its own force rhythm, then returns to the exact
-        // body plan that emerged from the Life Core.
+        // Completion keeps the exact identity plan that emerged from the Life
+        // Core. Reality may shift the body's particle state, but never rewrites
+        // the core, stellar skeleton, birth memory, direction, or force rhythm.
         for (let index = 0; index < bodyFieldParticleCount; index += 1) {
           const positionOffset = index * 3;
           const finalX = finalBodyFieldPositions[positionOffset];
@@ -2488,17 +2524,50 @@ export function createGenesisWebGLRendererCore(
             (1 -
               recognitionRecoveryWave * 0.28 -
               recognitionResponseWave * 0.008);
-          bodyFieldPositions[positionOffset] =
+          const recoveredX =
             forceExpressionAxisX * recoveredAxis +
             forceExpressionPerpendicularX * recoveredLateral;
-          bodyFieldPositions[positionOffset + 1] =
+          const recoveredY =
             forceExpressionAxisY * recoveredAxis +
             forceExpressionPerpendicularY * recoveredLateral;
+          const pressureContactProjection =
+            recoveredX * pressureContactAxisX +
+            recoveredY * pressureContactAxisY;
+          const pressureContactEdge = Math.min(
+            1,
+            Math.max(
+              0,
+              0.5 +
+                pressureContactProjection /
+                  Math.max(0.001, bodyDirectionExtent * 2),
+            ),
+          );
+          const pressureBodyEnvelope =
+            realityPressureStateWeight *
+            realityPressureEntryProgress *
+            pressureContactEdge;
+          const pressureInwardShift =
+            pressureBoundaryLoad *
+            pressureBodyEnvelope *
+            (0.018 + realityPressurePulse * 0.014);
+          const pressureAxialDrag =
+            pressureFlowDeflection *
+            pressureBodyEnvelope *
+            (0.006 + realityPressurePulse * 0.008);
+          bodyFieldPositions[positionOffset] =
+            recoveredX -
+            pressureContactAxisX * pressureInwardShift +
+            axisX * pressureAxialDrag;
+          bodyFieldPositions[positionOffset + 1] =
+            recoveredY -
+            pressureContactAxisY * pressureInwardShift +
+            axisY * pressureAxialDrag;
           bodyFieldPositions[positionOffset + 2] =
             finalBodyFieldPositions[positionOffset + 2] *
             (1 +
               recognitionRecoveryWave * 0.18 +
-              recognitionResponseWave * 0.025);
+              recognitionResponseWave * 0.025 -
+              pressureBodyEnvelope * 0.035);
         }
         bodyFieldPositionAttribute.needsUpdate = true;
       }
@@ -2999,24 +3068,6 @@ export function createGenesisWebGLRendererCore(
           : isCompletion
             ? 0.26
             : 0;
-      const realityPressureEntryRaw =
-        pressureExpression !== null && isCompletion
-          ? realityArrivalSettled
-            ? Math.min(
-                1,
-                Math.max(
-                  0,
-                  (realityPressureElapsedSeconds - 0.45) / 1.8,
-                ),
-              )
-            : 0
-          : pressureExpression !== null
-            ? 1
-            : 0;
-      const realityPressureEntryProgress =
-        realityPressureEntryRaw *
-        realityPressureEntryRaw *
-        (3 - 2 * realityPressureEntryRaw);
       const realitySpacePressure =
         pressureExpression !== null && isPresenceStage
           ? Math.min(
@@ -3025,12 +3076,10 @@ export function createGenesisWebGLRendererCore(
                 pressureBoundaryLoad * 0.28 +
                 Math.abs(pressureFlowDeflection) * 0.22 +
                 pressureTemporalWeight * 0.16,
-            ) * realityPressureEntryProgress
+            ) *
+              realityPressureEntryProgress *
+              realityPressureStateWeight
           : 0;
-      const realityPressurePhase =
-        universeSeconds * (0.11 + pressureTemporalWeight * 0.08) * Math.PI * 2;
-      const realityPressurePulse =
-        0.5 + Math.sin(realityPressurePhase) * 0.5;
       LIFE_UNIVERSE_STAR_FIELD.forEach((star, index) => {
         const offset = index * 3;
         const radialDistance = Math.hypot(star.x, star.y);
@@ -3096,10 +3145,22 @@ export function createGenesisWebGLRendererCore(
           forceExpressionAxisY * forceActedAxial +
           forceExpressionPerpendicularY * forceActedLateral;
         const pressureDepth = (star.z + 1.7) / 3.4;
+        const pressureContactProjection =
+          forceActedGravityX * pressureContactAxisX +
+          forceActedGravityY * pressureContactAxisY;
+        const pressureSourceAffinity = Math.min(
+          1,
+          Math.max(0, 0.5 + pressureContactProjection / 5.8),
+        );
+        const pressureCoreDistanceProtection = Math.min(
+          1,
+          Math.max(0, (radialDistance - 0.42) / 3.5),
+        );
         const pressureInfluence =
           realitySpacePressure *
           (0.38 + pressureDepth * 0.62) *
-          (0.52 + Math.max(0, 1 - radialDistance / 4.2) * 0.48);
+          (0.28 + pressureSourceAffinity * 0.72) *
+          (0.18 + pressureCoreDistanceProtection * 0.82);
         const axialPosition =
           forceActedGravityX * axisX + forceActedGravityY * axisY;
         const lateralPosition =
@@ -3113,7 +3174,8 @@ export function createGenesisWebGLRendererCore(
           pressureFlowDeflection *
             pressureInfluence *
             (0.12 + realityPressurePulse * 0.08) +
-          pressureBoundaryLoad *
+          pressureContactSign *
+            pressureBoundaryLoad *
             pressureInfluence *
             (0.025 + realityPressurePulse * 0.035);
         cosmicPositions[offset] =
@@ -3354,10 +3416,6 @@ export function createGenesisWebGLRendererCore(
           (1 + (fieldEnvelopeScale - 1) * 0.32) *
           (1 + (forceAggregation - 0.5) * 0.18) *
           (1 + revealCoreConvergence * 0.1) *
-          (1 -
-            pressureFieldCompression *
-              realityPressureEntryProgress *
-              0.08) *
           (1 + lifePresence.timeSequenceResponse.presenceIntensity * 0.045) *
           (1 + lifePresence.birthMansionIgnitionResponse.presenceIntensity * 0.04) *
           1.45 *
@@ -3401,9 +3459,6 @@ export function createGenesisWebGLRendererCore(
         fieldDirectionalFlow * 0.03 +
         forceDirectionalBias * 0.04 +
         revealFieldIntegration * 0.018 +
-        pressureFlowDeflection *
-          realityPressureEntryProgress *
-          0.025 +
         Math.sin(elapsedSeconds * sceneProjection.formField.flowSpeed) *
           sceneProjection.motion.driftAmplitude;
       if (isSymbolReveal) {
@@ -3485,22 +3540,24 @@ export function createGenesisWebGLRendererCore(
           pressureCoreResistance *
           realityPressureEntryProgress *
           (0.012 + pressurePulse * 0.018);
-        structureGroup.scale.x *= 1 - pressureCompression;
-        structureGroup.scale.y *= 1 + pressureLift;
+        const pressurePosture =
+          realityPressureStateWeight *
+          realityPressureEntryProgress *
+          (0.62 + pressurePulse * 0.38);
         structureGroup.rotation.z +=
           pressureFlowDeflection *
-          realityPressureEntryProgress *
-          (0.018 + pressurePulse * 0.032);
-        structureGroup.position.x =
-          perpendicularX *
+          pressurePosture *
+          0.012;
+        structureGroup.position.x +=
+          -pressureContactAxisX *
           pressureBoundaryLoad *
-          realityPressureEntryProgress *
-          (0.008 + pressurePulse * 0.018);
-        structureGroup.position.y =
-          perpendicularY *
+          pressurePosture *
+          (0.004 + pressureCompression * 0.08);
+        structureGroup.position.y +=
+          -pressureContactAxisY *
           pressureBoundaryLoad *
-          realityPressureEntryProgress *
-          (0.008 + pressurePulse * 0.018);
+          pressurePosture *
+          (0.004 + pressureLift * 0.06);
 
         for (let index = 0; index < pressureTracePointCount; index += 1) {
           const traceProgress =
@@ -3519,6 +3576,7 @@ export function createGenesisWebGLRendererCore(
             Math.sin(traceProgress * Math.PI) *
             pressureFlowDeflection *
             realityPressureEntryProgress *
+            realityPressureStateWeight *
             (0.018 + pressurePulse * 0.026);
           pressureTracePositions[traceOffset] =
             spinePositions[sourceOffset] +
@@ -3543,20 +3601,23 @@ export function createGenesisWebGLRendererCore(
           (0.18 +
             pressureStructureResponse * 0.26 +
             pressurePulse * 0.24) *
-          realityPressureEntryProgress;
+          realityPressureEntryProgress *
+          realityPressureStateWeight;
         pressureTraceMaterial.size =
           lifePresence.stellarSkeleton.nodeScale *
           (0.72 + pressureCoreResponse * 0.34 + pressurePulse * 0.18);
         spineMaterial.opacity =
           Math.max(spineOpacity, isCompletion ? 0.22 : 0.42) *
           (1 +
-            (-0.1 + pressurePulse * 0.18) *
-              realityPressureEntryProgress);
+            (-0.025 + pressurePulse * 0.04) *
+              realityPressureEntryProgress *
+              realityPressureStateWeight);
         branchMaterial.opacity =
           Math.max(branchOpacity, isCompletion ? 0.12 : 0.34) *
           (1 +
-            (-0.12 + pressurePulse * 0.14) *
-              realityPressureEntryProgress);
+            (-0.02 + pressurePulse * 0.032) *
+              realityPressureEntryProgress *
+              realityPressureStateWeight);
       }
       const stagePointOpacity = isSymbolReveal
         ? 0.86
@@ -3579,10 +3640,7 @@ export function createGenesisWebGLRendererCore(
             (0.94 + (breath - 1) * 2) -
           (isPresenceStage
             ? perspectiveBodyCohesion * 0.08 * (0.96 + (breath - 1) * 2)
-            : 0) +
-          pressureBoundaryLoad *
-            realityPressureEntryProgress *
-            0.06) *
+            : 0)) *
         (isStarBeastReveal
           ? presenceCoreTransmission * presenceSkeletonReveal
           : 1);

@@ -8,7 +8,7 @@ import type { RealityProductionHostProps } from "../types/realityProductionRoute
 
 const REALITY_ARRIVAL_TIMING_MS = Object.freeze({
   IDENTITY_HOLD: 760,
-  SETTLED: 2_200,
+  SETTLED: 4_200,
 });
 
 export function RealityLifeUniverseCanvas({
@@ -18,6 +18,11 @@ export function RealityLifeUniverseCanvas({
   const [rendererState, setRendererState] =
     useState<GenesisProductionCanvasHostState>("STARTING");
   const [arrivalPhase, setArrivalPhase] = useState("IDENTITY_HOLD");
+  const realityPressureFlowSide =
+    (visualContinuity.consumerSourceResult.consumerSource.projectionBundle
+      .realityPressureProjection?.pressureExpression.flowDeflection ?? 0) >= 0
+      ? "RIGHT"
+      : "LEFT";
 
   useEffect(() => {
     setArrivalPhase("IDENTITY_HOLD");
@@ -135,6 +140,7 @@ export function RealityLifeUniverseCanvas({
       className="gy-reality-life-universe__canvas"
       data-reality-life-universe-renderer={rendererState}
       data-reality-arrival-phase={arrivalPhase}
+      data-reality-pressure-flow-side={realityPressureFlowSide}
       data-genesis-presence-visual-state="RECOGNIZED"
       data-source-reference-id={visualContinuity.sourceReferenceId}
       aria-hidden="true"

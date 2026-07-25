@@ -27,10 +27,6 @@
 .gy-reality-life-universe__canvas:not(
     [data-reality-arrival-phase="SETTLED"]
   )
-  ~ .gy-reality-life-universe__disturbance,
-.gy-reality-life-universe__canvas:not(
-    [data-reality-arrival-phase="SETTLED"]
-  )
   ~ .gy-reality-life-universe__continuity-copy,
 .gy-reality-life-universe__canvas:not(
     [data-reality-arrival-phase="SETTLED"]
@@ -38,4 +34,143 @@
   ~ .gy-p36__pressure-space {
   opacity: 0 !important;
   pointer-events: none;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state]
+  .gy-reality-life-universe__canvas {
+  filter: none !important;
+  opacity: 1 !important;
+  animation: none !important;
+}
+
+.gy-reality-life-universe__canvas[data-reality-arrival-phase="IDENTITY_HOLD"]
+  ~ .gy-reality-life-universe__disturbance {
+  opacity: 0;
+}
+
+.gy-reality-life-universe__canvas[data-reality-arrival-phase="REALITY_REVEAL"]
+  ~ .gy-reality-life-universe__disturbance {
+  z-index: 10;
+  opacity: 0.56;
+}
+
+.gy-reality-life-universe__canvas[data-reality-arrival-phase="SETTLED"]
+  ~ .gy-reality-life-universe__disturbance {
+  opacity: 0.42;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
+  .gy-reality-life-universe__canvas[data-reality-arrival-phase="SETTLED"]
+  ~ .gy-reality-life-universe__disturbance {
+  opacity: 0.56;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_PAUSED"]
+  .gy-reality-life-universe__canvas[data-reality-arrival-phase="SETTLED"]
+  ~ .gy-reality-life-universe__disturbance {
+  opacity: 0.16;
+}
+
+.gy-reality-life-universe__canvas[data-reality-pressure-flow-side="LEFT"]
+  ~ .gy-reality-life-universe__disturbance {
+  transform: scaleX(-1);
+}
+
+.gy-reality-life-universe .gy-reality-life-universe__disturbance {
+  z-index: 1;
+  transition:
+    opacity 1.8s cubic-bezier(0.22, 0.7, 0.2, 1),
+    transform 1.4s ease;
+}
+
+.gy-reality-life-universe .gy-reality-life-universe__disturbance::before,
+.gy-reality-life-universe .gy-reality-life-universe__disturbance::after {
+  top: -12% !important;
+  right: -17% !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: 44% !important;
+  height: 124% !important;
+  border: 0 !important;
+  border-left: 1px solid rgb(185 203 236 / 10%) !important;
+  border-radius: 54% 0 0 48% !important;
+  background: linear-gradient(
+    90deg,
+    rgb(185 203 236 / 4%),
+    rgb(185 203 236 / 1%) 44%,
+    transparent 82%
+  ) !important;
+  box-shadow: inset 18px 0 46px rgb(185 203 236 / 2%) !important;
+  opacity: 0.52 !important;
+  transform: rotate(-4deg) !important;
+}
+
+.gy-reality-life-universe .gy-reality-life-universe__disturbance::after {
+  right: 2% !important;
+  width: 29% !important;
+  border-left-color: rgb(238 226 198 / 7%) !important;
+  opacity: 0.28 !important;
+  transform: rotate(-8deg) !important;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state]
+  .gy-reality-life-universe__disturbance
+  span {
+  top: -10% !important;
+  right: -26% !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: 52% !important;
+  height: 122% !important;
+  aspect-ratio: auto !important;
+  border: 0 !important;
+  border-left: 1px solid rgb(185 203 236 / 8%) !important;
+  border-radius: 52% 0 0 46% !important;
+  background: linear-gradient(
+    90deg,
+    rgb(185 203 236 / 3%),
+    transparent 72%
+  ) !important;
+  box-shadow: none !important;
+  opacity: 0.48;
+  transform: rotate(-2deg) !important;
+  animation: gy-reality-pressure-front 11s ease-in-out infinite alternate !important;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state]
+  .gy-reality-life-universe__disturbance
+  span:nth-child(2) {
+  right: -3% !important;
+  width: 34% !important;
+  opacity: 0.34;
+  transform: rotate(-6deg) !important;
+  animation-delay: -3.6s !important;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state]
+  .gy-reality-life-universe__disturbance
+  span:nth-child(3) {
+  right: 15% !important;
+  width: 23% !important;
+  opacity: 0.22;
+  transform: rotate(-10deg) !important;
+  animation-delay: -7.2s !important;
+}
+
+@keyframes gy-reality-pressure-front {
+  from {
+    translate: 3.5% 0;
+  }
+
+  to {
+    translate: -2.5% 0.8%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gy-reality-life-universe[data-reality-pressure-visual-state]
+    .gy-reality-life-universe__disturbance
+    span {
+    animation: none !important;
+  }
 }
