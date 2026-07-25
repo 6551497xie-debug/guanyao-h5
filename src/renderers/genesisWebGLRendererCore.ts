@@ -495,9 +495,9 @@ export function createGenesisWebGLRendererCore(
   const recognitionCoreVisibility = isStarBeastReveal
     ? 0.7 + recognitionCenterInfluence * 0.06
     : isCompletion
-      ? 0.62 +
-        recognitionCenterInfluence * 0.06 +
-        recognitionIdentityLock * 0.05
+      ? 0.7 +
+        recognitionCenterInfluence * 0.07 +
+        recognitionIdentityLock * 0.06
       : 1;
   const perspectiveCoreDimming =
     isMoonOrigin || isStarRiver || isTimeResonance
@@ -1575,6 +1575,77 @@ export function createGenesisWebGLRendererCore(
       (branchIndex / Math.max(1, branchCount)) * 0.08 +
       random() * 0.08;
   }
+  // Recognition is encoded inside the existing body, never as a badge or a
+  // second source. The birth coordinate selects one quiet density memory,
+  // direction shifts the luminous weight, and force keeps its own axial bias.
+  let bodyAxisMinimum = Number.POSITIVE_INFINITY;
+  let bodyAxisMaximum = Number.NEGATIVE_INFINITY;
+  let bodyDirectionExtent = 0.001;
+  for (let index = 0; index < bodyFieldParticleCount; index += 1) {
+    const positionOffset = index * 3;
+    const positionX = bodyFieldPositions[positionOffset];
+    const positionY = bodyFieldPositions[positionOffset + 1];
+    const bodyAxisPosition = positionX * axisX + positionY * axisY;
+    const directionPosition =
+      positionX * directionAxisX + positionY * directionAxisY;
+    bodyAxisMinimum = Math.min(bodyAxisMinimum, bodyAxisPosition);
+    bodyAxisMaximum = Math.max(bodyAxisMaximum, bodyAxisPosition);
+    bodyDirectionExtent = Math.max(
+      bodyDirectionExtent,
+      Math.abs(directionPosition),
+    );
+  }
+  const bodyAxisRange = Math.max(0.001, bodyAxisMaximum - bodyAxisMinimum);
+  const birthCoordinateProgress =
+    (mansionCoordinateVisualLayer?.birthCoordinate.coordinateIndex ?? 13) /
+    27;
+  const birthDensityAxis =
+    bodyAxisMinimum + bodyAxisRange * birthCoordinateProgress;
+  const bodyFieldColors = new Float32Array(bodyFieldParticleCount * 3);
+  const bodyIdentityColor = new Color();
+  const bodyBirthMemoryColor = new Color(0xffe8b8);
+  for (let index = 0; index < bodyFieldParticleCount; index += 1) {
+    const positionOffset = index * 3;
+    const positionX = bodyFieldPositions[positionOffset];
+    const positionY = bodyFieldPositions[positionOffset + 1];
+    const bodyAxisPosition = positionX * axisX + positionY * axisY;
+    const directionPosition =
+      positionX * directionAxisX + positionY * directionAxisY;
+    const directionAffinity = Math.min(
+      1,
+      Math.max(
+        0,
+        0.5 + directionPosition / (bodyDirectionExtent * 2),
+      ),
+    );
+    const birthDistance =
+      (bodyAxisPosition - birthDensityAxis) / (bodyAxisRange * 0.18);
+    const birthMemory = Math.exp(-birthDistance * birthDistance);
+    const forceAxisPosition =
+      positionX * forceExpressionAxisX +
+      positionY * forceExpressionAxisY;
+    const forceAffinity = Math.min(
+      1,
+      Math.abs(forceAxisPosition) / Math.max(0.001, bodyAxisRange * 0.6),
+    );
+    const identityLuminance = Math.min(
+      1,
+      0.48 +
+        directionAffinity * 0.2 +
+        birthMemory * 0.2 +
+        forceAffinity * (0.05 + forceExpressionDensity * 0.04),
+    );
+    bodyIdentityColor
+      .copy(anchorColor)
+      .multiplyScalar(identityLuminance)
+      .lerp(
+        bodyBirthMemoryColor,
+        birthMemory * (0.08 + forceAggregation * 0.04),
+      );
+    bodyFieldColors[positionOffset] = bodyIdentityColor.r;
+    bodyFieldColors[positionOffset + 1] = bodyIdentityColor.g;
+    bodyFieldColors[positionOffset + 2] = bodyIdentityColor.b;
+  }
   const finalBodyFieldPositions = bodyFieldPositions.slice();
   if (isStarBeastReveal) {
     for (let index = 0; index < bodyFieldParticleCount; index += 1) {
@@ -1593,8 +1664,13 @@ export function createGenesisWebGLRendererCore(
     "position",
     bodyFieldPositionAttribute,
   );
+  bodyFieldGeometry.setAttribute(
+    "color",
+    new Float32BufferAttribute(bodyFieldColors, 3),
+  );
   const bodyFieldMaterial = new PointsMaterial({
-    color: anchorColor,
+    color: new Color(0xffffff),
+    vertexColors: true,
     size:
       lifePresence.stellarSkeleton.nodeScale *
       (0.5 + (isPresenceStage ? (recognitionSubjectWeight - 1) * 0.16 : 0)) *
@@ -1755,7 +1831,7 @@ export function createGenesisWebGLRendererCore(
               : isStarBeastReveal
                 ? 0.4
                 : isCompletion
-                  ? 0.44
+                  ? 0.52
               : 0.72;
   const core = new Mesh(
     new SphereGeometry(coreRadius, 20, 20),
@@ -1986,10 +2062,25 @@ export function createGenesisWebGLRendererCore(
         presenceEnvelopeRevealRaw *
         presenceEnvelopeRevealRaw *
         (3 - 2 * presenceEnvelopeRevealRaw);
+      const recognitionRecoveryEnvelope = isCompletion
+        ? Math.exp(-elapsedSeconds / (1.15 + forceStability * 0.9))
+        : 0;
+      const recognitionRecoveryWave = isCompletion
+        ? Math.sin(
+            (elapsedSeconds /
+              Math.max(1.6, forceExpressionBreathingPeriod * 0.48)) *
+              Math.PI *
+              2,
+          ) *
+          recognitionRecoveryEnvelope *
+          (0.016 +
+            Math.abs(forceExpressionRadialBias) * 0.016 +
+            (1 - forceStability) * 0.008)
+        : 0;
       const presenceSourceCarry = isStarBeastReveal
         ? 1 - presenceSkeletonReveal * 0.86
         : isCompletion
-          ? 0.2 + recognitionIdentityLock * 0.08
+          ? 0.06 + recognitionIdentityLock * 0.02
           : 1;
       if (isStarBeastReveal) {
         // Grow the stellar skeleton from the core instead of cross-fading a
@@ -2173,6 +2264,37 @@ export function createGenesisWebGLRendererCore(
         spinePositionAttribute.needsUpdate = true;
         branchPositionAttribute.needsUpdate = true;
         nodePositionAttribute.needsUpdate = true;
+        bodyFieldPositionAttribute.needsUpdate = true;
+      } else if (isCompletion) {
+        // Completion does not freeze into a generic icon. It performs one
+        // damped recovery in its own force rhythm, then returns to the exact
+        // body plan that emerged from the Life Core.
+        for (let index = 0; index < bodyFieldParticleCount; index += 1) {
+          const positionOffset = index * 3;
+          const finalX = finalBodyFieldPositions[positionOffset];
+          const finalY = finalBodyFieldPositions[positionOffset + 1];
+          const forceAxisPosition =
+            finalX * forceExpressionAxisX +
+            finalY * forceExpressionAxisY;
+          const forceLateralPosition =
+            finalX * forceExpressionPerpendicularX +
+            finalY * forceExpressionPerpendicularY;
+          const recoveredAxis =
+            forceAxisPosition *
+            (1 + recognitionRecoveryWave * (0.72 + forceAggregation * 0.28));
+          const recoveredLateral =
+            forceLateralPosition *
+            (1 - recognitionRecoveryWave * 0.28);
+          bodyFieldPositions[positionOffset] =
+            forceExpressionAxisX * recoveredAxis +
+            forceExpressionPerpendicularX * recoveredLateral;
+          bodyFieldPositions[positionOffset + 1] =
+            forceExpressionAxisY * recoveredAxis +
+            forceExpressionPerpendicularY * recoveredLateral;
+          bodyFieldPositions[positionOffset + 2] =
+            finalBodyFieldPositions[positionOffset + 2] *
+            (1 + recognitionRecoveryWave * 0.18);
+        }
         bodyFieldPositionAttribute.needsUpdate = true;
       }
       const birthDirectionResponseRaw = isHexagramImprint
@@ -2491,7 +2613,7 @@ export function createGenesisWebGLRendererCore(
         : isStarBeastReveal
           ? Math.max(0.06, 1 - presenceSkeletonReveal * 0.88)
           : isCompletion
-            ? 0.14 + recognitionIdentityLock * 0.04
+            ? 0.08 + recognitionIdentityLock * 0.025
             : 0;
       if (
         forceRhythmParticleSeeds !== null &&
@@ -3330,7 +3452,7 @@ export function createGenesisWebGLRendererCore(
                     : isStarBeastReveal
                       ? 0.78
                       : isCompletion
-                        ? 0.68
+                        ? 0.76
                     : 0.68) *
         (0.94 + forceStability * 0.08) *
         (0.92 +
