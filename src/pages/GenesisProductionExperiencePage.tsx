@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GenesisProductionRendererCanvasHost } from "../components/GenesisProductionRendererCanvasHost";
 import {
@@ -62,6 +62,8 @@ const PRESENCE_RECOGNITION_TIMING_MS = Object.freeze({
   QUIET_HOLD: 1_250,
   RESPONSE_HOLD: 1_050,
 });
+
+const REALITY_ENTRY_VISUAL_HOLD_MS = 560;
 
 export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
   GenesisProductionExperiencePageBoundary = Object.freeze({
@@ -208,6 +210,7 @@ export function GenesisProductionExperiencePage({
   const [recognitionPromptReady, setRecognitionPromptReady] = useState(false);
   const [recognitionResponseSettled, setRecognitionResponseSettled] =
     useState(false);
+  const realityEntryTimerRef = useRef<number | null>(null);
   const recognitionInteractionAvailability =
     recognitionRealityResult?.status === "READY"
       ? recognitionRealityResult.session.interactionAvailability
@@ -268,7 +271,20 @@ export function GenesisProductionExperiencePage({
     setTimeDeliveryResponse(null);
     setRecognitionPromptReady(false);
     setRecognitionResponseSettled(false);
+    if (realityEntryTimerRef.current !== null) {
+      window.clearTimeout(realityEntryTimerRef.current);
+      realityEntryTimerRef.current = null;
+    }
   }, [routeAuthorization.sourceReferenceId]);
+
+  useEffect(
+    () => () => {
+      if (realityEntryTimerRef.current !== null) {
+        window.clearTimeout(realityEntryTimerRef.current);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (
@@ -647,19 +663,21 @@ export function GenesisProductionExperiencePage({
               })
             : null;
         if (presenceContinuityContext !== null) {
-          navigate(handoff.routeTarget, {
-            state: {
-              visualContinuity: Object.freeze({
-                sourceReferenceId: result.session.sourceReferenceId,
-                consumerSourceResult,
-                visualCalibrationBundle: visualCalibrationResult.bundle,
-                fourSymbolDirectionFieldVisualCalibration:
-                  directionFieldCalibrationResult.calibration,
-                lifeArchetypeForceCondensationVisualCalibration:
-                  archetypeForceCalibrationResult.calibration,
-              }),
-            },
+          const visualContinuity = Object.freeze({
+            sourceReferenceId: result.session.sourceReferenceId,
+            consumerSourceResult,
+            visualCalibrationBundle: visualCalibrationResult.bundle,
+            fourSymbolDirectionFieldVisualCalibration:
+              directionFieldCalibrationResult.calibration,
+            lifeArchetypeForceCondensationVisualCalibration:
+              archetypeForceCalibrationResult.calibration,
           });
+          realityEntryTimerRef.current = window.setTimeout(() => {
+            realityEntryTimerRef.current = null;
+            navigate(handoff.routeTarget, {
+              state: { visualContinuity },
+            });
+          }, REALITY_ENTRY_VISUAL_HOLD_MS);
         }
       }
     }
@@ -848,17 +866,6 @@ export function GenesisProductionExperiencePage({
         >
           进入现实观察
         </button>
-      ) : null}
-      {recognitionRealityResult?.status === "READY" &&
-      recognitionRealityResult.session.realityEntryEligibility ===
-        "ELIGIBLE" &&
-      recognitionResponseSettled ? (
-        <p
-          className="gy-genesis-production-experience__reality-ready"
-          role="status"
-        >
-          Reality Entry 已准备好。
-        </p>
       ) : null}
     </main>
   );

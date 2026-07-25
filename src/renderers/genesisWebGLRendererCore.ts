@@ -334,11 +334,13 @@ export function createGenesisWebGLRendererCore(
     });
   }
 
+  const isRealityCanvas =
+    input.canvas?.hasAttribute("data-reality-life-universe-renderer") === true;
   // The formal projection travels with the same real-user source, but it only
   // becomes visually active inside the existing Reality canvas consumer.
   // Genesis therefore closes on an undisturbed recognized life.
   const realityPressureProjection =
-    input.canvas?.hasAttribute("data-reality-life-universe-renderer") === true
+    isRealityCanvas
       ? input.realityPressureProjection ?? null
       : null;
   const sceneProjection = projectPersonalStarBeastRenderPlanToWebGLScene(
@@ -2026,6 +2028,8 @@ export function createGenesisWebGLRendererCore(
 
   let frameCount = 0;
   let recognitionResponseStartedAtMilliseconds: number | null = null;
+  let realityEntryCarryStartedAtMilliseconds: number | null = null;
+  let realityPressureStartedAtMilliseconds: number | null = null;
   let disposed = false;
   let contextState: "ACTIVE" | "LOST" | "RESTORED" | "DISPOSED" =
     "ACTIVE";
@@ -2050,11 +2054,38 @@ export function createGenesisWebGLRendererCore(
         (Number.isFinite(elapsedMilliseconds)
           ? Math.max(0, elapsedMilliseconds)
           : 0) / 1000;
+      const safeElapsedMilliseconds = elapsedSeconds * 1000;
+      const realityArrivalPhase = isRealityCanvas
+        ? input.canvas?.getAttribute("data-reality-arrival-phase")
+        : null;
+      const realityArrivalSettled =
+        !isRealityCanvas || realityArrivalPhase === "SETTLED";
+      if (
+        isRealityCanvas &&
+        realityArrivalSettled &&
+        realityPressureStartedAtMilliseconds === null
+      ) {
+        realityPressureStartedAtMilliseconds = safeElapsedMilliseconds;
+      } else if (isRealityCanvas && !realityArrivalSettled) {
+        realityPressureStartedAtMilliseconds = null;
+      }
+      const realityPressureElapsedSeconds = isRealityCanvas
+        ? realityPressureStartedAtMilliseconds === null
+          ? 0
+          : Math.max(
+              0,
+              (safeElapsedMilliseconds -
+                realityPressureStartedAtMilliseconds) /
+                1000,
+            )
+        : elapsedSeconds;
       const recognitionVisualState = input.canvas
         ?.closest("[data-genesis-presence-visual-state]")
         ?.getAttribute("data-genesis-presence-visual-state");
       const recognitionResponseIsActive =
-        isCompletion && recognitionVisualState === "RECOGNIZED";
+        isCompletion &&
+        !isRealityCanvas &&
+        recognitionVisualState === "RECOGNIZED";
       if (
         recognitionResponseIsActive &&
         recognitionResponseStartedAtMilliseconds === null
@@ -2078,6 +2109,36 @@ export function createGenesisWebGLRendererCore(
       const recognitionResponseWave =
         Math.sin(recognitionResponseProgress * Math.PI) *
         (1 - recognitionResponseProgress * 0.18);
+      const realityEntryEligibility = input.canvas
+        ?.closest("[data-reality-entry-eligibility]")
+        ?.getAttribute("data-reality-entry-eligibility");
+      const realityEntryCarryIsActive =
+        isCompletion &&
+        !isRealityCanvas &&
+        realityEntryEligibility === "ELIGIBLE";
+      if (
+        realityEntryCarryIsActive &&
+        realityEntryCarryStartedAtMilliseconds === null
+      ) {
+        realityEntryCarryStartedAtMilliseconds = safeElapsedMilliseconds;
+      } else if (!realityEntryCarryIsActive) {
+        realityEntryCarryStartedAtMilliseconds = null;
+      }
+      const realityEntryCarryProgress =
+        realityEntryCarryStartedAtMilliseconds === null
+          ? 0
+          : Math.min(
+              1,
+              Math.max(
+                0,
+                (safeElapsedMilliseconds -
+                  realityEntryCarryStartedAtMilliseconds) /
+                  560,
+              ),
+            );
+      const realityEntryCarryWave = Math.sin(
+        realityEntryCarryProgress * Math.PI,
+      );
       const universeSeconds = performance.now() / 1000;
       let coordinateFormationProgress = 1;
       let coordinateIdentityBreath = 1;
@@ -2156,7 +2217,9 @@ export function createGenesisWebGLRendererCore(
       const smoothReveal = (progress: number) =>
         progress * progress * (3 - 2 * progress);
       const recognitionAttentionRaw = isCompletion
-        ? Math.min(1, Math.max(0, (elapsedSeconds - 0.62) / 1.18))
+        ? isRealityCanvas
+          ? 1
+          : Math.min(1, Math.max(0, (elapsedSeconds - 0.62) / 1.18))
         : 0;
       const recognitionAttentionProgress = smoothReveal(
         recognitionAttentionRaw,
@@ -2226,10 +2289,10 @@ export function createGenesisWebGLRendererCore(
         );
         bodyFieldPositionAttribute.needsUpdate = true;
       }
-      const recognitionRecoveryEnvelope = isCompletion
+      const recognitionRecoveryEnvelope = isCompletion && !isRealityCanvas
         ? Math.exp(-elapsedSeconds / (1.15 + forceStability * 0.9))
         : 0;
-      const recognitionRecoveryWave = isCompletion
+      const recognitionRecoveryWave = isCompletion && !isRealityCanvas
         ? Math.sin(
             (elapsedSeconds /
               Math.max(1.6, forceExpressionBreathingPeriod * 0.48)) *
@@ -2938,7 +3001,15 @@ export function createGenesisWebGLRendererCore(
             : 0;
       const realityPressureEntryRaw =
         pressureExpression !== null && isCompletion
-          ? Math.min(1, Math.max(0, (elapsedSeconds - 1.6) / 1.6))
+          ? realityArrivalSettled
+            ? Math.min(
+                1,
+                Math.max(
+                  0,
+                  (realityPressureElapsedSeconds - 0.45) / 1.8,
+                ),
+              )
+            : 0
           : pressureExpression !== null
             ? 1
             : 0;
@@ -3226,12 +3297,14 @@ export function createGenesisWebGLRendererCore(
           (isCompletion
             ? 1 +
               recognitionAttentionProgress * 0.008 +
-              recognitionResponseWave * 0.018
+              recognitionResponseWave * 0.018 +
+              realityEntryCarryWave * 0.012
             : 1),
       );
       coreIdentityGroup.position.z = isCompletion
         ? recognitionAttentionProgress * 0.01 +
-          recognitionResponseWave * 0.016
+          recognitionResponseWave * 0.016 +
+          realityEntryCarryWave * 0.01
         : 0;
       core.scale.setScalar(1);
       // Force changes how the one core breathes; it does not project a
@@ -3387,11 +3460,13 @@ export function createGenesisWebGLRendererCore(
         structureGroup.position.z =
           structureGroupRestingDepth +
           recognitionAttentionProgress * 0.045 +
-          recognitionResponseWave * 0.018;
+          recognitionResponseWave * 0.018 +
+          realityEntryCarryWave * 0.012;
         structureGroup.scale.multiplyScalar(
           1 +
             recognitionAttentionProgress * 0.018 +
-            recognitionResponseWave * 0.012,
+            recognitionResponseWave * 0.012 +
+            realityEntryCarryWave * 0.008,
         );
         structureGroup.scale.x *=
           1.02 + perspectiveSubjectAxisStrength * 0.025;
@@ -3608,7 +3683,8 @@ export function createGenesisWebGLRendererCore(
       coreLight.intensity *= isCompletion
         ? 1 +
           recognitionAttentionProgress * 0.035 +
-          recognitionResponseWave * 0.08
+          recognitionResponseWave * 0.08 +
+          realityEntryCarryWave * 0.06
         : 1;
       renderer.render(scene, camera);
       frameCount += 1;

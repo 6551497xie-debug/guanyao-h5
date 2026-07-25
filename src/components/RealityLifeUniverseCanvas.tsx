@@ -6,6 +6,11 @@ import type {
 } from "../types/genesisProductionExperiencePage";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
 
+const REALITY_ARRIVAL_TIMING_MS = Object.freeze({
+  IDENTITY_HOLD: 760,
+  SETTLED: 2_200,
+});
+
 export function RealityLifeUniverseCanvas({
   visualContinuity,
 }: Pick<RealityProductionHostProps, "visualContinuity">) {
@@ -18,10 +23,10 @@ export function RealityLifeUniverseCanvas({
     setArrivalPhase("IDENTITY_HOLD");
     const revealTimer = window.setTimeout(() => {
       setArrivalPhase("REALITY_REVEAL");
-    }, 1500);
+    }, REALITY_ARRIVAL_TIMING_MS.IDENTITY_HOLD);
     const settleTimer = window.setTimeout(() => {
       setArrivalPhase("SETTLED");
-    }, 3000);
+    }, REALITY_ARRIVAL_TIMING_MS.SETTLED);
     return () => {
       window.clearTimeout(revealTimer);
       window.clearTimeout(settleTimer);
@@ -125,31 +130,14 @@ export function RealityLifeUniverseCanvas({
   }, [visualContinuity]);
 
   return (
-    <>
-      {arrivalPhase !== "SETTLED" ? (
-        <div
-          className="gy-reality-life-universe__arrival-shield"
-          data-reality-arrival-phase={arrivalPhase}
-          aria-hidden="true"
-        />
-      ) : null}
-      <canvas
-        ref={canvasRef}
-        className="gy-reality-life-universe__canvas"
-        data-reality-life-universe-renderer={rendererState}
-        data-reality-arrival-phase={arrivalPhase}
-        data-source-reference-id={visualContinuity.sourceReferenceId}
-        aria-hidden="true"
-      />
-      {arrivalPhase !== "SETTLED" ? (
-        <p
-          className="gy-reality-life-universe__arrival-copy"
-          data-reality-arrival-phase={arrivalPhase}
-          role="status"
-        >
-          同一个生命，正在进入现实。
-        </p>
-      ) : null}
-    </>
+    <canvas
+      ref={canvasRef}
+      className="gy-reality-life-universe__canvas"
+      data-reality-life-universe-renderer={rendererState}
+      data-reality-arrival-phase={arrivalPhase}
+      data-genesis-presence-visual-state="RECOGNIZED"
+      data-source-reference-id={visualContinuity.sourceReferenceId}
+      aria-hidden="true"
+    />
   );
 }
