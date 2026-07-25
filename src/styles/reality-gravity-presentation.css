@@ -189,13 +189,206 @@
   }
 }
 
+.gy-choice-response-gap__field {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.gy-choice-response-gap__unfinished-path {
+  fill: none;
+  stroke: rgb(244 226 187 / 58%);
+  stroke-width: 0.24;
+  stroke-linecap: round;
+  stroke-dasharray: 0.72 0.28;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 2px rgb(232 200 138 / 20%));
+  opacity: 0;
+  animation: gy-choice-unfinished-deflection 1500ms
+    cubic-bezier(0.2, 0.72, 0.22, 1) 2350ms forwards;
+}
+
+.gy-choice-response-gap__stillness {
+  z-index: 1;
+  opacity: 0;
+  animation: gy-choice-stillness 3600ms cubic-bezier(0.2, 0.72, 0.22, 1)
+    forwards;
+  pointer-events: none;
+}
+
+.gy-choice-response-gap__confirm {
+  opacity: 0;
+  animation: gy-choice-core-invitation 960ms ease 2800ms forwards;
+}
+
+.gy-choice-response-gap__invitation {
+  opacity: 0;
+  animation: gy-choice-invitation-breathe 4800ms ease-in-out 3000ms infinite;
+}
+
+main[data-choice-response-state="OLD_PATH_RESTARTING_THEN_PAUSE"]
+  .gy-gravity-inertia-field__path {
+  animation: gy-choice-old-path-restart 3300ms
+    cubic-bezier(0.2, 0.72, 0.22, 1) both;
+}
+
+main[data-choice-response-state="OLD_PATH_RESTARTING_THEN_PAUSE"]
+  .gy-reality-life-universe__canvas {
+  animation: gy-choice-life-pause 3600ms cubic-bezier(0.2, 0.72, 0.22, 1)
+    both;
+}
+
+.gy-choice-response-gap--held .gy-choice-response-gap__unfinished-path {
+  stroke-dashoffset: 0.18;
+  opacity: 0.62;
+  animation: gy-choice-possibility-settle 1900ms
+    cubic-bezier(0.2, 0.72, 0.22, 1) both;
+}
+
+.gy-choice-response-gap--held .gy-choice-response-gap__stillness {
+  opacity: 0.54;
+  animation: gy-choice-possibility-breathe 7200ms ease-in-out infinite
+    alternate;
+}
+
+main[data-choice-response-state="NEW_RESPONSE_POSSIBILITY"]
+  .gy-gravity-inertia-field__path {
+  animation: gy-choice-old-path-remains 10s ease-in-out infinite alternate;
+}
+
+@keyframes gy-choice-old-path-restart {
+  0% {
+    stroke-dashoffset: 0;
+    opacity: 0.18;
+  }
+  34% {
+    stroke-dashoffset: -0.18;
+    opacity: 0.42;
+  }
+  58% {
+    stroke-dashoffset: -0.25;
+    opacity: 0.46;
+  }
+  72%,
+  100% {
+    stroke-dashoffset: -0.25;
+    opacity: 0.2;
+  }
+}
+
+@keyframes gy-choice-life-pause {
+  0%,
+  34% {
+    opacity: 1;
+    filter: saturate(1) brightness(1);
+  }
+  58% {
+    opacity: 0.9;
+    filter: saturate(0.88) brightness(0.92);
+  }
+  72%,
+  100% {
+    opacity: 1;
+    filter: saturate(1) brightness(1);
+  }
+}
+
+@keyframes gy-choice-stillness {
+  0%,
+  42% {
+    opacity: 0;
+  }
+  58% {
+    opacity: 0.3;
+  }
+  72%,
+  100% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes gy-choice-unfinished-deflection {
+  from {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  to {
+    stroke-dashoffset: 0.18;
+    opacity: 0.58;
+  }
+}
+
+@keyframes gy-choice-core-invitation {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes gy-choice-invitation-breathe {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+  50% {
+    opacity: 0.52;
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+}
+
+@keyframes gy-choice-possibility-settle {
+  from {
+    stroke-dashoffset: 0.46;
+    opacity: 0.28;
+  }
+  to {
+    stroke-dashoffset: 0.18;
+    opacity: 0.62;
+  }
+}
+
+@keyframes gy-choice-possibility-breathe {
+  from {
+    opacity: 0.38;
+  }
+  to {
+    opacity: 0.56;
+  }
+}
+
+@keyframes gy-choice-old-path-remains {
+  from {
+    opacity: 0.16;
+  }
+  to {
+    opacity: 0.24;
+  }
+}
+
 @media (max-width: 560px) {
   .gy-p37__gravity-space { bottom: 66px; width: 80vw; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .gy-gravity-inertia-field__path,
-  .gy-gravity-inertia-field__deposit {
+  .gy-gravity-inertia-field__deposit,
+  .gy-choice-response-gap__unfinished-path,
+  .gy-choice-response-gap__stillness,
+  .gy-choice-response-gap__confirm,
+  .gy-choice-response-gap__invitation,
+  .gy-reality-life-universe__canvas {
     animation: none;
+  }
+
+  .gy-choice-response-gap__unfinished-path,
+  .gy-choice-response-gap__confirm {
+    opacity: 0.58;
   }
 }

@@ -1230,22 +1230,38 @@ function SingleModelRevisionActionFocus({
   visualSource: RealLifeVisualSource | null;
 }) {
   const hasPresentation = Boolean(presentation);
-  const responseLine = presentation?.revision.newResponse ?? action.actionLine;
+  const [responseGapReady, setResponseGapReady] = useState(false);
   const coreAnchorTop = visualSource
     ? `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`
     : "31%";
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setResponseGapReady(true);
+    }, 2800);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
     <section
-      aria-label="认领这一局的新回应"
+      aria-label="旧回应启动后，生命停一下"
+      className="gy-choice-response-gap"
       data-model-revision-action="pending"
       data-model-revision-layer={action.layerLabel}
       data-model-revision-yao={action.yaoName}
       data-model-revision-intervention={action.interventionPotential}
       data-model-revision-agency={action.userAgency}
       data-change-experience-presentation={hasPresentation ? "active" : "fallback"}
-      data-revision-visual-language="SAME_LIFE_STELLAR_DEFLECTION"
-      data-revision-copy-composition="SINGLE_RESPONSE_SENTENCE"
+      data-choice-response-gap={
+        responseGapReady ? "PAUSE_AVAILABLE" : "OLD_PATH_RESTARTING"
+      }
+      data-choice-answer-model="NONE"
+      data-choice-life-effect="RESPONSE_ONLY"
+      data-choice-old-path="PRESENT_NOT_AUTOMATIC"
+      data-choice-crystal-stage="NOT_STARTED"
+      data-revision-visual-language="SAME_LIFE_UNFINISHED_DEFLECTION"
+      data-revision-copy-composition="AWARENESS_NOT_ADVICE"
       style={{
         position: "absolute",
         inset: 0,
@@ -1254,22 +1270,24 @@ function SingleModelRevisionActionFocus({
     >
       <div
         aria-hidden="true"
+        className="gy-choice-response-gap__stillness"
         style={{
           position: "absolute",
           left: "50%",
           top: coreAnchorTop,
-          width: 284,
-          height: 284,
+          width: 252,
+          height: 196,
           transform: "translate(-50%, -50%)",
-          borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(255,226,158,0.13), transparent 20%), radial-gradient(circle, rgba(199,169,107,0.055), transparent 58%)",
-          filter: "blur(5px)",
-          opacity: 0.68,
+            "radial-gradient(ellipse, rgba(255,239,205,0.09), rgba(199,169,107,0.025) 38%, transparent 70%)",
+          filter: "blur(8px)",
         }}
       />
 
-      <div aria-hidden="true" style={{ position: "absolute", inset: 0, opacity: 0.9, zIndex: 0 }}>
+      <div
+        aria-hidden="true"
+        style={{ position: "absolute", inset: 0, opacity: 0.86, zIndex: 0 }}
+      >
         <LifeConstellationLayer
           toneColor="222,196,154"
           narrativePhase="node_complete"
@@ -1281,12 +1299,28 @@ function SingleModelRevisionActionFocus({
         />
       </div>
 
+      <svg
+        aria-hidden="true"
+        className="gy-choice-response-gap__field"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+      >
+        <path
+          className="gy-choice-response-gap__unfinished-path"
+          d="M 57 58 C 54.5 56, 51.2 52.7, 50 48 C 49.6 45.2, 51 42.8, 53.6 40.8"
+          pathLength="1"
+        />
+      </svg>
+
       <button
         type="button"
-        aria-label={`认领新回应：${responseLine}`}
+        aria-label="我愿意尝试一次不同回应"
+        className="gy-choice-response-gap__confirm"
         data-revision-claim="LIFE_CORE_TOUCH"
         data-life-core-anchor="LIFE_UNIVERSE_CORE_IDENTITY"
+        data-choice-participation="WILLING_TO_PAUSE"
         onClick={onConfirm}
+        disabled={!responseGapReady}
         style={{
           appearance: "none",
           position: "absolute",
@@ -1300,23 +1334,22 @@ function SingleModelRevisionActionFocus({
           borderRadius: "48%",
           background: "transparent",
           padding: 0,
-          cursor: "pointer",
+          cursor: responseGapReady ? "pointer" : "default",
         }}
       >
         <span
           aria-hidden="true"
+          className="gy-choice-response-gap__invitation"
           style={{
             position: "absolute",
             left: "50%",
             top: "50%",
-            width: 74,
-            height: 74,
-            transform: "translate(-50%, -50%) scale(0.78)",
-            border: "1px solid rgba(222,196,154,0.22)",
-            borderRadius: 999,
-            boxShadow: "0 0 22px rgba(199,169,107,0.1)",
-            opacity: 0,
-            animation: "gy-near-mansion-invitation 4.8s ease-out infinite",
+            width: 54,
+            height: 32,
+            transform: "translate(-50%, -50%)",
+            background:
+              "radial-gradient(ellipse, rgba(255,239,205,0.1), transparent 72%)",
+            filter: "blur(3px)",
             pointerEvents: "none",
           }}
         />
@@ -1338,19 +1371,30 @@ function SingleModelRevisionActionFocus({
         }}
       >
         <strong
+          data-choice-awareness-copy="PAUSE"
           style={{
             maxWidth: 300,
-            color: "rgba(255,239,196,0.9)",
-            fontSize: 16,
+            color: "rgba(245,240,226,0.84)",
+            fontSize: 15,
             lineHeight: 1.65,
-            fontWeight: 620,
+            fontWeight: 580,
             textWrap: "balance",
           }}
         >
-          {responseLine}
+          {responseGapReady
+            ? "惯性还在，但它没有立刻接管。"
+            : "熟悉的回应，又要启动了。"}
         </strong>
-        <span style={{ color: "rgba(199,169,107,0.52)", fontSize: 9.5, letterSpacing: "0.08em" }}>
-          轻触生命核心 · 认领新轨迹
+        <span
+          style={{
+            color: "rgba(199,169,107,0.5)",
+            fontSize: 9.5,
+            letterSpacing: "0.08em",
+            opacity: responseGapReady ? 1 : 0,
+            transition: "opacity 680ms ease",
+          }}
+        >
+          轻触生命核心 · 愿意尝试一次不同回应
         </span>
       </div>
     </section>
@@ -1366,18 +1410,24 @@ function TransformationMomentFocus({
   presentation?: ChangeExperiencePresentation | null;
   visualSource: RealLifeVisualSource | null;
 }) {
-  const newResponseLine = presentation?.revision.newResponse ?? action.actionLine;
-  const traceLine = action.actionLine;
+  const hasPresentation = Boolean(presentation);
   const coreAnchorTop = visualSource
     ? `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`
     : "31%";
 
   return (
     <section
-      aria-label="新回应正在写入生命星纹"
+      aria-label="生命为新的回应留出空间"
+      className="gy-choice-response-gap gy-choice-response-gap--held"
       data-transformation-moment="active"
-      data-transformation-visual-event="ADDITIVE_CRYSTAL_IMPRINT"
-      data-transformation-copy-composition="SINGLE_RESPONSE_SENTENCE"
+      data-change-experience-presentation={hasPresentation ? "active" : "fallback"}
+      data-choice-response-gap="NEW_RESPONSE_POSSIBILITY"
+      data-choice-answer-model="NONE"
+      data-choice-life-effect="RESPONSE_ONLY"
+      data-choice-old-path="PRESENT_NOT_AUTOMATIC"
+      data-choice-crystal-stage="NOT_STARTED"
+      data-transformation-visual-event="UNFINISHED_RESPONSE_SPACE"
+      data-transformation-copy-composition="AWARENESS_NOT_RESULT"
       style={{
         position: "absolute",
         inset: 0,
@@ -1386,34 +1436,47 @@ function TransformationMomentFocus({
     >
       <div
         aria-hidden="true"
+        className="gy-choice-response-gap__stillness"
         style={{
           position: "absolute",
           left: "50%",
           top: coreAnchorTop,
-          width: 318,
-          height: 318,
+          width: 274,
+          height: 212,
           transform: "translate(-50%, -50%)",
-          borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(255,246,218,0.22), transparent 16%), radial-gradient(circle, rgba(199,169,107,0.1), transparent 50%)",
-          filter: "blur(5px)",
-          opacity: 0.82,
+            "radial-gradient(ellipse, rgba(255,246,218,0.1), rgba(199,169,107,0.03) 42%, transparent 72%)",
+          filter: "blur(8px)",
         }}
       />
 
-      <div aria-hidden="true" style={{ position: "absolute", inset: 0, opacity: 1, zIndex: 0 }}>
+      <div
+        aria-hidden="true"
+        style={{ position: "absolute", inset: 0, opacity: 0.9, zIndex: 0 }}
+      >
         <LifeConstellationLayer
           toneColor="222,196,154"
           narrativePhase="node_complete"
           activeNodeIndex={6}
           onCoreStarClick={() => undefined}
           visualSource={visualSource}
-          pressureIntensity={0}
+          pressureIntensity={0.12}
           interactionEnabled={false}
-          crystalImprintActive
-          crystalImprintKey={traceLine}
         />
       </div>
+
+      <svg
+        aria-hidden="true"
+        className="gy-choice-response-gap__field"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+      >
+        <path
+          className="gy-choice-response-gap__unfinished-path"
+          d="M 57 58 C 54.5 56, 51.2 52.7, 50 48 C 49.6 45.2, 51 42.8, 53.6 40.8"
+          pathLength="1"
+        />
+      </svg>
 
       <div
         style={{
@@ -1428,18 +1491,30 @@ function TransformationMomentFocus({
         }}
       >
         <strong
+          data-choice-awareness-copy="POSSIBILITY"
           style={{
             display: "inline-block",
             maxWidth: 300,
-            color: "rgba(255,239,196,0.92)",
-            fontSize: 16,
+            color: "rgba(245,240,226,0.86)",
+            fontSize: 15,
             lineHeight: 1.65,
-            fontWeight: 620,
+            fontWeight: 580,
             textWrap: "balance",
           }}
         >
-          {newResponseLine}
+          这一次，你没有立刻沿旧路径走下去。
         </strong>
+        <span
+          style={{
+            display: "block",
+            marginTop: 8,
+            color: "rgba(199,169,107,0.5)",
+            fontSize: 9.5,
+            letterSpacing: "0.08em",
+          }}
+        >
+          新的回应仍未完成 · 选择权留在你这里
+        </span>
       </div>
     </section>
   );
@@ -1650,7 +1725,7 @@ function HexagramCodeDeliveryShell() {
   );
   const [activeDimensionIndex, setActiveDimensionIndex] = useState(0);
   const [completedDimensionIds, setCompletedDimensionIds] = useState<readonly SixSpaceId[]>([]);
-  const [revisionActionConfirmed, setRevisionActionConfirmed] = useState(false);
+  const [revisionActionConfirmed] = useState(false);
   const [transformationMomentActive, setTransformationMomentActive] = useState(false);
   const dimensionTransitionLockRef = useRef(false);
   const runtimeProjection = GuanyaoRuntimeEngine.project(executionSnapshot);
@@ -1763,17 +1838,6 @@ function HexagramCodeDeliveryShell() {
       singleModelRevisionAction,
       revisionActionConfirmed,
     ]);
-
-  useEffect(() => {
-    if (!transformationMomentActive) return;
-
-    const timer = window.setTimeout(() => {
-      setRevisionActionConfirmed(true);
-      setTransformationMomentActive(false);
-    }, 1650);
-
-    return () => window.clearTimeout(timer);
-  }, [transformationMomentActive]);
 
   useEffect(() => {
     if (!arrivalBridgeActive || arrivalVisualContinuity === null) return;
@@ -1895,6 +1959,18 @@ function HexagramCodeDeliveryShell() {
         data-dynamics-upper-trigram={currentHexagramPresentation?.upperTrigram ?? "missing"}
         data-dynamics-observation-rhythm="ONE_GESTURE_PER_SPACE"
         data-gravity-inertia-rhythm="REPEATED_PATH_OBSERVATION"
+        data-choice-response-state={
+          isRevisionActionPending
+            ? "OLD_PATH_RESTARTING_THEN_PAUSE"
+            : transformationMomentActive
+              ? "NEW_RESPONSE_POSSIBILITY"
+              : "INACTIVE"
+        }
+        data-choice-identity-effect="RESPONSE_ONLY"
+        data-choice-answer-model="NONE"
+        data-choice-crystal-stage={
+          revisionActionConfirmed ? "AVAILABLE" : "NOT_STARTED"
+        }
         style={{
           height: "100dvh",
           minHeight: "100dvh",
@@ -2060,7 +2136,13 @@ function HexagramCodeDeliveryShell() {
           data-hexagram-asset-candidate-state={hexagramAssetCandidate.completionState}
           data-current-crystal-end-state={currentCrystalEndState ? "connected" : "missing"}
           data-model-revision-action={
-            isRevisionActionPending ? "pending" : transformationMomentActive ? "transforming" : revisionActionConfirmed ? "confirmed" : "inactive"
+            isRevisionActionPending
+              ? "pending"
+              : transformationMomentActive
+                ? "response_space_open"
+                : revisionActionConfirmed
+                  ? "confirmed"
+                  : "inactive"
           }
           data-change-experience-presentation={changeExperienceRoute?.dimension ?? "inactive"}
           data-value-flow-behavior={valueFlow.behaviorSignals.join("|") || "NONE"}
