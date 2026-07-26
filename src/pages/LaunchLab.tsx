@@ -127,9 +127,9 @@ function smooth(e0: number, e1: number, x: number) {
   return t * t * (3 - 2 * t);
 }
 
-// TAIYIN_PRESENT / QUIET_ROUND_MOON: the Moon is a time entrance, not a
-// personal identity. It shares the one universe anchor with the later life
-// core, then yields that coordinate when the user releases time into the sky.
+// TAIYIN_PRESENT / QUIET_ROUND_MOON: the first visible face of the life light
+// carries the order of time. It never leaves the shared universe anchor; the
+// time surface simply becomes legible when the user enters their birth time.
 function drawTaiyinMoonEntrance(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -214,9 +214,10 @@ function drawTaiyinMoonEntrance(
   ctx.restore();
 }
 
-// TIME_RECEIVING_CORE: the Moon does not cut to a calculator. Its exact anchor,
-// scale and breath continue as one neutral light carrier while year / month /
-// day / hour establish position. This is continuity, not an identity result.
+// TIME_RECEIVING_CORE: the entrance light does not cut to a calculator. Its
+// exact anchor, scale and breath continue while year / month / day / hour make
+// the surrounding time surface legible. The invariant seed remains visible
+// beneath every lunar phase so time changes state, never identity.
 function drawTimeReceivingLifeCore(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -318,6 +319,31 @@ function drawTimeReceivingLifeCore(
     ctx.fill();
     ctx.restore();
   }
+
+  const identitySeedRadius = Math.max(1.8, coreRadius * 0.14);
+  const identitySeed = ctx.createRadialGradient(
+    -identitySeedRadius * 0.28,
+    -identitySeedRadius * 0.32,
+    0,
+    0,
+    0,
+    identitySeedRadius * 1.9,
+  );
+  identitySeed.addColorStop(
+    0,
+    `rgba(255,253,241,${(0.98 * reveal).toFixed(3)})`,
+  );
+  identitySeed.addColorStop(
+    0.42,
+    `rgba(255,244,214,${(0.82 * reveal).toFixed(3)})`,
+  );
+  identitySeed.addColorStop(1, "rgba(232,200,138,0)");
+  ctx.fillStyle = identitySeed;
+  ctx.shadowColor = `rgba(255,244,214,${(0.34 * reveal).toFixed(3)})`;
+  ctx.shadowBlur = identitySeedRadius * 2.8;
+  ctx.beginPath();
+  ctx.arc(0, 0, identitySeedRadius * 1.9, 0, Math.PI * 2);
+  ctx.fill();
 
   ctx.shadowBlur = 0;
   ctx.strokeStyle = `rgba(255,252,239,${(0.42 * reveal).toFixed(3)})`;
@@ -2758,6 +2784,17 @@ export function LaunchLab() {
             smooth(0.72, 1.65, m.t),
             moonReleaseProgress,
           );
+          if (m.moonReleaseStarted) {
+            drawTimeReceivingLifeCore(
+              ctx,
+              m.w,
+              m.h,
+              now,
+              smooth(0.12, 0.58, m.moonReleaseT),
+              m.lunarDayVisual,
+              0,
+            );
+          }
         }
 
         const topLineStarts = [1.7, 2.05];
@@ -3652,25 +3689,30 @@ export function LaunchLab() {
         ctx.fill();
 
         if (isTimeReceivingStage) {
+          const timeWheel = timeWheelMetrics();
           const timeIngressPoint = (
             progress: number,
-            lane: number,
+            sourceColumn: number,
+            laneJitter: number,
             depthLayer: number,
           ) => {
             const t = clamp(progress, 0, 1);
             const it = 1 - t;
-            const depthScale = 0.72 + depthLayer * 0.18;
+            const sourceX =
+              timeWheel.left +
+              timeWheel.columnWidth * (sourceColumn + 0.5) +
+              laneJitter * timeWheel.columnWidth * 0.34;
             const p0 = {
-              x: originX + lane * m.w * 0.36 * depthScale,
-              y: m.h * (0.255 - depthLayer * 0.018),
+              x: sourceX,
+              y: timeWheel.centerY - depthLayer * 4,
             };
             const p1 = {
-              x: originX + lane * m.w * 0.22,
-              y: originY - m.h * (0.19 + depthLayer * 0.018),
+              x: originX + (sourceX - originX) * 0.42,
+              y: originY + m.h * (0.15 + depthLayer * 0.008),
             };
             const p2 = {
-              x: originX - lane * m.w * 0.045,
-              y: originY - m.h * 0.052,
+              x: originX + (sourceX - originX) * 0.1,
+              y: originY + m.h * 0.045,
             };
             return {
               x:
@@ -3686,56 +3728,60 @@ export function LaunchLab() {
             };
           };
 
-          const intakeTopY = m.h * 0.245;
+          const intakeBottomY = timeWheel.top + timeWheel.height * 0.16;
           const intakeVeil = ctx.createLinearGradient(
             0,
-            intakeTopY,
-            0,
             originY,
+            0,
+            intakeBottomY,
           );
-          intakeVeil.addColorStop(0, `rgba(${coordinateAxisRgb},0)`);
-          intakeVeil.addColorStop(0.58, `rgba(${coordinateAxisRgb},0.025)`);
-          intakeVeil.addColorStop(0.9, `rgba(${starWhiteRgb},0.085)`);
-          intakeVeil.addColorStop(1, `rgba(${starWhiteRgb},0.14)`);
+          intakeVeil.addColorStop(0, `rgba(${starWhiteRgb},0.042)`);
+          intakeVeil.addColorStop(0.18, `rgba(${starWhiteRgb},0.016)`);
+          intakeVeil.addColorStop(0.62, `rgba(${coordinateAxisRgb},0.005)`);
+          intakeVeil.addColorStop(1, `rgba(${coordinateAxisRgb},0)`);
           ctx.save();
           ctx.globalCompositeOperation = "screen";
           ctx.fillStyle = intakeVeil;
           ctx.beginPath();
-          ctx.moveTo(originX - m.w * 0.2, intakeTopY);
+          ctx.moveTo(originX - 4, originY);
           ctx.bezierCurveTo(
-            originX - m.w * 0.13,
-            originY - m.h * 0.18,
             originX - m.w * 0.025,
-            originY - m.h * 0.045,
-            originX - 4,
-            originY,
+            originY + m.h * 0.045,
+            timeWheel.left + timeWheel.width * 0.22,
+            intakeBottomY - m.h * 0.055,
+            timeWheel.left + timeWheel.width * 0.08,
+            intakeBottomY,
           );
-          ctx.lineTo(originX + 4, originY);
+          ctx.lineTo(timeWheel.left + timeWheel.width * 0.92, intakeBottomY);
           ctx.bezierCurveTo(
+            timeWheel.left + timeWheel.width * 0.78,
+            intakeBottomY - m.h * 0.055,
             originX + m.w * 0.025,
-            originY - m.h * 0.045,
-            originX + m.w * 0.13,
-            originY - m.h * 0.18,
-            originX + m.w * 0.2,
-            intakeTopY,
+            originY + m.h * 0.045,
+            originX + 4,
+            originY,
           );
           ctx.closePath();
           ctx.fill();
           ctx.restore();
 
-          // Birth time is matter entering the existing light. It has depth,
-          // converges, and disappears into the core; it is not a plotted axis.
-          for (let flowIndex = 0; flowIndex < 54; flowIndex += 1) {
+          // The four familiar time wheels feed one existing light. Sparse
+          // particles rise from the selected values and disappear into the
+          // core; no axis, beam or second source is introduced.
+          for (let flowIndex = 0; flowIndex < 36; flowIndex += 1) {
             const depthLayer = flowIndex % 3;
-            const laneSeed = ((flowIndex * 17) % 29) / 28;
-            const lane =
-              (laneSeed - 0.5) * 2 +
-              Math.sin(flowIndex * 1.71) * 0.12;
-            const speed = 0.018 + depthLayer * 0.007;
+            const sourceColumn = flowIndex % CHRONO_DIMS.length;
+            const laneSeed = ((flowIndex * 17) % 29) / 28 - 0.5;
+            const speed = 0.014 + depthLayer * 0.005;
             const flow =
-              (now * speed + flowIndex / 54 + m.chronoStep * 0.035) % 1;
+              (now * speed + flowIndex / 36 + m.chronoStep * 0.025) % 1;
             const easedFlow = flow * flow * (3 - 2 * flow);
-            const point = timeIngressPoint(easedFlow, lane, depthLayer);
+            const point = timeIngressPoint(
+              easedFlow,
+              sourceColumn,
+              laneSeed,
+              depthLayer,
+            );
             const intakeFade =
               smooth(0.02, 0.16, flow) *
               (1 - smooth(0.78, 1, flow));
@@ -3933,22 +3979,23 @@ export function LaunchLab() {
           const axisCopy = AXIS_COPY.NEW_USER;
           const wheel = timeWheelMetrics();
           const wheelLabels = ["年", "月", "日", "时"] as const;
+          const birthKeyReveal = smooth(0.18, 0.86, m.t);
 
-          ctx.globalAlpha = 1;
-          ctx.textAlign = "left";
+          ctx.globalAlpha = birthKeyReveal;
+          ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillStyle = "rgba(255,247,228,0.86)";
           ctx.font = `650 ${Math.min(17, m.w * 0.043)}px ${SANS}`;
           ctx.fillText(
             axisCopy.bodyPrimary,
-            wheel.left + 4,
+            m.w / 2,
             m.h * 0.13,
           );
           ctx.fillStyle = `rgba(${coordinateTextRgb},0.72)`;
           ctx.font = `540 ${Math.min(11, m.w * 0.028)}px ${SANS}`;
           ctx.fillText(
             m.lunarDateLabel,
-            wheel.left + 4,
+            m.w / 2,
             m.h * 0.185,
           );
 
@@ -3959,6 +4006,25 @@ export function LaunchLab() {
             "按公历输入",
             m.w / 2,
             wheel.top - 14,
+          );
+
+          const selectionBand = ctx.createLinearGradient(
+            wheel.left,
+            0,
+            wheel.left + wheel.width,
+            0,
+          );
+          selectionBand.addColorStop(0, `rgba(${coordinateAxisRgb},0)`);
+          selectionBand.addColorStop(0.16, `rgba(${coordinateAxisRgb},0.025)`);
+          selectionBand.addColorStop(0.5, `rgba(${starWhiteRgb},0.055)`);
+          selectionBand.addColorStop(0.84, `rgba(${coordinateAxisRgb},0.025)`);
+          selectionBand.addColorStop(1, `rgba(${coordinateAxisRgb},0)`);
+          ctx.fillStyle = selectionBand;
+          ctx.fillRect(
+            wheel.left,
+            wheel.centerY - 29,
+            wheel.width,
+            58,
           );
 
           CHRONO_DIMS.forEach((wheelDim, wheelIndex) => {
@@ -3998,7 +4064,7 @@ export function LaunchLab() {
             panel.addColorStop(0, "rgba(3,6,12,0.08)");
             panel.addColorStop(
               0.5,
-              `rgba(9,14,24,${isActiveWheel ? "0.36" : "0.24"})`,
+              `rgba(9,14,24,${isActiveWheel ? "0.18" : "0.1"})`,
             );
             panel.addColorStop(1, "rgba(3,6,12,0.08)");
             ctx.fillStyle = panel;
@@ -4047,7 +4113,7 @@ export function LaunchLab() {
             );
             selectionGlow.addColorStop(
               0,
-              `rgba(${starWhiteRgb},${isActiveWheel ? "0.08" : "0.035"})`,
+              `rgba(${starWhiteRgb},${isActiveWheel ? "0.06" : "0.025"})`,
             );
             selectionGlow.addColorStop(1, `rgba(${starWhiteRgb},0)`);
             ctx.fillStyle = selectionGlow;
