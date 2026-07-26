@@ -599,6 +599,10 @@ export function createGenesisWebGLRendererCore(
   // Launch has already delivered time. Genesis must receive the living core,
   // not restart it inside a rotating 28-mansion orbit.
   const retainMotherContinuityOrbit = false;
+  // The same quiet 28-mansion field that answered the birth-time key remains
+  // present across the route threshold. It carries no selected coordinate or
+  // axis until the existing coordinate-reveal consumer reaches that phase.
+  const retainEntranceMansionField = isContinuityPresenceStage;
   const motherContinuityOrbitPhase = 0;
   const continuityCoordinatePosition = (coordinateIndex: number) => {
     const angle =
@@ -613,7 +617,8 @@ export function createGenesisWebGLRendererCore(
   if (
     mansionCoordinateVisualLayer !== null &&
     (mansionCoordinateVisualLayer.visibility !== "HIDDEN" ||
-      retainMotherContinuityOrbit)
+      retainMotherContinuityOrbit ||
+      retainEntranceMansionField)
   ) {
     const birthCoordinateRevealed =
       mansionCoordinateVisualLayer.visibility ===
@@ -659,13 +664,26 @@ export function createGenesisWebGLRendererCore(
       color: new Color(0xb9cbec),
       size:
         mansionCoordinateVisualLayer.fieldExpression.neutralPointSize *
-        (isLifeCoordinateStage ? 1.28 : isLifeDirectionStage ? 1.08 : 1),
+        (isLifeCoordinateStage
+          ? 1.28
+          : isLifeDirectionStage
+            ? 1.08
+            : isContinuityPresenceStage
+              ? 1.18
+              : 1),
       sizeAttenuation: true,
       transparent: true,
       opacity: Math.min(
         0.78,
         mansionCoordinateVisualLayer.fieldExpression.neutralOpacity *
         (retainMotherContinuityOrbit ? 0.72 : 1) *
+          (retainEntranceMansionField
+            ? isMoonOrigin
+              ? 0.46
+              : isStarRiver
+                ? 0.56
+                : 0.66
+            : 1) *
           (isLifeCoordinateStage
             ? 1.42
             : isLifeDirectionStage
@@ -1912,11 +1930,11 @@ export function createGenesisWebGLRendererCore(
   // used by the entrance and Launch at the 390px acceptance viewport.
   const coreRadius = 0.14;
   const coreStageOpacity = isMoonOrigin
-    ? 0.46
+    ? 0.86
     : isStarRiver
-      ? 0.48
+      ? 0.78
       : isTimeResonance
-        ? 0.54
+        ? 0.72
         : isSymbolReveal
           ? 0.58
           : isHexagramImprint

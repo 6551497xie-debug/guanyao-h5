@@ -87,7 +87,7 @@ const CFG = {
   moonReleaseSeconds: 1.65,
   convergeMs: 2.4,
   starfield: 420,
-  firstPresenceSeconds: 1.25,
+  firstPresenceSeconds: 2.1,
 };
 
 // The existing origin adapter still accepts a geo compatibility field. The
@@ -2235,7 +2235,7 @@ export function LaunchLab() {
         m.state === STATE.STARBEAST_SANDIFY
           ? smooth(0.04, 1.1, m.t)
           : m.state === STATE.DISPLAY_LOCK && m.pendingAxisMode === "NEW_USER"
-            ? 1
+            ? 0
           : isAxisState() &&
               !(
                 m.state === STATE.TIME_CALIBRATION &&
@@ -2885,10 +2885,11 @@ export function LaunchLab() {
         return;
       }
 
-      // All four time phases have entered the same light. Hold on that light
-      // just long enough for one quiet response, then let Genesis reveal the
-      // coordinate. No identity, animal silhouette or coordinate scaffold is
-      // allowed to appear during this handoff.
+      // All four time phases have entered the same light. Before navigation,
+      // let the existing 28-mansion field answer that light so Genesis receives
+      // an already-living universe instead of starting a second star scene.
+      // The birth mansion is only recognized inside this field: no new point,
+      // animal silhouette or coordinate scaffold is introduced here.
       if (
         m.state === STATE.DISPLAY_LOCK &&
         m.pendingAxisMode === "NEW_USER"
@@ -2941,6 +2942,50 @@ export function LaunchLab() {
           ctx.fill();
         }
         ctx.shadowBlur = 0;
+
+        const birthMansionIndex = m.lifeBeastMansionIndex;
+        const birthRecognition = smooth(1.14, 1.92, m.t);
+        ctx.save();
+        MANSION_COORDINATES.forEach((_, mansionIndex) => {
+          const mansionGroup = Math.floor(mansionIndex / 7);
+          const mansionSlot = mansionIndex % 7;
+          const responseDelay = mansionGroup * 0.045 + mansionSlot * 0.026;
+          const response = smooth(
+            0.28 + responseDelay,
+            1.14 + responseDelay,
+            m.t,
+          );
+          if (response <= 0.001) return;
+
+          const point = nodePos(mansionIndex);
+          const isBirthMansion = mansionIndex === birthMansionIndex;
+          const depthAlpha = 0.54 + point.p * 0.34;
+          const pointAlpha = Math.min(
+            0.74,
+            response *
+              depthAlpha *
+              (isBirthMansion
+                ? 0.42 + birthRecognition * 0.48
+                : 0.4),
+          );
+          const pointRadius =
+            0.84 +
+            point.p * 0.62 +
+            (isBirthMansion ? birthRecognition * 0.58 : 0);
+
+          ctx.fillStyle = isBirthMansion
+            ? `rgba(241,230,202,${pointAlpha.toFixed(3)})`
+            : `rgba(213,225,241,${pointAlpha.toFixed(3)})`;
+          ctx.shadowColor = isBirthMansion
+            ? `rgba(232,207,153,${(pointAlpha * 0.48).toFixed(3)})`
+            : `rgba(185,203,236,${(pointAlpha * 0.28).toFixed(3)})`;
+          ctx.shadowBlur =
+            2.5 + response * 3 + (isBirthMansion ? birthRecognition * 5 : 0);
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, pointRadius, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.restore();
 
         const responseAlpha =
           smooth(0.38, 0.62, m.t) *
