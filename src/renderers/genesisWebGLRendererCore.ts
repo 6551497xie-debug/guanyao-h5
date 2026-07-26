@@ -2157,6 +2157,17 @@ export function createGenesisWebGLRendererCore(
         realityPressureEntryRaw *
         realityPressureEntryRaw *
         (3 - 2 * realityPressureEntryRaw);
+      // Reality begins with the relationship already settled in Genesis.
+      // Pressure may occupy more of the shared space, but it must never reset
+      // the recognized life to an anonymous idle pose.
+      const realityCompanionshipCarry =
+        isRealityCanvas && isCompletion
+          ? 1 - realityPressureEntryProgress * 0.58
+          : 0;
+      const recognizedLifeRelationshipContinuity = Math.max(
+        recognitionRelationshipSettled,
+        realityCompanionshipCarry,
+      );
       const realityPressurePhase =
         universeSeconds * (0.11 + pressureTemporalWeight * 0.08) * Math.PI * 2;
       const realityPressurePulse =
@@ -2511,7 +2522,7 @@ export function createGenesisWebGLRendererCore(
               recognitionRecoveryWave * (0.72 + forceAggregation * 0.28) +
               recognitionResponseWave *
                 (0.07 + forceAggregation * 0.022) +
-              recognitionRelationshipSettled * 0.018);
+              recognizedLifeRelationshipContinuity * 0.018);
           const recoveredLateral =
             forceLateralPosition *
             (1 -
@@ -3179,14 +3190,14 @@ export function createGenesisWebGLRendererCore(
             ? 1 +
               recognitionAttentionProgress * 0.008 +
               recognitionResponseWave * 0.034 +
-              recognitionRelationshipSettled * 0.018 +
+              recognizedLifeRelationshipContinuity * 0.018 +
               realityEntryCarryWave * 0.012
             : 1),
       );
       coreIdentityGroup.position.z = isCompletion
         ? recognitionAttentionProgress * 0.01 +
           recognitionResponseWave * 0.025 +
-          recognitionRelationshipSettled * 0.017 +
+          recognizedLifeRelationshipContinuity * 0.017 +
           realityEntryCarryWave * 0.01
         : 0;
       core.scale.setScalar(1);
@@ -3212,7 +3223,7 @@ export function createGenesisWebGLRendererCore(
           forceAbsorptionEnvelope * 0.06 +
           forceActionPresence * 0.035 +
           recognitionResponseWave * 0.08 +
-          recognitionRelationshipSettled * 0.04);
+          recognizedLifeRelationshipContinuity * 0.04);
       coreSurfaceMaterial.opacity =
         coreSurfaceBaseOpacity *
         (1 +
@@ -3220,14 +3231,14 @@ export function createGenesisWebGLRendererCore(
           forceActionPresence *
             (0.2 + forceExpressionDensity * 0.12) +
           recognitionResponseWave * 0.14 +
-          recognitionRelationshipSettled * 0.06);
+          recognizedLifeRelationshipContinuity * 0.06);
       coreHaloMaterial.opacity =
         coreHaloBaseOpacity *
         (1 +
           forceActionPresence *
             (0.28 + forceExpressionDensity * 0.2) +
           recognitionResponseWave * 0.18 +
-          recognitionRelationshipSettled * 0.08);
+          recognizedLifeRelationshipContinuity * 0.08);
       coreLight.intensity =
         coreLightBaseIntensity *
         (1 +
@@ -3235,7 +3246,7 @@ export function createGenesisWebGLRendererCore(
           forceActionPresence *
             (0.08 + forceExpressionDensity * 0.08) +
           recognitionResponseWave * 0.1 +
-          recognitionRelationshipSettled * 0.05);
+          recognizedLifeRelationshipContinuity * 0.05);
       structureGroup.scale.setScalar(
         sceneProjection.formField.boundaryScale *
           fieldPoseScale *
@@ -3346,18 +3357,18 @@ export function createGenesisWebGLRendererCore(
           recognitionFacingSide *
           ((1 - recognitionAttentionProgress) * 0.105 -
             recognitionResponseWave * 0.075 +
-            recognitionRelationshipSettled * 0.024);
+            recognizedLifeRelationshipContinuity * 0.024);
         structureGroup.position.z =
           structureGroupRestingDepth +
           recognitionAttentionProgress * 0.045 +
           recognitionResponseWave * 0.035 +
-          recognitionRelationshipSettled * 0.03 +
+          recognizedLifeRelationshipContinuity * 0.03 +
           realityEntryCarryWave * 0.012;
         structureGroup.scale.multiplyScalar(
           1 +
             recognitionAttentionProgress * 0.018 +
             recognitionResponseWave * 0.036 +
-            recognitionRelationshipSettled * 0.022 +
+            recognizedLifeRelationshipContinuity * 0.022 +
             realityEntryCarryWave * 0.008,
         );
         structureGroup.scale.x *=
@@ -3544,7 +3555,7 @@ export function createGenesisWebGLRendererCore(
                 perspectiveBodyCohesion * (isCompletion ? 0.3 : 0.32) +
                 (recognitionSubjectWeight - 1) * 0.18 +
                 recognitionResponseWave * 0.12 +
-                recognitionRelationshipSettled * 0.08 +
+                recognizedLifeRelationshipContinuity * 0.08 +
                 Math.sin(rhythmPhase * 0.72 + 0.5) *
                   (0.008 + perspectivePresenceBreath * 0.012)
               : 0;
@@ -3622,7 +3633,7 @@ export function createGenesisWebGLRendererCore(
         ? 1 +
           recognitionAttentionProgress * 0.035 +
           recognitionResponseWave * 0.08 +
-          recognitionRelationshipSettled * 0.07 +
+          recognizedLifeRelationshipContinuity * 0.07 +
           realityEntryCarryWave * 0.06
         : 1;
       renderer.render(scene, camera);
