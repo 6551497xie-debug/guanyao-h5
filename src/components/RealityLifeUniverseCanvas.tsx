@@ -9,8 +9,8 @@ import type {
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
 
 const REALITY_ARRIVAL_TIMING_MS = Object.freeze({
-  IDENTITY_HOLD: 760,
-  SETTLED: 4_200,
+  IDENTITY_HOLD: 1_600,
+  SETTLED: 4_600,
 });
 
 export function RealityLifeUniverseCanvas({

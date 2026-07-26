@@ -15,6 +15,44 @@
   font-size: 20px;
 }
 
+.gy-reality-life-universe__arrival-copy {
+  position: absolute;
+  z-index: 11;
+  top: max(44px, env(safe-area-inset-top));
+  left: 50%;
+  width: min(78%, 320px);
+  margin: 0;
+  color: rgb(238 226 198 / 76%);
+  font-family: var(--gy-font-serif);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  line-height: 1.8;
+  text-align: center;
+  text-shadow: 0 0 22px rgb(238 226 198 / 18%);
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition:
+    opacity 420ms ease,
+    letter-spacing 1200ms ease;
+}
+
+.gy-reality-life-universe__canvas[data-reality-arrival-phase="IDENTITY_HOLD"]
+  + .gy-reality-life-universe__arrival-copy {
+  opacity: 1;
+}
+
+.gy-reality-life-universe__canvas[data-reality-arrival-phase="REALITY_REVEAL"]
+  + .gy-reality-life-universe__arrival-copy {
+  opacity: 0.82;
+  letter-spacing: 0.11em;
+}
+
+.gy-reality-life-universe__canvas[data-reality-arrival-phase="SETTLED"]
+  + .gy-reality-life-universe__arrival-copy {
+  opacity: 0;
+  letter-spacing: 0.09em;
+}
+
 .gy-reality-life-universe__canvas[data-reality-arrival-phase="IDENTITY_HOLD"],
 .gy-reality-life-universe__canvas[data-reality-arrival-phase="REALITY_REVEAL"] {
   z-index: 9;
@@ -34,6 +72,17 @@
   ~ .gy-p36__pressure-space {
   opacity: 0 !important;
   pointer-events: none;
+  transform: translateX(-50%) translateY(14px);
+}
+
+.gy-reality-life-universe__canvas[data-reality-arrival-phase="SETTLED"]
+  ~ .gy-reality-life-universe__continuity-copy {
+  transition-delay: 520ms;
+}
+
+.gy-reality-life-universe__canvas[data-reality-arrival-phase="SETTLED"]
+  ~ .gy-p36__pressure-space {
+  transition-delay: 980ms;
 }
 
 .gy-reality-life-universe[data-reality-pressure-visual-state]

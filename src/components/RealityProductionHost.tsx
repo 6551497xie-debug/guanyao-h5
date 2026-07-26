@@ -305,6 +305,12 @@ export function RealityProductionHost({
           pressureSeedSession.selectedPressureSeedContext
         }
       />
+      <p
+        className="gy-reality-life-universe__arrival-copy"
+        role="status"
+      >
+        你和它，继续走进现实。
+      </p>
       <div className="gy-reality-life-universe__disturbance" aria-hidden="true">
         <span />
         <span />
@@ -312,10 +318,10 @@ export function RealityProductionHost({
       </div>
       <p className="gy-reality-life-universe__continuity-copy">
         {pressureVisualState === "PRESSURE_RECOGNIZED"
-          ? "这股现实力量正在改变空间，也正在触碰它。"
+          ? "新的现实触碰了它，它仍是同一个生命。"
           : pressureVisualState === "PRESSURE_PAUSED"
-            ? "星河没有催促你，现实暂时停在远处。"
-            : "同一束生命光，开始感受现实的重量。"}
+            ? "你和它仍在这里，现实暂时停在远处。"
+            : "你和它仍在同一片星河里。现实开始从远处靠近。"}
       </p>
       <RealityPressureSeedPresentation
         session={pressureSeedSession}
