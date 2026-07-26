@@ -2874,7 +2874,7 @@ export function LaunchLab() {
 
             ctx.fillStyle = `rgba(232,200,138,${(actionCopyAlpha * 0.42).toFixed(3)})`;
             ctx.font = `${Math.min(11, m.w * 0.028)}px ${MONO}`;
-            ctx.fillText("观爻 · GUANYAO", m.w / 2, m.h * 0.94);
+            ctx.fillText("星脉之境 · XINMAI", m.w / 2, m.h * 0.94);
           }
 
           if (!returningLifeIdentity && m.moonReleaseStarted) {
@@ -4627,7 +4627,7 @@ export function LaunchLab() {
         ctx.textBaseline = "alphabetic";
         ctx.fillStyle = "rgba(232,200,138,0.76)";
         ctx.font = `650 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
-        ctx.fillText("观爻第一份本命资产", g.railX0, m.h * 0.115);
+        ctx.fillText("星脉之境第一份生命资产", g.railX0, m.h * 0.115);
         ctx.fillStyle = "rgba(255,247,228,0.96)";
         ctx.font = `760 ${Math.min(30, m.w * 0.074)}px ${SANS}`;
         ctx.fillText("母码资产已生成", g.railX0, m.h * 0.19);
@@ -4905,7 +4905,7 @@ export function LaunchLab() {
           ctx.font = `${Math.min(11, m.w * 0.028)}px ${MONO}`;
           ctx.fillStyle = `rgba(232,200,138,${(ctaSolid * 0.42 * (1 - enter)).toFixed(3)})`;
           ctx.textAlign = "center";
-          ctx.fillText("观爻 · GUANYAO", cx, m.h * 0.94);
+          ctx.fillText("星脉之境 · XINMAI", cx, m.h * 0.94);
         }
         ctx.textBaseline = "alphabetic";
         }
@@ -5477,7 +5477,7 @@ export function LaunchLab() {
                 <small>{returningExperienceCopy}</small>
               ) : null}
               <span>轻触星河，回到我的生命世界</span>
-              <em>观爻 · GUANYAO</em>
+              <em>星脉之境 · XINMAI</em>
             </div>
           </section>
         ) : null}

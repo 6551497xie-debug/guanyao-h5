@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { flowSteps } from "../data/mockFlow";
 import type { ReactNode } from "react";
 import { TimeSandglassReadout } from "./visual/TimeSandglassReadout";
+import { XinmaiEntryThreshold } from "./XinmaiEntryThreshold";
 
 type AppShellProps = {
   children: ReactNode;
@@ -10,6 +11,10 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
   const location = useLocation();
+  const isXinmaiThresholdRoute =
+    location.pathname === "/" ||
+    location.pathname === "/launch" ||
+    location.pathname === "/launch-lab";
   const isLaunchEntry =
     location.pathname === "/" ||
     location.pathname === "/launch" ||
@@ -23,7 +28,38 @@ export function AppShell({ children }: AppShellProps) {
     location.pathname === "/dynamics" || location.pathname === "/archive";
 
   if (isLaunchEntry || isProductionLifeUniverse) {
-    return <>{children}</>;
+    const surface =
+      location.pathname === "/genesis"
+        ? "GENESIS"
+        : location.pathname === "/reality"
+          ? "REALITY"
+          : location.pathname === "/dynamics"
+            ? "REFLECTION"
+            : location.pathname === "/archive"
+              ? "ARCHIVE"
+              : "ENTRY";
+    const screenRange =
+      surface === "ENTRY"
+        ? "0-2"
+        : surface === "GENESIS"
+          ? "3-6"
+          : surface === "REALITY"
+            ? "7"
+            : surface === "REFLECTION"
+              ? "8-11"
+              : "12";
+
+    return (
+      <div
+        className="xinmai-life-app"
+        data-xinmai-surface={surface}
+        data-xinmai-screen-range={screenRange}
+        data-xinmai-journey="ENTER_FIND_RECOGNIZE_ACCOMPANY_UNDERSTAND_RESPOND_SEDIMENT_BECOME"
+      >
+        <XinmaiEntryThreshold active={isXinmaiThresholdRoute} />
+        {children}
+      </div>
+    );
   }
 
   return (

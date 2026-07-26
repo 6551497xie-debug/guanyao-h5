@@ -76,8 +76,11 @@ function LifeUniverseRouteFallback() {
       const coreY = height * 0.48;
       const orbitRadiusX = Math.min(width * 0.43, 168);
       const orbitRadiusY = Math.min(width * 0.19, 74);
-      const orbitPhase = universeSeconds * 0.025;
-      context.strokeStyle = "rgba(147,172,211,0.14)";
+      // The accessible fallback preserves the same 28-mansion topology without
+      // turning it into a rotating astrological dial. Time is carried by the
+      // shared field and core breath, not by an orbiting interface.
+      const orbitPhase = 0;
+      context.strokeStyle = "rgba(147,172,211,0.07)";
       context.lineWidth = 1;
       context.beginPath();
       for (let index = 0; index < 28; index += 1) {

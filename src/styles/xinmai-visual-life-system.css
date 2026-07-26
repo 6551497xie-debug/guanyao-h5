@@ -1,0 +1,808 @@
+/*
+ * XINMAI Visual Life System · first migration layer
+ *
+ * This sheet is intentionally loaded after the legacy GUANYAO visual system.
+ * It aligns existing production surfaces without replacing their Runtime,
+ * renderer, identity source, or interaction contracts.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Space */
+  --xinmai-space-obsidian: #020306;
+  --xinmai-space-deep: #02040a;
+  --xinmai-space-water: #07101a;
+  --xinmai-space-violet: #16111e;
+
+  /* Life */
+  --xinmai-life-ivory: #fff7e4;
+  --xinmai-life-warm: #e8c88a;
+  --xinmai-life-text: #eee2c6;
+  --xinmai-life-muted: rgba(238, 226, 198, 0.62);
+  --xinmai-life-faint: rgba(238, 226, 198, 0.34);
+
+  /* Field and memory */
+  --xinmai-star-silver: #b9cbec;
+  --xinmai-star-soft: rgba(185, 203, 236, 0.44);
+  --xinmai-star-faint: rgba(185, 203, 236, 0.16);
+  --xinmai-dust-violet: #493a57;
+  --xinmai-dust-deep: #2f253a;
+  --xinmai-crystal: #ffefbf;
+  --xinmai-crystal-soft: rgba(255, 239, 191, 0.46);
+
+  /* Four-symbol environmental bias; never use as a full-screen skin. */
+  --xinmai-east-jade: #789b88;
+  --xinmai-south-cinnabar: #b98a75;
+  --xinmai-west-stone: #b8b2a2;
+  --xinmai-north-water: #687c91;
+
+  /* Type */
+  --xinmai-font-life:
+    "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC",
+    "PingFang SC", serif;
+  --xinmai-font-interface:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC",
+    "Microsoft YaHei", sans-serif;
+  --xinmai-font-coordinate:
+    "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+
+  /* Motion */
+  --xinmai-rhythm-core: 3000ms;
+  --xinmai-rhythm-force: 6400ms;
+  --xinmai-rhythm-space: 12000ms;
+  --xinmai-rhythm-memory: 10800ms;
+  --xinmai-ease-life: cubic-bezier(0.22, 0.7, 0.2, 1);
+  --xinmai-ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Bridge the existing visual consumers to the new semantic palette. */
+  --gy-bg: var(--xinmai-space-obsidian);
+  --gy-void: var(--xinmai-space-obsidian);
+  --gy-field: var(--xinmai-space-deep);
+  --gy-field-soft: var(--xinmai-space-water);
+  --gy-color-void: var(--xinmai-space-obsidian);
+  --gy-color-ink: var(--xinmai-space-deep);
+  --gy-color-bg: var(--xinmai-space-obsidian);
+  --gy-color-panel: rgba(4, 7, 12, 0.66);
+  --gy-color-text: var(--xinmai-life-ivory);
+  --gy-color-text-main: rgba(255, 247, 228, 0.82);
+  --gy-color-text-strong: rgba(255, 247, 228, 0.92);
+  --gy-color-text-muted: var(--xinmai-life-muted);
+  --gy-color-text-ghost: var(--xinmai-life-faint);
+  --gy-color-gold: var(--xinmai-life-warm);
+  --gy-color-gold-soft: rgba(232, 200, 138, 0.46);
+  --gy-color-line-gold: rgba(232, 200, 138, 0.34);
+  --gy-gold: var(--xinmai-life-warm);
+  --gy-font-serif: var(--xinmai-font-life);
+  --gy-font-sans: var(--xinmai-font-interface);
+  --gy-font-system: var(--xinmai-font-interface);
+  --gy-font-mono: var(--xinmai-font-coordinate);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  background: var(--xinmai-space-obsidian);
+}
+
+body {
+  color: var(--xinmai-life-ivory);
+  background:
+    radial-gradient(
+      ellipse at 50% 38%,
+      rgba(35, 47, 68, 0.12),
+      transparent 56%
+    ),
+    var(--xinmai-space-obsidian);
+  font-family: var(--xinmai-font-interface);
+}
+
+::selection {
+  color: var(--xinmai-space-obsidian);
+  background: rgba(255, 239, 191, 0.82);
+}
+
+.xinmai-life-app {
+  position: relative;
+  min-width: 320px;
+  min-height: 100dvh;
+  overflow: hidden;
+  color: var(--xinmai-life-ivory);
+  background: var(--xinmai-space-obsidian);
+  isolation: isolate;
+}
+
+.xinmai-life-app::before {
+  position: fixed;
+  z-index: 900;
+  inset: 0;
+  content: "";
+  background:
+    radial-gradient(
+      ellipse at 50% 48%,
+      transparent 42%,
+      rgba(2, 3, 6, 0.18) 74%,
+      rgba(2, 3, 6, 0.52) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(2, 3, 6, 0.18),
+      transparent 22%,
+      transparent 68%,
+      rgba(2, 3, 6, 0.24)
+    );
+  pointer-events: none;
+}
+
+.xinmai-life-app button,
+.xinmai-life-app [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.xinmai-life-app button:focus-visible,
+.xinmai-life-app [role="button"]:focus-visible {
+  outline: 1px solid rgba(255, 239, 191, 0.54);
+  outline-offset: 4px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Screen 0 · XINMAI threshold                                                */
+/* -------------------------------------------------------------------------- */
+
+.xinmai-entry-threshold {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: grid;
+  width: 100%;
+  height: 100dvh;
+  place-items: center;
+  overflow: hidden;
+  border: 0;
+  padding: 0;
+  color: var(--xinmai-life-ivory);
+  background:
+    radial-gradient(
+      ellipse at 50% 50%,
+      rgba(22, 34, 50, 0.09),
+      transparent 38%
+    ),
+    #000;
+  cursor: pointer;
+  transition:
+    opacity 620ms var(--xinmai-ease-life),
+    visibility 620ms linear;
+}
+
+.xinmai-entry-threshold[data-xinmai-threshold-phase="OPENING"] {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.xinmai-entry-threshold__space {
+  position: absolute;
+  inset: 0;
+  opacity: 0.48;
+}
+
+.xinmai-entry-threshold__space i {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(185, 203, 236, 0.72);
+  box-shadow: 0 0 10px rgba(185, 203, 236, 0.32);
+  animation: xinmai-threshold-star var(--xinmai-rhythm-space) ease-in-out
+    infinite;
+}
+
+.xinmai-entry-threshold__space i:nth-child(1) {
+  top: 22%;
+  left: 28%;
+}
+
+.xinmai-entry-threshold__space i:nth-child(2) {
+  top: 63%;
+  right: 22%;
+  width: 1px;
+  height: 1px;
+  animation-delay: -4.2s;
+}
+
+.xinmai-entry-threshold__space i:nth-child(3) {
+  right: 34%;
+  bottom: 18%;
+  opacity: 0.42;
+  animation-delay: -7.6s;
+}
+
+.xinmai-entry-threshold__pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(36vw, 142px);
+  height: min(18vw, 72px);
+  transform: translate(-50%, -58%);
+}
+
+.xinmai-entry-threshold__pulse::before {
+  position: absolute;
+  top: 50%;
+  right: 12%;
+  left: 12%;
+  height: 1px;
+  content: "";
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(185, 203, 236, 0.08),
+    transparent
+  );
+}
+
+.xinmai-entry-threshold__pulse b {
+  position: absolute;
+  top: 50%;
+  left: 14%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255, 247, 228, 0.76);
+  box-shadow:
+    0 0 8px rgba(255, 247, 228, 0.34),
+    0 0 24px rgba(232, 200, 138, 0.08);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.72);
+  animation: xinmai-threshold-pulse 1800ms var(--xinmai-ease-settle) both;
+}
+
+.xinmai-entry-threshold__pulse b:nth-child(1) {
+  animation-delay: 160ms;
+}
+
+.xinmai-entry-threshold__pulse b:nth-child(2) {
+  left: 26%;
+  animation-delay: 260ms;
+}
+
+.xinmai-entry-threshold__pulse b:nth-child(3) {
+  left: 38%;
+  animation-delay: 390ms;
+}
+
+.xinmai-entry-threshold__pulse b:nth-child(4) {
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  animation-delay: 540ms;
+}
+
+.xinmai-entry-threshold__pulse b:nth-child(5) {
+  left: 62%;
+  animation-delay: 720ms;
+}
+
+.xinmai-entry-threshold__pulse b:nth-child(6) {
+  left: 74%;
+  animation-delay: 890ms;
+}
+
+.xinmai-entry-threshold__pulse b:nth-child(7) {
+  left: 86%;
+  animation-delay: 1080ms;
+}
+
+.xinmai-entry-threshold__name {
+  position: absolute;
+  top: calc(50% + min(14vw, 56px));
+  left: 50%;
+  display: grid;
+  gap: 9px;
+  justify-items: center;
+  opacity: 0;
+  transform: translate(-50%, 7px);
+  animation: xinmai-threshold-name 940ms var(--xinmai-ease-life) 840ms
+    forwards;
+}
+
+.xinmai-entry-threshold__name strong {
+  color: rgba(255, 247, 228, 0.82);
+  font-family: var(--xinmai-font-life);
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  white-space: nowrap;
+}
+
+.xinmai-entry-threshold__name small {
+  color: rgba(185, 203, 236, 0.32);
+  font-family: var(--xinmai-font-coordinate);
+  font-size: 8px;
+  letter-spacing: 0.32em;
+}
+
+@keyframes xinmai-threshold-star {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: scale(0.72);
+  }
+
+  52% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+}
+
+@keyframes xinmai-threshold-pulse {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+
+  to {
+    opacity: 0.72;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes xinmai-threshold-name {
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Screens 1–2 · Entry and life key                                           */
+/* -------------------------------------------------------------------------- */
+
+.xinmai-life-app[data-xinmai-surface="ENTRY"] {
+  background:
+    radial-gradient(
+      ellipse at 50% 42%,
+      rgba(40, 53, 78, 0.1),
+      transparent 56%
+    ),
+    var(--xinmai-space-obsidian);
+}
+
+.xinmai-life-app[data-xinmai-surface="ENTRY"] .light-beast-hitbox {
+  color: var(--xinmai-life-ivory);
+  font-family: var(--xinmai-font-life);
+}
+
+.xinmai-life-app[data-xinmai-surface="ENTRY"] .light-field {
+  filter: saturate(0.88) contrast(1.03);
+}
+
+.xinmai-life-app[data-xinmai-surface="ENTRY"]
+  .gy-returning-life-world__cosmos-copy {
+  color: rgba(185, 203, 236, 0.46);
+  font-family: var(--xinmai-font-life);
+  letter-spacing: 0.16em;
+}
+
+.xinmai-life-app[data-xinmai-surface="ENTRY"]
+  .gy-returning-life-world__relationship-copy {
+  color: var(--xinmai-life-muted);
+  font-family: var(--xinmai-font-life);
+}
+
+.xinmai-life-app[data-xinmai-surface="ENTRY"]
+  .gy-returning-life-world__relationship-copy
+  strong {
+  color: rgba(255, 247, 228, 0.88);
+  font-weight: 400;
+}
+
+.xinmai-life-app[data-xinmai-surface="ENTRY"]
+  .gy-returning-life-world__relationship-copy
+  small {
+  color: rgba(185, 203, 236, 0.48);
+}
+
+.xinmai-life-app[data-xinmai-surface="ENTRY"]
+  .gy-returning-life-world__relationship-copy
+  span {
+  color: rgba(255, 239, 191, 0.62);
+}
+
+.xinmai-life-app[data-xinmai-surface="ENTRY"]
+  .gy-returning-life-world__relationship-copy
+  em {
+  color: rgba(185, 203, 236, 0.28);
+  font-family: var(--xinmai-font-coordinate);
+  font-style: normal;
+  letter-spacing: 0.18em;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Screens 3–6 · Coordinate, direction, presence and recognition              */
+/* -------------------------------------------------------------------------- */
+
+.xinmai-life-app[data-xinmai-surface="GENESIS"] {
+  background: var(--xinmai-space-deep);
+}
+
+.xinmai-life-app[data-xinmai-surface="GENESIS"]
+  .gy-genesis-production-experience {
+  color: var(--xinmai-life-ivory);
+  background:
+    radial-gradient(
+      ellipse at 50% 46%,
+      rgba(24, 34, 58, 0.14),
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse at 18% 20%,
+      rgba(31, 27, 52, 0.075),
+      transparent 62%
+    ),
+    var(--xinmai-space-deep);
+  font-family: var(--xinmai-font-life);
+}
+
+.xinmai-life-app[data-xinmai-surface="GENESIS"]
+  .gy-genesis-production-experience__time-response,
+.xinmai-life-app[data-xinmai-surface="GENESIS"]
+  .gy-genesis-production-experience__presence-response {
+  color: rgba(238, 226, 198, 0.78);
+  font-family: var(--xinmai-font-life);
+  font-weight: 400;
+  text-shadow: 0 0 22px rgba(185, 203, 236, 0.18);
+}
+
+.xinmai-life-app[data-xinmai-surface="GENESIS"]
+  .gy-genesis-production-experience__completion-action {
+  color: rgba(255, 247, 228, 0.84);
+  font-family: var(--xinmai-font-life);
+  font-weight: 400;
+}
+
+.xinmai-life-app[data-xinmai-surface="GENESIS"]
+  .gy-genesis-production-experience__completion-action::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 239, 191, 0.34),
+    transparent
+  );
+}
+
+/* Technical source states stay internal even when a restored life is absent. */
+.xinmai-life-app
+  .gy-genesis-production-experience--source-not-ready
+  p {
+  color: transparent;
+  font-size: 0;
+}
+
+.xinmai-life-app
+  .gy-genesis-production-experience--source-not-ready
+  p::after {
+  content: "你的生命世界还未唤醒。";
+  color: var(--xinmai-life-muted);
+  font-family: var(--xinmai-font-life);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Screen 7 · Reality companionship                                           */
+/* -------------------------------------------------------------------------- */
+
+.xinmai-life-app[data-xinmai-surface="REALITY"] {
+  background:
+    radial-gradient(
+      ellipse at 68% 46%,
+      rgba(73, 58, 87, 0.06),
+      transparent 46%
+    ),
+    var(--xinmai-space-obsidian);
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-reality-life-universe {
+  color: var(--xinmai-life-ivory);
+  font-family: var(--xinmai-font-life);
+  background: transparent;
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-reality-life-universe__arrival-copy,
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-reality-life-universe__continuity-copy {
+  color: rgba(238, 226, 198, 0.68);
+  font-family: var(--xinmai-font-life);
+  font-weight: 400;
+  text-shadow: 0 0 24px rgba(2, 3, 6, 0.94);
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-p36__pressure-space {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-p36__pressure-head {
+  color: rgba(185, 203, 236, 0.34);
+  font-family: var(--xinmai-font-coordinate);
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-p36__signal-list
+  article {
+  border: 0;
+  border-left: 1px solid rgba(185, 203, 236, 0.12);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-p36__signal-list
+  article
+  button,
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-p36__gravity-ready
+  button {
+  border: 0;
+  border-bottom: 1px solid rgba(255, 239, 191, 0.22);
+  border-radius: 0;
+  background: transparent;
+  color: rgba(255, 247, 228, 0.68);
+  box-shadow: none;
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  [data-production-reality-status="SOURCE_NOT_READY"]
+  p {
+  color: transparent;
+  font-size: 0;
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  [data-production-reality-status="SOURCE_NOT_READY"]
+  p::after {
+  content: "你的生命世界还未准备好进入现实。";
+  color: var(--xinmai-life-muted);
+  font-family: var(--xinmai-font-life);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Screens 8–11 · Gravity, reflection, Choice and Crystal                     */
+/* -------------------------------------------------------------------------- */
+
+.xinmai-life-app[data-xinmai-surface="REFLECTION"] {
+  background:
+    radial-gradient(
+      ellipse at 58% 38%,
+      rgba(73, 58, 87, 0.08),
+      transparent 48%
+    ),
+    var(--xinmai-space-obsidian);
+}
+
+.xinmai-life-app[data-xinmai-surface="REFLECTION"] > main {
+  color: var(--xinmai-life-ivory) !important;
+  background:
+    radial-gradient(
+      circle at 50% 36%,
+      rgba(232, 200, 138, 0.025),
+      transparent 34%
+    ),
+    var(--xinmai-space-obsidian) !important;
+  font-family: var(--xinmai-font-life);
+}
+
+.xinmai-life-app[data-xinmai-surface="REFLECTION"]
+  [data-dynamics-context-whisper] {
+  font-family: var(--xinmai-font-life);
+}
+
+.xinmai-life-app[data-xinmai-surface="REFLECTION"]
+  [data-dynamics-context-whisper]
+  > span {
+  display: none;
+}
+
+.xinmai-life-app[data-xinmai-surface="REFLECTION"]
+  [data-dynamics-context-whisper]
+  > p {
+  color: rgba(238, 226, 198, 0.58) !important;
+  font-family: var(--xinmai-font-life);
+  letter-spacing: 0.06em;
+}
+
+.xinmai-life-app[data-xinmai-surface="REFLECTION"]
+  [data-visual-layer="pressure-text-field"],
+.xinmai-life-app[data-xinmai-surface="REFLECTION"]
+  [data-visual-layer="beast-state-text"] {
+  color: rgba(238, 226, 198, 0.66);
+  font-family: var(--xinmai-font-life);
+  text-shadow: 0 0 22px rgba(2, 3, 6, 0.96);
+}
+
+.xinmai-life-app[data-xinmai-surface="REFLECTION"]
+  [data-dynamics-six-space-presentation="OBSERVATION_ENTRANCE"] {
+  filter: saturate(0.76);
+}
+
+.xinmai-life-app[data-xinmai-surface="REFLECTION"]
+  .gy-choice-response-gap {
+  color: var(--xinmai-life-ivory);
+  font-family: var(--xinmai-font-life);
+}
+
+.xinmai-life-app[data-xinmai-surface="REFLECTION"]
+  .gy-choice-response-gap__stillness {
+  border-color: rgba(185, 203, 236, 0.14);
+  background:
+    radial-gradient(
+      ellipse at 50% 50%,
+      rgba(73, 58, 87, 0.12),
+      transparent 62%
+    ),
+    transparent;
+  box-shadow: none;
+}
+
+.xinmai-life-app[data-xinmai-surface="REFLECTION"]
+  .gy-choice-response-gap__confirm,
+.xinmai-life-app[data-xinmai-surface="REFLECTION"]
+  [data-choice-participation],
+.xinmai-life-app[data-xinmai-surface="REFLECTION"]
+  [data-choice-lived-response-action] {
+  border: 0;
+  border-bottom: 1px solid rgba(255, 239, 191, 0.24);
+  border-radius: 0;
+  background: transparent;
+  color: rgba(255, 247, 228, 0.72);
+  box-shadow: none;
+}
+
+.xinmai-life-app[data-xinmai-surface="REFLECTION"]
+  .gy-crystal-sediment-field {
+  color: rgba(255, 247, 228, 0.72);
+  font-family: var(--xinmai-font-life);
+  background:
+    radial-gradient(
+      ellipse at 50% 48%,
+      rgba(255, 239, 191, 0.035),
+      transparent 56%
+    ),
+    transparent;
+}
+
+.xinmai-life-app[data-xinmai-surface="REFLECTION"]
+  [data-crystal-imprint-name="CRYSTAL_IMPRINT_LINE"] {
+  color: rgba(255, 239, 191, 0.76);
+  font-family: var(--xinmai-font-life);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 20px rgba(232, 200, 138, 0.1);
+}
+
+.xinmai-life-app[data-xinmai-surface="REFLECTION"]
+  [data-crystal-archive-action] {
+  border: 0;
+  border-bottom: 1px solid rgba(255, 239, 191, 0.2);
+  border-radius: 0;
+  background: transparent;
+  color: rgba(255, 247, 228, 0.58);
+  box-shadow: none;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Screen 12 · Life Archive                                                   */
+/* -------------------------------------------------------------------------- */
+
+.xinmai-life-app[data-xinmai-surface="ARCHIVE"] {
+  background:
+    radial-gradient(
+      ellipse at 50% 46%,
+      rgba(24, 34, 58, 0.1),
+      transparent 62%
+    ),
+    var(--xinmai-space-obsidian);
+}
+
+.xinmai-life-app[data-xinmai-surface="ARCHIVE"]
+  [data-personality-ring-page="ACTIVE_1_0"] {
+  color: rgba(255, 247, 228, 0.88) !important;
+  background: var(--xinmai-space-obsidian) !important;
+  font-family: var(--xinmai-font-life);
+}
+
+.xinmai-life-app[data-xinmai-surface="ARCHIVE"]
+  [data-personality-ring-page="ACTIVE_1_0"]
+  header {
+  color: rgba(238, 226, 198, 0.48);
+}
+
+.xinmai-life-app[data-xinmai-surface="ARCHIVE"]
+  [data-personality-ring-selected-imprint="LIFE_IMPRINT_LINE"] {
+  color: rgba(255, 239, 191, 0.78) !important;
+  font-family: var(--xinmai-font-life);
+  font-weight: 400 !important;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 26px rgba(2, 3, 6, 0.96);
+}
+
+.xinmai-life-app[data-xinmai-surface="ARCHIVE"]
+  [data-personality-ring-arrival-copy="CHANGE_REMEMBERED_BY_LIFE"] {
+  color: rgba(185, 203, 236, 0.48) !important;
+  font-family: var(--xinmai-font-life);
+}
+
+.xinmai-life-app[data-xinmai-surface="ARCHIVE"]
+  .gy-personality-ring__memory-trace {
+  mix-blend-mode: screen;
+}
+
+.xinmai-life-app[data-xinmai-surface="ARCHIVE"]
+  .gy-personality-ring__selected-memory-node:focus-visible {
+  outline: 1px solid rgba(255, 239, 191, 0.42);
+  outline-offset: 3px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Shared life continuity                                                     */
+/* -------------------------------------------------------------------------- */
+
+.xinmai-life-app .gy-reality-life-universe__crystal-memory,
+.xinmai-life-app .gy-returning-life-world__imprint,
+.xinmai-life-app .gy-personality-ring__selected-body-trace {
+  filter: saturate(0.82);
+}
+
+.xinmai-life-app .gy-reality-life-universe__reality-memory,
+.xinmai-life-app .gy-personality-ring__memory-trace {
+  color: var(--xinmai-star-silver);
+}
+
+.xinmai-life-app canvas {
+  image-rendering: auto;
+}
+
+@media (min-width: 720px) {
+  .xinmai-life-app[data-xinmai-surface="ENTRY"],
+  .xinmai-life-app[data-xinmai-surface="GENESIS"],
+  .xinmai-life-app[data-xinmai-surface="REALITY"] {
+    background:
+      radial-gradient(
+        ellipse at 50% 44%,
+        rgba(35, 47, 68, 0.1),
+        transparent 38rem
+      ),
+      var(--xinmai-space-obsidian);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xinmai-entry-threshold {
+    transition-duration: 120ms;
+  }
+
+  .xinmai-entry-threshold__space i,
+  .xinmai-entry-threshold__pulse b,
+  .xinmai-entry-threshold__name {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    opacity: 0.72;
+  }
+
+  .xinmai-life-app .gy-reality-life-universe__crystal-memory,
+  .xinmai-life-app .gy-returning-life-world__imprint,
+  .xinmai-life-app .gy-personality-ring__memory-trace {
+    animation: none !important;
+  }
+}
