@@ -1867,6 +1867,8 @@ export function createGenesisWebGLRendererCore(
       (recognitionSubjectWeight - 1) * 0.08 +
       spatialFocusStrength * 0.04
     : (spatialFocusStrength - 0.5) * 0.03;
+  const structureGroupRestingX = structureGroup.position.x;
+  const structureGroupRestingY = structureGroup.position.y;
   const structureGroupRestingDepth = structureGroup.position.z;
   structureGroup.rotation.x = isSymbolReveal
     ? fieldDirectionalFlow * 0.06
@@ -2034,6 +2036,7 @@ export function createGenesisWebGLRendererCore(
   let recognitionResponseStartedAtMilliseconds: number | null = null;
   let realityEntryCarryStartedAtMilliseconds: number | null = null;
   let realityPressureStartedAtMilliseconds: number | null = null;
+  let realityPressureRecoveryStartedAtMilliseconds: number | null = null;
   let disposed = false;
   let contextState: "ACTIVE" | "LOST" | "RESTORED" | "DISPOSED" =
     "ACTIVE";
@@ -2069,16 +2072,53 @@ export function createGenesisWebGLRendererCore(
             ?.closest("[data-reality-pressure-visual-state]")
             ?.getAttribute("data-reality-pressure-visual-state")
         : null;
+      if (
+        realityPressureVisualState === "PRESSURE_RECOVERING" &&
+        realityPressureRecoveryStartedAtMilliseconds === null
+      ) {
+        realityPressureRecoveryStartedAtMilliseconds =
+          safeElapsedMilliseconds;
+      } else if (
+        realityPressureVisualState === "PRESSURE_RECOGNIZED" ||
+        realityPressureVisualState === "PRESSURE_OBSERVING"
+      ) {
+        realityPressureRecoveryStartedAtMilliseconds = null;
+      }
+      const realityPressureRecoveryRaw =
+        realityPressureVisualState === "PRESSURE_RECOVERED"
+          ? 1
+          : realityPressureVisualState === "PRESSURE_RECOVERING" &&
+              realityPressureRecoveryStartedAtMilliseconds !== null
+            ? Math.min(
+                1,
+                Math.max(
+                  0,
+                  (safeElapsedMilliseconds -
+                    realityPressureRecoveryStartedAtMilliseconds) /
+                    2_400,
+                ),
+              )
+            : 0;
+      const realityPressureRecoveryProgress =
+        realityPressureRecoveryRaw *
+        realityPressureRecoveryRaw *
+        (3 - 2 * realityPressureRecoveryRaw);
       const realityPressureStateWeight =
         realityPressureVisualState === "PRESSURE_PAUSED"
           ? 0.16
-          : realityPressureVisualState === "PRESSURE_RECOGNIZED"
-            ? 1
-            : 0.72;
-      const realityIdentityIsUnderPressure =
+          : realityPressureVisualState === "PRESSURE_RECOVERED"
+            ? 0.24
+            : realityPressureVisualState === "PRESSURE_RECOVERING"
+              ? 1 - realityPressureRecoveryProgress * 0.76
+              : realityPressureVisualState === "PRESSURE_RECOGNIZED"
+                ? 1
+                : 0.72;
+      const realityIdentityCarriesPressureExperience =
         isRealityCanvas &&
         isCompletion &&
-        realityPressureVisualState === "PRESSURE_RECOGNIZED";
+        (realityPressureVisualState === "PRESSURE_RECOGNIZED" ||
+          realityPressureVisualState === "PRESSURE_RECOVERING" ||
+          realityPressureVisualState === "PRESSURE_RECOVERED");
       if (
         isRealityCanvas &&
         realityPressureCanApproach &&
@@ -2187,7 +2227,23 @@ export function createGenesisWebGLRendererCore(
       const realityPressurePhase =
         universeSeconds * (0.11 + pressureTemporalWeight * 0.08) * Math.PI * 2;
       const realityPressurePulse =
-        0.5 + Math.sin(realityPressurePhase) * 0.5;
+        0.5 +
+        Math.sin(realityPressurePhase) *
+          0.5 *
+          (1 - realityPressureRecoveryProgress * 0.9);
+      const realityRecoveryBodyRhythm =
+        1 +
+        Math.sin(
+          (universeSeconds /
+            (LIFE_UNIVERSE_CORE_IDENTITY.breathPeriodSeconds *
+              (1 + pressureTemporalWeight * 0.045))) *
+            Math.PI *
+            2 +
+            pressureFlowDeflection * 0.12,
+        ) *
+          LIFE_UNIVERSE_CORE_IDENTITY.breathingAmplitude *
+          realityPressureRecoveryProgress *
+          0.22;
       let coordinateFormationProgress = 1;
       let coordinateIdentityBreath = 1;
       const directionRevealRaw = isHexagramImprint
@@ -3202,7 +3258,8 @@ export function createGenesisWebGLRendererCore(
             0.12 +
           Math.sin(realityPressurePhase + star.phase) *
             pressureInfluence *
-            0.18;
+            0.18 *
+            (1 - realityPressureRecoveryProgress * 0.86);
       });
       cosmicGeometry.getAttribute("position").needsUpdate = true;
       cosmicFieldScale *=
@@ -3449,6 +3506,11 @@ export function createGenesisWebGLRendererCore(
             : 1) *
           structureInfluence,
       );
+      // Pressure posture is resolved from the immutable resting position on
+      // every frame. Accumulating offsets would make the same body drift out
+      // of view and falsely read as an identity disappearing over time.
+      structureGroup.position.x = structureGroupRestingX;
+      structureGroup.position.y = structureGroupRestingY;
       if (isStarBeastReveal) {
         structureGroup.scale.multiplyScalar(
           0.68 + presenceSkeletonReveal * 0.32,
@@ -3548,8 +3610,7 @@ export function createGenesisWebGLRendererCore(
       if (pressureExpression !== null && isPresenceStage) {
         const pressurePhase =
           elapsedSeconds * (0.11 + pressureTemporalWeight * 0.08);
-        const pressurePulse =
-          0.5 + Math.sin(pressurePhase * Math.PI * 2) * 0.5;
+        const pressurePulse = realityPressurePulse;
         const pressureCompression =
           pressureFieldCompression *
           realityPressureEntryProgress *
@@ -3578,8 +3639,11 @@ export function createGenesisWebGLRendererCore(
           (0.004 + pressureLift * 0.06);
 
         for (let index = 0; index < pressureTracePointCount; index += 1) {
+          const pressureTraceTravel =
+            pressurePhase * 0.38 * (1 - realityPressureRecoveryProgress) +
+            0.58 * realityPressureRecoveryProgress;
           const traceProgress =
-            ((pressurePhase * 0.38 - index * 0.045) % 1 + 1) % 1;
+            ((pressureTraceTravel - index * 0.045) % 1 + 1) % 1;
           const scaledIndex = traceProgress * Math.max(1, spineSegments - 1);
           const sourceIndex = Math.min(
             spineSegments - 1,
@@ -3615,12 +3679,21 @@ export function createGenesisWebGLRendererCore(
             0.08 + index * 0.012;
         }
         pressureTracePositionAttribute.needsUpdate = true;
-        pressureTraceMaterial.opacity =
+        const activePressureTraceOpacity =
           (0.18 +
             pressureStructureResponse * 0.26 +
             pressurePulse * 0.24) *
           realityPressureEntryProgress *
           realityPressureStateWeight;
+        const recoveredPressureTraceOpacity =
+          0.026 +
+          pressureStructureResponse * 0.034 +
+          pressureBoundaryLoad * 0.018;
+        pressureTraceMaterial.opacity =
+          activePressureTraceOpacity *
+            (1 - realityPressureRecoveryProgress) +
+          recoveredPressureTraceOpacity *
+            realityPressureRecoveryProgress;
         pressureTraceMaterial.size =
           lifePresence.stellarSkeleton.nodeScale *
           (0.72 + pressureCoreResponse * 0.34 + pressurePulse * 0.18);
@@ -3662,7 +3735,7 @@ export function createGenesisWebGLRendererCore(
         (isStarBeastReveal
           ? presenceCoreTransmission * presenceSkeletonReveal
           : 1);
-      if (realityIdentityIsUnderPressure) {
+      if (realityIdentityCarriesPressureExperience) {
         // Pressure changes posture and rhythm, never the legibility of the
         // existing life body. These are visibility floors for the same
         // skeleton and nodes, not a new pressure effect or a second identity.
@@ -3706,7 +3779,7 @@ export function createGenesisWebGLRendererCore(
                 Math.sin(rhythmPhase * 0.72 + 0.5) *
                   (0.008 + perspectivePresenceBreath * 0.012)
               : 0;
-      if (realityIdentityIsUnderPressure) {
+      if (realityIdentityCarriesPressureExperience) {
         bodyFieldMaterial.opacity = Math.max(
           bodyFieldMaterial.opacity,
           0.62 +
@@ -3754,7 +3827,10 @@ export function createGenesisWebGLRendererCore(
       }
       bodyField.scale.setScalar(
         isPresenceStage
-          ? 0.98 + perspectiveBodyCohesion * 0.06 + (breath - 1) * 0.4
+          ? (0.98 +
+              perspectiveBodyCohesion * 0.06 +
+              (breath - 1) * 0.4) *
+              realityRecoveryBodyRhythm
           : 1,
       );
       coreLight.intensity =

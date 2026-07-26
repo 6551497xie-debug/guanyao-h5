@@ -1782,6 +1782,14 @@ function HexagramCodeDeliveryShell() {
     motherPresentation,
   });
   const displayExperienceState = experienceReadinessPresentation.experienceState;
+  const realityPressureRecoveryVisualState =
+    arrivalBridgeActive
+      ? "PRESSURE_RECOGNIZED"
+      : contextWhisperVisible ||
+          (executionSnapshot.runtime.uiPhase !== "NODE_RUNNING" &&
+            executionSnapshot.runtime.uiPhase !== "COMPLETE")
+        ? "PRESSURE_RECOVERING"
+        : "PRESSURE_RECOVERED";
   const currentHexagramPresentation = useMemo(
     () => resolveDynamicsCurrentHexagramPresentation({
       formation: currentHexagramFormation,
@@ -1968,6 +1976,12 @@ function HexagramCodeDeliveryShell() {
         }
         data-choice-identity-effect="RESPONSE_ONLY"
         data-choice-answer-model="NONE"
+        data-reality-pressure-recovery-state={
+          realityPressureRecoveryVisualState
+        }
+        data-reality-pressure-recovery-meaning="SAME_LIFE_NEW_EQUILIBRIUM"
+        data-reality-pressure-memory="EXPERIENCE_RETAINED"
+        data-reality-core-identity="STABLE"
         data-choice-crystal-stage={
           revisionActionConfirmed ? "AVAILABLE" : "NOT_STARTED"
         }
@@ -1989,7 +2003,9 @@ function HexagramCodeDeliveryShell() {
           <div
             className="gy-reality-life-universe"
             data-dynamics-life-universe-background="PERSISTENT"
-            data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"
+            data-reality-pressure-visual-state={
+              realityPressureRecoveryVisualState
+            }
             data-source-reference-id={arrivalVisualContinuity.sourceReferenceId}
             style={{
               position: "absolute",
