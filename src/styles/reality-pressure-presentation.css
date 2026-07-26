@@ -33,6 +33,191 @@
     opacity 800ms ease;
 }
 
+.gy-personality-ring__replay {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.gy-personality-ring__memory-trace {
+  transform-origin: 50% 48%;
+  animation-name: gy-personality-ring-memory-breathe;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.gy-personality-ring__selected-body-trace {
+  transform-origin: 50% 48%;
+  animation: gy-personality-ring-body-recognition 900ms cubic-bezier(0.2, 0.72, 0.22, 1) both;
+}
+
+.gy-personality-ring__arrival-body-trace path {
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 2;
+  animation:
+    gy-personality-ring-arrival-sediment 1800ms cubic-bezier(0.2, 0.72, 0.22, 1) both,
+    gy-personality-ring-arrival-settle 7.8s 1800ms ease-in-out infinite;
+}
+
+.gy-personality-ring__selected-memory-node {
+  outline: none;
+}
+
+.gy-personality-ring__selected-memory-node:focus-visible {
+  border-radius: 2px !important;
+  outline: 1px solid rgb(255 226 158 / 42%);
+  outline-offset: -10px;
+}
+
+.gy-personality-ring__life-echo {
+  --gy-life-imprint-angle: 0deg;
+  position: absolute;
+  z-index: 1;
+  top: 48%;
+  left: 50%;
+  width: 74px;
+  height: 74px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(var(--gy-life-imprint-angle));
+  animation: gy-personality-ring-life-echo 1100ms 660ms cubic-bezier(0.2, 0.72, 0.22, 1) both;
+}
+
+.gy-personality-ring__life-echo::before {
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgb(255 226 158 / 34%);
+  border-radius: 50%;
+  box-shadow:
+    0 0 28px rgb(255 226 158 / 22%),
+    inset 0 0 18px rgb(255 247 228 / 12%);
+  content: "";
+  transform: scaleX(0.7) scaleY(1.18);
+  animation: gy-personality-ring-core-deformation 1100ms 660ms cubic-bezier(0.2, 0.72, 0.22, 1) both;
+}
+
+.gy-personality-ring__life-echo > span {
+  position: absolute;
+  inset: 18px;
+  border-radius: 50%;
+  backdrop-filter: blur(1.6px) brightness(1.28) contrast(1.08);
+  box-shadow: 0 0 20px rgb(255 247 228 / 14%);
+  transform: scaleX(0.76) scaleY(1.14);
+  animation: gy-personality-ring-core-lens 1100ms 660ms cubic-bezier(0.2, 0.72, 0.22, 1) both;
+}
+
+.gy-personality-ring__life-echo[data-life-imprint-axis="POWER"] {
+  --gy-life-imprint-angle: -78deg;
+}
+
+.gy-personality-ring__life-echo[data-life-imprint-axis="INTEREST"] {
+  --gy-life-imprint-angle: -48deg;
+}
+
+.gy-personality-ring__life-echo[data-life-imprint-axis="RELATION"] {
+  --gy-life-imprint-angle: -18deg;
+}
+
+.gy-personality-ring__life-echo[data-life-imprint-axis="FAMILY"] {
+  --gy-life-imprint-angle: 12deg;
+}
+
+.gy-personality-ring__life-echo[data-life-imprint-axis="SOCIAL"] {
+  --gy-life-imprint-angle: 42deg;
+}
+
+.gy-personality-ring__life-echo[data-life-imprint-axis="EXISTENCE"] {
+  --gy-life-imprint-angle: 72deg;
+}
+
+.gy-personality-ring__life-echo[data-life-imprint-axis="BODY"] {
+  --gy-life-imprint-angle: 102deg;
+}
+
+.gy-personality-ring__life-echo[data-life-imprint-axis="EMOTION"] {
+  --gy-life-imprint-angle: 132deg;
+}
+
+.gy-personality-ring__life-echo[data-life-imprint-axis="THOUGHT"] {
+  --gy-life-imprint-angle: 162deg;
+}
+
+.gy-personality-ring__life-echo[data-life-imprint-axis="ACTION"] {
+  --gy-life-imprint-angle: 192deg;
+}
+
+.gy-personality-ring__life-echo[data-life-imprint-axis="MEMORY"] {
+  --gy-life-imprint-angle: 222deg;
+}
+
+.gy-personality-ring__life-echo[data-life-imprint-axis="MOTIVATION"] {
+  --gy-life-imprint-angle: 252deg;
+}
+
+@keyframes gy-personality-ring-life-echo {
+  0% { opacity: 0; }
+  14% { opacity: 0.96; }
+  62% { opacity: 0.7; }
+  100% { opacity: 0; }
+}
+
+@keyframes gy-personality-ring-memory-breathe {
+  0%, 100% { filter: brightness(0.82); }
+  50% { filter: brightness(1.24) drop-shadow(0 0 2px rgb(185 203 236 / 12%)); }
+}
+
+@keyframes gy-personality-ring-body-recognition {
+  0% { opacity: 0.34; filter: brightness(0.72); }
+  62% { opacity: 1; filter: brightness(1.2) drop-shadow(0 0 4px rgb(255 226 158 / 24%)); }
+  100% { opacity: 1; filter: brightness(1); }
+}
+
+@keyframes gy-personality-ring-arrival-sediment {
+  0% {
+    opacity: 0.14;
+    stroke-dashoffset: 2;
+    filter: brightness(0.86);
+  }
+  58% {
+    opacity: 0.88;
+    stroke-dashoffset: 0.34;
+    filter: brightness(1.14) drop-shadow(0 0 3px rgb(255 226 158 / 16%));
+  }
+  100% {
+    opacity: 0.74;
+    stroke-dashoffset: 0;
+    filter: brightness(1);
+  }
+}
+
+@keyframes gy-personality-ring-arrival-settle {
+  0%, 100% {
+    opacity: 0.68;
+    filter: brightness(0.96);
+  }
+  50% {
+    opacity: 0.78;
+    filter: brightness(1.05) drop-shadow(0 0 2px rgb(255 226 158 / 10%));
+  }
+}
+
+@keyframes gy-personality-ring-core-deformation {
+  0% { transform: scale(0.72); }
+  24% { transform: scaleX(0.58) scaleY(1.28); }
+  58% { transform: scaleX(1.08) scaleY(0.92); }
+  100% { transform: scale(1); }
+}
+
+@keyframes gy-personality-ring-core-lens {
+  0% { opacity: 0; transform: scale(0.72); }
+  24% { opacity: 0.88; transform: scaleX(0.68) scaleY(1.24); }
+  68% { opacity: 0.42; transform: scaleX(1.04) scaleY(0.96); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+
 .gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_OBSERVING"]
   .gy-reality-life-universe__canvas {
   animation: gy-reality-observation-breath 8s ease-in-out infinite alternate;

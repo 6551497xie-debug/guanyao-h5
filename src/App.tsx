@@ -34,6 +34,12 @@ const RealityProductionRouteEntry = lazy(() =>
   })),
 );
 
+const PersonalityRingPage = lazy(() =>
+  import("./pages/PersonalityRingPage").then((module) => ({
+    default: module.PersonalityRingPage,
+  })),
+);
+
 function LifeUniverseRouteFallback() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -148,7 +154,14 @@ export default function App() {
         <Route path={GUANYAO_ROUTES.breachScan} element={<LegacyRedirect to={GUANYAO_ROUTES.dynamics} />} />
         <Route path={GUANYAO_ROUTES.yaoDevice} element={<LegacyRedirect to={GUANYAO_ROUTES.dynamics} />} />
         <Route path={GUANYAO_ROUTES.repairMethod} element={<LegacyRedirect to={GUANYAO_ROUTES.dynamics} />} />
-        <Route path={GUANYAO_ROUTES.archive} element={<LegacyRedirect to={GUANYAO_ROUTES.dynamics} />} />
+        <Route
+          path={GUANYAO_ROUTES.archive}
+          element={
+            <Suspense fallback={<LifeUniverseRouteFallback />}>
+              <PersonalityRingPage />
+            </Suspense>
+          }
+        />
         <Route path="/hexagram-card-lab" element={<HexagramCardLabPage />} />
         <Route path="/visual-system-lab" element={<VisualSystemLabPage />} />
         <Route path="/axis-lab" element={<AxisLinePage />} />

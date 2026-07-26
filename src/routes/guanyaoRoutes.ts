@@ -15,7 +15,7 @@ export const GUANYAO_ROUTES = {
   yaoDevice: "/yao-device",
   // DEPRECATED / ISOLATED. Legacy repair-method is not part of the active 1.0 forward flow.
   repairMethod: "/repair-method",
-  // DEPRECATED / ISOLATED. Legacy archive is not part of the active 1.0 forward flow.
+  // Active 1.0 personality-ring route. The legacy R7 ArchivePage stays isolated.
   archive: "/archive",
 } as const;
 
@@ -26,7 +26,6 @@ export const LEGACY_ISOLATED_ROUTES = {
   [GUANYAO_ROUTES.breachScan]: "DEPRECATED / ISOLATED / NOT IN ACTIVE FLOW",
   [GUANYAO_ROUTES.yaoDevice]: "DEPRECATED / ISOLATED / NOT IN ACTIVE FLOW",
   [GUANYAO_ROUTES.repairMethod]: "DEPRECATED / ISOLATED / NOT IN ACTIVE FLOW",
-  [GUANYAO_ROUTES.archive]: "DEPRECATED / ISOLATED / NOT IN ACTIVE FLOW",
 } as const;
 
 export const LEGACY_ROUTE_REDIRECTS = {

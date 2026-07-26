@@ -51,6 +51,7 @@ import type {
   GenesisProductionExperiencePageProps,
 } from "../types/genesisProductionExperiencePage";
 import type { GenesisProductionRecognitionRealityResult } from "../types/genesisProductionRecognitionRealityEntry";
+import { persistRecognizedGenesisLifeAssets } from "../services/sessionService";
 import "../styles/genesis-production-experience.css";
 
 const ENTRANCE_COORDINATE_CONTINUITY_HOLD_MS = Object.freeze({
@@ -612,6 +613,8 @@ export function GenesisProductionExperiencePage({
 
   const enterReality = () => {
     if (
+      consumerSourceResult === null ||
+      consumerSourceResult.status !== "READY" ||
       recognitionRealityResult?.status !== "READY" ||
       recognitionRealityResult.session.interactionAvailability !==
         "ENTER_REALITY" ||
@@ -621,7 +624,9 @@ export function GenesisProductionExperiencePage({
       directionFieldCalibrationResult === null ||
       directionFieldCalibrationResult.status !== "AVAILABLE" ||
       archetypeForceCalibrationResult === null ||
-      archetypeForceCalibrationResult.status !== "AVAILABLE"
+      archetypeForceCalibrationResult.status !== "AVAILABLE" ||
+      presenceVisualRealizationResult === null ||
+      presenceVisualRealizationResult.status !== "READY"
     ) {
       return;
     }
@@ -671,6 +676,11 @@ export function GenesisProductionExperiencePage({
               directionFieldCalibrationResult.calibration,
             lifeArchetypeForceCondensationVisualCalibration:
               archetypeForceCalibrationResult.calibration,
+          });
+          persistRecognizedGenesisLifeAssets({
+            visualContinuity,
+            presenceVisualRealization:
+              presenceVisualRealizationResult.realization,
           });
           realityEntryTimerRef.current = window.setTimeout(() => {
             realityEntryTimerRef.current = null;

@@ -1558,8 +1558,13 @@ function CurrentCrystalEndStateFocus({
       navigate(GUANYAO_ROUTES.archive, {
         state:
           archiveVisualContinuityReady && visualContinuity
-            ? { visualContinuity }
-            : undefined,
+            ? {
+                visualContinuity,
+                archiveEntryCreatedAt: depositResult.entry.createdAt,
+              }
+            : {
+                archiveEntryCreatedAt: depositResult.entry.createdAt,
+              },
       });
     }
   }
