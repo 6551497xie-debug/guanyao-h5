@@ -38,6 +38,26 @@ export const LIFE_UNIVERSE_CORE_IDENTITY = Object.freeze({
   threeColor: 0xfff7e4,
 });
 
+const LIFE_UNIVERSE_CRYSTAL_SOURCE_SLOT_BY_DIMENSION: Readonly<
+  Record<string, number>
+> = Object.freeze({
+  body: 0,
+  emotion: 1,
+  thought: 2,
+  action: 3,
+  behavior: 3,
+  memory: 4,
+  motivation: 5,
+  goal: 5,
+});
+
+export const resolveLifeUniverseCrystalSourceSlot = (
+  primaryDimension: string | null | undefined,
+) =>
+  LIFE_UNIVERSE_CRYSTAL_SOURCE_SLOT_BY_DIMENSION[
+    primaryDimension?.trim().toLowerCase() ?? ""
+  ] ?? 6;
+
 export const resolveLifeUniverseCrystalImprintGeometry = ({
   identityKey,
   birthMansionIndex,

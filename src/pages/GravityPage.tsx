@@ -71,6 +71,7 @@ import { RealityGravityInertiaField } from "../components/RealityGravityInertiaF
 import {
   LIFE_UNIVERSE_CORE_IDENTITY,
   resolveLifeUniverseCrystalImprintGeometry,
+  resolveLifeUniverseCrystalSourceSlot,
 } from "../renderers/lifeUniverseStarField";
 import { LegacyDynamicsDormant } from "./legacy/LegacyDynamicsDormant";
 import "../styles/reality-pressure-presentation.css";
@@ -78,17 +79,6 @@ import "../styles/reality-pressure-presentation.css";
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
 const LEGACY_DYNAMICS_FLOW_ISOLATED = true;
 const LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED = true;
-const CRYSTAL_SOURCE_SLOT_BY_DIMENSION: Readonly<Record<string, number>> =
-  Object.freeze({
-    body: 0,
-    emotion: 1,
-    thought: 2,
-    action: 3,
-    behavior: 3,
-    memory: 4,
-    motivation: 5,
-    goal: 5,
-  });
 
 function playCrystalUnderstandingTone() {
   try {
@@ -1777,8 +1767,9 @@ function CurrentCrystalEndStateFocus({
     : "31%";
   const crystalSourceDimension =
     state.transmission.primaryDimension?.trim().toLowerCase() ?? "unknown";
-  const crystalSourceSlot =
-    CRYSTAL_SOURCE_SLOT_BY_DIMENSION[crystalSourceDimension] ?? 6;
+  const crystalSourceSlot = resolveLifeUniverseCrystalSourceSlot(
+    crystalSourceDimension,
+  );
   const crystalImprintGeometry = useMemo(() => {
     if (visualSource === null) return null;
     const projectionBundle = visualSource.projectionBundle;

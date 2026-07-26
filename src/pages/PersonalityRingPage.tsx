@@ -10,6 +10,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   drawLifeUniverseDeepSpace2D,
   resolveLifeUniverseCrystalImprintGeometry,
+  resolveLifeUniverseCrystalSourceSlot,
 } from "../renderers/lifeUniverseStarField";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
@@ -127,7 +128,9 @@ export function PersonalityRingPage() {
       entries[0]?.createdAt ??
       null,
   );
-  const [imprintMemoryVisible, setImprintMemoryVisible] = useState(true);
+  const [imprintMemoryVisible, setImprintMemoryVisible] = useState(
+    () => !archiveArrivalCreatedAt,
+  );
   const imprintRevealTimerRef = useRef<number | null>(null);
   const [imprintReplaySequence, setImprintReplaySequence] = useState(0);
   const [imprintReplayPressurePosition, setImprintReplayPressurePosition] = useState(0.5);
@@ -146,6 +149,19 @@ export function PersonalityRingPage() {
     },
     [],
   );
+  useEffect(() => {
+    if (!archiveArrivalCreatedAt) return undefined;
+    imprintRevealTimerRef.current = window.setTimeout(() => {
+      setImprintMemoryVisible(true);
+      imprintRevealTimerRef.current = null;
+    }, 1_450);
+    return () => {
+      if (imprintRevealTimerRef.current !== null) {
+        window.clearTimeout(imprintRevealTimerRef.current);
+        imprintRevealTimerRef.current = null;
+      }
+    };
+  }, [archiveArrivalCreatedAt]);
   const selectedEntry =
     entries.find((entry) => entry.createdAt === selectedCreatedAt) ??
     entries[0] ??
@@ -208,14 +224,22 @@ export function PersonalityRingPage() {
         (coordinate) => coordinate.normalizedOrbitPosition,
       );
     return visiblePositionedEntries.flatMap((positionedEntry) => {
+      const sourceDimension =
+        positionedEntry.entry.transmission.primaryDimension?.trim().toLowerCase() ??
+        "unknown";
+      const sourceSlot =
+        resolveLifeUniverseCrystalSourceSlot(sourceDimension);
       const geometry = resolveLifeUniverseCrystalImprintGeometry({
-        identityKey: positionedEntry.entry.crystal.copy,
+        identityKey: `${visualContinuity.sourceReferenceId}:${positionedEntry.entry.crystal.copy}`,
         birthMansionIndex,
         normalizedOrbitPositions,
         envelopeScale: morphology.envelopeScale,
         postureBias: morphology.postureBias,
+        sourceSlot,
       });
-      return geometry ? [{ ...positionedEntry, geometry }] : [];
+      return geometry
+        ? [{ ...positionedEntry, geometry, sourceDimension, sourceSlot }]
+        : [];
     });
   })();
   const selectedLifeImprint =
@@ -284,6 +308,12 @@ export function PersonalityRingPage() {
           ? "CRYSTAL_SEDIMENT_CONTINUES_IN_SAME_BODY"
           : "RETURNING_TO_LIFE_MEMORY"
       }
+      data-personality-ring-memory-transition="PRESENT_BODY_TEXTURE_TO_TIME_MEMORY"
+      data-personality-ring-arrival-source-continuity={
+        isCrystalArrival
+          ? "SAME_SOURCE_POSITION_SAME_GEOMETRY"
+          : "ARCHIVED_BODY_MEMORY"
+      }
       data-personality-ring-first-perception="LIFE_REMEMBERS_CHANGE"
       data-personality-ring-collection-metaphor="EXCLUDED"
       data-personality-ring-identity-mode={
@@ -311,6 +341,12 @@ export function PersonalityRingPage() {
       }
       data-legacy-r7-archive="ISOLATED_OUTSIDE_ACTIVE_1_0"
       data-selected-imprint-identity={selectedEntry?.crystal.copy ?? "NONE"}
+      data-selected-imprint-source-dimension={
+        selectedLifeImprint?.sourceDimension ?? "NONE"
+      }
+      data-selected-imprint-source-slot={
+        selectedLifeImprint?.sourceSlot ?? "NONE"
+      }
       data-selected-hexagram-coordinate={selectedHexagramCoordinate}
       style={{
         position: "fixed",
@@ -416,6 +452,11 @@ export function PersonalityRingPage() {
                     : "BRIGHT_SELECTED_BODY_BRANCH"
                 }
                 data-personality-ring-imprint-form="BODY_TEXTURE_NOT_COLLECTIBLE"
+                data-personality-ring-imprint-temporal-state={
+                  isCrystalArrival
+                    ? "SETTLING_FROM_PRESENT_INTO_MEMORY"
+                    : "REMEMBERED_BODY_TEXTURE"
+                }
               >
                 <path
                   d={selectedImprintGeometry.path}
@@ -584,10 +625,12 @@ export function PersonalityRingPage() {
           data-personality-ring-selected-imprint="LIFE_IMPRINT_LINE"
           style={{
             maxWidth: 314,
-            color: "rgba(255,239,196,0.94)",
-            fontSize: 16,
-            lineHeight: 1.65,
-            fontWeight: 620,
+            color: isCrystalArrival
+              ? "rgba(245,236,210,0.72)"
+              : "rgba(255,239,196,0.9)",
+            fontSize: isCrystalArrival ? 13 : 16,
+            lineHeight: isCrystalArrival ? 1.72 : 1.65,
+            fontWeight: isCrystalArrival ? 540 : 620,
             textWrap: "balance",
           }}
         >
@@ -603,7 +646,7 @@ export function PersonalityRingPage() {
               letterSpacing: "0.06em",
             }}
           >
-            这次回应没有成为收藏，它已经留在你的生命里。
+            这次回应，已经成为生命走过的一道纹理。
           </span>
         ) : null}
         {revealedEntry ? (
