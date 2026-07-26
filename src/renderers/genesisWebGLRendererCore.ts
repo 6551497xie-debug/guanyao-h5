@@ -2157,6 +2157,12 @@ export function createGenesisWebGLRendererCore(
         realityPressureEntryRaw *
         realityPressureEntryRaw *
         (3 - 2 * realityPressureEntryRaw);
+      // The existing life senses Reality before the interface names it.
+      // This is the same pressure projection with a slightly earlier body
+      // response; the surrounding space keeps the original approach timing.
+      const lifePressurePerceptionProgress = isRealityCanvas
+        ? 1 - Math.pow(1 - realityPressureEntryProgress, 1.55)
+        : realityPressureEntryProgress;
       // Reality begins with the relationship already settled in Genesis.
       // Pressure may occupy more of the shared space, but it must never reset
       // the recognized life to an anonymous idle pose.
@@ -2548,7 +2554,7 @@ export function createGenesisWebGLRendererCore(
           );
           const pressureBodyEnvelope =
             realityPressureStateWeight *
-            realityPressureEntryProgress *
+            lifePressurePerceptionProgress *
             pressureContactEdge;
           const pressureInwardShift =
             pressureBoundaryLoad *
@@ -3381,15 +3387,15 @@ export function createGenesisWebGLRendererCore(
         const pressurePulse = realityPressurePulse;
         const pressureCompression =
           pressureFieldCompression *
-          realityPressureEntryProgress *
+          lifePressurePerceptionProgress *
           (0.024 + pressurePulse * 0.022);
         const pressureLift =
           pressureCoreResistance *
-          realityPressureEntryProgress *
+          lifePressurePerceptionProgress *
           (0.012 + pressurePulse * 0.018);
         const pressurePosture =
           realityPressureStateWeight *
-          realityPressureEntryProgress *
+          lifePressurePerceptionProgress *
           (0.62 + pressurePulse * 0.38);
         structureGroup.rotation.z +=
           pressureFlowDeflection *
