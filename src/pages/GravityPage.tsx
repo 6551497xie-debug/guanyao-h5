@@ -78,6 +78,51 @@ import "../styles/reality-pressure-presentation.css";
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
 const LEGACY_DYNAMICS_FLOW_ISOLATED = true;
 const LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED = true;
+const CRYSTAL_SOURCE_SLOT_BY_DIMENSION: Readonly<Record<string, number>> =
+  Object.freeze({
+    body: 0,
+    emotion: 1,
+    thought: 2,
+    action: 3,
+    behavior: 3,
+    memory: 4,
+    motivation: 5,
+    goal: 5,
+  });
+
+function playCrystalUnderstandingTone() {
+  try {
+    const AudioContextConstructor =
+      window.AudioContext ??
+      (
+        window as unknown as {
+          webkitAudioContext?: typeof AudioContext;
+        }
+      ).webkitAudioContext;
+    if (!AudioContextConstructor) return;
+
+    const context = new AudioContextConstructor();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    const startedAt = context.currentTime;
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(392, startedAt);
+    oscillator.frequency.exponentialRampToValueAtTime(349.23, startedAt + 0.72);
+    gain.gain.setValueAtTime(0.0001, startedAt);
+    gain.gain.exponentialRampToValueAtTime(0.018, startedAt + 0.06);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startedAt + 0.82);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start(startedAt);
+    oscillator.stop(startedAt + 0.86);
+    oscillator.addEventListener("ended", () => {
+      context.close().catch(() => {});
+    });
+  } catch {
+    // Sound is an optional single acknowledgement; visual continuity remains
+    // complete when audio is unavailable or disabled by the browser.
+  }
+}
+
 const RealityLifeUniverseCanvas = lazy(() =>
   import("../components/RealityLifeUniverseCanvas").then((module) => ({
     default: module.RealityLifeUniverseCanvas,
@@ -1717,6 +1762,8 @@ function CurrentCrystalEndStateFocus({
     [state],
   );
   const crystalImprintLine = crystalPresentation.crystalCopy;
+  const [imprintCopyReady, setImprintCopyReady] = useState(false);
+  const [archiveReady, setArchiveReady] = useState(false);
   const [ringLiteState, setRingLiteState] = useState(() => readPersonalityRingLite());
   const ringPresentation = useMemo(
     () => resolveDynamicsPersonalityRingPresentation({
@@ -1728,6 +1775,29 @@ function CurrentCrystalEndStateFocus({
   const coreAnchorTop = visualSource
     ? `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`
     : "31%";
+  const crystalSourceDimension =
+    state.transmission.primaryDimension?.trim().toLowerCase() ?? "unknown";
+  const crystalSourceSlot =
+    CRYSTAL_SOURCE_SLOT_BY_DIMENSION[crystalSourceDimension] ?? 6;
+  const crystalImprintGeometry = useMemo(() => {
+    if (visualSource === null) return null;
+    const projectionBundle = visualSource.projectionBundle;
+    const coordinateProjection =
+      projectionBundle.twentyEightMansionCoordinateProjection;
+    const morphology =
+      projectionBundle.morphologicalFieldAlignmentProjection
+        .morphologicalFieldExpression;
+    return resolveLifeUniverseCrystalImprintGeometry({
+      identityKey: `${visualSource.provenance.sourceReferenceId}:${crystalImprintLine}`,
+      birthMansionIndex: coordinateProjection.birthMansion.mansionIndex,
+      normalizedOrbitPositions: coordinateProjection.coordinates.map(
+        (coordinate) => coordinate.normalizedOrbitPosition,
+      ),
+      envelopeScale: morphology.envelopeScale,
+      postureBias: morphology.postureBias,
+      sourceSlot: crystalSourceSlot,
+    });
+  }, [crystalImprintLine, crystalSourceSlot, visualSource]);
   const archiveVisualContinuityReady =
     visualContinuity !== null &&
     visualSource !== null &&
@@ -1739,6 +1809,19 @@ function CurrentCrystalEndStateFocus({
       "REAL_USER_EXPERIENCE" &&
     visualContinuity.consumerSourceResult.consumerSource.sourceProvenance ===
       "REAL_USER_SESSION";
+
+  useEffect(() => {
+    const copyTimer = window.setTimeout(() => {
+      setImprintCopyReady(true);
+    }, 1_450);
+    const archiveTimer = window.setTimeout(() => {
+      setArchiveReady(true);
+    }, 3_200);
+    return () => {
+      window.clearTimeout(copyTimer);
+      window.clearTimeout(archiveTimer);
+    };
+  }, []);
 
   function saveToPersonalityRingLite() {
     const depositResult = depositDynamicsCurrentCrystalToPersonalityRing({
@@ -1767,7 +1850,17 @@ function CurrentCrystalEndStateFocus({
       data-crystal-visual-form="SAME_LIFE_IMPRINT"
       data-crystal-materialization="SEDIMENT_NOT_REWARD"
       data-crystal-life-surface="EXISTING_REALITY_PRESENCE"
+      data-crystal-source-continuity="CHANGED_POSITION_TO_BODY_IMPRINT"
+      data-crystal-source-dimension={crystalSourceDimension}
+      data-crystal-source-slot={crystalImprintGeometry?.sourceSlot ?? "unavailable"}
+      data-crystal-body-attachment={
+        crystalImprintGeometry ? "ATTACHED_TO_EXISTING_BODY" : "PENDING_SOURCE"
+      }
+      data-crystal-emotional-tone="UNDERSTANDING_NOT_CELEBRATION"
+      data-crystal-sound="ONE_RESTRAINED_TONE"
+      data-crystal-light-event="ONE_POINT"
       data-crystal-completion-language="NAME_AND_ARCHIVE_ONLY"
+      data-crystal-imprint-sequence="BODY_IMPRINT_THEN_ARCHIVE"
       data-crystal-hexagram-identity={crystalPresentation.hexagramTitle}
       data-crystal-archive-identity={state.crystal.copy}
       data-base-structure-invariant="true"
@@ -1783,6 +1876,67 @@ function CurrentCrystalEndStateFocus({
         overflow: "hidden",
       }}
     >
+      <CosmicFieldKeyframes />
+      {crystalImprintGeometry ? (
+        <svg
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          data-crystal-current-body-imprint="SOURCE_ATTACHED"
+          style={{
+            position: "absolute",
+            zIndex: 1,
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            overflow: "visible",
+            pointerEvents: "none",
+          }}
+        >
+          <path
+            d={crystalImprintGeometry.path}
+            fill="none"
+            stroke="rgba(255,239,190,0.12)"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            filter="blur(1.1px)"
+          />
+          <path
+            d={crystalImprintGeometry.path}
+            fill="none"
+            stroke="rgba(255,239,190,0.68)"
+            strokeWidth="0.42"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="120"
+            style={{
+              animation:
+                "gy-crystal-imprint 1.8s cubic-bezier(0.2, 0.7, 0.2, 1) both",
+            }}
+          />
+          <circle
+            cx={crystalImprintGeometry.source[0]}
+            cy={crystalImprintGeometry.source[1]}
+            r="0.44"
+            fill="rgba(255,247,220,0.72)"
+          />
+          <circle
+            cx={crystalImprintGeometry.target[0]}
+            cy={crystalImprintGeometry.target[1]}
+            r="0.9"
+            fill="rgba(255,239,190,0.12)"
+          />
+          <rect
+            x={crystalImprintGeometry.target[0] - 0.28}
+            y={crystalImprintGeometry.target[1] - 0.28}
+            width="0.56"
+            height="0.56"
+            rx="0.08"
+            fill="rgba(255,247,220,0.78)"
+          />
+        </svg>
+      ) : null}
       <div
         aria-hidden="true"
         className="gy-crystal-sediment-field"
@@ -1795,9 +1949,9 @@ function CurrentCrystalEndStateFocus({
           transform: "translate(-50%, -50%)",
           borderRadius: "50%",
           background:
-            "radial-gradient(ellipse, rgba(255,246,218,0.055), transparent 26%), radial-gradient(ellipse, rgba(199,169,107,0.035), transparent 58%)",
+            "radial-gradient(ellipse, rgba(255,246,218,0.035), transparent 22%), radial-gradient(ellipse, rgba(199,169,107,0.018), transparent 54%)",
           filter: "blur(5px)",
-          opacity: 0.38,
+          opacity: 0.28,
         }}
       />
 
@@ -1810,7 +1964,7 @@ function CurrentCrystalEndStateFocus({
           left: 30,
           display: "grid",
           justifyItems: "center",
-          gap: 14,
+          gap: 18,
           textAlign: "center",
           textShadow: "0 0 20px rgba(2,3,6,0.94)",
         }}
@@ -1819,11 +1973,15 @@ function CurrentCrystalEndStateFocus({
           data-crystal-imprint-name="CRYSTAL_IMPRINT_LINE"
           style={{
             maxWidth: 310,
-            color: "rgba(255,239,196,0.94)",
-            fontSize: 16,
-            lineHeight: 1.65,
-            fontWeight: 620,
+            color: "rgba(245,236,210,0.72)",
+            fontSize: 13,
+            lineHeight: 1.72,
+            fontWeight: 540,
             textWrap: "balance",
+            opacity: imprintCopyReady ? 1 : 0,
+            transform: `translateY(${imprintCopyReady ? 0 : 4}px)`,
+            transition:
+              "opacity 900ms ease, transform 900ms cubic-bezier(0.2, 0.7, 0.2, 1)",
           }}
         >
           {crystalImprintLine}
@@ -1835,20 +1993,27 @@ function CurrentCrystalEndStateFocus({
           data-crystal-archive-transition="SAME_LIFE_UNIVERSE_TRAJECTORY"
           data-crystal-archive-state={ringPresentation.button.status}
           onClick={saveToPersonalityRingLite}
-          disabled={ringPresentation.button.disabled}
+          disabled={ringPresentation.button.disabled || !archiveReady}
           style={{
             appearance: "none",
             border: 0,
-            borderBottom: `1px solid rgba(199,169,107,${ringPresentation.button.disabled ? 0.16 : 0.34})`,
+            borderBottom: `1px solid rgba(199,169,107,${ringPresentation.button.disabled || !archiveReady ? 0.1 : 0.24})`,
             padding: "5px 2px 6px",
             background: "transparent",
-            color: ringPresentation.button.disabled
-              ? "rgba(199,169,107,0.42)"
-              : "rgba(255,226,158,0.72)",
+            color:
+              ringPresentation.button.disabled || !archiveReady
+                ? "rgba(199,169,107,0)"
+                : "rgba(235,215,174,0.54)",
             fontSize: 10,
             lineHeight: 1.4,
             letterSpacing: "0.08em",
-            cursor: ringPresentation.button.disabled ? "default" : "pointer",
+            opacity: archiveReady ? 1 : 0,
+            pointerEvents: archiveReady ? "auto" : "none",
+            cursor:
+              ringPresentation.button.disabled || !archiveReady
+                ? "default"
+                : "pointer",
+            transition: "opacity 1000ms ease, color 700ms ease",
           }}
         >
           {ringPresentation.button.label}
@@ -2027,7 +2192,8 @@ function HexagramCodeDeliveryShell() {
           formation: currentHexagramFormation,
           migrationImpact: crystalMigrationImpact,
           completedNodeCount: completedSixDimensionCount,
-          primaryDimension: sequentialCurrentSpaceId,
+          primaryDimension:
+            changeExperienceRoute?.dimension ?? sequentialCurrentSpaceId,
           assetCompletionState: hexagramAssetCandidate.completionState,
           revisionAction: singleModelRevisionAction,
           revisionActionConfirmed,
@@ -2035,6 +2201,7 @@ function HexagramCodeDeliveryShell() {
       currentHexagramFormation,
       crystalMigrationImpact,
       completedSixDimensionCount,
+      changeExperienceRoute,
       sequentialCurrentSpaceId,
       hexagramAssetCandidate.completionState,
       singleModelRevisionAction,
@@ -2089,6 +2256,7 @@ function HexagramCodeDeliveryShell() {
   }
 
   function handleLivedResponseRecognized() {
+    playCrystalUnderstandingTone();
     setLivedResponseRecognized(true);
     handleResponseSedimentConfirm();
   }

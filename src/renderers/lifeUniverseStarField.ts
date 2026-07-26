@@ -44,12 +44,14 @@ export const resolveLifeUniverseCrystalImprintGeometry = ({
   normalizedOrbitPositions,
   envelopeScale = 1,
   postureBias = 0,
+  sourceSlot = null,
 }: {
   identityKey: string;
   birthMansionIndex: number | null;
   normalizedOrbitPositions: readonly number[];
   envelopeScale?: number;
   postureBias?: number;
+  sourceSlot?: number | null;
 }) => {
   if (birthMansionIndex === null) return null;
 
@@ -71,7 +73,10 @@ export const resolveLifeUniverseCrystalImprintGeometry = ({
     (sum, character, index) => sum + character.charCodeAt(0) * (index + 1),
     0,
   );
-  const imprintDirectionSlot = (birthCoreSlot + 2 + (imprintHash % 4)) % 7;
+  const imprintDirectionSlot =
+    sourceSlot === null
+      ? (birthCoreSlot + 2 + (imprintHash % 4)) % 7
+      : Math.max(0, Math.min(6, Math.round(sourceSlot)));
   const imprintDirectionMansion = activeSevenMansionPositions[imprintDirectionSlot]!;
   const core = [
     LIFE_UNIVERSE_CORE_IDENTITY.anchorX * 100,
@@ -86,6 +91,13 @@ export const resolveLifeUniverseCrystalImprintGeometry = ({
   const unitY = directionY / directionLength;
   const reachX = 10 + (imprintHash % 4);
   const reachY = 5.6 + (imprintHash % 3) * 0.8;
+  const source =
+    sourceSlot === null
+      ? core
+      : ([
+          core[0] + unitX * reachX * 0.18,
+          core[1] + unitY * reachY * 0.18,
+        ] as const);
   const stem = [
     core[0] + unitX * reachX * 0.46,
     core[1] + unitY * reachY * 0.46,
@@ -102,10 +114,12 @@ export const resolveLifeUniverseCrystalImprintGeometry = ({
 
   return Object.freeze({
     core,
+    source,
+    sourceSlot: imprintDirectionSlot,
     stem,
     target,
     branchTarget,
-    path: `M ${core[0]} ${core[1]} L ${stem[0]} ${stem[1]} L ${target[0]} ${target[1]} M ${stem[0]} ${stem[1]} L ${branchTarget[0]} ${branchTarget[1]}`,
+    path: `M ${source[0]} ${source[1]} L ${stem[0]} ${stem[1]} L ${target[0]} ${target[1]} M ${stem[0]} ${stem[1]} L ${branchTarget[0]} ${branchTarget[1]}`,
   });
 };
 
