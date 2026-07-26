@@ -57,6 +57,16 @@ export function RealityProductionRouteEntry() {
       | { visualContinuity?: RealityProductionHostProps["visualContinuity"] }
       | null
   )?.visualContinuity ?? null;
+  const choiceContinuation =
+    (
+      location.state as
+        | {
+            choiceContinuation?: "AWAITING_LIVED_RESPONSE_RECOGNITION";
+          }
+        | null
+    )?.choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION"
+      ? "AWAITING_LIVED_RESPONSE_RECOGNITION"
+      : null;
   const entryContext = readGenesisProductionRealityEntryContext();
   const activationSourceContext =
     readRealityRouteActivationSourceContext();
@@ -184,11 +194,15 @@ export function RealityProductionRouteEntry() {
       const handoffState: DynamicsHandoffState &
         Readonly<{
           visualContinuity: RealityProductionHostProps["visualContinuity"];
+          choiceContinuation:
+            | "AWAITING_LIVED_RESPONSE_RECOGNITION"
+            | null;
         }> = Object.freeze({
         selectedPressureSeedContext: writeSelectedPressureSeedContext(
           selectedPressureSeedContext,
         ),
         visualContinuity,
+        choiceContinuation,
       });
       navigate(GUANYAO_ROUTES.dynamics, { state: handoffState });
     };

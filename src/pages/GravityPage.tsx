@@ -1465,12 +1465,16 @@ function TransformationMomentFocus({
   presentation,
   onSediment,
   onContinueToReality,
+  livedResponseRecognitionRequired = false,
+  onRecognizeLivedResponse,
   visualSource,
 }: {
   action: SingleModelRevisionAction;
   presentation?: ChangeExperiencePresentation | null;
   onSediment?: () => void;
   onContinueToReality?: () => void;
+  livedResponseRecognitionRequired?: boolean;
+  onRecognizeLivedResponse?: () => void;
   visualSource: RealLifeVisualSource | null;
 }) {
   const hasPresentation = Boolean(presentation);
@@ -1511,8 +1515,17 @@ function TransformationMomentFocus({
           ? "EXPLICIT_SAME_LIFE_CONTINUATION"
           : "UNAVAILABLE"
       }
-      data-choice-lived-response="NOT_YET_OBSERVED"
-      data-choice-crystal-eligibility="WITHHELD_UNTIL_LIVED_RESPONSE"
+      data-choice-lived-response={
+        livedResponseRecognitionRequired
+          ? "AWAITING_USER_RECOGNITION"
+          : "NOT_YET_OBSERVED"
+      }
+      data-choice-living-change-judge="USER_NOT_SYSTEM"
+      data-choice-crystal-eligibility={
+        livedResponseRecognitionRequired
+          ? "WITHHELD_UNTIL_USER_RECOGNITION"
+          : "WITHHELD_UNTIL_LIVED_RESPONSE"
+      }
       data-crystal-sediment-readiness={
         onSediment
           ? responseSpaceSettled
@@ -1596,7 +1609,9 @@ function TransformationMomentFocus({
             textWrap: "balance",
           }}
         >
-          过去仍在，但你已经没有立刻跟随。
+          {livedResponseRecognitionRequired
+            ? "回看刚才：你认得出一点不同吗？"
+            : "过去仍在，但你已经没有立刻跟随。"}
         </strong>
         <span
           style={{
@@ -1608,15 +1623,52 @@ function TransformationMomentFocus({
           }}
         >
           {responseSpaceSettled
-            ? onSediment
+            ? livedResponseRecognitionRequired
+              ? "这次变化，只能由你认出。"
+              : onSediment
               ? "轻触生命核心 · 让这次回应留在生命里"
               : "先和这点空间待一会 · 不急着证明改变"
             : "熟悉的路径仍在 · 生命正在重新找到自己的节律"}
         </span>
+        {livedResponseRecognitionRequired && onRecognizeLivedResponse ? (
+          <button
+            type="button"
+            aria-label="这一次我没有完全被旧回应接管"
+            data-choice-lived-response-action="USER_RECOGNIZES_DIFFERENCE"
+            data-choice-system-judgement="NONE"
+            data-choice-growth-claim="NONE"
+            onClick={onRecognizeLivedResponse}
+            disabled={!responseSpaceSettled}
+            style={{
+              appearance: "none",
+              minHeight: 38,
+              marginTop: 5,
+              border: "1px solid rgba(220,205,169,0.26)",
+              borderRadius: 999,
+              background: "rgba(199,169,107,0.08)",
+              padding: "9px 17px",
+              color: "rgba(245,240,226,0.82)",
+              fontSize: 10.5,
+              lineHeight: 1.4,
+              letterSpacing: "0.03em",
+              opacity: responseSpaceSettled ? 1 : 0,
+              cursor: responseSpaceSettled ? "pointer" : "default",
+              transition:
+                "opacity 620ms ease, border-color 420ms ease, background 420ms ease",
+              pointerEvents: "auto",
+            }}
+          >
+            这一次，我没有完全被旧回应接管
+          </button>
+        ) : null}
         {!onSediment && onContinueToReality ? (
           <button
             type="button"
-            aria-label="带着这点空间继续面对现实"
+            aria-label={
+              livedResponseRecognitionRequired
+                ? "我还没有看见不同继续观察"
+                : "带着这点空间继续面对现实"
+            }
             data-choice-reality-continuation="SAME_LIFE_NEW_REALITY"
             data-choice-change-claim="NONE"
             data-choice-crystal-claim="NONE"
@@ -1640,7 +1692,9 @@ function TransformationMomentFocus({
                 "opacity 620ms ease, border-color 420ms ease, background 420ms ease",
             }}
           >
-            带着这点空间，继续面对现实
+            {livedResponseRecognitionRequired
+              ? "我还没有看见不同，继续观察"
+              : "带着这点空间，继续面对现实"}
           </button>
         ) : null}
       </div>
@@ -1816,9 +1870,18 @@ function HexagramCodeDeliveryShell() {
       | (DynamicsHandoffState &
           Readonly<{
             visualContinuity?: RealityProductionHostProps["visualContinuity"];
+            choiceContinuation?: "AWAITING_LIVED_RESPONSE_RECOGNITION";
           }>)
       | null
   )?.visualContinuity ?? null;
+  const livedResponseRecognitionPending =
+    (
+      location.state as
+        | Readonly<{
+            choiceContinuation?: "AWAITING_LIVED_RESPONSE_RECOGNITION";
+          }>
+        | null
+    )?.choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION";
   const arrivalVisualContinuity =
     routeVisualContinuity !== null &&
     realLifeVisualSource !== null &&
@@ -1851,6 +1914,8 @@ function HexagramCodeDeliveryShell() {
   const [activeDimensionIndex, setActiveDimensionIndex] = useState(0);
   const [completedDimensionIds, setCompletedDimensionIds] = useState<readonly SixSpaceId[]>([]);
   const [revisionActionConfirmed, setRevisionActionConfirmed] =
+    useState(false);
+  const [livedResponseRecognized, setLivedResponseRecognized] =
     useState(false);
   const [transformationMomentActive, setTransformationMomentActive] = useState(false);
   const dimensionTransitionLockRef = useRef(false);
@@ -1955,7 +2020,8 @@ function HexagramCodeDeliveryShell() {
     !revisionActionConfirmed &&
     !transformationMomentActive;
   const currentCrystalEndState = useMemo(() =>
-    LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED
+    LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED &&
+    !livedResponseRecognized
       ? null
       : resolveDynamicsCurrentCrystalEndState({
           formation: currentHexagramFormation,
@@ -1973,6 +2039,7 @@ function HexagramCodeDeliveryShell() {
       hexagramAssetCandidate.completionState,
       singleModelRevisionAction,
       revisionActionConfirmed,
+      livedResponseRecognized,
     ]);
 
   useEffect(() => {
@@ -2021,11 +2088,19 @@ function HexagramCodeDeliveryShell() {
     setTransformationMomentActive(false);
   }
 
+  function handleLivedResponseRecognized() {
+    setLivedResponseRecognized(true);
+    handleResponseSedimentConfirm();
+  }
+
   function handleChoiceContinueToReality() {
     navigate(GUANYAO_ROUTES.reality, {
-      state: arrivalVisualContinuity
-        ? { visualContinuity: arrivalVisualContinuity }
-        : undefined,
+      state: {
+        ...(arrivalVisualContinuity
+          ? { visualContinuity: arrivalVisualContinuity }
+          : {}),
+        choiceContinuation: "AWAITING_LIVED_RESPONSE_RECOGNITION",
+      },
     });
   }
 
@@ -2139,8 +2214,19 @@ function HexagramCodeDeliveryShell() {
         data-choice-answer-model="NONE"
         data-choice-protective-sequence="UNDERSTAND_PAUSE_PARTICIPATE"
         data-choice-reality-continuity="SAME_LIFE_NEW_REALITY"
-        data-choice-lived-response="NOT_YET_OBSERVED"
-        data-choice-crystal-eligibility="WITHHELD_UNTIL_LIVED_RESPONSE"
+        data-choice-lived-response={
+          livedResponseRecognized
+            ? "USER_RECOGNIZED_DIFFERENCE"
+            : livedResponseRecognitionPending
+              ? "AWAITING_USER_RECOGNITION"
+              : "NOT_YET_OBSERVED"
+        }
+        data-choice-living-change-judge="USER_NOT_SYSTEM"
+        data-choice-crystal-eligibility={
+          livedResponseRecognized
+            ? "ELIGIBLE_BY_USER_RECOGNITION"
+            : "WITHHELD_UNTIL_LIVED_RESPONSE"
+        }
         data-legacy-direct-choice-to-crystal={
           LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED
             ? "ISOLATED"
@@ -2153,7 +2239,8 @@ function HexagramCodeDeliveryShell() {
         data-reality-pressure-memory="EXPERIENCE_RETAINED"
         data-reality-core-identity="STABLE"
         data-choice-crystal-stage={
-          LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED
+          LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED &&
+          !livedResponseRecognized
             ? "ISOLATED_UNTIL_RESPONSE_IS_LIVED"
             : revisionActionConfirmed
               ? "AVAILABLE"
@@ -2313,6 +2400,14 @@ function HexagramCodeDeliveryShell() {
                   : handleResponseSedimentConfirm
               }
               onContinueToReality={handleChoiceContinueToReality}
+              livedResponseRecognitionRequired={
+                livedResponseRecognitionPending
+              }
+              onRecognizeLivedResponse={
+                livedResponseRecognitionPending
+                  ? handleLivedResponseRecognized
+                  : undefined
+              }
               visualSource={realLifeVisualSource}
             />
           ) : isRevisionActionPending && singleModelRevisionAction ? (
