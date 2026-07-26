@@ -110,7 +110,7 @@
   transition: opacity 1400ms ease;
 }
 
-.gy-gravity-inertia-field[data-inertia-path-state="FORMING"] {
+.gy-gravity-inertia-field[data-inertia-path-state="MEMORY_GUIDING"] {
   opacity: 1;
 }
 
@@ -133,59 +133,50 @@
 
 .gy-gravity-inertia-field__path {
   fill: none;
-  stroke: rgb(185 203 236 / 38%);
-  stroke-width: 0.18;
+  stroke-width: 0.16;
   stroke-linecap: round;
-  stroke-dasharray: 0.12 0.055;
-  filter: drop-shadow(0 0 1.6px rgb(185 203 236 / 18%));
-  animation:
-    gy-gravity-response-trace-form 2600ms cubic-bezier(0.2, 0.72, 0.22, 1)
-      both,
-    gy-gravity-response-trace-breathe 9200ms ease-in-out 3200ms infinite
-      alternate;
+  stroke-dasharray: 0.09 0.91;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 1.2px rgb(185 203 236 / 12%));
+  animation: gy-gravity-memory-guides-response 8400ms
+    cubic-bezier(0.34, 0.04, 0.3, 1) infinite;
 }
 
 .gy-gravity-inertia-field__deposit {
-  fill: rgb(238 226 198 / 54%);
-  filter: drop-shadow(0 0 1.8px rgb(238 226 198 / 18%));
+  fill: rgb(238 226 198 / 38%);
+  filter: drop-shadow(0 0 1.2px rgb(238 226 198 / 12%));
   transform-box: fill-box;
   transform-origin: center;
-  animation: gy-gravity-response-deposit 1900ms ease-out both;
+  animation: gy-gravity-memory-sediment 7200ms ease-in-out infinite
+    alternate;
 }
 
-@keyframes gy-gravity-response-trace-form {
-  from {
+@keyframes gy-gravity-memory-guides-response {
+  0%,
+  18% {
     stroke-dashoffset: 1;
     opacity: 0;
   }
-  62% {
-    opacity: 0.34;
+  34% {
+    opacity: 0.14;
   }
-  to {
+  68% {
     stroke-dashoffset: 0;
+    opacity: 0.12;
   }
-}
-
-@keyframes gy-gravity-response-trace-breathe {
-  from {
-    filter: drop-shadow(0 0 1.2px rgb(185 203 236 / 12%));
-  }
-  to {
-    filter: drop-shadow(0 0 2.4px rgb(185 203 236 / 22%));
-  }
-}
-
-@keyframes gy-gravity-response-deposit {
-  from {
+  82%,
+  100% {
+    stroke-dashoffset: -0.16;
     opacity: 0;
-    transform: scale(0.35);
   }
-  54% {
-    opacity: 0.58;
-    transform: scale(1.16);
+}
+
+@keyframes gy-gravity-memory-sediment {
+  from {
+    transform: translate3d(0, 0, 0) scale(0.92);
   }
   to {
-    transform: scale(1);
+    transform: translate3d(0.16px, -0.1px, 0) scale(1.04);
   }
 }
 

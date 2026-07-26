@@ -2037,6 +2037,7 @@ export function createGenesisWebGLRendererCore(
   let realityEntryCarryStartedAtMilliseconds: number | null = null;
   let realityPressureStartedAtMilliseconds: number | null = null;
   let realityPressureRecoveryStartedAtMilliseconds: number | null = null;
+  let gravityMemoryInfluenceStartedAtMilliseconds: number | null = null;
   let disposed = false;
   let contextState: "ACTIVE" | "LOST" | "RESTORED" | "DISPOSED" =
     "ACTIVE";
@@ -2072,6 +2073,56 @@ export function createGenesisWebGLRendererCore(
             ?.closest("[data-reality-pressure-visual-state]")
             ?.getAttribute("data-reality-pressure-visual-state")
         : null;
+      const gravityInertiaField = isRealityCanvas
+        ? input.canvas
+            ?.closest(".gy-reality-life-universe")
+            ?.querySelector("[data-inertia-path-state]")
+        : null;
+      const gravityInertiaPathState = gravityInertiaField?.getAttribute(
+        "data-inertia-path-state",
+      );
+      const gravityMemoryInfluenceIsActive =
+        gravityInertiaPathState === "MEMORY_GUIDING";
+      if (
+        gravityMemoryInfluenceIsActive &&
+        gravityMemoryInfluenceStartedAtMilliseconds === null
+      ) {
+        gravityMemoryInfluenceStartedAtMilliseconds =
+          safeElapsedMilliseconds;
+      } else if (!gravityMemoryInfluenceIsActive) {
+        gravityMemoryInfluenceStartedAtMilliseconds = null;
+      }
+      const gravityMemoryInfluenceRaw =
+        gravityMemoryInfluenceStartedAtMilliseconds === null
+          ? 0
+          : Math.min(
+              1,
+              Math.max(
+                0,
+                (safeElapsedMilliseconds -
+                  gravityMemoryInfluenceStartedAtMilliseconds) /
+                  3_200,
+              ),
+            );
+      const gravityMemoryInfluenceProgress =
+        gravityMemoryInfluenceRaw *
+        gravityMemoryInfluenceRaw *
+        (3 - 2 * gravityMemoryInfluenceRaw);
+      const gravityRepetitionDepth = Math.max(
+        1,
+        Math.min(
+          6,
+          Number(gravityInertiaField?.getAttribute("data-repetition-depth")) ||
+            1,
+        ),
+      );
+      const gravityRememberedDirection =
+        Math.sign(pressureFlowDeflection || pressureContactSign || 1) *
+        (0.34 + Math.min(1, Math.abs(pressureFlowDeflection)) * 0.66);
+      const gravityMemoryResponseBias =
+        gravityMemoryInfluenceProgress *
+        gravityRememberedDirection *
+        (0.012 + gravityRepetitionDepth * 0.0015);
       if (
         realityPressureVisualState === "PRESSURE_RECOVERING" &&
         realityPressureRecoveryStartedAtMilliseconds === null
@@ -2623,14 +2674,23 @@ export function createGenesisWebGLRendererCore(
             pressureFlowDeflection *
             pressureBodyEnvelope *
             (0.006 + realityPressurePulse * 0.008);
+          const rememberedResponseAffinity =
+            gravityMemoryInfluenceProgress *
+            (0.24 + pressureContactEdge * 0.76);
           bodyFieldPositions[positionOffset] =
             recoveredX -
             pressureContactAxisX * pressureInwardShift +
-            axisX * pressureAxialDrag;
+            axisX * pressureAxialDrag +
+            perpendicularX *
+              gravityMemoryResponseBias *
+              rememberedResponseAffinity;
           bodyFieldPositions[positionOffset + 1] =
             recoveredY -
             pressureContactAxisY * pressureInwardShift +
-            axisY * pressureAxialDrag;
+            axisY * pressureAxialDrag +
+            perpendicularY *
+              gravityMemoryResponseBias *
+              rememberedResponseAffinity;
           bodyFieldPositions[positionOffset + 2] =
             finalBodyFieldPositions[positionOffset + 2] *
             (1 +
@@ -3246,7 +3306,10 @@ export function createGenesisWebGLRendererCore(
           pressureContactSign *
             pressureBoundaryLoad *
             pressureInfluence *
-            (0.025 + realityPressurePulse * 0.035);
+            (0.025 + realityPressurePulse * 0.035) +
+          gravityMemoryResponseBias *
+            Math.pow(Math.max(0, 1 - radialDistance / 3.6), 2) *
+            (0.42 + pressureSourceAffinity * 0.58);
         cosmicPositions[offset] =
           axisX * compressedAxial + perpendicularX * deflectedLateral;
         cosmicPositions[offset + 1] =
@@ -3627,6 +3690,9 @@ export function createGenesisWebGLRendererCore(
           pressureFlowDeflection *
           pressurePosture *
           0.012;
+        structureGroup.rotation.z +=
+          gravityMemoryResponseBias *
+          (0.22 + gravityRepetitionDepth * 0.018);
         structureGroup.position.x +=
           -pressureContactAxisX *
           pressureBoundaryLoad *
