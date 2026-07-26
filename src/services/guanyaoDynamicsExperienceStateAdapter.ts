@@ -114,16 +114,16 @@ export function resolveDynamicsExperienceState(
       stage,
       primaryFocus,
       loopLabel: input.loopLabel,
-      headline: "六个空间已经走完。",
-      supportingCopy: "当你愿意认领一个新的回应，这一局会留下它发生过的变化印记。",
+      headline: "你已经从六个方向，看见这次回应。",
+      supportingCopy: "当新的回应被你真实认出，这段经历会在同一个生命里留下纹理。",
       pressureCopy: "你已经看见，这件事如何落在身体、情绪、思想、行动、记忆与动机里。",
-      beastCopy: "你与星兽已经一起走过六个空间，现在可以回望这次变化。",
+      beastCopy: "它陪你看见了整段回应，也仍然保持着同一个生命核心。",
       nodeCopy: {
-        title: "六个空间已经走完",
-        text: "你走完了六层。",
-        actionText: "准备好时，你可以认领一个新的回应。",
+        title: "回应已经被完整看见",
+        text: "六个生命窗口，留下了同一条回应的痕迹。",
+        actionText: "先停一下，看看新的空间是否真的出现。",
       },
-      crystalCopy: "你走完了六层。准备好时，你可以认领一个新的回应，让这一局的变化留下印记。",
+      crystalCopy: "不必证明改变。只有被你真实认出的回应，才会沉积为生命印记。",
     });
   }
 
@@ -137,7 +137,7 @@ export function resolveDynamicsExperienceState(
       pressureCopy: "这件事已经被你从几个空间看过。",
       beastCopy: "你与星兽正在一起辨认，这一次愿意往哪里走。",
       nodeCopy,
-      crystalCopy: "这一局的变化正在发生，还不需要得出答案。",
+      crystalCopy: "变化正在发生，还不需要得出答案。",
     });
   }
 
@@ -151,7 +151,7 @@ export function resolveDynamicsExperienceState(
       pressureCopy: "这件事正在落进当前空间。",
       beastCopy: "你与星兽正在一起辨认这里的感受与回应。",
       nodeCopy,
-      crystalCopy: "完成六维后，准备好时，你可以认领一个新的回应。",
+      crystalCopy: "先把回应看完整，不急着决定下一步。",
     });
   }
 
@@ -165,7 +165,7 @@ export function resolveDynamicsExperienceState(
       pressureCopy: "这件事已经被你放在眼前。",
       beastCopy: "你与星兽会一起走进第一个空间。",
       nodeCopy,
-      crystalCopy: "完成六维后，准备好时，你可以认领一个新的回应。",
+      crystalCopy: "先让生命状态显影，再讨论改变。",
     });
   }
 
@@ -178,6 +178,6 @@ export function resolveDynamicsExperienceState(
     pressureCopy: "这件事已经来到你面前。",
     beastCopy: "你与星兽会从这里一起看见，回应如何发生。",
     nodeCopy,
-    crystalCopy: "这一局刚刚开始，先看见此刻的回应。",
+    crystalCopy: "现实刚刚靠近，先看见此刻的回应。",
   });
 }
