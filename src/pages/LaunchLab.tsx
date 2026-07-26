@@ -67,6 +67,7 @@ import {
   LIFE_UNIVERSE_STAR_FIELD,
   projectLifeUniverseStarToViewport,
   resolveLifeUniverseCrystalImprintGeometry,
+  resolveLifeUniverseCrystalSourceSlot,
   resolveLifeUniverseCoreFrame,
 } from "../renderers/lifeUniverseStarField";
 
@@ -1174,6 +1175,14 @@ export function LaunchLab() {
         (left, right) =>
           Date.parse(right.createdAt) - Date.parse(left.createdAt),
       )[0] ?? null;
+  const returningLatestImprintSourceDimension =
+    returningLatestImprint?.transmission.primaryDimension
+      ?.trim()
+      .toLowerCase() ?? "unknown";
+  const returningLatestImprintSourceSlot =
+    resolveLifeUniverseCrystalSourceSlot(
+      returningLatestImprintSourceDimension,
+    );
   const returningLatestImprintGeometry = useMemo(() => {
     if (
       !returningVisualReady ||
@@ -1189,7 +1198,7 @@ export function LaunchLab() {
       projectionBundle.morphologicalFieldAlignmentProjection
         .morphologicalFieldExpression;
     return resolveLifeUniverseCrystalImprintGeometry({
-      identityKey: returningLatestImprint.crystal.copy,
+      identityKey: `${returningVisualContinuity.sourceReferenceId}:${returningLatestImprint.crystal.copy}`,
       birthMansionIndex:
         projectionBundle.twentyEightMansionCoordinateProjection.birthMansion
           .mansionIndex,
@@ -1199,9 +1208,11 @@ export function LaunchLab() {
         ),
       envelopeScale: morphology.envelopeScale,
       postureBias: morphology.postureBias,
+      sourceSlot: returningLatestImprintSourceSlot,
     });
   }, [
     returningLatestImprint,
+    returningLatestImprintSourceSlot,
     returningVisualContinuity,
     returningVisualReady,
   ]);
@@ -5339,6 +5350,21 @@ export function LaunchLab() {
               ? "LATEST_IMPRINT_ATTACHED"
               : "NO_IMPRINT_YET"
         }
+        data-returning-life-crystal-source-continuity={
+          !returningVisualReady
+            ? "NOT_ACTIVE"
+            : returningHasCrystal
+              ? "SAME_SOURCE_POSITION_SAME_GEOMETRY"
+              : "NO_IMPRINT_YET"
+        }
+        data-returning-life-crystal-source-dimension={
+          returningHasCrystal
+            ? returningLatestImprintSourceDimension
+            : "NONE"
+        }
+        data-returning-life-crystal-source-slot={
+          returningHasCrystal ? returningLatestImprintSourceSlot : "NONE"
+        }
         data-returning-life-temporal-state={
           returningVisualReady ? returningTemporalState : "NOT_ACTIVE"
         }
@@ -5386,6 +5412,7 @@ export function LaunchLab() {
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
                 data-returning-life-imprint="LATEST_CRYSTAL_ON_SAME_BODY"
+                data-returning-life-imprint-temporal-continuity="ARCHIVE_MEMORY_RESTORED_ON_SAME_BODY"
               >
                 <path
                   d={returningLatestImprintGeometry.path}
