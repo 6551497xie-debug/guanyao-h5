@@ -85,6 +85,63 @@
   transition-delay: 980ms;
 }
 
+.gy-reality-life-universe
+  .gy-p36__pressure-space[data-pressure-seed-capture-state="SEED_RECOGNIZED"] {
+  bottom: max(28px, env(safe-area-inset-bottom));
+  width: min(76%, 320px);
+  padding: 0;
+  opacity: 0.82;
+}
+
+.gy-reality-life-universe
+  .gy-p36__pressure-space[data-pressure-seed-capture-state="SEED_RECOGNIZED"]
+  .gy-p36__pressure-head {
+  justify-content: center;
+  gap: 10px;
+  opacity: 0.44;
+}
+
+.gy-reality-life-universe
+  .gy-p36__pressure-space[data-pressure-seed-capture-state="SEED_RECOGNIZED"]
+  > h2 {
+  margin: 8px 0 5px;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+}
+
+.gy-reality-life-universe
+  .gy-p36__pressure-space[data-pressure-seed-capture-state="SEED_RECOGNIZED"]
+  > p {
+  margin-inline: auto;
+  max-width: 280px;
+  font-size: 9px;
+  line-height: 1.65;
+}
+
+.gy-reality-life-universe
+  .gy-p36__pressure-space[data-pressure-seed-capture-state="SEED_RECOGNIZED"]
+  .gy-p36__gravity-ready {
+  gap: 5px;
+  margin-top: 8px !important;
+  color: rgb(185 203 236 / 48%) !important;
+  font-size: 9px !important;
+}
+
+.gy-reality-life-universe
+  .gy-p36__pressure-space[data-pressure-seed-capture-state="SEED_RECOGNIZED"]
+  .gy-p36__gravity-ready
+  button {
+  width: auto;
+  margin-top: 4px;
+  padding: 7px 4px 5px;
+  border: 0;
+  border-bottom: 1px solid rgb(238 226 198 / 22%);
+  border-radius: 0;
+  background: transparent;
+  color: rgb(238 226 198 / 62%);
+  box-shadow: none;
+}
+
 .gy-reality-life-universe[data-reality-pressure-visual-state]
   .gy-reality-life-universe__canvas {
   filter: none !important;

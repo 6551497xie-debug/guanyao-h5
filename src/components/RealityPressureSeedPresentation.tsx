@@ -53,7 +53,7 @@ function RealityPressureSeedCandidatePresentation({
           data-interaction="PRESSURE_SEED_RECOGNIZE"
           onClick={() => onRecognize(candidate.candidateReferenceId)}
         >
-          这就是正在作用于我的
+          这就是我正在经历的
         </button>
       ) : null}
     </article>
@@ -88,18 +88,19 @@ export function RealityPressureSeedPresentation({
       data-candidate-bundle-reference={session.candidateBundleReferenceId}
     >
       <div className="gy-p36__pressure-head">
-        <span>现实力量认领</span>
-        <strong>{recognized ? "已认领" : "看见"}</strong>
+        <span>现实正在靠近</span>
+        <strong>{recognized ? "已经看见" : "此刻"}</strong>
       </div>
       <h2>
         {recognized
-          ? "这股力量已经被你看见。"
-          : "哪一种现实力量，正在作用于你？"}
+          ? "这段现实，正在经过你们。"
+          : "此刻，哪一种现实最接近你？"}
       </h2>
       <p>
         {recognized
-          ? session.selectedPressureSeedContext?.surface ?? "认领已经完成。"
-          : "不需要判断对错，只认出此刻最像你的那一个。"}
+          ? session.selectedPressureSeedContext?.surface ??
+            "现实已经被你看见。"
+          : "不用判断，只停在最有感觉的那一幕。"}
       </p>
 
       {!recognized ? (
@@ -139,13 +140,13 @@ export function RealityPressureSeedPresentation({
       ) : null}
       {session.gravityReadiness === "READY" ? (
         <div className="gy-p36__gravity-ready">
-          <p role="status">你已经看见它。现在，观察你的生命如何回应。</p>
+          <p role="status">它仍是它，只是身体正在回应。</p>
           <button
             type="button"
             data-interaction="CONTINUE_TO_GRAVITY"
             onClick={onContinueToGravity}
           >
-            看看这股力量如何经过我
+            继续看它如何回应
           </button>
         </div>
       ) : null}

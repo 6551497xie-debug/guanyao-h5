@@ -1852,6 +1852,7 @@ export function createGenesisWebGLRendererCore(
   let recognitionResponseStartedAtMilliseconds: number | null = null;
   let realityEntryCarryStartedAtMilliseconds: number | null = null;
   let realityPressureStartedAtMilliseconds: number | null = null;
+  let realityPressureRecognitionStartedAtMilliseconds: number | null = null;
   let realityPressureRecoveryStartedAtMilliseconds: number | null = null;
   let gravityMemoryInfluenceStartedAtMilliseconds: number | null = null;
   let choiceResponsePauseStartedAtMilliseconds: number | null = null;
@@ -2036,6 +2037,31 @@ export function createGenesisWebGLRendererCore(
         realityPressureRecoveryRaw *
         realityPressureRecoveryRaw *
         (3 - 2 * realityPressureRecoveryRaw);
+      if (
+        realityPressureVisualState === "PRESSURE_RECOGNIZED" &&
+        realityPressureRecognitionStartedAtMilliseconds === null
+      ) {
+        realityPressureRecognitionStartedAtMilliseconds =
+          safeElapsedMilliseconds;
+      } else if (realityPressureVisualState !== "PRESSURE_RECOGNIZED") {
+        realityPressureRecognitionStartedAtMilliseconds = null;
+      }
+      const realityPressureRecognitionRaw =
+        realityPressureRecognitionStartedAtMilliseconds === null
+          ? 0
+          : Math.min(
+              1,
+              Math.max(
+                0,
+                (safeElapsedMilliseconds -
+                  realityPressureRecognitionStartedAtMilliseconds) /
+                  1_650,
+              ),
+            );
+      const realityPressureRecognitionProgress =
+        realityPressureRecognitionRaw *
+        realityPressureRecognitionRaw *
+        (3 - 2 * realityPressureRecognitionRaw);
       const realityPressureStateWeight =
         realityPressureVisualState === "PRESSURE_PAUSED"
           ? 0.16
@@ -2044,7 +2070,7 @@ export function createGenesisWebGLRendererCore(
             : realityPressureVisualState === "PRESSURE_RECOVERING"
               ? 1 - realityPressureRecoveryProgress * 0.76
               : realityPressureVisualState === "PRESSURE_RECOGNIZED"
-                ? 1
+                ? 0.72 + realityPressureRecognitionProgress * 0.28
                 : 0.72;
       const realityIdentityCarriesPressureExperience =
         isRealityCanvas &&
@@ -2057,7 +2083,13 @@ export function createGenesisWebGLRendererCore(
         realityPressureCanApproach &&
         realityPressureStartedAtMilliseconds === null
       ) {
-        realityPressureStartedAtMilliseconds = safeElapsedMilliseconds;
+        // A pressure selection rebuilds the visual consumer with the selected
+        // projection. If Reality has already arrived, inherit the completed
+        // approach instead of replaying an unpressured body from frame zero.
+        realityPressureStartedAtMilliseconds =
+          realityArrivalPhase === "SETTLED"
+            ? safeElapsedMilliseconds - 2_830
+            : safeElapsedMilliseconds;
       } else if (isRealityCanvas && !realityPressureCanApproach) {
         realityPressureStartedAtMilliseconds = null;
       }
@@ -3495,6 +3527,12 @@ export function createGenesisWebGLRendererCore(
             (-0.02 + pressurePulse * 0.032) *
               realityPressureEntryProgress *
               realityPressureStateWeight);
+        if (realityPressureVisualState === "PRESSURE_RECOGNIZED") {
+          spineMaterial.opacity *=
+            0.12 + realityPressureRecognitionProgress * 0.3;
+          branchMaterial.opacity *=
+            0.08 + realityPressureRecognitionProgress * 0.26;
+        }
       }
       const stagePointOpacity = isSymbolReveal
         ? 0.86
@@ -3525,17 +3563,22 @@ export function createGenesisWebGLRendererCore(
         // Pressure changes posture and rhythm, never the legibility of the
         // existing life body. These are visibility floors for the same
         // skeleton and nodes, not a new pressure effect or a second identity.
+        const pressureIdentityStructureVisibility =
+          0.35 + realityPressureRecognitionProgress * 0.65;
         spineMaterial.opacity = Math.max(
           spineMaterial.opacity,
-          0.105 + perspectiveSubjectAxisStrength * 0.018,
+          (0.032 + perspectiveSubjectAxisStrength * 0.008) *
+            pressureIdentityStructureVisibility,
         );
         branchMaterial.opacity = Math.max(
           branchMaterial.opacity,
-          0.052 + perspectiveBodyCohesion * 0.014,
+          (0.01 + perspectiveBodyCohesion * 0.005) *
+            pressureIdentityStructureVisibility,
         );
         structurePointMaterial.opacity = Math.max(
           structurePointMaterial.opacity,
-          0.2 + perspectiveBodyCohesion * 0.04,
+          (0.07 + perspectiveBodyCohesion * 0.018) *
+            pressureIdentityStructureVisibility,
         );
       }
       structurePointMaterial.size =
@@ -3568,8 +3611,8 @@ export function createGenesisWebGLRendererCore(
       if (realityIdentityCarriesPressureExperience) {
         bodyFieldMaterial.opacity = Math.max(
           bodyFieldMaterial.opacity,
-          0.62 +
-            perspectiveBodyCohesion * 0.18 +
+          0.68 +
+            perspectiveBodyCohesion * 0.2 +
             recognitionIdentityLock * 0.04,
         );
       }
