@@ -686,13 +686,15 @@ export function createGenesisWebGLRendererCore(
             : 1) *
           (isLifeCoordinateStage
             ? 1.42
-            : isLifeDirectionStage
-              ? 0.38
-              : isPresenceStage
-                ? isCompletion
-                  ? 0.24
-                  : 0.34
-                : 1),
+            : isHexagramImprint
+              ? 0.66
+              : isLifeForce
+                ? 0.48
+                : isPresenceStage
+                  ? isCompletion
+                    ? 0.24
+                    : 0.34
+                  : 1),
       ),
       blending: AdditiveBlending,
       depthWrite: false,
@@ -859,10 +861,6 @@ export function createGenesisWebGLRendererCore(
   const directionSouthExpansion = Math.max(0, -directionAxisY);
   let directionViewportScale = 1;
   let directionSourceReach = 0;
-  let directionBirthSourceMaterial: MeshBasicMaterial | null = null;
-  let directionBirthSourceHaloMaterial: MeshBasicMaterial | null = null;
-  let directionBirthSource: Mesh | null = null;
-  let directionBirthSourceHalo: Mesh | null = null;
   let directionCoreBiasMaterial: MeshBasicMaterial | null = null;
   if (
     directionFieldCalibration !== null &&
@@ -904,7 +902,7 @@ export function createGenesisWebGLRendererCore(
       directionFieldExpression.fieldReach * directionViewportScale * 1.08,
       directionBoundaryReach,
     );
-    directionFieldParticleCount = directionFieldExpression.lineCount * 34;
+    directionFieldParticleCount = directionFieldExpression.lineCount * 24;
     directionFieldPositions = new Float32Array(
       directionFieldParticleCount * 3,
     );
@@ -976,44 +974,6 @@ export function createGenesisWebGLRendererCore(
       depthWrite: false,
     });
     directionFieldGroup.add(new Points(geometry, directionFieldMaterial));
-
-    directionBirthSourceHalo = new Mesh(
-      new SphereGeometry(0.042, 16, 12),
-      new MeshBasicMaterial({
-        color: new Color(0xcbd8e8),
-        transparent: true,
-        opacity: 0,
-        blending: AdditiveBlending,
-        depthWrite: false,
-      }),
-    );
-    directionBirthSourceHaloMaterial =
-      directionBirthSourceHalo.material as MeshBasicMaterial;
-    directionBirthSourceHalo.position.set(
-      directionOriginX,
-      directionOriginY,
-      directionOriginZ,
-    );
-    directionFieldGroup.add(directionBirthSourceHalo);
-
-    directionBirthSource = new Mesh(
-      new SphereGeometry(0.014, 16, 12),
-      new MeshBasicMaterial({
-        color: new Color(0xdce5ef),
-        transparent: true,
-        opacity: 0,
-        blending: AdditiveBlending,
-        depthWrite: false,
-      }),
-    );
-    directionBirthSourceMaterial =
-      directionBirthSource.material as MeshBasicMaterial;
-    directionBirthSource.position.set(
-      directionOriginX,
-      directionOriginY,
-      directionOriginZ + 0.012,
-    );
-    directionFieldGroup.add(directionBirthSource);
 
     const directionCoreBias = new Mesh(
       new SphereGeometry(0.42, 18, 14),
@@ -2906,7 +2866,11 @@ export function createGenesisWebGLRendererCore(
               (retainMotherContinuityOrbit ? 0.82 : birthRevealProgress) *
               (0.94 + Math.sin(birthPhase) * 0.06) *
               (1 + birthDirectionResponse * 0.18) *
-              (isLifeDirectionStage ? 0 : 1),
+              (isHexagramImprint
+                ? 0.74
+                : isLifeForce
+                  ? 0.46 + (1 - forceRhythmRevealProgress) * 0.12
+                  : 1),
           );
       }
       if (
@@ -2950,6 +2914,11 @@ export function createGenesisWebGLRendererCore(
                 directionWestConvergence * 0.2 -
                 directionNorthDepth * 0.12,
             );
+        // Direction grows from the birth mansion that was just found. The
+        // field does not arrive as a completed new effect or a replacement
+        // source light: its celestial reach and its path into the existing
+        // core become spatially legible from that same coordinate.
+        const directionSpatialReveal = directionRevealProgress;
         for (
           let index = 0;
           index < directionFieldParticleCount;
@@ -2988,23 +2957,26 @@ export function createGenesisWebGLRendererCore(
               (3 - 2 * sourceProgress);
             directionFieldPositions[offset] =
               directionOriginX +
-              axisX * (0.04 + fieldReach * axialProgress) +
-              perpendicularX * lane * lateralBreath;
+              (axisX * (0.04 + fieldReach * axialProgress) +
+                perpendicularX * lane * lateralBreath) *
+                directionSpatialReveal;
             directionFieldPositions[offset + 1] =
               directionOriginY +
-              axisY * (0.04 + fieldReach * axialProgress) +
-              perpendicularY * lane * lateralBreath;
+              (axisY * (0.04 + fieldReach * axialProgress) +
+                perpendicularY * lane * lateralBreath) *
+                directionSpatialReveal;
             directionFieldPositions[offset + 2] =
               directionOriginZ +
-              Math.sin(
-                index * 2.173 + sourceProgress * Math.PI * 1.4,
-              ) *
-                (isLifeForce
-                  ? 0.2
-                  : 0.11 + directionNorthDepth * 0.17) +
-              axialProgress *
-                (0.08 + directionNorthDepth * 0.15) +
-              ((index % 3) - 1) * 0.018;
+              (Math.sin(
+                  index * 2.173 + sourceProgress * Math.PI * 1.4,
+                ) *
+                  (isLifeForce
+                    ? 0.2
+                    : 0.11 + directionNorthDepth * 0.17) +
+                axialProgress *
+                  (0.08 + directionNorthDepth * 0.15) +
+                ((index % 3) - 1) * 0.018) *
+                directionSpatialReveal;
           } else {
             const corePassage = progress / birthPassage;
             const coreEnvelope = Math.sin(corePassage * Math.PI);
@@ -3013,15 +2985,27 @@ export function createGenesisWebGLRendererCore(
               directionFieldExpression.parallelSpread *
               0.14 *
               responseBreath;
-            directionFieldPositions[offset] =
+            const coreTargetX =
               directionOriginX * corePassage +
               perpendicularX * lane * coreSpread;
-            directionFieldPositions[offset + 1] =
+            const coreTargetY =
               directionOriginY * corePassage +
               perpendicularY * lane * coreSpread;
-            directionFieldPositions[offset + 2] =
+            const coreTargetZ =
               directionOriginZ * corePassage +
               Math.sin(index * 1.37) * coreEnvelope * 0.04;
+            directionFieldPositions[offset] =
+              directionOriginX +
+              (coreTargetX - directionOriginX) *
+                directionSpatialReveal;
+            directionFieldPositions[offset + 1] =
+              directionOriginY +
+              (coreTargetY - directionOriginY) *
+                directionSpatialReveal;
+            directionFieldPositions[offset + 2] =
+              directionOriginZ +
+              (coreTargetZ - directionOriginZ) *
+                directionSpatialReveal;
           }
         }
         directionFieldPositionAttribute.needsUpdate = true;
@@ -3032,7 +3016,7 @@ export function createGenesisWebGLRendererCore(
               ? 0.16 + forceDensity * 0.04
               : isCompletion
                 ? 0.1 + recognitionIdentityLock * 0.04
-                : 0.48) *
+                : 0.32) *
           directionRevealProgress *
           (isLifeForce
             ? 1 - forceRhythmRevealProgress * 0.78
@@ -3040,54 +3024,8 @@ export function createGenesisWebGLRendererCore(
           presenceSourceCarry *
           (0.94 + (responseBreath - 1) * 1.5);
         directionFieldMaterial.size =
-          (isLifeForce ? 0.036 + forceDensity * 0.005 : 0.034) *
+          (isLifeForce ? 0.032 + forceDensity * 0.004 : 0.028) *
           (0.96 + (responseBreath - 1));
-        const directionSourceWakeRaw = isHexagramImprint
-          ? Math.min(1, Math.max(0, elapsedSeconds / 0.58))
-          : 1;
-        const directionSourceWake =
-          directionSourceWakeRaw *
-          directionSourceWakeRaw *
-          (3 - 2 * directionSourceWakeRaw);
-        if (
-          directionBirthSourceMaterial !== null &&
-          directionBirthSource !== null
-        ) {
-          directionBirthSourceMaterial.opacity =
-            (isHexagramImprint
-              ? 0.22
-              : isLifeForce
-                ? 0.12
-                : 0.06) *
-            directionSourceWake *
-            (isLifeForce
-              ? 1 - forceRhythmRevealProgress * 0.72
-              : 1) *
-            presenceSourceCarry;
-          directionBirthSource.scale.setScalar(
-            0.92 + directionRevealProgress * 0.08,
-          );
-        }
-        if (
-          directionBirthSourceHaloMaterial !== null &&
-          directionBirthSourceHalo !== null
-        ) {
-          directionBirthSourceHaloMaterial.opacity =
-            (isHexagramImprint
-              ? 0.018
-              : isLifeForce
-                ? 0.008
-                : 0.004) *
-            directionSourceWake *
-            (isLifeForce
-              ? 1 - forceRhythmRevealProgress * 0.72
-              : 1) *
-            presenceSourceCarry *
-            (0.9 + directionRevealProgress * 0.1);
-          directionBirthSourceHalo.scale.setScalar(
-            0.9 + directionRevealProgress * 0.1,
-          );
-        }
         directionCoreBreath =
           1 +
           (responseBreath - 1) *
