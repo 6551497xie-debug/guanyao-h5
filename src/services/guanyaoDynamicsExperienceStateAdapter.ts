@@ -34,12 +34,12 @@ const SIX_DIMENSION_INSIGHT_COPY: Record<SixSpaceId, string> = {
 };
 
 const SIX_DIMENSION_UNDERSTANDING_COPY: Record<SixSpaceId, string> = {
-  body: "先感到它，是身体在帮你准备回应。",
-  emotion: "它不是问题，它是在提醒你哪里需要被照看。",
-  thought: "这种解释曾帮你抓住确定感。",
-  action: "行动力是能力，现在需要先判断再出手。",
-  memory: "它曾保护你，这一次可以只作为参考。",
-  goal: "动机不是计划，是你正在保护的价值感。",
+  body: "这也许是身体曾经用来准备回应的方式。",
+  emotion: "这种感受也许正在提醒你，哪里需要被照看。",
+  thought: "这种解释也许曾经帮你抓住一点确定感。",
+  action: "这个动作也许曾经帮你更快稳住局面。",
+  memory: "这段过去也许曾经保护你，这一次可以先把它看清。",
+  goal: "这些反应背后，也许有一个你一直想守住的重要东西。",
 };
 
 const YAO_SEMANTIC_STAGES: Record<number, DynamicsExperienceState["nodeCopy"]> = {

@@ -179,12 +179,12 @@ try {
   assertEqual("complete engine maps to crystal", crystalByEngine.stage, "CRYSTAL");
 
   const dimensionCopies = {
-    body: ["压力先落在身体里。", "身体比意识更早知道压力来了。", "先感到它，是身体在帮你准备回应。"],
-    emotion: ["情绪先到了。", "你正在经历的感受，可能让这件事看起来更重。", "它不是问题，它是在提醒你哪里需要被照看。"],
-    thought: ["解释开始成形。", "你看见的不只是事情，还有你给它的意义。", "这种解释曾帮你抓住确定感。"],
-    action: ["回应的方向露出来了。", "结果还不确定时，你会先用行动把局面拉回掌控。", "行动力是能力，现在需要先判断再出手。"],
-    memory: ["旧经验被带到了现在。", "过去正在参与此刻，让现在像曾经的某一幕。", "它曾保护你，这一次可以只作为参考。"],
-    goal: ["守护的核心露出来了。", "这些反应背后，有一个你不想失去的重要东西。", "动机不是计划，是你正在保护的价值感。"],
+    body: ["压力先落在身体里。", "身体比意识更早知道压力来了。", "这也许是身体曾经用来准备回应的方式。"],
+    emotion: ["情绪先到了。", "你正在经历的感受，可能让这件事看起来更重。", "这种感受也许正在提醒你，哪里需要被照看。"],
+    thought: ["解释开始成形。", "你看见的不只是事情，还有你给它的意义。", "这种解释也许曾经帮你抓住一点确定感。"],
+    action: ["回应的方向露出来了。", "结果还不确定时，你会先用行动把局面拉回掌控。", "这个动作也许曾经帮你更快稳住局面。"],
+    memory: ["旧经验被带到了现在。", "过去正在参与此刻，让现在像曾经的某一幕。", "这段过去也许曾经保护你，这一次可以先把它看清。"],
+    goal: ["守护的核心露出来了。", "这些反应背后，有一个你不想失去的重要东西。", "这些反应背后，也许有一个你一直想守住的重要东西。"],
   };
   Object.entries(dimensionCopies).forEach(([focalDimension, [response, insight, understanding]]) => {
     const projected = resolveDynamicsExperienceState(baseInput({ uiPhase: "NODE_RUNNING", focalDimension }));
@@ -204,9 +204,9 @@ try {
   assertIncludes("Gravity passes completed node count", gravitySource, "completedNodeCount: executionSnapshot.node.completed.length");
   assertIncludes("Gravity passes focal dimension", gravitySource, "focalDimension: visualState.focalDimension");
   assertIncludes("Gravity passes timeline coordinate", gravitySource, "timelineCurrent: visualState.timeline.current");
-  assertIncludes("Gravity product loop names the present response", gravitySource, '"看见当下回应"');
-  assertIncludes("Gravity onboarding observes across spaces", gravitySource, '"从不同空间看见回应"');
-  assertIncludes("Gravity user perception keeps the response present", gravitySource, '"从不同空间看见当下回应"');
+  assertIncludes("Gravity product loop begins from reality fact", gravitySource, '"现实事实被看见"');
+  assertIncludes("Gravity onboarding begins from one life window", gravitySource, '"先观察一个生命窗口"');
+  assertIncludes("Gravity user perception keeps protective meaning tentative", gravitySource, '"这些回应也许曾经保护我"');
   assertEqual(
     "Gravity reuses experience supporting copy in both presentation positions",
     gravitySource.split("displayExperienceState.supportingCopy").length - 1,

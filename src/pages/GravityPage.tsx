@@ -155,28 +155,28 @@ type ProductRuntimeDefinition = Readonly<{
 
 const GUANYAO_PRODUCT_RUNTIME_DEFINITION = Object.freeze({
   officialDefinition:
-    "观爻让你看见同一个生命在现实反复作用下，如何形成惯性，并为新的回应留下间隙。",
-  threeSecondModel: "现实反复作用 → 生命重复回应 → 惯性留下痕迹",
+    "观爻让你看见现实如何在同一个生命的六个窗口留下痕迹，以及这些回应如何逐渐形成惯性。",
+  threeSecondModel: "现实发生 → 六维生命显影 → 重复回应留下惯性",
   experienceLoop: Object.freeze([
-    "现实压力再次抵达",
-    "同一种回应重新启动",
-    "熟悉路径留下痕迹",
-    "从六个入口观察惯性",
+    "现实事实被看见",
+    "生命反应逐层显影",
+    "保护性回应留下痕迹",
+    "相似回应逐渐形成惯性",
     "为新的回应留出间隙",
   ]),
   onboardingFlow: Object.freeze([
     "认出当前压力",
-    "看见重复回应",
-    "从一个入口观察",
-    "逐渐认出熟悉路径",
+    "先观察一个生命窗口",
+    "看见熟悉回应",
+    "理解它也许曾经保护自己",
   ]),
   userPerception: Object.freeze([
     "同一个生命仍在",
-    "现实反复经过",
-    "旧回应留下浅痕",
+    "现实影响可以被观察",
+    "这些回应也许曾经保护我",
     "惯性可以被看见而不是被定命",
   ]),
-  positioning: "现实反复作用下的生命惯性觉察",
+  positioning: "六维生命显影与保护性惯性觉察",
 } satisfies ProductRuntimeDefinition);
 
 function CosmicPageStarField() {
@@ -402,6 +402,8 @@ function NodeProgressionPanel({
   };
 }) {
   const [firstPauseInvitationVisible, setFirstPauseInvitationVisible] = useState(false);
+  const [protectiveUnderstandingVisible, setProtectiveUnderstandingVisible] =
+    useState(false);
   const hasShownFirstPauseInvitationRef = useRef(false);
   const livingSentence = activeNode.dimensionInsight ?? activeNode.text.replace(/\s*\n\s*/g, "");
 
@@ -421,10 +423,26 @@ function NodeProgressionPanel({
     return () => window.clearTimeout(timer);
   }, [visible]);
 
+  useEffect(() => {
+    setProtectiveUnderstandingVisible(false);
+    if (!visible || !activeNode.dimensionUnderstanding) return undefined;
+
+    const timer = window.setTimeout(() => {
+      setProtectiveUnderstandingVisible(true);
+    }, 1_450);
+
+    return () => window.clearTimeout(timer);
+  }, [activeNode.dimensionUnderstanding, livingSentence, visible]);
+
   return (
     <div
       data-dynamics-node-language="LIFE_UNIVERSE_WHISPER"
       data-dynamics-node-composition="SINGLE_LIVING_SENTENCE"
+      data-dynamics-six-dimension-role="LIFE_STATE_REVEAL_NOT_ANALYSIS"
+      data-dynamics-evidence-level="SIX_DIMENSION_OBSERVATION"
+      data-dynamics-dust-explanation="PROTECTIVE_RESPONSE_CANDIDATE_ONLY"
+      data-dynamics-dust-layer="UNRESOLVED"
+      data-dynamics-user-confirmation="REQUIRED_BEFORE_DUST_MEANING"
       data-dynamics-first-pause-invitation={
         firstPauseInvitationVisible ? "VISIBLE_ONCE" : "DELEGATED_TO_GENESIS_BREATH"
       }
@@ -456,6 +474,37 @@ function NodeProgressionPanel({
       >
         {livingSentence}
       </p>
+      <p
+        data-dynamics-protective-understanding="CANDIDATE_NOT_CONCLUSION"
+        style={{
+          margin: protectiveUnderstandingVisible ? "8px 0 0" : 0,
+          maxWidth: 298,
+          color: "rgba(220,205,169,0.58)",
+          fontSize: 10.5,
+          lineHeight: 1.58,
+          textWrap: "balance",
+          opacity: protectiveUnderstandingVisible ? 1 : 0,
+          transform: `translateY(${protectiveUnderstandingVisible ? 0 : 4}px)`,
+          transition:
+            "opacity 620ms ease, transform 620ms cubic-bezier(0.22, 0.7, 0.2, 1), margin 420ms ease",
+        }}
+      >
+        {activeNode.dimensionUnderstanding}
+      </p>
+      <span
+        data-dynamics-observation-boundary="OBSERVE_NOT_DEFINE"
+        style={{
+          marginTop: protectiveUnderstandingVisible ? 6 : 0,
+          color: "rgba(176,190,206,0.34)",
+          fontSize: 8.5,
+          lineHeight: 1.4,
+          letterSpacing: "0.08em",
+          opacity: protectiveUnderstandingVisible ? 1 : 0,
+          transition: "opacity 620ms ease, margin 420ms ease",
+        }}
+      >
+        先观察，不定义你
+      </span>
       <span
         aria-hidden="true"
         style={{
@@ -1100,16 +1149,21 @@ function CosmicBotanicsField({
 
   return (
     <section
-      aria-label="当前压力进入六个空间"
+      aria-label="现实进入同一个生命，并从六个窗口显出回应"
       data-experience-layer="pure-visual-projection"
       data-visual-grammar="BEAST_PRESSURE_DIMENSION_PARTICLE"
       data-visual-depth-state={visualState.visualDepthState}
       data-visual-composition={visualState.spatialComposition}
       data-visual-timeline={visualState.timeline.current}
       data-visual-focal-dimension={visualState.focalDimension}
-      data-experience-loop="当前压力_六个空间_看见反应_结晶"
+      data-experience-loop="现实事实_六维生命显影_保护回应候选_惯性观察"
       data-experience-stage={experienceState.stage}
       data-experience-focus={experienceState.primaryFocus}
+      data-dynamics-six-dimension-role="LIFE_STATE_REVEAL_NOT_PERSONALITY_ANALYSIS"
+      data-dynamics-dust-consumption="EXPLANATION_CANDIDATE_NOT_NEW_DUST_STATE"
+      data-dynamics-dust-layer-result="NONE"
+      data-dynamics-dust-scoring="FORBIDDEN"
+      data-dynamics-meridian-inference="FORBIDDEN"
       data-life-universe-continuity="SAME_GENESIS_UNIVERSE"
       data-dynamics-universe-background-authority={rendererOwnsUniverse ? "GENESIS_WEBGL" : "DOM_FALLBACK"}
       data-dynamics-pressure-visual-authority={rendererOwnsUniverse ? "GENESIS_WEBGL_PROJECTION" : "DOM_FALLBACK"}
@@ -1158,6 +1212,7 @@ function CosmicBotanicsField({
       <p
         data-visual-primitive="PRESSURE"
         data-visual-layer="pressure-text-field"
+        data-dynamics-evidence-level="USER_RECOGNIZED_REALITY_FACT"
         style={{
           position: "absolute",
           left: 28,
@@ -1175,7 +1230,21 @@ function CosmicBotanicsField({
           animation: "gy-copy-fade-in 360ms ease both",
         }}
       >
-        {experienceState.pressureCopy}
+        <span
+          style={{
+            display: "block",
+            marginBottom: 7,
+            color: "rgba(220,205,169,0.46)",
+            fontSize: 9,
+            fontWeight: 480,
+            letterSpacing: "0.1em",
+          }}
+        >
+          你认出的现实
+        </span>
+        <span style={{ display: "block", textWrap: "balance" }}>
+          {pressureSeedSurface}
+        </span>
       </p>
 
       <div data-visual-primitive="PARTICLE" data-visual-layer="particle-node-feedback" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.interaction, pointerEvents: "none" }}>
