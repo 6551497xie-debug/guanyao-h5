@@ -77,6 +77,7 @@ import "../styles/reality-pressure-presentation.css";
 
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
 const LEGACY_DYNAMICS_FLOW_ISOLATED = true;
+const LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED = true;
 const RealityLifeUniverseCanvas = lazy(() =>
   import("../components/RealityLifeUniverseCanvas").then((module) => ({
     default: module.RealityLifeUniverseCanvas,
@@ -1332,6 +1333,8 @@ function SingleModelRevisionActionFocus({
       data-choice-new-path="NONE"
       data-choice-life-surface="EXISTING_REALITY_PRESENCE"
       data-choice-crystal-stage="NOT_STARTED"
+      data-choice-protective-sequence="UNDERSTAND_THEN_PAUSE_THEN_PARTICIPATE"
+      data-legacy-revision-answer-surface="ISOLATED"
       data-revision-visual-language="SAME_LIFE_RESPONSE_PAUSE"
       data-revision-copy-composition="AWARENESS_NOT_ADVICE"
       style={{
@@ -1414,6 +1417,18 @@ function SingleModelRevisionActionFocus({
           textShadow: "0 0 20px rgba(2,3,6,0.94)",
         }}
       >
+        <span
+          data-choice-protective-understanding="CANDIDATE_NOT_CONCLUSION"
+          style={{
+            maxWidth: 290,
+            color: "rgba(220,205,169,0.56)",
+            fontSize: 10.5,
+            lineHeight: 1.58,
+            textWrap: "balance",
+          }}
+        >
+          这种回应，也许曾经帮助你保护自己。
+        </span>
         <strong
           data-choice-awareness-copy="PAUSE"
           style={{
@@ -1453,11 +1468,11 @@ function TransformationMomentFocus({
 }: {
   action: SingleModelRevisionAction;
   presentation?: ChangeExperiencePresentation | null;
-  onSediment: () => void;
+  onSediment?: () => void;
   visualSource: RealLifeVisualSource | null;
 }) {
   const hasPresentation = Boolean(presentation);
-  const [responseReadyToSediment, setResponseReadyToSediment] =
+  const [responseSpaceSettled, setResponseSpaceSettled] =
     useState(false);
   const coreAnchorTop = visualSource
     ? `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`
@@ -1465,7 +1480,7 @@ function TransformationMomentFocus({
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setResponseReadyToSediment(true);
+      setResponseSpaceSettled(true);
     }, 1_800);
 
     return () => window.clearTimeout(timer);
@@ -1485,8 +1500,16 @@ function TransformationMomentFocus({
       data-choice-new-path="NONE"
       data-choice-life-surface="EXISTING_REALITY_PRESENCE"
       data-choice-crystal-stage="NOT_STARTED"
+      data-choice-protective-sequence="UNDERSTAND_THEN_PAUSE_THEN_SPACE"
+      data-legacy-direct-choice-to-crystal={
+        onSediment ? "AVAILABLE" : "ISOLATED"
+      }
       data-crystal-sediment-readiness={
-        responseReadyToSediment ? "RESPONSE_LIVED" : "RESPONSE_SETTLING"
+        onSediment
+          ? responseSpaceSettled
+            ? "RESPONSE_LIVED"
+            : "RESPONSE_SETTLING"
+          : "ISOLATED_UNTIL_RESPONSE_IS_LIVED"
       }
       data-transformation-visual-event="RESPONSE_SPACE_WITHOUT_NEW_PATH"
       data-transformation-copy-composition="AWARENESS_NOT_RESULT"
@@ -1512,29 +1535,31 @@ function TransformationMomentFocus({
         }}
       />
 
-      <button
-        type="button"
-        aria-label="让这次回应留在生命里"
-        data-crystal-sediment-action="CONFIRM_RESPONSE_LIVED"
-        data-crystal-reward-model="NONE"
-        onClick={onSediment}
-        disabled={!responseReadyToSediment}
-        style={{
-          appearance: "none",
-          position: "absolute",
-          left: `${LIFE_UNIVERSE_CORE_IDENTITY.anchorX * 100}%`,
-          top: coreAnchorTop,
-          zIndex: 2,
-          width: "min(64vw, 236px)",
-          height: "min(28vh, 196px)",
-          transform: "translate(-50%, -50%)",
-          border: 0,
-          borderRadius: "48%",
-          background: "transparent",
-          padding: 0,
-          cursor: responseReadyToSediment ? "pointer" : "default",
-        }}
-      />
+      {onSediment ? (
+        <button
+          type="button"
+          aria-label="让这次回应留在生命里"
+          data-crystal-sediment-action="CONFIRM_RESPONSE_LIVED"
+          data-crystal-reward-model="NONE"
+          onClick={onSediment}
+          disabled={!responseSpaceSettled}
+          style={{
+            appearance: "none",
+            position: "absolute",
+            left: `${LIFE_UNIVERSE_CORE_IDENTITY.anchorX * 100}%`,
+            top: coreAnchorTop,
+            zIndex: 2,
+            width: "min(64vw, 236px)",
+            height: "min(28vh, 196px)",
+            transform: "translate(-50%, -50%)",
+            border: 0,
+            borderRadius: "48%",
+            background: "transparent",
+            padding: 0,
+            cursor: responseSpaceSettled ? "pointer" : "default",
+          }}
+        />
+      ) : null}
 
       <div
         style={{
@@ -1560,7 +1585,7 @@ function TransformationMomentFocus({
             textWrap: "balance",
           }}
         >
-          过去仍在，但选择权没有离开你。
+          过去仍在，但你已经没有立刻跟随。
         </strong>
         <span
           style={{
@@ -1571,9 +1596,11 @@ function TransformationMomentFocus({
             letterSpacing: "0.08em",
           }}
         >
-          {responseReadyToSediment
-            ? "轻触生命核心 · 让这次回应留在生命里"
-            : "没有新的答案道路 · 生命只是没有立刻跟随"}
+          {responseSpaceSettled
+            ? onSediment
+              ? "轻触生命核心 · 让这次回应留在生命里"
+              : "先和这点空间待一会 · 不急着证明改变"
+            : "熟悉的路径仍在 · 生命正在重新找到自己的节律"}
         </span>
       </div>
     </section>
@@ -1886,15 +1913,17 @@ function HexagramCodeDeliveryShell() {
     !revisionActionConfirmed &&
     !transformationMomentActive;
   const currentCrystalEndState = useMemo(() =>
-    resolveDynamicsCurrentCrystalEndState({
-      formation: currentHexagramFormation,
-      migrationImpact: crystalMigrationImpact,
-      completedNodeCount: completedSixDimensionCount,
-      primaryDimension: sequentialCurrentSpaceId,
-      assetCompletionState: hexagramAssetCandidate.completionState,
-      revisionAction: singleModelRevisionAction,
-      revisionActionConfirmed,
-    }), [
+    LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED
+      ? null
+      : resolveDynamicsCurrentCrystalEndState({
+          formation: currentHexagramFormation,
+          migrationImpact: crystalMigrationImpact,
+          completedNodeCount: completedSixDimensionCount,
+          primaryDimension: sequentialCurrentSpaceId,
+          assetCompletionState: hexagramAssetCandidate.completionState,
+          revisionAction: singleModelRevisionAction,
+          revisionActionConfirmed,
+        }), [
       currentHexagramFormation,
       crystalMigrationImpact,
       completedSixDimensionCount,
@@ -2058,6 +2087,12 @@ function HexagramCodeDeliveryShell() {
         }
         data-choice-identity-effect="RESPONSE_ONLY"
         data-choice-answer-model="NONE"
+        data-choice-protective-sequence="UNDERSTAND_PAUSE_PARTICIPATE"
+        data-legacy-direct-choice-to-crystal={
+          LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED
+            ? "ISOLATED"
+            : "AVAILABLE"
+        }
         data-reality-pressure-recovery-state={
           realityPressureRecoveryVisualState
         }
@@ -2065,7 +2100,11 @@ function HexagramCodeDeliveryShell() {
         data-reality-pressure-memory="EXPERIENCE_RETAINED"
         data-reality-core-identity="STABLE"
         data-choice-crystal-stage={
-          revisionActionConfirmed ? "AVAILABLE" : "NOT_STARTED"
+          LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED
+            ? "ISOLATED_UNTIL_RESPONSE_IS_LIVED"
+            : revisionActionConfirmed
+              ? "AVAILABLE"
+              : "NOT_STARTED"
         }
         style={{
           height: "100dvh",
@@ -2215,7 +2254,11 @@ function HexagramCodeDeliveryShell() {
             <TransformationMomentFocus
               action={singleModelRevisionAction}
               presentation={changeExperiencePresentation}
-              onSediment={handleResponseSedimentConfirm}
+              onSediment={
+                LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED
+                  ? undefined
+                  : handleResponseSedimentConfirm
+              }
               visualSource={realLifeVisualSource}
             />
           ) : isRevisionActionPending && singleModelRevisionAction ? (

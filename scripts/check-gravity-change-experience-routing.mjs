@@ -309,6 +309,26 @@ try {
     gravityPageSource,
     "这一刻首先出现的回应",
   );
+  assertIncludes(
+    "gravity isolates the legacy direct choice to crystal flow",
+    gravityPageSource,
+    "const LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED = true",
+  );
+  assertIncludes(
+    "choice begins with protective understanding before the pause",
+    gravityPageSource,
+    'data-choice-protective-sequence="UNDERSTAND_THEN_PAUSE_THEN_PARTICIPATE"',
+  );
+  assertIncludes(
+    "choice keeps protective meaning tentative",
+    gravityPageSource,
+    'data-choice-protective-understanding="CANDIDATE_NOT_CONCLUSION"',
+  );
+  assertIncludes(
+    "choice holds response space before crystal",
+    gravityPageSource,
+    '"ISOLATED_UNTIL_RESPONSE_IS_LIVED"',
+  );
 
   console.log("[GRAVITY CHANGE EXPERIENCE ROUTING] PASS");
 } finally {
