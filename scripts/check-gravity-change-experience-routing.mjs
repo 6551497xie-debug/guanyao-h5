@@ -329,6 +329,26 @@ try {
     gravityPageSource,
     '"ISOLATED_UNTIL_RESPONSE_IS_LIVED"',
   );
+  assertIncludes(
+    "choice explicitly continues to the existing reality route",
+    gravityPageSource,
+    "navigate(GUANYAO_ROUTES.reality, {",
+  );
+  assertIncludes(
+    "choice returns with the same life into a new reality",
+    gravityPageSource,
+    'data-choice-reality-continuation="SAME_LIFE_NEW_REALITY"',
+  );
+  assertIncludes(
+    "choice withholds crystal until a response is lived",
+    gravityPageSource,
+    'data-choice-crystal-eligibility="WITHHELD_UNTIL_LIVED_RESPONSE"',
+  );
+  assertIncludes(
+    "reality continuation does not claim change",
+    gravityPageSource,
+    'data-choice-change-claim="NONE"',
+  );
 
   console.log("[GRAVITY CHANGE EXPERIENCE ROUTING] PASS");
 } finally {

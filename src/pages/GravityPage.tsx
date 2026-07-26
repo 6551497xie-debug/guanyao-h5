@@ -1464,11 +1464,13 @@ function TransformationMomentFocus({
   action,
   presentation,
   onSediment,
+  onContinueToReality,
   visualSource,
 }: {
   action: SingleModelRevisionAction;
   presentation?: ChangeExperiencePresentation | null;
   onSediment?: () => void;
+  onContinueToReality?: () => void;
   visualSource: RealLifeVisualSource | null;
 }) {
   const hasPresentation = Boolean(presentation);
@@ -1504,6 +1506,13 @@ function TransformationMomentFocus({
       data-legacy-direct-choice-to-crystal={
         onSediment ? "AVAILABLE" : "ISOLATED"
       }
+      data-choice-return-to-reality={
+        onContinueToReality
+          ? "EXPLICIT_SAME_LIFE_CONTINUATION"
+          : "UNAVAILABLE"
+      }
+      data-choice-lived-response="NOT_YET_OBSERVED"
+      data-choice-crystal-eligibility="WITHHELD_UNTIL_LIVED_RESPONSE"
       data-crystal-sediment-readiness={
         onSediment
           ? responseSpaceSettled
@@ -1568,8 +1577,10 @@ function TransformationMomentFocus({
           right: 30,
           bottom: "max(62px, calc(38px + env(safe-area-inset-bottom)))",
           left: 30,
+          display: "grid",
+          justifyItems: "center",
+          gap: 9,
           textAlign: "center",
-          pointerEvents: "none",
           textShadow: "0 0 20px rgba(2,3,6,0.94)",
         }}
       >
@@ -1590,10 +1601,10 @@ function TransformationMomentFocus({
         <span
           style={{
             display: "block",
-            marginTop: 8,
             color: "rgba(199,169,107,0.5)",
             fontSize: 9.5,
             letterSpacing: "0.08em",
+            pointerEvents: "none",
           }}
         >
           {responseSpaceSettled
@@ -1602,6 +1613,36 @@ function TransformationMomentFocus({
               : "先和这点空间待一会 · 不急着证明改变"
             : "熟悉的路径仍在 · 生命正在重新找到自己的节律"}
         </span>
+        {!onSediment && onContinueToReality ? (
+          <button
+            type="button"
+            aria-label="带着这点空间继续面对现实"
+            data-choice-reality-continuation="SAME_LIFE_NEW_REALITY"
+            data-choice-change-claim="NONE"
+            data-choice-crystal-claim="NONE"
+            onClick={onContinueToReality}
+            disabled={!responseSpaceSettled}
+            style={{
+              appearance: "none",
+              minHeight: 36,
+              marginTop: 5,
+              border: "1px solid rgba(220,205,169,0.18)",
+              borderRadius: 999,
+              background: "rgba(7,9,13,0.34)",
+              padding: "8px 16px",
+              color: "rgba(245,240,226,0.68)",
+              fontSize: 10.5,
+              lineHeight: 1.4,
+              letterSpacing: "0.04em",
+              opacity: responseSpaceSettled ? 1 : 0,
+              cursor: responseSpaceSettled ? "pointer" : "default",
+              transition:
+                "opacity 620ms ease, border-color 420ms ease, background 420ms ease",
+            }}
+          >
+            带着这点空间，继续面对现实
+          </button>
+        ) : null}
       </div>
     </section>
   );
@@ -1763,6 +1804,7 @@ function CurrentCrystalEndStateFocus({
   );
 }
 function HexagramCodeDeliveryShell() {
+  const navigate = useNavigate();
   const location = useLocation();
   const experienceSmokeFixture = readDevExperienceSmokeFixture();
   const [realUserGenesisVisualSourceContext] = useState(() =>
@@ -1979,6 +2021,14 @@ function HexagramCodeDeliveryShell() {
     setTransformationMomentActive(false);
   }
 
+  function handleChoiceContinueToReality() {
+    navigate(GUANYAO_ROUTES.reality, {
+      state: arrivalVisualContinuity
+        ? { visualContinuity: arrivalVisualContinuity }
+        : undefined,
+    });
+  }
+
   function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
     if (eventType !== "CORE_STAR_BLOOM") {
       setExecutionSnapshot((current) => GuanyaoRuntimeEngine.run(current, { type: eventType, payload: context }));
@@ -2088,6 +2138,9 @@ function HexagramCodeDeliveryShell() {
         data-choice-identity-effect="RESPONSE_ONLY"
         data-choice-answer-model="NONE"
         data-choice-protective-sequence="UNDERSTAND_PAUSE_PARTICIPATE"
+        data-choice-reality-continuity="SAME_LIFE_NEW_REALITY"
+        data-choice-lived-response="NOT_YET_OBSERVED"
+        data-choice-crystal-eligibility="WITHHELD_UNTIL_LIVED_RESPONSE"
         data-legacy-direct-choice-to-crystal={
           LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED
             ? "ISOLATED"
@@ -2259,6 +2312,7 @@ function HexagramCodeDeliveryShell() {
                   ? undefined
                   : handleResponseSedimentConfirm
               }
+              onContinueToReality={handleChoiceContinueToReality}
               visualSource={realLifeVisualSource}
             />
           ) : isRevisionActionPending && singleModelRevisionAction ? (
