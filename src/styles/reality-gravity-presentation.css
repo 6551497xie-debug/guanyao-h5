@@ -180,29 +180,6 @@
   }
 }
 
-.gy-choice-response-gap__field {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.gy-choice-response-gap__unfinished-path {
-  fill: none;
-  stroke: rgb(244 226 187 / 58%);
-  stroke-width: 0.24;
-  stroke-linecap: round;
-  stroke-dasharray: 0.72 0.28;
-  stroke-dashoffset: 1;
-  filter: drop-shadow(0 0 2px rgb(232 200 138 / 20%));
-  opacity: 0;
-  animation: gy-choice-unfinished-deflection 1500ms
-    cubic-bezier(0.2, 0.72, 0.22, 1) 2350ms forwards;
-}
-
 .gy-choice-response-gap__stillness {
   z-index: 1;
   opacity: 0;
@@ -223,20 +200,7 @@
 
 main[data-choice-response-state="OLD_PATH_RESTARTING_THEN_PAUSE"]
   .gy-gravity-inertia-field__path {
-  animation: gy-choice-old-path-restart 3300ms
-    cubic-bezier(0.2, 0.72, 0.22, 1) both;
-}
-
-main[data-choice-response-state="OLD_PATH_RESTARTING_THEN_PAUSE"]
-  .gy-reality-life-universe__canvas {
-  animation: gy-choice-life-pause 3600ms cubic-bezier(0.2, 0.72, 0.22, 1)
-    both;
-}
-
-.gy-choice-response-gap--held .gy-choice-response-gap__unfinished-path {
-  stroke-dashoffset: 0.18;
-  opacity: 0.62;
-  animation: gy-choice-possibility-settle 1900ms
+  animation: gy-choice-old-path-restart 3600ms
     cubic-bezier(0.2, 0.72, 0.22, 1) both;
 }
 
@@ -253,38 +217,21 @@ main[data-choice-response-state="NEW_RESPONSE_POSSIBILITY"]
 
 @keyframes gy-choice-old-path-restart {
   0% {
-    stroke-dashoffset: 0;
-    opacity: 0.18;
+    stroke-dashoffset: 0.08;
+    opacity: 0.1;
   }
-  34% {
-    stroke-dashoffset: -0.18;
-    opacity: 0.42;
+  32% {
+    stroke-dashoffset: -0.08;
+    opacity: 0.24;
   }
-  58% {
-    stroke-dashoffset: -0.25;
-    opacity: 0.46;
-  }
-  72%,
-  100% {
-    stroke-dashoffset: -0.25;
+  56% {
+    stroke-dashoffset: -0.14;
     opacity: 0.2;
   }
-}
-
-@keyframes gy-choice-life-pause {
-  0%,
-  34% {
-    opacity: 1;
-    filter: saturate(1) brightness(1);
-  }
-  58% {
-    opacity: 0.9;
-    filter: saturate(0.88) brightness(0.92);
-  }
   72%,
   100% {
-    opacity: 1;
-    filter: saturate(1) brightness(1);
+    stroke-dashoffset: -0.18;
+    opacity: 0.07;
   }
 }
 
@@ -299,17 +246,6 @@ main[data-choice-response-state="NEW_RESPONSE_POSSIBILITY"]
   72%,
   100% {
     opacity: 0.5;
-  }
-}
-
-@keyframes gy-choice-unfinished-deflection {
-  from {
-    stroke-dashoffset: 1;
-    opacity: 0;
-  }
-  to {
-    stroke-dashoffset: 0.18;
-    opacity: 0.58;
   }
 }
 
@@ -334,17 +270,6 @@ main[data-choice-response-state="NEW_RESPONSE_POSSIBILITY"]
   }
 }
 
-@keyframes gy-choice-possibility-settle {
-  from {
-    stroke-dashoffset: 0.46;
-    opacity: 0.28;
-  }
-  to {
-    stroke-dashoffset: 0.18;
-    opacity: 0.62;
-  }
-}
-
 @keyframes gy-choice-possibility-breathe {
   from {
     opacity: 0.38;
@@ -356,10 +281,10 @@ main[data-choice-response-state="NEW_RESPONSE_POSSIBILITY"]
 
 @keyframes gy-choice-old-path-remains {
   from {
-    opacity: 0.16;
+    opacity: 0.06;
   }
   to {
-    opacity: 0.24;
+    opacity: 0.1;
   }
 }
 
@@ -370,7 +295,6 @@ main[data-choice-response-state="NEW_RESPONSE_POSSIBILITY"]
 @media (prefers-reduced-motion: reduce) {
   .gy-gravity-inertia-field__path,
   .gy-gravity-inertia-field__deposit,
-  .gy-choice-response-gap__unfinished-path,
   .gy-choice-response-gap__stillness,
   .gy-choice-response-gap__confirm,
   .gy-choice-response-gap__invitation,
@@ -378,7 +302,6 @@ main[data-choice-response-state="NEW_RESPONSE_POSSIBILITY"]
     animation: none;
   }
 
-  .gy-choice-response-gap__unfinished-path,
   .gy-choice-response-gap__confirm {
     opacity: 0.58;
   }

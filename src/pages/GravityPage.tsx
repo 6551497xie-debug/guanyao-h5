@@ -1259,8 +1259,11 @@ function SingleModelRevisionActionFocus({
       data-choice-answer-model="NONE"
       data-choice-life-effect="RESPONSE_ONLY"
       data-choice-old-path="PRESENT_NOT_AUTOMATIC"
+      data-choice-memory-influence="PRESENT_NOT_COMMANDING"
+      data-choice-new-path="NONE"
+      data-choice-life-surface="EXISTING_REALITY_PRESENCE"
       data-choice-crystal-stage="NOT_STARTED"
-      data-revision-visual-language="SAME_LIFE_UNFINISHED_DEFLECTION"
+      data-revision-visual-language="SAME_LIFE_RESPONSE_PAUSE"
       data-revision-copy-composition="AWARENESS_NOT_ADVICE"
       style={{
         position: "absolute",
@@ -1283,34 +1286,6 @@ function SingleModelRevisionActionFocus({
           filter: "blur(8px)",
         }}
       />
-
-      <div
-        aria-hidden="true"
-        style={{ position: "absolute", inset: 0, opacity: 0.86, zIndex: 0 }}
-      >
-        <LifeConstellationLayer
-          toneColor="222,196,154"
-          narrativePhase="node_complete"
-          activeNodeIndex={6}
-          onCoreStarClick={() => undefined}
-          visualSource={visualSource}
-          pressureIntensity={0.18}
-          interactionEnabled={false}
-        />
-      </div>
-
-      <svg
-        aria-hidden="true"
-        className="gy-choice-response-gap__field"
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-      >
-        <path
-          className="gy-choice-response-gap__unfinished-path"
-          d="M 57 58 C 54.5 56, 51.2 52.7, 50 48 C 49.6 45.2, 51 42.8, 53.6 40.8"
-          pathLength="1"
-        />
-      </svg>
 
       <button
         type="button"
@@ -1382,8 +1357,8 @@ function SingleModelRevisionActionFocus({
           }}
         >
           {responseGapReady
-            ? "惯性还在，但它没有立刻接管。"
-            : "熟悉的回应，又要启动了。"}
+            ? "它还在影响你，但没有替你决定。"
+            : "熟悉的回应，正沿旧方向启动。"}
         </strong>
         <span
           style={{
@@ -1425,8 +1400,11 @@ function TransformationMomentFocus({
       data-choice-answer-model="NONE"
       data-choice-life-effect="RESPONSE_ONLY"
       data-choice-old-path="PRESENT_NOT_AUTOMATIC"
+      data-choice-memory-influence="PRESENT_NOT_COMMANDING"
+      data-choice-new-path="NONE"
+      data-choice-life-surface="EXISTING_REALITY_PRESENCE"
       data-choice-crystal-stage="NOT_STARTED"
-      data-transformation-visual-event="UNFINISHED_RESPONSE_SPACE"
+      data-transformation-visual-event="RESPONSE_SPACE_WITHOUT_NEW_PATH"
       data-transformation-copy-composition="AWARENESS_NOT_RESULT"
       style={{
         position: "absolute",
@@ -1449,34 +1427,6 @@ function TransformationMomentFocus({
           filter: "blur(8px)",
         }}
       />
-
-      <div
-        aria-hidden="true"
-        style={{ position: "absolute", inset: 0, opacity: 0.9, zIndex: 0 }}
-      >
-        <LifeConstellationLayer
-          toneColor="222,196,154"
-          narrativePhase="node_complete"
-          activeNodeIndex={6}
-          onCoreStarClick={() => undefined}
-          visualSource={visualSource}
-          pressureIntensity={0.12}
-          interactionEnabled={false}
-        />
-      </div>
-
-      <svg
-        aria-hidden="true"
-        className="gy-choice-response-gap__field"
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-      >
-        <path
-          className="gy-choice-response-gap__unfinished-path"
-          d="M 57 58 C 54.5 56, 51.2 52.7, 50 48 C 49.6 45.2, 51 42.8, 53.6 40.8"
-          pathLength="1"
-        />
-      </svg>
 
       <div
         style={{
@@ -1502,7 +1452,7 @@ function TransformationMomentFocus({
             textWrap: "balance",
           }}
         >
-          这一次，你没有立刻沿旧路径走下去。
+          过去仍在，但选择权没有离开你。
         </strong>
         <span
           style={{
@@ -1513,7 +1463,7 @@ function TransformationMomentFocus({
             letterSpacing: "0.08em",
           }}
         >
-          新的回应仍未完成 · 选择权留在你这里
+          没有新的答案道路 · 生命只是没有立刻跟随
         </span>
       </div>
     </section>

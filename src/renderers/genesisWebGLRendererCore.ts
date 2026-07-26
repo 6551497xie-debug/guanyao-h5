@@ -2038,6 +2038,7 @@ export function createGenesisWebGLRendererCore(
   let realityPressureStartedAtMilliseconds: number | null = null;
   let realityPressureRecoveryStartedAtMilliseconds: number | null = null;
   let gravityMemoryInfluenceStartedAtMilliseconds: number | null = null;
+  let choiceResponsePauseStartedAtMilliseconds: number | null = null;
   let disposed = false;
   let contextState: "ACTIVE" | "LOST" | "RESTORED" | "DISPOSED" =
     "ACTIVE";
@@ -2083,6 +2084,40 @@ export function createGenesisWebGLRendererCore(
       );
       const gravityMemoryInfluenceIsActive =
         gravityInertiaPathState === "MEMORY_GUIDING";
+      const choiceResponseState = input.canvas
+        ?.closest("[data-choice-response-state]")
+        ?.getAttribute("data-choice-response-state");
+      const choiceResponsePauseIsActive =
+        choiceResponseState === "OLD_PATH_RESTARTING_THEN_PAUSE";
+      if (
+        choiceResponsePauseIsActive &&
+        choiceResponsePauseStartedAtMilliseconds === null
+      ) {
+        choiceResponsePauseStartedAtMilliseconds = safeElapsedMilliseconds;
+      } else if (!choiceResponsePauseIsActive) {
+        choiceResponsePauseStartedAtMilliseconds = null;
+      }
+      const choiceResponsePauseRaw =
+        choiceResponsePauseStartedAtMilliseconds === null
+          ? choiceResponseState === "NEW_RESPONSE_POSSIBILITY"
+            ? 1
+            : 0
+          : Math.min(
+              1,
+              Math.max(
+                0,
+                (safeElapsedMilliseconds -
+                  choiceResponsePauseStartedAtMilliseconds -
+                  920) /
+                  2_200,
+              ),
+            );
+      const choiceResponsePauseProgress =
+        choiceResponsePauseRaw *
+        choiceResponsePauseRaw *
+        (3 - 2 * choiceResponsePauseRaw);
+      const choiceMemoryInfluenceWeight =
+        1 - choiceResponsePauseProgress * 0.74;
       if (
         gravityMemoryInfluenceIsActive &&
         gravityMemoryInfluenceStartedAtMilliseconds === null
@@ -2122,7 +2157,8 @@ export function createGenesisWebGLRendererCore(
       const gravityMemoryResponseBias =
         gravityMemoryInfluenceProgress *
         gravityRememberedDirection *
-        (0.012 + gravityRepetitionDepth * 0.0015);
+        (0.012 + gravityRepetitionDepth * 0.0015) *
+        choiceMemoryInfluenceWeight;
       if (
         realityPressureVisualState === "PRESSURE_RECOVERING" &&
         realityPressureRecoveryStartedAtMilliseconds === null
