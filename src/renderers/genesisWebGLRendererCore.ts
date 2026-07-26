@@ -2,6 +2,7 @@ import {
   AdditiveBlending,
   AmbientLight,
   BufferGeometry,
+  CanvasTexture,
   Color,
   Float32BufferAttribute,
   Group,
@@ -94,6 +95,28 @@ const createSeededRandom = (seed: number): (() => number) => {
     state ^= state + Math.imul(state ^ (state >>> 7), 61 | state);
     return ((state ^ (state >>> 14)) >>> 0) / 4294967296;
   };
+};
+
+const createLifeOriginStarTexture = (): CanvasTexture | null => {
+  if (typeof document === "undefined") return null;
+
+  const sprite = document.createElement("canvas");
+  sprite.width = 64;
+  sprite.height = 64;
+  const context = sprite.getContext("2d");
+  if (context === null) return null;
+
+  const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 30);
+  gradient.addColorStop(0, "rgba(255,255,255,1)");
+  gradient.addColorStop(0.18, "rgba(239,250,255,0.96)");
+  gradient.addColorStop(0.48, "rgba(184,224,235,0.44)");
+  gradient.addColorStop(1, "rgba(111,168,182,0)");
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, 64, 64);
+
+  const texture = new CanvasTexture(sprite);
+  texture.needsUpdate = true;
+  return texture;
 };
 
 export function projectPersonalStarBeastRenderPlanToWebGLScene(
@@ -429,6 +452,13 @@ export function createGenesisWebGLRendererCore(
   const isLifeForce = activeVisualLayer === "LIFE_FORCE";
   const isStarBeastReveal = activeVisualLayer === "STAR_BEAST_REVEAL";
   const isCompletion = activeVisualLayer === "COMPLETION";
+  // Reality does not need a new identity scene. It lets the already completed
+  // life reveal its source order again: the same 28-mansion field, the same
+  // birth coordinate, the same inner structure and the same body.
+  const isLifeOriginStarMapReveal = isRealityCanvas && isCompletion;
+  const lifeOriginStarTexture = isLifeOriginStarMapReveal
+    ? createLifeOriginStarTexture()
+    : null;
   const isLifeCoordinateStage = isSymbolReveal;
   const isLifeDirectionStage = isHexagramImprint || isLifeForce;
   const isContinuityPresenceStage =
@@ -527,6 +557,8 @@ export function createGenesisWebGLRendererCore(
   );
   const cosmicMaterial = new PointsMaterial({
     color: new Color().setHSL(sceneProjection.formField.hue, 0.42, 0.7),
+    map: lifeOriginStarTexture,
+    alphaTest: isLifeOriginStarMapReveal ? 0.018 : 0,
     size: isMoonOrigin
       ? 0.022
       : isStarRiver
@@ -538,7 +570,9 @@ export function createGenesisWebGLRendererCore(
             : isLifeForce
               ? 0.022
               : isPresenceStage
-                ? 0.023
+                ? isLifeOriginStarMapReveal
+                  ? 0.027
+                  : 0.023
               : 0.02,
     sizeAttenuation: true,
     transparent: true,
@@ -588,6 +622,7 @@ export function createGenesisWebGLRendererCore(
   const mansionCoordinateVisualLayer =
     sceneProjection.mansionCoordinateVisualLayer;
   const mansionCoordinateGroup = new Group();
+  let mansionHeavenOrderMaterial: LineBasicMaterial | null = null;
   let birthCoordinateAxisMaterial: LineBasicMaterial | null = null;
   let birthMansionPointMaterial: PointsMaterial | null = null;
   const seekingResponseMaterials: PointsMaterial[] = [];
@@ -617,13 +652,16 @@ export function createGenesisWebGLRendererCore(
     mansionCoordinateVisualLayer !== null &&
     (mansionCoordinateVisualLayer.visibility !== "HIDDEN" ||
       retainMotherContinuityOrbit ||
-      retainEntranceMansionField)
+      retainEntranceMansionField ||
+      isLifeOriginStarMapReveal)
   ) {
     const birthCoordinateRevealed =
       mansionCoordinateVisualLayer.visibility ===
       "BIRTH_MANSION_COORDINATE_REVEALED";
     const birthCoordinateVisible =
-      birthCoordinateRevealed || retainMotherContinuityOrbit;
+      birthCoordinateRevealed ||
+      retainMotherContinuityOrbit ||
+      isLifeOriginStarMapReveal;
     const coordinateDepth = Math.abs(
       camera.position.z - mansionCoordinateVisualLayer.birthCoordinate.z,
     );
@@ -631,9 +669,17 @@ export function createGenesisWebGLRendererCore(
       input.height /
       (2 * Math.tan((camera.fov * Math.PI) / 360) * coordinateDepth);
     coordinateBaseScaleX =
-      Math.min(input.width * 0.43, 168) / (2.65 * pixelsPerWorld);
+      Math.min(
+        input.width * (isLifeOriginStarMapReveal ? 0.68 : 0.43),
+        isLifeOriginStarMapReveal ? 310 : 168,
+      ) /
+      (2.65 * pixelsPerWorld);
     coordinateBaseScaleY =
-      Math.min(input.width * 0.19, 74) / (1.32 * pixelsPerWorld);
+      Math.min(
+        input.width * (isLifeOriginStarMapReveal ? 0.28 : 0.19),
+        isLifeOriginStarMapReveal ? 128 : 74,
+      ) /
+      (1.32 * pixelsPerWorld);
     const keepBirthCoordinateInExistingField =
       coordinateFormationExpression?.phase === "SEEKING_TO_FOUND";
     const neutralCoordinates =
@@ -660,7 +706,11 @@ export function createGenesisWebGLRendererCore(
       new Float32BufferAttribute(neutralPositions, 3),
     );
     const mansionNeutralPointMaterial = new PointsMaterial({
-      color: new Color(0xb9cbec),
+      color: new Color(
+        isLifeOriginStarMapReveal ? 0x9bc8d2 : 0xb9cbec,
+      ),
+      map: lifeOriginStarTexture,
+      alphaTest: isLifeOriginStarMapReveal ? 0.018 : 0,
       size:
         mansionCoordinateVisualLayer.fieldExpression.neutralPointSize *
         (isLifeCoordinateStage
@@ -669,6 +719,8 @@ export function createGenesisWebGLRendererCore(
             ? 1.08
             : isContinuityPresenceStage
               ? 1.18
+              : isLifeOriginStarMapReveal
+                ? 1.62
               : 1),
       sizeAttenuation: true,
       transparent: true,
@@ -682,6 +734,8 @@ export function createGenesisWebGLRendererCore(
               : isStarRiver
                 ? 0.56
                 : 0.66
+            : isLifeOriginStarMapReveal
+              ? 0.72
             : 1) *
           (isLifeCoordinateStage
             ? 1.42
@@ -689,6 +743,8 @@ export function createGenesisWebGLRendererCore(
               ? 0.66
               : isLifeForce
                 ? 0.48
+                : isLifeOriginStarMapReveal
+                  ? 1.08
                 : isPresenceStage
                   ? isCompletion
                     ? 0.24
@@ -701,6 +757,51 @@ export function createGenesisWebGLRendererCore(
     mansionCoordinateGroup.add(
       new Points(neutralGeometry, mansionNeutralPointMaterial),
     );
+
+    if (isLifeOriginStarMapReveal) {
+      // The 28 points read as one ordered sky before the personal body is
+      // noticed. Lines only connect the existing four groups of seven; they
+      // never invent stars inside a mansion or pretend to be the inner
+      // seven-star meridians.
+      const heavenOrderPositions: number[] = [];
+      for (let mansionGroupIndex = 0; mansionGroupIndex < 4; mansionGroupIndex += 1) {
+        const groupStart = mansionGroupIndex * 7;
+        for (let mansionSlot = 0; mansionSlot < 6; mansionSlot += 1) {
+          const sourceCoordinate =
+            mansionCoordinateVisualLayer.coordinates[groupStart + mansionSlot]!;
+          const targetCoordinate =
+            mansionCoordinateVisualLayer.coordinates[
+              groupStart + mansionSlot + 1
+            ]!;
+          heavenOrderPositions.push(
+            sourceCoordinate.x,
+            sourceCoordinate.y,
+            sourceCoordinate.z,
+            targetCoordinate.x,
+            targetCoordinate.y,
+            targetCoordinate.z,
+          );
+        }
+      }
+      const heavenOrderGeometry = new BufferGeometry();
+      heavenOrderGeometry.setAttribute(
+        "position",
+        new Float32BufferAttribute(heavenOrderPositions, 3),
+      );
+      mansionHeavenOrderMaterial = new LineBasicMaterial({
+        color: new Color(0x8cb8c5),
+        transparent: true,
+        opacity: 0,
+        blending: AdditiveBlending,
+        depthWrite: false,
+      });
+      mansionCoordinateGroup.add(
+        new LineSegments(
+          heavenOrderGeometry,
+          mansionHeavenOrderMaterial,
+        ),
+      );
+    }
 
     if (coordinateFormationExpression?.phase === "SEEKING_TO_FOUND") {
       const responseOffsets = [-10, -7, -4, -2, 2, 4, 7, 10] as const;
@@ -726,6 +827,8 @@ export function createGenesisWebGLRendererCore(
         );
         const responseMaterial = new PointsMaterial({
           color: new Color(0xdbe6f5),
+          map: lifeOriginStarTexture,
+          alphaTest: isLifeOriginStarMapReveal ? 0.018 : 0,
           size: 0.038,
           sizeAttenuation: true,
           transparent: true,
@@ -766,10 +869,14 @@ export function createGenesisWebGLRendererCore(
         ),
       );
       birthCoordinateAxisMaterial = new LineBasicMaterial({
-        color: new Color(0xd8c58e),
+        color: new Color(
+          isLifeOriginStarMapReveal ? 0xaadce4 : 0xd8c58e,
+        ),
         transparent: true,
         opacity:
-          retainMotherContinuityOrbit
+          isLifeOriginStarMapReveal
+            ? 0
+            : retainMotherContinuityOrbit
             ? 0.18
             : coordinateFormationExpression.phase === "FOUND"
             ? coordinateFormationExpression.birthAxisOpacity * 0.12
@@ -800,14 +907,21 @@ export function createGenesisWebGLRendererCore(
         ),
       );
       birthMansionPointMaterial = new PointsMaterial({
-        color: new Color(0xe7d4a1),
+        color: new Color(
+          isLifeOriginStarMapReveal ? 0xd9f2f2 : 0xe7d4a1,
+        ),
+        map: lifeOriginStarTexture,
+        alphaTest: isLifeOriginStarMapReveal ? 0.018 : 0,
         size:
           mansionCoordinateVisualLayer.birthCoordinateExpression.pointSize *
-          0.72,
+          (isLifeOriginStarMapReveal ? 1.08 : 0.72),
         sizeAttenuation: true,
         transparent: true,
         opacity:
-          retainMotherContinuityOrbit
+          isLifeOriginStarMapReveal
+            ? mansionCoordinateVisualLayer.birthCoordinateExpression.opacity *
+              0.84
+            : retainMotherContinuityOrbit
             ? mansionCoordinateVisualLayer.birthCoordinateExpression.opacity * 0.82
             : coordinateFormationExpression?.phase === "SEEKING_TO_FOUND"
             ? 0
@@ -1227,11 +1341,13 @@ export function createGenesisWebGLRendererCore(
     "position",
     nodePositionAttribute,
   );
-  const anchorColor = new Color().setHSL(
-    sceneProjection.lifeCore.hue,
-    0.72,
-    0.76,
-  );
+  const anchorColor = isLifeOriginStarMapReveal
+    ? new Color(0xb8e0e3)
+    : new Color().setHSL(
+        sceneProjection.lifeCore.hue,
+        0.72,
+        0.76,
+      );
   const structureOpacityScale = isMoonOrigin
     ? 0.06
     : isStarRiver
@@ -1326,6 +1442,8 @@ export function createGenesisWebGLRendererCore(
     nodeGeometry,
     new PointsMaterial({
       color: anchorColor,
+      map: lifeOriginStarTexture,
+      alphaTest: isLifeOriginStarMapReveal ? 0.018 : 0,
       size:
         lifePresence.stellarSkeleton.nodeScale *
         (0.96 + spatialEdgeDefinition * 0.08) *
@@ -1476,7 +1594,9 @@ export function createGenesisWebGLRendererCore(
     bodyAxisMinimum + bodyAxisRange * birthCoordinateProgress;
   const bodyFieldColors = new Float32Array(bodyFieldParticleCount * 3);
   const bodyIdentityColor = new Color();
-  const bodyBirthMemoryColor = new Color(0xffe8b8);
+  const bodyBirthMemoryColor = new Color(
+    isLifeOriginStarMapReveal ? 0xd7eef0 : 0xffe8b8,
+  );
   for (let index = 0; index < bodyFieldParticleCount; index += 1) {
     const positionOffset = index * 3;
     const positionX = bodyFieldPositions[positionOffset];
@@ -1605,6 +1725,8 @@ export function createGenesisWebGLRendererCore(
   const bodyFieldMaterial = new PointsMaterial({
     color: new Color(0xffffff),
     vertexColors: true,
+    map: lifeOriginStarTexture,
+    alphaTest: isLifeOriginStarMapReveal ? 0.014 : 0,
     size:
       lifePresence.stellarSkeleton.nodeScale *
       (0.5 + (isPresenceStage ? (recognitionSubjectWeight - 1) * 0.16 : 0)) *
@@ -1640,6 +1762,8 @@ export function createGenesisWebGLRendererCore(
   pressureTraceGeometry.setAttribute("position", pressureTracePositionAttribute);
   const pressureTraceMaterial = new PointsMaterial({
     color: new Color(0xf2d79b),
+    map: lifeOriginStarTexture,
+    alphaTest: isLifeOriginStarMapReveal ? 0.018 : 0,
     size: lifePresence.stellarSkeleton.nodeScale * 0.9,
     transparent: true,
     opacity: 0,
@@ -1726,7 +1850,7 @@ export function createGenesisWebGLRendererCore(
   const coreColor = new Color(LIFE_UNIVERSE_CORE_IDENTITY.threeColor);
   // At the production camera distance this resolves to the same ~24px core
   // used by the entrance and Launch at the 390px acceptance viewport.
-  const coreRadius = 0.14;
+  const coreRadius = isLifeOriginStarMapReveal ? 0.082 : 0.14;
   const coreStageOpacity = isMoonOrigin
     ? 0.86
     : isStarRiver
@@ -2177,6 +2301,16 @@ export function createGenesisWebGLRendererCore(
         realityEntryCarryProgress * Math.PI,
       );
       const universeSeconds = performance.now() / 1000;
+      const lifeOriginRevealRaw = isLifeOriginStarMapReveal
+        ? Math.min(1, Math.max(0, (elapsedSeconds - 0.28) / 4.8))
+        : 0;
+      const lifeOriginRevealProgress =
+        lifeOriginRevealRaw *
+        lifeOriginRevealRaw *
+        (3 - 2 * lifeOriginRevealRaw);
+      const lifeOriginResponseBreath = isLifeOriginStarMapReveal
+        ? 1 + Math.sin(universeSeconds * 0.48) * 0.035
+        : 1;
       const realityPressureEntryRaw =
         pressureExpression !== null && isCompletion
           ? realityPressureCanApproach
@@ -2676,6 +2810,23 @@ export function createGenesisWebGLRendererCore(
           1,
         );
       }
+      if (isLifeOriginStarMapReveal) {
+        const originFieldScale =
+          (0.96 + lifeOriginRevealProgress * 0.04) *
+          lifeOriginResponseBreath;
+        mansionCoordinateGroup.scale.set(
+          coordinateBaseScaleX * originFieldScale,
+          -coordinateBaseScaleY * originFieldScale,
+          1,
+        );
+        mansionCoordinateGroup.rotation.z =
+          Math.sin(universeSeconds * 0.12) * 0.0035;
+        if (mansionHeavenOrderMaterial !== null) {
+          mansionHeavenOrderMaterial.opacity =
+            (0.018 + lifeOriginRevealProgress * 0.052) *
+            (0.94 + Math.sin(universeSeconds * 0.2) * 0.06);
+        }
+      }
       const birthRevealProgress =
         coordinateFormationExpression?.phase === "FOUND"
           ? 1
@@ -2710,7 +2861,10 @@ export function createGenesisWebGLRendererCore(
         coordinateFormationExpression !== null
       ) {
         birthCoordinateAxisMaterial.opacity =
-          retainMotherContinuityOrbit
+          isLifeOriginStarMapReveal
+            ? (0.035 + lifeOriginRevealProgress * 0.115) *
+              (0.94 + Math.sin(universeSeconds * 0.34) * 0.06)
+            : retainMotherContinuityOrbit
             ? 0.18
             : coordinateFormationExpression.birthAxisOpacity *
               birthRevealProgress *
@@ -2737,25 +2891,34 @@ export function createGenesisWebGLRendererCore(
             0.5;
         birthMansionPointMaterial.size =
           birthExpression.pointSize *
-          0.72 *
+          (isLifeOriginStarMapReveal ? 1.08 : 0.72) *
           birthBreath *
           (1 + birthDirectionResponse * 0.34) *
-          (retainMotherContinuityOrbit
+          (isLifeOriginStarMapReveal
+            ? 1
+            : retainMotherContinuityOrbit
             ? 1
             : 0.82 + birthRevealProgress * 0.18);
         birthMansionPointMaterial.opacity =
-          Math.min(
-            1,
-            birthExpression.opacity *
-              (retainMotherContinuityOrbit ? 0.82 : birthRevealProgress) *
-              (0.94 + Math.sin(birthPhase) * 0.06) *
-              (1 + birthDirectionResponse * 0.18) *
-              (isHexagramImprint
-                ? 0.74
-                : isLifeForce
-                  ? 0.46 + (1 - forceRhythmRevealProgress) * 0.12
-                  : 1),
-          );
+          isLifeOriginStarMapReveal
+            ? Math.min(
+                1,
+                birthExpression.opacity *
+                  (0.46 + lifeOriginRevealProgress * 0.46) *
+                  (0.94 + Math.sin(birthPhase) * 0.06),
+              )
+            : Math.min(
+                1,
+                birthExpression.opacity *
+                  (retainMotherContinuityOrbit ? 0.82 : birthRevealProgress) *
+                  (0.94 + Math.sin(birthPhase) * 0.06) *
+                  (1 + birthDirectionResponse * 0.18) *
+                  (isHexagramImprint
+                    ? 0.74
+                    : isLifeForce
+                      ? 0.46 + (1 - forceRhythmRevealProgress) * 0.12
+                      : 1),
+              );
       }
       if (
         directionFieldExpression !== null &&
@@ -3147,6 +3310,12 @@ export function createGenesisWebGLRendererCore(
         cosmicFieldOpacity *= 0.82 + recognitionCosmicSupportWeight * 0.12;
         cosmicFieldScale *= 0.99 + recognitionCosmicSupportWeight * 0.01;
       }
+      if (isLifeOriginStarMapReveal) {
+        // Random depth stars remain the sky, but no longer compete with the
+        // ordered 28-mansion foreground or the personal source structure.
+        cosmicFieldOpacity *= 0.54 + lifeOriginRevealProgress * 0.08;
+        cosmicFieldScale *= 1.04;
+      }
       if (birthMansionIgnition !== null) {
         const ignitionPhase =
           (universeSeconds / birthMansionIgnition.temporalRhythm.periodSeconds) *
@@ -3174,7 +3343,13 @@ export function createGenesisWebGLRendererCore(
       // nearer coordinates inside space, not as a diagram on black.
       cosmicPointMaterial.opacity = Math.max(
         cosmicFieldOpacity,
-        isMoonOrigin ? 0.2 : isStarRiver || isTimeResonance ? 0.18 : 0.12,
+        isMoonOrigin
+          ? 0.2
+          : isStarRiver || isTimeResonance
+            ? 0.18
+            : isLifeOriginStarMapReveal
+              ? 0.065
+              : 0.12,
       );
       const rhythmPhase =
         (universeSeconds /
@@ -3419,6 +3594,15 @@ export function createGenesisWebGLRendererCore(
           1.02 + perspectiveSubjectAxisStrength * 0.025;
         structureGroup.scale.y *= 1.01 + perspectiveBodyCohesion * 0.025;
       }
+      if (isLifeOriginStarMapReveal) {
+        // The body is not summoned in Reality. Its already existing topology
+        // simply becomes readable inside the source field, with a slow rise
+        // in visibility and no model swap.
+        structureGroup.scale.multiplyScalar(
+          0.58 + lifeOriginRevealProgress * 0.08,
+        );
+        structureGroup.position.z += 0.04;
+      }
       if (pressureExpression !== null && isPresenceStage) {
         const pressurePhase =
           elapsedSeconds * (0.11 + pressureTemporalWeight * 0.08);
@@ -3587,6 +3771,20 @@ export function createGenesisWebGLRendererCore(
             pressureIdentityStructureVisibility,
         );
       }
+      if (isLifeOriginStarMapReveal) {
+        spineMaterial.opacity = Math.max(
+          spineMaterial.opacity,
+          0.12 + lifeOriginRevealProgress * 0.16,
+        );
+        branchMaterial.opacity = Math.max(
+          branchMaterial.opacity,
+          0.045 + lifeOriginRevealProgress * 0.095,
+        );
+        structurePointMaterial.opacity = Math.max(
+          structurePointMaterial.opacity,
+          0.22 + lifeOriginRevealProgress * 0.29,
+        );
+      }
       structurePointMaterial.size =
         lifePresence.stellarSkeleton.nodeScale *
         (0.96 +
@@ -3598,7 +3796,8 @@ export function createGenesisWebGLRendererCore(
             ? 0.68
             : isPresenceStage
               ? 0.92
-              : 1);
+              : 1) *
+        (isLifeOriginStarMapReveal ? 2.05 : 1);
       bodyFieldMaterial.opacity = isSymbolReveal
         ? 0.12 + bodyContinuityReveal * 0.18
         : isHexagramImprint
@@ -3622,6 +3821,12 @@ export function createGenesisWebGLRendererCore(
             recognitionIdentityLock * 0.04,
         );
       }
+      if (isLifeOriginStarMapReveal) {
+        bodyFieldMaterial.opacity =
+          0.25 +
+          lifeOriginRevealProgress * 0.2 +
+          Math.sin(rhythmPhase * 0.72 + 0.5) * 0.012;
+      }
       bodyFieldMaterial.size =
         bodyFieldBaseSize *
         (1 + (breath - 1) * (1.1 + perspectivePresenceBreath * 0.45)) *
@@ -3636,7 +3841,8 @@ export function createGenesisWebGLRendererCore(
               ? 1.16
               : isPresenceStage
                 ? 1.24
-                : 1);
+                : 1) *
+        (isLifeOriginStarMapReveal ? 2.1 : 1);
       if (isStarBeastReveal) {
         spineMaterial.opacity =
           spineBaseOpacity * 0.85 * presenceSkeletonReveal;
@@ -3754,6 +3960,7 @@ export function createGenesisWebGLRendererCore(
           }
         }
       });
+      lifeOriginStarTexture?.dispose();
       renderer.dispose();
       scene.clear();
     },
