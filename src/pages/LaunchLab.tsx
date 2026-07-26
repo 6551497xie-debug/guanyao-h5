@@ -8,7 +8,15 @@
 // time coordinate has been confirmed.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import type { EntryCardRendererOptions } from "../components/entry/EntryCardRenderer";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
@@ -40,6 +48,14 @@ import {
   activateRealUserGenesisVisualSourceContext,
   clearRealUserGenesisVisualSourceContext,
 } from "../services/realUserGenesisVisualSourceContext";
+import {
+  hasPersistedRecognizedLifeIdentity,
+  persistLaunchLifeSourceSession,
+  readPersistedGenesisVisualContinuity,
+  restorePersistedRealUserGenesisVisualSourceContext,
+} from "../services/sessionService";
+import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
+import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
 import { writePersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
@@ -50,8 +66,15 @@ import {
   drawLifeUniverseCore2D,
   LIFE_UNIVERSE_STAR_FIELD,
   projectLifeUniverseStarToViewport,
+  resolveLifeUniverseCrystalImprintGeometry,
   resolveLifeUniverseCoreFrame,
 } from "../renderers/lifeUniverseStarField";
+
+const RealityLifeUniverseCanvas = lazy(() =>
+  import("../components/RealityLifeUniverseCanvas").then((module) => ({
+    default: module.RealityLifeUniverseCanvas,
+  })),
+);
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
@@ -61,7 +84,7 @@ const MANSION_COORDINATES = Object.freeze(
 );
 
 const CFG = {
-  moonReleaseSeconds: 0.92,
+  moonReleaseSeconds: 1.65,
   convergeMs: 2.4,
   starfield: 420,
   firstPresenceSeconds: 1.25,
@@ -390,8 +413,9 @@ const STATE = {
 } as const;
 
 const TOP_LINES = ["日月运行，", "星辰有序。"];
-const CTA_LINES = ["观我生，", "知进退。"];
-const ENTRY_ACTION_LINE = "轻触星河，寻找你的生命坐标";
+const CTA_LINES = ["那个被现实遮住的你，", "仍在这里。"];
+const ENTRY_ACTION_LINE = "进入我的生命世界";
+const ENTRY_TRANSITION_LINE = "去看见，那个一直存在的自己。";
 const BEAST_COLLAPSE_VISUAL_EVENT = "BEAST_COLLAPSE_VISUAL_EVENT";
 const NODE1_MIRROR_ACTIVATED_EVENT = "NODE1_MIRROR_ACTIVATED";
 const Node1State = {
@@ -502,6 +526,26 @@ function getEntryUserTypePreviewOverride(): EntryHandoffMode | undefined {
   const previewUser = new URLSearchParams(window.location.search).get("entryUser");
   if (previewUser === "new") return "NEW_USER";
   if (previewUser === "old") return "OLD_USER";
+
+  return undefined;
+}
+
+function getReturningLifeStatePreviewOverride() {
+  if (
+    typeof window === "undefined" ||
+    (window.location.hostname !== "localhost" &&
+      window.location.hostname !== "127.0.0.1")
+  ) {
+    return undefined;
+  }
+
+  const previewState = new URLSearchParams(window.location.search).get(
+    "returnState",
+  );
+  if (previewState === "identity") return "IDENTITY_ONLY";
+  if (previewState === "reality") return "REALITY_ONLY";
+  if (previewState === "crystal") return "CRYSTAL_ONLY";
+  if (previewState === "complete") return "REALITY_AND_CRYSTAL";
 
   return undefined;
 }
@@ -1060,6 +1104,99 @@ function drawFourBeastCardWatermark(
 export function LaunchLab() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const navigate = useNavigate();
+  const [returningLifeContext] = useState(() => {
+    const forcedEntry = getEntryUserTypePreviewOverride();
+    if (
+      forcedEntry === "NEW_USER" ||
+      !hasPersistedRecognizedLifeIdentity()
+    ) {
+      return null;
+    }
+    return restorePersistedRealUserGenesisVisualSourceContext();
+  });
+  const hasReturningLifeIdentity = returningLifeContext !== null;
+  const [returningVisualContinuity] = useState(() =>
+    hasReturningLifeIdentity ? readPersistedGenesisVisualContinuity() : null,
+  );
+  const [returningDynamicsInput] = useState(() =>
+    hasReturningLifeIdentity ? resolveDynamicsInputContext({}) : null,
+  );
+  const [returningLifeArchive] = useState(() =>
+    hasReturningLifeIdentity ? readPersonalityRingLite() : null,
+  );
+  const returningStatePreview = getReturningLifeStatePreviewOverride();
+  const returningVisualReady =
+    returningLifeContext !== null &&
+    returningVisualContinuity !== null &&
+    returningVisualContinuity.sourceReferenceId ===
+      returningLifeContext.sourceReferenceId;
+  // A persisted result is not yet a returning entrance. The returning path is
+  // only valid when that exact life can also be restored visually.
+  const returningLifeIdentity = returningVisualReady;
+  const returningRealityContext =
+    returningStatePreview === "IDENTITY_ONLY" ||
+    returningStatePreview === "CRYSTAL_ONLY"
+      ? null
+      : returningDynamicsInput?.selectedPressureSeedContext ?? null;
+  const returningCrystalVisible =
+    returningStatePreview !== "IDENTITY_ONLY" &&
+    returningStatePreview !== "REALITY_ONLY";
+  const returningLatestImprint =
+    (returningCrystalVisible ? returningLifeArchive?.entries : null)
+      ?.slice()
+      .sort(
+        (left, right) =>
+          Date.parse(right.createdAt) - Date.parse(left.createdAt),
+      )[0] ?? null;
+  const returningLatestImprintGeometry = useMemo(() => {
+    if (
+      !returningVisualReady ||
+      returningVisualContinuity === null ||
+      returningLatestImprint === null
+    ) {
+      return null;
+    }
+    const projectionBundle =
+      returningVisualContinuity.consumerSourceResult.consumerSource
+        .projectionBundle;
+    const morphology =
+      projectionBundle.morphologicalFieldAlignmentProjection
+        .morphologicalFieldExpression;
+    return resolveLifeUniverseCrystalImprintGeometry({
+      identityKey: returningLatestImprint.crystal.copy,
+      birthMansionIndex:
+        projectionBundle.twentyEightMansionCoordinateProjection.birthMansion
+          .mansionIndex,
+      normalizedOrbitPositions:
+        projectionBundle.twentyEightMansionCoordinateProjection.coordinates.map(
+          (coordinate) => coordinate.normalizedOrbitPosition,
+        ),
+      envelopeScale: morphology.envelopeScale,
+      postureBias: morphology.postureBias,
+    });
+  }, [
+    returningLatestImprint,
+    returningVisualContinuity,
+    returningVisualReady,
+  ]);
+  const returningHasReality = returningRealityContext !== null;
+  const returningHasCrystal = returningLatestImprintGeometry !== null;
+  const returningTemporalState =
+    returningHasReality && returningHasCrystal
+      ? "REALITY_AND_CRYSTAL"
+      : returningHasReality
+        ? "REALITY_ONLY"
+        : returningHasCrystal
+          ? "CRYSTAL_ONLY"
+          : "IDENTITY_ONLY";
+  const returningExperienceCopy =
+    returningTemporalState === "REALITY_AND_CRYSTAL"
+      ? "现实经过，变化也留在它的生命纹路里。"
+      : returningTemporalState === "REALITY_ONLY"
+        ? "最近的现实，仍在它的呼吸里。"
+        : returningTemporalState === "CRYSTAL_ONLY"
+          ? "那次变化，仍在它的生命纹路里。"
+          : null;
   const [interactionState, setInteractionState] = useState<LaunchInteractionState>("ENTRY");
   const interactionStateRef = useRef<LaunchInteractionState>("ENTRY");
   const [scene, setScene] = useState<SceneState>("ENTRY");
@@ -1337,6 +1474,14 @@ export function LaunchLab() {
       fpsAcc: 0,
       fpsN: 0,
     };
+    if (returningLifeIdentity && returningLifeContext !== null) {
+      const returningMansionIndex =
+        returningLifeContext.lifeSourceSession.starbeastDerivationResult
+          .mansionIndex;
+      m.lifeSourceSession = returningLifeContext.lifeSourceSession;
+      m.lifeBeastMansionIndex = returningMansionIndex;
+      m.lifeBeastGroupStart = Math.floor(returningMansionIndex / 7) * 7;
+    }
     entryHandoffRef.current = (mode: EntryHandoffMode) => {
       setSceneState("ENTRY");
       m.node1State = null;
@@ -1702,6 +1847,7 @@ export function LaunchLab() {
         );
       }
 
+      persistLaunchLifeSourceSession(sessionResult.session);
       m.lifeSourceSession = sessionResult.session;
       return sessionResult.session;
     }
@@ -1713,7 +1859,10 @@ export function LaunchLab() {
       try {
         dynamicsMotherHandoffRef.current = Object.freeze({
           motherCodeProfile: writeMotherCodeProfile(motherHandoff.motherCodeProfile),
-          originMotherContext: writeOriginMotherContext(motherHandoff.originMotherContext),
+          originMotherContext: writeOriginMotherContext({
+            ...motherHandoff.originMotherContext,
+            lifeSourceSession: m.lifeSourceSession,
+          }),
           personaOutputSnapshot: writePersonaOutputSnapshot(motherHandoff.personaOutputSnapshot),
         });
         m.originMotherContextPersistenceAttempted = true;
@@ -2188,7 +2337,11 @@ export function LaunchLab() {
             vibrate([0, 12, 60]);
           }
           if (m.moonReleaseStarted && m.moonReleaseT >= CFG.moonReleaseSeconds) {
-            enterTimeInjectionFromMoon();
+            if (returningLifeIdentity) {
+              navigate(GUANYAO_ROUTES.reality, { replace: true });
+            } else {
+              enterTimeInjectionFromMoon();
+            }
           }
           break;
         }
@@ -2587,14 +2740,25 @@ export function LaunchLab() {
         });
         ctx.shadowBlur = 0;
 
-        drawTaiyinMoonEntrance(
-          ctx,
-          m.w,
-          m.h,
-          now,
-          smooth(0.72, 1.65, m.t),
-          moonReleaseProgress,
-        );
+        if (returningLifeIdentity) {
+          drawLifeUniverseCore2D(
+            ctx,
+            m.w,
+            m.h,
+            now,
+            smooth(0.72, 1.65, m.t) *
+              (1 - smooth(0.04, 0.74, m.moonReleaseT)),
+          );
+        } else {
+          drawTaiyinMoonEntrance(
+            ctx,
+            m.w,
+            m.h,
+            now,
+            smooth(0.72, 1.65, m.t),
+            moonReleaseProgress,
+          );
+        }
 
         const topLineStarts = [1.7, 2.05];
         const topGather = 0.82;
@@ -2620,10 +2784,11 @@ export function LaunchLab() {
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           const mainSize = Math.min(18, m.w * 0.046);
+          const worldSize = Math.min(14, m.w * 0.036);
           const titleAlpha = smooth(2.2, 2.95, m.t);
           if (titleAlpha > 0.001) {
-            ctx.fillStyle = `rgba(255,247,228,${(titleAlpha * 0.95).toFixed(3)})`;
-            ctx.font = `650 ${mainSize}px ${SANS}`;
+            ctx.fillStyle = `rgba(255,247,228,${(titleAlpha * 0.46).toFixed(3)})`;
+            ctx.font = `580 ${worldSize}px ${SANS}`;
             ctx.fillText(TOP_LINES[0], m.w / 2, m.h * 0.16);
             ctx.fillText(TOP_LINES[1], m.w / 2, m.h * 0.205);
           }
@@ -2633,21 +2798,50 @@ export function LaunchLab() {
           if (relationCopyAlpha > 0.001) {
             ctx.fillStyle = `rgba(255,247,228,${(relationCopyAlpha * 0.92).toFixed(3)})`;
             ctx.font = `650 ${mainSize}px ${SANS}`;
-            ctx.fillText(CTA_LINES[0], m.w / 2, m.h * 0.78);
-            ctx.fillText(CTA_LINES[1], m.w / 2, m.h * 0.825);
+            ctx.fillText(
+              returningLifeIdentity ? "你的生命仍在这里，" : CTA_LINES[0],
+              m.w / 2,
+              m.h * 0.78,
+            );
+            ctx.fillText(
+              returningLifeIdentity ? "等你继续同行。" : CTA_LINES[1],
+              m.w / 2,
+              m.h * 0.825,
+            );
           }
 
           const actionCopyAlpha =
             smooth(4.2, 4.85, m.t) *
             (1 - smooth(0, 0.38, m.moonReleaseT));
           if (actionCopyAlpha > 0.001) {
-            ctx.fillStyle = `rgba(255,247,228,${(actionCopyAlpha * 0.64).toFixed(3)})`;
+            ctx.fillStyle = `rgba(255,247,228,${(actionCopyAlpha * 0.82).toFixed(3)})`;
             ctx.font = `620 ${Math.min(13, m.w * 0.033)}px ${SANS}`;
-            ctx.fillText(ENTRY_ACTION_LINE, m.w / 2, m.h * 0.89);
+            ctx.fillText(
+              returningLifeIdentity
+                ? "轻触星河，回到我的生命世界"
+                : ENTRY_ACTION_LINE,
+              m.w / 2,
+              m.h * 0.89,
+            );
 
             ctx.fillStyle = `rgba(232,200,138,${(actionCopyAlpha * 0.42).toFixed(3)})`;
             ctx.font = `${Math.min(11, m.w * 0.028)}px ${MONO}`;
             ctx.fillText("观爻 · GUANYAO", m.w / 2, m.h * 0.94);
+          }
+
+          if (!returningLifeIdentity && m.moonReleaseStarted) {
+            const transitionAlpha =
+              smooth(0.38, 0.82, m.moonReleaseT) *
+              (1 - smooth(1.38, CFG.moonReleaseSeconds, m.moonReleaseT));
+            if (transitionAlpha > 0.001) {
+              ctx.fillStyle = `rgba(255,247,228,${(transitionAlpha * 0.74).toFixed(3)})`;
+              ctx.font = `580 ${Math.min(14, m.w * 0.036)}px ${SANS}`;
+              ctx.fillText(
+                ENTRY_TRANSITION_LINE,
+                m.w / 2,
+                m.h * 0.825,
+              );
+            }
           }
           ctx.restore();
         }
@@ -4538,9 +4732,9 @@ export function LaunchLab() {
         ctx.save();
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        const mainSize = Math.min(18, m.w * 0.046);
-        ctx.fillStyle = "rgba(255,247,228,0.95)";
-        ctx.font = `650 ${mainSize}px ${SANS}`;
+        const worldSize = Math.min(14, m.w * 0.036);
+        ctx.fillStyle = "rgba(255,247,228,0.46)";
+        ctx.font = `580 ${worldSize}px ${SANS}`;
         ctx.fillText(TOP_LINES[0], m.w / 2, m.h * 0.16);
         ctx.fillText(TOP_LINES[1], m.w / 2, m.h * 0.205);
         ctx.restore();
@@ -4575,7 +4769,7 @@ export function LaunchLab() {
         [
           { text: CTA_LINES[0], y: 0.78, start: lineStarts[2]!, weight: 650, size: subtitleSize, alpha: 0.92 },
           { text: CTA_LINES[1], y: 0.825, start: lineStarts[3]!, weight: 650, size: subtitleSize, alpha: 0.92 },
-          { text: ENTRY_ACTION_LINE, y: 0.89, start: lineStarts[4]!, weight: 620, size: actionSize, alpha: 0.64 },
+          { text: ENTRY_ACTION_LINE, y: 0.89, start: lineStarts[4]!, weight: 620, size: actionSize, alpha: 0.82 },
         ].forEach((line) => {
           const solid = smooth(line.start + gather - 0.1, line.start + gather + 0.8, m.afterForm);
           if (solid <= 0.001) return;
@@ -5009,7 +5203,7 @@ export function LaunchLab() {
       canvas.removeEventListener("pointercancel", onUp);
       entryHandoffRef.current = null;
     };
-  }, [commitPressureSeedCapture, navigate, setLaunchInteractionState, setSceneState, triggerClickFlash]);
+  }, [commitPressureSeedCapture, navigate, returningLifeContext, returningLifeIdentity, setLaunchInteractionState, setSceneState, triggerClickFlash]);
 
   return (
     <GyMobilePreviewFrame background="#020306">
@@ -5017,8 +5211,100 @@ export function LaunchLab() {
         className={`light-beast-hitbox scene-${scene.toLowerCase()}${SNAPSHOT_MODE ? " snapshot-mode" : ""}`}
         data-production-collapse={isProductionCollapse ? "true" : "false"}
         data-collapse-phase={collapsePhase}
+        data-returning-life-world={
+          returningVisualReady ? "SAME_RECOGNIZED_LIFE" : "NOT_ACTIVE"
+        }
+        data-returning-life-reality-state={
+          !returningVisualReady
+            ? "NOT_ACTIVE"
+            : returningHasReality
+              ? "RECENT_REALITY_CARRIED"
+              : "STEADY_WITHOUT_RECENT_REALITY"
+        }
+        data-returning-life-crystal-trace={
+          !returningVisualReady
+            ? "NOT_ACTIVE"
+            : returningHasCrystal
+              ? "LATEST_IMPRINT_ATTACHED"
+              : "NO_IMPRINT_YET"
+        }
+        data-returning-life-temporal-state={
+          returningVisualReady ? returningTemporalState : "NOT_ACTIVE"
+        }
+        data-returning-life-priority="IDENTITY_THEN_STATE_THEN_EXPERIENCE_THEN_IMPRINT"
+        data-reality-pressure-visual-state={
+          returningVisualReady
+            ? returningHasReality
+              ? "PRESSURE_PAUSED"
+              : "PRESSURE_OBSERVING"
+            : undefined
+        }
         style={{ position: "relative", width: "100%", height: "100%" }}
       >
+        <span
+          data-entry-consumer={
+            returningLifeIdentity
+              ? "RETURNING_LIFE_WORLD"
+              : "NEW_LIFE_CALL"
+          }
+          data-returning-entry-readiness={
+            returningLifeIdentity
+              ? "IDENTITY_AND_VISUAL_READY"
+              : hasReturningLifeIdentity
+                ? "VISUAL_CONTINUITY_REQUIRED"
+                : "NEW_LIFE_JOURNEY"
+          }
+          aria-hidden="true"
+          style={{ display: "none" }}
+        />
+        {returningVisualReady && returningVisualContinuity ? (
+          <div
+            className="gy-returning-life-world"
+            aria-hidden="true"
+            data-returning-life-presence="SETTLED_COMPANION"
+          >
+            <Suspense fallback={null}>
+              <RealityLifeUniverseCanvas
+                visualContinuity={returningVisualContinuity}
+                selectedPressureSeedContext={returningRealityContext}
+              />
+            </Suspense>
+            {returningLatestImprintGeometry ? (
+              <svg
+                className="gy-returning-life-world__imprint"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                data-returning-life-imprint="LATEST_CRYSTAL_ON_SAME_BODY"
+              >
+                <path
+                  d={returningLatestImprintGeometry.path}
+                  fill="none"
+                  stroke="rgba(232,200,138,0.08)"
+                  strokeWidth="1.25"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  filter="blur(1.1px)"
+                />
+                <path
+                  d={returningLatestImprintGeometry.path}
+                  fill="none"
+                  stroke="rgba(255,239,190,0.4)"
+                  strokeWidth="0.38"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <rect
+                  x={returningLatestImprintGeometry.target[0] - 0.34}
+                  y={returningLatestImprintGeometry.target[1] - 0.34}
+                  width="0.68"
+                  height="0.68"
+                  rx="0.09"
+                  fill="rgba(255,247,220,0.54)"
+                />
+              </svg>
+            ) : null}
+          </div>
+        ) : null}
         <canvas
           ref={canvasRef}
           className="light-field"
@@ -5026,8 +5312,37 @@ export function LaunchLab() {
           data-launch-scene={scene}
           data-launch-timeline={timeline[scene]}
           data-snapshot-index={snapshotIndex}
-          style={{ width: "100%", height: "100%", display: "block", touchAction: "none", cursor: scene === "ENTRY" ? "pointer" : "default" }}
+          style={{
+            position: "relative",
+            zIndex: returningVisualReady ? 2 : 0,
+            width: "100%",
+            height: "100%",
+            display: "block",
+            opacity: returningVisualReady ? 0 : 1,
+            touchAction: "none",
+            cursor: scene === "ENTRY" ? "pointer" : "default",
+          }}
         />
+        {returningVisualReady ? (
+          <section
+            className="gy-returning-life-world__copy"
+            aria-label="回到我的生命世界"
+          >
+            <div className="gy-returning-life-world__cosmos-copy">
+              <span>日月运行，</span>
+              <span>星辰有序。</span>
+            </div>
+            <div className="gy-returning-life-world__relationship-copy">
+              <strong>你的生命仍在这里，</strong>
+              <strong>等你继续同行。</strong>
+              {returningExperienceCopy ? (
+                <small>{returningExperienceCopy}</small>
+              ) : null}
+              <span>轻触星河，回到我的生命世界</span>
+              <em>观爻 · GUANYAO</em>
+            </div>
+          </section>
+        ) : null}
         <div className="visual-stage" aria-hidden="true">
           <div className={visualLayerClass("ENTRY", "entry-layer")} />
           <div className={visualLayerClass("NODE_1", "node1-layer")}>
@@ -5061,7 +5376,7 @@ export function LaunchLab() {
           <div className="snapshot-panel">
             <div className="snapshot-panel-note" aria-hidden="true">
               <strong>内部节点调试</strong>
-              <span>生产路径请使用 /launch-lab?entryUser=new 或 /launch-lab?entryUser=old</span>
+              <span>生产路径请使用 /launch-lab?entryUser=new 或 /launch-lab?entryUser=old；四态预览追加 returnState=identity / reality / crystal / complete</span>
             </div>
             {snapshotTargets.map((target) => (
               <button key={target} type="button" onClick={() => debugGoTo(target)}>
@@ -5074,6 +5389,96 @@ export function LaunchLab() {
           </div>
         )}
         <style>{`
+          .gy-returning-life-world {
+            position: absolute;
+            z-index: 0;
+            inset: 0;
+            overflow: hidden;
+            background: #020306;
+            isolation: isolate;
+            pointer-events: none;
+          }
+          .gy-returning-life-world__imprint {
+            position: absolute;
+            z-index: 12;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            opacity: 0.46;
+            transform-origin: 50% 48%;
+            animation: gy-returning-life-imprint-breath 9.6s ease-in-out infinite;
+            pointer-events: none;
+          }
+          [data-returning-life-temporal-state="REALITY_AND_CRYSTAL"]
+            .gy-returning-life-world__imprint {
+            opacity: 0.34;
+          }
+          .gy-returning-life-world__copy {
+            position: absolute;
+            z-index: 3;
+            inset: 0;
+            color: rgba(255, 247, 228, 0.94);
+            font-family: ${SANS};
+            pointer-events: none;
+            text-shadow: 0 0 22px rgba(2, 3, 6, 0.92);
+          }
+          .gy-returning-life-world__cosmos-copy {
+            position: absolute;
+            top: 14.5%;
+            right: 0;
+            left: 0;
+            display: grid;
+            justify-items: center;
+            gap: 5px;
+            color: rgba(255, 247, 228, 0.46);
+            font-size: min(14px, 3.6vw);
+            font-weight: 580;
+            line-height: 1.35;
+          }
+          .gy-returning-life-world__relationship-copy {
+            position: absolute;
+            right: 8%;
+            bottom: 4.6%;
+            left: 8%;
+            display: grid;
+            justify-items: center;
+            text-align: center;
+          }
+          .gy-returning-life-world__relationship-copy strong {
+            font-size: min(18px, 4.6vw);
+            font-style: normal;
+            font-weight: 650;
+            line-height: 1.7;
+          }
+          .gy-returning-life-world__relationship-copy small {
+            margin-top: 8px;
+            color: rgba(232, 200, 138, 0.52);
+            font-size: min(10px, 2.55vw);
+            font-weight: 500;
+            letter-spacing: 0.04em;
+          }
+          .gy-returning-life-world__relationship-copy span {
+            margin-top: 18px;
+            color: rgba(255, 247, 228, 0.64);
+            font-size: min(13px, 3.3vw);
+            font-weight: 620;
+          }
+          .gy-returning-life-world__relationship-copy em {
+            margin-top: 18px;
+            color: rgba(232, 200, 138, 0.42);
+            font-family: ${MONO};
+            font-size: min(11px, 2.8vw);
+            font-style: normal;
+          }
+          @keyframes gy-returning-life-imprint-breath {
+            0%, 100% {
+              transform: scale(0.998);
+            }
+            52% {
+              transform: scale(1.002);
+            }
+          }
           .visual-stage {
             position: absolute;
             inset: 0;
