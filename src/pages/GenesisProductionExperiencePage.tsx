@@ -65,6 +65,7 @@ const PRESENCE_RECOGNITION_TIMING_MS = Object.freeze({
 });
 
 const REALITY_ENTRY_VISUAL_HOLD_MS = 560;
+const LIFE_ORIGIN_DISCOVERY_DURATION_MS = 5_200;
 
 export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
   GenesisProductionExperiencePageBoundary = Object.freeze({
@@ -211,6 +212,10 @@ export function GenesisProductionExperiencePage({
   const [recognitionPromptReady, setRecognitionPromptReady] = useState(false);
   const [recognitionResponseSettled, setRecognitionResponseSettled] =
     useState(false);
+  const [lifeOriginDiscoveryPhase, setLifeOriginDiscoveryPhase] = useState<
+    "DORMANT" | "DISCOVERING" | "REVEALED"
+  >("DORMANT");
+  const lifeOriginDiscoveryTimerRef = useRef<number | null>(null);
   const realityEntryTimerRef = useRef<number | null>(null);
   const recognitionInteractionAvailability =
     recognitionRealityResult?.status === "READY"
@@ -272,6 +277,11 @@ export function GenesisProductionExperiencePage({
     setTimeDeliveryResponse(null);
     setRecognitionPromptReady(false);
     setRecognitionResponseSettled(false);
+    setLifeOriginDiscoveryPhase("DORMANT");
+    if (lifeOriginDiscoveryTimerRef.current !== null) {
+      window.clearTimeout(lifeOriginDiscoveryTimerRef.current);
+      lifeOriginDiscoveryTimerRef.current = null;
+    }
     if (realityEntryTimerRef.current !== null) {
       window.clearTimeout(realityEntryTimerRef.current);
       realityEntryTimerRef.current = null;
@@ -280,6 +290,9 @@ export function GenesisProductionExperiencePage({
 
   useEffect(
     () => () => {
+      if (lifeOriginDiscoveryTimerRef.current !== null) {
+        window.clearTimeout(lifeOriginDiscoveryTimerRef.current);
+      }
       if (realityEntryTimerRef.current !== null) {
         window.clearTimeout(realityEntryTimerRef.current);
       }
@@ -306,7 +319,8 @@ export function GenesisProductionExperiencePage({
     if (
       productionRuntimeResult?.status !== "READY" ||
       productionRuntimeResult.session.currentStage !== "COMPLETION" ||
-      recognitionInteractionAvailability !== "RECOGNITION_CONFIRM"
+      recognitionInteractionAvailability !== "RECOGNITION_CONFIRM" ||
+      lifeOriginDiscoveryPhase !== "REVEALED"
     ) {
       setRecognitionPromptReady(false);
       return undefined;
@@ -318,6 +332,7 @@ export function GenesisProductionExperiencePage({
   }, [
     productionRuntimeResult,
     recognitionInteractionAvailability,
+    lifeOriginDiscoveryPhase,
     routeAuthorization.sourceReferenceId,
   ]);
 
@@ -564,6 +579,27 @@ export function GenesisProductionExperiencePage({
     timelineOrchestrationResult,
   ]);
 
+  const beginLifeOriginDiscovery = useCallback(() => {
+    if (
+      productionRuntimeResult?.status !== "READY" ||
+      productionRuntimeResult.session.currentStage !== "COMPLETION" ||
+      recognitionInteractionAvailability !== "RECOGNITION_CONFIRM" ||
+      lifeOriginDiscoveryPhase !== "DORMANT"
+    ) {
+      return;
+    }
+    setRecognitionPromptReady(false);
+    setLifeOriginDiscoveryPhase("DISCOVERING");
+    lifeOriginDiscoveryTimerRef.current = window.setTimeout(() => {
+      lifeOriginDiscoveryTimerRef.current = null;
+      setLifeOriginDiscoveryPhase("REVEALED");
+    }, LIFE_ORIGIN_DISCOVERY_DURATION_MS);
+  }, [
+    lifeOriginDiscoveryPhase,
+    productionRuntimeResult,
+    recognitionInteractionAvailability,
+  ]);
+
   const confirmRecognition = () => {
     if (
       recognitionRealityResult?.status !== "READY" ||
@@ -776,6 +812,7 @@ export function GenesisProductionExperiencePage({
           ? "READY"
           : "NOT_ACTIVE"
       }
+      data-genesis-life-origin-discovery={lifeOriginDiscoveryPhase}
     >
       <GenesisProductionRendererCanvasHost
         routeAuthorization={routeAuthorization}
@@ -787,6 +824,8 @@ export function GenesisProductionExperiencePage({
         lifeArchetypeForceCondensationVisualCalibration={
           archetypeForceCalibrationResult.calibration
         }
+        lifeOriginDiscoveryPhase={lifeOriginDiscoveryPhase}
+        onLifeOriginDiscoveryRequest={beginLifeOriginDiscovery}
         onStateChange={setCanvasHostState}
       />
       {timeDeliveryResponse !== null &&

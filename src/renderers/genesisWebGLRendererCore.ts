@@ -452,10 +452,15 @@ export function createGenesisWebGLRendererCore(
   const isLifeForce = activeVisualLayer === "LIFE_FORCE";
   const isStarBeastReveal = activeVisualLayer === "STAR_BEAST_REVEAL";
   const isCompletion = activeVisualLayer === "COMPLETION";
-  // Reality does not need a new identity scene. It lets the already completed
-  // life reveal its source order again: the same 28-mansion field, the same
-  // birth coordinate, the same inner structure and the same body.
-  const isLifeOriginStarMapReveal = isRealityCanvas && isCompletion;
+  // Genesis and Reality both consume the same completed identity scene.
+  // Genesis lets the user discover its source order; Reality keeps the order
+  // as a quiet memory. Neither consumer creates a second life or a new model.
+  const isGenesisLifeOriginStarMapReveal =
+    !isRealityCanvas &&
+    isCompletion &&
+    input.canvas?.hasAttribute("data-life-origin-discovery-phase") === true;
+  const isLifeOriginStarMapReveal =
+    (isRealityCanvas || isGenesisLifeOriginStarMapReveal) && isCompletion;
   const lifeOriginStarTexture = isLifeOriginStarMapReveal
     ? createLifeOriginStarTexture()
     : null;
@@ -623,6 +628,7 @@ export function createGenesisWebGLRendererCore(
     sceneProjection.mansionCoordinateVisualLayer;
   const mansionCoordinateGroup = new Group();
   let mansionHeavenOrderMaterial: LineBasicMaterial | null = null;
+  let birthMansionBoneMaterial: LineBasicMaterial | null = null;
   let birthCoordinateAxisMaterial: LineBasicMaterial | null = null;
   let birthMansionPointMaterial: PointsMaterial | null = null;
   const seekingResponseMaterials: PointsMaterial[] = [];
@@ -801,6 +807,55 @@ export function createGenesisWebGLRendererCore(
           mansionHeavenOrderMaterial,
         ),
       );
+
+      // Personal recognition is carried by stars that already belong to the
+      // same seven-mansion quarter. The nearest existing coordinates answer
+      // with the birth mansion; no decorative star or inner meridian is added.
+      const birthIndex =
+        mansionCoordinateVisualLayer.birthCoordinate.coordinateIndex;
+      const birthQuarterStart = Math.floor(birthIndex / 7) * 7;
+      const birthQuarterEnd = birthQuarterStart + 6;
+      const birthBonePositions: number[] = [];
+      const birthCoordinate =
+        mansionCoordinateVisualLayer.coordinates[birthIndex]!;
+      [birthIndex - 1, birthIndex + 1].forEach((neighborIndex) => {
+        if (
+          neighborIndex < birthQuarterStart ||
+          neighborIndex > birthQuarterEnd
+        ) {
+          return;
+        }
+        const neighbor =
+          mansionCoordinateVisualLayer.coordinates[neighborIndex]!;
+        birthBonePositions.push(
+          neighbor.x,
+          neighbor.y,
+          neighbor.z,
+          birthCoordinate.x,
+          birthCoordinate.y,
+          birthCoordinate.z,
+        );
+      });
+      if (birthBonePositions.length > 0) {
+        const birthBoneGeometry = new BufferGeometry();
+        birthBoneGeometry.setAttribute(
+          "position",
+          new Float32BufferAttribute(birthBonePositions, 3),
+        );
+        birthMansionBoneMaterial = new LineBasicMaterial({
+          color: new Color(0xc5e7e8),
+          transparent: true,
+          opacity: 0,
+          blending: AdditiveBlending,
+          depthWrite: false,
+        });
+        mansionCoordinateGroup.add(
+          new LineSegments(
+            birthBoneGeometry,
+            birthMansionBoneMaterial,
+          ),
+        );
+      }
     }
 
     if (coordinateFormationExpression?.phase === "SEEKING_TO_FOUND") {
@@ -1850,7 +1905,7 @@ export function createGenesisWebGLRendererCore(
   const coreColor = new Color(LIFE_UNIVERSE_CORE_IDENTITY.threeColor);
   // At the production camera distance this resolves to the same ~24px core
   // used by the entrance and Launch at the 390px acceptance viewport.
-  const coreRadius = isLifeOriginStarMapReveal ? 0.082 : 0.14;
+  const coreRadius = isLifeOriginStarMapReveal ? 0.052 : 0.14;
   const coreStageOpacity = isMoonOrigin
     ? 0.86
     : isStarRiver
@@ -1967,13 +2022,52 @@ export function createGenesisWebGLRendererCore(
   // luminance. It must never introduce a new orbital ring around the life.
   const coreIdentityGroup = new Group();
   core.add(coreLight);
+  const lifeOriginCoreMistGeometry = new BufferGeometry();
+  const lifeOriginCoreMistMaterial = new PointsMaterial({
+    color: new Color(0xf0e8d0),
+    map: lifeOriginStarTexture,
+    alphaTest: isLifeOriginStarMapReveal ? 0.012 : 0,
+    size: 0.028,
+    sizeAttenuation: true,
+    transparent: true,
+    opacity: 0,
+    blending: AdditiveBlending,
+    depthWrite: false,
+  });
+  const lifeOriginCoreMist = new Points(
+    lifeOriginCoreMistGeometry,
+    lifeOriginCoreMistMaterial,
+  );
+  if (isLifeOriginStarMapReveal) {
+    const mistParticleCount = 72;
+    const mistPositions = new Float32Array(mistParticleCount * 3);
+    for (let mistIndex = 0; mistIndex < mistParticleCount; mistIndex += 1) {
+      const mistOffset = mistIndex * 3;
+      const radialProgress = Math.sqrt((mistIndex + 0.5) / mistParticleCount);
+      const angle =
+        mistIndex * 2.399963229728653 +
+        (random() - 0.5) * 0.42;
+      const radius = 0.035 + radialProgress * 0.19;
+      mistPositions[mistOffset] =
+        Math.cos(angle) * radius * (0.72 + random() * 0.34);
+      mistPositions[mistOffset + 1] =
+        Math.sin(angle) * radius * (0.72 + random() * 0.34);
+      mistPositions[mistOffset + 2] = (random() - 0.5) * 0.08;
+    }
+    lifeOriginCoreMistGeometry.setAttribute(
+      "position",
+      new Float32BufferAttribute(mistPositions, 3),
+    );
+  }
   coreIdentityGroup.add(coreHalo);
+  coreIdentityGroup.add(lifeOriginCoreMist);
   coreIdentityGroup.add(coreSurface);
   coreIdentityGroup.add(core);
   root.add(coreIdentityGroup);
 
   let frameCount = 0;
   let recognitionResponseStartedAtMilliseconds: number | null = null;
+  let lifeOriginDiscoveryStartedAtMilliseconds: number | null = null;
   let realityEntryCarryStartedAtMilliseconds: number | null = null;
   let realityPressureStartedAtMilliseconds: number | null = null;
   let realityPressureRecognitionStartedAtMilliseconds: number | null = null;
@@ -2301,8 +2395,38 @@ export function createGenesisWebGLRendererCore(
         realityEntryCarryProgress * Math.PI,
       );
       const universeSeconds = performance.now() / 1000;
+      const lifeOriginDiscoveryPhase = isGenesisLifeOriginStarMapReveal
+        ? input.canvas?.getAttribute("data-life-origin-discovery-phase")
+        : null;
+      const lifeOriginDiscoveryIsActive =
+        lifeOriginDiscoveryPhase === "DISCOVERING";
+      if (
+        lifeOriginDiscoveryIsActive &&
+        lifeOriginDiscoveryStartedAtMilliseconds === null
+      ) {
+        lifeOriginDiscoveryStartedAtMilliseconds = safeElapsedMilliseconds;
+      } else if (
+        isGenesisLifeOriginStarMapReveal &&
+        lifeOriginDiscoveryPhase === "DORMANT"
+      ) {
+        lifeOriginDiscoveryStartedAtMilliseconds = null;
+      }
       const lifeOriginRevealRaw = isLifeOriginStarMapReveal
-        ? Math.min(1, Math.max(0, (elapsedSeconds - 0.28) / 4.8))
+        ? isGenesisLifeOriginStarMapReveal
+          ? lifeOriginDiscoveryPhase === "REVEALED"
+            ? 1
+            : lifeOriginDiscoveryStartedAtMilliseconds === null
+              ? 0
+              : Math.min(
+                  1,
+                  Math.max(
+                    0,
+                    (safeElapsedMilliseconds -
+                      lifeOriginDiscoveryStartedAtMilliseconds) /
+                      4_800,
+                  ),
+                )
+          : Math.min(1, Math.max(0, (elapsedSeconds - 0.28) / 4.8))
         : 0;
       const lifeOriginRevealProgress =
         lifeOriginRevealRaw *
@@ -2826,6 +2950,11 @@ export function createGenesisWebGLRendererCore(
             (0.018 + lifeOriginRevealProgress * 0.052) *
             (0.94 + Math.sin(universeSeconds * 0.2) * 0.06);
         }
+        if (birthMansionBoneMaterial !== null) {
+          birthMansionBoneMaterial.opacity =
+            (0.025 + lifeOriginRevealProgress * 0.23) *
+            (0.93 + Math.sin(universeSeconds * 0.28) * 0.07);
+        }
       }
       const birthRevealProgress =
         coordinateFormationExpression?.phase === "FOUND"
@@ -3315,6 +3444,11 @@ export function createGenesisWebGLRendererCore(
         // ordered 28-mansion foreground or the personal source structure.
         cosmicFieldOpacity *= 0.54 + lifeOriginRevealProgress * 0.08;
         cosmicFieldScale *= 1.04;
+        if (isGenesisLifeOriginStarMapReveal) {
+          const originStillness = 1 - lifeOriginRevealProgress * 0.78;
+          cosmicField.rotation.x *= originStillness;
+          cosmicField.rotation.y *= originStillness;
+        }
       }
       if (birthMansionIgnition !== null) {
         const ignitionPhase =
@@ -3458,6 +3592,27 @@ export function createGenesisWebGLRendererCore(
             (0.28 + forceExpressionDensity * 0.2) +
           recognitionResponseWave * 0.18 +
           recognizedLifeRelationshipContinuity * 0.08);
+      if (isLifeOriginStarMapReveal) {
+        const originMistBreath =
+          0.93 + Math.sin(universeSeconds * 0.48) * 0.07;
+        lifeOriginCoreMistMaterial.opacity =
+          (0.14 + lifeOriginRevealProgress * 0.34) * originMistBreath;
+        lifeOriginCoreMistMaterial.size =
+          0.03 + lifeOriginRevealProgress * 0.021;
+        lifeOriginCoreMist.rotation.z =
+          Math.sin(universeSeconds * 0.11) * 0.035;
+        lifeOriginCoreMist.scale.setScalar(
+          1.08 +
+            lifeOriginRevealProgress * 0.2 +
+            Math.sin(universeSeconds * 0.48) * 0.025,
+        );
+        coreMaterial.opacity =
+          coreBaseOpacity * (0.16 + lifeOriginRevealProgress * 0.05);
+        coreSurfaceMaterial.opacity =
+          coreSurfaceBaseOpacity * (0.52 + lifeOriginRevealProgress * 0.12);
+        coreHaloMaterial.opacity =
+          coreHaloBaseOpacity * (1.3 + lifeOriginRevealProgress * 0.42);
+      }
       coreLight.intensity =
         coreLightBaseIntensity *
         (1 +
@@ -3599,7 +3754,7 @@ export function createGenesisWebGLRendererCore(
         // simply becomes readable inside the source field, with a slow rise
         // in visibility and no model swap.
         structureGroup.scale.multiplyScalar(
-          0.58 + lifeOriginRevealProgress * 0.08,
+          0.72 + lifeOriginRevealProgress * 0.16,
         );
         structureGroup.position.z += 0.04;
       }

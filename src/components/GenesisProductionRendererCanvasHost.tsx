@@ -34,6 +34,8 @@ export function GenesisProductionRendererCanvasHost({
   visualCalibrationBundle,
   fourSymbolDirectionFieldVisualCalibration,
   lifeArchetypeForceCondensationVisualCalibration,
+  lifeOriginDiscoveryPhase,
+  onLifeOriginDiscoveryRequest,
   onStateChange,
 }: GenesisProductionRendererCanvasHostProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -110,25 +112,98 @@ export function GenesisProductionRendererCanvasHost({
     };
   }, [consumerSourceResult, fourSymbolDirectionFieldVisualCalibration, lifeArchetypeForceCondensationVisualCalibration, onStateChange, routeAuthorization, visualCalibrationBundle]);
 
+  const isLifeOriginDiscovery =
+    visualCalibrationBundle.runtimeStage === "COMPLETION";
+  const mansionProjection =
+    consumerSourceResult.consumerSource.projectionBundle
+      .twentyEightMansionCoordinateProjection;
+  const directionProjection =
+    consumerSourceResult.consumerSource.projectionBundle
+      .fourSymbolLifeDirectionProjection;
+  const lifeOriginIdentityLabel = `${directionProjection.direction}方${directionProjection.fourSymbol} · ${mansionProjection.birthMansion.mansion}宿`;
+
   return (
-    <canvas
-      ref={canvasRef}
-      className="gy-genesis-production-experience__canvas"
-      data-production-renderer-host-state={hostState}
-      data-source-provenance={
-        consumerSourceResult.consumerSource.sourceProvenance
-      }
-      data-source-reference-id={
-        consumerSourceResult.consumerSource.sourceReferenceId
-      }
-      data-genesis-runtime-stage={visualCalibrationBundle.runtimeStage}
-      data-genesis-direction-field-phase={
-        fourSymbolDirectionFieldVisualCalibration.phase
-      }
-      data-genesis-archetype-force-phase={
-        lifeArchetypeForceCondensationVisualCalibration.phase
-      }
-      aria-hidden="true"
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        className="gy-genesis-production-experience__canvas"
+        data-production-renderer-host-state={hostState}
+        data-source-provenance={
+          consumerSourceResult.consumerSource.sourceProvenance
+        }
+        data-source-reference-id={
+          consumerSourceResult.consumerSource.sourceReferenceId
+        }
+        data-genesis-runtime-stage={visualCalibrationBundle.runtimeStage}
+        data-genesis-direction-field-phase={
+          fourSymbolDirectionFieldVisualCalibration.phase
+        }
+        data-genesis-archetype-force-phase={
+          lifeArchetypeForceCondensationVisualCalibration.phase
+        }
+        data-life-origin-discovery-phase={
+          isLifeOriginDiscovery ? lifeOriginDiscoveryPhase : undefined
+        }
+        aria-hidden={
+          isLifeOriginDiscovery &&
+          lifeOriginDiscoveryPhase === "DORMANT"
+            ? undefined
+            : true
+        }
+        aria-label={
+          isLifeOriginDiscovery &&
+          lifeOriginDiscoveryPhase === "DORMANT"
+            ? "轻触星河，发现属于你的生命星宿"
+            : undefined
+        }
+        role={
+          isLifeOriginDiscovery &&
+          lifeOriginDiscoveryPhase === "DORMANT"
+            ? "button"
+            : undefined
+        }
+        tabIndex={
+          isLifeOriginDiscovery &&
+          lifeOriginDiscoveryPhase === "DORMANT"
+            ? 0
+            : undefined
+        }
+        onClick={
+          isLifeOriginDiscovery &&
+          lifeOriginDiscoveryPhase === "DORMANT"
+            ? onLifeOriginDiscoveryRequest
+            : undefined
+        }
+        onKeyDown={(event) => {
+          if (
+            isLifeOriginDiscovery &&
+            lifeOriginDiscoveryPhase === "DORMANT" &&
+            (event.key === "Enter" || event.key === " ")
+          ) {
+            event.preventDefault();
+            onLifeOriginDiscoveryRequest();
+          }
+        }}
+      />
+      {isLifeOriginDiscovery &&
+      lifeOriginDiscoveryPhase === "DORMANT" ? (
+        <p
+          className="gy-genesis-production-experience__origin-invitation"
+          aria-hidden="true"
+        >
+          轻触星河
+        </p>
+      ) : null}
+      {isLifeOriginDiscovery &&
+      lifeOriginDiscoveryPhase === "REVEALED" ? (
+        <p
+          className="gy-genesis-production-experience__origin-identity"
+          data-life-origin-identity={lifeOriginIdentityLabel}
+          role="status"
+        >
+          {lifeOriginIdentityLabel}
+        </p>
+      ) : null}
+    </>
   );
 }

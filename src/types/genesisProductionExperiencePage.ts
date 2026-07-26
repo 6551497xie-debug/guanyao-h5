@@ -43,6 +43,8 @@ export type GenesisProductionRendererCanvasHostProps = Readonly<{
   visualCalibrationBundle: GenesisProductionVisualCalibrationBundle;
   fourSymbolDirectionFieldVisualCalibration: GenesisFourSymbolDirectionFieldVisualCalibration;
   lifeArchetypeForceCondensationVisualCalibration: GenesisLifeArchetypeForceCondensationVisualCalibration;
+  lifeOriginDiscoveryPhase: "DORMANT" | "DISCOVERING" | "REVEALED";
+  onLifeOriginDiscoveryRequest: () => void;
   onStateChange?: (state: GenesisProductionCanvasHostState) => void;
 }>;
 
