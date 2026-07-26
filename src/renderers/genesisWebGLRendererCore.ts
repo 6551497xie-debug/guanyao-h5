@@ -2001,10 +2001,14 @@ export function createGenesisWebGLRendererCore(
       const gravityRememberedDirection =
         Math.sign(pressureFlowDeflection || pressureContactSign || 1) *
         (0.34 + Math.min(1, Math.abs(pressureFlowDeflection)) * 0.66);
+      const gravityMemoryRecurrence =
+        0.82 +
+        Math.max(0, Math.sin(elapsedSeconds * 0.72 - 0.4)) * 0.18;
       const gravityMemoryResponseBias =
         gravityMemoryInfluenceProgress *
         gravityRememberedDirection *
-        (0.012 + gravityRepetitionDepth * 0.0015) *
+        (0.015 + gravityRepetitionDepth * 0.0016) *
+        gravityMemoryRecurrence *
         choiceMemoryInfluenceWeight;
       if (
         realityPressureVisualState === "PRESSURE_RECOVERING" &&
@@ -2042,7 +2046,9 @@ export function createGenesisWebGLRendererCore(
         realityPressureRecognitionStartedAtMilliseconds === null
       ) {
         realityPressureRecognitionStartedAtMilliseconds =
-          safeElapsedMilliseconds;
+          gravityInertiaField === null
+            ? safeElapsedMilliseconds
+            : safeElapsedMilliseconds - 1_650;
       } else if (realityPressureVisualState !== "PRESSURE_RECOGNIZED") {
         realityPressureRecognitionStartedAtMilliseconds = null;
       }

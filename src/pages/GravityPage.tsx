@@ -1691,6 +1691,8 @@ function HexagramCodeDeliveryShell() {
   const [arrivalBridgeActive, setArrivalBridgeActive] = useState(
     () => arrivalVisualContinuity !== null,
   );
+  const [gravityEntryContinuityActive, setGravityEntryContinuityActive] =
+    useState(() => arrivalVisualContinuity !== null);
   const [contextWhisperVisible, setContextWhisperVisible] = useState(false);
   const [dynamicsInputContext] = useState<DynamicsInputContext>(() =>
     resolveDynamicsInputContext({
@@ -1842,7 +1844,20 @@ function HexagramCodeDeliveryShell() {
   }, [arrivalBridgeActive, arrivalVisualContinuity]);
 
   useEffect(() => {
-    if (arrivalBridgeActive) {
+    if (
+      !gravityEntryContinuityActive ||
+      arrivalVisualContinuity === null
+    ) {
+      return undefined;
+    }
+    const timer = window.setTimeout(() => {
+      setGravityEntryContinuityActive(false);
+    }, 4_800);
+    return () => window.clearTimeout(timer);
+  }, [gravityEntryContinuityActive, arrivalVisualContinuity]);
+
+  useEffect(() => {
+    if (arrivalBridgeActive || gravityEntryContinuityActive) {
       setContextWhisperVisible(false);
       return undefined;
     }
@@ -1851,7 +1866,7 @@ function HexagramCodeDeliveryShell() {
       setContextWhisperVisible(false);
     }, 2200);
     return () => window.clearTimeout(timer);
-  }, [arrivalBridgeActive]);
+  }, [arrivalBridgeActive, gravityEntryContinuityActive]);
 
   useEffect(() => {
     dimensionTransitionLockRef.current = false;
@@ -1958,6 +1973,11 @@ function HexagramCodeDeliveryShell() {
         data-dynamics-upper-trigram={currentHexagramPresentation?.upperTrigram ?? "missing"}
         data-dynamics-observation-rhythm="ONE_GESTURE_PER_SPACE"
         data-gravity-inertia-rhythm="REPEATED_PATH_OBSERVATION"
+        data-gravity-entry-continuity={
+          gravityEntryContinuityActive
+            ? "SAME_RESPONSE_BECOMING_TENDENCY"
+            : "OBSERVATION_READY"
+        }
         data-choice-response-state={
           revisionActionConfirmed
             ? "RESPONSE_SEDIMENTED"
@@ -2022,7 +2042,8 @@ function HexagramCodeDeliveryShell() {
               }
               visible={
                 !arrivalBridgeActive &&
-                (cosmicNarrativePhase === "node_active" ||
+                (gravityEntryContinuityActive ||
+                  cosmicNarrativePhase === "node_active" ||
                   cosmicNarrativePhase === "node_complete")
               }
             />
@@ -2097,12 +2118,22 @@ function HexagramCodeDeliveryShell() {
 
         <section
           data-dynamics-visual-stage="FULLSCREEN_LIFE_UNIVERSE"
+          aria-hidden={
+            arrivalBridgeActive || gravityEntryContinuityActive
+              ? "true"
+              : undefined
+          }
           style={{
             position: "absolute",
             zIndex: 3,
             inset: 0,
-            opacity: arrivalBridgeActive ? 0 : 1,
-            transition: "opacity 620ms ease",
+            opacity:
+              arrivalBridgeActive || gravityEntryContinuityActive ? 0 : 1,
+            transition: "opacity 820ms ease",
+            pointerEvents:
+              arrivalBridgeActive || gravityEntryContinuityActive
+                ? "none"
+                : "auto",
           }}
         >
           {currentCrystalEndState ? (
@@ -2171,7 +2202,8 @@ function HexagramCodeDeliveryShell() {
             fontSize: 10,
             lineHeight: 1.55,
             pointerEvents: "none",
-            opacity: arrivalBridgeActive ? 0 : 1,
+            opacity:
+              arrivalBridgeActive || gravityEntryContinuityActive ? 0 : 1,
             transition: "opacity 520ms ease",
           }}
         >

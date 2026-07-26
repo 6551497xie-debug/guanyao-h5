@@ -22,10 +22,13 @@ export function RealityLifeUniverseCanvas({
       | Parameters<RealityProductionHostProps["onContinueToGravity"]>[0]
       | null;
   }>) {
+  const continuesRecognizedPressure = selectedPressureSeedContext !== null;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [rendererState, setRendererState] =
     useState<GenesisProductionCanvasHostState>("STARTING");
-  const [arrivalPhase, setArrivalPhase] = useState("IDENTITY_HOLD");
+  const [arrivalPhase, setArrivalPhase] = useState(() =>
+    continuesRecognizedPressure ? "SETTLED" : "IDENTITY_HOLD",
+  );
   const realityPressureConsumer = useMemo(() => {
     const frozenProjection =
       visualContinuity.consumerSourceResult.consumerSource.projectionBundle
@@ -82,6 +85,11 @@ export function RealityLifeUniverseCanvas({
       : "LEFT";
 
   useEffect(() => {
+    if (continuesRecognizedPressure) {
+      setArrivalPhase("SETTLED");
+      return undefined;
+    }
+
     setArrivalPhase("IDENTITY_HOLD");
     const revealTimer = window.setTimeout(() => {
       setArrivalPhase("REALITY_REVEAL");
@@ -93,7 +101,7 @@ export function RealityLifeUniverseCanvas({
       window.clearTimeout(revealTimer);
       window.clearTimeout(settleTimer);
     };
-  }, [visualContinuity.sourceReferenceId]);
+  }, [continuesRecognizedPressure, visualContinuity.sourceReferenceId]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
