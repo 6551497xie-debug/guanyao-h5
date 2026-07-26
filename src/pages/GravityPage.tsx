@@ -1379,16 +1379,28 @@ function SingleModelRevisionActionFocus({
 function TransformationMomentFocus({
   action,
   presentation,
+  onSediment,
   visualSource,
 }: {
   action: SingleModelRevisionAction;
   presentation?: ChangeExperiencePresentation | null;
+  onSediment: () => void;
   visualSource: RealLifeVisualSource | null;
 }) {
   const hasPresentation = Boolean(presentation);
+  const [responseReadyToSediment, setResponseReadyToSediment] =
+    useState(false);
   const coreAnchorTop = visualSource
     ? `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`
     : "31%";
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setResponseReadyToSediment(true);
+    }, 1_800);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   return (
     <section
@@ -1404,6 +1416,9 @@ function TransformationMomentFocus({
       data-choice-new-path="NONE"
       data-choice-life-surface="EXISTING_REALITY_PRESENCE"
       data-choice-crystal-stage="NOT_STARTED"
+      data-crystal-sediment-readiness={
+        responseReadyToSediment ? "RESPONSE_LIVED" : "RESPONSE_SETTLING"
+      }
       data-transformation-visual-event="RESPONSE_SPACE_WITHOUT_NEW_PATH"
       data-transformation-copy-composition="AWARENESS_NOT_RESULT"
       style={{
@@ -1425,6 +1440,30 @@ function TransformationMomentFocus({
           background:
             "radial-gradient(ellipse, rgba(255,246,218,0.1), rgba(199,169,107,0.03) 42%, transparent 72%)",
           filter: "blur(8px)",
+        }}
+      />
+
+      <button
+        type="button"
+        aria-label="让这次回应留在生命里"
+        data-crystal-sediment-action="CONFIRM_RESPONSE_LIVED"
+        data-crystal-reward-model="NONE"
+        onClick={onSediment}
+        disabled={!responseReadyToSediment}
+        style={{
+          appearance: "none",
+          position: "absolute",
+          left: `${LIFE_UNIVERSE_CORE_IDENTITY.anchorX * 100}%`,
+          top: coreAnchorTop,
+          zIndex: 2,
+          width: "min(64vw, 236px)",
+          height: "min(28vh, 196px)",
+          transform: "translate(-50%, -50%)",
+          border: 0,
+          borderRadius: "48%",
+          background: "transparent",
+          padding: 0,
+          cursor: responseReadyToSediment ? "pointer" : "default",
         }}
       />
 
@@ -1463,7 +1502,9 @@ function TransformationMomentFocus({
             letterSpacing: "0.08em",
           }}
         >
-          没有新的答案道路 · 生命只是没有立刻跟随
+          {responseReadyToSediment
+            ? "轻触生命核心 · 让这次回应留在生命里"
+            : "没有新的答案道路 · 生命只是没有立刻跟随"}
         </span>
       </div>
     </section>
@@ -1528,6 +1569,8 @@ function CurrentCrystalEndStateFocus({
       aria-label="本局生命印记"
       data-crystal-view="LIFE_IMPRINT"
       data-crystal-visual-form="SAME_LIFE_IMPRINT"
+      data-crystal-materialization="SEDIMENT_NOT_REWARD"
+      data-crystal-life-surface="EXISTING_REALITY_PRESENCE"
       data-crystal-completion-language="NAME_AND_ARCHIVE_ONLY"
       data-crystal-hexagram-identity={crystalPresentation.hexagramTitle}
       data-crystal-archive-identity={state.crystal.copy}
@@ -1546,6 +1589,7 @@ function CurrentCrystalEndStateFocus({
     >
       <div
         aria-hidden="true"
+        className="gy-crystal-sediment-field"
         style={{
           position: "absolute",
           left: "50%",
@@ -1555,25 +1599,11 @@ function CurrentCrystalEndStateFocus({
           transform: "translate(-50%, -50%)",
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(255,246,218,0.18), transparent 17%), radial-gradient(circle, rgba(199,169,107,0.085), transparent 52%)",
+            "radial-gradient(ellipse, rgba(255,246,218,0.055), transparent 26%), radial-gradient(ellipse, rgba(199,169,107,0.035), transparent 58%)",
           filter: "blur(5px)",
-          opacity: 0.78,
+          opacity: 0.38,
         }}
       />
-
-      <div aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 0 }}>
-        <LifeConstellationLayer
-          toneColor="222,196,154"
-          narrativePhase="node_complete"
-          activeNodeIndex={6}
-          onCoreStarClick={() => undefined}
-          visualSource={visualSource}
-          pressureIntensity={0}
-          interactionEnabled={false}
-          crystalImprintActive
-          crystalImprintKey={crystalImprintLine}
-        />
-      </div>
 
       <div
         style={{
@@ -1675,7 +1705,8 @@ function HexagramCodeDeliveryShell() {
   );
   const [activeDimensionIndex, setActiveDimensionIndex] = useState(0);
   const [completedDimensionIds, setCompletedDimensionIds] = useState<readonly SixSpaceId[]>([]);
-  const [revisionActionConfirmed] = useState(false);
+  const [revisionActionConfirmed, setRevisionActionConfirmed] =
+    useState(false);
   const [transformationMomentActive, setTransformationMomentActive] = useState(false);
   const dimensionTransitionLockRef = useRef(false);
   const runtimeProjection = GuanyaoRuntimeEngine.project(executionSnapshot);
@@ -1825,6 +1856,11 @@ function HexagramCodeDeliveryShell() {
     setTransformationMomentActive(true);
   }
 
+  function handleResponseSedimentConfirm() {
+    setRevisionActionConfirmed(true);
+    setTransformationMomentActive(false);
+  }
+
   function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
     if (eventType !== "CORE_STAR_BLOOM") {
       setExecutionSnapshot((current) => GuanyaoRuntimeEngine.run(current, { type: eventType, payload: context }));
@@ -1918,7 +1954,9 @@ function HexagramCodeDeliveryShell() {
         data-dynamics-observation-rhythm="ONE_GESTURE_PER_SPACE"
         data-gravity-inertia-rhythm="REPEATED_PATH_OBSERVATION"
         data-choice-response-state={
-          isRevisionActionPending
+          revisionActionConfirmed
+            ? "RESPONSE_SEDIMENTED"
+            : isRevisionActionPending
             ? "OLD_PATH_RESTARTING_THEN_PAUSE"
             : transformationMomentActive
               ? "NEW_RESPONSE_POSSIBILITY"
@@ -2072,6 +2110,7 @@ function HexagramCodeDeliveryShell() {
             <TransformationMomentFocus
               action={singleModelRevisionAction}
               presentation={changeExperiencePresentation}
+              onSediment={handleResponseSedimentConfirm}
               visualSource={realLifeVisualSource}
             />
           ) : isRevisionActionPending && singleModelRevisionAction ? (

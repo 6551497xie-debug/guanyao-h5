@@ -2039,6 +2039,7 @@ export function createGenesisWebGLRendererCore(
   let realityPressureRecoveryStartedAtMilliseconds: number | null = null;
   let gravityMemoryInfluenceStartedAtMilliseconds: number | null = null;
   let choiceResponsePauseStartedAtMilliseconds: number | null = null;
+  let crystalSedimentStartedAtMilliseconds: number | null = null;
   let disposed = false;
   let contextState: "ACTIVE" | "LOST" | "RESTORED" | "DISPOSED" =
     "ACTIVE";
@@ -2089,6 +2090,34 @@ export function createGenesisWebGLRendererCore(
         ?.getAttribute("data-choice-response-state");
       const choiceResponsePauseIsActive =
         choiceResponseState === "OLD_PATH_RESTARTING_THEN_PAUSE";
+      const choiceCrystalStage = input.canvas
+        ?.closest("[data-choice-crystal-stage]")
+        ?.getAttribute("data-choice-crystal-stage");
+      const crystalSedimentIsActive = choiceCrystalStage === "AVAILABLE";
+      if (
+        crystalSedimentIsActive &&
+        crystalSedimentStartedAtMilliseconds === null
+      ) {
+        crystalSedimentStartedAtMilliseconds = safeElapsedMilliseconds;
+      } else if (!crystalSedimentIsActive) {
+        crystalSedimentStartedAtMilliseconds = null;
+      }
+      const crystalSedimentRaw =
+        crystalSedimentStartedAtMilliseconds === null
+          ? 0
+          : Math.min(
+              1,
+              Math.max(
+                0,
+                (safeElapsedMilliseconds -
+                  crystalSedimentStartedAtMilliseconds) /
+                  3_200,
+              ),
+            );
+      const crystalSedimentProgress =
+        crystalSedimentRaw *
+        crystalSedimentRaw *
+        (3 - 2 * crystalSedimentRaw);
       if (
         choiceResponsePauseIsActive &&
         choiceResponsePauseStartedAtMilliseconds === null
@@ -2099,7 +2128,8 @@ export function createGenesisWebGLRendererCore(
       }
       const choiceResponsePauseRaw =
         choiceResponsePauseStartedAtMilliseconds === null
-          ? choiceResponseState === "NEW_RESPONSE_POSSIBILITY"
+          ? choiceResponseState === "NEW_RESPONSE_POSSIBILITY" ||
+            choiceResponseState === "RESPONSE_SEDIMENTED"
             ? 1
             : 0
           : Math.min(
@@ -2713,20 +2743,34 @@ export function createGenesisWebGLRendererCore(
           const rememberedResponseAffinity =
             gravityMemoryInfluenceProgress *
             (0.24 + pressureContactEdge * 0.76);
+          const crystalSedimentAffinity =
+            crystalSedimentProgress *
+            Math.max(
+              0,
+              1 - Math.abs(pressureContactEdge - 0.58) / 0.42,
+            );
           bodyFieldPositions[positionOffset] =
             recoveredX -
             pressureContactAxisX * pressureInwardShift +
             axisX * pressureAxialDrag +
             perpendicularX *
               gravityMemoryResponseBias *
-              rememberedResponseAffinity;
+              rememberedResponseAffinity +
+            perpendicularX *
+              gravityRememberedDirection *
+              crystalSedimentAffinity *
+              0.0028;
           bodyFieldPositions[positionOffset + 1] =
             recoveredY -
             pressureContactAxisY * pressureInwardShift +
             axisY * pressureAxialDrag +
             perpendicularY *
               gravityMemoryResponseBias *
-              rememberedResponseAffinity;
+              rememberedResponseAffinity +
+            perpendicularY *
+              gravityRememberedDirection *
+              crystalSedimentAffinity *
+              0.0028;
           bodyFieldPositions[positionOffset + 2] =
             finalBodyFieldPositions[positionOffset + 2] *
             (1 +
@@ -3791,14 +3835,23 @@ export function createGenesisWebGLRendererCore(
           0.026 +
           pressureStructureResponse * 0.034 +
           pressureBoundaryLoad * 0.018;
+        const sedimentedPressureTraceOpacity =
+          0.105 +
+          pressureStructureResponse * 0.06 +
+          pressureBoundaryLoad * 0.028;
         pressureTraceMaterial.opacity =
-          activePressureTraceOpacity *
-            (1 - realityPressureRecoveryProgress) +
-          recoveredPressureTraceOpacity *
-            realityPressureRecoveryProgress;
+          (activePressureTraceOpacity *
+              (1 - realityPressureRecoveryProgress) +
+            recoveredPressureTraceOpacity *
+              realityPressureRecoveryProgress) *
+            (1 - crystalSedimentProgress) +
+          sedimentedPressureTraceOpacity * crystalSedimentProgress;
         pressureTraceMaterial.size =
           lifePresence.stellarSkeleton.nodeScale *
-          (0.72 + pressureCoreResponse * 0.34 + pressurePulse * 0.18);
+          (0.72 +
+            pressureCoreResponse * 0.34 +
+            pressurePulse * 0.18 -
+            crystalSedimentProgress * 0.12);
         spineMaterial.opacity =
           Math.max(spineOpacity, isCompletion ? 0.08 : 0.16) *
           (1 +

@@ -198,6 +198,12 @@
   animation: gy-choice-invitation-breathe 4800ms ease-in-out 3000ms infinite;
 }
 
+.gy-crystal-sediment-field {
+  animation: gy-crystal-sediment-settle 3400ms
+    cubic-bezier(0.2, 0.72, 0.22, 1) both;
+  pointer-events: none;
+}
+
 main[data-choice-response-state="OLD_PATH_RESTARTING_THEN_PAUSE"]
   .gy-gravity-inertia-field__path {
   animation: gy-choice-old-path-restart 3600ms
@@ -288,6 +294,17 @@ main[data-choice-response-state="NEW_RESPONSE_POSSIBILITY"]
   }
 }
 
+@keyframes gy-crystal-sediment-settle {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+  to {
+    opacity: 0.38;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+}
+
 @media (max-width: 560px) {
   .gy-p37__gravity-space { bottom: 66px; width: 80vw; }
 }
@@ -298,6 +315,7 @@ main[data-choice-response-state="NEW_RESPONSE_POSSIBILITY"]
   .gy-choice-response-gap__stillness,
   .gy-choice-response-gap__confirm,
   .gy-choice-response-gap__invitation,
+  .gy-crystal-sediment-field,
   .gy-reality-life-universe__canvas {
     animation: none;
   }
