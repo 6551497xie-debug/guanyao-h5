@@ -2380,7 +2380,26 @@ export function LaunchLab() {
           }
           if (m.moonReleaseStarted && m.moonReleaseT >= CFG.moonReleaseSeconds) {
             if (returningLifeIdentity) {
-              navigate(GUANYAO_ROUTES.reality, { replace: true });
+              navigate(GUANYAO_ROUTES.reality, {
+                replace: true,
+                state: {
+                  visualContinuity: returningVisualContinuity,
+                  returningLifeMemory: {
+                    historicalRealityMemoryKey:
+                      returningRealityContext?.selectedPressureSeedId?.trim() ||
+                      returningRealityContext?.surface?.trim() ||
+                      null,
+                    latestCrystalMemoryKey:
+                      returningLatestImprint && returningVisualContinuity
+                        ? `${returningVisualContinuity.sourceReferenceId}:${returningLatestImprint.crystal.copy}`
+                        : null,
+                    latestCrystalSourceSlot: returningHasCrystal
+                      ? returningLatestImprintSourceSlot
+                      : null,
+                  },
+                  returningEntry: "SAME_LIFE_NEW_REALITY",
+                },
+              });
             } else {
               enterTimeInjectionFromMoon();
             }
@@ -5330,7 +5349,20 @@ export function LaunchLab() {
       canvas.removeEventListener("pointercancel", onUp);
       entryHandoffRef.current = null;
     };
-  }, [commitPressureSeedCapture, navigate, returningLifeContext, returningLifeIdentity, setLaunchInteractionState, setSceneState, triggerClickFlash]);
+  }, [
+    commitPressureSeedCapture,
+    navigate,
+    returningHasCrystal,
+    returningLatestImprint,
+    returningLatestImprintSourceSlot,
+    returningLifeContext,
+    returningLifeIdentity,
+    returningRealityContext,
+    returningVisualContinuity,
+    setLaunchInteractionState,
+    setSceneState,
+    triggerClickFlash,
+  ]);
 
   return (
     <GyMobilePreviewFrame background="#020306">

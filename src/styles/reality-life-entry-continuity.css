@@ -11,6 +11,75 @@
   width: min(94%, 410px);
 }
 
+.gy-reality-life-universe__memory-layer {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.gy-reality-life-universe__reality-memory {
+  opacity: 0.16;
+  transform-origin: 50% 48%;
+  animation: gy-reality-past-memory-settle 4.8s ease-out both;
+}
+
+.gy-reality-life-universe__crystal-memory {
+  opacity: 0.3;
+  transform-origin: 50% 48%;
+  animation: gy-reality-crystal-memory-breath 10.8s ease-in-out infinite;
+}
+
+.gy-reality-life-universe__crystal-memory-flow,
+.gy-reality-life-universe__crystal-memory-origin,
+.gy-reality-life-universe__crystal-memory-trace {
+  vector-effect: non-scaling-stroke;
+}
+
+.gy-reality-life-universe__crystal-memory-trace {
+  transform-origin: center;
+  animation: gy-reality-crystal-trace-breathe 8.4s ease-in-out infinite;
+}
+
+@keyframes gy-reality-past-memory-settle {
+  from {
+    opacity: 0.22;
+    transform: scale(1.006);
+  }
+
+  to {
+    opacity: 0.07;
+    transform: scale(1);
+  }
+}
+
+@keyframes gy-reality-crystal-memory-breath {
+  0%,
+  100% {
+    opacity: 0.24;
+    transform: scale(0.999);
+  }
+
+  52% {
+    opacity: 0.32;
+    transform: scale(1.0015);
+  }
+}
+
+@keyframes gy-reality-crystal-trace-breathe {
+  0%,
+  100% {
+    opacity: 0.52;
+  }
+
+  54% {
+    opacity: 0.82;
+  }
+}
+
 .gy-reality-life-universe .gy-p36__pressure-space > h2 {
   font-size: 20px;
 }

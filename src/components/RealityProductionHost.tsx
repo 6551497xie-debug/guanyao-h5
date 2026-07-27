@@ -75,6 +75,10 @@ export function RealityProductionHost({
   pressureSeedContinuationContext,
   genesisPresenceContinuityContext,
   visualContinuity,
+  historicalRealityMemoryKey = null,
+  latestCrystalMemoryKey = null,
+  latestCrystalSourceSlot = null,
+  returningLifeWorldEntry = false,
   choiceContinuation = null,
   onContinueToGravity,
 }: RealityProductionHostProps) {
@@ -311,6 +315,23 @@ export function RealityProductionHost({
         continuationContext.deliverySession.currentBundleReferenceId
       }
       data-pressure-seed-capture-state={pressureSeedSession.captureState}
+      data-reality-entry-cycle="NEW_REALITY_ENCOUNTER"
+      data-reality-entry-origin={
+        returningLifeWorldEntry
+          ? "RETURNING_LIFE_WORLD"
+          : "GENESIS_CONTINUATION"
+      }
+      data-reality-historical-pressure-role={
+        historicalRealityMemoryKey ? "MEMORY_ONLY" : "NONE"
+      }
+      data-reality-current-pressure-role={
+        pressureSeedSession.selectedPressureSeedContext
+          ? "CURRENT_USER_RECOGNIZED"
+          : "AWAITING_NEW_RECOGNITION"
+      }
+      data-reality-crystal-memory-role={
+        latestCrystalMemoryKey ? "BODY_IMPRINT" : "NONE"
+      }
       data-choice-response-state={
         choiceRhythmValidationActive
           ? "NEW_RESPONSE_POSSIBILITY"
@@ -340,6 +361,9 @@ export function RealityProductionHost({
         selectedPressureSeedContext={
           pressureSeedSession.selectedPressureSeedContext
         }
+        historicalRealityMemoryKey={historicalRealityMemoryKey}
+        latestCrystalMemoryKey={latestCrystalMemoryKey}
+        latestCrystalSourceSlot={latestCrystalSourceSlot}
       />
       <p
         className="gy-reality-life-universe__arrival-copy"

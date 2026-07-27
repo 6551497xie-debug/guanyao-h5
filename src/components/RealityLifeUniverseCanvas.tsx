@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createGenesisWebGLRendererCore } from "../renderers/genesisWebGLRendererCore";
+import { resolveLifeUniverseCrystalImprintGeometry } from "../renderers/lifeUniverseStarField";
 import { adaptRealLifeVisualSource } from "../services/realLifeVisualSourceAdapter";
 import { readRealUserGenesisVisualSourceContext } from "../services/realUserGenesisVisualSourceContext";
 import "../styles/reality-life-entry-continuity.css";
@@ -16,11 +17,17 @@ const REALITY_ARRIVAL_TIMING_MS = Object.freeze({
 export function RealityLifeUniverseCanvas({
   visualContinuity,
   selectedPressureSeedContext = null,
+  historicalRealityMemoryKey = null,
+  latestCrystalMemoryKey = null,
+  latestCrystalSourceSlot = null,
 }: Pick<RealityProductionHostProps, "visualContinuity"> &
   Readonly<{
     selectedPressureSeedContext?:
       | Parameters<RealityProductionHostProps["onContinueToGravity"]>[0]
       | null;
+    historicalRealityMemoryKey?: string | null;
+    latestCrystalMemoryKey?: string | null;
+    latestCrystalSourceSlot?: number | null;
   }>) {
   const continuesRecognizedPressure = selectedPressureSeedContext !== null;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -83,6 +90,49 @@ export function RealityLifeUniverseCanvas({
       0) >= 0
       ? "RIGHT"
       : "LEFT";
+  const lifeMemoryGeometry = useMemo(() => {
+    const projectionBundle =
+      visualContinuity.consumerSourceResult.consumerSource.projectionBundle;
+    const morphology =
+      projectionBundle.morphologicalFieldAlignmentProjection
+        .morphologicalFieldExpression;
+    const sharedInput = {
+      birthMansionIndex:
+        projectionBundle.twentyEightMansionCoordinateProjection.birthMansion
+          .mansionIndex,
+      normalizedOrbitPositions:
+        projectionBundle.twentyEightMansionCoordinateProjection.coordinates.map(
+          (coordinate) => coordinate.normalizedOrbitPosition,
+        ),
+      envelopeScale: morphology.envelopeScale,
+      postureBias: morphology.postureBias,
+    };
+    return Object.freeze({
+      historicalReality: historicalRealityMemoryKey
+        ? resolveLifeUniverseCrystalImprintGeometry({
+            identityKey: historicalRealityMemoryKey,
+            ...sharedInput,
+          })
+        : null,
+      latestCrystal: latestCrystalMemoryKey
+        ? resolveLifeUniverseCrystalImprintGeometry({
+            identityKey: latestCrystalMemoryKey,
+            ...sharedInput,
+            sourceSlot: latestCrystalSourceSlot,
+          })
+        : null,
+    });
+  }, [
+    historicalRealityMemoryKey,
+    latestCrystalMemoryKey,
+    latestCrystalSourceSlot,
+    visualContinuity,
+  ]);
+  const latestCrystalBodyPath = lifeMemoryGeometry.latestCrystal
+    ? `M ${lifeMemoryGeometry.latestCrystal.target[0]} ${lifeMemoryGeometry.latestCrystal.target[1]} L ${lifeMemoryGeometry.latestCrystal.stem[0]} ${lifeMemoryGeometry.latestCrystal.stem[1]} L ${lifeMemoryGeometry.latestCrystal.branchTarget[0]} ${lifeMemoryGeometry.latestCrystal.branchTarget[1]}`
+    : "";
+  const latestCrystalBodyPoint =
+    lifeMemoryGeometry.latestCrystal?.branchTarget ?? null;
 
   useEffect(() => {
     if (continuesRecognizedPressure) {
@@ -201,15 +251,100 @@ export function RealityLifeUniverseCanvas({
   }, [realityPressureConsumer, visualContinuity]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="gy-reality-life-universe__canvas"
-      data-reality-life-universe-renderer={rendererState}
-      data-reality-arrival-phase={arrivalPhase}
-      data-reality-pressure-flow-side={realityPressureFlowSide}
-      data-genesis-presence-visual-state="RECOGNIZED"
-      data-source-reference-id={visualContinuity.sourceReferenceId}
-      aria-hidden="true"
-    />
+    <>
+      {lifeMemoryGeometry.historicalReality ||
+      lifeMemoryGeometry.latestCrystal ? (
+        <svg
+          className="gy-reality-life-universe__memory-layer"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          data-reality-life-memory="PAST_AS_TEXTURE_NOT_CURRENT_EVENT"
+          data-reality-history-pressure={
+            lifeMemoryGeometry.historicalReality ? "MEMORY_ONLY" : "NONE"
+          }
+          data-reality-history-crystal={
+            lifeMemoryGeometry.latestCrystal ? "BODY_IMPRINT" : "NONE"
+          }
+        >
+          {lifeMemoryGeometry.historicalReality ? (
+            <path
+              className="gy-reality-life-universe__reality-memory"
+              d={lifeMemoryGeometry.historicalReality.path}
+              fill="none"
+              stroke="rgba(185,203,236,0.32)"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              filter="blur(2.2px)"
+            />
+          ) : null}
+          {lifeMemoryGeometry.latestCrystal && latestCrystalBodyPoint ? (
+            <g
+              className="gy-reality-life-universe__crystal-memory"
+              data-reality-crystal-imprint-source="ARCHIVED_USER_RECOGNIZED_RESPONSE"
+              data-reality-crystal-imprint-direction="SAME_RESPONSE_POSITION_INTO_SAME_BODY"
+              data-reality-crystal-imprint-form="LIFE_TEXTURE_NOT_COLLECTIBLE"
+              data-reality-crystal-imprint-status="REMEMBERED_NOT_CURRENT_EVENT"
+              data-reality-crystal-identity-invariant="SAME_CORE_SAME_BODY_SAME_LIFE"
+            >
+              <path
+                d={latestCrystalBodyPath}
+                fill="none"
+                stroke="rgba(232,200,138,0.08)"
+                strokeWidth="1.08"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                filter="blur(1.1px)"
+              />
+              <path
+                className="gy-reality-life-universe__crystal-memory-flow"
+                d={latestCrystalBodyPath}
+                fill="none"
+                stroke="rgba(255,239,190,0.48)"
+                strokeWidth="0.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle
+                className="gy-reality-life-universe__crystal-memory-origin"
+                cx={lifeMemoryGeometry.latestCrystal.target[0]}
+                cy={lifeMemoryGeometry.latestCrystal.target[1]}
+                r="0.34"
+                fill="rgba(255,247,220,0.06)"
+                stroke="rgba(255,239,190,0.2)"
+                strokeWidth="0.14"
+              />
+              <g className="gy-reality-life-universe__crystal-memory-trace">
+                <path
+                  d={`M ${latestCrystalBodyPoint[0] - 0.62} ${latestCrystalBodyPoint[1] + 0.08} L ${latestCrystalBodyPoint[0] - 0.14} ${latestCrystalBodyPoint[1] - 0.46} L ${latestCrystalBodyPoint[0] + 0.5} ${latestCrystalBodyPoint[1] - 0.12} M ${latestCrystalBodyPoint[0] - 0.14} ${latestCrystalBodyPoint[1] - 0.46} L ${latestCrystalBodyPoint[0] - 0.08} ${latestCrystalBodyPoint[1] + 0.58}`}
+                  fill="none"
+                  stroke="rgba(255,239,190,0.48)"
+                  strokeWidth="0.24"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle
+                  cx={latestCrystalBodyPoint[0]}
+                  cy={latestCrystalBodyPoint[1]}
+                  r="0.17"
+                  fill="rgba(255,247,220,0.5)"
+                />
+              </g>
+            </g>
+          ) : null}
+        </svg>
+      ) : null}
+      <canvas
+        ref={canvasRef}
+        className="gy-reality-life-universe__canvas"
+        data-reality-life-universe-renderer={rendererState}
+        data-reality-arrival-phase={arrivalPhase}
+        data-reality-pressure-flow-side={realityPressureFlowSide}
+        data-genesis-presence-visual-state="RECOGNIZED"
+        data-source-reference-id={visualContinuity.sourceReferenceId}
+        aria-hidden="true"
+      />
+    </>
   );
 }

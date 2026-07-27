@@ -1,18 +1,40 @@
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { RealityProductionHost } from "../components/RealityProductionHost";
-import { readGenesisProductionRealityEntryContext } from "../services/genesisProductionRecognitionRealityEntry";
+import {
+  readGenesisProductionRealityEntryContext,
+  restoreGenesisProductionRealityEntryContext,
+} from "../services/genesisProductionRecognitionRealityEntry";
 import {
   authorizeRealityProductionRoute,
   REALITY_PRODUCTION_ROUTE_TARGET,
 } from "../services/realityProductionRouteAuthorization";
-import { readRealityRouteActivationSourceContext } from "../services/realityRouteActivationSourceContext";
+import {
+  activateRealityRouteActivationSourceContext,
+  captureExplicitRealityRequestDateSource,
+  clearRealityRouteActivationSourceContext,
+  readRealityRouteActivationSourceContext,
+} from "../services/realityRouteActivationSourceContext";
 import { bridgeRealityRouteToPressureCandidateActivation } from "../services/realityRoutePressureCandidateActivationBridge";
 import { bridgeRealityRouteCandidateRequestContext } from "../services/realityRouteCandidateRequestContextBridge";
 import { bridgeRealityRouteDeliveryOrchestration } from "../services/realityRouteDeliveryOrchestrationBridge";
 import { resolveRealityProductionPressureHostInput } from "../services/realityProductionPressureHostInputContract";
 import { createRealityPressureSeedContinuationContext } from "../services/realityPressureSeedContinuationContext";
-import { readGenesisRealityPresenceContinuityContext } from "../services/genesisRealityPresenceContinuityBridge";
+import {
+  activateGenesisRealityPresenceContinuityContext,
+  readGenesisRealityPresenceContinuityContext,
+} from "../services/genesisRealityPresenceContinuityBridge";
 import { writeSelectedPressureSeedContext } from "../services/guanyaoSelectedPressureSeedContextPersistenceAdapter";
+import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
+import { readPersonalityRingLite } from "../services/personalityRingLiteService";
+import {
+  readPersistedGenesisPresenceVisualRealization,
+  readPersistedGenesisVisualContinuity,
+  readPersistedLaunchLifeSourceSession,
+  restorePersistedRealUserGenesisVisualSourceContext,
+} from "../services/sessionService";
+import { readRealUserGenesisVisualSourceContext } from "../services/realUserGenesisVisualSourceContext";
+import { resolveLifeUniverseCrystalSourceSlot } from "../renderers/lifeUniverseStarField";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import type { RealityProductionRouteEntryBoundary } from "../types/realityProductionRouteEntry";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
@@ -52,26 +74,111 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
 export function RealityProductionRouteEntry() {
   const navigate = useNavigate();
   const location = useLocation();
-  const visualContinuity = (
-    location.state as
-      | { visualContinuity?: RealityProductionHostProps["visualContinuity"] }
-      | null
-  )?.visualContinuity ?? null;
+  const [entryCycle] = useState(() => {
+    clearRealityRouteActivationSourceContext();
+    return "NEW_REALITY_ENCOUNTER" as const;
+  });
+  const [historicalLifeMemory] = useState(() => {
+    const previousReality =
+      resolveDynamicsInputContext({}).selectedPressureSeedContext;
+    const latestCrystal =
+      readPersonalityRingLite()
+        .entries.slice()
+        .sort(
+          (left, right) =>
+            Date.parse(right.createdAt) - Date.parse(left.createdAt),
+        )[0] ?? null;
+    return Object.freeze({
+      historicalRealityMemoryKey:
+        previousReality?.selectedPressureSeedId?.trim() ||
+        previousReality?.surface?.trim() ||
+        null,
+      latestCrystalMemoryKey: latestCrystal?.crystal.copy.trim() || null,
+      latestCrystalSourceSlot: latestCrystal
+        ? resolveLifeUniverseCrystalSourceSlot(
+            latestCrystal.transmission.primaryDimension,
+          )
+        : null,
+    });
+  });
+  const routeState = location.state as
+    | {
+        visualContinuity?: RealityProductionHostProps["visualContinuity"];
+        returningLifeMemory?: Readonly<{
+          historicalRealityMemoryKey?: string | null;
+          latestCrystalMemoryKey?: string | null;
+          latestCrystalSourceSlot?: number | null;
+        }>;
+        returningEntry?: "SAME_LIFE_NEW_REALITY";
+        choiceContinuation?: "AWAITING_LIVED_RESPONSE_RECOGNITION";
+      }
+    | null;
+  const routeVisualContinuity = routeState?.visualContinuity ?? null;
+  const routeReturningLifeMemory = routeState?.returningLifeMemory ?? null;
+  const returningLifeWorldEntry =
+    routeState?.returningEntry === "SAME_LIFE_NEW_REALITY";
   const choiceContinuation =
-    (
-      location.state as
-        | {
-            choiceContinuation?: "AWAITING_LIVED_RESPONSE_RECOGNITION";
-          }
-        | null
-    )?.choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION"
+    routeState?.choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION"
       ? "AWAITING_LIVED_RESPONSE_RECOGNITION"
       : null;
-  const entryContext = readGenesisProductionRealityEntryContext();
+  const persistedVisualContinuity =
+    readPersistedGenesisVisualContinuity();
+  const persistedLifeSourceSession =
+    readPersistedLaunchLifeSourceSession();
+  const visualContinuity =
+    routeVisualContinuity ?? persistedVisualContinuity;
+  const realUserContext =
+    readRealUserGenesisVisualSourceContext() ??
+    restorePersistedRealUserGenesisVisualSourceContext();
+  const persistedPresenceVisualRealization =
+    readPersistedGenesisPresenceVisualRealization();
+  const restoredIdentityReady =
+    visualContinuity !== null &&
+    realUserContext !== null &&
+    persistedPresenceVisualRealization !== null &&
+    visualContinuity.sourceReferenceId === realUserContext.sourceReferenceId &&
+    visualContinuity.sourceReferenceId ===
+      persistedPresenceVisualRealization.sourceReferenceId;
+  const entryContext =
+    readGenesisProductionRealityEntryContext() ??
+    (restoredIdentityReady
+      ? restoreGenesisProductionRealityEntryContext(
+          visualContinuity.sourceReferenceId,
+        )
+      : null);
+  const restoredRequestDateSource =
+    restoredIdentityReady && entryContext !== null
+      ? captureExplicitRealityRequestDateSource({
+          sourceReferenceId: entryContext.sourceReferenceId,
+          calendarInstant: new Date(),
+        })
+      : null;
+  const restoredActivationSourceResult =
+    restoredIdentityReady &&
+    entryContext !== null &&
+    realUserContext !== null &&
+    restoredRequestDateSource !== null
+      ? activateRealityRouteActivationSourceContext({
+          realityEntryContext: entryContext,
+          lifeSourceSession: realUserContext.lifeSourceSession,
+          requestDateSource: restoredRequestDateSource,
+        })
+      : null;
   const activationSourceContext =
-    readRealityRouteActivationSourceContext();
+    readRealityRouteActivationSourceContext() ??
+    (restoredActivationSourceResult?.status === "AVAILABLE"
+      ? restoredActivationSourceResult.context
+      : null);
   const genesisPresenceContinuityContext =
-    readGenesisRealityPresenceContinuityContext();
+    readGenesisRealityPresenceContinuityContext() ??
+    (restoredIdentityReady &&
+    entryContext !== null &&
+    persistedPresenceVisualRealization !== null
+      ? activateGenesisRealityPresenceContinuityContext({
+          presenceRealization: persistedPresenceVisualRealization,
+          realityEntryContext: entryContext,
+        })
+      : null);
   const authorization = authorizeRealityProductionRoute({
     routeTarget: REALITY_PRODUCTION_ROUTE_TARGET,
     sourceReferenceId: entryContext?.sourceReferenceId ?? null,
@@ -140,9 +247,24 @@ export function RealityProductionRouteEntry() {
       authorization.sourceReferenceId ||
     visualContinuity.visualCalibrationBundle.runtimeStage !== "COMPLETION"
   ) {
+    // The legacy recovery destination is still 返回出生信息; only the
+    // user-facing language now describes the life state instead of an
+    // engineering failure.
     return (
       <main
         data-production-reality-status="SOURCE_NOT_READY"
+        data-player-life-source-restored={
+          realUserContext === null ? "false" : "true"
+        }
+        data-player-life-source-asset-restored={
+          persistedLifeSourceSession === null ? "false" : "true"
+        }
+        data-player-life-recognition-restored={
+          persistedPresenceVisualRealization === null ? "false" : "true"
+        }
+        data-player-life-visual-restored={
+          visualContinuity === null ? "false" : "true"
+        }
         data-guard-reason={
           authorization.status !== "READY"
             ? authorization.guardReason
@@ -178,12 +300,12 @@ export function RealityProductionRouteEntry() {
               : "GENESIS_PRESENCE_CONTINUITY_NOT_READY"
         }
       >
-        <p role="status">SOURCE_NOT_READY</p>
+        <p role="status">你的生命世界还未唤醒。</p>
         <button
           type="button"
           onClick={() => navigate("/launch-lab", { replace: true })}
         >
-          返回出生信息
+          唤醒生命世界
         </button>
       </main>
     );
@@ -209,11 +331,27 @@ export function RealityProductionRouteEntry() {
 
   return (
     <RealityProductionHost
+      key={entryCycle}
       routeAuthorization={authorization}
       pressureSeedHostInput={pressureHostInputResult.input}
       pressureSeedContinuationContext={pressureSeedContinuationResult.context}
       genesisPresenceContinuityContext={genesisPresenceContinuityContext}
       visualContinuity={visualContinuity}
+      historicalRealityMemoryKey={
+        routeReturningLifeMemory?.historicalRealityMemoryKey ??
+        historicalLifeMemory.historicalRealityMemoryKey
+      }
+      latestCrystalMemoryKey={
+        routeReturningLifeMemory?.latestCrystalMemoryKey ??
+        (historicalLifeMemory.latestCrystalMemoryKey
+          ? `${visualContinuity.sourceReferenceId}:${historicalLifeMemory.latestCrystalMemoryKey}`
+          : null)
+      }
+      latestCrystalSourceSlot={
+        routeReturningLifeMemory?.latestCrystalSourceSlot ??
+        historicalLifeMemory.latestCrystalSourceSlot
+      }
+      returningLifeWorldEntry={returningLifeWorldEntry}
       choiceContinuation={choiceContinuation}
       onContinueToGravity={continueToGravity}
     />

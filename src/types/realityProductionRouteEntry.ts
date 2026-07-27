@@ -89,6 +89,10 @@ export type RealityProductionHostProps = Readonly<{
     fourSymbolDirectionFieldVisualCalibration: GenesisFourSymbolDirectionFieldVisualCalibration;
     lifeArchetypeForceCondensationVisualCalibration: GenesisLifeArchetypeForceCondensationVisualCalibration;
   }>;
+  historicalRealityMemoryKey?: string | null;
+  latestCrystalMemoryKey?: string | null;
+  latestCrystalSourceSlot?: number | null;
+  returningLifeWorldEntry?: boolean;
   choiceContinuation?: "AWAITING_LIVED_RESPONSE_RECOGNITION" | null;
   onContinueToGravity: (
     selectedPressureSeedContext: Readonly<SelectedPressureSeedContext>,
