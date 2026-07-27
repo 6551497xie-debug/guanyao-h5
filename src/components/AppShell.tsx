@@ -58,8 +58,8 @@ export function AppShell({ children }: AppShellProps) {
         data-xinmai-journey="ENTER_FIND_RECOGNIZE_ACCOMPANY_UNDERSTAND_RESPOND_SEDIMENT_BECOME"
       >
         <XinmaiEntryThreshold active={isXinmaiThresholdRoute} />
-        {surface === "REALITY" || surface === "REFLECTION" ? (
-          <XinmaiLifeReflectionGuide surface={surface} />
+        {surface === "REALITY" ? (
+          <XinmaiLifeReflectionGuide surface="REALITY" />
         ) : null}
         {children}
       </div>

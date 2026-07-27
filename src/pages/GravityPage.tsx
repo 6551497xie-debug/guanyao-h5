@@ -68,6 +68,7 @@ import type {
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { RealityGravityInertiaField } from "../components/RealityGravityInertiaField";
+import { XinmaiLifeReflectionGuide } from "../components/XinmaiLifeReflectionGuide";
 import {
   LIFE_UNIVERSE_CORE_IDENTITY,
   resolveLifeUniverseCrystalImprintGeometry,
@@ -428,6 +429,13 @@ function NodeProgressionPanel({
   visible,
   toneColor,
   activeNode,
+  phase,
+  onApproach,
+  onConfirm,
+  onSelfName,
+  onPause,
+  onResume,
+  onContinue,
 }: {
   visible: boolean;
   toneColor: string;
@@ -436,10 +444,20 @@ function NodeProgressionPanel({
     dimensionInsight?: string;
     dimensionUnderstanding?: string;
   };
+  phase:
+    | "OBSERVING"
+    | "APPROACHED"
+    | "CONFIRMED"
+    | "SELF_NAMED"
+    | "PAUSED";
+  onApproach: () => void;
+  onConfirm: () => void;
+  onSelfName: () => void;
+  onPause: () => void;
+  onResume: () => void;
+  onContinue: () => void;
 }) {
   const [firstPauseInvitationVisible, setFirstPauseInvitationVisible] = useState(false);
-  const [protectiveUnderstandingVisible, setProtectiveUnderstandingVisible] =
-    useState(false);
   const hasShownFirstPauseInvitationRef = useRef(false);
   const livingSentence = activeNode.dimensionInsight ?? activeNode.text.replace(/\s*\n\s*/g, "");
 
@@ -459,17 +477,6 @@ function NodeProgressionPanel({
     return () => window.clearTimeout(timer);
   }, [visible]);
 
-  useEffect(() => {
-    setProtectiveUnderstandingVisible(false);
-    if (!visible || !activeNode.dimensionUnderstanding) return undefined;
-
-    const timer = window.setTimeout(() => {
-      setProtectiveUnderstandingVisible(true);
-    }, 1_450);
-
-    return () => window.clearTimeout(timer);
-  }, [activeNode.dimensionUnderstanding, livingSentence, visible]);
-
   return (
     <div
       data-dynamics-node-language="LIFE_UNIVERSE_WHISPER"
@@ -479,6 +486,12 @@ function NodeProgressionPanel({
       data-dynamics-dust-explanation="PROTECTIVE_RESPONSE_CANDIDATE_ONLY"
       data-dynamics-dust-layer="UNRESOLVED"
       data-dynamics-user-confirmation="REQUIRED_BEFORE_DUST_MEANING"
+      data-dynamics-inner-view-phase={phase}
+      data-dynamics-choice-gate={
+        phase === "CONFIRMED" || phase === "SELF_NAMED"
+          ? "RELATION_ESTABLISHED"
+          : "WAITING_FOR_USER_RELATION"
+      }
       data-dynamics-first-pause-invitation={
         firstPauseInvitationVisible ? "VISIBLE_ONCE" : "DELEGATED_TO_GENESIS_BREATH"
       }
@@ -489,7 +502,7 @@ function NodeProgressionPanel({
         bottom: "max(42px, calc(22px + env(safe-area-inset-bottom)))",
         justifyItems: "center",
         gap: 0,
-        pointerEvents: "none",
+        pointerEvents: "auto",
         padding: 0,
         textAlign: "center",
         textShadow: "0 0 18px rgba(2,3,6,0.96)",
@@ -497,50 +510,18 @@ function NodeProgressionPanel({
         animation: "gy-copy-fade-in 520ms ease both",
       }}
     >
-      <p
-        style={{
-          position: "relative",
-          margin: 0,
-          maxWidth: 286,
-          color: "rgba(245,242,233,0.72)",
-          fontSize: 12.5,
-          lineHeight: 1.62,
-          textWrap: "balance",
-        }}
-      >
-        {livingSentence}
-      </p>
-      <p
-        data-dynamics-protective-understanding="CANDIDATE_NOT_CONCLUSION"
-        style={{
-          margin: protectiveUnderstandingVisible ? "8px 0 0" : 0,
-          maxWidth: 298,
-          color: "rgba(220,205,169,0.58)",
-          fontSize: 10.5,
-          lineHeight: 1.58,
-          textWrap: "balance",
-          opacity: protectiveUnderstandingVisible ? 1 : 0,
-          transform: `translateY(${protectiveUnderstandingVisible ? 0 : 4}px)`,
-          transition:
-            "opacity 620ms ease, transform 620ms cubic-bezier(0.22, 0.7, 0.2, 1), margin 420ms ease",
-        }}
-      >
-        {activeNode.dimensionUnderstanding}
-      </p>
-      <span
-        data-dynamics-observation-boundary="OBSERVE_NOT_DEFINE"
-        style={{
-          marginTop: protectiveUnderstandingVisible ? 6 : 0,
-          color: "rgba(176,190,206,0.34)",
-          fontSize: 8.5,
-          lineHeight: 1.4,
-          letterSpacing: "0.08em",
-          opacity: protectiveUnderstandingVisible ? 1 : 0,
-          transition: "opacity 620ms ease, margin 420ms ease",
-        }}
-      >
-        先观察，不定义你
-      </span>
+      <XinmaiLifeReflectionGuide
+        surface="REFLECTION"
+        phase={phase}
+        observation={livingSentence}
+        understanding={activeNode.dimensionUnderstanding}
+        onApproach={onApproach}
+        onConfirm={onConfirm}
+        onSelfName={onSelfName}
+        onPause={onPause}
+        onResume={onResume}
+        onContinue={onContinue}
+      />
       <span
         aria-hidden="true"
         style={{
@@ -1160,6 +1141,11 @@ function CosmicBotanicsField({
   visualState: VisualState;
   experienceState: ExperienceState;
 }) {
+  const [innerViewPhase, setInnerViewPhase] = useState<
+    "OBSERVING" | "APPROACHED" | "CONFIRMED" | "SELF_NAMED" | "PAUSED"
+  >("OBSERVING");
+  const [innerViewRelationEstablished, setInnerViewRelationEstablished] =
+    useState(false);
   const seedTone = pressureSeedSurface.length % 3;
   const toneColor = visualState.colorTemperature || (seedTone === 0 ? "199,169,107" : seedTone === 1 ? "222,196,154" : "176,210,206");
   const activeConfig = configs[Math.max(0, Math.min(configs.length - 1, activeDimensionStep - 1))] ?? configs[0];
@@ -1183,6 +1169,41 @@ function CosmicBotanicsField({
   const dimensionLayerOpacity = experienceState.primaryFocus === "DIMENSION_FLOW" ? 0.64 : experienceState.primaryFocus === "BEAST_AND_DIMENSION" ? 0.56 : experienceState.primaryFocus === "CRYSTALLIZATION" ? 0.58 : 0.28;
   const particleLayerOpacity = experienceState.primaryFocus === "CRYSTALLIZATION" ? 0.92 : experienceState.primaryFocus === "DIMENSION_FLOW" ? 0.7 : 0.42;
 
+  function approachLifeState() {
+    setInnerViewPhase("APPROACHED");
+  }
+
+  function confirmLifeState() {
+    setInnerViewRelationEstablished(true);
+    setInnerViewPhase("CONFIRMED");
+  }
+
+  function keepOwnUnderstanding() {
+    setInnerViewRelationEstablished(true);
+    setInnerViewPhase("SELF_NAMED");
+  }
+
+  function pauseInnerView() {
+    setInnerViewPhase("PAUSED");
+  }
+
+  function resumeInnerView() {
+    setInnerViewPhase("APPROACHED");
+  }
+
+  function continueObservation() {
+    if (!innerViewRelationEstablished) return;
+    onNodeBloom();
+  }
+
+  function handleLifeCoreApproach() {
+    if (!innerViewRelationEstablished) {
+      approachLifeState();
+      return;
+    }
+    onNodeBloom();
+  }
+
   return (
     <section
       aria-label="现实进入同一个生命，并从六个窗口显出回应"
@@ -1200,6 +1221,10 @@ function CosmicBotanicsField({
       data-dynamics-dust-layer-result="NONE"
       data-dynamics-dust-scoring="FORBIDDEN"
       data-dynamics-meridian-inference="FORBIDDEN"
+      data-dynamics-inner-view-consumer="EXISTING_SIX_DIMENSION_STATE"
+      data-dynamics-inner-view-relation={
+        innerViewRelationEstablished ? "ESTABLISHED" : "AWAITING_USER_APPROACH"
+      }
       data-life-universe-continuity="SAME_GENESIS_UNIVERSE"
       data-dynamics-universe-background-authority={rendererOwnsUniverse ? "GENESIS_WEBGL" : "DOM_FALLBACK"}
       data-dynamics-pressure-visual-authority={rendererOwnsUniverse ? "GENESIS_WEBGL_PROJECTION" : "DOM_FALLBACK"}
@@ -1235,7 +1260,7 @@ function CosmicBotanicsField({
           toneColor={toneColor}
           narrativePhase={narrativePhase}
           activeNodeIndex={activeNodeIndex}
-          onCoreStarClick={onNodeBloom}
+          onCoreStarClick={handleLifeCoreApproach}
           visualSource={visualSource}
           pressureIntensity={visualState.primitives.PRESSURE.intensity}
         />
@@ -1283,8 +1308,19 @@ function CosmicBotanicsField({
         </span>
       </p>
 
-      <div data-visual-primitive="PARTICLE" data-visual-layer="particle-node-feedback" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.interaction, pointerEvents: "none" }}>
-        <NodeProgressionPanel visible={showNodePanel} toneColor={toneColor} activeNode={experienceState.nodeCopy} />
+      <div data-visual-primitive="PARTICLE" data-visual-layer="particle-node-feedback" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.interaction, pointerEvents: showNodePanel ? "auto" : "none" }}>
+        <NodeProgressionPanel
+          visible={showNodePanel}
+          toneColor={toneColor}
+          activeNode={experienceState.nodeCopy}
+          phase={innerViewPhase}
+          onApproach={approachLifeState}
+          onConfirm={confirmLifeState}
+          onSelfName={keepOwnUnderstanding}
+          onPause={pauseInnerView}
+          onResume={resumeInnerView}
+          onContinue={continueObservation}
+        />
       </div>
 
       <p
