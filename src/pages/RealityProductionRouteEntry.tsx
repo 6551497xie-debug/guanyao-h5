@@ -319,12 +319,14 @@ export function RealityProductionRouteEntry() {
           choiceContinuation:
             | "AWAITING_LIVED_RESPONSE_RECOGNITION"
             | null;
+          innerViewEntry: "CURRENT_LIFE_WEATHER_BODY_APPROACHED";
         }> = Object.freeze({
         selectedPressureSeedContext: writeSelectedPressureSeedContext(
           selectedPressureSeedContext,
         ),
         visualContinuity,
         choiceContinuation,
+        innerViewEntry: "CURRENT_LIFE_WEATHER_BODY_APPROACHED",
       });
       navigate(GUANYAO_ROUTES.dynamics, { state: handoffState });
     };

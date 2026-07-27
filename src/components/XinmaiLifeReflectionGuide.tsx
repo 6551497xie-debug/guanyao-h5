@@ -2,7 +2,9 @@ type XinmaiLifeReflectionGuideProps = Readonly<{
   surface: "REALITY" | "REFLECTION";
   phase?:
     | "OBSERVING"
-    | "APPROACHED"
+    | "FIRST_APPROACH"
+    | "SECOND_APPROACH"
+    | "THIRD_APPROACH"
     | "CONFIRMED"
     | "SELF_NAMED"
     | "PAUSED";
@@ -67,17 +69,38 @@ export function XinmaiLifeReflectionGuide({
   const activeStep =
     phase === "OBSERVING"
       ? "MIRROR"
-      : phase === "APPROACHED" || phase === "PAUSED"
+      : phase === "FIRST_APPROACH"
+        ? "IDENTIFY"
+        : phase === "SECOND_APPROACH" || phase === "PAUSED"
         ? "VALIDATE"
         : "SHIFT";
   const relationEstablished =
     phase === "CONFIRMED" || phase === "SELF_NAMED";
+  const approachDepth =
+    phase === "OBSERVING"
+      ? 0
+      : phase === "FIRST_APPROACH"
+        ? 1
+        : phase === "SECOND_APPROACH" || phase === "PAUSED"
+          ? 2
+          : 3;
+
+  function resolveStepState(stepId: string) {
+    const stepOrder = ["MIRROR", "IDENTIFY", "VALIDATE", "SHIFT"];
+    const activeIndex = stepOrder.indexOf(activeStep);
+    const stepIndex = stepOrder.indexOf(stepId);
+    if (stepId === activeStep) return "ACTIVE";
+    if (stepIndex >= 0 && stepIndex < activeIndex) return "PASSED";
+    return "RESTING";
+  }
 
   return (
     <aside
       className="xinmai-life-reflection-guide xinmai-life-reflection-guide--reflection"
       data-xinmai-reflection-guide="MIRROR_IDENTIFY_VALIDATE_SHIFT"
       data-xinmai-inner-view-phase={phase}
+      data-xinmai-three-approach-depth={approachDepth}
+      data-xinmai-three-approach-sequence="SEE_UNDERSTAND_TRANSFORM"
       data-xinmai-reflection-consumer="EXISTING_GRAVITY_STATE"
       data-xinmai-ai-claim="NONE"
       data-xinmai-dust-claim="NONE"
@@ -90,9 +113,7 @@ export function XinmaiLifeReflectionGuide({
           <li
             key={step.id}
             data-xinmai-reflection-step={step.id}
-            data-xinmai-reflection-step-state={
-              step.id === activeStep ? "ACTIVE" : "RESTING"
-            }
+            data-xinmai-reflection-step-state={resolveStepState(step.id)}
           >
             <i />
             <span>
@@ -120,16 +141,33 @@ export function XinmaiLifeReflectionGuide({
               ? "不必现在得出结论。你和它仍在这里。"
               : phase === "SELF_NAMED"
                 ? "保留你的理解。系统不替你命名。"
-                : understanding ??
-                  "这种回应，也许曾经用自己的方式保护过你。"}
+                : phase === "FIRST_APPROACH"
+                  ? "先看见这处变化，不急着把它解释成你。"
+                  : phase === "SECOND_APPROACH"
+                    ? understanding ??
+                      "这种回应，也许曾经用自己的方式保护过你。"
+                    : phase === "THIRD_APPROACH"
+                      ? "如果你愿意，为生命留出一点不同的流动。回应仍然由你决定。"
+                      : phase === "CONFIRMED"
+                        ? "这份理解来自你的确认，不是系统替你下的结论。"
+                        : understanding ??
+                          "这种回应，也许曾经用自己的方式保护过你。"}
           </p>
         ) : null}
 
         {phase === "OBSERVING" ? (
           <button type="button" onClick={onApproach}>
-            靠近这处变化
+            第一次靠近 · 看见
           </button>
-        ) : phase === "APPROACHED" ? (
+        ) : phase === "FIRST_APPROACH" ? (
+          <button type="button" onClick={onApproach}>
+            第二次靠近 · 理解
+          </button>
+        ) : phase === "SECOND_APPROACH" ? (
+          <button type="button" onClick={onApproach}>
+            第三次靠近 · 让它流动
+          </button>
+        ) : phase === "THIRD_APPROACH" ? (
           <div className="xinmai-life-reflection-guide__agency">
             <button type="button" onClick={onConfirm}>
               这像我
@@ -143,7 +181,7 @@ export function XinmaiLifeReflectionGuide({
           </div>
         ) : phase === "PAUSED" ? (
           <button type="button" onClick={onResume}>
-            再靠近一点
+            回到刚才那一处
           </button>
         ) : relationEstablished ? (
           <button type="button" onClick={onContinue}>

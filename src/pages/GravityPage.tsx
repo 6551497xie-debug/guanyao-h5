@@ -446,7 +446,9 @@ function NodeProgressionPanel({
   };
   phase:
     | "OBSERVING"
-    | "APPROACHED"
+    | "FIRST_APPROACH"
+    | "SECOND_APPROACH"
+    | "THIRD_APPROACH"
     | "CONFIRMED"
     | "SELF_NAMED"
     | "PAUSED";
@@ -487,6 +489,15 @@ function NodeProgressionPanel({
       data-dynamics-dust-layer="UNRESOLVED"
       data-dynamics-user-confirmation="REQUIRED_BEFORE_DUST_MEANING"
       data-dynamics-inner-view-phase={phase}
+      data-dynamics-inner-view-approach-depth={
+        phase === "OBSERVING"
+          ? 0
+          : phase === "FIRST_APPROACH"
+            ? 1
+            : phase === "SECOND_APPROACH" || phase === "PAUSED"
+              ? 2
+              : 3
+      }
       data-dynamics-choice-gate={
         phase === "CONFIRMED" || phase === "SELF_NAMED"
           ? "RELATION_ESTABLISHED"
@@ -787,6 +798,7 @@ function LifeConstellationLayer({
   visualSource,
   pressureIntensity,
   interactionEnabled = true,
+  innerViewRevealDepth = 0,
   crystalImprintActive = false,
   crystalImprintKey = "",
 }: {
@@ -797,6 +809,7 @@ function LifeConstellationLayer({
   visualSource: RealLifeVisualSource | null;
   pressureIntensity: number;
   interactionEnabled?: boolean;
+  innerViewRevealDepth?: number;
   crystalImprintActive?: boolean;
   crystalImprintKey?: string;
 }) {
@@ -888,6 +901,13 @@ function LifeConstellationLayer({
       data-original-force={lifeArchetype?.originalForce ?? "unavailable"}
       data-four-symbol-field-mode={morphology?.fieldMode ?? "unavailable"}
       data-pressure-effect="POSTURE_ONLY"
+      data-inner-view-life-revelation={
+        innerViewRevealDepth > 0
+          ? `APPROACH_${Math.min(3, innerViewRevealDepth)}`
+          : "RESTING"
+      }
+      data-inner-view-meridian-source="EXISTING_BIRTH_MANSION_BODY_RELATION"
+      data-inner-view-meridian-scoring="NONE"
       data-dynamics-core-overlay-copy="NONE"
       data-dynamics-life-visual-authority={rendererOwnsLifeVisual ? "GENESIS_WEBGL" : "DOM_FALLBACK"}
       data-crystal-imprint={
@@ -982,6 +1002,52 @@ function LifeConstellationLayer({
               }}
             />
           </>
+        ) : null}
+        {rendererOwnsLifeVisual && innerViewRevealDepth > 0 ? (
+          <g
+            className="gy-inner-view-life-meridian"
+            data-inner-view-meridian-revelation="SAME_BODY"
+            data-inner-view-meridian-depth={Math.min(
+              3,
+              innerViewRevealDepth,
+            )}
+          >
+            <path
+              className="gy-inner-view-life-meridian__breath"
+              d={activePath}
+              fill="none"
+              stroke={`rgba(${toneColor},${0.1 + innerViewRevealDepth * 0.04})`}
+              strokeWidth="1.12"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              filter="blur(1.4px)"
+            />
+            <path
+              className="gy-inner-view-life-meridian__flow"
+              d={activePath}
+              fill="none"
+              stroke={`rgba(${toneColor},${0.22 + innerViewRevealDepth * 0.08})`}
+              strokeWidth="0.34"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              pathLength="1"
+            />
+            {coreStars.map(([x, y], index) => (
+              <circle
+                key={`inner-view-meridian-${index}`}
+                className="gy-inner-view-life-meridian__point"
+                cx={x}
+                cy={y}
+                r={index === birthCoreSlot ? "0.68" : "0.38"}
+                fill={
+                  index === birthCoreSlot
+                    ? "rgba(255,247,220,0.76)"
+                    : `rgba(${toneColor},0.38)`
+                }
+                style={{ animationDelay: `${index * 120}ms` }}
+              />
+            ))}
+          </g>
         ) : null}
         {crystalImprintActive && crystalImprintPath ? (
           <>
@@ -1129,6 +1195,7 @@ function CosmicBotanicsField({
   visualSource,
   visualState,
   experienceState,
+  innerViewEntryEstablished,
   onInnerViewRelationEstablished,
 }: {
   configs: SixSpaceConfig[];
@@ -1141,15 +1208,25 @@ function CosmicBotanicsField({
   visualSource: RealLifeVisualSource | null;
   visualState: VisualState;
   experienceState: ExperienceState;
+  innerViewEntryEstablished: boolean;
   onInnerViewRelationEstablished: (
     relation: "CONFIRMED" | "SELF_NAMED",
   ) => void;
 }) {
   const [innerViewPhase, setInnerViewPhase] = useState<
-    "OBSERVING" | "APPROACHED" | "CONFIRMED" | "SELF_NAMED" | "PAUSED"
+    | "OBSERVING"
+    | "FIRST_APPROACH"
+    | "SECOND_APPROACH"
+    | "THIRD_APPROACH"
+    | "CONFIRMED"
+    | "SELF_NAMED"
+    | "PAUSED"
   >("OBSERVING");
   const [innerViewRelationEstablished, setInnerViewRelationEstablished] =
     useState(false);
+  const innerViewPhaseBeforePauseRef = useRef<
+    "FIRST_APPROACH" | "SECOND_APPROACH" | "THIRD_APPROACH"
+  >("FIRST_APPROACH");
   const seedTone = pressureSeedSurface.length % 3;
   const toneColor = visualState.colorTemperature || (seedTone === 0 ? "199,169,107" : seedTone === 1 ? "222,196,154" : "176,210,206");
   const activeConfig = configs[Math.max(0, Math.min(configs.length - 1, activeDimensionStep - 1))] ?? configs[0];
@@ -1173,8 +1250,23 @@ function CosmicBotanicsField({
   const dimensionLayerOpacity = experienceState.primaryFocus === "DIMENSION_FLOW" ? 0.64 : experienceState.primaryFocus === "BEAST_AND_DIMENSION" ? 0.56 : experienceState.primaryFocus === "CRYSTALLIZATION" ? 0.58 : 0.28;
   const particleLayerOpacity = experienceState.primaryFocus === "CRYSTALLIZATION" ? 0.92 : experienceState.primaryFocus === "DIMENSION_FLOW" ? 0.7 : 0.42;
 
+  const innerViewRevealDepth =
+    innerViewPhase === "OBSERVING"
+      ? 0
+      : innerViewPhase === "FIRST_APPROACH"
+        ? 1
+        : innerViewPhase === "SECOND_APPROACH" ||
+            innerViewPhase === "PAUSED"
+          ? 2
+          : 3;
+
   function approachLifeState() {
-    setInnerViewPhase("APPROACHED");
+    setInnerViewPhase((currentPhase) => {
+      if (currentPhase === "OBSERVING") return "FIRST_APPROACH";
+      if (currentPhase === "FIRST_APPROACH") return "SECOND_APPROACH";
+      if (currentPhase === "SECOND_APPROACH") return "THIRD_APPROACH";
+      return currentPhase;
+    });
   }
 
   function confirmLifeState() {
@@ -1190,11 +1282,18 @@ function CosmicBotanicsField({
   }
 
   function pauseInnerView() {
+    if (
+      innerViewPhase === "FIRST_APPROACH" ||
+      innerViewPhase === "SECOND_APPROACH" ||
+      innerViewPhase === "THIRD_APPROACH"
+    ) {
+      innerViewPhaseBeforePauseRef.current = innerViewPhase;
+    }
     setInnerViewPhase("PAUSED");
   }
 
   function resumeInnerView() {
-    setInnerViewPhase("APPROACHED");
+    setInnerViewPhase(innerViewPhaseBeforePauseRef.current);
   }
 
   function continueObservation() {
@@ -1228,6 +1327,12 @@ function CosmicBotanicsField({
       data-dynamics-dust-scoring="FORBIDDEN"
       data-dynamics-meridian-inference="FORBIDDEN"
       data-dynamics-inner-view-consumer="EXISTING_SIX_DIMENSION_STATE"
+      data-dynamics-inner-view-entry={
+        innerViewEntryEstablished
+          ? "CURRENT_LIFE_WEATHER_BODY_APPROACHED"
+          : "GRAVITY_DIRECT_OBSERVATION"
+      }
+      data-dynamics-inner-view-sequence="SEE_UNDERSTAND_TRANSFORM"
       data-dynamics-inner-view-relation={
         innerViewRelationEstablished ? "ESTABLISHED" : "AWAITING_USER_APPROACH"
       }
@@ -1269,6 +1374,7 @@ function CosmicBotanicsField({
           onCoreStarClick={handleLifeCoreApproach}
           visualSource={visualSource}
           pressureIntensity={visualState.primitives.PRESSURE.intensity}
+          innerViewRevealDepth={innerViewRevealDepth}
         />
       </div>
 
@@ -2136,9 +2242,18 @@ function HexagramCodeDeliveryShell() {
           Readonly<{
             visualContinuity?: RealityProductionHostProps["visualContinuity"];
             choiceContinuation?: "AWAITING_LIVED_RESPONSE_RECOGNITION";
+            innerViewEntry?: "CURRENT_LIFE_WEATHER_BODY_APPROACHED";
           }>)
       | null
   )?.visualContinuity ?? null;
+  const routeInnerViewEntry =
+    (
+      location.state as
+        | Readonly<{
+            innerViewEntry?: "CURRENT_LIFE_WEATHER_BODY_APPROACHED";
+          }>
+        | null
+    )?.innerViewEntry === "CURRENT_LIFE_WEATHER_BODY_APPROACHED";
   const livedResponseRecognitionPending =
     (
       location.state as
@@ -2472,6 +2587,11 @@ function HexagramCodeDeliveryShell() {
             ? "SAME_RESPONSE_BECOMING_TENDENCY"
             : "OBSERVATION_READY"
         }
+        data-inner-view-entry-continuity={
+          routeInnerViewEntry && arrivalVisualContinuity !== null
+            ? "SAME_BODY_FROM_CURRENT_LIFE_WEATHER"
+            : "DIRECT_GRAVITY_OBSERVATION"
+        }
         data-choice-response-state={
           revisionActionConfirmed
             ? "RESPONSE_SEDIMENTED"
@@ -2715,6 +2835,9 @@ function HexagramCodeDeliveryShell() {
               visualSource={realLifeVisualSource}
               visualState={visualState}
               experienceState={displayExperienceState}
+              innerViewEntryEstablished={
+                routeInnerViewEntry && arrivalVisualContinuity !== null
+              }
               onInnerViewRelationEstablished={setInnerViewRelation}
             />
           )}

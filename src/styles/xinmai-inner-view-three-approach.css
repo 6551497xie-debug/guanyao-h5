@@ -1,0 +1,128 @@
+.gy-inner-view-life-meridian {
+  opacity: 0.48;
+  transition: opacity 900ms ease;
+}
+
+.gy-inner-view-life-meridian[data-inner-view-meridian-depth="2"] {
+  opacity: 0.68;
+}
+
+.gy-inner-view-life-meridian[data-inner-view-meridian-depth="3"] {
+  opacity: 0.84;
+}
+
+.gy-inner-view-life-meridian__breath {
+  opacity: 0.42;
+  animation: xinmai-inner-view-meridian-breath 5.6s ease-in-out infinite;
+}
+
+.gy-inner-view-life-meridian__flow {
+  stroke-dasharray: 0.08 0.92;
+  animation: xinmai-inner-view-meridian-flow 8.8s linear infinite;
+}
+
+.gy-inner-view-life-meridian__point {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: xinmai-inner-view-meridian-point 2.8s ease-in-out infinite;
+}
+
+.xinmai-life-reflection-guide__sequence
+  li[data-xinmai-reflection-step-state="PASSED"] {
+  opacity: 0.3;
+  transform: translateX(1px);
+}
+
+.xinmai-life-reflection-guide--reflection[data-xinmai-three-approach-depth="1"]
+  .xinmai-life-reflection-guide__observation,
+.xinmai-life-reflection-guide--reflection[data-xinmai-three-approach-depth="2"]
+  .xinmai-life-reflection-guide__understanding,
+.xinmai-life-reflection-guide--reflection[data-xinmai-three-approach-depth="3"]
+  .xinmai-life-reflection-guide__understanding {
+  animation: xinmai-inner-view-copy-arrival 760ms
+    cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+
+.xinmai-life-reflection-guide--reflection[data-xinmai-three-approach-depth="3"]
+  .xinmai-life-reflection-guide__agency {
+  animation: xinmai-inner-view-agency-arrival 980ms
+    cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+
+@keyframes xinmai-inner-view-meridian-breath {
+  0%,
+  100% {
+    opacity: 0.28;
+  }
+
+  50% {
+    opacity: 0.62;
+  }
+}
+
+@keyframes xinmai-inner-view-meridian-flow {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes xinmai-inner-view-meridian-point {
+  0%,
+  100% {
+    opacity: 0.24;
+    transform: scale(0.86);
+  }
+
+  50% {
+    opacity: 0.72;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes xinmai-inner-view-copy-arrival {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes xinmai-inner-view-agency-arrival {
+  0%,
+  34% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gy-inner-view-life-meridian__breath,
+  .gy-inner-view-life-meridian__flow,
+  .gy-inner-view-life-meridian__point,
+  .xinmai-life-reflection-guide--reflection
+    .xinmai-life-reflection-guide__observation,
+  .xinmai-life-reflection-guide--reflection
+    .xinmai-life-reflection-guide__understanding,
+  .xinmai-life-reflection-guide--reflection
+    .xinmai-life-reflection-guide__agency {
+    animation: none;
+  }
+
+  .gy-inner-view-life-meridian__point {
+    opacity: 0.52;
+  }
+}
