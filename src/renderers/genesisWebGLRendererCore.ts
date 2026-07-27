@@ -680,6 +680,22 @@ export function createGenesisWebGLRendererCore(
 
   const mansionCoordinateVisualLayer =
     sceneProjection.mansionCoordinateVisualLayer;
+  // Mansion Presence Signature is a renderer-only reading of the existing
+  // birth-mansion index. It gives the shared skeleton, core and aura one
+  // personal cadence without calculating identity or inventing any star.
+  const birthMansionPresenceIndex =
+    mansionCoordinateVisualLayer?.birthCoordinate.coordinateIndex ??
+    sceneProjection.mansionCoordinateField?.birthCoordinateIndex ??
+    0;
+  const birthMansionPresencePhase =
+    (birthMansionPresenceIndex / 28) * Math.PI * 2;
+  const birthMansionQuarterSlot = birthMansionPresenceIndex % 7;
+  const birthMansionPresenceBreathRate =
+    0.27 + ((birthMansionPresenceIndex * 5) % 7) * 0.012;
+  const birthMansionAuraCurl =
+    Math.sin(birthMansionPresencePhase) * 0.42;
+  const birthMansionAuraEnclosure =
+    0.88 + Math.cos(birthMansionPresencePhase * 2) * 0.08;
   const mansionCoordinateGroup = new Group();
   let mansionHeavenOrderMaterial: LineBasicMaterial | null = null;
   let birthMansionBoneMaterial: LineBasicMaterial | null = null;
@@ -767,9 +783,15 @@ export function createGenesisWebGLRendererCore(
       // The personal seven-mansion source remains made from the existing
       // coordinates, but is brought into one shared visual focus around the
       // life core. This is a camera-space emphasis, not a new star topology.
+      const centeredX = coordinate.x - birthQuarterCenter.x;
+      const centeredY = coordinate.y - birthQuarterCenter.y;
+      // The seven existing source stars lean very slightly around the actual
+      // birth star. The topology remains unchanged; the personal coordinate
+      // now reads as the origin of this particular body's posture.
+      const identityLean = (birthMansionQuarterSlot - 3) * 0.008;
       return {
-        x: (coordinate.x - birthQuarterCenter.x) * 0.76,
-        y: (coordinate.y - birthQuarterCenter.y) * 0.76 + 0.08,
+        x: centeredX * 0.76 + centeredY * identityLean,
+        y: centeredY * 0.76 - centeredX * identityLean + 0.08,
         z: coordinate.z,
       };
     };
@@ -972,6 +994,27 @@ export function createGenesisWebGLRendererCore(
             target.z,
           );
         }
+        // Two faint response ribs make the real birth star the perceptual
+        // anchor of its existing seven-mansion source group. No inner star or
+        // seven-star meridian is added.
+        [birthIndex - 2, birthIndex + 2].forEach((responseIndex) => {
+          if (
+            responseIndex < birthQuarterStart ||
+            responseIndex > birthQuarterEnd
+          ) {
+            return;
+          }
+          const source = lifeOriginCoordinatePosition(birthIndex);
+          const target = lifeOriginCoordinatePosition(responseIndex);
+          birthBonePositions.push(
+            source.x,
+            source.y,
+            source.z,
+            target.x,
+            target.y,
+            target.z,
+          );
+        });
       } else {
         [birthIndex - 1, birthIndex + 1].forEach((neighborIndex) => {
           if (
@@ -2006,15 +2049,26 @@ export function createGenesisWebGLRendererCore(
         finalSpinePositions[sourceOffset + 2]) *
         interpolation;
     const signedWash = random() * 2 - 1;
+    const identityWash =
+      Math.sin(
+        progress * Math.PI * 2 +
+          birthMansionPresencePhase +
+          signedWash * 0.48,
+      ) * birthMansionAuraCurl;
     const lateralOffset =
       Math.sign(signedWash) *
       Math.pow(Math.abs(signedWash), 0.74) *
       bodyFieldWidth *
-      (1.95 + Math.sin(progress * Math.PI) * 1.45);
+      (1.95 + Math.sin(progress * Math.PI) * 1.45) *
+      birthMansionAuraEnclosure +
+      identityWash * bodyFieldWidth * 0.34;
     const axialOffset =
       (random() * 2 - 1) *
       bodyFieldWidth *
-      (0.36 + Math.sin(progress * Math.PI) * 0.22);
+        (0.36 + Math.sin(progress * Math.PI) * 0.22) +
+      Math.cos(progress * Math.PI * 3 + birthMansionPresencePhase) *
+        bodyFieldWidth *
+        0.08;
     const depthOffset =
       (random() * 2 - 1) *
       (0.08 + bodyFieldWidth * 0.44);
@@ -2023,7 +2077,10 @@ export function createGenesisWebGLRendererCore(
     lifeAuraSpineOrigins[positionOffset + 2] = spineZ + depthOffset;
     lifeAuraLateralOffsets[index] = lateralOffset;
     lifeAuraAxialOffsets[index] = axialOffset;
-    lifeAuraPhases[index] = random() * Math.PI * 2 + progress * Math.PI * 3;
+    lifeAuraPhases[index] =
+      random() * Math.PI * 2 +
+      progress * Math.PI * 3 +
+      birthMansionPresencePhase;
     lifeAuraPositions[positionOffset] =
       spineX + perpendicularX * lateralOffset + axisX * axialOffset;
     lifeAuraPositions[positionOffset + 1] =
@@ -3278,7 +3335,8 @@ export function createGenesisWebGLRendererCore(
           choiceResponseSpaceProgress * 0.14;
         const lifeAuraFlowSpeed =
           (0.15 +
-            Math.abs(lifePresence.morphologicalField.flowDirection) * 0.055) *
+            Math.abs(lifePresence.morphologicalField.flowDirection) * 0.055 +
+            (birthMansionPresenceBreathRate - 0.27) * 0.22) *
           (1 - pressureAuraContraction * 0.62 + lifeAuraRelease * 0.24);
         const lifeAuraBreath =
           1 +
@@ -3289,10 +3347,13 @@ export function createGenesisWebGLRendererCore(
           const phase =
             lifeAuraPhases[index] + universeSeconds * lifeAuraFlowSpeed;
           const flowShift =
-            Math.sin(phase) *
-            (0.012 +
-              Math.abs(lifePresence.morphologicalField.flowDirection) *
-                0.007) *
+            (Math.sin(phase) *
+              (0.012 +
+                Math.abs(lifePresence.morphologicalField.flowDirection) *
+                  0.007) +
+              Math.cos(phase * 0.52 + birthMansionPresencePhase) *
+                birthMansionAuraCurl *
+                0.004) *
             (1 - pressureAuraContraction * 0.58);
           const lateralBreath =
             lifeAuraBreath *
@@ -3395,7 +3456,12 @@ export function createGenesisWebGLRendererCore(
         }
         if (birthMansionGroupPointMaterial !== null) {
           const sourceGroupBreath =
-            0.94 + Math.sin(universeSeconds * 0.34) * 0.06;
+            0.94 +
+            Math.sin(
+              universeSeconds * birthMansionPresenceBreathRate +
+                birthMansionPresencePhase,
+            ) *
+              0.06;
           birthMansionGroupPointMaterial.opacity =
             (0.26 + lifeOriginRevealProgress * 0.5) *
             sourceGroupBreath;
@@ -3405,11 +3471,18 @@ export function createGenesisWebGLRendererCore(
             sourceGroupBreath;
         }
         if (birthMansionBoneMaterial !== null) {
+          const identityBoneBreath =
+            0.92 +
+            Math.sin(
+              universeSeconds * birthMansionPresenceBreathRate +
+                birthMansionPresencePhase,
+            ) *
+              0.08;
           birthMansionBoneMaterial.opacity =
             (isGenesisLifeOriginStarMapReveal
-              ? 0.035 + lifeOriginRevealProgress * 0.3
+              ? 0.042 + lifeOriginRevealProgress * 0.34
               : 0.025 + lifeOriginRevealProgress * 0.23) *
-            (0.93 + Math.sin(universeSeconds * 0.28) * 0.07);
+            identityBoneBreath;
         }
       }
       const birthRevealProgress =
@@ -3448,9 +3521,14 @@ export function createGenesisWebGLRendererCore(
         birthCoordinateAxisMaterial.opacity =
           isLifeOriginStarMapReveal
             ? (isGenesisLifeOriginStarMapReveal
-                ? 0.008 + lifeOriginRevealProgress * 0.042
+                ? 0.012 + lifeOriginRevealProgress * 0.054
                 : 0.035 + lifeOriginRevealProgress * 0.115) *
-              (0.94 + Math.sin(universeSeconds * 0.34) * 0.06)
+              (0.94 +
+                Math.sin(
+                  universeSeconds * birthMansionPresenceBreathRate +
+                    birthMansionPresencePhase,
+                ) *
+                  0.06)
             : retainMotherContinuityOrbit
             ? 0.18
             : coordinateFormationExpression.birthAxisOpacity *
@@ -3467,8 +3545,9 @@ export function createGenesisWebGLRendererCore(
           mansionCoordinateVisualLayer.birthCoordinateExpression;
         const birthPhase =
           (universeSeconds / birthExpression.breathingPeriodSeconds) *
-          Math.PI *
-          2;
+            Math.PI *
+            2 +
+          birthMansionPresencePhase;
         const birthBreath =
           1 + Math.sin(birthPhase) * birthExpression.breathingAmplitude;
         coordinateIdentityBreath =
@@ -4512,17 +4591,19 @@ export function createGenesisWebGLRendererCore(
           realityPressureStateWeight *
           (1 - realityPressureRecoveryProgress * 0.78);
         const settledAuraOpacity = isGenesisLifeOriginStarMapReveal
-          ? 0.034 + lifeOriginRevealProgress * 0.082
+          ? 0.046 + lifeOriginRevealProgress * 0.094
           : isRealityCanvas
             ? 0.12 + lifeOriginRevealProgress * 0.045
             : 0.072 + recognitionIdentityLock * 0.035;
-        lifeAuraMaterial.opacity =
+        lifeAuraMaterial.opacity = Math.min(
+          0.2,
           (settledAuraOpacity +
             recognizedLifeRelationshipContinuity * 0.03) *
-          (1 -
-            pressureAuraContraction * 0.16 +
-            realityPressureRecoveryProgress * 0.08 +
-            choiceResponseSpaceProgress * 0.035);
+            (1 -
+              pressureAuraContraction * 0.16 +
+              realityPressureRecoveryProgress * 0.08 +
+              choiceResponseSpaceProgress * 0.035),
+        );
         lifeAuraMaterial.size =
           lifeAuraBaseSize *
           (isGenesisLifeOriginStarMapReveal
