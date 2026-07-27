@@ -35,9 +35,9 @@ const checks = [
   [
     "sequence, explanation, and boundary copy recede during first approach",
     guide.includes("{firstLifeSignalVisible ? (") &&
-      guide.includes("{!firstLifeSignalVisible ? (") &&
+      guide.includes("{!focusedInnerViewMeaningVisible ? (") &&
       guide.includes(
-        'phase !== "OBSERVING" && !firstLifeSignalVisible',
+        'phase !== "OBSERVING" && !focusedInnerViewMeaningVisible',
       ),
   ],
   [

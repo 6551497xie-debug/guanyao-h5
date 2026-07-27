@@ -85,6 +85,9 @@ export function XinmaiLifeReflectionGuide({
           ? 2
           : 3;
   const firstLifeSignalVisible = phase === "FIRST_APPROACH";
+  const secondProtectiveMeaningVisible = phase === "SECOND_APPROACH";
+  const focusedInnerViewMeaningVisible =
+    firstLifeSignalVisible || secondProtectiveMeaningVisible;
 
   function resolveStepState(stepId: string) {
     const stepOrder = ["MIRROR", "IDENTIFY", "VALIDATE", "SHIFT"];
@@ -106,7 +109,9 @@ export function XinmaiLifeReflectionGuide({
       data-xinmai-life-signal-mode={
         firstLifeSignalVisible
           ? "SINGLE_EXISTING_DIMENSION_SIGNAL"
-          : "REFLECTION_SEQUENCE"
+          : secondProtectiveMeaningVisible
+            ? "SINGLE_EXISTING_PROTECTIVE_MEANING"
+            : "REFLECTION_SEQUENCE"
       }
       data-xinmai-ai-claim="NONE"
       data-xinmai-dust-claim="NONE"
@@ -124,6 +129,21 @@ export function XinmaiLifeReflectionGuide({
           <i aria-hidden="true" />
           <span>这一处，先有了回应</span>
           <strong>{observation ?? "生命在这里停留了一下。"}</strong>
+        </div>
+      ) : secondProtectiveMeaningVisible ? (
+        <div
+          className="xinmai-life-reflection-guide__protective-meaning"
+          data-xinmai-protective-meaning="EXISTING_DIMENSION_UNDERSTANDING"
+          data-xinmai-protective-meaning-count="ONE"
+          data-xinmai-protective-meaning-certainty="POSSIBILITY_NOT_CONCLUSION"
+          data-xinmai-dust-layer="UNRESOLVED"
+        >
+          <i aria-hidden="true" />
+          <span>它也许曾这样保护过你</span>
+          <strong>
+            {understanding ??
+              "这种回应，也许曾经用自己的方式保护过你。"}
+          </strong>
         </div>
       ) : (
         <>
@@ -152,13 +172,13 @@ export function XinmaiLifeReflectionGuide({
         className="xinmai-life-reflection-guide__approach"
         data-xinmai-user-agency="CONFIRM_REVISE_OR_PAUSE"
       >
-        {!firstLifeSignalVisible ? (
+        {!focusedInnerViewMeaningVisible ? (
           <p className="xinmai-life-reflection-guide__observation">
             {observation ?? "先靠近这一处生命变化。"}
           </p>
         ) : null}
 
-        {phase !== "OBSERVING" && !firstLifeSignalVisible ? (
+        {phase !== "OBSERVING" && !focusedInnerViewMeaningVisible ? (
           <p
             className="xinmai-life-reflection-guide__understanding"
             data-dynamics-protective-understanding="CANDIDATE_NOT_CONCLUSION"
@@ -167,15 +187,12 @@ export function XinmaiLifeReflectionGuide({
               ? "不必现在得出结论。你和它仍在这里。"
               : phase === "SELF_NAMED"
                 ? "保留你的理解。系统不替你命名。"
-                : phase === "SECOND_APPROACH"
-                    ? understanding ??
-                      "这种回应，也许曾经用自己的方式保护过你。"
-                    : phase === "THIRD_APPROACH"
-                      ? "如果你愿意，为生命留出一点不同的流动。回应仍然由你决定。"
-                      : phase === "CONFIRMED"
-                        ? "这份理解来自你的确认，不是系统替你下的结论。"
-                        : understanding ??
-                          "这种回应，也许曾经用自己的方式保护过你。"}
+                : phase === "THIRD_APPROACH"
+                  ? "如果你愿意，为生命留出一点不同的流动。回应仍然由你决定。"
+                  : phase === "CONFIRMED"
+                    ? "这份理解来自你的确认，不是系统替你下的结论。"
+                    : understanding ??
+                      "这种回应，也许曾经用自己的方式保护过你。"}
           </p>
         ) : null}
 
@@ -214,7 +231,7 @@ export function XinmaiLifeReflectionGuide({
         ) : null}
       </div>
 
-      {!firstLifeSignalVisible ? (
+      {!focusedInnerViewMeaningVisible ? (
         <p className="xinmai-life-reflection-guide__boundary">
           它只帮助你看见，不替你决定。
         </p>

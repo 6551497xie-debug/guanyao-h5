@@ -28,7 +28,10 @@
   animation: xinmai-inner-view-meridian-point 2.8s ease-in-out infinite;
 }
 
-.xinmai-life-reflection-guide--reflection[data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"] {
+.xinmai-life-reflection-guide--reflection:is(
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"]
+  ) {
   width: min(238px, 64vw);
   gap: 13px;
   transform: translateY(-7vh);
@@ -38,18 +41,25 @@
 main:has(
     .gy-reality-life-universe__canvas[data-reality-pressure-flow-side="RIGHT"]
   )
-  .xinmai-life-reflection-guide--reflection[data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"] {
+  .xinmai-life-reflection-guide--reflection:is(
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"]
+  ) {
   transform: translate(34px, -7vh);
 }
 
 main:has(
     .gy-reality-life-universe__canvas[data-reality-pressure-flow-side="LEFT"]
   )
-  .xinmai-life-reflection-guide--reflection[data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"] {
+  .xinmai-life-reflection-guide--reflection:is(
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"]
+  ) {
   transform: translate(-34px, -7vh);
 }
 
-.xinmai-life-reflection-guide__life-signal {
+.xinmai-life-reflection-guide__life-signal,
+.xinmai-life-reflection-guide__protective-meaning {
   position: relative;
   display: grid;
   gap: 5px;
@@ -61,7 +71,12 @@ main:has(
     cubic-bezier(0.22, 0.7, 0.2, 1) both;
 }
 
-.xinmai-life-reflection-guide__life-signal::before {
+.xinmai-life-reflection-guide__protective-meaning {
+  animation-name: xinmai-inner-view-protective-meaning-arrival;
+}
+
+.xinmai-life-reflection-guide__life-signal::before,
+.xinmai-life-reflection-guide__protective-meaning::before {
   position: absolute;
   top: 3px;
   bottom: 2px;
@@ -76,7 +91,17 @@ main:has(
   content: "";
 }
 
-.xinmai-life-reflection-guide__life-signal > i {
+.xinmai-life-reflection-guide__protective-meaning::before {
+  background: linear-gradient(
+    180deg,
+    rgb(220 205 169 / 6%),
+    rgb(220 205 169 / 32%),
+    rgb(185 203 236 / 6%)
+  );
+}
+
+.xinmai-life-reflection-guide__life-signal > i,
+.xinmai-life-reflection-guide__protective-meaning > i {
   position: absolute;
   top: 50%;
   left: 0;
@@ -89,13 +114,24 @@ main:has(
   animation: xinmai-inner-view-life-signal-breathe 4.8s ease-in-out infinite;
 }
 
-.xinmai-life-reflection-guide__life-signal > span {
+.xinmai-life-reflection-guide__protective-meaning > i {
+  border-color: rgb(220 205 169 / 34%);
+  animation-duration: 5.8s;
+}
+
+.xinmai-life-reflection-guide__life-signal > span,
+.xinmai-life-reflection-guide__protective-meaning > span {
   color: rgb(185 203 236 / 44%);
   font-size: 8px;
   letter-spacing: 0.13em;
 }
 
-.xinmai-life-reflection-guide__life-signal > strong {
+.xinmai-life-reflection-guide__protective-meaning > span {
+  color: rgb(220 205 169 / 46%);
+}
+
+.xinmai-life-reflection-guide__life-signal > strong,
+.xinmai-life-reflection-guide__protective-meaning > strong {
   color: rgb(245 242 233 / 76%);
   font-family: var(--xinmai-font-life);
   font-size: 12px;
@@ -105,12 +141,22 @@ main:has(
   text-wrap: balance;
 }
 
-.xinmai-life-reflection-guide--reflection[data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"]
+.xinmai-life-reflection-guide__protective-meaning > strong {
+  color: rgb(238 226 198 / 72%);
+}
+
+.xinmai-life-reflection-guide--reflection:is(
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"]
+  )
   .xinmai-life-reflection-guide__approach {
   gap: 0;
 }
 
-[data-dynamics-node-language="LIFE_UNIVERSE_WHISPER"][data-dynamics-inner-view-phase="FIRST_APPROACH"]
+[data-dynamics-node-language="LIFE_UNIVERSE_WHISPER"]:is(
+    [data-dynamics-inner-view-phase="FIRST_APPROACH"],
+    [data-dynamics-inner-view-phase="SECOND_APPROACH"]
+  )
   > span[aria-hidden="true"] {
   display: none;
 }
@@ -183,6 +229,18 @@ main:has(
   }
 }
 
+@keyframes xinmai-inner-view-protective-meaning-arrival {
+  from {
+    opacity: 0;
+    transform: translateY(5px) scale(0.992);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @keyframes xinmai-inner-view-life-signal-breathe {
   0%,
   100% {
@@ -227,6 +285,8 @@ main:has(
   .gy-inner-view-life-meridian__point,
   .xinmai-life-reflection-guide__life-signal,
   .xinmai-life-reflection-guide__life-signal > i,
+  .xinmai-life-reflection-guide__protective-meaning,
+  .xinmai-life-reflection-guide__protective-meaning > i,
   .xinmai-life-reflection-guide--reflection
     .xinmai-life-reflection-guide__observation,
   .xinmai-life-reflection-guide--reflection
@@ -240,7 +300,10 @@ main:has(
     opacity: 0.52;
   }
 
-  .xinmai-life-reflection-guide--reflection[data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"] {
+  .xinmai-life-reflection-guide--reflection:is(
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"]
+  ) {
     transform: none;
   }
 }
