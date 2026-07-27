@@ -1,0 +1,115 @@
+.gy-choice-life-trace {
+  opacity: 0.68;
+  transition: opacity 1.2s ease;
+}
+
+.gy-choice-life-trace__bed {
+  opacity: 0.28;
+  transition: opacity 1.6s ease;
+}
+
+.gy-choice-life-trace__flow {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 3px rgba(255, 239, 190, 0.12));
+  animation: xinmai-choice-response-flow 1.9s
+    cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+
+.gy-choice-life-trace__memory {
+  opacity: 0;
+  transform: scale(1.08);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 1.5s ease,
+    transform 1.8s cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+
+.gy-choice-response-gap[data-choice-response-trace-phase="LIFE_SETTLING"]
+  .gy-choice-life-trace {
+  opacity: 0.48;
+}
+
+.gy-choice-response-gap[data-choice-response-trace-phase="LIFE_SETTLING"]
+  .gy-choice-life-trace__flow {
+  opacity: 0.26;
+}
+
+.gy-choice-response-gap[data-choice-response-trace-phase="QUIET_TRACE"]
+  .gy-choice-life-trace {
+  opacity: 0.4;
+}
+
+.gy-choice-response-gap[data-choice-response-trace-phase="QUIET_TRACE"]
+  .gy-choice-life-trace__bed {
+  opacity: 0.16;
+}
+
+.gy-choice-response-gap[data-choice-response-trace-phase="QUIET_TRACE"]
+  .gy-choice-life-trace__flow {
+  opacity: 0.1;
+}
+
+.gy-choice-response-gap[data-choice-response-trace-phase="QUIET_TRACE"]
+  .gy-choice-life-trace__memory {
+  opacity: 0.5;
+  transform: scale(1);
+  animation: xinmai-choice-response-memory 7.2s ease-in-out 1.8s infinite
+    alternate;
+}
+
+.gy-choice-response-gap[data-choice-response-trace-phase="NEW_FLOW"]
+  .gy-inner-view-life-meridian__flow {
+  animation-duration: 5.8s;
+}
+
+.gy-choice-response-gap[data-choice-response-trace-phase="LIFE_SETTLING"]
+  .gy-inner-view-life-meridian__flow {
+  animation-duration: 8.8s;
+}
+
+.gy-choice-response-gap[data-choice-response-trace-phase="QUIET_TRACE"]
+  .gy-inner-view-life-meridian__flow {
+  animation-duration: 11.6s;
+}
+
+@keyframes xinmai-choice-response-flow {
+  0% {
+    opacity: 0.12;
+    stroke-dashoffset: 1;
+  }
+
+  58% {
+    opacity: 0.62;
+  }
+
+  100% {
+    opacity: 0.2;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes xinmai-choice-response-memory {
+  from {
+    opacity: 0.32;
+  }
+
+  to {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gy-choice-life-trace,
+  .gy-choice-life-trace__bed,
+  .gy-choice-life-trace__flow,
+  .gy-choice-life-trace__memory {
+    animation: none !important;
+    transition: none;
+  }
+
+  .gy-choice-life-trace__flow {
+    stroke-dashoffset: 0;
+  }
+}

@@ -1812,6 +1812,7 @@ function SingleModelRevisionActionFocus({
 function TransformationMomentFocus({
   action,
   presentation,
+  responseDimension,
   onSediment,
   onContinueToReality,
   livedResponseRecognitionRequired = false,
@@ -1822,6 +1823,7 @@ function TransformationMomentFocus({
 }: {
   action: SingleModelRevisionAction;
   presentation?: ChangeExperiencePresentation | null;
+  responseDimension: string;
   onSediment?: () => void;
   onContinueToReality?: () => void;
   livedResponseRecognitionRequired?: boolean;
@@ -1833,16 +1835,65 @@ function TransformationMomentFocus({
   const hasPresentation = Boolean(presentation);
   const [responseSpaceSettled, setResponseSpaceSettled] =
     useState(false);
+  const [responseTracePhase, setResponseTracePhase] = useState<
+    "NEW_FLOW" | "LIFE_SETTLING" | "QUIET_TRACE"
+  >("NEW_FLOW");
   const coreAnchorTop = visualSource
     ? `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`
     : "31%";
+  const responseTraceSourceSlot =
+    resolveLifeUniverseCrystalSourceSlot(responseDimension);
+  const responseTraceGeometry = useMemo(() => {
+    if (visualSource === null) return null;
+    const projectionBundle = visualSource.projectionBundle;
+    const coordinateProjection =
+      projectionBundle.twentyEightMansionCoordinateProjection;
+    const morphology =
+      projectionBundle.morphologicalFieldAlignmentProjection
+        .morphologicalFieldExpression;
+    return resolveLifeUniverseCrystalImprintGeometry({
+      identityKey: [
+        visualSource.provenance.sourceReferenceId,
+        action.yaoName,
+        responseDimension,
+        "CHOICE_RESPONSE_TRACE",
+      ].join(":"),
+      birthMansionIndex: coordinateProjection.birthMansion.mansionIndex,
+      normalizedOrbitPositions: coordinateProjection.coordinates.map(
+        (coordinate) => coordinate.normalizedOrbitPosition,
+      ),
+      envelopeScale: morphology.envelopeScale,
+      postureBias: morphology.postureBias,
+      sourceSlot: responseTraceSourceSlot,
+    });
+  }, [
+    action.yaoName,
+    responseDimension,
+    responseTraceSourceSlot,
+    visualSource,
+  ]);
+  const responseTracePath = responseTraceGeometry
+    ? `M ${responseTraceGeometry.target[0]} ${responseTraceGeometry.target[1]} L ${responseTraceGeometry.stem[0]} ${responseTraceGeometry.stem[1]} L ${responseTraceGeometry.branchTarget[0]} ${responseTraceGeometry.branchTarget[1]}`
+    : "";
+  const responseTracePoint =
+    responseTraceGeometry?.branchTarget ?? null;
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
+    const settleTimer = window.setTimeout(() => {
+      setResponseTracePhase("LIFE_SETTLING");
+    }, 920);
+    const traceTimer = window.setTimeout(() => {
+      setResponseTracePhase("QUIET_TRACE");
+    }, 2_260);
+    const readyTimer = window.setTimeout(() => {
       setResponseSpaceSettled(true);
-    }, 1_800);
+    }, 3_100);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(settleTimer);
+      window.clearTimeout(traceTimer);
+      window.clearTimeout(readyTimer);
+    };
   }, []);
 
   return (
@@ -1887,6 +1938,13 @@ function TransformationMomentFocus({
           ? "AWAITING_USER_RECOGNITION"
           : "NOT_YET_OBSERVED"
       }
+      data-choice-response-trace-phase={responseTracePhase}
+      data-choice-response-trace-source={responseDimension}
+      data-choice-response-trace-slot={responseTraceSourceSlot}
+      data-choice-response-trace-continuity="SAME_SOURCE_POSITION_SAME_BODY"
+      data-choice-response-trace-form="MERIDIAN_MEMORY_NOT_OBJECT"
+      data-choice-response-trace-sequence="FLOW_THEN_SETTLE_THEN_TRACE"
+      data-choice-crystal-materialization="NOT_STARTED"
       data-choice-living-change-judge="USER_NOT_SYSTEM"
       data-choice-crystal-eligibility={
         livedResponseRecognitionRequired
@@ -1924,6 +1982,62 @@ function TransformationMomentFocus({
           innerViewRevealDepth={2}
         />
       </div>
+
+      {responseTraceGeometry && responseTracePoint ? (
+        <svg
+          className="gy-choice-life-trace"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          data-choice-life-trace="PRE_CRYSTAL_BODY_MEMORY"
+          data-choice-life-trace-location="ACTIVE_RESPONSE_SOURCE_SLOT"
+          style={{
+            position: "absolute",
+            zIndex: 1,
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            overflow: "visible",
+            pointerEvents: "none",
+          }}
+        >
+          <path
+            className="gy-choice-life-trace__bed"
+            d={responseTracePath}
+            pathLength="1"
+            fill="none"
+            stroke="rgba(185,203,236,0.12)"
+            strokeWidth="0.48"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            className="gy-choice-life-trace__flow"
+            d={responseTracePath}
+            pathLength="1"
+            fill="none"
+            stroke="rgba(255,239,190,0.5)"
+            strokeWidth="0.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <g className="gy-choice-life-trace__memory">
+            <path
+              d={`M ${responseTracePoint[0] - 0.38} ${responseTracePoint[1] + 0.12} Q ${responseTracePoint[0]} ${responseTracePoint[1] - 0.38} ${responseTracePoint[0] + 0.42} ${responseTracePoint[1] + 0.08}`}
+              fill="none"
+              stroke="rgba(255,239,190,0.54)"
+              strokeWidth="0.22"
+              strokeLinecap="round"
+            />
+            <circle
+              cx={responseTracePoint[0]}
+              cy={responseTracePoint[1]}
+              r="0.16"
+              fill="rgba(255,247,220,0.64)"
+            />
+          </g>
+        </svg>
+      ) : null}
 
       <div
         aria-hidden="true"
@@ -2011,8 +2125,12 @@ function TransformationMomentFocus({
               ? "这次变化，只能由你认出。"
               : onSediment
               ? "轻触生命核心 · 让这次回应留在生命里"
-              : "先和这点空间待一会 · 不急着证明改变"
-            : "熟悉的路径仍在 · 生命正在重新找到自己的节律"}
+              : "这里留下了一点未被命名的变化"
+            : responseTracePhase === "NEW_FLOW"
+              ? "新的流动仍在同一身体里"
+              : responseTracePhase === "LIFE_SETTLING"
+                ? "生命正在重新找到自己的节律"
+                : "一点变化，安静留在刚刚回应的位置"}
         </span>
         {livedResponseRecognitionRequired && onRecognizeLivedResponse ? (
           <button
@@ -2963,6 +3081,9 @@ function HexagramCodeDeliveryShell() {
             <TransformationMomentFocus
               action={singleModelRevisionAction}
               presentation={changeExperiencePresentation}
+              responseDimension={
+                changeExperienceRoute?.dimension ?? sequentialCurrentSpaceId
+              }
               onSediment={
                 LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED
                   ? undefined

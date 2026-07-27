@@ -9,6 +9,7 @@ import "./styles/xinmai-life-reflection-refinement.css";
 import "./styles/xinmai-inner-view-three-approach.css";
 import "./styles/xinmai-inner-view-choice-continuity.css";
 import "./styles/xinmai-choice-breath-hold-response.css";
+import "./styles/xinmai-choice-crystal-life-trace.css";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
