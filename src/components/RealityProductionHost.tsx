@@ -155,6 +155,12 @@ export function RealityProductionHost({
       : pressureVisualState === "PRESSURE_PAUSED"
         ? "你和它仍在这里，现实暂时停在远处。"
         : "你和它仍在同一片星河里。现实开始从远处靠近。";
+  const realityLifeWeather =
+    pressureVisualState === "PRESSURE_RECOGNIZED"
+      ? "CURRENT_REALITY_MOVING_THROUGH_SAME_LIFE"
+      : pressureVisualState === "PRESSURE_PAUSED"
+        ? "CURRENT_REALITY_HELD_AT_DISTANCE"
+        : "QUIET_IDENTITY_WITH_MEMORY";
 
   const applyConsumerResult = (
     nextConsumerResult: RealityProductionPressureSeedConsumerResult,
@@ -348,6 +354,14 @@ export function RealityProductionHost({
       data-choice-growth-claim="NONE_UNTIL_USER_RECOGNIZES"
       data-choice-crystal-stage="NOT_STARTED"
       data-reality-pressure-visual-state={pressureVisualState}
+      data-reality-life-weather={realityLifeWeather}
+      data-reality-life-weather-input={
+        pressureSeedSession.selectedPressureSeedContext
+          ? "CURRENT_RECOGNIZED_REALITY"
+          : "NONE"
+      }
+      data-reality-life-weather-memory-boundary="PAST_IN_BODY_NOT_CURRENT_STATE"
+      data-reality-life-weather-identity-invariant="SAME_CORE_SAME_BODY_SAME_LIFE"
       data-pressure-seed-bundle-reference={
         pressureSeedSession.candidateBundleReferenceId
       }
@@ -358,6 +372,7 @@ export function RealityProductionHost({
     >
       <RealityLifeUniverseCanvas
         visualContinuity={visualContinuity}
+        currentRealityWeatherEnabled
         selectedPressureSeedContext={
           pressureSeedSession.selectedPressureSeedContext
         }

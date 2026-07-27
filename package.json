@@ -176,6 +176,7 @@
     "check-xinmai-validated-response-crystal-body-sediment": "node scripts/check-xinmai-validated-response-crystal-body-sediment.mjs",
     "check-xinmai-crystal-imprint-returning-life-world-continuity": "node scripts/check-xinmai-crystal-imprint-returning-life-world-continuity.mjs",
     "check-xinmai-returning-imprint-new-reality-continuity": "node scripts/check-xinmai-returning-imprint-new-reality-continuity.mjs",
+    "check-xinmai-new-reality-life-weather-response": "node scripts/check-xinmai-new-reality-life-weather-response.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",

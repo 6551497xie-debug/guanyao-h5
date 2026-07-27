@@ -2191,6 +2191,7 @@ export function createGenesisWebGLRendererCore(
   let realityPressureStartedAtMilliseconds: number | null = null;
   let realityPressureRecognitionStartedAtMilliseconds: number | null = null;
   let realityPressureRecoveryStartedAtMilliseconds: number | null = null;
+  let realityLifeWeatherStartedAtMilliseconds: number | null = null;
   let gravityMemoryInfluenceStartedAtMilliseconds: number | null = null;
   let choiceResponsePauseStartedAtMilliseconds: number | null = null;
   let choiceResponseSpaceStartedAtMilliseconds: number | null = null;
@@ -2230,6 +2231,38 @@ export function createGenesisWebGLRendererCore(
             ?.closest("[data-reality-pressure-visual-state]")
             ?.getAttribute("data-reality-pressure-visual-state")
         : null;
+      const realityLifeWeatherPhase = isRealityCanvas
+        ? input.canvas?.getAttribute("data-reality-life-weather-phase")
+        : null;
+      if (
+        realityLifeWeatherPhase === "CURRENT_REALITY_SENSING" &&
+        realityLifeWeatherStartedAtMilliseconds === null
+      ) {
+        realityLifeWeatherStartedAtMilliseconds = safeElapsedMilliseconds;
+      } else if (realityLifeWeatherPhase === "QUIET_WITH_MEMORY") {
+        realityLifeWeatherStartedAtMilliseconds = null;
+      }
+      const realityLifeWeatherRaw =
+        realityLifeWeatherPhase === "CURRENT_REALITY_SETTLED"
+          ? 1
+          : realityLifeWeatherPhase === "CURRENT_REALITY_SENSING" &&
+              realityLifeWeatherStartedAtMilliseconds !== null
+            ? Math.min(
+                1,
+                Math.max(
+                  0,
+                  (safeElapsedMilliseconds -
+                    realityLifeWeatherStartedAtMilliseconds) /
+                    2_800,
+                ),
+              )
+            : realityLifeWeatherPhase === null
+              ? 1
+              : 0;
+      const realityLifeWeatherProgress =
+        realityLifeWeatherRaw *
+        realityLifeWeatherRaw *
+        (3 - 2 * realityLifeWeatherRaw);
       const gravityInertiaField = isRealityCanvas
         ? input.canvas
             ?.closest(".gy-reality-life-universe")
@@ -2611,9 +2644,10 @@ export function createGenesisWebGLRendererCore(
       // The existing life senses Reality before the interface names it.
       // This is the same pressure projection with a slightly earlier body
       // response; the surrounding space keeps the original approach timing.
-      const lifePressurePerceptionProgress = isRealityCanvas
-        ? 1 - Math.pow(1 - realityPressureEntryProgress, 1.55)
-        : realityPressureEntryProgress;
+      const lifePressurePerceptionProgress =
+        (isRealityCanvas
+          ? 1 - Math.pow(1 - realityPressureEntryProgress, 1.55)
+          : realityPressureEntryProgress) * realityLifeWeatherProgress;
       // Reality begins with the relationship already settled in Genesis.
       // Pressure may occupy more of the shared space, but it must never reset
       // the recognized life to an anonymous idle pose.

@@ -12,11 +12,13 @@ import type { RealityProductionHostProps } from "../types/realityProductionRoute
 const REALITY_ARRIVAL_TIMING_MS = Object.freeze({
   IDENTITY_HOLD: 1_600,
   SETTLED: 4_600,
+  LIFE_WEATHER_SETTLE: 2_800,
 });
 
 export function RealityLifeUniverseCanvas({
   visualContinuity,
   selectedPressureSeedContext = null,
+  currentRealityWeatherEnabled = false,
   historicalRealityMemoryKey = null,
   latestCrystalMemoryKey = null,
   latestCrystalSourceSlot = null,
@@ -25,6 +27,7 @@ export function RealityLifeUniverseCanvas({
     selectedPressureSeedContext?:
       | Parameters<RealityProductionHostProps["onContinueToGravity"]>[0]
       | null;
+    currentRealityWeatherEnabled?: boolean;
     historicalRealityMemoryKey?: string | null;
     latestCrystalMemoryKey?: string | null;
     latestCrystalSourceSlot?: number | null;
@@ -36,14 +39,22 @@ export function RealityLifeUniverseCanvas({
   const [arrivalPhase, setArrivalPhase] = useState(() =>
     continuesRecognizedPressure ? "SETTLED" : "IDENTITY_HOLD",
   );
+  const [lifeWeatherPhase, setLifeWeatherPhase] = useState<
+    "QUIET_WITH_MEMORY" | "CURRENT_REALITY_SENSING" | "CURRENT_REALITY_SETTLED"
+  >(() =>
+    selectedPressureSeedContext === null
+      ? "QUIET_WITH_MEMORY"
+      : currentRealityWeatherEnabled
+        ? "CURRENT_REALITY_SENSING"
+        : "CURRENT_REALITY_SETTLED",
+  );
   const realityPressureConsumer = useMemo(() => {
-    const frozenProjection =
-      visualContinuity.consumerSourceResult.consumerSource.projectionBundle
-        .realityPressureProjection;
     if (selectedPressureSeedContext === null) {
       return Object.freeze({
         status: "WAITING" as const,
-        projection: frozenProjection,
+        // A persisted projection belongs to history. A new Reality encounter
+        // stays visually quiet until the user recognizes what is happening now.
+        projection: null,
       });
     }
 
@@ -152,6 +163,29 @@ export function RealityLifeUniverseCanvas({
       window.clearTimeout(settleTimer);
     };
   }, [continuesRecognizedPressure, visualContinuity.sourceReferenceId]);
+
+  useEffect(() => {
+    if (selectedPressureSeedContext === null) {
+      setLifeWeatherPhase("QUIET_WITH_MEMORY");
+      return undefined;
+    }
+    if (
+      !currentRealityWeatherEnabled ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      setLifeWeatherPhase("CURRENT_REALITY_SETTLED");
+      return undefined;
+    }
+
+    setLifeWeatherPhase("CURRENT_REALITY_SENSING");
+    const settleTimer = window.setTimeout(() => {
+      setLifeWeatherPhase("CURRENT_REALITY_SETTLED");
+    }, REALITY_ARRIVAL_TIMING_MS.LIFE_WEATHER_SETTLE);
+    return () => window.clearTimeout(settleTimer);
+  }, [
+    currentRealityWeatherEnabled,
+    selectedPressureSeedContext?.selectedPressureSeedId,
+  ]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -340,6 +374,13 @@ export function RealityLifeUniverseCanvas({
         className="gy-reality-life-universe__canvas"
         data-reality-life-universe-renderer={rendererState}
         data-reality-arrival-phase={arrivalPhase}
+        data-reality-life-weather-phase={lifeWeatherPhase}
+        data-reality-life-weather-source={
+          realityPressureConsumer.status === "RESPONDING"
+            ? "CURRENT_RECOGNIZED_REALITY_ONLY"
+            : "NO_CURRENT_REALITY"
+        }
+        data-reality-life-weather-identity="SAME_CORE_SAME_BODY"
         data-reality-pressure-flow-side={realityPressureFlowSide}
         data-genesis-presence-visual-state="RECOGNIZED"
         data-source-reference-id={visualContinuity.sourceReferenceId}
