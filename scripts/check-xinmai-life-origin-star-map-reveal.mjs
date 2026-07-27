@@ -57,8 +57,10 @@ const assertions = [
   [
     "the life core remains singular and becomes a boundaryless mist seed",
     rendererSource.includes(
-      "const coreRadius = isLifeOriginStarMapReveal ? 0.052 : 0.14;",
+      "const coreRadius = isGenesisLifeOriginStarMapReveal",
     ) &&
+      rendererSource.includes("? 0.078") &&
+      rendererSource.includes("? 0.052") &&
       rendererSource.includes("lifeOriginCoreMist") &&
       !rendererSource.includes("SECOND_LIFE_CORE"),
   ],

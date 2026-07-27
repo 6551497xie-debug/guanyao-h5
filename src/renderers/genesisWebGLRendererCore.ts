@@ -11,6 +11,7 @@ import {
   LineSegments,
   Mesh,
   MeshBasicMaterial,
+  NormalBlending,
   PerspectiveCamera,
   PointLight,
   Points,
@@ -113,6 +114,56 @@ const createLifeOriginStarTexture = (): CanvasTexture | null => {
   gradient.addColorStop(1, "rgba(111,168,182,0)");
   context.fillStyle = gradient;
   context.fillRect(0, 0, 64, 64);
+
+  const texture = new CanvasTexture(sprite);
+  texture.needsUpdate = true;
+  return texture;
+};
+
+const createInkWashLifeAuraTexture = (): CanvasTexture | null => {
+  if (typeof document === "undefined") return null;
+
+  const sprite = document.createElement("canvas");
+  sprite.width = 96;
+  sprite.height = 96;
+  const context = sprite.getContext("2d");
+  if (context === null) return null;
+
+  context.clearRect(0, 0, 96, 96);
+  context.save();
+  context.translate(48, 48);
+  context.scale(1, 0.72);
+
+  const wash = context.createRadialGradient(0, 0, 2, 0, 0, 44);
+  wash.addColorStop(0, "rgba(238,251,249,0.54)");
+  wash.addColorStop(0.24, "rgba(205,235,232,0.34)");
+  wash.addColorStop(0.58, "rgba(126,181,183,0.16)");
+  wash.addColorStop(0.82, "rgba(72,119,126,0.07)");
+  wash.addColorStop(1, "rgba(30,66,74,0)");
+  context.fillStyle = wash;
+  context.beginPath();
+  context.arc(0, 0, 44, 0, Math.PI * 2);
+  context.fill();
+
+  // Break the perfect radial edge into a restrained ink wash. This remains a
+  // reusable material for the existing body topology, never an animal mask.
+  context.globalCompositeOperation = "destination-out";
+  for (let index = 0; index < 18; index += 1) {
+    const angle = (index / 18) * Math.PI * 2;
+    const radius = 35 + Math.sin(index * 2.37) * 5;
+    const washoutRadius = 4 + (index % 4) * 1.3;
+    context.globalAlpha = 0.22 + (index % 3) * 0.08;
+    context.beginPath();
+    context.arc(
+      Math.cos(angle) * radius,
+      Math.sin(angle) * radius,
+      washoutRadius,
+      0,
+      Math.PI * 2,
+    );
+    context.fill();
+  }
+  context.restore();
 
   const texture = new CanvasTexture(sprite);
   texture.needsUpdate = true;
@@ -469,6 +520,9 @@ export function createGenesisWebGLRendererCore(
   const isContinuityPresenceStage =
     isMoonOrigin || isStarRiver || isTimeResonance;
   const isPresenceStage = isStarBeastReveal || isCompletion;
+  const inkWashLifeAuraTexture = isPresenceStage
+    ? createInkWashLifeAuraTexture()
+    : null;
   const realizationProgress = genesisVisualRealization?.transitionProgress ?? 0;
   const perspectiveBalance = genesisPerspectiveCalibration?.presenceBalance;
   const perspectiveMoonWeight = perspectiveBalance?.moonWeight ?? 1;
@@ -1909,6 +1963,110 @@ export function createGenesisWebGLRendererCore(
     isHexagramImprint ||
     isLifeForce ||
     isPresenceStage;
+  // Ink-Wash Life Aura uses the same immutable spine and force direction as
+  // the body field. It is a low-frequency density envelope around the life,
+  // not a new beast, outline asset, or identity source.
+  const lifeAuraParticleCount = isPresenceStage ? 168 : 0;
+  const lifeAuraPositions = new Float32Array(lifeAuraParticleCount * 3);
+  const lifeAuraSpineOrigins = new Float32Array(lifeAuraParticleCount * 3);
+  const lifeAuraLateralOffsets = new Float32Array(lifeAuraParticleCount);
+  const lifeAuraAxialOffsets = new Float32Array(lifeAuraParticleCount);
+  const lifeAuraPhases = new Float32Array(lifeAuraParticleCount);
+  const lifeAuraColors = new Float32Array(lifeAuraParticleCount * 3);
+  const lifeAuraDeepWaterColor = new Color(0x315b64);
+  const lifeAuraLivingJadeColor = new Color(0x8fbfc0);
+  const lifeAuraColor = new Color();
+  for (let index = 0; index < lifeAuraParticleCount; index += 1) {
+    const progress =
+      (index + 0.28 + random() * 0.44) /
+      Math.max(1, lifeAuraParticleCount);
+    const scaledIndex = progress * Math.max(1, spineSegments - 1);
+    const sourceIndex = Math.min(
+      spineSegments - 1,
+      Math.floor(scaledIndex),
+    );
+    const targetIndex = Math.min(spineSegments - 1, sourceIndex + 1);
+    const interpolation = scaledIndex - sourceIndex;
+    const sourceOffset = sourceIndex * 3;
+    const targetOffset = targetIndex * 3;
+    const positionOffset = index * 3;
+    const spineX =
+      finalSpinePositions[sourceOffset] +
+      (finalSpinePositions[targetOffset] -
+        finalSpinePositions[sourceOffset]) *
+        interpolation;
+    const spineY =
+      finalSpinePositions[sourceOffset + 1] +
+      (finalSpinePositions[targetOffset + 1] -
+        finalSpinePositions[sourceOffset + 1]) *
+        interpolation;
+    const spineZ =
+      finalSpinePositions[sourceOffset + 2] +
+      (finalSpinePositions[targetOffset + 2] -
+        finalSpinePositions[sourceOffset + 2]) *
+        interpolation;
+    const signedWash = random() * 2 - 1;
+    const lateralOffset =
+      Math.sign(signedWash) *
+      Math.pow(Math.abs(signedWash), 0.74) *
+      bodyFieldWidth *
+      (1.95 + Math.sin(progress * Math.PI) * 1.45);
+    const axialOffset =
+      (random() * 2 - 1) *
+      bodyFieldWidth *
+      (0.36 + Math.sin(progress * Math.PI) * 0.22);
+    const depthOffset =
+      (random() * 2 - 1) *
+      (0.08 + bodyFieldWidth * 0.44);
+    lifeAuraSpineOrigins[positionOffset] = spineX;
+    lifeAuraSpineOrigins[positionOffset + 1] = spineY;
+    lifeAuraSpineOrigins[positionOffset + 2] = spineZ + depthOffset;
+    lifeAuraLateralOffsets[index] = lateralOffset;
+    lifeAuraAxialOffsets[index] = axialOffset;
+    lifeAuraPhases[index] = random() * Math.PI * 2 + progress * Math.PI * 3;
+    lifeAuraPositions[positionOffset] =
+      spineX + perpendicularX * lateralOffset + axisX * axialOffset;
+    lifeAuraPositions[positionOffset + 1] =
+      spineY + perpendicularY * lateralOffset + axisY * axialOffset;
+    lifeAuraPositions[positionOffset + 2] = spineZ + depthOffset;
+
+    const birthDistance =
+      ((spineX * axisX + spineY * axisY) - birthDensityAxis) /
+      (bodyAxisRange * 0.24);
+    const birthAffinity = Math.exp(-birthDistance * birthDistance);
+    lifeAuraColor
+      .copy(lifeAuraDeepWaterColor)
+      .lerp(lifeAuraLivingJadeColor, 0.18 + birthAffinity * 0.34)
+      .multiplyScalar(0.62 + random() * 0.22);
+    lifeAuraColors[positionOffset] = lifeAuraColor.r;
+    lifeAuraColors[positionOffset + 1] = lifeAuraColor.g;
+    lifeAuraColors[positionOffset + 2] = lifeAuraColor.b;
+  }
+  const lifeAuraGeometry = new BufferGeometry();
+  const lifeAuraPositionAttribute = new Float32BufferAttribute(
+    lifeAuraPositions,
+    3,
+  );
+  lifeAuraGeometry.setAttribute("position", lifeAuraPositionAttribute);
+  lifeAuraGeometry.setAttribute(
+    "color",
+    new Float32BufferAttribute(lifeAuraColors, 3),
+  );
+  const lifeAuraMaterial = new PointsMaterial({
+    color: new Color(0xffffff),
+    vertexColors: true,
+    map: inkWashLifeAuraTexture,
+    alphaTest: 0.004,
+    size: lifePresence.stellarSkeleton.nodeScale * 2.7,
+    sizeAttenuation: true,
+    transparent: true,
+    opacity: 0,
+    blending: NormalBlending,
+    depthWrite: false,
+  });
+  const lifeAuraBaseSize = lifeAuraMaterial.size;
+  const lifeAura = new Points(lifeAuraGeometry, lifeAuraMaterial);
+  lifeAura.visible = isPresenceStage;
   const pressureTracePointCount = 5;
   const pressureTracePositions = new Float32Array(pressureTracePointCount * 3);
   const pressureTraceGeometry = new BufferGeometry();
@@ -1981,6 +2139,7 @@ export function createGenesisWebGLRendererCore(
             ? lifePresence.morphologicalField.flowDirection * 0.012
         : 0;
   structureGroup.add(
+    lifeAura,
     spineLine,
     branchLines,
     structurePoints,
@@ -2046,6 +2205,7 @@ export function createGenesisWebGLRendererCore(
   );
   const coreMaterial = core.material as MeshBasicMaterial;
   const coreBaseOpacity = coreMaterial.opacity;
+  core.visible = !isLifeOriginStarMapReveal;
   const coreSurface = new Mesh(
     new SphereGeometry(
       coreRadius * LIFE_UNIVERSE_CORE_IDENTITY.surfaceToCoreRatio,
@@ -2068,6 +2228,7 @@ export function createGenesisWebGLRendererCore(
   );
   const coreSurfaceMaterial = coreSurface.material as MeshBasicMaterial;
   const coreSurfaceBaseOpacity = coreSurfaceMaterial.opacity;
+  coreSurface.visible = !isLifeOriginStarMapReveal;
   const coreHalo = new Mesh(
     new SphereGeometry(
       coreRadius * LIFE_UNIVERSE_CORE_IDENTITY.haloToCoreRatio,
@@ -2097,6 +2258,7 @@ export function createGenesisWebGLRendererCore(
   );
   const coreHaloMaterial = coreHalo.material as MeshBasicMaterial;
   const coreHaloBaseOpacity = coreHaloMaterial.opacity;
+  coreHalo.visible = !isLifeOriginStarMapReveal;
   const coreLight = new PointLight(
     coreColor,
     sceneProjection.lifeCore.intensity *
@@ -2145,7 +2307,7 @@ export function createGenesisWebGLRendererCore(
     lifeOriginCoreMistMaterial,
   );
   if (isLifeOriginStarMapReveal) {
-    const mistParticleCount = isGenesisLifeOriginStarMapReveal ? 124 : 72;
+    const mistParticleCount = isGenesisLifeOriginStarMapReveal ? 88 : 64;
     const mistPositions = new Float32Array(mistParticleCount * 3);
     for (let mistIndex = 0; mistIndex < mistParticleCount; mistIndex += 1) {
       const mistOffset = mistIndex * 3;
@@ -2154,9 +2316,9 @@ export function createGenesisWebGLRendererCore(
         mistIndex * 2.399963229728653 +
         (random() - 0.5) * 0.42;
       const radius =
-        0.03 +
+        0.06 +
         radialProgress *
-          (isGenesisLifeOriginStarMapReveal ? 0.29 : 0.19);
+          (isGenesisLifeOriginStarMapReveal ? 0.34 : 0.24);
       mistPositions[mistOffset] =
         Math.cos(angle) *
         radius *
@@ -3097,6 +3259,88 @@ export function createGenesisWebGLRendererCore(
         }
         bodyFieldPositionAttribute.needsUpdate = true;
       }
+      if (isPresenceStage && lifeAuraParticleCount > 0) {
+        const pressureAuraContraction =
+          (pressureExpression === null
+            ? 0
+            : Math.min(
+                1,
+                pressureFieldCompression * 0.42 +
+                  pressureBoundaryLoad * 0.26 +
+                  Math.abs(pressureFlowDeflection) * 0.2 +
+                  pressureTemporalWeight * 0.12,
+              )) *
+          realityPressureEntryProgress *
+          realityPressureStateWeight *
+          (1 - realityPressureRecoveryProgress * 0.78);
+        const lifeAuraRelease =
+          realityPressureRecoveryProgress * 0.78 +
+          choiceResponseSpaceProgress * 0.14;
+        const lifeAuraFlowSpeed =
+          (0.15 +
+            Math.abs(lifePresence.morphologicalField.flowDirection) * 0.055) *
+          (1 - pressureAuraContraction * 0.62 + lifeAuraRelease * 0.24);
+        const lifeAuraBreath =
+          1 +
+          (identityContinuityBreath - 1) *
+            (0.74 - pressureAuraContraction * 0.26);
+        for (let index = 0; index < lifeAuraParticleCount; index += 1) {
+          const positionOffset = index * 3;
+          const phase =
+            lifeAuraPhases[index] + universeSeconds * lifeAuraFlowSpeed;
+          const flowShift =
+            Math.sin(phase) *
+            (0.012 +
+              Math.abs(lifePresence.morphologicalField.flowDirection) *
+                0.007) *
+            (1 - pressureAuraContraction * 0.58);
+          const lateralBreath =
+            lifeAuraBreath *
+            (1 -
+              pressureAuraContraction * 0.2 +
+              lifeAuraRelease * 0.055 +
+              Math.sin(phase * 0.63) * 0.018);
+          const lateralOffset =
+            lifeAuraLateralOffsets[index] * lateralBreath;
+          const axialOffset =
+            lifeAuraAxialOffsets[index] *
+              (1 - pressureAuraContraction * 0.08) +
+            flowShift;
+          const contactProjection =
+            lifeAuraSpineOrigins[positionOffset] * pressureContactAxisX +
+            lifeAuraSpineOrigins[positionOffset + 1] *
+              pressureContactAxisY;
+          const contactAffinity = Math.min(
+            1,
+            Math.max(
+              0,
+              0.5 +
+                contactProjection /
+                  Math.max(0.001, bodyDirectionExtent * 2.4),
+            ),
+          );
+          const pressureShift =
+            pressureAuraContraction *
+            contactAffinity *
+            (0.012 + realityPressurePulse * 0.008);
+          lifeAuraPositions[positionOffset] =
+            lifeAuraSpineOrigins[positionOffset] +
+            perpendicularX * lateralOffset +
+            axisX * axialOffset -
+            pressureContactAxisX * pressureShift;
+          lifeAuraPositions[positionOffset + 1] =
+            lifeAuraSpineOrigins[positionOffset + 1] +
+            perpendicularY * lateralOffset +
+            axisY * axialOffset -
+            pressureContactAxisY * pressureShift;
+          lifeAuraPositions[positionOffset + 2] =
+            lifeAuraSpineOrigins[positionOffset + 2] +
+            Math.sin(phase * 0.47) *
+              0.012 *
+              (1 - pressureAuraContraction * 0.64);
+        }
+        lifeAuraPositionAttribute.needsUpdate = true;
+      }
       const birthDirectionResponseRaw = isHexagramImprint
         ? Math.min(1, Math.max(0, (elapsedSeconds - 0.08) / 1.08))
         : 1;
@@ -3708,7 +3952,7 @@ export function createGenesisWebGLRendererCore(
             : isLifeOriginStarMapReveal
               ? isGenesisLifeOriginStarMapReveal
                 ? 0.026
-                : 0.065
+                : 0.038
               : 0.12,
       );
       const rhythmPhase =
@@ -3839,17 +4083,17 @@ export function createGenesisWebGLRendererCore(
           0.93 + Math.sin(universeSeconds * 0.48) * 0.07;
         lifeOriginCoreMistMaterial.opacity =
           (isGenesisLifeOriginStarMapReveal
-            ? 0.34 + lifeOriginRevealProgress * 0.46
-            : 0.14 + lifeOriginRevealProgress * 0.34) *
+            ? 0.075 + lifeOriginRevealProgress * 0.17
+            : 0.09 + lifeOriginRevealProgress * 0.16) *
           originMistBreath;
         lifeOriginCoreMistMaterial.size =
           isGenesisLifeOriginStarMapReveal
-            ? 0.024 + lifeOriginRevealProgress * 0.018
-            : 0.03 + lifeOriginRevealProgress * 0.021;
+            ? 0.014 + lifeOriginRevealProgress * 0.009
+            : 0.018 + lifeOriginRevealProgress * 0.011;
         lifeOriginCoreMist.rotation.z =
           Math.sin(universeSeconds * 0.11) * 0.035;
         lifeOriginCoreMist.scale.setScalar(
-          (isGenesisLifeOriginStarMapReveal ? 1.18 : 1.08) +
+          (isGenesisLifeOriginStarMapReveal ? 1.26 : 1.14) +
             lifeOriginRevealProgress *
               (isGenesisLifeOriginStarMapReveal ? 0.28 : 0.2) +
             Math.sin(universeSeconds * 0.48) * 0.025,
@@ -3858,17 +4102,17 @@ export function createGenesisWebGLRendererCore(
           coreBaseOpacity *
           (isGenesisLifeOriginStarMapReveal
             ? 0.008 + lifeOriginRevealProgress * 0.006
-            : 0.16 + lifeOriginRevealProgress * 0.05);
+            : 0.045 + lifeOriginRevealProgress * 0.018);
         coreSurfaceMaterial.opacity =
           coreSurfaceBaseOpacity *
           (isGenesisLifeOriginStarMapReveal
             ? 0.1 + lifeOriginRevealProgress * 0.04
-            : 0.52 + lifeOriginRevealProgress * 0.12);
+            : 0.24 + lifeOriginRevealProgress * 0.08);
         coreHaloMaterial.opacity =
           coreHaloBaseOpacity *
           (isGenesisLifeOriginStarMapReveal
             ? 1.72 + lifeOriginRevealProgress * 0.64
-            : 1.3 + lifeOriginRevealProgress * 0.42);
+            : 1.55 + lifeOriginRevealProgress * 0.5);
       }
       coreLight.intensity =
         coreLightBaseIntensity *
@@ -4251,7 +4495,42 @@ export function createGenesisWebGLRendererCore(
           lifeOriginRevealProgress *
             (isGenesisLifeOriginStarMapReveal ? 0.065 : 0.2) +
           Math.sin(rhythmPhase * 0.72 + 0.5) *
-            (isGenesisLifeOriginStarMapReveal ? 0.006 : 0.012);
+                  (isGenesisLifeOriginStarMapReveal ? 0.006 : 0.012);
+      }
+      if (isPresenceStage) {
+        const pressureAuraContraction =
+          (pressureExpression === null
+            ? 0
+            : Math.min(
+                1,
+                pressureFieldCompression * 0.42 +
+                  pressureBoundaryLoad * 0.26 +
+                  Math.abs(pressureFlowDeflection) * 0.2 +
+                  pressureTemporalWeight * 0.12,
+              )) *
+          realityPressureEntryProgress *
+          realityPressureStateWeight *
+          (1 - realityPressureRecoveryProgress * 0.78);
+        const settledAuraOpacity = isGenesisLifeOriginStarMapReveal
+          ? 0.034 + lifeOriginRevealProgress * 0.082
+          : isRealityCanvas
+            ? 0.12 + lifeOriginRevealProgress * 0.045
+            : 0.072 + recognitionIdentityLock * 0.035;
+        lifeAuraMaterial.opacity =
+          (settledAuraOpacity +
+            recognizedLifeRelationshipContinuity * 0.03) *
+          (1 -
+            pressureAuraContraction * 0.16 +
+            realityPressureRecoveryProgress * 0.08 +
+            choiceResponseSpaceProgress * 0.035);
+        lifeAuraMaterial.size =
+          lifeAuraBaseSize *
+          (isGenesisLifeOriginStarMapReveal
+            ? 1.08 + lifeOriginRevealProgress * 0.12
+            : 1.16) *
+          (1 -
+            pressureAuraContraction * 0.11 +
+            realityPressureRecoveryProgress * 0.07);
       }
       bodyFieldMaterial.size =
         bodyFieldBaseSize *
@@ -4400,6 +4679,7 @@ export function createGenesisWebGLRendererCore(
         }
       });
       lifeOriginStarTexture?.dispose();
+      inkWashLifeAuraTexture?.dispose();
       renderer.dispose();
       scene.clear();
     },
