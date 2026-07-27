@@ -1129,6 +1129,7 @@ function CosmicBotanicsField({
   visualSource,
   visualState,
   experienceState,
+  onInnerViewRelationEstablished,
 }: {
   configs: SixSpaceConfig[];
   activeDimensionStep: number;
@@ -1140,6 +1141,9 @@ function CosmicBotanicsField({
   visualSource: RealLifeVisualSource | null;
   visualState: VisualState;
   experienceState: ExperienceState;
+  onInnerViewRelationEstablished: (
+    relation: "CONFIRMED" | "SELF_NAMED",
+  ) => void;
 }) {
   const [innerViewPhase, setInnerViewPhase] = useState<
     "OBSERVING" | "APPROACHED" | "CONFIRMED" | "SELF_NAMED" | "PAUSED"
@@ -1176,11 +1180,13 @@ function CosmicBotanicsField({
   function confirmLifeState() {
     setInnerViewRelationEstablished(true);
     setInnerViewPhase("CONFIRMED");
+    onInnerViewRelationEstablished("CONFIRMED");
   }
 
   function keepOwnUnderstanding() {
     setInnerViewRelationEstablished(true);
     setInnerViewPhase("SELF_NAMED");
+    onInnerViewRelationEstablished("SELF_NAMED");
   }
 
   function pauseInnerView() {
@@ -1364,11 +1370,13 @@ function SingleModelRevisionActionFocus({
   presentation,
   onConfirm,
   visualSource,
+  innerViewRelation,
 }: {
   action: SingleModelRevisionAction;
   presentation?: ChangeExperiencePresentation | null;
   onConfirm: () => void;
   visualSource: RealLifeVisualSource | null;
+  innerViewRelation: "AWAITING" | "CONFIRMED" | "SELF_NAMED";
 }) {
   const hasPresentation = Boolean(presentation);
   const [responseGapReady, setResponseGapReady] = useState(false);
@@ -1405,6 +1413,9 @@ function SingleModelRevisionActionFocus({
       data-choice-life-surface="EXISTING_REALITY_PRESENCE"
       data-choice-crystal-stage="NOT_STARTED"
       data-choice-protective-sequence="UNDERSTAND_THEN_PAUSE_THEN_PARTICIPATE"
+      data-choice-inner-view-continuity="SAME_UNDERSTANDING_BECOMES_RESPONSE_GAP"
+      data-choice-inner-view-relation={innerViewRelation}
+      data-choice-transition-model="RELATION_NOT_MODE_SWITCH"
       data-legacy-revision-answer-surface="ISOLATED"
       data-revision-visual-language="SAME_LIFE_RESPONSE_PAUSE"
       data-revision-copy-composition="AWARENESS_NOT_ADVICE"
@@ -1489,6 +1500,21 @@ function SingleModelRevisionActionFocus({
         }}
       >
         <span
+          data-choice-inner-view-carry="RECOGNIZED_RELATION_REMAINS_PRESENT"
+          style={{
+            maxWidth: 286,
+            color: "rgba(185,203,236,0.38)",
+            fontSize: 9,
+            lineHeight: 1.55,
+            letterSpacing: "0.06em",
+            textWrap: "balance",
+          }}
+        >
+          {innerViewRelation === "SELF_NAMED"
+            ? "你保留的那份理解，仍和这颗生命在一起。"
+            : "你刚刚靠近的那种回应，仍在这颗生命里。"}
+        </span>
+        <span
           data-choice-protective-understanding="CANDIDATE_NOT_CONCLUSION"
           style={{
             maxWidth: 290,
@@ -1498,7 +1524,9 @@ function SingleModelRevisionActionFocus({
             textWrap: "balance",
           }}
         >
-          这种回应，也许曾经帮助你保护自己。
+          {innerViewRelation === "SELF_NAMED"
+            ? "它不需要被系统定义，也可能曾经保护过你。"
+            : "这种回应，也许曾经帮助你保护自己。"}
         </span>
         <strong
           data-choice-awareness-copy="PAUSE"
@@ -1539,6 +1567,7 @@ function TransformationMomentFocus({
   livedResponseRecognitionRequired = false,
   onRecognizeLivedResponse,
   visualSource,
+  innerViewRelation,
 }: {
   action: SingleModelRevisionAction;
   presentation?: ChangeExperiencePresentation | null;
@@ -1547,6 +1576,7 @@ function TransformationMomentFocus({
   livedResponseRecognitionRequired?: boolean;
   onRecognizeLivedResponse?: () => void;
   visualSource: RealLifeVisualSource | null;
+  innerViewRelation: "AWAITING" | "CONFIRMED" | "SELF_NAMED";
 }) {
   const hasPresentation = Boolean(presentation);
   const [responseSpaceSettled, setResponseSpaceSettled] =
@@ -1578,6 +1608,9 @@ function TransformationMomentFocus({
       data-choice-life-surface="EXISTING_REALITY_PRESENCE"
       data-choice-crystal-stage="NOT_STARTED"
       data-choice-protective-sequence="UNDERSTAND_THEN_PAUSE_THEN_SPACE"
+      data-choice-inner-view-continuity="SAME_UNDERSTANDING_NEW_RESPONSE_SPACE"
+      data-choice-inner-view-relation={innerViewRelation}
+      data-choice-transition-model="RELATION_NOT_MODE_SWITCH"
       data-legacy-direct-choice-to-crystal={
         onSediment ? "AVAILABLE" : "ISOLATED"
       }
@@ -2110,6 +2143,9 @@ function HexagramCodeDeliveryShell() {
   const [livedResponseRecognized, setLivedResponseRecognized] =
     useState(false);
   const [transformationMomentActive, setTransformationMomentActive] = useState(false);
+  const [innerViewRelation, setInnerViewRelation] = useState<
+    "AWAITING" | "CONFIRMED" | "SELF_NAMED"
+  >("AWAITING");
   const dimensionTransitionLockRef = useRef(false);
   const runtimeProjection = GuanyaoRuntimeEngine.project(executionSnapshot);
   const {
@@ -2408,6 +2444,8 @@ function HexagramCodeDeliveryShell() {
         data-choice-identity-effect="RESPONSE_ONLY"
         data-choice-answer-model="NONE"
         data-choice-protective-sequence="UNDERSTAND_PAUSE_PARTICIPATE"
+        data-choice-inner-view-relation={innerViewRelation}
+        data-choice-inner-view-continuity="OBSERVE_UNDERSTAND_PAUSE_RESPOND"
         data-choice-reality-continuity="SAME_LIFE_NEW_REALITY"
         data-choice-lived-response={
           livedResponseRecognized
@@ -2604,6 +2642,7 @@ function HexagramCodeDeliveryShell() {
                   : undefined
               }
               visualSource={realLifeVisualSource}
+              innerViewRelation={innerViewRelation}
             />
           ) : isRevisionActionPending && singleModelRevisionAction ? (
             <SingleModelRevisionActionFocus
@@ -2611,6 +2650,7 @@ function HexagramCodeDeliveryShell() {
               presentation={changeExperiencePresentation}
               onConfirm={handleRevisionActionConfirm}
               visualSource={realLifeVisualSource}
+              innerViewRelation={innerViewRelation}
             />
           ) : (
             <CosmicBotanicsField
@@ -2624,6 +2664,7 @@ function HexagramCodeDeliveryShell() {
               visualSource={realLifeVisualSource}
               visualState={visualState}
               experienceState={displayExperienceState}
+              onInnerViewRelationEstablished={setInnerViewRelation}
             />
           )}
         </section>
