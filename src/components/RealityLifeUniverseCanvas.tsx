@@ -171,6 +171,15 @@ export function RealityLifeUniverseCanvas({
     : "";
   const choiceLifeTraceBodyPoint =
     lifeMemoryGeometry.choiceLifeTrace?.branchTarget ?? null;
+  const choiceLifeTraceResponseInfluence =
+    lifeMemoryGeometry.choiceLifeTrace !== null &&
+    selectedPressureSeedContext !== null
+      ? "CADENCE_BIAS_ONLY"
+      : "NONE";
+  const choiceLifeTraceCadenceSignature =
+    choiceLifeTraceSourceSlot === null
+      ? "NONE"
+      : `SOURCE_SLOT_${choiceLifeTraceSourceSlot}`;
 
   useEffect(() => {
     if (continuesRecognizedPressure) {
@@ -408,6 +417,14 @@ export function RealityLifeUniverseCanvas({
               data-choice-life-trace-pressure-role="PAST_INFLUENCE_NOT_CURRENT_PRESSURE"
               data-choice-life-trace-crystal-state="NOT_MATERIALIZED"
               data-choice-life-trace-identity-invariant="SAME_CORE_SAME_BODY_SAME_LIFE"
+              data-choice-life-trace-response-influence={
+                choiceLifeTraceResponseInfluence
+              }
+              data-choice-life-trace-response-order="MEMORY_PULSES_BEFORE_CURRENT_RESPONSE"
+              data-choice-life-trace-outcome-authority="NONE"
+              data-choice-life-trace-cadence-signature={
+                choiceLifeTraceCadenceSignature
+              }
             >
               <path
                 className="gy-reality-life-universe__choice-life-trace-bed"
@@ -443,6 +460,17 @@ export function RealityLifeUniverseCanvas({
                   fill="rgba(255,247,220,0.48)"
                 />
               </g>
+              {choiceLifeTraceResponseInfluence === "CADENCE_BIAS_ONLY" ? (
+                <circle
+                  className="gy-reality-life-universe__choice-life-trace-response-echo"
+                  cx={choiceLifeTraceBodyPoint[0]}
+                  cy={choiceLifeTraceBodyPoint[1]}
+                  r="0.54"
+                  fill="none"
+                  stroke="rgba(255,239,190,0.36)"
+                  strokeWidth="0.16"
+                />
+              ) : null}
             </g>
           ) : null}
         </svg>
@@ -460,6 +488,13 @@ export function RealityLifeUniverseCanvas({
         }
         data-reality-life-weather-identity="SAME_CORE_SAME_BODY"
         data-reality-pressure-flow-side={realityPressureFlowSide}
+        data-choice-life-trace-response-influence={
+          choiceLifeTraceResponseInfluence
+        }
+        data-choice-life-trace-outcome-authority="NONE"
+        data-choice-life-trace-cadence-signature={
+          choiceLifeTraceCadenceSignature
+        }
         data-genesis-presence-visual-state="RECOGNIZED"
         data-source-reference-id={visualContinuity.sourceReferenceId}
         aria-hidden="true"

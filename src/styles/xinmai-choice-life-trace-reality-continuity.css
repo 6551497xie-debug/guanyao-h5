@@ -25,10 +25,37 @@
     infinite alternate;
 }
 
+.gy-reality-life-universe__choice-life-trace-response-echo {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  vector-effect: non-scaling-stroke;
+}
+
 .gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
   .gy-reality-life-universe__choice-life-trace {
   opacity: 0.2;
   transition: opacity 1.4s ease;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
+  .gy-reality-life-universe__choice-life-trace[data-choice-life-trace-response-influence="CADENCE_BIAS_ONLY"]
+  .gy-reality-life-universe__choice-life-trace-flow {
+  animation: xinmai-choice-trace-inform-current-response 2.8s
+    cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
+  .gy-reality-life-universe__choice-life-trace[data-choice-life-trace-response-influence="CADENCE_BIAS_ONLY"]
+  .gy-reality-life-universe__choice-life-trace-response-echo {
+  animation: xinmai-choice-trace-response-echo 2.8s
+    cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+
+.gy-reality-life-universe
+  .gy-reality-life-universe__canvas[data-reality-life-weather-phase="CURRENT_REALITY_SENSING"][data-choice-life-trace-response-influence="CADENCE_BIAS_ONLY"] {
+  animation: xinmai-choice-trace-informed-body-cadence 2.8s
+    cubic-bezier(0.22, 0.7, 0.2, 1) both;
 }
 
 .gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_PAUSED"]
@@ -63,9 +90,75 @@
   }
 }
 
+@keyframes xinmai-choice-trace-inform-current-response {
+  0% {
+    opacity: 0.24;
+    stroke-dashoffset: 0;
+  }
+
+  28% {
+    opacity: 0.72;
+    stroke-dashoffset: -0.22;
+  }
+
+  58% {
+    opacity: 0.42;
+    stroke-dashoffset: -0.64;
+  }
+
+  100% {
+    opacity: 0.24;
+    stroke-dashoffset: -1;
+  }
+}
+
+@keyframes xinmai-choice-trace-response-echo {
+  0% {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+
+  24% {
+    opacity: 0.48;
+    transform: scale(0.94);
+  }
+
+  52% {
+    opacity: 0.2;
+    transform: scale(1.12);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.24);
+  }
+}
+
+@keyframes xinmai-choice-trace-informed-body-cadence {
+  0% {
+    filter: brightness(0.9) contrast(1.1) saturate(0.9);
+  }
+
+  26% {
+    filter: brightness(0.94) contrast(1.1) saturate(0.91);
+  }
+
+  54% {
+    filter: brightness(0.88) contrast(1.12) saturate(0.89);
+  }
+
+  100% {
+    filter: brightness(0.9) contrast(1.12) saturate(0.9);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gy-reality-life-universe__choice-life-trace,
-  .gy-reality-life-universe__choice-life-trace-memory {
+  .gy-reality-life-universe__choice-life-trace-memory,
+  .gy-reality-life-universe__choice-life-trace-flow,
+  .gy-reality-life-universe__choice-life-trace-response-echo,
+  .gy-reality-life-universe
+    .gy-reality-life-universe__canvas[data-choice-life-trace-response-influence="CADENCE_BIAS_ONLY"] {
     animation: none;
   }
 }
