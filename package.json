@@ -180,6 +180,7 @@
     "check-xinmai-life-weather-inner-view-entry": "node scripts/check-xinmai-life-weather-inner-view-entry.mjs",
     "check-xinmai-inner-view-three-approach-life-revelation": "node scripts/check-xinmai-inner-view-three-approach-life-revelation.mjs",
     "check-xinmai-third-approach-choice-response-continuity": "node scripts/check-xinmai-third-approach-choice-response-continuity.mjs",
+    "check-xinmai-choice-breath-hold-response-embodiment": "node scripts/check-xinmai-choice-breath-hold-response-embodiment.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",

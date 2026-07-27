@@ -1490,6 +1490,12 @@ function SingleModelRevisionActionFocus({
   const [responseGapPhase, setResponseGapPhase] = useState<
     "MERIDIAN_SETTLING" | "LIFE_PAUSING" | "RESPONSE_GAP_OPEN"
   >("MERIDIAN_SETTLING");
+  const [breathHoldState, setBreathHoldState] = useState<
+    "RESTING" | "HOLDING" | "RELEASED_EARLY"
+  >("RESTING");
+  const breathHoldTimerRef = useRef<number | null>(null);
+  const breathHoldResetTimerRef = useRef<number | null>(null);
+  const breathHoldCompletedRef = useRef(false);
   const responseGapReady = responseGapPhase === "RESPONSE_GAP_OPEN";
   const coreAnchorTop = visualSource
     ? `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`
@@ -1506,8 +1512,49 @@ function SingleModelRevisionActionFocus({
     return () => {
       window.clearTimeout(pauseTimer);
       window.clearTimeout(responseGapTimer);
+      if (breathHoldTimerRef.current !== null) {
+        window.clearTimeout(breathHoldTimerRef.current);
+      }
+      if (breathHoldResetTimerRef.current !== null) {
+        window.clearTimeout(breathHoldResetTimerRef.current);
+      }
     };
   }, []);
+
+  function beginBreathHold() {
+    if (
+      !responseGapReady ||
+      innerViewRelation === "AWAITING" ||
+      breathHoldState === "HOLDING"
+    ) {
+      return;
+    }
+    if (breathHoldResetTimerRef.current !== null) {
+      window.clearTimeout(breathHoldResetTimerRef.current);
+      breathHoldResetTimerRef.current = null;
+    }
+    breathHoldCompletedRef.current = false;
+    setBreathHoldState("HOLDING");
+    breathHoldTimerRef.current = window.setTimeout(() => {
+      breathHoldCompletedRef.current = true;
+      breathHoldTimerRef.current = null;
+      onConfirm();
+    }, 1_800);
+  }
+
+  function releaseBreathHold() {
+    if (breathHoldCompletedRef.current) return;
+    if (breathHoldTimerRef.current !== null) {
+      window.clearTimeout(breathHoldTimerRef.current);
+      breathHoldTimerRef.current = null;
+    }
+    if (breathHoldState !== "HOLDING") return;
+    setBreathHoldState("RELEASED_EARLY");
+    breathHoldResetTimerRef.current = window.setTimeout(() => {
+      setBreathHoldState("RESTING");
+      breathHoldResetTimerRef.current = null;
+    }, 720);
+  }
 
   return (
     <section
@@ -1524,6 +1571,10 @@ function SingleModelRevisionActionFocus({
       }
       data-choice-transition-phase={responseGapPhase}
       data-choice-transition-source="THIRD_APPROACH_SAME_BODY_MERIDIAN"
+      data-choice-breath-hold={breathHoldState}
+      data-choice-breath-duration-ms="1800"
+      data-choice-embodiment="USER_BODY_STAYS_WITH_LIFE_BODY"
+      data-choice-click-confirm="FORBIDDEN"
       data-choice-answer-model="NONE"
       data-choice-life-effect="RESPONSE_ONLY"
       data-choice-old-path="PRESENT_NOT_AUTOMATIC"
@@ -1593,12 +1644,27 @@ function SingleModelRevisionActionFocus({
 
       <button
         type="button"
-        aria-label="我愿意尝试一次不同回应"
+        aria-label="按住生命核心，陪它完成一次呼吸"
         className="gy-choice-response-gap__confirm"
         data-revision-claim="LIFE_CORE_TOUCH"
         data-life-core-anchor="LIFE_UNIVERSE_CORE_IDENTITY"
         data-choice-participation="WILLING_TO_PAUSE"
-        onClick={onConfirm}
+        onPointerDown={(event) => {
+          event.currentTarget.setPointerCapture(event.pointerId);
+          beginBreathHold();
+        }}
+        onPointerUp={releaseBreathHold}
+        onPointerCancel={releaseBreathHold}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          if (!event.repeat) beginBreathHold();
+        }}
+        onKeyUp={(event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          releaseBreathHold();
+        }}
         disabled={
           !responseGapReady || innerViewRelation === "AWAITING"
         }
@@ -1615,6 +1681,7 @@ function SingleModelRevisionActionFocus({
           borderRadius: "48%",
           background: "transparent",
           padding: 0,
+          touchAction: "none",
           cursor:
             responseGapReady && innerViewRelation !== "AWAITING"
               ? "pointer"
@@ -1637,6 +1704,27 @@ function SingleModelRevisionActionFocus({
             pointerEvents: "none",
           }}
         />
+        <span
+          aria-hidden="true"
+          className="gy-choice-breath-hold__ring"
+        >
+          <svg viewBox="0 0 44 44">
+            <circle
+              className="gy-choice-breath-hold__track"
+              cx="22"
+              cy="22"
+              r="19"
+              pathLength="1"
+            />
+            <circle
+              className="gy-choice-breath-hold__progress"
+              cx="22"
+              cy="22"
+              r="19"
+              pathLength="1"
+            />
+          </svg>
+        </span>
       </button>
 
       <div
@@ -1710,7 +1798,11 @@ function SingleModelRevisionActionFocus({
             transition: "opacity 680ms ease",
           }}
         >
-          轻触生命核心 · 愿意尝试一次不同回应
+          {breathHoldState === "HOLDING"
+            ? "保持这一口呼吸"
+            : breathHoldState === "RELEASED_EARLY"
+              ? "可以慢一点，再陪它停留"
+              : "按住生命核心 · 陪它完成一次呼吸"}
         </span>
       </div>
     </section>
