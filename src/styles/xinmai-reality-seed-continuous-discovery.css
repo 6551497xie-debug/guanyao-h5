@@ -1,0 +1,137 @@
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-p36__signal-list[data-reality-seed-discovery="CONTINUOUS_EXISTING_CATALOG"] {
+  animation: xinmai-reality-seed-bundle-arrive 860ms
+    cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-reality-seed-continuation {
+  position: relative;
+  display: flex;
+  flex: 0 0 min(58vw, 218px);
+  min-height: 92px;
+  align-items: flex-start;
+  justify-content: center;
+  flex-direction: column;
+  padding: 8px 18px 7px;
+  color: rgba(185, 203, 236, 0.46);
+  scroll-snap-align: center;
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-reality-seed-continuation::before {
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  left: 0;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(185, 203, 236, 0.16) 30%,
+    rgba(238, 226, 198, 0.2) 68%,
+    transparent
+  );
+  content: "";
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-reality-seed-continuation::after {
+  position: absolute;
+  right: 12px;
+  bottom: 11px;
+  width: 24px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(185, 203, 236, 0.08),
+    rgba(238, 226, 198, 0.34)
+  );
+  content: "";
+  transform-origin: right center;
+  animation: xinmai-reality-seed-continuation-breathe 3.6s ease-in-out infinite;
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-reality-seed-continuation
+  > span {
+  color: rgba(185, 203, 236, 0.34);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-reality-seed-continuation
+  > strong {
+  margin-top: 7px;
+  color: rgba(238, 226, 198, 0.66);
+  font-family: var(--gy-font-serif);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  line-height: 1.7;
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-p36__signal-list
+  .gy-reality-seed-continuation
+  > button {
+  width: auto;
+  margin: 8px 0 0;
+  padding: 4px 1px 3px;
+  border: 0;
+  border-bottom: 1px solid rgba(238, 226, 198, 0.24);
+  border-radius: 0;
+  background: transparent;
+  color: rgba(238, 226, 198, 0.62);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-p36__signal-list
+  .gy-reality-seed-continuation
+  > button:hover,
+.xinmai-life-app[data-xinmai-surface="REALITY"]
+  .gy-p36__signal-list
+  .gy-reality-seed-continuation
+  > button:focus-visible {
+  border-bottom-color: rgba(238, 226, 198, 0.54);
+  background: transparent;
+  color: rgba(255, 241, 207, 0.9);
+  outline: none;
+}
+
+@keyframes xinmai-reality-seed-bundle-arrive {
+  from {
+    opacity: 0.28;
+    transform: translateX(9px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes xinmai-reality-seed-continuation-breathe {
+  0%,
+  100% {
+    opacity: 0.36;
+    transform: scaleX(0.72);
+  }
+
+  50% {
+    opacity: 0.82;
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xinmai-life-app[data-xinmai-surface="REALITY"]
+    .gy-p36__signal-list[data-reality-seed-discovery="CONTINUOUS_EXISTING_CATALOG"],
+  .xinmai-life-app[data-xinmai-surface="REALITY"]
+    .gy-reality-seed-continuation::after {
+    animation: none;
+  }
+}

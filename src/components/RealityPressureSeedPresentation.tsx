@@ -4,6 +4,7 @@ import type {
   RealityPressureSeedPresentationProps,
 } from "../types/realityPressureSeedPresentation";
 import "../styles/reality-pressure-presentation.css";
+import "../styles/xinmai-reality-seed-continuous-discovery.css";
 
 export const REALITY_PRESSURE_SEED_PRESENTATION_BOUNDARY:
   RealityPressureSeedPresentationBoundary = Object.freeze({
@@ -108,9 +109,13 @@ export function RealityPressureSeedPresentation({
 
       {!recognized ? (
         <div
+          key={session.candidateBundleReferenceId}
           className="gy-p36__signal-list"
           aria-label="正在靠近生命的现实片段"
+          aria-live="polite"
           data-candidate-count={session.candidateBundle.candidates.length}
+          data-reality-seed-discovery="CONTINUOUS_EXISTING_CATALOG"
+          data-reality-seed-bundle-continuity="CURSOR_WITHOUT_REPETITION"
         >
           {session.candidateBundle.candidates.map((candidate) => (
             <RealityPressureSeedCandidatePresentation
@@ -120,18 +125,29 @@ export function RealityPressureSeedPresentation({
               onRecognize={onRecognize}
             />
           ))}
+          {nextBundleAvailable ? (
+            <div
+              className="gy-reality-seed-continuation"
+              role="group"
+              aria-label="继续靠近下一组现实片段"
+              data-reality-seed-continuation="IN_SWIPE_PATH"
+              data-next-bundle-source="EXISTING_PRESSURE_SEED_CURSOR"
+              data-automatic-recognition="NONE"
+            >
+              <span>星河还没有结束</span>
+              <strong>还有别的现实，正在从远处靠近。</strong>
+              <button
+                type="button"
+                data-interaction="PRESSURE_SEED_REQUEST_NEXT_BUNDLE"
+                onClick={onRequestNextBundle}
+              >
+                继续靠近
+              </button>
+            </div>
+          ) : null}
         </div>
       ) : null}
 
-      {!recognized && nextBundleAvailable ? (
-        <button
-          type="button"
-          data-interaction="PRESSURE_SEED_REQUEST_NEXT_BUNDLE"
-          onClick={onRequestNextBundle}
-        >
-          都不像，换一组
-        </button>
-      ) : null}
       {!recognized && pauseAvailable ? (
         <button
           type="button"
