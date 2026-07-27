@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 type XinmaiLifeReflectionGuideProps = Readonly<{
   surface: "REALITY" | "REFLECTION";
   phase?:
@@ -51,8 +53,9 @@ export function XinmaiLifeReflectionGuide({
   onSelfName,
   onPause,
   onResume,
-  onContinue,
 }: XinmaiLifeReflectionGuideProps) {
+  const [lifeContinuityStable, setLifeContinuityStable] = useState(false);
+
   if (surface === "REALITY") {
     return (
       <aside
@@ -95,7 +98,9 @@ export function XinmaiLifeReflectionGuide({
     focusedInnerViewMeaningVisible || thirdUnfinishedFlowVisible ||
     relationSettlingVisible;
   const relationSettlingState =
-    phase === "CONFIRMED"
+    lifeContinuityStable
+      ? "LIFE_CONTINUES"
+      : phase === "CONFIRMED"
       ? "RECOGNIZED"
       : phase === "SELF_NAMED"
         ? "USER_KEEPS_OWN_MEANING"
@@ -132,6 +137,14 @@ export function XinmaiLifeReflectionGuide({
       data-xinmai-ai-claim="NONE"
       data-xinmai-dust-claim="NONE"
       data-xinmai-meridian-claim="NONE"
+      data-xinmai-life-continuity={
+        lifeContinuityStable
+          ? "STABLE_AFTER_UNDERSTANDING"
+          : relationSettlingVisible
+            ? "SETTLING_IN_SAME_LIFE"
+            : "NOT_YET_ESTABLISHED"
+      }
+      data-xinmai-choice-timing="UNDECIDED_NOT_TRIGGERED_BY_UNDERSTANDING"
       aria-label="生命内观"
     >
       {firstLifeSignalVisible ? (
@@ -185,19 +198,25 @@ export function XinmaiLifeReflectionGuide({
           data-xinmai-new-flow-memory="RETAINED"
           data-xinmai-equilibrium="AFTER_EXPERIENCE_NOT_INITIAL"
           data-xinmai-result-model="NONE"
+          data-xinmai-route-transition="NONE"
+          data-xinmai-module-transition="NONE"
           data-xinmai-choice-stage="NOT_STARTED"
           data-xinmai-crystal-stage="NOT_STARTED"
         >
           <i aria-hidden="true" />
           <span>
-            {phase === "CONFIRMED"
+            {lifeContinuityStable
+              ? "生命继续在这里"
+              : phase === "CONFIRMED"
               ? "生命回应了你的认出"
               : phase === "SELF_NAMED"
                 ? "生命为你的理解留出位置"
                 : "生命陪你停在这里"}
           </span>
           <strong>
-            {phase === "CONFIRMED"
+            {lifeContinuityStable
+              ? "这份理解已经沉回生命，它仍按自己的节律呼吸。"
+              : phase === "CONFIRMED"
               ? "这股流动慢慢安定下来，仍然是它自己。"
               : phase === "SELF_NAMED"
                 ? "它没有被命名成答案，仍按自己的节律继续。"
@@ -289,13 +308,23 @@ export function XinmaiLifeReflectionGuide({
             回到刚才那一处
           </button>
         ) : relationEstablished ? (
-          <button
-            type="button"
-            data-xinmai-relation-action="CONTINUE_OBSERVATION_NOT_CHOICE_EXECUTION"
-            onClick={onContinue}
-          >
-            带着这份理解，继续观察
-          </button>
+          lifeContinuityStable ? (
+            <span
+              className="xinmai-life-reflection-guide__continuity-whisper"
+              data-xinmai-life-continuity-presence="SAME_LIFE_STILL_HERE"
+            >
+              它仍在这里
+            </span>
+          ) : (
+            <button
+              type="button"
+              data-xinmai-relation-action="SETTLE_INTO_LIFE_NO_ROUTE"
+              data-xinmai-choice-trigger="WITHHELD"
+              onClick={() => setLifeContinuityStable(true)}
+            >
+              让它继续呼吸
+            </button>
+          )
         ) : null}
       </div>
 

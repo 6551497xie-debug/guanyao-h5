@@ -48,7 +48,7 @@ const checks = [
         'data-xinmai-relation-action="RESUME_RELATION_NOT_RESTART"',
       ) &&
       guide.includes(
-        'data-xinmai-relation-action="CONTINUE_OBSERVATION_NOT_CHOICE_EXECUTION"',
+        'data-xinmai-relation-action="SETTLE_INTO_LIFE_NO_ROUTE"',
       ),
   ],
   [

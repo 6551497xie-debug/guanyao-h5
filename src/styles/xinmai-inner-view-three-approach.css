@@ -276,6 +276,53 @@ main:has(
   animation-duration: 7.2s;
 }
 
+.xinmai-life-reflection-guide--reflection[data-xinmai-life-continuity="STABLE_AFTER_UNDERSTANDING"]
+  .xinmai-life-reflection-guide__relation-settling {
+  animation: xinmai-inner-view-life-continuity-arrival 1.4s
+    cubic-bezier(0.2, 0.64, 0.2, 1) both;
+}
+
+.xinmai-life-reflection-guide__continuity-whisper {
+  color: rgb(185 203 196 / 34%);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  line-height: 1.6;
+  animation: xinmai-inner-view-continuity-whisper 1.8s ease both;
+}
+
+main:has(
+    .xinmai-life-reflection-guide--reflection[data-xinmai-life-continuity="STABLE_AFTER_UNDERSTANDING"]
+  )
+  .gy-inner-view-life-meridian {
+  opacity: 0.72;
+}
+
+main:has(
+    .xinmai-life-reflection-guide--reflection[data-xinmai-life-continuity="STABLE_AFTER_UNDERSTANDING"]
+  )
+  .gy-inner-view-life-meridian__breath {
+  opacity: 0.4;
+  animation: xinmai-inner-view-life-continuity-breath 7.6s ease-in-out
+    infinite;
+}
+
+main:has(
+    .xinmai-life-reflection-guide--reflection[data-xinmai-life-continuity="STABLE_AFTER_UNDERSTANDING"]
+  )
+  .gy-inner-view-life-meridian__flow {
+  opacity: 0.34;
+  stroke-dasharray: 0.09 0.91;
+  animation: xinmai-inner-view-life-continuity-flow 10.8s ease-in-out
+    infinite;
+}
+
+main:has(
+    .xinmai-life-reflection-guide--reflection[data-xinmai-life-continuity="STABLE_AFTER_UNDERSTANDING"]
+  )
+  .gy-inner-view-life-meridian__point {
+  animation-duration: 4.6s;
+}
+
 .xinmai-life-reflection-guide__sequence
   li[data-xinmai-reflection-step-state="PASSED"] {
   opacity: 0.3;
@@ -421,6 +468,52 @@ main:has(
   }
 }
 
+@keyframes xinmai-inner-view-life-continuity-arrival {
+  from {
+    opacity: 0.68;
+    transform: translateY(2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes xinmai-inner-view-continuity-whisper {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes xinmai-inner-view-life-continuity-breath {
+  0%,
+  100% {
+    opacity: 0.32;
+  }
+
+  52% {
+    opacity: 0.48;
+  }
+}
+
+@keyframes xinmai-inner-view-life-continuity-flow {
+  0%,
+  100% {
+    opacity: 0.28;
+    stroke-dashoffset: 0.18;
+  }
+
+  50% {
+    opacity: 0.4;
+    stroke-dashoffset: 0.08;
+  }
+}
+
 @keyframes xinmai-inner-view-copy-arrival {
   from {
     opacity: 0;
@@ -458,6 +551,7 @@ main:has(
   .xinmai-life-reflection-guide__new-flow > i,
   .xinmai-life-reflection-guide__relation-settling,
   .xinmai-life-reflection-guide__relation-settling > i,
+  .xinmai-life-reflection-guide__continuity-whisper,
   .xinmai-life-reflection-guide--reflection
     .xinmai-life-reflection-guide__observation,
   .xinmai-life-reflection-guide--reflection
