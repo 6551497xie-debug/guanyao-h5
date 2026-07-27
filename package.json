@@ -190,6 +190,7 @@
     "check-xinmai-meridian-first-approach-life-signal-recognition": "node scripts/check-xinmai-meridian-first-approach-life-signal-recognition.mjs",
     "check-xinmai-life-signal-protective-meaning-second-approach": "node scripts/check-xinmai-life-signal-protective-meaning-second-approach.mjs",
     "check-xinmai-protective-meaning-new-flow-third-approach": "node scripts/check-xinmai-protective-meaning-new-flow-third-approach.mjs",
+    "check-xinmai-new-flow-relation-confirmation": "node scripts/check-xinmai-new-flow-relation-confirmation.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",

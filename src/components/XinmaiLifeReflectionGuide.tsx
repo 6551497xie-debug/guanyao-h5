@@ -87,10 +87,19 @@ export function XinmaiLifeReflectionGuide({
   const firstLifeSignalVisible = phase === "FIRST_APPROACH";
   const secondProtectiveMeaningVisible = phase === "SECOND_APPROACH";
   const thirdUnfinishedFlowVisible = phase === "THIRD_APPROACH";
+  const relationSettlingVisible =
+    relationEstablished || phase === "PAUSED";
   const focusedInnerViewMeaningVisible =
     firstLifeSignalVisible || secondProtectiveMeaningVisible;
   const focusedInnerViewMomentVisible =
-    focusedInnerViewMeaningVisible || thirdUnfinishedFlowVisible;
+    focusedInnerViewMeaningVisible || thirdUnfinishedFlowVisible ||
+    relationSettlingVisible;
+  const relationSettlingState =
+    phase === "CONFIRMED"
+      ? "RECOGNIZED"
+      : phase === "SELF_NAMED"
+        ? "USER_KEEPS_OWN_MEANING"
+        : "PAUSED_WITHOUT_LOSS";
 
   function resolveStepState(stepId: string) {
     const stepOrder = ["MIRROR", "IDENTIFY", "VALIDATE", "SHIFT"];
@@ -116,7 +125,9 @@ export function XinmaiLifeReflectionGuide({
             ? "SINGLE_EXISTING_PROTECTIVE_MEANING"
             : thirdUnfinishedFlowVisible
               ? "SAME_MERIDIAN_UNFINISHED_NEW_FLOW"
-              : "REFLECTION_SEQUENCE"
+              : relationSettlingVisible
+                ? "SAME_LIFE_RELATION_SETTLING"
+                : "REFLECTION_SEQUENCE"
       }
       data-xinmai-ai-claim="NONE"
       data-xinmai-dust-claim="NONE"
@@ -164,6 +175,34 @@ export function XinmaiLifeReflectionGuide({
           <i aria-hidden="true" />
           <span>旧的保护仍在</span>
           <strong>一点新的流动，正在同一处生命里出现。</strong>
+        </div>
+      ) : relationSettlingVisible ? (
+        <div
+          className="xinmai-life-reflection-guide__relation-settling"
+          data-xinmai-relation-response="SAME_LIFE_SETTLING"
+          data-xinmai-relation-response-state={relationSettlingState}
+          data-xinmai-life-identity="UNCHANGED"
+          data-xinmai-new-flow-memory="RETAINED"
+          data-xinmai-equilibrium="AFTER_EXPERIENCE_NOT_INITIAL"
+          data-xinmai-result-model="NONE"
+          data-xinmai-choice-stage="NOT_STARTED"
+          data-xinmai-crystal-stage="NOT_STARTED"
+        >
+          <i aria-hidden="true" />
+          <span>
+            {phase === "CONFIRMED"
+              ? "生命回应了你的认出"
+              : phase === "SELF_NAMED"
+                ? "生命为你的理解留出位置"
+                : "生命陪你停在这里"}
+          </span>
+          <strong>
+            {phase === "CONFIRMED"
+              ? "这股流动慢慢安定下来，仍然是它自己。"
+              : phase === "SELF_NAMED"
+                ? "它没有被命名成答案，仍按自己的节律继续。"
+                : "不必现在确认，它仍安静保持这次流动。"}
+          </strong>
         </div>
       ) : (
         <>
@@ -242,11 +281,19 @@ export function XinmaiLifeReflectionGuide({
             </button>
           </div>
         ) : phase === "PAUSED" ? (
-          <button type="button" onClick={onResume}>
+          <button
+            type="button"
+            data-xinmai-relation-action="RESUME_RELATION_NOT_RESTART"
+            onClick={onResume}
+          >
             回到刚才那一处
           </button>
         ) : relationEstablished ? (
-          <button type="button" onClick={onContinue}>
+          <button
+            type="button"
+            data-xinmai-relation-action="CONTINUE_OBSERVATION_NOT_CHOICE_EXECUTION"
+            onClick={onContinue}
+          >
             带着这份理解，继续观察
           </button>
         ) : null}

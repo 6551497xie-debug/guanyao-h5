@@ -31,7 +31,8 @@
 .xinmai-life-reflection-guide--reflection:is(
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"],
-    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"]
+    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"],
+    [data-xinmai-life-signal-mode="SAME_LIFE_RELATION_SETTLING"]
   ) {
   width: min(238px, 64vw);
   gap: 13px;
@@ -45,7 +46,8 @@ main:has(
   .xinmai-life-reflection-guide--reflection:is(
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"],
-    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"]
+    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"],
+    [data-xinmai-life-signal-mode="SAME_LIFE_RELATION_SETTLING"]
   ) {
   transform: translate(34px, -7vh);
 }
@@ -56,14 +58,16 @@ main:has(
   .xinmai-life-reflection-guide--reflection:is(
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"],
-    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"]
+    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"],
+    [data-xinmai-life-signal-mode="SAME_LIFE_RELATION_SETTLING"]
   ) {
   transform: translate(-34px, -7vh);
 }
 
 .xinmai-life-reflection-guide__life-signal,
 .xinmai-life-reflection-guide__protective-meaning,
-.xinmai-life-reflection-guide__new-flow {
+.xinmai-life-reflection-guide__new-flow,
+.xinmai-life-reflection-guide__relation-settling {
   position: relative;
   display: grid;
   gap: 5px;
@@ -81,7 +85,8 @@ main:has(
 
 .xinmai-life-reflection-guide__life-signal::before,
 .xinmai-life-reflection-guide__protective-meaning::before,
-.xinmai-life-reflection-guide__new-flow::before {
+.xinmai-life-reflection-guide__new-flow::before,
+.xinmai-life-reflection-guide__relation-settling::before {
   position: absolute;
   top: 3px;
   bottom: 2px;
@@ -114,9 +119,19 @@ main:has(
   );
 }
 
+.xinmai-life-reflection-guide__relation-settling::before {
+  background: linear-gradient(
+    180deg,
+    rgb(185 213 210 / 4%),
+    rgb(218 230 219 / 25%),
+    rgb(220 205 169 / 7%)
+  );
+}
+
 .xinmai-life-reflection-guide__life-signal > i,
 .xinmai-life-reflection-guide__protective-meaning > i,
-.xinmai-life-reflection-guide__new-flow > i {
+.xinmai-life-reflection-guide__new-flow > i,
+.xinmai-life-reflection-guide__relation-settling > i {
   position: absolute;
   top: 50%;
   left: 0;
@@ -141,9 +156,16 @@ main:has(
   animation-duration: 6.4s;
 }
 
+.xinmai-life-reflection-guide__relation-settling > i {
+  border-color: rgb(218 230 219 / 28%);
+  box-shadow: 0 0 10px rgb(185 213 210 / 9%);
+  animation: xinmai-inner-view-relation-response 6.8s ease-in-out infinite;
+}
+
 .xinmai-life-reflection-guide__life-signal > span,
 .xinmai-life-reflection-guide__protective-meaning > span,
-.xinmai-life-reflection-guide__new-flow > span {
+.xinmai-life-reflection-guide__new-flow > span,
+.xinmai-life-reflection-guide__relation-settling > span {
   color: rgb(185 203 236 / 44%);
   font-size: 8px;
   letter-spacing: 0.13em;
@@ -157,9 +179,14 @@ main:has(
   color: rgb(185 203 236 / 38%);
 }
 
+.xinmai-life-reflection-guide__relation-settling > span {
+  color: rgb(185 213 210 / 40%);
+}
+
 .xinmai-life-reflection-guide__life-signal > strong,
 .xinmai-life-reflection-guide__protective-meaning > strong,
-.xinmai-life-reflection-guide__new-flow > strong {
+.xinmai-life-reflection-guide__new-flow > strong,
+.xinmai-life-reflection-guide__relation-settling > strong {
   color: rgb(245 242 233 / 76%);
   font-family: var(--xinmai-font-life);
   font-size: 12px;
@@ -177,10 +204,15 @@ main:has(
   color: rgb(218 230 219 / 70%);
 }
 
+.xinmai-life-reflection-guide__relation-settling > strong {
+  color: rgb(226 233 220 / 66%);
+}
+
 .xinmai-life-reflection-guide--reflection:is(
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"],
-    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"]
+    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"],
+    [data-xinmai-life-signal-mode="SAME_LIFE_RELATION_SETTLING"]
   )
   .xinmai-life-reflection-guide__approach {
   gap: 0;
@@ -189,7 +221,10 @@ main:has(
 [data-dynamics-node-language="LIFE_UNIVERSE_WHISPER"]:is(
     [data-dynamics-inner-view-phase="FIRST_APPROACH"],
     [data-dynamics-inner-view-phase="SECOND_APPROACH"],
-    [data-dynamics-inner-view-phase="THIRD_APPROACH"]
+    [data-dynamics-inner-view-phase="THIRD_APPROACH"],
+    [data-dynamics-inner-view-phase="CONFIRMED"],
+    [data-dynamics-inner-view-phase="SELF_NAMED"],
+    [data-dynamics-inner-view-phase="PAUSED"]
   )
   > span[aria-hidden="true"] {
   display: none;
@@ -206,6 +241,39 @@ main:has(
   stroke-dasharray: 0.16 0.84;
   animation: xinmai-inner-view-unfinished-new-flow 6.8s
     cubic-bezier(0.2, 0.62, 0.18, 1) both;
+}
+
+main:has(
+    .xinmai-life-reflection-guide--reflection[data-xinmai-life-signal-mode="SAME_LIFE_RELATION_SETTLING"]
+  )
+  .gy-inner-view-life-meridian {
+  opacity: 0.76;
+}
+
+main:has(
+    .xinmai-life-reflection-guide--reflection[data-xinmai-life-signal-mode="SAME_LIFE_RELATION_SETTLING"]
+  )
+  .gy-inner-view-life-meridian__breath {
+  opacity: 0.43;
+  animation: xinmai-inner-view-new-equilibrium 6.8s ease-in-out infinite;
+}
+
+main:has(
+    .xinmai-life-reflection-guide--reflection[data-xinmai-life-signal-mode="SAME_LIFE_RELATION_SETTLING"]
+  )
+  .gy-inner-view-life-meridian__flow {
+  stroke-dasharray: 0.11 0.89;
+  animation: xinmai-inner-view-relation-flow-settle 4.8s
+    cubic-bezier(0.2, 0.64, 0.2, 1) both;
+}
+
+main:has(
+    [data-dynamics-inner-view-phase="PAUSED"]
+      .xinmai-life-reflection-guide--reflection[data-xinmai-life-signal-mode="SAME_LIFE_RELATION_SETTLING"]
+  )
+  .gy-inner-view-life-meridian__flow {
+  opacity: 0.3;
+  animation-duration: 7.2s;
 }
 
 .xinmai-life-reflection-guide__sequence
@@ -317,6 +385,42 @@ main:has(
   }
 }
 
+@keyframes xinmai-inner-view-relation-response {
+  0%,
+  100% {
+    opacity: 0.38;
+    transform: translateY(-50%) scale(0.94);
+  }
+
+  50% {
+    opacity: 0.68;
+    transform: translateY(-50%) scale(1.04);
+  }
+}
+
+@keyframes xinmai-inner-view-new-equilibrium {
+  0%,
+  100% {
+    opacity: 0.34;
+  }
+
+  48% {
+    opacity: 0.54;
+  }
+}
+
+@keyframes xinmai-inner-view-relation-flow-settle {
+  from {
+    opacity: 0.58;
+    stroke-dashoffset: 0.36;
+  }
+
+  to {
+    opacity: 0.4;
+    stroke-dashoffset: 0.18;
+  }
+}
+
 @keyframes xinmai-inner-view-copy-arrival {
   from {
     opacity: 0;
@@ -352,6 +456,8 @@ main:has(
   .xinmai-life-reflection-guide__protective-meaning > i,
   .xinmai-life-reflection-guide__new-flow,
   .xinmai-life-reflection-guide__new-flow > i,
+  .xinmai-life-reflection-guide__relation-settling,
+  .xinmai-life-reflection-guide__relation-settling > i,
   .xinmai-life-reflection-guide--reflection
     .xinmai-life-reflection-guide__observation,
   .xinmai-life-reflection-guide--reflection
@@ -368,7 +474,8 @@ main:has(
   .xinmai-life-reflection-guide--reflection:is(
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"],
-    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"]
+    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"],
+    [data-xinmai-life-signal-mode="SAME_LIFE_RELATION_SETTLING"]
   ) {
     transform: none;
   }
