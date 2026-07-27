@@ -215,6 +215,10 @@ export function GenesisProductionExperiencePage({
   const [lifeOriginDiscoveryPhase, setLifeOriginDiscoveryPhase] = useState<
     "DORMANT" | "DISCOVERING" | "REVEALED"
   >("DORMANT");
+  const [lifeWhisperText, setLifeWhisperText] = useState("");
+  const [lifeWhisperFact, setLifeWhisperFact] = useState<
+    "NONE" | "WHISPER_SUBMITTED" | "WHISPER_SKIPPED"
+  >("NONE");
   const lifeOriginDiscoveryTimerRef = useRef<number | null>(null);
   const realityEntryTimerRef = useRef<number | null>(null);
   const recognitionInteractionAvailability =
@@ -268,6 +272,12 @@ export function GenesisProductionExperiencePage({
       recognitionRealityResult,
     ],
   );
+  const lifeWhisperEntryReady =
+    recognitionRealityResult?.status === "READY" &&
+    recognitionRealityResult.session.interactionAvailability ===
+      "ENTER_REALITY" &&
+    presenceRecognitionContinuityResult?.status === "READY" &&
+    recognitionResponseSettled;
 
   useEffect(() => {
     clearGenesisProductionRealityEntryContext();
@@ -278,6 +288,8 @@ export function GenesisProductionExperiencePage({
     setRecognitionPromptReady(false);
     setRecognitionResponseSettled(false);
     setLifeOriginDiscoveryPhase("DORMANT");
+    setLifeWhisperText("");
+    setLifeWhisperFact("NONE");
     if (lifeOriginDiscoveryTimerRef.current !== null) {
       window.clearTimeout(lifeOriginDiscoveryTimerRef.current);
       lifeOriginDiscoveryTimerRef.current = null;
@@ -647,6 +659,26 @@ export function GenesisProductionExperiencePage({
     setRecognitionRealityResult(recognizedRealityResult);
   };
 
+  const submitLifeWhisper = () => {
+    if (
+      !lifeWhisperEntryReady ||
+      lifeWhisperFact !== "NONE" ||
+      lifeWhisperText.trim().length === 0
+    ) {
+      return;
+    }
+    setLifeWhisperText("");
+    setLifeWhisperFact("WHISPER_SUBMITTED");
+  };
+
+  const skipLifeWhisper = () => {
+    if (!lifeWhisperEntryReady || lifeWhisperFact !== "NONE") {
+      return;
+    }
+    setLifeWhisperText("");
+    setLifeWhisperFact("WHISPER_SKIPPED");
+  };
+
   const enterReality = () => {
     if (
       consumerSourceResult === null ||
@@ -813,6 +845,10 @@ export function GenesisProductionExperiencePage({
           : "NOT_ACTIVE"
       }
       data-genesis-life-origin-discovery={lifeOriginDiscoveryPhase}
+      data-life-whisper-entry-ready={
+        lifeWhisperEntryReady ? "READY" : "NOT_READY"
+      }
+      data-life-whisper-fact={lifeWhisperFact}
     >
       <GenesisProductionRendererCanvasHost
         routeAuthorization={routeAuthorization}
@@ -828,6 +864,75 @@ export function GenesisProductionExperiencePage({
         onLifeOriginDiscoveryRequest={beginLifeOriginDiscovery}
         onStateChange={setCanvasHostState}
       />
+      {lifeWhisperEntryReady ? (
+        <section
+          className="gy-genesis-production-experience__life-whisper"
+          data-life-whisper-entry="READY"
+          data-life-whisper-fact={lifeWhisperFact}
+          aria-label="生命低语"
+        >
+          {lifeWhisperFact === "NONE" ? (
+            <form
+              className="gy-genesis-production-experience__life-whisper-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                submitLifeWhisper();
+              }}
+            >
+              <label htmlFor="xinmai-life-whisper">
+                留下一句此刻的心声
+              </label>
+              <textarea
+                id="xinmai-life-whisper"
+                value={lifeWhisperText}
+                rows={1}
+                maxLength={120}
+                placeholder="一句话，一个词，都可以"
+                aria-describedby="xinmai-life-whisper-guidance"
+                onChange={(event) => setLifeWhisperText(event.target.value)}
+                onKeyDown={(event) => {
+                  if (
+                    !event.nativeEvent.isComposing &&
+                    event.key === "Enter" &&
+                    (event.metaKey || event.ctrlKey)
+                  ) {
+                    event.preventDefault();
+                    submitLifeWhisper();
+                  }
+                }}
+              />
+              <p id="xinmai-life-whisper-guidance">
+                只留在此刻，不会被分析
+              </p>
+              <div className="gy-genesis-production-experience__life-whisper-actions">
+                <button
+                  type="button"
+                  data-interaction="WHISPER_SKIPPED"
+                  onClick={skipLifeWhisper}
+                >
+                  暂时不说
+                </button>
+                <button
+                  type="submit"
+                  data-interaction="WHISPER_SUBMITTED"
+                  disabled={lifeWhisperText.trim().length === 0}
+                >
+                  留给它
+                </button>
+              </div>
+            </form>
+          ) : (
+            <p
+              className="gy-genesis-production-experience__life-whisper-settled"
+              role="status"
+            >
+              {lifeWhisperFact === "WHISPER_SUBMITTED"
+                ? "这句话只留在此刻。"
+                : "此刻不说，也可以。"}
+            </p>
+          )}
+        </section>
+      ) : null}
       {timeDeliveryResponse !== null &&
       productionRuntimeResult.session.currentStage === "SYMBOL_REVEAL" ? (
         <p className="gy-genesis-production-experience__time-response" role="status">

@@ -169,3 +169,144 @@
   background: rgb(8 11 18 / 64%);
   font: inherit;
 }
+
+.gy-genesis-production-experience__life-whisper {
+  position: absolute;
+  z-index: 2;
+  right: 24px;
+  bottom: max(92px, calc(env(safe-area-inset-bottom) + 72px));
+  left: 24px;
+  display: grid;
+  justify-items: center;
+  color: rgb(238 226 198 / 78%);
+  font-family: var(--gy-font-serif);
+  animation: gy-genesis-life-whisper-arrive 620ms ease-out both;
+}
+
+.gy-genesis-production-experience__life-whisper-form {
+  display: grid;
+  width: min(100%, 336px);
+  gap: 8px;
+  margin: 0;
+}
+
+.gy-genesis-production-experience__life-whisper-form label {
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-align: center;
+}
+
+.gy-genesis-production-experience__life-whisper-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 40px;
+  max-height: 76px;
+  padding: 9px 4px 8px;
+  resize: none;
+  overflow-y: auto;
+  border: 0;
+  border-bottom: 1px solid rgb(186 210 209 / 26%);
+  border-radius: 0;
+  outline: none;
+  color: rgb(240 233 214 / 88%);
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgb(7 13 23 / 28%)
+  );
+  font: 14px/1.55 var(--gy-font-serif);
+  letter-spacing: 0.08em;
+  text-align: center;
+  caret-color: rgb(190 220 220 / 82%);
+}
+
+.gy-genesis-production-experience__life-whisper-form textarea::placeholder {
+  color: rgb(167 183 191 / 42%);
+}
+
+.gy-genesis-production-experience__life-whisper-form textarea:focus-visible {
+  border-bottom-color: rgb(190 220 220 / 58%);
+  box-shadow: 0 12px 24px -20px rgb(136 193 204 / 56%);
+}
+
+.gy-genesis-production-experience__life-whisper-form p {
+  margin: 0;
+  color: rgb(150 166 178 / 48%);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+.gy-genesis-production-experience__life-whisper-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.gy-genesis-production-experience__life-whisper-actions button {
+  min-height: 34px;
+  padding: 5px 2px;
+  border: 0;
+  color: rgb(202 207 201 / 62%);
+  background: transparent;
+  font: 11px var(--gy-font-serif);
+  letter-spacing: 0.12em;
+}
+
+.gy-genesis-production-experience__life-whisper-actions button:last-child {
+  color: rgb(238 226 198 / 86%);
+}
+
+.gy-genesis-production-experience__life-whisper-actions button:disabled {
+  color: rgb(150 158 162 / 28%);
+}
+
+.gy-genesis-production-experience__life-whisper-actions button:focus-visible {
+  outline: 1px solid rgb(190 220 220 / 42%);
+  outline-offset: 4px;
+}
+
+.gy-genesis-production-experience__life-whisper-settled {
+  margin: 0;
+  color: rgb(190 210 210 / 58%);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-align: center;
+}
+
+.gy-genesis-production-experience[data-life-whisper-entry-ready="READY"]
+  .gy-genesis-production-experience__presence-response {
+  bottom: max(256px, calc(env(safe-area-inset-bottom) + 236px));
+}
+
+@keyframes gy-genesis-life-whisper-arrive {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@media (max-height: 700px) {
+  .gy-genesis-production-experience__life-whisper {
+    bottom: max(78px, calc(env(safe-area-inset-bottom) + 62px));
+  }
+
+  .gy-genesis-production-experience[data-life-whisper-entry-ready="READY"]
+    .gy-genesis-production-experience__presence-response {
+    bottom: max(228px, calc(env(safe-area-inset-bottom) + 210px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gy-genesis-production-experience__life-whisper {
+    animation: none;
+  }
+}
