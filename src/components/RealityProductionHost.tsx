@@ -131,6 +131,26 @@ export function RealityProductionHost({
       : pressureSeedSession.captureState === "PAUSED"
         ? "PRESSURE_PAUSED"
         : "PRESSURE_OBSERVING";
+  const choiceRhythmValidationActive =
+    choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION";
+  const choiceRhythmValidationState = choiceRhythmValidationActive
+    ? pressureSeedSession.captureState === "SEED_RECOGNIZED"
+      ? "CURRENT_REALITY_RESPONSE_READY_FOR_OBSERVATION"
+      : pressureSeedSession.captureState === "PAUSED"
+        ? "REALITY_CONTACT_PAUSED_BY_USER"
+        : "AWAITING_REALITY_CONTACT"
+    : "NOT_ACTIVE";
+  const realityContinuityCopy = choiceRhythmValidationActive
+    ? pressureVisualState === "PRESSURE_RECOGNIZED"
+      ? "新的现实已经触碰到它。先看身体怎样回应，不急着把不同叫作改变。"
+      : pressureVisualState === "PRESSURE_PAUSED"
+        ? "你和它仍在这里，新的回应暂时不必接受检验。"
+        : "刚刚出现的空间仍在身体里，新的现实从远处靠近。"
+    : pressureVisualState === "PRESSURE_RECOGNIZED"
+      ? "新的现实触碰了它，它仍是同一个生命。"
+      : pressureVisualState === "PRESSURE_PAUSED"
+        ? "你和它仍在这里，现实暂时停在远处。"
+        : "你和它仍在同一片星河里。现实开始从远处靠近。";
 
   const applyConsumerResult = (
     nextConsumerResult: RealityProductionPressureSeedConsumerResult,
@@ -292,16 +312,19 @@ export function RealityProductionHost({
       }
       data-pressure-seed-capture-state={pressureSeedSession.captureState}
       data-choice-response-state={
-        choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION"
+        choiceRhythmValidationActive
           ? "NEW_RESPONSE_POSSIBILITY"
           : "INACTIVE"
       }
       data-choice-rhythm-continuity={
-        choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION"
+        choiceRhythmValidationActive
           ? "SAME_BODY_NEW_CADENCE_CARRIED_TO_REALITY"
           : "NONE"
       }
+      data-choice-rhythm-validation={choiceRhythmValidationState}
+      data-choice-body-continuity="SAME_CORE_SAME_BODY"
       data-choice-identity-effect="RESPONSE_ONLY"
+      data-choice-growth-claim="NONE_UNTIL_USER_RECOGNIZES"
       data-choice-crystal-stage="NOT_STARTED"
       data-reality-pressure-visual-state={pressureVisualState}
       data-pressure-seed-bundle-reference={
@@ -322,7 +345,7 @@ export function RealityProductionHost({
         className="gy-reality-life-universe__arrival-copy"
         role="status"
       >
-        {choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION"
+        {choiceRhythmValidationActive
           ? "你和它，带着新的呼吸继续走。"
           : "你和它，继续走进现实。"}
       </p>
@@ -332,14 +355,7 @@ export function RealityProductionHost({
         <span />
       </div>
       <p className="gy-reality-life-universe__continuity-copy">
-        {choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION" &&
-        pressureVisualState === "PRESSURE_OBSERVING"
-          ? "刚刚出现的空间仍在身体里，新的现实从远处靠近。"
-          : pressureVisualState === "PRESSURE_RECOGNIZED"
-          ? "新的现实触碰了它，它仍是同一个生命。"
-          : pressureVisualState === "PRESSURE_PAUSED"
-            ? "你和它仍在这里，现实暂时停在远处。"
-            : "你和它仍在同一片星河里。现实开始从远处靠近。"}
+        {realityContinuityCopy}
       </p>
       <RealityPressureSeedPresentation
         session={pressureSeedSession}

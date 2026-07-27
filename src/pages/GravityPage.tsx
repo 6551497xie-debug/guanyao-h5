@@ -1614,9 +1614,15 @@ function TransformationMomentFocus({
       data-choice-inner-view-continuity="SAME_UNDERSTANDING_NEW_RESPONSE_SPACE"
       data-choice-inner-view-relation={innerViewRelation}
       data-choice-transition-model="RELATION_NOT_MODE_SWITCH"
+      data-choice-rhythm-validation={
+        livedResponseRecognitionRequired
+          ? "AWAITING_USER_RECOGNITION"
+          : "FIRST_RESPONSE_SPACE"
+      }
       data-choice-life-body-rhythm="NEW_CADENCE_SAME_BODY"
       data-choice-core-identity="STABLE_THROUGH_RESPONSE"
       data-choice-particle-rhythm="QUIET_REORIENTATION"
+      data-choice-growth-claim="NONE"
       data-legacy-direct-choice-to-crystal={
         onSediment ? "AVAILABLE" : "ISOLATED"
       }
@@ -2445,9 +2451,20 @@ function HexagramCodeDeliveryShell() {
             ? "OLD_PATH_RESTARTING_THEN_PAUSE"
             : transformationMomentActive
               ? "NEW_RESPONSE_POSSIBILITY"
-              : "INACTIVE"
+              : livedResponseRecognitionPending
+                ? "NEW_RESPONSE_POSSIBILITY"
+                : "INACTIVE"
         }
         data-choice-identity-effect="RESPONSE_ONLY"
+        data-choice-body-continuity="SAME_CORE_SAME_BODY"
+        data-choice-rhythm-validation={
+          livedResponseRecognized
+            ? "USER_RECOGNIZED_DIFFERENCE"
+            : livedResponseRecognitionPending
+              ? "NEW_REALITY_RESPONSE_UNDER_OBSERVATION"
+              : "NOT_ACTIVE"
+        }
+        data-choice-growth-claim="NONE"
         data-choice-answer-model="NONE"
         data-choice-protective-sequence="UNDERSTAND_PAUSE_PARTICIPATE"
         data-choice-inner-view-relation={innerViewRelation}
