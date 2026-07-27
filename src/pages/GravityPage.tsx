@@ -1833,7 +1833,9 @@ function CurrentCrystalEndStateFocus({
     [state],
   );
   const crystalImprintLine = crystalPresentation.crystalCopy;
-  const [imprintCopyReady, setImprintCopyReady] = useState(false);
+  const [sedimentPhase, setSedimentPhase] = useState<
+    "SOURCE_RESPONDING" | "ENTERING_BODY" | "BODY_SETTLED"
+  >("SOURCE_RESPONDING");
   const [archiveReady, setArchiveReady] = useState(false);
   const [ringLiteState, setRingLiteState] = useState(() => readPersonalityRingLite());
   const ringPresentation = useMemo(
@@ -1870,6 +1872,12 @@ function CurrentCrystalEndStateFocus({
       sourceSlot: crystalSourceSlot,
     });
   }, [crystalImprintLine, crystalSourceSlot, visualSource]);
+  const responsePositionToBodyPath = crystalImprintGeometry
+    ? `M ${crystalImprintGeometry.target[0]} ${crystalImprintGeometry.target[1]} L ${crystalImprintGeometry.stem[0]} ${crystalImprintGeometry.stem[1]} L ${crystalImprintGeometry.branchTarget[0]} ${crystalImprintGeometry.branchTarget[1]}`
+    : "";
+  const bodySedimentPoint =
+    crystalImprintGeometry?.branchTarget ?? null;
+  const bodySedimentSettled = sedimentPhase === "BODY_SETTLED";
   const archiveVisualContinuityReady =
     visualContinuity !== null &&
     visualSource !== null &&
@@ -1883,14 +1891,18 @@ function CurrentCrystalEndStateFocus({
       "REAL_USER_SESSION";
 
   useEffect(() => {
-    const copyTimer = window.setTimeout(() => {
-      setImprintCopyReady(true);
-    }, 1_450);
+    const flowTimer = window.setTimeout(() => {
+      setSedimentPhase("ENTERING_BODY");
+    }, 620);
+    const settleTimer = window.setTimeout(() => {
+      setSedimentPhase("BODY_SETTLED");
+    }, 2_350);
     const archiveTimer = window.setTimeout(() => {
       setArchiveReady(true);
-    }, 3_200);
+    }, 4_200);
     return () => {
-      window.clearTimeout(copyTimer);
+      window.clearTimeout(flowTimer);
+      window.clearTimeout(settleTimer);
       window.clearTimeout(archiveTimer);
     };
   }, []);
@@ -1925,9 +1937,18 @@ function CurrentCrystalEndStateFocus({
       data-crystal-source-continuity="CHANGED_POSITION_TO_BODY_IMPRINT"
       data-crystal-source-dimension={crystalSourceDimension}
       data-crystal-source-slot={crystalImprintGeometry?.sourceSlot ?? "unavailable"}
+      data-crystal-validation-authority="USER_RECOGNIZED_RESPONSE"
+      data-crystal-source-anchor="ACTIVE_SIX_DIMENSION_BODY_POSITION"
+      data-crystal-sediment-direction="RESPONSE_POSITION_INTO_EXISTING_BODY"
+      data-crystal-sediment-phase={sedimentPhase}
+      data-crystal-result-form="LIFE_TEXTURE_NOT_OBJECT"
+      data-crystal-archive-gate={
+        archiveReady ? "BODY_SEDIMENT_SETTLED" : "WAITING_FOR_BODY_SEDIMENT"
+      }
       data-crystal-body-attachment={
         crystalImprintGeometry ? "ATTACHED_TO_EXISTING_BODY" : "PENDING_SOURCE"
       }
+      data-crystal-identity-invariant="SAME_CORE_SAME_BODY_SAME_LIFE"
       data-crystal-emotional-tone="UNDERSTANDING_NOT_CELEBRATION"
       data-crystal-sound="ONE_RESTRAINED_TONE"
       data-crystal-light-event="ONE_POINT"
@@ -1949,12 +1970,17 @@ function CurrentCrystalEndStateFocus({
       }}
     >
       <CosmicFieldKeyframes />
-      {crystalImprintGeometry ? (
+      {crystalImprintGeometry && bodySedimentPoint ? (
         <svg
+          className="gy-crystal-response-sediment"
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           aria-hidden="true"
-          data-crystal-current-body-imprint="SOURCE_ATTACHED"
+          data-crystal-current-body-imprint={
+            bodySedimentSettled
+              ? "SETTLED_IN_SAME_BODY"
+              : "FLOWING_FROM_RECOGNIZED_RESPONSE_POSITION"
+          }
           style={{
             position: "absolute",
             zIndex: 1,
@@ -1966,47 +1992,49 @@ function CurrentCrystalEndStateFocus({
           }}
         >
           <path
-            d={crystalImprintGeometry.path}
+            d={responsePositionToBodyPath}
             fill="none"
-            stroke="rgba(255,239,190,0.12)"
-            strokeWidth="1.3"
+            stroke="rgba(255,239,190,0.1)"
+            strokeWidth="1.12"
             strokeLinecap="round"
             strokeLinejoin="round"
             filter="blur(1.1px)"
           />
           <path
-            d={crystalImprintGeometry.path}
+            className="gy-crystal-response-sediment__flow"
+            d={responsePositionToBodyPath}
+            pathLength="1"
             fill="none"
-            stroke="rgba(255,239,190,0.68)"
-            strokeWidth="0.42"
+            stroke="rgba(255,239,190,0.62)"
+            strokeWidth="0.36"
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeDasharray="120"
-            style={{
-              animation:
-                "gy-crystal-imprint 1.8s cubic-bezier(0.2, 0.7, 0.2, 1) both",
-            }}
           />
           <circle
-            cx={crystalImprintGeometry.source[0]}
-            cy={crystalImprintGeometry.source[1]}
-            r="0.44"
-            fill="rgba(255,247,220,0.72)"
-          />
-          <circle
+            className="gy-crystal-response-sediment__origin"
             cx={crystalImprintGeometry.target[0]}
             cy={crystalImprintGeometry.target[1]}
-            r="0.9"
-            fill="rgba(255,239,190,0.12)"
+            r="0.72"
+            fill="rgba(255,247,220,0.08)"
+            stroke="rgba(255,239,190,0.42)"
+            strokeWidth="0.2"
           />
-          <rect
-            x={crystalImprintGeometry.target[0] - 0.28}
-            y={crystalImprintGeometry.target[1] - 0.28}
-            width="0.56"
-            height="0.56"
-            rx="0.08"
-            fill="rgba(255,247,220,0.78)"
-          />
+          <g className="gy-crystal-response-sediment__body-trace">
+            <path
+              d={`M ${bodySedimentPoint[0] - 0.62} ${bodySedimentPoint[1] + 0.08} L ${bodySedimentPoint[0] - 0.14} ${bodySedimentPoint[1] - 0.46} L ${bodySedimentPoint[0] + 0.5} ${bodySedimentPoint[1] - 0.12} M ${bodySedimentPoint[0] - 0.14} ${bodySedimentPoint[1] - 0.46} L ${bodySedimentPoint[0] - 0.08} ${bodySedimentPoint[1] + 0.58}`}
+              fill="none"
+              stroke="rgba(255,239,190,0.68)"
+              strokeWidth="0.26"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <circle
+              cx={bodySedimentPoint[0]}
+              cy={bodySedimentPoint[1]}
+              r="0.2"
+              fill="rgba(255,247,220,0.72)"
+            />
+          </g>
         </svg>
       ) : null}
       <div
@@ -2050,8 +2078,8 @@ function CurrentCrystalEndStateFocus({
             lineHeight: 1.72,
             fontWeight: 540,
             textWrap: "balance",
-            opacity: imprintCopyReady ? 1 : 0,
-            transform: `translateY(${imprintCopyReady ? 0 : 4}px)`,
+            opacity: bodySedimentSettled ? 1 : 0,
+            transform: `translateY(${bodySedimentSettled ? 0 : 4}px)`,
             transition:
               "opacity 900ms ease, transform 900ms cubic-bezier(0.2, 0.7, 0.2, 1)",
           }}

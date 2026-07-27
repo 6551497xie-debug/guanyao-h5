@@ -173,6 +173,7 @@
     "check-reality-production-choice-consumer": "node scripts/check-reality-production-choice-consumer.mjs",
     "check-reality-production-choice-host": "node scripts/check-reality-production-choice-host.mjs",
     "check-xinmai-new-reality-response-rhythm-validation": "node scripts/check-xinmai-new-reality-response-rhythm-validation.mjs",
+    "check-xinmai-validated-response-crystal-body-sediment": "node scripts/check-xinmai-validated-response-crystal-body-sediment.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",

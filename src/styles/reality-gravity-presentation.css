@@ -204,6 +204,30 @@
   pointer-events: none;
 }
 
+.gy-crystal-response-sediment__origin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: gy-crystal-response-origin 1380ms ease-out both;
+}
+
+.gy-crystal-response-sediment__flow {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: gy-crystal-response-enter-body 1780ms
+    cubic-bezier(0.2, 0.72, 0.22, 1) 520ms both;
+}
+
+.gy-crystal-response-sediment__body-trace {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation:
+    gy-crystal-body-trace-settle 1500ms
+      cubic-bezier(0.2, 0.72, 0.22, 1) 1880ms both,
+    gy-crystal-body-trace-remember 7200ms ease-in-out 3380ms infinite
+      alternate;
+}
+
 main[data-choice-response-state="OLD_PATH_RESTARTING_THEN_PAUSE"]
   .gy-gravity-inertia-field__path {
   animation: gy-choice-old-path-restart 3600ms
@@ -305,6 +329,52 @@ main[data-choice-response-state="NEW_RESPONSE_POSSIBILITY"]
   }
 }
 
+@keyframes gy-crystal-response-origin {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  24% {
+    opacity: 0.56;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 0.06;
+    transform: scale(0.86);
+  }
+}
+
+@keyframes gy-crystal-response-enter-body {
+  from {
+    stroke-dashoffset: 1;
+    opacity: 0.08;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 0.46;
+  }
+}
+
+@keyframes gy-crystal-body-trace-settle {
+  from {
+    opacity: 0;
+    transform: scale(1.12);
+  }
+  to {
+    opacity: 0.58;
+    transform: scale(1);
+  }
+}
+
+@keyframes gy-crystal-body-trace-remember {
+  from {
+    opacity: 0.34;
+  }
+  to {
+    opacity: 0.52;
+  }
+}
+
 @media (max-width: 560px) {
   .gy-p37__gravity-space { bottom: 66px; width: 80vw; }
 }
@@ -315,6 +385,9 @@ main[data-choice-response-state="NEW_RESPONSE_POSSIBILITY"]
   .gy-choice-response-gap__stillness,
   .gy-choice-response-gap__confirm,
   .gy-choice-response-gap__invitation,
+  .gy-crystal-response-sediment__origin,
+  .gy-crystal-response-sediment__flow,
+  .gy-crystal-response-sediment__body-trace,
   .gy-crystal-sediment-field,
   .gy-reality-life-universe__canvas {
     animation: none;
@@ -322,5 +395,11 @@ main[data-choice-response-state="NEW_RESPONSE_POSSIBILITY"]
 
   .gy-choice-response-gap__confirm {
     opacity: 0.58;
+  }
+
+  .gy-crystal-response-sediment__flow,
+  .gy-crystal-response-sediment__body-trace {
+    opacity: 0.5;
+    stroke-dashoffset: 0;
   }
 }
