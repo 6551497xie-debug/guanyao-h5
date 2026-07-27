@@ -214,6 +214,7 @@ export function RealityProductionRouteEntry() {
       pressureSeedContinuationContext={pressureSeedContinuationResult.context}
       genesisPresenceContinuityContext={genesisPresenceContinuityContext}
       visualContinuity={visualContinuity}
+      choiceContinuation={choiceContinuation}
       onContinueToGravity={continueToGravity}
     />
   );

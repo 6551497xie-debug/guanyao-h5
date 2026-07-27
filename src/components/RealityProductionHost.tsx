@@ -75,6 +75,7 @@ export function RealityProductionHost({
   pressureSeedContinuationContext,
   genesisPresenceContinuityContext,
   visualContinuity,
+  choiceContinuation = null,
   onContinueToGravity,
 }: RealityProductionHostProps) {
   const sourceContext = routeAuthorization.sourceContext;
@@ -290,6 +291,18 @@ export function RealityProductionHost({
         continuationContext.deliverySession.currentBundleReferenceId
       }
       data-pressure-seed-capture-state={pressureSeedSession.captureState}
+      data-choice-response-state={
+        choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION"
+          ? "NEW_RESPONSE_POSSIBILITY"
+          : "INACTIVE"
+      }
+      data-choice-rhythm-continuity={
+        choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION"
+          ? "SAME_BODY_NEW_CADENCE_CARRIED_TO_REALITY"
+          : "NONE"
+      }
+      data-choice-identity-effect="RESPONSE_ONLY"
+      data-choice-crystal-stage="NOT_STARTED"
       data-reality-pressure-visual-state={pressureVisualState}
       data-pressure-seed-bundle-reference={
         pressureSeedSession.candidateBundleReferenceId
@@ -309,7 +322,9 @@ export function RealityProductionHost({
         className="gy-reality-life-universe__arrival-copy"
         role="status"
       >
-        你和它，继续走进现实。
+        {choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION"
+          ? "你和它，带着新的呼吸继续走。"
+          : "你和它，继续走进现实。"}
       </p>
       <div className="gy-reality-life-universe__disturbance" aria-hidden="true">
         <span />
@@ -317,7 +332,10 @@ export function RealityProductionHost({
         <span />
       </div>
       <p className="gy-reality-life-universe__continuity-copy">
-        {pressureVisualState === "PRESSURE_RECOGNIZED"
+        {choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION" &&
+        pressureVisualState === "PRESSURE_OBSERVING"
+          ? "刚刚出现的空间仍在身体里，新的现实从远处靠近。"
+          : pressureVisualState === "PRESSURE_RECOGNIZED"
           ? "新的现实触碰了它，它仍是同一个生命。"
           : pressureVisualState === "PRESSURE_PAUSED"
             ? "你和它仍在这里，现实暂时停在远处。"
