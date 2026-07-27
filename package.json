@@ -187,6 +187,7 @@
     "check-xinmai-reality-seed-continuous-discovery": "node scripts/check-xinmai-reality-seed-continuous-discovery.mjs",
     "check-xinmai-reality-seed-recognition-body-response": "node scripts/check-xinmai-reality-seed-recognition-body-response.mjs",
     "check-xinmai-body-response-meridian-inner-view-continuity": "node scripts/check-xinmai-body-response-meridian-inner-view-continuity.mjs",
+    "check-xinmai-meridian-first-approach-life-signal-recognition": "node scripts/check-xinmai-meridian-first-approach-life-signal-recognition.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",

@@ -84,6 +84,7 @@ export function XinmaiLifeReflectionGuide({
         : phase === "SECOND_APPROACH" || phase === "PAUSED"
           ? 2
           : 3;
+  const firstLifeSignalVisible = phase === "FIRST_APPROACH";
 
   function resolveStepState(stepId: string) {
     const stepOrder = ["MIRROR", "IDENTIFY", "VALIDATE", "SHIFT"];
@@ -102,37 +103,62 @@ export function XinmaiLifeReflectionGuide({
       data-xinmai-three-approach-depth={approachDepth}
       data-xinmai-three-approach-sequence="SEE_UNDERSTAND_TRANSFORM"
       data-xinmai-reflection-consumer="EXISTING_GRAVITY_STATE"
+      data-xinmai-life-signal-mode={
+        firstLifeSignalVisible
+          ? "SINGLE_EXISTING_DIMENSION_SIGNAL"
+          : "REFLECTION_SEQUENCE"
+      }
       data-xinmai-ai-claim="NONE"
       data-xinmai-dust-claim="NONE"
       data-xinmai-meridian-claim="NONE"
       aria-label="生命内观"
     >
-      <span className="xinmai-life-reflection-guide__eyebrow">生命照见</span>
-      <ol className="xinmai-life-reflection-guide__sequence">
-        {REFLECTION_STEPS.map((step) => (
-          <li
-            key={step.id}
-            data-xinmai-reflection-step={step.id}
-            data-xinmai-reflection-step-state={resolveStepState(step.id)}
-          >
-            <i />
-            <span>
-              <strong>{step.label}</strong>
-              <small>{step.copy}</small>
-            </span>
-          </li>
-        ))}
-      </ol>
+      {firstLifeSignalVisible ? (
+        <div
+          className="xinmai-life-reflection-guide__life-signal"
+          data-xinmai-life-signal="EXISTING_SIX_DIMENSION_OBSERVATION"
+          data-xinmai-life-signal-count="ONE"
+          data-xinmai-life-signal-meaning="STATE_CHANGE_NOT_DIAGNOSIS"
+          data-xinmai-life-signal-boundary="先看见这处变化，不急着把它解释成你。"
+        >
+          <i aria-hidden="true" />
+          <span>这一处，先有了回应</span>
+          <strong>{observation ?? "生命在这里停留了一下。"}</strong>
+        </div>
+      ) : (
+        <>
+          <span className="xinmai-life-reflection-guide__eyebrow">
+            生命照见
+          </span>
+          <ol className="xinmai-life-reflection-guide__sequence">
+            {REFLECTION_STEPS.map((step) => (
+              <li
+                key={step.id}
+                data-xinmai-reflection-step={step.id}
+                data-xinmai-reflection-step-state={resolveStepState(step.id)}
+              >
+                <i />
+                <span>
+                  <strong>{step.label}</strong>
+                  <small>{step.copy}</small>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
 
       <div
         className="xinmai-life-reflection-guide__approach"
         data-xinmai-user-agency="CONFIRM_REVISE_OR_PAUSE"
       >
-        <p className="xinmai-life-reflection-guide__observation">
-          {observation ?? "先靠近这一处生命变化。"}
-        </p>
+        {!firstLifeSignalVisible ? (
+          <p className="xinmai-life-reflection-guide__observation">
+            {observation ?? "先靠近这一处生命变化。"}
+          </p>
+        ) : null}
 
-        {phase !== "OBSERVING" ? (
+        {phase !== "OBSERVING" && !firstLifeSignalVisible ? (
           <p
             className="xinmai-life-reflection-guide__understanding"
             data-dynamics-protective-understanding="CANDIDATE_NOT_CONCLUSION"
@@ -141,9 +167,7 @@ export function XinmaiLifeReflectionGuide({
               ? "不必现在得出结论。你和它仍在这里。"
               : phase === "SELF_NAMED"
                 ? "保留你的理解。系统不替你命名。"
-                : phase === "FIRST_APPROACH"
-                  ? "先看见这处变化，不急着把它解释成你。"
-                  : phase === "SECOND_APPROACH"
+                : phase === "SECOND_APPROACH"
                     ? understanding ??
                       "这种回应，也许曾经用自己的方式保护过你。"
                     : phase === "THIRD_APPROACH"
@@ -190,9 +214,11 @@ export function XinmaiLifeReflectionGuide({
         ) : null}
       </div>
 
-      <p className="xinmai-life-reflection-guide__boundary">
-        它只帮助你看见，不替你决定。
-      </p>
+      {!firstLifeSignalVisible ? (
+        <p className="xinmai-life-reflection-guide__boundary">
+          它只帮助你看见，不替你决定。
+        </p>
+      ) : null}
     </aside>
   );
 }

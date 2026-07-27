@@ -28,6 +28,93 @@
   animation: xinmai-inner-view-meridian-point 2.8s ease-in-out infinite;
 }
 
+.xinmai-life-reflection-guide--reflection[data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"] {
+  width: min(238px, 64vw);
+  gap: 13px;
+  transform: translateY(-7vh);
+  transition: transform 900ms cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+
+main:has(
+    .gy-reality-life-universe__canvas[data-reality-pressure-flow-side="RIGHT"]
+  )
+  .xinmai-life-reflection-guide--reflection[data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"] {
+  transform: translate(34px, -7vh);
+}
+
+main:has(
+    .gy-reality-life-universe__canvas[data-reality-pressure-flow-side="LEFT"]
+  )
+  .xinmai-life-reflection-guide--reflection[data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"] {
+  transform: translate(-34px, -7vh);
+}
+
+.xinmai-life-reflection-guide__life-signal {
+  position: relative;
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  padding-left: 16px;
+  text-align: left;
+  text-shadow: 0 0 18px rgb(2 3 6 / 96%);
+  animation: xinmai-inner-view-life-signal-arrival 980ms
+    cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+
+.xinmai-life-reflection-guide__life-signal::before {
+  position: absolute;
+  top: 3px;
+  bottom: 2px;
+  left: 3px;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    rgb(185 203 236 / 8%),
+    rgb(238 226 198 / 34%),
+    rgb(185 203 236 / 5%)
+  );
+  content: "";
+}
+
+.xinmai-life-reflection-guide__life-signal > i {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border: 1px solid rgb(238 226 198 / 32%);
+  border-radius: 50%;
+  box-shadow: 0 0 14px rgb(238 226 198 / 13%);
+  transform: translateY(-50%);
+  animation: xinmai-inner-view-life-signal-breathe 4.8s ease-in-out infinite;
+}
+
+.xinmai-life-reflection-guide__life-signal > span {
+  color: rgb(185 203 236 / 44%);
+  font-size: 8px;
+  letter-spacing: 0.13em;
+}
+
+.xinmai-life-reflection-guide__life-signal > strong {
+  color: rgb(245 242 233 / 76%);
+  font-family: var(--xinmai-font-life);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.025em;
+  line-height: 1.7;
+  text-wrap: balance;
+}
+
+.xinmai-life-reflection-guide--reflection[data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"]
+  .xinmai-life-reflection-guide__approach {
+  gap: 0;
+}
+
+[data-dynamics-node-language="LIFE_UNIVERSE_WHISPER"][data-dynamics-inner-view-phase="FIRST_APPROACH"]
+  > span[aria-hidden="true"] {
+  display: none;
+}
+
 .xinmai-life-reflection-guide__sequence
   li[data-xinmai-reflection-step-state="PASSED"] {
   opacity: 0.3;
@@ -84,6 +171,31 @@
   }
 }
 
+@keyframes xinmai-inner-view-life-signal-arrival {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes xinmai-inner-view-life-signal-breathe {
+  0%,
+  100% {
+    opacity: 0.34;
+    transform: translateY(-50%) scale(0.9);
+  }
+
+  52% {
+    opacity: 0.76;
+    transform: translateY(-50%) scale(1.08);
+  }
+}
+
 @keyframes xinmai-inner-view-copy-arrival {
   from {
     opacity: 0;
@@ -113,6 +225,8 @@
   .gy-inner-view-life-meridian__breath,
   .gy-inner-view-life-meridian__flow,
   .gy-inner-view-life-meridian__point,
+  .xinmai-life-reflection-guide__life-signal,
+  .xinmai-life-reflection-guide__life-signal > i,
   .xinmai-life-reflection-guide--reflection
     .xinmai-life-reflection-guide__observation,
   .xinmai-life-reflection-guide--reflection
@@ -124,5 +238,9 @@
 
   .gy-inner-view-life-meridian__point {
     opacity: 0.52;
+  }
+
+  .xinmai-life-reflection-guide--reflection[data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"] {
+    transform: none;
   }
 }
