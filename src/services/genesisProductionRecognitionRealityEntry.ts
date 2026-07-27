@@ -193,6 +193,21 @@ export function activateGenesisProductionRealityEntryContext(
 export const readGenesisProductionRealityEntryContext = ():
   GenesisProductionRealityEntryContext | null => activeRealityEntryContext;
 
+export function restoreGenesisProductionRealityEntryContext(
+  sourceReferenceId: string,
+): GenesisProductionRealityEntryContext | null {
+  const normalizedReferenceId = sourceReferenceId.trim();
+  if (
+    normalizedReferenceId.length === 0 ||
+    hasForbiddenSourceReference(normalizedReferenceId)
+  ) {
+    return null;
+  }
+  return activateGenesisProductionRealityEntryContext(
+    createSession(normalizedReferenceId, "REALITY_ENTRY_ELIGIBLE"),
+  );
+}
+
 export function clearGenesisProductionRealityEntryContext(): void {
   activeRealityEntryContext = null;
 }
