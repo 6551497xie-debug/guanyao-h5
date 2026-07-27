@@ -185,6 +185,7 @@
     "check-xinmai-life-trace-new-reality-continuity": "node scripts/check-xinmai-life-trace-new-reality-continuity.mjs",
     "check-xinmai-new-reality-trace-response-calibration": "node scripts/check-xinmai-new-reality-trace-response-calibration.mjs",
     "check-xinmai-reality-seed-continuous-discovery": "node scripts/check-xinmai-reality-seed-continuous-discovery.mjs",
+    "check-xinmai-reality-seed-recognition-body-response": "node scripts/check-xinmai-reality-seed-recognition-body-response.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",

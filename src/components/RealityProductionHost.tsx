@@ -402,6 +402,18 @@ export function RealityProductionHost({
       data-choice-crystal-stage="NOT_STARTED"
       data-reality-pressure-visual-state={pressureVisualState}
       data-reality-life-weather={realityLifeWeather}
+      data-reality-seed-recognition-continuity={
+        pressureSeedSession.selectedPressureSeedContext
+          ? "FRAGMENT_TO_SAME_BODY_RESPONSE"
+          : "AWAITING_USER_RECOGNITION"
+      }
+      data-reality-seed-presentation-form={
+        pressureSeedSession.selectedPressureSeedContext
+          ? "LIFE_WEATHER_NOT_CARD"
+          : "REALITY_FRAGMENTS"
+      }
+      data-reality-seed-response-position="EXISTING_LIFE_BODY"
+      data-reality-seed-analysis-stage="NOT_STARTED"
       data-reality-life-weather-input={
         pressureSeedSession.selectedPressureSeedContext
           ? "CURRENT_RECOGNIZED_REALITY"

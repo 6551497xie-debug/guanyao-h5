@@ -5,6 +5,7 @@ import { adaptRealLifeVisualSource } from "../services/realLifeVisualSourceAdapt
 import { readRealUserGenesisVisualSourceContext } from "../services/realUserGenesisVisualSourceContext";
 import "../styles/reality-life-entry-continuity.css";
 import "../styles/reality-inner-view-entry.css";
+import "../styles/xinmai-reality-seed-body-response.css";
 import type {
   GenesisProductionCanvasHostState,
 } from "../types/genesisProductionExperiencePage";
@@ -113,6 +114,16 @@ export function RealityLifeUniverseCanvas({
       0) >= 0
       ? "RIGHT"
       : "LEFT";
+  const realitySeedBodyTargetX =
+    realityPressureFlowSide === "RIGHT" ? 59 : 41;
+  const realitySeedIngressOriginX =
+    realityPressureFlowSide === "RIGHT" ? 96 : 4;
+  const realitySeedIngressControlX =
+    realityPressureFlowSide === "RIGHT" ? 78 : 22;
+  const realitySeedBodyResponsePath =
+    selectedPressureSeedContext === null
+      ? ""
+      : `M ${realitySeedIngressOriginX} 72 C ${realitySeedIngressControlX} 69 ${realitySeedBodyTargetX + (realityPressureFlowSide === "RIGHT" ? 7 : -7)} 57 ${realitySeedBodyTargetX} 48`;
   const lifeMemoryGeometry = useMemo(() => {
     const projectionBundle =
       visualContinuity.consumerSourceResult.consumerSource.projectionBundle;
@@ -500,13 +511,61 @@ export function RealityLifeUniverseCanvas({
         aria-hidden="true"
       />
       {selectedPressureSeedContext !== null &&
+      realityPressureConsumer.status === "RESPONDING" ? (
+        <svg
+          className="gy-reality-life-universe__seed-body-response"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          data-reality-seed-recognition="FRAGMENT_ENTERING_SAME_LIFE"
+          data-reality-seed-presentation-state="DISSOLVED_FROM_CARD"
+          data-reality-seed-body-target="EXISTING_LIFE_WEATHER_POSITION"
+          data-reality-seed-analysis-stage="NOT_STARTED"
+          data-reality-seed-identity-invariant="SAME_CORE_SAME_BODY_SAME_LIFE"
+          data-reality-seed-reference={
+            selectedPressureSeedContext.selectedPressureSeedId
+          }
+          data-reality-seed-pressure-field={
+            selectedPressureSeedContext.pressureField ?? "UNSPECIFIED"
+          }
+          data-reality-seed-flow-side={realityPressureFlowSide}
+          data-inner-view-approach-state={innerViewApproachState}
+        >
+          <path
+            className="gy-reality-life-universe__seed-body-response-bed"
+            d={realitySeedBodyResponsePath}
+            fill="none"
+            stroke="rgba(185,203,236,0.16)"
+            strokeWidth="0.34"
+            strokeLinecap="round"
+          />
+          <path
+            className="gy-reality-life-universe__seed-body-response-flow"
+            d={realitySeedBodyResponsePath}
+            pathLength="1"
+            fill="none"
+            stroke="rgba(238,226,198,0.38)"
+            strokeWidth="0.18"
+            strokeLinecap="round"
+          />
+          <path
+            className="gy-reality-life-universe__seed-body-response-breath"
+            d={`M ${realitySeedBodyTargetX - 0.72} 48.12 Q ${realitySeedBodyTargetX} 47.46 ${realitySeedBodyTargetX + 0.74} 48.08`}
+            fill="none"
+            stroke="rgba(255,239,190,0.42)"
+            strokeWidth="0.18"
+            strokeLinecap="round"
+          />
+        </svg>
+      ) : null}
+      {selectedPressureSeedContext !== null &&
       innerViewApproachState !== "INACTIVE" &&
       onApproachCurrentWeather ? (
         <button
           type="button"
           className="gy-reality-inner-view-entry"
           style={{
-            left: realityPressureFlowSide === "RIGHT" ? "59%" : "41%",
+            left: `${realitySeedBodyTargetX}%`,
           }}
           aria-label="靠近生命正在变化的位置"
           data-inner-view-entry="SAME_BODY_LIFE_WEATHER_TRACE"

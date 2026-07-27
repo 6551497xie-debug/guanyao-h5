@@ -1,0 +1,131 @@
+.gy-reality-life-universe__seed-body-response {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.gy-reality-life-universe__seed-body-response-bed,
+.gy-reality-life-universe__seed-body-response-flow,
+.gy-reality-life-universe__seed-body-response-breath {
+  vector-effect: non-scaling-stroke;
+}
+
+.gy-reality-life-universe__seed-body-response-bed {
+  opacity: 0;
+  animation: xinmai-reality-seed-path-settle 2.8s
+    cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+
+.gy-reality-life-universe__seed-body-response-flow {
+  opacity: 0;
+  stroke-dasharray: 0.08 0.92;
+  stroke-dashoffset: 1;
+  animation: xinmai-reality-seed-enter-body 2.8s
+    cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+
+.gy-reality-life-universe__seed-body-response-breath {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation:
+    xinmai-reality-seed-body-contact 2.8s
+      cubic-bezier(0.22, 0.7, 0.2, 1) both,
+    xinmai-reality-seed-body-breathe 5.8s 2.8s ease-in-out infinite;
+}
+
+.gy-reality-life-universe__seed-body-response[data-inner-view-approach-state="BODY_APPROACHED"]
+  .gy-reality-life-universe__seed-body-response-bed,
+.gy-reality-life-universe__seed-body-response[data-inner-view-approach-state="BODY_APPROACHED"]
+  .gy-reality-life-universe__seed-body-response-flow {
+  opacity: 0.03;
+  transition: opacity 900ms ease;
+}
+
+.gy-reality-life-universe__seed-body-response[data-inner-view-approach-state="BODY_APPROACHED"]
+  .gy-reality-life-universe__seed-body-response-breath {
+  opacity: 0.12;
+  transition: opacity 900ms ease;
+}
+
+@keyframes xinmai-reality-seed-path-settle {
+  0% {
+    opacity: 0;
+  }
+
+  24% {
+    opacity: 0.32;
+  }
+
+  72% {
+    opacity: 0.2;
+  }
+
+  100% {
+    opacity: 0.08;
+  }
+}
+
+@keyframes xinmai-reality-seed-enter-body {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 1;
+  }
+
+  16% {
+    opacity: 0.58;
+  }
+
+  72% {
+    opacity: 0.46;
+  }
+
+  100% {
+    opacity: 0.12;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes xinmai-reality-seed-body-contact {
+  0%,
+  56% {
+    opacity: 0;
+    transform: scale(0.84);
+  }
+
+  76% {
+    opacity: 0.62;
+    transform: scale(1.08);
+  }
+
+  100% {
+    opacity: 0.28;
+    transform: scale(1);
+  }
+}
+
+@keyframes xinmai-reality-seed-body-breathe {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: scale(0.96);
+  }
+
+  52% {
+    opacity: 0.34;
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gy-reality-life-universe__seed-body-response-bed,
+  .gy-reality-life-universe__seed-body-response-flow,
+  .gy-reality-life-universe__seed-body-response-breath {
+    animation: none;
+    opacity: 0.18;
+  }
+}

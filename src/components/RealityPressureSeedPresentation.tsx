@@ -88,6 +88,9 @@ export function RealityPressureSeedPresentation({
       data-reality-experience-order="LIFE_FIRST_REALITY_SECOND_RECOGNITION_THIRD"
       data-reality-analysis-stage="NOT_STARTED"
       data-pressure-seed-capture-state={session.captureState}
+      data-recognized-reality-presentation={
+        recognized ? "TEXT_RECEDES_LIFE_RESPONDS" : "EXPLORING_FRAGMENTS"
+      }
       data-source-reference-id={session.sourceReferenceId}
       data-candidate-bundle-reference={session.candidateBundleReferenceId}
     >
@@ -97,13 +100,12 @@ export function RealityPressureSeedPresentation({
       </div>
       <h2>
         {recognized
-          ? "这段现实，正在经过你们。"
+          ? "这一幕，正在经过你们。"
           : "哪一幕，刚刚碰到了你的生命？"}
       </h2>
       <p>
         {recognized
-          ? session.selectedPressureSeedContext?.surface ??
-            "现实已经被你看见。"
+          ? "先让文字退远一点，看生命身体里哪一处开始回应。"
           : "不需要选得准确，先停在让身体有一点回应的那一幕。"}
       </p>
 
