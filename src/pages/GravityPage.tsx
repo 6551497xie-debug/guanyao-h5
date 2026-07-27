@@ -1416,6 +1416,9 @@ function SingleModelRevisionActionFocus({
       data-choice-inner-view-continuity="SAME_UNDERSTANDING_BECOMES_RESPONSE_GAP"
       data-choice-inner-view-relation={innerViewRelation}
       data-choice-transition-model="RELATION_NOT_MODE_SWITCH"
+      data-choice-life-body-rhythm="OLD_RESPONSE_SLOWS_IN_SAME_BODY"
+      data-choice-core-identity="STABLE_THROUGH_PAUSE"
+      data-choice-particle-rhythm="SLOW_NOT_FROZEN"
       data-legacy-revision-answer-surface="ISOLATED"
       data-revision-visual-language="SAME_LIFE_RESPONSE_PAUSE"
       data-revision-copy-composition="AWARENESS_NOT_ADVICE"
@@ -1611,6 +1614,9 @@ function TransformationMomentFocus({
       data-choice-inner-view-continuity="SAME_UNDERSTANDING_NEW_RESPONSE_SPACE"
       data-choice-inner-view-relation={innerViewRelation}
       data-choice-transition-model="RELATION_NOT_MODE_SWITCH"
+      data-choice-life-body-rhythm="NEW_CADENCE_SAME_BODY"
+      data-choice-core-identity="STABLE_THROUGH_RESPONSE"
+      data-choice-particle-rhythm="QUIET_REORIENTATION"
       data-legacy-direct-choice-to-crystal={
         onSediment ? "AVAILABLE" : "ISOLATED"
       }

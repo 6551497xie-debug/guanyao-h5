@@ -2193,6 +2193,7 @@ export function createGenesisWebGLRendererCore(
   let realityPressureRecoveryStartedAtMilliseconds: number | null = null;
   let gravityMemoryInfluenceStartedAtMilliseconds: number | null = null;
   let choiceResponsePauseStartedAtMilliseconds: number | null = null;
+  let choiceResponseSpaceStartedAtMilliseconds: number | null = null;
   let crystalSedimentStartedAtMilliseconds: number | null = null;
   let disposed = false;
   let contextState: "ACTIVE" | "LOST" | "RESTORED" | "DISPOSED" =
@@ -2300,6 +2301,41 @@ export function createGenesisWebGLRendererCore(
         choiceResponsePauseRaw *
         choiceResponsePauseRaw *
         (3 - 2 * choiceResponsePauseRaw);
+      const choiceResponseSpaceIsActive =
+        choiceResponseState === "NEW_RESPONSE_POSSIBILITY" ||
+        choiceResponseState === "RESPONSE_SEDIMENTED";
+      if (
+        choiceResponseSpaceIsActive &&
+        choiceResponseSpaceStartedAtMilliseconds === null
+      ) {
+        choiceResponseSpaceStartedAtMilliseconds =
+          safeElapsedMilliseconds;
+      } else if (!choiceResponseSpaceIsActive) {
+        choiceResponseSpaceStartedAtMilliseconds = null;
+      }
+      const choiceResponseSpaceRaw =
+        choiceResponseSpaceStartedAtMilliseconds === null
+          ? 0
+          : Math.min(
+              1,
+              Math.max(
+                0,
+                (safeElapsedMilliseconds -
+                  choiceResponseSpaceStartedAtMilliseconds) /
+                  2_400,
+              ),
+            );
+      const choiceResponseSpaceProgress =
+        choiceResponseSpaceRaw *
+        choiceResponseSpaceRaw *
+        (3 - 2 * choiceResponseSpaceRaw);
+      const choiceLifePauseWeight = choiceResponsePauseIsActive
+        ? choiceResponsePauseProgress
+        : 0;
+      const choiceSpatialMotionWeight =
+        1 -
+        choiceLifePauseWeight * 0.72 +
+        choiceResponseSpaceProgress * 0.08;
       const choiceMemoryInfluenceWeight =
         1 - choiceResponsePauseProgress * 0.74;
       if (
@@ -2674,6 +2710,14 @@ export function createGenesisWebGLRendererCore(
         1 +
         Math.sin(identityContinuityPhase) *
           LIFE_UNIVERSE_CORE_IDENTITY.breathingAmplitude;
+      const choiceLifeBodyBreath =
+        1 +
+        (identityContinuityBreath - 1) *
+          (1 - choiceLifePauseWeight * 0.68) +
+        Math.sin(identityContinuityPhase * 0.72 + 0.34) *
+          LIFE_UNIVERSE_CORE_IDENTITY.breathingAmplitude *
+          choiceResponseSpaceProgress *
+          0.24;
       const coordinateBodyRevealRaw = isSymbolReveal
         ? Math.min(1, Math.max(0, elapsedSeconds / 2.4))
         : 0;
@@ -2733,7 +2777,7 @@ export function createGenesisWebGLRendererCore(
                 : 0;
       const bodyContinuityRhythm =
         1 +
-        (identityContinuityBreath - 1) *
+        (choiceLifeBodyBreath - 1) *
           (isSymbolReveal ? 0.34 : isHexagramImprint ? 0.42 : 0.52) +
         (forceRhythmBreath - 1) *
           (isLifeForce ? 0.9 : isPresenceStage ? 0.74 : 0);
@@ -3357,7 +3401,11 @@ export function createGenesisWebGLRendererCore(
       // reveals depth through quiet yaw and pitch, never by spinning a flat
       // star plate around the screen axis.
       cosmicField.rotation.x = Math.cos(universeSeconds * 0.071) * 0.052;
-      cosmicField.rotation.y = Math.sin(universeSeconds * 0.085) * 0.075;
+      cosmicField.rotation.x *= choiceSpatialMotionWeight;
+      cosmicField.rotation.y =
+        Math.sin(universeSeconds * 0.085) *
+        0.075 *
+        choiceSpatialMotionWeight;
       cosmicField.rotation.z = 0;
       const lifeCoreGravity = isLifeForce
         ? 0.28
@@ -3471,11 +3519,13 @@ export function createGenesisWebGLRendererCore(
           lateralPosition +
           pressureFlowDeflection *
             pressureInfluence *
-            (0.12 + realityPressurePulse * 0.08) +
+            (0.12 +
+              realityPressurePulse * 0.08 * choiceSpatialMotionWeight) +
           pressureContactSign *
             pressureBoundaryLoad *
             pressureInfluence *
-            (0.025 + realityPressurePulse * 0.035) +
+            (0.025 +
+              realityPressurePulse * 0.035 * choiceSpatialMotionWeight) +
           gravityMemoryResponseBias *
             Math.pow(Math.max(0, 1 - radialDistance / 3.6), 2) *
             (0.42 + pressureSourceAffinity * 0.58);
@@ -3487,10 +3537,12 @@ export function createGenesisWebGLRendererCore(
           star.z +
           Math.sin(universeSeconds * 0.13 + star.phase) *
             gravityInfluence *
-            0.12 +
+            0.12 *
+            choiceSpatialMotionWeight +
           Math.sin(realityPressurePhase + star.phase) *
             pressureInfluence *
             0.18 *
+            choiceSpatialMotionWeight *
             (1 - realityPressureRecoveryProgress * 0.86);
       });
       cosmicGeometry.getAttribute("position").needsUpdate = true;
@@ -3634,9 +3686,16 @@ export function createGenesisWebGLRendererCore(
         1 +
           Math.sin(rhythmPhase) *
             LIFE_UNIVERSE_CORE_IDENTITY.breathingAmplitude;
+      const choiceLifeCoreBreath =
+        1 +
+        (breath - 1) * (1 - choiceLifePauseWeight * 0.68) +
+        Math.sin(rhythmPhase * 0.72 + 0.34) *
+          LIFE_UNIVERSE_CORE_IDENTITY.breathingAmplitude *
+          choiceResponseSpaceProgress *
+          0.24;
       const structureInfluence =
         1 +
-        (breath - 1) *
+        (choiceLifeCoreBreath - 1) *
           (lifeStarCore.coreInfluence.structureResponse +
             sceneProjection.lifePresence.corePresence.aggregationStrength *
               0.04);
@@ -3673,7 +3732,7 @@ export function createGenesisWebGLRendererCore(
               (0.018 + forceExpressionDensity * 0.016)
           : 1;
       coreIdentityGroup.scale.setScalar(
-        breath *
+        choiceLifeCoreBreath *
           coreObservationScale *
           coordinateIdentityBreath *
           directionCoreBreath *
@@ -3716,7 +3775,10 @@ export function createGenesisWebGLRendererCore(
           forceAbsorptionEnvelope * 0.06 +
           forceActionPresence * 0.035 +
           recognitionResponseWave * 0.08 +
-          recognizedLifeRelationshipContinuity * 0.04);
+          recognizedLifeRelationshipContinuity * 0.04) *
+        (1 +
+          choiceLifePauseWeight * 0.018 +
+          choiceResponseSpaceProgress * 0.024);
       coreSurfaceMaterial.opacity =
         coreSurfaceBaseOpacity *
         (1 +
@@ -3724,14 +3786,20 @@ export function createGenesisWebGLRendererCore(
           forceActionPresence *
             (0.2 + forceExpressionDensity * 0.12) +
           recognitionResponseWave * 0.14 +
-          recognizedLifeRelationshipContinuity * 0.06);
+          recognizedLifeRelationshipContinuity * 0.06) *
+        (1 +
+          choiceLifePauseWeight * 0.02 +
+          choiceResponseSpaceProgress * 0.026);
       coreHaloMaterial.opacity =
         coreHaloBaseOpacity *
         (1 +
           forceActionPresence *
             (0.28 + forceExpressionDensity * 0.2) +
           recognitionResponseWave * 0.18 +
-          recognizedLifeRelationshipContinuity * 0.08);
+          recognizedLifeRelationshipContinuity * 0.08) *
+        (1 +
+          choiceLifePauseWeight * 0.018 +
+          choiceResponseSpaceProgress * 0.03);
       if (isLifeOriginStarMapReveal) {
         const originMistBreath =
           0.93 + Math.sin(universeSeconds * 0.48) * 0.07;
@@ -4153,7 +4221,9 @@ export function createGenesisWebGLRendererCore(
       }
       bodyFieldMaterial.size =
         bodyFieldBaseSize *
-        (1 + (breath - 1) * (1.1 + perspectivePresenceBreath * 0.45)) *
+        (1 +
+          (choiceLifeCoreBreath - 1) *
+            (1.1 + perspectivePresenceBreath * 0.45)) *
         (1 +
           (forceRhythmBreath - 1) *
             (isLifeForce ? 1.6 : isPresenceStage ? 1.05 : 0)) *
@@ -4187,8 +4257,11 @@ export function createGenesisWebGLRendererCore(
         isPresenceStage
           ? (0.98 +
               perspectiveBodyCohesion * 0.06 +
-              (breath - 1) * 0.4) *
-              realityRecoveryBodyRhythm
+              (choiceLifeCoreBreath - 1) * 0.4) *
+              realityRecoveryBodyRhythm *
+              (1 -
+                choiceLifePauseWeight * 0.012 +
+                choiceResponseSpaceProgress * 0.008)
           : 1,
       );
       coreLight.intensity =
@@ -4225,6 +4298,10 @@ export function createGenesisWebGLRendererCore(
           recognizedLifeRelationshipContinuity * 0.07 +
           realityEntryCarryWave * 0.06
         : 1;
+      coreLight.intensity *=
+        1 -
+        choiceLifePauseWeight * 0.035 +
+        choiceResponseSpaceProgress * 0.025;
       renderer.render(scene, camera);
       frameCount += 1;
     },
