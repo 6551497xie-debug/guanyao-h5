@@ -1216,6 +1216,11 @@ export function LaunchLab() {
     returningVisualContinuity,
     returningVisualReady,
   ]);
+  const returningLatestImprintBodyPath = returningLatestImprintGeometry
+    ? `M ${returningLatestImprintGeometry.target[0]} ${returningLatestImprintGeometry.target[1]} L ${returningLatestImprintGeometry.stem[0]} ${returningLatestImprintGeometry.stem[1]} L ${returningLatestImprintGeometry.branchTarget[0]} ${returningLatestImprintGeometry.branchTarget[1]}`
+    : "";
+  const returningLatestImprintBodyPoint =
+    returningLatestImprintGeometry?.branchTarget ?? null;
   const returningHasReality = returningRealityContext !== null;
   const returningHasCrystal = returningLatestImprintGeometry !== null;
   const returningTemporalState =
@@ -5406,39 +5411,63 @@ export function LaunchLab() {
                 selectedPressureSeedContext={returningRealityContext}
               />
             </Suspense>
-            {returningLatestImprintGeometry ? (
+            {returningLatestImprintGeometry &&
+            returningLatestImprintBodyPoint ? (
               <svg
                 className="gy-returning-life-world__imprint"
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
                 data-returning-life-imprint="LATEST_CRYSTAL_ON_SAME_BODY"
                 data-returning-life-imprint-temporal-continuity="ARCHIVE_MEMORY_RESTORED_ON_SAME_BODY"
+                data-returning-life-imprint-source="ARCHIVED_USER_RECOGNIZED_RESPONSE"
+                data-returning-life-imprint-direction="SAME_RESPONSE_POSITION_INTO_SAME_BODY"
+                data-returning-life-imprint-form="LIFE_TEXTURE_NOT_COLLECTIBLE"
+                data-returning-life-imprint-status="REMEMBERED_NOT_CURRENT_EVENT"
+                data-returning-life-identity-invariant="SAME_CORE_SAME_BODY_SAME_LIFE"
               >
                 <path
-                  d={returningLatestImprintGeometry.path}
+                  d={returningLatestImprintBodyPath}
                   fill="none"
                   stroke="rgba(232,200,138,0.08)"
-                  strokeWidth="1.25"
+                  strokeWidth="1.08"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   filter="blur(1.1px)"
                 />
                 <path
-                  d={returningLatestImprintGeometry.path}
+                  className="gy-returning-life-world__imprint-flow"
+                  d={returningLatestImprintBodyPath}
                   fill="none"
-                  stroke="rgba(255,239,190,0.4)"
-                  strokeWidth="0.38"
+                  stroke="rgba(255,239,190,0.28)"
+                  strokeWidth="0.3"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-                <rect
-                  x={returningLatestImprintGeometry.target[0] - 0.34}
-                  y={returningLatestImprintGeometry.target[1] - 0.34}
-                  width="0.68"
-                  height="0.68"
-                  rx="0.09"
-                  fill="rgba(255,247,220,0.54)"
+                <circle
+                  className="gy-returning-life-world__imprint-origin"
+                  cx={returningLatestImprintGeometry.target[0]}
+                  cy={returningLatestImprintGeometry.target[1]}
+                  r="0.34"
+                  fill="rgba(255,247,220,0.06)"
+                  stroke="rgba(255,239,190,0.2)"
+                  strokeWidth="0.14"
                 />
+                <g className="gy-returning-life-world__imprint-trace">
+                  <path
+                    d={`M ${returningLatestImprintBodyPoint[0] - 0.62} ${returningLatestImprintBodyPoint[1] + 0.08} L ${returningLatestImprintBodyPoint[0] - 0.14} ${returningLatestImprintBodyPoint[1] - 0.46} L ${returningLatestImprintBodyPoint[0] + 0.5} ${returningLatestImprintBodyPoint[1] - 0.12} M ${returningLatestImprintBodyPoint[0] - 0.14} ${returningLatestImprintBodyPoint[1] - 0.46} L ${returningLatestImprintBodyPoint[0] - 0.08} ${returningLatestImprintBodyPoint[1] + 0.58}`}
+                    fill="none"
+                    stroke="rgba(255,239,190,0.48)"
+                    strokeWidth="0.24"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle
+                    cx={returningLatestImprintBodyPoint[0]}
+                    cy={returningLatestImprintBodyPoint[1]}
+                    r="0.17"
+                    fill="rgba(255,247,220,0.5)"
+                  />
+                </g>
               </svg>
             ) : null}
           </div>
@@ -5538,19 +5567,30 @@ export function LaunchLab() {
           }
           .gy-returning-life-world__imprint {
             position: absolute;
-            z-index: 12;
+            z-index: 2;
             inset: 0;
             width: 100%;
             height: 100%;
             overflow: visible;
-            opacity: 0.46;
+            opacity: 0.34;
             transform-origin: 50% 48%;
             animation: gy-returning-life-imprint-breath 9.6s ease-in-out infinite;
             pointer-events: none;
           }
+          .gy-returning-life-world__imprint-flow {
+            opacity: 0.52;
+          }
+          .gy-returning-life-world__imprint-origin {
+            opacity: 0.22;
+          }
+          .gy-returning-life-world__imprint-trace {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: gy-returning-life-imprint-remember 8.8s ease-in-out infinite alternate;
+          }
           [data-returning-life-temporal-state="REALITY_AND_CRYSTAL"]
             .gy-returning-life-world__imprint {
-            opacity: 0.34;
+            opacity: 0.26;
           }
           .gy-returning-life-world__copy {
             position: absolute;
@@ -5614,6 +5654,16 @@ export function LaunchLab() {
               transform: scale(0.998);
             }
             52% {
+              transform: scale(1.002);
+            }
+          }
+          @keyframes gy-returning-life-imprint-remember {
+            from {
+              opacity: 0.42;
+              transform: scale(0.998);
+            }
+            to {
+              opacity: 0.58;
               transform: scale(1.002);
             }
           }
