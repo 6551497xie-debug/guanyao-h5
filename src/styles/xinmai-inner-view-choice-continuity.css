@@ -1,0 +1,114 @@
+.gy-choice-response-gap__body-continuity {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.gy-choice-response-gap__body-continuity
+  [data-visual-layer="origin-life-under-pressure"] {
+  transition:
+    opacity 1.1s ease,
+    transform 1.4s cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+
+.gy-choice-response-gap[data-choice-transition-phase="MERIDIAN_SETTLING"]
+  .gy-inner-view-life-meridian {
+  opacity: 0.82;
+}
+
+.gy-choice-response-gap[data-choice-transition-phase="MERIDIAN_SETTLING"]
+  .gy-inner-view-life-meridian__flow {
+  animation-duration: 9.6s;
+}
+
+.gy-choice-response-gap[data-choice-transition-phase="LIFE_PAUSING"]
+  .gy-inner-view-life-meridian {
+  opacity: 0.58;
+}
+
+.gy-choice-response-gap[data-choice-transition-phase="LIFE_PAUSING"]
+  .gy-inner-view-life-meridian__flow {
+  animation-duration: 17s;
+}
+
+.gy-choice-response-gap[data-choice-transition-phase="LIFE_PAUSING"]
+  .gy-inner-view-life-meridian__point {
+  animation-duration: 5.8s;
+}
+
+.gy-choice-response-gap[data-choice-transition-phase="RESPONSE_GAP_OPEN"]
+  .gy-inner-view-life-meridian {
+  opacity: 0.4;
+}
+
+.gy-choice-response-gap[data-choice-transition-phase="RESPONSE_GAP_OPEN"]
+  .gy-inner-view-life-meridian__flow {
+  animation-duration: 13.8s;
+}
+
+.gy-choice-response-gap[data-choice-transition-phase="NEW_RESPONSE_SPACE"]
+  .gy-inner-view-life-meridian {
+  opacity: 0.56;
+}
+
+.gy-choice-response-gap[data-choice-transition-phase="NEW_RESPONSE_SPACE"]
+  .gy-inner-view-life-meridian__flow {
+  animation-duration: 7.4s;
+}
+
+.gy-choice-response-gap[data-choice-transition-phase="NEW_RESPONSE_SPACE"]
+  .gy-inner-view-life-meridian__point {
+  animation-duration: 3.8s;
+}
+
+.gy-choice-response-gap[data-choice-transition-phase="LIFE_PAUSING"]
+  .gy-choice-response-gap__stillness {
+  animation: xinmai-choice-life-pause 2.6s ease-in-out infinite;
+}
+
+.gy-choice-response-gap[data-choice-transition-phase="RESPONSE_GAP_OPEN"]
+  .gy-choice-response-gap__invitation,
+.gy-choice-response-gap[data-choice-transition-phase="NEW_RESPONSE_SPACE"]
+  .gy-choice-response-gap__invitation {
+  animation: xinmai-choice-response-space-breathe 4.8s ease-in-out infinite;
+}
+
+@keyframes xinmai-choice-life-pause {
+  0%,
+  100% {
+    opacity: 0.52;
+    transform: translate(-50%, -50%) scale(0.98);
+  }
+
+  50% {
+    opacity: 0.68;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes xinmai-choice-response-space-breathe {
+  0%,
+  100% {
+    opacity: 0.36;
+    transform: translate(-50%, -50%) scale(0.94);
+  }
+
+  50% {
+    opacity: 0.72;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gy-choice-response-gap__body-continuity
+    [data-visual-layer="origin-life-under-pressure"],
+  .gy-choice-response-gap
+    .gy-choice-response-gap__stillness,
+  .gy-choice-response-gap
+    .gy-choice-response-gap__invitation {
+    animation: none;
+    transition: none;
+  }
+}

@@ -1476,26 +1476,37 @@ function SingleModelRevisionActionFocus({
   presentation,
   onConfirm,
   visualSource,
+  toneColor,
   innerViewRelation,
 }: {
   action: SingleModelRevisionAction;
   presentation?: ChangeExperiencePresentation | null;
   onConfirm: () => void;
   visualSource: RealLifeVisualSource | null;
+  toneColor: string;
   innerViewRelation: "AWAITING" | "CONFIRMED" | "SELF_NAMED";
 }) {
   const hasPresentation = Boolean(presentation);
-  const [responseGapReady, setResponseGapReady] = useState(false);
+  const [responseGapPhase, setResponseGapPhase] = useState<
+    "MERIDIAN_SETTLING" | "LIFE_PAUSING" | "RESPONSE_GAP_OPEN"
+  >("MERIDIAN_SETTLING");
+  const responseGapReady = responseGapPhase === "RESPONSE_GAP_OPEN";
   const coreAnchorTop = visualSource
     ? `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`
     : "31%";
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setResponseGapReady(true);
+    const pauseTimer = window.setTimeout(() => {
+      setResponseGapPhase("LIFE_PAUSING");
+    }, 1_300);
+    const responseGapTimer = window.setTimeout(() => {
+      setResponseGapPhase("RESPONSE_GAP_OPEN");
     }, 2800);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(pauseTimer);
+      window.clearTimeout(responseGapTimer);
+    };
   }, []);
 
   return (
@@ -1511,6 +1522,8 @@ function SingleModelRevisionActionFocus({
       data-choice-response-gap={
         responseGapReady ? "PAUSE_AVAILABLE" : "OLD_PATH_RESTARTING"
       }
+      data-choice-transition-phase={responseGapPhase}
+      data-choice-transition-source="THIRD_APPROACH_SAME_BODY_MERIDIAN"
       data-choice-answer-model="NONE"
       data-choice-life-effect="RESPONSE_ONLY"
       data-choice-old-path="PRESENT_NOT_AUTOMATIC"
@@ -1522,6 +1535,11 @@ function SingleModelRevisionActionFocus({
       data-choice-inner-view-continuity="SAME_UNDERSTANDING_BECOMES_RESPONSE_GAP"
       data-choice-inner-view-relation={innerViewRelation}
       data-choice-transition-model="RELATION_NOT_MODE_SWITCH"
+      data-choice-availability={
+        responseGapReady && innerViewRelation !== "AWAITING"
+          ? "USER_RESPONSE_AVAILABLE"
+          : "WITHHELD_DURING_LIFE_TRANSITION"
+      }
       data-choice-life-body-rhythm="OLD_RESPONSE_SLOWS_IN_SAME_BODY"
       data-choice-core-identity="STABLE_THROUGH_PAUSE"
       data-choice-particle-rhythm="SLOW_NOT_FROZEN"
@@ -1534,6 +1552,29 @@ function SingleModelRevisionActionFocus({
         overflow: "hidden",
       }}
     >
+      <div
+        aria-hidden="true"
+        className="gy-choice-response-gap__body-continuity"
+        data-choice-body-continuity-layer="EXISTING_BIRTH_MANSION_BODY"
+      >
+        <LifeConstellationLayer
+          toneColor={toneColor}
+          narrativePhase="node_complete"
+          activeNodeIndex={6}
+          onCoreStarClick={() => {}}
+          visualSource={visualSource}
+          pressureIntensity={0.32}
+          interactionEnabled={false}
+          innerViewRevealDepth={
+            responseGapPhase === "MERIDIAN_SETTLING"
+              ? 3
+              : responseGapPhase === "LIFE_PAUSING"
+                ? 2
+                : 1
+          }
+        />
+      </div>
+
       <div
         aria-hidden="true"
         className="gy-choice-response-gap__stillness"
@@ -1558,7 +1599,9 @@ function SingleModelRevisionActionFocus({
         data-life-core-anchor="LIFE_UNIVERSE_CORE_IDENTITY"
         data-choice-participation="WILLING_TO_PAUSE"
         onClick={onConfirm}
-        disabled={!responseGapReady}
+        disabled={
+          !responseGapReady || innerViewRelation === "AWAITING"
+        }
         style={{
           appearance: "none",
           position: "absolute",
@@ -1572,7 +1615,10 @@ function SingleModelRevisionActionFocus({
           borderRadius: "48%",
           background: "transparent",
           padding: 0,
-          cursor: responseGapReady ? "pointer" : "default",
+          cursor:
+            responseGapReady && innerViewRelation !== "AWAITING"
+              ? "pointer"
+              : "default",
         }}
       >
         <span
@@ -1650,14 +1696,17 @@ function SingleModelRevisionActionFocus({
         >
           {responseGapReady
             ? "它还在影响你，但没有替你决定。"
-            : "熟悉的回应，正沿旧方向启动。"}
+            : responseGapPhase === "LIFE_PAUSING"
+              ? "熟悉的回应正在启动，而生命停了一下。"
+              : "刚刚被看见的流动，仍留在同一身体里。"}
         </strong>
         <span
           style={{
             color: "rgba(199,169,107,0.5)",
             fontSize: 9.5,
             letterSpacing: "0.08em",
-            opacity: responseGapReady ? 1 : 0,
+            opacity:
+              responseGapReady && innerViewRelation !== "AWAITING" ? 1 : 0,
             transition: "opacity 680ms ease",
           }}
         >
@@ -1676,6 +1725,7 @@ function TransformationMomentFocus({
   livedResponseRecognitionRequired = false,
   onRecognizeLivedResponse,
   visualSource,
+  toneColor,
   innerViewRelation,
 }: {
   action: SingleModelRevisionAction;
@@ -1685,6 +1735,7 @@ function TransformationMomentFocus({
   livedResponseRecognitionRequired?: boolean;
   onRecognizeLivedResponse?: () => void;
   visualSource: RealLifeVisualSource | null;
+  toneColor: string;
   innerViewRelation: "AWAITING" | "CONFIRMED" | "SELF_NAMED";
 }) {
   const hasPresentation = Boolean(presentation);
@@ -1709,6 +1760,8 @@ function TransformationMomentFocus({
       data-transformation-moment="active"
       data-change-experience-presentation={hasPresentation ? "active" : "fallback"}
       data-choice-response-gap="NEW_RESPONSE_POSSIBILITY"
+      data-choice-transition-phase="NEW_RESPONSE_SPACE"
+      data-choice-transition-source="SAME_MERIDIAN_AFTER_PAUSE"
       data-choice-answer-model="NONE"
       data-choice-life-effect="RESPONSE_ONLY"
       data-choice-old-path="PRESENT_NOT_AUTOMATIC"
@@ -1763,6 +1816,23 @@ function TransformationMomentFocus({
         overflow: "hidden",
       }}
     >
+      <div
+        aria-hidden="true"
+        className="gy-choice-response-gap__body-continuity"
+        data-choice-body-continuity-layer="EXISTING_BIRTH_MANSION_BODY"
+      >
+        <LifeConstellationLayer
+          toneColor={toneColor}
+          narrativePhase="node_complete"
+          activeNodeIndex={6}
+          onCoreStarClick={() => {}}
+          visualSource={visualSource}
+          pressureIntensity={0.18}
+          interactionEnabled={false}
+          innerViewRevealDepth={2}
+        />
+      </div>
+
       <div
         aria-hidden="true"
         className="gy-choice-response-gap__stillness"
@@ -2335,6 +2405,8 @@ function HexagramCodeDeliveryShell() {
     runtimePrimaryDimension: runtimeProjection.currentPrimarySpaceId,
     sequentialFocalDimension: sequentialCurrentSpaceId,
   });
+  const choiceToneColor =
+    visualState.colorTemperature || "199,169,107";
   const experienceState = resolveDynamicsExperienceState({
     completedNodeCount: executionSnapshot.node.completed.length,
     currentNode: executionSnapshot.node.current,
@@ -2400,6 +2472,7 @@ function HexagramCodeDeliveryShell() {
   const isRevisionActionPending =
     hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE" &&
     Boolean(singleModelRevisionAction) &&
+    innerViewRelation !== "AWAITING" &&
     !revisionActionConfirmed &&
     !transformationMomentActive;
   const currentCrystalEndState = useMemo(() =>
@@ -2813,6 +2886,7 @@ function HexagramCodeDeliveryShell() {
                   : undefined
               }
               visualSource={realLifeVisualSource}
+              toneColor={choiceToneColor}
               innerViewRelation={innerViewRelation}
             />
           ) : isRevisionActionPending && singleModelRevisionAction ? (
@@ -2821,6 +2895,7 @@ function HexagramCodeDeliveryShell() {
               presentation={changeExperiencePresentation}
               onConfirm={handleRevisionActionConfirm}
               visualSource={realLifeVisualSource}
+              toneColor={choiceToneColor}
               innerViewRelation={innerViewRelation}
             />
           ) : (

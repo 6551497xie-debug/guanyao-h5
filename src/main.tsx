@@ -7,6 +7,7 @@ import "./styles/guanyao-visual-system.css";
 import "./styles/xinmai-visual-life-system.css";
 import "./styles/xinmai-life-reflection-refinement.css";
 import "./styles/xinmai-inner-view-three-approach.css";
+import "./styles/xinmai-inner-view-choice-continuity.css";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
