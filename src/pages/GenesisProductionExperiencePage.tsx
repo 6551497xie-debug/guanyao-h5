@@ -66,6 +66,7 @@ const PRESENCE_RECOGNITION_TIMING_MS = Object.freeze({
 
 const REALITY_ENTRY_VISUAL_HOLD_MS = 560;
 const LIFE_ORIGIN_DISCOVERY_DURATION_MS = 5_200;
+const LIFE_WHISPER_RESPONSE_HOLD_MS = 1_600;
 
 export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
   GenesisProductionExperiencePageBoundary = Object.freeze({
@@ -219,7 +220,11 @@ export function GenesisProductionExperiencePage({
   const [lifeWhisperFact, setLifeWhisperFact] = useState<
     "NONE" | "WHISPER_SUBMITTED" | "WHISPER_SKIPPED"
   >("NONE");
+  const [lifeWhisperResponsePhase, setLifeWhisperResponsePhase] = useState<
+    "DORMANT" | "RESPONDING" | "SETTLED" | "SKIPPED"
+  >("DORMANT");
   const lifeOriginDiscoveryTimerRef = useRef<number | null>(null);
+  const lifeWhisperResponseTimerRef = useRef<number | null>(null);
   const realityEntryTimerRef = useRef<number | null>(null);
   const recognitionInteractionAvailability =
     recognitionRealityResult?.status === "READY"
@@ -278,6 +283,9 @@ export function GenesisProductionExperiencePage({
       "ENTER_REALITY" &&
     presenceRecognitionContinuityResult?.status === "READY" &&
     recognitionResponseSettled;
+  const lifeWhisperResponseSettled =
+    lifeWhisperFact !== "WHISPER_SUBMITTED" ||
+    lifeWhisperResponsePhase === "SETTLED";
 
   useEffect(() => {
     clearGenesisProductionRealityEntryContext();
@@ -290,9 +298,14 @@ export function GenesisProductionExperiencePage({
     setLifeOriginDiscoveryPhase("DORMANT");
     setLifeWhisperText("");
     setLifeWhisperFact("NONE");
+    setLifeWhisperResponsePhase("DORMANT");
     if (lifeOriginDiscoveryTimerRef.current !== null) {
       window.clearTimeout(lifeOriginDiscoveryTimerRef.current);
       lifeOriginDiscoveryTimerRef.current = null;
+    }
+    if (lifeWhisperResponseTimerRef.current !== null) {
+      window.clearTimeout(lifeWhisperResponseTimerRef.current);
+      lifeWhisperResponseTimerRef.current = null;
     }
     if (realityEntryTimerRef.current !== null) {
       window.clearTimeout(realityEntryTimerRef.current);
@@ -304,6 +317,9 @@ export function GenesisProductionExperiencePage({
     () => () => {
       if (lifeOriginDiscoveryTimerRef.current !== null) {
         window.clearTimeout(lifeOriginDiscoveryTimerRef.current);
+      }
+      if (lifeWhisperResponseTimerRef.current !== null) {
+        window.clearTimeout(lifeWhisperResponseTimerRef.current);
       }
       if (realityEntryTimerRef.current !== null) {
         window.clearTimeout(realityEntryTimerRef.current);
@@ -669,6 +685,19 @@ export function GenesisProductionExperiencePage({
     }
     setLifeWhisperText("");
     setLifeWhisperFact("WHISPER_SUBMITTED");
+    setLifeWhisperResponsePhase("RESPONDING");
+    if (lifeWhisperResponseTimerRef.current !== null) {
+      window.clearTimeout(lifeWhisperResponseTimerRef.current);
+    }
+    const responseHoldMilliseconds = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches
+      ? 80
+      : LIFE_WHISPER_RESPONSE_HOLD_MS;
+    lifeWhisperResponseTimerRef.current = window.setTimeout(() => {
+      lifeWhisperResponseTimerRef.current = null;
+      setLifeWhisperResponsePhase("SETTLED");
+    }, responseHoldMilliseconds);
   };
 
   const skipLifeWhisper = () => {
@@ -677,6 +706,7 @@ export function GenesisProductionExperiencePage({
     }
     setLifeWhisperText("");
     setLifeWhisperFact("WHISPER_SKIPPED");
+    setLifeWhisperResponsePhase("SKIPPED");
   };
 
   const enterReality = () => {
@@ -849,6 +879,7 @@ export function GenesisProductionExperiencePage({
         lifeWhisperEntryReady ? "READY" : "NOT_READY"
       }
       data-life-whisper-fact={lifeWhisperFact}
+      data-life-whisper-response-phase={lifeWhisperResponsePhase}
     >
       <GenesisProductionRendererCanvasHost
         routeAuthorization={routeAuthorization}
@@ -1010,7 +1041,8 @@ export function GenesisProductionExperiencePage({
       recognitionRealityResult.session.interactionAvailability ===
         "ENTER_REALITY" &&
       presenceRecognitionContinuityResult?.status === "READY" &&
-      recognitionResponseSettled ? (
+      recognitionResponseSettled &&
+      lifeWhisperResponseSettled ? (
         <button
           type="button"
           className="gy-genesis-production-experience__completion-action"

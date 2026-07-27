@@ -2405,6 +2405,7 @@ export function createGenesisWebGLRendererCore(
 
   let frameCount = 0;
   let recognitionResponseStartedAtMilliseconds: number | null = null;
+  let lifeWhisperResponseStartedAtMilliseconds: number | null = null;
   let lifeOriginDiscoveryStartedAtMilliseconds: number | null = null;
   let realityEntryCarryStartedAtMilliseconds: number | null = null;
   let realityPressureStartedAtMilliseconds: number | null = null;
@@ -2771,6 +2772,57 @@ export function createGenesisWebGLRendererCore(
         recognitionRelationshipRaw *
         recognitionRelationshipRaw *
         (3 - 2 * recognitionRelationshipRaw);
+      const lifeWhisperContainer = input.canvas?.closest(
+        "[data-life-whisper-response-phase]",
+      );
+      const lifeWhisperFact = lifeWhisperContainer?.getAttribute(
+        "data-life-whisper-fact",
+      );
+      const lifeWhisperResponsePhase = lifeWhisperContainer?.getAttribute(
+        "data-life-whisper-response-phase",
+      );
+      const lifeWhisperResponseIsActive =
+        isCompletion &&
+        !isRealityCanvas &&
+        lifeWhisperFact === "WHISPER_SUBMITTED" &&
+        lifeWhisperResponsePhase === "RESPONDING";
+      if (
+        lifeWhisperResponseIsActive &&
+        lifeWhisperResponseStartedAtMilliseconds === null
+      ) {
+        lifeWhisperResponseStartedAtMilliseconds = elapsedMilliseconds;
+      } else if (
+        lifeWhisperFact !== "WHISPER_SUBMITTED" ||
+        lifeWhisperResponsePhase === "DORMANT" ||
+        lifeWhisperResponsePhase === "SKIPPED"
+      ) {
+        lifeWhisperResponseStartedAtMilliseconds = null;
+      }
+      const lifeWhisperResponseElapsedSeconds =
+        lifeWhisperResponseStartedAtMilliseconds === null
+          ? 0
+          : Math.max(
+              0,
+              (elapsedMilliseconds -
+                lifeWhisperResponseStartedAtMilliseconds) /
+                1000,
+            );
+      const lifeWhisperResponseProgress = lifeWhisperResponseIsActive
+        ? Math.min(1, lifeWhisperResponseElapsedSeconds / 1.6)
+        : 0;
+      const lifeWhisperResponseWave = input.reducedMotion
+        ? 0
+        : Math.sin(lifeWhisperResponseProgress * Math.PI) *
+          (1 - lifeWhisperResponseProgress * 0.22);
+      const lifeWhisperRelationshipSettled =
+        lifeWhisperFact === "WHISPER_SUBMITTED" &&
+        lifeWhisperResponsePhase === "SETTLED"
+          ? 1
+          : lifeWhisperResponseIsActive
+            ? lifeWhisperResponseProgress *
+              lifeWhisperResponseProgress *
+              (3 - 2 * lifeWhisperResponseProgress)
+            : 0;
       const realityEntryEligibility = input.canvas
         ?.closest("[data-reality-entry-eligibility]")
         ?.getAttribute("data-reality-entry-eligibility");
@@ -3240,12 +3292,16 @@ export function createGenesisWebGLRendererCore(
               recognitionRecoveryWave * (0.72 + forceAggregation * 0.28) +
               recognitionResponseWave *
                 (0.07 + forceAggregation * 0.022) +
-              recognizedLifeRelationshipContinuity * 0.018);
+              recognizedLifeRelationshipContinuity * 0.018 +
+              lifeWhisperResponseWave *
+                (0.052 + forceAggregation * 0.016) +
+              lifeWhisperRelationshipSettled * 0.01);
           const recoveredLateral =
             forceLateralPosition *
             (1 -
               recognitionRecoveryWave * 0.28 -
-              recognitionResponseWave * 0.016);
+              recognitionResponseWave * 0.016 -
+              lifeWhisperResponseWave * 0.01);
           const recoveredX =
             forceExpressionAxisX * recoveredAxis +
             forceExpressionPerpendicularX * recoveredLateral;
@@ -3312,7 +3368,9 @@ export function createGenesisWebGLRendererCore(
             (1 +
               recognitionRecoveryWave * 0.18 +
               recognitionResponseWave * 0.025 -
-              pressureBodyEnvelope * 0.035);
+              pressureBodyEnvelope * 0.035 +
+              lifeWhisperResponseWave * 0.018 +
+              lifeWhisperRelationshipSettled * 0.004);
         }
         bodyFieldPositionAttribute.needsUpdate = true;
       }
@@ -3332,7 +3390,9 @@ export function createGenesisWebGLRendererCore(
           (1 - realityPressureRecoveryProgress * 0.78);
         const lifeAuraRelease =
           realityPressureRecoveryProgress * 0.78 +
-          choiceResponseSpaceProgress * 0.14;
+          choiceResponseSpaceProgress * 0.14 +
+          lifeWhisperResponseWave * 0.1 +
+          lifeWhisperRelationshipSettled * 0.025;
         const lifeAuraFlowSpeed =
           (0.15 +
             Math.abs(lifePresence.morphologicalField.flowDirection) * 0.055 +
@@ -4100,6 +4160,8 @@ export function createGenesisWebGLRendererCore(
               recognitionAttentionProgress * 0.008 +
               recognitionResponseWave * 0.034 +
               recognizedLifeRelationshipContinuity * 0.018 +
+              lifeWhisperResponseWave * 0.026 +
+              lifeWhisperRelationshipSettled * 0.006 +
               realityEntryCarryWave * 0.012
             : 1),
       );
@@ -4107,6 +4169,8 @@ export function createGenesisWebGLRendererCore(
         ? recognitionAttentionProgress * 0.01 +
           recognitionResponseWave * 0.025 +
           recognizedLifeRelationshipContinuity * 0.017 +
+          lifeWhisperResponseWave * 0.018 +
+          lifeWhisperRelationshipSettled * 0.005 +
           realityEntryCarryWave * 0.01
         : 0;
       core.scale.setScalar(1);
@@ -4132,7 +4196,9 @@ export function createGenesisWebGLRendererCore(
           forceAbsorptionEnvelope * 0.06 +
           forceActionPresence * 0.035 +
           recognitionResponseWave * 0.08 +
-          recognizedLifeRelationshipContinuity * 0.04) *
+          recognizedLifeRelationshipContinuity * 0.04 +
+          lifeWhisperResponseWave * 0.06 +
+          lifeWhisperRelationshipSettled * 0.018) *
         (1 +
           choiceLifePauseWeight * 0.018 +
           choiceResponseSpaceProgress * 0.024);
@@ -4143,7 +4209,9 @@ export function createGenesisWebGLRendererCore(
           forceActionPresence *
             (0.2 + forceExpressionDensity * 0.12) +
           recognitionResponseWave * 0.14 +
-          recognizedLifeRelationshipContinuity * 0.06) *
+          recognizedLifeRelationshipContinuity * 0.06 +
+          lifeWhisperResponseWave * 0.09 +
+          lifeWhisperRelationshipSettled * 0.024) *
         (1 +
           choiceLifePauseWeight * 0.02 +
           choiceResponseSpaceProgress * 0.026);
@@ -4153,7 +4221,9 @@ export function createGenesisWebGLRendererCore(
           forceActionPresence *
             (0.28 + forceExpressionDensity * 0.2) +
           recognitionResponseWave * 0.18 +
-          recognizedLifeRelationshipContinuity * 0.08) *
+          recognizedLifeRelationshipContinuity * 0.08 +
+          lifeWhisperResponseWave * 0.11 +
+          lifeWhisperRelationshipSettled * 0.03) *
         (1 +
           choiceLifePauseWeight * 0.018 +
           choiceResponseSpaceProgress * 0.03);
@@ -4311,18 +4381,24 @@ export function createGenesisWebGLRendererCore(
           recognitionFacingSide *
           ((1 - recognitionAttentionProgress) * 0.105 -
             recognitionResponseWave * 0.075 +
-            recognizedLifeRelationshipContinuity * 0.024);
+            recognizedLifeRelationshipContinuity * 0.024 -
+            lifeWhisperResponseWave * 0.048 +
+            lifeWhisperRelationshipSettled * 0.01);
         structureGroup.position.z =
           structureGroupRestingDepth +
           recognitionAttentionProgress * 0.045 +
           recognitionResponseWave * 0.035 +
           recognizedLifeRelationshipContinuity * 0.03 +
+          lifeWhisperResponseWave * 0.024 +
+          lifeWhisperRelationshipSettled * 0.008 +
           realityEntryCarryWave * 0.012;
         structureGroup.scale.multiplyScalar(
           1 +
             recognitionAttentionProgress * 0.018 +
             recognitionResponseWave * 0.036 +
             recognizedLifeRelationshipContinuity * 0.022 +
+            lifeWhisperResponseWave * 0.028 +
+            lifeWhisperRelationshipSettled * 0.008 +
             realityEntryCarryWave * 0.008,
         );
         structureGroup.scale.x *=
@@ -4557,6 +4633,8 @@ export function createGenesisWebGLRendererCore(
                 (recognitionSubjectWeight - 1) * 0.18 +
                 recognitionResponseWave * 0.12 +
                 recognizedLifeRelationshipContinuity * 0.08 +
+                lifeWhisperResponseWave * 0.085 +
+                lifeWhisperRelationshipSettled * 0.025 +
                 Math.sin(rhythmPhase * 0.72 + 0.5) *
                   (0.008 + perspectivePresenceBreath * 0.012)
               : 0;
@@ -4598,7 +4676,9 @@ export function createGenesisWebGLRendererCore(
         lifeAuraMaterial.opacity = Math.min(
           0.2,
           (settledAuraOpacity +
-            recognizedLifeRelationshipContinuity * 0.03) *
+            recognizedLifeRelationshipContinuity * 0.03 +
+            lifeWhisperResponseWave * 0.045 +
+            lifeWhisperRelationshipSettled * 0.014) *
             (1 -
               pressureAuraContraction * 0.16 +
               realityPressureRecoveryProgress * 0.08 +
@@ -4690,6 +4770,8 @@ export function createGenesisWebGLRendererCore(
           recognitionAttentionProgress * 0.035 +
           recognitionResponseWave * 0.08 +
           recognizedLifeRelationshipContinuity * 0.07 +
+          lifeWhisperResponseWave * 0.055 +
+          lifeWhisperRelationshipSettled * 0.018 +
           realityEntryCarryWave * 0.06
         : 1;
       coreLight.intensity *=
