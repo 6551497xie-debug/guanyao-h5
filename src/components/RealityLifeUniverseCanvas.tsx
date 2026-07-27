@@ -489,9 +489,14 @@ export function RealityLifeUniverseCanvas({
       <canvas
         ref={canvasRef}
         className="gy-reality-life-universe__canvas"
+        style={{
+          transformOrigin: `${realitySeedBodyTargetX}% 48%`,
+        }}
         data-reality-life-universe-renderer={rendererState}
         data-reality-arrival-phase={arrivalPhase}
         data-reality-life-weather-phase={lifeWeatherPhase}
+        data-inner-view-approach-state={innerViewApproachState}
+        data-inner-view-body-anchor={`${realitySeedBodyTargetX}:48`}
         data-reality-life-weather-source={
           realityPressureConsumer.status === "RESPONDING"
             ? "CURRENT_RECOGNIZED_REALITY_ONLY"

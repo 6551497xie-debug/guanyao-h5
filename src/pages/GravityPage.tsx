@@ -1221,7 +1221,7 @@ function CosmicBotanicsField({
     | "CONFIRMED"
     | "SELF_NAMED"
     | "PAUSED"
-  >("OBSERVING");
+  >(() => (innerViewEntryEstablished ? "FIRST_APPROACH" : "OBSERVING"));
   const [innerViewRelationEstablished, setInnerViewRelationEstablished] =
     useState(false);
   const innerViewPhaseBeforePauseRef = useRef<
@@ -2551,6 +2551,11 @@ function HexagramCodeDeliveryShell() {
   );
   const [gravityEntryContinuityActive, setGravityEntryContinuityActive] =
     useState(() => arrivalVisualContinuity !== null);
+  const innerViewBodyContinuityActive =
+    routeInnerViewEntry && arrivalVisualContinuity !== null;
+  const lifeObservationStageWithheld =
+    arrivalBridgeActive ||
+    (gravityEntryContinuityActive && !innerViewBodyContinuityActive);
   const [contextWhisperVisible, setContextWhisperVisible] = useState(false);
   const [dynamicsInputContext] = useState<DynamicsInputContext>(() =>
     resolveDynamicsInputContext({
@@ -2887,10 +2892,19 @@ function HexagramCodeDeliveryShell() {
             : "OBSERVATION_READY"
         }
         data-inner-view-entry-continuity={
-          routeInnerViewEntry && arrivalVisualContinuity !== null
+          innerViewBodyContinuityActive
             ? "SAME_BODY_FROM_CURRENT_LIFE_WEATHER"
             : "DIRECT_GRAVITY_OBSERVATION"
         }
+        data-inner-view-first-frame={
+          innerViewBodyContinuityActive
+            ? "SAME_RESPONSE_POINT_WITH_EXISTING_MERIDIAN"
+            : "DIRECT_OBSERVATION"
+        }
+        data-inner-view-first-depth={
+          innerViewBodyContinuityActive ? "FIRST_APPROACH" : "OBSERVING"
+        }
+        data-inner-view-analysis-stage="USER_LED_OBSERVATION_NOT_ANALYSIS"
         data-choice-response-state={
           revisionActionConfirmed
             ? "RESPONSE_SEDIMENTED"
@@ -2984,6 +2998,11 @@ function HexagramCodeDeliveryShell() {
                 selectedPressureSeedContext={
                   dynamicsInputContext.selectedPressureSeedContext
                 }
+                innerViewApproachState={
+                  innerViewBodyContinuityActive
+                    ? "BODY_APPROACHED"
+                    : "INACTIVE"
+                }
               />
             </Suspense>
             <RealityGravityInertiaField
@@ -2993,7 +3012,8 @@ function HexagramCodeDeliveryShell() {
               }
               visible={
                 !arrivalBridgeActive &&
-                (gravityEntryContinuityActive ||
+                ((gravityEntryContinuityActive &&
+                  !innerViewBodyContinuityActive) ||
                   cosmicNarrativePhase === "node_active" ||
                   cosmicNarrativePhase === "node_complete")
               }
@@ -3005,6 +3025,16 @@ function HexagramCodeDeliveryShell() {
         {arrivalBridgeActive && arrivalVisualContinuity ? (
           <div
             data-dynamics-arrival-bridge="REALITY_VISUAL_CONTINUITY"
+            data-inner-view-arrival={
+              innerViewBodyContinuityActive
+                ? "SAME_RESPONSE_POINT"
+                : "DIRECT_GRAVITY"
+            }
+            data-inner-view-meridian-stage={
+              innerViewBodyContinuityActive
+                ? "EXISTING_MERIDIAN_APPROACH"
+                : "NOT_ACTIVE"
+            }
             data-source-reference-id={arrivalVisualContinuity.sourceReferenceId}
             style={{
               position: "fixed",
@@ -3024,7 +3054,9 @@ function HexagramCodeDeliveryShell() {
               <span />
             </div>
             <p className="gy-reality-life-universe__continuity-copy">
-              同一束生命光，开始进入现实引力。
+              {innerViewBodyContinuityActive
+                ? "刚才回应的地方，开始显出生命的流动。"
+                : "同一束生命光，开始进入现实引力。"}
             </p>
           </div>
         ) : null}
@@ -3069,22 +3101,21 @@ function HexagramCodeDeliveryShell() {
 
         <section
           data-dynamics-visual-stage="FULLSCREEN_LIFE_UNIVERSE"
+          data-inner-view-visual-continuity={
+            innerViewBodyContinuityActive
+              ? "SAME_BODY_REVEALED_AFTER_ARRIVAL_BREATH"
+              : "DEFAULT"
+          }
           aria-hidden={
-            arrivalBridgeActive || gravityEntryContinuityActive
-              ? "true"
-              : undefined
+            lifeObservationStageWithheld ? "true" : undefined
           }
           style={{
             position: "absolute",
             zIndex: 3,
             inset: 0,
-            opacity:
-              arrivalBridgeActive || gravityEntryContinuityActive ? 0 : 1,
+            opacity: lifeObservationStageWithheld ? 0 : 1,
             transition: "opacity 820ms ease",
-            pointerEvents:
-              arrivalBridgeActive || gravityEntryContinuityActive
-                ? "none"
-                : "auto",
+            pointerEvents: lifeObservationStageWithheld ? "none" : "auto",
           }}
         >
           {currentCrystalEndState ? (

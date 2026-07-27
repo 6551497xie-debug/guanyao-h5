@@ -42,14 +42,36 @@
   .gy-reality-life-universe__seed-body-response-bed,
 .gy-reality-life-universe__seed-body-response[data-inner-view-approach-state="BODY_APPROACHED"]
   .gy-reality-life-universe__seed-body-response-flow {
+  animation: none;
   opacity: 0.03;
   transition: opacity 900ms ease;
 }
 
 .gy-reality-life-universe__seed-body-response[data-inner-view-approach-state="BODY_APPROACHED"]
   .gy-reality-life-universe__seed-body-response-breath {
-  opacity: 0.12;
+  animation: xinmai-reality-seed-body-breathe 5.8s ease-in-out infinite;
+  opacity: 0.18;
   transition: opacity 900ms ease;
+}
+
+.gy-reality-life-universe__canvas[data-inner-view-approach-state="BODY_APPROACHED"] {
+  transform: scale(1.018);
+  transition:
+    filter 1100ms ease,
+    opacity 800ms ease,
+    transform 1200ms cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+
+[data-inner-view-arrival="SAME_RESPONSE_POINT"]
+  .gy-reality-life-universe__disturbance {
+  opacity: 0.08;
+  filter: blur(7px);
+}
+
+[data-inner-view-arrival="SAME_RESPONSE_POINT"]
+  .gy-reality-life-universe__continuity-copy {
+  color: rgb(238 226 198 / 62%);
+  letter-spacing: 0.1em;
 }
 
 @keyframes xinmai-reality-seed-path-settle {
@@ -122,6 +144,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .gy-reality-life-universe__canvas[data-inner-view-approach-state="BODY_APPROACHED"] {
+    transform: none;
+  }
+
   .gy-reality-life-universe__seed-body-response-bed,
   .gy-reality-life-universe__seed-body-response-flow,
   .gy-reality-life-universe__seed-body-response-breath {
