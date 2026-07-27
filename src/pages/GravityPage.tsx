@@ -1813,6 +1813,7 @@ function TransformationMomentFocus({
   action,
   presentation,
   responseDimension,
+  responseTraceIdentityKey,
   onSediment,
   onContinueToReality,
   livedResponseRecognitionRequired = false,
@@ -1824,6 +1825,7 @@ function TransformationMomentFocus({
   action: SingleModelRevisionAction;
   presentation?: ChangeExperiencePresentation | null;
   responseDimension: string;
+  responseTraceIdentityKey: string | null;
   onSediment?: () => void;
   onContinueToReality?: () => void;
   livedResponseRecognitionRequired?: boolean;
@@ -1844,7 +1846,7 @@ function TransformationMomentFocus({
   const responseTraceSourceSlot =
     resolveLifeUniverseCrystalSourceSlot(responseDimension);
   const responseTraceGeometry = useMemo(() => {
-    if (visualSource === null) return null;
+    if (visualSource === null || responseTraceIdentityKey === null) return null;
     const projectionBundle = visualSource.projectionBundle;
     const coordinateProjection =
       projectionBundle.twentyEightMansionCoordinateProjection;
@@ -1852,12 +1854,7 @@ function TransformationMomentFocus({
       projectionBundle.morphologicalFieldAlignmentProjection
         .morphologicalFieldExpression;
     return resolveLifeUniverseCrystalImprintGeometry({
-      identityKey: [
-        visualSource.provenance.sourceReferenceId,
-        action.yaoName,
-        responseDimension,
-        "CHOICE_RESPONSE_TRACE",
-      ].join(":"),
+      identityKey: responseTraceIdentityKey,
       birthMansionIndex: coordinateProjection.birthMansion.mansionIndex,
       normalizedOrbitPositions: coordinateProjection.coordinates.map(
         (coordinate) => coordinate.normalizedOrbitPosition,
@@ -1867,8 +1864,8 @@ function TransformationMomentFocus({
       sourceSlot: responseTraceSourceSlot,
     });
   }, [
-    action.yaoName,
     responseDimension,
+    responseTraceIdentityKey,
     responseTraceSourceSlot,
     visualSource,
   ]);
@@ -2679,6 +2676,19 @@ function HexagramCodeDeliveryShell() {
   const changeExperienceRoute = changeExperienceRuntime.route;
   const changeExperiencePresentation = changeExperienceRuntime.presentation;
   const crystalMigrationImpact = changeExperienceRuntime.migrationImpact;
+  const choiceResponseDimension =
+    changeExperienceRoute?.dimension ?? sequentialCurrentSpaceId;
+  const choiceResponseTraceIdentityKey =
+    realLifeVisualSource !== null && singleModelRevisionAction !== null
+      ? [
+          realLifeVisualSource.provenance.sourceReferenceId,
+          singleModelRevisionAction.yaoName,
+          choiceResponseDimension,
+          "CHOICE_RESPONSE_TRACE",
+        ].join(":")
+      : null;
+  const choiceResponseTraceSourceSlot =
+    resolveLifeUniverseCrystalSourceSlot(choiceResponseDimension);
   const isRevisionActionPending =
     hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE" &&
     Boolean(singleModelRevisionAction) &&
@@ -2769,6 +2779,12 @@ function HexagramCodeDeliveryShell() {
           ? { visualContinuity: arrivalVisualContinuity }
           : {}),
         choiceContinuation: "AWAITING_LIVED_RESPONSE_RECOGNITION",
+        ...(choiceResponseTraceIdentityKey
+          ? {
+              choiceLifeTraceMemoryKey: choiceResponseTraceIdentityKey,
+              choiceLifeTraceSourceSlot: choiceResponseTraceSourceSlot,
+            }
+          : {}),
       },
     });
   }
@@ -3082,8 +3098,9 @@ function HexagramCodeDeliveryShell() {
               action={singleModelRevisionAction}
               presentation={changeExperiencePresentation}
               responseDimension={
-                changeExperienceRoute?.dimension ?? sequentialCurrentSpaceId
+                choiceResponseDimension
               }
+              responseTraceIdentityKey={choiceResponseTraceIdentityKey}
               onSediment={
                 LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED
                   ? undefined

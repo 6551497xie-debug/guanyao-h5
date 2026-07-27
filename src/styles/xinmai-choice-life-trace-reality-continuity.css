@@ -1,0 +1,71 @@
+.gy-reality-life-universe__choice-life-trace {
+  opacity: 0.28;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: xinmai-choice-trace-enter-reality 3.8s
+    cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+
+.gy-reality-life-universe__choice-life-trace-bed,
+.gy-reality-life-universe__choice-life-trace-flow,
+.gy-reality-life-universe__choice-life-trace-memory {
+  vector-effect: non-scaling-stroke;
+}
+
+.gy-reality-life-universe__choice-life-trace-flow {
+  opacity: 0.34;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.gy-reality-life-universe__choice-life-trace-memory {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: xinmai-choice-trace-memory-breathe 9.6s ease-in-out 3.8s
+    infinite alternate;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_RECOGNIZED"]
+  .gy-reality-life-universe__choice-life-trace {
+  opacity: 0.2;
+  transition: opacity 1.4s ease;
+}
+
+.gy-reality-life-universe[data-reality-pressure-visual-state="PRESSURE_PAUSED"]
+  .gy-reality-life-universe__choice-life-trace {
+  opacity: 0.24;
+  transition: opacity 1.8s ease;
+}
+
+@keyframes xinmai-choice-trace-enter-reality {
+  0% {
+    opacity: 0;
+    transform: scale(1.018);
+  }
+
+  48% {
+    opacity: 0.36;
+  }
+
+  100% {
+    opacity: 0.28;
+    transform: scale(1);
+  }
+}
+
+@keyframes xinmai-choice-trace-memory-breathe {
+  from {
+    opacity: 0.38;
+  }
+
+  to {
+    opacity: 0.58;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gy-reality-life-universe__choice-life-trace,
+  .gy-reality-life-universe__choice-life-trace-memory {
+    animation: none;
+  }
+}

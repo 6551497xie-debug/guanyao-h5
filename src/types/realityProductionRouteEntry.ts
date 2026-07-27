@@ -94,6 +94,8 @@ export type RealityProductionHostProps = Readonly<{
   latestCrystalSourceSlot?: number | null;
   returningLifeWorldEntry?: boolean;
   choiceContinuation?: "AWAITING_LIVED_RESPONSE_RECOGNITION" | null;
+  choiceLifeTraceMemoryKey?: string | null;
+  choiceLifeTraceSourceSlot?: number | null;
   onContinueToGravity: (
     selectedPressureSeedContext: Readonly<SelectedPressureSeedContext>,
   ) => void;

@@ -85,6 +85,8 @@ export function RealityProductionHost({
   latestCrystalSourceSlot = null,
   returningLifeWorldEntry = false,
   choiceContinuation = null,
+  choiceLifeTraceMemoryKey = null,
+  choiceLifeTraceSourceSlot = null,
   onContinueToGravity,
 }: RealityProductionHostProps) {
   const sourceContext = routeAuthorization.sourceContext;
@@ -144,6 +146,10 @@ export function RealityProductionHost({
         : "PRESSURE_OBSERVING";
   const choiceRhythmValidationActive =
     choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION";
+  const choiceLifeTraceCarried =
+    choiceRhythmValidationActive &&
+    choiceLifeTraceMemoryKey !== null &&
+    choiceLifeTraceSourceSlot !== null;
   const choiceRhythmValidationState = choiceRhythmValidationActive
     ? pressureSeedSession.captureState === "SEED_RECOGNIZED"
       ? "CURRENT_REALITY_RESPONSE_READY_FOR_OBSERVATION"
@@ -156,7 +162,9 @@ export function RealityProductionHost({
       ? "新的现实已经触碰到它。先看身体怎样回应，不急着把不同叫作改变。"
       : pressureVisualState === "PRESSURE_PAUSED"
         ? "你和它仍在这里，新的回应暂时不必接受检验。"
-        : "刚刚出现的空间仍在身体里，新的现实从远处靠近。"
+        : choiceLifeTraceCarried
+          ? "刚刚留下的微弱纹理仍在身体里，新的现实从远处靠近。"
+          : "刚刚出现的空间仍在身体里，新的现实从远处靠近。"
     : pressureVisualState === "PRESSURE_RECOGNIZED"
       ? "新的现实触碰了它，它仍是同一个生命。"
       : pressureVisualState === "PRESSURE_PAUSED"
@@ -378,6 +386,16 @@ export function RealityProductionHost({
           : "NONE"
       }
       data-choice-rhythm-validation={choiceRhythmValidationState}
+      data-choice-life-trace-role={
+        choiceLifeTraceCarried ? "PRE_CRYSTAL_BODY_MEMORY" : "NONE"
+      }
+      data-choice-life-trace-continuity={
+        choiceLifeTraceCarried
+          ? "SAME_TRACE_SAME_BODY_NEW_REALITY"
+          : "NONE"
+      }
+      data-choice-life-trace-pressure-role="MEMORY_INFLUENCE_NOT_CURRENT_PRESSURE"
+      data-choice-life-trace-growth-claim="NONE"
       data-choice-body-continuity="SAME_CORE_SAME_BODY"
       data-choice-identity-effect="RESPONSE_ONLY"
       data-choice-growth-claim="NONE_UNTIL_USER_RECOGNIZES"
@@ -415,6 +433,8 @@ export function RealityProductionHost({
         historicalRealityMemoryKey={historicalRealityMemoryKey}
         latestCrystalMemoryKey={latestCrystalMemoryKey}
         latestCrystalSourceSlot={latestCrystalSourceSlot}
+        choiceLifeTraceMemoryKey={choiceLifeTraceMemoryKey}
+        choiceLifeTraceSourceSlot={choiceLifeTraceSourceSlot}
       />
       <p
         className="gy-reality-life-universe__arrival-copy"

@@ -111,6 +111,8 @@ export function RealityProductionRouteEntry() {
         }>;
         returningEntry?: "SAME_LIFE_NEW_REALITY";
         choiceContinuation?: "AWAITING_LIVED_RESPONSE_RECOGNITION";
+        choiceLifeTraceMemoryKey?: string;
+        choiceLifeTraceSourceSlot?: number;
       }
     | null;
   const routeVisualContinuity = routeState?.visualContinuity ?? null;
@@ -120,6 +122,20 @@ export function RealityProductionRouteEntry() {
   const choiceContinuation =
     routeState?.choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION"
       ? "AWAITING_LIVED_RESPONSE_RECOGNITION"
+      : null;
+  const choiceLifeTraceMemoryKey =
+    choiceContinuation !== null &&
+    typeof routeState?.choiceLifeTraceMemoryKey === "string" &&
+    routeState.choiceLifeTraceMemoryKey.trim().length > 0
+      ? routeState.choiceLifeTraceMemoryKey
+      : null;
+  const choiceLifeTraceSourceSlot =
+    choiceLifeTraceMemoryKey !== null &&
+    typeof routeState?.choiceLifeTraceSourceSlot === "number" &&
+    Number.isInteger(routeState?.choiceLifeTraceSourceSlot) &&
+    (routeState?.choiceLifeTraceSourceSlot ?? -1) >= 0 &&
+    (routeState?.choiceLifeTraceSourceSlot ?? 7) <= 6
+      ? routeState?.choiceLifeTraceSourceSlot ?? null
       : null;
   const persistedVisualContinuity =
     readPersistedGenesisVisualContinuity();
@@ -355,6 +371,8 @@ export function RealityProductionRouteEntry() {
       }
       returningLifeWorldEntry={returningLifeWorldEntry}
       choiceContinuation={choiceContinuation}
+      choiceLifeTraceMemoryKey={choiceLifeTraceMemoryKey}
+      choiceLifeTraceSourceSlot={choiceLifeTraceSourceSlot}
       onContinueToGravity={continueToGravity}
     />
   );

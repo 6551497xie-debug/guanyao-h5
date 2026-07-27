@@ -182,6 +182,7 @@
     "check-xinmai-third-approach-choice-response-continuity": "node scripts/check-xinmai-third-approach-choice-response-continuity.mjs",
     "check-xinmai-choice-breath-hold-response-embodiment": "node scripts/check-xinmai-choice-breath-hold-response-embodiment.mjs",
     "check-xinmai-choice-crystal-life-trace-continuity": "node scripts/check-xinmai-choice-crystal-life-trace-continuity.mjs",
+    "check-xinmai-life-trace-new-reality-continuity": "node scripts/check-xinmai-life-trace-new-reality-continuity.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",

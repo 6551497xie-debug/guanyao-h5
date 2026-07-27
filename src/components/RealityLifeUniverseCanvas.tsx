@@ -25,6 +25,8 @@ export function RealityLifeUniverseCanvas({
   historicalRealityMemoryKey = null,
   latestCrystalMemoryKey = null,
   latestCrystalSourceSlot = null,
+  choiceLifeTraceMemoryKey = null,
+  choiceLifeTraceSourceSlot = null,
 }: Pick<RealityProductionHostProps, "visualContinuity"> &
   Readonly<{
     selectedPressureSeedContext?:
@@ -39,6 +41,8 @@ export function RealityLifeUniverseCanvas({
     historicalRealityMemoryKey?: string | null;
     latestCrystalMemoryKey?: string | null;
     latestCrystalSourceSlot?: number | null;
+    choiceLifeTraceMemoryKey?: string | null;
+    choiceLifeTraceSourceSlot?: number | null;
   }>) {
   const continuesRecognizedPressure = selectedPressureSeedContext !== null;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -140,8 +144,18 @@ export function RealityLifeUniverseCanvas({
             sourceSlot: latestCrystalSourceSlot,
           })
         : null,
+      choiceLifeTrace:
+        choiceLifeTraceMemoryKey && choiceLifeTraceSourceSlot !== null
+          ? resolveLifeUniverseCrystalImprintGeometry({
+              identityKey: choiceLifeTraceMemoryKey,
+              ...sharedInput,
+              sourceSlot: choiceLifeTraceSourceSlot,
+            })
+          : null,
     });
   }, [
+    choiceLifeTraceMemoryKey,
+    choiceLifeTraceSourceSlot,
     historicalRealityMemoryKey,
     latestCrystalMemoryKey,
     latestCrystalSourceSlot,
@@ -152,6 +166,11 @@ export function RealityLifeUniverseCanvas({
     : "";
   const latestCrystalBodyPoint =
     lifeMemoryGeometry.latestCrystal?.branchTarget ?? null;
+  const choiceLifeTraceBodyPath = lifeMemoryGeometry.choiceLifeTrace
+    ? `M ${lifeMemoryGeometry.choiceLifeTrace.target[0]} ${lifeMemoryGeometry.choiceLifeTrace.target[1]} L ${lifeMemoryGeometry.choiceLifeTrace.stem[0]} ${lifeMemoryGeometry.choiceLifeTrace.stem[1]} L ${lifeMemoryGeometry.choiceLifeTrace.branchTarget[0]} ${lifeMemoryGeometry.choiceLifeTrace.branchTarget[1]}`
+    : "";
+  const choiceLifeTraceBodyPoint =
+    lifeMemoryGeometry.choiceLifeTrace?.branchTarget ?? null;
 
   useEffect(() => {
     if (continuesRecognizedPressure) {
@@ -295,7 +314,8 @@ export function RealityLifeUniverseCanvas({
   return (
     <>
       {lifeMemoryGeometry.historicalReality ||
-      lifeMemoryGeometry.latestCrystal ? (
+      lifeMemoryGeometry.latestCrystal ||
+      lifeMemoryGeometry.choiceLifeTrace ? (
         <svg
           className="gy-reality-life-universe__memory-layer"
           viewBox="0 0 100 100"
@@ -307,6 +327,11 @@ export function RealityLifeUniverseCanvas({
           }
           data-reality-history-crystal={
             lifeMemoryGeometry.latestCrystal ? "BODY_IMPRINT" : "NONE"
+          }
+          data-reality-choice-life-trace={
+            lifeMemoryGeometry.choiceLifeTrace
+              ? "PRE_CRYSTAL_BODY_MEMORY"
+              : "NONE"
           }
         >
           {lifeMemoryGeometry.historicalReality ? (
@@ -371,6 +396,51 @@ export function RealityLifeUniverseCanvas({
                   cy={latestCrystalBodyPoint[1]}
                   r="0.17"
                   fill="rgba(255,247,220,0.5)"
+                />
+              </g>
+            </g>
+          ) : null}
+          {lifeMemoryGeometry.choiceLifeTrace &&
+          choiceLifeTraceBodyPoint ? (
+            <g
+              className="gy-reality-life-universe__choice-life-trace"
+              data-choice-life-trace-memory="SAME_BODY_FROM_CHOICE"
+              data-choice-life-trace-pressure-role="PAST_INFLUENCE_NOT_CURRENT_PRESSURE"
+              data-choice-life-trace-crystal-state="NOT_MATERIALIZED"
+              data-choice-life-trace-identity-invariant="SAME_CORE_SAME_BODY_SAME_LIFE"
+            >
+              <path
+                className="gy-reality-life-universe__choice-life-trace-bed"
+                d={choiceLifeTraceBodyPath}
+                fill="none"
+                stroke="rgba(185,203,236,0.13)"
+                strokeWidth="0.48"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                className="gy-reality-life-universe__choice-life-trace-flow"
+                d={choiceLifeTraceBodyPath}
+                pathLength="1"
+                fill="none"
+                stroke="rgba(255,239,190,0.34)"
+                strokeWidth="0.22"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <g className="gy-reality-life-universe__choice-life-trace-memory">
+                <path
+                  d={`M ${choiceLifeTraceBodyPoint[0] - 0.38} ${choiceLifeTraceBodyPoint[1] + 0.12} Q ${choiceLifeTraceBodyPoint[0]} ${choiceLifeTraceBodyPoint[1] - 0.38} ${choiceLifeTraceBodyPoint[0] + 0.42} ${choiceLifeTraceBodyPoint[1] + 0.08}`}
+                  fill="none"
+                  stroke="rgba(255,239,190,0.4)"
+                  strokeWidth="0.2"
+                  strokeLinecap="round"
+                />
+                <circle
+                  cx={choiceLifeTraceBodyPoint[0]}
+                  cy={choiceLifeTraceBodyPoint[1]}
+                  r="0.14"
+                  fill="rgba(255,247,220,0.48)"
                 />
               </g>
             </g>
