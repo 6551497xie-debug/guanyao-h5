@@ -86,8 +86,11 @@ export function XinmaiLifeReflectionGuide({
           : 3;
   const firstLifeSignalVisible = phase === "FIRST_APPROACH";
   const secondProtectiveMeaningVisible = phase === "SECOND_APPROACH";
+  const thirdUnfinishedFlowVisible = phase === "THIRD_APPROACH";
   const focusedInnerViewMeaningVisible =
     firstLifeSignalVisible || secondProtectiveMeaningVisible;
+  const focusedInnerViewMomentVisible =
+    focusedInnerViewMeaningVisible || thirdUnfinishedFlowVisible;
 
   function resolveStepState(stepId: string) {
     const stepOrder = ["MIRROR", "IDENTIFY", "VALIDATE", "SHIFT"];
@@ -111,7 +114,9 @@ export function XinmaiLifeReflectionGuide({
           ? "SINGLE_EXISTING_DIMENSION_SIGNAL"
           : secondProtectiveMeaningVisible
             ? "SINGLE_EXISTING_PROTECTIVE_MEANING"
-            : "REFLECTION_SEQUENCE"
+            : thirdUnfinishedFlowVisible
+              ? "SAME_MERIDIAN_UNFINISHED_NEW_FLOW"
+              : "REFLECTION_SEQUENCE"
       }
       data-xinmai-ai-claim="NONE"
       data-xinmai-dust-claim="NONE"
@@ -145,6 +150,21 @@ export function XinmaiLifeReflectionGuide({
               "这种回应，也许曾经用自己的方式保护过你。"}
           </strong>
         </div>
+      ) : thirdUnfinishedFlowVisible ? (
+        <div
+          className="xinmai-life-reflection-guide__new-flow"
+          data-xinmai-new-flow="EXISTING_SAME_BODY_MERIDIAN"
+          data-xinmai-new-flow-state="EMERGING_NOT_RESOLVED"
+          data-xinmai-old-protective-path="PRESENT_NOT_AUTOMATIC"
+          data-xinmai-new-flow-count="ONE"
+          data-xinmai-new-flow-agency="回应仍然由你决定。"
+          data-xinmai-choice-stage="NOT_STARTED"
+          data-xinmai-crystal-stage="NOT_STARTED"
+        >
+          <i aria-hidden="true" />
+          <span>旧的保护仍在</span>
+          <strong>一点新的流动，正在同一处生命里出现。</strong>
+        </div>
       ) : (
         <>
           <span className="xinmai-life-reflection-guide__eyebrow">
@@ -172,13 +192,13 @@ export function XinmaiLifeReflectionGuide({
         className="xinmai-life-reflection-guide__approach"
         data-xinmai-user-agency="CONFIRM_REVISE_OR_PAUSE"
       >
-        {!focusedInnerViewMeaningVisible ? (
+        {!focusedInnerViewMomentVisible ? (
           <p className="xinmai-life-reflection-guide__observation">
             {observation ?? "先靠近这一处生命变化。"}
           </p>
         ) : null}
 
-        {phase !== "OBSERVING" && !focusedInnerViewMeaningVisible ? (
+        {phase !== "OBSERVING" && !focusedInnerViewMomentVisible ? (
           <p
             className="xinmai-life-reflection-guide__understanding"
             data-dynamics-protective-understanding="CANDIDATE_NOT_CONCLUSION"
@@ -187,12 +207,10 @@ export function XinmaiLifeReflectionGuide({
               ? "不必现在得出结论。你和它仍在这里。"
               : phase === "SELF_NAMED"
                 ? "保留你的理解。系统不替你命名。"
-                : phase === "THIRD_APPROACH"
-                  ? "如果你愿意，为生命留出一点不同的流动。回应仍然由你决定。"
-                  : phase === "CONFIRMED"
-                    ? "这份理解来自你的确认，不是系统替你下的结论。"
-                    : understanding ??
-                      "这种回应，也许曾经用自己的方式保护过你。"}
+                : phase === "CONFIRMED"
+                  ? "这份理解来自你的确认，不是系统替你下的结论。"
+                  : understanding ??
+                    "这种回应，也许曾经用自己的方式保护过你。"}
           </p>
         ) : null}
 
@@ -209,7 +227,10 @@ export function XinmaiLifeReflectionGuide({
             第三次靠近 · 让它流动
           </button>
         ) : phase === "THIRD_APPROACH" ? (
-          <div className="xinmai-life-reflection-guide__agency">
+          <div
+            className="xinmai-life-reflection-guide__agency"
+            data-xinmai-agency-purpose="RELATION_CONFIRMATION_NOT_CHOICE_ANSWER"
+          >
             <button type="button" onClick={onConfirm}>
               这像我
             </button>
@@ -231,7 +252,7 @@ export function XinmaiLifeReflectionGuide({
         ) : null}
       </div>
 
-      {!focusedInnerViewMeaningVisible ? (
+      {!focusedInnerViewMomentVisible ? (
         <p className="xinmai-life-reflection-guide__boundary">
           它只帮助你看见，不替你决定。
         </p>

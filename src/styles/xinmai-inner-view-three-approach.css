@@ -30,7 +30,8 @@
 
 .xinmai-life-reflection-guide--reflection:is(
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
-    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"]
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"],
+    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"]
   ) {
   width: min(238px, 64vw);
   gap: 13px;
@@ -43,7 +44,8 @@ main:has(
   )
   .xinmai-life-reflection-guide--reflection:is(
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
-    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"]
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"],
+    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"]
   ) {
   transform: translate(34px, -7vh);
 }
@@ -53,13 +55,15 @@ main:has(
   )
   .xinmai-life-reflection-guide--reflection:is(
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
-    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"]
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"],
+    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"]
   ) {
   transform: translate(-34px, -7vh);
 }
 
 .xinmai-life-reflection-guide__life-signal,
-.xinmai-life-reflection-guide__protective-meaning {
+.xinmai-life-reflection-guide__protective-meaning,
+.xinmai-life-reflection-guide__new-flow {
   position: relative;
   display: grid;
   gap: 5px;
@@ -76,7 +80,8 @@ main:has(
 }
 
 .xinmai-life-reflection-guide__life-signal::before,
-.xinmai-life-reflection-guide__protective-meaning::before {
+.xinmai-life-reflection-guide__protective-meaning::before,
+.xinmai-life-reflection-guide__new-flow::before {
   position: absolute;
   top: 3px;
   bottom: 2px;
@@ -100,8 +105,18 @@ main:has(
   );
 }
 
+.xinmai-life-reflection-guide__new-flow::before {
+  background: linear-gradient(
+    180deg,
+    rgb(185 203 236 / 5%),
+    rgb(185 213 210 / 28%),
+    rgb(220 205 169 / 8%)
+  );
+}
+
 .xinmai-life-reflection-guide__life-signal > i,
-.xinmai-life-reflection-guide__protective-meaning > i {
+.xinmai-life-reflection-guide__protective-meaning > i,
+.xinmai-life-reflection-guide__new-flow > i {
   position: absolute;
   top: 50%;
   left: 0;
@@ -119,8 +134,16 @@ main:has(
   animation-duration: 5.8s;
 }
 
+.xinmai-life-reflection-guide__new-flow > i {
+  border-color: rgb(185 213 210 / 36%);
+  border-right-color: transparent;
+  box-shadow: 0 0 12px rgb(185 213 210 / 11%);
+  animation-duration: 6.4s;
+}
+
 .xinmai-life-reflection-guide__life-signal > span,
-.xinmai-life-reflection-guide__protective-meaning > span {
+.xinmai-life-reflection-guide__protective-meaning > span,
+.xinmai-life-reflection-guide__new-flow > span {
   color: rgb(185 203 236 / 44%);
   font-size: 8px;
   letter-spacing: 0.13em;
@@ -130,8 +153,13 @@ main:has(
   color: rgb(220 205 169 / 46%);
 }
 
+.xinmai-life-reflection-guide__new-flow > span {
+  color: rgb(185 203 236 / 38%);
+}
+
 .xinmai-life-reflection-guide__life-signal > strong,
-.xinmai-life-reflection-guide__protective-meaning > strong {
+.xinmai-life-reflection-guide__protective-meaning > strong,
+.xinmai-life-reflection-guide__new-flow > strong {
   color: rgb(245 242 233 / 76%);
   font-family: var(--xinmai-font-life);
   font-size: 12px;
@@ -145,9 +173,14 @@ main:has(
   color: rgb(238 226 198 / 72%);
 }
 
+.xinmai-life-reflection-guide__new-flow > strong {
+  color: rgb(218 230 219 / 70%);
+}
+
 .xinmai-life-reflection-guide--reflection:is(
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
-    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"]
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"],
+    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"]
   )
   .xinmai-life-reflection-guide__approach {
   gap: 0;
@@ -155,10 +188,24 @@ main:has(
 
 [data-dynamics-node-language="LIFE_UNIVERSE_WHISPER"]:is(
     [data-dynamics-inner-view-phase="FIRST_APPROACH"],
-    [data-dynamics-inner-view-phase="SECOND_APPROACH"]
+    [data-dynamics-inner-view-phase="SECOND_APPROACH"],
+    [data-dynamics-inner-view-phase="THIRD_APPROACH"]
   )
   > span[aria-hidden="true"] {
   display: none;
+}
+
+.gy-inner-view-life-meridian[data-inner-view-meridian-depth="3"]
+  .gy-inner-view-life-meridian__breath {
+  opacity: 0.46;
+  animation-duration: 6.4s;
+}
+
+.gy-inner-view-life-meridian[data-inner-view-meridian-depth="3"]
+  .gy-inner-view-life-meridian__flow {
+  stroke-dasharray: 0.16 0.84;
+  animation: xinmai-inner-view-unfinished-new-flow 6.8s
+    cubic-bezier(0.2, 0.62, 0.18, 1) both;
 }
 
 .xinmai-life-reflection-guide__sequence
@@ -254,6 +301,22 @@ main:has(
   }
 }
 
+@keyframes xinmai-inner-view-unfinished-new-flow {
+  from {
+    opacity: 0;
+    stroke-dashoffset: 0.98;
+  }
+
+  38% {
+    opacity: 0.72;
+  }
+
+  to {
+    opacity: 0.54;
+    stroke-dashoffset: 0.36;
+  }
+}
+
 @keyframes xinmai-inner-view-copy-arrival {
   from {
     opacity: 0;
@@ -287,6 +350,8 @@ main:has(
   .xinmai-life-reflection-guide__life-signal > i,
   .xinmai-life-reflection-guide__protective-meaning,
   .xinmai-life-reflection-guide__protective-meaning > i,
+  .xinmai-life-reflection-guide__new-flow,
+  .xinmai-life-reflection-guide__new-flow > i,
   .xinmai-life-reflection-guide--reflection
     .xinmai-life-reflection-guide__observation,
   .xinmai-life-reflection-guide--reflection
@@ -302,7 +367,8 @@ main:has(
 
   .xinmai-life-reflection-guide--reflection:is(
     [data-xinmai-life-signal-mode="SINGLE_EXISTING_DIMENSION_SIGNAL"],
-    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"]
+    [data-xinmai-life-signal-mode="SINGLE_EXISTING_PROTECTIVE_MEANING"],
+    [data-xinmai-life-signal-mode="SAME_MERIDIAN_UNFINISHED_NEW_FLOW"]
   ) {
     transform: none;
   }

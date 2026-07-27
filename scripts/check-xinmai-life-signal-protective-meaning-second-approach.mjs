@@ -35,9 +35,12 @@ const checks = [
     guide.includes(
       "const focusedInnerViewMeaningVisible =\n    firstLifeSignalVisible || secondProtectiveMeaningVisible",
     ) &&
-      guide.includes("{!focusedInnerViewMeaningVisible ? (") &&
       guide.includes(
-        'phase !== "OBSERVING" && !focusedInnerViewMeaningVisible',
+        "focusedInnerViewMeaningVisible || thirdUnfinishedFlowVisible",
+      ) &&
+      guide.includes("{!focusedInnerViewMomentVisible ? (") &&
+      guide.includes(
+        'phase !== "OBSERVING" && !focusedInnerViewMomentVisible',
       ),
   ],
   [
