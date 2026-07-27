@@ -4,6 +4,7 @@ import { resolveLifeUniverseCrystalImprintGeometry } from "../renderers/lifeUniv
 import { adaptRealLifeVisualSource } from "../services/realLifeVisualSourceAdapter";
 import { readRealUserGenesisVisualSourceContext } from "../services/realUserGenesisVisualSourceContext";
 import "../styles/reality-life-entry-continuity.css";
+import "../styles/reality-inner-view-entry.css";
 import type {
   GenesisProductionCanvasHostState,
 } from "../types/genesisProductionExperiencePage";
@@ -19,6 +20,8 @@ export function RealityLifeUniverseCanvas({
   visualContinuity,
   selectedPressureSeedContext = null,
   currentRealityWeatherEnabled = false,
+  innerViewApproachState = "INACTIVE",
+  onApproachCurrentWeather,
   historicalRealityMemoryKey = null,
   latestCrystalMemoryKey = null,
   latestCrystalSourceSlot = null,
@@ -28,6 +31,11 @@ export function RealityLifeUniverseCanvas({
       | Parameters<RealityProductionHostProps["onContinueToGravity"]>[0]
       | null;
     currentRealityWeatherEnabled?: boolean;
+    innerViewApproachState?:
+      | "INACTIVE"
+      | "AWAITING_BODY_APPROACH"
+      | "BODY_APPROACHED";
+    onApproachCurrentWeather?: () => void;
     historicalRealityMemoryKey?: string | null;
     latestCrystalMemoryKey?: string | null;
     latestCrystalSourceSlot?: number | null;
@@ -386,6 +394,25 @@ export function RealityLifeUniverseCanvas({
         data-source-reference-id={visualContinuity.sourceReferenceId}
         aria-hidden="true"
       />
+      {selectedPressureSeedContext !== null &&
+      innerViewApproachState !== "INACTIVE" &&
+      onApproachCurrentWeather ? (
+        <button
+          type="button"
+          className="gy-reality-inner-view-entry"
+          style={{
+            left: realityPressureFlowSide === "RIGHT" ? "59%" : "41%",
+          }}
+          aria-label="靠近生命正在变化的位置"
+          data-inner-view-entry="SAME_BODY_LIFE_WEATHER_TRACE"
+          data-inner-view-approach-state={innerViewApproachState}
+          data-inner-view-entry-visual="HAIRLINE_BREATH_NOT_SECOND_CORE"
+          disabled={innerViewApproachState === "BODY_APPROACHED"}
+          onClick={onApproachCurrentWeather}
+        >
+          <span aria-hidden="true" />
+        </button>
+      ) : null}
     </>
   );
 }

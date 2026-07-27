@@ -55,6 +55,11 @@ type RealityPressureHostState = Readonly<{
   continuationResult: RealityPressureSeedContinuationContextResult;
 }>;
 
+type RealityInnerViewApproachState =
+  | "INACTIVE"
+  | "AWAITING_BODY_APPROACH"
+  | "BODY_APPROACHED";
+
 const initializePressureHostState = (
   pressureSeedContinuationContext: RealityProductionHostProps["pressureSeedContinuationContext"],
 ): RealityPressureHostState => {
@@ -87,6 +92,8 @@ export function RealityProductionHost({
     useState<RealityPressureHostState>(() =>
       initializePressureHostState(pressureSeedContinuationContext),
     );
+  const [innerViewApproachState, setInnerViewApproachState] =
+    useState<RealityInnerViewApproachState>("INACTIVE");
   const pressureSeedHostInputReady =
     isRealityProductionPressureHostInputReady(
       pressureSeedHostInput,
@@ -185,7 +192,7 @@ export function RealityProductionHost({
     ) {
       return;
     }
-    applyConsumerResult(
+    const nextConsumerResult =
       advanceRealityProductionPressureSeedConsumer({
         session: pressureSeedSession,
         candidateSourceContext: continuationContext.candidateSourceContext,
@@ -196,14 +203,21 @@ export function RealityProductionHost({
             pressureSeedSession.candidateBundleReferenceId,
           recognizedCandidateReferenceId: candidateReferenceId,
         }),
-      }),
-    );
+      });
+    applyConsumerResult(nextConsumerResult);
+    if (
+      nextConsumerResult.status === "READY" &&
+      nextConsumerResult.session.captureState === "SEED_RECOGNIZED"
+    ) {
+      setInnerViewApproachState("AWAITING_BODY_APPROACH");
+    }
   };
 
   const pausePressureSeed = () => {
     if (!pressureSeedSession.availableEvents.includes("PRESSURE_SEED_PAUSE")) {
       return;
     }
+    setInnerViewApproachState("INACTIVE");
     applyConsumerResult(
       advanceRealityProductionPressureSeedConsumer({
         session: pressureSeedSession,
@@ -227,6 +241,7 @@ export function RealityProductionHost({
     ) {
       return;
     }
+    setInnerViewApproachState("INACTIVE");
     const requestResult =
       bridgeRealityPressureActivationCandidateRequestContext({
         activationContext: continuationContext.candidateActivationContext,
@@ -295,6 +310,20 @@ export function RealityProductionHost({
     }
     onContinueToGravity(pressureSeedSession.selectedPressureSeedContext);
   };
+  const approachCurrentLifeWeather = () => {
+    if (
+      innerViewApproachState !== "AWAITING_BODY_APPROACH" ||
+      pressureSeedSession.gravityReadiness !== "READY" ||
+      pressureSeedSession.selectedPressureSeedContext === null
+    ) {
+      return;
+    }
+    const currentReality = pressureSeedSession.selectedPressureSeedContext;
+    setInnerViewApproachState("BODY_APPROACHED");
+    window.setTimeout(() => {
+      onContinueToGravity(currentReality);
+    }, 1_200);
+  };
 
   return (
     <main
@@ -362,6 +391,11 @@ export function RealityProductionHost({
       }
       data-reality-life-weather-memory-boundary="PAST_IN_BODY_NOT_CURRENT_STATE"
       data-reality-life-weather-identity-invariant="SAME_CORE_SAME_BODY_SAME_LIFE"
+      data-inner-view-entry-state={innerViewApproachState}
+      data-inner-view-entry-source="CURRENT_LIFE_WEATHER_ON_SAME_BODY"
+      data-inner-view-entry-action="USER_APPROACH_REQUIRED"
+      data-inner-view-transition="LIFE_WEATHER_TO_EXISTING_GRAVITY"
+      data-inner-view-analysis-stage="NOT_STARTED"
       data-pressure-seed-bundle-reference={
         pressureSeedSession.candidateBundleReferenceId
       }
@@ -373,6 +407,8 @@ export function RealityProductionHost({
       <RealityLifeUniverseCanvas
         visualContinuity={visualContinuity}
         currentRealityWeatherEnabled
+        innerViewApproachState={innerViewApproachState}
+        onApproachCurrentWeather={approachCurrentLifeWeather}
         selectedPressureSeedContext={
           pressureSeedSession.selectedPressureSeedContext
         }

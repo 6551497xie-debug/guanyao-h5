@@ -66,7 +66,6 @@ export function RealityPressureSeedPresentation({
   onRecognize,
   onRequestNextBundle,
   onPause,
-  onContinueToGravity,
 }: RealityPressureSeedPresentationProps) {
   const recognitionAvailable = session.availableEvents.includes(
     "PRESSURE_SEED_RECOGNIZE",
@@ -143,17 +142,14 @@ export function RealityPressureSeedPresentation({
         </button>
       ) : null}
       {session.gravityReadiness === "READY" ? (
-        <div className="gy-p36__gravity-ready">
+        <div
+          className="gy-p36__gravity-ready"
+          data-inner-view-guidance="APPROACH_LIFE_BODY"
+          data-direct-gravity-action="WITHHELD"
+        >
           <p role="status">
-            这段现实已经被你认出。它仍是它，只是身体正在回应。
+            身体里有一处回应正在成形。轻触生命本身，靠近它。
           </p>
-          <button
-            type="button"
-            data-interaction="CONTINUE_TO_GRAVITY"
-            onClick={onContinueToGravity}
-          >
-            和它一起，看见这次回应
-          </button>
         </div>
       ) : null}
     </section>

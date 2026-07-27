@@ -1,0 +1,84 @@
+.gy-reality-inner-view-entry {
+  position: absolute;
+  z-index: 6;
+  top: 48%;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.62;
+  transform: translate(-50%, -50%);
+  transition:
+    opacity 900ms ease,
+    transform 1200ms cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+
+.gy-reality-inner-view-entry::before,
+.gy-reality-inner-view-entry::after {
+  position: absolute;
+  inset: 11px;
+  border: 1px solid rgb(185 203 236 / 22%);
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  content: "";
+  transform: rotate(-28deg);
+  animation: gy-reality-inner-view-breathe 4.8s ease-in-out infinite;
+}
+
+.gy-reality-inner-view-entry::after {
+  inset: 19px;
+  border-color: rgb(238 226 198 / 26%);
+  border-left-color: transparent;
+  border-bottom-color: transparent;
+  transform: rotate(42deg);
+  animation-delay: -2.4s;
+}
+
+.gy-reality-inner-view-entry span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 12px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgb(238 226 198 / 34%),
+    transparent
+  );
+  transform: translate(-50%, -50%) rotate(18deg);
+}
+
+.gy-reality-inner-view-entry:focus-visible {
+  outline: 1px solid rgb(238 226 198 / 34%);
+  outline-offset: 3px;
+}
+
+.gy-reality-inner-view-entry[data-inner-view-approach-state="BODY_APPROACHED"] {
+  opacity: 0.18;
+  transform: translate(-50%, -50%) scale(0.72);
+}
+
+@keyframes gy-reality-inner-view-breathe {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: rotate(-28deg) scale(0.92);
+  }
+
+  52% {
+    opacity: 0.72;
+    transform: rotate(-20deg) scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gy-reality-inner-view-entry::before,
+  .gy-reality-inner-view-entry::after {
+    animation: none;
+  }
+}
