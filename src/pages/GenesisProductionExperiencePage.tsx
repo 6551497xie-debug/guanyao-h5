@@ -249,6 +249,15 @@ export function GenesisProductionExperiencePage({
     recognitionRealityResult?.status === "READY"
       ? recognitionRealityResult.session.interactionAvailability
       : "NONE";
+  const recognitionActionReady =
+    recognitionRealityResult?.status === "READY" &&
+    recognitionRealityResult.session.interactionAvailability ===
+      "RECOGNITION_CONFIRM" &&
+    productionRuntimeResult?.status === "READY" &&
+    productionRuntimeResult.session.currentStage === "COMPLETION" &&
+    manifestationExperienceResult?.status === "READY" &&
+    manifestationExperienceResult.session.currentState ===
+      "PRESENCE_APPROACHING";
   const presenceRecognitionPhase: GenesisPresenceRecognitionPhase =
     recognitionRealityResult?.status === "READY"
       ? recognitionRealityResult.session.recognitionConfirmed
@@ -378,9 +387,7 @@ export function GenesisProductionExperiencePage({
 
   useEffect(() => {
     if (
-      productionRuntimeResult?.status !== "READY" ||
-      productionRuntimeResult.session.currentStage !== "COMPLETION" ||
-      recognitionInteractionAvailability !== "RECOGNITION_CONFIRM" ||
+      !recognitionActionReady ||
       lifeOriginDiscoveryPhase !== "REVEALED"
     ) {
       setRecognitionPromptReady(false);
@@ -391,8 +398,7 @@ export function GenesisProductionExperiencePage({
     }, PRESENCE_RECOGNITION_TIMING_MS.QUIET_HOLD);
     return () => window.clearTimeout(timeout);
   }, [
-    productionRuntimeResult,
-    recognitionInteractionAvailability,
+    recognitionActionReady,
     lifeOriginDiscoveryPhase,
     routeAuthorization.sourceReferenceId,
   ]);
@@ -1214,9 +1220,7 @@ export function GenesisProductionExperiencePage({
                 "你认出了它：始终是同一个生命。"}
         </p>
       ) : null}
-      {recognitionRealityResult?.status === "READY" &&
-      recognitionRealityResult.session.interactionAvailability ===
-        "RECOGNITION_CONFIRM" &&
+      {recognitionActionReady &&
       recognitionPromptReady ? (
         <button
           type="button"
