@@ -9,8 +9,76 @@ import type { GenesisLifeArchetypeForceCondensationVisualCalibration } from "./g
 import type { SelectedPressureSeedContext } from "./primaryPetal";
 import type {
   RealityEncounterAdmission,
+  RealityEncounterIdentityReferences,
   RealityHostAcceptanceOutcome,
 } from "./xinmaiRealityEncounterIntent";
+
+export type RealityExplicitLeaveRequest = Readonly<{
+  intentReferenceId: string;
+  encounterCycleId: string;
+  expectedIntentRevision: number;
+  identityReferences: RealityEncounterIdentityReferences;
+  routeTarget: "/reality";
+  terminalReason: "EXPLICIT_LEAVE";
+}>;
+
+export type RealityExplicitLeaveTransactionResult =
+  | Readonly<{
+      status: "TERMINATED_AND_LEFT";
+      request: RealityExplicitLeaveRequest;
+      reason: "EXPLICIT_LEAVE";
+    }>
+  | Readonly<{
+      status: "NO_ACTIVE_ENCOUNTER";
+      request: RealityExplicitLeaveRequest;
+      reason: "NO_CURRENT_INTENT" | "INTENT_ALREADY_TERMINAL";
+    }>
+  | Readonly<{
+      status: "STALE_REQUEST_REJECTED";
+      request: RealityExplicitLeaveRequest;
+      reason:
+        | "INTENT_REFERENCE_MISMATCH"
+        | "ENCOUNTER_CYCLE_MISMATCH"
+        | "INTENT_REVISION_MISMATCH"
+        | "IDENTITY_MISMATCH"
+        | "TERMINAL_REASON_CONFLICT"
+        | "ACTIVATION_ADMISSION_MISMATCH";
+    }>
+  | Readonly<{
+      status: "TERMINATION_RETRYABLE";
+      request: RealityExplicitLeaveRequest;
+      reason:
+        | "RECOVERY_CLEAR_UNAVAILABLE"
+        | "RECOVERY_CLEAR_UNCONFIRMED";
+    }>;
+
+export type RealityExplicitLeaveUiState =
+  | Readonly<{
+      status: "IDLE";
+      transactionKey: null;
+      reason: null;
+    }>
+  | Readonly<{
+      status: "PENDING";
+      transactionKey: string;
+      reason: null;
+    }>
+  | Readonly<{
+      status: "RETRYABLE";
+      transactionKey: string;
+      reason: Exclude<
+        RealityExplicitLeaveTransactionResult,
+        { status: "TERMINATED_AND_LEFT" | "NO_ACTIVE_ENCOUNTER" }
+      >["reason"];
+    }>;
+
+export type RealityProductionRouteEntryProps = Readonly<{
+  explicitLeaveState: RealityExplicitLeaveUiState;
+  onExplicitLeaveRequest: (
+    request: RealityExplicitLeaveRequest,
+  ) => void;
+  onReturnToLifeWorld: () => void;
+}>;
 
 export type RealityProductionRouteEntryBoundary = Readonly<{
   productionRouteEntryOnly: true;
@@ -50,6 +118,9 @@ export type RealityProductionRouteEntryBoundary = Readonly<{
   renderPhaseAdmissionMutationForbidden: true;
   ordinaryCleanupDoesNotTerminateIntent: true;
   singleAdmissionSuccessPath: true;
+  explicitLeaveTransactionRequired: true;
+  routeOwnsExplicitLeaveTransaction: true;
+  noDirectIntentTerminationFromHost: true;
 }>;
 
 export type RealityProductionHostBoundary = Readonly<{
@@ -64,6 +135,7 @@ export type RealityProductionHostBoundary = Readonly<{
   explicitPressureSeedRecognitionOnly: true;
   explicitNextBundleRequestOnly: true;
   explicitGravityContinuationCallbackOnly: true;
+  explicitLeaveCallbackOnly: true;
   noFixtureSource: true;
   noPrototypeSource: true;
   noDefaultSource: true;
@@ -119,6 +191,8 @@ export type RealityProductionHostProps = Readonly<{
   onRealityAcceptanceOutcome: (
     outcome: RealityHostAcceptanceOutcome,
   ) => void;
+  explicitLeaveState: RealityExplicitLeaveUiState;
+  onExplicitLeaveRequest: () => void;
   onContinueToGravity: (
     selectedPressureSeedContext: Readonly<SelectedPressureSeedContext>,
   ) => void;

@@ -241,8 +241,40 @@ try {
     assertEqual(`context excludes ${forbiddenKey}`, forbiddenKey in ready.context, false);
   }
 
-  runtime.clearRealityRouteActivationSourceContext();
+  const mismatchedClear =
+    runtime.clearRealityRouteActivationSourceContextForAdmission({
+      ...encounterAdmission,
+      encounterCycleId: "cycle:other",
+    });
+  assertEqual(
+    "mismatched admission cannot clear active context",
+    mismatchedClear.status,
+    "MISMATCH",
+  );
+  assertEqual(
+    "mismatched clear preserves active context",
+    runtime.readRealityRouteActivationSourceContext(),
+    ready.context,
+  );
+  const exactClear =
+    runtime.clearRealityRouteActivationSourceContextForAdmission(
+      encounterAdmission,
+    );
+  assertEqual(
+    "exact admission clears active context",
+    exactClear.status,
+    "CLEARED",
+  );
   assertEqual("clear removes in-memory context", runtime.readRealityRouteActivationSourceContext(), null);
+  const alreadyAbsent =
+    runtime.clearRealityRouteActivationSourceContextForAdmission(
+      encounterAdmission,
+    );
+  assertEqual(
+    "repeated exact clear is truthfully absent",
+    alreadyAbsent.status,
+    "ALREADY_ABSENT",
+  );
 
   const invalidDate = runtime.activateRealityRouteActivationSourceContext({
     routeAuthorization,

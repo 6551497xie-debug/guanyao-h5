@@ -95,6 +95,16 @@ export type RealityRouteActivationSourceContextResult =
       reason: RealityRouteActivationSourceContextBlockedReason;
     }>;
 
+export type RealityRouteActivationSourceContextClearResult =
+  | Readonly<{
+      status: "CLEARED" | "ALREADY_ABSENT";
+      reason: null;
+    }>
+  | Readonly<{
+      status: "MISMATCH";
+      reason: "ACTIVATION_ADMISSION_MISMATCH";
+    }>;
+
 export type RealityExplicitRequestDateSourceInput = Readonly<{
   sourceReferenceId: string;
   calendarInstant: Date;

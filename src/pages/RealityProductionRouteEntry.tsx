@@ -34,6 +34,10 @@ import {
   retryRealityEncounterAcceptance,
   terminateRealityEncounter,
 } from "../services/xinmaiRealityEncounterIntentController";
+import {
+  createRealityExplicitLeaveRequestFromAdmission,
+  createRealityExplicitLeaveRequestFromIntent,
+} from "../services/realityExplicitLeaveTerminationTransaction";
 import { writeSelectedPressureSeedContext } from "../services/guanyaoSelectedPressureSeedContextPersistenceAdapter";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
@@ -42,6 +46,7 @@ import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import type {
   RealityProductionHostProps,
   RealityProductionRouteEntryBoundary,
+  RealityProductionRouteEntryProps,
 } from "../types/realityProductionRouteEntry";
 import type { DynamicsHandoffState } from "../types/gravityRuntimeInput";
 import type {
@@ -96,6 +101,9 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
     renderPhaseAdmissionMutationForbidden: true,
     ordinaryCleanupDoesNotTerminateIntent: true,
     singleAdmissionSuccessPath: true,
+    explicitLeaveTransactionRequired: true,
+    routeOwnsExplicitLeaveTransaction: true,
+    noDirectIntentTerminationFromHost: true,
   });
 
 type RealityRouteState =
@@ -149,7 +157,11 @@ type PostCommitAdmissionTransactionState =
       failure: AcceptanceAssemblyFailure;
     }>;
 
-export function RealityProductionRouteEntry() {
+export function RealityProductionRouteEntry({
+  explicitLeaveState,
+  onExplicitLeaveRequest,
+  onReturnToLifeWorld,
+}: RealityProductionRouteEntryProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const routeState = location.state as RealityRouteState;
@@ -668,6 +680,35 @@ export function RealityProductionRouteEntry() {
     setAttemptVersion(nextAttemptVersion);
   }, [attemptVersion]);
 
+  const requestExplicitLeave = useCallback(() => {
+    const currentIntent = readCurrentRealityEncounterIntent();
+    if (currentIntent === null) {
+      onReturnToLifeWorld();
+      return;
+    }
+    const request =
+      encounterAdmission !== null &&
+      (currentIntent.intentReferenceId !==
+        encounterAdmission.intentReferenceId ||
+        currentIntent.encounterCycleId !==
+          encounterAdmission.encounterCycleId)
+        ? createRealityExplicitLeaveRequestFromAdmission(
+            encounterAdmission,
+          )
+        : createRealityExplicitLeaveRequestFromIntent(
+            currentIntent,
+          );
+    if (request === null) {
+      onReturnToLifeWorld();
+      return;
+    }
+    onExplicitLeaveRequest(request);
+  }, [
+    encounterAdmission,
+    onExplicitLeaveRequest,
+    onReturnToLifeWorld,
+  ]);
+
   const handleRealityAcceptanceOutcome = useCallback(
     (outcome: RealityHostAcceptanceOutcome) => {
       if (
@@ -753,6 +794,7 @@ export function RealityProductionRouteEntry() {
         postCommitTransaction.retryAvailable;
     return (
       <main
+        className="gy-reality-route-guard"
         data-production-reality-status="SOURCE_NOT_READY"
         data-reality-intent-authority={
           currentIntent?.state ?? "ABSENT"
@@ -782,16 +824,31 @@ export function RealityProductionRouteEntry() {
           >
             继续这一轮
           </button>
-        ) : (
+        ) : currentIntent === null ? (
           <button
             type="button"
-            onClick={() =>
-              navigate("/launch-lab", { replace: true })
-            }
+            onClick={onReturnToLifeWorld}
           >
             回到生命世界
           </button>
-        )}
+        ) : null}
+        {currentIntent !== null ? (
+          <button
+            type="button"
+            data-interaction="REALITY_EXPLICIT_LEAVE"
+            disabled={explicitLeaveState.status === "PENDING"}
+            onClick={requestExplicitLeave}
+          >
+            {explicitLeaveState.status === "PENDING"
+              ? "正在让这一轮安静下来"
+              : "这一轮先到这里"}
+          </button>
+        ) : null}
+        {explicitLeaveState.status === "RETRYABLE" ? (
+          <p role="status" data-reality-explicit-leave-feedback="RETRYABLE">
+            这一轮还没有完整停下，可以再试一次。
+          </p>
+        ) : null}
       </main>
     );
   }
@@ -799,14 +856,33 @@ export function RealityProductionRouteEntry() {
   const visualContinuity = identityRecovery.visualContinuity;
   const continueToGravity: RealityProductionHostProps["onContinueToGravity"] =
     (selectedPressureSeedContext) => {
+      const currentIntent = readCurrentRealityEncounterIntent();
       if (
+        currentIntent === null ||
+        currentIntent.state !== "ACTIVE_IN_REALITY" ||
         activeIntentReferenceId !==
-        encounterAdmission.intentReferenceId
+          encounterAdmission.intentReferenceId ||
+        currentIntent.intentReferenceId !==
+          encounterAdmission.intentReferenceId ||
+        currentIntent.encounterCycleId !==
+          encounterAdmission.encounterCycleId
       ) {
         return;
       }
       const termination = terminateRealityEncounter(
-        "ENCOUNTER_COMPLETED",
+        {
+          intentReferenceId: currentIntent.intentReferenceId,
+          encounterCycleId: currentIntent.encounterCycleId,
+          expectedIntentRevision: currentIntent.revision,
+          identityReferences: Object.freeze({
+            sourceReferenceId: currentIntent.sourceReferenceId,
+            starBeastIdentityReferenceId:
+              currentIntent.starBeastIdentityReferenceId,
+            mansionCoordinateReferenceId:
+              currentIntent.mansionCoordinateReferenceId,
+          }),
+          terminalReason: "ENCOUNTER_COMPLETED",
+        },
       );
       if (termination.status !== "TERMINATED") return;
       const handoffState: DynamicsHandoffState &
@@ -861,6 +937,8 @@ export function RealityProductionRouteEntry() {
       onRealityAcceptanceOutcome={
         handleRealityAcceptanceOutcome
       }
+      explicitLeaveState={explicitLeaveState}
+      onExplicitLeaveRequest={requestExplicitLeave}
       onContinueToGravity={continueToGravity}
     />
   );

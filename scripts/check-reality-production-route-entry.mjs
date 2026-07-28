@@ -54,7 +54,9 @@ try {
     'data-production-reality-status="SOURCE_NOT_READY"',
     "RealityProductionHost",
     "routeAuthorization={authorization}",
-    'navigate("/launch-lab", { replace: true })',
+    "onReturnToLifeWorld",
+    "onExplicitLeaveRequest",
+    'data-interaction="REALITY_EXPLICIT_LEAVE"',
     "回到生命世界",
     "sourceReferenceExcludedFromUrl: true",
     "noPressureExecution: true",
@@ -68,6 +70,9 @@ try {
     "renderPhaseAdmissionMutationForbidden: true",
     "ordinaryCleanupDoesNotTerminateIntent: true",
     "singleAdmissionSuccessPath: true",
+    "explicitLeaveTransactionRequired: true",
+    "routeOwnsExplicitLeaveTransaction: true",
+    "noDirectIntentTerminationFromHost: true",
     "intentReferenceId",
   ].forEach((marker) =>
     assertIncludes("guarded Reality production route entry", source.entry, marker),
@@ -109,6 +114,7 @@ try {
     "authorizedRealitySourceOnly: true",
     "productionPressureSeedConsumerOnly: true",
     "explicitGravityContinuationCallbackOnly: true",
+    "explicitLeaveCallbackOnly: true",
     "onRealityAcceptanceOutcome",
     'status: "REALITY_MINIMUM_PRESENTED"',
     "resolveRealitySurfaceAdmissionTransaction",
@@ -171,6 +177,10 @@ try {
     "renderPhaseAdmissionMutationForbidden: true",
     "ordinaryCleanupDoesNotTerminateIntent: true",
     "singleAdmissionSuccessPath: true",
+    "explicitLeaveTransactionRequired: true",
+    "routeOwnsExplicitLeaveTransaction: true",
+    "noDirectIntentTerminationFromHost: true",
+    "explicitLeaveCallbackOnly: true",
   ].forEach((marker) =>
     assertIncludes("Reality route and host contract", source.entryType, marker),
   );
@@ -180,7 +190,11 @@ try {
   assertIncludes("App gives Reality route a loading boundary", source.app, "RealityRouteLoadBoundary");
   assertIncludes("App reports route-load failure truthfully", source.app, '"ROUTE_LOAD_UNAVAILABLE"');
   assertIncludes("App registers exact Reality route", source.app, "path={GUANYAO_ROUTES.reality}");
-  assertIncludes("App renders guarded Reality entry", source.app, "<RealityProductionRouteEntry />");
+  assertIncludes(
+    "App renders guarded Reality entry with typed leave request",
+    source.app,
+    "onExplicitLeaveRequest={requestExplicitLeave}",
+  );
   assertIncludes("Reality receives fullscreen shell", source.shell, 'location.pathname === "/reality"');
   assertIncludes("Genesis resolves explicit Reality handoff", source.genesisPage, "resolveGenesisProductionRealityRouteHandoff");
   assertIncludes("Genesis navigates only to the authorized handoff target", source.genesisPage, "navigate(handoff.routeTarget, {");

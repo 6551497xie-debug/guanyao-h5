@@ -98,7 +98,11 @@ try {
   }
   assertIncludes("Route reports assembly failure", source.route, "failRealityEncounterAcceptance");
   assertIncludes("Route commits through Controller", source.route, "commitRealityEncounterActive");
-  assertIncludes("Reality handoff terminates entry intent", source.route, 'terminateRealityEncounter(\n        "ENCOUNTER_COMPLETED"');
+  assertIncludes(
+    "Reality handoff terminates entry intent",
+    source.route,
+    'terminalReason: "ENCOUNTER_COMPLETED"',
+  );
   assertExcludes("Route no longer restores identity-only Entry Context", source.route, "restoreGenesisProductionRealityEntryContext");
   assertExcludes("Route does not read persisted identity services directly", source.route, "readPersistedGenesisVisualContinuity");
   assertExcludes("Route has no fixed encounter cycle", source.route, 'return "NEW_REALITY_ENCOUNTER"');

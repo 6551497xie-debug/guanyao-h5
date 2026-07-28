@@ -5,6 +5,7 @@ import type {
   RealityRouteActivationSourceContext,
   RealityRouteActivationSourceContextBlockedReason,
   RealityRouteActivationSourceContextBoundary,
+  RealityRouteActivationSourceContextClearResult,
   RealityRouteActivationSourceContextInput,
   RealityRouteActivationSourceContextResult,
 } from "../types/realityRouteActivationSourceContext";
@@ -295,9 +296,14 @@ export function clearRealityRouteActivationSourceContextForAdmission(
     encounterCycleId: string;
     intentRevision: number;
   }>,
-): boolean {
+): RealityRouteActivationSourceContextClearResult {
+  if (activeContext === null) {
+    return Object.freeze({
+      status: "ALREADY_ABSENT" as const,
+      reason: null,
+    });
+  }
   if (
-    activeContext === null ||
     activeContext.intentReferenceId !==
       encounterAdmission.intentReferenceId ||
     activeContext.encounterCycleId !==
@@ -305,10 +311,16 @@ export function clearRealityRouteActivationSourceContextForAdmission(
     activeContext.intentRevision !==
       encounterAdmission.intentRevision
   ) {
-    return false;
+    return Object.freeze({
+      status: "MISMATCH" as const,
+      reason: "ACTIVATION_ADMISSION_MISMATCH" as const,
+    });
   }
   activeContext = null;
-  return true;
+  return Object.freeze({
+    status: "CLEARED" as const,
+    reason: null,
+  });
 }
 
 export const RealityRouteActivationSourceContextService = Object.freeze({

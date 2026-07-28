@@ -16,6 +16,7 @@ export const REALITY_PRESSURE_SEED_PRESENTATION_BOUNDARY:
     explicitRecognitionCallbackOnly: true,
     explicitNextBundleCallbackOnly: true,
     explicitPauseCallbackOnly: true,
+    explicitLeaveCallbackOnly: true,
     explicitGravityContinuationCallbackOnly: true,
     sourceReferenceReadOnly: true,
     noFixtureSource: true,
@@ -68,6 +69,8 @@ export function RealityPressureSeedPresentation({
   onRecognize,
   onRequestNextBundle,
   onPause,
+  explicitLeaveState,
+  onExplicitLeaveRequest,
   realitySurfaceAdmissionAttempt,
   onRealityPressureSurfaceOutcome,
 }: RealityPressureSeedPresentationProps) {
@@ -227,6 +230,29 @@ export function RealityPressureSeedPresentation({
           暂时停在这里
         </button>
       ) : null}
+      <div
+        className="gy-reality-explicit-leave"
+        data-reality-explicit-leave-state={explicitLeaveState.status}
+      >
+        <button
+          type="button"
+          data-interaction="REALITY_EXPLICIT_LEAVE"
+          disabled={explicitLeaveState.status === "PENDING"}
+          onClick={onExplicitLeaveRequest}
+        >
+          {explicitLeaveState.status === "PENDING"
+            ? "正在让这一轮安静下来"
+            : "这一轮先到这里"}
+        </button>
+        {explicitLeaveState.status === "RETRYABLE" ? (
+          <p
+            role="status"
+            data-reality-explicit-leave-feedback="RETRYABLE"
+          >
+            这一轮还没有完整停下，可以再试一次。
+          </p>
+        ) : null}
+      </div>
       {session.gravityReadiness === "READY" ? (
         <div
           className="gy-p36__gravity-ready"

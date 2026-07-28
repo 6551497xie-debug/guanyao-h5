@@ -17,8 +17,8 @@ import type {
   RealityEncounterQualification,
   RealityEncounterRequestInput,
   RealityEncounterRequestResult,
+  RealityEncounterTerminationCommand,
   RealityEncounterTerminationResult,
-  RealityEncounterTerminalReason,
   RealityHostAcceptanceOutcome,
 } from "../types/xinmaiRealityEncounterIntent";
 import {
@@ -798,28 +798,95 @@ export function commitRealityEncounterActive(
 }
 
 export function terminateRealityEncounter(
-  reason: RealityEncounterTerminalReason,
+  command: RealityEncounterTerminationCommand,
 ): RealityEncounterTerminationResult {
-  if (currentIntent === null || currentIntent.state === "TERMINAL") {
+  if (currentIntent === null) {
+    return Object.freeze({
+      status: "NOT_ACTIVE" as const,
+      operation: "TERMINATE" as const,
+      intent: null,
+      reason: "NO_CURRENT_INTENT" as const,
+    });
+  }
+  if (currentIntent.state === "TERMINAL") {
     return Object.freeze({
       status: "NOT_ACTIVE" as const,
       operation: "TERMINATE" as const,
       intent: currentIntent,
-      reason: "NO_CURRENT_INTENT" as const,
+      reason: "INTENT_ALREADY_TERMINAL" as const,
     });
   }
-  const terminal = nextIntent(currentIntent, {
+  if (currentIntent.intentReferenceId !== command.intentReferenceId) {
+    return Object.freeze({
+      status: "REJECTED_STALE" as const,
+      operation: "TERMINATE" as const,
+      intent: currentIntent,
+      reason: "INTENT_REFERENCE_MISMATCH" as const,
+    });
+  }
+  if (currentIntent.encounterCycleId !== command.encounterCycleId) {
+    return Object.freeze({
+      status: "REJECTED_STALE" as const,
+      operation: "TERMINATE" as const,
+      intent: currentIntent,
+      reason: "ENCOUNTER_CYCLE_MISMATCH" as const,
+    });
+  }
+  if (currentIntent.revision !== command.expectedIntentRevision) {
+    return Object.freeze({
+      status: "REJECTED_STALE" as const,
+      operation: "TERMINATE" as const,
+      intent: currentIntent,
+      reason: "INTENT_REVISION_MISMATCH" as const,
+    });
+  }
+  if (!identityMatches(currentIntent, command.identityReferences)) {
+    return Object.freeze({
+      status: "REJECTED_STALE" as const,
+      operation: "TERMINATE" as const,
+      intent: currentIntent,
+      reason: "IDENTITY_MISMATCH" as const,
+    });
+  }
+  if (
+    currentIntent.terminalReason !== null &&
+    currentIntent.terminalReason !== command.terminalReason
+  ) {
+    return Object.freeze({
+      status: "REJECTED_STALE" as const,
+      operation: "TERMINATE" as const,
+      intent: currentIntent,
+      reason: "TERMINAL_REASON_CONFLICT" as const,
+    });
+  }
+
+  const previous = currentIntent;
+  const terminal = createNextIntent(previous, {
     state: "TERMINAL",
     failure: null,
-    terminalReason: reason,
+    terminalReason: command.terminalReason,
   });
-  clearRealityEncounterRecoveryCandidate(terminal.intentReferenceId);
+  const clearResult = clearRealityEncounterRecoveryCandidate(
+    terminal.intentReferenceId,
+  );
+  if (clearResult.status !== "CONFIRMED") {
+    currentIntent = previous;
+    return Object.freeze({
+      status: "TERMINATION_RETRYABLE" as const,
+      operation: "TERMINATE" as const,
+      intent: previous,
+      reason:
+        clearResult.status === "UNAVAILABLE"
+          ? "RECOVERY_CLEAR_UNAVAILABLE" as const
+          : "RECOVERY_CLEAR_UNCONFIRMED" as const,
+    });
+  }
   currentIntent = null;
   return Object.freeze({
     status: "TERMINATED" as const,
     operation: "TERMINATE" as const,
     intent: terminal,
-    reason,
+    reason: command.terminalReason,
   });
 }
 

@@ -241,12 +241,46 @@ export type RealityEncounterFailureResult = Readonly<{
   reason: RealityEncounterFailureReason | "INTENT_STATE_NOT_FAILABLE";
 }>;
 
-export type RealityEncounterTerminationResult = Readonly<{
-  status: "TERMINATED" | "NOT_ACTIVE";
-  operation: "TERMINATE";
-  intent: RealityEncounterIntent | null;
-  reason: RealityEncounterTerminalReason | "NO_CURRENT_INTENT";
+export type RealityEncounterTerminationCommand = Readonly<{
+  intentReferenceId: string;
+  encounterCycleId: string;
+  expectedIntentRevision: number;
+  identityReferences: RealityEncounterIdentityReferences;
+  terminalReason: RealityEncounterTerminalReason;
 }>;
+
+export type RealityEncounterTerminationResult =
+  | Readonly<{
+      status: "TERMINATED";
+      operation: "TERMINATE";
+      intent: RealityEncounterIntent;
+      reason: RealityEncounterTerminalReason;
+    }>
+  | Readonly<{
+      status: "NOT_ACTIVE";
+      operation: "TERMINATE";
+      intent: RealityEncounterIntent | null;
+      reason: "NO_CURRENT_INTENT" | "INTENT_ALREADY_TERMINAL";
+    }>
+  | Readonly<{
+      status: "REJECTED_STALE";
+      operation: "TERMINATE";
+      intent: RealityEncounterIntent | null;
+      reason:
+        | "INTENT_REFERENCE_MISMATCH"
+        | "ENCOUNTER_CYCLE_MISMATCH"
+        | "INTENT_REVISION_MISMATCH"
+        | "IDENTITY_MISMATCH"
+        | "TERMINAL_REASON_CONFLICT";
+    }>
+  | Readonly<{
+      status: "TERMINATION_RETRYABLE";
+      operation: "TERMINATE";
+      intent: RealityEncounterIntent;
+      reason:
+        | "RECOVERY_CLEAR_UNAVAILABLE"
+        | "RECOVERY_CLEAR_UNCONFIRMED";
+    }>;
 
 export type RealityEncounterRecoverySnapshot = Readonly<{
   schemaVersion: typeof XINMAI_REALITY_ENCOUNTER_RECOVERY_SCHEMA_VERSION;

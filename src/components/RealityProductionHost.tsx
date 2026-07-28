@@ -45,6 +45,7 @@ export const REALITY_PRODUCTION_HOST_BOUNDARY:
     explicitPressureSeedRecognitionOnly: true,
     explicitNextBundleRequestOnly: true,
     explicitGravityContinuationCallbackOnly: true,
+    explicitLeaveCallbackOnly: true,
     noFixtureSource: true,
     noPrototypeSource: true,
     noDefaultSource: true,
@@ -112,6 +113,8 @@ export function RealityProductionHost({
   choiceLifeTraceMemoryKey = null,
   choiceLifeTraceSourceSlot = null,
   onRealityAcceptanceOutcome,
+  explicitLeaveState,
+  onExplicitLeaveRequest,
   onContinueToGravity,
 }: RealityProductionHostProps) {
   const reportedAcceptanceAttemptRef = useRef<string | null>(null);
@@ -692,6 +695,8 @@ export function RealityProductionHost({
           onRecognize={recognizePressureSeed}
           onRequestNextBundle={requestNextPressureSeedBundle}
           onPause={pausePressureSeed}
+          explicitLeaveState={explicitLeaveState}
+          onExplicitLeaveRequest={onExplicitLeaveRequest}
           onContinueToGravity={continueToGravity}
           realitySurfaceAdmissionAttempt={
             realitySurfaceAdmissionAttempt

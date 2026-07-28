@@ -2,6 +2,7 @@ import {
   Component,
   lazy,
   Suspense,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -9,7 +10,12 @@ import {
   type ErrorInfo,
   type ReactNode,
 } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { AxisLinePage } from "./pages/AxisLinePage";
 import { ChronoAxisPage } from "./pages/ChronoAxisPage";
@@ -36,6 +42,16 @@ import {
   readCurrentRealityEncounterIntent,
   retryRealityEncounterAcceptance,
 } from "./services/xinmaiRealityEncounterIntentController";
+import {
+  createRealityExplicitLeaveRequestFromIntent,
+  executeRealityExplicitLeaveTermination,
+} from "./services/realityExplicitLeaveTerminationTransaction";
+import type {
+  RealityExplicitLeaveRequest,
+  RealityExplicitLeaveUiState,
+  RealityProductionRouteEntryProps,
+} from "./types/realityProductionRouteEntry";
+import "./styles/reality-pressure-presentation.css";
 
 const GenesisProductionRouteEntry = lazy(() =>
   import("./pages/GenesisProductionRouteEntry").then((module) => ({
@@ -148,6 +164,11 @@ function LegacyRedirect({ to }: { to: string }) {
 type RealityRouteLoadBoundaryProps = Readonly<{
   children: ReactNode;
   onRetry: () => void;
+  explicitLeaveState: RealityExplicitLeaveUiState;
+  onExplicitLeaveRequest: (
+    request: RealityExplicitLeaveRequest,
+  ) => void;
+  onReturnToLifeWorld: () => void;
 }>;
 
 type RealityRouteLoadBoundaryState = Readonly<{
@@ -199,11 +220,27 @@ class RealityRouteLoadBoundary extends Component<
     this.setState({ failed: false }, this.props.onRetry);
   };
 
+  private explicitLeave = () => {
+    const currentIntent = readCurrentRealityEncounterIntent();
+    const request =
+      currentIntent === null
+        ? null
+        : createRealityExplicitLeaveRequestFromIntent(currentIntent);
+    if (request === null) {
+      this.props.onReturnToLifeWorld();
+      return;
+    }
+    this.props.onExplicitLeaveRequest(request);
+  };
+
   render() {
     if (!this.state.failed) return this.props.children;
     const currentIntent = readCurrentRealityEncounterIntent();
+    const explicitLeavePending =
+      this.props.explicitLeaveState.status === "PENDING";
     return (
       <main
+        className="gy-reality-route-guard"
         data-production-reality-status="ROUTE_LOAD_UNAVAILABLE"
         data-reality-intent-authority={
           currentIntent?.state ?? "ABSENT"
@@ -220,13 +257,38 @@ class RealityRouteLoadBoundary extends Component<
         >
           继续这一轮
         </button>
+        <button
+          type="button"
+          data-interaction="REALITY_EXPLICIT_LEAVE"
+          disabled={explicitLeavePending}
+          onClick={this.explicitLeave}
+        >
+          {explicitLeavePending
+            ? "正在让这一轮安静下来"
+            : "这一轮先到这里"}
+        </button>
+        {this.props.explicitLeaveState.status === "RETRYABLE" ? (
+          <p role="status" data-reality-explicit-leave-feedback="RETRYABLE">
+            这一轮还没有完整停下，可以再试一次。
+          </p>
+        ) : null}
       </main>
     );
   }
 }
 
 function RealityProductionRouteRuntime() {
+  const navigate = useNavigate();
   const [loadAttempt, setLoadAttempt] = useState(0);
+  const [explicitLeaveState, setExplicitLeaveState] =
+    useState<RealityExplicitLeaveUiState>(() =>
+      Object.freeze({
+        status: "IDLE" as const,
+        transactionKey: null,
+        reason: null,
+      }),
+    );
+  const explicitLeaveInFlightRef = useRef<string | null>(null);
   const RealityProductionRouteEntry = useMemo(
     () =>
       lazy(() =>
@@ -235,16 +297,76 @@ function RealityProductionRouteRuntime() {
             default: module.RealityProductionRouteEntry,
           }),
         ),
-      ),
+    ),
     [loadAttempt],
   );
+  const returnToLifeWorld = useCallback(() => {
+    navigate("/launch-lab", { replace: true });
+  }, [navigate]);
+  const requestExplicitLeave = useCallback<
+    RealityProductionRouteEntryProps["onExplicitLeaveRequest"]
+  >(
+    (request) => {
+      const transactionKey = [
+        request.intentReferenceId,
+        request.encounterCycleId,
+        String(request.expectedIntentRevision),
+        request.terminalReason,
+      ].join("|");
+      if (explicitLeaveInFlightRef.current !== null) return;
+      explicitLeaveInFlightRef.current = transactionKey;
+      setExplicitLeaveState(
+        Object.freeze({
+          status: "PENDING" as const,
+          transactionKey,
+          reason: null,
+        }),
+      );
+      const result =
+        executeRealityExplicitLeaveTermination(request);
+      if (
+        result.status === "TERMINATED_AND_LEFT" ||
+        result.status === "NO_ACTIVE_ENCOUNTER"
+      ) {
+        navigate("/launch-lab", { replace: true });
+        return;
+      }
+      explicitLeaveInFlightRef.current = null;
+      setExplicitLeaveState(
+        Object.freeze({
+          status: "RETRYABLE" as const,
+          transactionKey,
+          reason: result.reason,
+        }),
+      );
+    },
+    [navigate],
+  );
+  const retryRouteLoad = useCallback(() => {
+    explicitLeaveInFlightRef.current = null;
+    setExplicitLeaveState(
+      Object.freeze({
+        status: "IDLE" as const,
+        transactionKey: null,
+        reason: null,
+      }),
+    );
+    setLoadAttempt((current) => current + 1);
+  }, []);
   return (
     <RealityRouteLoadBoundary
       key={loadAttempt}
-      onRetry={() => setLoadAttempt((current) => current + 1)}
+      onRetry={retryRouteLoad}
+      explicitLeaveState={explicitLeaveState}
+      onExplicitLeaveRequest={requestExplicitLeave}
+      onReturnToLifeWorld={returnToLifeWorld}
     >
       <Suspense fallback={<LifeUniverseRouteFallback />}>
-        <RealityProductionRouteEntry />
+        <RealityProductionRouteEntry
+          explicitLeaveState={explicitLeaveState}
+          onExplicitLeaveRequest={requestExplicitLeave}
+          onReturnToLifeWorld={returnToLifeWorld}
+        />
       </Suspense>
     </RealityRouteLoadBoundary>
   );

@@ -1,6 +1,9 @@
 import type { RealityPressureSeedCandidate } from "./realityPressureSeedCaptureContract";
 import type { RealityProductionPressureSeedSession } from "./realityProductionPressureSeedConsumer";
 import type {
+  RealityExplicitLeaveUiState,
+} from "./realityProductionRouteEntry";
+import type {
   RealityPressureSurfaceOutcome,
   RealitySurfaceAdmissionAttempt,
 } from "./xinmaiRealitySurfaceAdmission";
@@ -13,6 +16,7 @@ export type RealityPressureSeedPresentationBoundary = Readonly<{
   explicitRecognitionCallbackOnly: true;
   explicitNextBundleCallbackOnly: true;
   explicitPauseCallbackOnly: true;
+  explicitLeaveCallbackOnly: true;
   explicitGravityContinuationCallbackOnly: true;
   sourceReferenceReadOnly: true;
   noFixtureSource: true;
@@ -39,6 +43,8 @@ export type RealityPressureSeedPresentationProps = Readonly<{
   onRecognize: (candidateReferenceId: string) => void;
   onRequestNextBundle: () => void;
   onPause: () => void;
+  explicitLeaveState: RealityExplicitLeaveUiState;
+  onExplicitLeaveRequest: () => void;
   onContinueToGravity: () => void;
   realitySurfaceAdmissionAttempt: RealitySurfaceAdmissionAttempt;
   onRealityPressureSurfaceOutcome: (

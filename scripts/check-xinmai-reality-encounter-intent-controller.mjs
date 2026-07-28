@@ -399,8 +399,16 @@ try {
     "ACTIVE",
   );
 
+  const currentRecoveredIntent =
+    recoveredRuntime.readCurrentRealityEncounterIntent();
   const terminal =
-    recoveredRuntime.terminateRealityEncounter("ENCOUNTER_COMPLETED");
+    recoveredRuntime.terminateRealityEncounter({
+      intentReferenceId: currentRecoveredIntent.intentReferenceId,
+      encounterCycleId: currentRecoveredIntent.encounterCycleId,
+      expectedIntentRevision: currentRecoveredIntent.revision,
+      identityReferences: identity,
+      terminalReason: "ENCOUNTER_COMPLETED",
+    });
   assertEqual("formal Reality handoff terminates entry cycle", terminal.status, "TERMINATED");
   assertEqual(
     "terminal cycle leaves no current intent",
