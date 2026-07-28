@@ -88,7 +88,7 @@ try {
     "v2PressureSeedPresentationOnly: true",
     "explicitPressureSeedRecognitionOnly: true",
     "explicitNextBundleRequestOnly: true",
-    "gravityReadinessHoldOnly: true",
+    "explicitGravityContinuationCallbackOnly: true",
     "noAutomaticSelection: true",
     "noGravityExecution: true",
     "noChoiceExecution: true",
