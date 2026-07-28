@@ -289,10 +289,34 @@ export function clearRealityRouteActivationSourceContext(): void {
   activeContext = null;
 }
 
+export function clearRealityRouteActivationSourceContextForAdmission(
+  encounterAdmission: Readonly<{
+    intentReferenceId: string;
+    encounterCycleId: string;
+    intentRevision: number;
+  }>,
+): boolean {
+  if (
+    activeContext === null ||
+    activeContext.intentReferenceId !==
+      encounterAdmission.intentReferenceId ||
+    activeContext.encounterCycleId !==
+      encounterAdmission.encounterCycleId ||
+    activeContext.intentRevision !==
+      encounterAdmission.intentRevision
+  ) {
+    return false;
+  }
+  activeContext = null;
+  return true;
+}
+
 export const RealityRouteActivationSourceContextService = Object.freeze({
   captureDate: captureExplicitRealityRequestDateSource,
   activate: activateRealityRouteActivationSourceContext,
   read: readRealityRouteActivationSourceContext,
   clear: clearRealityRouteActivationSourceContext,
+  clearForAdmission:
+    clearRealityRouteActivationSourceContextForAdmission,
   boundary: REALITY_ROUTE_ACTIVATION_SOURCE_CONTEXT_BOUNDARY,
 });

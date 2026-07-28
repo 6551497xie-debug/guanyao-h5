@@ -302,6 +302,21 @@ try {
     admission.intent.state,
     "ACCEPTING_REALITY",
   );
+  const repeatedAdmission =
+    runtime.establishRealityEncounterAdmission({
+      intentReferenceId: requested.intent.intentReferenceId,
+      identityReferences: identity,
+    });
+  assertEqual(
+    "Strict Mode duplicate admission keeps one revision",
+    repeatedAdmission.admission.intentRevision,
+    admission.admission.intentRevision,
+  );
+  assertEqual(
+    "Strict Mode duplicate admission keeps one cycle",
+    repeatedAdmission.admission.encounterCycleId,
+    admission.admission.encounterCycleId,
+  );
 
   const staleOutcomeInput = createHostOutcome(admission.admission);
   const staleOutcome = runtime.commitRealityEncounterActive({
@@ -467,6 +482,104 @@ try {
     },
   });
   assertEqual("identity mismatch cannot consume intent", identityMismatch.status, "BLOCKED");
+
+  const failureStorageValues = new Map();
+  let admissionRecoveryWriteFails = false;
+  globalThis.window = {
+    sessionStorage: {
+      getItem(key) {
+        return failureStorageValues.get(key) ?? null;
+      },
+      setItem(key, value) {
+        if (admissionRecoveryWriteFails) {
+          throw new Error("simulated admission recovery failure");
+        }
+        failureStorageValues.set(key, String(value));
+      },
+      removeItem(key) {
+        failureStorageValues.delete(key);
+      },
+    },
+  };
+  controlledNow = initialNow;
+  const recoveryFailureRuntime = await import(
+    `file://${outPath}?recovery-failure=${Date.now()}`
+  );
+  const recoveryFailureRequest =
+    recoveryFailureRuntime.requestRealityEncounter({
+      origin: "FIRST_ENCOUNTER",
+      qualification: "WHISPER_SKIPPED",
+      identityReferences: identity,
+    });
+  const recoveryFailureReadyRevision =
+    recoveryFailureRequest.intent.revision;
+  admissionRecoveryWriteFails = true;
+  const recoveryFailureAdmission =
+    recoveryFailureRuntime.establishRealityEncounterAdmission({
+      intentReferenceId:
+        recoveryFailureRequest.intent.intentReferenceId,
+      identityReferences: identity,
+    });
+  assertEqual(
+    "Recovery failure does not establish Admission",
+    recoveryFailureAdmission.status,
+    "BLOCKED",
+  );
+  assertEqual(
+    "Recovery failure is reported truthfully",
+    recoveryFailureAdmission.reason,
+    "RECOVERY_STORAGE_UNAVAILABLE",
+  );
+  assertEqual(
+    "Recovery failure keeps Runtime READY",
+    recoveryFailureRuntime.readCurrentRealityEncounterIntent().state,
+    "READY_TO_ENTER_REALITY",
+  );
+  assertEqual(
+    "Recovery failure does not advance Runtime revision",
+    recoveryFailureRuntime.readCurrentRealityEncounterIntent().revision,
+    recoveryFailureReadyRevision,
+  );
+  admissionRecoveryWriteFails = false;
+  const recoveryFailureRetry =
+    recoveryFailureRuntime.establishRealityEncounterAdmission({
+      intentReferenceId:
+        recoveryFailureRequest.intent.intentReferenceId,
+      identityReferences: identity,
+    });
+  assertEqual(
+    "Recovery failure retries the same cycle",
+    recoveryFailureRetry.admission.encounterCycleId,
+    recoveryFailureRequest.intent.encounterCycleId,
+  );
+  const rolledBack =
+    recoveryFailureRuntime.rollbackRealityEncounterAdmission({
+      admission: recoveryFailureRetry.admission,
+    });
+  assertEqual(
+    "Activation failure can roll Admission back to READY",
+    rolledBack.status,
+    "ROLLED_BACK",
+  );
+  assertEqual(
+    "Admission rollback keeps the same encounter cycle",
+    rolledBack.intent.encounterCycleId,
+    recoveryFailureRequest.intent.encounterCycleId,
+  );
+  assertEqual(
+    "Admission rollback restores READY",
+    rolledBack.intent.state,
+    "READY_TO_ENTER_REALITY",
+  );
+  const lateRollback =
+    recoveryFailureRuntime.rollbackRealityEncounterAdmission({
+      admission: recoveryFailureRetry.admission,
+    });
+  assertEqual(
+    "Late rollback from an old revision is rejected",
+    lateRollback.status,
+    "REJECTED",
+  );
 
   for (const forbidden of [
     "lifeWhisperText",

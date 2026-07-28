@@ -165,7 +165,25 @@ export type RealityEncounterAdmissionResult =
         | "IDENTITY_MISMATCH"
         | "INTENT_EXPIRED"
         | "RECOVERY_CANDIDATE_NOT_FOUND"
-        | "RECOVERY_CANDIDATE_INVALID";
+        | "RECOVERY_CANDIDATE_INVALID"
+        | "RECOVERY_STORAGE_UNAVAILABLE";
+    }>;
+
+export type RealityEncounterAdmissionRollbackResult =
+  | Readonly<{
+      status: "ROLLED_BACK";
+      operation: "ROLLBACK_ADMISSION";
+      intent: RealityEncounterIntent;
+      reason: null;
+    }>
+  | Readonly<{
+      status: "REJECTED";
+      operation: "ROLLBACK_ADMISSION";
+      intent: RealityEncounterIntent | null;
+      reason:
+        | "INTENT_NOT_CURRENT"
+        | "INTENT_STATE_NOT_ACCEPTING"
+        | "RECOVERY_STORAGE_UNAVAILABLE";
     }>;
 
 export type RealityHostAcceptanceOutcome =

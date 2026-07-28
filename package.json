@@ -203,6 +203,7 @@
     "check-xinmai-reality-encounter-intent-controller": "node scripts/check-xinmai-reality-encounter-intent-controller.mjs",
     "check-xinmai-reality-encounter-intent-recovery": "node scripts/check-xinmai-reality-encounter-intent-recovery.mjs",
     "check-xinmai-reality-encounter-intent-atomic-migration": "node scripts/check-xinmai-reality-encounter-intent-atomic-migration.mjs",
+    "check-xinmai-reality-route-admission-post-commit-atomic-migration": "node scripts/check-xinmai-reality-route-admission-post-commit-atomic-migration.mjs",
     "check-xinmai-reality-surface-outcome-admission-transaction": "node scripts/check-xinmai-reality-surface-outcome-admission-transaction.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",

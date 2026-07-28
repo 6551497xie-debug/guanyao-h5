@@ -27,8 +27,13 @@ requireSource(
 );
 requireSource(
   routeEntry,
-  "clearRealityRouteActivationSourceContext()",
-  "A returning entry must clear the previous current-event activation.",
+  "PostCommitAdmissionTransactionState",
+  "A returning entry must establish its new current-event activation after Route commit.",
+);
+requireSource(
+  routeEntry,
+  "clearRealityRouteActivationSourceContextForAdmission",
+  "A stale returning transaction may clear only its own cycle-scoped activation.",
 );
 requireSource(
   host,

@@ -75,6 +75,12 @@ try {
   assertExcludes("Choice does not write Recovery storage", source.choice, "xinmaiRealityEncounterIntentRecoveryAdapter");
 
   assertIncludes("Route asks Controller for admission", source.route, "establishRealityEncounterAdmission");
+  assertIncludes("Route owns post-commit transaction state", source.route, "PostCommitAdmissionTransactionState");
+  assertIncludes("Route scopes post-commit work by epoch", source.route, "postCommitTransactionEpochRef");
+  assertIncludes("Route reuses one committed transaction across Strict Mode effects", source.route, "committedPostCommitTransactionRef");
+  assertIncludes("Route can rollback an incomplete Admission", source.route, "rollbackRealityEncounterAdmission");
+  assertExcludes("Route no longer mutates Admission in useMemo", source.route, "useMemo");
+  assertExcludes("Route no longer clears Activation during render", source.route, "clearRealityRouteActivationSourceContext()");
   assertIncludes("Route consumes typed identity recovery", source.route, "recoverRealityRecognizedIdentity");
   for (const marker of [
     "typedIdentityRecoveryAdapterConsumptionOnly: true",
@@ -82,6 +88,10 @@ try {
     "noDirectStorageRead: true",
     "recoveryCandidateIsNotAuthority: true",
     "identityOnlyAuthorizationForbidden: true",
+    "postCommitAdmissionTransactionRequired: true",
+    "renderPhaseAdmissionMutationForbidden: true",
+    "ordinaryCleanupDoesNotTerminateIntent: true",
+    "singleAdmissionSuccessPath: true",
   ]) {
     assertIncludes("Route recovery boundary names the current typed path", source.route, marker);
     assertIncludes("Route recovery type names the current typed path", source.routeType, marker);

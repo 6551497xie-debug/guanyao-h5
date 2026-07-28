@@ -46,6 +46,10 @@ export type RealityProductionRouteEntryBoundary = Readonly<{
   noGenesisNavigationMutation: true;
   noPresenceMutation: true;
   typedSurfaceAdmissionTransactionRequired: true;
+  postCommitAdmissionTransactionRequired: true;
+  renderPhaseAdmissionMutationForbidden: true;
+  ordinaryCleanupDoesNotTerminateIntent: true;
+  singleAdmissionSuccessPath: true;
 }>;
 
 export type RealityProductionHostBoundary = Readonly<{

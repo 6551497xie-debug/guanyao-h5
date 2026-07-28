@@ -5,6 +5,7 @@ import {
 } from "./xinmaiRealityEncounterIntentRecoveryAdapter";
 import type {
   RealityEncounterAdmission,
+  RealityEncounterAdmissionRollbackResult,
   RealityEncounterAdmissionResult,
   RealityEncounterCommitResult,
   RealityEncounterFailure,
@@ -109,6 +110,40 @@ const nextIntent = (
   currentIntent = updated;
   persist(updated);
   return updated;
+};
+
+const createNextIntent = (
+  intent: RealityEncounterIntent,
+  patch: Partial<
+    Pick<
+      RealityEncounterIntent,
+      "state" | "failure" | "terminalReason"
+    >
+  >,
+): RealityEncounterIntent =>
+  Object.freeze({
+    ...intent,
+    ...patch,
+    updatedAt: new Date().toISOString(),
+    revision: intent.revision + 1,
+  });
+
+const commitIntentWithConfirmedRecovery = (
+  previous: RealityEncounterIntent,
+  candidate: RealityEncounterIntent,
+): boolean => {
+  const writeResult =
+    writeRealityEncounterRecoveryCandidate(candidate);
+  if (writeResult.status === "CONFIRMED") {
+    currentIntent = candidate;
+    return true;
+  }
+
+  // Admission is not authoritative until its recovery candidate is confirmed.
+  // Restore the last confirmed fact best-effort and keep the Runtime on it.
+  writeRealityEncounterRecoveryCandidate(previous);
+  currentIntent = previous;
+  return false;
 };
 
 const isExpired = (intent: RealityEncounterIntent): boolean => {
@@ -347,20 +382,19 @@ const recoverIntent = (
   }
 
   if (candidate.state === "ACTIVE_IN_REALITY") {
-    currentIntent = Object.freeze({
-      ...candidate,
-      state: "RECOVERING" as const,
-      updatedAt: new Date().toISOString(),
-      revision: candidate.revision + 1,
-      failure: null,
-      terminalReason: null,
-    });
-    persist(currentIntent);
-    const accepting = nextIntent(currentIntent, {
+    const accepting = createNextIntent(candidate, {
       state: "ACCEPTING_REALITY",
       failure: null,
       terminalReason: null,
     });
+    if (!commitIntentWithConfirmedRecovery(candidate, accepting)) {
+      return admissionBlocked(
+        "BLOCKED",
+        "RECOVER",
+        "RECOVERY_STORAGE_UNAVAILABLE",
+        candidate,
+      );
+    }
     return admissionReady("RECOVER", accepting);
   }
 
@@ -442,11 +476,20 @@ export function establishRealityEncounterAdmission(input: Readonly<{
   }
 
   if (currentIntent.state === "READY_TO_ENTER_REALITY") {
-    const accepting = nextIntent(currentIntent, {
+    const previous = currentIntent;
+    const accepting = createNextIntent(previous, {
       state: "ACCEPTING_REALITY",
       failure: null,
       terminalReason: null,
     });
+    if (!commitIntentWithConfirmedRecovery(previous, accepting)) {
+      return admissionBlocked(
+        "BLOCKED",
+        "ADMIT",
+        "RECOVERY_STORAGE_UNAVAILABLE",
+        previous,
+      );
+    }
     return admissionReady("ADMIT", accepting);
   }
   if (currentIntent.state === "ACCEPTING_REALITY") {
@@ -460,24 +503,37 @@ export function establishRealityEncounterAdmission(input: Readonly<{
     );
   }
   if (currentIntent.state === "RECOVERING") {
-    const accepting = nextIntent(currentIntent, {
+    const previous = currentIntent;
+    const accepting = createNextIntent(previous, {
       state: "ACCEPTING_REALITY",
       failure: null,
       terminalReason: null,
     });
+    if (!commitIntentWithConfirmedRecovery(previous, accepting)) {
+      return admissionBlocked(
+        "BLOCKED",
+        "RECOVER",
+        "RECOVERY_STORAGE_UNAVAILABLE",
+        previous,
+      );
+    }
     return admissionReady("RECOVER", accepting);
   }
   if (currentIntent.state === "ACTIVE_IN_REALITY") {
-    const recovering = nextIntent(currentIntent, {
-      state: "RECOVERING",
-      failure: null,
-      terminalReason: null,
-    });
-    const accepting = nextIntent(recovering, {
+    const previous = currentIntent;
+    const accepting = createNextIntent(previous, {
       state: "ACCEPTING_REALITY",
       failure: null,
       terminalReason: null,
     });
+    if (!commitIntentWithConfirmedRecovery(previous, accepting)) {
+      return admissionBlocked(
+        "BLOCKED",
+        "RECOVER",
+        "RECOVERY_STORAGE_UNAVAILABLE",
+        previous,
+      );
+    }
     return admissionReady("RECOVER", accepting);
   }
   return admissionBlocked(
@@ -521,12 +577,69 @@ export function retryRealityEncounterAcceptance(input: Readonly<{
   if (isExpired(currentIntent)) {
     return expireCurrentIntent(currentIntent);
   }
-  const accepting = nextIntent(currentIntent, {
+  const previous = currentIntent;
+  const accepting = createNextIntent(previous, {
     state: "ACCEPTING_REALITY",
     failure: null,
     terminalReason: null,
   });
+  if (!commitIntentWithConfirmedRecovery(previous, accepting)) {
+    return admissionBlocked(
+      "BLOCKED",
+      "RETRY",
+      "RECOVERY_STORAGE_UNAVAILABLE",
+      previous,
+    );
+  }
   return admissionReady("RETRY", accepting);
+}
+
+export function rollbackRealityEncounterAdmission(input: Readonly<{
+  admission: RealityEncounterAdmission;
+}>): RealityEncounterAdmissionRollbackResult {
+  const admission = input.admission;
+  if (
+    currentIntent === null ||
+    currentIntent.intentReferenceId !== admission.intentReferenceId ||
+    currentIntent.encounterCycleId !== admission.encounterCycleId ||
+    currentIntent.revision !== admission.intentRevision
+  ) {
+    return Object.freeze({
+      status: "REJECTED" as const,
+      operation: "ROLLBACK_ADMISSION" as const,
+      intent: currentIntent,
+      reason: "INTENT_NOT_CURRENT" as const,
+    });
+  }
+  if (currentIntent.state !== "ACCEPTING_REALITY") {
+    return Object.freeze({
+      status: "REJECTED" as const,
+      operation: "ROLLBACK_ADMISSION" as const,
+      intent: currentIntent,
+      reason: "INTENT_STATE_NOT_ACCEPTING" as const,
+    });
+  }
+
+  const accepting = currentIntent;
+  const ready = createNextIntent(accepting, {
+    state: "READY_TO_ENTER_REALITY",
+    failure: null,
+    terminalReason: null,
+  });
+  if (!commitIntentWithConfirmedRecovery(accepting, ready)) {
+    return Object.freeze({
+      status: "REJECTED" as const,
+      operation: "ROLLBACK_ADMISSION" as const,
+      intent: currentIntent,
+      reason: "RECOVERY_STORAGE_UNAVAILABLE" as const,
+    });
+  }
+  return Object.freeze({
+    status: "ROLLED_BACK" as const,
+    operation: "ROLLBACK_ADMISSION" as const,
+    intent: ready,
+    reason: null,
+  });
 }
 
 export function failRealityEncounterAcceptance(input: Readonly<{
@@ -719,6 +832,7 @@ export const XinmaiRealityEncounterIntentController = Object.freeze({
   requestEncounter: requestRealityEncounter,
   establishAdmission: establishRealityEncounterAdmission,
   retryCurrentEncounter: retryRealityEncounterAcceptance,
+  rollbackAdmission: rollbackRealityEncounterAdmission,
   commitActive: commitRealityEncounterActive,
   failAcceptance: failRealityEncounterAcceptance,
   terminateCurrentEncounter: terminateRealityEncounter,

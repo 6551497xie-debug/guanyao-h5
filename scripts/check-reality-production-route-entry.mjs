@@ -64,6 +64,10 @@ try {
     "recoveryCandidateIsNotAuthority: true",
     "identityOnlyAuthorizationForbidden: true",
     "typedSurfaceAdmissionTransactionRequired: true",
+    "postCommitAdmissionTransactionRequired: true",
+    "renderPhaseAdmissionMutationForbidden: true",
+    "ordinaryCleanupDoesNotTerminateIntent: true",
+    "singleAdmissionSuccessPath: true",
     "intentReferenceId",
   ].forEach((marker) =>
     assertIncludes("guarded Reality production route entry", source.entry, marker),
@@ -84,6 +88,7 @@ try {
     "URLSearchParams",
     "localStorage",
     "sessionStorage",
+    "useMemo",
   ].forEach((marker) =>
     assertExcludes("route entry owns no fixture, engine, Pressure runtime, legacy route, URL source, or storage", source.entry, marker),
   );
@@ -162,6 +167,10 @@ try {
     "typedPressureSurfaceOutcomeRequired: true",
     "domSurfaceInspectionForbidden: true",
     "fixedTimerSuccessForbidden: true",
+    "postCommitAdmissionTransactionRequired: true",
+    "renderPhaseAdmissionMutationForbidden: true",
+    "ordinaryCleanupDoesNotTerminateIntent: true",
+    "singleAdmissionSuccessPath: true",
   ].forEach((marker) =>
     assertIncludes("Reality route and host contract", source.entryType, marker),
   );

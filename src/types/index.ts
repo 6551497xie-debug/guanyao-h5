@@ -3346,6 +3346,7 @@ export type {
   RealityEncounterRequestInput,
   RealityEncounterRequestResult,
   RealityEncounterAdmissionResult,
+  RealityEncounterAdmissionRollbackResult,
   RealityHostAcceptanceOutcome,
   RealityEncounterCommitResult,
   RealityEncounterFailureResult,
