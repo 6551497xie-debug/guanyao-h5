@@ -59,10 +59,13 @@ import {
   resolveFirstEncounterRealityEntryIntent,
   resolveRelationshipNamingEntryEligibility,
 } from "../services/xinmaiRelationshipNamingPresentationState";
+import { resolveLifeWhisperVisualOutcomeTransition } from "../services/xinmaiLifeWhisperVisualOutcomeTransition";
 import { STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS } from "../types/starBeastRelationshipNamingAsset";
 import type {
   LifeWhisperRelationshipFact,
   LifeWhisperRelationshipResponsePhase,
+  LifeWhisperSurfaceVisualResponseOutcome,
+  LifeWhisperUnavailableContinuation,
 } from "../types/xinmaiLifeWhisperRelationship";
 import "../styles/genesis-production-experience.css";
 
@@ -78,7 +81,7 @@ const PRESENCE_RECOGNITION_TIMING_MS = Object.freeze({
 
 const REALITY_ENTRY_VISUAL_HOLD_MS = 560;
 const LIFE_ORIGIN_DISCOVERY_DURATION_MS = 5_200;
-const LIFE_WHISPER_RESPONSE_HOLD_MS = 1_600;
+const FIRST_ENCOUNTER_LIFE_WHISPER_OUTCOME_WATCHDOG_MS = 6_000;
 
 export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
   GenesisProductionExperiencePageBoundary = Object.freeze({
@@ -126,6 +129,10 @@ export function GenesisProductionExperiencePage({
       }),
     [sourceReferenceId],
   );
+  const authorizedSourceReferenceId =
+    routeAuthorization.status === "READY"
+      ? routeAuthorization.sourceReferenceId
+      : "";
   const consumerSourceResult = useMemo(
     () =>
       routeAuthorization.status === "READY"
@@ -233,6 +240,29 @@ export function GenesisProductionExperiencePage({
     useState<LifeWhisperRelationshipFact>("NONE");
   const [lifeWhisperResponsePhase, setLifeWhisperResponsePhase] =
     useState<LifeWhisperRelationshipResponsePhase>("DORMANT");
+  const [
+    lifeWhisperResponseCycleId,
+    setLifeWhisperResponseCycleId,
+  ] = useState<string | null>(null);
+  const [
+    lifeWhisperUnavailableContinuation,
+    setLifeWhisperUnavailableContinuation,
+  ] = useState<LifeWhisperUnavailableContinuation>("NONE");
+  const [
+    lifeWhisperUnavailableReason,
+    setLifeWhisperUnavailableReason,
+  ] = useState<
+    Extract<
+      LifeWhisperSurfaceVisualResponseOutcome,
+      { status: "VISUAL_RESPONSE_UNAVAILABLE" }
+    >["reason"] | null
+  >(null);
+  const [
+    lifeWhisperSettlementAuthority,
+    setLifeWhisperSettlementAuthority,
+  ] = useState<
+    "MOTION_VISUAL_OUTCOME" | "STATIC_VISUAL_OUTCOME" | null
+  >(null);
   const [relationshipNameDraft, setRelationshipNameDraft] = useState("");
   const [relationshipName, setRelationshipName] = useState<string | null>(
     null,
@@ -243,8 +273,46 @@ export function GenesisProductionExperiencePage({
   const [relationshipNamingPersistence, setRelationshipNamingPersistence] =
     useState<"PERSISTED" | "CURRENT_CYCLE_ONLY" | null>(null);
   const lifeOriginDiscoveryTimerRef = useRef<number | null>(null);
-  const lifeWhisperResponseTimerRef = useRef<number | null>(null);
+  const lifeWhisperFactRef =
+    useRef<LifeWhisperRelationshipFact>("NONE");
+  const lifeWhisperResponsePhaseRef =
+    useRef<LifeWhisperRelationshipResponsePhase>("DORMANT");
+  const lifeWhisperResponseCycleIdRef = useRef<string | null>(null);
+  const lifeWhisperResponseCycleSequenceRef = useRef(0);
+  const lifeWhisperOutcomeWatchdogRef = useRef<number | null>(null);
   const realityEntryTimerRef = useRef<number | null>(null);
+  const clearLifeWhisperOutcomeWatchdog = useCallback(() => {
+    if (lifeWhisperOutcomeWatchdogRef.current !== null) {
+      window.clearTimeout(lifeWhisperOutcomeWatchdogRef.current);
+      lifeWhisperOutcomeWatchdogRef.current = null;
+    }
+  }, []);
+  const beginLifeWhisperResponseCycle = useCallback(() => {
+    clearLifeWhisperOutcomeWatchdog();
+    lifeWhisperResponseCycleSequenceRef.current += 1;
+    const responseCycleId =
+      `first-encounter-life-whisper-cycle-${lifeWhisperResponseCycleSequenceRef.current}`;
+    lifeWhisperResponseCycleIdRef.current = responseCycleId;
+    setLifeWhisperResponseCycleId(responseCycleId);
+    lifeWhisperResponsePhaseRef.current = "RESPONDING";
+    setLifeWhisperResponsePhase("RESPONDING");
+    setLifeWhisperUnavailableContinuation("NONE");
+    setLifeWhisperUnavailableReason(null);
+    setLifeWhisperSettlementAuthority(null);
+    lifeWhisperOutcomeWatchdogRef.current = window.setTimeout(() => {
+      if (
+        lifeWhisperResponseCycleIdRef.current !== responseCycleId ||
+        lifeWhisperFactRef.current !== "WHISPER_SUBMITTED" ||
+        lifeWhisperResponsePhaseRef.current !== "RESPONDING"
+      ) {
+        return;
+      }
+      lifeWhisperOutcomeWatchdogRef.current = null;
+      lifeWhisperResponsePhaseRef.current = "UNAVAILABLE";
+      setLifeWhisperResponsePhase("UNAVAILABLE");
+      setLifeWhisperUnavailableReason("OUTCOME_WATCHDOG_EXPIRED");
+    }, FIRST_ENCOUNTER_LIFE_WHISPER_OUTCOME_WATCHDOG_MS);
+  }, [clearLifeWhisperOutcomeWatchdog]);
   const recognitionInteractionAvailability =
     recognitionRealityResult?.status === "READY"
       ? recognitionRealityResult.session.interactionAvailability
@@ -315,6 +383,7 @@ export function GenesisProductionExperiencePage({
     resolveFirstEncounterRealityEntryIntent({
       lifeWhisperFact,
       lifeWhisperResponsePhase,
+      unavailableContinuation: lifeWhisperUnavailableContinuation,
     });
   const relationshipNamingEligibility =
     resolveRelationshipNamingEntryEligibility({
@@ -336,7 +405,15 @@ export function GenesisProductionExperiencePage({
     setLifeOriginDiscoveryPhase("DORMANT");
     setLifeWhisperText("");
     setLifeWhisperFact("NONE");
+    lifeWhisperFactRef.current = "NONE";
     setLifeWhisperResponsePhase("DORMANT");
+    lifeWhisperResponsePhaseRef.current = "DORMANT";
+    setLifeWhisperResponseCycleId(null);
+    lifeWhisperResponseCycleIdRef.current = null;
+    lifeWhisperResponseCycleSequenceRef.current = 0;
+    setLifeWhisperUnavailableContinuation("NONE");
+    setLifeWhisperUnavailableReason(null);
+    setLifeWhisperSettlementAuthority(null);
     setRelationshipNameDraft("");
     setRelationshipName(null);
     setRelationshipNamingState("PENDING");
@@ -345,29 +422,27 @@ export function GenesisProductionExperiencePage({
       window.clearTimeout(lifeOriginDiscoveryTimerRef.current);
       lifeOriginDiscoveryTimerRef.current = null;
     }
-    if (lifeWhisperResponseTimerRef.current !== null) {
-      window.clearTimeout(lifeWhisperResponseTimerRef.current);
-      lifeWhisperResponseTimerRef.current = null;
-    }
+    clearLifeWhisperOutcomeWatchdog();
     if (realityEntryTimerRef.current !== null) {
       window.clearTimeout(realityEntryTimerRef.current);
       realityEntryTimerRef.current = null;
     }
-  }, [routeAuthorization.sourceReferenceId]);
+  }, [
+    clearLifeWhisperOutcomeWatchdog,
+    routeAuthorization.sourceReferenceId,
+  ]);
 
   useEffect(
     () => () => {
       if (lifeOriginDiscoveryTimerRef.current !== null) {
         window.clearTimeout(lifeOriginDiscoveryTimerRef.current);
       }
-      if (lifeWhisperResponseTimerRef.current !== null) {
-        window.clearTimeout(lifeWhisperResponseTimerRef.current);
-      }
+      clearLifeWhisperOutcomeWatchdog();
       if (realityEntryTimerRef.current !== null) {
         window.clearTimeout(realityEntryTimerRef.current);
       }
     },
-    [],
+    [clearLifeWhisperOutcomeWatchdog],
   );
 
   useEffect(() => {
@@ -723,29 +798,81 @@ export function GenesisProductionExperiencePage({
       return;
     }
     setLifeWhisperText("");
+    lifeWhisperFactRef.current = "WHISPER_SUBMITTED";
     setLifeWhisperFact("WHISPER_SUBMITTED");
-    setLifeWhisperResponsePhase("RESPONDING");
-    if (lifeWhisperResponseTimerRef.current !== null) {
-      window.clearTimeout(lifeWhisperResponseTimerRef.current);
-    }
-    const responseHoldMilliseconds = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches
-      ? 80
-      : LIFE_WHISPER_RESPONSE_HOLD_MS;
-    lifeWhisperResponseTimerRef.current = window.setTimeout(() => {
-      lifeWhisperResponseTimerRef.current = null;
-      setLifeWhisperResponsePhase("SETTLED");
-    }, responseHoldMilliseconds);
+    beginLifeWhisperResponseCycle();
   };
 
   const skipLifeWhisper = () => {
     if (!lifeWhisperEntryReady || lifeWhisperFact !== "NONE") {
       return;
     }
+    clearLifeWhisperOutcomeWatchdog();
     setLifeWhisperText("");
+    lifeWhisperFactRef.current = "WHISPER_SKIPPED";
     setLifeWhisperFact("WHISPER_SKIPPED");
+    lifeWhisperResponsePhaseRef.current = "SKIPPED";
     setLifeWhisperResponsePhase("SKIPPED");
+    lifeWhisperResponseCycleIdRef.current = null;
+    setLifeWhisperResponseCycleId(null);
+    setLifeWhisperUnavailableContinuation("NONE");
+    setLifeWhisperUnavailableReason(null);
+    setLifeWhisperSettlementAuthority(null);
+  };
+
+  const handleLifeWhisperVisualResponseOutcome = useCallback(
+    (outcome: LifeWhisperSurfaceVisualResponseOutcome) => {
+      const transition = resolveLifeWhisperVisualOutcomeTransition({
+        expectedSourceReferenceId: authorizedSourceReferenceId,
+        currentResponseCycleId:
+          lifeWhisperResponseCycleIdRef.current,
+        lifeWhisperFact: lifeWhisperFactRef.current,
+        lifeWhisperResponsePhase:
+          lifeWhisperResponsePhaseRef.current,
+        outcome,
+      });
+      if (transition.action === "SETTLE") {
+        clearLifeWhisperOutcomeWatchdog();
+        lifeWhisperResponsePhaseRef.current = "SETTLED";
+        setLifeWhisperResponsePhase("SETTLED");
+        setLifeWhisperSettlementAuthority(transition.authority);
+        setLifeWhisperUnavailableReason(null);
+        return;
+      }
+      if (transition.action === "MARK_UNAVAILABLE") {
+        clearLifeWhisperOutcomeWatchdog();
+        lifeWhisperResponsePhaseRef.current = "UNAVAILABLE";
+        setLifeWhisperResponsePhase("UNAVAILABLE");
+        setLifeWhisperUnavailableReason(transition.reason);
+        setLifeWhisperSettlementAuthority(null);
+      }
+    },
+    [
+      clearLifeWhisperOutcomeWatchdog,
+      authorizedSourceReferenceId,
+    ],
+  );
+
+  const retryLifeWhisperResponse = () => {
+    if (
+      lifeWhisperFactRef.current !== "WHISPER_SUBMITTED" ||
+      lifeWhisperResponsePhaseRef.current !== "UNAVAILABLE"
+    ) {
+      return;
+    }
+    beginLifeWhisperResponseCycle();
+  };
+
+  const continueWithoutConfirmedLifeWhisperResponse = () => {
+    if (
+      lifeWhisperFactRef.current !== "WHISPER_SUBMITTED" ||
+      lifeWhisperResponsePhaseRef.current !== "UNAVAILABLE"
+    ) {
+      return;
+    }
+    setLifeWhisperUnavailableContinuation(
+      "CONTINUE_WITHOUT_CONFIRMED_RESPONSE",
+    );
   };
 
   const submitRelationshipName = () => {
@@ -836,6 +963,8 @@ export function GenesisProductionExperiencePage({
     );
     setRecognitionRealityResult(result);
     if (result.status === "READY") {
+      clearLifeWhisperOutcomeWatchdog();
+      lifeWhisperResponseCycleIdRef.current = null;
       const entryContext =
         activateGenesisProductionRealityEntryContext(result.session);
       const realUserContext = readRealUserGenesisVisualSourceContext();
@@ -982,6 +1111,18 @@ export function GenesisProductionExperiencePage({
       }
       data-life-whisper-fact={lifeWhisperFact}
       data-life-whisper-response-phase={lifeWhisperResponsePhase}
+      data-life-whisper-response-cycle={
+        lifeWhisperResponseCycleId === null ? "NONE" : "CURRENT"
+      }
+      data-life-whisper-response-authority={
+        lifeWhisperSettlementAuthority ?? "NONE"
+      }
+      data-life-whisper-unavailable-reason={
+        lifeWhisperUnavailableReason ?? "NONE"
+      }
+      data-life-whisper-unavailable-continuation={
+        lifeWhisperUnavailableContinuation
+      }
       data-relationship-naming-state={
         relationshipNamingReady ? relationshipNamingState : "NOT_READY"
       }
@@ -1003,8 +1144,11 @@ export function GenesisProductionExperiencePage({
         lifeWhisperRelationshipVisualFact={{
           lifeWhisperFact,
           lifeWhisperResponsePhase,
-          responseCycleId: null,
+          responseCycleId: lifeWhisperResponseCycleId,
         }}
+        onLifeWhisperVisualResponseOutcome={
+          handleLifeWhisperVisualResponseOutcome
+        }
         onLifeOriginDiscoveryRequest={beginLifeOriginDiscovery}
         onStateChange={setCanvasHostState}
       />
@@ -1065,13 +1209,41 @@ export function GenesisProductionExperiencePage({
                 </button>
               </div>
             </form>
+          ) : lifeWhisperFact === "WHISPER_SUBMITTED" &&
+            lifeWhisperResponsePhase === "UNAVAILABLE" ? (
+            <div
+              className="gy-genesis-production-experience__life-whisper-unavailable"
+              role="status"
+            >
+              <p>这一次，它的回应没有完整显现。</p>
+              <div className="gy-genesis-production-experience__life-whisper-actions">
+                <button
+                  type="button"
+                  data-interaction="RETRY_LIFE_WHISPER_RESPONSE"
+                  onClick={retryLifeWhisperResponse}
+                >
+                  再靠近一次
+                </button>
+                <button
+                  type="button"
+                  data-interaction="CONTINUE_WITHOUT_CONFIRMED_RESPONSE"
+                  onClick={
+                    continueWithoutConfirmedLifeWhisperResponse
+                  }
+                >
+                  暂不等待，继续同行
+                </button>
+              </div>
+            </div>
           ) : (
             <p
               className="gy-genesis-production-experience__life-whisper-settled"
               role="status"
             >
               {lifeWhisperFact === "WHISPER_SUBMITTED"
-                ? "这句话只留在此刻。"
+                ? lifeWhisperResponsePhase === "RESPONDING"
+                  ? "它正在听。"
+                  : "它听见了。这句话只留在此刻。"
                 : "此刻不说，也可以。"}
             </p>
           )}

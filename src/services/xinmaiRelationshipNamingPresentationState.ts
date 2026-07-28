@@ -72,7 +72,10 @@ export function resolveLifeWhisperRealityEntryIntent(
 }
 
 export function resolveFirstEncounterRealityEntryIntent(
-  input: LifeWhisperRelationshipIntentFacts,
+  input: LifeWhisperRelationshipIntentFacts &
+    Readonly<{
+      unavailableContinuation?: LifeWhisperUnavailableContinuation;
+    }>,
 ): boolean {
   return resolveLifeWhisperRealityEntryIntent(input);
 }
