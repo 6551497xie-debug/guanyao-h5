@@ -60,6 +60,10 @@ import {
   resolveRelationshipNamingEntryEligibility,
 } from "../services/xinmaiRelationshipNamingPresentationState";
 import { STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS } from "../types/starBeastRelationshipNamingAsset";
+import type {
+  LifeWhisperRelationshipFact,
+  LifeWhisperRelationshipResponsePhase,
+} from "../types/xinmaiLifeWhisperRelationship";
 import "../styles/genesis-production-experience.css";
 
 const ENTRANCE_COORDINATE_CONTINUITY_HOLD_MS = Object.freeze({
@@ -225,12 +229,10 @@ export function GenesisProductionExperiencePage({
     "DORMANT" | "DISCOVERING" | "REVEALED"
   >("DORMANT");
   const [lifeWhisperText, setLifeWhisperText] = useState("");
-  const [lifeWhisperFact, setLifeWhisperFact] = useState<
-    "NONE" | "WHISPER_SUBMITTED" | "WHISPER_SKIPPED"
-  >("NONE");
-  const [lifeWhisperResponsePhase, setLifeWhisperResponsePhase] = useState<
-    "DORMANT" | "RESPONDING" | "SETTLED" | "SKIPPED"
-  >("DORMANT");
+  const [lifeWhisperFact, setLifeWhisperFact] =
+    useState<LifeWhisperRelationshipFact>("NONE");
+  const [lifeWhisperResponsePhase, setLifeWhisperResponsePhase] =
+    useState<LifeWhisperRelationshipResponsePhase>("DORMANT");
   const [relationshipNameDraft, setRelationshipNameDraft] = useState("");
   const [relationshipName, setRelationshipName] = useState<string | null>(
     null,
@@ -992,6 +994,10 @@ export function GenesisProductionExperiencePage({
           archetypeForceCalibrationResult.calibration
         }
         lifeOriginDiscoveryPhase={lifeOriginDiscoveryPhase}
+        lifeWhisperRelationshipVisualFact={{
+          lifeWhisperFact,
+          lifeWhisperResponsePhase,
+        }}
         onLifeOriginDiscoveryRequest={beginLifeOriginDiscovery}
         onStateChange={setCanvasHostState}
       />

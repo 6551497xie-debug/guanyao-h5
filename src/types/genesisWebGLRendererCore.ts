@@ -20,6 +20,7 @@ import type { GenesisTwentyEightMansionVisualLayerCalibration } from "./genesisT
 import type { PersonalStarBeastLifePresenceProjection } from "./personalStarBeastLifePresenceProjection";
 import type { PersonalStarBeastLifeStarCoreProjection } from "./personalStarBeastLifeStarCoreProjection";
 import type { PersonalStarBeastRenderPlan } from "./personalStarBeastRenderPlan";
+import type { LifeWhisperRelationshipVisualFact } from "./xinmaiLifeWhisperRelationship";
 
 export type GenesisWebGLRendererCoreSceneProjection = Readonly<{
   semanticRole: "ISOLATED_WEBGL_LIFE_MANIFESTATION_SCENE";
@@ -88,6 +89,7 @@ export type GenesisWebGLRendererCoreInput = Readonly<{
   height: number;
   pixelRatio: number;
   reducedMotion: boolean;
+  readLifeWhisperRelationshipVisualFact?: () => LifeWhisperRelationshipVisualFact;
   twentyEightMansionCoordinateProjection?: GenesisTwentyEightMansionCoordinateProjection | null;
   timeSequenceRecognitionProjection?: GenesisTimeSequenceRecognitionProjection | null;
   birthMansionIgnitionProjection?: GenesisBirthMansionIgnitionProjection | null;

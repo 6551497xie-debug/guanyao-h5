@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createGenesisWebGLRendererCore } from "../renderers/genesisWebGLRendererCore";
 import { resolveLifeUniverseCrystalImprintGeometry } from "../renderers/lifeUniverseStarField";
 import { adaptRealLifeVisualSource } from "../services/realLifeVisualSourceAdapter";
@@ -10,6 +10,10 @@ import type {
   GenesisProductionCanvasHostState,
 } from "../types/genesisProductionExperiencePage";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
+import {
+  DORMANT_LIFE_WHISPER_RELATIONSHIP_VISUAL_FACT,
+  type LifeWhisperRelationshipVisualFact,
+} from "../types/xinmaiLifeWhisperRelationship";
 
 const REALITY_ARRIVAL_TIMING_MS = Object.freeze({
   IDENTITY_HOLD: 1_600,
@@ -28,6 +32,8 @@ export function RealityLifeUniverseCanvas({
   latestCrystalSourceSlot = null,
   choiceLifeTraceMemoryKey = null,
   choiceLifeTraceSourceSlot = null,
+  lifeWhisperRelationshipVisualFact =
+    DORMANT_LIFE_WHISPER_RELATIONSHIP_VISUAL_FACT,
 }: Pick<RealityProductionHostProps, "visualContinuity"> &
   Readonly<{
     selectedPressureSeedContext?:
@@ -44,9 +50,19 @@ export function RealityLifeUniverseCanvas({
     latestCrystalSourceSlot?: number | null;
     choiceLifeTraceMemoryKey?: string | null;
     choiceLifeTraceSourceSlot?: number | null;
+    lifeWhisperRelationshipVisualFact?: LifeWhisperRelationshipVisualFact;
   }>) {
   const continuesRecognizedPressure = selectedPressureSeedContext !== null;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const lifeWhisperRelationshipVisualFactRef = useRef(
+    lifeWhisperRelationshipVisualFact,
+  );
+  lifeWhisperRelationshipVisualFactRef.current =
+    lifeWhisperRelationshipVisualFact;
+  const readLifeWhisperRelationshipVisualFact = useCallback(
+    () => lifeWhisperRelationshipVisualFactRef.current,
+    [],
+  );
   const [rendererState, setRendererState] =
     useState<GenesisProductionCanvasHostState>("STARTING");
   const [arrivalPhase, setArrivalPhase] = useState(() =>
@@ -266,6 +282,7 @@ export function RealityLifeUniverseCanvas({
       reducedMotion: window.matchMedia(
         "(prefers-reduced-motion: reduce)",
       ).matches,
+      readLifeWhisperRelationshipVisualFact,
       twentyEightMansionCoordinateProjection:
         projectionBundle.twentyEightMansionCoordinateProjection,
       timeSequenceRecognitionProjection:
@@ -329,7 +346,11 @@ export function RealityLifeUniverseCanvas({
       resizeObserver.disconnect();
       controller.dispose();
     };
-  }, [realityPressureConsumer, visualContinuity]);
+  }, [
+    readLifeWhisperRelationshipVisualFact,
+    realityPressureConsumer,
+    visualContinuity,
+  ]);
 
   return (
     <>

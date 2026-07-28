@@ -50,6 +50,9 @@ import type {
   GenesisWebGLRendererCoreSceneProjection,
 } from "../types/genesisWebGLRendererCore";
 import {
+  DORMANT_LIFE_WHISPER_RELATIONSHIP_VISUAL_FACT,
+} from "../types/xinmaiLifeWhisperRelationship";
+import {
   LIFE_UNIVERSE_CORE_IDENTITY,
   LIFE_UNIVERSE_STAR_FIELD,
 } from "./lifeUniverseStarField";
@@ -2772,18 +2775,13 @@ export function createGenesisWebGLRendererCore(
         recognitionRelationshipRaw *
         recognitionRelationshipRaw *
         (3 - 2 * recognitionRelationshipRaw);
-      const lifeWhisperContainer = input.canvas?.closest(
-        "[data-life-whisper-response-phase]",
-      );
-      const lifeWhisperFact = lifeWhisperContainer?.getAttribute(
-        "data-life-whisper-fact",
-      );
-      const lifeWhisperResponsePhase = lifeWhisperContainer?.getAttribute(
-        "data-life-whisper-response-phase",
-      );
+      const lifeWhisperRelationshipVisualFact =
+        input.readLifeWhisperRelationshipVisualFact?.() ??
+        DORMANT_LIFE_WHISPER_RELATIONSHIP_VISUAL_FACT;
+      const { lifeWhisperFact, lifeWhisperResponsePhase } =
+        lifeWhisperRelationshipVisualFact;
       const lifeWhisperResponseIsActive =
         isCompletion &&
-        !isRealityCanvas &&
         lifeWhisperFact === "WHISPER_SUBMITTED" &&
         lifeWhisperResponsePhase === "RESPONDING";
       if (

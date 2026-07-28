@@ -1,20 +1,5 @@
 import type { StarBeastRelationshipNamingReadResult } from "../types/starBeastRelationshipNamingAsset";
-
-type LifeWhisperRelationshipFact =
-  | "NONE"
-  | "WHISPER_SUBMITTED"
-  | "WHISPER_SKIPPED";
-
-type LifeWhisperRelationshipResponsePhase =
-  | "DORMANT"
-  | "RESPONDING"
-  | "SETTLED"
-  | "SKIPPED";
-
-type LifeWhisperRelationshipInput = Readonly<{
-  lifeWhisperFact: LifeWhisperRelationshipFact;
-  lifeWhisperResponsePhase: LifeWhisperRelationshipResponsePhase;
-}>;
+import type { LifeWhisperRelationshipVisualFact } from "../types/xinmaiLifeWhisperRelationship";
 
 export type RelationshipNamingEntryEligibility = Readonly<{
   status: "READY" | "NOT_READY";
@@ -30,7 +15,7 @@ export type RelationshipNamingEntryEligibility = Readonly<{
 export function resolveRelationshipNamingEntryEligibility(input: Readonly<{
   lifeWhisperEntryReady: boolean;
 }> &
-  LifeWhisperRelationshipInput): RelationshipNamingEntryEligibility {
+  LifeWhisperRelationshipVisualFact): RelationshipNamingEntryEligibility {
   const responseSettled =
     input.lifeWhisperFact === "WHISPER_SUBMITTED" &&
     input.lifeWhisperResponsePhase === "SETTLED";
@@ -54,8 +39,8 @@ export function resolveRelationshipNamingEntryEligibility(input: Readonly<{
   });
 }
 
-export function resolveFirstEncounterRealityEntryIntent(
-  input: LifeWhisperRelationshipInput,
+export function resolveLifeWhisperRealityEntryIntent(
+  input: LifeWhisperRelationshipVisualFact,
 ): boolean {
   const submittedResponseSettled =
     input.lifeWhisperFact === "WHISPER_SUBMITTED" &&
@@ -64,6 +49,12 @@ export function resolveFirstEncounterRealityEntryIntent(
     input.lifeWhisperFact === "WHISPER_SKIPPED" &&
     input.lifeWhisperResponsePhase === "SKIPPED";
   return submittedResponseSettled || silenceExplicitlyChosen;
+}
+
+export function resolveFirstEncounterRealityEntryIntent(
+  input: LifeWhisperRelationshipVisualFact,
+): boolean {
+  return resolveLifeWhisperRealityEntryIntent(input);
 }
 
 export type RelationshipNameDeletePresentation = Readonly<{

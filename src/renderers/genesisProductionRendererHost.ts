@@ -177,6 +177,8 @@ export function createGenesisProductionRendererHost(
     height: input.height,
     pixelRatio: input.pixelRatio,
     reducedMotion: input.reducedMotion,
+    readLifeWhisperRelationshipVisualFact:
+      input.readLifeWhisperRelationshipVisualFact,
     twentyEightMansionCoordinateProjection:
       mansionCoordinateProjection,
     timeSequenceRecognitionProjection:

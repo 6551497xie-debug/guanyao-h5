@@ -3,6 +3,7 @@ import type { GenesisProductionVisualCalibrationBundle } from "./genesisProducti
 import type { GenesisFourSymbolDirectionFieldVisualCalibration } from "./genesisFourSymbolDirectionFieldVisualCalibration";
 import type { GenesisLifeArchetypeForceCondensationVisualCalibration } from "./genesisLifeArchetypeForceCondensationVisualCalibration";
 import type { GenesisVisualConsumerSourceResult } from "./genesisVisualConsumerSource";
+import type { LifeWhisperRelationshipVisualFact } from "./xinmaiLifeWhisperRelationship";
 
 export type GenesisProductionCanvasHostState =
   | "STARTING"
@@ -44,6 +45,7 @@ export type GenesisProductionRendererCanvasHostProps = Readonly<{
   fourSymbolDirectionFieldVisualCalibration: GenesisFourSymbolDirectionFieldVisualCalibration;
   lifeArchetypeForceCondensationVisualCalibration: GenesisLifeArchetypeForceCondensationVisualCalibration;
   lifeOriginDiscoveryPhase: "DORMANT" | "DISCOVERING" | "REVEALED";
+  lifeWhisperRelationshipVisualFact: LifeWhisperRelationshipVisualFact;
   onLifeOriginDiscoveryRequest: () => void;
   onStateChange?: (state: GenesisProductionCanvasHostState) => void;
 }>;

@@ -63,7 +63,14 @@ import {
   STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS,
   type StarBeastRelationshipNamingReadResult,
 } from "../types/starBeastRelationshipNamingAsset";
-import { resolveRelationshipNameDeletePresentation } from "../services/xinmaiRelationshipNamingPresentationState";
+import {
+  resolveLifeWhisperRealityEntryIntent,
+  resolveRelationshipNameDeletePresentation,
+} from "../services/xinmaiRelationshipNamingPresentationState";
+import type {
+  LifeWhisperRelationshipFact,
+  LifeWhisperRelationshipResponsePhase,
+} from "../types/xinmaiLifeWhisperRelationship";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
@@ -100,6 +107,8 @@ const CFG = {
   starfield: 420,
   firstPresenceSeconds: 2.1,
 };
+
+const RETURNING_LIFE_WHISPER_RESPONSE_HOLD_MS = 1_600;
 
 // The existing origin adapter still accepts a geo compatibility field. The
 // production flow no longer asks for birthplace, so never fabricate a place.
@@ -1177,6 +1186,14 @@ export function LaunchLab() {
     returningRelationshipNameFeedback,
     setReturningRelationshipNameFeedback,
   ] = useState<"DELETE_UNCONFIRMED" | null>(null);
+  const [returningLifeWhisperText, setReturningLifeWhisperText] = useState("");
+  const [returningLifeWhisperFact, setReturningLifeWhisperFact] =
+    useState<LifeWhisperRelationshipFact>("NONE");
+  const [
+    returningLifeWhisperResponsePhase,
+    setReturningLifeWhisperResponsePhase,
+  ] = useState<LifeWhisperRelationshipResponsePhase>("DORMANT");
+  const returningLifeWhisperResponseTimerRef = useRef<number | null>(null);
   const [returningDynamicsInput] = useState(() =>
     hasReturningLifeIdentity ? resolveDynamicsInputContext({}) : null,
   );
@@ -1192,6 +1209,12 @@ export function LaunchLab() {
   // A persisted result is not yet a returning entrance. The returning path is
   // only valid when that exact life can also be restored visually.
   const returningLifeIdentity = returningVisualReady;
+  const returningLifeWhisperEntryReady = returningVisualReady;
+  const returningLifeWhisperRealityIntentReady =
+    resolveLifeWhisperRealityEntryIntent({
+      lifeWhisperFact: returningLifeWhisperFact,
+      lifeWhisperResponsePhase: returningLifeWhisperResponsePhase,
+    });
   const returningRealityContext =
     returningStatePreview === "IDENTITY_ONLY" ||
     returningStatePreview === "CRYSTAL_ONLY"
@@ -1271,6 +1294,15 @@ export function LaunchLab() {
         : returningTemporalState === "CRYSTAL_ONLY"
           ? "那次变化，仍在它的生命纹路里。"
           : null;
+  useEffect(
+    () => () => {
+      if (returningLifeWhisperResponseTimerRef.current !== null) {
+        window.clearTimeout(returningLifeWhisperResponseTimerRef.current);
+        returningLifeWhisperResponseTimerRef.current = null;
+      }
+    },
+    [],
+  );
   const [interactionState, setInteractionState] = useState<LaunchInteractionState>("ENTRY");
   const interactionStateRef = useRef<LaunchInteractionState>("ENTRY");
   const [scene, setScene] = useState<SceneState>("ENTRY");
@@ -2411,28 +2443,7 @@ export function LaunchLab() {
             vibrate([0, 12, 60]);
           }
           if (m.moonReleaseStarted && m.moonReleaseT >= CFG.moonReleaseSeconds) {
-            if (returningLifeIdentity) {
-              navigate(GUANYAO_ROUTES.reality, {
-                replace: true,
-                state: {
-                  visualContinuity: returningVisualContinuity,
-                  returningLifeMemory: {
-                    historicalRealityMemoryKey:
-                      returningRealityContext?.selectedPressureSeedId?.trim() ||
-                      returningRealityContext?.surface?.trim() ||
-                      null,
-                    latestCrystalMemoryKey:
-                      returningLatestImprint && returningVisualContinuity
-                        ? `${returningVisualContinuity.sourceReferenceId}:${returningLatestImprint.crystal.copy}`
-                        : null,
-                    latestCrystalSourceSlot: returningHasCrystal
-                      ? returningLatestImprintSourceSlot
-                      : null,
-                  },
-                  returningEntry: "SAME_LIFE_NEW_REALITY",
-                },
-              });
-            } else {
+            if (!returningLifeIdentity) {
               enterTimeInjectionFromMoon();
             }
           }
@@ -5000,6 +5011,7 @@ export function LaunchLab() {
       const x = e.clientX - r.left;
       const y = e.clientY - r.top;
       if (m.state === STATE.STARFIELD_IDLE) {
+        if (returningLifeIdentity) return;
         if (!m.moonReleaseStarted && isLifeMapHit(x, y)) {
           m.moonReleaseStarted = true;
           m.moonReleaseT = 0;
@@ -5469,6 +5481,73 @@ export function LaunchLab() {
     setReturningRelationshipNameDraft("");
   };
 
+  const submitReturningLifeWhisper = () => {
+    if (
+      !returningLifeWhisperEntryReady ||
+      returningLifeWhisperFact !== "NONE" ||
+      returningLifeWhisperText.trim().length === 0
+    ) {
+      return;
+    }
+    setReturningLifeWhisperText("");
+    setReturningLifeWhisperFact("WHISPER_SUBMITTED");
+    setReturningLifeWhisperResponsePhase("RESPONDING");
+    if (returningLifeWhisperResponseTimerRef.current !== null) {
+      window.clearTimeout(returningLifeWhisperResponseTimerRef.current);
+    }
+    const responseHoldMilliseconds = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches
+      ? 80
+      : RETURNING_LIFE_WHISPER_RESPONSE_HOLD_MS;
+    returningLifeWhisperResponseTimerRef.current = window.setTimeout(() => {
+      returningLifeWhisperResponseTimerRef.current = null;
+      setReturningLifeWhisperResponsePhase("SETTLED");
+    }, responseHoldMilliseconds);
+  };
+
+  const skipReturningLifeWhisper = () => {
+    if (
+      !returningLifeWhisperEntryReady ||
+      returningLifeWhisperFact !== "NONE"
+    ) {
+      return;
+    }
+    setReturningLifeWhisperText("");
+    setReturningLifeWhisperFact("WHISPER_SKIPPED");
+    setReturningLifeWhisperResponsePhase("SKIPPED");
+  };
+
+  const enterReturningNewReality = () => {
+    if (
+      !returningLifeWhisperRealityIntentReady ||
+      !returningVisualReady ||
+      returningVisualContinuity === null
+    ) {
+      return;
+    }
+    setReturningLifeWhisperText("");
+    navigate(GUANYAO_ROUTES.reality, {
+      replace: true,
+      state: {
+        visualContinuity: returningVisualContinuity,
+        returningLifeMemory: {
+          historicalRealityMemoryKey:
+            returningRealityContext?.selectedPressureSeedId?.trim() ||
+            returningRealityContext?.surface?.trim() ||
+            null,
+          latestCrystalMemoryKey: returningLatestImprint
+            ? `${returningVisualContinuity.sourceReferenceId}:${returningLatestImprint.crystal.copy}`
+            : null,
+          latestCrystalSourceSlot: returningHasCrystal
+            ? returningLatestImprintSourceSlot
+            : null,
+        },
+        returningEntry: "SAME_LIFE_NEW_REALITY",
+      },
+    });
+  };
+
   return (
     <GyMobilePreviewFrame background="#020306">
       <div
@@ -5509,6 +5588,28 @@ export function LaunchLab() {
         }
         data-returning-life-temporal-state={
           returningVisualReady ? returningTemporalState : "NOT_ACTIVE"
+        }
+        data-returning-life-whisper-entry={
+          returningLifeWhisperEntryReady ? "READY" : "NOT_ACTIVE"
+        }
+        data-returning-life-whisper-fact={
+          returningVisualReady ? returningLifeWhisperFact : "NOT_ACTIVE"
+        }
+        data-returning-life-whisper-response-phase={
+          returningVisualReady
+            ? returningLifeWhisperResponsePhase
+            : "NOT_ACTIVE"
+        }
+        data-returning-reality-intent={
+          returningVisualReady
+            ? returningLifeWhisperRealityIntentReady
+              ? "READY"
+              : "AWAITING_RELATIONSHIP"
+            : "NOT_ACTIVE"
+        }
+        data-returning-life-whisper-raw-text-persistence="NONE"
+        data-returning-historical-reality-consumption={
+          returningVisualReady && returningHasReality ? "MEMORY_ONLY" : "NONE"
         }
         data-returning-relationship-name-state={
           returningVisualReady
@@ -5555,7 +5656,16 @@ export function LaunchLab() {
             <Suspense fallback={null}>
               <RealityLifeUniverseCanvas
                 visualContinuity={returningVisualContinuity}
-                selectedPressureSeedContext={returningRealityContext}
+                historicalRealityMemoryKey={
+                  returningRealityContext?.selectedPressureSeedId?.trim() ||
+                  returningRealityContext?.surface?.trim() ||
+                  null
+                }
+                lifeWhisperRelationshipVisualFact={{
+                  lifeWhisperFact: returningLifeWhisperFact,
+                  lifeWhisperResponsePhase:
+                    returningLifeWhisperResponsePhase,
+                }}
               />
             </Suspense>
             {returningLatestImprintGeometry &&
@@ -5663,7 +5773,90 @@ export function LaunchLab() {
               {returningExperienceCopy ? (
                 <small>{returningExperienceCopy}</small>
               ) : null}
-              <span>轻触星河，回到我的生命世界</span>
+              <div
+                className="gy-returning-life-world__whisper"
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={(event) => event.stopPropagation()}
+              >
+                {returningLifeWhisperFact === "NONE" ? (
+                  <form
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      submitReturningLifeWhisper();
+                    }}
+                  >
+                    <label htmlFor="xinmai-returning-life-whisper">
+                      告诉它，此刻什么正在靠近你
+                    </label>
+                    <textarea
+                      id="xinmai-returning-life-whisper"
+                      value={returningLifeWhisperText}
+                      rows={1}
+                      maxLength={120}
+                      autoComplete="off"
+                      placeholder="一句话，一个词，都可以"
+                      aria-describedby="xinmai-returning-life-whisper-guidance"
+                      onChange={(event) =>
+                        setReturningLifeWhisperText(event.target.value)
+                      }
+                      onKeyDown={(event) => {
+                        if (
+                          !event.nativeEvent.isComposing &&
+                          event.key === "Enter" &&
+                          (event.metaKey || event.ctrlKey)
+                        ) {
+                          event.preventDefault();
+                          submitReturningLifeWhisper();
+                        }
+                      }}
+                    />
+                    <small id="xinmai-returning-life-whisper-guidance">
+                      只留在此刻，不会恢复成下一次现实
+                    </small>
+                    <div>
+                      <button
+                        type="button"
+                        data-interaction="WHISPER_SKIPPED"
+                        onClick={skipReturningLifeWhisper}
+                      >
+                        暂时不说
+                      </button>
+                      <button
+                        type="submit"
+                        data-interaction="WHISPER_SUBMITTED"
+                        disabled={
+                          returningLifeWhisperText.trim().length === 0
+                        }
+                      >
+                        留给它
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div
+                    className="gy-returning-life-world__whisper-settled"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <p>
+                      {returningLifeWhisperFact === "WHISPER_SKIPPED"
+                        ? "此刻不说，也可以。"
+                        : returningLifeWhisperResponsePhase === "SETTLED"
+                          ? "它听见了。这句话只留在此刻。"
+                          : "它正在听。"}
+                    </p>
+                    {returningLifeWhisperRealityIntentReady ? (
+                      <button
+                        type="button"
+                        data-interaction="RETURNING_REALITY_INTENT"
+                        onClick={enterReturningNewReality}
+                      >
+                        和它一起进入新的现实
+                      </button>
+                    ) : null}
+                  </div>
+                )}
+              </div>
               {returningRelationshipNaming.status !== "UNAVAILABLE" ? (
                 <div
                   className="gy-returning-life-world__relationship-name-controls"
@@ -5907,11 +6100,91 @@ export function LaunchLab() {
             font-weight: 520;
             letter-spacing: 0.12em;
           }
-          .gy-returning-life-world__relationship-copy span {
-            margin-top: 18px;
-            color: rgba(255, 247, 228, 0.64);
-            font-size: min(13px, 3.3vw);
-            font-weight: 620;
+          .gy-returning-life-world__whisper {
+            display: grid;
+            justify-items: center;
+            width: min(78vw, 310px);
+            margin-top: 14px;
+            pointer-events: auto;
+          }
+          .gy-returning-life-world__whisper form {
+            display: grid;
+            justify-items: stretch;
+            gap: 7px;
+            width: 100%;
+            padding: 10px 13px;
+            border: 1px solid rgba(190, 220, 220, 0.14);
+            border-radius: 16px;
+            background: rgba(2, 6, 10, 0.76);
+            backdrop-filter: blur(10px);
+          }
+          .gy-returning-life-world__whisper label {
+            color: rgba(255, 247, 228, 0.78);
+            font-size: min(12px, 3vw);
+            font-weight: 590;
+            letter-spacing: 0.03em;
+          }
+          .gy-returning-life-world__whisper textarea {
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 38px;
+            max-height: 76px;
+            resize: vertical;
+            padding: 8px 3px 6px;
+            border: 0;
+            border-bottom: 1px solid rgba(190, 220, 220, 0.24);
+            border-radius: 0;
+            outline: none;
+            color: rgba(255, 247, 228, 0.9);
+            background: transparent;
+            font: 500 min(12px, 3vw) ${SANS};
+            line-height: 1.5;
+            text-align: center;
+          }
+          .gy-returning-life-world__whisper textarea::placeholder {
+            color: rgba(201, 218, 216, 0.34);
+          }
+          .gy-returning-life-world__whisper form > small {
+            margin: 0;
+            color: rgba(201, 218, 216, 0.42);
+            font-size: min(9px, 2.25vw);
+            line-height: 1.45;
+          }
+          .gy-returning-life-world__whisper form > div {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+          }
+          .gy-returning-life-world__whisper button {
+            min-height: 32px;
+            padding: 5px 9px;
+            border: 0;
+            color: rgba(232, 220, 190, 0.7);
+            background: transparent;
+            font: 560 min(10px, 2.55vw) ${SANS};
+            letter-spacing: 0.07em;
+          }
+          .gy-returning-life-world__whisper button:disabled {
+            opacity: 0.34;
+          }
+          .gy-returning-life-world__whisper textarea:focus-visible,
+          .gy-returning-life-world__whisper button:focus-visible {
+            outline: 1px solid rgba(190, 220, 220, 0.42);
+            outline-offset: 2px;
+          }
+          .gy-returning-life-world__whisper-settled {
+            display: grid;
+            justify-items: center;
+            gap: 8px;
+          }
+          .gy-returning-life-world__whisper-settled p {
+            margin: 0;
+            color: rgba(201, 218, 216, 0.6);
+            font-size: min(11px, 2.8vw);
+            line-height: 1.6;
+          }
+          .gy-returning-life-world__whisper-settled button {
+            color: rgba(255, 239, 190, 0.76);
           }
           .gy-returning-life-world__relationship-name-controls {
             display: grid;

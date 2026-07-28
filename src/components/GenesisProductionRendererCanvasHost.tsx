@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createGenesisProductionRendererHost } from "../renderers/genesisProductionRendererHost";
 import type {
   GenesisProductionCanvasHostBoundary,
@@ -35,10 +35,20 @@ export function GenesisProductionRendererCanvasHost({
   fourSymbolDirectionFieldVisualCalibration,
   lifeArchetypeForceCondensationVisualCalibration,
   lifeOriginDiscoveryPhase,
+  lifeWhisperRelationshipVisualFact,
   onLifeOriginDiscoveryRequest,
   onStateChange,
 }: GenesisProductionRendererCanvasHostProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const lifeWhisperRelationshipVisualFactRef = useRef(
+    lifeWhisperRelationshipVisualFact,
+  );
+  lifeWhisperRelationshipVisualFactRef.current =
+    lifeWhisperRelationshipVisualFact;
+  const readLifeWhisperRelationshipVisualFact = useCallback(
+    () => lifeWhisperRelationshipVisualFactRef.current,
+    [],
+  );
   const [hostState, setHostState] =
     useState<GenesisProductionCanvasHostState>("STARTING");
 
@@ -64,6 +74,7 @@ export function GenesisProductionRendererCanvasHost({
       reducedMotion: window.matchMedia(
         "(prefers-reduced-motion: reduce)",
       ).matches,
+      readLifeWhisperRelationshipVisualFact,
       genesisVisualRealization:
         visualCalibrationBundle.genesisVisualRealization,
       genesisPerspectiveCalibration:
@@ -110,7 +121,7 @@ export function GenesisProductionRendererCanvasHost({
       resizeObserver.disconnect();
       controller.dispose();
     };
-  }, [consumerSourceResult, fourSymbolDirectionFieldVisualCalibration, lifeArchetypeForceCondensationVisualCalibration, onStateChange, routeAuthorization, visualCalibrationBundle]);
+  }, [consumerSourceResult, fourSymbolDirectionFieldVisualCalibration, lifeArchetypeForceCondensationVisualCalibration, onStateChange, readLifeWhisperRelationshipVisualFact, routeAuthorization, visualCalibrationBundle]);
 
   const isLifeOriginDiscovery =
     visualCalibrationBundle.runtimeStage === "COMPLETION";
