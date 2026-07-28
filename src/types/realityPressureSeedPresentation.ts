@@ -1,5 +1,9 @@
 import type { RealityPressureSeedCandidate } from "./realityPressureSeedCaptureContract";
 import type { RealityProductionPressureSeedSession } from "./realityProductionPressureSeedConsumer";
+import type {
+  RealityPressureSurfaceOutcome,
+  RealitySurfaceAdmissionAttempt,
+} from "./xinmaiRealitySurfaceAdmission";
 
 export type RealityPressureSeedPresentationBoundary = Readonly<{
   productionPressureSeedPresentationOnly: true;
@@ -36,6 +40,10 @@ export type RealityPressureSeedPresentationProps = Readonly<{
   onRequestNextBundle: () => void;
   onPause: () => void;
   onContinueToGravity: () => void;
+  realitySurfaceAdmissionAttempt: RealitySurfaceAdmissionAttempt;
+  onRealityPressureSurfaceOutcome: (
+    outcome: RealityPressureSurfaceOutcome,
+  ) => void;
 }>;
 
 export type RealityPressureSeedCandidatePresentationProps = Readonly<{

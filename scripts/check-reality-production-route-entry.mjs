@@ -63,6 +63,7 @@ try {
     "typedIntentRecoveryViaControllerOnly: true",
     "recoveryCandidateIsNotAuthority: true",
     "identityOnlyAuthorizationForbidden: true",
+    "typedSurfaceAdmissionTransactionRequired: true",
     "intentReferenceId",
   ].forEach((marker) =>
     assertIncludes("guarded Reality production route entry", source.entry, marker),
@@ -105,6 +106,11 @@ try {
     "explicitGravityContinuationCallbackOnly: true",
     "onRealityAcceptanceOutcome",
     'status: "REALITY_MINIMUM_PRESENTED"',
+    "resolveRealitySurfaceAdmissionTransaction",
+    "typedLifeSurfaceOutcomeRequired: true",
+    "typedPressureSurfaceOutcomeRequired: true",
+    "domSurfaceInspectionForbidden: true",
+    "fixedTimerSuccessForbidden: true",
     "noLegacyDynamicsRuntime: true",
     "noRendererInvocation: true",
   ].forEach((marker) =>
@@ -126,6 +132,8 @@ try {
     "useNavigate",
     "localStorage",
     "sessionStorage",
+    "querySelector",
+    "requestAnimationFrame",
   ].forEach((marker) =>
     assertExcludes("host starts no Reality stage, renderer, legacy runtime, navigation, or storage", source.host, marker),
   );
@@ -149,6 +157,11 @@ try {
     "noPressureExecution: true",
     "noGenesisNavigationMutation: true",
     "hostAcceptanceOutcomeRequired: true",
+    "typedSurfaceAdmissionTransactionRequired: true",
+    "typedLifeSurfaceOutcomeRequired: true",
+    "typedPressureSurfaceOutcomeRequired: true",
+    "domSurfaceInspectionForbidden: true",
+    "fixedTimerSuccessForbidden: true",
   ].forEach((marker) =>
     assertIncludes("Reality route and host contract", source.entryType, marker),
   );

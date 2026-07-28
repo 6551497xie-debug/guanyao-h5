@@ -1,3 +1,7 @@
+import type {
+  RealitySurfaceAdmissionTransaction,
+} from "./xinmaiRealitySurfaceAdmission";
+
 export const XINMAI_REALITY_ENCOUNTER_INTENT_SCHEMA_VERSION =
   "XINMAI_REALITY_ENCOUNTER_INTENT_V1" as const;
 
@@ -174,6 +178,7 @@ export type RealityHostAcceptanceOutcome =
       presentedSurface:
         | "REALITY_LIFE_UNIVERSE_AND_PRESSURE_CANDIDATES"
         | "REALITY_STATIC_LIFE_UNIVERSE_AND_PRESSURE_CANDIDATES";
+      transaction: RealitySurfaceAdmissionTransaction;
       committedAt: string;
     }>
   | Readonly<{
@@ -185,7 +190,10 @@ export type RealityHostAcceptanceOutcome =
       reason:
         | "HOST_INPUT_NOT_READY"
         | "PRESSURE_CONSUMER_NOT_READY"
-        | "MINIMUM_SURFACE_NOT_PRESENTED";
+        | "MINIMUM_SURFACE_NOT_PRESENTED"
+        | "LIFE_SURFACE_OUTCOME_REJECTED"
+        | "PRESSURE_SURFACE_OUTCOME_REJECTED"
+        | "SURFACE_OUTCOME_WATCHDOG_EXPIRED";
       reportedAt: string;
     }>;
 

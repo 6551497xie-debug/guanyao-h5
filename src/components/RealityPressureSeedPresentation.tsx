@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import type {
   RealityPressureSeedCandidatePresentationProps,
   RealityPressureSeedPresentationBoundary,
@@ -67,6 +68,8 @@ export function RealityPressureSeedPresentation({
   onRecognize,
   onRequestNextBundle,
   onPause,
+  realitySurfaceAdmissionAttempt,
+  onRealityPressureSurfaceOutcome,
 }: RealityPressureSeedPresentationProps) {
   const recognitionAvailable = session.availableEvents.includes(
     "PRESSURE_SEED_RECOGNIZE",
@@ -78,6 +81,71 @@ export function RealityPressureSeedPresentation({
     "PRESSURE_SEED_PAUSE",
   );
   const recognized = session.captureState === "SEED_RECOGNIZED";
+  const reportedSurfaceOutcomeKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const outcomeKey =
+      `${realitySurfaceAdmissionAttempt.intentReferenceId}:` +
+      `${realitySurfaceAdmissionAttempt.encounterCycleId}:` +
+      `${realitySurfaceAdmissionAttempt.intentRevision}:` +
+      session.candidateBundleReferenceId;
+    if (reportedSurfaceOutcomeKeyRef.current === outcomeKey) {
+      return;
+    }
+    reportedSurfaceOutcomeKeyRef.current = outcomeKey;
+    const sharedOutcome = Object.freeze({
+      ...realitySurfaceAdmissionAttempt,
+      identityReferences:
+        realitySurfaceAdmissionAttempt.identityReferences,
+      sourceReferenceId: session.sourceReferenceId,
+    });
+    if (
+      session.sourceReferenceId !==
+      realitySurfaceAdmissionAttempt.identityReferences
+        .sourceReferenceId
+    ) {
+      onRealityPressureSurfaceOutcome(
+        Object.freeze({
+          ...sharedOutcome,
+          status:
+            "REALITY_PRESSURE_SURFACE_UNAVAILABLE" as const,
+          reason: "PRESSURE_SOURCE_MISMATCH" as const,
+          reportedAt: new Date().toISOString(),
+        }),
+      );
+      return;
+    }
+    if (session.candidateBundle.candidates.length === 0) {
+      onRealityPressureSurfaceOutcome(
+        Object.freeze({
+          ...sharedOutcome,
+          status:
+            "REALITY_PRESSURE_SURFACE_UNAVAILABLE" as const,
+          reason: "CANDIDATE_BUNDLE_EMPTY" as const,
+          reportedAt: new Date().toISOString(),
+        }),
+      );
+      return;
+    }
+    onRealityPressureSurfaceOutcome(
+      Object.freeze({
+        ...sharedOutcome,
+        status: "REALITY_PRESSURE_SURFACE_PRESENTED" as const,
+        surfaceMode:
+          "SEMANTIC_PRESSURE_CANDIDATE_SURFACE" as const,
+        candidateBundleReferenceId:
+          session.candidateBundleReferenceId,
+        candidateCount: session.candidateBundle.candidates.length,
+        presentedAt: new Date().toISOString(),
+      }),
+    );
+  }, [
+    onRealityPressureSurfaceOutcome,
+    realitySurfaceAdmissionAttempt,
+    session.candidateBundle.candidates.length,
+    session.candidateBundleReferenceId,
+    session.sourceReferenceId,
+  ]);
 
   return (
     <section

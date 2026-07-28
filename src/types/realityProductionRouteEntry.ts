@@ -45,6 +45,7 @@ export type RealityProductionRouteEntryBoundary = Readonly<{
   explicitDynamicsNavigationOnly: true;
   noGenesisNavigationMutation: true;
   noPresenceMutation: true;
+  typedSurfaceAdmissionTransactionRequired: true;
 }>;
 
 export type RealityProductionHostBoundary = Readonly<{
@@ -76,6 +77,10 @@ export type RealityProductionHostBoundary = Readonly<{
   noStorageWrite: true;
   noNavigationMutation: true;
   hostAcceptanceOutcomeRequired: true;
+  typedLifeSurfaceOutcomeRequired: true;
+  typedPressureSurfaceOutcomeRequired: true;
+  domSurfaceInspectionForbidden: true;
+  fixedTimerSuccessForbidden: true;
 }>;
 
 export type RealityProductionHostProps = Readonly<{

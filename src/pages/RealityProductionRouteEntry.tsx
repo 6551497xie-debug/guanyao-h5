@@ -83,6 +83,7 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
     explicitDynamicsNavigationOnly: true,
     noGenesisNavigationMutation: true,
     noPresenceMutation: true,
+    typedSurfaceAdmissionTransactionRequired: true,
   });
 
 type RealityRouteState =
@@ -413,6 +414,19 @@ export function RealityProductionRouteEntry() {
 
   const handleRealityAcceptanceOutcome = useCallback(
     (outcome: RealityHostAcceptanceOutcome) => {
+      if (
+        encounterAdmission === null ||
+        outcome.intentReferenceId !==
+          encounterAdmission.intentReferenceId ||
+        outcome.encounterCycleId !==
+          encounterAdmission.encounterCycleId ||
+        outcome.intentRevision !==
+          encounterAdmission.intentRevision ||
+        outcome.sourceReferenceId !==
+          encounterAdmission.identityReferences.sourceReferenceId
+      ) {
+        return;
+      }
       if (outcome.status === "REALITY_HOST_UNAVAILABLE") {
         const failure = failRealityEncounterAcceptance({
           intentReferenceId: outcome.intentReferenceId,
@@ -440,9 +454,18 @@ export function RealityProductionRouteEntry() {
         setActiveIntentReferenceId(
           commitResult.intent.intentReferenceId,
         );
+        return;
       }
+      setActiveIntentReferenceId(null);
+      setHostAcceptanceFailure(
+        Object.freeze({
+          stage: "MINIMUM_SURFACE" as const,
+          reason: "HOST_OUTCOME_MISMATCH" as const,
+          guardReason: commitResult.reason,
+        }),
+      );
     },
-    [],
+    [encounterAdmission],
   );
 
   const acceptanceFailure =

@@ -57,6 +57,61 @@ const identity = Object.freeze({
   mansionCoordinateReferenceId: "mansion-a",
 });
 
+const createHostOutcome = (
+  admission,
+  options = Object.freeze({ staticSurface: false }),
+) => {
+  const committedAt = new NativeDate(controlledNow).toISOString();
+  const staticSurface = options.staticSurface === true;
+  const attempt = Object.freeze({
+    intentReferenceId: admission.intentReferenceId,
+    encounterCycleId: admission.encounterCycleId,
+    intentRevision: admission.intentRevision,
+    identityReferences: identity,
+  });
+  const lifeSurfaceOutcome = Object.freeze({
+    ...attempt,
+    status: "REALITY_LIFE_SURFACE_PRESENTED",
+    sourceReferenceId: identity.sourceReferenceId,
+    surfaceMode: staticSurface
+      ? "SEMANTIC_STATIC_LIFE_UNIVERSE"
+      : "WEBGL_LIFE_UNIVERSE",
+    presentedAt: committedAt,
+  });
+  const pressureSurfaceOutcome = Object.freeze({
+    ...attempt,
+    status: "REALITY_PRESSURE_SURFACE_PRESENTED",
+    sourceReferenceId: identity.sourceReferenceId,
+    surfaceMode: "SEMANTIC_PRESSURE_CANDIDATE_SURFACE",
+    candidateBundleReferenceId: "bundle-a",
+    candidateCount: 3,
+    presentedAt: committedAt,
+  });
+  const presentedSurface = staticSurface
+    ? "REALITY_STATIC_LIFE_UNIVERSE_AND_PRESSURE_CANDIDATES"
+    : "REALITY_LIFE_UNIVERSE_AND_PRESSURE_CANDIDATES";
+  const transaction = Object.freeze({
+    schemaVersion:
+      "XINMAI_REALITY_SURFACE_ADMISSION_TRANSACTION_V1",
+    source: "xinmai_reality_surface_admission_transaction",
+    ...attempt,
+    lifeSurfaceOutcome,
+    pressureSurfaceOutcome,
+    minimumSurface: presentedSurface,
+    committedAt,
+  });
+  return Object.freeze({
+    status: "REALITY_MINIMUM_PRESENTED",
+    intentReferenceId: admission.intentReferenceId,
+    encounterCycleId: admission.encounterCycleId,
+    intentRevision: admission.intentRevision,
+    sourceReferenceId: identity.sourceReferenceId,
+    presentedSurface,
+    transaction,
+    committedAt,
+  });
+};
+
 try {
   await build({
     entryPoints: [controllerPath],
@@ -248,26 +303,45 @@ try {
     "ACCEPTING_REALITY",
   );
 
+  const staleOutcomeInput = createHostOutcome(admission.admission);
   const staleOutcome = runtime.commitRealityEncounterActive({
-    status: "REALITY_MINIMUM_PRESENTED",
-    intentReferenceId: admission.intent.intentReferenceId,
-    encounterCycleId: admission.intent.encounterCycleId,
+    ...staleOutcomeInput,
     intentRevision: admission.intentRevision - 1,
-    sourceReferenceId: identity.sourceReferenceId,
-    presentedSurface: "REALITY_LIFE_UNIVERSE_AND_PRESSURE_CANDIDATES",
-    committedAt: new Date().toISOString(),
   });
   assertEqual("stale Host outcome is rejected", staleOutcome.status, "REJECTED");
 
-  const committed = runtime.commitRealityEncounterActive({
-    status: "REALITY_MINIMUM_PRESENTED",
-    intentReferenceId: admission.admission.intentReferenceId,
-    encounterCycleId: admission.admission.encounterCycleId,
-    intentRevision: admission.admission.intentRevision,
-    sourceReferenceId: identity.sourceReferenceId,
-    presentedSurface: "REALITY_LIFE_UNIVERSE_AND_PRESSURE_CANDIDATES",
-    committedAt: new Date().toISOString(),
-  });
+  const {
+    transaction: _missingTransaction,
+    ...outcomeWithoutTransaction
+  } = createHostOutcome(admission.admission);
+  const missingTransaction =
+    runtime.commitRealityEncounterActive(
+      outcomeWithoutTransaction,
+    );
+  assertEqual(
+    "unproven minimum surface cannot commit Active",
+    missingTransaction.status,
+    "REJECTED",
+  );
+  assertEqual(
+    "unproven minimum surface becomes retryable",
+    runtime.readCurrentRealityEncounterIntent().state,
+    "FAILED_RETRYABLE",
+  );
+  const surfaceTransactionRetry =
+    runtime.retryRealityEncounterAcceptance({
+      intentReferenceId: requested.intent.intentReferenceId,
+      identityReferences: identity,
+    });
+  assertEqual(
+    "typed surface transaction retries the same cycle",
+    surfaceTransactionRetry.admission.encounterCycleId,
+    requested.intent.encounterCycleId,
+  );
+
+  const committed = runtime.commitRealityEncounterActive(
+    createHostOutcome(surfaceTransactionRetry.admission),
+  );
   assertEqual("real minimum surface commits Active", committed.status, "ACTIVE");
   assertEqual(
     "Controller is the single Active authority",
@@ -299,19 +373,11 @@ try {
     requested.intent.encounterCycleId,
   );
   const recoveredActive =
-    recoveredRuntime.commitRealityEncounterActive({
-      status: "REALITY_MINIMUM_PRESENTED",
-      intentReferenceId:
-        recoveredAdmission.admission.intentReferenceId,
-      encounterCycleId:
-        recoveredAdmission.admission.encounterCycleId,
-      intentRevision:
-        recoveredAdmission.admission.intentRevision,
-      sourceReferenceId: identity.sourceReferenceId,
-      presentedSurface:
-        "REALITY_STATIC_LIFE_UNIVERSE_AND_PRESSURE_CANDIDATES",
-      committedAt: new Date().toISOString(),
-    });
+    recoveredRuntime.commitRealityEncounterActive(
+      createHostOutcome(recoveredAdmission.admission, {
+        staticSurface: true,
+      }),
+    );
   assertEqual(
     "Recovered static minimum surface recommits Active",
     recoveredActive.status,

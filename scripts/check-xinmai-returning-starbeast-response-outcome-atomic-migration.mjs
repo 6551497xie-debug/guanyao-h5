@@ -306,7 +306,12 @@ try {
   assertIncludes(
     "Surface Host consumes renderer snapshot",
     realityCanvas,
-    "controller.getSnapshot().lifeWhisperVisualResponseOutcome",
+    "const rendererSnapshot = controller.getSnapshot()",
+  );
+  assertIncludes(
+    "Surface Host preserves Life Whisper outcome consumption",
+    realityCanvas,
+    "rendererSnapshot.lifeWhisperVisualResponseOutcome",
   );
   assertIncludes(
     "Static outcome requires a connected rendered surface",

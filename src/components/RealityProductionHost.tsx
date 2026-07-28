@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { RealityPressureSeedPresentation } from "./RealityPressureSeedPresentation";
 import { RealityLifeUniverseCanvas } from "./RealityLifeUniverseCanvas";
 import { bridgeRealityPressureActivationCandidateRequestContext } from "../services/realityPressureActivationCandidateRequestBridge";
@@ -18,6 +24,13 @@ import type {
   RealityProductionHostBoundary,
   RealityProductionHostProps,
 } from "../types/realityProductionRouteEntry";
+import type {
+  RealityLifeSurfaceOutcome,
+  RealityPressureSurfaceOutcome,
+} from "../types/xinmaiRealitySurfaceAdmission";
+import { resolveRealitySurfaceAdmissionTransaction } from "../services/xinmaiRealitySurfaceAdmissionTransaction";
+
+const MINIMUM_SURFACE_OUTCOME_WATCHDOG_MS = 8_000;
 
 export const REALITY_PRODUCTION_HOST_BOUNDARY:
   RealityProductionHostBoundary = Object.freeze({
@@ -49,6 +62,10 @@ export const REALITY_PRODUCTION_HOST_BOUNDARY:
     noStorageWrite: true,
     noNavigationMutation: true,
     hostAcceptanceOutcomeRequired: true,
+    typedLifeSurfaceOutcomeRequired: true,
+    typedPressureSurfaceOutcomeRequired: true,
+    domSurfaceInspectionForbidden: true,
+    fixedTimerSuccessForbidden: true,
   });
 
 type RealityPressureHostState = Readonly<{
@@ -60,6 +77,11 @@ type RealityInnerViewApproachState =
   | "INACTIVE"
   | "AWAITING_BODY_APPROACH"
   | "BODY_APPROACHED";
+
+type RealitySurfaceOutcomeState = Readonly<{
+  lifeSurfaceOutcome: RealityLifeSurfaceOutcome | null;
+  pressureSurfaceOutcome: RealityPressureSurfaceOutcome | null;
+}>;
 
 const initializePressureHostState = (
   pressureSeedContinuationContext: RealityProductionHostProps["pressureSeedContinuationContext"],
@@ -92,7 +114,6 @@ export function RealityProductionHost({
   onRealityAcceptanceOutcome,
   onContinueToGravity,
 }: RealityProductionHostProps) {
-  const minimumSurfaceRef = useRef<HTMLElement | null>(null);
   const reportedAcceptanceAttemptRef = useRef<string | null>(null);
   const sourceContext = routeAuthorization.sourceContext;
   const [pressureHostState, setPressureHostState] =
@@ -101,6 +122,13 @@ export function RealityProductionHost({
     );
   const [innerViewApproachState, setInnerViewApproachState] =
     useState<RealityInnerViewApproachState>("INACTIVE");
+  const [surfaceOutcomes, setSurfaceOutcomes] =
+    useState<RealitySurfaceOutcomeState>(() =>
+      Object.freeze({
+        lifeSurfaceOutcome: null,
+        pressureSurfaceOutcome: null,
+      }),
+    );
   const pressureSeedHostInputReady =
     isRealityProductionPressureHostInputReady(
       pressureSeedHostInput,
@@ -130,6 +158,61 @@ export function RealityProductionHost({
     `${encounterAdmission.intentReferenceId}:` +
     `${encounterAdmission.encounterCycleId}:` +
     `${encounterAdmission.intentRevision}`;
+  const realitySurfaceAdmissionAttempt = useMemo(
+    () =>
+      Object.freeze({
+        intentReferenceId: encounterAdmission.intentReferenceId,
+        encounterCycleId: encounterAdmission.encounterCycleId,
+        intentRevision: encounterAdmission.intentRevision,
+        identityReferences: encounterAdmission.identityReferences,
+      }),
+    [encounterAdmission],
+  );
+  const surfaceOutcomeMatchesCurrentAttempt = useCallback(
+    (
+      outcome:
+        | RealityLifeSurfaceOutcome
+        | RealityPressureSurfaceOutcome,
+    ) =>
+      outcome.intentReferenceId ===
+        realitySurfaceAdmissionAttempt.intentReferenceId &&
+      outcome.encounterCycleId ===
+        realitySurfaceAdmissionAttempt.encounterCycleId &&
+      outcome.intentRevision ===
+        realitySurfaceAdmissionAttempt.intentRevision &&
+      outcome.sourceReferenceId ===
+        realitySurfaceAdmissionAttempt.identityReferences
+          .sourceReferenceId,
+    [realitySurfaceAdmissionAttempt],
+  );
+  const handleRealityLifeSurfaceOutcome = useCallback(
+    (outcome: RealityLifeSurfaceOutcome) => {
+      if (!surfaceOutcomeMatchesCurrentAttempt(outcome)) return;
+      setSurfaceOutcomes((current) =>
+        current.lifeSurfaceOutcome === null
+          ? Object.freeze({
+              ...current,
+              lifeSurfaceOutcome: outcome,
+            })
+          : current,
+      );
+    },
+    [surfaceOutcomeMatchesCurrentAttempt],
+  );
+  const handleRealityPressureSurfaceOutcome = useCallback(
+    (outcome: RealityPressureSurfaceOutcome) => {
+      if (!surfaceOutcomeMatchesCurrentAttempt(outcome)) return;
+      setSurfaceOutcomes((current) =>
+        current.pressureSurfaceOutcome === null
+          ? Object.freeze({
+              ...current,
+              pressureSurfaceOutcome: outcome,
+            })
+          : current,
+      );
+    },
+    [surfaceOutcomeMatchesCurrentAttempt],
+  );
 
   useEffect(() => {
     if (
@@ -154,55 +237,84 @@ export function RealityProductionHost({
       return undefined;
     }
 
-    const animationFrame = window.requestAnimationFrame(() => {
-      const minimumSurface = minimumSurfaceRef.current;
-      const lifeSurface =
-        minimumSurface?.querySelector("canvas") ?? null;
-      const pressureSurface =
-        minimumSurface?.querySelector(
-          '[data-pressure-seed-presentation="V2"]',
-        ) ?? null;
-      if (
-        minimumSurface === null ||
-        !minimumSurface.isConnected ||
-        lifeSurface === null ||
-        pressureSurface === null
-      ) {
-        reportedAcceptanceAttemptRef.current = acceptanceAttemptKey;
-        onRealityAcceptanceOutcome(
-          Object.freeze({
-            status: "REALITY_HOST_UNAVAILABLE" as const,
-            intentReferenceId: encounterAdmission.intentReferenceId,
-            encounterCycleId: encounterAdmission.encounterCycleId,
-            intentRevision: encounterAdmission.intentRevision,
-            sourceReferenceId:
-              encounterAdmission.identityReferences.sourceReferenceId,
-            reason: "MINIMUM_SURFACE_NOT_PRESENTED" as const,
-            reportedAt: new Date().toISOString(),
-          }),
-        );
-        return;
-      }
-      const reducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
+    const transactionResult =
+      resolveRealitySurfaceAdmissionTransaction({
+        admission: encounterAdmission,
+        lifeSurfaceOutcome: surfaceOutcomes.lifeSurfaceOutcome,
+        pressureSurfaceOutcome:
+          surfaceOutcomes.pressureSurfaceOutcome,
+      });
+    if (transactionResult.status === "PENDING") {
+      return undefined;
+    }
+    if (transactionResult.status === "REJECTED") {
       reportedAcceptanceAttemptRef.current = acceptanceAttemptKey;
       onRealityAcceptanceOutcome(
         Object.freeze({
-          status: "REALITY_MINIMUM_PRESENTED" as const,
+          status: "REALITY_HOST_UNAVAILABLE" as const,
           intentReferenceId: encounterAdmission.intentReferenceId,
           encounterCycleId: encounterAdmission.encounterCycleId,
           intentRevision: encounterAdmission.intentRevision,
           sourceReferenceId:
             encounterAdmission.identityReferences.sourceReferenceId,
-          presentedSurface: reducedMotion
-            ? "REALITY_STATIC_LIFE_UNIVERSE_AND_PRESSURE_CANDIDATES"
-            : "REALITY_LIFE_UNIVERSE_AND_PRESSURE_CANDIDATES",
-          committedAt: new Date().toISOString(),
+          reason:
+            transactionResult.reason.startsWith("LIFE_")
+              ? "LIFE_SURFACE_OUTCOME_REJECTED"
+              : "PRESSURE_SURFACE_OUTCOME_REJECTED",
+          reportedAt: new Date().toISOString(),
         }),
       );
-    });
-    return () => window.cancelAnimationFrame(animationFrame);
+      return undefined;
+    }
+    reportedAcceptanceAttemptRef.current = acceptanceAttemptKey;
+    onRealityAcceptanceOutcome(
+      Object.freeze({
+        status: "REALITY_MINIMUM_PRESENTED" as const,
+        intentReferenceId: encounterAdmission.intentReferenceId,
+        encounterCycleId: encounterAdmission.encounterCycleId,
+        intentRevision: encounterAdmission.intentRevision,
+        sourceReferenceId:
+          encounterAdmission.identityReferences.sourceReferenceId,
+        presentedSurface:
+          transactionResult.transaction.minimumSurface,
+        transaction: transactionResult.transaction,
+        committedAt: transactionResult.transaction.committedAt,
+      }),
+    );
+    return undefined;
+  }, [
+    acceptanceAttemptKey,
+    encounterAdmission,
+    minimumInputReady,
+    onRealityAcceptanceOutcome,
+    surfaceOutcomes.lifeSurfaceOutcome,
+    surfaceOutcomes.pressureSurfaceOutcome,
+  ]);
+
+  useEffect(() => {
+    if (!minimumInputReady) return undefined;
+    const watchdog = window.setTimeout(() => {
+      if (
+        reportedAcceptanceAttemptRef.current ===
+        acceptanceAttemptKey
+      ) {
+        return;
+      }
+      reportedAcceptanceAttemptRef.current = acceptanceAttemptKey;
+      onRealityAcceptanceOutcome(
+        Object.freeze({
+          status: "REALITY_HOST_UNAVAILABLE" as const,
+          intentReferenceId: encounterAdmission.intentReferenceId,
+          encounterCycleId: encounterAdmission.encounterCycleId,
+          intentRevision: encounterAdmission.intentRevision,
+          sourceReferenceId:
+            encounterAdmission.identityReferences.sourceReferenceId,
+          reason: "SURFACE_OUTCOME_WATCHDOG_EXPIRED" as const,
+          reportedAt: new Date().toISOString(),
+        }),
+      );
+    }, MINIMUM_SURFACE_OUTCOME_WATCHDOG_MS);
+    return () => window.clearTimeout(watchdog);
   }, [
     acceptanceAttemptKey,
     encounterAdmission,
@@ -430,7 +542,6 @@ export function RealityProductionHost({
 
   return (
     <main
-      ref={minimumSurfaceRef}
       className="gy-reality-life-universe"
       data-production-reality-status="AUTHORIZED_PRODUCTION_REALITY_SOURCE"
       data-reality-production-host-state={
@@ -551,6 +662,12 @@ export function RealityProductionHost({
         latestCrystalSourceSlot={latestCrystalSourceSlot}
         choiceLifeTraceMemoryKey={choiceLifeTraceMemoryKey}
         choiceLifeTraceSourceSlot={choiceLifeTraceSourceSlot}
+        realitySurfaceAdmissionAttempt={
+          realitySurfaceAdmissionAttempt
+        }
+        onRealityLifeSurfaceOutcome={
+          handleRealityLifeSurfaceOutcome
+        }
       />
       <p
         className="gy-reality-life-universe__arrival-copy"
@@ -568,13 +685,22 @@ export function RealityProductionHost({
       <p className="gy-reality-life-universe__continuity-copy">
         {realityContinuityCopy}
       </p>
-      <RealityPressureSeedPresentation
-        session={pressureSeedSession}
-        onRecognize={recognizePressureSeed}
-        onRequestNextBundle={requestNextPressureSeedBundle}
-        onPause={pausePressureSeed}
-        onContinueToGravity={continueToGravity}
-      />
+      {surfaceOutcomes.lifeSurfaceOutcome?.status ===
+      "REALITY_LIFE_SURFACE_PRESENTED" ? (
+        <RealityPressureSeedPresentation
+          session={pressureSeedSession}
+          onRecognize={recognizePressureSeed}
+          onRequestNextBundle={requestNextPressureSeedBundle}
+          onPause={pausePressureSeed}
+          onContinueToGravity={continueToGravity}
+          realitySurfaceAdmissionAttempt={
+            realitySurfaceAdmissionAttempt
+          }
+          onRealityPressureSurfaceOutcome={
+            handleRealityPressureSurfaceOutcome
+          }
+        />
+      ) : null}
     </main>
   );
 }

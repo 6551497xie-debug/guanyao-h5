@@ -23,6 +23,7 @@ import type {
 import {
   XINMAI_REALITY_ENCOUNTER_INTENT_SCHEMA_VERSION,
 } from "../types/xinmaiRealityEncounterIntent";
+import { isRealitySurfaceAdmissionTransactionValid } from "./xinmaiRealitySurfaceAdmissionTransaction";
 
 const INTENT_TTL_MS = 2 * 60 * 60 * 1_000;
 
@@ -627,6 +628,41 @@ export function commitRealityEncounterActive(
       intentRevision: outcome.intentRevision,
       stage: "MINIMUM_SURFACE",
       reason: "MINIMUM_SURFACE_NOT_PRESENTED",
+    });
+    return Object.freeze({
+      status: "REJECTED" as const,
+      operation: "COMMIT_ACTIVE" as const,
+      intent: currentIntent,
+      reason: "HOST_OUTCOME_MISMATCH" as const,
+    });
+  }
+  if (
+    outcome.transaction === undefined ||
+    outcome.committedAt !== outcome.transaction.committedAt ||
+    outcome.presentedSurface !==
+      outcome.transaction.minimumSurface ||
+    !isRealitySurfaceAdmissionTransactionValid(
+      outcome.transaction,
+      Object.freeze({
+        intentReferenceId: currentIntent.intentReferenceId,
+        encounterCycleId: currentIntent.encounterCycleId,
+        intentRevision: currentIntent.revision,
+        identityReferences: Object.freeze({
+          sourceReferenceId: currentIntent.sourceReferenceId,
+          starBeastIdentityReferenceId:
+            currentIntent.starBeastIdentityReferenceId,
+          mansionCoordinateReferenceId:
+            currentIntent.mansionCoordinateReferenceId,
+        }),
+      }),
+    )
+  ) {
+    failRealityEncounterAcceptance({
+      intentReferenceId: outcome.intentReferenceId,
+      encounterCycleId: outcome.encounterCycleId,
+      intentRevision: outcome.intentRevision,
+      stage: "MINIMUM_SURFACE",
+      reason: "HOST_OUTCOME_MISMATCH",
     });
     return Object.freeze({
       status: "REJECTED" as const,

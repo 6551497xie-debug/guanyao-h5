@@ -11,6 +11,10 @@ import type {
 } from "../types/genesisProductionExperiencePage";
 import type { GenesisWebGLRendererCoreFallback } from "../types/genesisWebGLRendererCore";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
+import type {
+  RealityLifeSurfaceOutcome,
+  RealitySurfaceAdmissionAttempt,
+} from "../types/xinmaiRealitySurfaceAdmission";
 import {
   DORMANT_LIFE_WHISPER_RELATIONSHIP_VISUAL_FACT,
   type LifeWhisperRelationshipVisualFact,
@@ -30,6 +34,20 @@ type LifeWhisperSurfaceVisualResponseOutcomeInput =
       : never
     : never;
 
+type RealityLifeSurfaceOutcomeInput =
+  RealityLifeSurfaceOutcome extends infer Outcome
+    ? Outcome extends RealityLifeSurfaceOutcome
+      ? Omit<
+          Outcome,
+          | "intentReferenceId"
+          | "encounterCycleId"
+          | "intentRevision"
+          | "identityReferences"
+          | "sourceReferenceId"
+        >
+      : never
+    : never;
+
 export function RealityLifeUniverseCanvas({
   visualContinuity,
   selectedPressureSeedContext = null,
@@ -44,6 +62,8 @@ export function RealityLifeUniverseCanvas({
   lifeWhisperRelationshipVisualFact =
     DORMANT_LIFE_WHISPER_RELATIONSHIP_VISUAL_FACT,
   onLifeWhisperVisualResponseOutcome,
+  realitySurfaceAdmissionAttempt,
+  onRealityLifeSurfaceOutcome,
 }: Pick<RealityProductionHostProps, "visualContinuity"> &
   Readonly<{
     selectedPressureSeedContext?:
@@ -63,6 +83,10 @@ export function RealityLifeUniverseCanvas({
     lifeWhisperRelationshipVisualFact?: LifeWhisperRelationshipVisualFact;
     onLifeWhisperVisualResponseOutcome?: (
       outcome: LifeWhisperSurfaceVisualResponseOutcome,
+    ) => void;
+    realitySurfaceAdmissionAttempt?: RealitySurfaceAdmissionAttempt;
+    onRealityLifeSurfaceOutcome?: (
+      outcome: RealityLifeSurfaceOutcome,
     ) => void;
   }>) {
   const continuesRecognizedPressure = selectedPressureSeedContext !== null;
@@ -94,6 +118,8 @@ export function RealityLifeUniverseCanvas({
     onLifeWhisperVisualResponseOutcome;
   const lastDeliveredLifeWhisperOutcomeKeyRef = useRef<string | null>(null);
   const staticLifeWhisperResponseRef = useRef<SVGSVGElement | null>(null);
+  const realityStaticLifeSurfaceRef =
+    useRef<SVGSVGElement | null>(null);
   const emitLifeWhisperVisualResponseOutcome = useCallback(
     (
       outcome: LifeWhisperSurfaceVisualResponseOutcomeInput,
@@ -114,13 +140,62 @@ export function RealityLifeUniverseCanvas({
     },
     [visualContinuity.sourceReferenceId],
   );
+  const onRealityLifeSurfaceOutcomeRef = useRef(
+    onRealityLifeSurfaceOutcome,
+  );
+  onRealityLifeSurfaceOutcomeRef.current =
+    onRealityLifeSurfaceOutcome;
+  const lastDeliveredRealityLifeSurfaceOutcomeKeyRef =
+    useRef<string | null>(null);
+  const emitRealityLifeSurfaceOutcome = useCallback(
+    (outcome: RealityLifeSurfaceOutcomeInput) => {
+      if (realitySurfaceAdmissionAttempt === undefined) {
+        return;
+      }
+      const outcomeKey =
+        `${realitySurfaceAdmissionAttempt.intentReferenceId}:` +
+        `${realitySurfaceAdmissionAttempt.encounterCycleId}:` +
+        `${realitySurfaceAdmissionAttempt.intentRevision}:` +
+        outcome.status;
+      if (
+        lastDeliveredRealityLifeSurfaceOutcomeKeyRef.current ===
+        outcomeKey
+      ) {
+        return;
+      }
+      lastDeliveredRealityLifeSurfaceOutcomeKeyRef.current =
+        outcomeKey;
+      onRealityLifeSurfaceOutcomeRef.current?.(
+        Object.freeze({
+          ...realitySurfaceAdmissionAttempt,
+          sourceReferenceId: visualContinuity.sourceReferenceId,
+          ...outcome,
+        }) as RealityLifeSurfaceOutcome,
+      );
+    },
+    [
+      realitySurfaceAdmissionAttempt,
+      visualContinuity.sourceReferenceId,
+    ],
+  );
   const [rendererState, setRendererState] =
     useState<GenesisProductionCanvasHostState>("STARTING");
   const [rendererFallbackReason, setRendererFallbackReason] =
     useState<GenesisWebGLRendererCoreFallback["reason"] | null>(null);
+  const [
+    realityLifeSurfaceUnavailableReason,
+    setRealityLifeSurfaceUnavailableReason,
+  ] = useState<
+    Extract<
+      RealityLifeSurfaceOutcome,
+      { status: "REALITY_LIFE_SURFACE_UNAVAILABLE" }
+    >["reason"] | null
+  >(null);
   const [arrivalPhase, setArrivalPhase] = useState(() =>
     continuesRecognizedPressure ? "SETTLED" : "IDENTITY_HOLD",
   );
+  const arrivalPhaseRef = useRef(arrivalPhase);
+  arrivalPhaseRef.current = arrivalPhase;
   const [lifeWeatherPhase, setLifeWeatherPhase] = useState<
     "QUIET_WITH_MEMORY" | "CURRENT_REALITY_SENSING" | "CURRENT_REALITY_SETTLED"
   >(() =>
@@ -307,6 +382,7 @@ export function RealityLifeUniverseCanvas({
     const canvas = canvasRef.current;
     if (canvas === null) {
       setRendererFallbackReason(null);
+      setRealityLifeSurfaceUnavailableReason("CANVAS_REQUIRED");
       setRendererState("BLOCKED");
       return undefined;
     }
@@ -323,11 +399,15 @@ export function RealityLifeUniverseCanvas({
       realityPressureConsumer.status === "BLOCKED"
     ) {
       setRendererFallbackReason(null);
+      setRealityLifeSurfaceUnavailableReason("SOURCE_NOT_READY");
       setRendererState("BLOCKED");
       return undefined;
     }
     if (rendererFailureRequested) {
       setRendererFallbackReason(null);
+      setRealityLifeSurfaceUnavailableReason(
+        "RENDERER_INITIALIZATION_FAILED",
+      );
       setRendererState("BLOCKED");
       return undefined;
     }
@@ -372,24 +452,53 @@ export function RealityLifeUniverseCanvas({
 
     if (rendererResult.status === "BLOCKED") {
       setRendererFallbackReason(null);
+      setRealityLifeSurfaceUnavailableReason("RENDERER_BLOCKED");
       setRendererState("BLOCKED");
       return undefined;
     }
     if (rendererResult.status === "FALLBACK_REQUIRED") {
       setRendererFallbackReason(rendererResult.fallback.reason);
+      setRealityLifeSurfaceUnavailableReason(null);
       setRendererState("FALLBACK_REQUIRED");
       return undefined;
     }
 
     setRendererFallbackReason(null);
+    setRealityLifeSurfaceUnavailableReason(null);
     setRendererState("RENDERING");
     const controller = rendererResult.controller;
     const startedAt = performance.now();
     let animationFrame = 0;
     const renderFrame = (timestamp: number) => {
-      controller.renderFrame(timestamp - startedAt);
+      try {
+        controller.renderFrame(timestamp - startedAt);
+      } catch {
+        emitRealityLifeSurfaceOutcome({
+          status: "REALITY_LIFE_SURFACE_UNAVAILABLE",
+          reason: "RENDERER_INITIALIZATION_FAILED",
+          reportedAt: new Date().toISOString(),
+        });
+        return;
+      }
+      const rendererSnapshot = controller.getSnapshot();
+      if (rendererSnapshot.contextState === "LOST") {
+        emitRealityLifeSurfaceOutcome({
+          status: "REALITY_LIFE_SURFACE_UNAVAILABLE",
+          reason: "WEBGL_CONTEXT_LOST",
+          reportedAt: new Date().toISOString(),
+        });
+      } else if (
+        rendererSnapshot.frameCount > 0 &&
+        arrivalPhaseRef.current === "SETTLED"
+      ) {
+        emitRealityLifeSurfaceOutcome({
+          status: "REALITY_LIFE_SURFACE_PRESENTED",
+          surfaceMode: "WEBGL_LIFE_UNIVERSE",
+          presentedAt: new Date().toISOString(),
+        });
+      }
       const visualOutcome =
-        controller.getSnapshot().lifeWhisperVisualResponseOutcome;
+        rendererSnapshot.lifeWhisperVisualResponseOutcome;
       if (visualOutcome !== null) {
         emitLifeWhisperVisualResponseOutcome(visualOutcome);
       }
@@ -413,12 +522,55 @@ export function RealityLifeUniverseCanvas({
       controller.dispose();
     };
   }, [
+    emitRealityLifeSurfaceOutcome,
     emitLifeWhisperVisualResponseOutcome,
     readLifeWhisperRelationshipVisualFact,
     realityPressureConsumer,
     reducedMotionRequested,
     rendererFailureRequested,
     visualContinuity,
+  ]);
+
+  const realityStaticLifeSurfaceVisible =
+    realitySurfaceAdmissionAttempt !== undefined &&
+    rendererState === "FALLBACK_REQUIRED" &&
+    rendererFallbackReason !== null;
+
+  useEffect(() => {
+    if (
+      !realityStaticLifeSurfaceVisible ||
+      arrivalPhase !== "SETTLED" ||
+      realityStaticLifeSurfaceRef.current?.isConnected !== true
+    ) {
+      return;
+    }
+    emitRealityLifeSurfaceOutcome({
+      status: "REALITY_LIFE_SURFACE_PRESENTED",
+      surfaceMode: "SEMANTIC_STATIC_LIFE_UNIVERSE",
+      presentedAt: new Date().toISOString(),
+    });
+  }, [
+    emitRealityLifeSurfaceOutcome,
+    arrivalPhase,
+    realityStaticLifeSurfaceVisible,
+  ]);
+
+  useEffect(() => {
+    if (
+      rendererState !== "BLOCKED" ||
+      realityLifeSurfaceUnavailableReason === null
+    ) {
+      return;
+    }
+    emitRealityLifeSurfaceOutcome({
+      status: "REALITY_LIFE_SURFACE_UNAVAILABLE",
+      reason: realityLifeSurfaceUnavailableReason,
+      reportedAt: new Date().toISOString(),
+    });
+  }, [
+    emitRealityLifeSurfaceOutcome,
+    realityLifeSurfaceUnavailableReason,
+    rendererState,
   ]);
 
   const staticLifeWhisperResponseVisible =
@@ -650,6 +802,42 @@ export function RealityLifeUniverseCanvas({
               ) : null}
             </g>
           ) : null}
+        </svg>
+      ) : null}
+      {realityStaticLifeSurfaceVisible ? (
+        <svg
+          ref={realityStaticLifeSurfaceRef}
+          className="gy-reality-life-universe__static-life-response"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          data-reality-static-life-universe="SAME_LIFE_PRESENTED"
+          data-source-reference-id={
+            visualContinuity.sourceReferenceId
+          }
+        >
+          <ellipse
+            cx="50"
+            cy="49"
+            rx="18"
+            ry="12"
+            fill="rgba(170, 213, 216, 0.035)"
+            stroke="rgba(190, 220, 220, 0.16)"
+            strokeWidth="0.22"
+          />
+          <path
+            d="M 34 50 Q 42 41 50 46 Q 58 40 67 50 Q 59 58 50 54 Q 41 59 34 50"
+            fill="none"
+            stroke="rgba(190, 220, 220, 0.24)"
+            strokeWidth="0.3"
+            strokeLinecap="round"
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r="2.5"
+            fill="rgba(244, 235, 206, 0.34)"
+          />
         </svg>
       ) : null}
       <canvas

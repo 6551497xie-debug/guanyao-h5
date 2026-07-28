@@ -17,6 +17,15 @@ const source = {
   authorization: read("src/services/realityProductionRouteAuthorization.ts"),
   activation: read("src/services/realityRouteActivationSourceContext.ts"),
   host: read("src/components/RealityProductionHost.tsx"),
+  surfaceTransaction: read(
+    "src/services/xinmaiRealitySurfaceAdmissionTransaction.ts",
+  ),
+  lifeSurface: read(
+    "src/components/RealityLifeUniverseCanvas.tsx",
+  ),
+  pressureSurface: read(
+    "src/components/RealityPressureSeedPresentation.tsx",
+  ),
   app: read("src/App.tsx"),
 };
 
@@ -91,7 +100,12 @@ try {
   assertIncludes("Activation is revision-scoped", source.activation, "encounterAdmission.intentRevision");
 
   assertIncludes("Host reports real minimum surface outcome", source.host, 'status: "REALITY_MINIMUM_PRESENTED"');
-  assertIncludes("Host checks connected surface", source.host, "!minimumSurface.isConnected");
+  assertIncludes("Host assembles typed surface transaction", source.host, "resolveRealitySurfaceAdmissionTransaction");
+  assertIncludes("Life surface reports typed outcome", source.lifeSurface, "onRealityLifeSurfaceOutcome");
+  assertIncludes("Pressure surface reports typed outcome", source.pressureSurface, "onRealityPressureSurfaceOutcome");
+  assertIncludes("Surface transaction validates identity", source.surfaceTransaction, "identityMatches");
+  assertExcludes("Host no longer inspects child DOM", source.host, "querySelector");
+  assertExcludes("Host has no frame-delay success path", source.host, "requestAnimationFrame");
   assertIncludes("Host does not own Active state", source.host, "onRealityAcceptanceOutcome");
   assertIncludes("App owns route chunk failure boundary", source.app, "RealityRouteLoadBoundary");
   assertIncludes("App reports route load failure", source.app, 'reason: "ROUTE_LOAD_UNAVAILABLE"');
