@@ -17,6 +17,10 @@ const routePath = path.join(
   rootDir,
   "src/pages/RealityProductionRouteEntry.tsx",
 );
+const routeTypePath = path.join(
+  rootDir,
+  "src/types/realityProductionRouteEntry.ts",
+);
 const tempDir = fs.mkdtempSync(
   path.join(os.tmpdir(), "xinmai-intent-recovery-"),
 );
@@ -31,6 +35,12 @@ const assertEqual = (name, actual, expected) => {
 const assertExcludes = (name, source, marker) => {
   if (source.includes(marker)) {
     throw new Error(`${name} forbidden=${marker}`);
+  }
+  console.log(`PASS | ${name}`);
+};
+const assertIncludes = (name, source, marker) => {
+  if (!source.includes(marker)) {
+    throw new Error(`${name} missing=${marker}`);
   }
   console.log(`PASS | ${name}`);
 };
@@ -142,9 +152,25 @@ try {
 
   const controllerSource = fs.readFileSync(controllerPath, "utf8");
   const routeSource = fs.readFileSync(routePath, "utf8");
+  const routeTypeSource = fs.readFileSync(routeTypePath, "utf8");
   assertExcludes("Controller has no direct sessionStorage access", controllerSource, "sessionStorage");
   assertExcludes("Route has no direct sessionStorage access", routeSource, "sessionStorage");
   assertExcludes("Route does not import Recovery Adapter", routeSource, "xinmaiRealityEncounterIntentRecoveryAdapter");
+  assertIncludes(
+    "Controller freezes the two-hour TTL",
+    controllerSource,
+    "const INTENT_TTL_MS = 2 * 60 * 60 * 1_000",
+  );
+  for (const marker of [
+    "typedIdentityRecoveryAdapterConsumptionOnly: true",
+    "typedIntentRecoveryViaControllerOnly: true",
+    "noDirectStorageRead: true",
+    "recoveryCandidateIsNotAuthority: true",
+    "identityOnlyAuthorizationForbidden: true",
+  ]) {
+    assertIncludes("Route declares typed recovery boundary", routeSource, marker);
+    assertIncludes("Route type declares typed recovery boundary", routeTypeSource, marker);
+  }
 
   console.log("\n[XINMAI REALITY ENCOUNTER INTENT RECOVERY] PASS");
 } catch (error) {

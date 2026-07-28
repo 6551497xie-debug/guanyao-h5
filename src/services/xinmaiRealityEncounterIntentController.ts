@@ -24,7 +24,7 @@ import {
   XINMAI_REALITY_ENCOUNTER_INTENT_SCHEMA_VERSION,
 } from "../types/xinmaiRealityEncounterIntent";
 
-const INTENT_TTL_MS = 24 * 60 * 60 * 1_000;
+const INTENT_TTL_MS = 2 * 60 * 60 * 1_000;
 
 let currentIntent: RealityEncounterIntent | null = null;
 
@@ -110,8 +110,20 @@ const nextIntent = (
   return updated;
 };
 
-const isExpired = (intent: RealityEncounterIntent): boolean =>
-  Date.parse(intent.expiresAt) <= Date.now();
+const isExpired = (intent: RealityEncounterIntent): boolean => {
+  const now = Date.now();
+  const issuedAt = Date.parse(intent.issuedAt);
+  const declaredExpiry = Date.parse(intent.expiresAt);
+  if (
+    !Number.isFinite(issuedAt) ||
+    !Number.isFinite(declaredExpiry) ||
+    issuedAt > now ||
+    declaredExpiry <= issuedAt
+  ) {
+    return true;
+  }
+  return Math.min(declaredExpiry, issuedAt + INTENT_TTL_MS) <= now;
+};
 
 const createAdmission = (
   intent: RealityEncounterIntent,
@@ -251,12 +263,9 @@ export function requestRealityEncounter(
     });
   }
 
-  const requestedAtDate = input.requestedAt
-    ? new Date(input.requestedAt)
-    : new Date();
-  const issuedAt = Number.isNaN(requestedAtDate.getTime())
-    ? new Date().toISOString()
-    : requestedAtDate.toISOString();
+  // Recovery lifetime begins when the Controller accepts the explicit request.
+  // A producer-provided timestamp must never extend the recovery window.
+  const issuedAt = new Date().toISOString();
   const intent: RealityEncounterIntent = Object.freeze({
     schemaVersion: XINMAI_REALITY_ENCOUNTER_INTENT_SCHEMA_VERSION,
     source: "xinmai_reality_encounter_intent_controller" as const,

@@ -15,7 +15,11 @@ import type {
 export type RealityProductionRouteEntryBoundary = Readonly<{
   productionRouteEntryOnly: true;
   exactRealityRouteOnly: true;
-  inMemoryRealityEntryContextOnly: true;
+  typedIdentityRecoveryAdapterConsumptionOnly: true;
+  typedIntentRecoveryViaControllerOnly: true;
+  noDirectStorageRead: true;
+  recoveryCandidateIsNotAuthority: true;
+  identityOnlyAuthorizationForbidden: true;
   realityEncounterIntentAuthorityRequired: true;
   realityRouteActivationSourceContextRequired: true;
   pressureCandidateActivationContextRequired: true;
@@ -36,7 +40,6 @@ export type RealityProductionRouteEntryBoundary = Readonly<{
   noCrystalExecution: true;
   noRendererInvocation: true;
   noSourceRecalculation: true;
-  noStorageRead: true;
   routeStateIsPresentationOnly: true;
   selectedPressureSeedHandoffWriteOnly: true;
   explicitDynamicsNavigationOnly: true;

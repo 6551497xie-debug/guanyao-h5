@@ -21,6 +21,21 @@ const assertEqual = (name, actual, expected) => {
   console.log(`PASS | ${name}`);
 };
 
+const TWO_HOURS_MS = 2 * 60 * 60 * 1_000;
+const initialNow = Date.parse("2026-07-28T08:00:00.000Z");
+const NativeDate = globalThis.Date;
+let controlledNow = initialNow;
+class ControlledDate extends NativeDate {
+  constructor(...args) {
+    super(...(args.length === 0 ? [controlledNow] : args));
+  }
+
+  static now() {
+    return controlledNow;
+  }
+}
+globalThis.Date = ControlledDate;
+
 const storageValues = new Map();
 globalThis.window = {
   sessionStorage: {
@@ -58,6 +73,9 @@ try {
     origin: "FIRST_ENCOUNTER",
     qualification: "WHISPER_SKIPPED",
     identityReferences: identity,
+    requestedAt: new NativeDate(
+      initialNow + 24 * 60 * 60 * 1_000,
+    ).toISOString(),
   });
   assertEqual("explicit request creates READY intent", requested.status, "READY");
   assertEqual(
@@ -66,6 +84,25 @@ try {
     "READY_TO_ENTER_REALITY",
   );
   assertEqual("recovery write is confirmed", requested.persistence, "CONFIRMED");
+  assertEqual(
+    "Controller owns the issued time",
+    requested.intent.issuedAt,
+    new NativeDate(initialNow).toISOString(),
+  );
+  assertEqual(
+    "producer timestamp cannot extend recovery",
+    Date.parse(requested.intent.expiresAt) -
+      Date.parse(requested.intent.issuedAt),
+    TWO_HOURS_MS,
+  );
+  const readyRecoverySnapshot = storageValues.get(
+    "xinmaiRealityEncounterIntentRecovery",
+  );
+  assertEqual(
+    "READY recovery snapshot is available for TTL boundaries",
+    typeof readyRecoverySnapshot,
+    "string",
+  );
 
   const repeated = runtime.requestRealityEncounter({
     origin: "FIRST_ENCOUNTER",
@@ -78,6 +115,128 @@ try {
     requested.intent.encounterCycleId,
   );
 
+  controlledNow = initialNow + TWO_HOURS_MS - 1;
+  const beforeBoundaryRuntime = await import(
+    `file://${outPath}?before-boundary=${Date.now()}`,
+  );
+  const beforeBoundary =
+    beforeBoundaryRuntime.establishRealityEncounterAdmission({
+      intentReferenceId: requested.intent.intentReferenceId,
+      identityReferences: identity,
+    });
+  assertEqual(
+    "TTL boundary minus one millisecond keeps recovery eligible",
+    beforeBoundary.status,
+    "RETRY_REQUIRED",
+  );
+  assertEqual(
+    "TTL boundary minus one millisecond is not expired",
+    beforeBoundary.reason,
+    "RETRY_NOT_AVAILABLE",
+  );
+  assertEqual(
+    "TTL boundary minus one millisecond keeps the same cycle",
+    beforeBoundary.intent.encounterCycleId,
+    requested.intent.encounterCycleId,
+  );
+  storageValues.set(
+    "xinmaiRealityEncounterIntentRecovery",
+    readyRecoverySnapshot,
+  );
+
+  controlledNow = initialNow + TWO_HOURS_MS;
+  const exactBoundaryRuntime = await import(
+    `file://${outPath}?exact-boundary=${Date.now()}`,
+  );
+  const exactBoundary =
+    exactBoundaryRuntime.establishRealityEncounterAdmission({
+      intentReferenceId: requested.intent.intentReferenceId,
+      identityReferences: identity,
+    });
+  assertEqual(
+    "TTL exact boundary is expired",
+    exactBoundary.reason,
+    "INTENT_EXPIRED",
+  );
+  assertEqual(
+    "TTL expiry keeps the same encounter cycle",
+    exactBoundary.intent.encounterCycleId,
+    requested.intent.encounterCycleId,
+  );
+  storageValues.set(
+    "xinmaiRealityEncounterIntentRecovery",
+    readyRecoverySnapshot,
+  );
+
+  controlledNow = initialNow + TWO_HOURS_MS + 1;
+  const afterBoundaryRuntime = await import(
+    `file://${outPath}?after-boundary=${Date.now()}`,
+  );
+  const afterBoundary =
+    afterBoundaryRuntime.establishRealityEncounterAdmission({
+      intentReferenceId: requested.intent.intentReferenceId,
+      identityReferences: identity,
+    });
+  assertEqual(
+    "TTL boundary plus one millisecond is expired",
+    afterBoundary.reason,
+    "INTENT_EXPIRED",
+  );
+
+  const overlongRecoverySnapshot = JSON.parse(readyRecoverySnapshot);
+  overlongRecoverySnapshot.intent.expiresAt = new NativeDate(
+    initialNow + 24 * 60 * 60 * 1_000,
+  ).toISOString();
+  storageValues.set(
+    "xinmaiRealityEncounterIntentRecovery",
+    JSON.stringify(overlongRecoverySnapshot),
+  );
+  controlledNow = initialNow + TWO_HOURS_MS;
+  const overlongRuntime = await import(
+    `file://${outPath}?overlong=${Date.now()}`,
+  );
+  const overlongRecovery =
+    overlongRuntime.establishRealityEncounterAdmission({
+      intentReferenceId: requested.intent.intentReferenceId,
+      identityReferences: identity,
+    });
+  assertEqual(
+    "legacy overlong snapshot cannot exceed the two-hour window",
+    overlongRecovery.reason,
+    "INTENT_EXPIRED",
+  );
+
+  const futureIssuedRecoverySnapshot = JSON.parse(readyRecoverySnapshot);
+  futureIssuedRecoverySnapshot.intent.issuedAt = new NativeDate(
+    initialNow + 30 * 60 * 1_000,
+  ).toISOString();
+  futureIssuedRecoverySnapshot.intent.expiresAt = new NativeDate(
+    initialNow + 30 * 60 * 1_000 + TWO_HOURS_MS,
+  ).toISOString();
+  storageValues.set(
+    "xinmaiRealityEncounterIntentRecovery",
+    JSON.stringify(futureIssuedRecoverySnapshot),
+  );
+  controlledNow = initialNow;
+  const rollbackClockRuntime = await import(
+    `file://${outPath}?clock-rollback=${Date.now()}`,
+  );
+  const rollbackClockRecovery =
+    rollbackClockRuntime.establishRealityEncounterAdmission({
+      intentReferenceId: requested.intent.intentReferenceId,
+      identityReferences: identity,
+    });
+  assertEqual(
+    "clock rollback cannot extend recovery",
+    rollbackClockRecovery.reason,
+    "INTENT_EXPIRED",
+  );
+
+  storageValues.set(
+    "xinmaiRealityEncounterIntentRecovery",
+    readyRecoverySnapshot,
+  );
+  controlledNow = initialNow;
   const admission = runtime.establishRealityEncounterAdmission({
     intentReferenceId: requested.intent.intentReferenceId,
     identityReferences: identity,
@@ -114,6 +273,11 @@ try {
     "Controller is the single Active authority",
     runtime.readCurrentRealityEncounterIntent().state,
     "ACTIVE_IN_REALITY",
+  );
+  assertEqual(
+    "ACTIVE keeps the original recovery deadline",
+    committed.intent.expiresAt,
+    requested.intent.expiresAt,
   );
 
   const recoveredRuntime = await import(
@@ -188,6 +352,7 @@ try {
     reason: "ROUTE_LOAD_UNAVAILABLE",
   });
   assertEqual("Active-before failure stays retryable", failed.status, "FAILED_RETRYABLE");
+  controlledNow = initialNow + 60 * 60 * 1_000;
   const retryRuntime = await import(
     `file://${outPath}?retry=${Date.now()}`
   );
@@ -220,6 +385,11 @@ try {
     "same-cycle retry advances revision",
     retry.admission.intentRevision > nextAdmission.admission.intentRevision,
     true,
+  );
+  assertEqual(
+    "same-cycle retry does not extend TTL",
+    retry.intent.expiresAt,
+    next.intent.expiresAt,
   );
 
   const identityMismatch =
@@ -256,5 +426,6 @@ try {
   console.error(error instanceof Error ? error.message : error);
   process.exitCode = 1;
 } finally {
+  globalThis.Date = NativeDate;
   fs.rmSync(tempDir, { recursive: true, force: true });
 }

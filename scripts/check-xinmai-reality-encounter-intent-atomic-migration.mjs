@@ -13,6 +13,7 @@ const source = {
   returning: read("src/pages/LaunchLab.tsx"),
   choice: read("src/pages/GravityPage.tsx"),
   route: read("src/pages/RealityProductionRouteEntry.tsx"),
+  routeType: read("src/types/realityProductionRouteEntry.ts"),
   authorization: read("src/services/realityProductionRouteAuthorization.ts"),
   activation: read("src/services/realityRouteActivationSourceContext.ts"),
   host: read("src/components/RealityProductionHost.tsx"),
@@ -66,6 +67,16 @@ try {
 
   assertIncludes("Route asks Controller for admission", source.route, "establishRealityEncounterAdmission");
   assertIncludes("Route consumes typed identity recovery", source.route, "recoverRealityRecognizedIdentity");
+  for (const marker of [
+    "typedIdentityRecoveryAdapterConsumptionOnly: true",
+    "typedIntentRecoveryViaControllerOnly: true",
+    "noDirectStorageRead: true",
+    "recoveryCandidateIsNotAuthority: true",
+    "identityOnlyAuthorizationForbidden: true",
+  ]) {
+    assertIncludes("Route recovery boundary names the current typed path", source.route, marker);
+    assertIncludes("Route recovery type names the current typed path", source.routeType, marker);
+  }
   assertIncludes("Route reports assembly failure", source.route, "failRealityEncounterAcceptance");
   assertIncludes("Route commits through Controller", source.route, "commitRealityEncounterActive");
   assertIncludes("Reality handoff terminates entry intent", source.route, 'terminateRealityEncounter(\n        "ENCOUNTER_COMPLETED"');
