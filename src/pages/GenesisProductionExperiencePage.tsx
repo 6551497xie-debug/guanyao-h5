@@ -55,6 +55,7 @@ import {
   createStarBeastRelationshipNamingAsset,
   persistRecognizedGenesisLifeAssets,
 } from "../services/sessionService";
+import { resolveRelationshipNamingEntryEligibility } from "../services/xinmaiRelationshipNamingPresentationState";
 import { STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS } from "../types/starBeastRelationshipNamingAsset";
 import "../styles/genesis-production-experience.css";
 
@@ -299,9 +300,14 @@ export function GenesisProductionExperiencePage({
   const lifeWhisperResponseSettled =
     lifeWhisperFact !== "WHISPER_SUBMITTED" ||
     lifeWhisperResponsePhase === "SETTLED";
+  const relationshipNamingEligibility =
+    resolveRelationshipNamingEntryEligibility({
+      lifeWhisperEntryReady,
+      lifeWhisperFact,
+      lifeWhisperResponsePhase,
+    });
   const relationshipNamingReady =
-    lifeWhisperEntryReady &&
-    lifeWhisperResponsePhase === "SETTLED";
+    relationshipNamingEligibility.status === "READY";
 
   useEffect(() => {
     clearGenesisProductionRealityEntryContext();
@@ -964,6 +970,9 @@ export function GenesisProductionExperiencePage({
       data-life-whisper-response-phase={lifeWhisperResponsePhase}
       data-relationship-naming-state={
         relationshipNamingReady ? relationshipNamingState : "NOT_READY"
+      }
+      data-relationship-naming-eligibility-source={
+        relationshipNamingEligibility.source
       }
     >
       <GenesisProductionRendererCanvasHost

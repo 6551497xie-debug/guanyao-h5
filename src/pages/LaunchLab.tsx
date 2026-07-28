@@ -63,6 +63,7 @@ import {
   STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS,
   type StarBeastRelationshipNamingReadResult,
 } from "../types/starBeastRelationshipNamingAsset";
+import { resolveRelationshipNameDeletePresentation } from "../services/xinmaiRelationshipNamingPresentationState";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
@@ -1172,6 +1173,10 @@ export function LaunchLab() {
     returningRelationshipNamePersistence,
     setReturningRelationshipNamePersistence,
   ] = useState<"PERSISTED" | "CURRENT_CYCLE_ONLY" | null>(null);
+  const [
+    returningRelationshipNameFeedback,
+    setReturningRelationshipNameFeedback,
+  ] = useState<"DELETE_UNCONFIRMED" | null>(null);
   const [returningDynamicsInput] = useState(() =>
     hasReturningLifeIdentity ? resolveDynamicsInputContext({}) : null,
   );
@@ -5392,6 +5397,7 @@ export function LaunchLab() {
   ]);
 
   const beginReturningRelationshipNameEdit = () => {
+    setReturningRelationshipNameFeedback(null);
     setReturningRelationshipNameDraft(
       returningRelationshipNaming.status === "AVAILABLE"
         ? returningRelationshipNaming.asset.relationshipName ?? ""
@@ -5403,6 +5409,7 @@ export function LaunchLab() {
   const saveReturningRelationshipName = () => {
     const relationshipName = returningRelationshipNameDraft.trim();
     if (!returningVisualReady || relationshipName.length === 0) return;
+    setReturningRelationshipNameFeedback(null);
     const result =
       returningRelationshipNaming.status === "AVAILABLE"
         ? renameStarBeastRelationshipNamingAsset({ relationshipName })
@@ -5423,6 +5430,7 @@ export function LaunchLab() {
 
   const clearReturningRelationshipName = () => {
     if (!returningVisualReady) return;
+    setReturningRelationshipNameFeedback(null);
     const result = clearStarBeastRelationshipNamingAsset();
     setReturningRelationshipNameEditing(false);
     setReturningRelationshipNameDraft("");
@@ -5440,11 +5448,25 @@ export function LaunchLab() {
 
   const deleteReturningRelationshipName = () => {
     if (!returningVisualReady) return;
-    deleteStarBeastRelationshipNamingAsset();
+    const deleteResult = deleteStarBeastRelationshipNamingAsset();
+    const presentation = resolveRelationshipNameDeletePresentation({
+      lastConfirmedRelationshipNaming: returningRelationshipNaming,
+      deleteOutcome: deleteResult.outcome,
+    });
+    setReturningRelationshipNaming(presentation.relationshipNaming);
+    setReturningRelationshipNamePersistence(null);
+    setReturningRelationshipNameFeedback(presentation.feedback);
+    if (presentation.feedback === "DELETE_UNCONFIRMED") {
+      setReturningRelationshipNameEditing(true);
+      setReturningRelationshipNameDraft(
+        returningRelationshipNaming.status === "AVAILABLE"
+          ? returningRelationshipNaming.asset.relationshipName ?? ""
+          : "",
+      );
+      return;
+    }
     setReturningRelationshipNameEditing(false);
     setReturningRelationshipNameDraft("");
-    setReturningRelationshipNaming({ status: "UNNAMED", asset: null });
-    setReturningRelationshipNamePersistence(null);
   };
 
   return (
@@ -5491,6 +5513,11 @@ export function LaunchLab() {
         data-returning-relationship-name-state={
           returningVisualReady
             ? returningRelationshipNaming.status
+            : "NOT_ACTIVE"
+        }
+        data-returning-relationship-name-feedback={
+          returningVisualReady
+            ? returningRelationshipNameFeedback ?? "NONE"
             : "NOT_ACTIVE"
         }
         data-returning-life-priority="IDENTITY_THEN_STATE_THEN_EXPERIENCE_THEN_IMPRINT"
@@ -5676,9 +5703,10 @@ export function LaunchLab() {
                       <div>
                         <button
                           type="button"
-                          onClick={() =>
+                          onClick={() => {
+                            setReturningRelationshipNameFeedback(null);
                             setReturningRelationshipNameEditing(false)
-                          }
+                          }}
                         >
                           保持现在
                         </button>
@@ -5708,6 +5736,12 @@ export function LaunchLab() {
                             删除称呼记录
                           </button>
                         </div>
+                      ) : null}
+                      {returningRelationshipNameFeedback ===
+                      "DELETE_UNCONFIRMED" ? (
+                        <p role="status">
+                          这个称呼还没有被删除，你可以稍后再试。
+                        </p>
                       ) : null}
                     </form>
                   ) : (
@@ -5940,6 +5974,12 @@ export function LaunchLab() {
             display: flex;
             justify-content: center;
             gap: 10px;
+          }
+          .gy-returning-life-world__relationship-name-controls form p {
+            margin: 1px 0 0;
+            color: rgba(201, 218, 216, 0.46);
+            font-size: min(9px, 2.3vw);
+            line-height: 1.55;
           }
           .gy-returning-life-world__relationship-name-controls
             > small {

@@ -195,6 +195,7 @@
     "check-xinmai-life-presence-star-dust-aura": "node scripts/check-xinmai-life-presence-star-dust-aura.mjs",
     "check-xinmai-28-mansion-starbeast-presence": "node scripts/check-xinmai-28-mansion-starbeast-presence.mjs",
     "check-xinmai-relationship-naming-major-blade-3": "node scripts/check-xinmai-relationship-naming-major-blade-3.mjs",
+    "check-xinmai-relationship-naming-delivery-correction": "node scripts/check-xinmai-relationship-naming-delivery-correction.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",

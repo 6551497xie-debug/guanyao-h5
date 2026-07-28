@@ -246,6 +246,18 @@ try {
     "DELETE_UNCONFIRMED",
   );
   storageWriteBlocked = false;
+  const relationshipAfterUnconfirmedDelete =
+    service.readStarBeastRelationshipNamingAsset();
+  assertEqual(
+    "failed deletion keeps last confirmed relationship available",
+    relationshipAfterUnconfirmedDelete.status,
+    "AVAILABLE",
+  );
+  assertEqual(
+    "failed deletion keeps last confirmed relationship name",
+    relationshipAfterUnconfirmedDelete.asset.relationshipName,
+    "待删",
+  );
 
   const genesisSource = fs.readFileSync(genesisPagePath, "utf8");
   const launchSource = fs.readFileSync(launchPagePath, "utf8");
@@ -284,6 +296,10 @@ try {
     path.join(rootDir, "src/pages/GenesisProductionExperiencePage.tsx"),
     path.join(rootDir, "src/pages/LaunchLab.tsx"),
     path.join(rootDir, "src/services/sessionService.ts"),
+    path.join(
+      rootDir,
+      "src/services/xinmaiRelationshipNamingPresentationState.ts",
+    ),
     path.join(rootDir, "src/types/starBeastRelationshipNamingAsset.ts"),
   ]);
   const namingTokens =
