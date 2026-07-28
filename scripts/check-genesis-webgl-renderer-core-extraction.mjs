@@ -7,6 +7,7 @@ const files = {
   core: "src/renderers/genesisWebGLRendererCore.ts",
   coreType: "src/types/genesisWebGLRendererCore.ts",
   prototype: "src/prototypes/isolatedWebGLRendererPrototype.ts",
+  realityCanvas: "src/components/RealityLifeUniverseCanvas.tsx",
   authorization: "src/types/isolatedWebGLRendererPrototypeAuthorization.ts",
   routes: "src/routes/guanyaoRoutes.ts",
   app: "src/App.tsx",
@@ -70,6 +71,37 @@ try {
 
   [
     "createGenesisWebGLRendererCore",
+    'source.sourceExperienceMode !== "REAL_USER_EXPERIENCE"',
+    'source.sourceProvenance !== "REAL_USER_SESSION"',
+    "source.sourceReferenceId !== visualContinuity.sourceReferenceId",
+    "controller.dispose()",
+    "data-reality-life-universe-renderer",
+  ].forEach((marker) =>
+    assertIncludes(
+      "Reality canvas remains an explicit production core facade",
+      source.realityCanvas,
+      marker,
+    ),
+  );
+  [
+    "fixtureGenesisVisualConsumerSource",
+    "starBeastSceneModelFixtures",
+    "isolatedWebGLRendererPrototype",
+    "react-router-dom",
+    "useNavigate",
+    "relationshipName",
+    "starBeastRelationshipNamingAsset",
+    "canvas.closest(",
+  ].forEach((marker) =>
+    assertExcludes(
+      "Reality canvas owns no fixture, route, relationship, or DOM reverse input",
+      source.realityCanvas,
+      marker,
+    ),
+  );
+
+  [
+    "createGenesisWebGLRendererCore",
     'classification !== "EXPERIMENT"',
     'authorization.productionStatus !== "FORBIDDEN"',
     'authorization.uiIntegrationStatus !== "FORBIDDEN"',
@@ -118,6 +150,7 @@ try {
     "only authorized facades consume shared core",
     coreConsumers.join(","),
     [
+      "src/components/RealityLifeUniverseCanvas.tsx",
       "src/prototypes/isolatedWebGLRendererPrototype.ts",
       "src/renderers/genesisProductionRendererHost.ts",
     ].join(","),

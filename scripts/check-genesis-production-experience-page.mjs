@@ -78,7 +78,7 @@ try {
     "useNavigate",
     "resolveGenesisProductionRealityRouteHandoff",
     "activateGenesisProductionRealityEntryContext",
-    'navigate(handoff.routeTarget)',
+    'navigate(handoff.routeTarget, {',
   ].forEach((marker) => assertIncludes("page owns only explicit authorized Reality navigation", source.page, marker));
 
   [
@@ -127,8 +127,24 @@ try {
     "noRouteRegistration: true",
   ].forEach((marker) => assertIncludes("production page contract", source.type, marker));
 
-  ["radial-gradient", "filter:", "animation:", "transition:"].forEach(
-    (marker) => assertExcludes("page stylesheet adds layout only", source.style, marker),
+  [
+    "radial-gradient(ellipse at 50% 46%",
+    "@keyframes gy-genesis-origin-invitation-breathe",
+    "@keyframes gy-genesis-origin-identity-reveal",
+    "@keyframes gy-genesis-life-whisper-arrive",
+    "@media (prefers-reduced-motion: reduce)",
+  ].forEach(
+    (marker) =>
+      assertIncludes(
+        "page stylesheet preserves authorized life-space continuity",
+        source.style,
+        marker,
+      ),
+  );
+  assertExcludes(
+    "page stylesheet adds no ungoverned transition",
+    source.style,
+    "transition:",
   );
 
   assertIncludes(

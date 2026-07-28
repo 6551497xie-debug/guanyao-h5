@@ -96,7 +96,7 @@ try {
     "activateGenesisProductionRealityEntryContext",
     "resolveGenesisProductionRealityRouteHandoff",
     'handoff.status === "READY"',
-    "navigate(handoff.routeTarget)",
+    "navigate(handoff.routeTarget, {",
   ].forEach((marker) =>
     assertIncludes("Genesis page performs explicit authorized handoff", source.page, marker),
   );
@@ -110,7 +110,7 @@ try {
   const resolutionIndex = source.page.indexOf(
     "resolveGenesisProductionRealityRouteHandoff({",
   );
-  const navigationIndex = source.page.indexOf("navigate(handoff.routeTarget)");
+  const navigationIndex = source.page.indexOf("navigate(handoff.routeTarget, {");
   assertEqual("entry context activation exists", activationIndex >= 0, true);
   assertEqual("handoff resolution follows context activation", resolutionIndex > activationIndex, true);
   assertEqual("navigation follows READY handoff resolution", navigationIndex > resolutionIndex, true);

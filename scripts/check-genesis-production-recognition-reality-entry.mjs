@@ -79,10 +79,14 @@ try {
     'data-reality-entry-eligibility=',
     "认出它一直在那里",
     "进入现实观察",
-    "Reality Entry 已准备好。",
   ].forEach((marker) => assertIncludes("production page owns explicit completion interactions", source.page, marker));
+  assertExcludes(
+    "production page exposes no engineering readiness copy",
+    source.page,
+    "Reality Entry 已准备好。",
+  );
   assertIncludes("production page resolves explicit Reality handoff", source.page, "resolveGenesisProductionRealityRouteHandoff");
-  assertIncludes("production page navigates only to authorized handoff target", source.page, "navigate(handoff.routeTarget)");
+  assertIncludes("production page navigates only to authorized handoff target", source.page, "navigate(handoff.routeTarget, {");
   assertExcludes("production page starts no Pressure runtime", source.page, "resolvePressureRecognitionUIRuntime");
   assertIncludes("Reality route is now registered behind its own authorization", source.routes, 'reality: "/reality"');
   assertIncludes("Launch to Genesis is explicitly connected", source.launch, "resolveLaunchGenesisProductionRouteHandoff");
