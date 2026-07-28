@@ -11,6 +11,10 @@ const genesisPagePath = path.join(
   "src/pages/GenesisProductionExperiencePage.tsx",
 );
 const launchPagePath = path.join(rootDir, "src/pages/LaunchLab.tsx");
+const relationshipPresentationStatePath = path.join(
+  rootDir,
+  "src/services/xinmaiRelationshipNamingPresentationState.ts",
+);
 const tempModulePath = path.join(
   os.tmpdir(),
   `xinmai-relationship-naming-${process.pid}.mjs`,
@@ -261,9 +265,13 @@ try {
 
   const genesisSource = fs.readFileSync(genesisPagePath, "utf8");
   const launchSource = fs.readFileSync(launchPagePath, "utf8");
+  const relationshipPresentationSource = fs.readFileSync(
+    relationshipPresentationStatePath,
+    "utf8",
+  );
   assertIncludes(
     "naming opens only after whisper response settles",
-    genesisSource,
+    relationshipPresentationSource,
     'lifeWhisperResponsePhase === "SETTLED"',
   );
   assertIncludes(

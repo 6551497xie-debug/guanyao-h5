@@ -106,6 +106,38 @@ try {
     settledEligibility.source,
     "WHISPER_RESPONSE_SETTLED",
   );
+  const realityIntentCases = [
+    ["undecided whisper cannot enter Reality", "NONE", "DORMANT", false],
+    [
+      "responding whisper cannot enter Reality",
+      "WHISPER_SUBMITTED",
+      "RESPONDING",
+      false,
+    ],
+    [
+      "settled whisper can enter Reality",
+      "WHISPER_SUBMITTED",
+      "SETTLED",
+      true,
+    ],
+    [
+      "explicit silence can enter Reality",
+      "WHISPER_SKIPPED",
+      "SKIPPED",
+      true,
+    ],
+  ];
+  for (const [name, lifeWhisperFact, lifeWhisperResponsePhase, expected] of
+    realityIntentCases) {
+    assertEqual(
+      name,
+      presentation.resolveFirstEncounterRealityEntryIntent({
+        lifeWhisperFact,
+        lifeWhisperResponsePhase,
+      }),
+      expected,
+    );
+  }
 
   const confirmedAsset = Object.freeze({
     schemaVersion: "XINMAI_STARBEAST_RELATIONSHIP_NAMING_ASSET_V1",
@@ -176,6 +208,16 @@ try {
     "Genesis consumes the shared naming eligibility behavior",
     genesisSource,
     "resolveRelationshipNamingEntryEligibility",
+  );
+  assertIncludes(
+    "Genesis consumes explicit relation intent for Reality entry",
+    genesisSource,
+    "resolveFirstEncounterRealityEntryIntent",
+  );
+  assertIncludes(
+    "Reality handler rejects unresolved relation intent",
+    genesisSource,
+    "!lifeWhisperRelationIntentResolved",
   );
   assertIncludes(
     "returning UI consumes authoritative delete outcome",

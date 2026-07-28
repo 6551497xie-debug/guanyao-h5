@@ -1,5 +1,21 @@
 import type { StarBeastRelationshipNamingReadResult } from "../types/starBeastRelationshipNamingAsset";
 
+type LifeWhisperRelationshipFact =
+  | "NONE"
+  | "WHISPER_SUBMITTED"
+  | "WHISPER_SKIPPED";
+
+type LifeWhisperRelationshipResponsePhase =
+  | "DORMANT"
+  | "RESPONDING"
+  | "SETTLED"
+  | "SKIPPED";
+
+type LifeWhisperRelationshipInput = Readonly<{
+  lifeWhisperFact: LifeWhisperRelationshipFact;
+  lifeWhisperResponsePhase: LifeWhisperRelationshipResponsePhase;
+}>;
+
 export type RelationshipNamingEntryEligibility = Readonly<{
   status: "READY" | "NOT_READY";
   source:
@@ -13,16 +29,8 @@ export type RelationshipNamingEntryEligibility = Readonly<{
 
 export function resolveRelationshipNamingEntryEligibility(input: Readonly<{
   lifeWhisperEntryReady: boolean;
-  lifeWhisperFact:
-    | "NONE"
-    | "WHISPER_SUBMITTED"
-    | "WHISPER_SKIPPED";
-  lifeWhisperResponsePhase:
-    | "DORMANT"
-    | "RESPONDING"
-    | "SETTLED"
-    | "SKIPPED";
-}>): RelationshipNamingEntryEligibility {
+}> &
+  LifeWhisperRelationshipInput): RelationshipNamingEntryEligibility {
   const responseSettled =
     input.lifeWhisperFact === "WHISPER_SUBMITTED" &&
     input.lifeWhisperResponsePhase === "SETTLED";
@@ -44,6 +52,18 @@ export function resolveRelationshipNamingEntryEligibility(input: Readonly<{
     namingOptional: true,
     realityEntryBlocked: false,
   });
+}
+
+export function resolveFirstEncounterRealityEntryIntent(
+  input: LifeWhisperRelationshipInput,
+): boolean {
+  const submittedResponseSettled =
+    input.lifeWhisperFact === "WHISPER_SUBMITTED" &&
+    input.lifeWhisperResponsePhase === "SETTLED";
+  const silenceExplicitlyChosen =
+    input.lifeWhisperFact === "WHISPER_SKIPPED" &&
+    input.lifeWhisperResponsePhase === "SKIPPED";
+  return submittedResponseSettled || silenceExplicitlyChosen;
 }
 
 export type RelationshipNameDeletePresentation = Readonly<{

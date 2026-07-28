@@ -55,7 +55,10 @@ import {
   createStarBeastRelationshipNamingAsset,
   persistRecognizedGenesisLifeAssets,
 } from "../services/sessionService";
-import { resolveRelationshipNamingEntryEligibility } from "../services/xinmaiRelationshipNamingPresentationState";
+import {
+  resolveFirstEncounterRealityEntryIntent,
+  resolveRelationshipNamingEntryEligibility,
+} from "../services/xinmaiRelationshipNamingPresentationState";
 import { STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS } from "../types/starBeastRelationshipNamingAsset";
 import "../styles/genesis-production-experience.css";
 
@@ -297,9 +300,11 @@ export function GenesisProductionExperiencePage({
       "ENTER_REALITY" &&
     presenceRecognitionContinuityResult?.status === "READY" &&
     recognitionResponseSettled;
-  const lifeWhisperResponseSettled =
-    lifeWhisperFact !== "WHISPER_SUBMITTED" ||
-    lifeWhisperResponsePhase === "SETTLED";
+  const lifeWhisperRelationIntentResolved =
+    resolveFirstEncounterRealityEntryIntent({
+      lifeWhisperFact,
+      lifeWhisperResponsePhase,
+    });
   const relationshipNamingEligibility =
     resolveRelationshipNamingEntryEligibility({
       lifeWhisperEntryReady,
@@ -812,7 +817,8 @@ export function GenesisProductionExperiencePage({
       archetypeForceCalibrationResult === null ||
       archetypeForceCalibrationResult.status !== "AVAILABLE" ||
       presenceVisualRealizationResult === null ||
-      presenceVisualRealizationResult.status !== "READY"
+      presenceVisualRealizationResult.status !== "READY" ||
+      !lifeWhisperRelationIntentResolved
     ) {
       return;
     }
@@ -1219,7 +1225,7 @@ export function GenesisProductionExperiencePage({
         "ENTER_REALITY" &&
       presenceRecognitionContinuityResult?.status === "READY" &&
       recognitionResponseSettled &&
-      lifeWhisperResponseSettled ? (
+      lifeWhisperRelationIntentResolved ? (
         <button
           type="button"
           className="gy-genesis-production-experience__completion-action"
