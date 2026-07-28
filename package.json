@@ -206,6 +206,7 @@
     "check-xinmai-reality-route-admission-post-commit-atomic-migration": "node scripts/check-xinmai-reality-route-admission-post-commit-atomic-migration.mjs",
     "check-xinmai-reality-surface-outcome-admission-transaction": "node scripts/check-xinmai-reality-surface-outcome-admission-transaction.mjs",
     "check-xinmai-reality-explicit-leave-termination": "node scripts/check-xinmai-reality-explicit-leave-termination.mjs",
+    "check-xinmai-reality-explicit-leave-navigation-delivery": "node scripts/check-xinmai-reality-explicit-leave-navigation-delivery.mjs",
     "check-isolated-webgl-renderer-harness": "node scripts/check-isolated-webgl-renderer-harness.mjs",
     "check-life-presence-scene-projection-calibration": "node scripts/check-life-presence-scene-projection-calibration.mjs",
     "check-genesis-time-sequence-recognition-projection": "node scripts/check-genesis-time-sequence-recognition-projection.mjs",

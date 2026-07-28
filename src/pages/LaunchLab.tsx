@@ -17,7 +17,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { EntryCardRendererOptions } from "../components/entry/EntryCardRenderer";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import {
@@ -76,6 +76,10 @@ import type {
   LifeWhisperSurfaceVisualResponseOutcome,
   LifeWhisperUnavailableContinuation,
 } from "../types/xinmaiLifeWhisperRelationship";
+import type {
+  RealityExplicitLeaveNavigationDeliveryTicket,
+  ReturningLifeWorldDeliveryOutcome,
+} from "../types/realityExplicitLeaveNavigationDelivery";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
@@ -1152,9 +1156,24 @@ function drawFourBeastCardWatermark(
   ctx.restore();
 }
 
-export function LaunchLab() {
+export type LaunchLabProps = Readonly<{
+  explicitLeaveNavigationDeliveryTicket?:
+    | RealityExplicitLeaveNavigationDeliveryTicket
+    | null;
+  onExplicitLeaveNavigationDeliveryOutcome?: (
+    outcome: ReturningLifeWorldDeliveryOutcome,
+  ) => void;
+}>;
+
+export function LaunchLab({
+  explicitLeaveNavigationDeliveryTicket = null,
+  onExplicitLeaveNavigationDeliveryOutcome,
+}: LaunchLabProps = {}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const lastExplicitLeaveDeliveryOutcomeKeyRef =
+    useRef<string | null>(null);
   const [returningLifeContext] = useState(() => {
     const forcedEntry = getEntryUserTypePreviewOverride();
     if (
@@ -1243,6 +1262,110 @@ export function LaunchLab() {
     returningVisualContinuity !== null &&
     returningVisualContinuity.sourceReferenceId ===
       returningLifeContext.sourceReferenceId;
+  useEffect(() => {
+    const ticket = explicitLeaveNavigationDeliveryTicket;
+    const report = onExplicitLeaveNavigationDeliveryOutcome;
+    if (ticket === null || report === undefined) return;
+    const outcomeKey = `${ticket.deliveryReferenceId}:${ticket.deliveryAttempt}`;
+    if (
+      lastExplicitLeaveDeliveryOutcomeKeyRef.current ===
+      outcomeKey
+    ) {
+      return;
+    }
+    lastExplicitLeaveDeliveryOutcomeKeyRef.current = outcomeKey;
+    if (location.pathname !== ticket.targetRoute) {
+      report(
+        Object.freeze({
+          status: "LIFE_WORLD_DELIVERY_REJECTED" as const,
+          deliveryReferenceId: ticket.deliveryReferenceId,
+          deliveryAttempt: ticket.deliveryAttempt,
+          reason: "ROUTE_TARGET_MISMATCH" as const,
+        }),
+      );
+      return;
+    }
+    if (returningVisualContinuity === null) {
+      report(
+        Object.freeze({
+          status: "LIFE_WORLD_DELIVERY_UNAVAILABLE" as const,
+          deliveryReferenceId: ticket.deliveryReferenceId,
+          deliveryAttempt: ticket.deliveryAttempt,
+          reason:
+            "RETURNING_VISUAL_CONTINUITY_UNAVAILABLE" as const,
+        }),
+      );
+      return;
+    }
+    const identityRecovery = recoverRealityRecognizedIdentity({
+      visualContinuity: returningVisualContinuity,
+    });
+    if (identityRecovery.status !== "READY") {
+      report(
+        Object.freeze({
+          status: "LIFE_WORLD_DELIVERY_UNAVAILABLE" as const,
+          deliveryReferenceId: ticket.deliveryReferenceId,
+          deliveryAttempt: ticket.deliveryAttempt,
+          reason: "RETURNING_IDENTITY_UNAVAILABLE" as const,
+        }),
+      );
+      return;
+    }
+    const identity = identityRecovery.identityReferences;
+    const mismatchReason =
+      identity.sourceReferenceId !== ticket.sourceReferenceId
+        ? "SOURCE_REFERENCE_MISMATCH" as const
+        : identity.starBeastIdentityReferenceId !==
+            ticket.starBeastIdentityReferenceId
+          ? "STARBEAST_IDENTITY_MISMATCH" as const
+          : identity.mansionCoordinateReferenceId !==
+              ticket.mansionCoordinateReferenceId
+            ? "MANSION_COORDINATE_MISMATCH" as const
+            : null;
+    if (mismatchReason !== null) {
+      report(
+        Object.freeze({
+          status: "LIFE_WORLD_DELIVERY_REJECTED" as const,
+          deliveryReferenceId: ticket.deliveryReferenceId,
+          deliveryAttempt: ticket.deliveryAttempt,
+          reason: mismatchReason,
+        }),
+      );
+      return;
+    }
+    if (!returningVisualReady) {
+      report(
+        Object.freeze({
+          status: "LIFE_WORLD_DELIVERY_UNAVAILABLE" as const,
+          deliveryReferenceId: ticket.deliveryReferenceId,
+          deliveryAttempt: ticket.deliveryAttempt,
+          reason: "RETURNING_LIFE_SURFACE_NOT_COMMITTED" as const,
+        }),
+      );
+      return;
+    }
+    report(
+      Object.freeze({
+        status: "LIFE_WORLD_DELIVERED" as const,
+        deliveryReferenceId: ticket.deliveryReferenceId,
+        deliveryAttempt: ticket.deliveryAttempt,
+        targetRoute: ticket.targetRoute,
+        sourceReferenceId: identity.sourceReferenceId,
+        starBeastIdentityReferenceId:
+          identity.starBeastIdentityReferenceId,
+        mansionCoordinateReferenceId:
+          identity.mansionCoordinateReferenceId,
+        presentedAt: new Date().toISOString(),
+        authority: "RETURNING_LIFE_WORLD_POST_COMMIT" as const,
+      }),
+    );
+  }, [
+    explicitLeaveNavigationDeliveryTicket,
+    location.pathname,
+    onExplicitLeaveNavigationDeliveryOutcome,
+    returningVisualContinuity,
+    returningVisualReady,
+  ]);
   // A persisted result is not yet a returning entrance. The returning path is
   // only valid when that exact life can also be restored visually.
   const returningLifeIdentity = returningVisualReady;

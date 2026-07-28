@@ -46,11 +46,23 @@ import {
   createRealityExplicitLeaveRequestFromIntent,
   executeRealityExplicitLeaveTermination,
 } from "./services/realityExplicitLeaveTerminationTransaction";
+import {
+  beginRealityExplicitLeaveNavigationDelivery,
+  consumeReturningLifeWorldDeliveryOutcome,
+  createIdleRealityExplicitLeaveNavigationDeliveryState,
+  markRealityExplicitLeaveNavigationRequested,
+  markRealityExplicitLeaveNavigationRetryable,
+  retryRealityExplicitLeaveNavigationDelivery,
+} from "./services/realityExplicitLeaveNavigationDeliveryTransition";
 import type {
   RealityExplicitLeaveRequest,
   RealityExplicitLeaveUiState,
   RealityProductionRouteEntryProps,
 } from "./types/realityProductionRouteEntry";
+import type {
+  RealityExplicitLeaveNavigationDeliveryState,
+  ReturningLifeWorldDeliveryOutcome,
+} from "./types/realityExplicitLeaveNavigationDelivery";
 import "./styles/reality-pressure-presentation.css";
 
 const GenesisProductionRouteEntry = lazy(() =>
@@ -277,7 +289,15 @@ class RealityRouteLoadBoundary extends Component<
   }
 }
 
-function RealityProductionRouteRuntime() {
+type RealityProductionRouteRuntimeProps = Readonly<{
+  onExplicitLeaveTerminationConfirmed: (
+    request: RealityExplicitLeaveRequest,
+  ) => void;
+}>;
+
+function RealityProductionRouteRuntime({
+  onExplicitLeaveTerminationConfirmed,
+}: RealityProductionRouteRuntimeProps) {
   const navigate = useNavigate();
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [explicitLeaveState, setExplicitLeaveState] =
@@ -324,10 +344,11 @@ function RealityProductionRouteRuntime() {
       );
       const result =
         executeRealityExplicitLeaveTermination(request);
-      if (
-        result.status === "TERMINATED_AND_LEFT" ||
-        result.status === "NO_ACTIVE_ENCOUNTER"
-      ) {
+      if (result.status === "TERMINATED_AND_LEFT") {
+        onExplicitLeaveTerminationConfirmed(request);
+        return;
+      }
+      if (result.status === "NO_ACTIVE_ENCOUNTER") {
         navigate("/launch-lab", { replace: true });
         return;
       }
@@ -340,7 +361,7 @@ function RealityProductionRouteRuntime() {
         }),
       );
     },
-    [navigate],
+    [navigate, onExplicitLeaveTerminationConfirmed],
   );
   const retryRouteLoad = useCallback(() => {
     explicitLeaveInFlightRef.current = null;
@@ -379,6 +400,158 @@ function EntryRouter() {
 }
 
 export default function App() {
+  const navigate = useNavigate();
+  const [
+    explicitLeaveNavigationDelivery,
+    setExplicitLeaveNavigationDelivery,
+  ] = useState<RealityExplicitLeaveNavigationDeliveryState>(
+    createIdleRealityExplicitLeaveNavigationDeliveryState,
+  );
+  const navigationRequestKeyRef = useRef<string | null>(null);
+
+  const confirmExplicitLeaveTermination = useCallback(
+    (request: RealityExplicitLeaveRequest) => {
+      setExplicitLeaveNavigationDelivery((current) => {
+        const next = beginRealityExplicitLeaveNavigationDelivery(
+          request,
+          new Date().toISOString(),
+        );
+        if (
+          current.status !== "IDLE" &&
+          current.ticket.deliveryReferenceId ===
+            next.ticket.deliveryReferenceId
+        ) {
+          return current;
+        }
+        if (
+          current.status !== "IDLE" &&
+          current.status !== "LIFE_WORLD_DELIVERED"
+        ) {
+          return current;
+        }
+        return next;
+      });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (
+      explicitLeaveNavigationDelivery.status !==
+      "TERMINATION_CONFIRMED_NAVIGATION_PENDING"
+    ) {
+      return;
+    }
+    const ticket = explicitLeaveNavigationDelivery.ticket;
+    const requestKey = `${ticket.deliveryReferenceId}:${ticket.deliveryAttempt}`;
+    if (navigationRequestKeyRef.current === requestKey) return;
+    navigationRequestKeyRef.current = requestKey;
+    setExplicitLeaveNavigationDelivery((current) =>
+      current.status ===
+        "TERMINATION_CONFIRMED_NAVIGATION_PENDING" &&
+      current.ticket.deliveryReferenceId ===
+        ticket.deliveryReferenceId &&
+      current.ticket.deliveryAttempt === ticket.deliveryAttempt
+        ? markRealityExplicitLeaveNavigationRequested(
+            current,
+            new Date().toISOString(),
+          )
+        : current,
+    );
+    try {
+      navigate(ticket.targetRoute, {
+        replace: true,
+        state: {
+          explicitLeaveDeliveryReferenceId:
+            ticket.deliveryReferenceId,
+          explicitLeaveDeliveryAttempt: ticket.deliveryAttempt,
+        },
+      });
+    } catch {
+      setExplicitLeaveNavigationDelivery((current) =>
+        current.status !== "IDLE" &&
+        current.ticket.deliveryReferenceId ===
+          ticket.deliveryReferenceId &&
+        current.ticket.deliveryAttempt === ticket.deliveryAttempt
+          ? markRealityExplicitLeaveNavigationRetryable(
+              current,
+              "NAVIGATION_INVOCATION_FAILED",
+            )
+          : current,
+      );
+    }
+  }, [explicitLeaveNavigationDelivery, navigate]);
+
+  useEffect(() => {
+    if (
+      explicitLeaveNavigationDelivery.status !==
+      "NAVIGATION_REQUESTED"
+    ) {
+      return;
+    }
+    const ticket = explicitLeaveNavigationDelivery.ticket;
+    const watchdog = window.setTimeout(() => {
+      setExplicitLeaveNavigationDelivery((current) =>
+        current.status === "NAVIGATION_REQUESTED" &&
+        current.ticket.deliveryReferenceId ===
+          ticket.deliveryReferenceId &&
+        current.ticket.deliveryAttempt === ticket.deliveryAttempt
+          ? markRealityExplicitLeaveNavigationRetryable(
+              current,
+              "NAVIGATION_OUTCOME_WATCHDOG_EXPIRED",
+            )
+          : current,
+      );
+    }, 8_000);
+    return () => window.clearTimeout(watchdog);
+  }, [explicitLeaveNavigationDelivery]);
+
+  const consumeLifeWorldDeliveryOutcome = useCallback(
+    (outcome: ReturningLifeWorldDeliveryOutcome) => {
+      setExplicitLeaveNavigationDelivery((current) => {
+        const consumption =
+          consumeReturningLifeWorldDeliveryOutcome(
+            current,
+            outcome,
+          );
+        return consumption.state;
+      });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (
+      explicitLeaveNavigationDelivery.status !==
+      "LIFE_WORLD_DELIVERED"
+    ) {
+      return;
+    }
+    navigationRequestKeyRef.current = null;
+    setExplicitLeaveNavigationDelivery(
+      createIdleRealityExplicitLeaveNavigationDeliveryState(),
+    );
+  }, [explicitLeaveNavigationDelivery]);
+
+  const retryLifeWorldNavigation = useCallback(() => {
+    setExplicitLeaveNavigationDelivery((current) =>
+      retryRealityExplicitLeaveNavigationDelivery(current),
+    );
+  }, []);
+
+  const launchDeliveryTicket =
+    explicitLeaveNavigationDelivery.status ===
+    "NAVIGATION_REQUESTED"
+      ? explicitLeaveNavigationDelivery.ticket
+      : null;
+  const navigationDeliveryVisible =
+    explicitLeaveNavigationDelivery.status ===
+      "TERMINATION_CONFIRMED_NAVIGATION_PENDING" ||
+    explicitLeaveNavigationDelivery.status ===
+      "NAVIGATION_REQUESTED" ||
+    explicitLeaveNavigationDelivery.status ===
+      "NAVIGATION_RETRYABLE";
+
   return (
     <AppShell>
       <Routes>
@@ -413,7 +586,19 @@ export default function App() {
         <Route path="/mother-lab" element={<MotherLab />} />
         <Route path="/breach-lab" element={<BreachLab />} />
         <Route path="/starbeast-lab" element={<StarbeastLab />} />
-        <Route path="/launch-lab" element={<LaunchLab />} />
+        <Route
+          path="/launch-lab"
+          element={
+            <LaunchLab
+              explicitLeaveNavigationDeliveryTicket={
+                launchDeliveryTicket
+              }
+              onExplicitLeaveNavigationDeliveryOutcome={
+                consumeLifeWorldDeliveryOutcome
+              }
+            />
+          }
+        />
         <Route
           path={GUANYAO_ROUTES.genesis}
           element={
@@ -426,7 +611,13 @@ export default function App() {
         />
         <Route
           path={GUANYAO_ROUTES.reality}
-          element={<RealityProductionRouteRuntime />}
+          element={
+            <RealityProductionRouteRuntime
+              onExplicitLeaveTerminationConfirmed={
+                confirmExplicitLeaveTermination
+              }
+            />
+          }
         />
         {previewRoutes.map((route) => (
           <Route key={route.path} path={route.path} element={route.element} />
@@ -442,6 +633,31 @@ export default function App() {
         <Route path="/migration" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/migration"]} />} />
         <Route path="/result" element={<LegacyRedirect to={LEGACY_ROUTE_REDIRECTS["/result"]} />} />
       </Routes>
+      {navigationDeliveryVisible ? (
+        <section
+          className="gy-reality-navigation-delivery"
+          role="status"
+          aria-live="polite"
+          data-reality-navigation-delivery={
+            explicitLeaveNavigationDelivery.status
+          }
+        >
+          <p>这一轮已经停下。</p>
+          <strong>回到同一片生命星河。</strong>
+          {explicitLeaveNavigationDelivery.status ===
+          "NAVIGATION_RETRYABLE" ? (
+            <button
+              type="button"
+              data-interaction="RETRY_LIFE_WORLD_NAVIGATION"
+              onClick={retryLifeWorldNavigation}
+            >
+              回到生命世界
+            </button>
+          ) : (
+            <small>正在回到生命世界</small>
+          )}
+        </section>
+      ) : null}
     </AppShell>
   );
 }
