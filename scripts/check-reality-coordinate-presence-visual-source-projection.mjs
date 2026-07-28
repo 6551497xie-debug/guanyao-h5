@@ -198,9 +198,27 @@ try {
     realityEntryContext,
   });
   assertEqual("recognized Presence reaches Reality continuity", continuityContext.bridge.continuityState, "CARRIED_TO_REALITY");
+  const encounterAdmission = Object.freeze({
+    schemaVersion: "XINMAI_REALITY_ENCOUNTER_ADMISSION_V1",
+    source: "xinmai_reality_encounter_intent_controller",
+    intentReferenceId: "intent:reality-presence",
+    encounterCycleId: "encounter:reality-presence",
+    intentRevision: 1,
+    state: "ACCEPTING_REALITY",
+    routeTarget: "/reality",
+    origin: "FIRST_ENCOUNTER",
+    qualification: "WHISPER_SKIPPED",
+    identityReferences: Object.freeze({
+      sourceReferenceId,
+      starBeastIdentityReferenceId: "starbeast:reality-presence",
+      mansionCoordinateReferenceId: "mansion:reality-presence",
+    }),
+    expiresAt: "2099-01-01T00:00:00.000Z",
+  });
   const realityAuthorization = runtime.authorizeRealityProductionRoute({
     routeTarget: "/reality",
-    sourceReferenceId,
+    identityEntryContext: realityEntryContext,
+    encounterAdmission,
   });
   assertEqual("Reality route is authorized", realityAuthorization.status, "READY");
 

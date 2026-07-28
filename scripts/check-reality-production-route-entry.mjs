@@ -41,7 +41,13 @@ const assertExcludes = (name, text, marker) => {
 try {
   [
     "export function RealityProductionRouteEntry",
-    "readGenesisProductionRealityEntryContext()",
+    "recoverRealityRecognizedIdentity",
+    "establishRealityEncounterAdmission",
+    "commitRealityEncounterActive",
+    "hostAcceptanceFailure",
+    "setHostAcceptanceFailure",
+    '"MINIMUM_SURFACE_NOT_PRESENTED"',
+    'currentIntent?.state === "FAILED_RETRYABLE"',
     "authorizeRealityProductionRoute({",
     "REALITY_PRODUCTION_ROUTE_TARGET",
     'authorization.status !== "READY"',
@@ -49,10 +55,11 @@ try {
     "RealityProductionHost",
     "routeAuthorization={authorization}",
     'navigate("/launch-lab", { replace: true })',
-    "返回出生信息",
+    "回到生命世界",
     "sourceReferenceExcludedFromUrl: true",
     "noPressureExecution: true",
     "noStorageRead: true",
+    "intentReferenceId",
   ].forEach((marker) =>
     assertIncludes("guarded Reality production route entry", source.entry, marker),
   );
@@ -92,6 +99,8 @@ try {
     "authorizedRealitySourceOnly: true",
     "productionPressureSeedConsumerOnly: true",
     "explicitGravityContinuationCallbackOnly: true",
+    "onRealityAcceptanceOutcome",
+    'status: "REALITY_MINIMUM_PRESENTED"',
     "noLegacyDynamicsRuntime: true",
     "noRendererInvocation: true",
   ].forEach((marker) =>
@@ -110,7 +119,6 @@ try {
     "initializeRealityProductionPressureConsumer",
     "initializeRealityProductionGravityConsumer",
     "initializeRealityProductionChoiceConsumer",
-    "useEffect",
     "useNavigate",
     "localStorage",
     "sessionStorage",
@@ -122,6 +130,7 @@ try {
     "productionRouteEntryOnly: true",
     "exactRealityRouteOnly: true",
     "inMemoryRealityEntryContextOnly: true",
+    "realityEncounterIntentAuthorityRequired: true",
     "routeAuthorizationRequired: true",
     "sourceNotReadyRecoveryRequired: true",
     "sourceReferenceExcludedFromUrl: true",
@@ -131,13 +140,15 @@ try {
     "v1PressureConsumerForbidden: true",
     "noPressureExecution: true",
     "noGenesisNavigationMutation: true",
+    "hostAcceptanceOutcomeRequired: true",
   ].forEach((marker) =>
     assertIncludes("Reality route and host contract", source.entryType, marker),
   );
 
   assertIncludes("formal Reality route target exists", source.routes, 'reality: "/reality"');
   assertIncludes("App lazily imports guarded Reality route", source.app, 'import("./pages/RealityProductionRouteEntry")');
-  assertIncludes("App gives Reality route a loading boundary", source.app, "<Suspense fallback={null}>");
+  assertIncludes("App gives Reality route a loading boundary", source.app, "RealityRouteLoadBoundary");
+  assertIncludes("App reports route-load failure truthfully", source.app, '"ROUTE_LOAD_UNAVAILABLE"');
   assertIncludes("App registers exact Reality route", source.app, "path={GUANYAO_ROUTES.reality}");
   assertIncludes("App renders guarded Reality entry", source.app, "<RealityProductionRouteEntry />");
   assertIncludes("Reality receives fullscreen shell", source.shell, 'location.pathname === "/reality"');

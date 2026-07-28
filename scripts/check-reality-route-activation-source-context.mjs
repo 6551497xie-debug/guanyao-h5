@@ -43,6 +43,7 @@ try {
     'activationBoundary: "EXPLICIT_ENTER_REALITY"',
     "lifeSourceSession: LaunchLifeSourceSession",
     "requestDateSource: RealityPressureExplicitRequestDateSource",
+    "encounterAdmission: RealityEncounterAdmission",
     "noCandidateActivation: true",
     "noConsumerInvocation: true",
     "noGravityIntegration: true",
@@ -83,19 +84,24 @@ try {
   );
 
   assertIncludes(
-    "explicit user event captures calendar instant",
-    source.genesisPage,
+    "authorized Route captures calendar instant",
+    source.realityRoute,
     "calendarInstant: new Date()",
   );
   assertIncludes(
-    "explicit user event activates route source",
-    source.genesisPage,
+    "authorized Route activates cycle-scoped source",
+    source.realityRoute,
     "activateRealityRouteActivationSourceContext({",
   );
   assertIncludes(
-    "Reality route requires activation source",
+    "Reality route creates activation source after admission",
     source.realityRoute,
-    "readRealityRouteActivationSourceContext()",
+    "encounterAdmission,",
+  );
+  assertExcludes(
+    "Genesis no longer owns Route activation",
+    source.genesisPage,
+    "activateRealityRouteActivationSourceContext",
   );
   assertExcludes(
     "Production Host remains outside new source context",
@@ -162,6 +168,30 @@ try {
     eligibility: "ELIGIBLE",
     recognitionRealitySession,
   });
+  const encounterAdmission = Object.freeze({
+    schemaVersion: "XINMAI_REALITY_ENCOUNTER_ADMISSION_V1",
+    source: "xinmai_reality_encounter_intent_controller",
+    intentReferenceId: "intent:work-003w",
+    encounterCycleId: "cycle:work-003w",
+    intentRevision: 2,
+    state: "ACCEPTING_REALITY",
+    routeTarget: "/reality",
+    origin: "FIRST_ENCOUNTER",
+    qualification: "WHISPER_SKIPPED",
+    identityReferences: Object.freeze({
+      sourceReferenceId,
+      starBeastIdentityReferenceId: "starbeast:work-003w",
+      mansionCoordinateReferenceId: "mansion:work-003w",
+    }),
+    expiresAt: new Date(Date.now() + 60_000).toISOString(),
+  });
+  const routeAuthorization = Object.freeze({
+    status: "READY",
+    sourceReferenceId,
+    intentReferenceId: encounterAdmission.intentReferenceId,
+    encounterCycleId: encounterAdmission.encounterCycleId,
+    intentRevision: encounterAdmission.intentRevision,
+  });
 
   const requestDateSource = runtime.captureExplicitRealityRequestDateSource({
     sourceReferenceId,
@@ -172,12 +202,16 @@ try {
   assertEqual("explicit date source is immutable", Object.isFrozen(requestDateSource), true);
 
   const ready = runtime.activateRealityRouteActivationSourceContext({
+    routeAuthorization,
+    encounterAdmission,
     realityEntryContext,
     lifeSourceSession,
     requestDateSource,
   });
   assertEqual("valid real sources activate context", ready.status, "AVAILABLE");
   assertEqual("source reference remains continuous", ready.context.sourceReferenceId, sourceReferenceId);
+  assertEqual("encounter cycle remains continuous", ready.context.encounterCycleId, encounterAdmission.encounterCycleId);
+  assertEqual("intent revision remains continuous", ready.context.intentRevision, encounterAdmission.intentRevision);
   assertEqual("activation boundary is explicit", ready.context.activationBoundary, "EXPLICIT_ENTER_REALITY");
   assertEqual("context is immutable", Object.isFrozen(ready.context), true);
   assertEqual("provenance is immutable", Object.isFrozen(ready.context.provenance), true);
@@ -188,6 +222,8 @@ try {
     calendarInstant: new Date(2026, 6, 20, 12, 0, 0),
   });
   const repeated = runtime.activateRealityRouteActivationSourceContext({
+    routeAuthorization,
+    encounterAdmission,
     realityEntryContext,
     lifeSourceSession,
     requestDateSource: laterDateSource,
@@ -209,6 +245,8 @@ try {
   assertEqual("clear removes in-memory context", runtime.readRealityRouteActivationSourceContext(), null);
 
   const invalidDate = runtime.activateRealityRouteActivationSourceContext({
+    routeAuthorization,
+    encounterAdmission,
     realityEntryContext,
     lifeSourceSession,
     requestDateSource: Object.freeze({
@@ -231,6 +269,8 @@ try {
     calendarInstant: new Date(2026, 6, 19),
   });
   const mismatch = runtime.activateRealityRouteActivationSourceContext({
+    routeAuthorization,
+    encounterAdmission,
     realityEntryContext,
     lifeSourceSession,
     requestDateSource: mismatchDate,

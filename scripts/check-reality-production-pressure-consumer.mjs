@@ -183,10 +183,29 @@ try {
     recognized.session,
     "ENTER_REALITY",
   );
-  runtime.activateGenesisProductionRealityEntryContext(eligible.session);
+  const identityEntryContext =
+    runtime.activateGenesisProductionRealityEntryContext(eligible.session);
+  const encounterAdmission = Object.freeze({
+    schemaVersion: "XINMAI_REALITY_ENCOUNTER_ADMISSION_V1",
+    source: "xinmai_reality_encounter_intent_controller",
+    intentReferenceId: "intent:production-pressure",
+    encounterCycleId: "encounter:production-pressure",
+    intentRevision: 1,
+    state: "ACCEPTING_REALITY",
+    routeTarget: "/reality",
+    origin: "FIRST_ENCOUNTER",
+    qualification: "WHISPER_SKIPPED",
+    identityReferences: Object.freeze({
+      sourceReferenceId,
+      starBeastIdentityReferenceId: "starbeast:production-pressure",
+      mansionCoordinateReferenceId: "mansion:production-pressure",
+    }),
+    expiresAt: "2099-01-01T00:00:00.000Z",
+  });
   const authorization = runtime.authorizeRealityProductionRoute({
     routeTarget: "/reality",
-    sourceReferenceId,
+    identityEntryContext,
+    encounterAdmission,
   });
   assertEqual("real Reality route authorization is ready", authorization.status, "READY");
 

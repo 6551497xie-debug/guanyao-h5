@@ -57,6 +57,8 @@ try {
     "noPressureExecution: true",
     "noRouteRegistration: true",
     "noStorageWrite: true",
+    "encounterAdmissionRequired: true",
+    "explicitAuthorizationInputOnly: true",
   ].forEach((marker) =>
     assertIncludes("Reality route/source contract", source.type, marker),
   );
@@ -76,13 +78,15 @@ try {
   [
     "export function authorizeRealityProductionRoute",
     'REALITY_PRODUCTION_ROUTE_TARGET = "/reality"',
-    "readGenesisProductionRealityEntryContext()",
+    "input.identityEntryContext",
+    "input.encounterAdmission",
     'entryContext.sourceProvenance !== "REAL_USER_SESSION"',
     'entryContext.eligibility !== "ELIGIBLE"',
     'session.phase !== "REALITY_ENTRY_ELIGIBLE"',
     'session.recognitionConfirmed !== true',
     'session.realityEntryConfirmed !== true',
-    'return sourceNotReady(null, "SOURCE_REFERENCE_REQUIRED")',
+    '"ENCOUNTER_ADMISSION_REQUIRED"',
+    '"ENCOUNTER_ADMISSION_INVALID"',
     '"REALITY_ENTRY_CONTEXT_NOT_AVAILABLE"',
     '"SOURCE_REFERENCE_MISMATCH"',
     'authorizationState: "AUTHORIZED_PRODUCTION_REALITY_SOURCE"',
@@ -105,6 +109,7 @@ try {
     "localStorage",
     "sessionStorage",
     "resolveDynamicsInputContext",
+    "readGenesisProductionRealityEntryContext",
   ].forEach((marker) =>
     assertExcludes("guard starts no engine, Reality runtime, renderer, route, storage, or legacy flow", source.service, marker),
   );
@@ -145,24 +150,45 @@ try {
 
   runtime.clearGenesisProductionRealityEntryContext();
   const sourceReferenceId = "launch:real-user:002.6p";
-
-  const missingReference = runtime.authorizeRealityProductionRoute({
+  const identityReferences = {
+    sourceReferenceId,
+    starBeastIdentityReferenceId: "starbeast:002.6p",
+    mansionCoordinateReferenceId: "mansion:002.6p",
+  };
+  const createAdmission = (references = identityReferences) => ({
+    schemaVersion: "XINMAI_REALITY_ENCOUNTER_ADMISSION_V1",
+    source: "xinmai_reality_encounter_intent_controller",
+    intentReferenceId: "intent:002.6p",
+    encounterCycleId: "cycle:002.6p",
+    intentRevision: 2,
+    state: "ACCEPTING_REALITY",
     routeTarget: "/reality",
-    sourceReferenceId: null,
+    origin: "FIRST_ENCOUNTER",
+    qualification: "WHISPER_SKIPPED",
+    identityReferences: references,
+    expiresAt: new Date(Date.now() + 60_000).toISOString(),
   });
-  assertEqual("missing reference returns SOURCE_NOT_READY", missingReference.status, "SOURCE_NOT_READY");
-  assertEqual("missing reference creates no source context", missingReference.sourceContext, null);
+
+  const missingAdmission = runtime.authorizeRealityProductionRoute({
+    routeTarget: "/reality",
+    identityEntryContext: null,
+    encounterAdmission: null,
+  });
+  assertEqual("missing admission returns SOURCE_NOT_READY", missingAdmission.status, "SOURCE_NOT_READY");
+  assertEqual("missing admission reason is explicit", missingAdmission.guardReason, "ENCOUNTER_ADMISSION_REQUIRED");
 
   const missingContext = runtime.authorizeRealityProductionRoute({
     routeTarget: "/reality",
-    sourceReferenceId,
+    identityEntryContext: null,
+    encounterAdmission: createAdmission(),
   });
   assertEqual("missing entry context returns SOURCE_NOT_READY", missingContext.status, "SOURCE_NOT_READY");
   assertEqual("missing context reason is explicit", missingContext.guardReason, "REALITY_ENTRY_CONTEXT_NOT_AVAILABLE");
 
   const wrongRoute = runtime.authorizeRealityProductionRoute({
     routeTarget: "/dynamics",
-    sourceReferenceId,
+    identityEntryContext: null,
+    encounterAdmission: createAdmission(),
   });
   assertEqual("legacy Dynamics route is blocked", wrongRoute.status, "BLOCKED");
   assertEqual("wrong route creates no source context", wrongRoute.sourceContext, null);
@@ -175,7 +201,11 @@ try {
   ]) {
     const result = runtime.authorizeRealityProductionRoute({
       routeTarget: "/reality",
-      sourceReferenceId: forbiddenReference,
+      identityEntryContext: null,
+      encounterAdmission: createAdmission({
+        ...identityReferences,
+        sourceReferenceId: forbiddenReference,
+      }),
     });
     assertEqual(`${forbiddenReference} is blocked`, result.status, "BLOCKED");
     assertEqual(`${forbiddenReference} creates no source context`, result.sourceContext, null);
@@ -203,20 +233,28 @@ try {
 
   const mismatch = runtime.authorizeRealityProductionRoute({
     routeTarget: "/reality",
-    sourceReferenceId: "launch:other-session",
+    identityEntryContext: entryContext,
+    encounterAdmission: createAdmission({
+      ...identityReferences,
+      sourceReferenceId: "launch:other-session",
+    }),
   });
   assertEqual("mismatched reference returns SOURCE_NOT_READY", mismatch.status, "SOURCE_NOT_READY");
   assertEqual("mismatched reference reason is explicit", mismatch.guardReason, "SOURCE_REFERENCE_MISMATCH");
 
   const ready = runtime.authorizeRealityProductionRoute({
     routeTarget: "/reality",
-    sourceReferenceId,
+    identityEntryContext: entryContext,
+    encounterAdmission: createAdmission(),
   });
   assertEqual("eligible real session is authorized", ready.status, "READY");
   assertEqual("authorization targets production Reality source", ready.authorizationState, "AUTHORIZED_PRODUCTION_REALITY_SOURCE");
   assertEqual("source provenance is real session", ready.sourceContext.sourceProvenance, "REAL_USER_SESSION");
   assertEqual("source mode is real user", ready.sourceContext.sourceExperienceMode, "REAL_USER_EXPERIENCE");
   assertEqual("source reference remains continuous", ready.sourceContext.sourceReferenceId, sourceReferenceId);
+  assertEqual("intent reference remains continuous", ready.intentReferenceId, "intent:002.6p");
+  assertEqual("encounter cycle remains continuous", ready.encounterCycleId, "cycle:002.6p");
+  assertEqual("intent revision remains continuous", ready.intentRevision, 2);
   assertEqual("Genesis completion reference remains continuous", ready.sourceContext.genesisCompletionReference.sourceReferenceId, sourceReferenceId);
   assertEqual("recognition reference remains continuous", ready.sourceContext.recognitionConfirmationReference.sourceReferenceId, sourceReferenceId);
   assertEqual("Pressure remains not started", ready.sourceContext.pressureRecognitionState, "NOT_STARTED");

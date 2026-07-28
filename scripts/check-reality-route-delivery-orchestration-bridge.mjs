@@ -183,22 +183,47 @@ try {
     sourceReferenceId,
     calendarInstant: new Date(2026, 6, 19, 12, 0, 0),
   });
-  const routeSourceResult = runtime.activateRealityRouteActivationSourceContext({
-    realityEntryContext,
-    lifeSourceSession,
-    requestDateSource,
+  const encounterAdmission = Object.freeze({
+    schemaVersion: "XINMAI_REALITY_ENCOUNTER_ADMISSION_V1",
+    source: "xinmai_reality_encounter_intent_controller",
+    intentReferenceId: "intent:route-delivery",
+    encounterCycleId: "encounter:route-delivery",
+    intentRevision: 1,
+    state: "ACCEPTING_REALITY",
+    routeTarget: "/reality",
+    origin: "FIRST_ENCOUNTER",
+    qualification: "WHISPER_SKIPPED",
+    identityReferences: Object.freeze({
+      sourceReferenceId,
+      starBeastIdentityReferenceId: "starbeast:route-delivery",
+      mansionCoordinateReferenceId: "mansion:route-delivery",
+    }),
+    expiresAt: "2099-01-01T00:00:00.000Z",
   });
   const routeAuthorization = Object.freeze({
     status: "READY",
     authorizationState: "AUTHORIZED_PRODUCTION_REALITY_SOURCE",
     routeTarget: "/reality",
     sourceReferenceId,
+    intentReferenceId: encounterAdmission.intentReferenceId,
+    encounterCycleId: encounterAdmission.encounterCycleId,
+    intentRevision: encounterAdmission.intentRevision,
     sourceContext: Object.freeze({
       sourceExperienceMode: "REAL_USER_EXPERIENCE",
       sourceProvenance: "REAL_USER_SESSION",
       sourceReferenceId,
+      intentReferenceId: encounterAdmission.intentReferenceId,
+      encounterCycleId: encounterAdmission.encounterCycleId,
+      intentRevision: encounterAdmission.intentRevision,
       realityEntryEligibility: "ELIGIBLE",
     }),
+  });
+  const routeSourceResult = runtime.activateRealityRouteActivationSourceContext({
+    realityEntryContext,
+    routeAuthorization,
+    encounterAdmission,
+    lifeSourceSession,
+    requestDateSource,
   });
   const activationResult =
     runtime.bridgeRealityRouteToPressureCandidateActivation({

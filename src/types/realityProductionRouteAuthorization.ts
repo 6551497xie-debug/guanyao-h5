@@ -1,10 +1,13 @@
 import type { RealityExperienceArchitectureReference } from "./realityPressureRecognitionArchitecture";
+import type { GenesisProductionRealityEntryContext } from "./genesisProductionRecognitionRealityEntry";
+import type { RealityEncounterAdmission } from "./xinmaiRealityEncounterIntent";
 
 export type RealityProductionRouteTarget = "/reality";
 
 export type RealityProductionRouteAuthorizationInput = Readonly<{
   routeTarget: string;
-  sourceReferenceId: string | null;
+  identityEntryContext: GenesisProductionRealityEntryContext | null;
+  encounterAdmission: RealityEncounterAdmission | null;
 }>;
 
 export type RealityProductionRouteGuardReason =
@@ -15,13 +18,19 @@ export type RealityProductionRouteGuardReason =
   | "SOURCE_PROVENANCE_INVALID"
   | "REALITY_ENTRY_NOT_ELIGIBLE"
   | "REALITY_ENTRY_SESSION_INVALID"
-  | "SOURCE_REFERENCE_MISMATCH";
+  | "SOURCE_REFERENCE_MISMATCH"
+  | "ENCOUNTER_ADMISSION_REQUIRED"
+  | "ENCOUNTER_ADMISSION_INVALID"
+  | "ENCOUNTER_ADMISSION_EXPIRED"
+  | "ENCOUNTER_IDENTITY_MISMATCH";
 
 export type RealityProductionRouteAuthorizationBoundary = Readonly<{
   routeAuthorizationAndSourceAssemblyOnly: true;
   explicitRealityEntryRequired: true;
   realUserSessionProvenanceOnly: true;
   sourceReferenceContinuityRequired: true;
+  encounterAdmissionRequired: true;
+  explicitAuthorizationInputOnly: true;
   immutableSourceContextOnly: true;
   pressureRecognitionNotStarted: true;
   noFixtureSource: true;
@@ -39,6 +48,7 @@ export type RealityProductionRouteAuthorizationBoundary = Readonly<{
   noNavigationMutation: true;
   noUiIntegration: true;
   noStorageWrite: true;
+  noStorageRead: true;
 }>;
 
 export type RealityProductionSourceContext = Readonly<{
@@ -47,6 +57,9 @@ export type RealityProductionSourceContext = Readonly<{
   sourceExperienceMode: "REAL_USER_EXPERIENCE";
   sourceProvenance: "REAL_USER_SESSION";
   sourceReferenceId: string;
+  intentReferenceId: string;
+  encounterCycleId: string;
+  intentRevision: number;
   realityEntryEligibility: "ELIGIBLE";
   genesisCompletionReference: Readonly<{
     stage: "COMPLETION";
@@ -67,6 +80,9 @@ export type RealityProductionRouteActivationAuthorization =
       source: "reality_production_route_authorization";
       routeTarget: RealityProductionRouteTarget;
       sourceReferenceId: string;
+      intentReferenceId: string;
+      encounterCycleId: string;
+      intentRevision: number;
       authorizationState: "AUTHORIZED_PRODUCTION_REALITY_SOURCE";
       guardReason: null;
       sourceContext: RealityProductionSourceContext;
@@ -77,6 +93,9 @@ export type RealityProductionRouteActivationAuthorization =
       source: "reality_production_route_authorization";
       routeTarget: RealityProductionRouteTarget;
       sourceReferenceId: string | null;
+      intentReferenceId: string | null;
+      encounterCycleId: string | null;
+      intentRevision: number | null;
       authorizationState: "SOURCE_NOT_READY";
       guardReason: Exclude<
         RealityProductionRouteGuardReason,
@@ -90,6 +109,9 @@ export type RealityProductionRouteActivationAuthorization =
       source: "reality_production_route_authorization";
       routeTarget: string;
       sourceReferenceId: string | null;
+      intentReferenceId: string | null;
+      encounterCycleId: string | null;
+      intentRevision: number | null;
       authorizationState: "BLOCKED";
       guardReason:
         | "ROUTE_TARGET_NOT_AUTHORIZED"

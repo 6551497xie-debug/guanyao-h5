@@ -68,6 +68,8 @@ import {
   resolveRelationshipNameDeletePresentation,
 } from "../services/xinmaiRelationshipNamingPresentationState";
 import { resolveLifeWhisperVisualOutcomeTransition } from "../services/xinmaiLifeWhisperVisualOutcomeTransition";
+import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
+import { requestRealityEncounter } from "../services/xinmaiRealityEncounterIntentController";
 import type {
   LifeWhisperRelationshipFact,
   LifeWhisperRelationshipResponsePhase,
@@ -5666,9 +5668,36 @@ export function LaunchLab() {
     clearReturningLifeWhisperOutcomeWatchdog();
     returningLifeWhisperResponseCycleIdRef.current = null;
     setReturningLifeWhisperText("");
+    const identityRecovery = recoverRealityRecognizedIdentity({
+      visualContinuity: returningVisualContinuity,
+    });
+    const qualification =
+      returningLifeWhisperFactRef.current === "WHISPER_SKIPPED"
+        ? "WHISPER_SKIPPED" as const
+        : returningLifeWhisperResponsePhaseRef.current === "SETTLED"
+          ? "WHISPER_RESPONSE_SETTLED" as const
+          : returningLifeWhisperUnavailableContinuation ===
+              "CONTINUE_WITHOUT_CONFIRMED_RESPONSE"
+            ? "RESPONSE_UNAVAILABLE_EXPLICITLY_CONTINUED" as const
+            : null;
+    const intentResult =
+      identityRecovery.status === "READY" &&
+      qualification !== null
+        ? requestRealityEncounter({
+            origin: "RETURNING_LIFE_WORLD",
+            qualification,
+            identityReferences:
+              identityRecovery.identityReferences,
+          })
+        : null;
+    if (intentResult?.status !== "READY") {
+      return;
+    }
     navigate(GUANYAO_ROUTES.reality, {
       replace: true,
       state: {
+        intentReferenceId:
+          intentResult.intent.intentReferenceId,
         visualContinuity: returningVisualContinuity,
         returningLifeMemory: {
           historicalRealityMemoryKey:

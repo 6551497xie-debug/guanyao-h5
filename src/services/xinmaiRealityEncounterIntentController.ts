@@ -1,0 +1,681 @@
+import {
+  clearRealityEncounterRecoveryCandidate,
+  readRealityEncounterRecoveryCandidate,
+  writeRealityEncounterRecoveryCandidate,
+} from "./xinmaiRealityEncounterIntentRecoveryAdapter";
+import type {
+  RealityEncounterAdmission,
+  RealityEncounterAdmissionResult,
+  RealityEncounterCommitResult,
+  RealityEncounterFailure,
+  RealityEncounterFailureReason,
+  RealityEncounterFailureResult,
+  RealityEncounterFailureStage,
+  RealityEncounterIdentityReferences,
+  RealityEncounterIntent,
+  RealityEncounterQualification,
+  RealityEncounterRequestInput,
+  RealityEncounterRequestResult,
+  RealityEncounterTerminationResult,
+  RealityEncounterTerminalReason,
+  RealityHostAcceptanceOutcome,
+} from "../types/xinmaiRealityEncounterIntent";
+import {
+  XINMAI_REALITY_ENCOUNTER_INTENT_SCHEMA_VERSION,
+} from "../types/xinmaiRealityEncounterIntent";
+
+const INTENT_TTL_MS = 24 * 60 * 60 * 1_000;
+
+let currentIntent: RealityEncounterIntent | null = null;
+
+const normalizeIdentityReferences = (
+  identity: RealityEncounterIdentityReferences,
+): RealityEncounterIdentityReferences | null => {
+  const sourceReferenceId = identity.sourceReferenceId.trim();
+  const starBeastIdentityReferenceId =
+    identity.starBeastIdentityReferenceId.trim();
+  const mansionCoordinateReferenceId =
+    identity.mansionCoordinateReferenceId.trim();
+  if (
+    sourceReferenceId.length === 0 ||
+    starBeastIdentityReferenceId.length === 0 ||
+    mansionCoordinateReferenceId.length === 0
+  ) {
+    return null;
+  }
+  return Object.freeze({
+    sourceReferenceId,
+    starBeastIdentityReferenceId,
+    mansionCoordinateReferenceId,
+  });
+};
+
+const identityMatches = (
+  intent: RealityEncounterIntent,
+  identity: RealityEncounterIdentityReferences,
+): boolean =>
+  intent.sourceReferenceId === identity.sourceReferenceId &&
+  intent.starBeastIdentityReferenceId ===
+    identity.starBeastIdentityReferenceId &&
+  intent.mansionCoordinateReferenceId ===
+    identity.mansionCoordinateReferenceId;
+
+const qualificationMatchesOrigin = (
+  origin: RealityEncounterRequestInput["origin"],
+  qualification: RealityEncounterQualification,
+): boolean =>
+  origin === "CHOICE_CONTINUATION"
+    ? qualification === "LIVED_RESPONSE_CONTINUATION"
+    : qualification === "WHISPER_RESPONSE_SETTLED" ||
+      qualification === "WHISPER_SKIPPED" ||
+      qualification === "RESPONSE_UNAVAILABLE_EXPLICITLY_CONTINUED";
+
+const opaqueId = (): string => {
+  const randomUuid =
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Math.random().toString(36).slice(2)}-${Math.random()
+          .toString(36)
+          .slice(2)}`;
+  return randomUuid;
+};
+
+const persist = (
+  intent: RealityEncounterIntent,
+): "CONFIRMED" | "CURRENT_RUNTIME_ONLY" => {
+  const result = writeRealityEncounterRecoveryCandidate(intent);
+  return result.status === "CONFIRMED"
+    ? "CONFIRMED"
+    : "CURRENT_RUNTIME_ONLY";
+};
+
+const nextIntent = (
+  intent: RealityEncounterIntent,
+  patch: Partial<
+    Pick<
+      RealityEncounterIntent,
+      "state" | "failure" | "terminalReason"
+    >
+  >,
+): RealityEncounterIntent => {
+  const updated = Object.freeze({
+    ...intent,
+    ...patch,
+    updatedAt: new Date().toISOString(),
+    revision: intent.revision + 1,
+  });
+  currentIntent = updated;
+  persist(updated);
+  return updated;
+};
+
+const isExpired = (intent: RealityEncounterIntent): boolean =>
+  Date.parse(intent.expiresAt) <= Date.now();
+
+const createAdmission = (
+  intent: RealityEncounterIntent,
+): RealityEncounterAdmission =>
+  Object.freeze({
+    schemaVersion: "XINMAI_REALITY_ENCOUNTER_ADMISSION_V1" as const,
+    source: "xinmai_reality_encounter_intent_controller" as const,
+    intentReferenceId: intent.intentReferenceId,
+    encounterCycleId: intent.encounterCycleId,
+    intentRevision: intent.revision,
+    state: "ACCEPTING_REALITY" as const,
+    routeTarget: "/reality" as const,
+    origin: intent.origin,
+    qualification: intent.qualification,
+    identityReferences: Object.freeze({
+      sourceReferenceId: intent.sourceReferenceId,
+      starBeastIdentityReferenceId:
+        intent.starBeastIdentityReferenceId,
+      mansionCoordinateReferenceId:
+        intent.mansionCoordinateReferenceId,
+    }),
+    expiresAt: intent.expiresAt,
+  });
+
+const admissionReady = (
+  operation: "ADMIT" | "RETRY" | "RECOVER",
+  intent: RealityEncounterIntent,
+): RealityEncounterAdmissionResult =>
+  Object.freeze({
+    status: "READY" as const,
+    operation,
+    admission: createAdmission(intent),
+    intent,
+    reason: null,
+  });
+
+const admissionBlocked = (
+  status: "RETRY_REQUIRED" | "BLOCKED",
+  operation: "ADMIT" | "RETRY" | "RECOVER",
+  reason: Extract<
+    RealityEncounterAdmissionResult,
+    { status: "RETRY_REQUIRED" | "BLOCKED" }
+  >["reason"],
+  intent: RealityEncounterIntent | null = currentIntent,
+): RealityEncounterAdmissionResult =>
+  Object.freeze({
+    status,
+    operation,
+    admission: null,
+    intent,
+    reason,
+  });
+
+const expireCurrentIntent = (
+  intent: RealityEncounterIntent,
+): RealityEncounterAdmissionResult => {
+  const terminal = nextIntent(intent, {
+    state: "TERMINAL",
+    failure: null,
+    terminalReason: "INTENT_EXPIRED",
+  });
+  return admissionBlocked(
+    "BLOCKED",
+    "ADMIT",
+    "INTENT_EXPIRED",
+    terminal,
+  );
+};
+
+export function requestRealityEncounter(
+  input: RealityEncounterRequestInput,
+): RealityEncounterRequestResult {
+  const identity = normalizeIdentityReferences(input.identityReferences);
+  if (identity === null) {
+    return Object.freeze({
+      status: "BLOCKED" as const,
+      operation: "REQUEST" as const,
+      intent: currentIntent,
+      persistence: null,
+      reason: "IDENTITY_REFERENCES_INVALID" as const,
+    });
+  }
+  if (!qualificationMatchesOrigin(input.origin, input.qualification)) {
+    return Object.freeze({
+      status: "BLOCKED" as const,
+      operation: "REQUEST" as const,
+      intent: currentIntent,
+      persistence: null,
+      reason: "QUALIFICATION_NOT_ALLOWED_FOR_ORIGIN" as const,
+    });
+  }
+
+  if (currentIntent !== null && currentIntent.state !== "TERMINAL") {
+    if (!identityMatches(currentIntent, identity)) {
+      return Object.freeze({
+        status: "BLOCKED" as const,
+        operation: "REQUEST" as const,
+        intent: currentIntent,
+        persistence: null,
+        reason: "CURRENT_IDENTITY_MISMATCH" as const,
+      });
+    }
+    if (
+      currentIntent.state === "READY_TO_ENTER_REALITY" &&
+      currentIntent.origin === input.origin &&
+      currentIntent.qualification === input.qualification
+    ) {
+      return Object.freeze({
+        status: "READY" as const,
+        operation: "REQUEST" as const,
+        intent: currentIntent,
+        persistence: persist(currentIntent),
+        reason: null,
+      });
+    }
+    if (currentIntent.state === "FAILED_RETRYABLE") {
+      const retry = retryRealityEncounterAcceptance({
+        intentReferenceId: currentIntent.intentReferenceId,
+        identityReferences: identity,
+      });
+      if (retry.status === "READY") {
+        return Object.freeze({
+          status: "READY" as const,
+          operation: "REQUEST" as const,
+          intent: retry.intent,
+          persistence: persist(retry.intent),
+          reason: null,
+        });
+      }
+    }
+    return Object.freeze({
+      status: "BLOCKED" as const,
+      operation: "REQUEST" as const,
+      intent: currentIntent,
+      persistence: null,
+      reason: "ENCOUNTER_ALREADY_ACTIVE" as const,
+    });
+  }
+
+  const requestedAtDate = input.requestedAt
+    ? new Date(input.requestedAt)
+    : new Date();
+  const issuedAt = Number.isNaN(requestedAtDate.getTime())
+    ? new Date().toISOString()
+    : requestedAtDate.toISOString();
+  const intent: RealityEncounterIntent = Object.freeze({
+    schemaVersion: XINMAI_REALITY_ENCOUNTER_INTENT_SCHEMA_VERSION,
+    source: "xinmai_reality_encounter_intent_controller" as const,
+    intentReferenceId: `reality-intent:${opaqueId()}`,
+    encounterCycleId: `reality-encounter:${opaqueId()}`,
+    ...identity,
+    origin: input.origin,
+    qualification: input.qualification,
+    state: "READY_TO_ENTER_REALITY" as const,
+    routeTarget: "/reality" as const,
+    issuedAt,
+    updatedAt: issuedAt,
+    expiresAt: new Date(
+      Date.parse(issuedAt) + INTENT_TTL_MS,
+    ).toISOString(),
+    revision: 1,
+    failure: null,
+    terminalReason: null,
+    provenance: Object.freeze({
+      userExplicitRequest: true as const,
+      identityAuthority: "EXISTING_RECOGNIZED_LIFE" as const,
+      relationshipAuthority:
+        "EXISTING_RELATIONSHIP_RUNTIME" as const,
+      noGrowthAuthority: true as const,
+    }),
+  });
+  currentIntent = intent;
+  const persistence = persist(intent);
+  return Object.freeze({
+    status: "READY" as const,
+    operation: "REQUEST" as const,
+    intent,
+    persistence,
+    reason: null,
+  });
+}
+
+const recoverIntent = (
+  requestedIntentReferenceId: string | null,
+  identity: RealityEncounterIdentityReferences,
+): RealityEncounterAdmissionResult => {
+  const recovery = readRealityEncounterRecoveryCandidate();
+  if (recovery.status !== "FOUND") {
+    return admissionBlocked(
+      "BLOCKED",
+      "RECOVER",
+      recovery.status === "CORRUPTED"
+        ? "RECOVERY_CANDIDATE_INVALID"
+        : "RECOVERY_CANDIDATE_NOT_FOUND",
+      null,
+    );
+  }
+  const candidate = recovery.snapshot.intent;
+  if (
+    (requestedIntentReferenceId !== null &&
+      candidate.intentReferenceId !== requestedIntentReferenceId) ||
+    !identityMatches(candidate, identity)
+  ) {
+    currentIntent = Object.freeze({
+      ...candidate,
+      state: "TERMINAL" as const,
+      updatedAt: new Date().toISOString(),
+      revision: candidate.revision + 1,
+      failure: null,
+      terminalReason: "IDENTITY_MISMATCH" as const,
+    });
+    persist(currentIntent);
+    return admissionBlocked(
+      "BLOCKED",
+      "RECOVER",
+      "IDENTITY_MISMATCH",
+      currentIntent,
+    );
+  }
+  if (isExpired(candidate)) {
+    currentIntent = candidate;
+    return expireCurrentIntent(candidate);
+  }
+
+  if (candidate.state === "ACTIVE_IN_REALITY") {
+    currentIntent = Object.freeze({
+      ...candidate,
+      state: "RECOVERING" as const,
+      updatedAt: new Date().toISOString(),
+      revision: candidate.revision + 1,
+      failure: null,
+      terminalReason: null,
+    });
+    persist(currentIntent);
+    const accepting = nextIntent(currentIntent, {
+      state: "ACCEPTING_REALITY",
+      failure: null,
+      terminalReason: null,
+    });
+    return admissionReady("RECOVER", accepting);
+  }
+
+  if (
+    candidate.state === "READY_TO_ENTER_REALITY" ||
+    candidate.state === "ACCEPTING_REALITY" ||
+    candidate.state === "FAILED_RETRYABLE" ||
+    candidate.state === "RECOVERING"
+  ) {
+    const now = new Date().toISOString();
+    currentIntent = Object.freeze({
+      ...candidate,
+      state: "FAILED_RETRYABLE" as const,
+      updatedAt: now,
+      revision: candidate.revision + 1,
+      failure: Object.freeze({
+        stage: "RECOVERY" as const,
+        reason: "RECOVERY_AFTER_INCOMPLETE_ACCEPTANCE" as const,
+        failedAt: now,
+        retryAllowed: true as const,
+      }),
+      terminalReason: null,
+    });
+    persist(currentIntent);
+    return admissionBlocked(
+      "RETRY_REQUIRED",
+      "RECOVER",
+      "RETRY_NOT_AVAILABLE",
+      currentIntent,
+    );
+  }
+
+  currentIntent = candidate;
+  return admissionBlocked(
+    "BLOCKED",
+    "RECOVER",
+    "INTENT_STATE_NOT_ADMISSIBLE",
+    candidate,
+  );
+};
+
+export function establishRealityEncounterAdmission(input: Readonly<{
+  intentReferenceId: string | null;
+  identityReferences: RealityEncounterIdentityReferences;
+}>): RealityEncounterAdmissionResult {
+  const identity = normalizeIdentityReferences(input.identityReferences);
+  if (identity === null) {
+    return admissionBlocked(
+      "BLOCKED",
+      "ADMIT",
+      "IDENTITY_MISMATCH",
+      currentIntent,
+    );
+  }
+  const requestedIntentReferenceId =
+    input.intentReferenceId?.trim() || null;
+  if (currentIntent === null) {
+    return recoverIntent(requestedIntentReferenceId, identity);
+  }
+  if (
+    requestedIntentReferenceId !== null &&
+    currentIntent.intentReferenceId !== requestedIntentReferenceId
+  ) {
+    return admissionBlocked(
+      "BLOCKED",
+      "ADMIT",
+      "INTENT_NOT_CURRENT",
+    );
+  }
+  if (!identityMatches(currentIntent, identity)) {
+    return admissionBlocked(
+      "BLOCKED",
+      "ADMIT",
+      "IDENTITY_MISMATCH",
+    );
+  }
+  if (isExpired(currentIntent)) {
+    return expireCurrentIntent(currentIntent);
+  }
+
+  if (currentIntent.state === "READY_TO_ENTER_REALITY") {
+    const accepting = nextIntent(currentIntent, {
+      state: "ACCEPTING_REALITY",
+      failure: null,
+      terminalReason: null,
+    });
+    return admissionReady("ADMIT", accepting);
+  }
+  if (currentIntent.state === "ACCEPTING_REALITY") {
+    return admissionReady("ADMIT", currentIntent);
+  }
+  if (currentIntent.state === "FAILED_RETRYABLE") {
+    return admissionBlocked(
+      "RETRY_REQUIRED",
+      "ADMIT",
+      "RETRY_NOT_AVAILABLE",
+    );
+  }
+  if (currentIntent.state === "RECOVERING") {
+    const accepting = nextIntent(currentIntent, {
+      state: "ACCEPTING_REALITY",
+      failure: null,
+      terminalReason: null,
+    });
+    return admissionReady("RECOVER", accepting);
+  }
+  if (currentIntent.state === "ACTIVE_IN_REALITY") {
+    const recovering = nextIntent(currentIntent, {
+      state: "RECOVERING",
+      failure: null,
+      terminalReason: null,
+    });
+    const accepting = nextIntent(recovering, {
+      state: "ACCEPTING_REALITY",
+      failure: null,
+      terminalReason: null,
+    });
+    return admissionReady("RECOVER", accepting);
+  }
+  return admissionBlocked(
+    "BLOCKED",
+    "ADMIT",
+    "INTENT_STATE_NOT_ADMISSIBLE",
+  );
+}
+
+export function retryRealityEncounterAcceptance(input: Readonly<{
+  intentReferenceId: string;
+  identityReferences?: RealityEncounterIdentityReferences;
+}>): RealityEncounterAdmissionResult {
+  if (
+    currentIntent === null ||
+    currentIntent.intentReferenceId !== input.intentReferenceId
+  ) {
+    return admissionBlocked(
+      "BLOCKED",
+      "RETRY",
+      "INTENT_NOT_CURRENT",
+    );
+  }
+  if (
+    input.identityReferences &&
+    !identityMatches(currentIntent, input.identityReferences)
+  ) {
+    return admissionBlocked(
+      "BLOCKED",
+      "RETRY",
+      "IDENTITY_MISMATCH",
+    );
+  }
+  if (currentIntent.state !== "FAILED_RETRYABLE") {
+    return admissionBlocked(
+      "BLOCKED",
+      "RETRY",
+      "RETRY_NOT_AVAILABLE",
+    );
+  }
+  if (isExpired(currentIntent)) {
+    return expireCurrentIntent(currentIntent);
+  }
+  const accepting = nextIntent(currentIntent, {
+    state: "ACCEPTING_REALITY",
+    failure: null,
+    terminalReason: null,
+  });
+  return admissionReady("RETRY", accepting);
+}
+
+export function failRealityEncounterAcceptance(input: Readonly<{
+  intentReferenceId: string;
+  encounterCycleId: string;
+  intentRevision: number;
+  stage: RealityEncounterFailureStage;
+  reason: RealityEncounterFailureReason;
+}>): RealityEncounterFailureResult {
+  if (
+    currentIntent === null ||
+    currentIntent.intentReferenceId !== input.intentReferenceId ||
+    currentIntent.encounterCycleId !== input.encounterCycleId ||
+    currentIntent.revision !== input.intentRevision
+  ) {
+    return Object.freeze({
+      status: "REJECTED" as const,
+      operation: "FAIL_ACCEPTANCE" as const,
+      intent: currentIntent,
+      reason: "INTENT_NOT_CURRENT" as const,
+    });
+  }
+  if (
+    currentIntent.state !== "READY_TO_ENTER_REALITY" &&
+    currentIntent.state !== "ACCEPTING_REALITY" &&
+    currentIntent.state !== "RECOVERING"
+  ) {
+    return Object.freeze({
+      status: "REJECTED" as const,
+      operation: "FAIL_ACCEPTANCE" as const,
+      intent: currentIntent,
+      reason: "INTENT_STATE_NOT_FAILABLE" as const,
+    });
+  }
+  const failure: RealityEncounterFailure = Object.freeze({
+    stage: input.stage,
+    reason: input.reason,
+    failedAt: new Date().toISOString(),
+    retryAllowed: true as const,
+  });
+  const failed = nextIntent(currentIntent, {
+    state: "FAILED_RETRYABLE",
+    failure,
+    terminalReason: null,
+  });
+  return Object.freeze({
+    status: "FAILED_RETRYABLE" as const,
+    operation: "FAIL_ACCEPTANCE" as const,
+    intent: failed,
+    reason: input.reason,
+  });
+}
+
+export function commitRealityEncounterActive(
+  outcome: RealityHostAcceptanceOutcome,
+): RealityEncounterCommitResult {
+  if (
+    currentIntent === null ||
+    currentIntent.intentReferenceId !== outcome.intentReferenceId ||
+    currentIntent.encounterCycleId !== outcome.encounterCycleId ||
+    currentIntent.revision !== outcome.intentRevision
+  ) {
+    return Object.freeze({
+      status: "REJECTED" as const,
+      operation: "COMMIT_ACTIVE" as const,
+      intent: currentIntent,
+      reason: "HOST_OUTCOME_MISMATCH" as const,
+    });
+  }
+  if (currentIntent.state !== "ACCEPTING_REALITY") {
+    return Object.freeze({
+      status: "REJECTED" as const,
+      operation: "COMMIT_ACTIVE" as const,
+      intent: currentIntent,
+      reason: "INTENT_STATE_NOT_ACCEPTING" as const,
+    });
+  }
+  if (currentIntent.sourceReferenceId !== outcome.sourceReferenceId) {
+    return Object.freeze({
+      status: "REJECTED" as const,
+      operation: "COMMIT_ACTIVE" as const,
+      intent: currentIntent,
+      reason: "IDENTITY_MISMATCH" as const,
+    });
+  }
+  if (isExpired(currentIntent)) {
+    expireCurrentIntent(currentIntent);
+    return Object.freeze({
+      status: "REJECTED" as const,
+      operation: "COMMIT_ACTIVE" as const,
+      intent: currentIntent,
+      reason: "INTENT_EXPIRED" as const,
+    });
+  }
+  if (outcome.status !== "REALITY_MINIMUM_PRESENTED") {
+    failRealityEncounterAcceptance({
+      intentReferenceId: outcome.intentReferenceId,
+      encounterCycleId: outcome.encounterCycleId,
+      intentRevision: outcome.intentRevision,
+      stage: "MINIMUM_SURFACE",
+      reason: "MINIMUM_SURFACE_NOT_PRESENTED",
+    });
+    return Object.freeze({
+      status: "REJECTED" as const,
+      operation: "COMMIT_ACTIVE" as const,
+      intent: currentIntent,
+      reason: "HOST_OUTCOME_MISMATCH" as const,
+    });
+  }
+  const active = nextIntent(currentIntent, {
+    state: "ACTIVE_IN_REALITY",
+    failure: null,
+    terminalReason: null,
+  });
+  return Object.freeze({
+    status: "ACTIVE" as const,
+    operation: "COMMIT_ACTIVE" as const,
+    intent: active,
+    reason: null,
+  });
+}
+
+export function terminateRealityEncounter(
+  reason: RealityEncounterTerminalReason,
+): RealityEncounterTerminationResult {
+  if (currentIntent === null || currentIntent.state === "TERMINAL") {
+    return Object.freeze({
+      status: "NOT_ACTIVE" as const,
+      operation: "TERMINATE" as const,
+      intent: currentIntent,
+      reason: "NO_CURRENT_INTENT" as const,
+    });
+  }
+  const terminal = nextIntent(currentIntent, {
+    state: "TERMINAL",
+    failure: null,
+    terminalReason: reason,
+  });
+  clearRealityEncounterRecoveryCandidate(terminal.intentReferenceId);
+  currentIntent = null;
+  return Object.freeze({
+    status: "TERMINATED" as const,
+    operation: "TERMINATE" as const,
+    intent: terminal,
+    reason,
+  });
+}
+
+export function readCurrentRealityEncounterIntent():
+  RealityEncounterIntent | null {
+  return currentIntent;
+}
+
+export const XinmaiRealityEncounterIntentController = Object.freeze({
+  requestEncounter: requestRealityEncounter,
+  establishAdmission: establishRealityEncounterAdmission,
+  retryCurrentEncounter: retryRealityEncounterAcceptance,
+  commitActive: commitRealityEncounterActive,
+  failAcceptance: failRealityEncounterAcceptance,
+  terminateCurrentEncounter: terminateRealityEncounter,
+  readCurrentIntent: readCurrentRealityEncounterIntent,
+});

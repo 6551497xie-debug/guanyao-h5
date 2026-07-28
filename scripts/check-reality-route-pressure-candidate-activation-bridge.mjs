@@ -176,25 +176,51 @@ try {
     sourceReferenceId,
     calendarInstant: new Date(2026, 6, 19, 12, 0, 0),
   });
-  const routeSourceResult = runtime.activateRealityRouteActivationSourceContext({
-    realityEntryContext,
-    lifeSourceSession,
-    requestDateSource,
+  const encounterAdmission = Object.freeze({
+    schemaVersion: "XINMAI_REALITY_ENCOUNTER_ADMISSION_V1",
+    source: "xinmai_reality_encounter_intent_controller",
+    intentReferenceId: "intent:route-candidate-activation",
+    encounterCycleId: "encounter:route-candidate-activation",
+    intentRevision: 1,
+    state: "ACCEPTING_REALITY",
+    routeTarget: "/reality",
+    origin: "FIRST_ENCOUNTER",
+    qualification: "WHISPER_SKIPPED",
+    identityReferences: Object.freeze({
+      sourceReferenceId,
+      starBeastIdentityReferenceId:
+        "starbeast:route-candidate-activation",
+      mansionCoordinateReferenceId:
+        "mansion:route-candidate-activation",
+    }),
+    expiresAt: "2099-01-01T00:00:00.000Z",
   });
-  assertEqual("route activation source prerequisite is ready", routeSourceResult.status, "AVAILABLE");
-
   const routeAuthorization = Object.freeze({
     status: "READY",
     authorizationState: "AUTHORIZED_PRODUCTION_REALITY_SOURCE",
     routeTarget: "/reality",
     sourceReferenceId,
+    intentReferenceId: encounterAdmission.intentReferenceId,
+    encounterCycleId: encounterAdmission.encounterCycleId,
+    intentRevision: encounterAdmission.intentRevision,
     sourceContext: Object.freeze({
       sourceExperienceMode: "REAL_USER_EXPERIENCE",
       sourceProvenance: "REAL_USER_SESSION",
       sourceReferenceId,
+      intentReferenceId: encounterAdmission.intentReferenceId,
+      encounterCycleId: encounterAdmission.encounterCycleId,
+      intentRevision: encounterAdmission.intentRevision,
       realityEntryEligibility: "ELIGIBLE",
     }),
   });
+  const routeSourceResult = runtime.activateRealityRouteActivationSourceContext({
+    realityEntryContext,
+    routeAuthorization,
+    encounterAdmission,
+    lifeSourceSession,
+    requestDateSource,
+  });
+  assertEqual("route activation source prerequisite is ready", routeSourceResult.status, "AVAILABLE");
   const ready = runtime.bridgeRealityRouteToPressureCandidateActivation({
     routeAuthorization,
     routeActivationSourceContext: routeSourceResult.context,

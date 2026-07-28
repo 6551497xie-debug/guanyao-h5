@@ -5,7 +5,6 @@ import type {
   RealityProductionRouteGuardReason,
   RealityProductionSourceContext,
 } from "../types/realityProductionRouteAuthorization";
-import { readGenesisProductionRealityEntryContext } from "./genesisProductionRecognitionRealityEntry";
 
 export const REALITY_PRODUCTION_ROUTE_TARGET = "/reality" as const;
 
@@ -15,6 +14,8 @@ export const REALITY_PRODUCTION_ROUTE_AUTHORIZATION_BOUNDARY:
     explicitRealityEntryRequired: true,
     realUserSessionProvenanceOnly: true,
     sourceReferenceContinuityRequired: true,
+    encounterAdmissionRequired: true,
+    explicitAuthorizationInputOnly: true,
     immutableSourceContextOnly: true,
     pressureRecognitionNotStarted: true,
     noFixtureSource: true,
@@ -32,10 +33,13 @@ export const REALITY_PRODUCTION_ROUTE_AUTHORIZATION_BOUNDARY:
     noNavigationMutation: true,
     noUiIntegration: true,
     noStorageWrite: true,
+    noStorageRead: true,
   });
 
 const sourceNotReady = (
   sourceReferenceId: string | null,
+  encounterAdmission:
+    RealityProductionRouteAuthorizationInput["encounterAdmission"],
   guardReason: Exclude<
     RealityProductionRouteGuardReason,
     "ROUTE_TARGET_NOT_AUTHORIZED" | "FORBIDDEN_SOURCE_REFERENCE"
@@ -45,6 +49,9 @@ const sourceNotReady = (
   source: "reality_production_route_authorization" as const,
   routeTarget: REALITY_PRODUCTION_ROUTE_TARGET,
   sourceReferenceId,
+  intentReferenceId: encounterAdmission?.intentReferenceId ?? null,
+  encounterCycleId: encounterAdmission?.encounterCycleId ?? null,
+  intentRevision: encounterAdmission?.intentRevision ?? null,
   authorizationState: "SOURCE_NOT_READY" as const,
   guardReason,
   sourceContext: null,
@@ -58,7 +65,13 @@ const blocked = (
   status: "BLOCKED" as const,
   source: "reality_production_route_authorization" as const,
   routeTarget: input.routeTarget,
-  sourceReferenceId: input.sourceReferenceId,
+  sourceReferenceId:
+    input.encounterAdmission?.identityReferences.sourceReferenceId ??
+    input.identityEntryContext?.sourceReferenceId ??
+    null,
+  intentReferenceId: input.encounterAdmission?.intentReferenceId ?? null,
+  encounterCycleId: input.encounterAdmission?.encounterCycleId ?? null,
+  intentRevision: input.encounterAdmission?.intentRevision ?? null,
   authorizationState: "BLOCKED" as const,
   guardReason,
   sourceContext: null,
@@ -79,18 +92,57 @@ export function authorizeRealityProductionRoute(
     return blocked(input, "ROUTE_TARGET_NOT_AUTHORIZED");
   }
 
-  const requestedReference = input.sourceReferenceId?.trim() ?? "";
+  const entryContext = input.identityEntryContext;
+  const encounterAdmission = input.encounterAdmission;
+  if (encounterAdmission === null) {
+    return sourceNotReady(
+      entryContext?.sourceReferenceId ?? null,
+      null,
+      "ENCOUNTER_ADMISSION_REQUIRED",
+    );
+  }
+  if (
+    encounterAdmission.schemaVersion !==
+      "XINMAI_REALITY_ENCOUNTER_ADMISSION_V1" ||
+    encounterAdmission.source !==
+      "xinmai_reality_encounter_intent_controller" ||
+    encounterAdmission.state !== "ACCEPTING_REALITY" ||
+    encounterAdmission.routeTarget !== REALITY_PRODUCTION_ROUTE_TARGET ||
+    encounterAdmission.intentReferenceId.trim().length === 0 ||
+    encounterAdmission.encounterCycleId.trim().length === 0 ||
+    !Number.isInteger(encounterAdmission.intentRevision) ||
+    encounterAdmission.intentRevision <= 0
+  ) {
+    return sourceNotReady(
+      encounterAdmission.identityReferences.sourceReferenceId,
+      encounterAdmission,
+      "ENCOUNTER_ADMISSION_INVALID",
+    );
+  }
+  if (Date.parse(encounterAdmission.expiresAt) <= Date.now()) {
+    return sourceNotReady(
+      encounterAdmission.identityReferences.sourceReferenceId,
+      encounterAdmission,
+      "ENCOUNTER_ADMISSION_EXPIRED",
+    );
+  }
+  const requestedReference =
+    encounterAdmission.identityReferences.sourceReferenceId.trim();
   if (requestedReference.length === 0) {
-    return sourceNotReady(null, "SOURCE_REFERENCE_REQUIRED");
+    return sourceNotReady(
+      null,
+      encounterAdmission,
+      "SOURCE_REFERENCE_REQUIRED",
+    );
   }
   if (hasForbiddenSourceReference(requestedReference)) {
     return blocked(input, "FORBIDDEN_SOURCE_REFERENCE");
   }
 
-  const entryContext = readGenesisProductionRealityEntryContext();
   if (entryContext === null) {
     return sourceNotReady(
       requestedReference,
+      encounterAdmission,
       "REALITY_ENTRY_CONTEXT_NOT_AVAILABLE",
     );
   }
@@ -98,10 +150,18 @@ export function authorizeRealityProductionRoute(
     entryContext.source !== "genesis_production_reality_entry_context" ||
     entryContext.sourceProvenance !== "REAL_USER_SESSION"
   ) {
-    return sourceNotReady(requestedReference, "SOURCE_PROVENANCE_INVALID");
+    return sourceNotReady(
+      requestedReference,
+      encounterAdmission,
+      "SOURCE_PROVENANCE_INVALID",
+    );
   }
   if (entryContext.eligibility !== "ELIGIBLE") {
-    return sourceNotReady(requestedReference, "REALITY_ENTRY_NOT_ELIGIBLE");
+    return sourceNotReady(
+      requestedReference,
+      encounterAdmission,
+      "REALITY_ENTRY_NOT_ELIGIBLE",
+    );
   }
 
   const session = entryContext.recognitionRealitySession;
@@ -114,13 +174,35 @@ export function authorizeRealityProductionRoute(
     session.realityEntryConfirmed !== true ||
     session.realityEntryEligibility !== "ELIGIBLE"
   ) {
-    return sourceNotReady(requestedReference, "REALITY_ENTRY_SESSION_INVALID");
+    return sourceNotReady(
+      requestedReference,
+      encounterAdmission,
+      "REALITY_ENTRY_SESSION_INVALID",
+    );
   }
   if (
     requestedReference !== entryContext.sourceReferenceId ||
     requestedReference !== session.sourceReferenceId
   ) {
-    return sourceNotReady(requestedReference, "SOURCE_REFERENCE_MISMATCH");
+    return sourceNotReady(
+      requestedReference,
+      encounterAdmission,
+      "SOURCE_REFERENCE_MISMATCH",
+    );
+  }
+  if (
+    encounterAdmission.identityReferences.sourceReferenceId !==
+      entryContext.sourceReferenceId ||
+    encounterAdmission.identityReferences.starBeastIdentityReferenceId
+      .trim().length === 0 ||
+    encounterAdmission.identityReferences.mansionCoordinateReferenceId
+      .trim().length === 0
+  ) {
+    return sourceNotReady(
+      requestedReference,
+      encounterAdmission,
+      "ENCOUNTER_IDENTITY_MISMATCH",
+    );
   }
 
   const sourceContext: RealityProductionSourceContext = Object.freeze({
@@ -129,6 +211,9 @@ export function authorizeRealityProductionRoute(
     sourceExperienceMode: "REAL_USER_EXPERIENCE" as const,
     sourceProvenance: "REAL_USER_SESSION" as const,
     sourceReferenceId: requestedReference,
+    intentReferenceId: encounterAdmission.intentReferenceId,
+    encounterCycleId: encounterAdmission.encounterCycleId,
+    intentRevision: encounterAdmission.intentRevision,
     realityEntryEligibility: "ELIGIBLE" as const,
     genesisCompletionReference: Object.freeze({
       stage: "COMPLETION" as const,
@@ -160,6 +245,9 @@ export function authorizeRealityProductionRoute(
     source: "reality_production_route_authorization" as const,
     routeTarget: REALITY_PRODUCTION_ROUTE_TARGET,
     sourceReferenceId: requestedReference,
+    intentReferenceId: encounterAdmission.intentReferenceId,
+    encounterCycleId: encounterAdmission.encounterCycleId,
+    intentRevision: encounterAdmission.intentRevision,
     authorizationState: "AUTHORIZED_PRODUCTION_REALITY_SOURCE" as const,
     guardReason: null,
     sourceContext,

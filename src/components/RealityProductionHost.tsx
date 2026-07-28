@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RealityPressureSeedPresentation } from "./RealityPressureSeedPresentation";
 import { RealityLifeUniverseCanvas } from "./RealityLifeUniverseCanvas";
 import { bridgeRealityPressureActivationCandidateRequestContext } from "../services/realityPressureActivationCandidateRequestBridge";
@@ -48,6 +48,7 @@ export const REALITY_PRODUCTION_HOST_BOUNDARY:
     noStorageRead: true,
     noStorageWrite: true,
     noNavigationMutation: true,
+    hostAcceptanceOutcomeRequired: true,
   });
 
 type RealityPressureHostState = Readonly<{
@@ -76,6 +77,7 @@ const initializePressureHostState = (
 
 export function RealityProductionHost({
   routeAuthorization,
+  encounterAdmission,
   pressureSeedHostInput,
   pressureSeedContinuationContext,
   genesisPresenceContinuityContext,
@@ -87,8 +89,11 @@ export function RealityProductionHost({
   choiceContinuation = null,
   choiceLifeTraceMemoryKey = null,
   choiceLifeTraceSourceSlot = null,
+  onRealityAcceptanceOutcome,
   onContinueToGravity,
 }: RealityProductionHostProps) {
+  const minimumSurfaceRef = useRef<HTMLElement | null>(null);
+  const reportedAcceptanceAttemptRef = useRef<string | null>(null);
   const sourceContext = routeAuthorization.sourceContext;
   const [pressureHostState, setPressureHostState] =
     useState<RealityPressureHostState>(() =>
@@ -103,20 +108,110 @@ export function RealityProductionHost({
     );
   const continuationResult = pressureHostState.continuationResult;
   const consumerResult = pressureHostState.consumerResult;
+  const minimumInputReady =
+    pressureSeedHostInputReady &&
+    pressureSeedContinuationContext.phase ===
+      "READY_FOR_CONSUMER_INITIALIZATION" &&
+    pressureSeedContinuationContext.sourceReferenceId ===
+      routeAuthorization.sourceReferenceId &&
+    pressureSeedHostInput.deliverySession ===
+      pressureSeedContinuationContext.deliverySession &&
+    pressureSeedHostInput.consumerInput ===
+      pressureSeedContinuationContext.consumerInput &&
+    consumerResult.status === "READY" &&
+    continuationResult.status === "READY" &&
+    continuationResult.context.phase === "ACTIVE" &&
+    routeAuthorization.intentReferenceId ===
+      encounterAdmission.intentReferenceId &&
+    routeAuthorization.encounterCycleId ===
+      encounterAdmission.encounterCycleId &&
+    routeAuthorization.intentRevision === encounterAdmission.intentRevision;
+  const acceptanceAttemptKey =
+    `${encounterAdmission.intentReferenceId}:` +
+    `${encounterAdmission.encounterCycleId}:` +
+    `${encounterAdmission.intentRevision}`;
+
+  useEffect(() => {
+    if (
+      reportedAcceptanceAttemptRef.current === acceptanceAttemptKey
+    ) {
+      return undefined;
+    }
+    if (!minimumInputReady) {
+      reportedAcceptanceAttemptRef.current = acceptanceAttemptKey;
+      onRealityAcceptanceOutcome(
+        Object.freeze({
+          status: "REALITY_HOST_UNAVAILABLE" as const,
+          intentReferenceId: encounterAdmission.intentReferenceId,
+          encounterCycleId: encounterAdmission.encounterCycleId,
+          intentRevision: encounterAdmission.intentRevision,
+          sourceReferenceId:
+            encounterAdmission.identityReferences.sourceReferenceId,
+          reason: "HOST_INPUT_NOT_READY" as const,
+          reportedAt: new Date().toISOString(),
+        }),
+      );
+      return undefined;
+    }
+
+    const animationFrame = window.requestAnimationFrame(() => {
+      const minimumSurface = minimumSurfaceRef.current;
+      const lifeSurface =
+        minimumSurface?.querySelector("canvas") ?? null;
+      const pressureSurface =
+        minimumSurface?.querySelector(
+          '[data-pressure-seed-presentation="V2"]',
+        ) ?? null;
+      if (
+        minimumSurface === null ||
+        !minimumSurface.isConnected ||
+        lifeSurface === null ||
+        pressureSurface === null
+      ) {
+        reportedAcceptanceAttemptRef.current = acceptanceAttemptKey;
+        onRealityAcceptanceOutcome(
+          Object.freeze({
+            status: "REALITY_HOST_UNAVAILABLE" as const,
+            intentReferenceId: encounterAdmission.intentReferenceId,
+            encounterCycleId: encounterAdmission.encounterCycleId,
+            intentRevision: encounterAdmission.intentRevision,
+            sourceReferenceId:
+              encounterAdmission.identityReferences.sourceReferenceId,
+            reason: "MINIMUM_SURFACE_NOT_PRESENTED" as const,
+            reportedAt: new Date().toISOString(),
+          }),
+        );
+        return;
+      }
+      const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      reportedAcceptanceAttemptRef.current = acceptanceAttemptKey;
+      onRealityAcceptanceOutcome(
+        Object.freeze({
+          status: "REALITY_MINIMUM_PRESENTED" as const,
+          intentReferenceId: encounterAdmission.intentReferenceId,
+          encounterCycleId: encounterAdmission.encounterCycleId,
+          intentRevision: encounterAdmission.intentRevision,
+          sourceReferenceId:
+            encounterAdmission.identityReferences.sourceReferenceId,
+          presentedSurface: reducedMotion
+            ? "REALITY_STATIC_LIFE_UNIVERSE_AND_PRESSURE_CANDIDATES"
+            : "REALITY_LIFE_UNIVERSE_AND_PRESSURE_CANDIDATES",
+          committedAt: new Date().toISOString(),
+        }),
+      );
+    });
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [
+    acceptanceAttemptKey,
+    encounterAdmission,
+    minimumInputReady,
+    onRealityAcceptanceOutcome,
+  ]);
 
   if (
-    !pressureSeedHostInputReady ||
-    pressureSeedContinuationContext.phase !==
-      "READY_FOR_CONSUMER_INITIALIZATION" ||
-    pressureSeedContinuationContext.sourceReferenceId !==
-      routeAuthorization.sourceReferenceId ||
-    pressureSeedHostInput.deliverySession !==
-      pressureSeedContinuationContext.deliverySession ||
-    pressureSeedHostInput.consumerInput !==
-      pressureSeedContinuationContext.consumerInput ||
-    consumerResult.status !== "READY" ||
-    continuationResult.status !== "READY" ||
-    continuationResult.context.phase !== "ACTIVE"
+    !minimumInputReady
   ) {
     return (
       <main
@@ -335,6 +430,7 @@ export function RealityProductionHost({
 
   return (
     <main
+      ref={minimumSurfaceRef}
       className="gy-reality-life-universe"
       data-production-reality-status="AUTHORIZED_PRODUCTION_REALITY_SOURCE"
       data-reality-production-host-state={
@@ -345,6 +441,14 @@ export function RealityProductionHost({
       data-source-experience-mode={sourceContext.sourceExperienceMode}
       data-source-provenance={sourceContext.sourceProvenance}
       data-source-reference-id={sourceContext.sourceReferenceId}
+      data-reality-intent-reference-id={
+        encounterAdmission.intentReferenceId
+      }
+      data-reality-encounter-cycle-id={
+        encounterAdmission.encounterCycleId
+      }
+      data-reality-intent-revision={encounterAdmission.intentRevision}
+      data-reality-intent-authority="ACCEPTING_REALITY"
       data-genesis-presence-continuity={
         genesisPresenceContinuityContext.bridge.continuityState
       }

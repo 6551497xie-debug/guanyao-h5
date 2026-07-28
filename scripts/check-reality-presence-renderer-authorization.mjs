@@ -334,9 +334,29 @@ try {
       presenceRealization: recognizedPresence.realization,
       realityEntryContext,
     });
+  const encounterAdmission = Object.freeze({
+    schemaVersion: "XINMAI_REALITY_ENCOUNTER_ADMISSION_V1",
+    source: "xinmai_reality_encounter_intent_controller",
+    intentReferenceId: "intent:reality-renderer-authorization",
+    encounterCycleId: "encounter:reality-renderer-authorization",
+    intentRevision: 1,
+    state: "ACCEPTING_REALITY",
+    routeTarget: "/reality",
+    origin: "FIRST_ENCOUNTER",
+    qualification: "WHISPER_SKIPPED",
+    identityReferences: Object.freeze({
+      sourceReferenceId,
+      starBeastIdentityReferenceId:
+        "starbeast:reality-renderer-authorization",
+      mansionCoordinateReferenceId:
+        "mansion:reality-renderer-authorization",
+    }),
+    expiresAt: "2099-01-01T00:00:00.000Z",
+  });
   const realityRouteAuthorization = runtime.authorizeRealityProductionRoute({
     routeTarget: "/reality",
-    sourceReferenceId,
+    identityEntryContext: realityEntryContext,
+    encounterAdmission,
   });
   const sourceProjection =
     runtime.projectRealityCoordinatePresenceVisualSource({

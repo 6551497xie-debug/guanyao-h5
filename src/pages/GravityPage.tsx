@@ -67,6 +67,8 @@ import type {
 } from "../types/gravityRuntimeInput";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
+import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
+import { requestRealityEncounter } from "../services/xinmaiRealityEncounterIntentController";
 import { RealityGravityInertiaField } from "../components/RealityGravityInertiaField";
 import { XinmaiLifeReflectionGuide } from "../components/XinmaiLifeReflectionGuide";
 import {
@@ -2778,8 +2780,20 @@ function HexagramCodeDeliveryShell() {
   }
 
   function handleChoiceContinueToReality() {
+    if (!livedResponseRecognized) return;
+    const identityRecovery = recoverRealityRecognizedIdentity({
+      visualContinuity: arrivalVisualContinuity,
+    });
+    if (identityRecovery.status !== "READY") return;
+    const intentResult = requestRealityEncounter({
+      origin: "CHOICE_CONTINUATION",
+      qualification: "LIVED_RESPONSE_CONTINUATION",
+      identityReferences: identityRecovery.identityReferences,
+    });
+    if (intentResult.status !== "READY") return;
     navigate(GUANYAO_ROUTES.reality, {
       state: {
+        intentReferenceId: intentResult.intent.intentReferenceId,
         ...(arrivalVisualContinuity
           ? { visualContinuity: arrivalVisualContinuity }
           : {}),

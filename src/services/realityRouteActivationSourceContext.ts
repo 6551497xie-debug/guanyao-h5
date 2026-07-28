@@ -12,6 +12,7 @@ import type {
 export const REALITY_ROUTE_ACTIVATION_SOURCE_CONTEXT_BOUNDARY:
   RealityRouteActivationSourceContextBoundary = Object.freeze({
     explicitRealityEntryOnly: true,
+    encounterAdmissionRequired: true,
     inMemoryContextOnly: true,
     existingRealityEntryContextOnly: true,
     existingLaunchLifeSourceSessionOnly: true,
@@ -174,6 +175,26 @@ export function activateRealityRouteActivationSourceContext(
   ) {
     return unavailable("BLOCKED", "REALITY_ENTRY_CONTEXT_INVALID");
   }
+  const routeAuthorization = input.routeAuthorization;
+  const encounterAdmission = input.encounterAdmission;
+  if (!encounterAdmission) {
+    return unavailable(
+      "SOURCE_NOT_READY",
+      "ENCOUNTER_ADMISSION_REQUIRED",
+    );
+  }
+  if (
+    routeAuthorization.status !== "READY" ||
+    encounterAdmission.state !== "ACCEPTING_REALITY" ||
+    routeAuthorization.intentReferenceId !==
+      encounterAdmission.intentReferenceId ||
+    routeAuthorization.encounterCycleId !==
+      encounterAdmission.encounterCycleId ||
+    routeAuthorization.intentRevision !==
+      encounterAdmission.intentRevision
+  ) {
+    return unavailable("BLOCKED", "ENCOUNTER_ADMISSION_INVALID");
+  }
   const lifeSourceSession = input.lifeSourceSession;
   if (!isRealLifeSourceSession(lifeSourceSession)) {
     return unavailable(
@@ -201,11 +222,20 @@ export function activateRealityRouteActivationSourceContext(
     sourceReferenceId !==
       entryContext.recognitionRealitySession.sourceReferenceId ||
     sourceReferenceId !== lifeSourceSession.sourceReferenceId ||
-    sourceReferenceId !== requestDateSource.sourceReferenceId
+    sourceReferenceId !== requestDateSource.sourceReferenceId ||
+    sourceReferenceId !== routeAuthorization.sourceReferenceId ||
+    sourceReferenceId !==
+      encounterAdmission.identityReferences.sourceReferenceId
   ) {
     return unavailable("BLOCKED", "SOURCE_REFERENCE_MISMATCH");
   }
-  if (activeContext?.sourceReferenceId === sourceReferenceId) {
+  if (
+    activeContext?.intentReferenceId ===
+      encounterAdmission.intentReferenceId &&
+    activeContext.encounterCycleId ===
+      encounterAdmission.encounterCycleId &&
+    activeContext.intentRevision === encounterAdmission.intentRevision
+  ) {
     return Object.freeze({
       status: "AVAILABLE" as const,
       context: activeContext,
@@ -217,10 +247,13 @@ export function activateRealityRouteActivationSourceContext(
     schemaVersion: "GUANYAO_REALITY_ROUTE_ACTIVATION_SOURCE_CONTEXT_V1" as const,
     source: "reality_route_activation_source_context" as const,
     contextReferenceId:
-      `reality-route-activation:${sourceReferenceId}:${requestDateSource.asOfDate}`,
+      `reality-route-activation:${encounterAdmission.encounterCycleId}:${encounterAdmission.intentRevision}`,
     sourceExperienceMode: "REAL_USER_EXPERIENCE" as const,
     sourceProvenance: "REAL_USER_SESSION" as const,
     sourceReferenceId,
+    intentReferenceId: encounterAdmission.intentReferenceId,
+    encounterCycleId: encounterAdmission.encounterCycleId,
+    intentRevision: encounterAdmission.intentRevision,
     activationBoundary: "EXPLICIT_ENTER_REALITY" as const,
     realityEntryContext: entryContext,
     lifeSourceSession,
@@ -231,6 +264,9 @@ export function activateRealityRouteActivationSourceContext(
       lifeSource: "LAUNCH_LIFE_SOURCE_SESSION" as const,
       requestDateSource: "EXPLICIT_REALITY_ENTRY_CALENDAR_SOURCE" as const,
       sourceReferenceId,
+      intentReferenceId: encounterAdmission.intentReferenceId,
+      encounterCycleId: encounterAdmission.encounterCycleId,
+      intentRevision: encounterAdmission.intentRevision,
       noPressureInference: true as const,
       noCandidateSelection: true as const,
     }),

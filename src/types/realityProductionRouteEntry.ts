@@ -7,11 +7,16 @@ import type { GenesisProductionVisualCalibrationBundle } from "./genesisProducti
 import type { GenesisFourSymbolDirectionFieldVisualCalibration } from "./genesisFourSymbolDirectionFieldVisualCalibration";
 import type { GenesisLifeArchetypeForceCondensationVisualCalibration } from "./genesisLifeArchetypeForceCondensationVisualCalibration";
 import type { SelectedPressureSeedContext } from "./primaryPetal";
+import type {
+  RealityEncounterAdmission,
+  RealityHostAcceptanceOutcome,
+} from "./xinmaiRealityEncounterIntent";
 
 export type RealityProductionRouteEntryBoundary = Readonly<{
   productionRouteEntryOnly: true;
   exactRealityRouteOnly: true;
   inMemoryRealityEntryContextOnly: true;
+  realityEncounterIntentAuthorityRequired: true;
   realityRouteActivationSourceContextRequired: true;
   pressureCandidateActivationContextRequired: true;
   pressureCandidateRequestContextRequired: true;
@@ -32,6 +37,7 @@ export type RealityProductionRouteEntryBoundary = Readonly<{
   noRendererInvocation: true;
   noSourceRecalculation: true;
   noStorageRead: true;
+  routeStateIsPresentationOnly: true;
   selectedPressureSeedHandoffWriteOnly: true;
   explicitDynamicsNavigationOnly: true;
   noGenesisNavigationMutation: true;
@@ -66,6 +72,7 @@ export type RealityProductionHostBoundary = Readonly<{
   noStorageRead: true;
   noStorageWrite: true;
   noNavigationMutation: true;
+  hostAcceptanceOutcomeRequired: true;
 }>;
 
 export type RealityProductionHostProps = Readonly<{
@@ -73,6 +80,7 @@ export type RealityProductionHostProps = Readonly<{
     RealityProductionRouteActivationAuthorization,
     { status: "READY" }
   >;
+  encounterAdmission: RealityEncounterAdmission;
   pressureSeedHostInput: RealityProductionPressureHostInput;
   pressureSeedContinuationContext: Extract<
     RealityPressureSeedContinuationContext,
@@ -96,6 +104,9 @@ export type RealityProductionHostProps = Readonly<{
   choiceContinuation?: "AWAITING_LIVED_RESPONSE_RECOGNITION" | null;
   choiceLifeTraceMemoryKey?: string | null;
   choiceLifeTraceSourceSlot?: number | null;
+  onRealityAcceptanceOutcome: (
+    outcome: RealityHostAcceptanceOutcome,
+  ) => void;
   onContinueToGravity: (
     selectedPressureSeedContext: Readonly<SelectedPressureSeedContext>,
   ) => void;

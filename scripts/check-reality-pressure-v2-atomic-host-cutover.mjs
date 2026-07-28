@@ -99,7 +99,7 @@ try {
   assertIncludes(
     "Route passes initial continuation context",
     source.route,
-    "pressureSeedContinuationContext={pressureSeedContinuationResult.context}",
+    "pressureSeedContinuationContext={\n        pressureSeedContinuationResult.context\n      }",
   );
   assertIncludes(
     "Route requires initial continuation phase",

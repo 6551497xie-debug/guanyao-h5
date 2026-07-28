@@ -1,4 +1,14 @@
-import { lazy, Suspense, useEffect, useRef } from "react";
+import {
+  Component,
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ErrorInfo,
+  type ReactNode,
+} from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { AxisLinePage } from "./pages/AxisLinePage";
@@ -21,16 +31,15 @@ import {
   drawLifeUniverseCore2D,
 } from "./renderers/lifeUniverseStarField";
 import { readRealUserGenesisVisualSourceContext } from "./services/realUserGenesisVisualSourceContext";
+import {
+  failRealityEncounterAcceptance,
+  readCurrentRealityEncounterIntent,
+  retryRealityEncounterAcceptance,
+} from "./services/xinmaiRealityEncounterIntentController";
 
 const GenesisProductionRouteEntry = lazy(() =>
   import("./pages/GenesisProductionRouteEntry").then((module) => ({
     default: module.GenesisProductionRouteEntry,
-  })),
-);
-
-const RealityProductionRouteEntry = lazy(() =>
-  import("./pages/RealityProductionRouteEntry").then((module) => ({
-    default: module.RealityProductionRouteEntry,
   })),
 );
 
@@ -136,6 +145,111 @@ function LegacyRedirect({ to }: { to: string }) {
   return <Navigate to={to} replace />;
 }
 
+type RealityRouteLoadBoundaryProps = Readonly<{
+  children: ReactNode;
+  onRetry: () => void;
+}>;
+
+type RealityRouteLoadBoundaryState = Readonly<{
+  failed: boolean;
+}>;
+
+class RealityRouteLoadBoundary extends Component<
+  RealityRouteLoadBoundaryProps,
+  RealityRouteLoadBoundaryState
+> {
+  state: RealityRouteLoadBoundaryState = Object.freeze({
+    failed: false,
+  });
+
+  static getDerivedStateFromError(): RealityRouteLoadBoundaryState {
+    return Object.freeze({ failed: true });
+  }
+
+  componentDidCatch(_error: Error, _info: ErrorInfo) {
+    const currentIntent = readCurrentRealityEncounterIntent();
+    if (
+      currentIntent !== null &&
+      (currentIntent.state === "READY_TO_ENTER_REALITY" ||
+        currentIntent.state === "ACCEPTING_REALITY" ||
+        currentIntent.state === "RECOVERING")
+    ) {
+      failRealityEncounterAcceptance({
+        intentReferenceId: currentIntent.intentReferenceId,
+        encounterCycleId: currentIntent.encounterCycleId,
+        intentRevision: currentIntent.revision,
+        stage: "ROUTE_LOAD",
+        reason: "ROUTE_LOAD_UNAVAILABLE",
+      });
+    }
+  }
+
+  private retry = () => {
+    const currentIntent = readCurrentRealityEncounterIntent();
+    if (
+      currentIntent === null ||
+      currentIntent.state !== "FAILED_RETRYABLE"
+    ) {
+      return;
+    }
+    const retryResult = retryRealityEncounterAcceptance({
+      intentReferenceId: currentIntent.intentReferenceId,
+    });
+    if (retryResult.status !== "READY") return;
+    this.setState({ failed: false }, this.props.onRetry);
+  };
+
+  render() {
+    if (!this.state.failed) return this.props.children;
+    const currentIntent = readCurrentRealityEncounterIntent();
+    return (
+      <main
+        data-production-reality-status="ROUTE_LOAD_UNAVAILABLE"
+        data-reality-intent-authority={
+          currentIntent?.state ?? "ABSENT"
+        }
+        data-reality-encounter-cycle-id={
+          currentIntent?.encounterCycleId ?? "NONE"
+        }
+      >
+        <p role="status">现实入口暂时没有完整打开。</p>
+        <button
+          type="button"
+          data-interaction="RETRY_SAME_REALITY_ENCOUNTER"
+          onClick={this.retry}
+        >
+          继续这一轮
+        </button>
+      </main>
+    );
+  }
+}
+
+function RealityProductionRouteRuntime() {
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const RealityProductionRouteEntry = useMemo(
+    () =>
+      lazy(() =>
+        import("./pages/RealityProductionRouteEntry").then(
+          (module) => ({
+            default: module.RealityProductionRouteEntry,
+          }),
+        ),
+      ),
+    [loadAttempt],
+  );
+  return (
+    <RealityRouteLoadBoundary
+      key={loadAttempt}
+      onRetry={() => setLoadAttempt((current) => current + 1)}
+    >
+      <Suspense fallback={<LifeUniverseRouteFallback />}>
+        <RealityProductionRouteEntry />
+      </Suspense>
+    </RealityRouteLoadBoundary>
+  );
+}
+
 // Production begins inside the already-living universe. The standalone brand
 // prelude remains available at /genesis-lab as an isolated visual prototype.
 function EntryRouter() {
@@ -190,11 +304,7 @@ export default function App() {
         />
         <Route
           path={GUANYAO_ROUTES.reality}
-          element={
-            <Suspense fallback={<LifeUniverseRouteFallback />}>
-              <RealityProductionRouteEntry />
-            </Suspense>
-          }
+          element={<RealityProductionRouteRuntime />}
         />
         {previewRoutes.map((route) => (
           <Route key={route.path} path={route.path} element={route.element} />

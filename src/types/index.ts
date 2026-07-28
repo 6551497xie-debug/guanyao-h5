@@ -3331,3 +3331,27 @@ export type {
   GenesisRealityPresenceContinuityBridgeResult,
   GenesisRealityPresenceContinuityContext,
 } from "./genesisRealityPresenceContinuityBridge";
+
+export type {
+  RealityEncounterIntentState,
+  RealityEncounterOrigin,
+  RealityEncounterQualification,
+  RealityEncounterIdentityReferences,
+  RealityEncounterFailureStage,
+  RealityEncounterFailureReason,
+  RealityEncounterFailure,
+  RealityEncounterTerminalReason,
+  RealityEncounterIntent,
+  RealityEncounterAdmission,
+  RealityEncounterRequestInput,
+  RealityEncounterRequestResult,
+  RealityEncounterAdmissionResult,
+  RealityHostAcceptanceOutcome,
+  RealityEncounterCommitResult,
+  RealityEncounterFailureResult,
+  RealityEncounterTerminationResult,
+  RealityEncounterRecoverySnapshot,
+  RealityEncounterRecoveryWriteResult,
+  RealityEncounterRecoveryReadResult,
+  RealityEncounterRecoveryClearResult,
+} from "./xinmaiRealityEncounterIntent";

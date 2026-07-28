@@ -1,9 +1,12 @@
 import type { GenesisProductionRealityEntryContext } from "./genesisProductionRecognitionRealityEntry";
 import type { LaunchLifeSourceSession } from "./launchLifeSourceSession";
 import type { RealityPressureExplicitRequestDateSource } from "./realityPressureCandidateActivationContext";
+import type { RealityProductionRouteActivationAuthorization } from "./realityProductionRouteAuthorization";
+import type { RealityEncounterAdmission } from "./xinmaiRealityEncounterIntent";
 
 export type RealityRouteActivationSourceContextBoundary = Readonly<{
   explicitRealityEntryOnly: true;
+  encounterAdmissionRequired: true;
   inMemoryContextOnly: true;
   existingRealityEntryContextOnly: true;
   existingLaunchLifeSourceSessionOnly: true;
@@ -37,6 +40,9 @@ export type RealityRouteActivationSourceContext = Readonly<{
   sourceExperienceMode: "REAL_USER_EXPERIENCE";
   sourceProvenance: "REAL_USER_SESSION";
   sourceReferenceId: string;
+  intentReferenceId: string;
+  encounterCycleId: string;
+  intentRevision: number;
   activationBoundary: "EXPLICIT_ENTER_REALITY";
   realityEntryContext: GenesisProductionRealityEntryContext;
   lifeSourceSession: LaunchLifeSourceSession;
@@ -46,6 +52,9 @@ export type RealityRouteActivationSourceContext = Readonly<{
     lifeSource: "LAUNCH_LIFE_SOURCE_SESSION";
     requestDateSource: "EXPLICIT_REALITY_ENTRY_CALENDAR_SOURCE";
     sourceReferenceId: string;
+    intentReferenceId: string;
+    encounterCycleId: string;
+    intentRevision: number;
     noPressureInference: true;
     noCandidateSelection: true;
   }>;
@@ -53,6 +62,11 @@ export type RealityRouteActivationSourceContext = Readonly<{
 }>;
 
 export type RealityRouteActivationSourceContextInput = Readonly<{
+  routeAuthorization: Extract<
+    RealityProductionRouteActivationAuthorization,
+    { status: "READY" }
+  >;
+  encounterAdmission: RealityEncounterAdmission;
   realityEntryContext: GenesisProductionRealityEntryContext;
   lifeSourceSession: LaunchLifeSourceSession;
   requestDateSource: RealityPressureExplicitRequestDateSource;
@@ -65,7 +79,9 @@ export type RealityRouteActivationSourceContextBlockedReason =
   | "EXPLICIT_REQUEST_DATE_REQUIRED"
   | "EXPLICIT_REQUEST_DATE_INVALID"
   | "FORBIDDEN_SOURCE_REFERENCE"
-  | "SOURCE_REFERENCE_MISMATCH";
+  | "SOURCE_REFERENCE_MISMATCH"
+  | "ENCOUNTER_ADMISSION_REQUIRED"
+  | "ENCOUNTER_ADMISSION_INVALID";
 
 export type RealityRouteActivationSourceContextResult =
   | Readonly<{

@@ -19,10 +19,7 @@ import {
 import {
   resolveGenesisProductionRealityRouteHandoff,
 } from "../services/genesisProductionRealityRouteHandoff";
-import { readRealUserGenesisVisualSourceContext } from "../services/realUserGenesisVisualSourceContext";
 import {
-  activateRealityRouteActivationSourceContext,
-  captureExplicitRealityRequestDateSource,
   clearRealityRouteActivationSourceContext,
 } from "../services/realityRouteActivationSourceContext";
 import { bridgeGenesisProductionRuntimeToVisualCalibration } from "../services/genesisProductionVisualCalibrationBridge";
@@ -60,6 +57,8 @@ import {
   resolveRelationshipNamingEntryEligibility,
 } from "../services/xinmaiRelationshipNamingPresentationState";
 import { resolveLifeWhisperVisualOutcomeTransition } from "../services/xinmaiLifeWhisperVisualOutcomeTransition";
+import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
+import { requestRealityEncounter } from "../services/xinmaiRealityEncounterIntentController";
 import { STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS } from "../types/starBeastRelationshipNamingAsset";
 import type {
   LifeWhisperRelationshipFact,
@@ -967,27 +966,11 @@ export function GenesisProductionExperiencePage({
       lifeWhisperResponseCycleIdRef.current = null;
       const entryContext =
         activateGenesisProductionRealityEntryContext(result.session);
-      const realUserContext = readRealUserGenesisVisualSourceContext();
-      const requestDateSource = captureExplicitRealityRequestDateSource({
-        sourceReferenceId: result.session.sourceReferenceId,
-        calendarInstant: new Date(),
-      });
-      const activationSourceContext =
-        entryContext && realUserContext && requestDateSource
-          ? activateRealityRouteActivationSourceContext({
-              realityEntryContext: entryContext,
-              lifeSourceSession: realUserContext.lifeSourceSession,
-              requestDateSource,
-            })
-          : null;
       const handoff = resolveGenesisProductionRealityRouteHandoff({
         entryContext,
         sourceReferenceId: result.session.sourceReferenceId,
       });
-      if (
-        handoff.status === "READY" &&
-        activationSourceContext?.status === "AVAILABLE"
-      ) {
+      if (handoff.status === "READY") {
         const presenceContinuityContext =
           presenceVisualRealizationResult?.status === "READY"
             ? activateGenesisRealityPresenceContinuityContext({
@@ -1011,12 +994,45 @@ export function GenesisProductionExperiencePage({
             presenceVisualRealization:
               presenceVisualRealizationResult.realization,
           });
-          realityEntryTimerRef.current = window.setTimeout(() => {
-            realityEntryTimerRef.current = null;
-            navigate(handoff.routeTarget, {
-              state: { visualContinuity },
+          const identityRecovery =
+            recoverRealityRecognizedIdentity({
+              visualContinuity,
+              presenceVisualRealization:
+                presenceVisualRealizationResult.realization,
             });
-          }, REALITY_ENTRY_VISUAL_HOLD_MS);
+          const qualification =
+            lifeWhisperFactRef.current === "WHISPER_SKIPPED"
+              ? "WHISPER_SKIPPED" as const
+              : lifeWhisperResponsePhaseRef.current === "SETTLED"
+                ? "WHISPER_RESPONSE_SETTLED" as const
+                : lifeWhisperUnavailableContinuation ===
+                    "CONTINUE_WITHOUT_CONFIRMED_RESPONSE"
+                  ? "RESPONSE_UNAVAILABLE_EXPLICITLY_CONTINUED" as const
+                  : null;
+          const intentResult =
+            identityRecovery.status === "READY" &&
+            qualification !== null
+              ? requestRealityEncounter({
+                  origin: "FIRST_ENCOUNTER",
+                  qualification,
+                  identityReferences:
+                    identityRecovery.identityReferences,
+                })
+              : null;
+          if (intentResult?.status === "READY") {
+            // This brief hold preserves the existing same-body visual
+            // continuity. It is not a Reality success authority.
+            realityEntryTimerRef.current = window.setTimeout(() => {
+              realityEntryTimerRef.current = null;
+              navigate(handoff.routeTarget, {
+                state: {
+                  intentReferenceId:
+                    intentResult.intent.intentReferenceId,
+                  visualContinuity,
+                },
+              });
+            }, REALITY_ENTRY_VISUAL_HOLD_MS);
+          }
         }
       }
     }
