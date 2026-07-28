@@ -20,7 +20,10 @@ import type { GenesisTwentyEightMansionVisualLayerCalibration } from "./genesisT
 import type { PersonalStarBeastLifePresenceProjection } from "./personalStarBeastLifePresenceProjection";
 import type { PersonalStarBeastLifeStarCoreProjection } from "./personalStarBeastLifeStarCoreProjection";
 import type { PersonalStarBeastRenderPlan } from "./personalStarBeastRenderPlan";
-import type { LifeWhisperRelationshipVisualFact } from "./xinmaiLifeWhisperRelationship";
+import type {
+  LifeWhisperRelationshipVisualFact,
+  LifeWhisperRendererVisualResponseOutcome,
+} from "./xinmaiLifeWhisperRelationship";
 
 export type GenesisWebGLRendererCoreSceneProjection = Readonly<{
   semanticRole: "ISOLATED_WEBGL_LIFE_MANIFESTATION_SCENE";
@@ -114,6 +117,7 @@ export type GenesisWebGLRendererCoreContextState =
 export type GenesisWebGLRendererCoreSnapshot = Readonly<{
   sourceRenderPlanReferenceId: string;
   contextState: GenesisWebGLRendererCoreContextState;
+  lifeWhisperVisualResponseOutcome: LifeWhisperRendererVisualResponseOutcome | null;
   frameCount: number;
   width: number;
   height: number;

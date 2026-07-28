@@ -9,10 +9,12 @@ import "../styles/xinmai-reality-seed-body-response.css";
 import type {
   GenesisProductionCanvasHostState,
 } from "../types/genesisProductionExperiencePage";
+import type { GenesisWebGLRendererCoreFallback } from "../types/genesisWebGLRendererCore";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
 import {
   DORMANT_LIFE_WHISPER_RELATIONSHIP_VISUAL_FACT,
   type LifeWhisperRelationshipVisualFact,
+  type LifeWhisperSurfaceVisualResponseOutcome,
 } from "../types/xinmaiLifeWhisperRelationship";
 
 const REALITY_ARRIVAL_TIMING_MS = Object.freeze({
@@ -20,6 +22,13 @@ const REALITY_ARRIVAL_TIMING_MS = Object.freeze({
   SETTLED: 4_600,
   LIFE_WEATHER_SETTLE: 2_800,
 });
+
+type LifeWhisperSurfaceVisualResponseOutcomeInput =
+  LifeWhisperSurfaceVisualResponseOutcome extends infer Outcome
+    ? Outcome extends LifeWhisperSurfaceVisualResponseOutcome
+      ? Omit<Outcome, "sourceReferenceId">
+      : never
+    : never;
 
 export function RealityLifeUniverseCanvas({
   visualContinuity,
@@ -34,6 +43,7 @@ export function RealityLifeUniverseCanvas({
   choiceLifeTraceSourceSlot = null,
   lifeWhisperRelationshipVisualFact =
     DORMANT_LIFE_WHISPER_RELATIONSHIP_VISUAL_FACT,
+  onLifeWhisperVisualResponseOutcome,
 }: Pick<RealityProductionHostProps, "visualContinuity"> &
   Readonly<{
     selectedPressureSeedContext?:
@@ -51,8 +61,22 @@ export function RealityLifeUniverseCanvas({
     choiceLifeTraceMemoryKey?: string | null;
     choiceLifeTraceSourceSlot?: number | null;
     lifeWhisperRelationshipVisualFact?: LifeWhisperRelationshipVisualFact;
+    onLifeWhisperVisualResponseOutcome?: (
+      outcome: LifeWhisperSurfaceVisualResponseOutcome,
+    ) => void;
   }>) {
   const continuesRecognizedPressure = selectedPressureSeedContext !== null;
+  const reducedMotionRequested =
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+    (import.meta.env.DEV &&
+      new URLSearchParams(window.location.search).get(
+        "__xinmaiReducedMotion",
+      ) === "1");
+  const rendererFailureRequested =
+    import.meta.env.DEV &&
+    new URLSearchParams(window.location.search).get(
+      "__xinmaiRendererFailure",
+    ) === "1";
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const lifeWhisperRelationshipVisualFactRef = useRef(
     lifeWhisperRelationshipVisualFact,
@@ -63,8 +87,37 @@ export function RealityLifeUniverseCanvas({
     () => lifeWhisperRelationshipVisualFactRef.current,
     [],
   );
+  const onLifeWhisperVisualResponseOutcomeRef = useRef(
+    onLifeWhisperVisualResponseOutcome,
+  );
+  onLifeWhisperVisualResponseOutcomeRef.current =
+    onLifeWhisperVisualResponseOutcome;
+  const lastDeliveredLifeWhisperOutcomeKeyRef = useRef<string | null>(null);
+  const staticLifeWhisperResponseRef = useRef<SVGSVGElement | null>(null);
+  const emitLifeWhisperVisualResponseOutcome = useCallback(
+    (
+      outcome: LifeWhisperSurfaceVisualResponseOutcomeInput,
+    ) => {
+      const outcomeKey = `${outcome.responseCycleId}:${outcome.status}`;
+      if (
+        lastDeliveredLifeWhisperOutcomeKeyRef.current === outcomeKey
+      ) {
+        return;
+      }
+      lastDeliveredLifeWhisperOutcomeKeyRef.current = outcomeKey;
+      onLifeWhisperVisualResponseOutcomeRef.current?.(
+        Object.freeze({
+          ...outcome,
+          sourceReferenceId: visualContinuity.sourceReferenceId,
+        }) as LifeWhisperSurfaceVisualResponseOutcome,
+      );
+    },
+    [visualContinuity.sourceReferenceId],
+  );
   const [rendererState, setRendererState] =
     useState<GenesisProductionCanvasHostState>("STARTING");
+  const [rendererFallbackReason, setRendererFallbackReason] =
+    useState<GenesisWebGLRendererCoreFallback["reason"] | null>(null);
   const [arrivalPhase, setArrivalPhase] = useState(() =>
     continuesRecognizedPressure ? "SETTLED" : "IDENTITY_HOLD",
   );
@@ -253,6 +306,7 @@ export function RealityLifeUniverseCanvas({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas === null) {
+      setRendererFallbackReason(null);
       setRendererState("BLOCKED");
       return undefined;
     }
@@ -268,6 +322,12 @@ export function RealityLifeUniverseCanvas({
       visualContinuity.visualCalibrationBundle.runtimeStage !== "COMPLETION" ||
       realityPressureConsumer.status === "BLOCKED"
     ) {
+      setRendererFallbackReason(null);
+      setRendererState("BLOCKED");
+      return undefined;
+    }
+    if (rendererFailureRequested) {
+      setRendererFallbackReason(null);
       setRendererState("BLOCKED");
       return undefined;
     }
@@ -279,9 +339,7 @@ export function RealityLifeUniverseCanvas({
       width: Math.max(1, bounds.width),
       height: Math.max(1, bounds.height),
       pixelRatio: window.devicePixelRatio || 1,
-      reducedMotion: window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches,
+      reducedMotion: reducedMotionRequested,
       readLifeWhisperRelationshipVisualFact,
       twentyEightMansionCoordinateProjection:
         projectionBundle.twentyEightMansionCoordinateProjection,
@@ -313,20 +371,28 @@ export function RealityLifeUniverseCanvas({
     });
 
     if (rendererResult.status === "BLOCKED") {
+      setRendererFallbackReason(null);
       setRendererState("BLOCKED");
       return undefined;
     }
     if (rendererResult.status === "FALLBACK_REQUIRED") {
+      setRendererFallbackReason(rendererResult.fallback.reason);
       setRendererState("FALLBACK_REQUIRED");
       return undefined;
     }
 
+    setRendererFallbackReason(null);
     setRendererState("RENDERING");
     const controller = rendererResult.controller;
     const startedAt = performance.now();
     let animationFrame = 0;
     const renderFrame = (timestamp: number) => {
       controller.renderFrame(timestamp - startedAt);
+      const visualOutcome =
+        controller.getSnapshot().lifeWhisperVisualResponseOutcome;
+      if (visualOutcome !== null) {
+        emitLifeWhisperVisualResponseOutcome(visualOutcome);
+      }
       animationFrame = window.requestAnimationFrame(renderFrame);
     };
     const resizeObserver = new ResizeObserver((entries) => {
@@ -347,9 +413,88 @@ export function RealityLifeUniverseCanvas({
       controller.dispose();
     };
   }, [
+    emitLifeWhisperVisualResponseOutcome,
     readLifeWhisperRelationshipVisualFact,
     realityPressureConsumer,
+    reducedMotionRequested,
+    rendererFailureRequested,
     visualContinuity,
+  ]);
+
+  const staticLifeWhisperResponseVisible =
+    rendererState === "FALLBACK_REQUIRED" &&
+    rendererFallbackReason !== null &&
+    lifeWhisperRelationshipVisualFact.lifeWhisperFact ===
+      "WHISPER_SUBMITTED" &&
+    (lifeWhisperRelationshipVisualFact.lifeWhisperResponsePhase ===
+      "RESPONDING" ||
+      lifeWhisperRelationshipVisualFact.lifeWhisperResponsePhase ===
+        "SETTLED") &&
+    lifeWhisperRelationshipVisualFact.responseCycleId !== null;
+
+  useEffect(() => {
+    if (
+      !staticLifeWhisperResponseVisible ||
+      lifeWhisperRelationshipVisualFact.lifeWhisperResponsePhase !==
+        "RESPONDING" ||
+      lifeWhisperRelationshipVisualFact.responseCycleId === null ||
+      rendererFallbackReason === null
+    ) {
+      return undefined;
+    }
+
+    let firstFrame = 0;
+    let presentedFrame = 0;
+    firstFrame = window.requestAnimationFrame(() => {
+      presentedFrame = window.requestAnimationFrame(() => {
+        if (staticLifeWhisperResponseRef.current?.isConnected !== true) {
+          return;
+        }
+        emitLifeWhisperVisualResponseOutcome({
+          responseCycleId:
+            lifeWhisperRelationshipVisualFact.responseCycleId as string,
+          status: "STATIC_RESPONSE_PRESENTED",
+          surfaceMode: "SEMANTIC_STATIC_FALLBACK",
+          reason: rendererFallbackReason,
+        });
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(presentedFrame);
+    };
+  }, [
+    emitLifeWhisperVisualResponseOutcome,
+    lifeWhisperRelationshipVisualFact.lifeWhisperResponsePhase,
+    lifeWhisperRelationshipVisualFact.responseCycleId,
+    rendererFallbackReason,
+    staticLifeWhisperResponseVisible,
+  ]);
+
+  useEffect(() => {
+    if (
+      rendererState !== "BLOCKED" ||
+      lifeWhisperRelationshipVisualFact.lifeWhisperFact !==
+        "WHISPER_SUBMITTED" ||
+      lifeWhisperRelationshipVisualFact.lifeWhisperResponsePhase !==
+        "RESPONDING" ||
+      lifeWhisperRelationshipVisualFact.responseCycleId === null
+    ) {
+      return;
+    }
+    emitLifeWhisperVisualResponseOutcome({
+      responseCycleId:
+        lifeWhisperRelationshipVisualFact.responseCycleId,
+      status: "VISUAL_RESPONSE_UNAVAILABLE",
+      surfaceMode: "SEMANTIC_STATIC_FALLBACK",
+      reason: "SURFACE_BLOCKED",
+    });
+  }, [
+    emitLifeWhisperVisualResponseOutcome,
+    lifeWhisperRelationshipVisualFact.lifeWhisperFact,
+    lifeWhisperRelationshipVisualFact.lifeWhisperResponsePhase,
+    lifeWhisperRelationshipVisualFact.responseCycleId,
+    rendererState,
   ]);
 
   return (
@@ -536,6 +681,40 @@ export function RealityLifeUniverseCanvas({
         data-source-reference-id={visualContinuity.sourceReferenceId}
         aria-hidden="true"
       />
+      {staticLifeWhisperResponseVisible ? (
+        <svg
+          ref={staticLifeWhisperResponseRef}
+          className="gy-reality-life-universe__static-life-response"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          data-life-whisper-static-response="SAME_LIFE_PRESENTED"
+          data-source-reference-id={visualContinuity.sourceReferenceId}
+        >
+          <ellipse
+            cx="50"
+            cy="49"
+            rx="18"
+            ry="12"
+            fill="rgba(170, 213, 216, 0.035)"
+            stroke="rgba(190, 220, 220, 0.16)"
+            strokeWidth="0.22"
+          />
+          <path
+            d="M 34 50 Q 42 41 50 46 Q 58 40 67 50 Q 59 58 50 54 Q 41 59 34 50"
+            fill="none"
+            stroke="rgba(190, 220, 220, 0.24)"
+            strokeWidth="0.3"
+            strokeLinecap="round"
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r="2.5"
+            fill="rgba(244, 235, 206, 0.34)"
+          />
+        </svg>
+      ) : null}
       {selectedPressureSeedContext !== null &&
       realityPressureConsumer.status === "RESPONDING" ? (
         <svg

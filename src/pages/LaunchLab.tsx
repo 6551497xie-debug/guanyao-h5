@@ -67,9 +67,12 @@ import {
   resolveLifeWhisperRealityEntryIntent,
   resolveRelationshipNameDeletePresentation,
 } from "../services/xinmaiRelationshipNamingPresentationState";
+import { resolveLifeWhisperVisualOutcomeTransition } from "../services/xinmaiLifeWhisperVisualOutcomeTransition";
 import type {
   LifeWhisperRelationshipFact,
   LifeWhisperRelationshipResponsePhase,
+  LifeWhisperSurfaceVisualResponseOutcome,
+  LifeWhisperUnavailableContinuation,
 } from "../types/xinmaiLifeWhisperRelationship";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
@@ -108,7 +111,7 @@ const CFG = {
   firstPresenceSeconds: 2.1,
 };
 
-const RETURNING_LIFE_WHISPER_RESPONSE_HOLD_MS = 1_600;
+const RETURNING_LIFE_WHISPER_OUTCOME_WATCHDOG_MS = 6_000;
 
 // The existing origin adapter still accepts a geo compatibility field. The
 // production flow no longer asks for birthplace, so never fabricate a place.
@@ -1189,11 +1192,43 @@ export function LaunchLab() {
   const [returningLifeWhisperText, setReturningLifeWhisperText] = useState("");
   const [returningLifeWhisperFact, setReturningLifeWhisperFact] =
     useState<LifeWhisperRelationshipFact>("NONE");
+  const returningLifeWhisperFactRef =
+    useRef<LifeWhisperRelationshipFact>("NONE");
   const [
     returningLifeWhisperResponsePhase,
     setReturningLifeWhisperResponsePhase,
   ] = useState<LifeWhisperRelationshipResponsePhase>("DORMANT");
-  const returningLifeWhisperResponseTimerRef = useRef<number | null>(null);
+  const returningLifeWhisperResponsePhaseRef =
+    useRef<LifeWhisperRelationshipResponsePhase>("DORMANT");
+  const [
+    returningLifeWhisperResponseCycleId,
+    setReturningLifeWhisperResponseCycleId,
+  ] = useState<string | null>(null);
+  const returningLifeWhisperResponseCycleIdRef = useRef<string | null>(
+    null,
+  );
+  const returningLifeWhisperResponseCycleSequenceRef = useRef(0);
+  const returningLifeWhisperOutcomeWatchdogRef =
+    useRef<number | null>(null);
+  const [
+    returningLifeWhisperUnavailableContinuation,
+    setReturningLifeWhisperUnavailableContinuation,
+  ] = useState<LifeWhisperUnavailableContinuation>("NONE");
+  const [
+    returningLifeWhisperUnavailableReason,
+    setReturningLifeWhisperUnavailableReason,
+  ] = useState<
+    Extract<
+      LifeWhisperSurfaceVisualResponseOutcome,
+      { status: "VISUAL_RESPONSE_UNAVAILABLE" }
+    >["reason"] | null
+  >(null);
+  const [
+    returningLifeWhisperSettlementAuthority,
+    setReturningLifeWhisperSettlementAuthority,
+  ] = useState<
+    "MOTION_VISUAL_OUTCOME" | "STATIC_VISUAL_OUTCOME" | null
+  >(null);
   const [returningDynamicsInput] = useState(() =>
     hasReturningLifeIdentity ? resolveDynamicsInputContext({}) : null,
   );
@@ -1214,6 +1249,8 @@ export function LaunchLab() {
     resolveLifeWhisperRealityEntryIntent({
       lifeWhisperFact: returningLifeWhisperFact,
       lifeWhisperResponsePhase: returningLifeWhisperResponsePhase,
+      unavailableContinuation:
+        returningLifeWhisperUnavailableContinuation,
     });
   const returningRealityContext =
     returningStatePreview === "IDENTITY_ONLY" ||
@@ -1296,10 +1333,13 @@ export function LaunchLab() {
           : null;
   useEffect(
     () => () => {
-      if (returningLifeWhisperResponseTimerRef.current !== null) {
-        window.clearTimeout(returningLifeWhisperResponseTimerRef.current);
-        returningLifeWhisperResponseTimerRef.current = null;
+      if (returningLifeWhisperOutcomeWatchdogRef.current !== null) {
+        window.clearTimeout(
+          returningLifeWhisperOutcomeWatchdogRef.current,
+        );
+        returningLifeWhisperOutcomeWatchdogRef.current = null;
       }
+      returningLifeWhisperResponseCycleIdRef.current = null;
     },
     [],
   );
@@ -5481,6 +5521,49 @@ export function LaunchLab() {
     setReturningRelationshipNameDraft("");
   };
 
+  const clearReturningLifeWhisperOutcomeWatchdog = () => {
+    if (returningLifeWhisperOutcomeWatchdogRef.current !== null) {
+      window.clearTimeout(
+        returningLifeWhisperOutcomeWatchdogRef.current,
+      );
+      returningLifeWhisperOutcomeWatchdogRef.current = null;
+    }
+  };
+
+  const beginReturningLifeWhisperResponseCycle = () => {
+    clearReturningLifeWhisperOutcomeWatchdog();
+    returningLifeWhisperResponseCycleSequenceRef.current += 1;
+    const responseCycleId = `returning-life-whisper-cycle-${returningLifeWhisperResponseCycleSequenceRef.current}`;
+    returningLifeWhisperResponseCycleIdRef.current = responseCycleId;
+    returningLifeWhisperResponsePhaseRef.current = "RESPONDING";
+    setReturningLifeWhisperResponseCycleId(responseCycleId);
+    setReturningLifeWhisperResponsePhase("RESPONDING");
+    setReturningLifeWhisperUnavailableContinuation("NONE");
+    setReturningLifeWhisperUnavailableReason(null);
+    setReturningLifeWhisperSettlementAuthority(null);
+    returningLifeWhisperOutcomeWatchdogRef.current = window.setTimeout(
+      () => {
+        returningLifeWhisperOutcomeWatchdogRef.current = null;
+        if (
+          returningLifeWhisperResponseCycleIdRef.current !==
+            responseCycleId ||
+          returningLifeWhisperFactRef.current !==
+            "WHISPER_SUBMITTED" ||
+          returningLifeWhisperResponsePhaseRef.current !==
+            "RESPONDING"
+        ) {
+          return;
+        }
+        returningLifeWhisperResponsePhaseRef.current = "UNAVAILABLE";
+        setReturningLifeWhisperResponsePhase("UNAVAILABLE");
+        setReturningLifeWhisperUnavailableReason(
+          "OUTCOME_WATCHDOG_EXPIRED",
+        );
+      },
+      RETURNING_LIFE_WHISPER_OUTCOME_WATCHDOG_MS,
+    );
+  };
+
   const submitReturningLifeWhisper = () => {
     if (
       !returningLifeWhisperEntryReady ||
@@ -5490,20 +5573,9 @@ export function LaunchLab() {
       return;
     }
     setReturningLifeWhisperText("");
+    returningLifeWhisperFactRef.current = "WHISPER_SUBMITTED";
     setReturningLifeWhisperFact("WHISPER_SUBMITTED");
-    setReturningLifeWhisperResponsePhase("RESPONDING");
-    if (returningLifeWhisperResponseTimerRef.current !== null) {
-      window.clearTimeout(returningLifeWhisperResponseTimerRef.current);
-    }
-    const responseHoldMilliseconds = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches
-      ? 80
-      : RETURNING_LIFE_WHISPER_RESPONSE_HOLD_MS;
-    returningLifeWhisperResponseTimerRef.current = window.setTimeout(() => {
-      returningLifeWhisperResponseTimerRef.current = null;
-      setReturningLifeWhisperResponsePhase("SETTLED");
-    }, responseHoldMilliseconds);
+    beginReturningLifeWhisperResponseCycle();
   };
 
   const skipReturningLifeWhisper = () => {
@@ -5513,9 +5585,74 @@ export function LaunchLab() {
     ) {
       return;
     }
+    clearReturningLifeWhisperOutcomeWatchdog();
     setReturningLifeWhisperText("");
+    returningLifeWhisperFactRef.current = "WHISPER_SKIPPED";
+    returningLifeWhisperResponsePhaseRef.current = "SKIPPED";
+    returningLifeWhisperResponseCycleIdRef.current = null;
     setReturningLifeWhisperFact("WHISPER_SKIPPED");
     setReturningLifeWhisperResponsePhase("SKIPPED");
+    setReturningLifeWhisperResponseCycleId(null);
+    setReturningLifeWhisperUnavailableContinuation("NONE");
+    setReturningLifeWhisperUnavailableReason(null);
+    setReturningLifeWhisperSettlementAuthority(null);
+  };
+
+  const handleReturningLifeWhisperVisualResponseOutcome = (
+    outcome: LifeWhisperSurfaceVisualResponseOutcome,
+  ) => {
+    if (returningVisualContinuity === null) {
+      return;
+    }
+    const transition = resolveLifeWhisperVisualOutcomeTransition({
+      expectedSourceReferenceId:
+        returningVisualContinuity.sourceReferenceId,
+      currentResponseCycleId:
+        returningLifeWhisperResponseCycleIdRef.current,
+      lifeWhisperFact: returningLifeWhisperFactRef.current,
+      lifeWhisperResponsePhase:
+        returningLifeWhisperResponsePhaseRef.current,
+      outcome,
+    });
+    if (transition.action === "SETTLE") {
+      clearReturningLifeWhisperOutcomeWatchdog();
+      returningLifeWhisperResponsePhaseRef.current = "SETTLED";
+      setReturningLifeWhisperResponsePhase("SETTLED");
+      setReturningLifeWhisperUnavailableReason(null);
+      setReturningLifeWhisperSettlementAuthority(
+        transition.authority,
+      );
+      return;
+    }
+    if (transition.action === "MARK_UNAVAILABLE") {
+      clearReturningLifeWhisperOutcomeWatchdog();
+      returningLifeWhisperResponsePhaseRef.current = "UNAVAILABLE";
+      setReturningLifeWhisperResponsePhase("UNAVAILABLE");
+      setReturningLifeWhisperUnavailableReason(transition.reason);
+      setReturningLifeWhisperSettlementAuthority(null);
+    }
+  };
+
+  const retryReturningLifeWhisperResponse = () => {
+    if (
+      returningLifeWhisperFactRef.current !== "WHISPER_SUBMITTED" ||
+      returningLifeWhisperResponsePhaseRef.current !== "UNAVAILABLE"
+    ) {
+      return;
+    }
+    beginReturningLifeWhisperResponseCycle();
+  };
+
+  const continueReturningLifeWithoutConfirmedResponse = () => {
+    if (
+      returningLifeWhisperFactRef.current !== "WHISPER_SUBMITTED" ||
+      returningLifeWhisperResponsePhaseRef.current !== "UNAVAILABLE"
+    ) {
+      return;
+    }
+    setReturningLifeWhisperUnavailableContinuation(
+      "CONTINUE_WITHOUT_CONFIRMED_RESPONSE",
+    );
   };
 
   const enterReturningNewReality = () => {
@@ -5526,6 +5663,8 @@ export function LaunchLab() {
     ) {
       return;
     }
+    clearReturningLifeWhisperOutcomeWatchdog();
+    returningLifeWhisperResponseCycleIdRef.current = null;
     setReturningLifeWhisperText("");
     navigate(GUANYAO_ROUTES.reality, {
       replace: true,
@@ -5600,6 +5739,25 @@ export function LaunchLab() {
             ? returningLifeWhisperResponsePhase
             : "NOT_ACTIVE"
         }
+        data-returning-life-whisper-response-authority={
+          returningVisualReady
+            ? returningLifeWhisperSettlementAuthority ??
+              (returningLifeWhisperResponsePhase === "UNAVAILABLE"
+                ? "VISUAL_OUTCOME_UNAVAILABLE"
+                : "AWAITING_VISUAL_OUTCOME")
+            : "NOT_ACTIVE"
+        }
+        data-returning-life-whisper-response-cycle={
+          returningLifeWhisperResponseCycleId === null
+            ? "NONE"
+            : "CURRENT_CYCLE"
+        }
+        data-returning-life-whisper-unavailable-reason={
+          returningLifeWhisperUnavailableReason ?? "NONE"
+        }
+        data-returning-life-whisper-unavailable-continuation={
+          returningLifeWhisperUnavailableContinuation
+        }
         data-returning-reality-intent={
           returningVisualReady
             ? returningLifeWhisperRealityIntentReady
@@ -5650,7 +5808,6 @@ export function LaunchLab() {
         {returningVisualReady && returningVisualContinuity ? (
           <div
             className="gy-returning-life-world"
-            aria-hidden="true"
             data-returning-life-presence="SETTLED_COMPANION"
           >
             <Suspense fallback={null}>
@@ -5665,7 +5822,12 @@ export function LaunchLab() {
                   lifeWhisperFact: returningLifeWhisperFact,
                   lifeWhisperResponsePhase:
                     returningLifeWhisperResponsePhase,
+                  responseCycleId:
+                    returningLifeWhisperResponseCycleId,
                 }}
+                onLifeWhisperVisualResponseOutcome={
+                  handleReturningLifeWhisperVisualResponseOutcome
+                }
               />
             </Suspense>
             {returningLatestImprintGeometry &&
@@ -5843,8 +6005,35 @@ export function LaunchLab() {
                         ? "此刻不说，也可以。"
                         : returningLifeWhisperResponsePhase === "SETTLED"
                           ? "它听见了。这句话只留在此刻。"
+                          : returningLifeWhisperResponsePhase ===
+                              "UNAVAILABLE"
+                            ? "这一次，它的回应没有完整显现。"
                           : "它正在听。"}
                     </p>
+                    {returningLifeWhisperResponsePhase ===
+                    "UNAVAILABLE" ? (
+                      <div>
+                        <button
+                          type="button"
+                          data-interaction="RETRY_STARBEAST_RESPONSE"
+                          onClick={retryReturningLifeWhisperResponse}
+                        >
+                          再靠近一次
+                        </button>
+                        {returningLifeWhisperUnavailableContinuation ===
+                        "NONE" ? (
+                          <button
+                            type="button"
+                            data-interaction="CONTINUE_WITHOUT_CONFIRMED_RESPONSE"
+                            onClick={
+                              continueReturningLifeWithoutConfirmedResponse
+                            }
+                          >
+                            这一次先继续同行
+                          </button>
+                        ) : null}
+                      </div>
+                    ) : null}
                     {returningLifeWhisperRealityIntentReady ? (
                       <button
                         type="button"
@@ -6182,6 +6371,11 @@ export function LaunchLab() {
             color: rgba(201, 218, 216, 0.6);
             font-size: min(11px, 2.8vw);
             line-height: 1.6;
+          }
+          .gy-returning-life-world__whisper-settled > div {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
           }
           .gy-returning-life-world__whisper-settled button {
             color: rgba(255, 239, 190, 0.76);

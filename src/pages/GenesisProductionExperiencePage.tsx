@@ -997,6 +997,7 @@ export function GenesisProductionExperiencePage({
         lifeWhisperRelationshipVisualFact={{
           lifeWhisperFact,
           lifeWhisperResponsePhase,
+          responseCycleId: null,
         }}
         onLifeOriginDiscoveryRequest={beginLifeOriginDiscovery}
         onStateChange={setCanvasHostState}

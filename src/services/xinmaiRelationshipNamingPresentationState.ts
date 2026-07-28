@@ -1,5 +1,13 @@
 import type { StarBeastRelationshipNamingReadResult } from "../types/starBeastRelationshipNamingAsset";
-import type { LifeWhisperRelationshipVisualFact } from "../types/xinmaiLifeWhisperRelationship";
+import type {
+  LifeWhisperRelationshipVisualFact,
+  LifeWhisperUnavailableContinuation,
+} from "../types/xinmaiLifeWhisperRelationship";
+
+type LifeWhisperRelationshipIntentFacts = Pick<
+  LifeWhisperRelationshipVisualFact,
+  "lifeWhisperFact" | "lifeWhisperResponsePhase"
+>;
 
 export type RelationshipNamingEntryEligibility = Readonly<{
   status: "READY" | "NOT_READY";
@@ -15,7 +23,7 @@ export type RelationshipNamingEntryEligibility = Readonly<{
 export function resolveRelationshipNamingEntryEligibility(input: Readonly<{
   lifeWhisperEntryReady: boolean;
 }> &
-  LifeWhisperRelationshipVisualFact): RelationshipNamingEntryEligibility {
+  LifeWhisperRelationshipIntentFacts): RelationshipNamingEntryEligibility {
   const responseSettled =
     input.lifeWhisperFact === "WHISPER_SUBMITTED" &&
     input.lifeWhisperResponsePhase === "SETTLED";
@@ -40,7 +48,10 @@ export function resolveRelationshipNamingEntryEligibility(input: Readonly<{
 }
 
 export function resolveLifeWhisperRealityEntryIntent(
-  input: LifeWhisperRelationshipVisualFact,
+  input: LifeWhisperRelationshipIntentFacts &
+    Readonly<{
+      unavailableContinuation?: LifeWhisperUnavailableContinuation;
+    }>,
 ): boolean {
   const submittedResponseSettled =
     input.lifeWhisperFact === "WHISPER_SUBMITTED" &&
@@ -48,11 +59,20 @@ export function resolveLifeWhisperRealityEntryIntent(
   const silenceExplicitlyChosen =
     input.lifeWhisperFact === "WHISPER_SKIPPED" &&
     input.lifeWhisperResponsePhase === "SKIPPED";
-  return submittedResponseSettled || silenceExplicitlyChosen;
+  const unavailableResponseExplicitlyContinued =
+    input.lifeWhisperFact === "WHISPER_SUBMITTED" &&
+    input.lifeWhisperResponsePhase === "UNAVAILABLE" &&
+    input.unavailableContinuation ===
+      "CONTINUE_WITHOUT_CONFIRMED_RESPONSE";
+  return (
+    submittedResponseSettled ||
+    silenceExplicitlyChosen ||
+    unavailableResponseExplicitlyContinued
+  );
 }
 
 export function resolveFirstEncounterRealityEntryIntent(
-  input: LifeWhisperRelationshipVisualFact,
+  input: LifeWhisperRelationshipIntentFacts,
 ): boolean {
   return resolveLifeWhisperRealityEntryIntent(input);
 }

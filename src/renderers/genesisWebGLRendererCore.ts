@@ -51,6 +51,7 @@ import type {
 } from "../types/genesisWebGLRendererCore";
 import {
   DORMANT_LIFE_WHISPER_RELATIONSHIP_VISUAL_FACT,
+  type LifeWhisperRendererVisualResponseOutcome,
 } from "../types/xinmaiLifeWhisperRelationship";
 import {
   LIFE_UNIVERSE_CORE_IDENTITY,
@@ -2409,6 +2410,10 @@ export function createGenesisWebGLRendererCore(
   let frameCount = 0;
   let recognitionResponseStartedAtMilliseconds: number | null = null;
   let lifeWhisperResponseStartedAtMilliseconds: number | null = null;
+  let activeLifeWhisperResponseCycleId: string | null = null;
+  let lifeWhisperVisualResponseOutcome:
+    | LifeWhisperRendererVisualResponseOutcome
+    | null = null;
   let lifeOriginDiscoveryStartedAtMilliseconds: number | null = null;
   let realityEntryCarryStartedAtMilliseconds: number | null = null;
   let realityPressureStartedAtMilliseconds: number | null = null;
@@ -2428,6 +2433,18 @@ export function createGenesisWebGLRendererCore(
   const onContextLost = (event: Event) => {
     event.preventDefault();
     contextState = "LOST";
+    if (
+      activeLifeWhisperResponseCycleId !== null &&
+      lifeWhisperVisualResponseOutcome?.status !==
+        "MOTION_RESPONSE_COMPLETED"
+    ) {
+      lifeWhisperVisualResponseOutcome = Object.freeze({
+        responseCycleId: activeLifeWhisperResponseCycleId,
+        status: "VISUAL_RESPONSE_UNAVAILABLE",
+        surfaceMode: "WEBGL_MOTION",
+        reason: "WEBGL_CONTEXT_LOST",
+      });
+    }
   };
   const onContextRestored = () => {
     if (!disposed) contextState = "RESTORED";
@@ -2784,17 +2801,26 @@ export function createGenesisWebGLRendererCore(
         isCompletion &&
         lifeWhisperFact === "WHISPER_SUBMITTED" &&
         lifeWhisperResponsePhase === "RESPONDING";
+      const lifeWhisperResponseCycleId =
+        lifeWhisperRelationshipVisualFact.responseCycleId;
       if (
         lifeWhisperResponseIsActive &&
-        lifeWhisperResponseStartedAtMilliseconds === null
+        (lifeWhisperResponseStartedAtMilliseconds === null ||
+          (lifeWhisperResponseCycleId !== null &&
+            activeLifeWhisperResponseCycleId !==
+              lifeWhisperResponseCycleId))
       ) {
         lifeWhisperResponseStartedAtMilliseconds = elapsedMilliseconds;
+        activeLifeWhisperResponseCycleId = lifeWhisperResponseCycleId;
+        lifeWhisperVisualResponseOutcome = null;
       } else if (
         lifeWhisperFact !== "WHISPER_SUBMITTED" ||
         lifeWhisperResponsePhase === "DORMANT" ||
-        lifeWhisperResponsePhase === "SKIPPED"
+        lifeWhisperResponsePhase === "SKIPPED" ||
+        lifeWhisperResponsePhase === "UNAVAILABLE"
       ) {
         lifeWhisperResponseStartedAtMilliseconds = null;
+        activeLifeWhisperResponseCycleId = null;
       }
       const lifeWhisperResponseElapsedSeconds =
         lifeWhisperResponseStartedAtMilliseconds === null
@@ -4778,6 +4804,25 @@ export function createGenesisWebGLRendererCore(
         choiceResponseSpaceProgress * 0.025;
       renderer.render(scene, camera);
       frameCount += 1;
+      if (
+        lifeWhisperResponseIsActive &&
+        activeLifeWhisperResponseCycleId !== null &&
+        lifeWhisperVisualResponseOutcome?.status !==
+          "VISUAL_RESPONSE_UNAVAILABLE"
+      ) {
+        lifeWhisperVisualResponseOutcome =
+          lifeWhisperResponseProgress >= 1
+            ? Object.freeze({
+                responseCycleId: activeLifeWhisperResponseCycleId,
+                status: "MOTION_RESPONSE_COMPLETED",
+                surfaceMode: "WEBGL_MOTION",
+              })
+            : Object.freeze({
+                responseCycleId: activeLifeWhisperResponseCycleId,
+                status: "MOTION_RESPONSE_STARTED",
+                surfaceMode: "WEBGL_MOTION",
+              });
+      }
     },
     resize: (nextWidth: number, nextHeight: number, nextPixelRatio = 1) => {
       if (
@@ -4804,6 +4849,7 @@ export function createGenesisWebGLRendererCore(
       Object.freeze({
         sourceRenderPlanReferenceId: planReference.referenceId,
         contextState,
+        lifeWhisperVisualResponseOutcome,
         frameCount,
         width,
         height,
