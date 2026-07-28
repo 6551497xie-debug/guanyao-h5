@@ -135,9 +135,13 @@ try {
   assertIncludes("existing Choice resolver still owns frozen transition", source.choiceService, "resolveChoiceExperienceUIRuntime");
   assertIncludes("Gravity session remains Choice-readiness-only", source.gravityType, "choiceReadinessOutputOnly: true");
   assertExcludes("Gravity consumer does not activate Choice", source.gravityService, "initializeRealityProductionChoiceConsumer");
-  assertIncludes("Production Host initializes the authorized Choice consumer", source.host, "initializeRealityProductionChoiceConsumer");
-  assertIncludes("Production Host advances only explicit active response", source.host, "advanceRealityProductionChoiceConsumer");
-  assertIncludes("Production Host stops at Crystal readiness", source.host, '"CRYSTAL_READY_HOLD"');
+  assertExcludes("V2 Production Host does not initialize the isolated Choice consumer", source.host, "initializeRealityProductionChoiceConsumer");
+  assertExcludes("V2 Production Host does not advance the isolated Choice consumer", source.host, "advanceRealityProductionChoiceConsumer");
+  assertExcludes("V2 Production Host does not render the isolated Choice presentation", source.host, "RealityChoicePresentation");
+  assertIncludes("V2 Production Host remains Pressure Seed only", source.host, 'data-pressure-runtime="V2_PRESSURE_SEED_ONLY"');
+  assertIncludes("V2 Production Host explicitly forbids Choice execution", source.host, "noChoiceExecution: true");
+  assertIncludes("Choice continuation remains observation-only in Reality", source.host, 'data-choice-growth-claim="NONE_UNTIL_USER_RECOGNIZES"');
+  assertIncludes("Choice continuation starts no Crystal stage", source.host, 'data-choice-crystal-stage="NOT_STARTED"');
   assertExcludes("Production Host does not call the review resolver directly", source.host, "resolveChoiceExperienceUIRuntime");
   assertIncludes("Prototype Harness still uses frozen Choice resolver", source.harness, "resolveChoiceExperienceUIRuntime");
   assertIncludes("Prototype Harness remains fixture-only", source.harness, 'sourceExperienceMode !== "FIXTURE_PREVIEW_ONLY"');

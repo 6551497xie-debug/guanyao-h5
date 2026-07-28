@@ -14,6 +14,7 @@ const paths = {
   harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
   consumer: "src/services/realityProductionChoiceConsumer.ts",
   routeEntry: "src/pages/RealityProductionRouteEntry.tsx",
+  gravity: "src/pages/GravityPage.tsx",
   packageManifest: "package.json",
 };
 const source = Object.fromEntries(
@@ -40,24 +41,24 @@ const assertExcludes = (name, text, marker) => {
 
 try {
   [
-    "initializeRealityProductionChoiceConsumer",
-    "advanceRealityProductionChoiceConsumer",
-    "RealityChoicePresentation",
-    'choiceResult?.status === "BLOCKED"',
+    "initializeRealityProductionPressureSeedConsumer",
+    "advanceRealityProductionPressureSeedConsumer",
+    "RealityPressureSeedPresentation",
     'data-production-reality-status="SOURCE_NOT_READY"',
-    '"CHOICE_RESPONSE_SPACE"',
-    '"CRYSTAL_READY_HOLD"',
-    "data-choice-stage={choiceSession?.choiceStageState",
-    "choiceSession?.responseGapState",
-    "choiceSession?.alternativeResponseState",
-    "choiceSession?.crystalReadiness",
-    "choiceSession?.interactionAvailability",
-    'event: "CHOICE_ACTIVE_RESPONSE"',
+    'data-pressure-runtime="V2_PRESSURE_SEED_ONLY"',
+    "choiceContinuation ===",
+    'data-choice-rhythm-continuity=',
+    'data-choice-growth-claim="NONE_UNTIL_USER_RECOGNIZES"',
+    'data-choice-crystal-stage="NOT_STARTED"',
+    'data-choice-identity-effect="RESPONSE_ONLY"',
   ].forEach((marker) =>
-    assertIncludes("Production Reality Host consumes Choice session", source.host, marker),
+    assertIncludes("V2 Production Host keeps Choice as presentation continuity only", source.host, marker),
   );
 
   [
+    "initializeRealityProductionChoiceConsumer",
+    "advanceRealityProductionChoiceConsumer",
+    "RealityChoicePresentation",
     "resolveChoiceExperienceUIRuntime",
     "reviewRealityChoiceExperienceArchitecture",
     "resolveCrystalExperienceUIRuntime",
@@ -70,20 +71,18 @@ try {
     "sessionStorage",
     "useNavigate",
   ].forEach((marker) =>
-    assertExcludes("Production Host bypasses no consumer, engine, downstream, prototype, or storage boundary", source.host, marker),
+    assertExcludes("V2 Production Host starts no Choice consumer, downstream, prototype, router, or storage", source.host, marker),
   );
 
   [
-    "productionChoiceConsumerOnly: true",
-    "sharedFrozenChoicePresentationOnly: true",
-    "explicitChoiceActiveResponseOnly: true",
-    "crystalReadinessHoldOnly: true",
-    "noBehaviorEngine: true",
-    "noRecommendedAction: true",
-    "noBestChoice: true",
+    "productionPressureSeedConsumerOnly: true",
+    "v2PressureSeedPresentationOnly: true",
+    "explicitGravityContinuationCallbackOnly: true",
+    "noGravityExecution: true",
+    "noChoiceExecution: true",
     "noCrystalExecution: true",
   ].forEach((marker) =>
-    assertIncludes("Production Choice Host boundary", source.hostType, marker),
+    assertIncludes("Current V2 Host boundary excludes Choice execution", source.hostType, marker),
   );
 
   [
@@ -150,8 +149,13 @@ try {
   assertIncludes("Prototype uses shared Choice presentation", source.harness, "<RealityChoicePresentation");
   assertExcludes("Prototype no longer owns duplicate Choice markup", source.harness, 'className="gy-p38__choice-space"');
   assertExcludes("Prototype stylesheet no longer owns duplicate P38 base calibration", source.prototypeStyles, "background: rgba(12, 9, 9, 0.74)");
-  assertIncludes("Production Host uses authorized Choice consumer", source.consumer, "confirmedGravitySessionOnly: true");
+  assertIncludes("Isolated Choice consumer still requires confirmed Gravity", source.consumer, "confirmedGravitySessionOnly: true");
+  assertIncludes("Isolated Choice consumer still has no UI integration", source.consumer, "noUiIntegration: true");
   assertIncludes("Reality route remains guarded", source.routeEntry, "authorizeRealityProductionRoute({");
+  assertExcludes("Reality route does not initialize Choice", source.routeEntry, "initializeRealityProductionChoiceConsumer");
+  assertIncludes("Embodied Choice requests a new Reality continuation", source.gravity, "handleChoiceContinueToReality");
+  assertIncludes("Embodied Choice carries presentation continuity", source.gravity, 'choiceContinuation: "AWAITING_LIVED_RESPONSE_RECOGNITION"');
+  assertExcludes("Embodied Choice does not import the isolated Choice consumer", source.gravity, "initializeRealityProductionChoiceConsumer");
 
   const packageJson = JSON.parse(source.packageManifest);
   assertIncludes(
@@ -171,26 +175,28 @@ try {
     logLevel: "silent",
     loader: { ".css": "empty" },
   });
-  assertEqual("Production Choice Host compiles independently", compileResult.errors.length, 0);
+  assertEqual("V2 Production Host compiles independently", compileResult.errors.length, 0);
   const bundleInputs = Object.keys(compileResult.metafile.inputs);
   for (const requiredInput of [
-    "RealityPressurePresentation.tsx",
-    "realityProductionPressureConsumer.ts",
-    "pressureRecognitionUIRuntime.ts",
-    "RealityGravityPresentation.tsx",
-    "realityProductionGravityConsumer.ts",
-    "gravityExperienceUIRuntime.ts",
-    "RealityChoicePresentation.tsx",
-    "realityProductionChoiceConsumer.ts",
-    "choiceExperienceUIRuntime.ts",
+    "RealityPressureSeedPresentation.tsx",
+    "realityProductionPressureSeedConsumer.ts",
+    "realityPressureSeedContinuationContext.ts",
+    "RealityLifeUniverseCanvas.tsx",
   ]) {
     assertEqual(
-      `Production Host bundle includes ${requiredInput}`,
+      `V2 Production Host bundle includes ${requiredInput}`,
       bundleInputs.some((input) => input.includes(requiredInput)),
       true,
     );
   }
   for (const forbiddenInput of [
+    "RealityPressurePresentation.tsx",
+    "realityProductionPressureConsumer.ts",
+    "RealityGravityPresentation.tsx",
+    "realityProductionGravityConsumer.ts",
+    "RealityChoicePresentation.tsx",
+    "realityProductionChoiceConsumer.ts",
+    "choiceExperienceUIRuntime.ts",
     "PersonalStarBeastWebGLPrototypeHarness",
     "isolatedWebGLRendererPrototype.ts",
     "GravityPage",
@@ -201,15 +207,15 @@ try {
     "fixtureGenesisVisualConsumerSource",
   ]) {
     assertEqual(
-      `Production Host bundle excludes ${forbiddenInput}`,
+      `V2 Production Host bundle excludes ${forbiddenInput}`,
       bundleInputs.some((input) => input.includes(forbiddenInput)),
       false,
     );
   }
 
-  console.log("\n[REALITY PRODUCTION CHOICE HOST] PASS");
+  console.log("\n[REALITY PRODUCTION CHOICE HOST ISOLATION] PASS");
 } catch (error) {
-  console.error("[REALITY PRODUCTION CHOICE HOST] FAIL");
+  console.error("[REALITY PRODUCTION CHOICE HOST ISOLATION] FAIL");
   console.error(error instanceof Error ? error.message : error);
   process.exit(1);
 }
