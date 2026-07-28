@@ -49,11 +49,20 @@ import {
   clearRealUserGenesisVisualSourceContext,
 } from "../services/realUserGenesisVisualSourceContext";
 import {
+  clearStarBeastRelationshipNamingAsset,
+  createStarBeastRelationshipNamingAsset,
+  deleteStarBeastRelationshipNamingAsset,
   hasPersistedRecognizedLifeIdentity,
   persistLaunchLifeSourceSession,
   readPersistedGenesisVisualContinuity,
+  readStarBeastRelationshipNamingAsset,
+  renameStarBeastRelationshipNamingAsset,
   restorePersistedRealUserGenesisVisualSourceContext,
 } from "../services/sessionService";
+import {
+  STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS,
+  type StarBeastRelationshipNamingReadResult,
+} from "../types/starBeastRelationshipNamingAsset";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
@@ -1145,6 +1154,24 @@ export function LaunchLab() {
   const [returningVisualContinuity] = useState(() =>
     hasReturningLifeIdentity ? readPersistedGenesisVisualContinuity() : null,
   );
+  const [returningRelationshipNaming, setReturningRelationshipNaming] =
+    useState<StarBeastRelationshipNamingReadResult>(() =>
+      hasReturningLifeIdentity
+        ? readStarBeastRelationshipNamingAsset()
+        : {
+            status: "UNAVAILABLE",
+            reason: "RECOGNIZED_IDENTITY_REQUIRED",
+            asset: null,
+          },
+    );
+  const [returningRelationshipNameDraft, setReturningRelationshipNameDraft] =
+    useState("");
+  const [returningRelationshipNameEditing, setReturningRelationshipNameEditing] =
+    useState(false);
+  const [
+    returningRelationshipNamePersistence,
+    setReturningRelationshipNamePersistence,
+  ] = useState<"PERSISTED" | "CURRENT_CYCLE_ONLY" | null>(null);
   const [returningDynamicsInput] = useState(() =>
     hasReturningLifeIdentity ? resolveDynamicsInputContext({}) : null,
   );
@@ -5364,6 +5391,62 @@ export function LaunchLab() {
     triggerClickFlash,
   ]);
 
+  const beginReturningRelationshipNameEdit = () => {
+    setReturningRelationshipNameDraft(
+      returningRelationshipNaming.status === "AVAILABLE"
+        ? returningRelationshipNaming.asset.relationshipName ?? ""
+        : "",
+    );
+    setReturningRelationshipNameEditing(true);
+  };
+
+  const saveReturningRelationshipName = () => {
+    const relationshipName = returningRelationshipNameDraft.trim();
+    if (!returningVisualReady || relationshipName.length === 0) return;
+    const result =
+      returningRelationshipNaming.status === "AVAILABLE"
+        ? renameStarBeastRelationshipNamingAsset({ relationshipName })
+        : createStarBeastRelationshipNamingAsset({ relationshipName });
+    setReturningRelationshipNameDraft("");
+    setReturningRelationshipNameEditing(false);
+    if (result.status === "READY") {
+      setReturningRelationshipNaming({
+        status: "AVAILABLE",
+        asset: result.asset,
+      });
+      setReturningRelationshipNamePersistence(result.persistence);
+      return;
+    }
+    setReturningRelationshipNaming({ status: "UNNAMED", asset: null });
+    setReturningRelationshipNamePersistence(null);
+  };
+
+  const clearReturningRelationshipName = () => {
+    if (!returningVisualReady) return;
+    const result = clearStarBeastRelationshipNamingAsset();
+    setReturningRelationshipNameEditing(false);
+    setReturningRelationshipNameDraft("");
+    if (result.status === "READY") {
+      setReturningRelationshipNaming({
+        status: "CLEARED",
+        asset: result.asset,
+      });
+      setReturningRelationshipNamePersistence(result.persistence);
+      return;
+    }
+    setReturningRelationshipNaming({ status: "UNNAMED", asset: null });
+    setReturningRelationshipNamePersistence(null);
+  };
+
+  const deleteReturningRelationshipName = () => {
+    if (!returningVisualReady) return;
+    deleteStarBeastRelationshipNamingAsset();
+    setReturningRelationshipNameEditing(false);
+    setReturningRelationshipNameDraft("");
+    setReturningRelationshipNaming({ status: "UNNAMED", asset: null });
+    setReturningRelationshipNamePersistence(null);
+  };
+
   return (
     <GyMobilePreviewFrame background="#020306">
       <div
@@ -5404,6 +5487,11 @@ export function LaunchLab() {
         }
         data-returning-life-temporal-state={
           returningVisualReady ? returningTemporalState : "NOT_ACTIVE"
+        }
+        data-returning-relationship-name-state={
+          returningVisualReady
+            ? returningRelationshipNaming.status
+            : "NOT_ACTIVE"
         }
         data-returning-life-priority="IDENTITY_THEN_STATE_THEN_EXPERIENCE_THEN_IMPRINT"
         data-reality-pressure-visual-state={
@@ -5532,12 +5620,112 @@ export function LaunchLab() {
               <span>星辰有序。</span>
             </div>
             <div className="gy-returning-life-world__relationship-copy">
+              {returningRelationshipNaming.status === "AVAILABLE" ? (
+                <small className="gy-returning-life-world__relationship-name">
+                  你仍可以叫它
+                  <b>
+                    {
+                      returningRelationshipNaming.asset
+                        .relationshipName
+                    }
+                  </b>
+                </small>
+              ) : null}
               <strong>你的生命仍在这里，</strong>
               <strong>等你继续同行。</strong>
               {returningExperienceCopy ? (
                 <small>{returningExperienceCopy}</small>
               ) : null}
               <span>轻触星河，回到我的生命世界</span>
+              {returningRelationshipNaming.status !== "UNAVAILABLE" ? (
+                <div
+                  className="gy-returning-life-world__relationship-name-controls"
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  {returningRelationshipNameEditing ? (
+                    <form
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        saveReturningRelationshipName();
+                      }}
+                    >
+                      <label htmlFor="xinmai-returning-relationship-name">
+                        你们之间的称呼
+                      </label>
+                      <input
+                        id="xinmai-returning-relationship-name"
+                        type="text"
+                        value={returningRelationshipNameDraft}
+                        maxLength={
+                          STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS *
+                          2
+                        }
+                        autoComplete="off"
+                        onChange={(event) =>
+                          setReturningRelationshipNameDraft(
+                            Array.from(event.target.value)
+                              .slice(
+                                0,
+                                STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS,
+                              )
+                              .join(""),
+                          )
+                        }
+                      />
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setReturningRelationshipNameEditing(false)
+                          }
+                        >
+                          保持现在
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={
+                            returningRelationshipNameDraft.trim()
+                              .length === 0
+                          }
+                        >
+                          留下称呼
+                        </button>
+                      </div>
+                      {returningRelationshipNaming.status ===
+                      "AVAILABLE" ? (
+                        <div>
+                          <button
+                            type="button"
+                            onClick={clearReturningRelationshipName}
+                          >
+                            清空称呼
+                          </button>
+                          <button
+                            type="button"
+                            onClick={deleteReturningRelationshipName}
+                          >
+                            删除称呼记录
+                          </button>
+                        </div>
+                      ) : null}
+                    </form>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={beginReturningRelationshipNameEdit}
+                    >
+                      {returningRelationshipNaming.status === "AVAILABLE"
+                        ? "调整称呼"
+                        : "给它一个称呼"}
+                    </button>
+                  )}
+                  {returningRelationshipNamePersistence ===
+                  "CURRENT_CYCLE_ONLY" ? (
+                    <small>这个称呼暂时只留在此刻。</small>
+                  ) : null}
+                </div>
+              ) : null}
               <em>星脉之境 · XINMAI</em>
             </div>
           </section>
@@ -5668,11 +5856,96 @@ export function LaunchLab() {
             font-weight: 500;
             letter-spacing: 0.04em;
           }
+          .gy-returning-life-world__relationship-copy
+            .gy-returning-life-world__relationship-name {
+            display: flex;
+            align-items: baseline;
+            gap: 0.55em;
+            margin: 0 0 7px;
+            color: rgba(201, 218, 216, 0.56);
+            font-family: ${SANS};
+            font-size: min(10px, 2.55vw);
+          }
+          .gy-returning-life-world__relationship-name b {
+            color: rgba(255, 247, 228, 0.86);
+            font-family: ${MONO};
+            font-size: min(12px, 3vw);
+            font-weight: 520;
+            letter-spacing: 0.12em;
+          }
           .gy-returning-life-world__relationship-copy span {
             margin-top: 18px;
             color: rgba(255, 247, 228, 0.64);
             font-size: min(13px, 3.3vw);
             font-weight: 620;
+          }
+          .gy-returning-life-world__relationship-name-controls {
+            display: grid;
+            justify-items: center;
+            gap: 6px;
+            margin-top: 7px;
+            pointer-events: auto;
+          }
+          .gy-returning-life-world__relationship-name-controls > button,
+          .gy-returning-life-world__relationship-name-controls form button {
+            min-height: 30px;
+            padding: 4px 8px;
+            border: 0;
+            color: rgba(201, 218, 216, 0.54);
+            background: transparent;
+            font: 500 min(10px, 2.55vw) ${SANS};
+            letter-spacing: 0.08em;
+          }
+          .gy-returning-life-world__relationship-name-controls form {
+            display: grid;
+            justify-items: center;
+            gap: 5px;
+            width: min(72vw, 286px);
+            padding: 8px 12px;
+            border: 1px solid rgba(190, 220, 220, 0.12);
+            border-radius: 14px;
+            background: rgba(2, 6, 10, 0.72);
+          }
+          .gy-returning-life-world__relationship-name-controls form label {
+            color: rgba(201, 218, 216, 0.58);
+            font-size: min(10px, 2.55vw);
+          }
+          .gy-returning-life-world__relationship-name-controls form input {
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 34px;
+            padding: 5px 4px;
+            border: 0;
+            border-bottom: 1px solid rgba(190, 220, 220, 0.28);
+            border-radius: 0;
+            outline: none;
+            color: rgba(255, 247, 228, 0.88);
+            background: transparent;
+            font: 500 min(12px, 3vw) ${SANS};
+            letter-spacing: 0.08em;
+            text-align: center;
+          }
+          .gy-returning-life-world__relationship-name-controls
+            form
+            button:focus-visible,
+          .gy-returning-life-world__relationship-name-controls
+            form
+            input:focus-visible,
+          .gy-returning-life-world__relationship-name-controls
+            > button:focus-visible {
+            outline: 1px solid rgba(190, 220, 220, 0.4);
+            outline-offset: 2px;
+          }
+          .gy-returning-life-world__relationship-name-controls form div {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+          }
+          .gy-returning-life-world__relationship-name-controls
+            > small {
+            margin: 0;
+            color: rgba(201, 218, 216, 0.38);
+            font-size: min(9px, 2.3vw);
           }
           .gy-returning-life-world__relationship-copy em {
             margin-top: 18px;

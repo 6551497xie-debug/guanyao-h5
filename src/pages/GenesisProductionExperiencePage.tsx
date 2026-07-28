@@ -51,7 +51,11 @@ import type {
   GenesisProductionExperiencePageProps,
 } from "../types/genesisProductionExperiencePage";
 import type { GenesisProductionRecognitionRealityResult } from "../types/genesisProductionRecognitionRealityEntry";
-import { persistRecognizedGenesisLifeAssets } from "../services/sessionService";
+import {
+  createStarBeastRelationshipNamingAsset,
+  persistRecognizedGenesisLifeAssets,
+} from "../services/sessionService";
+import { STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS } from "../types/starBeastRelationshipNamingAsset";
 import "../styles/genesis-production-experience.css";
 
 const ENTRANCE_COORDINATE_CONTINUITY_HOLD_MS = Object.freeze({
@@ -223,6 +227,15 @@ export function GenesisProductionExperiencePage({
   const [lifeWhisperResponsePhase, setLifeWhisperResponsePhase] = useState<
     "DORMANT" | "RESPONDING" | "SETTLED" | "SKIPPED"
   >("DORMANT");
+  const [relationshipNameDraft, setRelationshipNameDraft] = useState("");
+  const [relationshipName, setRelationshipName] = useState<string | null>(
+    null,
+  );
+  const [relationshipNamingState, setRelationshipNamingState] = useState<
+    "PENDING" | "NAMED" | "SKIPPED"
+  >("PENDING");
+  const [relationshipNamingPersistence, setRelationshipNamingPersistence] =
+    useState<"PERSISTED" | "CURRENT_CYCLE_ONLY" | null>(null);
   const lifeOriginDiscoveryTimerRef = useRef<number | null>(null);
   const lifeWhisperResponseTimerRef = useRef<number | null>(null);
   const realityEntryTimerRef = useRef<number | null>(null);
@@ -286,6 +299,9 @@ export function GenesisProductionExperiencePage({
   const lifeWhisperResponseSettled =
     lifeWhisperFact !== "WHISPER_SUBMITTED" ||
     lifeWhisperResponsePhase === "SETTLED";
+  const relationshipNamingReady =
+    lifeWhisperEntryReady &&
+    lifeWhisperResponsePhase === "SETTLED";
 
   useEffect(() => {
     clearGenesisProductionRealityEntryContext();
@@ -299,6 +315,10 @@ export function GenesisProductionExperiencePage({
     setLifeWhisperText("");
     setLifeWhisperFact("NONE");
     setLifeWhisperResponsePhase("DORMANT");
+    setRelationshipNameDraft("");
+    setRelationshipName(null);
+    setRelationshipNamingState("PENDING");
+    setRelationshipNamingPersistence(null);
     if (lifeOriginDiscoveryTimerRef.current !== null) {
       window.clearTimeout(lifeOriginDiscoveryTimerRef.current);
       lifeOriginDiscoveryTimerRef.current = null;
@@ -709,6 +729,68 @@ export function GenesisProductionExperiencePage({
     setLifeWhisperResponsePhase("SKIPPED");
   };
 
+  const submitRelationshipName = () => {
+    const normalizedName = relationshipNameDraft.trim();
+    if (
+      !relationshipNamingReady ||
+      relationshipNamingState !== "PENDING" ||
+      normalizedName.length === 0 ||
+      consumerSourceResult?.status !== "READY" ||
+      recognitionRealityResult?.status !== "READY" ||
+      visualCalibrationResult?.status !== "READY" ||
+      directionFieldCalibrationResult?.status !== "AVAILABLE" ||
+      archetypeForceCalibrationResult?.status !== "AVAILABLE" ||
+      presenceVisualRealizationResult?.status !== "READY"
+    ) {
+      return;
+    }
+
+    const visualContinuity = Object.freeze({
+      sourceReferenceId:
+        recognitionRealityResult.session.sourceReferenceId,
+      consumerSourceResult,
+      visualCalibrationBundle: visualCalibrationResult.bundle,
+      fourSymbolDirectionFieldVisualCalibration:
+        directionFieldCalibrationResult.calibration,
+      lifeArchetypeForceCondensationVisualCalibration:
+        archetypeForceCalibrationResult.calibration,
+    });
+    persistRecognizedGenesisLifeAssets({
+      visualContinuity,
+      presenceVisualRealization:
+        presenceVisualRealizationResult.realization,
+    });
+    const result = createStarBeastRelationshipNamingAsset({
+      relationshipName: normalizedName,
+      visualContinuity,
+    });
+    setRelationshipNameDraft("");
+    if (result.status === "READY") {
+      setRelationshipName(result.asset.relationshipName);
+      setRelationshipNamingPersistence(result.persistence);
+      setRelationshipNamingState("NAMED");
+      return;
+    }
+
+    // 关系称呼是可选资产；身份失配、损坏或存储不可用都不能阻断同行。
+    setRelationshipName(null);
+    setRelationshipNamingPersistence(null);
+    setRelationshipNamingState("SKIPPED");
+  };
+
+  const skipRelationshipNaming = () => {
+    if (
+      !relationshipNamingReady ||
+      relationshipNamingState !== "PENDING"
+    ) {
+      return;
+    }
+    setRelationshipNameDraft("");
+    setRelationshipName(null);
+    setRelationshipNamingPersistence(null);
+    setRelationshipNamingState("SKIPPED");
+  };
+
   const enterReality = () => {
     if (
       consumerSourceResult === null ||
@@ -880,6 +962,9 @@ export function GenesisProductionExperiencePage({
       }
       data-life-whisper-fact={lifeWhisperFact}
       data-life-whisper-response-phase={lifeWhisperResponsePhase}
+      data-relationship-naming-state={
+        relationshipNamingReady ? relationshipNamingState : "NOT_READY"
+      }
     >
       <GenesisProductionRendererCanvasHost
         routeAuthorization={routeAuthorization}
@@ -895,7 +980,7 @@ export function GenesisProductionExperiencePage({
         onLifeOriginDiscoveryRequest={beginLifeOriginDiscovery}
         onStateChange={setCanvasHostState}
       />
-      {lifeWhisperEntryReady ? (
+      {lifeWhisperEntryReady && !relationshipNamingReady ? (
         <section
           className="gy-genesis-production-experience__life-whisper"
           data-life-whisper-entry="READY"
@@ -960,6 +1045,89 @@ export function GenesisProductionExperiencePage({
               {lifeWhisperFact === "WHISPER_SUBMITTED"
                 ? "这句话只留在此刻。"
                 : "此刻不说，也可以。"}
+            </p>
+          )}
+        </section>
+      ) : null}
+      {relationshipNamingReady ? (
+        <section
+          className="gy-genesis-production-experience__relationship-naming"
+          data-relationship-naming-entry="READY"
+          data-relationship-naming-persistence={
+            relationshipNamingPersistence ?? "NONE"
+          }
+          aria-label="生命伙伴关系称呼"
+        >
+          {relationshipNamingState === "PENDING" ? (
+            <form
+              className="gy-genesis-production-experience__relationship-naming-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                submitRelationshipName();
+              }}
+            >
+              <label htmlFor="xinmai-relationship-name">
+                如果愿意，可以这样称呼它
+              </label>
+              <input
+                id="xinmai-relationship-name"
+                type="text"
+                value={relationshipNameDraft}
+                maxLength={
+                  STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS * 2
+                }
+                autoComplete="off"
+                placeholder="一个只属于你们的称呼"
+                aria-describedby="xinmai-relationship-name-guidance"
+                onChange={(event) =>
+                  setRelationshipNameDraft(
+                    Array.from(event.target.value)
+                      .slice(
+                        0,
+                        STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS,
+                      )
+                      .join(""),
+                  )
+                }
+              />
+              <p id="xinmai-relationship-name-guidance">
+                它的天地之名不会改变
+              </p>
+              <div className="gy-genesis-production-experience__relationship-naming-actions">
+                <button
+                  type="button"
+                  data-interaction="RELATIONSHIP_NAMING_SKIPPED"
+                  onClick={skipRelationshipNaming}
+                >
+                  以后再说
+                </button>
+                <button
+                  type="submit"
+                  data-interaction="RELATIONSHIP_NAME_CREATED"
+                  disabled={relationshipNameDraft.trim().length === 0}
+                >
+                  留下称呼
+                </button>
+              </div>
+            </form>
+          ) : (
+            <p
+              className="gy-genesis-production-experience__relationship-naming-settled"
+              role="status"
+            >
+              {relationshipNamingState === "NAMED" &&
+              relationshipName !== null ? (
+                <>
+                  你可以叫它
+                  <strong>{relationshipName}</strong>
+                  {relationshipNamingPersistence ===
+                  "CURRENT_CYCLE_ONLY" ? (
+                    <span>这个称呼暂时只留在此刻。</span>
+                  ) : null}
+                </>
+              ) : (
+                "不命名，也不妨碍你们继续同行。"
+              )}
             </p>
           )}
         </section>
