@@ -50,7 +50,7 @@ try {
     '"PRESSURE_SEED_RECOGNIZE"',
     '"PRESSURE_SEED_REQUEST_NEXT_BUNDLE"',
     '"PRESSURE_SEED_PAUSE"',
-    '"GRAVITY_READY_HOLD"',
+    '"GRAVITY_READY_TO_CONTINUE"',
     'data-pressure-runtime="V2_PRESSURE_SEED_ONLY"',
     'data-gravity-stage="NOT_STARTED"',
   ].forEach((marker) =>
