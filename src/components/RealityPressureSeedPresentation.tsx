@@ -65,6 +65,7 @@ function RealityPressureSeedCandidatePresentation({
 
 export function RealityPressureSeedPresentation({
   session,
+  interactionEnabled,
   onRecognize,
   onRequestNextBundle,
   onPause,
@@ -73,15 +74,21 @@ export function RealityPressureSeedPresentation({
   realitySurfaceAdmissionAttempt,
   onRealityPressureSurfaceOutcome,
 }: RealityPressureSeedPresentationProps) {
-  const recognitionAvailable = session.availableEvents.includes(
-    "PRESSURE_SEED_RECOGNIZE",
-  );
-  const nextBundleAvailable = session.availableEvents.includes(
-    "PRESSURE_SEED_REQUEST_NEXT_BUNDLE",
-  );
-  const pauseAvailable = session.availableEvents.includes(
-    "PRESSURE_SEED_PAUSE",
-  );
+  const recognitionAvailable =
+    interactionEnabled &&
+    session.availableEvents.includes(
+      "PRESSURE_SEED_RECOGNIZE",
+    );
+  const nextBundleAvailable =
+    interactionEnabled &&
+    session.availableEvents.includes(
+      "PRESSURE_SEED_REQUEST_NEXT_BUNDLE",
+    );
+  const pauseAvailable =
+    interactionEnabled &&
+    session.availableEvents.includes(
+      "PRESSURE_SEED_PAUSE",
+    );
   const recognized = session.captureState === "SEED_RECOGNIZED";
   const reportedSurfaceOutcomeKeyRef = useRef<string | null>(null);
 
@@ -157,6 +164,11 @@ export function RealityPressureSeedPresentation({
       data-xinmai-screen="7"
       data-reality-experience-order="LIFE_FIRST_REALITY_SECOND_RECOGNITION_THIRD"
       data-reality-analysis-stage="NOT_STARTED"
+      data-reality-surface-interaction={
+        interactionEnabled
+          ? "ACTIVE_INTERACTION"
+          : "PRE_ACTIVE_PRESENTATION_ONLY"
+      }
       data-pressure-seed-capture-state={session.captureState}
       data-recognized-reality-presentation={
         recognized ? "TEXT_RECEDES_LIFE_RESPONDS" : "EXPLORING_FRAGMENTS"
@@ -252,7 +264,8 @@ export function RealityPressureSeedPresentation({
           </p>
         ) : null}
       </div>
-      {session.gravityReadiness === "READY" ? (
+      {interactionEnabled &&
+      session.gravityReadiness === "READY" ? (
         <div
           className="gy-p36__gravity-ready"
           data-inner-view-guidance="APPROACH_LIFE_BODY"

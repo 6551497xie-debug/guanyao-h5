@@ -44,6 +44,7 @@ import { readPersonalityRingLite } from "../services/personalityRingLiteService"
 import { resolveLifeUniverseCrystalSourceSlot } from "../renderers/lifeUniverseStarField";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import type {
+  RealityHostInteractionAuthority,
   RealityProductionHostProps,
   RealityProductionRouteEntryBoundary,
   RealityProductionRouteEntryProps,
@@ -101,6 +102,10 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
     renderPhaseAdmissionMutationForbidden: true,
     ordinaryCleanupDoesNotTerminateIntent: true,
     singleAdmissionSuccessPath: true,
+    preActiveHostSurfaceRequired: true,
+    singleHostPhaseTransitionRequired: true,
+    controllerActiveAuthorityOnly: true,
+    admissionActiveRevisionSeparationRequired: true,
     explicitLeaveTransactionRequired: true,
     routeOwnsExplicitLeaveTransaction: true,
     noDirectIntentTerminationFromHost: true,
@@ -126,6 +131,16 @@ type AcceptanceAssemblyFailure = Readonly<{
   stage: RealityEncounterFailureStage;
   reason: RealityEncounterFailureReason;
   guardReason: string;
+}>;
+
+type RealityActiveCommitReceipt = Readonly<{
+  intentReferenceId: string;
+  encounterCycleId: string;
+  sourceReferenceId: string;
+  starBeastIdentityReferenceId: string;
+  mansionCoordinateReferenceId: string;
+  admissionRevision: number;
+  activeRevision: number;
 }>;
 
 type PostCommitAdmissionTransactionState =
@@ -186,8 +201,8 @@ export function RealityProductionRouteEntry({
       { status: "READY" }
     > | null
   >(null);
-  const [activeIntentReferenceId, setActiveIntentReferenceId] =
-    useState<string | null>(null);
+  const [activeCommitReceipt, setActiveCommitReceipt] =
+    useState<RealityActiveCommitReceipt | null>(null);
   const [hostAcceptanceFailure, setHostAcceptanceFailure] =
     useState<AcceptanceAssemblyFailure | null>(null);
   const [historicalLifeMemory] = useState(() => {
@@ -670,7 +685,7 @@ export function RealityProductionRouteEntry({
     const nextAttemptVersion = attemptVersion + 1;
     committedPostCommitTransactionRef.current = null;
     setHostAcceptanceFailure(null);
-    setActiveIntentReferenceId(null);
+    setActiveCommitReceipt(null);
     setPostCommitTransaction(
       Object.freeze({
         status: "PENDING" as const,
@@ -741,24 +756,54 @@ export function RealityProductionRouteEntry({
             }),
           );
         }
-        setActiveIntentReferenceId(null);
+        setActiveCommitReceipt(null);
         return;
       }
       const commitResult =
         commitRealityEncounterActive(outcome);
-      if (commitResult.status === "ACTIVE") {
+      if (
+        commitResult.status === "ACTIVE" &&
+        commitResult.intent.state === "ACTIVE_IN_REALITY" &&
+        commitResult.intent.revision ===
+          encounterAdmission.intentRevision + 1 &&
+        commitResult.intent.sourceReferenceId ===
+          encounterAdmission.identityReferences.sourceReferenceId &&
+        commitResult.intent.starBeastIdentityReferenceId ===
+          encounterAdmission.identityReferences
+            .starBeastIdentityReferenceId &&
+        commitResult.intent.mansionCoordinateReferenceId ===
+          encounterAdmission.identityReferences
+            .mansionCoordinateReferenceId
+      ) {
         setHostAcceptanceFailure(null);
-        setActiveIntentReferenceId(
-          commitResult.intent.intentReferenceId,
+        setActiveCommitReceipt(
+          Object.freeze({
+            intentReferenceId:
+              commitResult.intent.intentReferenceId,
+            encounterCycleId:
+              commitResult.intent.encounterCycleId,
+            sourceReferenceId:
+              commitResult.intent.sourceReferenceId,
+            starBeastIdentityReferenceId:
+              commitResult.intent.starBeastIdentityReferenceId,
+            mansionCoordinateReferenceId:
+              commitResult.intent.mansionCoordinateReferenceId,
+            admissionRevision:
+              encounterAdmission.intentRevision,
+            activeRevision: commitResult.intent.revision,
+          }),
         );
         return;
       }
-      setActiveIntentReferenceId(null);
+      setActiveCommitReceipt(null);
       setHostAcceptanceFailure(
         Object.freeze({
           stage: "MINIMUM_SURFACE" as const,
           reason: "HOST_OUTCOME_MISMATCH" as const,
-          guardReason: commitResult.reason,
+          guardReason:
+            commitResult.status === "REJECTED"
+              ? commitResult.reason
+              : "ACTIVE_COMMIT_RECEIPT_MISMATCH",
         }),
       );
     },
@@ -854,22 +899,83 @@ export function RealityProductionRouteEntry({
   }
 
   const visualContinuity = identityRecovery.visualContinuity;
-  const activeRealityIntent = readCurrentRealityEncounterIntent();
-  if (
-    activeRealityIntent === null ||
-    activeRealityIntent.state !== "ACTIVE_IN_REALITY" ||
-    activeIntentReferenceId !== encounterAdmission.intentReferenceId ||
-    activeRealityIntent.intentReferenceId !==
-      encounterAdmission.intentReferenceId ||
-    activeRealityIntent.encounterCycleId !==
-      encounterAdmission.encounterCycleId ||
-    activeRealityIntent.revision !== encounterAdmission.intentRevision
-  ) {
+  const currentRealityIntent =
+    readCurrentRealityEncounterIntent();
+  const preActivePresentationReady =
+    currentRealityIntent !== null &&
+    currentRealityIntent.state === "ACCEPTING_REALITY" &&
+    currentRealityIntent.intentReferenceId ===
+      encounterAdmission.intentReferenceId &&
+    currentRealityIntent.encounterCycleId ===
+      encounterAdmission.encounterCycleId &&
+    currentRealityIntent.revision ===
+      encounterAdmission.intentRevision &&
+    currentRealityIntent.sourceReferenceId ===
+      encounterAdmission.identityReferences.sourceReferenceId &&
+    currentRealityIntent.starBeastIdentityReferenceId ===
+      encounterAdmission.identityReferences
+        .starBeastIdentityReferenceId &&
+    currentRealityIntent.mansionCoordinateReferenceId ===
+      encounterAdmission.identityReferences
+        .mansionCoordinateReferenceId;
+  const activeInteractionReady =
+    currentRealityIntent !== null &&
+    currentRealityIntent.state === "ACTIVE_IN_REALITY" &&
+    activeCommitReceipt !== null &&
+    activeCommitReceipt.intentReferenceId ===
+      encounterAdmission.intentReferenceId &&
+    activeCommitReceipt.encounterCycleId ===
+      encounterAdmission.encounterCycleId &&
+    activeCommitReceipt.sourceReferenceId ===
+      encounterAdmission.identityReferences.sourceReferenceId &&
+    activeCommitReceipt.starBeastIdentityReferenceId ===
+      encounterAdmission.identityReferences
+        .starBeastIdentityReferenceId &&
+    activeCommitReceipt.mansionCoordinateReferenceId ===
+      encounterAdmission.identityReferences
+        .mansionCoordinateReferenceId &&
+    activeCommitReceipt.admissionRevision ===
+      encounterAdmission.intentRevision &&
+    activeCommitReceipt.activeRevision ===
+      encounterAdmission.intentRevision + 1 &&
+    currentRealityIntent.intentReferenceId ===
+      activeCommitReceipt.intentReferenceId &&
+    currentRealityIntent.encounterCycleId ===
+      activeCommitReceipt.encounterCycleId &&
+    currentRealityIntent.revision ===
+      activeCommitReceipt.activeRevision &&
+    currentRealityIntent.sourceReferenceId ===
+      activeCommitReceipt.sourceReferenceId &&
+    currentRealityIntent.starBeastIdentityReferenceId ===
+      activeCommitReceipt.starBeastIdentityReferenceId &&
+    currentRealityIntent.mansionCoordinateReferenceId ===
+      activeCommitReceipt.mansionCoordinateReferenceId;
+  const realityInteractionAuthority:
+    RealityHostInteractionAuthority | null =
+    activeInteractionReady
+      ? Object.freeze({
+          phase: "ACTIVE_INTERACTION" as const,
+          admissionRevision:
+            encounterAdmission.intentRevision,
+          activeRevision:
+            currentRealityIntent.revision,
+          activeIntent: currentRealityIntent,
+        })
+      : preActivePresentationReady
+        ? Object.freeze({
+            phase: "PRE_ACTIVE_PRESENTATION" as const,
+            admissionRevision:
+              encounterAdmission.intentRevision,
+            activeRevision: null,
+            activeIntent: null,
+          })
+        : null;
+  if (realityInteractionAuthority === null) {
     return (
       <main
         className="gy-reality-route-guard"
         data-production-reality-status="SOURCE_NOT_READY"
-        data-guard-reason="ACTIVE_REALITY_INTENT_REQUIRED"
+        data-guard-reason="REALITY_INTENT_ATTEMPT_NOT_CURRENT"
       >
         <p role="status">这一轮现实还没有被完整承接。</p>
       </main>
@@ -895,7 +1001,9 @@ export function RealityProductionRouteEntry({
       key={`${encounterAdmission.encounterCycleId}:${encounterAdmission.intentRevision}`}
       routeAuthorization={authorization}
       encounterAdmission={encounterAdmission}
-      activeRealityIntent={activeRealityIntent}
+      realityInteractionAuthority={
+        realityInteractionAuthority
+      }
       pressureSeedHostInput={pressureHostInputResult.input}
       pressureSeedContinuationContext={
         pressureSeedContinuationResult.context

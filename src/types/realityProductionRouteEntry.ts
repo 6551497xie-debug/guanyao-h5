@@ -122,6 +122,10 @@ export type RealityProductionRouteEntryBoundary = Readonly<{
   renderPhaseAdmissionMutationForbidden: true;
   ordinaryCleanupDoesNotTerminateIntent: true;
   singleAdmissionSuccessPath: true;
+  preActiveHostSurfaceRequired: true;
+  singleHostPhaseTransitionRequired: true;
+  controllerActiveAuthorityOnly: true;
+  admissionActiveRevisionSeparationRequired: true;
   explicitLeaveTransactionRequired: true;
   routeOwnsExplicitLeaveTransaction: true;
   noDirectIntentTerminationFromHost: true;
@@ -161,7 +165,26 @@ export type RealityProductionHostBoundary = Readonly<{
   typedPressureSurfaceOutcomeRequired: true;
   domSurfaceInspectionForbidden: true;
   fixedTimerSuccessForbidden: true;
+  preActiveSurfacePresentationRequired: true;
+  activeInteractionAuthorityRequired: true;
+  singleHostPhaseTransitionRequired: true;
+  preActivePressureInteractionForbidden: true;
+  admissionActiveRevisionSeparationRequired: true;
 }>;
+
+export type RealityHostInteractionAuthority =
+  | Readonly<{
+      phase: "PRE_ACTIVE_PRESENTATION";
+      admissionRevision: number;
+      activeRevision: null;
+      activeIntent: null;
+    }>
+  | Readonly<{
+      phase: "ACTIVE_INTERACTION";
+      admissionRevision: number;
+      activeRevision: number;
+      activeIntent: RealityEncounterIntent;
+    }>;
 
 export type RealityProductionHostProps = Readonly<{
   routeAuthorization: Extract<
@@ -169,7 +192,7 @@ export type RealityProductionHostProps = Readonly<{
     { status: "READY" }
   >;
   encounterAdmission: RealityEncounterAdmission;
-  activeRealityIntent: RealityEncounterIntent;
+  realityInteractionAuthority: RealityHostInteractionAuthority;
   pressureSeedHostInput: RealityProductionPressureHostInput;
   pressureSeedContinuationContext: Extract<
     RealityPressureSeedContinuationContext,

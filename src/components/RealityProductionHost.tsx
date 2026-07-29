@@ -67,6 +67,11 @@ export const REALITY_PRODUCTION_HOST_BOUNDARY:
     typedPressureSurfaceOutcomeRequired: true,
     domSurfaceInspectionForbidden: true,
     fixedTimerSuccessForbidden: true,
+    preActiveSurfacePresentationRequired: true,
+    activeInteractionAuthorityRequired: true,
+    singleHostPhaseTransitionRequired: true,
+    preActivePressureInteractionForbidden: true,
+    admissionActiveRevisionSeparationRequired: true,
   });
 
 type RealityPressureHostState = Readonly<{
@@ -101,7 +106,7 @@ const initializePressureHostState = (
 export function RealityProductionHost({
   routeAuthorization,
   encounterAdmission,
-  activeRealityIntent,
+  realityInteractionAuthority,
   pressureSeedHostInput,
   pressureSeedContinuationContext,
   genesisPresenceContinuityContext,
@@ -158,6 +163,31 @@ export function RealityProductionHost({
     routeAuthorization.encounterCycleId ===
       encounterAdmission.encounterCycleId &&
     routeAuthorization.intentRevision === encounterAdmission.intentRevision;
+  const activeRealityIntent =
+    realityInteractionAuthority.phase === "ACTIVE_INTERACTION"
+      ? realityInteractionAuthority.activeIntent
+      : null;
+  const realityInteractionActive =
+    activeRealityIntent !== null &&
+    activeRealityIntent.state === "ACTIVE_IN_REALITY" &&
+    realityInteractionAuthority.admissionRevision ===
+      encounterAdmission.intentRevision &&
+    realityInteractionAuthority.activeRevision ===
+      encounterAdmission.intentRevision + 1 &&
+    activeRealityIntent.revision ===
+      realityInteractionAuthority.activeRevision &&
+    activeRealityIntent.intentReferenceId ===
+      encounterAdmission.intentReferenceId &&
+    activeRealityIntent.encounterCycleId ===
+      encounterAdmission.encounterCycleId &&
+    activeRealityIntent.sourceReferenceId ===
+      encounterAdmission.identityReferences.sourceReferenceId &&
+    activeRealityIntent.starBeastIdentityReferenceId ===
+      encounterAdmission.identityReferences
+        .starBeastIdentityReferenceId &&
+    activeRealityIntent.mansionCoordinateReferenceId ===
+      encounterAdmission.identityReferences
+        .mansionCoordinateReferenceId;
   const acceptanceAttemptKey =
     `${encounterAdmission.intentReferenceId}:` +
     `${encounterAdmission.encounterCycleId}:` +
@@ -405,6 +435,7 @@ export function RealityProductionHost({
 
   const recognizePressureSeed = (candidateReferenceId: string) => {
     if (
+      !realityInteractionActive ||
       !pressureSeedSession.availableEvents.includes(
         "PRESSURE_SEED_RECOGNIZE",
       )
@@ -433,7 +464,12 @@ export function RealityProductionHost({
   };
 
   const pausePressureSeed = () => {
-    if (!pressureSeedSession.availableEvents.includes("PRESSURE_SEED_PAUSE")) {
+    if (
+      !realityInteractionActive ||
+      !pressureSeedSession.availableEvents.includes(
+        "PRESSURE_SEED_PAUSE",
+      )
+    ) {
       return;
     }
     setInnerViewApproachState("INACTIVE");
@@ -454,6 +490,7 @@ export function RealityProductionHost({
 
   const requestNextPressureSeedBundle = () => {
     if (
+      !realityInteractionActive ||
       !pressureSeedSession.availableEvents.includes(
         "PRESSURE_SEED_REQUEST_NEXT_BUNDLE",
       )
@@ -526,13 +563,14 @@ export function RealityProductionHost({
       pressureSeedSession.gravityReadiness !== "READY" ||
       pressureSeedSession.selectedPressureSeedContext === null ||
       pressureSeedSession.captureProvenance === null ||
-      activeRealityIntent.state !== "ACTIVE_IN_REALITY" ||
+      !realityInteractionActive ||
+      activeRealityIntent === null ||
       activeRealityIntent.intentReferenceId !==
         encounterAdmission.intentReferenceId ||
       activeRealityIntent.encounterCycleId !==
         encounterAdmission.encounterCycleId ||
       activeRealityIntent.revision !==
-        encounterAdmission.intentRevision ||
+        encounterAdmission.intentRevision + 1 ||
       activeRealityIntent.sourceReferenceId !==
         visualContinuity.sourceReferenceId
     ) {
@@ -582,9 +620,24 @@ export function RealityProductionHost({
   return (
     <main
       className="gy-reality-life-universe"
-      data-production-reality-status="AUTHORIZED_PRODUCTION_REALITY_SOURCE"
+      data-production-reality-status={
+        realityInteractionActive
+          ? "AUTHORIZED_PRODUCTION_REALITY_SOURCE"
+          : "PRE_ACTIVE_REALITY_SURFACE_PRESENTATION"
+      }
+      data-reality-host-instance-key={acceptanceAttemptKey}
+      data-reality-surface-phase={
+        realityInteractionActive
+          ? "ACTIVE_INTERACTION"
+          : "PRE_ACTIVE_PRESENTATION"
+      }
+      data-reality-interaction-enabled={
+        realityInteractionActive ? "TRUE" : "FALSE"
+      }
       data-reality-production-host-state={
-        pressureSeedSession.gravityReadiness === "READY"
+        !realityInteractionActive
+          ? "PRE_ACTIVE_SURFACE_PRESENTATION"
+          : pressureSeedSession.gravityReadiness === "READY"
           ? "GRAVITY_READY_TO_CONTINUE"
           : "PRESSURE_SEED_RECOGNITION"
       }
@@ -598,7 +651,16 @@ export function RealityProductionHost({
         encounterAdmission.encounterCycleId
       }
       data-reality-intent-revision={encounterAdmission.intentRevision}
-      data-reality-intent-authority="ACCEPTING_REALITY"
+      data-reality-active-intent-revision={
+        realityInteractionActive
+          ? realityInteractionAuthority.activeRevision
+          : "NONE"
+      }
+      data-reality-intent-authority={
+        realityInteractionActive
+          ? "ACTIVE_IN_REALITY"
+          : "ACCEPTING_REALITY"
+      }
       data-genesis-presence-continuity={
         genesisPresenceContinuityContext.bridge.continuityState
       }
@@ -683,7 +745,11 @@ export function RealityProductionHost({
       data-pressure-seed-bundle-reference={
         pressureSeedSession.candidateBundleReferenceId
       }
-      data-gravity-readiness={pressureSeedSession.gravityReadiness}
+      data-gravity-readiness={
+        realityInteractionActive
+          ? pressureSeedSession.gravityReadiness
+          : "NOT_READY_UNTIL_REALITY_ACTIVE"
+      }
       data-gravity-stage="NOT_STARTED"
       data-choice-stage="NOT_STARTED"
       data-crystal-readiness="NOT_READY"
@@ -728,6 +794,7 @@ export function RealityProductionHost({
       "REALITY_LIFE_SURFACE_PRESENTED" ? (
         <RealityPressureSeedPresentation
           session={pressureSeedSession}
+          interactionEnabled={realityInteractionActive}
           onRecognize={recognizePressureSeed}
           onRequestNextBundle={requestNextPressureSeedBundle}
           onPause={pausePressureSeed}

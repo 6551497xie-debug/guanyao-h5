@@ -3101,6 +3101,7 @@ export type {
 } from "./realityPresenceRendererAuthorization";
 
 export type {
+  RealityHostInteractionAuthority,
   RealityProductionRouteEntryBoundary,
   RealityProductionHostBoundary,
   RealityProductionHostProps,

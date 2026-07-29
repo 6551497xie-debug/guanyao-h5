@@ -39,6 +39,7 @@ export type RealityPressureSeedPresentationBoundary = Readonly<{
 
 export type RealityPressureSeedPresentationProps = Readonly<{
   session: RealityProductionPressureSeedSession;
+  interactionEnabled: boolean;
   onRecognize: (candidateReferenceId: string) => void;
   onRequestNextBundle: () => void;
   onPause: () => void;
