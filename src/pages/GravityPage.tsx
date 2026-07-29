@@ -11,18 +11,13 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   runCosmicBotanicsRuntimeEngine,
   type CosmicPetalState,
 } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
-import {
-  resolveChangeExperienceRuntimeSmokeFixture,
-} from "../services/fixtures/changeExperienceRuntimeSmokeFixtures";
-import { resolvePrimaryPetalDevFixture } from "../services/fixtures/primaryPetalDevFixtures";
-import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import {
   resolveDynamicsInputReadiness,
   type DynamicsInputReadiness,
@@ -61,11 +56,15 @@ import {
   type SpatialIntent,
 } from "../runtime/guanyaoRuntimeEngine";
 import type { ChangeExperiencePresentation } from "../types/changeExperience";
+import type { DynamicsInputContext } from "../types/gravityRuntimeInput";
 import type {
-  DynamicsHandoffState,
-  DynamicsInputContext,
-} from "../types/gravityRuntimeInput";
-import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
+  GravityEntryVisualContinuity,
+} from "../types/xinmaiGravityEntryAdmission";
+import type {
+  GravityLifeSurfaceOutcome,
+  GravityObservationSurfaceOutcome,
+  GravitySurfaceAdmissionAttempt,
+} from "../types/xinmaiGravitySurfaceAdmission";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
 import { requestRealityEncounter } from "../services/xinmaiRealityEncounterIntentController";
@@ -122,26 +121,24 @@ const RealityLifeUniverseCanvas = lazy(() =>
   })),
 );
 
-function readDevPrimaryPetalFixture(): SelectedPressureSeedContext | null {
-  const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
-  if (!viteEnv?.DEV || typeof window === "undefined") return null;
-
-  const searchParams = new URLSearchParams(window.location.search);
-  const fixtureKey = searchParams.get("fixture");
-  if (!fixtureKey) return null;
-  const smokeFixture = resolveChangeExperienceRuntimeSmokeFixture(searchParams.get("__experienceSmoke"));
-
-  if (smokeFixture?.fixtureKey === fixtureKey) return smokeFixture.pressureContext;
-
-  return resolvePrimaryPetalDevFixture(fixtureKey);
-}
-
-function readDevExperienceSmokeFixture(): string | null {
-  const viteEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
-  if (!viteEnv?.DEV || typeof window === "undefined") return null;
-
-  return new URLSearchParams(window.location.search).get("__experienceSmoke");
-}
+export type GravityPageProps = Readonly<{
+  dynamicsInputContext: DynamicsInputContext;
+  visualContinuity: GravityEntryVisualContinuity | null;
+  innerViewEntry:
+    | "CURRENT_LIFE_WEATHER_BODY_APPROACHED"
+    | null;
+  choiceContinuation:
+    | "AWAITING_LIVED_RESPONSE_RECOGNITION"
+    | null;
+  experienceSmokeFixture: string | null;
+  surfaceAttempt?: GravitySurfaceAdmissionAttempt;
+  onLifeSurfaceOutcome?: (
+    outcome: GravityLifeSurfaceOutcome,
+  ) => void;
+  onObservationSurfaceOutcome?: (
+    outcome: GravityObservationSurfaceOutcome,
+  ) => void;
+}>;
 
 const SIX_SPACE_SHORT_LABELS: Record<SixSpaceId, string> = {
   body: "身体",
@@ -2209,7 +2206,7 @@ function CurrentCrystalEndStateFocus({
   visualSource,
 }: {
   state: CurrentCrystalEndState;
-  visualContinuity: RealityProductionHostProps["visualContinuity"] | null;
+  visualContinuity: GravityEntryVisualContinuity | null;
   visualSource: RealLifeVisualSource | null;
 }) {
   const navigate = useNavigate();
@@ -2507,46 +2504,31 @@ function CurrentCrystalEndStateFocus({
     </section>
   );
 }
-function HexagramCodeDeliveryShell() {
+function HexagramCodeDeliveryShell({
+  dynamicsInputContext,
+  visualContinuity,
+  innerViewEntry,
+  choiceContinuation,
+  experienceSmokeFixture,
+  surfaceAttempt,
+  onLifeSurfaceOutcome,
+  onObservationSurfaceOutcome,
+}: GravityPageProps) {
   const navigate = useNavigate();
-  const location = useLocation();
-  const experienceSmokeFixture = readDevExperienceSmokeFixture();
   const [realUserGenesisVisualSourceContext] = useState(() =>
     readRealUserGenesisVisualSourceContext(),
   );
   const realLifeVisualSource = realUserGenesisVisualSourceContext?.visualSource ?? null;
-  const routeVisualContinuity = (
-    location.state as
-      | (DynamicsHandoffState &
-          Readonly<{
-            visualContinuity?: RealityProductionHostProps["visualContinuity"];
-            choiceContinuation?: "AWAITING_LIVED_RESPONSE_RECOGNITION";
-            innerViewEntry?: "CURRENT_LIFE_WEATHER_BODY_APPROACHED";
-          }>)
-      | null
-  )?.visualContinuity ?? null;
   const routeInnerViewEntry =
-    (
-      location.state as
-        | Readonly<{
-            innerViewEntry?: "CURRENT_LIFE_WEATHER_BODY_APPROACHED";
-          }>
-        | null
-    )?.innerViewEntry === "CURRENT_LIFE_WEATHER_BODY_APPROACHED";
+    innerViewEntry === "CURRENT_LIFE_WEATHER_BODY_APPROACHED";
   const livedResponseRecognitionPending =
-    (
-      location.state as
-        | Readonly<{
-            choiceContinuation?: "AWAITING_LIVED_RESPONSE_RECOGNITION";
-          }>
-        | null
-    )?.choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION";
+    choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION";
   const arrivalVisualContinuity =
-    routeVisualContinuity !== null &&
+    visualContinuity !== null &&
     realLifeVisualSource !== null &&
-    routeVisualContinuity.sourceReferenceId ===
+    visualContinuity.sourceReferenceId ===
       realLifeVisualSource.provenance.sourceReferenceId
-      ? routeVisualContinuity
+      ? visualContinuity
       : null;
   const [arrivalBridgeActive, setArrivalBridgeActive] = useState(
     () => arrivalVisualContinuity !== null,
@@ -2559,13 +2541,6 @@ function HexagramCodeDeliveryShell() {
     arrivalBridgeActive ||
     (gravityEntryContinuityActive && !innerViewBodyContinuityActive);
   const [contextWhisperVisible, setContextWhisperVisible] = useState(false);
-  const [dynamicsInputContext] = useState<DynamicsInputContext>(() =>
-    resolveDynamicsInputContext({
-      handoffState: location.state,
-      primaryPetalFixture: readDevPrimaryPetalFixture(),
-      smokeFixture: resolveChangeExperienceRuntimeSmokeFixture(experienceSmokeFixture),
-    }),
-  );
   const [dynamicsInputReadiness] = useState<DynamicsInputReadiness>(() =>
     resolveDynamicsInputReadiness(dynamicsInputContext),
   );
@@ -3017,6 +2992,8 @@ function HexagramCodeDeliveryShell() {
                     ? "BODY_APPROACHED"
                     : "INACTIVE"
                 }
+                gravitySurfaceAdmissionAttempt={surfaceAttempt}
+                onGravityLifeSurfaceOutcome={onLifeSurfaceOutcome}
               />
             </Suspense>
             <RealityGravityInertiaField
@@ -3026,10 +3003,15 @@ function HexagramCodeDeliveryShell() {
               }
               visible={
                 !arrivalBridgeActive &&
-                ((gravityEntryContinuityActive &&
-                  !innerViewBodyContinuityActive) ||
+                (surfaceAttempt !== undefined ||
+                  (gravityEntryContinuityActive &&
+                    !innerViewBodyContinuityActive) ||
                   cosmicNarrativePhase === "node_active" ||
                   cosmicNarrativePhase === "node_complete")
+              }
+              gravitySurfaceAdmissionAttempt={surfaceAttempt}
+              onGravityObservationSurfaceOutcome={
+                onObservationSurfaceOutcome
               }
             />
           </div>
@@ -3243,6 +3225,6 @@ function HexagramCodeDeliveryShell() {
   return <LegacyDynamicsDormant branch="six-space-weapon-annular-asset" />;
 }
 
-export function GravityPage() {
-  return <HexagramCodeDeliveryShell />;
+export function GravityPage(props: GravityPageProps) {
+  return <HexagramCodeDeliveryShell {...props} />;
 }

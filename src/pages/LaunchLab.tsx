@@ -29,13 +29,12 @@ import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { getEntryUserType } from "../runtime/entry/entryDecision";
 import { getNodeTransitionLerp } from "../runtime/node/perception/nodeTransitionLerp";
 import { resolveStarbeastRenderState } from "../runtime/starbeast/starbeastRenderState";
-import { buildSelectedPressureSeedContext } from "../services/guanyaoPressureSeedSceneBindingService";
 import { getPressureSeedSceneTriplet } from "../services/guanyaoPressureSeedSceneBindingService";
 import type { GeoChronoMotherFusionResult } from "../types/guanyaoGeoChronoMotherFusion";
 import type { LaunchLifeSourceSession } from "../types/launchLifeSourceSession";
 import type { LaunchOriginMotherInput } from "../types/guanyaoLaunchOriginMother";
 import type { FourSymbol } from "../types/guanyaoStarbeast";
-import type { DynamicsHandoffState, DynamicsMotherHandoff } from "../types/gravityRuntimeInput";
+import type { DynamicsMotherHandoff } from "../types/gravityRuntimeInput";
 import { buildDynamicsMotherHandoff } from "../services/guanyaoDynamicsMotherHandoffAdapter";
 import {
   resolveLaunchOriginMother,
@@ -89,7 +88,6 @@ import { readPersonalityRingLite } from "../services/personalityRingLiteService"
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
 import { writePersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
-import { writeSelectedPressureSeedContext } from "../services/guanyaoSelectedPressureSeedContextPersistenceAdapter";
 import { resolveBirthCalendarFromGregorianDate } from "../services/guanyaoBirthCalendarService";
 import {
   drawLifeUniverseDeepSpace2D,
@@ -504,8 +502,7 @@ type LaunchInteractionState =
   | "PRESSURE_CANVAS_ACTIVE"
   | "SEED_SELECTED"
   | "SNAPSHOT_GENERATED"
-  | "GENESIS_HANDOFF"
-  | "DYNAMICS_HANDOFF";
+  | "GENESIS_HANDOFF";
 type SceneState = "ENTRY" | "NODE_1" | "NODE_2" | "HANDOFF";
 type EntryHandoffMode = "NEW_USER" | "OLD_USER";
 const SCENE_ORDER = ["ENTRY", "NODE_1", "NODE_2", "HANDOFF"] as const;
@@ -1610,20 +1607,9 @@ export function LaunchLab({
     (candidate: PressureSeedCrossAxisSeed | undefined) => {
       if (!candidate) return;
       setLaunchInteractionState("SEED_SELECTED");
-
-      const selectedPressureSeedContext = buildSelectedPressureSeedContext(candidate.seed);
-
-      const selectedPressureSeedHandoff = writeSelectedPressureSeedContext(selectedPressureSeedContext);
-      const dynamicsHandoffState: DynamicsHandoffState = {
-        selectedPressureSeedContext: selectedPressureSeedHandoff,
-        mother: dynamicsMotherHandoffRef.current,
-      };
-
       setLaunchInteractionState("SNAPSHOT_GENERATED");
-      setLaunchInteractionState("DYNAMICS_HANDOFF");
-      navigate(GUANYAO_ROUTES.dynamics, { state: dynamicsHandoffState });
     },
-    [navigate, setLaunchInteractionState],
+    [setLaunchInteractionState],
   );
 
   useEffect(() => {

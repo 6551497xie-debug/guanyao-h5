@@ -8,6 +8,10 @@ import ts from "typescript";
 const rootDir = process.cwd();
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "guanyao-gravity-change-experience-routing-"));
 const gravityPageSource = fs.readFileSync(path.join(rootDir, "src/pages/GravityPage.tsx"), "utf8");
+const gravityDevelopmentEntrySource = fs.readFileSync(
+  path.join(rootDir, "src/pages/GravityDevelopmentFixtureRouteEntry.tsx"),
+  "utf8",
+);
 const runtimeAdapterSource = fs.readFileSync(
   path.join(rootDir, "src/services/guanyaoDynamicsChangeExperienceRuntimeAdapter.ts"),
   "utf8",
@@ -210,9 +214,9 @@ try {
     "resolveChangeExperienceRuntimeRoute(",
   );
   assertIncludes(
-    "gravity consumes centralized smoke fixture",
-    gravityPageSource,
-    "smokeFixture: resolveChangeExperienceRuntimeSmokeFixture(experienceSmokeFixture)",
+    "development Gravity entry consumes centralized smoke fixture",
+    gravityDevelopmentEntrySource,
+    "resolveChangeExperienceRuntimeSmokeFixture(smokeKey)",
   );
   assertIncludes(
     "change experience runtime consumes centralized smoke revision action",

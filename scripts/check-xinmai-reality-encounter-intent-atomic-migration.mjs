@@ -13,6 +13,9 @@ const source = {
   returning: read("src/pages/LaunchLab.tsx"),
   choice: read("src/pages/GravityPage.tsx"),
   route: read("src/pages/RealityProductionRouteEntry.tsx"),
+  gravityCutover: read(
+    "src/services/realityToGravityCutoverTransaction.ts",
+  ),
   routeType: read("src/types/realityProductionRouteEntry.ts"),
   authorization: read("src/services/realityProductionRouteAuthorization.ts"),
   activation: read("src/services/realityRouteActivationSourceContext.ts"),
@@ -99,9 +102,19 @@ try {
   assertIncludes("Route reports assembly failure", source.route, "failRealityEncounterAcceptance");
   assertIncludes("Route commits through Controller", source.route, "commitRealityEncounterActive");
   assertIncludes(
-    "Reality handoff terminates entry intent",
-    source.route,
+    "Gravity cutover supersedes the active Reality intent",
+    source.gravityCutover,
+    "commitRealityEncounterGravitySupersession",
+  );
+  assertIncludes(
+    "Gravity supersession terminates the source encounter",
+    source.controller,
     'terminalReason: "ENCOUNTER_COMPLETED"',
+  );
+  assertIncludes(
+    "Gravity supersession records the typed cutover meaning",
+    source.controller,
+    'cutoverMeaning !== "SUPERSEDED_BY_GRAVITY_TRANSFER"',
   );
   assertExcludes("Route no longer restores identity-only Entry Context", source.route, "restoreGenesisProductionRealityEntryContext");
   assertExcludes("Route does not read persisted identity services directly", source.route, "readPersistedGenesisVisualContinuity");

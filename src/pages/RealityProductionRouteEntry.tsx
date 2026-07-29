@@ -32,14 +32,13 @@ import {
   readCurrentRealityEncounterIntent,
   rollbackRealityEncounterAdmission,
   retryRealityEncounterAcceptance,
-  terminateRealityEncounter,
 } from "../services/xinmaiRealityEncounterIntentController";
 import {
   createRealityExplicitLeaveRequestFromAdmission,
   createRealityExplicitLeaveRequestFromIntent,
 } from "../services/realityExplicitLeaveTerminationTransaction";
-import { writeSelectedPressureSeedContext } from "../services/guanyaoSelectedPressureSeedContextPersistenceAdapter";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
+import { executeRealityToGravityCutover } from "../services/realityToGravityCutoverTransaction";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { resolveLifeUniverseCrystalSourceSlot } from "../renderers/lifeUniverseStarField";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
@@ -48,7 +47,7 @@ import type {
   RealityProductionRouteEntryBoundary,
   RealityProductionRouteEntryProps,
 } from "../types/realityProductionRouteEntry";
-import type { DynamicsHandoffState } from "../types/gravityRuntimeInput";
+import type { GravityEntryTransferRequest } from "../types/xinmaiGravityEntryAdmission";
 import type {
   RealityEncounterAdmissionResult,
   RealityEncounterFailureReason,
@@ -92,8 +91,8 @@ export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
     noRendererInvocation: true,
     noSourceRecalculation: true,
     routeStateIsPresentationOnly: true,
-    selectedPressureSeedHandoffWriteOnly: true,
-    explicitDynamicsNavigationOnly: true,
+    typedGravityTransferRequestOnly: true,
+    gravityCutoverTransactionRequired: true,
     noGenesisNavigationMutation: true,
     noPresenceMutation: true,
     typedSurfaceAdmissionTransactionRequired: true,
@@ -854,60 +853,47 @@ export function RealityProductionRouteEntry({
   }
 
   const visualContinuity = identityRecovery.visualContinuity;
-  const continueToGravity: RealityProductionHostProps["onContinueToGravity"] =
-    (selectedPressureSeedContext) => {
-      const currentIntent = readCurrentRealityEncounterIntent();
-      if (
-        currentIntent === null ||
-        currentIntent.state !== "ACTIVE_IN_REALITY" ||
-        activeIntentReferenceId !==
-          encounterAdmission.intentReferenceId ||
-        currentIntent.intentReferenceId !==
-          encounterAdmission.intentReferenceId ||
-        currentIntent.encounterCycleId !==
-          encounterAdmission.encounterCycleId
-      ) {
-        return;
-      }
-      const termination = terminateRealityEncounter(
-        {
-          intentReferenceId: currentIntent.intentReferenceId,
-          encounterCycleId: currentIntent.encounterCycleId,
-          expectedIntentRevision: currentIntent.revision,
-          identityReferences: Object.freeze({
-            sourceReferenceId: currentIntent.sourceReferenceId,
-            starBeastIdentityReferenceId:
-              currentIntent.starBeastIdentityReferenceId,
-            mansionCoordinateReferenceId:
-              currentIntent.mansionCoordinateReferenceId,
-          }),
-          terminalReason: "ENCOUNTER_COMPLETED",
-        },
-      );
-      if (termination.status !== "TERMINATED") return;
-      const handoffState: DynamicsHandoffState &
-        Readonly<{
-          visualContinuity: RealityProductionHostProps["visualContinuity"];
-          choiceContinuation:
-            | "AWAITING_LIVED_RESPONSE_RECOGNITION"
-            | null;
-          innerViewEntry: "CURRENT_LIFE_WEATHER_BODY_APPROACHED";
-        }> = Object.freeze({
-        selectedPressureSeedContext: writeSelectedPressureSeedContext(
-          selectedPressureSeedContext,
-        ),
-        visualContinuity,
-        choiceContinuation,
-        innerViewEntry: "CURRENT_LIFE_WEATHER_BODY_APPROACHED",
+  const activeRealityIntent = readCurrentRealityEncounterIntent();
+  if (
+    activeRealityIntent === null ||
+    activeRealityIntent.state !== "ACTIVE_IN_REALITY" ||
+    activeIntentReferenceId !== encounterAdmission.intentReferenceId ||
+    activeRealityIntent.intentReferenceId !==
+      encounterAdmission.intentReferenceId ||
+    activeRealityIntent.encounterCycleId !==
+      encounterAdmission.encounterCycleId ||
+    activeRealityIntent.revision !== encounterAdmission.intentRevision
+  ) {
+    return (
+      <main
+        className="gy-reality-route-guard"
+        data-production-reality-status="SOURCE_NOT_READY"
+        data-guard-reason="ACTIVE_REALITY_INTENT_REQUIRED"
+      >
+        <p role="status">这一轮现实还没有被完整承接。</p>
+      </main>
+    );
+  }
+  const requestGravityTransfer = (
+    request: GravityEntryTransferRequest,
+  ) => {
+    const cutover = executeRealityToGravityCutover(request);
+    if (cutover.status === "COMMITTED") {
+      navigate(GUANYAO_ROUTES.dynamics, {
+        state: Object.freeze({
+          gravityRouteTicket: cutover.routeTicket,
+        }),
       });
-      navigate(GUANYAO_ROUTES.dynamics, { state: handoffState });
-    };
+    }
+    return cutover;
+  };
 
   return (
     <RealityProductionHost
       key={`${encounterAdmission.encounterCycleId}:${encounterAdmission.intentRevision}`}
       routeAuthorization={authorization}
       encounterAdmission={encounterAdmission}
+      activeRealityIntent={activeRealityIntent}
       pressureSeedHostInput={pressureHostInputResult.input}
       pressureSeedContinuationContext={
         pressureSeedContinuationResult.context
@@ -939,7 +925,7 @@ export function RealityProductionRouteEntry({
       }
       explicitLeaveState={explicitLeaveState}
       onExplicitLeaveRequest={requestExplicitLeave}
-      onContinueToGravity={continueToGravity}
+      onRequestGravityTransfer={requestGravityTransfer}
     />
   );
 }

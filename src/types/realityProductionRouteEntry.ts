@@ -6,12 +6,16 @@ import type { GenesisVisualConsumerSourceResult } from "./genesisVisualConsumerS
 import type { GenesisProductionVisualCalibrationBundle } from "./genesisProductionVisualCalibrationBridge";
 import type { GenesisFourSymbolDirectionFieldVisualCalibration } from "./genesisFourSymbolDirectionFieldVisualCalibration";
 import type { GenesisLifeArchetypeForceCondensationVisualCalibration } from "./genesisLifeArchetypeForceCondensationVisualCalibration";
-import type { SelectedPressureSeedContext } from "./primaryPetal";
 import type {
   RealityEncounterAdmission,
   RealityEncounterIdentityReferences,
+  RealityEncounterIntent,
   RealityHostAcceptanceOutcome,
 } from "./xinmaiRealityEncounterIntent";
+import type {
+  GravityEntryTransferRequest,
+  RealityToGravityCutoverTransactionResult,
+} from "./xinmaiGravityEntryAdmission";
 
 export type RealityExplicitLeaveRequest = Readonly<{
   intentReferenceId: string;
@@ -109,8 +113,8 @@ export type RealityProductionRouteEntryBoundary = Readonly<{
   noRendererInvocation: true;
   noSourceRecalculation: true;
   routeStateIsPresentationOnly: true;
-  selectedPressureSeedHandoffWriteOnly: true;
-  explicitDynamicsNavigationOnly: true;
+  typedGravityTransferRequestOnly: true;
+  gravityCutoverTransactionRequired: true;
   noGenesisNavigationMutation: true;
   noPresenceMutation: true;
   typedSurfaceAdmissionTransactionRequired: true;
@@ -134,7 +138,7 @@ export type RealityProductionHostBoundary = Readonly<{
   v2PressureSeedPresentationOnly: true;
   explicitPressureSeedRecognitionOnly: true;
   explicitNextBundleRequestOnly: true;
-  explicitGravityContinuationCallbackOnly: true;
+  typedGravityTransferRequestOnly: true;
   explicitLeaveCallbackOnly: true;
   noFixtureSource: true;
   noPrototypeSource: true;
@@ -165,6 +169,7 @@ export type RealityProductionHostProps = Readonly<{
     { status: "READY" }
   >;
   encounterAdmission: RealityEncounterAdmission;
+  activeRealityIntent: RealityEncounterIntent;
   pressureSeedHostInput: RealityProductionPressureHostInput;
   pressureSeedContinuationContext: Extract<
     RealityPressureSeedContinuationContext,
@@ -193,7 +198,7 @@ export type RealityProductionHostProps = Readonly<{
   ) => void;
   explicitLeaveState: RealityExplicitLeaveUiState;
   onExplicitLeaveRequest: () => void;
-  onContinueToGravity: (
-    selectedPressureSeedContext: Readonly<SelectedPressureSeedContext>,
-  ) => void;
+  onRequestGravityTransfer: (
+    request: GravityEntryTransferRequest,
+  ) => RealityToGravityCutoverTransactionResult;
 }>;

@@ -17,7 +17,6 @@ export const REALITY_PRESSURE_SEED_PRESENTATION_BOUNDARY:
     explicitNextBundleCallbackOnly: true,
     explicitPauseCallbackOnly: true,
     explicitLeaveCallbackOnly: true,
-    explicitGravityContinuationCallbackOnly: true,
     sourceReferenceReadOnly: true,
     noFixtureSource: true,
     noPrototypeAuthorization: true,

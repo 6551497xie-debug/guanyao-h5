@@ -31,11 +31,11 @@ export const LEGACY_ISOLATED_ROUTES = {
 export const LEGACY_ROUTE_REDIRECTS = {
   "/chrono": GUANYAO_ROUTES.motherCode,
   "/force": GUANYAO_ROUTES.motherCode,
-  "/scene": GUANYAO_ROUTES.dynamics,
-  "/identity": GUANYAO_ROUTES.dynamics,
-  "/gravity": GUANYAO_ROUTES.dynamics,
-  "/collapse": GUANYAO_ROUTES.dynamics,
-  "/choice": GUANYAO_ROUTES.breachScan,
-  "/migration": GUANYAO_ROUTES.yaoDevice,
-  "/result": GUANYAO_ROUTES.repairMethod,
+  "/scene": "/launch-lab",
+  "/identity": "/launch-lab",
+  "/gravity": "/launch-lab",
+  "/collapse": "/launch-lab",
+  "/choice": "/launch-lab",
+  "/migration": "/launch-lab",
+  "/result": "/launch-lab",
 } as const;

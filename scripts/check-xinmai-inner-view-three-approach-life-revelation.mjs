@@ -6,7 +6,9 @@ const read = (path) =>
 
 const gravity = read("src/pages/GravityPage.tsx");
 const guide = read("src/components/XinmaiLifeReflectionGuide.tsx");
-const routeEntry = read("src/pages/RealityProductionRouteEntry.tsx");
+const productionSurfaceHost = read(
+  "src/components/GravityProductionSurfaceHost.tsx",
+);
 const styles = read("src/styles/xinmai-inner-view-three-approach.css");
 
 const requireSource = (source, fragment, message) => {
@@ -16,9 +18,9 @@ const requireSource = (source, fragment, message) => {
 };
 
 requireSource(
-  routeEntry,
-  'innerViewEntry: "CURRENT_LIFE_WEATHER_BODY_APPROACHED"',
-  "Gravity must receive an explicit same-body Inner View handoff.",
+  productionSurfaceHost,
+  'innerViewEntry="CURRENT_LIFE_WEATHER_BODY_APPROACHED"',
+  "The production Gravity Host must preserve the explicit same-body Inner View handoff.",
 );
 requireSource(
   gravity,

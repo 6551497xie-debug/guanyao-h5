@@ -55,10 +55,9 @@ const checks = [
       ),
   ],
   [
-    "inertia remains behind the initial body-led inner view",
-    gravityPage.includes(
-      "gravityEntryContinuityActive &&\n                  !innerViewBodyContinuityActive",
-    ) &&
+    "production inertia appears only after the same-life arrival bridge",
+    gravityPage.includes("!arrivalBridgeActive &&") &&
+      gravityPage.includes("surfaceAttempt !== undefined") &&
       gravityPage.includes(
         "刚才回应的地方，开始显出生命的流动。",
       ),

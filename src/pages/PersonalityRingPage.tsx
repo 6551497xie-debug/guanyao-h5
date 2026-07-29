@@ -12,7 +12,6 @@ import {
   resolveLifeUniverseCrystalImprintGeometry,
   resolveLifeUniverseCrystalSourceSlot,
 } from "../renderers/lifeUniverseStarField";
-import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { readPersistedGenesisVisualContinuity } from "../services/sessionService";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
@@ -659,7 +658,7 @@ export function PersonalityRingPage() {
         ) : (
           <button
             type="button"
-            onClick={() => navigate(GUANYAO_ROUTES.dynamics)}
+            onClick={() => navigate("/launch-lab")}
             style={{
               border: 0,
               borderBottom: "1px solid rgba(199,169,107,0.26)",

@@ -15,6 +15,11 @@ import type {
   RealityLifeSurfaceOutcome,
   RealitySurfaceAdmissionAttempt,
 } from "../types/xinmaiRealitySurfaceAdmission";
+import type { SelectedPressureSeedContext } from "../types/primaryPetal";
+import type {
+  GravityLifeSurfaceOutcome,
+  GravitySurfaceAdmissionAttempt,
+} from "../types/xinmaiGravitySurfaceAdmission";
 import {
   DORMANT_LIFE_WHISPER_RELATIONSHIP_VISUAL_FACT,
   type LifeWhisperRelationshipVisualFact,
@@ -48,6 +53,21 @@ type RealityLifeSurfaceOutcomeInput =
       : never
     : never;
 
+type GravityLifeSurfaceOutcomeInput =
+  GravityLifeSurfaceOutcome extends infer Outcome
+    ? Outcome extends GravityLifeSurfaceOutcome
+      ? Omit<
+          Outcome,
+          | "admissionReferenceId"
+          | "gravityCycleId"
+          | "admissionRevision"
+          | "identityReferences"
+          | "selectedPressureSeedId"
+          | "sourceReferenceId"
+        >
+      : never
+    : never;
+
 export function RealityLifeUniverseCanvas({
   visualContinuity,
   selectedPressureSeedContext = null,
@@ -64,11 +84,11 @@ export function RealityLifeUniverseCanvas({
   onLifeWhisperVisualResponseOutcome,
   realitySurfaceAdmissionAttempt,
   onRealityLifeSurfaceOutcome,
+  gravitySurfaceAdmissionAttempt,
+  onGravityLifeSurfaceOutcome,
 }: Pick<RealityProductionHostProps, "visualContinuity"> &
   Readonly<{
-    selectedPressureSeedContext?:
-      | Parameters<RealityProductionHostProps["onContinueToGravity"]>[0]
-      | null;
+    selectedPressureSeedContext?: SelectedPressureSeedContext | null;
     currentRealityWeatherEnabled?: boolean;
     innerViewApproachState?:
       | "INACTIVE"
@@ -87,6 +107,10 @@ export function RealityLifeUniverseCanvas({
     realitySurfaceAdmissionAttempt?: RealitySurfaceAdmissionAttempt;
     onRealityLifeSurfaceOutcome?: (
       outcome: RealityLifeSurfaceOutcome,
+    ) => void;
+    gravitySurfaceAdmissionAttempt?: GravitySurfaceAdmissionAttempt;
+    onGravityLifeSurfaceOutcome?: (
+      outcome: GravityLifeSurfaceOutcome,
     ) => void;
   }>) {
   const continuesRecognizedPressure = selectedPressureSeedContext !== null;
@@ -175,6 +199,42 @@ export function RealityLifeUniverseCanvas({
     },
     [
       realitySurfaceAdmissionAttempt,
+      visualContinuity.sourceReferenceId,
+    ],
+  );
+  const onGravityLifeSurfaceOutcomeRef = useRef(
+    onGravityLifeSurfaceOutcome,
+  );
+  onGravityLifeSurfaceOutcomeRef.current =
+    onGravityLifeSurfaceOutcome;
+  const lastDeliveredGravityLifeSurfaceOutcomeKeyRef =
+    useRef<string | null>(null);
+  const emitGravityLifeSurfaceOutcome = useCallback(
+    (outcome: GravityLifeSurfaceOutcomeInput) => {
+      if (gravitySurfaceAdmissionAttempt === undefined) return;
+      const outcomeKey =
+        `${gravitySurfaceAdmissionAttempt.admissionReferenceId}:` +
+        `${gravitySurfaceAdmissionAttempt.gravityCycleId}:` +
+        `${gravitySurfaceAdmissionAttempt.admissionRevision}:` +
+        outcome.status;
+      if (
+        lastDeliveredGravityLifeSurfaceOutcomeKeyRef.current ===
+        outcomeKey
+      ) {
+        return;
+      }
+      lastDeliveredGravityLifeSurfaceOutcomeKeyRef.current =
+        outcomeKey;
+      onGravityLifeSurfaceOutcomeRef.current?.(
+        Object.freeze({
+          ...gravitySurfaceAdmissionAttempt,
+          sourceReferenceId: visualContinuity.sourceReferenceId,
+          ...outcome,
+        }) as GravityLifeSurfaceOutcome,
+      );
+    },
+    [
+      gravitySurfaceAdmissionAttempt,
       visualContinuity.sourceReferenceId,
     ],
   );
@@ -478,12 +538,22 @@ export function RealityLifeUniverseCanvas({
           reason: "RENDERER_INITIALIZATION_FAILED",
           reportedAt: new Date().toISOString(),
         });
+        emitGravityLifeSurfaceOutcome({
+          status: "GRAVITY_LIFE_SURFACE_UNAVAILABLE",
+          reason: "RENDERER_INITIALIZATION_FAILED",
+          reportedAt: new Date().toISOString(),
+        });
         return;
       }
       const rendererSnapshot = controller.getSnapshot();
       if (rendererSnapshot.contextState === "LOST") {
         emitRealityLifeSurfaceOutcome({
           status: "REALITY_LIFE_SURFACE_UNAVAILABLE",
+          reason: "WEBGL_CONTEXT_LOST",
+          reportedAt: new Date().toISOString(),
+        });
+        emitGravityLifeSurfaceOutcome({
+          status: "GRAVITY_LIFE_SURFACE_UNAVAILABLE",
           reason: "WEBGL_CONTEXT_LOST",
           reportedAt: new Date().toISOString(),
         });
@@ -494,6 +564,11 @@ export function RealityLifeUniverseCanvas({
         emitRealityLifeSurfaceOutcome({
           status: "REALITY_LIFE_SURFACE_PRESENTED",
           surfaceMode: "WEBGL_LIFE_UNIVERSE",
+          presentedAt: new Date().toISOString(),
+        });
+        emitGravityLifeSurfaceOutcome({
+          status: "GRAVITY_LIFE_SURFACE_PRESENTED",
+          surfaceMode: "WEBGL_SAME_LIFE_SURFACE",
           presentedAt: new Date().toISOString(),
         });
       }
@@ -523,6 +598,7 @@ export function RealityLifeUniverseCanvas({
     };
   }, [
     emitRealityLifeSurfaceOutcome,
+    emitGravityLifeSurfaceOutcome,
     emitLifeWhisperVisualResponseOutcome,
     readLifeWhisperRelationshipVisualFact,
     realityPressureConsumer,
@@ -532,7 +608,8 @@ export function RealityLifeUniverseCanvas({
   ]);
 
   const realityStaticLifeSurfaceVisible =
-    realitySurfaceAdmissionAttempt !== undefined &&
+    (realitySurfaceAdmissionAttempt !== undefined ||
+      gravitySurfaceAdmissionAttempt !== undefined) &&
     rendererState === "FALLBACK_REQUIRED" &&
     rendererFallbackReason !== null;
 
@@ -549,8 +626,14 @@ export function RealityLifeUniverseCanvas({
       surfaceMode: "SEMANTIC_STATIC_LIFE_UNIVERSE",
       presentedAt: new Date().toISOString(),
     });
+    emitGravityLifeSurfaceOutcome({
+      status: "GRAVITY_LIFE_SURFACE_PRESENTED",
+      surfaceMode: "SEMANTIC_STATIC_SAME_LIFE_SURFACE",
+      presentedAt: new Date().toISOString(),
+    });
   }, [
     emitRealityLifeSurfaceOutcome,
+    emitGravityLifeSurfaceOutcome,
     arrivalPhase,
     realityStaticLifeSurfaceVisible,
   ]);
@@ -567,8 +650,17 @@ export function RealityLifeUniverseCanvas({
       reason: realityLifeSurfaceUnavailableReason,
       reportedAt: new Date().toISOString(),
     });
+    emitGravityLifeSurfaceOutcome({
+      status: "GRAVITY_LIFE_SURFACE_UNAVAILABLE",
+      reason:
+        realityLifeSurfaceUnavailableReason === "CANVAS_REQUIRED"
+          ? "SOURCE_NOT_READY"
+          : realityLifeSurfaceUnavailableReason,
+      reportedAt: new Date().toISOString(),
+    });
   }, [
     emitRealityLifeSurfaceOutcome,
+    emitGravityLifeSurfaceOutcome,
     realityLifeSurfaceUnavailableReason,
     rendererState,
   ]);

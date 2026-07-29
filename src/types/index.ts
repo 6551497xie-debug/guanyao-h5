@@ -3356,3 +3356,38 @@ export type {
   RealityEncounterRecoveryReadResult,
   RealityEncounterRecoveryClearResult,
 } from "./xinmaiRealityEncounterIntent";
+
+export type {
+  GravityEntryAdmissionState,
+  GravitySourceRealityProof,
+  GravityCurrentPressureProof,
+  GravityBodyApproachProof,
+  GravityEntryFailureStage,
+  GravityEntryFailureReason,
+  GravityEntryFailure,
+  GravityEntryTerminalReason,
+  GravityEntryAdmission,
+  GravityEntryVisualContinuity,
+  GravityEntryTransferRequest,
+  GravityRouteTicket,
+  RealityToGravityCutoverEnvelope,
+  GravityEntryRecoverySnapshot,
+  GravityEntryRecoveryWriteResult,
+  GravityEntryRecoveryReadResult,
+  GravityEntryRecoveryClearResult,
+  GravityEntryTransferPrepareResult,
+  GravityEntryCutoverCommitResult,
+  GravityRouteAdmission,
+  GravityRouteAdmissionResult,
+  GravityHostAcceptanceOutcome,
+  GravityProductionRuntimeInput,
+  RealityToGravityCutoverTransactionResult,
+} from "./xinmaiGravityEntryAdmission";
+
+export type {
+  GravitySurfaceAdmissionAttempt,
+  GravityLifeSurfaceOutcome,
+  GravityObservationSurfaceOutcome,
+  GravitySurfaceAdmissionTransaction,
+  GravitySurfaceAdmissionTransactionResult,
+} from "./xinmaiGravitySurfaceAdmission";

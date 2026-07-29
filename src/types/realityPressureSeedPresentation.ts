@@ -17,7 +17,6 @@ export type RealityPressureSeedPresentationBoundary = Readonly<{
   explicitNextBundleCallbackOnly: true;
   explicitPauseCallbackOnly: true;
   explicitLeaveCallbackOnly: true;
-  explicitGravityContinuationCallbackOnly: true;
   sourceReferenceReadOnly: true;
   noFixtureSource: true;
   noPrototypeAuthorization: true;
@@ -45,7 +44,6 @@ export type RealityPressureSeedPresentationProps = Readonly<{
   onPause: () => void;
   explicitLeaveState: RealityExplicitLeaveUiState;
   onExplicitLeaveRequest: () => void;
-  onContinueToGravity: () => void;
   realitySurfaceAdmissionAttempt: RealitySurfaceAdmissionAttempt;
   onRealityPressureSurfaceOutcome: (
     outcome: RealityPressureSurfaceOutcome,

@@ -25,6 +25,10 @@ import {
   XINMAI_REALITY_ENCOUNTER_INTENT_SCHEMA_VERSION,
 } from "../types/xinmaiRealityEncounterIntent";
 import { isRealitySurfaceAdmissionTransactionValid } from "./xinmaiRealitySurfaceAdmissionTransaction";
+import { readRealitySupersessionProof } from "./xinmaiGravityEntryRecoveryAdapter";
+import type {
+  RealityToGravityCutoverEnvelope,
+} from "../types/xinmaiGravityEntryAdmission";
 
 const INTENT_TTL_MS = 2 * 60 * 60 * 1_000;
 
@@ -355,6 +359,27 @@ const recoverIntent = (
     );
   }
   const candidate = recovery.snapshot.intent;
+  const supersession = readRealitySupersessionProof({
+    intentReferenceId: candidate.intentReferenceId,
+    encounterCycleId: candidate.encounterCycleId,
+    identityReferences: Object.freeze({
+      sourceReferenceId: candidate.sourceReferenceId,
+      starBeastIdentityReferenceId:
+        candidate.starBeastIdentityReferenceId,
+      mansionCoordinateReferenceId:
+        candidate.mansionCoordinateReferenceId,
+    }),
+  });
+  if (supersession.status === "SUPERSEDED") {
+    clearRealityEncounterRecoveryCandidate(candidate.intentReferenceId);
+    currentIntent = null;
+    return admissionBlocked(
+      "BLOCKED",
+      "RECOVER",
+      "INTENT_STATE_NOT_ADMISSIBLE",
+      null,
+    );
+  }
   if (
     (requestedIntentReferenceId !== null &&
       candidate.intentReferenceId !== requestedIntentReferenceId) ||
@@ -890,6 +915,119 @@ export function terminateRealityEncounter(
   });
 }
 
+export function commitRealityEncounterGravitySupersession(
+  envelope: RealityToGravityCutoverEnvelope,
+):
+  | Readonly<{
+      status: "SUPERSEDED";
+      terminalIntent: RealityEncounterIntent;
+      cleanup:
+        | "SOURCE_RECOVERY_CLEARED"
+        | "SOURCE_RECOVERY_SUPERSEDED_PENDING_CLEANUP";
+      reason: null;
+    }>
+  | Readonly<{
+      status: "REJECTED_STALE";
+      terminalIntent: null;
+      cleanup: null;
+      reason:
+        | "NO_CURRENT_INTENT"
+        | "INTENT_NOT_ACTIVE"
+        | "INTENT_REFERENCE_MISMATCH"
+        | "ENCOUNTER_CYCLE_MISMATCH"
+        | "INTENT_REVISION_MISMATCH"
+        | "IDENTITY_MISMATCH"
+        | "CUTOVER_PROOF_MISMATCH";
+    }> {
+  const proof = envelope.sourceReality.terminalProof;
+  if (currentIntent === null) {
+    return Object.freeze({
+      status: "REJECTED_STALE" as const,
+      terminalIntent: null,
+      cleanup: null,
+      reason: "NO_CURRENT_INTENT" as const,
+    });
+  }
+  if (currentIntent.state !== "ACTIVE_IN_REALITY") {
+    return Object.freeze({
+      status: "REJECTED_STALE" as const,
+      terminalIntent: null,
+      cleanup: null,
+      reason: "INTENT_NOT_ACTIVE" as const,
+    });
+  }
+  if (currentIntent.intentReferenceId !== proof.intentReferenceId) {
+    return Object.freeze({
+      status: "REJECTED_STALE" as const,
+      terminalIntent: null,
+      cleanup: null,
+      reason: "INTENT_REFERENCE_MISMATCH" as const,
+    });
+  }
+  if (currentIntent.encounterCycleId !== proof.encounterCycleId) {
+    return Object.freeze({
+      status: "REJECTED_STALE" as const,
+      terminalIntent: null,
+      cleanup: null,
+      reason: "ENCOUNTER_CYCLE_MISMATCH" as const,
+    });
+  }
+  if (currentIntent.revision !== proof.intentRevision) {
+    return Object.freeze({
+      status: "REJECTED_STALE" as const,
+      terminalIntent: null,
+      cleanup: null,
+      reason: "INTENT_REVISION_MISMATCH" as const,
+    });
+  }
+  if (
+    !identityMatches(
+      currentIntent,
+      envelope.sourceReality.identityReferences,
+    )
+  ) {
+    return Object.freeze({
+      status: "REJECTED_STALE" as const,
+      terminalIntent: null,
+      cleanup: null,
+      reason: "IDENTITY_MISMATCH" as const,
+    });
+  }
+  if (
+    proof.sourceState !== "ACTIVE_IN_REALITY" ||
+    proof.activeConfirmed !== true ||
+    proof.terminalReason !== "ENCOUNTER_COMPLETED" ||
+    proof.cutoverMeaning !== "SUPERSEDED_BY_GRAVITY_TRANSFER" ||
+    envelope.sourceReality.supersededByGravityTransfer !== true
+  ) {
+    return Object.freeze({
+      status: "REJECTED_STALE" as const,
+      terminalIntent: null,
+      cleanup: null,
+      reason: "CUTOVER_PROOF_MISMATCH" as const,
+    });
+  }
+
+  const terminalIntent = createNextIntent(currentIntent, {
+    state: "TERMINAL",
+    failure: null,
+    terminalReason: "ENCOUNTER_COMPLETED",
+  });
+  const clear = clearRealityEncounterRecoveryCandidate(
+    currentIntent.intentReferenceId,
+  );
+  currentIntent = null;
+  return Object.freeze({
+    status: "SUPERSEDED" as const,
+    terminalIntent,
+    cleanup:
+      clear.status === "CONFIRMED"
+        ? "SOURCE_RECOVERY_CLEARED" as const
+        : "SOURCE_RECOVERY_SUPERSEDED_PENDING_CLEANUP" as const,
+    reason: null,
+  });
+}
+
 export function readCurrentRealityEncounterIntent():
   RealityEncounterIntent | null {
   return currentIntent;
@@ -903,5 +1041,7 @@ export const XinmaiRealityEncounterIntentController = Object.freeze({
   commitActive: commitRealityEncounterActive,
   failAcceptance: failRealityEncounterAcceptance,
   terminateCurrentEncounter: terminateRealityEncounter,
+  commitGravitySupersession:
+    commitRealityEncounterGravitySupersession,
   readCurrentIntent: readCurrentRealityEncounterIntent,
 });

@@ -44,7 +44,7 @@ export const REALITY_PRODUCTION_HOST_BOUNDARY:
     v2PressureSeedPresentationOnly: true,
     explicitPressureSeedRecognitionOnly: true,
     explicitNextBundleRequestOnly: true,
-    explicitGravityContinuationCallbackOnly: true,
+    typedGravityTransferRequestOnly: true,
     explicitLeaveCallbackOnly: true,
     noFixtureSource: true,
     noPrototypeSource: true,
@@ -101,6 +101,7 @@ const initializePressureHostState = (
 export function RealityProductionHost({
   routeAuthorization,
   encounterAdmission,
+  activeRealityIntent,
   pressureSeedHostInput,
   pressureSeedContinuationContext,
   genesisPresenceContinuityContext,
@@ -115,7 +116,7 @@ export function RealityProductionHost({
   onRealityAcceptanceOutcome,
   explicitLeaveState,
   onExplicitLeaveRequest,
-  onContinueToGravity,
+  onRequestGravityTransfer,
 }: RealityProductionHostProps) {
   const reportedAcceptanceAttemptRef = useRef<string | null>(null);
   const sourceContext = routeAuthorization.sourceContext;
@@ -519,28 +520,63 @@ export function RealityProductionHost({
     );
   };
 
-  const continueToGravity = () => {
-    if (
-      pressureSeedSession.gravityReadiness !== "READY" ||
-      pressureSeedSession.selectedPressureSeedContext === null
-    ) {
-      return;
-    }
-    onContinueToGravity(pressureSeedSession.selectedPressureSeedContext);
-  };
   const approachCurrentLifeWeather = () => {
     if (
       innerViewApproachState !== "AWAITING_BODY_APPROACH" ||
       pressureSeedSession.gravityReadiness !== "READY" ||
-      pressureSeedSession.selectedPressureSeedContext === null
+      pressureSeedSession.selectedPressureSeedContext === null ||
+      pressureSeedSession.captureProvenance === null ||
+      activeRealityIntent.state !== "ACTIVE_IN_REALITY" ||
+      activeRealityIntent.intentReferenceId !==
+        encounterAdmission.intentReferenceId ||
+      activeRealityIntent.encounterCycleId !==
+        encounterAdmission.encounterCycleId ||
+      activeRealityIntent.revision !==
+        encounterAdmission.intentRevision ||
+      activeRealityIntent.sourceReferenceId !==
+        visualContinuity.sourceReferenceId
     ) {
       return;
     }
-    const currentReality = pressureSeedSession.selectedPressureSeedContext;
-    setInnerViewApproachState("BODY_APPROACHED");
-    window.setTimeout(() => {
-      onContinueToGravity(currentReality);
-    }, 1_200);
+    const requestedAt = new Date().toISOString();
+    const result = onRequestGravityTransfer(
+      Object.freeze({
+        schemaVersion:
+          "XINMAI_GRAVITY_ENTRY_TRANSFER_REQUEST_V1" as const,
+        source: "reality_production_host" as const,
+        requestedAt,
+        userExplicitRequest: true as const,
+        identityReferences: Object.freeze({
+          sourceReferenceId: activeRealityIntent.sourceReferenceId,
+          starBeastIdentityReferenceId:
+            activeRealityIntent.starBeastIdentityReferenceId,
+          mansionCoordinateReferenceId:
+            activeRealityIntent.mansionCoordinateReferenceId,
+        }),
+        sourceReality: Object.freeze({
+          intentReferenceId: activeRealityIntent.intentReferenceId,
+          encounterCycleId: activeRealityIntent.encounterCycleId,
+          intentRevision: activeRealityIntent.revision,
+          origin: activeRealityIntent.origin,
+          qualification: activeRealityIntent.qualification,
+          state: "ACTIVE_IN_REALITY" as const,
+        }),
+        pressureSession: pressureSeedSession,
+        bodyApproachProof: Object.freeze({
+          source: "reality_inner_view_approach" as const,
+          innerViewEntry:
+            "CURRENT_LIFE_WEATHER_BODY_APPROACHED" as const,
+          bodyApproachConfirmed: true as const,
+          confirmedAt: requestedAt,
+          sourceReferenceId: activeRealityIntent.sourceReferenceId,
+          encounterCycleId: activeRealityIntent.encounterCycleId,
+        }),
+        visualContinuity,
+      }),
+    );
+    if (result.status === "COMMITTED") {
+      setInnerViewApproachState("BODY_APPROACHED");
+    }
   };
 
   return (
@@ -697,7 +733,6 @@ export function RealityProductionHost({
           onPause={pausePressureSeed}
           explicitLeaveState={explicitLeaveState}
           onExplicitLeaveRequest={onExplicitLeaveRequest}
-          onContinueToGravity={continueToGravity}
           realitySurfaceAdmissionAttempt={
             realitySurfaceAdmissionAttempt
           }

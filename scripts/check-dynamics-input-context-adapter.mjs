@@ -7,8 +7,18 @@ import { build } from "esbuild";
 const rootDir = process.cwd();
 const adapterPath = path.join(rootDir, "src/services/guanyaoDynamicsInputContextAdapter.ts");
 const gravityPath = path.join(rootDir, "src/pages/GravityPage.tsx");
+const productionInputPath = path.join(
+  rootDir,
+  "src/services/gravityProductionRuntimeInputAdapter.ts",
+);
+const developmentEntryPath = path.join(
+  rootDir,
+  "src/pages/GravityDevelopmentFixtureRouteEntry.tsx",
+);
 const adapterSource = fs.readFileSync(adapterPath, "utf8");
 const gravitySource = fs.readFileSync(gravityPath, "utf8");
+const productionInputSource = fs.readFileSync(productionInputPath, "utf8");
+const developmentEntrySource = fs.readFileSync(developmentEntryPath, "utf8");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-dynamics-input-context-${process.pid}.mjs`);
 
 const assertEqual = (name, actual, expected) => {
@@ -192,9 +202,10 @@ try {
   assertEqual("invalid route without persistence yields no origin context", emptyInput.originMotherContext, null);
   assertEqual("invalid route without persistence yields no persona snapshot", emptyInput.personaOutputSnapshot, null);
 
-  assertIncludes("Gravity delegates Dynamics input resolution", gravitySource, "resolveDynamicsInputContext({");
-  assertIncludes("Gravity passes unknown route state without casting", gravitySource, "handoffState: location.state");
-  assertExcludes("Gravity does not cast route state", gravitySource, "location.state as");
+  assertExcludes("Production Gravity page does not resolve entry input", gravitySource, "resolveDynamicsInputContext({");
+  assertIncludes("Production adapter assembles explicit Dynamics input", productionInputSource, "dynamicsInputContext: Object.freeze({");
+  assertIncludes("Development entry alone resolves fixture input", developmentEntrySource, "resolveDynamicsInputContext({");
+  assertExcludes("Production Gravity page does not read route state", gravitySource, "location.state");
   assertExcludes("Gravity does not read persistence directly", gravitySource, "readPersisted");
   assertIncludes(
     "Dynamics input adapter owns selected pressure persistence fallback",

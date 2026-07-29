@@ -23,7 +23,8 @@ import { ChronoLab } from "./pages/ChronoLab";
 import { BreachLab } from "./pages/BreachLab";
 import { GenesisLab } from "./pages/GenesisLab";
 import { GoldenCaliperLab } from "./pages/GoldenCaliperLab";
-import { GravityPage } from "./pages/GravityPage";
+import { GravityProductionRouteEntry } from "./pages/GravityProductionRouteEntry";
+import { GravityDevelopmentFixtureRouteEntry } from "./pages/GravityDevelopmentFixtureRouteEntry";
 import { HexagramCardLabPage } from "./pages/HexagramCardLabPage";
 import { LaunchLab } from "./pages/LaunchLab";
 import { LaunchPage } from "./pages/LaunchPage";
@@ -559,12 +560,18 @@ export default function App() {
         <Route path="/launch-legacy" element={<LaunchPage />} />
         <Route path="/chrono-axis" element={<ChronoAxisPage />} />
         <Route path={GUANYAO_ROUTES.motherCode} element={<LegacyRedirect to="/launch-lab" />} />
-        <Route path={GUANYAO_ROUTES.pressureSeed} element={<LegacyRedirect to={GUANYAO_ROUTES.dynamics} />} />
-        <Route path={GUANYAO_ROUTES.hexagramStamp} element={<LegacyRedirect to={GUANYAO_ROUTES.dynamics} />} />
-        <Route path={GUANYAO_ROUTES.dynamics} element={<GravityPage />} />
-        <Route path={GUANYAO_ROUTES.breachScan} element={<LegacyRedirect to={GUANYAO_ROUTES.dynamics} />} />
-        <Route path={GUANYAO_ROUTES.yaoDevice} element={<LegacyRedirect to={GUANYAO_ROUTES.dynamics} />} />
-        <Route path={GUANYAO_ROUTES.repairMethod} element={<LegacyRedirect to={GUANYAO_ROUTES.dynamics} />} />
+        <Route path={GUANYAO_ROUTES.pressureSeed} element={<LegacyRedirect to="/launch-lab" />} />
+        <Route path={GUANYAO_ROUTES.hexagramStamp} element={<LegacyRedirect to="/launch-lab" />} />
+        <Route path={GUANYAO_ROUTES.dynamics} element={<GravityProductionRouteEntry />} />
+        {import.meta.env.DEV ? (
+          <Route
+            path="/dynamics-dev"
+            element={<GravityDevelopmentFixtureRouteEntry />}
+          />
+        ) : null}
+        <Route path={GUANYAO_ROUTES.breachScan} element={<LegacyRedirect to="/launch-lab" />} />
+        <Route path={GUANYAO_ROUTES.yaoDevice} element={<LegacyRedirect to="/launch-lab" />} />
+        <Route path={GUANYAO_ROUTES.repairMethod} element={<LegacyRedirect to="/launch-lab" />} />
         <Route
           path={GUANYAO_ROUTES.archive}
           element={

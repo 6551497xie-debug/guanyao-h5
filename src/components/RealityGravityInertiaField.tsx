@@ -1,4 +1,9 @@
+import { useEffect, useRef } from "react";
 import { LIFE_UNIVERSE_CORE_IDENTITY } from "../renderers/lifeUniverseStarField";
+import type {
+  GravityObservationSurfaceOutcome,
+  GravitySurfaceAdmissionAttempt,
+} from "../types/xinmaiGravitySurfaceAdmission";
 import "../styles/reality-gravity-presentation.css";
 
 const RESPONSE_TENDENCIES = Object.freeze([
@@ -16,15 +21,65 @@ export function RealityGravityInertiaField({
   repetitionDepth,
   activeObservation,
   visible,
+  gravitySurfaceAdmissionAttempt,
+  onGravityObservationSurfaceOutcome,
 }: Readonly<{
   repetitionDepth: number;
   activeObservation: string;
   visible: boolean;
+  gravitySurfaceAdmissionAttempt?: GravitySurfaceAdmissionAttempt;
+  onGravityObservationSurfaceOutcome?: (
+    outcome: GravityObservationSurfaceOutcome,
+  ) => void;
 }>) {
   const safeDepth = Math.max(1, Math.min(6, repetitionDepth));
+  const fieldRef = useRef<HTMLDivElement | null>(null);
+  const lastOutcomeKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (
+      !visible ||
+      gravitySurfaceAdmissionAttempt === undefined ||
+      fieldRef.current?.isConnected !== true
+    ) {
+      return;
+    }
+    const key =
+      `${gravitySurfaceAdmissionAttempt.admissionReferenceId}:` +
+      `${gravitySurfaceAdmissionAttempt.gravityCycleId}:` +
+      `${gravitySurfaceAdmissionAttempt.admissionRevision}`;
+    if (lastOutcomeKeyRef.current === key) return;
+    lastOutcomeKeyRef.current = key;
+    const reducedMotion =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      (import.meta.env.DEV &&
+        new URLSearchParams(window.location.search).get(
+          "__xinmaiReducedMotion",
+        ) === "1");
+    onGravityObservationSurfaceOutcome?.(
+      Object.freeze({
+        ...gravitySurfaceAdmissionAttempt,
+        status: "GRAVITY_OBSERVATION_SURFACE_PRESENTED" as const,
+        sourceReferenceId:
+          gravitySurfaceAdmissionAttempt.identityReferences
+            .sourceReferenceId,
+        surfaceMode: reducedMotion
+          ? "STATIC_FIRST_GRAVITY_OBSERVATION" as const
+          : "MOTION_FIRST_GRAVITY_OBSERVATION" as const,
+        currentRealityTraceVisible: true as const,
+        firstObservationAffordanceAvailable: true as const,
+        presentedAt: new Date().toISOString(),
+      }),
+    );
+  }, [
+    gravitySurfaceAdmissionAttempt,
+    onGravityObservationSurfaceOutcome,
+    visible,
+  ]);
 
   return (
     <div
+      ref={fieldRef}
       aria-hidden="true"
       className="gy-gravity-inertia-field"
       data-gravity-visual-consumer="RECOVERED_TRACE_RESPONSE_BIAS"
