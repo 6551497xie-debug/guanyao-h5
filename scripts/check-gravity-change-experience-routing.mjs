@@ -24,6 +24,38 @@ const runtimeInputTypeSource = fs.readFileSync(
   path.join(rootDir, "src/types/gravityRuntimeInput.ts"),
   "utf8",
 );
+const gravityObservationSurfaceSource = fs.readFileSync(
+  path.join(rootDir, "src/components/RealityGravityInertiaField.tsx"),
+  "utf8",
+);
+const gravitySurfaceAdmissionTypeSource = fs.readFileSync(
+  path.join(rootDir, "src/types/xinmaiGravitySurfaceAdmission.ts"),
+  "utf8",
+);
+const gravitySurfaceHostSource = fs.readFileSync(
+  path.join(rootDir, "src/components/GravityProductionSurfaceHost.tsx"),
+  "utf8",
+);
+const gravityEntryControllerSource = fs.readFileSync(
+  path.join(rootDir, "src/services/xinmaiGravityEntryAdmissionController.ts"),
+  "utf8",
+);
+const gravityRouteSource = fs.readFileSync(
+  path.join(rootDir, "src/pages/GravityProductionRouteEntry.tsx"),
+  "utf8",
+);
+const pressurePresentationSource = fs.readFileSync(
+  path.join(rootDir, "src/components/RealityPressureSeedPresentation.tsx"),
+  "utf8",
+);
+const choicePresentationSource = fs.readFileSync(
+  path.join(rootDir, "src/components/RealityChoicePresentation.tsx"),
+  "utf8",
+);
+const crystalPresentationSource = fs.readFileSync(
+  path.join(rootDir, "src/services/guanyaoDynamicsCurrentCrystalPresentationAdapter.ts"),
+  "utf8",
+);
 
 const sourceFiles = [
   "src/services/fixtures/personaTransmissionFixtures.ts",
@@ -72,6 +104,17 @@ const assertNotIncludes = (name, source, forbidden) => {
   }
 
   console.log(`PASS | ${name} | forbidden=absent`);
+};
+
+const sliceBetween = (name, source, startMarker, endMarker) => {
+  const startIndex = source.indexOf(startMarker);
+  const endIndex = source.indexOf(endMarker, startIndex + startMarker.length);
+  if (startIndex < 0 || endIndex < 0) {
+    throw new Error(
+      `${name} block missing start=${startMarker} end=${endMarker}`,
+    );
+  }
+  return source.slice(startIndex, endIndex);
 };
 
 const routingCases = [
@@ -298,10 +341,15 @@ try {
     gravityPageSource,
     "function resolvePersonaDimensionFromLayerLabel",
   );
-  assertIncludes(
-    "gravity consumes formal first response label",
+  assertNotIncludes(
+    "gravity does not consume dormant first response label",
     gravityPageSource,
-    "presentation?.recognition.firstResponseLabel ?? CHANGE_EXPERIENCE_FIRST_RESPONSE_LABEL",
+    "firstResponseLabel",
+  );
+  assertNotIncludes(
+    "gravity does not import dormant first response label copy",
+    gravityPageSource,
+    "CHANGE_EXPERIENCE_FIRST_RESPONSE_LABEL",
   );
   assertNotIncludes(
     "gravity removes familiar reaction label",
@@ -312,6 +360,92 @@ try {
     "gravity does not own first response label copy",
     gravityPageSource,
     "这一刻首先出现的回应",
+  );
+  assertIncludes(
+    "Gravity observation surface emits typed presented outcome",
+    gravityObservationSurfaceSource,
+    'status: "GRAVITY_OBSERVATION_SURFACE_PRESENTED" as const',
+  );
+  assertIncludes(
+    "Gravity observation surface emits Motion first observation",
+    gravityObservationSurfaceSource,
+    '"MOTION_FIRST_GRAVITY_OBSERVATION" as const',
+  );
+  assertIncludes(
+    "Gravity observation surface emits Static first observation",
+    gravityObservationSurfaceSource,
+    '"STATIC_FIRST_GRAVITY_OBSERVATION" as const',
+  );
+  assertIncludes(
+    "typed observation requires current Reality trace",
+    gravitySurfaceAdmissionTypeSource,
+    "currentRealityTraceVisible: true",
+  );
+  assertIncludes(
+    "typed observation requires first observation affordance",
+    gravitySurfaceAdmissionTypeSource,
+    "firstObservationAffordanceAvailable: true",
+  );
+  assertIncludes(
+    "Gravity Host aggregates typed surface outcomes",
+    gravitySurfaceHostSource,
+    "resolveGravitySurfaceAdmissionTransaction({",
+  );
+  assertIncludes(
+    "Gravity Host reports typed minimum surface",
+    gravitySurfaceHostSource,
+    'status: "GRAVITY_MINIMUM_PRESENTED" as const',
+  );
+  const gravityWatchdogBlock = sliceBetween(
+    "Gravity surface watchdog",
+    gravitySurfaceHostSource,
+    "const watchdog = window.setTimeout",
+    "return (",
+  );
+  assertIncludes(
+    "Gravity watchdog reports unavailable",
+    gravityWatchdogBlock,
+    'reportUnavailable("SURFACE_OUTCOME_WATCHDOG_EXPIRED")',
+  );
+  assertNotIncludes(
+    "Gravity watchdog cannot report success",
+    gravityWatchdogBlock,
+    "GRAVITY_MINIMUM_PRESENTED",
+  );
+  assertIncludes(
+    "Gravity Controller owns Active commit",
+    gravityEntryControllerSource,
+    'state: "ACTIVE_IN_GRAVITY"',
+  );
+  assertNotIncludes(
+    "Gravity Page cannot produce Active",
+    gravityPageSource,
+    'state: "ACTIVE_IN_GRAVITY"',
+  );
+  assertNotIncludes(
+    "Gravity Host cannot produce Active",
+    gravitySurfaceHostSource,
+    'state: "ACTIVE_IN_GRAVITY"',
+  );
+  assertNotIncludes(
+    "Gravity Route cannot produce Active",
+    gravityRouteSource,
+    'state: "ACTIVE_IN_GRAVITY"',
+  );
+  assertNotIncludes(
+    "Pressure presentation does not consume first response label",
+    pressurePresentationSource,
+    "firstResponseLabel",
+  );
+  assertNotIncludes(
+    "Choice presentation does not consume first response label",
+    choicePresentationSource,
+    "firstResponseLabel",
+  );
+  assertNotIncludes(
+    "Crystal presentation does not consume first response label",
+    crystalPresentationSource,
+    "firstResponseLabel",
   );
   assertIncludes(
     "gravity isolates the legacy direct choice to crystal flow",
