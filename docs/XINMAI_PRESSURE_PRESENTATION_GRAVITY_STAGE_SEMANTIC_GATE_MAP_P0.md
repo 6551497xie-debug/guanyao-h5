@@ -1176,3 +1176,323 @@ NOW — MAP ONLY
 - 自动解锁 Phase 3；
 - 提前实施 Gravity、Choice 或 Crystal；
 - 顺带修复 Mother Context 门禁漂移。
+
+---
+
+# 附录 A：当前远程 HEAD 独立复验
+
+复验基线：
+
+```text
+7573165ca0e0d1dc38b99845a61ee3ca5653b776
+```
+
+复验性质：
+
+```text
+MAP REVALIDATION ONLY
+```
+
+本附录不替换前述审计，不修改 Runtime，也不校准任何门禁。它只回答：
+
+> 在 RealityEncounterIntent 已完成统一入口交付后，原有 Pressure Presentation / Gravity Stage 裁决是否仍然成立。
+
+## A.1 目标门禁复现
+
+执行当前基线中的：
+
+```text
+node scripts/check-reality-pressure-seed-presentation-contract.mjs
+```
+
+结果：
+
+```text
+FAIL
+missing=Gravity 尚未启动
+```
+
+其余既有断言在到达该精确文案断言前均已通过。
+
+因此当前失败已经收敛为：
+
+```text
+STALE EXACT-COPY ASSERTION
+```
+
+不再是旧审计时期包含 `useEffect` 在内的复合失败。
+
+## A.2 当前 Presentation 语义事实
+
+`RealityPressureSeedPresentation` 当前只在以下条件成立时展示内观引导：
+
+```text
+interactionEnabled
+&&
+session.gravityReadiness === "READY"
+```
+
+页面同时保留：
+
+```text
+data-inner-view-guidance="APPROACH_LIFE_BODY"
+data-direct-gravity-action="WITHHELD"
+data-reality-analysis-stage="NOT_STARTED"
+```
+
+组件边界继续冻结：
+
+```text
+noGravityExecution: true
+```
+
+并且没有：
+
+- Gravity 导航；
+- Gravity 服务调用；
+- Pressure Seed 之外的成长执行；
+- 存储写入；
+- Gravity Active 提交。
+
+当前文案：
+
+```text
+身体里有一处回应正在成形。轻触生命本身，靠近它。
+```
+
+表达的是 Reality 中的身体靠近邀请，不是 Gravity 已经启动。
+
+## A.3 READY 不等于 ACTIVE
+
+当前 Host 仍明确呈现：
+
+```text
+data-gravity-stage="NOT_STARTED"
+```
+
+`gravityReadiness === "READY"` 只表示：
+
+> 当前 Reality 已具备由用户主动靠近生命身体、申请进入下一阶段的资格。
+
+它不表示：
+
+- Gravity 已初始化；
+- Gravity 已承接；
+- Gravity 已呈现；
+- 用户已进入 `/dynamics`；
+- Gravity Runtime 已经 Active。
+
+真实转移还必须继续满足：
+
+```text
+innerViewApproachState === "AWAITING_BODY_APPROACH"
++
+gravityReadiness === "READY"
++
+selected context 与 provenance 成立
++
+Reality interaction ACTIVE
++
+当前 Intent / cycle / revision / identity 一致
++
+userExplicitRequest === true
++
+bodyApproachConfirmed === true
++
+CURRENT_LIFE_WEATHER_BODY_APPROACHED
+```
+
+随后由 typed cutover transaction 建立 Gravity admission；Gravity 只有在真实 Life Surface 与 Observation Surface Outcome 成立后，才由 Gravity Controller 提交 Active。
+
+因此：
+
+```text
+Presentation READY:
+TRANSFER ELIGIBILITY
+
+Gravity ACTIVE:
+SEPARATE TYPED RUNTIME FACT
+```
+
+两者没有混同。
+
+## A.4 历史证据
+
+原始 Pressure Presentation Contract 在提交：
+
+```text
+e7cb6012979e1e50929fd7a8bea9ac014e4e1e24
+feat: add pressure seed presentation contract
+```
+
+同时引入：
+
+```text
+Reality Pressure Seed 已完成认领。Gravity 尚未启动。
+```
+
+以及对：
+
+```text
+Gravity 尚未启动
+```
+
+的精确源码断言。
+
+后续提交：
+
+```text
+bba8b5f757b57cbc302fafd8498afdea7cd4aa1c
+feat: refine reality pressure disturbance
+```
+
+有意将用户文案升级为：
+
+```text
+你已经看见这股力量，先停在这里。
+```
+
+但没有同步校准该精确源码断言。
+
+这证明当前失败来源是：
+
+```text
+COPY EVOLUTION
+↓
+CHECK NOT CALIBRATED
+```
+
+而不是：
+
+```text
+GRAVITY AUTHORITY LEAK
+```
+
+## A.5 邻接门禁证据
+
+当前基线：
+
+```text
+check-reality-production-pressure-seed-consumer:
+PASS
+
+check-xinmai-reality-to-gravity-atomic-cutover:
+PASS
+```
+
+说明：
+
+- Pressure Seed Presentation 仍由既有 Reality 消费链承接；
+- Reality → Gravity 仍通过原子切换链完成；
+- 本精确文案缺失不影响 Runtime 因果真实性。
+
+另有：
+
+```text
+check-reality-pressure-v2-atomic-host-cutover:
+FAIL
+missing=explicitGravityContinuationCallbackOnly: true
+```
+
+该失败属于独立的 Host Cutover 门禁漂移：
+
+- 不由目标精确文案断言产生；
+- 不改变本 MAP 裁决；
+- 不在本刀修复；
+- 按施工纪律进入独立黄灯分流。
+
+## A.6 复验裁决
+
+```text
+Pressure Presentation / Gravity Stage Semantic Gate:
+CLOSED / REVALIDATED
+
+“Gravity 尚未启动”：
+STALE EXACT-COPY ASSERTION
+
+Runtime Defect：
+NO
+
+Gravity Authority Conflict：
+NO
+
+Pressure Presentation 提前执行 Gravity：
+NO
+
+Gravity Readiness 与 Gravity Active 混同：
+NO
+
+Runtime 修改：
+0
+
+Gate 修改：
+0
+
+Phase 3：
+LOCKED
+```
+
+## A.7 刀后交通灯
+
+### GREEN｜下一张快速小刀
+
+```text
+XINMAI-PRESSURE-PRESENTATION-GRAVITY-STAGE-SEMANTIC-GATE-CORRECTION-P0
+```
+
+刀型：
+
+```text
+Refinement / Gate Correction
+```
+
+决策：
+
+```text
+NOW — STRICT GREEN SCOPE
+```
+
+唯一目标：
+
+> 移除已经失真的精确用户文案断言，改为验证 Pressure Presentation 未执行 Gravity、用户身体靠近仍是显式动作、Gravity Stage 仍未启动的结构事实。
+
+只允许修改：
+
+```text
+scripts/check-reality-pressure-seed-presentation-contract.mjs
+```
+
+建议断言：
+
+- `interactionEnabled && session.gravityReadiness === "READY"`；
+- `data-inner-view-guidance="APPROACH_LIFE_BODY"`；
+- `data-direct-gravity-action="WITHHELD"`；
+- `data-reality-analysis-stage="NOT_STARTED"`；
+- Host 的 `data-gravity-stage="NOT_STARTED"`；
+- handoff 的 `userExplicitRequest: true`；
+- handoff 的 `bodyApproachConfirmed: true`；
+- 继续保留禁止 Gravity 服务、导航和存储消费的负向断言。
+
+禁止：
+
+- 冻结新的用户文案；
+- 修改 Runtime；
+- 修改 Pressure Seed、Gravity 或 Intent；
+- 顺带修复其他门禁；
+- 解锁 Phase 3。
+
+### YELLOW｜独立记录，不阻断本刀
+
+```text
+XINMAI-REALITY-PRESSURE-V2-ATOMIC-HOST-CUTOVER-GATE-MAP-P0
+```
+
+用于独立裁决：
+
+```text
+explicitGravityContinuationCallbackOnly: true
+```
+
+缺失究竟是陈旧源码门禁，还是 Host 继续动作契约发生了结构漂移。
+
+不得并入上述绿色修正刀。
