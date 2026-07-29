@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "dev:xinmai-explicit-leave-acceptance": "vite --mode xinmai-acceptance",
+    "dev:xinmai-gravity-entry-acceptance": "vite --mode xinmai-acceptance",
+    "check:xinmai-gravity-entry-production-browser-acceptance-harness": "node scripts/check-xinmai-gravity-entry-production-browser-acceptance-harness.mjs",
     "check:layers": "node scripts/check-layer-isolation.mjs",
     "check:expression": "node scripts/check-expression-layer-v1.mjs",
     "check:mother-card-determinism": "node scripts/check-mother-code-card-determinism.mjs",
@@ -411,6 +413,7 @@
     "build": "tsc -b && vite build",
     "build:xinmai-explicit-leave-acceptance": "vite build --mode xinmai-acceptance --outDir dist-acceptance",
     "accept:xinmai-explicit-leave-navigation": "node scripts/run-xinmai-reality-explicit-leave-browser-acceptance.mjs",
+    "accept:xinmai-gravity-entry": "node scripts/run-xinmai-gravity-entry-production-browser-acceptance.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

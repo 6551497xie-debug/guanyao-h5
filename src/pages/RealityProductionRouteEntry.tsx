@@ -39,6 +39,7 @@ import {
 } from "../services/realityExplicitLeaveTerminationTransaction";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { executeRealityToGravityCutover } from "../services/realityToGravityCutoverTransaction";
+import { observeRealityToGravityCutoverResult } from "../services/gravityEntryAcceptanceRuntimePort";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { resolveLifeUniverseCrystalSourceSlot } from "../renderers/lifeUniverseStarField";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
@@ -878,6 +879,7 @@ export function RealityProductionRouteEntry({
     request: GravityEntryTransferRequest,
   ) => {
     const cutover = executeRealityToGravityCutover(request);
+    observeRealityToGravityCutoverResult(cutover);
     if (cutover.status === "COMMITTED") {
       navigate(GUANYAO_ROUTES.dynamics, {
         state: Object.freeze({

@@ -9,6 +9,12 @@ import { GravityProductionSurfaceHost } from "../components/GravityProductionSur
 import { resolveGravityProductionRuntimeInput } from "../services/gravityProductionRuntimeInputAdapter";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
 import {
+  observeGravityActiveCommit,
+  observeGravityHostAcceptanceOutcome,
+  observeGravityRouteAdmissionResult,
+  observeGravityRouteGuard,
+} from "../services/gravityEntryAcceptanceRuntimePort";
+import {
   commitGravityEntryActive,
   establishGravityRouteAdmission,
   failGravityEntryAcceptance,
@@ -75,6 +81,7 @@ export function GravityProductionRouteEntry() {
 
   useEffect(() => {
     if (identityRecovery.status !== "READY") {
+      observeGravityRouteGuard("IDENTITY_MISMATCH");
       setAssembly(
         Object.freeze({
           status: "BLOCKED" as const,
@@ -91,6 +98,7 @@ export function GravityProductionRouteEntry() {
       routeTicket,
       identityReferences: identityRecovery.identityReferences,
     });
+    observeGravityRouteAdmissionResult(routeAdmission);
     if (transactionEpochRef.current !== epoch) return;
     if (routeAdmission.status !== "READY") {
       setAssembly(
@@ -149,6 +157,7 @@ export function GravityProductionRouteEntry() {
 
   const handleAcceptanceOutcome = useCallback(
     (outcome: GravityHostAcceptanceOutcome) => {
+      observeGravityHostAcceptanceOutcome(outcome);
       if (outcome.status === "GRAVITY_HOST_UNAVAILABLE") {
         const failed = failGravityEntryAcceptance({
           admissionReferenceId: outcome.admissionReferenceId,
@@ -171,6 +180,7 @@ export function GravityProductionRouteEntry() {
         return;
       }
       const active = commitGravityEntryActive(outcome);
+      observeGravityActiveCommit(active);
       if (active?.state !== "ACTIVE_IN_GRAVITY") {
         setAssembly(
           Object.freeze({

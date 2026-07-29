@@ -29,6 +29,12 @@ export default defineConfig(({ mode }) => {
                 `${process.cwd()}/src/acceptance/` +
                 "xinmaiRealityExplicitLeaveNavigationDeliveryFaultPort.ts",
             },
+            {
+              find: /^.*services\/gravityEntryAcceptanceRuntimePort$/,
+              replacement:
+                `${process.cwd()}/src/acceptance/` +
+                "xinmaiGravityEntryAcceptanceFaultPort.ts",
+            },
           ],
         }
       : undefined,

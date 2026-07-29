@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "../App";
 import { XinmaiExplicitLeaveAcceptanceEvidencePanel } from "./XinmaiExplicitLeaveAcceptanceEvidencePanel";
+import { XinmaiGravityEntryAcceptanceEvidencePanel } from "./XinmaiGravityEntryAcceptanceEvidencePanel";
 import "../styles/global.css";
 import "../styles/guanyao-visual-system.css";
 import "../styles/xinmai-visual-life-system.css";
@@ -18,6 +19,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <BrowserRouter>
       <App />
       <XinmaiExplicitLeaveAcceptanceEvidencePanel />
+      <XinmaiGravityEntryAcceptanceEvidencePanel />
     </BrowserRouter>
   </React.StrictMode>,
 );

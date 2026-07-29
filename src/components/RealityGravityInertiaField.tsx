@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { LIFE_UNIVERSE_CORE_IDENTITY } from "../renderers/lifeUniverseStarField";
+import { projectGravityObservationSurfaceOutcomes } from "../services/gravityEntryAcceptanceRuntimePort";
 import type {
   GravityObservationSurfaceOutcome,
   GravitySurfaceAdmissionAttempt,
@@ -56,21 +57,23 @@ export function RealityGravityInertiaField({
         new URLSearchParams(window.location.search).get(
           "__xinmaiReducedMotion",
         ) === "1");
-    onGravityObservationSurfaceOutcome?.(
-      Object.freeze({
-        ...gravitySurfaceAdmissionAttempt,
-        status: "GRAVITY_OBSERVATION_SURFACE_PRESENTED" as const,
-        sourceReferenceId:
-          gravitySurfaceAdmissionAttempt.identityReferences
-            .sourceReferenceId,
-        surfaceMode: reducedMotion
-          ? "STATIC_FIRST_GRAVITY_OBSERVATION" as const
-          : "MOTION_FIRST_GRAVITY_OBSERVATION" as const,
-        currentRealityTraceVisible: true as const,
-        firstObservationAffordanceAvailable: true as const,
-        presentedAt: new Date().toISOString(),
-      }),
-    );
+    const typedOutcome = Object.freeze({
+      ...gravitySurfaceAdmissionAttempt,
+      status: "GRAVITY_OBSERVATION_SURFACE_PRESENTED" as const,
+      sourceReferenceId:
+        gravitySurfaceAdmissionAttempt.identityReferences
+          .sourceReferenceId,
+      surfaceMode: reducedMotion
+        ? "STATIC_FIRST_GRAVITY_OBSERVATION" as const
+        : "MOTION_FIRST_GRAVITY_OBSERVATION" as const,
+      currentRealityTraceVisible: true as const,
+      firstObservationAffordanceAvailable: true as const,
+      presentedAt: new Date().toISOString(),
+    });
+    for (const projectedOutcome of
+      projectGravityObservationSurfaceOutcomes(typedOutcome)) {
+      onGravityObservationSurfaceOutcome?.(projectedOutcome);
+    }
   }, [
     gravitySurfaceAdmissionAttempt,
     onGravityObservationSurfaceOutcome,

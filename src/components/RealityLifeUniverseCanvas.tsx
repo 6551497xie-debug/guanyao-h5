@@ -3,6 +3,7 @@ import { createGenesisWebGLRendererCore } from "../renderers/genesisWebGLRendere
 import { resolveLifeUniverseCrystalImprintGeometry } from "../renderers/lifeUniverseStarField";
 import { adaptRealLifeVisualSource } from "../services/realLifeVisualSourceAdapter";
 import { readRealUserGenesisVisualSourceContext } from "../services/realUserGenesisVisualSourceContext";
+import { projectGravityLifeSurfaceOutcomes } from "../services/gravityEntryAcceptanceRuntimePort";
 import "../styles/reality-life-entry-continuity.css";
 import "../styles/reality-inner-view-entry.css";
 import "../styles/xinmai-reality-seed-body-response.css";
@@ -225,13 +226,17 @@ export function RealityLifeUniverseCanvas({
       }
       lastDeliveredGravityLifeSurfaceOutcomeKeyRef.current =
         outcomeKey;
-      onGravityLifeSurfaceOutcomeRef.current?.(
-        Object.freeze({
-          ...gravitySurfaceAdmissionAttempt,
-          sourceReferenceId: visualContinuity.sourceReferenceId,
-          ...outcome,
-        }) as GravityLifeSurfaceOutcome,
-      );
+      const typedOutcome = Object.freeze({
+        ...gravitySurfaceAdmissionAttempt,
+        sourceReferenceId: visualContinuity.sourceReferenceId,
+        ...outcome,
+      }) as GravityLifeSurfaceOutcome;
+      for (const projectedOutcome of
+        projectGravityLifeSurfaceOutcomes(typedOutcome)) {
+        onGravityLifeSurfaceOutcomeRef.current?.(
+          projectedOutcome,
+        );
+      }
     },
     [
       gravitySurfaceAdmissionAttempt,
