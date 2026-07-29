@@ -6,6 +6,8 @@ for (const expected of [
   '"CHANGED_RESPONSE"',
   '"LIVED_RESPONSE_NOT_ATTEMPTED"',
   '"LIVED_RESPONSE_UNABLE_TO_CONTINUE"',
+  "FORMATION_ALREADY_CONFIRMED",
+  "executeXinmaiLivedGrowthTransaction",
 ]) {
   if (!source.includes(expected)) throw new Error(`missing ${expected}`);
 }

@@ -1,19 +1,23 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { XinmaiLivedResponseReturnSurface } from "../components/XinmaiLivedResponseReturnSurface";
 import { resolveChangeExperienceRuntimeRoute } from "../services/changeExperienceRuntimeRoutingService";
 import { resolveChangeExperienceRuntimeSmokeRevisionAction } from "../services/fixtures/changeExperienceRuntimeSmokeFixtures";
 import { resolveCurrentHexagramFormation } from "../services/guanyaoCurrentHexagramFormationAdapter";
 import { resolveDynamicsMigrationImpact } from "../services/guanyaoDynamicsMigrationImpactAdapter";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
+import { setPersonalityRingLiteAcceptanceWriteFailure } from "../services/guanyaoPersonalityRingLitePersistenceAdapter";
 import { formCrystalFromEligibility } from "../services/xinmaiCrystalFormationConsumer";
 import {
   bindChoiceActionIntentionToRealityEncounter,
   commitChoiceActionIntention,
-  readOutstandingChoiceActionIntentions,
+  readOpenXinmaiLivedGrowthReturnItems,
+  type XinmaiLivedGrowthReturnItem,
 } from "../services/xinmaiChoiceActionIntentionController";
-import { readXinmaiLivedGrowthRecoveryCandidate } from "../services/xinmaiLivedGrowthRecoveryPersistenceAdapter";
-import type { ChoiceActionIntention } from "../types/xinmaiChoiceActionIntention";
+import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
+import { readXinmaiLivedGrowthCanonicalState } from "../services/xinmaiLivedGrowthTransactionalStore";
+import { simulateXinmaiLivedGrowthLegacyWriterForAcceptance } from "../services/xinmaiLivedGrowthAcceptancePersistenceAdapter";
 import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityEncounterIntent";
+import type { XinmaiLivedGrowthEnvelope } from "../types/xinmaiLivedGrowthRecovery";
 
 const READY_INPUT = Object.freeze({
   status: "READY" as const,
@@ -46,8 +50,39 @@ const readScenario = () =>
   new URLSearchParams(window.location.search).get("scenario")?.trim() ||
   "primary";
 
+type AcceptancePersistenceFault =
+  | "NONE"
+  | "OPEN_FAILURE"
+  | "OPEN_BLOCKED"
+  | "TRANSACTION_ABORT"
+  | "CONNECTION_CLOSED"
+  | "QUOTA"
+  | "PROJECTION"
+  | "LEGACY_WRITER"
+  | "LEGACY_IMPORT"
+  | "LEGACY_IMPORT_CONFLICT";
+
+const readPersistenceFault = (): AcceptancePersistenceFault => {
+  const fault = new URLSearchParams(window.location.search)
+    .get("fault")
+    ?.trim()
+    .toUpperCase();
+  return fault === "OPEN_FAILURE" ||
+    fault === "OPEN_BLOCKED" ||
+    fault === "TRANSACTION_ABORT" ||
+    fault === "CONNECTION_CLOSED" ||
+    fault === "QUOTA" ||
+    fault === "PROJECTION" ||
+    fault === "LEGACY_WRITER" ||
+    fault === "LEGACY_IMPORT" ||
+    fault === "LEGACY_IMPORT_CONFLICT"
+    ? fault
+    : "NONE";
+};
+
 export function XinmaiLivedGrowthAcceptancePage() {
   const scenario = useMemo(readScenario, []);
+  const persistenceFault = useMemo(readPersistenceFault, []);
   const reducedMotion = useMemo(
     () =>
       new URLSearchParams(window.location.search).get("motion") === "reduce",
@@ -62,35 +97,169 @@ export function XinmaiLivedGrowthAcceptancePage() {
       }),
     [scenario],
   );
-  const [intention, setIntention] =
-    useState<ChoiceActionIntention | null>(() =>
-      readOutstandingChoiceActionIntentions(identityReferences)[0] ?? null,
-    );
+  const [returnItems, setReturnItems] = useState<
+    readonly XinmaiLivedGrowthReturnItem[]
+  >(() => Object.freeze([]));
+  const [canonicalEnvelope, setCanonicalEnvelope] =
+    useState<XinmaiLivedGrowthEnvelope | null>(null);
   const [revision, setRevision] = useState(0);
   const [feedback, setFeedback] = useState<string | null>(null);
+  useEffect(() => {
+    if (
+      persistenceFault === "NONE" ||
+      persistenceFault === "LEGACY_WRITER"
+    ) {
+      return;
+    }
+    if (persistenceFault === "LEGACY_IMPORT") {
+      simulateXinmaiLivedGrowthLegacyWriterForAcceptance();
+      return;
+    }
+    if (persistenceFault === "LEGACY_IMPORT_CONFLICT") {
+      simulateXinmaiLivedGrowthLegacyWriterForAcceptance();
+      queueMicrotask(() =>
+        simulateXinmaiLivedGrowthLegacyWriterForAcceptance(
+          "CONFLICT",
+        ),
+      );
+      return;
+    }
+    if (persistenceFault === "PROJECTION") {
+      setPersonalityRingLiteAcceptanceWriteFailure(true);
+      return () =>
+        setPersonalityRingLiteAcceptanceWriteFailure(false);
+    }
+    const factory = window.indexedDB;
+    const originalOpen = factory.open;
+    const originalTransaction = IDBDatabase.prototype.transaction;
+    const originalPut = IDBObjectStore.prototype.put;
+    if (persistenceFault === "OPEN_FAILURE") {
+      factory.open = (() => {
+        throw new DOMException(
+          "Acceptance open failure",
+          "InvalidStateError",
+        );
+      }) as typeof factory.open;
+    } else if (persistenceFault === "OPEN_BLOCKED") {
+      factory.open = (() => {
+        const request: Partial<IDBOpenDBRequest> = {};
+        queueMicrotask(() => {
+          const callback = request.onblocked;
+          if (callback) {
+            callback.call(
+              request as IDBOpenDBRequest,
+              new Event("blocked") as IDBVersionChangeEvent,
+            );
+          }
+        });
+        return request as IDBOpenDBRequest;
+      }) as typeof factory.open;
+    } else if (persistenceFault === "CONNECTION_CLOSED") {
+      IDBDatabase.prototype.transaction = (() => {
+        throw new DOMException(
+          "Acceptance connection closed",
+          "InvalidStateError",
+        );
+      }) as typeof IDBDatabase.prototype.transaction;
+    } else if (persistenceFault === "TRANSACTION_ABORT") {
+      IDBDatabase.prototype.transaction = function (
+        ...args: Parameters<IDBDatabase["transaction"]>
+      ) {
+        const transaction = originalTransaction.apply(this, args);
+        if (args[1] === "readwrite") {
+          queueMicrotask(() => {
+            try {
+              transaction.abort();
+            } catch {
+              // The transaction may already have completed.
+            }
+          });
+        }
+        return transaction;
+      };
+    } else if (persistenceFault === "QUOTA") {
+      IDBObjectStore.prototype.put = (() => {
+        throw new DOMException(
+          "Acceptance quota failure",
+          "QuotaExceededError",
+        );
+      }) as typeof IDBObjectStore.prototype.put;
+    }
+    return () => {
+      factory.open = originalOpen;
+      IDBDatabase.prototype.transaction = originalTransaction;
+      IDBObjectStore.prototype.put = originalPut;
+    };
+  }, [persistenceFault]);
+  const refreshAuthority = useCallback(() => {
+    void Promise.all([
+      readOpenXinmaiLivedGrowthReturnItems(identityReferences),
+      readXinmaiLivedGrowthCanonicalState(),
+    ]).then(([items, canonical]) => {
+      setReturnItems(items);
+      setCanonicalEnvelope(
+        canonical.status === "FOUND" ? canonical.envelope : null,
+      );
+      setRevision((current) => current + 1);
+    });
+  }, [identityReferences]);
 
-  const recovery = readXinmaiLivedGrowthRecoveryCandidate();
+  useEffect(() => {
+    refreshAuthority();
+  }, [refreshAuthority]);
+
+  useEffect(
+    () =>
+      subscribeToXinmaiLivedGrowthRecoveryRevision(() => {
+        refreshAuthority();
+      }),
+    [refreshAuthority],
+  );
+
   const ring = readPersonalityRingLite();
   const matchingReceipts =
-    recovery.status === "FOUND"
-      ? recovery.envelope.formationReceipts.filter(
+    canonicalEnvelope
+      ? canonicalEnvelope.formationReceipts.filter(
           (receipt) =>
             receipt.identityReferences.sourceReferenceId ===
             identityReferences.sourceReferenceId,
         )
       : [];
+  const matchingFacts =
+    canonicalEnvelope
+      ? canonicalEnvelope.livedResponseFacts.filter(
+          (fact) =>
+            fact.identityReferences.sourceReferenceId ===
+            identityReferences.sourceReferenceId,
+        )
+      : [];
+  const matchingEligibilities =
+    canonicalEnvelope
+      ? canonicalEnvelope.crystalEligibilities.filter(
+          (eligibility) =>
+            eligibility.identityReferences.sourceReferenceId ===
+            identityReferences.sourceReferenceId,
+        )
+      : [];
   const formalEligibility =
-    recovery.status === "FOUND"
-      ? recovery.envelope.crystalEligibilities.find(
+    canonicalEnvelope
+      ? canonicalEnvelope.crystalEligibilities.find(
           (eligibility) =>
             eligibility.identityReferences.sourceReferenceId ===
               identityReferences.sourceReferenceId &&
             (eligibility.state === "ELIGIBLE" ||
-              eligibility.state === "FORMATION_PENDING"),
+              eligibility.state === "FORMATION_PENDING" ||
+              (eligibility.state === "CONSUMED" &&
+                matchingReceipts.some(
+                  (receipt) =>
+                    receipt.crystalEligibilityReferenceId ===
+                      eligibility.crystalEligibilityReferenceId &&
+                    receipt.projection !== "PROJECTED",
+                ))),
         ) ?? null
       : null;
 
-  const prepare = () => {
+  const prepare = async () => {
     const formation = resolveCurrentHexagramFormation(READY_INPUT);
     const action =
       resolveChangeExperienceRuntimeSmokeRevisionAction("action-five");
@@ -106,7 +275,7 @@ export function XinmaiLivedGrowthAcceptancePage() {
       setFeedback("验收事实尚未准备完成。");
       return;
     }
-    const committed = commitChoiceActionIntention({
+    const committed = await commitChoiceActionIntention({
       identityReferences,
       sourceEncounterCycleId: `acceptance-source-encounter:${scenario}`,
       gravityCycleId: `acceptance-gravity:${scenario}`,
@@ -122,23 +291,29 @@ export function XinmaiLivedGrowthAcceptancePage() {
         assetCompletionState: "READY_TO_CRYSTALLIZE" as const,
       }),
     });
-    if (committed.status !== "COMMITTED") {
+    if (
+      committed.status !== "COMMITTED" &&
+      committed.status !== "ALREADY_COMMITTED"
+    ) {
       setFeedback("行动意愿没有被正式保存。");
       return;
     }
-    const bound = bindChoiceActionIntentionToRealityEncounter({
+    const bound = await bindChoiceActionIntentionToRealityEncounter({
       choiceActionIntentionReferenceId:
         committed.intention.choiceActionIntentionReferenceId,
+      expectedIntentionRevision: committed.intention.revision,
       targetEncounterCycleId: `acceptance-target-encounter:${scenario}`,
       identityReferences,
     });
-    if (!bound) {
+    if (
+      bound.status !== "BOUND" &&
+      bound.status !== "ALREADY_BOUND"
+    ) {
       setFeedback("本轮 Reality 来源没有完成绑定。");
       return;
     }
     setFeedback(null);
-    setIntention(bound);
-    setRevision((current) => current + 1);
+    refreshAuthority();
   };
 
   return (
@@ -146,6 +321,7 @@ export function XinmaiLivedGrowthAcceptancePage() {
       data-testid="xinmai-lived-growth-browser-acceptance"
       data-development-only="true"
       data-scenario={scenario}
+      data-persistence-fault={persistenceFault}
       data-motion-presentation={reducedMotion ? "STATIC" : "MOTION_ALLOWED"}
       data-revision={revision}
       style={{
@@ -167,10 +343,26 @@ export function XinmaiLivedGrowthAcceptancePage() {
       </button>
       <button
         type="button"
-        onClick={() => setRevision((current) => current + 1)}
+        onClick={refreshAuthority}
       >
         刷新权威状态
       </button>
+      {persistenceFault === "LEGACY_WRITER" ? (
+        <button
+          type="button"
+          onClick={() => {
+            const written =
+              simulateXinmaiLivedGrowthLegacyWriterForAcceptance();
+            setFeedback(
+              written
+                ? "已模拟旧 V1 写入。"
+                : "旧 V1 写入模拟不可用。",
+            );
+          }}
+        >
+          模拟旧 V1 写入
+        </button>
+      ) : null}
       {formalEligibility ? (
         <button
           type="button"
@@ -187,31 +379,37 @@ export function XinmaiLivedGrowthAcceptancePage() {
                 ? `SAFE_WITHHELD：${result.reason}`
                 : `Receipt：${result.receipt.formationReferenceId}`,
             );
-            setRevision((current) => current + 1);
+            refreshAuthority();
           }}
         >
           并发消费正式资格
         </button>
       ) : null}
-      {intention ? (
+      {returnItems.length > 0 ? (
         <XinmaiLivedResponseReturnSurface
           identityReferences={identityReferences}
-          intentions={Object.freeze([intention])}
+          returnItems={returnItems}
           reducedMotion={reducedMotion}
-          onResolved={() => {
-            setIntention(null);
-            setRevision((current) => current + 1);
-          }}
+          onResolved={refreshAuthority}
+          onAuthorityRevision={refreshAuthority}
         />
       ) : null}
       {feedback ? <p role="alert">{feedback}</p> : null}
       <section aria-label="权威状态">
+        <p data-testid="fact-count">Fact：{matchingFacts.length}</p>
+        <p data-testid="eligibility-count">
+          Eligibility：{matchingEligibilities.length}
+        </p>
         <p data-testid="receipt-count">
           Receipt：{matchingReceipts.length}
         </p>
         <p data-testid="ring-count">Archive：{ring.entries.length}</p>
+        <p data-testid="projection-state">
+          Projection：
+          {matchingReceipts[0]?.projection ?? "NONE"}
+        </p>
         <p data-testid="recovery-state">
-          Recovery：{recovery.status}
+          Recovery：{canonicalEnvelope ? "FOUND" : "SAFE_WITHHELD"}
         </p>
       </section>
     </main>

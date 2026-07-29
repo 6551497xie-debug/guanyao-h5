@@ -4,32 +4,78 @@ import {
   type CommitChoiceActionIntentionInput,
 } from "../types/xinmaiChoiceActionIntention";
 import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityEncounterIntent";
+import type {
+  CrystalEligibility,
+  CrystalFormationReceipt,
+} from "../types/xinmaiCrystalEligibility";
+import type { LivedResponseFact } from "../types/xinmaiLivedResponse";
 import {
-  readXinmaiLivedGrowthRecoveryCandidate,
-  transactXinmaiLivedGrowthRecovery,
-} from "./xinmaiLivedGrowthRecoveryPersistenceAdapter";
+  commitXinmaiLivedGrowthTransaction,
+  preserveXinmaiLivedGrowthTransaction,
+  rejectXinmaiLivedGrowthTransaction,
+} from "../types/xinmaiLivedGrowthTransaction";
+import { xinmaiGrowthIdentityMatches } from "./xinmaiLivedGrowthIdentity";
+import {
+  executeXinmaiLivedGrowthTransaction,
+} from "./xinmaiLivedGrowthTransactionAuthority";
+import { readXinmaiLivedGrowthCanonicalState } from "./xinmaiLivedGrowthTransactionalStore";
 import {
   createEphemeralXinmaiGrowthReference,
   createStableXinmaiGrowthReference,
 } from "./xinmaiLivedGrowthReference";
 
-export const xinmaiGrowthIdentityMatches = (
-  left: RealityEncounterIdentityReferences,
-  right: RealityEncounterIdentityReferences,
-): boolean =>
-  left.sourceReferenceId === right.sourceReferenceId &&
-  left.starBeastIdentityReferenceId === right.starBeastIdentityReferenceId &&
-  left.mansionCoordinateReferenceId === right.mansionCoordinateReferenceId;
+type ChoiceMutationFailureReason =
+  | "INVALID_INPUT"
+  | "INTENTION_NOT_FOUND"
+  | "IDENTITY_MISMATCH"
+  | "ENCOUNTER_MISMATCH"
+  | "STALE_INTENTION_REVISION"
+  | "FORMATION_ALREADY_CONFIRMED"
+  | "PERSISTENCE_UNAVAILABLE";
 
-export function commitChoiceActionIntention(
-  input: CommitChoiceActionIntentionInput,
-):
-  | Readonly<{ status: "COMMITTED"; intention: ChoiceActionIntention }>
+export type CommitChoiceActionIntentionResult =
   | Readonly<{
-      status: "REJECTED";
+      status: "COMMITTED" | "ALREADY_COMMITTED";
+      intention: ChoiceActionIntention;
+    }>
+  | Readonly<{
+      status: "REJECTED" | "SAFE_WITHHELD";
       intention: null;
-      reason: "INVALID_INPUT" | "PERSISTENCE_UNAVAILABLE";
-    }> {
+      reason: ChoiceMutationFailureReason | string;
+    }>;
+
+export type BindChoiceActionIntentionResult =
+  | Readonly<{
+      status: "BOUND" | "ALREADY_BOUND";
+      intention: ChoiceActionIntention;
+    }>
+  | Readonly<{
+      status: "REJECTED" | "SAFE_WITHHELD";
+      intention: null;
+      reason: ChoiceMutationFailureReason | string;
+    }>;
+
+export type CloseChoiceActionIntentionResult =
+  | Readonly<{
+      status: "CLOSED" | "ALREADY_CLOSED";
+      intention: ChoiceActionIntention;
+    }>
+  | Readonly<{
+      status: "REJECTED" | "SAFE_WITHHELD";
+      intention: null;
+      reason: ChoiceMutationFailureReason | string;
+    }>;
+
+export type XinmaiLivedGrowthReturnItem = Readonly<{
+  intention: ChoiceActionIntention;
+  currentFact: LivedResponseFact | null;
+  currentEligibility: CrystalEligibility | null;
+  formationReceipt: CrystalFormationReceipt | null;
+}>;
+
+export async function commitChoiceActionIntention(
+  input: CommitChoiceActionIntentionInput,
+): Promise<CommitChoiceActionIntentionResult> {
   if (
     Object.values(input.identityReferences).some((value) => !value.trim()) ||
     !input.sourceEncounterCycleId.trim() ||
@@ -45,7 +91,6 @@ export function commitChoiceActionIntention(
       reason: "INVALID_INPUT" as const,
     });
   }
-  const now = new Date().toISOString();
   const choiceActionIntentionReferenceId = createStableXinmaiGrowthReference(
     "choice-intention",
     input.identityReferences.sourceReferenceId,
@@ -53,95 +98,205 @@ export function commitChoiceActionIntention(
     input.gravityCycleId,
     input.gravityObservationReferenceId,
   );
-  const intention: ChoiceActionIntention = Object.freeze({
-    schemaVersion: XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION,
-    source: "xinmai_choice_action_intention_controller" as const,
-    choiceActionIntentionReferenceId,
-    identityReferences: Object.freeze({ ...input.identityReferences }),
-    sourceEncounterCycleId: input.sourceEncounterCycleId,
-    targetEncounterCycleId: null,
-    gravityCycleId: input.gravityCycleId,
-    gravityObservationReferenceId: input.gravityObservationReferenceId,
-    state: "COMMITTED" as const,
-    revision: 1,
-    actionSummary: input.actionSummary.trim(),
-    formationSourceSnapshot: input.formationSourceSnapshot,
-    committedAt: now,
-    updatedAt: now,
-    provenance: Object.freeze({
-      userExplicitCommit: true as const,
-      sourceAuthority: "GRAVITY_TYPED_OBSERVATION" as const,
-      noLivedResponseAuthority: true as const,
-      noCrystalEligibilityAuthority: true as const,
-    }),
-  });
-  const result = transactXinmaiLivedGrowthRecovery((current) => ({
-    ...current,
-    choiceActionIntentions: current.choiceActionIntentions.some(
-      (candidate) =>
-        candidate.choiceActionIntentionReferenceId ===
+  const result = await executeXinmaiLivedGrowthTransaction(
+    Object.freeze({
+      commandReferenceId: createStableXinmaiGrowthReference(
+        "growth-command:commit-choice",
         choiceActionIntentionReferenceId,
-    )
-      ? current.choiceActionIntentions
-      : Object.freeze([...current.choiceActionIntentions, intention]),
-  }));
-  const confirmed =
-    result.status === "CONFIRMED"
-      ? result.envelope.choiceActionIntentions.find(
-          (candidate) =>
-            candidate.choiceActionIntentionReferenceId ===
-            choiceActionIntentionReferenceId,
-        )
-      : null;
-  return confirmed
-    ? Object.freeze({ status: "COMMITTED" as const, intention: confirmed })
-    : Object.freeze({
-        status: "REJECTED" as const,
-        intention: null,
-        reason: "PERSISTENCE_UNAVAILABLE" as const,
-      });
-}
-
-export function bindChoiceActionIntentionToRealityEncounter(input: Readonly<{
-  choiceActionIntentionReferenceId: string;
-  targetEncounterCycleId: string;
-  identityReferences: RealityEncounterIdentityReferences;
-}>): ChoiceActionIntention | null {
-  let bound: ChoiceActionIntention | null = null;
-  const result = transactXinmaiLivedGrowthRecovery((current) => ({
-    ...current,
-    choiceActionIntentions: Object.freeze(
-      current.choiceActionIntentions.map((intention) => {
+      ),
+      commandType: "COMMIT_CHOICE_INTENTION" as const,
+      identityReferences: input.identityReferences,
+      issuedAt: new Date().toISOString(),
+    }),
+    (current) => {
+      const existing = current.choiceActionIntentions.find(
+        (candidate) =>
+          candidate.choiceActionIntentionReferenceId ===
+          choiceActionIntentionReferenceId,
+      );
+      if (existing) {
         if (
-          intention.choiceActionIntentionReferenceId !==
-            input.choiceActionIntentionReferenceId ||
           !xinmaiGrowthIdentityMatches(
-            intention.identityReferences,
+            existing.identityReferences,
             input.identityReferences,
           ) ||
-          (intention.targetEncounterCycleId !== null &&
-            intention.targetEncounterCycleId !== input.targetEncounterCycleId)
+          existing.sourceEncounterCycleId !== input.sourceEncounterCycleId ||
+          existing.gravityCycleId !== input.gravityCycleId ||
+          existing.gravityObservationReferenceId !==
+            input.gravityObservationReferenceId
         ) {
-          return intention;
+          return rejectXinmaiLivedGrowthTransaction("IDENTITY_MISMATCH");
         }
-        bound = Object.freeze({
-          ...intention,
-          targetEncounterCycleId: input.targetEncounterCycleId,
-          state: "AWAITING_RETURN" as const,
-          revision: intention.revision + 1,
-          updatedAt: new Date().toISOString(),
-        });
-        return bound;
-      }),
-    ),
-  }));
-  return result.status === "CONFIRMED" ? bound : null;
+        return preserveXinmaiLivedGrowthTransaction(existing);
+      }
+      const now = new Date().toISOString();
+      const intention: ChoiceActionIntention = Object.freeze({
+        schemaVersion: XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION,
+        source: "xinmai_choice_action_intention_controller" as const,
+        choiceActionIntentionReferenceId,
+        identityReferences: Object.freeze({ ...input.identityReferences }),
+        sourceEncounterCycleId: input.sourceEncounterCycleId,
+        targetEncounterCycleId: null,
+        gravityCycleId: input.gravityCycleId,
+        gravityObservationReferenceId:
+          input.gravityObservationReferenceId,
+        state: "COMMITTED" as const,
+        revision: 1,
+        actionSummary: input.actionSummary.trim(),
+        formationSourceSnapshot: input.formationSourceSnapshot,
+        committedAt: now,
+        updatedAt: now,
+        provenance: Object.freeze({
+          userExplicitCommit: true as const,
+          sourceAuthority: "GRAVITY_TYPED_OBSERVATION" as const,
+          noLivedResponseAuthority: true as const,
+          noCrystalEligibilityAuthority: true as const,
+        }),
+      });
+      return commitXinmaiLivedGrowthTransaction(
+        {
+          ...current,
+          choiceActionIntentions: Object.freeze([
+            ...current.choiceActionIntentions,
+            intention,
+          ]),
+        },
+        intention,
+      );
+    },
+  );
+  if (
+    result.status === "COMMITTED" ||
+    result.status === "ALREADY_COMMITTED"
+  ) {
+    return Object.freeze({
+      status:
+        result.status === "COMMITTED"
+          ? "COMMITTED" as const
+          : "ALREADY_COMMITTED" as const,
+      intention: result.value,
+    });
+  }
+  return Object.freeze({
+    status: result.status,
+    intention: null,
+    reason:
+      result.status === "REJECTED"
+        ? result.reason
+        : result.reason ?? "PERSISTENCE_UNAVAILABLE",
+  });
 }
 
-export function readOutstandingChoiceActionIntentions(
+export async function bindChoiceActionIntentionToRealityEncounter(
+  input: Readonly<{
+    choiceActionIntentionReferenceId: string;
+    expectedIntentionRevision: number;
+    targetEncounterCycleId: string;
+    identityReferences: RealityEncounterIdentityReferences;
+  }>,
+): Promise<BindChoiceActionIntentionResult> {
+  const result = await executeXinmaiLivedGrowthTransaction(
+    Object.freeze({
+      commandReferenceId: createStableXinmaiGrowthReference(
+        "growth-command:bind-choice",
+        input.choiceActionIntentionReferenceId,
+        input.targetEncounterCycleId,
+        String(input.expectedIntentionRevision),
+      ),
+      commandType: "BIND_CHOICE_TO_ENCOUNTER" as const,
+      identityReferences: input.identityReferences,
+      issuedAt: new Date().toISOString(),
+    }),
+    (current) => {
+      const intention = current.choiceActionIntentions.find(
+        (candidate) =>
+          candidate.choiceActionIntentionReferenceId ===
+          input.choiceActionIntentionReferenceId,
+      );
+      if (!intention) {
+        return rejectXinmaiLivedGrowthTransaction("INTENTION_NOT_FOUND");
+      }
+      if (
+        !xinmaiGrowthIdentityMatches(
+          intention.identityReferences,
+          input.identityReferences,
+        )
+      ) {
+        return rejectXinmaiLivedGrowthTransaction("IDENTITY_MISMATCH");
+      }
+      if (
+        intention.targetEncounterCycleId === input.targetEncounterCycleId &&
+        intention.state === "AWAITING_RETURN"
+      ) {
+        return preserveXinmaiLivedGrowthTransaction(intention);
+      }
+      if (intention.revision !== input.expectedIntentionRevision) {
+        return rejectXinmaiLivedGrowthTransaction(
+          "STALE_INTENTION_REVISION",
+        );
+      }
+      if (
+        intention.targetEncounterCycleId !== null ||
+        intention.state !== "COMMITTED"
+      ) {
+        return rejectXinmaiLivedGrowthTransaction("ENCOUNTER_MISMATCH");
+      }
+      const bound: ChoiceActionIntention = Object.freeze({
+        ...intention,
+        targetEncounterCycleId: input.targetEncounterCycleId,
+        state: "AWAITING_RETURN" as const,
+        revision: intention.revision + 1,
+        updatedAt: new Date().toISOString(),
+      });
+      return commitXinmaiLivedGrowthTransaction(
+        {
+          ...current,
+          choiceActionIntentions: Object.freeze(
+            current.choiceActionIntentions.map((candidate) =>
+              candidate.choiceActionIntentionReferenceId ===
+              input.choiceActionIntentionReferenceId
+                ? bound
+                : candidate,
+            ),
+          ),
+        },
+        bound,
+      );
+    },
+  );
+  if (
+    result.status === "COMMITTED" ||
+    result.status === "ALREADY_COMMITTED"
+  ) {
+    return Object.freeze({
+      status:
+        result.status === "COMMITTED"
+          ? "BOUND" as const
+          : "ALREADY_BOUND" as const,
+      intention: result.value,
+    });
+  }
+  return Object.freeze({
+    status: result.status,
+    intention: null,
+    reason: result.reason,
+  });
+}
+
+export async function readOutstandingChoiceActionIntentions(
   identityReferences: RealityEncounterIdentityReferences,
-): readonly ChoiceActionIntention[] {
-  const result = readXinmaiLivedGrowthRecoveryCandidate();
+): Promise<readonly ChoiceActionIntention[]> {
+  return Object.freeze(
+    (await readOpenXinmaiLivedGrowthReturnItems(identityReferences))
+      .filter((item) => item.currentFact === null)
+      .map((item) => item.intention),
+  );
+}
+
+export async function readOpenXinmaiLivedGrowthReturnItems(
+  identityReferences: RealityEncounterIdentityReferences,
+): Promise<readonly XinmaiLivedGrowthReturnItem[]> {
+  const result = await readXinmaiLivedGrowthCanonicalState();
   if (result.status !== "FOUND") return Object.freeze([]);
   return Object.freeze(
     result.envelope.choiceActionIntentions.filter(
@@ -151,46 +306,141 @@ export function readOutstandingChoiceActionIntentions(
           identityReferences,
         ) &&
         (intention.state === "COMMITTED" ||
-          intention.state === "AWAITING_RETURN") &&
-        !result.envelope.livedResponseFacts.some(
-          (fact) =>
-            fact.choiceActionIntentionReferenceId ===
-              intention.choiceActionIntentionReferenceId &&
-            fact.state === "CONFIRMED",
-        ),
-    ),
+          intention.state === "AWAITING_RETURN" ||
+          intention.state === "REPORTED"),
+    ).map((intention) => {
+      const currentFact =
+        result.envelope.livedResponseFacts
+          .filter(
+            (fact) =>
+              fact.choiceActionIntentionReferenceId ===
+                intention.choiceActionIntentionReferenceId &&
+              fact.state === "CONFIRMED",
+          )
+          .sort(
+            (left, right) =>
+              right.userConfirmationRevision -
+              left.userConfirmationRevision,
+          )[0] ?? null;
+      const currentEligibility =
+        currentFact === null
+          ? null
+          : result.envelope.crystalEligibilities.find(
+              (eligibility) =>
+                eligibility.livedResponseReferenceId ===
+                  currentFact.livedResponseReferenceId &&
+                eligibility.livedResponseRevision ===
+                  currentFact.userConfirmationRevision &&
+                eligibility.state !== "INVALIDATED",
+            ) ?? null;
+      const formationReceipt =
+        result.envelope.formationReceipts.find(
+          (receipt) =>
+            receipt.choiceActionIntentionReferenceId ===
+            intention.choiceActionIntentionReferenceId,
+        ) ?? null;
+      return Object.freeze({
+        intention,
+        currentFact,
+        currentEligibility,
+        formationReceipt,
+      });
+    }).filter((item) => item.formationReceipt === null),
   );
 }
 
-export function closeChoiceActionIntentionWithoutRecord(
-  referenceId: string,
-  identityReferences: RealityEncounterIdentityReferences,
-): boolean {
-  let closed = false;
-  const result = transactXinmaiLivedGrowthRecovery((current) => ({
-    ...current,
-    choiceActionIntentions: Object.freeze(
-      current.choiceActionIntentions.map((intention) => {
-        if (
-          intention.choiceActionIntentionReferenceId !== referenceId ||
-          !xinmaiGrowthIdentityMatches(
-            intention.identityReferences,
-            identityReferences,
-          )
-        ) {
-          return intention;
-        }
-        closed = true;
-        return Object.freeze({
-          ...intention,
-          state: "CLOSED" as const,
-          revision: intention.revision + 1,
-          updatedAt: new Date().toISOString(),
-        });
-      }),
-    ),
-  }));
-  return closed && result.status === "CONFIRMED";
+export async function closeChoiceActionIntentionWithoutRecord(
+  input: Readonly<{
+    choiceActionIntentionReferenceId: string;
+    expectedIntentionRevision: number;
+    identityReferences: RealityEncounterIdentityReferences;
+  }>,
+): Promise<CloseChoiceActionIntentionResult> {
+  const result = await executeXinmaiLivedGrowthTransaction(
+    Object.freeze({
+      commandReferenceId: createStableXinmaiGrowthReference(
+        "growth-command:close-choice",
+        input.choiceActionIntentionReferenceId,
+        String(input.expectedIntentionRevision),
+      ),
+      commandType: "CLOSE_CHOICE_WITHOUT_RECORD" as const,
+      identityReferences: input.identityReferences,
+      issuedAt: new Date().toISOString(),
+    }),
+    (current) => {
+      const intention = current.choiceActionIntentions.find(
+        (candidate) =>
+          candidate.choiceActionIntentionReferenceId ===
+          input.choiceActionIntentionReferenceId,
+      );
+      if (!intention) {
+        return rejectXinmaiLivedGrowthTransaction("INTENTION_NOT_FOUND");
+      }
+      if (
+        !xinmaiGrowthIdentityMatches(
+          intention.identityReferences,
+          input.identityReferences,
+        )
+      ) {
+        return rejectXinmaiLivedGrowthTransaction("IDENTITY_MISMATCH");
+      }
+      const receiptCount = current.formationReceipts.filter(
+        (receipt) =>
+          receipt.choiceActionIntentionReferenceId ===
+          input.choiceActionIntentionReferenceId,
+      ).length;
+      if (receiptCount > 0) {
+        return rejectXinmaiLivedGrowthTransaction(
+          "FORMATION_ALREADY_CONFIRMED",
+        );
+      }
+      if (intention.state === "CLOSED") {
+        return preserveXinmaiLivedGrowthTransaction(intention);
+      }
+      if (intention.revision !== input.expectedIntentionRevision) {
+        return rejectXinmaiLivedGrowthTransaction(
+          "STALE_INTENTION_REVISION",
+        );
+      }
+      const closed: ChoiceActionIntention = Object.freeze({
+        ...intention,
+        state: "CLOSED" as const,
+        revision: intention.revision + 1,
+        updatedAt: new Date().toISOString(),
+      });
+      return commitXinmaiLivedGrowthTransaction(
+        {
+          ...current,
+          choiceActionIntentions: Object.freeze(
+            current.choiceActionIntentions.map((candidate) =>
+              candidate.choiceActionIntentionReferenceId ===
+              input.choiceActionIntentionReferenceId
+                ? closed
+                : candidate,
+            ),
+          ),
+        },
+        closed,
+      );
+    },
+  );
+  if (
+    result.status === "COMMITTED" ||
+    result.status === "ALREADY_COMMITTED"
+  ) {
+    return Object.freeze({
+      status:
+        result.status === "COMMITTED"
+          ? "CLOSED" as const
+          : "ALREADY_CLOSED" as const,
+      intention: result.value,
+    });
+  }
+  return Object.freeze({
+    status: result.status,
+    intention: null,
+    reason: result.reason,
+  });
 }
 
 export const createLivedResponseCandidateReference = (

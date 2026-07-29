@@ -7,6 +7,8 @@ for (const expected of [
   "PERSISTENCE_UNAVAILABLE",
   "revokeLivedResponseFact",
   "FORMATION_ALREADY_CONFIRMED",
+  "STALE_INTENTION_REVISION",
+  "executeXinmaiLivedGrowthTransaction",
   '"REVOKED"',
 ]) {
   if (!(source + surface).includes(expected)) throw new Error(`missing ${expected}`);

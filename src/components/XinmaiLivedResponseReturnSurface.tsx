@@ -1,5 +1,4 @@
-import { useMemo, useState } from "react";
-import type { ChoiceActionIntention } from "../types/xinmaiChoiceActionIntention";
+import { useEffect, useMemo, useState } from "react";
 import type { CrystalEligibility } from "../types/xinmaiCrystalEligibility";
 import type {
   LivedResponseCandidate,
@@ -9,6 +8,7 @@ import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityE
 import {
   closeChoiceActionIntentionWithoutRecord,
   createLivedResponseCandidateReference,
+  type XinmaiLivedGrowthReturnItem,
 } from "../services/xinmaiChoiceActionIntentionController";
 import {
   confirmLivedResponseFact,
@@ -33,86 +33,138 @@ const OUTCOMES: readonly Readonly<{
 
 export function XinmaiLivedResponseReturnSurface({
   identityReferences,
-  intentions,
+  returnItems,
   onResolved,
+  onAuthorityRevision,
   reducedMotion = false,
 }: Readonly<{
   identityReferences: RealityEncounterIdentityReferences;
-  intentions: readonly ChoiceActionIntention[];
+  returnItems: readonly XinmaiLivedGrowthReturnItem[];
   onResolved: () => void;
+  onAuthorityRevision?: () => void;
   reducedMotion?: boolean;
 }>) {
   const [selectedReferenceId, setSelectedReferenceId] = useState(
-    intentions[0]?.choiceActionIntentionReferenceId ?? null,
+    returnItems[0]?.intention.choiceActionIntentionReferenceId ?? null,
   );
   const selected = useMemo(
     () =>
-      intentions.find(
-        (intention) =>
-          intention.choiceActionIntentionReferenceId === selectedReferenceId,
-      ) ?? intentions[0] ?? null,
-    [intentions, selectedReferenceId],
+      returnItems.find(
+        (item) =>
+          item.intention.choiceActionIntentionReferenceId ===
+          selectedReferenceId,
+      ) ?? returnItems[0] ?? null,
+    [returnItems, selectedReferenceId],
   );
   const [outcome, setOutcome] =
     useState<LivedResponseOutcome>("ATTEMPTED");
   const [summary, setSummary] = useState("");
   const [eligibility, setEligibility] =
-    useState<CrystalEligibility | null>(null);
+    useState<CrystalEligibility | null>(
+      selected?.currentEligibility ?? null,
+    );
+  const [confirmedFact, setConfirmedFact] = useState(
+    selected?.currentFact ?? null,
+  );
   const [formation, setFormation] =
     useState<XinmaiCrystalFormationResult | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (!selected) return null;
+  useEffect(() => {
+    setConfirmedFact(selected?.currentFact ?? null);
+    setEligibility(selected?.currentEligibility ?? null);
+    setFormation(null);
+    setFeedback(null);
+  }, [
+    selected?.currentEligibility,
+    selected?.currentFact,
+    selected?.intention.choiceActionIntentionReferenceId,
+  ]);
 
-  const confirmFact = () => {
+  if (!selected) return null;
+  const selectedIntention = selected.intention;
+
+  const confirmFact = async () => {
     if (busy || eligibility !== null) return;
     setBusy(true);
     setFeedback(null);
-    const candidate: LivedResponseCandidate = Object.freeze({
-      source: "xinmai_lived_response_return_surface" as const,
-      candidateReferenceId: createLivedResponseCandidateReference(
-        selected.choiceActionIntentionReferenceId,
-      ),
-      choiceActionIntentionReferenceId:
-        selected.choiceActionIntentionReferenceId,
-      candidateRevision: 1,
-      responseOutcome: outcome,
-      factualSummary: summary.trim(),
-      state: "AWAITING_USER_CONFIRMATION" as const,
-      createdAt: new Date().toISOString(),
-    });
-    const fact = confirmLivedResponseFact({
-      candidate,
-      intentionReferenceId: selected.choiceActionIntentionReferenceId,
-    });
-    if (fact.status !== "CONFIRMED") {
-      setFeedback("这次事实还没有被保存，请稍后再试。");
-      setBusy(false);
-      return;
+    let factValue = confirmedFact;
+    if (factValue === null) {
+      const candidate: LivedResponseCandidate = Object.freeze({
+        source: "xinmai_lived_response_return_surface" as const,
+        candidateReferenceId: createLivedResponseCandidateReference(
+          selectedIntention.choiceActionIntentionReferenceId,
+        ),
+        choiceActionIntentionReferenceId:
+          selectedIntention.choiceActionIntentionReferenceId,
+        candidateRevision: 1,
+        responseOutcome: outcome,
+        factualSummary: summary.trim(),
+        state: "AWAITING_USER_CONFIRMATION" as const,
+        createdAt: new Date().toISOString(),
+      });
+      const fact = await confirmLivedResponseFact({
+        candidate,
+        intentionReferenceId:
+          selectedIntention.choiceActionIntentionReferenceId,
+        expectedIntentionRevision: selectedIntention.revision,
+        expectedCurrentFactRevision: 0,
+        identityReferences,
+      });
+      if (
+        fact.status !== "CONFIRMED" &&
+        fact.status !== "ALREADY_CONFIRMED"
+      ) {
+        setFeedback(
+          fact.reason === "FORMATION_ALREADY_CONFIRMED"
+            ? "这次生命印记已经在另一处形成，没有重复留下第二颗。"
+            : fact.reason === "STALE_INTENTION_REVISION" ||
+                fact.reason === "STALE_FACT_REVISION"
+              ? "这次记录已在另一处更新，请回到最新状态。"
+              : "这次事实还没有被保存，请稍后再试。",
+        );
+        setBusy(false);
+        return;
+      }
+      factValue = fact.fact;
+      setConfirmedFact(fact.fact);
     }
-    const resolved = resolveCrystalEligibilityForFact(fact.fact);
-    if (resolved.status === "REJECTED") {
+    const resolved = await resolveCrystalEligibilityForFact(factValue);
+    if (
+      resolved.status === "REJECTED" ||
+      resolved.status === "SAFE_WITHHELD" ||
+      resolved.eligibility === null
+    ) {
       setFeedback("这次回应已经被记住，生命沉积暂时没有完成。");
       setBusy(false);
       return;
     }
     setEligibility(resolved.eligibility);
     setFeedback(
-      resolved.status === "ELIGIBLE"
+      resolved.eligibility.state === "ELIGIBLE"
         ? "这次真实回应，已经具备留下生命印记的条件。"
         : "这一次不形成印记，也没有关系。你的选择仍然被尊重。",
     );
+    onAuthorityRevision?.();
     setBusy(false);
   };
 
-  const rejectRecord = () => {
-    const closed = closeChoiceActionIntentionWithoutRecord(
-      selected.choiceActionIntentionReferenceId,
+  const rejectRecord = async () => {
+    if (busy) return;
+    setBusy(true);
+    const closed = await closeChoiceActionIntentionWithoutRecord({
+      choiceActionIntentionReferenceId:
+        selectedIntention.choiceActionIntentionReferenceId,
+      expectedIntentionRevision: selectedIntention.revision,
       identityReferences,
-    );
-    if (closed) onResolved();
-    else setFeedback("这次记录尚未关闭，你仍可以继续同行。");
+    });
+    if (closed.status === "CLOSED" || closed.status === "ALREADY_CLOSED") {
+      onResolved();
+    } else {
+      setFeedback("这次记录尚未关闭，你仍可以继续同行。");
+    }
+    setBusy(false);
   };
 
   const formCrystal = async () => {
@@ -130,18 +182,24 @@ export function XinmaiLivedResponseReturnSurface({
         ? "这段经历已经被记录，生命沉积暂时没有完成。"
         : "这次真实回应，已经成为生命里的一道纹理。",
     );
+    onAuthorityRevision?.();
     setBusy(false);
   };
 
-  const revokeFact = () => {
-    if (!eligibility || busy) return;
+  const revokeFact = async () => {
+    if (!confirmedFact || busy) return;
     setBusy(true);
-    const result = revokeLivedResponseFact({
-      livedResponseReferenceId: eligibility.livedResponseReferenceId,
-      expectedUserConfirmationRevision: eligibility.livedResponseRevision,
+    const result = await revokeLivedResponseFact({
+      livedResponseReferenceId:
+        confirmedFact.livedResponseReferenceId,
+      expectedUserConfirmationRevision:
+        confirmedFact.userConfirmationRevision,
       identityReferences,
     });
-    if (result.status === "REVOKED") {
+    if (
+      result.status === "REVOKED" ||
+      result.status === "ALREADY_REVOKED"
+    ) {
       setFeedback("这次记录已经撤回，没有形成生命印记。");
       onResolved();
     } else {
@@ -178,10 +236,10 @@ export function XinmaiLivedResponseReturnSurface({
       }}
     >
       <small>回到那次回应</small>
-      <strong>{selected.actionSummary}</strong>
-      {intentions.length > 1 ? (
+      <strong>{selectedIntention.actionSummary}</strong>
+      {returnItems.length > 1 ? (
         <div aria-label="选择要回看的现实回应">
-          {intentions.map((intention) => (
+          {returnItems.map(({ intention }) => (
             <button
               key={intention.choiceActionIntentionReferenceId}
               type="button"
@@ -196,7 +254,7 @@ export function XinmaiLivedResponseReturnSurface({
           ))}
         </div>
       ) : null}
-      {eligibility === null ? (
+      {eligibility === null && confirmedFact === null ? (
         <>
           <p>现实里，实际发生了什么？</p>
           <div style={{ display: "grid", gap: 7 }}>
@@ -228,7 +286,17 @@ export function XinmaiLivedResponseReturnSurface({
             </button>
           </div>
         </>
-      ) : eligibility.state === "ELIGIBLE" &&
+      ) : eligibility === null && confirmedFact !== null ? (
+        <div>
+          <p>这次事实已经确认，生命沉积正在等待继续。</p>
+          <button type="button" disabled={busy} onClick={revokeFact}>
+            删除这次记录
+          </button>
+          <button type="button" disabled={busy} onClick={confirmFact}>
+            继续恢复生命沉积
+          </button>
+        </div>
+      ) : eligibility?.state === "ELIGIBLE" &&
         formation?.status !== "FORMED" &&
         formation?.status !== "ALREADY_FORMED" ? (
         <div>

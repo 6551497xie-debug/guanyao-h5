@@ -6,6 +6,17 @@ export type PersonalityRingLitePersistenceWriteStatus =
   | "UNAVAILABLE"
   | "FAILED";
 
+let acceptanceWriteFailure = false;
+const isDevelopmentAcceptance = (): boolean =>
+  import.meta.env?.DEV === true;
+
+export const setPersonalityRingLiteAcceptanceWriteFailure = (
+  enabled: boolean,
+): void => {
+  if (!isDevelopmentAcceptance()) return;
+  acceptanceWriteFailure = enabled;
+};
+
 function canUseStorage(): boolean {
   try {
     return typeof window !== "undefined" && Boolean(window.localStorage);
@@ -29,6 +40,7 @@ export function writePersistedPersonalityRingLiteState(
   state: unknown,
 ): PersonalityRingLitePersistenceWriteStatus {
   if (!canUseStorage()) return "UNAVAILABLE";
+  if (isDevelopmentAcceptance() && acceptanceWriteFailure) return "FAILED";
 
   try {
     window.localStorage.setItem(

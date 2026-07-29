@@ -1,28 +1,21 @@
 import {
   XINMAI_CRYSTAL_FORMATION_RECEIPT_SCHEMA_VERSION,
-  type CrystalEligibility,
   type CrystalFormationReceipt,
 } from "../types/xinmaiCrystalEligibility";
 import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityEncounterIntent";
-import { resolveDynamicsCurrentCrystalEndState } from "./guanyaoDynamicsCrystalRuntimeAdapter";
-import { depositDynamicsCurrentCrystalToPersonalityRing } from "./guanyaoDynamicsPersonalityRingDepositAdapter";
 import {
-  readXinmaiLivedGrowthRecoveryCandidate,
-  transactXinmaiLivedGrowthRecovery,
-} from "./xinmaiLivedGrowthRecoveryPersistenceAdapter";
+  commitXinmaiLivedGrowthTransaction,
+  preserveXinmaiLivedGrowthTransaction,
+  rejectXinmaiLivedGrowthTransaction,
+} from "../types/xinmaiLivedGrowthTransaction";
+import { resolveDynamicsCurrentCrystalEndState } from "./guanyaoDynamicsCrystalRuntimeAdapter";
+import { reconcileCanonicalFormationReceiptsToPersonalityRing } from "./guanyaoDynamicsPersonalityRingDepositAdapter";
+import { xinmaiGrowthIdentityMatches } from "./xinmaiLivedGrowthIdentity";
 import { createStableXinmaiGrowthReference } from "./xinmaiLivedGrowthReference";
-import { xinmaiGrowthIdentityMatches } from "./xinmaiChoiceActionIntentionController";
+import { executeXinmaiLivedGrowthTransaction } from "./xinmaiLivedGrowthTransactionAuthority";
 
 export const XINMAI_CRYSTAL_FORMATION_AUTHORITY_MODE =
   "FORMAL_AUTHORITY" as const;
-
-type BrowserLockManager = Readonly<{
-  request: <T>(
-    name: string,
-    options: Readonly<{ mode: "exclusive" }>,
-    callback: () => Promise<T>,
-  ) => Promise<T>;
-}>;
 
 export type XinmaiCrystalFormationResult =
   | Readonly<{
@@ -34,13 +27,20 @@ export type XinmaiCrystalFormationResult =
       status: "SAFE_WITHHELD";
       receipt: null;
       reason:
-        | "FORMATION_LOCK_UNAVAILABLE"
+        | "TRANSACTION_STORAGE_UNAVAILABLE"
+        | "TRANSACTION_OPEN_BLOCKED"
+        | "TRANSACTION_ABORTED"
+        | "TRANSACTION_CONNECTION_CLOSED"
         | "ELIGIBILITY_NOT_CURRENT"
         | "PROVENANCE_MISMATCH"
         | "RECOVERY_UNAVAILABLE"
-        | "RESERVATION_UNCONFIRMED"
+        | "RECOVERY_CORRUPTED"
+        | "LEGACY_IMPORT_CONFLICT"
+        | "LEGACY_WRITER_DETECTED"
+        | "CANONICAL_UNIQUENESS_VIOLATION"
+        | "WRITE_UNCONFIRMED"
         | "CRYSTAL_ENGINE_UNAVAILABLE"
-        | "RECEIPT_UNCONFIRMED";
+        | "LEGACY_MULTIPLE_FORMATION_RECEIPTS";
     }>;
 
 const safeWithheld = (
@@ -51,260 +51,325 @@ const safeWithheld = (
 ): XinmaiCrystalFormationResult =>
   Object.freeze({ status: "SAFE_WITHHELD" as const, receipt: null, reason });
 
-const projectReceipt = (
+const projectReceipt = async (
   receipt: CrystalFormationReceipt,
-): CrystalFormationReceipt => {
-  const result = depositDynamicsCurrentCrystalToPersonalityRing({
-    formationReceipt: receipt,
-  });
+  canonicalReceipts: readonly CrystalFormationReceipt[],
+): Promise<CrystalFormationReceipt> => {
+  if (receipt.projection === "PROJECTED") return receipt;
+  const mirror =
+    reconcileCanonicalFormationReceiptsToPersonalityRing(
+      canonicalReceipts,
+    );
   const projection =
-    result.status === "DEPOSITED" || result.status === "DUPLICATE"
-      ? "PROJECTED"
-      : "RETRYABLE";
-  const updated: CrystalFormationReceipt = Object.freeze({
-    ...receipt,
-    projection,
-    projectionUpdatedAt: new Date().toISOString(),
-  });
-  const write = transactXinmaiLivedGrowthRecovery((current) => ({
-    ...current,
-    formationReceipts: Object.freeze(
-      current.formationReceipts.map((candidate) =>
-        candidate.formationReferenceId === receipt.formationReferenceId
-          ? updated
-          : candidate,
+    mirror.status === "RECONCILED" ? "PROJECTED" : "RETRYABLE";
+  const transaction = await executeXinmaiLivedGrowthTransaction(
+    Object.freeze({
+      commandReferenceId: createStableXinmaiGrowthReference(
+        "growth-command:project-crystal",
+        receipt.formationReferenceId,
       ),
-    ),
-  }));
-  return write.status === "CONFIRMED" ? updated : receipt;
-};
-
-async function formUnderLock(input: Readonly<{
-  crystalEligibilityReferenceId: string;
-  expectedEligibilityRevision: number;
-  identityReferences: RealityEncounterIdentityReferences;
-}>): Promise<XinmaiCrystalFormationResult> {
-  const recovered = readXinmaiLivedGrowthRecoveryCandidate();
-  if (recovered.status !== "FOUND") {
-    return safeWithheld("RECOVERY_UNAVAILABLE");
-  }
-  const previousReceipt = recovered.envelope.formationReceipts.find(
-    (receipt) =>
-      receipt.crystalEligibilityReferenceId ===
-      input.crystalEligibilityReferenceId,
-  );
-  if (previousReceipt) {
-    return Object.freeze({
-      status: "ALREADY_FORMED" as const,
-      receipt:
-        previousReceipt.projection === "PROJECTED"
-          ? previousReceipt
-          : projectReceipt(previousReceipt),
-      reason: null,
-    });
-  }
-  let eligibility = recovered.envelope.crystalEligibilities.find(
-    (candidate) =>
-      candidate.crystalEligibilityReferenceId ===
-      input.crystalEligibilityReferenceId,
-  );
-  if (
-    !eligibility ||
-    eligibility.eligibilityRevision !== input.expectedEligibilityRevision ||
-    (eligibility.state !== "ELIGIBLE" &&
-      eligibility.state !== "FORMATION_PENDING")
-  ) {
-    return safeWithheld("ELIGIBILITY_NOT_CURRENT");
-  }
-  const fact = recovered.envelope.livedResponseFacts.find(
-    (candidate) =>
-      candidate.livedResponseReferenceId ===
-        eligibility?.livedResponseReferenceId &&
-      candidate.userConfirmationRevision ===
-        eligibility?.livedResponseRevision &&
-      candidate.state === "CONFIRMED",
-  );
-  const intention = recovered.envelope.choiceActionIntentions.find(
-    (candidate) =>
-      candidate.choiceActionIntentionReferenceId ===
-      eligibility?.choiceActionIntentionReferenceId,
-  );
-  if (
-    !fact ||
-    !intention ||
-    !xinmaiGrowthIdentityMatches(
-      eligibility.identityReferences,
-      input.identityReferences,
-    ) ||
-    !xinmaiGrowthIdentityMatches(fact.identityReferences, input.identityReferences) ||
-    !xinmaiGrowthIdentityMatches(
-      intention.identityReferences,
-      input.identityReferences,
-    ) ||
-    fact.gravityObservationReferenceId !==
-      intention.gravityObservationReferenceId ||
-    fact.targetEncounterCycleId !== intention.targetEncounterCycleId
-  ) {
-    return safeWithheld("PROVENANCE_MISMATCH");
-  }
-  const formationKey = `${eligibility.crystalEligibilityReferenceId}:${eligibility.eligibilityRevision}`;
-  const formationReferenceId = createStableXinmaiGrowthReference(
-    "crystal-formation",
-    formationKey,
-  );
-  const crystalReferenceId = createStableXinmaiGrowthReference(
-    "crystal",
-    formationKey,
-  );
-  const reservationReferenceId = createStableXinmaiGrowthReference(
-    "crystal-reservation",
-    formationKey,
-  );
-  const reservedAt =
-    eligibility.reservation?.reservedAt ?? new Date().toISOString();
-  const fencingToken =
-    eligibility.reservation?.fencingToken ?? recovered.envelope.revision + 1;
-
-  if (eligibility.state === "ELIGIBLE") {
-    let reserved: CrystalEligibility | null = null;
-    const reservationWrite = transactXinmaiLivedGrowthRecovery((current) => ({
-      ...current,
-      crystalEligibilities: Object.freeze(
-        current.crystalEligibilities.map((candidate) => {
-          if (
-            candidate.crystalEligibilityReferenceId !==
-              eligibility?.crystalEligibilityReferenceId ||
-            candidate.eligibilityRevision !== eligibility.eligibilityRevision ||
-            candidate.state !== "ELIGIBLE"
-          ) return candidate;
-          reserved = Object.freeze({
-            ...candidate,
-            state: "FORMATION_PENDING" as const,
-            reservation: Object.freeze({
-              reservationReferenceId,
-              formationReferenceId,
-              crystalReferenceId,
-              fencingToken,
-              reservedAt,
-            }),
-            updatedAt: reservedAt,
-          });
-          return reserved;
-        }),
-      ),
-    }));
-    if (reservationWrite.status !== "CONFIRMED" || reserved === null) {
-      return safeWithheld("RESERVATION_UNCONFIRMED");
-    }
-    eligibility = reserved;
-  } else if (
-    eligibility.reservation?.reservationReferenceId !==
-      reservationReferenceId ||
-    eligibility.reservation.formationReferenceId !== formationReferenceId ||
-    eligibility.reservation.crystalReferenceId !== crystalReferenceId
-  ) {
-    return safeWithheld("PROVENANCE_MISMATCH");
-  }
-
-  const formedCrystal = resolveDynamicsCurrentCrystalEndState({
-    formationSourceSnapshot: intention.formationSourceSnapshot,
-    formationAuthorization: {
-      authority: "XINMAI_CRYSTAL_ELIGIBILITY",
-      status: "AUTHORIZED",
-      crystalEligibilityReferenceId:
-        eligibility.crystalEligibilityReferenceId,
-      eligibilityRevision: eligibility.eligibilityRevision,
-      livedResponseReferenceId: fact.livedResponseReferenceId,
-      formationReferenceId,
-      crystalReferenceId,
-      formedAt: reservedAt,
-    },
-  });
-  if (!formedCrystal) return safeWithheld("CRYSTAL_ENGINE_UNAVAILABLE");
-
-  const receipt: CrystalFormationReceipt = Object.freeze({
-    schemaVersion: XINMAI_CRYSTAL_FORMATION_RECEIPT_SCHEMA_VERSION,
-    source: "xinmai_crystal_formation_consumer" as const,
-    formationReferenceId,
-    crystalReferenceId,
-    crystalEligibilityReferenceId:
-      eligibility.crystalEligibilityReferenceId,
-    eligibilityRevision: eligibility.eligibilityRevision,
-    livedResponseReferenceId: fact.livedResponseReferenceId,
-    choiceActionIntentionReferenceId:
-      intention.choiceActionIntentionReferenceId,
-    identityReferences: eligibility.identityReferences,
-    formationKey,
-    fencingToken,
-    formedCrystal,
-    status: "FORMED" as const,
-    formedAt: reservedAt,
-    projection: "PENDING" as const,
-    projectionUpdatedAt: reservedAt,
-    provenance: Object.freeze({
-      factAuthority: "XINMAI_LIVED_RESPONSE_FACT" as const,
-      eligibilityAuthority: "XINMAI_CRYSTAL_ELIGIBILITY" as const,
-      deterministicFormation: true as const,
-      noBackfill: true as const,
+      commandType: "UPDATE_CRYSTAL_PROJECTION" as const,
+      identityReferences: receipt.identityReferences,
+      issuedAt: new Date().toISOString(),
     }),
-  });
-  let committed = false;
-  const receiptWrite = transactXinmaiLivedGrowthRecovery((current) => {
-    const eligibilities = current.crystalEligibilities.map((candidate) => {
+    (current) => {
+      const currentReceipt = current.formationReceipts.find(
+        (candidate) =>
+          candidate.formationReferenceId ===
+          receipt.formationReferenceId,
+      );
       if (
-        candidate.crystalEligibilityReferenceId !==
-          eligibility?.crystalEligibilityReferenceId ||
-        candidate.state !== "FORMATION_PENDING" ||
-        candidate.reservation?.reservationReferenceId !==
-          reservationReferenceId ||
-        candidate.reservation.fencingToken !== fencingToken
-      ) return candidate;
-      committed = true;
-      return Object.freeze({
-        ...candidate,
-        state: "CONSUMED" as const,
-        consumedByFormationReferenceId: formationReferenceId,
-        updatedAt: new Date().toISOString(),
+        !currentReceipt ||
+        !xinmaiGrowthIdentityMatches(
+          currentReceipt.identityReferences,
+          receipt.identityReferences,
+        )
+      ) {
+        return rejectXinmaiLivedGrowthTransaction(
+          "PROVENANCE_MISMATCH",
+        );
+      }
+      if (currentReceipt.projection === "PROJECTED") {
+        return preserveXinmaiLivedGrowthTransaction(currentReceipt);
+      }
+      const updated: CrystalFormationReceipt = Object.freeze({
+        ...currentReceipt,
+        projection,
+        projectionUpdatedAt: new Date().toISOString(),
       });
-    });
-    return {
-      ...current,
-      crystalEligibilities: Object.freeze(eligibilities),
-      formationReceipts: committed
-        ? Object.freeze([...current.formationReceipts, receipt])
-        : current.formationReceipts,
-    };
-  });
-  if (
-    receiptWrite.status !== "CONFIRMED" ||
-    !committed ||
-    !receiptWrite.envelope.formationReceipts.some(
-      (candidate) =>
-        candidate.formationReferenceId === formationReferenceId,
-    )
-  ) {
-    return safeWithheld("RECEIPT_UNCONFIRMED");
-  }
-  return Object.freeze({
-    status: "FORMED" as const,
-    receipt: projectReceipt(receipt),
-    reason: null,
-  });
-}
+      return commitXinmaiLivedGrowthTransaction(
+        {
+          ...current,
+          formationReceipts: Object.freeze(
+            current.formationReceipts.map((candidate) =>
+              candidate.formationReferenceId ===
+              receipt.formationReferenceId
+                ? updated
+                : candidate,
+            ),
+          ),
+        },
+        updated,
+      );
+    },
+  );
+  return transaction.status === "COMMITTED" ||
+    transaction.status === "ALREADY_COMMITTED"
+    ? transaction.value
+    : receipt;
+};
 
 export async function formCrystalFromEligibility(input: Readonly<{
   crystalEligibilityReferenceId: string;
   expectedEligibilityRevision: number;
   identityReferences: RealityEncounterIdentityReferences;
 }>): Promise<XinmaiCrystalFormationResult> {
-  const locks =
-    typeof navigator === "undefined"
-      ? undefined
-      : (navigator as unknown as { locks?: BrowserLockManager }).locks;
-  if (!locks) return safeWithheld("FORMATION_LOCK_UNAVAILABLE");
-  return locks.request(
-    `xinmai-crystal-formation:${input.crystalEligibilityReferenceId}:${input.expectedEligibilityRevision}`,
-    { mode: "exclusive" },
-    () => formUnderLock(input),
+  let crystalEngineUnavailable = false;
+  const transaction = await executeXinmaiLivedGrowthTransaction(
+    Object.freeze({
+      commandReferenceId: createStableXinmaiGrowthReference(
+        "growth-command:form-crystal",
+        input.crystalEligibilityReferenceId,
+        String(input.expectedEligibilityRevision),
+      ),
+      commandType: "FORM_CRYSTAL" as const,
+      identityReferences: input.identityReferences,
+      issuedAt: new Date().toISOString(),
+    }),
+    (current) => {
+      const eligibility = current.crystalEligibilities.find(
+        (candidate) =>
+          candidate.crystalEligibilityReferenceId ===
+          input.crystalEligibilityReferenceId,
+      );
+      if (!eligibility) {
+        return rejectXinmaiLivedGrowthTransaction(
+          "ELIGIBILITY_NOT_CURRENT",
+        );
+      }
+      if (
+        !xinmaiGrowthIdentityMatches(
+          eligibility.identityReferences,
+          input.identityReferences,
+        )
+      ) {
+        return rejectXinmaiLivedGrowthTransaction("PROVENANCE_MISMATCH");
+      }
+      const lineageReceipts = current.formationReceipts.filter(
+        (receipt) =>
+          receipt.choiceActionIntentionReferenceId ===
+          eligibility.choiceActionIntentionReferenceId,
+      );
+      if (lineageReceipts.length > 1) {
+        return rejectXinmaiLivedGrowthTransaction(
+          "LEGACY_MULTIPLE_FORMATION_RECEIPTS",
+        );
+      }
+      if (lineageReceipts.length === 1) {
+        const existing = lineageReceipts[0];
+        if (
+          !xinmaiGrowthIdentityMatches(
+            existing.identityReferences,
+            input.identityReferences,
+          )
+        ) {
+          return rejectXinmaiLivedGrowthTransaction(
+            "PROVENANCE_MISMATCH",
+          );
+        }
+        return preserveXinmaiLivedGrowthTransaction(existing);
+      }
+      if (
+        eligibility.eligibilityRevision !==
+          input.expectedEligibilityRevision ||
+        (eligibility.state !== "ELIGIBLE" &&
+          eligibility.state !== "FORMATION_PENDING")
+      ) {
+        return rejectXinmaiLivedGrowthTransaction(
+          "ELIGIBILITY_NOT_CURRENT",
+        );
+      }
+      const fact = current.livedResponseFacts.find(
+        (candidate) =>
+          candidate.livedResponseReferenceId ===
+            eligibility.livedResponseReferenceId &&
+          candidate.userConfirmationRevision ===
+            eligibility.livedResponseRevision &&
+          candidate.state === "CONFIRMED",
+      );
+      const intention = current.choiceActionIntentions.find(
+        (candidate) =>
+          candidate.choiceActionIntentionReferenceId ===
+          eligibility.choiceActionIntentionReferenceId,
+      );
+      if (
+        !fact ||
+        !intention ||
+        !xinmaiGrowthIdentityMatches(
+          fact.identityReferences,
+          input.identityReferences,
+        ) ||
+        !xinmaiGrowthIdentityMatches(
+          intention.identityReferences,
+          input.identityReferences,
+        ) ||
+        fact.gravityObservationReferenceId !==
+          intention.gravityObservationReferenceId ||
+        fact.targetEncounterCycleId !==
+          intention.targetEncounterCycleId ||
+        fact.choiceActionIntentionReferenceId !==
+          intention.choiceActionIntentionReferenceId
+      ) {
+        return rejectXinmaiLivedGrowthTransaction(
+          "PROVENANCE_MISMATCH",
+        );
+      }
+      const formationKey =
+        `${eligibility.crystalEligibilityReferenceId}:` +
+        eligibility.eligibilityRevision;
+      const formationReferenceId = createStableXinmaiGrowthReference(
+        "crystal-formation",
+        formationKey,
+      );
+      const crystalReferenceId = createStableXinmaiGrowthReference(
+        "crystal",
+        formationKey,
+      );
+      const reservationReferenceId =
+        createStableXinmaiGrowthReference(
+          "crystal-reservation",
+          formationKey,
+        );
+      const formedAt =
+        eligibility.reservation?.reservedAt ?? new Date().toISOString();
+      const fencingToken =
+        eligibility.reservation?.fencingToken ?? current.revision + 1;
+      if (
+        eligibility.state === "FORMATION_PENDING" &&
+        (eligibility.reservation?.reservationReferenceId !==
+          reservationReferenceId ||
+          eligibility.reservation.formationReferenceId !==
+            formationReferenceId ||
+          eligibility.reservation.crystalReferenceId !==
+            crystalReferenceId)
+      ) {
+        return rejectXinmaiLivedGrowthTransaction(
+          "PROVENANCE_MISMATCH",
+        );
+      }
+      const formedCrystal = resolveDynamicsCurrentCrystalEndState({
+        formationSourceSnapshot: intention.formationSourceSnapshot,
+        formationAuthorization: {
+          authority: "XINMAI_CRYSTAL_ELIGIBILITY",
+          status: "AUTHORIZED",
+          crystalEligibilityReferenceId:
+            eligibility.crystalEligibilityReferenceId,
+          eligibilityRevision: eligibility.eligibilityRevision,
+          livedResponseReferenceId: fact.livedResponseReferenceId,
+          formationReferenceId,
+          crystalReferenceId,
+          formedAt,
+        },
+      });
+      if (!formedCrystal) {
+        crystalEngineUnavailable = true;
+        return rejectXinmaiLivedGrowthTransaction(
+          "CRYSTAL_ENGINE_UNAVAILABLE",
+        );
+      }
+      const receipt: CrystalFormationReceipt = Object.freeze({
+        schemaVersion:
+          XINMAI_CRYSTAL_FORMATION_RECEIPT_SCHEMA_VERSION,
+        source: "xinmai_crystal_formation_consumer" as const,
+        formationReferenceId,
+        crystalReferenceId,
+        crystalEligibilityReferenceId:
+          eligibility.crystalEligibilityReferenceId,
+        eligibilityRevision: eligibility.eligibilityRevision,
+        livedResponseReferenceId: fact.livedResponseReferenceId,
+        choiceActionIntentionReferenceId:
+          intention.choiceActionIntentionReferenceId,
+        identityReferences: eligibility.identityReferences,
+        formationKey,
+        fencingToken,
+        formedCrystal,
+        status: "FORMED" as const,
+        formedAt,
+        projection: "PENDING" as const,
+        projectionUpdatedAt: formedAt,
+        provenance: Object.freeze({
+          factAuthority: "XINMAI_LIVED_RESPONSE_FACT" as const,
+          eligibilityAuthority:
+            "XINMAI_CRYSTAL_ELIGIBILITY" as const,
+          deterministicFormation: true as const,
+          noBackfill: true as const,
+        }),
+      });
+      return commitXinmaiLivedGrowthTransaction(
+        {
+          ...current,
+          crystalEligibilities: Object.freeze(
+            current.crystalEligibilities.map((candidate) =>
+              candidate.crystalEligibilityReferenceId ===
+              eligibility.crystalEligibilityReferenceId
+                ? Object.freeze({
+                    ...candidate,
+                    state: "CONSUMED" as const,
+                    reservation: Object.freeze({
+                      reservationReferenceId,
+                      formationReferenceId,
+                      crystalReferenceId,
+                      fencingToken,
+                      reservedAt: formedAt,
+                    }),
+                    consumedByFormationReferenceId:
+                      formationReferenceId,
+                    updatedAt: formedAt,
+                  })
+                : candidate,
+            ),
+          ),
+          formationReceipts: Object.freeze([
+            ...current.formationReceipts,
+            receipt,
+          ]),
+        },
+        receipt,
+      );
+    },
   );
+  if (
+    transaction.status === "COMMITTED" ||
+    transaction.status === "ALREADY_COMMITTED"
+  ) {
+    const projected = await projectReceipt(
+      transaction.value,
+      transaction.envelope.formationReceipts,
+    );
+    return Object.freeze({
+      status:
+        transaction.status === "COMMITTED"
+          ? "FORMED" as const
+          : "ALREADY_FORMED" as const,
+      receipt: projected,
+      reason: null,
+    });
+  }
+  if (
+    transaction.status === "REJECTED" &&
+    transaction.reason === "CRYSTAL_ENGINE_UNAVAILABLE" &&
+    crystalEngineUnavailable
+  ) {
+    return safeWithheld("CRYSTAL_ENGINE_UNAVAILABLE");
+  }
+  if (transaction.status === "REJECTED") {
+    return safeWithheld(
+      transaction.reason === "LEGACY_MULTIPLE_FORMATION_RECEIPTS"
+        ? "LEGACY_MULTIPLE_FORMATION_RECEIPTS"
+        : transaction.reason === "PROVENANCE_MISMATCH"
+          ? "PROVENANCE_MISMATCH"
+          : "ELIGIBILITY_NOT_CURRENT",
+    );
+  }
+  return safeWithheld(transaction.reason);
 }

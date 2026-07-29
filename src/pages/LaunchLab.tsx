@@ -86,7 +86,11 @@ import {
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { XinmaiLivedResponseReturnSurface } from "../components/XinmaiLivedResponseReturnSurface";
-import { readOutstandingChoiceActionIntentions } from "../services/xinmaiChoiceActionIntentionController";
+import {
+  readOpenXinmaiLivedGrowthReturnItems,
+  type XinmaiLivedGrowthReturnItem,
+} from "../services/xinmaiChoiceActionIntentionController";
+import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
 import { writePersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
@@ -1261,6 +1265,13 @@ export function LaunchLab({
   );
   const [returningGrowthSurfaceRevision, setReturningGrowthSurfaceRevision] =
     useState(0);
+  useEffect(
+    () =>
+      subscribeToXinmaiLivedGrowthRecoveryRevision(() => {
+        setReturningGrowthSurfaceRevision((revision) => revision + 1);
+      }),
+    [],
+  );
   const returningStatePreview = getReturningLifeStatePreviewOverride();
   const returningVisualReady =
     returningLifeContext !== null &&
@@ -1395,20 +1406,34 @@ export function LaunchLab({
       : recoverRealityRecognizedIdentity({
           visualContinuity: returningVisualContinuity,
         });
-  const returningOutstandingChoiceIntentions = useMemo(
-    () =>
-      returningRecognizedIdentity?.status === "READY"
-        ? readOutstandingChoiceActionIntentions(
-            returningRecognizedIdentity.identityReferences,
-          )
-        : Object.freeze([]),
-    [
-      returningRecognizedIdentity,
-      returningGrowthSurfaceRevision,
-    ],
+  const [
+    returningLivedGrowthReturnItems,
+    setReturningLivedGrowthReturnItems,
+  ] = useState<readonly XinmaiLivedGrowthReturnItem[]>(() =>
+    Object.freeze([]),
   );
+  useEffect(() => {
+    let cancelled = false;
+    if (returningRecognizedIdentity?.status !== "READY") {
+      setReturningLivedGrowthReturnItems(Object.freeze([]));
+      return () => {
+        cancelled = true;
+      };
+    }
+    void readOpenXinmaiLivedGrowthReturnItems(
+      returningRecognizedIdentity.identityReferences,
+    ).then((items) => {
+      if (!cancelled) setReturningLivedGrowthReturnItems(items);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    returningRecognizedIdentity,
+    returningGrowthSurfaceRevision,
+  ]);
   const returningLivedResponseActive =
-    returningOutstandingChoiceIntentions.length > 0;
+    returningLivedGrowthReturnItems.length > 0;
   const returningLifeWhisperEntryReady =
     returningVisualReady && !returningLivedResponseActive;
   const returningLifeWhisperRealityIntentReady =
@@ -6124,7 +6149,7 @@ export function LaunchLab({
                   identityReferences={
                     returningRecognizedIdentity.identityReferences
                   }
-                  intentions={returningOutstandingChoiceIntentions}
+                  returnItems={returningLivedGrowthReturnItems}
                   onResolved={() => {
                     setReturningLifeArchive(readPersonalityRingLite());
                     setReturningGrowthSurfaceRevision(

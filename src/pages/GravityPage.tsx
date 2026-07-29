@@ -2559,6 +2559,7 @@ function HexagramCodeDeliveryShell({
   ] = useState<ChoiceActionIntention | null>(null);
   const [choiceAuthorityFeedback, setChoiceAuthorityFeedback] =
     useState<string | null>(null);
+  const choiceMutationPendingRef = useRef(false);
   const [transformationMomentActive, setTransformationMomentActive] = useState(false);
   const [innerViewRelation, setInnerViewRelation] = useState<
     "AWAITING" | "CONFIRMED" | "SELF_NAMED"
@@ -2718,7 +2719,8 @@ function HexagramCodeDeliveryShell({
     dimensionTransitionLockRef.current = false;
   }, [activeDimensionIndex, executionSnapshot.node.current, executionSnapshot.runtime.enginePhase]);
 
-  function handleRevisionActionConfirm() {
+  async function handleRevisionActionConfirm() {
+    if (choiceMutationPendingRef.current) return;
     if (
       surfaceAttempt === undefined ||
       currentHexagramFormation === null ||
@@ -2732,39 +2734,50 @@ function HexagramCodeDeliveryShell({
       );
       return;
     }
-    const result = commitChoiceActionIntention({
-      identityReferences: surfaceAttempt.identityReferences,
-      sourceEncounterCycleId:
-        surfaceAttempt.sourceEncounterCycleId,
-      gravityCycleId: surfaceAttempt.gravityCycleId,
-      gravityObservationReferenceId:
-        surfaceAttempt.gravityObservationReferenceId,
-      actionSummary: singleModelRevisionAction.actionLine,
-      formationSourceSnapshot: Object.freeze({
-        formation: currentHexagramFormation,
-        migrationImpact: crystalMigrationImpact,
-        completedNodeCount: completedSixDimensionCount,
-        primaryDimension:
-          changeExperienceRoute?.dimension ??
-          sequentialCurrentSpaceId,
-        action: singleModelRevisionAction,
-        assetCompletionState:
-          "READY_TO_CRYSTALLIZE" as const,
-      }),
-    });
-    if (result.status !== "COMMITTED") {
-      setChoiceAuthorityFeedback(
-        "这次回应还没有被完整保存，请稍后再试。",
-      );
-      return;
+    choiceMutationPendingRef.current = true;
+    try {
+      const result = await commitChoiceActionIntention({
+        identityReferences: surfaceAttempt.identityReferences,
+        sourceEncounterCycleId:
+          surfaceAttempt.sourceEncounterCycleId,
+        gravityCycleId: surfaceAttempt.gravityCycleId,
+        gravityObservationReferenceId:
+          surfaceAttempt.gravityObservationReferenceId,
+        actionSummary: singleModelRevisionAction.actionLine,
+        formationSourceSnapshot: Object.freeze({
+          formation: currentHexagramFormation,
+          migrationImpact: crystalMigrationImpact,
+          completedNodeCount: completedSixDimensionCount,
+          primaryDimension:
+            changeExperienceRoute?.dimension ??
+            sequentialCurrentSpaceId,
+          action: singleModelRevisionAction,
+          assetCompletionState:
+            "READY_TO_CRYSTALLIZE" as const,
+        }),
+      });
+      if (
+        result.status !== "COMMITTED" &&
+        result.status !== "ALREADY_COMMITTED"
+      ) {
+        setChoiceAuthorityFeedback(
+          "这次回应还没有被完整保存，请稍后再试。",
+        );
+        return;
+      }
+      setChoiceAuthorityFeedback(null);
+      setCommittedChoiceActionIntention(result.intention);
+      setTransformationMomentActive(true);
+    } finally {
+      choiceMutationPendingRef.current = false;
     }
-    setChoiceAuthorityFeedback(null);
-    setCommittedChoiceActionIntention(result.intention);
-    setTransformationMomentActive(true);
   }
 
-  function handleChoiceContinueToReality() {
-    if (committedChoiceActionIntention === null) return;
+  async function handleChoiceContinueToReality() {
+    if (
+      committedChoiceActionIntention === null ||
+      choiceMutationPendingRef.current
+    ) return;
     const identityRecovery = recoverRealityRecognizedIdentity({
       visualContinuity: arrivalVisualContinuity,
     });
@@ -2777,37 +2790,47 @@ function HexagramCodeDeliveryShell({
         committedChoiceActionIntention.choiceActionIntentionReferenceId,
     });
     if (intentResult.status !== "READY") return;
-    const bound = bindChoiceActionIntentionToRealityEncounter({
-      choiceActionIntentionReferenceId:
-        committedChoiceActionIntention.choiceActionIntentionReferenceId,
-      targetEncounterCycleId:
-        intentResult.intent.encounterCycleId,
-      identityReferences: identityRecovery.identityReferences,
-    });
-    if (bound === null) {
-      setChoiceAuthorityFeedback(
-        "新的现实还没有接住这次回应，请稍后再试。",
-      );
-      return;
-    }
-    navigate(GUANYAO_ROUTES.reality, {
-      state: {
-        intentReferenceId: intentResult.intent.intentReferenceId,
-        ...(arrivalVisualContinuity
-          ? { visualContinuity: arrivalVisualContinuity }
-          : {}),
-        choiceContinuation:
-          "CHOICE_ACTION_INTENTION_CONTINUATION",
+    choiceMutationPendingRef.current = true;
+    try {
+      const bound = await bindChoiceActionIntentionToRealityEncounter({
         choiceActionIntentionReferenceId:
-          bound.choiceActionIntentionReferenceId,
-        ...(choiceResponseTraceIdentityKey
-          ? {
-              choiceLifeTraceMemoryKey: choiceResponseTraceIdentityKey,
-              choiceLifeTraceSourceSlot: choiceResponseTraceSourceSlot,
-            }
-          : {}),
-      },
-    });
+          committedChoiceActionIntention.choiceActionIntentionReferenceId,
+        expectedIntentionRevision:
+          committedChoiceActionIntention.revision,
+        targetEncounterCycleId:
+          intentResult.intent.encounterCycleId,
+        identityReferences: identityRecovery.identityReferences,
+      });
+      if (
+        bound.status !== "BOUND" &&
+        bound.status !== "ALREADY_BOUND"
+      ) {
+        setChoiceAuthorityFeedback(
+          "新的现实还没有接住这次回应，请稍后再试。",
+        );
+        return;
+      }
+      navigate(GUANYAO_ROUTES.reality, {
+        state: {
+          intentReferenceId: intentResult.intent.intentReferenceId,
+          ...(arrivalVisualContinuity
+            ? { visualContinuity: arrivalVisualContinuity }
+            : {}),
+          choiceContinuation:
+            "CHOICE_ACTION_INTENTION_CONTINUATION",
+          choiceActionIntentionReferenceId:
+            bound.intention.choiceActionIntentionReferenceId,
+          ...(choiceResponseTraceIdentityKey
+            ? {
+                choiceLifeTraceMemoryKey: choiceResponseTraceIdentityKey,
+                choiceLifeTraceSourceSlot: choiceResponseTraceSourceSlot,
+              }
+            : {}),
+        },
+      });
+    } finally {
+      choiceMutationPendingRef.current = false;
+    }
   }
 
   function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {

@@ -13,7 +13,7 @@ for (const marker of [
   "commitChoiceActionIntention",
   "bindChoiceActionIntentionToRealityEncounter",
   "<XinmaiLivedResponseReturnSurface",
-  "readXinmaiLivedGrowthRecoveryCandidate",
+  "readXinmaiLivedGrowthCanonicalState",
   "并发消费正式资格",
   'data-motion-presentation={reducedMotion ? "STATIC" : "MOTION_ALLOWED"}',
   "reducedMotion={reducedMotion}",

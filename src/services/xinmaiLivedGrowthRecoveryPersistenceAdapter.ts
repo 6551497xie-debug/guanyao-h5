@@ -7,17 +7,15 @@ export const XINMAI_LIVED_GROWTH_RECOVERY_STORAGE_KEY =
   "xinmai:lived-growth-authority:v1";
 
 export type XinmaiLivedGrowthRecoveryReadResult =
-  | Readonly<{ status: "FOUND"; envelope: XinmaiLivedGrowthEnvelope }>
+  | Readonly<{
+      status: "FOUND";
+      envelope: XinmaiLivedGrowthEnvelope;
+      raw: string;
+    }>
   | Readonly<{
       status: "NOT_FOUND" | "UNAVAILABLE" | "CORRUPTED";
       envelope: null;
-    }>;
-
-export type XinmaiLivedGrowthRecoveryWriteResult =
-  | Readonly<{ status: "CONFIRMED"; envelope: XinmaiLivedGrowthEnvelope }>
-  | Readonly<{
-      status: "UNAVAILABLE" | "CONFLICT" | "UNCONFIRMED";
-      envelope: null;
+      raw: string | null;
     }>;
 
 const canUseStorage = (): boolean => {
@@ -42,7 +40,9 @@ export const createEmptyXinmaiLivedGrowthEnvelope =
       noBackfill: true as const,
     });
 
-const isEnvelope = (value: unknown): value is XinmaiLivedGrowthEnvelope => {
+export const isXinmaiLivedGrowthEnvelope = (
+  value: unknown,
+): value is XinmaiLivedGrowthEnvelope => {
   if (value === null || typeof value !== "object") return false;
   const candidate = value as Partial<XinmaiLivedGrowthEnvelope>;
   return (
@@ -63,89 +63,58 @@ const isEnvelope = (value: unknown): value is XinmaiLivedGrowthEnvelope => {
 export function readXinmaiLivedGrowthRecoveryCandidate():
   XinmaiLivedGrowthRecoveryReadResult {
   if (!canUseStorage()) {
-    return Object.freeze({ status: "UNAVAILABLE" as const, envelope: null });
+    return Object.freeze({
+      status: "UNAVAILABLE" as const,
+      envelope: null,
+      raw: null,
+    });
   }
   try {
     const raw = window.localStorage.getItem(
       XINMAI_LIVED_GROWTH_RECOVERY_STORAGE_KEY,
     );
     if (raw === null) {
-      return Object.freeze({ status: "NOT_FOUND" as const, envelope: null });
+      return Object.freeze({
+        status: "NOT_FOUND" as const,
+        envelope: null,
+        raw: null,
+      });
     }
     const parsed = JSON.parse(raw) as unknown;
-    return isEnvelope(parsed)
-      ? Object.freeze({ status: "FOUND" as const, envelope: parsed })
-      : Object.freeze({ status: "CORRUPTED" as const, envelope: null });
+    return isXinmaiLivedGrowthEnvelope(parsed)
+      ? Object.freeze({ status: "FOUND" as const, envelope: parsed, raw })
+      : Object.freeze({
+          status: "CORRUPTED" as const,
+          envelope: null,
+          raw,
+        });
   } catch {
-    return Object.freeze({ status: "CORRUPTED" as const, envelope: null });
-  }
-}
-
-export function writeXinmaiLivedGrowthRecoveryCandidate(
-  envelope: XinmaiLivedGrowthEnvelope,
-  expectedPreviousRevision: number,
-): XinmaiLivedGrowthRecoveryWriteResult {
-  if (!canUseStorage()) {
-    return Object.freeze({ status: "UNAVAILABLE" as const, envelope: null });
-  }
-  const current = readXinmaiLivedGrowthRecoveryCandidate();
-  const currentRevision =
-    current.status === "FOUND" ? current.envelope.revision : 0;
-  if (
-    (current.status !== "FOUND" && current.status !== "NOT_FOUND") ||
-    currentRevision !== expectedPreviousRevision ||
-    envelope.revision !== expectedPreviousRevision + 1 ||
-    !isEnvelope(envelope)
-  ) {
-    return Object.freeze({ status: "CONFLICT" as const, envelope: null });
-  }
-  try {
-    window.localStorage.setItem(
-      XINMAI_LIVED_GROWTH_RECOVERY_STORAGE_KEY,
-      JSON.stringify(envelope),
-    );
-    const confirmed = readXinmaiLivedGrowthRecoveryCandidate();
-    if (
-      confirmed.status !== "FOUND" ||
-      confirmed.envelope.revision !== envelope.revision ||
-      confirmed.envelope.updatedAt !== envelope.updatedAt
-    ) {
-      return Object.freeze({ status: "UNCONFIRMED" as const, envelope: null });
-    }
     return Object.freeze({
-      status: "CONFIRMED" as const,
-      envelope: confirmed.envelope,
+      status: "CORRUPTED" as const,
+      envelope: null,
+      raw: null,
     });
-  } catch {
-    return Object.freeze({ status: "UNCONFIRMED" as const, envelope: null });
   }
 }
 
-export function transactXinmaiLivedGrowthRecovery(
-  transform: (
-    current: XinmaiLivedGrowthEnvelope,
-  ) => Omit<XinmaiLivedGrowthEnvelope, "revision" | "updatedAt">,
-): XinmaiLivedGrowthRecoveryWriteResult {
-  const readResult = readXinmaiLivedGrowthRecoveryCandidate();
-  if (readResult.status !== "FOUND" && readResult.status !== "NOT_FOUND") {
-    return Object.freeze({ status: "UNAVAILABLE" as const, envelope: null });
+export const isXinmaiLivedGrowthLegacyStorageEvent = (
+  event: StorageEvent,
+): boolean => {
+  try {
+    return (
+      typeof window !== "undefined" &&
+      event.storageArea === window.localStorage &&
+      event.key === XINMAI_LIVED_GROWTH_RECOVERY_STORAGE_KEY
+    );
+  } catch {
+    return false;
   }
-  const current =
-    readResult.status === "FOUND"
-      ? readResult.envelope
-      : createEmptyXinmaiLivedGrowthEnvelope();
-  const next = Object.freeze({
-    ...transform(current),
-    revision: current.revision + 1,
-    updatedAt: new Date().toISOString(),
-  }) as XinmaiLivedGrowthEnvelope;
-  return writeXinmaiLivedGrowthRecoveryCandidate(next, current.revision);
-}
+};
 
 export const XinmaiLivedGrowthRecoveryAdapter = Object.freeze({
   storageKey: XINMAI_LIVED_GROWTH_RECOVERY_STORAGE_KEY,
   read: readXinmaiLivedGrowthRecoveryCandidate,
-  write: writeXinmaiLivedGrowthRecoveryCandidate,
-  transact: transactXinmaiLivedGrowthRecovery,
+  observesLegacyMutation: isXinmaiLivedGrowthLegacyStorageEvent,
+  authority: "LEGACY_READ_ONLY_SOURCE" as const,
   noBackfill: true as const,
 });

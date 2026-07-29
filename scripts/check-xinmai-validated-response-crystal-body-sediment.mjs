@@ -31,13 +31,22 @@ for (const marker of [
   "XINMAI_LIVED_RESPONSE_FACT",
   "XINMAI_CRYSTAL_ELIGIBILITY",
   "formationReceipts",
-  "depositDynamicsCurrentCrystalToPersonalityRing",
+  "reconcileCanonicalFormationReceiptsToPersonalityRing",
+  'projection === "PROJECTED"',
 ]) {
   assert(formation.includes(marker), `formal body sediment missing ${marker}`);
 }
 assert(
-  deposit.includes("input.formationReceipt.formedCrystal"),
-  "Archive projection does not consume a confirmed Receipt",
+  deposit.includes("receipt.formedCrystal"),
+  "Archive projection does not consume confirmed canonical Receipts",
+);
+assert(
+  deposit.includes("writePersistedPersonalityRingLiteState(next)"),
+  "Archive projection is not isolated as a derived mirror",
+);
+assert(
+  !formation.includes("depositDynamicsCurrentCrystalToPersonalityRing"),
+  "Formation still owns the legacy direct Archive deposit",
 );
 const executableGravity = stripComments(gravity);
 for (const legacy of [

@@ -6,6 +6,7 @@ import {
   type PersonalityRingLiteState,
 } from "./personalityRingLiteService";
 import type { CrystalFormationReceipt } from "../types/xinmaiCrystalEligibility";
+import { writePersistedPersonalityRingLiteState } from "./guanyaoPersonalityRingLitePersistenceAdapter";
 
 export type DynamicsPersonalityRingDepositAdapterInput = Readonly<{
   formationReceipt: CrystalFormationReceipt;
@@ -77,4 +78,82 @@ export function depositDynamicsCurrentCrystalToPersonalityRing(
     state: persistedState,
     entry: depositedEntry,
   };
+}
+
+export type DynamicsPersonalityRingReconciliationResult =
+  | Readonly<{
+      status: "RECONCILED";
+      state: PersonalityRingLiteState;
+    }>
+  | Readonly<{
+      status: "RETRYABLE";
+      state: PersonalityRingLiteState;
+      reason: "INVALID_CANONICAL_CRYSTAL" | "PERSISTENCE_REJECTED";
+    }>;
+
+export function reconcileCanonicalFormationReceiptsToPersonalityRing(
+  formationReceipts: readonly CrystalFormationReceipt[],
+): DynamicsPersonalityRingReconciliationResult {
+  const current = readPersonalityRingLite();
+  const canonicalEntries: PersonalityRingLiteEntry[] = [];
+  for (const receipt of formationReceipts) {
+    const entry = createPersonalityRingLiteEntryFromCrystal(
+      receipt.formedCrystal,
+    );
+    if (!entry) {
+      return Object.freeze({
+        status: "RETRYABLE" as const,
+        state: current,
+        reason: "INVALID_CANONICAL_CRYSTAL" as const,
+      });
+    }
+    canonicalEntries.push(entry);
+  }
+  const canonicalCrystalReferences = new Set(
+    canonicalEntries
+      .map((entry) => entry.crystalReferenceId)
+      .filter((reference): reference is string => Boolean(reference)),
+  );
+  const next: PersonalityRingLiteState = {
+    version: "1.0",
+    updatedAt: new Date().toISOString(),
+    entries: [
+      ...canonicalEntries,
+      ...current.entries.filter(
+        (entry) =>
+          !entry.crystalReferenceId ||
+          !canonicalCrystalReferences.has(entry.crystalReferenceId),
+      ),
+    ],
+  };
+  if (writePersistedPersonalityRingLiteState(next) !== "STORED") {
+    return Object.freeze({
+      status: "RETRYABLE" as const,
+      state: current,
+      reason: "PERSISTENCE_REJECTED" as const,
+    });
+  }
+  const confirmed = readPersonalityRingLite();
+  const confirmedReferences = new Set(
+    confirmed.entries
+      .map((entry) => entry.crystalReferenceId)
+      .filter((reference): reference is string => Boolean(reference)),
+  );
+  if (
+    canonicalEntries.some(
+      (entry) =>
+        !entry.crystalReferenceId ||
+        !confirmedReferences.has(entry.crystalReferenceId),
+    )
+  ) {
+    return Object.freeze({
+      status: "RETRYABLE" as const,
+      state: confirmed,
+      reason: "PERSISTENCE_REJECTED" as const,
+    });
+  }
+  return Object.freeze({
+    status: "RECONCILED" as const,
+    state: confirmed,
+  });
 }
