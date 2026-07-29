@@ -13,6 +13,7 @@ const persistenceSource = fs.readFileSync(persistencePath, "utf8");
 const serviceSource = fs.readFileSync(servicePath, "utf8");
 const depositAdapterSource = fs.readFileSync(depositAdapterPath, "utf8");
 const gravitySource = fs.readFileSync(gravityPath, "utf8");
+const gravityExecutableSource = gravitySource.replace(/\/\*[\s\S]*?\*\//g, "");
 const tempModulePath = path.join(
   os.tmpdir(),
   `guanyao-personality-ring-lite-persistence-${process.pid}.mjs`,
@@ -101,23 +102,24 @@ try {
   assertIncludes("domain service delegates persisted state reading", serviceSource, "readPersistedPersonalityRingLiteState()");
   assertIncludes("domain service delegates persisted state writing", serviceSource, "writePersistedPersonalityRingLiteState(next)");
   assertIncludes("domain service keeps V1 state", serviceSource, 'version: "1.0"');
-  assertIncludes("domain service keeps created-at deduplication", serviceSource, "item.createdAt === entry.createdAt");
+  assertIncludes("domain service keeps formal Crystal reference deduplication", serviceSource, "item.crystalReferenceId === entry.crystalReferenceId");
+  assertIncludes("domain service keeps legacy created-at compatibility", serviceSource, "item.createdAt === entry.createdAt");
   assertIncludes("domain service keeps failed-write rollback", serviceSource, 'writeStatus === "FAILED" ? current : next');
   assertExcludes("domain service does not own persistence key", serviceSource, "guanyao:personalityRingLite");
   assertExcludes("domain service stays localStorage neutral", serviceSource, "localStorage");
   assertIncludes(
     "deposit adapter keeps explicit crystal entry formation",
     depositAdapterSource,
-    "createPersonalityRingLiteEntryFromCrystal(input.currentCrystalEndState)",
+    "createPersonalityRingLiteEntryFromCrystal(\n    input.formationReceipt.formedCrystal",
   );
   assertIncludes(
     "deposit adapter keeps explicit personality ring deposition",
     depositAdapterSource,
     "savePersonalityRingLiteEntry(entry)",
   );
-  assertIncludes(
-    "Gravity delegates user-triggered personality ring deposition",
-    gravitySource,
+  assertExcludes(
+    "page-local Gravity no longer deposits Personality Ring assets",
+    gravityExecutableSource,
     "depositDynamicsCurrentCrystalToPersonalityRing({",
   );
   assertIncludes(

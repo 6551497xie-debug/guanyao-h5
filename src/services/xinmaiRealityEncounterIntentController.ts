@@ -71,7 +71,7 @@ const qualificationMatchesOrigin = (
   qualification: RealityEncounterQualification,
 ): boolean =>
   origin === "CHOICE_CONTINUATION"
-    ? qualification === "LIVED_RESPONSE_CONTINUATION"
+    ? qualification === "CHOICE_ACTION_INTENTION_COMMITTED"
     : qualification === "WHISPER_RESPONSE_SETTLED" ||
       qualification === "WHISPER_SKIPPED" ||
       qualification === "RESPONSE_UNAVAILABLE_EXPLICITLY_CONTINUED";
@@ -178,6 +178,8 @@ const createAdmission = (
     routeTarget: "/reality" as const,
     origin: intent.origin,
     qualification: intent.qualification,
+    choiceActionIntentionReferenceId:
+      intent.choiceActionIntentionReferenceId,
     identityReferences: Object.freeze({
       sourceReferenceId: intent.sourceReferenceId,
       starBeastIdentityReferenceId:
@@ -255,6 +257,22 @@ export function requestRealityEncounter(
       reason: "QUALIFICATION_NOT_ALLOWED_FOR_ORIGIN" as const,
     });
   }
+  const choiceActionIntentionReferenceId =
+    input.choiceActionIntentionReferenceId?.trim() || null;
+  if (
+    (input.origin === "CHOICE_CONTINUATION" &&
+      choiceActionIntentionReferenceId === null) ||
+    (input.origin !== "CHOICE_CONTINUATION" &&
+      choiceActionIntentionReferenceId !== null)
+  ) {
+    return Object.freeze({
+      status: "BLOCKED" as const,
+      operation: "REQUEST" as const,
+      intent: currentIntent,
+      persistence: null,
+      reason: "QUALIFICATION_NOT_ALLOWED_FOR_ORIGIN" as const,
+    });
+  }
 
   if (currentIntent !== null && currentIntent.state !== "TERMINAL") {
     if (!identityMatches(currentIntent, identity)) {
@@ -269,7 +287,9 @@ export function requestRealityEncounter(
     if (
       currentIntent.state === "READY_TO_ENTER_REALITY" &&
       currentIntent.origin === input.origin &&
-      currentIntent.qualification === input.qualification
+      currentIntent.qualification === input.qualification &&
+      currentIntent.choiceActionIntentionReferenceId ===
+        choiceActionIntentionReferenceId
     ) {
       return Object.freeze({
         status: "READY" as const,
@@ -314,6 +334,7 @@ export function requestRealityEncounter(
     ...identity,
     origin: input.origin,
     qualification: input.qualification,
+    choiceActionIntentionReferenceId,
     state: "READY_TO_ENTER_REALITY" as const,
     routeTarget: "/reality" as const,
     issuedAt,

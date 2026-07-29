@@ -333,6 +333,8 @@ export function prepareGravityEntryTransfer(input: Readonly<{
       intentRevision: input.currentRealityIntent.revision,
       origin: input.currentRealityIntent.origin,
       qualification: input.currentRealityIntent.qualification,
+      choiceActionIntentionReferenceId:
+        input.currentRealityIntent.choiceActionIntentionReferenceId,
       sourceState: "ACTIVE_IN_REALITY" as const,
       terminalReason: "ENCOUNTER_COMPLETED" as const,
       cutoverMeaning: "SUPERSEDED_BY_GRAVITY_TRANSFER" as const,
@@ -673,6 +675,13 @@ export function commitGravityEntryActive(
         identityReferences: currentAdmission.identityReferences,
         selectedPressureSeedId:
           currentAdmission.currentPressure.selectedPressureSeedId,
+        sourceEncounterCycleId:
+          currentAdmission.sourceReality.encounterCycleId,
+        choiceActionIntentionReferenceId:
+          currentAdmission.sourceReality
+            .choiceActionIntentionReferenceId,
+        gravityObservationReferenceId:
+          outcome.transaction.gravityObservationReferenceId,
       }),
     ) ||
     outcome.committedAt !== outcome.transaction.committedAt ||

@@ -64,6 +64,9 @@ type GravityLifeSurfaceOutcomeInput =
           | "admissionRevision"
           | "identityReferences"
           | "selectedPressureSeedId"
+          | "sourceEncounterCycleId"
+          | "choiceActionIntentionReferenceId"
+          | "gravityObservationReferenceId"
           | "sourceReferenceId"
         >
       : never

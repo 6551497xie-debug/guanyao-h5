@@ -480,7 +480,7 @@ try {
   assertIncludes(
     "choice withholds crystal until a response is lived",
     gravityPageSource,
-    'data-choice-crystal-eligibility="WITHHELD_UNTIL_LIVED_RESPONSE"',
+    '"WITHHELD_UNTIL_USER_CONFIRMED_LIVED_RESPONSE"',
   );
   assertIncludes(
     "reality continuation does not claim change",

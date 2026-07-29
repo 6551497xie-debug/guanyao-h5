@@ -164,7 +164,8 @@ try {
   assertIncludes("Reality route remains guarded", source.routeEntry, "authorizeRealityProductionRoute({");
   assertExcludes("Reality route does not initialize Choice", source.routeEntry, "initializeRealityProductionChoiceConsumer");
   assertIncludes("Embodied Choice requests a new Reality continuation", source.gravity, "handleChoiceContinueToReality");
-  assertIncludes("Embodied Choice carries presentation continuity", source.gravity, 'choiceContinuation: "AWAITING_LIVED_RESPONSE_RECOGNITION"');
+  assertIncludes("Embodied Choice carries action-intention continuity", source.gravity, 'choiceContinuation:\n          "CHOICE_ACTION_INTENTION_CONTINUATION"');
+  assertIncludes("Embodied Choice carries the formal intention reference", source.gravity, "choiceActionIntentionReferenceId:");
   assertExcludes("Embodied Choice does not import the isolated Choice consumer", source.gravity, "initializeRealityProductionChoiceConsumer");
 
   const packageJson = JSON.parse(source.packageManifest);

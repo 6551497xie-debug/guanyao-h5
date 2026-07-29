@@ -15,6 +15,11 @@ export type RuntimeCurrentCrystalEndState = Readonly<{
   source: "dynamics";
   status: "CRYSTALLIZED";
   createdAt: string;
+  formationReferenceId: string;
+  crystalReferenceId: string;
+  crystalEligibilityReferenceId: string;
+  eligibilityRevision: number;
+  livedResponseReferenceId: string;
   mother: Readonly<{
     motherCodeName: string;
     lowerTrigram: string;
@@ -45,7 +50,14 @@ export type RuntimeCurrentCrystalEndStateInput = Readonly<{
   primaryDimension?: string;
   readyToCrystallize: boolean;
   migrationImpact?: PersonaMigrationImpact | null;
-  createdAt?: string;
+  formationIdentity: Readonly<{
+    formationReferenceId: string;
+    crystalReferenceId: string;
+    crystalEligibilityReferenceId: string;
+    eligibilityRevision: number;
+    livedResponseReferenceId: string;
+    formedAt: string;
+  }>;
 }>;
 
 export const resolveRuntimeCurrentCrystalEndState = (
@@ -129,7 +141,14 @@ export const resolveRuntimeCurrentCrystalEndState = (
   return {
     source: "dynamics",
     status: "CRYSTALLIZED",
-    createdAt: input.createdAt ?? new Date().toISOString(),
+    createdAt: input.formationIdentity.formedAt,
+    formationReferenceId: input.formationIdentity.formationReferenceId,
+    crystalReferenceId: input.formationIdentity.crystalReferenceId,
+    crystalEligibilityReferenceId:
+      input.formationIdentity.crystalEligibilityReferenceId,
+    eligibilityRevision: input.formationIdentity.eligibilityRevision,
+    livedResponseReferenceId:
+      input.formationIdentity.livedResponseReferenceId,
     mother: {
       motherCodeName: motherCodeName || inheritedIdentity.lowerTrigram,
       lowerTrigram: inheritedIdentity.lowerTrigram,

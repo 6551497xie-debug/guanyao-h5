@@ -3392,3 +3392,22 @@ export type {
   GravitySurfaceAdmissionTransaction,
   GravitySurfaceAdmissionTransactionResult,
 } from "./xinmaiGravitySurfaceAdmission";
+
+export type {
+  ChoiceActionIntention,
+  ChoiceFormationSourceSnapshot,
+  CommitChoiceActionIntentionInput,
+} from "./xinmaiChoiceActionIntention";
+
+export type {
+  LivedResponseCandidate,
+  LivedResponseFact,
+  LivedResponseOutcome,
+} from "./xinmaiLivedResponse";
+
+export type {
+  CrystalEligibility,
+  CrystalFormationReceipt,
+} from "./xinmaiCrystalEligibility";
+
+export type { XinmaiLivedGrowthEnvelope } from "./xinmaiLivedGrowthRecovery";

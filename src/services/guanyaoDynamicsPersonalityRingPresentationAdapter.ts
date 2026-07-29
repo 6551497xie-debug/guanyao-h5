@@ -38,7 +38,9 @@ export function resolveDynamicsPersonalityRingPresentation(
 ): DynamicsPersonalityRingPresentation {
   const { state, currentCrystalEndState } = input;
   const isDeposited = state.entries.some(
-    (entry) => entry.createdAt === currentCrystalEndState.createdAt,
+    (entry) =>
+      Boolean(currentCrystalEndState.crystalReferenceId) &&
+      entry.crystalReferenceId === currentCrystalEndState.crystalReferenceId,
   );
   const entryCount = state.entries.length;
   const recentHexagramTitle =

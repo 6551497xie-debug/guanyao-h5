@@ -69,6 +69,7 @@ const intent = Object.freeze({
   mansionCoordinateReferenceId: "mansion-a",
   origin: "FIRST_ENCOUNTER",
   qualification: "WHISPER_SKIPPED",
+  choiceActionIntentionReferenceId: null,
   state: "READY_TO_ENTER_REALITY",
   routeTarget: "/reality",
   issuedAt: new Date().toISOString(),

@@ -418,8 +418,9 @@ try {
 
   const next = recoveredRuntime.requestRealityEncounter({
     origin: "CHOICE_CONTINUATION",
-    qualification: "LIVED_RESPONSE_CONTINUATION",
+    qualification: "CHOICE_ACTION_INTENTION_COMMITTED",
     identityReferences: identity,
+    choiceActionIntentionReferenceId: "choice-action-intention:next",
   });
   assertEqual("Choice creates a new eligible encounter", next.status, "READY");
   assertEqual(

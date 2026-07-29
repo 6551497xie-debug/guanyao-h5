@@ -85,6 +85,8 @@ import {
 } from "../services/realityExplicitLeaveNavigationDeliveryRuntimePort";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
+import { XinmaiLivedResponseReturnSurface } from "../components/XinmaiLivedResponseReturnSurface";
+import { readOutstandingChoiceActionIntentions } from "../services/xinmaiChoiceActionIntentionController";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
 import { writePersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
@@ -1254,9 +1256,11 @@ export function LaunchLab({
   const [returningDynamicsInput] = useState(() =>
     hasReturningLifeIdentity ? resolveDynamicsInputContext({}) : null,
   );
-  const [returningLifeArchive] = useState(() =>
+  const [returningLifeArchive, setReturningLifeArchive] = useState(() =>
     hasReturningLifeIdentity ? readPersonalityRingLite() : null,
   );
+  const [returningGrowthSurfaceRevision, setReturningGrowthSurfaceRevision] =
+    useState(0);
   const returningStatePreview = getReturningLifeStatePreviewOverride();
   const returningVisualReady =
     returningLifeContext !== null &&
@@ -1385,8 +1389,30 @@ export function LaunchLab({
   // A persisted result is not yet a returning entrance. The returning path is
   // only valid when that exact life can also be restored visually.
   const returningLifeIdentity = returningVisualReady;
-  const returningLifeWhisperEntryReady = returningVisualReady;
+  const returningRecognizedIdentity =
+    returningVisualContinuity === null
+      ? null
+      : recoverRealityRecognizedIdentity({
+          visualContinuity: returningVisualContinuity,
+        });
+  const returningOutstandingChoiceIntentions = useMemo(
+    () =>
+      returningRecognizedIdentity?.status === "READY"
+        ? readOutstandingChoiceActionIntentions(
+            returningRecognizedIdentity.identityReferences,
+          )
+        : Object.freeze([]),
+    [
+      returningRecognizedIdentity,
+      returningGrowthSurfaceRevision,
+    ],
+  );
+  const returningLivedResponseActive =
+    returningOutstandingChoiceIntentions.length > 0;
+  const returningLifeWhisperEntryReady =
+    returningVisualReady && !returningLivedResponseActive;
   const returningLifeWhisperRealityIntentReady =
+    !returningLivedResponseActive &&
     resolveLifeWhisperRealityEntryIntent({
       lifeWhisperFact: returningLifeWhisperFact,
       lifeWhisperResponsePhase: returningLifeWhisperResponsePhase,
@@ -6092,6 +6118,22 @@ export function LaunchLab({
               {returningExperienceCopy ? (
                 <small>{returningExperienceCopy}</small>
               ) : null}
+              {returningLivedResponseActive &&
+              returningRecognizedIdentity?.status === "READY" ? (
+                <XinmaiLivedResponseReturnSurface
+                  identityReferences={
+                    returningRecognizedIdentity.identityReferences
+                  }
+                  intentions={returningOutstandingChoiceIntentions}
+                  onResolved={() => {
+                    setReturningLifeArchive(readPersonalityRingLite());
+                    setReturningGrowthSurfaceRevision(
+                      (revision) => revision + 1,
+                    );
+                  }}
+                />
+              ) : null}
+              {!returningLivedResponseActive ? (
               <div
                 className="gy-returning-life-world__whisper"
                 onPointerDown={(event) => event.stopPropagation()}
@@ -6203,6 +6245,7 @@ export function LaunchLab({
                   </div>
                 )}
               </div>
+              ) : null}
               {returningRelationshipNaming.status !== "UNAVAILABLE" ? (
                 <div
                   className="gy-returning-life-world__relationship-name-controls"

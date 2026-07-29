@@ -82,6 +82,16 @@ const PersonalityRingPage = lazy(() =>
   })),
 );
 
+const XinmaiLivedGrowthAcceptancePage = import.meta.env.DEV
+  ? lazy(() =>
+      import("./pages/XinmaiLivedGrowthAcceptancePage").then(
+        (module) => ({
+          default: module.XinmaiLivedGrowthAcceptancePage,
+        }),
+      ),
+    )
+  : null;
+
 function LifeUniverseRouteFallback() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -564,10 +574,22 @@ export default function App() {
         <Route path={GUANYAO_ROUTES.hexagramStamp} element={<LegacyRedirect to="/launch-lab" />} />
         <Route path={GUANYAO_ROUTES.dynamics} element={<GravityProductionRouteEntry />} />
         {import.meta.env.DEV ? (
-          <Route
-            path="/dynamics-dev"
-            element={<GravityDevelopmentFixtureRouteEntry />}
-          />
+          <>
+            <Route
+              path="/dynamics-dev"
+              element={<GravityDevelopmentFixtureRouteEntry />}
+            />
+            <Route
+              path="/xinmai-lived-growth-acceptance"
+              element={
+                XinmaiLivedGrowthAcceptancePage ? (
+                  <Suspense fallback={<LifeUniverseRouteFallback />}>
+                    <XinmaiLivedGrowthAcceptancePage />
+                  </Suspense>
+                ) : null
+              }
+            />
+          </>
         ) : null}
         <Route path={GUANYAO_ROUTES.breachScan} element={<LegacyRedirect to="/launch-lab" />} />
         <Route path={GUANYAO_ROUTES.yaoDevice} element={<LegacyRedirect to="/launch-lab" />} />

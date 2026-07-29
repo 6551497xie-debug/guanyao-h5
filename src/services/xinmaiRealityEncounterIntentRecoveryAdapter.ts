@@ -32,6 +32,7 @@ const INTENT_KEYS = Object.freeze([
   "mansionCoordinateReferenceId",
   "origin",
   "qualification",
+  "choiceActionIntentionReferenceId",
   "state",
   "routeTarget",
   "issuedAt",
@@ -139,11 +140,14 @@ const isIntent = (value: unknown): value is RealityEncounterIntent => {
       : value.terminalReason === null;
   const qualificationValid =
     value.origin === "CHOICE_CONTINUATION"
-      ? value.qualification === "LIVED_RESPONSE_CONTINUATION"
-      : value.qualification === "WHISPER_RESPONSE_SETTLED" ||
-        value.qualification === "WHISPER_SKIPPED" ||
-        value.qualification ===
-          "RESPONSE_UNAVAILABLE_EXPLICITLY_CONTINUED";
+      ? value.qualification === "CHOICE_ACTION_INTENTION_COMMITTED" &&
+        typeof value.choiceActionIntentionReferenceId === "string" &&
+        value.choiceActionIntentionReferenceId.trim().length > 0
+      : value.choiceActionIntentionReferenceId === null &&
+        (value.qualification === "WHISPER_RESPONSE_SETTLED" ||
+          value.qualification === "WHISPER_SKIPPED" ||
+          value.qualification ===
+            "RESPONSE_UNAVAILABLE_EXPLICITLY_CONTINUED");
   return (
     hasOnlyKeys(value, INTENT_KEYS) &&
     value.schemaVersion ===
@@ -166,7 +170,10 @@ const isIntent = (value: unknown): value is RealityEncounterIntent => {
       value.qualification === "WHISPER_SKIPPED" ||
       value.qualification ===
         "RESPONSE_UNAVAILABLE_EXPLICITLY_CONTINUED" ||
-      value.qualification === "LIVED_RESPONSE_CONTINUATION") &&
+      value.qualification === "CHOICE_ACTION_INTENTION_COMMITTED") &&
+    (value.choiceActionIntentionReferenceId === null ||
+      (typeof value.choiceActionIntentionReferenceId === "string" &&
+        value.choiceActionIntentionReferenceId.trim().length > 0)) &&
     (value.state === "READY_TO_ENTER_REALITY" ||
       value.state === "ACCEPTING_REALITY" ||
       value.state === "FAILED_RETRYABLE" ||

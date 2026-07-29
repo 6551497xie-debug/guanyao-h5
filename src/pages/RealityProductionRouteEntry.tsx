@@ -121,7 +121,7 @@ type RealityRouteState =
         latestCrystalSourceSlot?: number | null;
       }>;
       returningEntry?: "SAME_LIFE_NEW_REALITY";
-      choiceContinuation?: "AWAITING_LIVED_RESPONSE_RECOGNITION";
+      choiceContinuation?: "CHOICE_ACTION_INTENTION_CONTINUATION";
       choiceLifeTraceMemoryKey?: string;
       choiceLifeTraceSourceSlot?: number;
     }>
@@ -240,8 +240,8 @@ export function RealityProductionRouteEntry({
     routeState?.returningEntry === "SAME_LIFE_NEW_REALITY";
   const choiceContinuation =
     routeState?.choiceContinuation ===
-    "AWAITING_LIVED_RESPONSE_RECOGNITION"
-      ? "AWAITING_LIVED_RESPONSE_RECOGNITION"
+    "CHOICE_ACTION_INTENTION_CONTINUATION"
+      ? "CHOICE_ACTION_INTENTION_CONTINUATION"
       : null;
   const choiceLifeTraceMemoryKey =
     choiceContinuation !== null &&

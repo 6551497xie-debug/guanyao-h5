@@ -11,6 +11,9 @@ export type GravitySurfaceAdmissionAttempt = Readonly<{
   admissionRevision: number;
   identityReferences: RealityEncounterIdentityReferences;
   selectedPressureSeedId: string;
+  sourceEncounterCycleId: string;
+  choiceActionIntentionReferenceId: string | null;
+  gravityObservationReferenceId: string;
 }>;
 
 export type GravityLifeSurfaceOutcome =
@@ -72,6 +75,9 @@ export type GravitySurfaceAdmissionTransaction = Readonly<{
   admissionRevision: number;
   identityReferences: RealityEncounterIdentityReferences;
   selectedPressureSeedId: string;
+  sourceEncounterCycleId: string;
+  choiceActionIntentionReferenceId: string | null;
+  gravityObservationReferenceId: string;
   lifeSurfaceOutcome: Extract<
     GravityLifeSurfaceOutcome,
     { status: "GRAVITY_LIFE_SURFACE_PRESENTED" }

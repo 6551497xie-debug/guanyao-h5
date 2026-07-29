@@ -50,6 +50,7 @@ export type GravitySourceRealityProof = Readonly<{
   intentRevision: number;
   origin: RealityEncounterOrigin;
   qualification: RealityEncounterQualification;
+  choiceActionIntentionReferenceId: string | null;
   sourceState: "ACTIVE_IN_REALITY";
   terminalReason: "ENCOUNTER_COMPLETED";
   cutoverMeaning: "SUPERSEDED_BY_GRAVITY_TRANSFER";
@@ -182,6 +183,7 @@ export type GravityEntryTransferRequest = Readonly<{
     intentRevision: number;
     origin: RealityEncounterOrigin;
     qualification: RealityEncounterQualification;
+    choiceActionIntentionReferenceId: string | null;
     state: "ACTIVE_IN_REALITY";
   }>;
   pressureSession: RealityProductionPressureSeedSession;
@@ -339,6 +341,7 @@ export type GravityProductionRuntimeInput = Readonly<{
   gravityCycleId: string;
   admissionRevision: number;
   identityReferences: RealityEncounterIdentityReferences;
+  sourceReality: GravitySourceRealityProof;
   currentPressure: Readonly<SelectedPressureSeedContext>;
   pressureProvenance: GravityCurrentPressureProof;
   lifeSourceSession: LaunchLifeSourceSession;

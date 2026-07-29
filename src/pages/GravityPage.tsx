@@ -17,7 +17,6 @@ import {
   type CosmicPetalState,
 } from "../services/guanyaoCosmicBotanicsRuntimeEngine";
 import { resolveHexagramAssetCandidate } from "../services/guanyaoHexagramAssetCandidateResolver";
-import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import {
   resolveDynamicsInputReadiness,
   type DynamicsInputReadiness,
@@ -35,13 +34,6 @@ import {
   resolveDynamicsSixSpaceProgress,
 } from "../services/guanyaoDynamicsSixSpaceProgressAdapter";
 import { resolveDynamicsCurrentHexagramPresentation } from "../services/guanyaoDynamicsCurrentHexagramPresentationAdapter";
-import {
-  resolveDynamicsCurrentCrystalEndState,
-  type DynamicsCurrentCrystalEndState as CurrentCrystalEndState,
-} from "../services/guanyaoDynamicsCrystalRuntimeAdapter";
-import { resolveDynamicsCurrentCrystalPresentation } from "../services/guanyaoDynamicsCurrentCrystalPresentationAdapter";
-import { depositDynamicsCurrentCrystalToPersonalityRing } from "../services/guanyaoDynamicsPersonalityRingDepositAdapter";
-import { resolveDynamicsPersonalityRingPresentation } from "../services/guanyaoDynamicsPersonalityRingPresentationAdapter";
 import type { CurrentHexagramFormationResult } from "../types/currentHexagramFormation";
 import type { SingleModelRevisionAction } from "../types/dynamicsRevisionAction";
 import type { DynamicsExperienceState as ExperienceState } from "../types/dynamicsExperiencePresentation";
@@ -68,6 +60,11 @@ import type {
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
 import { requestRealityEncounter } from "../services/xinmaiRealityEncounterIntentController";
+import {
+  bindChoiceActionIntentionToRealityEncounter,
+  commitChoiceActionIntention,
+} from "../services/xinmaiChoiceActionIntentionController";
+import type { ChoiceActionIntention } from "../types/xinmaiChoiceActionIntention";
 import { RealityGravityInertiaField } from "../components/RealityGravityInertiaField";
 import { XinmaiLifeReflectionGuide } from "../components/XinmaiLifeReflectionGuide";
 import {
@@ -128,7 +125,7 @@ export type GravityPageProps = Readonly<{
     | "CURRENT_LIFE_WEATHER_BODY_APPROACHED"
     | null;
   choiceContinuation:
-    | "AWAITING_LIVED_RESPONSE_RECOGNITION"
+    | "CHOICE_ACTION_INTENTION_CONTINUATION"
     | null;
   experienceSmokeFixture: string | null;
   surfaceAttempt?: GravitySurfaceAdmissionAttempt;
@@ -2200,6 +2197,9 @@ function TransformationMomentFocus({
   );
 }
 
+/* Legacy page-owned Crystal deposit surface intentionally isolated by the
+ * atomic Growth Authority cutover. New Formation is rendered only from a
+ * confirmed Formation Receipt in the returning-life surface.
 function CurrentCrystalEndStateFocus({
   state,
   visualContinuity,
@@ -2504,6 +2504,7 @@ function CurrentCrystalEndStateFocus({
     </section>
   );
 }
+*/
 function HexagramCodeDeliveryShell({
   dynamicsInputContext,
   visualContinuity,
@@ -2521,8 +2522,8 @@ function HexagramCodeDeliveryShell({
   const realLifeVisualSource = realUserGenesisVisualSourceContext?.visualSource ?? null;
   const routeInnerViewEntry =
     innerViewEntry === "CURRENT_LIFE_WEATHER_BODY_APPROACHED";
-  const livedResponseRecognitionPending =
-    choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION";
+  const choiceActionIntentionContinuation =
+    choiceContinuation === "CHOICE_ACTION_INTENTION_CONTINUATION";
   const arrivalVisualContinuity =
     visualContinuity !== null &&
     realLifeVisualSource !== null &&
@@ -2552,10 +2553,12 @@ function HexagramCodeDeliveryShell({
   );
   const [activeDimensionIndex, setActiveDimensionIndex] = useState(0);
   const [completedDimensionIds, setCompletedDimensionIds] = useState<readonly SixSpaceId[]>([]);
-  const [revisionActionConfirmed, setRevisionActionConfirmed] =
-    useState(false);
-  const [livedResponseRecognized, setLivedResponseRecognized] =
-    useState(false);
+  const [
+    committedChoiceActionIntention,
+    setCommittedChoiceActionIntention,
+  ] = useState<ChoiceActionIntention | null>(null);
+  const [choiceAuthorityFeedback, setChoiceAuthorityFeedback] =
+    useState<string | null>(null);
   const [transformationMomentActive, setTransformationMomentActive] = useState(false);
   const [innerViewRelation, setInnerViewRelation] = useState<
     "AWAITING" | "CONFIRMED" | "SELF_NAMED"
@@ -2675,32 +2678,8 @@ function HexagramCodeDeliveryShell({
     hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE" &&
     Boolean(singleModelRevisionAction) &&
     innerViewRelation !== "AWAITING" &&
-    !revisionActionConfirmed &&
+    committedChoiceActionIntention === null &&
     !transformationMomentActive;
-  const currentCrystalEndState = useMemo(() =>
-    LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED &&
-    !livedResponseRecognized
-      ? null
-      : resolveDynamicsCurrentCrystalEndState({
-          formation: currentHexagramFormation,
-          migrationImpact: crystalMigrationImpact,
-          completedNodeCount: completedSixDimensionCount,
-          primaryDimension:
-            changeExperienceRoute?.dimension ?? sequentialCurrentSpaceId,
-          assetCompletionState: hexagramAssetCandidate.completionState,
-          revisionAction: singleModelRevisionAction,
-          revisionActionConfirmed,
-        }), [
-      currentHexagramFormation,
-      crystalMigrationImpact,
-      completedSixDimensionCount,
-      changeExperienceRoute,
-      sequentialCurrentSpaceId,
-      hexagramAssetCandidate.completionState,
-      singleModelRevisionAction,
-      revisionActionConfirmed,
-      livedResponseRecognized,
-    ]);
 
   useEffect(() => {
     if (!arrivalBridgeActive || arrivalVisualContinuity === null) return;
@@ -2740,39 +2719,87 @@ function HexagramCodeDeliveryShell({
   }, [activeDimensionIndex, executionSnapshot.node.current, executionSnapshot.runtime.enginePhase]);
 
   function handleRevisionActionConfirm() {
+    if (
+      surfaceAttempt === undefined ||
+      currentHexagramFormation === null ||
+      crystalMigrationImpact === null ||
+      singleModelRevisionAction === null ||
+      hexagramAssetCandidate.completionState !==
+        "READY_TO_CRYSTALLIZE"
+    ) {
+      setChoiceAuthorityFeedback(
+        "这次回应还没有被完整保存，请稍后再试。",
+      );
+      return;
+    }
+    const result = commitChoiceActionIntention({
+      identityReferences: surfaceAttempt.identityReferences,
+      sourceEncounterCycleId:
+        surfaceAttempt.sourceEncounterCycleId,
+      gravityCycleId: surfaceAttempt.gravityCycleId,
+      gravityObservationReferenceId:
+        surfaceAttempt.gravityObservationReferenceId,
+      actionSummary: singleModelRevisionAction.actionLine,
+      formationSourceSnapshot: Object.freeze({
+        formation: currentHexagramFormation,
+        migrationImpact: crystalMigrationImpact,
+        completedNodeCount: completedSixDimensionCount,
+        primaryDimension:
+          changeExperienceRoute?.dimension ??
+          sequentialCurrentSpaceId,
+        action: singleModelRevisionAction,
+        assetCompletionState:
+          "READY_TO_CRYSTALLIZE" as const,
+      }),
+    });
+    if (result.status !== "COMMITTED") {
+      setChoiceAuthorityFeedback(
+        "这次回应还没有被完整保存，请稍后再试。",
+      );
+      return;
+    }
+    setChoiceAuthorityFeedback(null);
+    setCommittedChoiceActionIntention(result.intention);
     setTransformationMomentActive(true);
   }
 
-  function handleResponseSedimentConfirm() {
-    setRevisionActionConfirmed(true);
-    setTransformationMomentActive(false);
-  }
-
-  function handleLivedResponseRecognized() {
-    playCrystalUnderstandingTone();
-    setLivedResponseRecognized(true);
-    handleResponseSedimentConfirm();
-  }
-
   function handleChoiceContinueToReality() {
-    if (!livedResponseRecognized) return;
+    if (committedChoiceActionIntention === null) return;
     const identityRecovery = recoverRealityRecognizedIdentity({
       visualContinuity: arrivalVisualContinuity,
     });
     if (identityRecovery.status !== "READY") return;
     const intentResult = requestRealityEncounter({
       origin: "CHOICE_CONTINUATION",
-      qualification: "LIVED_RESPONSE_CONTINUATION",
+      qualification: "CHOICE_ACTION_INTENTION_COMMITTED",
       identityReferences: identityRecovery.identityReferences,
+      choiceActionIntentionReferenceId:
+        committedChoiceActionIntention.choiceActionIntentionReferenceId,
     });
     if (intentResult.status !== "READY") return;
+    const bound = bindChoiceActionIntentionToRealityEncounter({
+      choiceActionIntentionReferenceId:
+        committedChoiceActionIntention.choiceActionIntentionReferenceId,
+      targetEncounterCycleId:
+        intentResult.intent.encounterCycleId,
+      identityReferences: identityRecovery.identityReferences,
+    });
+    if (bound === null) {
+      setChoiceAuthorityFeedback(
+        "新的现实还没有接住这次回应，请稍后再试。",
+      );
+      return;
+    }
     navigate(GUANYAO_ROUTES.reality, {
       state: {
         intentReferenceId: intentResult.intent.intentReferenceId,
         ...(arrivalVisualContinuity
           ? { visualContinuity: arrivalVisualContinuity }
           : {}),
-        choiceContinuation: "AWAITING_LIVED_RESPONSE_RECOGNITION",
+        choiceContinuation:
+          "CHOICE_ACTION_INTENTION_CONTINUATION",
+        choiceActionIntentionReferenceId:
+          bound.choiceActionIntentionReferenceId,
         ...(choiceResponseTraceIdentityKey
           ? {
               choiceLifeTraceMemoryKey: choiceResponseTraceIdentityKey,
@@ -2895,24 +2922,22 @@ function HexagramCodeDeliveryShell({
         }
         data-inner-view-analysis-stage="USER_LED_OBSERVATION_NOT_ANALYSIS"
         data-choice-response-state={
-          revisionActionConfirmed
-            ? "RESPONSE_SEDIMENTED"
+          committedChoiceActionIntention
+            ? "ACTION_INTENTION_COMMITTED"
             : isRevisionActionPending
             ? "OLD_PATH_RESTARTING_THEN_PAUSE"
             : transformationMomentActive
               ? "NEW_RESPONSE_POSSIBILITY"
-              : livedResponseRecognitionPending
+              : choiceActionIntentionContinuation
                 ? "NEW_RESPONSE_POSSIBILITY"
                 : "INACTIVE"
         }
         data-choice-identity-effect="RESPONSE_ONLY"
         data-choice-body-continuity="SAME_CORE_SAME_BODY"
         data-choice-rhythm-validation={
-          livedResponseRecognized
-            ? "USER_RECOGNIZED_DIFFERENCE"
-            : livedResponseRecognitionPending
-              ? "NEW_REALITY_RESPONSE_UNDER_OBSERVATION"
-              : "NOT_ACTIVE"
+          choiceActionIntentionContinuation
+            ? "NEW_REALITY_RESPONSE_UNDER_OBSERVATION"
+            : "NOT_ACTIVE"
         }
         data-choice-growth-claim="NONE"
         data-choice-answer-model="NONE"
@@ -2921,17 +2946,13 @@ function HexagramCodeDeliveryShell({
         data-choice-inner-view-continuity="OBSERVE_UNDERSTAND_PAUSE_RESPOND"
         data-choice-reality-continuity="SAME_LIFE_NEW_REALITY"
         data-choice-lived-response={
-          livedResponseRecognized
-            ? "USER_RECOGNIZED_DIFFERENCE"
-            : livedResponseRecognitionPending
-              ? "AWAITING_USER_RECOGNITION"
-              : "NOT_YET_OBSERVED"
+          choiceActionIntentionContinuation
+            ? "AWAITING_USER_RETURN_FACT"
+            : "NOT_YET_REPORTED"
         }
         data-choice-living-change-judge="USER_NOT_SYSTEM"
         data-choice-crystal-eligibility={
-          livedResponseRecognized
-            ? "ELIGIBLE_BY_USER_RECOGNITION"
-            : "WITHHELD_UNTIL_LIVED_RESPONSE"
+          "WITHHELD_UNTIL_USER_CONFIRMED_LIVED_RESPONSE"
         }
         data-legacy-direct-choice-to-crystal={
           LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED
@@ -2945,12 +2966,7 @@ function HexagramCodeDeliveryShell({
         data-reality-pressure-memory="EXPERIENCE_RETAINED"
         data-reality-core-identity="STABLE"
         data-choice-crystal-stage={
-          LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED &&
-          !livedResponseRecognized
-            ? "ISOLATED_UNTIL_RESPONSE_IS_LIVED"
-            : revisionActionConfirmed
-              ? "AVAILABLE"
-              : "NOT_STARTED"
+          "FORMATION_AUTHORITY_OWNED_BY_RETURNING_LIVED_RESPONSE"
         }
         style={{
           height: "100dvh",
@@ -3114,13 +3130,7 @@ function HexagramCodeDeliveryShell({
             pointerEvents: lifeObservationStageWithheld ? "none" : "auto",
           }}
         >
-          {currentCrystalEndState ? (
-            <CurrentCrystalEndStateFocus
-              state={currentCrystalEndState}
-              visualContinuity={arrivalVisualContinuity}
-              visualSource={realLifeVisualSource}
-            />
-          ) : transformationMomentActive && singleModelRevisionAction ? (
+          {transformationMomentActive && singleModelRevisionAction ? (
             <TransformationMomentFocus
               action={singleModelRevisionAction}
               presentation={changeExperiencePresentation}
@@ -3128,20 +3138,10 @@ function HexagramCodeDeliveryShell({
                 choiceResponseDimension
               }
               responseTraceIdentityKey={choiceResponseTraceIdentityKey}
-              onSediment={
-                LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED
-                  ? undefined
-                  : handleResponseSedimentConfirm
-              }
+              onSediment={undefined}
               onContinueToReality={handleChoiceContinueToReality}
-              livedResponseRecognitionRequired={
-                livedResponseRecognitionPending
-              }
-              onRecognizeLivedResponse={
-                livedResponseRecognitionPending
-                  ? handleLivedResponseRecognized
-                  : undefined
-              }
+              livedResponseRecognitionRequired={false}
+              onRecognizeLivedResponse={undefined}
               visualSource={realLifeVisualSource}
               toneColor={choiceToneColor}
               innerViewRelation={innerViewRelation}
@@ -3178,14 +3178,14 @@ function HexagramCodeDeliveryShell({
         <footer
           data-hexagram-asset-candidate-status={hexagramAssetCandidate.status}
           data-hexagram-asset-candidate-state={hexagramAssetCandidate.completionState}
-          data-current-crystal-end-state={currentCrystalEndState ? "connected" : "missing"}
+          data-current-crystal-end-state="FORMATION_RECEIPT_REQUIRED"
           data-model-revision-action={
             isRevisionActionPending
               ? "pending"
               : transformationMomentActive
                 ? "response_space_open"
-                : revisionActionConfirmed
-                  ? "confirmed"
+                : committedChoiceActionIntention
+                  ? "intention_committed"
                   : "inactive"
           }
           data-change-experience-presentation={changeExperienceRoute?.dimension ?? "inactive"}
@@ -3210,11 +3210,29 @@ function HexagramCodeDeliveryShell({
             transition: "opacity 520ms ease",
           }}
         >
-          {currentCrystalEndState || transformationMomentActive || isRevisionActionPending ? "" : cosmicNarrativePhase === "node_complete" &&
+          {transformationMomentActive || isRevisionActionPending ? "" : cosmicNarrativePhase === "node_complete" &&
             hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE"
               ? displayExperienceState.crystalCopy
               : ""}
         </footer>
+        {choiceAuthorityFeedback ? (
+          <p
+            role="status"
+            style={{
+              position: "absolute",
+              zIndex: 8,
+              right: 24,
+              bottom: 24,
+              left: 24,
+              margin: 0,
+              textAlign: "center",
+              color: "rgba(245,240,226,0.66)",
+              fontSize: 11,
+            }}
+          >
+            {choiceAuthorityFeedback}
+          </p>
+        ) : null}
       </main>
     );
   }

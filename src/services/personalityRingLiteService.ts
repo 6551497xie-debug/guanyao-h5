@@ -13,6 +13,11 @@ export type PersonalityRingLiteEntry = {
   id: string;
   createdAt: string;
   source: "dynamics";
+  provenanceClass?: "FORMAL_FORMATION_RECEIPT" | "LEGACY_VALID_CRYSTAL";
+  crystalReferenceId?: string;
+  formationReferenceId?: string;
+  eligibilityReferenceId?: string;
+  livedResponseReferenceId?: string;
   mother: {
     motherCodeName?: string;
     lowerTrigram?: string;
@@ -43,6 +48,10 @@ type CrystalEndStateInput = {
   source: "dynamics";
   status: "CRYSTALLIZED";
   createdAt: string;
+  formationReferenceId?: string;
+  crystalReferenceId?: string;
+  crystalEligibilityReferenceId?: string;
+  livedResponseReferenceId?: string;
   mother: PersonalityRingLiteEntry["mother"];
   pressure: PersonalityRingLiteEntry["pressure"];
   hexagram: PersonalityRingLiteEntry["hexagram"];
@@ -106,9 +115,22 @@ export function createPersonalityRingLiteEntryFromCrystal(
   }
 
   const entry: PersonalityRingLiteEntry = {
-    id: createEntryId(),
+    id: currentCrystalEndState.crystalReferenceId ?? createEntryId(),
     createdAt: currentCrystalEndState.createdAt,
     source: "dynamics",
+    provenanceClass:
+      currentCrystalEndState.crystalReferenceId &&
+      currentCrystalEndState.formationReferenceId &&
+      currentCrystalEndState.crystalEligibilityReferenceId &&
+      currentCrystalEndState.livedResponseReferenceId
+        ? "FORMAL_FORMATION_RECEIPT"
+        : "LEGACY_VALID_CRYSTAL",
+    crystalReferenceId: currentCrystalEndState.crystalReferenceId,
+    formationReferenceId: currentCrystalEndState.formationReferenceId,
+    eligibilityReferenceId:
+      currentCrystalEndState.crystalEligibilityReferenceId,
+    livedResponseReferenceId:
+      currentCrystalEndState.livedResponseReferenceId,
     mother: currentCrystalEndState.mother,
     pressure: currentCrystalEndState.pressure,
     hexagram: currentCrystalEndState.hexagram,
@@ -126,7 +148,11 @@ export function savePersonalityRingLiteEntry(entry: PersonalityRingLiteEntry): P
   const current = readPersonalityRingLite();
   if (!isValidEntry(entry)) return current;
 
-  const duplicate = current.entries.some((item) => item.createdAt === entry.createdAt);
+  const duplicate = current.entries.some((item) =>
+    entry.crystalReferenceId
+      ? item.crystalReferenceId === entry.crystalReferenceId
+      : item.createdAt === entry.createdAt,
+  );
   if (duplicate) return current;
 
   const next: PersonalityRingLiteState = {

@@ -25,7 +25,7 @@ export type RealityEncounterQualification =
   | "WHISPER_RESPONSE_SETTLED"
   | "WHISPER_SKIPPED"
   | "RESPONSE_UNAVAILABLE_EXPLICITLY_CONTINUED"
-  | "LIVED_RESPONSE_CONTINUATION";
+  | "CHOICE_ACTION_INTENTION_COMMITTED";
 
 export type RealityEncounterIdentityReferences = Readonly<{
   sourceReferenceId: string;
@@ -87,6 +87,7 @@ export type RealityEncounterIntent = Readonly<{
   mansionCoordinateReferenceId: string;
   origin: RealityEncounterOrigin;
   qualification: RealityEncounterQualification;
+  choiceActionIntentionReferenceId: string | null;
   state: RealityEncounterIntentState;
   routeTarget: "/reality";
   issuedAt: string;
@@ -113,6 +114,7 @@ export type RealityEncounterAdmission = Readonly<{
   routeTarget: "/reality";
   origin: RealityEncounterOrigin;
   qualification: RealityEncounterQualification;
+  choiceActionIntentionReferenceId: string | null;
   identityReferences: RealityEncounterIdentityReferences;
   expiresAt: string;
 }>;
@@ -120,6 +122,7 @@ export type RealityEncounterAdmission = Readonly<{
 export type RealityEncounterRequestInput = Readonly<{
   origin: RealityEncounterOrigin;
   qualification: RealityEncounterQualification;
+  choiceActionIntentionReferenceId?: string | null;
   identityReferences: RealityEncounterIdentityReferences;
   requestedAt?: string;
 }>;

@@ -69,6 +69,12 @@ export function GravityProductionSurfaceHost({
         identityReferences: admission.identityReferences,
         selectedPressureSeedId:
           admission.currentPressure.selectedPressureSeedId,
+        sourceEncounterCycleId:
+          admission.sourceReality.encounterCycleId,
+        choiceActionIntentionReferenceId:
+          admission.sourceReality.choiceActionIntentionReferenceId,
+        gravityObservationReferenceId:
+          `gravity-observation:${admission.gravityCycleId}:${admission.revision}`,
       }),
     [admission],
   );
@@ -186,7 +192,7 @@ export function GravityProductionSurfaceHost({
       innerViewEntry="CURRENT_LIFE_WEATHER_BODY_APPROACHED"
       choiceContinuation={
         admission.sourceReality.origin === "CHOICE_CONTINUATION"
-          ? "AWAITING_LIVED_RESPONSE_RECOGNITION"
+          ? "CHOICE_ACTION_INTENTION_CONTINUATION"
           : null
       }
       experienceSmokeFixture={null}

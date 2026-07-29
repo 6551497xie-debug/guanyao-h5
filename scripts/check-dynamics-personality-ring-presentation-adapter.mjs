@@ -30,6 +30,11 @@ const currentCrystalEndState = {
   source: "dynamics",
   status: "CRYSTALLIZED",
   createdAt: "2026-07-14T00:00:00.000Z",
+  formationReferenceId: "formation:current",
+  crystalReferenceId: "crystal:current",
+  crystalEligibilityReferenceId: "eligibility:current",
+  eligibilityRevision: 1,
+  livedResponseReferenceId: "response:current",
   mother: {
     motherCodeName: "兑｜连接者",
     lowerTrigram: "兑",
@@ -55,10 +60,19 @@ const currentCrystalEndState = {
   },
 };
 
-const entry = (createdAt, hexagramName = "天泽履") => ({
+const entry = (
+  createdAt,
+  hexagramName = "天泽履",
+  crystalReferenceId = "crystal:other",
+) => ({
   id: `ring-${createdAt}`,
   createdAt,
   source: "dynamics",
+  provenanceClass: "FORMAL_FORMATION_RECEIPT",
+  crystalReferenceId,
+  formationReferenceId: `formation:${crystalReferenceId}`,
+  eligibilityReferenceId: `eligibility:${crystalReferenceId}`,
+  livedResponseReferenceId: `response:${crystalReferenceId}`,
   mother: currentCrystalEndState.mother,
   pressure: currentCrystalEndState.pressure,
   hexagram: {
@@ -106,7 +120,13 @@ try {
   assertEqual("current crystal supplies recent title", ready.recentHexagramTitle, "天泽履");
   assertEqual("presentation does not mutate state", JSON.stringify(emptyState), emptySnapshot);
 
-  const depositedState = state([entry(currentCrystalEndState.createdAt)]);
+  const depositedState = state([
+    entry(
+      currentCrystalEndState.createdAt,
+      "天泽履",
+      currentCrystalEndState.crystalReferenceId,
+    ),
+  ]);
   const deposited = resolveDynamicsPersonalityRingPresentation({
     state: depositedState,
     currentCrystalEndState,
@@ -139,7 +159,11 @@ try {
 
   const multiEntryState = state([
     entry("2026-07-14T02:00:00.000Z", "风山渐"),
-    entry(currentCrystalEndState.createdAt),
+    entry(
+      currentCrystalEndState.createdAt,
+      "天泽履",
+      currentCrystalEndState.crystalReferenceId,
+    ),
   ]);
   const multiEntry = resolveDynamicsPersonalityRingPresentation({
     state: multiEntryState,
@@ -194,12 +218,10 @@ try {
   assertExcludes("ring presentation adapter does not invoke deposit adapter", adapterSource, "depositDynamicsCurrentCrystal");
 
   assertIncludes(
-    "Gravity delegates ring presentation",
+    "legacy ring presentation remains readable without becoming Formation authority",
     gravitySource,
     "resolveDynamicsPersonalityRingPresentation({",
   );
-  assertIncludes("Gravity consumes ring button state", gravitySource, "ringPresentation.button.status");
-  assertIncludes("Gravity consumes ring confirmation", gravitySource, "ringPresentation.confirmation.summary");
   assertExcludes("Gravity no longer owns saved entry search", gravitySource, "savedEntry");
   assertExcludes("Gravity no longer searches ring entries", gravitySource, "ringLiteState.entries.find");
   assertExcludes("Gravity no longer counts ring entries", gravitySource, "ringLiteState.entries.length");

@@ -93,6 +93,7 @@ export function resolveGravityProductionRuntimeInput(input: Readonly<{
     gravityCycleId: admission.gravityCycleId,
     admissionRevision: admission.revision,
     identityReferences: admission.identityReferences,
+    sourceReality: admission.sourceReality,
     currentPressure:
       admission.currentPressure.selectedPressureSeedContext,
     pressureProvenance: admission.currentPressure,

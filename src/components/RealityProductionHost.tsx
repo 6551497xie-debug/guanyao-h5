@@ -386,7 +386,7 @@ export function RealityProductionHost({
         ? "PRESSURE_PAUSED"
         : "PRESSURE_OBSERVING";
   const choiceRhythmValidationActive =
-    choiceContinuation === "AWAITING_LIVED_RESPONSE_RECOGNITION";
+    choiceContinuation === "CHOICE_ACTION_INTENTION_CONTINUATION";
   const choiceLifeTraceCarried =
     choiceRhythmValidationActive &&
     choiceLifeTraceMemoryKey !== null &&
@@ -597,6 +597,8 @@ export function RealityProductionHost({
           intentRevision: activeRealityIntent.revision,
           origin: activeRealityIntent.origin,
           qualification: activeRealityIntent.qualification,
+          choiceActionIntentionReferenceId:
+            activeRealityIntent.choiceActionIntentionReferenceId,
           state: "ACTIVE_IN_REALITY" as const,
         }),
         pressureSession: pressureSeedSession,

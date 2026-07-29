@@ -5,10 +5,10 @@ import {
   type PersonalityRingLiteEntry,
   type PersonalityRingLiteState,
 } from "./personalityRingLiteService";
-import type { DynamicsCurrentCrystalEndState } from "./guanyaoDynamicsCrystalRuntimeAdapter";
+import type { CrystalFormationReceipt } from "../types/xinmaiCrystalEligibility";
 
 export type DynamicsPersonalityRingDepositAdapterInput = Readonly<{
-  currentCrystalEndState: DynamicsCurrentCrystalEndState;
+  formationReceipt: CrystalFormationReceipt;
 }>;
 
 export type DynamicsPersonalityRingDepositResult =
@@ -34,7 +34,8 @@ export function depositDynamicsCurrentCrystalToPersonalityRing(
 ): DynamicsPersonalityRingDepositResult {
   const currentState = readPersonalityRingLite();
   const duplicate = currentState.entries.find(
-    (entry) => entry.createdAt === input.currentCrystalEndState.createdAt,
+    (entry) =>
+      entry.crystalReferenceId === input.formationReceipt.crystalReferenceId,
   );
   if (duplicate) {
     return {
@@ -44,7 +45,9 @@ export function depositDynamicsCurrentCrystalToPersonalityRing(
     };
   }
 
-  const entry = createPersonalityRingLiteEntryFromCrystal(input.currentCrystalEndState);
+  const entry = createPersonalityRingLiteEntryFromCrystal(
+    input.formationReceipt.formedCrystal,
+  );
   if (!entry) {
     return {
       status: "REJECTED",
@@ -57,7 +60,8 @@ export function depositDynamicsCurrentCrystalToPersonalityRing(
   savePersonalityRingLiteEntry(entry);
   const persistedState = readPersonalityRingLite();
   const depositedEntry = persistedState.entries.find(
-    (candidate) => candidate.createdAt === entry.createdAt,
+    (candidate) =>
+      candidate.crystalReferenceId === input.formationReceipt.crystalReferenceId,
   );
   if (!depositedEntry) {
     return {

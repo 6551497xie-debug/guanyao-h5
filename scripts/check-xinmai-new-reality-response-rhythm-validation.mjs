@@ -37,9 +37,8 @@ const assertExcludes = (name, source, marker) => {
   "NEW_REALITY_RESPONSE_UNDER_OBSERVATION",
   'data-choice-body-continuity="SAME_CORE_SAME_BODY"',
   'data-choice-growth-claim="NONE"',
-  'livedResponseRecognitionPending\n                ? "NEW_RESPONSE_POSSIBILITY"',
   "AWAITING_USER_RECOGNITION",
-  "USER_RECOGNIZED_DIFFERENCE",
+  "CHOICE_ACTION_INTENTION_COMMITTED",
 ].forEach((marker) =>
   assertIncludes("Dynamics carries one life rhythm through observation", sources.gravity, marker),
 );
@@ -64,7 +63,7 @@ assertIncludes(
 assertIncludes(
   "Reality host contract reuses the existing continuation",
   sources.hostType,
-  'choiceContinuation?: "AWAITING_LIVED_RESPONSE_RECOGNITION" | null',
+  'choiceContinuation?: "CHOICE_ACTION_INTENTION_CONTINUATION" | null',
 );
 assertIncludes(
   "Shared renderer consumes the continued response rhythm",
