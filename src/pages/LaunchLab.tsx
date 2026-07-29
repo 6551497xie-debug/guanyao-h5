@@ -80,6 +80,10 @@ import type {
   RealityExplicitLeaveNavigationDeliveryTicket,
   ReturningLifeWorldDeliveryOutcome,
 } from "../types/realityExplicitLeaveNavigationDelivery";
+import {
+  projectReturningLifeWorldDeliveryOutcomes,
+  projectReturningLifeWorldSurfaceReady,
+} from "../services/realityExplicitLeaveNavigationDeliveryRuntimePort";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
@@ -1274,8 +1278,18 @@ export function LaunchLab({
       return;
     }
     lastExplicitLeaveDeliveryOutcomeKeyRef.current = outcomeKey;
+    const reportProjectedOutcome = (
+      outcome: ReturningLifeWorldDeliveryOutcome,
+    ) => {
+      for (const projectedOutcome of projectReturningLifeWorldDeliveryOutcomes(
+        ticket,
+        outcome,
+      )) {
+        report(projectedOutcome);
+      }
+    };
     if (location.pathname !== ticket.targetRoute) {
-      report(
+      reportProjectedOutcome(
         Object.freeze({
           status: "LIFE_WORLD_DELIVERY_REJECTED" as const,
           deliveryReferenceId: ticket.deliveryReferenceId,
@@ -1286,7 +1300,7 @@ export function LaunchLab({
       return;
     }
     if (returningVisualContinuity === null) {
-      report(
+      reportProjectedOutcome(
         Object.freeze({
           status: "LIFE_WORLD_DELIVERY_UNAVAILABLE" as const,
           deliveryReferenceId: ticket.deliveryReferenceId,
@@ -1301,7 +1315,7 @@ export function LaunchLab({
       visualContinuity: returningVisualContinuity,
     });
     if (identityRecovery.status !== "READY") {
-      report(
+      reportProjectedOutcome(
         Object.freeze({
           status: "LIFE_WORLD_DELIVERY_UNAVAILABLE" as const,
           deliveryReferenceId: ticket.deliveryReferenceId,
@@ -1323,7 +1337,7 @@ export function LaunchLab({
             ? "MANSION_COORDINATE_MISMATCH" as const
             : null;
     if (mismatchReason !== null) {
-      report(
+      reportProjectedOutcome(
         Object.freeze({
           status: "LIFE_WORLD_DELIVERY_REJECTED" as const,
           deliveryReferenceId: ticket.deliveryReferenceId,
@@ -1333,8 +1347,13 @@ export function LaunchLab({
       );
       return;
     }
-    if (!returningVisualReady) {
-      report(
+    if (
+      !projectReturningLifeWorldSurfaceReady(
+        returningVisualReady,
+        ticket,
+      )
+    ) {
+      reportProjectedOutcome(
         Object.freeze({
           status: "LIFE_WORLD_DELIVERY_UNAVAILABLE" as const,
           deliveryReferenceId: ticket.deliveryReferenceId,
@@ -1344,7 +1363,7 @@ export function LaunchLab({
       );
       return;
     }
-    report(
+    reportProjectedOutcome(
       Object.freeze({
         status: "LIFE_WORLD_DELIVERED" as const,
         deliveryReferenceId: ticket.deliveryReferenceId,

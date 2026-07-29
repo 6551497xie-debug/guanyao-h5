@@ -54,6 +54,10 @@ import {
   markRealityExplicitLeaveNavigationRetryable,
   retryRealityExplicitLeaveNavigationDelivery,
 } from "./services/realityExplicitLeaveNavigationDeliveryTransition";
+import {
+  invokeRealityExplicitLeaveNavigation,
+  projectRealityExplicitLeaveNavigationDeliveryTicket,
+} from "./services/realityExplicitLeaveNavigationDeliveryRuntimePort";
 import type {
   RealityExplicitLeaveRequest,
   RealityExplicitLeaveUiState,
@@ -459,14 +463,7 @@ export default function App() {
         : current,
     );
     try {
-      navigate(ticket.targetRoute, {
-        replace: true,
-        state: {
-          explicitLeaveDeliveryReferenceId:
-            ticket.deliveryReferenceId,
-          explicitLeaveDeliveryAttempt: ticket.deliveryAttempt,
-        },
-      });
+      invokeRealityExplicitLeaveNavigation(navigate, ticket);
     } catch {
       setExplicitLeaveNavigationDelivery((current) =>
         current.status !== "IDLE" &&
@@ -542,7 +539,9 @@ export default function App() {
   const launchDeliveryTicket =
     explicitLeaveNavigationDelivery.status ===
     "NAVIGATION_REQUESTED"
-      ? explicitLeaveNavigationDelivery.ticket
+      ? projectRealityExplicitLeaveNavigationDeliveryTicket(
+          explicitLeaveNavigationDelivery.ticket,
+        )
       : null;
   const navigationDeliveryVisible =
     explicitLeaveNavigationDelivery.status ===
