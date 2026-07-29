@@ -77,12 +77,22 @@ try {
   [
     "productionPressureSeedConsumerOnly: true",
     "v2PressureSeedPresentationOnly: true",
-    "explicitGravityContinuationCallbackOnly: true",
+    "typedGravityTransferRequestOnly: true",
     "noGravityExecution: true",
     "noChoiceExecution: true",
     "noCrystalExecution: true",
   ].forEach((marker) =>
     assertIncludes("Current V2 Host boundary excludes Choice execution", source.hostType, marker),
+  );
+  [
+    "explicitGravityContinuationCallbackOnly",
+    "onContinueToGravity",
+  ].forEach((marker) =>
+    assertExcludes(
+      "superseded Gravity callback boundary is absent",
+      source.hostType,
+      marker,
+    ),
   );
 
   [
