@@ -67,7 +67,17 @@ try {
     "onRecognize(candidate.candidateReferenceId)",
     "onRequestNextBundle",
     "onPause",
-    "Gravity 尚未启动",
+    "noGravityExecution: true",
+    "useEffect(() => {",
+    '"REALITY_PRESSURE_SURFACE_PRESENTED"',
+    '"REALITY_PRESSURE_SURFACE_UNAVAILABLE"',
+    "realitySurfaceAdmissionAttempt.intentReferenceId",
+    "realitySurfaceAdmissionAttempt.encounterCycleId",
+    "realitySurfaceAdmissionAttempt.intentRevision",
+    'data-reality-analysis-stage="NOT_STARTED"',
+    'session.gravityReadiness === "READY"',
+    'data-inner-view-guidance="APPROACH_LIFE_BODY"',
+    'data-direct-gravity-action="WITHHELD"',
   ].forEach((marker) =>
     assertIncludes("V2 Pressure Seed presentation implementation", source.component, marker),
   );
@@ -84,7 +94,6 @@ try {
     "localStorage",
     "sessionStorage",
     "useState",
-    "useEffect",
     "useNavigate",
   ].forEach((marker) =>
     assertExcludes(
@@ -98,6 +107,18 @@ try {
     "Production Host activates the frozen V2 presentation",
     source.host,
     "RealityPressureSeedPresentation",
+  );
+  [
+    'data-gravity-stage="NOT_STARTED"',
+    "userExplicitRequest: true as const",
+    "bodyApproachConfirmed: true as const",
+    '"CURRENT_LIFE_WEATHER_BODY_APPROACHED" as const',
+  ].forEach((marker) =>
+    assertIncludes(
+      "Production Host keeps Gravity behind explicit body approach",
+      source.host,
+      marker,
+    ),
   );
   assertExcludes(
     "V1 presentation remains isolated",
