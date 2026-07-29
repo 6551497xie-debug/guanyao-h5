@@ -53,6 +53,10 @@ try {
     '"GRAVITY_READY_TO_CONTINUE"',
     'data-pressure-runtime="V2_PRESSURE_SEED_ONLY"',
     'data-gravity-stage="NOT_STARTED"',
+    "onRequestGravityTransfer",
+    "userExplicitRequest: true as const",
+    '"CURRENT_LIFE_WEATHER_BODY_APPROACHED" as const',
+    "bodyApproachConfirmed: true as const",
   ].forEach((marker) =>
     assertIncludes("Production Host runs the V2 Pressure Seed chain", source.host, marker),
   );
@@ -88,12 +92,23 @@ try {
     "v2PressureSeedPresentationOnly: true",
     "explicitPressureSeedRecognitionOnly: true",
     "explicitNextBundleRequestOnly: true",
-    "explicitGravityContinuationCallbackOnly: true",
+    "typedGravityTransferRequestOnly: true",
+    "gravityCutoverTransactionRequired: true",
     "noAutomaticSelection: true",
     "noGravityExecution: true",
     "noChoiceExecution: true",
   ].forEach((marker) =>
     assertIncludes("atomic Host boundary", source.hostType, marker),
+  );
+  [
+    "explicitGravityContinuationCallbackOnly",
+    "onContinueToGravity",
+  ].forEach((marker) =>
+    assertExcludes(
+      "superseded callback-only Gravity handoff is absent",
+      source.hostType,
+      marker,
+    ),
   );
 
   assertIncludes(
@@ -105,6 +120,17 @@ try {
     "Route requires initial continuation phase",
     source.route,
     '"READY_FOR_CONSUMER_INITIALIZATION"',
+  );
+  [
+    "executeRealityToGravityCutover(request)",
+    'if (cutover.status === "COMMITTED")',
+    "onRequestGravityTransfer={requestGravityTransfer}",
+  ].forEach((marker) =>
+    assertIncludes(
+      "Route consumes typed Gravity transfer through the atomic cutover",
+      source.route,
+      marker,
+    ),
   );
   assertIncludes(
     "Continuation supports a new delivery bundle",
