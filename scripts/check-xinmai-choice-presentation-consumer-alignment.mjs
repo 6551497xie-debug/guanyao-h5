@@ -66,14 +66,22 @@ requireSource(
   "noCommitAuthority: true",
 );
 requireSource(
-  "route required before ready",
+  "typed Action Route required before ready",
   resolver,
-  "CHANGE_EXPERIENCE_ROUTE_REQUIRED",
+  'input.actionRouteResolution.status !== "READY"',
 );
 requireSource(
-  "migration impact required before ready",
+  "Route formation projection required before ready",
   resolver,
-  "MIGRATION_IMPACT_REQUIRED",
+  "createChoiceRouteFormationSourceSnapshot({",
+);
+requireSource(
+  "Host owns typed production Route resolution",
+  fs.readFileSync(
+    "src/components/GravityProductionSurfaceHost.tsx",
+    "utf8",
+  ),
+  "resolveProductionChoiceActionRoutes({",
 );
 forbidSource(
   "awareness enum cannot directly grant ready",

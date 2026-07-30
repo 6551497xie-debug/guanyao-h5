@@ -72,6 +72,10 @@ import type {
   ChoiceGrowthTerminalSummary,
 } from "../types/xinmaiChoicePresentationReadiness";
 import type {
+  ChoiceActionRouteCandidate,
+  ChoiceActionRouteResolution,
+} from "../types/xinmaiChoiceActionRoute";
+import type {
   GravityObservationRecognitionOutcome,
   GravityObservationRecognitionProvenance,
   GravityObservationResumeDecision,
@@ -142,6 +146,7 @@ export type GravityPageProps = Readonly<{
   surfaceAttempt?: GravitySurfaceAdmissionAttempt;
   observationContinuityDecision: GravityObservationResumeDecision;
   growthTerminalSummary: ChoiceGrowthTerminalSummary;
+  actionRouteResolution: ChoiceActionRouteResolution;
   growthSummaryPending: boolean;
   onGrowthTerminalSummaryRefreshRequested: () => Promise<void>;
   onObservationRecognitionRequested: (
@@ -1519,21 +1524,18 @@ function CosmicBotanicsField({
 }
 
 function SingleModelRevisionActionFocus({
-  action,
-  presentation,
+  actionRoute,
   onConfirm,
   visualSource,
   toneColor,
   innerViewRelation,
 }: {
-  action: SingleModelRevisionAction;
-  presentation?: ChangeExperiencePresentation | null;
+  actionRoute: ChoiceActionRouteCandidate;
   onConfirm: () => void;
   visualSource: RealLifeVisualSource | null;
   toneColor: string;
   innerViewRelation: "AWAITING" | "CONFIRMED" | "SELF_NAMED";
 }) {
-  const hasPresentation = Boolean(presentation);
   const [responseGapPhase, setResponseGapPhase] = useState<
     "MERIDIAN_SETTLING" | "LIFE_PAUSING" | "RESPONSE_GAP_OPEN"
   >("MERIDIAN_SETTLING");
@@ -1608,11 +1610,14 @@ function SingleModelRevisionActionFocus({
       aria-label="旧回应启动后，生命停一下"
       className="gy-choice-response-gap"
       data-model-revision-action="pending"
-      data-model-revision-layer={action.layerLabel}
-      data-model-revision-yao={action.yaoName}
-      data-model-revision-intervention={action.interventionPotential}
-      data-model-revision-agency={action.userAgency}
-      data-change-experience-presentation={hasPresentation ? "active" : "fallback"}
+      data-action-route-reference={
+        actionRoute.actionRouteReferenceId
+      }
+      data-action-route-prototype={actionRoute.prototypeId}
+      data-action-route-safety={
+        actionRoute.safety.safetyLevel
+      }
+      data-change-experience-presentation="TYPED_ACTION_ROUTE"
       data-choice-response-gap={
         responseGapReady ? "PAUSE_AVAILABLE" : "OLD_PATH_RESTARTING"
       }
@@ -1830,7 +1835,7 @@ function SingleModelRevisionActionFocus({
           }}
         >
           {responseGapReady
-            ? "它还在影响你，但没有替你决定。"
+            ? actionRoute.action.visibleAction
             : responseGapPhase === "LIFE_PAUSING"
               ? "熟悉的回应正在启动，而生命停了一下。"
               : "刚刚被看见的流动，仍留在同一身体里。"}
@@ -1846,7 +1851,7 @@ function SingleModelRevisionActionFocus({
           }}
         >
           {breathHoldState === "HOLDING"
-            ? "保持这一口呼吸"
+            ? "保持这一口呼吸 · 确认带着这一步离开"
             : breathHoldState === "RELEASED_EARLY"
               ? "可以慢一点，再陪它停留"
               : "按住生命核心 · 陪它完成一次呼吸"}
@@ -2565,6 +2570,7 @@ function HexagramCodeDeliveryShell({
   surfaceAttempt,
   observationContinuityDecision,
   growthTerminalSummary,
+  actionRouteResolution,
   growthSummaryPending,
   onGrowthTerminalSummaryRefreshRequested,
   onObservationRecognitionRequested,
@@ -2759,9 +2765,7 @@ function HexagramCodeDeliveryShell({
         completedNodeCount:
           hexagramAssetCandidate.completedNodeCount,
       }),
-      revisionAction: singleModelRevisionAction,
-      changeExperienceRoute,
-      migrationImpact: crystalMigrationImpact,
+      actionRouteResolution,
       growthTerminalSummary,
       operationalState: Object.freeze({
         summaryPending: growthSummaryPending,
@@ -3407,11 +3411,8 @@ function HexagramCodeDeliveryShell({
             choicePresentationDecision.state ===
               "READY_TO_PRESENT" ? (
             <SingleModelRevisionActionFocus
-              action={
-                choicePresentationDecision.actionCandidate
-              }
-              presentation={
-                choicePresentationDecision.route.presentation
+              actionRoute={
+                choicePresentationDecision.actionRouteCandidate
               }
               onConfirm={handleRevisionActionConfirm}
               visualSource={realLifeVisualSource}
@@ -3460,7 +3461,13 @@ function HexagramCodeDeliveryShell({
                     ? "safe_withheld"
                   : "inactive"
           }
-          data-change-experience-presentation={changeExperienceRoute?.dimension ?? "inactive"}
+          data-change-experience-presentation={
+            choicePresentationDecision.state ===
+            "READY_TO_PRESENT"
+              ? choicePresentationDecision
+                  .actionRouteCandidate.prototypeId
+              : "inactive"
+          }
           data-value-flow-behavior={valueFlow.behaviorSignals.join("|") || "NONE"}
           data-value-flow-pressure={valueFlow.pressureState}
           data-value-flow-emotion={valueFlow.emotionalState}

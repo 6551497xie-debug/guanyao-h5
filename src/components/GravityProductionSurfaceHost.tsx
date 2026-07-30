@@ -9,6 +9,9 @@ import { GravityPage } from "../pages/GravityPage";
 import {
   resolveGravitySurfaceAdmissionTransaction,
 } from "../services/xinmaiGravitySurfaceAdmissionTransaction";
+import {
+  resolveProductionChoiceActionRoutes,
+} from "../services/xinmaiChoiceActionRouteRuntimeInputAdapter";
 import type {
   GravityEntryAdmission,
   GravityHostAcceptanceOutcome,
@@ -103,6 +106,14 @@ export function GravityProductionSurfaceHost({
     `${surfaceAttempt.admissionReferenceId}:` +
     `${surfaceAttempt.gravityCycleId}:` +
     `${surfaceAttempt.admissionRevision}`;
+  const actionRouteResolution = useMemo(
+    () =>
+      resolveProductionChoiceActionRoutes({
+        runtimeInput,
+        observationDecision: continuityDecision,
+      }),
+    [runtimeInput, continuityDecision],
+  );
 
   useEffect(() => {
     setLifeSurfaceOutcome(null);
@@ -220,6 +231,7 @@ export function GravityProductionSurfaceHost({
       surfaceAttempt={surfaceAttempt}
       observationContinuityDecision={continuityDecision}
       growthTerminalSummary={growthTerminalSummary}
+      actionRouteResolution={actionRouteResolution}
       growthSummaryPending={growthSummaryPending}
       onGrowthTerminalSummaryRefreshRequested={
         onGrowthTerminalSummaryRefreshRequested

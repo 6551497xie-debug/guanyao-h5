@@ -79,6 +79,9 @@ try {
     platform: "node",
     format: "esm",
     target: "node20",
+    define: {
+      "import.meta.env.DEV": "true",
+    },
     logLevel: "silent",
   });
 

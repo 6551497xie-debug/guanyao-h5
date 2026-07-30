@@ -1,14 +1,20 @@
 import type {
   CommitChoiceActionIntentionInput,
 } from "../types/xinmaiChoiceActionIntention";
+import {
+  resolveChoiceActionRoutes,
+} from "./xinmaiChoiceActionRouteResolver";
+import {
+  validateChoiceActionRouteCandidate,
+} from "./xinmaiChoiceActionRouteValidator";
 
 export type ChoiceActionIntentionPrerequisiteInvalidReason =
   | "IDENTITY_REFERENCES_INVALID"
   | "LINEAGE_REFERENCES_INVALID"
   | "OBSERVATION_PROOF_INVALID"
-  | "ACTION_SUMMARY_INVALID"
+  | "ACTION_ROUTE_INVALID"
   | "FORMATION_SOURCE_INCOMPLETE"
-  | "ROUTE_IMPACT_MISMATCH";
+  | "ROUTE_PROJECTION_MISMATCH";
 
 export type ChoiceActionIntentionPrerequisiteValidation =
   | Readonly<{
@@ -64,15 +70,32 @@ export function validateChoiceActionIntentionPrerequisites(
       reason: "OBSERVATION_PROOF_INVALID" as const,
     });
   }
+  const routeResolution = resolveChoiceActionRoutes(
+    input.actionRouteResolverInput,
+  );
+  if (routeResolution.status !== "READY") {
+    return Object.freeze({
+      status: "INVALID" as const,
+      input: null,
+      reason: "ACTION_ROUTE_INVALID" as const,
+    });
+  }
+  const selectedRoute = routeResolution.candidates.find(
+    (candidate) =>
+      candidate.actionRouteReferenceId ===
+      input.selectedActionRouteReferenceId,
+  );
   if (
-    !hasText(input.actionSummary) ||
-    input.actionSummary.trim() !==
-      input.formationSourceSnapshot.action.actionLine.trim()
+    !selectedRoute ||
+    validateChoiceActionRouteCandidate(
+      selectedRoute,
+      input.actionRouteResolverInput,
+    ).status !== "VALID"
   ) {
     return Object.freeze({
       status: "INVALID" as const,
       input: null,
-      reason: "ACTION_SUMMARY_INVALID" as const,
+      reason: "ACTION_ROUTE_INVALID" as const,
     });
   }
   if (
@@ -89,22 +112,21 @@ export function validateChoiceActionIntentionPrerequisites(
     });
   }
   if (
-    !hasText(input.changeExperienceRouteProof.sourceUnitId) ||
-    input.changeExperienceRouteProof.dimension !==
-      input.formationSourceSnapshot.primaryDimension ||
+    input.formationSourceSnapshot.action.actionLine.trim() !==
+      selectedRoute.action.visibleAction.trim() ||
     input.formationSourceSnapshot.migrationImpact.dimension !==
-      input.changeExperienceRouteProof.dimension ||
+      input.formationSourceSnapshot.primaryDimension ||
     input.formationSourceSnapshot.migrationImpact.sourceUnit
-      .dimension !== input.changeExperienceRouteProof.dimension ||
+      .dimension !== input.formationSourceSnapshot.primaryDimension ||
     input.formationSourceSnapshot.migrationImpact.sourceUnit.unitId !==
-      input.changeExperienceRouteProof.sourceUnitId ||
+      selectedRoute.actionRouteReferenceId ||
     input.formationSourceSnapshot.migrationImpact.impactReadiness !==
       "READY_FOR_CRYSTAL"
   ) {
     return Object.freeze({
       status: "INVALID" as const,
       input: null,
-      reason: "ROUTE_IMPACT_MISMATCH" as const,
+      reason: "ROUTE_PROJECTION_MISMATCH" as const,
     });
   }
   return Object.freeze({

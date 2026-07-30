@@ -9,8 +9,12 @@ import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityE
 import {
   validateChoiceActionIntentionPrerequisites,
 } from "./xinmaiChoiceActionIntentionPrerequisiteValidator";
-
-const XINMAI_NEW_CHOICE_PRESENTATION_MUTATIONS_PAUSED = true;
+import {
+  createChoiceRouteFormationSourceSnapshot,
+} from "./xinmaiChoiceActionRouteGrowthProjection";
+import {
+  canCreateXinmaiChoiceFromActionRoute,
+} from "./xinmaiChoiceActionRouteRuntimePolicy";
 
 const identityMatches = (
   left: RealityEncounterIdentityReferences,
@@ -33,9 +37,7 @@ const withheld = (
     lineage,
     experienceStage: input.experienceStage,
     resolvedAt: new Date().toISOString(),
-    actionCandidate: null,
-    route: null,
-    migrationImpact: null,
+    actionRouteCandidate: null,
     formationSourceSnapshot: null,
     structuralInput: null,
     choiceActionIntention: null,
@@ -54,9 +56,7 @@ const safeWithheld = (
     lineage,
     experienceStage: input.experienceStage,
     resolvedAt: new Date().toISOString(),
-    actionCandidate: null,
-    route: null,
-    migrationImpact: null,
+    actionRouteCandidate: null,
     formationSourceSnapshot: null,
     structuralInput: null,
     choiceActionIntention: null,
@@ -155,9 +155,7 @@ export function resolveChoicePresentationReadiness(
       lineage: currentLineage,
       experienceStage: input.experienceStage,
       resolvedAt: new Date().toISOString(),
-      actionCandidate: null,
-      route: null,
-      migrationImpact: null,
+      actionRouteCandidate: null,
       formationSourceSnapshot: null,
       structuralInput: null,
       choiceActionIntention: summary.choiceActionIntention,
@@ -173,9 +171,7 @@ export function resolveChoicePresentationReadiness(
       lineage: currentLineage,
       experienceStage: input.experienceStage,
       resolvedAt: new Date().toISOString(),
-      actionCandidate: null,
-      route: null,
-      migrationImpact: null,
+      actionRouteCandidate: null,
       formationSourceSnapshot: null,
       structuralInput: null,
       choiceActionIntention: summary.choiceActionIntention,
@@ -191,9 +187,7 @@ export function resolveChoicePresentationReadiness(
       lineage: currentLineage,
       experienceStage: input.experienceStage,
       resolvedAt: new Date().toISOString(),
-      actionCandidate: null,
-      route: null,
-      migrationImpact: null,
+      actionRouteCandidate: null,
       formationSourceSnapshot: null,
       structuralInput: null,
       choiceActionIntention: summary.choiceActionIntention,
@@ -209,9 +203,7 @@ export function resolveChoicePresentationReadiness(
       lineage: currentLineage,
       experienceStage: input.experienceStage,
       resolvedAt: new Date().toISOString(),
-      actionCandidate: null,
-      route: null,
-      migrationImpact: null,
+      actionRouteCandidate: null,
       formationSourceSnapshot: null,
       structuralInput: null,
       choiceActionIntention: summary.choiceActionIntention,
@@ -221,17 +213,17 @@ export function resolveChoicePresentationReadiness(
           .choiceActionIntentionReferenceId,
     });
   }
-  if (XINMAI_NEW_CHOICE_PRESENTATION_MUTATIONS_PAUSED) {
-    return safeWithheld(
-      input,
-      "RUNTIME_RECOVERY_FAILURE",
-      currentLineage,
-    );
-  }
   if (observation.status === "CHOICE_COMMITTED") {
     return safeWithheld(
       input,
       "SUMMARY_CONFLICT",
+      currentLineage,
+    );
+  }
+  if (!canCreateXinmaiChoiceFromActionRoute()) {
+    return safeWithheld(
+      input,
+      "ACTION_ROUTE_RUNTIME_PAUSED",
       currentLineage,
     );
   }
@@ -254,24 +246,19 @@ export function resolveChoicePresentationReadiness(
       currentLineage,
     );
   }
-  if (input.revisionAction === null) {
-    return withheld(
+  if (input.actionRouteResolution.status !== "READY") {
+    return safeWithheld(
       input,
-      "ACTION_CANDIDATE_REQUIRED",
+      "ACTION_ROUTE_SAFE_WITHHELD",
       currentLineage,
     );
   }
-  if (input.changeExperienceRoute === null) {
+  const actionRouteCandidate =
+    input.actionRouteResolution.candidates[0] ?? null;
+  if (actionRouteCandidate === null) {
     return withheld(
       input,
-      "CHANGE_EXPERIENCE_ROUTE_REQUIRED",
-      currentLineage,
-    );
-  }
-  if (input.migrationImpact === null) {
-    return withheld(
-      input,
-      "MIGRATION_IMPACT_REQUIRED",
+      "ACTION_ROUTE_REQUIRED",
       currentLineage,
     );
   }
@@ -292,14 +279,21 @@ export function resolveChoicePresentationReadiness(
       currentLineage,
     );
   }
-  const formationSourceSnapshot = Object.freeze({
-    formation: input.formation,
-    migrationImpact: input.migrationImpact,
-    completedNodeCount: input.assetCandidate.completedNodeCount,
-    primaryDimension: input.changeExperienceRoute.dimension,
-    action: input.revisionAction,
-    assetCompletionState: "READY_TO_CRYSTALLIZE" as const,
-  });
+  const formationSourceSnapshot =
+    createChoiceRouteFormationSourceSnapshot({
+      candidate: actionRouteCandidate,
+      formation: input.formation,
+      completedNodeCount: input.assetCandidate.completedNodeCount,
+      assetCompletionState:
+        input.assetCandidate.completionState,
+    });
+  if (formationSourceSnapshot === null) {
+    return withheld(
+      input,
+      "FORMATION_SOURCE_INCOMPLETE",
+      currentLineage,
+    );
+  }
   const structuralInput = Object.freeze({
     identityReferences: attempt.identityReferences,
     sourceEncounterCycleId: attempt.sourceEncounterCycleId,
@@ -314,11 +308,10 @@ export function resolveChoicePresentationReadiness(
         observation.gravityObservationReferenceId,
       checkpointRevision: observation.checkpointRevision,
     }),
-    changeExperienceRouteProof: Object.freeze({
-      dimension: input.changeExperienceRoute.dimension,
-      sourceUnitId: input.migrationImpact.sourceUnit.unitId,
-    }),
-    actionSummary: input.revisionAction.actionLine,
+    actionRouteResolverInput:
+      input.actionRouteResolution.resolverInput,
+    selectedActionRouteReferenceId:
+      actionRouteCandidate.actionRouteReferenceId,
     formationSourceSnapshot,
   });
   const validation =
@@ -336,9 +329,7 @@ export function resolveChoicePresentationReadiness(
     lineage: currentLineage,
     experienceStage: input.experienceStage,
     resolvedAt: new Date().toISOString(),
-    actionCandidate: input.revisionAction,
-    route: input.changeExperienceRoute,
-    migrationImpact: input.migrationImpact,
+    actionRouteCandidate,
     formationSourceSnapshot,
     structuralInput: validation.input,
     choiceActionIntention: null,

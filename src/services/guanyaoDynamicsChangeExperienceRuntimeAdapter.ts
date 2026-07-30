@@ -31,9 +31,12 @@ export type DynamicsChangeExperienceRuntimeResult = Readonly<{
 export function resolveDynamicsChangeExperienceRuntime(
   input: DynamicsChangeExperienceRuntimeAdapterInput,
 ): DynamicsChangeExperienceRuntimeResult {
-  const smokeRevisionAction = resolveChangeExperienceRuntimeSmokeRevisionAction(
-    input.experienceSmokeFixture,
-  );
+  const smokeRevisionAction =
+    import.meta.env.DEV
+      ? resolveChangeExperienceRuntimeSmokeRevisionAction(
+          input.experienceSmokeFixture,
+        )
+      : null;
   const revisionAction = smokeRevisionAction ?? resolveDynamicsRevisionAction(input.formation);
   const revisionActionSource: DynamicsChangeExperienceRevisionActionSource = smokeRevisionAction
     ? "SMOKE_FIXTURE"

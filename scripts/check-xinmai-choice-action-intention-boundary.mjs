@@ -22,4 +22,18 @@ if (
 ) {
   throw new Error("Choice controller bypasses shared prerequisites");
 }
+for (const expected of [
+  "resolveChoiceActionRoutes(",
+  "const currentRouteResolution = resolveChoiceActionRoutes(",
+  "actionRouteSnapshot: Object.freeze({",
+  'lifecycleState: "CONSUMED_BY_CHOICE" as const',
+  '"XINMAI_CHOICE_ACTION_ROUTE_AUTHORITY" as const',
+]) {
+  if (!controller.includes(expected)) {
+    throw new Error(`Choice V2 atomic Route boundary missing ${expected}`);
+  }
+}
+if (controller.includes("changeExperienceRouteProof")) {
+  throw new Error("Legacy Change Experience proof still grants Choice");
+}
 console.log("[XINMAI CHOICE ACTION INTENTION BOUNDARY] PASS");

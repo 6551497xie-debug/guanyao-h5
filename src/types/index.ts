@@ -3405,11 +3405,27 @@ export type {
 
 export type {
   ChoiceActionIntention,
+  ChoiceActionIntentionV1,
+  ChoiceActionIntentionV2,
   ChoiceFormationSourceSnapshot,
   ChoiceObservationStructuralProof,
-  ChoiceChangeExperienceRouteProof,
   CommitChoiceActionIntentionInput,
 } from "./xinmaiChoiceActionIntention";
+
+export type {
+  ChoiceActionRoutePrototypeId,
+  ChoiceActionRouteSceneKind,
+  ChoiceActionRouteTargetKind,
+  ChoiceActionRouteEffortBoundary,
+  ChoiceActionRouteScale,
+  ChoiceActionRoutePrototype,
+  ChoiceActionRouteParameters,
+  ChoiceActionRouteResolverInput,
+  ChoiceActionRouteCandidate,
+  ChoiceActionRouteSnapshot,
+  ChoiceActionRouteResolution,
+  ChoiceActionRouteValidation,
+} from "./xinmaiChoiceActionRoute";
 
 export type {
   ChoicePresentationLineage,

@@ -8,7 +8,7 @@
   .gy-reality-seed-continuation {
   position: relative;
   display: flex;
-  flex: 0 0 min(58vw, 218px);
+  flex: 0 0 min(calc(100% - 72px), 218px);
   min-height: 92px;
   align-items: flex-start;
   justify-content: center;
@@ -16,6 +16,7 @@
   padding: 8px 18px 7px;
   color: rgba(185, 203, 236, 0.46);
   scroll-snap-align: center;
+  scroll-snap-stop: always;
 }
 
 .xinmai-life-app[data-xinmai-surface="REALITY"]
@@ -76,9 +77,14 @@
   .gy-p36__signal-list
   .gy-reality-seed-continuation
   > button {
+  display: inline-flex;
+  min-width: 96px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
   width: auto;
-  margin: 8px 0 0;
-  padding: 4px 1px 3px;
+  margin: 2px 0 0;
+  padding: 10px 8px;
   border: 0;
   border-bottom: 1px solid rgba(238, 226, 198, 0.24);
   border-radius: 0;

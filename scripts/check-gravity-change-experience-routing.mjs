@@ -322,9 +322,9 @@ try {
     "DEV_ACTION_FIVE_PRESSURE_CONTEXT",
   );
   assertIncludes(
-    "gravity presentation marker follows routed dimension",
+    "gravity presentation marker follows typed Action Route",
     gravityPageSource,
-    'data-change-experience-presentation={changeExperienceRoute?.dimension ?? "inactive"}',
+    ".actionRouteCandidate.prototypeId",
   );
   assertNotIncludes(
     "gravity no longer owns unit routing",

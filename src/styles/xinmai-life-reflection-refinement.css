@@ -63,7 +63,7 @@
 .xinmai-life-app[data-xinmai-surface="REALITY"]
   .gy-p36__pressure-space {
   bottom: max(18px, env(safe-area-inset-bottom));
-  width: min(920px, 94vw);
+  width: min(100%, 920px);
   padding: 10px 0 4px;
 }
 
@@ -100,10 +100,14 @@
 
 .xinmai-life-app[data-xinmai-surface="REALITY"]
   .gy-p36__signal-list {
-  gap: clamp(18px, 3.2vw, 34px);
+  box-sizing: border-box;
+  gap: clamp(18px, 6%, 26px);
   width: 100%;
   margin-top: 13px;
-  padding: 0 clamp(20px, 6vw, 72px) 5px;
+  padding: 0 clamp(20px, 8%, 36px) 5px;
+  overscroll-behavior-inline: contain;
+  scroll-padding-inline: clamp(20px, 8%, 36px);
+  touch-action: pan-x;
   mask-image: linear-gradient(
     90deg,
     transparent,
@@ -117,13 +121,14 @@
   .gy-p36__signal-list
   article {
   position: relative;
-  flex-basis: min(64vw, 248px);
+  flex-basis: min(calc(100% - 72px), 248px);
   min-height: 92px;
   border: 0 !important;
   border-radius: 0;
   padding: 8px 5px 6px 13px;
   background: transparent !important;
   opacity: 0.46;
+  scroll-snap-stop: always;
   transform: translateY(4px);
   transition:
     opacity 620ms ease,
@@ -180,9 +185,14 @@
   .gy-p36__signal-list
   article
   button {
+  display: inline-flex;
+  min-width: 96px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
   width: auto;
-  margin-top: 6px;
-  padding: 4px 1px 3px;
+  margin-top: 2px;
+  padding: 10px 8px;
   border-bottom-color: rgba(238, 226, 198, 0.15);
   color: rgba(238, 226, 198, 0.48);
   font-size: 9px;
@@ -661,19 +671,19 @@
 
   .xinmai-life-app[data-xinmai-surface="REALITY"]
     .gy-p36__pressure-space {
-    width: 96vw;
+    width: min(100%, 96vw);
   }
 
   .xinmai-life-app[data-xinmai-surface="REALITY"]
     .gy-p36__signal-list {
-    padding-right: 14vw;
-    padding-left: 14vw;
+    padding-right: clamp(20px, 8%, 36px);
+    padding-left: clamp(20px, 8%, 36px);
   }
 
   .xinmai-life-app[data-xinmai-surface="REALITY"]
     .gy-p36__signal-list
     article {
-    flex-basis: 70vw;
+    flex-basis: min(calc(100% - 72px), 248px);
   }
 
   .xinmai-life-app[data-xinmai-surface="REFLECTION"]

@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { XinmaiLivedResponseReturnSurface } from "../components/XinmaiLivedResponseReturnSurface";
-import { resolveChangeExperienceRuntimeRoute } from "../services/changeExperienceRuntimeRoutingService";
-import { resolveChangeExperienceRuntimeSmokeRevisionAction } from "../services/fixtures/changeExperienceRuntimeSmokeFixtures";
 import { resolveCurrentHexagramFormation } from "../services/guanyaoCurrentHexagramFormationAdapter";
-import { resolveDynamicsMigrationImpact } from "../services/guanyaoDynamicsMigrationImpactAdapter";
+import { resolveChoiceActionRoutes } from "../services/xinmaiChoiceActionRouteResolver";
+import { createChoiceRouteFormationSourceSnapshot } from "../services/xinmaiChoiceActionRouteGrowthProjection";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { setPersonalityRingLiteAcceptanceWriteFailure } from "../services/guanyaoPersonalityRingLitePersistenceAdapter";
 import { formCrystalFromEligibility } from "../services/xinmaiCrystalFormationConsumer";
@@ -318,20 +317,6 @@ export function XinmaiLivedGrowthAcceptancePage() {
 
   const prepare = async () => {
     const formation = resolveCurrentHexagramFormation(READY_INPUT);
-    const action =
-      resolveChangeExperienceRuntimeSmokeRevisionAction("action-five");
-    const route = resolveChangeExperienceRuntimeRoute(
-      action,
-      "action-five",
-    );
-    const migrationImpact = resolveDynamicsMigrationImpact({
-      action,
-      changeExperienceRoute: route,
-    });
-    if (!formation || !action || !route || !migrationImpact) {
-      setFeedback("验收事实尚未准备完成。");
-      return;
-    }
     const {
       sourceEncounterCycleId,
       gravityCycleId,
@@ -348,6 +333,53 @@ export function XinmaiLivedGrowthAcceptancePage() {
       setFeedback("验收观察事实没有被正式保存。");
       return;
     }
+    const actionRouteResolution = resolveChoiceActionRoutes(
+      Object.freeze({
+        identityReferences,
+        sourceEncounterCycleId,
+        gravityCycleId,
+        gravityObservationReferenceId,
+        observationCheckpointRevision: 2,
+        observationStatus: "OBSERVATION_RECOGNIZED" as const,
+        pressure: Object.freeze({
+          selectedPressureSeedId:
+            READY_INPUT.selectedPressureSeedContext
+              .selectedPressureSeedId,
+          candidateReferenceId:
+            `acceptance-pressure-candidate:${scenario}`,
+          pressureField:
+            READY_INPUT.selectedPressureSeedContext.pressureField,
+          pressureNature:
+            READY_INPUT.selectedPressureSeedContext.pressureNature,
+        }),
+        motherCode: Object.freeze({
+          motherCodeProfileId:
+            READY_INPUT.motherCodeProfile.motherCodeId,
+          motherCodeDefinitionId:
+            READY_INPUT.motherCodeProfile.motherCodeId,
+          lowerTrigram: READY_INPUT.motherTrigram,
+        }),
+      }),
+    );
+    if (actionRouteResolution.status !== "READY") {
+      setFeedback("验收行动路线尚未准备完成。");
+      return;
+    }
+    const actionRouteCandidate =
+      actionRouteResolution.candidates[0] ?? null;
+    const formationSourceSnapshot =
+      actionRouteCandidate
+        ? createChoiceRouteFormationSourceSnapshot({
+            candidate: actionRouteCandidate,
+            formation,
+            completedNodeCount: 6,
+            assetCompletionState: "READY_TO_CRYSTALLIZE",
+          })
+        : null;
+    if (!actionRouteCandidate || !formationSourceSnapshot) {
+      setFeedback("验收行动路线尚未准备完成。");
+      return;
+    }
     const committed = await commitChoiceActionIntention({
       identityReferences,
       sourceEncounterCycleId,
@@ -359,19 +391,11 @@ export function XinmaiLivedGrowthAcceptancePage() {
         gravityObservationReferenceId,
         checkpointRevision: 2,
       }),
-      changeExperienceRouteProof: Object.freeze({
-        dimension: route.dimension,
-        sourceUnitId: migrationImpact.sourceUnit.unitId,
-      }),
-      actionSummary: action.actionLine,
-      formationSourceSnapshot: Object.freeze({
-        formation,
-        migrationImpact,
-        completedNodeCount: 6,
-        primaryDimension: "action",
-        action,
-        assetCompletionState: "READY_TO_CRYSTALLIZE" as const,
-      }),
+      actionRouteResolverInput:
+        actionRouteResolution.resolverInput,
+      selectedActionRouteReferenceId:
+        actionRouteCandidate.actionRouteReferenceId,
+      formationSourceSnapshot,
     });
     if (
       committed.status !== "COMMITTED" &&

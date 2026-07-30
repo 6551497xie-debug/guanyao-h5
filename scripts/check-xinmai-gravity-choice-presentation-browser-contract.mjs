@@ -51,6 +51,16 @@ requireSource(
   "growthTerminalSummary={growthTerminalSummary}",
 );
 requireSource(
+  "host resolves typed Action Routes",
+  host,
+  "resolveProductionChoiceActionRoutes({",
+);
+requireSource(
+  "host forwards typed Action Routes",
+  host,
+  "actionRouteResolution={actionRouteResolution}",
+);
+requireSource(
   "resolver motion agnostic",
   resolver,
   "noCommitAuthority: true",

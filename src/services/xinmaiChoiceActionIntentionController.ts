@@ -29,6 +29,12 @@ import {
 import {
   validateChoiceActionIntentionPrerequisites,
 } from "./xinmaiChoiceActionIntentionPrerequisiteValidator";
+import {
+  resolveChoiceActionRoutes,
+} from "./xinmaiChoiceActionRouteResolver";
+import {
+  canCreateXinmaiChoiceFromActionRoute,
+} from "./xinmaiChoiceActionRouteRuntimePolicy";
 
 type ChoiceMutationFailureReason =
   | "INVALID_INPUT"
@@ -37,6 +43,7 @@ type ChoiceMutationFailureReason =
   | "ENCOUNTER_MISMATCH"
   | "STALE_INTENTION_REVISION"
   | "FORMATION_ALREADY_CONFIRMED"
+  | "ACTION_ROUTE_RUNTIME_PAUSED"
   | "PERSISTENCE_UNAVAILABLE";
 
 export type CommitChoiceActionIntentionResult =
@@ -82,9 +89,34 @@ export type XinmaiLivedGrowthReturnItem = Readonly<{
 export async function commitChoiceActionIntention(
   input: CommitChoiceActionIntentionInput,
 ): Promise<CommitChoiceActionIntentionResult> {
+  if (!canCreateXinmaiChoiceFromActionRoute()) {
+    return Object.freeze({
+      status: "SAFE_WITHHELD" as const,
+      intention: null,
+      reason: "ACTION_ROUTE_RUNTIME_PAUSED" as const,
+    });
+  }
   const prerequisiteValidation =
     validateChoiceActionIntentionPrerequisites(input);
   if (prerequisiteValidation.status !== "VALID") {
+    return Object.freeze({
+      status: "REJECTED" as const,
+      intention: null,
+      reason: "INVALID_INPUT" as const,
+    });
+  }
+  const initialRouteResolution = resolveChoiceActionRoutes(
+    input.actionRouteResolverInput,
+  );
+  const initiallySelectedRoute =
+    initialRouteResolution.status === "READY"
+      ? initialRouteResolution.candidates.find(
+          (candidate) =>
+            candidate.actionRouteReferenceId ===
+            input.selectedActionRouteReferenceId,
+        ) ?? null
+      : null;
+  if (initiallySelectedRoute === null) {
     return Object.freeze({
       status: "REJECTED" as const,
       intention: null,
@@ -121,6 +153,19 @@ export async function commitChoiceActionIntention(
           return Object.freeze({
             status: "REJECTED" as const,
             reason: "IDENTITY_MISMATCH" as const,
+          });
+        }
+        if (
+          existing.schemaVersion ===
+            XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION &&
+          (existing.actionRouteSnapshot.actionRouteReferenceId !==
+            input.selectedActionRouteReferenceId ||
+            existing.actionRouteSnapshot.canonicalIdentityKey !==
+              initiallySelectedRoute.canonicalIdentityKey)
+        ) {
+          return Object.freeze({
+            status: "REJECTED" as const,
+            reason: "CHOICE_ALREADY_EXISTS" as const,
           });
         }
         return Object.freeze({
@@ -176,6 +221,34 @@ export async function commitChoiceActionIntention(
           reason: "OBSERVATION_NOT_RECOGNIZED" as const,
         });
       }
+      const inTransactionValidation =
+        validateChoiceActionIntentionPrerequisites(input);
+      const currentRouteResolution = resolveChoiceActionRoutes(
+        input.actionRouteResolverInput,
+      );
+      const selectedRoute =
+        currentRouteResolution.status === "READY"
+          ? currentRouteResolution.candidates.find(
+              (candidate) =>
+                candidate.actionRouteReferenceId ===
+                input.selectedActionRouteReferenceId,
+            ) ?? null
+          : null;
+      if (
+        inTransactionValidation.status !== "VALID" ||
+        selectedRoute === null ||
+        selectedRoute.canonicalIdentityKey !==
+          initiallySelectedRoute.canonicalIdentityKey ||
+        selectedRoute.pressureProvenance.candidateReferenceId !==
+          observation.pressureProvenance.candidateReferenceId ||
+        selectedRoute.pressureProvenance.selectedPressureSeedId !==
+          observation.pressureProvenance.selectedPressureSeedId
+      ) {
+        return Object.freeze({
+          status: "REJECTED" as const,
+          reason: "ACTION_ROUTE_STALE" as const,
+        });
+      }
       const now = new Date().toISOString();
       const intention: ChoiceActionIntention = Object.freeze({
         schemaVersion: XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION,
@@ -189,13 +262,20 @@ export async function commitChoiceActionIntention(
           input.gravityObservationReferenceId,
         state: "COMMITTED" as const,
         revision: 1,
-        actionSummary: input.actionSummary.trim(),
+        actionSummary: selectedRoute.action.visibleAction.trim(),
         formationSourceSnapshot: input.formationSourceSnapshot,
+        actionRouteSnapshot: Object.freeze({
+          ...selectedRoute,
+          lifecycle: "CONSUMED_BY_CHOICE" as const,
+          revision: 1 as const,
+          userExplicitSelection: true as const,
+        }),
         committedAt: now,
         updatedAt: now,
         provenance: Object.freeze({
           userExplicitCommit: true as const,
-          sourceAuthority: "GRAVITY_TYPED_OBSERVATION" as const,
+          sourceAuthority:
+            "XINMAI_CHOICE_ACTION_ROUTE_AUTHORITY" as const,
           noLivedResponseAuthority: true as const,
           noCrystalEligibilityAuthority: true as const,
         }),

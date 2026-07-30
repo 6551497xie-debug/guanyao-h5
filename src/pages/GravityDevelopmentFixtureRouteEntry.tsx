@@ -94,6 +94,13 @@ export function GravityDevelopmentFixtureRouteEntry() {
         formationReceipt: null,
         reason: "DEVELOPMENT_FIXTURE_ISOLATED",
       })}
+      actionRouteResolution={Object.freeze({
+        status: "SAFE_WITHHELD" as const,
+        routeSetReferenceId: null,
+        resolverInput: null,
+        candidates: Object.freeze([]) as readonly [],
+        reason: "OBSERVATION_NOT_RECOGNIZED" as const,
+      })}
       growthSummaryPending={false}
       onGrowthTerminalSummaryRefreshRequested={
         async () => undefined

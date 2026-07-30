@@ -14,6 +14,10 @@ const paths = {
     "src/services/realityProductionPressureSeedConsumer.ts",
   gravity: "src/services/realityProductionGravityConsumer.ts",
   stylesheet: "src/styles/reality-pressure-presentation.css",
+  refinementStylesheet:
+    "src/styles/xinmai-life-reflection-refinement.css",
+  discoveryStylesheet:
+    "src/styles/xinmai-reality-seed-continuous-discovery.css",
   packageManifest: "package.json",
 };
 const source = Object.fromEntries(
@@ -142,6 +146,53 @@ try {
     ".gy-p36__gravity-ready",
   ].forEach((marker) =>
     assertIncludes("existing frozen Pressure style is reused", source.stylesheet, marker),
+  );
+  [
+    "width: min(100%, 920px)",
+    "box-sizing: border-box",
+    "flex-basis: min(calc(100% - 72px), 248px)",
+    "overscroll-behavior-inline: contain",
+    "scroll-padding-inline: clamp(20px, 8%, 36px)",
+    "touch-action: pan-x",
+    "scroll-snap-stop: always",
+    "min-width: 96px",
+    "min-height: 44px",
+    "width: min(100%, 96vw)",
+  ].forEach((marker) =>
+    assertIncludes(
+      "Pressure candidates remain inside the actual Reality Host with accessible hit targets",
+      source.refinementStylesheet,
+      marker,
+    ),
+  );
+  [
+    "width: min(920px, 94vw)",
+    "flex-basis: min(64vw, 248px)",
+    "width: 96vw",
+    "flex-basis: 70vw",
+  ].forEach((marker) =>
+    assertExcludes(
+      "viewport-sized Pressure presentation cannot escape the Reality Host",
+      source.refinementStylesheet,
+      marker,
+    ),
+  );
+  [
+    "flex: 0 0 min(calc(100% - 72px), 218px)",
+    "scroll-snap-stop: always",
+    "min-width: 96px",
+    "min-height: 44px",
+  ].forEach((marker) =>
+    assertIncludes(
+      "continuous discovery remains reachable inside the Reality Host",
+      source.discoveryStylesheet,
+      marker,
+    ),
+  );
+  assertExcludes(
+    "continuous discovery no longer uses viewport width inside the clipped Host",
+    source.discoveryStylesheet,
+    "flex: 0 0 min(58vw, 218px)",
   );
 
   const packageJson = JSON.parse(source.packageManifest);

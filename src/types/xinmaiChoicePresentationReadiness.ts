@@ -1,14 +1,15 @@
 import type { CurrentHexagramFormationResult } from "./currentHexagramFormation";
 import type { DynamicsExperienceStage } from "./dynamicsExperiencePresentation";
-import type { SingleModelRevisionAction } from "./dynamicsRevisionAction";
 import type { HexagramAssetCandidateCompletionState } from "../services/guanyaoHexagramAssetCandidateResolver";
-import type { ChangeExperienceRuntimeRoute } from "../services/changeExperienceRuntimeRoutingService";
-import type { PersonaMigrationImpact } from "./personaTransmission";
 import type {
   ChoiceActionIntention,
   ChoiceFormationSourceSnapshot,
   CommitChoiceActionIntentionInput,
 } from "./xinmaiChoiceActionIntention";
+import type {
+  ChoiceActionRouteCandidate,
+  ChoiceActionRouteResolution,
+} from "./xinmaiChoiceActionRoute";
 import type {
   CrystalEligibility,
   CrystalFormationReceipt,
@@ -112,9 +113,7 @@ export type ChoicePresentationReadinessInput = Readonly<{
     completionState: HexagramAssetCandidateCompletionState;
     completedNodeCount: number;
   }>;
-  revisionAction: SingleModelRevisionAction | null;
-  changeExperienceRoute: ChangeExperienceRuntimeRoute | null;
-  migrationImpact: PersonaMigrationImpact | null;
+  actionRouteResolution: ChoiceActionRouteResolution;
   growthTerminalSummary: ChoiceGrowthTerminalSummary;
   operationalState: ChoicePresentationOperationalState;
 }>;
@@ -122,9 +121,7 @@ export type ChoicePresentationReadinessInput = Readonly<{
 export type ChoicePresentationWithheldReason =
   | "SURFACE_ATTEMPT_REQUIRED"
   | "OBSERVATION_NOT_RECOGNIZED"
-  | "ACTION_CANDIDATE_REQUIRED"
-  | "CHANGE_EXPERIENCE_ROUTE_REQUIRED"
-  | "MIGRATION_IMPACT_REQUIRED"
+  | "ACTION_ROUTE_REQUIRED"
   | "FORMATION_SOURCE_REQUIRED"
   | "FORMATION_SOURCE_INCOMPLETE"
   | "STRUCTURAL_PREREQUISITE_INVALID";
@@ -139,6 +136,8 @@ export type ChoicePresentationSafeWithheldReason =
   | "GRAVITY_LINEAGE_MISMATCH"
   | "OBSERVATION_LINEAGE_MISMATCH"
   | "SUMMARY_CONFLICT"
+  | "ACTION_ROUTE_SAFE_WITHHELD"
+  | "ACTION_ROUTE_RUNTIME_PAUSED"
   | "RUNTIME_RECOVERY_FAILURE";
 
 type ChoicePresentationDecisionBase = Readonly<{
@@ -152,9 +151,7 @@ export type ChoicePresentationReadinessDecision =
         state: "READY_TO_PRESENT";
         reason: "ALL_TYPED_PREREQUISITES_READY";
         lineage: ChoicePresentationLineage;
-        actionCandidate: SingleModelRevisionAction;
-        route: ChangeExperienceRuntimeRoute;
-        migrationImpact: PersonaMigrationImpact;
+        actionRouteCandidate: ChoiceActionRouteCandidate;
         formationSourceSnapshot: ChoiceFormationSourceSnapshot;
         structuralInput: CommitChoiceActionIntentionInput;
         choiceActionIntention: null;
@@ -166,9 +163,7 @@ export type ChoicePresentationReadinessDecision =
         state: "WITHHELD";
         reason: ChoicePresentationWithheldReason;
         lineage: ChoicePresentationLineage | null;
-        actionCandidate: null;
-        route: null;
-        migrationImpact: null;
+        actionRouteCandidate: null;
         formationSourceSnapshot: null;
         structuralInput: null;
         choiceActionIntention: null;
@@ -180,9 +175,7 @@ export type ChoicePresentationReadinessDecision =
         state: "RESUME_COMMITTED";
         reason: "CANONICAL_CHOICE_EXISTS";
         lineage: ChoicePresentationLineage;
-        actionCandidate: null;
-        route: null;
-        migrationImpact: null;
+        actionRouteCandidate: null;
         formationSourceSnapshot: null;
         structuralInput: null;
         choiceActionIntention: ChoiceActionIntention;
@@ -194,9 +187,7 @@ export type ChoicePresentationReadinessDecision =
         state: "TERMINAL_BY_GROWTH";
         reason: "HIGHER_GROWTH_ASSET_EXISTS";
         lineage: ChoicePresentationLineage;
-        actionCandidate: null;
-        route: null;
-        migrationImpact: null;
+        actionRouteCandidate: null;
         formationSourceSnapshot: null;
         structuralInput: null;
         choiceActionIntention: ChoiceActionIntention;
@@ -211,9 +202,7 @@ export type ChoicePresentationReadinessDecision =
         state: "SAFE_WITHHELD";
         reason: ChoicePresentationSafeWithheldReason;
         lineage: ChoicePresentationLineage | null;
-        actionCandidate: null;
-        route: null;
-        migrationImpact: null;
+        actionRouteCandidate: null;
         formationSourceSnapshot: null;
         structuralInput: null;
         choiceActionIntention: null;
