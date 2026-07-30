@@ -36,6 +36,12 @@ export function RealityGravityInertiaField({
   const safeDepth = Math.max(1, Math.min(6, repetitionDepth));
   const fieldRef = useRef<HTMLDivElement | null>(null);
   const lastOutcomeKeyRef = useRef<string | null>(null);
+  const reducedMotion =
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+    (import.meta.env.DEV &&
+      new URLSearchParams(window.location.search).get(
+        "__xinmaiReducedMotion",
+      ) === "1");
 
   useEffect(() => {
     if (
@@ -51,12 +57,6 @@ export function RealityGravityInertiaField({
       `${gravitySurfaceAdmissionAttempt.admissionRevision}`;
     if (lastOutcomeKeyRef.current === key) return;
     lastOutcomeKeyRef.current = key;
-    const reducedMotion =
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-      (import.meta.env.DEV &&
-        new URLSearchParams(window.location.search).get(
-          "__xinmaiReducedMotion",
-        ) === "1");
     const typedOutcome = Object.freeze({
       ...gravitySurfaceAdmissionAttempt,
       status: "GRAVITY_OBSERVATION_SURFACE_PRESENTED" as const,
@@ -77,6 +77,7 @@ export function RealityGravityInertiaField({
   }, [
     gravitySurfaceAdmissionAttempt,
     onGravityObservationSurfaceOutcome,
+    reducedMotion,
     visible,
   ]);
 
@@ -94,6 +95,11 @@ export function RealityGravityInertiaField({
       data-life-identity-effect="STATE_ONLY"
       data-choice-space="RESERVED_NOT_ACTIVE"
       data-observation-entry={activeObservation}
+      data-observation-surface-mode={
+        reducedMotion
+          ? "STATIC_FIRST_GRAVITY_OBSERVATION"
+          : "MOTION_FIRST_GRAVITY_OBSERVATION"
+      }
       data-repetition-depth={safeDepth}
     >
       <svg viewBox="0 0 100 100" preserveAspectRatio="none">

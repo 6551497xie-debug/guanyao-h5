@@ -3,7 +3,7 @@ import type { CrystalFormationReceipt } from "./xinmaiCrystalEligibility";
 
 export const XINMAI_LIVED_GROWTH_DATABASE_NAME =
   "xinmai-lived-growth-canonical" as const;
-export const XINMAI_LIVED_GROWTH_DATABASE_VERSION = 1 as const;
+export const XINMAI_LIVED_GROWTH_DATABASE_VERSION = 2 as const;
 
 export const XINMAI_LIVED_GROWTH_CANONICAL_STORE =
   "canonical-growth-envelope" as const;

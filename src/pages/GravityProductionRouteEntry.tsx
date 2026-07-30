@@ -20,6 +20,13 @@ import {
   failGravityEntryAcceptance,
   retryGravityEntryAcceptance,
 } from "../services/xinmaiGravityEntryAdmissionController";
+import {
+  establishGravityObservationAvailable,
+  recognizeGravityObservation,
+} from "../services/xinmaiGravityEncounterContinuityController";
+import {
+  resolveGravityEncounterResumeDecision,
+} from "../services/xinmaiGravityEncounterContinuityRecoveryAdapter";
 import type {
   GravityEntryFailureReason,
   GravityEntryAdmission,
@@ -28,6 +35,11 @@ import type {
   GravityRouteAdmission,
   GravityRouteTicket,
 } from "../types/xinmaiGravityEntryAdmission";
+import type {
+  GravityObservationRecognitionOutcome,
+  GravityObservationRecognitionProvenance,
+  GravityObservationResumeDecision,
+} from "../types/xinmaiGravityObservationContinuity";
 
 type GravityRouteState =
   | Readonly<{ gravityRouteTicket?: GravityRouteTicket }>
@@ -40,6 +52,7 @@ type GravityRouteAssemblyState =
       routeAdmission: GravityRouteAdmission;
       admission: GravityEntryAdmission;
       runtimeInput: GravityProductionRuntimeInput;
+      continuityDecision: GravityObservationResumeDecision;
     }>
   | Readonly<{
       status: "RETRYABLE" | "BLOCKED";
@@ -80,6 +93,7 @@ export function GravityProductionRouteEntry() {
   const transactionEpochRef = useRef(0);
 
   useEffect(() => {
+    let cancelled = false;
     if (identityRecovery.status !== "READY") {
       observeGravityRouteGuard("IDENTITY_MISMATCH");
       setAssembly(
@@ -90,69 +104,89 @@ export function GravityProductionRouteEntry() {
           gravityCycleId: null,
         }),
       );
-      return;
+      return () => {
+        cancelled = true;
+      };
     }
     const epoch = transactionEpochRef.current + 1;
     transactionEpochRef.current = epoch;
-    const routeAdmission = establishGravityRouteAdmission({
-      routeTicket,
-      identityReferences: identityRecovery.identityReferences,
-    });
-    observeGravityRouteAdmissionResult(routeAdmission);
-    if (transactionEpochRef.current !== epoch) return;
-    if (routeAdmission.status !== "READY") {
-      setAssembly(
-        Object.freeze({
-          status:
-            routeAdmission.status === "RETRY_REQUIRED"
-              ? "RETRYABLE" as const
-              : "BLOCKED" as const,
-          reason: routeAdmission.reason,
-          admissionReferenceId:
-            routeAdmission.intent?.admissionReferenceId ?? null,
-          gravityCycleId:
-            routeAdmission.intent?.gravityCycleId ?? null,
-        }),
-      );
-      return;
-    }
-    const runtimeInput = resolveGravityProductionRuntimeInput({
-      admission: routeAdmission.intent,
-      lifeSourceSession: identityRecovery.lifeSourceSession,
-      visualContinuity: identityRecovery.visualContinuity,
-    });
-    if (runtimeInput.status !== "READY") {
-      failGravityEntryAcceptance({
-        admissionReferenceId:
-          routeAdmission.intent.admissionReferenceId,
-        gravityCycleId: routeAdmission.intent.gravityCycleId,
-        admissionRevision: routeAdmission.intent.revision,
-        stage: "RUNTIME_INPUT",
-        reason: "RUNTIME_INPUT_UNAVAILABLE",
+    void (async () => {
+      const routeAdmission = establishGravityRouteAdmission({
+        routeTicket,
+        identityReferences: identityRecovery.identityReferences,
       });
-      setAssembly(
-        Object.freeze({
-          status: "RETRYABLE" as const,
-          reason: "RUNTIME_INPUT_UNAVAILABLE" as const,
+      observeGravityRouteAdmissionResult(routeAdmission);
+      if (
+        cancelled ||
+        transactionEpochRef.current !== epoch
+      ) return;
+      if (routeAdmission.status !== "READY") {
+        setAssembly(
+          Object.freeze({
+            status:
+              routeAdmission.status === "RETRY_REQUIRED"
+                ? "RETRYABLE" as const
+                : "BLOCKED" as const,
+            reason: routeAdmission.reason,
+            admissionReferenceId:
+              routeAdmission.intent?.admissionReferenceId ?? null,
+            gravityCycleId:
+              routeAdmission.intent?.gravityCycleId ?? null,
+          }),
+        );
+        return;
+      }
+      const runtimeInput = resolveGravityProductionRuntimeInput({
+        admission: routeAdmission.intent,
+        lifeSourceSession: identityRecovery.lifeSourceSession,
+        visualContinuity: identityRecovery.visualContinuity,
+      });
+      if (runtimeInput.status !== "READY") {
+        failGravityEntryAcceptance({
           admissionReferenceId:
             routeAdmission.intent.admissionReferenceId,
           gravityCycleId: routeAdmission.intent.gravityCycleId,
+          admissionRevision: routeAdmission.intent.revision,
+          stage: "RUNTIME_INPUT",
+          reason: "RUNTIME_INPUT_UNAVAILABLE",
+        });
+        setAssembly(
+          Object.freeze({
+            status: "RETRYABLE" as const,
+            reason: "RUNTIME_INPUT_UNAVAILABLE" as const,
+            admissionReferenceId:
+              routeAdmission.intent.admissionReferenceId,
+            gravityCycleId: routeAdmission.intent.gravityCycleId,
+          }),
+        );
+        return;
+      }
+      const continuityDecision =
+        await resolveGravityEncounterResumeDecision(
+          routeAdmission.intent,
+        );
+      if (
+        cancelled ||
+        transactionEpochRef.current !== epoch
+      ) return;
+      setAssembly(
+        Object.freeze({
+          status: "READY" as const,
+          routeAdmission: routeAdmission.admission,
+          admission: routeAdmission.intent,
+          runtimeInput: runtimeInput.input,
+          continuityDecision,
         }),
       );
-      return;
-    }
-    setAssembly(
-      Object.freeze({
-        status: "READY" as const,
-        routeAdmission: routeAdmission.admission,
-        admission: routeAdmission.intent,
-        runtimeInput: runtimeInput.input,
-      }),
-    );
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [
     identityRecovery,
     routeTicket?.admissionReferenceId,
     routeTicket?.gravityCycleId,
+    routeTicket?.gravityObservationReferenceId,
   ]);
 
   const handleAcceptanceOutcome = useCallback(
@@ -190,9 +224,71 @@ export function GravityProductionRouteEntry() {
             gravityCycleId: outcome.gravityCycleId,
           }),
         );
+        return;
       }
+      void establishGravityObservationAvailable({
+        admission: active,
+        transaction: outcome.transaction,
+      }).then((continuityDecision) => {
+        setAssembly((current) =>
+          current.status === "READY" &&
+          current.admission.admissionReferenceId ===
+            outcome.admissionReferenceId &&
+          current.admission.gravityCycleId ===
+            outcome.gravityCycleId
+            ? Object.freeze({
+                ...current,
+                continuityDecision,
+              })
+            : current,
+        );
+      });
     },
     [],
+  );
+
+  const handleObservationRecognitionRequested = useCallback(
+    async (
+      recognition: GravityObservationRecognitionProvenance,
+      expectedCheckpointRevision: number,
+    ): Promise<GravityObservationRecognitionOutcome> => {
+      if (assembly.status !== "READY") {
+        return Object.freeze({
+          status: "REJECTED" as const,
+          decision: Object.freeze({
+            status: "BLOCKED" as const,
+            gravityObservationReferenceId: "unavailable",
+            checkpointRevision: 0,
+            recognition: null,
+            choiceActionIntention: null,
+            reason: "ADMISSION_NOT_CURRENT" as const,
+          }),
+        });
+      }
+      const result = await recognizeGravityObservation({
+        admission: assembly.admission,
+        gravityObservationReferenceId:
+          assembly.continuityDecision
+            .gravityObservationReferenceId,
+        expectedCheckpointRevision,
+        recognition,
+      });
+      if (
+        result.status === "RECOGNIZED" ||
+        result.status === "ALREADY_RECOGNIZED"
+      ) {
+        setAssembly((current) =>
+          current.status === "READY"
+            ? Object.freeze({
+                ...current,
+                continuityDecision: result.decision,
+              })
+            : current,
+        );
+      }
+      return result;
+    },
+    [assembly],
   );
 
   const retry = useCallback(() => {
@@ -216,13 +312,18 @@ export function GravityProductionRouteEntry() {
       visualContinuity: identityRecovery.visualContinuity,
     });
     if (runtimeInput.status !== "READY") return;
-    setAssembly(
-      Object.freeze({
-        status: "READY" as const,
-        routeAdmission: result.admission,
-        admission: result.intent,
-        runtimeInput: runtimeInput.input,
-      }),
+    void resolveGravityEncounterResumeDecision(result.intent).then(
+      (continuityDecision) => {
+        setAssembly(
+          Object.freeze({
+            status: "READY" as const,
+            routeAdmission: result.admission,
+            admission: result.intent,
+            runtimeInput: runtimeInput.input,
+            continuityDecision,
+          }),
+        );
+      },
     );
   }, [assembly, identityRecovery]);
 
@@ -263,6 +364,10 @@ export function GravityProductionRouteEntry() {
       routeAdmission={assembly.routeAdmission}
       admission={assembly.admission}
       runtimeInput={assembly.runtimeInput}
+      continuityDecision={assembly.continuityDecision}
+      onObservationRecognitionRequested={
+        handleObservationRecognitionRequested
+      }
       onAcceptanceOutcome={handleAcceptanceOutcome}
     />
   );

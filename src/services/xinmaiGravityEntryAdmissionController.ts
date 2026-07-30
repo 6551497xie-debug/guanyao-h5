@@ -186,11 +186,13 @@ const createRouteAdmission = (
   admission: GravityEntryAdmission,
 ): GravityRouteAdmission =>
   Object.freeze({
-    schemaVersion: "XINMAI_GRAVITY_ROUTE_ADMISSION_V1" as const,
+    schemaVersion: "XINMAI_GRAVITY_ROUTE_ADMISSION_V2" as const,
     source:
       "reality_to_gravity_entry_admission_controller" as const,
     admissionReferenceId: admission.admissionReferenceId,
     gravityCycleId: admission.gravityCycleId,
+    gravityObservationReferenceId:
+      admission.gravityObservationReferenceId,
     admissionRevision: admission.revision,
     identityReferences: admission.identityReferences,
     selectedPressureSeedId:
@@ -321,6 +323,8 @@ export function prepareGravityEntryTransfer(input: Readonly<{
       "reality_to_gravity_entry_admission_controller" as const,
     admissionReferenceId: `gravity-admission:${opaqueId()}`,
     gravityCycleId: `gravity-cycle:${opaqueId()}`,
+    gravityObservationReferenceId:
+      `gravity-observation:${opaqueId()}`,
     revision: 1,
     state: "TRANSFER_PREPARED" as const,
     routeTarget: "/dynamics" as const,
@@ -394,6 +398,8 @@ export function commitPreparedGravityTransfer(
       currentAdmission.admissionReferenceId ||
     envelope.targetGravity.admission.gravityCycleId !==
       currentAdmission.gravityCycleId ||
+    envelope.targetGravity.admission.gravityObservationReferenceId !==
+      currentAdmission.gravityObservationReferenceId ||
     envelope.targetGravity.admission.revision !==
       currentAdmission.revision + 1 ||
     envelope.targetGravity.admission.state !==
@@ -513,7 +519,9 @@ export function establishGravityRouteAdmission(input: Readonly<{
     (input.routeTicket.admissionReferenceId !==
       currentAdmission.admissionReferenceId ||
       input.routeTicket.gravityCycleId !==
-        currentAdmission.gravityCycleId)
+        currentAdmission.gravityCycleId ||
+      input.routeTicket.gravityObservationReferenceId !==
+        currentAdmission.gravityObservationReferenceId)
   ) {
     return routeBlocked("ADMIT", "ADMISSION_NOT_CURRENT");
   }
@@ -681,7 +689,7 @@ export function commitGravityEntryActive(
           currentAdmission.sourceReality
             .choiceActionIntentionReferenceId,
         gravityObservationReferenceId:
-          outcome.transaction.gravityObservationReferenceId,
+          currentAdmission.gravityObservationReferenceId,
       }),
     ) ||
     outcome.committedAt !== outcome.transaction.committedAt ||

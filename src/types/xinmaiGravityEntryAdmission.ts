@@ -28,13 +28,13 @@ import type {
 } from "./xinmaiGravitySurfaceAdmission";
 
 export const XINMAI_GRAVITY_ENTRY_ADMISSION_SCHEMA_VERSION =
-  "XINMAI_GRAVITY_ENTRY_ADMISSION_V1" as const;
+  "XINMAI_GRAVITY_ENTRY_ADMISSION_V2" as const;
 export const XINMAI_REALITY_TO_GRAVITY_CUTOVER_SCHEMA_VERSION =
-  "XINMAI_REALITY_TO_GRAVITY_CUTOVER_V1" as const;
+  "XINMAI_REALITY_TO_GRAVITY_CUTOVER_V2" as const;
 export const XINMAI_GRAVITY_ENTRY_RECOVERY_SCHEMA_VERSION =
-  "XINMAI_GRAVITY_ENTRY_RECOVERY_V1" as const;
+  "XINMAI_GRAVITY_ENTRY_RECOVERY_V2" as const;
 export const XINMAI_GRAVITY_ROUTE_TICKET_SCHEMA_VERSION =
-  "XINMAI_GRAVITY_ROUTE_TICKET_V1" as const;
+  "XINMAI_GRAVITY_ROUTE_TICKET_V2" as const;
 
 export type GravityEntryAdmissionState =
   | "TRANSFER_PREPARED"
@@ -131,6 +131,7 @@ export type GravityEntryAdmission = Readonly<{
   source: "reality_to_gravity_entry_admission_controller";
   admissionReferenceId: string;
   gravityCycleId: string;
+  gravityObservationReferenceId: string;
   revision: number;
   state: GravityEntryAdmissionState;
   routeTarget: "/dynamics";
@@ -196,6 +197,7 @@ export type GravityRouteTicket = Readonly<{
   source: "reality_to_gravity_cutover_transaction";
   admissionReferenceId: string;
   gravityCycleId: string;
+  gravityObservationReferenceId: string;
   expectedAdmissionRevision: number;
   identityReferences: RealityEncounterIdentityReferences;
   routeTarget: "/dynamics";
@@ -281,10 +283,11 @@ export type GravityEntryCutoverCommitResult =
     }>;
 
 export type GravityRouteAdmission = Readonly<{
-  schemaVersion: "XINMAI_GRAVITY_ROUTE_ADMISSION_V1";
+  schemaVersion: "XINMAI_GRAVITY_ROUTE_ADMISSION_V2";
   source: "reality_to_gravity_entry_admission_controller";
   admissionReferenceId: string;
   gravityCycleId: string;
+  gravityObservationReferenceId: string;
   admissionRevision: number;
   identityReferences: RealityEncounterIdentityReferences;
   selectedPressureSeedId: string;
@@ -335,10 +338,11 @@ export type GravityHostAcceptanceOutcome =
     }>;
 
 export type GravityProductionRuntimeInput = Readonly<{
-  schemaVersion: "XINMAI_GRAVITY_PRODUCTION_RUNTIME_INPUT_V1";
+  schemaVersion: "XINMAI_GRAVITY_PRODUCTION_RUNTIME_INPUT_V2";
   source: "gravity_production_runtime_input_adapter";
   admissionReferenceId: string;
   gravityCycleId: string;
+  gravityObservationReferenceId: string;
   admissionRevision: number;
   identityReferences: RealityEncounterIdentityReferences;
   sourceReality: GravitySourceRealityProof;

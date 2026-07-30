@@ -63,6 +63,7 @@ const isAdmission = (value: unknown): value is GravityEntryAdmission => {
       "reality_to_gravity_entry_admission_controller" ||
     !validText(value.admissionReferenceId) ||
     !validText(value.gravityCycleId) ||
+    !validText(value.gravityObservationReferenceId) ||
     !Number.isInteger(value.revision) ||
     Number(value.revision) < 1 ||
     value.routeTarget !== "/dynamics" ||
@@ -158,6 +159,8 @@ const isEnvelope = (
       target.sourceReality.intentReferenceId &&
     value.sourceReality.terminalProof.encounterCycleId ===
       target.sourceReality.encounterCycleId &&
+    target.gravityObservationReferenceId ===
+      value.targetGravity.admission.gravityObservationReferenceId &&
     value.integrity.sourceAndTargetIdentityMatch === true &&
     value.integrity.sourceAndTargetCycleBound === true &&
     value.integrity.pressureBelongsToSourceReference === true &&
@@ -179,6 +182,9 @@ const isSnapshot = (
     value.envelope.targetGravity.admission.admissionReferenceId &&
   value.currentGravityAdmission.gravityCycleId ===
     value.envelope.targetGravity.admission.gravityCycleId &&
+  value.currentGravityAdmission.gravityObservationReferenceId ===
+    value.envelope.targetGravity.admission
+      .gravityObservationReferenceId &&
   identityMatches(
     value.currentGravityAdmission.identityReferences,
     value.envelope.targetGravity.identityReferences,
@@ -240,6 +246,9 @@ const writeSnapshot = (
           snapshot.currentGravityAdmission.admissionReferenceId &&
         parsed.currentGravityAdmission.gravityCycleId ===
           snapshot.currentGravityAdmission.gravityCycleId &&
+        parsed.currentGravityAdmission.gravityObservationReferenceId ===
+          snapshot.currentGravityAdmission
+            .gravityObservationReferenceId &&
         parsed.currentGravityAdmission.revision ===
           snapshot.currentGravityAdmission.revision
           ? "CONFIRMED" as const

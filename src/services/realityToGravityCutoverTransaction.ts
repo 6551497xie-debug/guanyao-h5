@@ -89,6 +89,8 @@ const createRouteTicket = (
     admissionReferenceId:
       envelope.targetGravity.admission.admissionReferenceId,
     gravityCycleId: envelope.targetGravity.admission.gravityCycleId,
+    gravityObservationReferenceId:
+      envelope.targetGravity.admission.gravityObservationReferenceId,
     expectedAdmissionRevision:
       envelope.targetGravity.admission.revision,
     identityReferences:

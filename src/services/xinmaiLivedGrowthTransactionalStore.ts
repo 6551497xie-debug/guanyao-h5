@@ -6,6 +6,14 @@ import type {
 } from "../types/xinmaiLivedGrowthTransaction";
 import type { XinmaiLivedGrowthEnvelope } from "../types/xinmaiLivedGrowthRecovery";
 import {
+  XINMAI_GRAVITY_OBSERVATION_CONTINUITY_SCHEMA_VERSION,
+  XINMAI_GRAVITY_OBSERVATION_CONTINUITY_STORE,
+  type GravityObservationContinuityReadResult,
+  type GravityObservationContinuityRecord,
+  type GravityObservationContinuityTransactionDecision,
+  type GravityObservationContinuityTransactionOutcome,
+} from "../types/xinmaiGravityObservationContinuity";
+import {
   XINMAI_LIVED_GROWTH_CANONICAL_RECORD_ID,
   XINMAI_LIVED_GROWTH_CANONICAL_STORE,
   XINMAI_LIVED_GROWTH_CRYSTAL_PROJECTION_STORE,
@@ -36,6 +44,7 @@ const STORE_NAMES: string[] = [
   XINMAI_LIVED_GROWTH_ELIGIBILITY_INDEX_STORE,
   XINMAI_LIVED_GROWTH_FORMATION_INDEX_STORE,
   XINMAI_LIVED_GROWTH_CRYSTAL_PROJECTION_STORE,
+  XINMAI_GRAVITY_OBSERVATION_CONTINUITY_STORE,
 ];
 
 const LEGACY_ABSENT_SENTINEL = "XINMAI_LEGACY_V1_ABSENT";
@@ -252,6 +261,21 @@ const openCanonicalDatabase = (): Promise<OpenDatabaseResult> =>
         projectionStore.createIndex(
           "choiceActionIntentionReferenceId",
           "choiceActionIntentionReferenceId",
+          { unique: true },
+        );
+      }
+      if (
+        !database.objectStoreNames.contains(
+          XINMAI_GRAVITY_OBSERVATION_CONTINUITY_STORE,
+        )
+      ) {
+        const observationStore = database.createObjectStore(
+          XINMAI_GRAVITY_OBSERVATION_CONTINUITY_STORE,
+          { keyPath: "recordId" },
+        );
+        observationStore.createIndex(
+          "gravityObservationReferenceId",
+          "gravityObservationReferenceId",
           { unique: true },
         );
       }
@@ -885,6 +909,423 @@ export async function transactXinmaiLivedGrowthCanonicalState<
   return outcome;
 }
 
+const isGravityObservationContinuityRecord = (
+  value: unknown,
+): value is GravityObservationContinuityRecord => {
+  if (!value || typeof value !== "object") return false;
+  const candidate =
+    value as Partial<GravityObservationContinuityRecord>;
+  const identity = candidate.identityReferences;
+  const sourceReality = candidate.sourceReality;
+  const gravityAdmission = candidate.gravityAdmission;
+  const pressure = candidate.pressureProvenance;
+  return (
+    candidate.schemaVersion ===
+      XINMAI_GRAVITY_OBSERVATION_CONTINUITY_SCHEMA_VERSION &&
+    typeof candidate.recordId === "string" &&
+    candidate.recordId.startsWith("CURRENT:") &&
+    typeof candidate.gravityObservationReferenceId === "string" &&
+    candidate.gravityObservationReferenceId.length > 0 &&
+    Number.isInteger(candidate.gravityObservationLineageRevision) &&
+    Number(candidate.gravityObservationLineageRevision) > 0 &&
+    identity !== undefined &&
+    typeof identity.sourceReferenceId === "string" &&
+    typeof identity.starBeastIdentityReferenceId === "string" &&
+    typeof identity.mansionCoordinateReferenceId === "string" &&
+    sourceReality !== undefined &&
+    typeof sourceReality.intentReferenceId === "string" &&
+    typeof sourceReality.encounterCycleId === "string" &&
+    gravityAdmission !== undefined &&
+    typeof gravityAdmission.admissionReferenceId === "string" &&
+    typeof gravityAdmission.gravityCycleId === "string" &&
+    pressure !== undefined &&
+    typeof pressure.candidateBundleReferenceId === "string" &&
+    typeof pressure.selectedPressureSeedId === "string" &&
+    typeof pressure.candidateReferenceId === "string" &&
+    (candidate.checkpointState === "OBSERVATION_AVAILABLE" ||
+      candidate.checkpointState === "OBSERVATION_RECOGNIZED") &&
+    Number.isInteger(candidate.checkpointRevision) &&
+    Number(candidate.checkpointRevision) > 0 &&
+    (candidate.lifecycleState === "CURRENT" ||
+      candidate.lifecycleState === "CONSUMED_BY_CHOICE" ||
+      candidate.lifecycleState === "TERMINAL") &&
+    typeof candidate.createdAt === "string" &&
+    Number.isFinite(Date.parse(candidate.createdAt)) &&
+    typeof candidate.updatedAt === "string" &&
+    Number.isFinite(Date.parse(candidate.updatedAt)) &&
+    typeof candidate.expiresAt === "string" &&
+    Number.isFinite(Date.parse(candidate.expiresAt))
+  );
+};
+
+const toObservationSafeWithheld = <TValue>(
+  reason: Extract<
+    GravityObservationContinuityTransactionOutcome<TValue>,
+    { status: "SAFE_WITHHELD" }
+  >["reason"],
+): GravityObservationContinuityTransactionOutcome<TValue> =>
+  Object.freeze({
+    status: "SAFE_WITHHELD" as const,
+    value: null,
+    record: null,
+    growthEnvelope: null,
+    reason,
+  });
+
+export async function readXinmaiGravityObservationContinuityState(
+  recordId: string,
+): Promise<GravityObservationContinuityReadResult> {
+  const initialized = await ensureCanonicalState();
+  if (initialized.status !== "READY") {
+    return Object.freeze({
+      status: "SAFE_WITHHELD" as const,
+      record: null,
+      growthEnvelope: null,
+      reason: initialized.reason,
+    });
+  }
+  const opened = await openCanonicalDatabase();
+  if (opened.status !== "OPEN") {
+    return Object.freeze({
+      status: "UNAVAILABLE" as const,
+      record: null,
+      growthEnvelope: null,
+      reason:
+        opened.status === "BLOCKED"
+          ? "TRANSACTION_OPEN_BLOCKED" as const
+          : "TRANSACTION_STORAGE_UNAVAILABLE" as const,
+    });
+  }
+  const database = opened.database;
+  const result = await new Promise<GravityObservationContinuityReadResult>(
+    (resolve) => {
+      let canonicalValue: unknown;
+      let recordValue: unknown;
+      let transaction: IDBTransaction;
+      try {
+        transaction = database.transaction(
+          [
+            XINMAI_LIVED_GROWTH_CANONICAL_STORE,
+            XINMAI_GRAVITY_OBSERVATION_CONTINUITY_STORE,
+          ],
+          "readonly",
+        );
+      } catch {
+        resolve(
+          Object.freeze({
+            status: "UNAVAILABLE" as const,
+            record: null,
+            growthEnvelope: null,
+            reason: "TRANSACTION_CONNECTION_CLOSED" as const,
+          }),
+        );
+        return;
+      }
+      const canonicalRequest = transaction
+        .objectStore(XINMAI_LIVED_GROWTH_CANONICAL_STORE)
+        .get(XINMAI_LIVED_GROWTH_CANONICAL_RECORD_ID);
+      const observationRequest = transaction
+        .objectStore(XINMAI_GRAVITY_OBSERVATION_CONTINUITY_STORE)
+        .get(recordId);
+      canonicalRequest.onsuccess = () => {
+        canonicalValue = canonicalRequest.result;
+      };
+      observationRequest.onsuccess = () => {
+        recordValue = observationRequest.result;
+      };
+      transaction.oncomplete = () => {
+        const canonical = canonicalValue as
+          | Partial<XinmaiLivedGrowthCanonicalRecord>
+          | undefined;
+        if (
+          canonical?.id !== XINMAI_LIVED_GROWTH_CANONICAL_RECORD_ID ||
+          !isXinmaiLivedGrowthEnvelope(canonical.envelope) ||
+          (recordValue !== undefined &&
+            !isGravityObservationContinuityRecord(recordValue))
+        ) {
+          resolve(
+            Object.freeze({
+              status: "CORRUPTED" as const,
+              record: null,
+              growthEnvelope: null,
+              reason: "RECOVERY_CORRUPTED" as const,
+            }),
+          );
+          return;
+        }
+        resolve(
+          Object.freeze({
+            status: "FOUND" as const,
+            record:
+              recordValue === undefined
+                ? null
+                : recordValue as GravityObservationContinuityRecord,
+            growthEnvelope: canonical.envelope,
+          }),
+        );
+      };
+      transaction.onabort = () =>
+        resolve(
+          Object.freeze({
+            status: "SAFE_WITHHELD" as const,
+            record: null,
+            growthEnvelope: null,
+            reason: "TRANSACTION_ABORTED" as const,
+          }),
+        );
+      transaction.onerror = () => undefined;
+    },
+  );
+  database.close();
+  return result;
+}
+
+export async function transactXinmaiGravityObservationContinuity<
+  TValue,
+>(
+  recordId: string,
+  decide: (
+    currentRecord: GravityObservationContinuityRecord | null,
+    currentGrowth: XinmaiLivedGrowthEnvelope,
+  ) => GravityObservationContinuityTransactionDecision<TValue>,
+): Promise<GravityObservationContinuityTransactionOutcome<TValue>> {
+  const initialized = await ensureCanonicalState();
+  if (initialized.status !== "READY") {
+    return toObservationSafeWithheld(initialized.reason);
+  }
+  const legacy = await captureLegacySnapshot();
+  if (!legacy) {
+    return toObservationSafeWithheld(
+      "TRANSACTION_STORAGE_UNAVAILABLE",
+    );
+  }
+  const opened = await openCanonicalDatabase();
+  if (opened.status !== "OPEN") {
+    return toObservationSafeWithheld(
+      opened.status === "BLOCKED"
+        ? "TRANSACTION_OPEN_BLOCKED"
+        : "TRANSACTION_STORAGE_UNAVAILABLE",
+    );
+  }
+  const database = opened.database;
+  const outcome = await new Promise<
+    GravityObservationContinuityTransactionOutcome<TValue>
+  >((resolve) => {
+    let transaction: IDBTransaction;
+    try {
+      transaction = createStrictReadwriteTransaction(database);
+    } catch {
+      resolve(
+        toObservationSafeWithheld(
+          "TRANSACTION_CONNECTION_CLOSED",
+        ),
+      );
+      return;
+    }
+    let result =
+      toObservationSafeWithheld<TValue>("TRANSACTION_ABORTED");
+    let canonicalValue: unknown;
+    let metaValue: unknown;
+    let recordValue: unknown;
+    let canonicalResolved = false;
+    let metaResolved = false;
+    let recordResolved = false;
+    let wroteCanonical = false;
+    let wroteRecord = false;
+    let uniquenessViolation = false;
+    const canonicalStore = transaction.objectStore(
+      XINMAI_LIVED_GROWTH_CANONICAL_STORE,
+    );
+    const metaStore = transaction.objectStore(
+      XINMAI_LIVED_GROWTH_MIGRATION_META_STORE,
+    );
+    const observationStore = transaction.objectStore(
+      XINMAI_GRAVITY_OBSERVATION_CONTINUITY_STORE,
+    );
+    const canonicalRequest = canonicalStore.get(
+      XINMAI_LIVED_GROWTH_CANONICAL_RECORD_ID,
+    );
+    const metaRequest = metaStore.get(
+      XINMAI_LIVED_GROWTH_V1_MIGRATION_META_ID,
+    );
+    const observationRequest = observationStore.get(recordId);
+    const prepare = () => {
+      if (
+        !canonicalResolved ||
+        !metaResolved ||
+        !recordResolved
+      ) return;
+      const canonical = canonicalValue as
+        | Partial<XinmaiLivedGrowthCanonicalRecord>
+        | undefined;
+      if (
+        canonical?.id !== XINMAI_LIVED_GROWTH_CANONICAL_RECORD_ID ||
+        !isXinmaiLivedGrowthEnvelope(canonical.envelope) ||
+        !isMigrationMeta(metaValue) ||
+        (recordValue !== undefined &&
+          !isGravityObservationContinuityRecord(recordValue))
+      ) {
+        result = toObservationSafeWithheld("RECOVERY_CORRUPTED");
+        return;
+      }
+      if (
+        metaValue.status !== "IMPORTED" &&
+        metaValue.status !== "NO_LEGACY_SOURCE"
+      ) {
+        result = toObservationSafeWithheld(
+          metaValue.status === "LEGACY_WRITER_DETECTED"
+            ? "LEGACY_WRITER_DETECTED"
+            : "LEGACY_IMPORT_CONFLICT",
+        );
+        return;
+      }
+      const currentLegacy = readXinmaiLivedGrowthRecoveryCandidate();
+      if (
+        currentLegacy.raw !== legacy.raw ||
+        metaValue.sourceDigest !== legacy.digest
+      ) {
+        metaStore.put(
+          Object.freeze({
+            ...metaValue,
+            status: "LEGACY_WRITER_DETECTED" as const,
+            lastCheckedAt: new Date().toISOString(),
+          }),
+        );
+        result = toObservationSafeWithheld(
+          "LEGACY_WRITER_DETECTED",
+        );
+        return;
+      }
+      const currentRecord =
+        recordValue === undefined
+          ? null
+          : recordValue as GravityObservationContinuityRecord;
+      const decision = decide(currentRecord, canonical.envelope);
+      if (decision.status === "REJECTED") {
+        result = Object.freeze({
+          status: "REJECTED" as const,
+          value: null,
+          record: currentRecord,
+          growthEnvelope: canonical.envelope,
+          reason: decision.reason,
+        });
+        return;
+      }
+      if (decision.status === "ALREADY_COMMITTED") {
+        result = Object.freeze({
+          status: "ALREADY_COMMITTED" as const,
+          value: decision.value,
+          record: currentRecord,
+          growthEnvelope: canonical.envelope,
+        });
+        return;
+      }
+      if (
+        decision.record.recordId !== recordId ||
+        !isGravityObservationContinuityRecord(decision.record)
+      ) {
+        result = Object.freeze({
+          status: "REJECTED" as const,
+          value: null,
+          record: currentRecord,
+          growthEnvelope: canonical.envelope,
+          reason: "INVALID_INPUT" as const,
+        });
+        return;
+      }
+      let nextGrowth = canonical.envelope;
+      if (decision.growthEnvelope !== null) {
+        nextGrowth = Object.freeze({
+          ...decision.growthEnvelope,
+          revision: canonical.envelope.revision + 1,
+          updatedAt: new Date().toISOString(),
+        });
+        if (
+          !isXinmaiLivedGrowthEnvelope(nextGrowth) ||
+          hasLegacyUniquenessConflict(nextGrowth)
+        ) {
+          uniquenessViolation = true;
+          try {
+            transaction.abort();
+          } catch {
+            // The abort outcome remains authoritative.
+          }
+          return;
+        }
+      }
+      try {
+        observationStore.put(decision.record);
+        wroteRecord = true;
+        if (decision.growthEnvelope !== null) {
+          canonicalStore.put(
+            Object.freeze({
+              id: XINMAI_LIVED_GROWTH_CANONICAL_RECORD_ID,
+              envelope: nextGrowth,
+            }),
+          );
+          writeEnvelopeIndexes(transaction, nextGrowth);
+          wroteCanonical = true;
+        }
+      } catch {
+        try {
+          transaction.abort();
+        } catch {
+          // The abort outcome remains authoritative.
+        }
+        return;
+      }
+      result = Object.freeze({
+        status: "COMMITTED" as const,
+        value: decision.value,
+        record: decision.record,
+        growthEnvelope: nextGrowth,
+      });
+    };
+    canonicalRequest.onsuccess = () => {
+      canonicalValue = canonicalRequest.result;
+      canonicalResolved = true;
+      prepare();
+    };
+    metaRequest.onsuccess = () => {
+      metaValue = metaRequest.result;
+      metaResolved = true;
+      prepare();
+    };
+    observationRequest.onsuccess = () => {
+      recordValue = observationRequest.result;
+      recordResolved = true;
+      prepare();
+    };
+    transaction.oncomplete = () => {
+      if (
+        wroteRecord &&
+        wroteCanonical &&
+        result.status === "COMMITTED"
+      ) {
+        notifyXinmaiLivedGrowthCanonicalRevision(
+          result.growthEnvelope.revision,
+        );
+      }
+      resolve(result);
+    };
+    transaction.onabort = () =>
+      resolve(
+        toObservationSafeWithheld(
+          uniquenessViolation
+            ? "CANONICAL_UNIQUENESS_VIOLATION"
+            : "TRANSACTION_ABORTED",
+        ),
+      );
+    transaction.onerror = () => {
+      if (transaction.error?.name === "ConstraintError") {
+        uniquenessViolation = true;
+      }
+    };
+  });
+  database.close();
+  return outcome;
+}
+
 export const XinmaiLivedGrowthTransactionalStore = Object.freeze({
   databaseName: XINMAI_LIVED_GROWTH_DATABASE_NAME,
   databaseVersion: XINMAI_LIVED_GROWTH_DATABASE_VERSION,
@@ -894,6 +1335,8 @@ export const XinmaiLivedGrowthTransactionalStore = Object.freeze({
   formationIndexStore: XINMAI_LIVED_GROWTH_FORMATION_INDEX_STORE,
   canonicalProjectionStore:
     XINMAI_LIVED_GROWTH_CRYSTAL_PROJECTION_STORE,
+  gravityObservationContinuityStore:
+    XINMAI_GRAVITY_OBSERVATION_CONTINUITY_STORE,
   read: readXinmaiLivedGrowthCanonicalState,
   transact: transactXinmaiLivedGrowthCanonicalState,
   successAuthority: "IDB_TRANSACTION_COMPLETE" as const,

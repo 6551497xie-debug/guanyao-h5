@@ -65,6 +65,11 @@ import {
   commitChoiceActionIntention,
 } from "../services/xinmaiChoiceActionIntentionController";
 import type { ChoiceActionIntention } from "../types/xinmaiChoiceActionIntention";
+import type {
+  GravityObservationRecognitionOutcome,
+  GravityObservationRecognitionProvenance,
+  GravityObservationResumeDecision,
+} from "../types/xinmaiGravityObservationContinuity";
 import { RealityGravityInertiaField } from "../components/RealityGravityInertiaField";
 import { XinmaiLifeReflectionGuide } from "../components/XinmaiLifeReflectionGuide";
 import {
@@ -129,6 +134,11 @@ export type GravityPageProps = Readonly<{
     | null;
   experienceSmokeFixture: string | null;
   surfaceAttempt?: GravitySurfaceAdmissionAttempt;
+  observationContinuityDecision: GravityObservationResumeDecision;
+  onObservationRecognitionRequested: (
+    recognition: GravityObservationRecognitionProvenance,
+    expectedCheckpointRevision: number,
+  ) => Promise<GravityObservationRecognitionOutcome>;
   onLifeSurfaceOutcome?: (
     outcome: GravityLifeSurfaceOutcome,
   ) => void;
@@ -1192,6 +1202,7 @@ function CosmicBotanicsField({
   visualState,
   experienceState,
   innerViewEntryEstablished,
+  initialInnerViewRelation,
   onInnerViewRelationEstablished,
 }: {
   configs: SixSpaceConfig[];
@@ -1205,9 +1216,13 @@ function CosmicBotanicsField({
   visualState: VisualState;
   experienceState: ExperienceState;
   innerViewEntryEstablished: boolean;
+  initialInnerViewRelation:
+    | "AWAITING"
+    | "CONFIRMED"
+    | "SELF_NAMED";
   onInnerViewRelationEstablished: (
     relation: "CONFIRMED" | "SELF_NAMED",
-  ) => void;
+  ) => Promise<boolean>;
 }) {
   const [innerViewPhase, setInnerViewPhase] = useState<
     | "OBSERVING"
@@ -1217,9 +1232,18 @@ function CosmicBotanicsField({
     | "CONFIRMED"
     | "SELF_NAMED"
     | "PAUSED"
-  >(() => (innerViewEntryEstablished ? "FIRST_APPROACH" : "OBSERVING"));
+  >(() =>
+    initialInnerViewRelation === "CONFIRMED"
+      ? "CONFIRMED"
+      : initialInnerViewRelation === "SELF_NAMED"
+        ? "SELF_NAMED"
+        : innerViewEntryEstablished
+          ? "FIRST_APPROACH"
+          : "OBSERVING",
+  );
   const [innerViewRelationEstablished, setInnerViewRelationEstablished] =
-    useState(false);
+    useState(() => initialInnerViewRelation !== "AWAITING");
+  const relationMutationPendingRef = useRef(false);
   const innerViewPhaseBeforePauseRef = useRef<
     "FIRST_APPROACH" | "SECOND_APPROACH" | "THIRD_APPROACH"
   >("FIRST_APPROACH");
@@ -1265,16 +1289,34 @@ function CosmicBotanicsField({
     });
   }
 
-  function confirmLifeState() {
+  useEffect(() => {
+    if (initialInnerViewRelation === "AWAITING") return;
+    setInnerViewRelationEstablished(true);
+    setInnerViewPhase(initialInnerViewRelation);
+  }, [initialInnerViewRelation]);
+
+  async function confirmLifeState() {
+    if (relationMutationPendingRef.current) return;
+    relationMutationPendingRef.current = true;
+    const confirmed = await onInnerViewRelationEstablished(
+      "CONFIRMED",
+    );
+    relationMutationPendingRef.current = false;
+    if (!confirmed) return;
     setInnerViewRelationEstablished(true);
     setInnerViewPhase("CONFIRMED");
-    onInnerViewRelationEstablished("CONFIRMED");
   }
 
-  function keepOwnUnderstanding() {
+  async function keepOwnUnderstanding() {
+    if (relationMutationPendingRef.current) return;
+    relationMutationPendingRef.current = true;
+    const confirmed = await onInnerViewRelationEstablished(
+      "SELF_NAMED",
+    );
+    relationMutationPendingRef.current = false;
+    if (!confirmed) return;
     setInnerViewRelationEstablished(true);
     setInnerViewPhase("SELF_NAMED");
-    onInnerViewRelationEstablished("SELF_NAMED");
   }
 
   function pauseInnerView() {
@@ -2512,6 +2554,8 @@ function HexagramCodeDeliveryShell({
   choiceContinuation,
   experienceSmokeFixture,
   surfaceAttempt,
+  observationContinuityDecision,
+  onObservationRecognitionRequested,
   onLifeSurfaceOutcome,
   onObservationSurfaceOutcome,
 }: GravityPageProps) {
@@ -2556,14 +2600,29 @@ function HexagramCodeDeliveryShell({
   const [
     committedChoiceActionIntention,
     setCommittedChoiceActionIntention,
-  ] = useState<ChoiceActionIntention | null>(null);
+  ] = useState<ChoiceActionIntention | null>(() =>
+    observationContinuityDecision.status === "CHOICE_COMMITTED"
+      ? observationContinuityDecision.choiceActionIntention
+      : null,
+  );
   const [choiceAuthorityFeedback, setChoiceAuthorityFeedback] =
     useState<string | null>(null);
   const choiceMutationPendingRef = useRef(false);
   const [transformationMomentActive, setTransformationMomentActive] = useState(false);
   const [innerViewRelation, setInnerViewRelation] = useState<
     "AWAITING" | "CONFIRMED" | "SELF_NAMED"
-  >("AWAITING");
+  >(() =>
+    observationContinuityDecision.status ===
+      "OBSERVATION_RECOGNIZED" ||
+    observationContinuityDecision.status === "CHOICE_COMMITTED"
+      ? observationContinuityDecision.recognition ===
+          "USER_SELF_NAMED"
+        ? "SELF_NAMED"
+        : "CONFIRMED"
+      : "AWAITING",
+  );
+  const recoveredObservationPresentationRef =
+    useRef<string | null>(null);
   const dimensionTransitionLockRef = useRef(false);
   const runtimeProjection = GuanyaoRuntimeEngine.project(executionSnapshot);
   const {
@@ -2683,6 +2742,98 @@ function HexagramCodeDeliveryShell({
     !transformationMomentActive;
 
   useEffect(() => {
+    if (
+      observationContinuityDecision.status ===
+        "OBSERVATION_RECOGNIZED" ||
+      observationContinuityDecision.status === "CHOICE_COMMITTED"
+    ) {
+      setInnerViewRelation(
+        observationContinuityDecision.recognition ===
+          "USER_SELF_NAMED"
+          ? "SELF_NAMED"
+          : "CONFIRMED",
+      );
+      if (
+        recoveredObservationPresentationRef.current !==
+        observationContinuityDecision
+          .gravityObservationReferenceId
+      ) {
+        recoveredObservationPresentationRef.current =
+          observationContinuityDecision
+            .gravityObservationReferenceId;
+        const finalDimension =
+          DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS[
+            DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS.length - 1
+          ];
+        setActiveDimensionIndex(
+          DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS.length - 1,
+        );
+        setCompletedDimensionIds(
+          Object.freeze([
+            ...DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS,
+          ]),
+        );
+        setExecutionSnapshot(
+          completeCurrentSpaceWithExistingEngine(
+            createNodeRunningExecutionSnapshot(
+              dynamicsInputContext.selectedPressureSeedContext,
+            ),
+            {
+              dimension: finalDimension,
+              context: "focus",
+              triggerStrength: 1,
+            },
+          ),
+        );
+      }
+    }
+    if (
+      observationContinuityDecision.status === "CHOICE_COMMITTED"
+    ) {
+      setCommittedChoiceActionIntention(
+        observationContinuityDecision.choiceActionIntention,
+      );
+      setTransformationMomentActive(true);
+    }
+  }, [
+    dynamicsInputContext.selectedPressureSeedContext,
+    observationContinuityDecision,
+  ]);
+
+  async function handleInnerViewRelationEstablished(
+    relation: "CONFIRMED" | "SELF_NAMED",
+  ): Promise<boolean> {
+    if (
+      observationContinuityDecision.status !==
+      "OBSERVATION_AVAILABLE"
+    ) {
+      return (
+        observationContinuityDecision.status ===
+          "OBSERVATION_RECOGNIZED" ||
+        observationContinuityDecision.status === "CHOICE_COMMITTED"
+      );
+    }
+    const result = await onObservationRecognitionRequested(
+      relation === "SELF_NAMED"
+        ? "USER_SELF_NAMED"
+        : "USER_CONFIRMED",
+      observationContinuityDecision.checkpointRevision,
+    );
+    if (
+      result.status !== "RECOGNIZED" &&
+      result.status !== "ALREADY_RECOGNIZED"
+    ) {
+      setChoiceAuthorityFeedback(
+        "这次看见还没有被完整保存，请稍后再试。",
+      );
+      return false;
+    }
+    setChoiceAuthorityFeedback(null);
+    setInnerViewRelation(relation);
+    return true;
+  }
+
+  useEffect(() => {
     if (!arrivalBridgeActive || arrivalVisualContinuity === null) return;
     const timer = window.setTimeout(() => {
       setArrivalBridgeActive(false);
@@ -2743,6 +2894,11 @@ function HexagramCodeDeliveryShell({
         gravityCycleId: surfaceAttempt.gravityCycleId,
         gravityObservationReferenceId:
           surfaceAttempt.gravityObservationReferenceId,
+        expectedObservationCheckpointRevision:
+          observationContinuityDecision.status ===
+          "OBSERVATION_RECOGNIZED"
+            ? observationContinuityDecision.checkpointRevision
+            : 0,
         actionSummary: singleModelRevisionAction.actionLine,
         formationSourceSnapshot: Object.freeze({
           formation: currentHexagramFormation,
@@ -2930,6 +3086,16 @@ function HexagramCodeDeliveryShell({
             ? "SAME_RESPONSE_BECOMING_TENDENCY"
             : "OBSERVATION_READY"
         }
+        data-gravity-observation-reference={
+          observationContinuityDecision.gravityObservationReferenceId
+        }
+        data-gravity-observation-continuity-state={
+          observationContinuityDecision.status
+        }
+        data-gravity-observation-checkpoint-revision={
+          observationContinuityDecision.checkpointRevision
+        }
+        data-gravity-observation-authority="TYPED_RESUME_DECISION_READ_ONLY_MIRROR"
         data-inner-view-entry-continuity={
           innerViewBodyContinuityActive
             ? "SAME_BODY_FROM_CURRENT_LIFE_WEATHER"
@@ -2941,7 +3107,15 @@ function HexagramCodeDeliveryShell({
             : "DIRECT_OBSERVATION"
         }
         data-inner-view-first-depth={
-          innerViewBodyContinuityActive ? "FIRST_APPROACH" : "OBSERVING"
+          observationContinuityDecision.status ===
+            "CHOICE_COMMITTED"
+            ? "CHOICE_COMMITTED"
+            : observationContinuityDecision.status ===
+                "OBSERVATION_RECOGNIZED"
+              ? "RECOGNIZED"
+              : innerViewBodyContinuityActive
+                ? "FIRST_APPROACH"
+                : "OBSERVING"
         }
         data-inner-view-analysis-stage="USER_LED_OBSERVATION_NOT_ANALYSIS"
         data-choice-response-state={
@@ -3193,7 +3367,10 @@ function HexagramCodeDeliveryShell({
               innerViewEntryEstablished={
                 routeInnerViewEntry && arrivalVisualContinuity !== null
               }
-              onInnerViewRelationEstablished={setInnerViewRelation}
+              initialInnerViewRelation={innerViewRelation}
+              onInnerViewRelationEstablished={
+                handleInnerViewRelationEstablished
+              }
             />
           )}
         </section>

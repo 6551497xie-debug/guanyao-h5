@@ -3394,6 +3394,16 @@ export type {
 } from "./xinmaiGravitySurfaceAdmission";
 
 export type {
+  GravityObservationCheckpointState,
+  GravityObservationLifecycleState,
+  GravityObservationRecognitionProvenance,
+  GravityObservationContinuityRecord,
+  GravityObservationContinuityReadResult,
+  GravityObservationResumeDecision,
+  GravityObservationRecognitionOutcome,
+} from "./xinmaiGravityObservationContinuity";
+
+export type {
   ChoiceActionIntention,
   ChoiceFormationSourceSnapshot,
   CommitChoiceActionIntentionInput,

@@ -49,6 +49,7 @@ export type CommitChoiceActionIntentionInput = Readonly<{
   sourceEncounterCycleId: string;
   gravityCycleId: string;
   gravityObservationReferenceId: string;
+  expectedObservationCheckpointRevision: number;
   actionSummary: string;
   formationSourceSnapshot: ChoiceFormationSourceSnapshot;
 }>;

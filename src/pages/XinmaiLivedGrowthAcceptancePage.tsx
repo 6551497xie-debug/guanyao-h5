@@ -14,8 +14,14 @@ import {
   type XinmaiLivedGrowthReturnItem,
 } from "../services/xinmaiChoiceActionIntentionController";
 import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
-import { readXinmaiLivedGrowthCanonicalState } from "../services/xinmaiLivedGrowthTransactionalStore";
-import { simulateXinmaiLivedGrowthLegacyWriterForAcceptance } from "../services/xinmaiLivedGrowthAcceptancePersistenceAdapter";
+import {
+  readXinmaiGravityObservationContinuityState,
+  readXinmaiLivedGrowthCanonicalState,
+} from "../services/xinmaiLivedGrowthTransactionalStore";
+import {
+  establishRecognizedGravityObservationForAcceptance,
+  simulateXinmaiLivedGrowthLegacyWriterForAcceptance,
+} from "../services/xinmaiLivedGrowthAcceptancePersistenceAdapter";
 import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityEncounterIntent";
 import type { XinmaiLivedGrowthEnvelope } from "../types/xinmaiLivedGrowthRecovery";
 
@@ -102,6 +108,13 @@ export function XinmaiLivedGrowthAcceptancePage() {
   >(() => Object.freeze([]));
   const [canonicalEnvelope, setCanonicalEnvelope] =
     useState<XinmaiLivedGrowthEnvelope | null>(null);
+  const [observationEvidence, setObservationEvidence] = useState<
+    Readonly<{
+      checkpoint: string;
+      lifecycle: string;
+      reference: string;
+    }> | null
+  >(null);
   const [revision, setRevision] = useState(0);
   const [feedback, setFeedback] = useState<string | null>(null);
   useEffect(() => {
@@ -195,10 +208,24 @@ export function XinmaiLivedGrowthAcceptancePage() {
     void Promise.all([
       readOpenXinmaiLivedGrowthReturnItems(identityReferences),
       readXinmaiLivedGrowthCanonicalState(),
-    ]).then(([items, canonical]) => {
+      readXinmaiGravityObservationContinuityState(
+        `CURRENT:${identityReferences.sourceReferenceId}`,
+      ),
+    ]).then(([items, canonical, observation]) => {
       setReturnItems(items);
       setCanonicalEnvelope(
         canonical.status === "FOUND" ? canonical.envelope : null,
+      );
+      setObservationEvidence(
+        observation.status === "FOUND" &&
+          observation.record !== null
+          ? Object.freeze({
+              checkpoint: observation.record.checkpointState,
+              lifecycle: observation.record.lifecycleState,
+              reference:
+                observation.record.gravityObservationReferenceId,
+            })
+          : null,
       );
       setRevision((current) => current + 1);
     });
@@ -231,6 +258,14 @@ export function XinmaiLivedGrowthAcceptancePage() {
           (fact) =>
             fact.identityReferences.sourceReferenceId ===
             identityReferences.sourceReferenceId,
+        )
+      : [];
+  const matchingChoices =
+    canonicalEnvelope
+      ? canonicalEnvelope.choiceActionIntentions.filter(
+          (choice) =>
+            choice.identityReferences.sourceReferenceId ===
+              identityReferences.sourceReferenceId,
         )
       : [];
   const matchingEligibilities =
@@ -275,12 +310,28 @@ export function XinmaiLivedGrowthAcceptancePage() {
       setFeedback("验收事实尚未准备完成。");
       return;
     }
+    const sourceEncounterCycleId =
+      `acceptance-source-encounter:${scenario}`;
+    const gravityCycleId = `acceptance-gravity:${scenario}`;
+    const gravityObservationReferenceId =
+      `acceptance-gravity-observation:${scenario}`;
+    const observationReady =
+      await establishRecognizedGravityObservationForAcceptance({
+        identityReferences,
+        sourceEncounterCycleId,
+        gravityCycleId,
+        gravityObservationReferenceId,
+      });
+    if (!observationReady) {
+      setFeedback("验收观察事实没有被正式保存。");
+      return;
+    }
     const committed = await commitChoiceActionIntention({
       identityReferences,
-      sourceEncounterCycleId: `acceptance-source-encounter:${scenario}`,
-      gravityCycleId: `acceptance-gravity:${scenario}`,
-      gravityObservationReferenceId:
-        `acceptance-gravity-observation:${scenario}`,
+      sourceEncounterCycleId,
+      gravityCycleId,
+      gravityObservationReferenceId,
+      expectedObservationCheckpointRevision: 2,
       actionSummary: action.actionLine,
       formationSourceSnapshot: Object.freeze({
         formation,
@@ -396,6 +447,9 @@ export function XinmaiLivedGrowthAcceptancePage() {
       ) : null}
       {feedback ? <p role="alert">{feedback}</p> : null}
       <section aria-label="权威状态">
+        <p data-testid="choice-count">
+          Choice：{matchingChoices.length}
+        </p>
         <p data-testid="fact-count">Fact：{matchingFacts.length}</p>
         <p data-testid="eligibility-count">
           Eligibility：{matchingEligibilities.length}
@@ -410,6 +464,18 @@ export function XinmaiLivedGrowthAcceptancePage() {
         </p>
         <p data-testid="recovery-state">
           Recovery：{canonicalEnvelope ? "FOUND" : "SAFE_WITHHELD"}
+        </p>
+        <p data-testid="observation-checkpoint">
+          Observation：
+          {observationEvidence?.checkpoint ?? "NONE"}
+        </p>
+        <p data-testid="observation-lifecycle">
+          Observation Lifecycle：
+          {observationEvidence?.lifecycle ?? "NONE"}
+        </p>
+        <p data-testid="observation-reference">
+          Observation Reference：
+          {observationEvidence?.reference ?? "NONE"}
         </p>
       </section>
     </main>

@@ -38,7 +38,10 @@ const checks = [
       'useState<\n    | "OBSERVING"\n    | "FIRST_APPROACH"',
     ) &&
       gravityPage.includes(
-        '(() => (innerViewEntryEstablished ? "FIRST_APPROACH" : "OBSERVING"))',
+        'initialInnerViewRelation === "CONFIRMED"\n      ? "CONFIRMED"',
+      ) &&
+      gravityPage.includes(
+        'innerViewEntryEstablished\n          ? "FIRST_APPROACH"\n          : "OBSERVING"',
       ) &&
       gravityPage.includes(
         'data-inner-view-meridian-source="EXISTING_BIRTH_MANSION_BODY_RELATION"',

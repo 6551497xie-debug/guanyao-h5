@@ -60,6 +60,27 @@ export function GravityDevelopmentFixtureRouteEntry() {
       }
       choiceContinuation={null}
       experienceSmokeFixture={input.experienceSmokeFixture}
+      observationContinuityDecision={Object.freeze({
+        status: "BLOCKED" as const,
+        gravityObservationReferenceId: "development-fixture",
+        checkpointRevision: 0,
+        recognition: null,
+        choiceActionIntention: null,
+        reason: "ADMISSION_NOT_CURRENT" as const,
+      })}
+      onObservationRecognitionRequested={async () =>
+        Object.freeze({
+          status: "REJECTED" as const,
+          decision: Object.freeze({
+            status: "BLOCKED" as const,
+            gravityObservationReferenceId: "development-fixture",
+            checkpointRevision: 0,
+            recognition: null,
+            choiceActionIntention: null,
+            reason: "ADMISSION_NOT_CURRENT" as const,
+          }),
+        })
+      }
     />
   );
 }

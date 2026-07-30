@@ -20,6 +20,11 @@ import type {
   GravityObservationSurfaceOutcome,
   GravitySurfaceAdmissionAttempt,
 } from "../types/xinmaiGravitySurfaceAdmission";
+import type {
+  GravityObservationRecognitionOutcome,
+  GravityObservationRecognitionProvenance,
+  GravityObservationResumeDecision,
+} from "../types/xinmaiGravityObservationContinuity";
 
 const GRAVITY_SURFACE_WATCHDOG_MS = 8_000;
 
@@ -44,6 +49,11 @@ export type GravityProductionSurfaceHostProps = Readonly<{
   routeAdmission: GravityRouteAdmission;
   admission: GravityEntryAdmission;
   runtimeInput: GravityProductionRuntimeInput;
+  continuityDecision: GravityObservationResumeDecision;
+  onObservationRecognitionRequested: (
+    recognition: GravityObservationRecognitionProvenance,
+    expectedCheckpointRevision: number,
+  ) => Promise<GravityObservationRecognitionOutcome>;
   onAcceptanceOutcome: (
     outcome: GravityHostAcceptanceOutcome,
   ) => void;
@@ -53,6 +63,8 @@ export function GravityProductionSurfaceHost({
   routeAdmission,
   admission,
   runtimeInput,
+  continuityDecision,
+  onObservationRecognitionRequested,
   onAcceptanceOutcome,
 }: GravityProductionSurfaceHostProps) {
   const [lifeSurfaceOutcome, setLifeSurfaceOutcome] =
@@ -74,7 +86,7 @@ export function GravityProductionSurfaceHost({
         choiceActionIntentionReferenceId:
           admission.sourceReality.choiceActionIntentionReferenceId,
         gravityObservationReferenceId:
-          `gravity-observation:${admission.gravityCycleId}:${admission.revision}`,
+          admission.gravityObservationReferenceId,
       }),
     [admission],
   );
@@ -197,6 +209,10 @@ export function GravityProductionSurfaceHost({
       }
       experienceSmokeFixture={null}
       surfaceAttempt={surfaceAttempt}
+      observationContinuityDecision={continuityDecision}
+      onObservationRecognitionRequested={
+        onObservationRecognitionRequested
+      }
       onLifeSurfaceOutcome={receiveLifeSurfaceOutcome}
       onObservationSurfaceOutcome={
         receiveObservationSurfaceOutcome

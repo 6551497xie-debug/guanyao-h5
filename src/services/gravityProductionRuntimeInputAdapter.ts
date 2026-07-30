@@ -87,10 +87,12 @@ export function resolveGravityProductionRuntimeInput(input: Readonly<{
     lifeSourceSession.motherCodeLandingResult.motherCodeProfile;
   const originMotherContext = lifeSourceSession.originMotherResult;
   const runtimeInput: GravityProductionRuntimeInput = Object.freeze({
-    schemaVersion: "XINMAI_GRAVITY_PRODUCTION_RUNTIME_INPUT_V1" as const,
+    schemaVersion: "XINMAI_GRAVITY_PRODUCTION_RUNTIME_INPUT_V2" as const,
     source: "gravity_production_runtime_input_adapter" as const,
     admissionReferenceId: admission.admissionReferenceId,
     gravityCycleId: admission.gravityCycleId,
+    gravityObservationReferenceId:
+      admission.gravityObservationReferenceId,
     admissionRevision: admission.revision,
     identityReferences: admission.identityReferences,
     sourceReality: admission.sourceReality,
