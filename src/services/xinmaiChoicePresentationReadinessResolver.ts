@@ -10,6 +10,8 @@ import {
   validateChoiceActionIntentionPrerequisites,
 } from "./xinmaiChoiceActionIntentionPrerequisiteValidator";
 
+const XINMAI_NEW_CHOICE_PRESENTATION_MUTATIONS_PAUSED = true;
+
 const identityMatches = (
   left: RealityEncounterIdentityReferences,
   right: RealityEncounterIdentityReferences,
@@ -218,6 +220,13 @@ export function resolveChoicePresentationReadiness(
         summary.choiceActionIntention
           .choiceActionIntentionReferenceId,
     });
+  }
+  if (XINMAI_NEW_CHOICE_PRESENTATION_MUTATIONS_PAUSED) {
+    return safeWithheld(
+      input,
+      "RUNTIME_RECOVERY_FAILURE",
+      currentLineage,
+    );
   }
   if (observation.status === "CHOICE_COMMITTED") {
     return safeWithheld(

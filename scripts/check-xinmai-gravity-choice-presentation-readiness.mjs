@@ -35,12 +35,6 @@ const {
 } = requireFromTemp(
   "./src/services/xinmaiChoicePresentationReadinessResolver.js",
 );
-const {
-  validateChoiceActionIntentionPrerequisites,
-} = requireFromTemp(
-  "./src/services/xinmaiChoiceActionIntentionPrerequisiteValidator.js",
-);
-
 const identityReferences = Object.freeze({
   sourceReferenceId: "source:choice-presentation",
   starBeastIdentityReferenceId: "starbeast:choice-presentation",
@@ -151,18 +145,15 @@ const assertEqual = (name, actual, expected) => {
 };
 
 const ready = resolveChoicePresentationReadiness(baseInput);
-assertEqual("typed candidate becomes ready", ready.state, "READY_TO_PRESENT");
 assertEqual(
-  "ready structural input is shared-validator valid",
-  validateChoiceActionIntentionPrerequisites(
-    ready.structuralInput,
-  ).status,
-  "VALID",
+  "new choice presentation is safely paused",
+  ready.state,
+  "SAFE_WITHHELD",
 );
 assertEqual(
-  "action stage is not rejected by enum name",
-  ready.experienceStage,
-  "ACTION",
+  "paused presentation exposes a safe reason",
+  ready.reason,
+  "RUNTIME_RECOVERY_FAILURE",
 );
 
 const unrecognized = resolveChoicePresentationReadiness({
@@ -175,9 +166,9 @@ const unrecognized = resolveChoicePresentationReadiness({
   },
 });
 assertEqual(
-  "awareness enum alone stays withheld",
+  "awareness cannot bypass the pause",
   unrecognized.state,
-  "WITHHELD",
+  "SAFE_WITHHELD",
 );
 
 const missingRoute = resolveChoicePresentationReadiness({
@@ -190,14 +181,14 @@ const missingRoute = resolveChoicePresentationReadiness({
   },
 });
 assertEqual(
-  "non-awareness route gap is withheld",
+  "non-awareness entry cannot bypass the pause",
   missingRoute.state,
-  "WITHHELD",
+  "SAFE_WITHHELD",
 );
 assertEqual(
-  "non-awareness route gap reason",
+  "non-awareness entry keeps the safe pause reason",
   missingRoute.reason,
-  "CHANGE_EXPERIENCE_ROUTE_REQUIRED",
+  "RUNTIME_RECOVERY_FAILURE",
 );
 
 const committed = resolveChoicePresentationReadiness({
