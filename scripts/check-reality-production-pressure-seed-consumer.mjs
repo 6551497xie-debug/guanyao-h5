@@ -216,12 +216,19 @@ try {
   assertEqual("initial session is immutable", Object.isFrozen(initialized.session), true);
 
   const firstCandidate = initialized.session.candidateBundle.candidates[0];
+  const firstCandidateRecord = candidateSource.context.candidateRecords.find(
+    (entry) =>
+      entry.candidateReferenceId ===
+      firstCandidate.candidateReferenceId,
+  );
   const baseCommand = {
     event: "PRESSURE_SEED_RECOGNIZE",
     sourceReferenceId,
     candidateBundleReferenceId:
       initialized.session.candidateBundleReferenceId,
     recognizedCandidateReferenceId: firstCandidate.candidateReferenceId,
+    recognizedCandidateRevisionReferenceId:
+      firstCandidateRecord.candidateRevisionReferenceId,
   };
   const paused = runtime.advanceRealityProductionPressureSeedConsumer({
     session: initialized.session,
@@ -230,6 +237,7 @@ try {
       ...baseCommand,
       event: "PRESSURE_SEED_PAUSE",
       recognizedCandidateReferenceId: null,
+      recognizedCandidateRevisionReferenceId: null,
     },
   });
   assertEqual("pause remains a valid session state", paused.status, "READY");
@@ -275,6 +283,7 @@ try {
       sourceReferenceId,
       candidateBundleReferenceId: nextSource.context.bundleReferenceId,
       recognizedCandidateReferenceId: null,
+      recognizedCandidateRevisionReferenceId: null,
     },
   });
   assertEqual("explicit next bundle advances session", nextBundle.status, "READY");

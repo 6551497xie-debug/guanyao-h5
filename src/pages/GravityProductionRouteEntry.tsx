@@ -19,8 +19,12 @@ import {
   commitGravityEntryActive,
   establishGravityRouteAdmission,
   failGravityEntryAcceptance,
+  readCanonicalGravityAdmission,
   retryGravityEntryAcceptance,
 } from "../services/xinmaiGravityEntryAdmissionController";
+import {
+  subscribeToRealityAdventureContinuityRevision,
+} from "../services/xinmaiRealityAdventureContinuityRevisionObserver";
 import {
   establishGravityObservationAvailable,
   recognizeGravityObservation,
@@ -105,6 +109,7 @@ export function GravityProductionRouteEntry() {
     );
   const transactionEpochRef = useRef(0);
   const growthSummaryEpochRef = useRef(0);
+  const continuityRefreshEpochRef = useRef(0);
 
   const createGrowthSummaryRequest = useCallback(
     (
@@ -140,7 +145,7 @@ export function GravityProductionRouteEntry() {
     const epoch = transactionEpochRef.current + 1;
     transactionEpochRef.current = epoch;
     void (async () => {
-      const routeAdmission = establishGravityRouteAdmission({
+      const routeAdmission = await establishGravityRouteAdmission({
         routeTicket,
         identityReferences: identityRecovery.identityReferences,
       });
@@ -171,7 +176,7 @@ export function GravityProductionRouteEntry() {
         visualContinuity: identityRecovery.visualContinuity,
       });
       if (runtimeInput.status !== "READY") {
-        failGravityEntryAcceptance({
+        await failGravityEntryAcceptance({
           admissionReferenceId:
             routeAdmission.intent.admissionReferenceId,
           gravityCycleId: routeAdmission.intent.gravityCycleId,
@@ -235,6 +240,99 @@ export function GravityProductionRouteEntry() {
   );
 
   useEffect(() => {
+    if (
+      assembly.status !== "READY" ||
+      identityRecovery.status !== "READY"
+    ) {
+      return undefined;
+    }
+    let cancelled = false;
+    const admissionReferenceId =
+      assembly.admission.admissionReferenceId;
+    const gravityCycleId = assembly.admission.gravityCycleId;
+    const sourceEncounterCycleId =
+      assembly.admission.sourceReality.encounterCycleId;
+    const currentAdmissionRevision =
+      assembly.admission.revision;
+    const routeAdmission = assembly.routeAdmission;
+    const unsubscribe =
+      subscribeToRealityAdventureContinuityRevision((notice) => {
+        if (
+          notice.encounterCycleId !==
+            sourceEncounterCycleId
+        ) {
+          return;
+        }
+        const epoch = continuityRefreshEpochRef.current + 1;
+        continuityRefreshEpochRef.current = epoch;
+        void readCanonicalGravityAdmission({
+          admissionReferenceId,
+        }).then(async (admission) => {
+          if (
+            cancelled ||
+            continuityRefreshEpochRef.current !== epoch ||
+            admission === null ||
+            admission.admissionReferenceId !==
+              admissionReferenceId ||
+            admission.gravityCycleId !== gravityCycleId ||
+            admission.revision <= currentAdmissionRevision
+          ) {
+            return;
+          }
+          if (admission.state === "TERMINAL") {
+            setAssembly(Object.freeze({
+              status: "BLOCKED" as const,
+              reason: "ADMISSION_NOT_CURRENT" as const,
+              admissionReferenceId,
+              gravityCycleId,
+            }));
+            return;
+          }
+          const runtimeInput =
+            resolveGravityProductionRuntimeInput({
+              admission,
+              lifeSourceSession:
+                identityRecovery.lifeSourceSession,
+              visualContinuity:
+                identityRecovery.visualContinuity,
+            });
+          if (runtimeInput.status !== "READY") return;
+          const [continuityDecision, growthTerminalSummary] =
+            await Promise.all([
+              resolveGravityEncounterResumeDecision(admission),
+              readChoiceGrowthTerminalSummary(
+                createGrowthSummaryRequest(admission),
+              ),
+            ]);
+          if (
+            cancelled ||
+            continuityRefreshEpochRef.current !== epoch
+          ) {
+            return;
+          }
+          setAssembly(Object.freeze({
+            status: "READY" as const,
+            routeAdmission,
+            admission,
+            runtimeInput: runtimeInput.input,
+            continuityDecision,
+            growthTerminalSummary,
+            growthSummaryPending: false,
+          }));
+        });
+      });
+    return () => {
+      cancelled = true;
+      continuityRefreshEpochRef.current += 1;
+      unsubscribe();
+    };
+  }, [
+    assembly,
+    createGrowthSummaryRequest,
+    identityRecovery,
+  ]);
+
+  useEffect(() => {
     if (readyGrowthSummaryRequest === null) return undefined;
     let cancelled = false;
     const refresh = () => {
@@ -289,10 +387,10 @@ export function GravityProductionRouteEntry() {
   ]);
 
   const handleAcceptanceOutcome = useCallback(
-    (outcome: GravityHostAcceptanceOutcome) => {
+    async (outcome: GravityHostAcceptanceOutcome) => {
       observeGravityHostAcceptanceOutcome(outcome);
       if (outcome.status === "GRAVITY_HOST_UNAVAILABLE") {
-        const failed = failGravityEntryAcceptance({
+        const failed = await failGravityEntryAcceptance({
           admissionReferenceId: outcome.admissionReferenceId,
           gravityCycleId: outcome.gravityCycleId,
           admissionRevision: outcome.admissionRevision,
@@ -312,7 +410,7 @@ export function GravityProductionRouteEntry() {
         );
         return;
       }
-      const active = commitGravityEntryActive(outcome);
+      const active = await commitGravityEntryActive(outcome);
       observeGravityActiveCommit(active);
       if (active?.state !== "ACTIVE_IN_GRAVITY") {
         setAssembly(
@@ -436,7 +534,7 @@ export function GravityProductionRouteEntry() {
       createGrowthSummaryRequest,
     ]);
 
-  const retry = useCallback(() => {
+  const retry = useCallback(async () => {
     if (
       assembly.status !== "RETRYABLE" ||
       assembly.admissionReferenceId === null ||
@@ -445,7 +543,7 @@ export function GravityProductionRouteEntry() {
     ) {
       return;
     }
-    const result = retryGravityEntryAcceptance({
+    const result = await retryGravityEntryAcceptance({
       admissionReferenceId: assembly.admissionReferenceId,
       gravityCycleId: assembly.gravityCycleId,
       identityReferences: identityRecovery.identityReferences,

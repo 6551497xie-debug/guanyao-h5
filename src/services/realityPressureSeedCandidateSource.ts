@@ -13,6 +13,9 @@ import {
 } from "./realityPressureCrossFieldCandidateBundleContract";
 import { getPressureSeedSceneCandidateAtMatrixSlot } from "./guanyaoPressureSeedSceneBindingService";
 
+export const REALITY_PRESSURE_SEED_CATALOG_REVISION =
+  "GUANYAO_PRESSURE_SEED_MATRIX_CATALOG_2026_07_30_P0" as const;
+
 export const REALITY_PRESSURE_SEED_CANDIDATE_SOURCE_BOUNDARY:
   RealityPressureSeedCandidateSourceBoundary = Object.freeze({
     productionCandidateSourceOnly: true,
@@ -97,6 +100,29 @@ const freezeSeed = (seed: GuanyaoPressureSeed): Readonly<GuanyaoPressureSeed> =>
     core: Object.freeze({ ...seed.core }),
     tags: freezeArray(seed.tags),
   });
+
+const deterministicDigest = (value: string): string => {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+};
+
+const createCandidateRevisionReferenceId = (
+  seed: GuanyaoPressureSeed,
+): string =>
+  `pressure-candidate-revision:${deterministicDigest(
+    JSON.stringify([
+      REALITY_PRESSURE_SEED_CATALOG_REVISION,
+      seed.id,
+      seed.surface,
+      seed.shell,
+      seed.pressureField,
+      seed.primaryAge,
+    ]),
+  )}`;
 
 const resolvePlanSeeds = (
   ageSegment: NonNullable<RealityPressureSeedCandidateRequest["ageSegment"]>,
@@ -247,6 +273,19 @@ export function resolveRealityPressureSeedCandidateSource(
     request.ageSegment,
     ...candidateIds,
   ].join(":");
+  const candidateRevisionReferenceIds = resolvedSeeds.map(
+    createCandidateRevisionReferenceId,
+  );
+  const bundleRevisionReferenceId =
+    `pressure-bundle-revision:${deterministicDigest(
+      JSON.stringify([
+        REALITY_PRESSURE_SEED_CATALOG_REVISION,
+        sourceReferenceId,
+        request.ageSegment,
+        candidateIds,
+        candidateRevisionReferenceIds,
+      ]),
+    )}`;
   const nextCandidateCursor = expectedCursor(
     excludedCandidateReferenceIds.length + candidateIds.length,
   );
@@ -260,9 +299,11 @@ export function resolveRealityPressureSeedCandidateSource(
     ),
   );
   const candidateRecords = Object.freeze(
-    resolvedSeeds.map((seed) =>
+    resolvedSeeds.map((seed, index) =>
       Object.freeze({
         candidateReferenceId: seed.id,
+        candidateRevisionReferenceId:
+          candidateRevisionReferenceIds[index] ?? "",
         seed: freezeSeed(seed),
       }),
     ),
@@ -271,6 +312,8 @@ export function resolveRealityPressureSeedCandidateSource(
     candidateSource: "PRESSURE_SEED_MATRIX_V2" as const,
     candidateSourceService:
       "guanyao_pressure_seed_scene_binding_service" as const,
+    catalogRevision: REALITY_PRESSURE_SEED_CATALOG_REVISION,
+    bundleRevisionReferenceId,
     userRecognitionRequired: true as const,
     noAutomaticSelection: true as const,
     noDefaultCandidate: true as const,
@@ -280,6 +323,7 @@ export function resolveRealityPressureSeedCandidateSource(
     source: "reality_pressure_seed_candidate_source" as const,
     sourceExperienceMode: "REAL_USER_EXPERIENCE" as const,
     sourceReferenceId,
+    ageSegment: request.ageSegment,
     bundleReferenceId,
     selectionMode: "USER_RECOGNITION_REQUIRED" as const,
     candidates,
@@ -292,7 +336,10 @@ export function resolveRealityPressureSeedCandidateSource(
     source: "reality_pressure_seed_candidate_source" as const,
     sourceExperienceMode: "REAL_USER_EXPERIENCE" as const,
     sourceReferenceId,
+    ageSegment: request.ageSegment,
+    catalogRevision: REALITY_PRESSURE_SEED_CATALOG_REVISION,
     bundleReferenceId,
+    bundleRevisionReferenceId,
     candidateBundle,
     candidateRecords,
     boundary: REALITY_PRESSURE_SEED_CANDIDATE_SOURCE_BOUNDARY,
@@ -306,4 +353,60 @@ export function resolveRealityPressureSeedCandidateSource(
     reason: null,
     boundary: REALITY_PRESSURE_SEED_CANDIDATE_SOURCE_BOUNDARY,
   });
+}
+
+export function recoverRealityPressureSeedCandidateSource(input: Readonly<{
+  sourceReferenceId: string;
+  ageSegment: NonNullable<
+    RealityPressureSeedCandidateRequest["ageSegment"]
+  >;
+  candidateBundleReferenceId: string;
+  candidateBundleRevisionReferenceId: string;
+}>): RealityPressureSeedCandidateSourceResult {
+  const excludedCandidateReferenceIds: string[] = [];
+  for (let sequence = 0; sequence < 32; sequence += 1) {
+    const result = resolveRealityPressureSeedCandidateSource(
+      Object.freeze({
+        sourceExperienceMode: "REAL_USER_EXPERIENCE" as const,
+        sourceReferenceId: input.sourceReferenceId,
+        candidateCursor:
+          excludedCandidateReferenceIds.length === 0
+            ? null
+            : `pressure-seed-cursor:${excludedCandidateReferenceIds.length}`,
+        excludedCandidateReferenceIds: Object.freeze([
+          ...excludedCandidateReferenceIds,
+        ]),
+        ageSegment: input.ageSegment,
+        ageSegmentRole: "CATALOG_ROUTING_ONLY" as const,
+      }),
+    );
+    if (result.status !== "READY") return result;
+    if (
+      result.context.bundleReferenceId ===
+        input.candidateBundleReferenceId &&
+      result.context.bundleRevisionReferenceId ===
+        input.candidateBundleRevisionReferenceId
+    ) {
+      return result;
+    }
+    excludedCandidateReferenceIds.push(
+      ...result.context.candidateBundle.candidates.map(
+        (candidate) => candidate.candidateReferenceId,
+      ),
+    );
+  }
+  return sourceNotReady(
+    Object.freeze({
+      sourceExperienceMode: "REAL_USER_EXPERIENCE" as const,
+      sourceReferenceId: input.sourceReferenceId,
+      candidateCursor:
+        `pressure-seed-cursor:${excludedCandidateReferenceIds.length}`,
+      excludedCandidateReferenceIds: Object.freeze([
+        ...excludedCandidateReferenceIds,
+      ]),
+      ageSegment: input.ageSegment,
+      ageSegmentRole: "CATALOG_ROUTING_ONLY" as const,
+    }),
+    "CANDIDATE_CATALOG_EXHAUSTED",
+  );
 }

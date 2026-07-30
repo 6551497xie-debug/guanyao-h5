@@ -84,13 +84,18 @@ const isSourceContextValid = (
     context.source === "reality_pressure_seed_candidate_source" &&
     context.sourceExperienceMode === "REAL_USER_EXPERIENCE" &&
     context.sourceReferenceId.trim().length > 0 &&
+    context.catalogRevision.trim().length > 0 &&
     context.bundleReferenceId.trim().length > 0 &&
+    context.bundleRevisionReferenceId.trim().length > 0 &&
     bundle.schemaVersion ===
       "GUANYAO_REALITY_PRESSURE_CANDIDATE_BUNDLE_V1" &&
     bundle.source === "reality_pressure_seed_candidate_source" &&
     bundle.sourceExperienceMode === "REAL_USER_EXPERIENCE" &&
     bundle.sourceReferenceId === context.sourceReferenceId &&
     bundle.bundleReferenceId === context.bundleReferenceId &&
+    bundle.provenance.catalogRevision === context.catalogRevision &&
+    bundle.provenance.bundleRevisionReferenceId ===
+      context.bundleRevisionReferenceId &&
     bundle.selectionMode === "USER_RECOGNITION_REQUIRED" &&
     bundle.provenance.candidateSource === "PRESSURE_SEED_MATRIX_V2" &&
     bundle.provenance.userRecognitionRequired === true &&
@@ -172,6 +177,9 @@ export function captureRealityPressureSeed(
     !candidate ||
     !candidateRecord ||
     candidateRecord.seed.id !== candidateReferenceId ||
+    !command.recognizedCandidateRevisionReferenceId ||
+    command.recognizedCandidateRevisionReferenceId !==
+      candidateRecord.candidateRevisionReferenceId ||
     candidate.surface !== candidateRecord.seed.surface ||
     candidate.shell !== candidateRecord.seed.shell
   ) {
@@ -187,6 +195,11 @@ export function captureRealityPressureSeed(
     sourceReferenceId: sourceContext.sourceReferenceId,
     bundleReferenceId: sourceContext.bundleReferenceId,
     candidateReferenceId,
+    catalogRevision: sourceContext.catalogRevision,
+    bundleRevisionReferenceId:
+      sourceContext.bundleRevisionReferenceId,
+    candidateRevisionReferenceId:
+      candidateRecord.candidateRevisionReferenceId,
   });
 
   return Object.freeze({

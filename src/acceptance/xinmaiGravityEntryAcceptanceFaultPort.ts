@@ -8,6 +8,12 @@ import type {
   GravityLifeSurfaceOutcome,
   GravityObservationSurfaceOutcome,
 } from "../types/xinmaiGravitySurfaceAdmission";
+import type {
+  RealityPressureRecognitionOutcome,
+} from "../types/xinmaiRealityAdventureContinuity";
+import type {
+  RealityEncounterRequestResult,
+} from "../types/xinmaiRealityEncounterIntent";
 import { recordGravityEntryAcceptanceEvidence } from "./xinmaiGravityEntryAcceptanceScenario";
 
 const identityOf = (
@@ -64,6 +70,35 @@ export function observeRealityToGravityCutoverResult(
     event: `CUTOVER:${result.status}`,
     ...(admission === null ? {} : identityOf(admission)),
     detail: result.reason,
+  });
+}
+
+export function observeRealityPressureRecognitionOutcome(
+  outcome: RealityPressureRecognitionOutcome,
+): void {
+  recordGravityEntryAcceptanceEvidence({
+    event: `PRESSURE_RECOGNITION:${outcome.status}`,
+    detail:
+      outcome.receipt === null
+        ? outcome.reason
+        : [
+            outcome.receipt.recognitionReceiptReferenceId,
+            outcome.receipt.lifecycle,
+            String(outcome.canonicalRevision),
+          ].join("|"),
+  });
+}
+
+export function observeRealityEncounterRequestOutcome(
+  outcome: RealityEncounterRequestResult,
+): void {
+  recordGravityEntryAcceptanceEvidence({
+    event: `REALITY_INTENT:${outcome.status}`,
+    detail: [
+      outcome.reason ?? "NONE",
+      outcome.intent?.encounterCycleId ?? "NO_ENCOUNTER",
+      outcome.persistence ?? "UNCONFIRMED",
+    ].join("|"),
   });
 }
 

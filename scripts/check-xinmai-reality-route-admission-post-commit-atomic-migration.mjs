@@ -169,9 +169,9 @@ try {
   }
 
   assertIncludes(
-    "Controller confirms Recovery before publishing Admission",
+    "Controller commits Admission through canonical transaction",
     source.controller,
-    "commitIntentWithConfirmedRecovery",
+    "transactRealityAdventureContinuity",
   );
   assertIncludes(
     "Controller exposes admission rollback only",

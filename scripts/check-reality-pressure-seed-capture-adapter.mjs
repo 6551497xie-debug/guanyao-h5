@@ -174,11 +174,18 @@ try {
 
   const sourceContext = sourceResult.context;
   const candidate = sourceContext.candidateBundle.candidates[0];
+  const candidateRecord = sourceContext.candidateRecords.find(
+    (entry) =>
+      entry.candidateReferenceId ===
+      candidate.candidateReferenceId,
+  );
   const baseCommand = {
     event: "PRESSURE_SEED_RECOGNIZE",
     sourceReferenceId: sourceContext.sourceReferenceId,
     candidateBundleReferenceId: sourceContext.bundleReferenceId,
     recognizedCandidateReferenceId: candidate.candidateReferenceId,
+    recognizedCandidateRevisionReferenceId:
+      candidateRecord.candidateRevisionReferenceId,
   };
 
   const paused = runtime.captureRealityPressureSeed({
@@ -187,6 +194,7 @@ try {
       ...baseCommand,
       event: "PRESSURE_SEED_PAUSE",
       recognizedCandidateReferenceId: null,
+      recognizedCandidateRevisionReferenceId: null,
     },
   });
   assertEqual("pause never captures a Seed", paused.status, "BLOCKED");
@@ -200,6 +208,7 @@ try {
       ...baseCommand,
       event: "PRESSURE_SEED_REQUEST_NEXT_BUNDLE",
       recognizedCandidateReferenceId: null,
+      recognizedCandidateRevisionReferenceId: null,
     },
   });
   assertEqual("next-bundle request does not auto-capture", nextBundle.status, "BLOCKED");

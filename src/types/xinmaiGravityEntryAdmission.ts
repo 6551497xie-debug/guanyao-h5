@@ -177,6 +177,9 @@ export type GravityEntryTransferRequest = Readonly<{
   source: "reality_production_host";
   requestedAt: string;
   userExplicitRequest: true;
+  expectedCanonicalRevision: number;
+  recognitionReceiptReferenceId: string;
+  recognitionReceiptRevision: number;
   identityReferences: RealityEncounterIdentityReferences;
   sourceReality: Readonly<{
     intentReferenceId: string;
@@ -208,7 +211,9 @@ export type GravityRouteTicket = Readonly<{
 
 export type RealityToGravityCutoverEnvelope = Readonly<{
   schemaVersion: typeof XINMAI_REALITY_TO_GRAVITY_CUTOVER_SCHEMA_VERSION;
-  source: "xinmai_gravity_entry_recovery_adapter";
+  source:
+    | "xinmai_gravity_entry_recovery_adapter"
+    | "xinmai_reality_adventure_continuity_transactional_store";
   envelopeReferenceId: string;
   committedAt: string;
   expiresAt: string;
@@ -381,7 +386,8 @@ export type RealityToGravityCutoverTransactionResult =
       envelope: RealityToGravityCutoverEnvelope;
       cleanup:
         | "SOURCE_RECOVERY_CLEARED"
-        | "SOURCE_RECOVERY_SUPERSEDED_PENDING_CLEANUP";
+        | "SOURCE_RECOVERY_SUPERSEDED_PENDING_CLEANUP"
+        | "SOURCE_CANONICAL_SUPERSEDED";
       reason: null;
     }>
   | Readonly<{

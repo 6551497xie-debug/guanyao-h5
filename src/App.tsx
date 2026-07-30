@@ -222,7 +222,7 @@ class RealityRouteLoadBoundary extends Component<
         currentIntent.state === "ACCEPTING_REALITY" ||
         currentIntent.state === "RECOVERING")
     ) {
-      failRealityEncounterAcceptance({
+      void failRealityEncounterAcceptance({
         intentReferenceId: currentIntent.intentReferenceId,
         encounterCycleId: currentIntent.encounterCycleId,
         intentRevision: currentIntent.revision,
@@ -232,7 +232,7 @@ class RealityRouteLoadBoundary extends Component<
     }
   }
 
-  private retry = () => {
+  private retry = async () => {
     const currentIntent = readCurrentRealityEncounterIntent();
     if (
       currentIntent === null ||
@@ -240,7 +240,7 @@ class RealityRouteLoadBoundary extends Component<
     ) {
       return;
     }
-    const retryResult = retryRealityEncounterAcceptance({
+    const retryResult = await retryRealityEncounterAcceptance({
       intentReferenceId: currentIntent.intentReferenceId,
     });
     if (retryResult.status !== "READY") return;
@@ -341,7 +341,7 @@ function RealityProductionRouteRuntime({
   const requestExplicitLeave = useCallback<
     RealityProductionRouteEntryProps["onExplicitLeaveRequest"]
   >(
-    (request) => {
+    async (request) => {
       const transactionKey = [
         request.intentReferenceId,
         request.encounterCycleId,
@@ -358,7 +358,7 @@ function RealityProductionRouteRuntime({
         }),
       );
       const result =
-        executeRealityExplicitLeaveTermination(request);
+        await executeRealityExplicitLeaveTermination(request);
       if (result.status === "TERMINATED_AND_LEFT") {
         onExplicitLeaveTerminationConfirmed(request);
         return;

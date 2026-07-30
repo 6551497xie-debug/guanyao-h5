@@ -1,4 +1,7 @@
-import type { GuanyaoPressureSeed } from "./guanyaoPressureSeed";
+import type {
+  GuanyaoAgeSegment,
+  GuanyaoPressureSeed,
+} from "./guanyaoPressureSeed";
 import type {
   RealityPressureSeedCandidateBundle,
   RealityPressureSeedCandidateRequest,
@@ -36,6 +39,7 @@ export type RealityPressureSeedCandidateSourceBoundary = Readonly<{
 
 export type RealityPressureSeedCandidateSourceRecord = Readonly<{
   candidateReferenceId: string;
+  candidateRevisionReferenceId: string;
   seed: Readonly<GuanyaoPressureSeed>;
 }>;
 
@@ -44,7 +48,10 @@ export type RealityPressureSeedCandidateSourceContext = Readonly<{
   source: "reality_pressure_seed_candidate_source";
   sourceExperienceMode: "REAL_USER_EXPERIENCE";
   sourceReferenceId: string;
+  ageSegment: GuanyaoAgeSegment;
+  catalogRevision: string;
   bundleReferenceId: string;
+  bundleRevisionReferenceId: string;
   candidateBundle: RealityPressureSeedCandidateBundle;
   candidateRecords: readonly RealityPressureSeedCandidateSourceRecord[];
   boundary: RealityPressureSeedCandidateSourceBoundary;

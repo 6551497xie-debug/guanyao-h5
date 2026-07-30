@@ -22,6 +22,8 @@ export type RealityPressureSeedCandidate = Readonly<{
 export type RealityPressureSeedCandidateBundleProvenance = Readonly<{
   candidateSource: RealityPressureSeedCandidateSource;
   candidateSourceService: "guanyao_pressure_seed_scene_binding_service";
+  catalogRevision: string;
+  bundleRevisionReferenceId: string;
   userRecognitionRequired: true;
   noAutomaticSelection: true;
   noDefaultCandidate: true;
@@ -54,6 +56,7 @@ export type RealityPressureSeedCaptureCommand = Readonly<{
   sourceReferenceId: string;
   candidateBundleReferenceId: string;
   recognizedCandidateReferenceId: string | null;
+  recognizedCandidateRevisionReferenceId: string | null;
 }>;
 
 export type RealityPressureSeedCaptureProvenance = Readonly<{
@@ -62,6 +65,9 @@ export type RealityPressureSeedCaptureProvenance = Readonly<{
   sourceReferenceId: string;
   bundleReferenceId: string;
   candidateReferenceId: string;
+  catalogRevision: string;
+  bundleRevisionReferenceId: string;
+  candidateRevisionReferenceId: string;
 }>;
 
 export type RealityPressureSeedCaptureBlockedReason =

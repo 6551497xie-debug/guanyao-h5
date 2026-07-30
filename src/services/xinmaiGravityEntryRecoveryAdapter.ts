@@ -1,9 +1,7 @@
 import type {
   GravityEntryAdmission,
-  GravityEntryRecoveryClearResult,
   GravityEntryRecoveryReadResult,
   GravityEntryRecoverySnapshot,
-  GravityEntryRecoveryWriteResult,
   RealityToGravityCutoverEnvelope,
 } from "../types/xinmaiGravityEntryAdmission";
 import {
@@ -202,119 +200,6 @@ const freezeSnapshot = (
     ),
   });
 
-const createSnapshot = (
-  envelope: RealityToGravityCutoverEnvelope,
-  admission: GravityEntryAdmission,
-): GravityEntryRecoverySnapshot =>
-  freezeSnapshot({
-    schemaVersion: XINMAI_GRAVITY_ENTRY_RECOVERY_SCHEMA_VERSION,
-    source: "xinmai_gravity_entry_recovery_adapter",
-    envelope,
-    currentGravityAdmission: admission,
-    writtenAt: new Date().toISOString(),
-  });
-
-const writeSnapshot = (
-  snapshot: GravityEntryRecoverySnapshot,
-): GravityEntryRecoveryWriteResult => {
-  const storage = getSessionStorage();
-  if (storage === null) {
-    return Object.freeze({
-      status: "UNAVAILABLE" as const,
-      snapshot,
-    });
-  }
-  try {
-    storage.setItem(
-      GRAVITY_ENTRY_RECOVERY_STORAGE_KEY,
-      JSON.stringify(snapshot),
-    );
-    const stored = storage.getItem(GRAVITY_ENTRY_RECOVERY_STORAGE_KEY);
-    if (stored === null) {
-      return Object.freeze({
-        status: "UNCONFIRMED" as const,
-        snapshot,
-      });
-    }
-    const parsed = JSON.parse(stored) as unknown;
-    return Object.freeze({
-      status:
-        isSnapshot(parsed) &&
-        parsed.envelope.envelopeReferenceId ===
-          snapshot.envelope.envelopeReferenceId &&
-        parsed.currentGravityAdmission.admissionReferenceId ===
-          snapshot.currentGravityAdmission.admissionReferenceId &&
-        parsed.currentGravityAdmission.gravityCycleId ===
-          snapshot.currentGravityAdmission.gravityCycleId &&
-        parsed.currentGravityAdmission.gravityObservationReferenceId ===
-          snapshot.currentGravityAdmission
-            .gravityObservationReferenceId &&
-        parsed.currentGravityAdmission.revision ===
-          snapshot.currentGravityAdmission.revision
-          ? "CONFIRMED" as const
-          : "UNCONFIRMED" as const,
-      snapshot,
-    });
-  } catch {
-    return Object.freeze({
-      status: "UNAVAILABLE" as const,
-      snapshot,
-    });
-  }
-};
-
-export function writeRealityToGravityCutoverEnvelope(
-  envelope: RealityToGravityCutoverEnvelope,
-): GravityEntryRecoveryWriteResult {
-  return writeSnapshot(
-    createSnapshot(envelope, envelope.targetGravity.admission),
-  );
-}
-
-export function updateGravityEntryRecoveryCandidate(
-  admission: GravityEntryAdmission,
-): GravityEntryRecoveryWriteResult {
-  const current = readGravityEntryRecoveryCandidate();
-  if (
-    current.status !== "FOUND" ||
-    current.snapshot.currentGravityAdmission.admissionReferenceId !==
-      admission.admissionReferenceId ||
-    current.snapshot.currentGravityAdmission.gravityCycleId !==
-      admission.gravityCycleId
-  ) {
-    const unavailableEnvelope = Object.freeze({
-      schemaVersion: XINMAI_REALITY_TO_GRAVITY_CUTOVER_SCHEMA_VERSION,
-      source: "xinmai_gravity_entry_recovery_adapter" as const,
-      envelopeReferenceId: `unavailable:${admission.gravityCycleId}`,
-      committedAt: admission.updatedAt,
-      expiresAt: admission.expiresAt,
-      sourceReality: Object.freeze({
-        terminalProof: admission.sourceReality,
-        identityReferences: admission.identityReferences,
-        supersededByGravityTransfer: true as const,
-      }),
-      targetGravity: Object.freeze({
-        admission,
-        identityReferences: admission.identityReferences,
-      }),
-      integrity: Object.freeze({
-        sourceAndTargetIdentityMatch: true as const,
-        sourceAndTargetCycleBound: true as const,
-        pressureBelongsToSourceReference: true as const,
-        bodyApproachBelongsToEncounter: true as const,
-        singleRouteTarget: "/dynamics" as const,
-      }),
-    });
-    return Object.freeze({
-      status: "UNAVAILABLE" as const,
-      snapshot: createSnapshot(unavailableEnvelope, admission),
-    });
-  }
-  return writeSnapshot(
-    createSnapshot(current.snapshot.envelope, admission),
-  );
-}
-
 export function readGravityEntryRecoveryCandidate():
   GravityEntryRecoveryReadResult {
   const storage = getSessionStorage();
@@ -391,49 +276,14 @@ export function readRealitySupersessionProof(input: Readonly<{
   });
 }
 
-export function clearGravityEntryRecoveryCandidate(
-  admissionReferenceId: string,
-): GravityEntryRecoveryClearResult {
-  const normalized = admissionReferenceId.trim();
-  const storage = getSessionStorage();
-  if (storage === null) {
-    return Object.freeze({
-      status: "UNAVAILABLE" as const,
-      admissionReferenceId: normalized,
-    });
-  }
-  try {
-    const current = readGravityEntryRecoveryCandidate();
-    if (
-      current.status === "FOUND" &&
-      current.snapshot.currentGravityAdmission.admissionReferenceId !==
-        normalized
-    ) {
-      return Object.freeze({
-        status: "UNCONFIRMED" as const,
-        admissionReferenceId: normalized,
-      });
-    }
-    storage.removeItem(GRAVITY_ENTRY_RECOVERY_STORAGE_KEY);
-    return Object.freeze({
-      status:
-        storage.getItem(GRAVITY_ENTRY_RECOVERY_STORAGE_KEY) === null
-          ? "CONFIRMED" as const
-          : "UNCONFIRMED" as const,
-      admissionReferenceId: normalized,
-    });
-  } catch {
-    return Object.freeze({
-      status: "UNAVAILABLE" as const,
-      admissionReferenceId: normalized,
-    });
-  }
-}
-
 export const XinmaiGravityEntryRecoveryAdapter = Object.freeze({
-  writeCutover: writeRealityToGravityCutoverEnvelope,
-  update: updateGravityEntryRecoveryCandidate,
   read: readGravityEntryRecoveryCandidate,
   readRealitySupersession: readRealitySupersessionProof,
-  clear: clearGravityEntryRecoveryCandidate,
+  boundary: Object.freeze({
+    readOnlyLegacyAdapter: true as const,
+    noBackfill: true as const,
+    noStorageWrite: true as const,
+    noStorageClear: true as const,
+    noAuthority: true as const,
+  }),
 });

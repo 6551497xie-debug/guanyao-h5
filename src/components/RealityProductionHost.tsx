@@ -29,6 +29,18 @@ import type {
   RealityPressureSurfaceOutcome,
 } from "../types/xinmaiRealitySurfaceAdmission";
 import { resolveRealitySurfaceAdmissionTransaction } from "../services/xinmaiRealitySurfaceAdmissionTransaction";
+import {
+  recognizeRealityPressureCandidate,
+} from "../services/xinmaiRealityPressureRecognitionController";
+import {
+  recoverRealityPressureSeedCandidateSource,
+} from "../services/realityPressureSeedCandidateSource";
+import {
+  observeRealityPressureRecognitionOutcome,
+} from "../services/gravityEntryAcceptanceRuntimePort";
+import type {
+  RealityPressureRecognitionReceipt,
+} from "../types/xinmaiRealityAdventureContinuity";
 
 const MINIMUM_SURFACE_OUTCOME_WATCHDOG_MS = 8_000;
 
@@ -84,6 +96,11 @@ type RealityInnerViewApproachState =
   | "AWAITING_BODY_APPROACH"
   | "BODY_APPROACHED";
 
+type RealityPressureRecognitionAuthorityState = Readonly<{
+  receipt: RealityPressureRecognitionReceipt;
+  canonicalRevision: number;
+}> | null;
+
 type RealitySurfaceOutcomeState = Readonly<{
   lifeSurfaceOutcome: RealityLifeSurfaceOutcome | null;
   pressureSurfaceOutcome: RealityPressureSurfaceOutcome | null;
@@ -131,6 +148,9 @@ export function RealityProductionHost({
     );
   const [innerViewApproachState, setInnerViewApproachState] =
     useState<RealityInnerViewApproachState>("INACTIVE");
+  const [recognitionAuthorityState, setRecognitionAuthorityState] =
+    useState<RealityPressureRecognitionAuthorityState>(null);
+  const recognitionInFlightRef = useRef(false);
   const [surfaceOutcomes, setSurfaceOutcomes] =
     useState<RealitySurfaceOutcomeState>(() =>
       Object.freeze({
@@ -356,6 +376,177 @@ export function RealityProductionHost({
     onRealityAcceptanceOutcome,
   ]);
 
+  const recoverableContinuationContext =
+    minimumInputReady &&
+    continuationResult.status === "READY" &&
+    continuationResult.context.phase === "ACTIVE"
+      ? continuationResult.context
+      : null;
+  const recoverablePressureSession =
+    recoverableContinuationContext?.pressureSeedSession ?? null;
+
+  useEffect(() => {
+    if (
+      !realityInteractionActive ||
+      realityInteractionAuthority.phase !== "ACTIVE_INTERACTION" ||
+      realityInteractionAuthority.recognitionReceipt === null ||
+      recognitionAuthorityState !== null ||
+      recognitionInFlightRef.current ||
+      recoverableContinuationContext === null ||
+      recoverablePressureSession === null
+    ) {
+      return;
+    }
+    const receipt = realityInteractionAuthority.recognitionReceipt;
+    const currentSourceContext =
+      recoverableContinuationContext.candidateSourceContext;
+    const recoveredSourceResult =
+      currentSourceContext.bundleReferenceId ===
+          receipt.fact.candidateRevision
+            .candidateBundleReferenceId &&
+        currentSourceContext.bundleRevisionReferenceId ===
+          receipt.fact.candidateRevision
+            .candidateBundleRevisionReferenceId
+        ? Object.freeze({
+            status: "READY" as const,
+            context: currentSourceContext,
+          })
+        : recoverRealityPressureSeedCandidateSource({
+            sourceReferenceId:
+              receipt.fact.candidateRevision.sourceReferenceId,
+            ageSegment: currentSourceContext.ageSegment,
+            candidateBundleReferenceId:
+              receipt.fact.candidateRevision
+                .candidateBundleReferenceId,
+            candidateBundleRevisionReferenceId:
+              receipt.fact.candidateRevision
+                .candidateBundleRevisionReferenceId,
+          });
+    if (
+      recoveredSourceResult.status !== "READY" ||
+      activeRealityIntent === null
+    ) {
+      return;
+    }
+    const recoveredSourceContext =
+      recoveredSourceResult.context;
+    const candidate =
+      recoveredSourceContext.candidateRecords.find(
+          (entry) =>
+            entry.candidateReferenceId ===
+              receipt.fact.candidateRevision
+                .candidateReferenceId &&
+            entry.candidateRevisionReferenceId ===
+              receipt.fact.candidateRevision
+                .candidateRevisionReferenceId,
+        );
+    if (!candidate) return;
+    const baseConsumerResult =
+      initializeRealityProductionPressureSeedConsumer({
+        routeAuthorization,
+        candidateSourceContext: recoveredSourceContext,
+      });
+    if (baseConsumerResult.status !== "READY") return;
+    recognitionInFlightRef.current = true;
+    void recognizeRealityPressureCandidate({
+      encounterCycleId: activeRealityIntent.encounterCycleId,
+      expectedCanonicalRevision:
+        realityInteractionAuthority.canonicalRevision,
+      identityReferences: Object.freeze({
+        sourceReferenceId:
+          activeRealityIntent.sourceReferenceId,
+        starBeastIdentityReferenceId:
+          activeRealityIntent.starBeastIdentityReferenceId,
+        mansionCoordinateReferenceId:
+          activeRealityIntent.mansionCoordinateReferenceId,
+      }),
+      candidateReferenceId: candidate.candidateReferenceId,
+      candidateRevisionReferenceId:
+        candidate.candidateRevisionReferenceId,
+      candidateBundleReferenceId:
+        recoveredSourceContext.bundleReferenceId,
+      candidateBundleRevisionReferenceId:
+        recoveredSourceContext.bundleRevisionReferenceId,
+      catalogRevision:
+        recoveredSourceContext.catalogRevision,
+      candidateSourceContext: recoveredSourceContext,
+      pressureSession: baseConsumerResult.session,
+      requestedAt: new Date().toISOString(),
+    }).then((outcome) => {
+      observeRealityPressureRecognitionOutcome(outcome);
+      if (
+        outcome.status !== "ALREADY_RECOGNIZED" &&
+        outcome.status !== "RECOGNIZED"
+      ) {
+        return;
+      }
+      if (
+        recoveredSourceContext.bundleReferenceId ===
+        recoverableContinuationContext.candidateSourceContext
+          .bundleReferenceId
+      ) {
+        applyConsumerResult(outcome.consumerResult);
+      } else {
+        const deliveredCandidateReferenceIds =
+          Object.freeze(
+            recoveredSourceContext.candidateBundle.candidates.map(
+              (entry) => entry.candidateReferenceId,
+            ),
+          );
+        const recoveredDeliverySession = Object.freeze({
+          ...recoverableContinuationContext.deliverySession,
+          currentBundleReferenceId:
+            recoveredSourceContext.bundleReferenceId,
+          nextCandidateCursor:
+            recoveredSourceContext.candidateBundle
+              .nextCandidateCursor,
+          deliveredBundleReferenceIds: Object.freeze([
+            recoveredSourceContext.bundleReferenceId,
+          ]),
+          deliveredCandidateReferenceIds,
+        });
+        const recoveredContinuation = Object.freeze({
+          ...recoverableContinuationContext,
+          phase: "ACTIVE" as const,
+          candidateSourceContext: recoveredSourceContext,
+          deliverySession: recoveredDeliverySession,
+          pressureSeedSession: outcome.consumerResult.session,
+        });
+        setPressureHostState(
+          Object.freeze({
+            consumerResult: outcome.consumerResult,
+            continuationResult: Object.freeze({
+              status: "READY" as const,
+              context: recoveredContinuation,
+              reason: null,
+              boundary:
+                recoverableContinuationContext.boundary,
+            }),
+          }),
+        );
+      }
+      setRecognitionAuthorityState(
+        Object.freeze({
+          receipt: outcome.receipt,
+          canonicalRevision: outcome.canonicalRevision,
+        }),
+      );
+      setInnerViewApproachState(
+        "AWAITING_BODY_APPROACH",
+      );
+    }).finally(() => {
+      recognitionInFlightRef.current = false;
+    });
+  }, [
+    activeRealityIntent,
+    realityInteractionActive,
+    realityInteractionAuthority,
+    recognitionAuthorityState,
+    recoverableContinuationContext,
+    recoverablePressureSession,
+    routeAuthorization,
+  ]);
+
   if (
     !minimumInputReady
   ) {
@@ -433,33 +624,77 @@ export function RealityProductionHost({
     );
   };
 
-  const recognizePressureSeed = (candidateReferenceId: string) => {
+  const recognizePressureSeed = async (
+    candidateReferenceId: string,
+  ) => {
     if (
+      recognitionInFlightRef.current ||
       !realityInteractionActive ||
+      realityInteractionAuthority.phase !== "ACTIVE_INTERACTION" ||
       !pressureSeedSession.availableEvents.includes(
         "PRESSURE_SEED_RECOGNIZE",
       )
     ) {
       return;
     }
-    const nextConsumerResult =
-      advanceRealityProductionPressureSeedConsumer({
-        session: pressureSeedSession,
-        candidateSourceContext: continuationContext.candidateSourceContext,
-        command: Object.freeze({
-          event: "PRESSURE_SEED_RECOGNIZE" as const,
-          sourceReferenceId: pressureSeedSession.sourceReferenceId,
-          candidateBundleReferenceId:
-            pressureSeedSession.candidateBundleReferenceId,
-          recognizedCandidateReferenceId: candidateReferenceId,
+    const candidate =
+      continuationContext.candidateSourceContext.candidateRecords
+        .find(
+          (entry) =>
+            entry.candidateReferenceId ===
+            candidateReferenceId,
+        );
+    if (!candidate || activeRealityIntent === null) return;
+    recognitionInFlightRef.current = true;
+    try {
+      const outcome = await recognizeRealityPressureCandidate({
+        encounterCycleId:
+          activeRealityIntent.encounterCycleId,
+        expectedCanonicalRevision:
+          realityInteractionAuthority.canonicalRevision,
+        identityReferences: Object.freeze({
+          sourceReferenceId:
+            activeRealityIntent.sourceReferenceId,
+          starBeastIdentityReferenceId:
+            activeRealityIntent.starBeastIdentityReferenceId,
+          mansionCoordinateReferenceId:
+            activeRealityIntent.mansionCoordinateReferenceId,
         }),
+        candidateReferenceId,
+        candidateRevisionReferenceId:
+          candidate.candidateRevisionReferenceId,
+        candidateBundleReferenceId:
+          pressureSeedSession.candidateBundleReferenceId,
+        candidateBundleRevisionReferenceId:
+          pressureSeedSession
+            .candidateBundleRevisionReferenceId,
+        catalogRevision:
+          continuationContext.candidateSourceContext
+            .catalogRevision,
+        candidateSourceContext:
+          continuationContext.candidateSourceContext,
+        pressureSession: pressureSeedSession,
+        requestedAt: new Date().toISOString(),
       });
-    applyConsumerResult(nextConsumerResult);
-    if (
-      nextConsumerResult.status === "READY" &&
-      nextConsumerResult.session.captureState === "SEED_RECOGNIZED"
-    ) {
-      setInnerViewApproachState("AWAITING_BODY_APPROACH");
+      observeRealityPressureRecognitionOutcome(outcome);
+      if (
+        (outcome.status === "RECOGNIZED" ||
+          outcome.status === "ALREADY_RECOGNIZED") &&
+        outcome.consumerResult.status === "READY"
+      ) {
+        applyConsumerResult(outcome.consumerResult);
+        setRecognitionAuthorityState(
+          Object.freeze({
+            receipt: outcome.receipt,
+            canonicalRevision: outcome.canonicalRevision,
+          }),
+        );
+        setInnerViewApproachState(
+          "AWAITING_BODY_APPROACH",
+        );
+      }
+    } finally {
+      recognitionInFlightRef.current = false;
     }
   };
 
@@ -483,6 +718,7 @@ export function RealityProductionHost({
           candidateBundleReferenceId:
             pressureSeedSession.candidateBundleReferenceId,
           recognizedCandidateReferenceId: null,
+          recognizedCandidateRevisionReferenceId: null,
         }),
       }),
     );
@@ -557,7 +793,7 @@ export function RealityProductionHost({
     );
   };
 
-  const approachCurrentLifeWeather = () => {
+  const approachCurrentLifeWeather = async () => {
     if (
       innerViewApproachState !== "AWAITING_BODY_APPROACH" ||
       pressureSeedSession.gravityReadiness !== "READY" ||
@@ -572,18 +808,26 @@ export function RealityProductionHost({
       activeRealityIntent.revision !==
         encounterAdmission.intentRevision + 1 ||
       activeRealityIntent.sourceReferenceId !==
-        visualContinuity.sourceReferenceId
+        visualContinuity.sourceReferenceId ||
+      recognitionAuthorityState === null
     ) {
       return;
     }
     const requestedAt = new Date().toISOString();
-    const result = onRequestGravityTransfer(
+    const result = await onRequestGravityTransfer(
       Object.freeze({
         schemaVersion:
           "XINMAI_GRAVITY_ENTRY_TRANSFER_REQUEST_V1" as const,
         source: "reality_production_host" as const,
         requestedAt,
         userExplicitRequest: true as const,
+        expectedCanonicalRevision:
+          recognitionAuthorityState.canonicalRevision,
+        recognitionReceiptReferenceId:
+          recognitionAuthorityState.receipt
+            .recognitionReceiptReferenceId,
+        recognitionReceiptRevision:
+          recognitionAuthorityState.receipt.revision,
         identityReferences: Object.freeze({
           sourceReferenceId: activeRealityIntent.sourceReferenceId,
           starBeastIdentityReferenceId:

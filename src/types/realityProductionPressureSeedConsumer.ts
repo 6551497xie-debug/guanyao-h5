@@ -48,6 +48,7 @@ export type RealityProductionPressureSeedSession = Readonly<{
   realityEntryEligibility: "ELIGIBLE";
   candidateBundle: RealityPressureSeedCandidateBundle;
   candidateBundleReferenceId: string;
+  candidateBundleRevisionReferenceId: string;
   captureState: RealityPressureSeedCaptureState;
   selectedPressureSeedContext: Readonly<SelectedPressureSeedContext> | null;
   captureProvenance: RealityPressureSeedCaptureProvenance | null;

@@ -16,6 +16,9 @@ import type {
   GravityEntryTransferRequest,
   RealityToGravityCutoverTransactionResult,
 } from "./xinmaiGravityEntryAdmission";
+import type {
+  RealityPressureRecognitionReceipt,
+} from "./xinmaiRealityAdventureContinuity";
 
 export type RealityExplicitLeaveRequest = Readonly<{
   intentReferenceId: string;
@@ -177,12 +180,16 @@ export type RealityHostInteractionAuthority =
       phase: "PRE_ACTIVE_PRESENTATION";
       admissionRevision: number;
       activeRevision: null;
+      canonicalRevision: null;
       activeIntent: null;
     }>
   | Readonly<{
       phase: "ACTIVE_INTERACTION";
       admissionRevision: number;
       activeRevision: number;
+      canonicalRevision: number;
+      recognitionReceipt:
+        RealityPressureRecognitionReceipt | null;
       activeIntent: RealityEncounterIntent;
     }>;
 
@@ -223,5 +230,5 @@ export type RealityProductionHostProps = Readonly<{
   onExplicitLeaveRequest: () => void;
   onRequestGravityTransfer: (
     request: GravityEntryTransferRequest,
-  ) => RealityToGravityCutoverTransactionResult;
+  ) => Promise<RealityToGravityCutoverTransactionResult>;
 }>;

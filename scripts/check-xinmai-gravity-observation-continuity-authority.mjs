@@ -2,6 +2,7 @@ import fs from "node:fs";
 
 const read = (path) => fs.readFileSync(path, "utf8");
 const admission = read("src/services/xinmaiGravityEntryAdmissionController.ts");
+const cutover = read("src/services/realityToGravityCutoverTransaction.ts");
 const admissionTypes = read("src/types/xinmaiGravityEntryAdmission.ts");
 const host = read("src/components/GravityProductionSurfaceHost.tsx");
 const controller = read("src/services/xinmaiGravityEncounterContinuityController.ts");
@@ -23,8 +24,10 @@ const assert = (label, condition) => {
 };
 
 assert(
-  "Admission Controller is the stable Observation Reference generator",
-  admission.includes("`gravity-observation:${opaqueId()}`") &&
+  "Atomic cutover is the stable Observation Reference generator",
+  cutover.includes("`gravity-observation:${digest}`") &&
+    cutover.includes("gravityObservationReferenceId,") &&
+    !admission.includes("`gravity-observation:${opaqueId()}`") &&
     admissionTypes.includes("gravityObservationReferenceId: string"),
 );
 assert(

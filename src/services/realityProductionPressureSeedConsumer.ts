@@ -119,6 +119,8 @@ const createSession = (input: Readonly<{
   realityEntryEligibility: "ELIGIBLE" as const,
   candidateBundle: input.candidateBundle,
   candidateBundleReferenceId: input.candidateBundle.bundleReferenceId,
+  candidateBundleRevisionReferenceId:
+    input.candidateBundle.provenance.bundleRevisionReferenceId,
   captureState: input.captureState,
   selectedPressureSeedContext: input.selectedPressureSeedContext,
   captureProvenance: input.captureProvenance,
@@ -146,6 +148,8 @@ const isSessionValid = (
   session.candidateBundle.sourceReferenceId === session.sourceReferenceId &&
   session.candidateBundleReferenceId ===
     session.candidateBundle.bundleReferenceId &&
+  session.candidateBundleRevisionReferenceId ===
+    session.candidateBundle.provenance.bundleRevisionReferenceId &&
   session.candidateBundle.selectionMode === "USER_RECOGNITION_REQUIRED" &&
   session.boundary === REALITY_PRODUCTION_PRESSURE_SEED_CONSUMER_BOUNDARY &&
   (

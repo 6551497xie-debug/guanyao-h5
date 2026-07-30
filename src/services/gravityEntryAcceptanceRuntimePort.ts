@@ -8,6 +8,12 @@ import type {
   GravityLifeSurfaceOutcome,
   GravityObservationSurfaceOutcome,
 } from "../types/xinmaiGravitySurfaceAdmission";
+import type {
+  RealityPressureRecognitionOutcome,
+} from "../types/xinmaiRealityAdventureContinuity";
+import type {
+  RealityEncounterRequestResult,
+} from "../types/xinmaiRealityEncounterIntent";
 
 export function projectGravityLifeSurfaceOutcomes(
   outcome: GravityLifeSurfaceOutcome,
@@ -23,6 +29,14 @@ export function projectGravityObservationSurfaceOutcomes(
 
 export function observeRealityToGravityCutoverResult(
   _result: RealityToGravityCutoverTransactionResult,
+): void {}
+
+export function observeRealityPressureRecognitionOutcome(
+  _outcome: RealityPressureRecognitionOutcome,
+): void {}
+
+export function observeRealityEncounterRequestOutcome(
+  _outcome: RealityEncounterRequestResult,
 ): void {}
 
 export function observeGravityRouteGuard(

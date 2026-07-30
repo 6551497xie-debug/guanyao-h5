@@ -2976,7 +2976,7 @@ function HexagramCodeDeliveryShell({
       visualContinuity: arrivalVisualContinuity,
     });
     if (identityRecovery.status !== "READY") return;
-    const intentResult = requestRealityEncounter({
+    const intentResult = await requestRealityEncounter({
       origin: "CHOICE_CONTINUATION",
       qualification: "CHOICE_ACTION_INTENTION_COMMITTED",
       identityReferences: identityRecovery.identityReferences,

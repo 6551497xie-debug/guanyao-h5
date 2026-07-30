@@ -30,9 +30,13 @@ import {
   establishRealityEncounterAdmission,
   failRealityEncounterAcceptance,
   readCurrentRealityEncounterIntent,
+  recoverCurrentRealityEncounter,
   rollbackRealityEncounterAdmission,
   retryRealityEncounterAcceptance,
 } from "../services/xinmaiRealityEncounterIntentController";
+import {
+  subscribeToRealityAdventureContinuityRevision,
+} from "../services/xinmaiRealityAdventureContinuityRevisionObserver";
 import {
   createRealityExplicitLeaveRequestFromAdmission,
   createRealityExplicitLeaveRequestFromIntent,
@@ -56,6 +60,9 @@ import type {
   RealityEncounterFailureStage,
   RealityHostAcceptanceOutcome,
 } from "../types/xinmaiRealityEncounterIntent";
+import type {
+  RealityPressureRecognitionReceipt,
+} from "../types/xinmaiRealityAdventureContinuity";
 import type {
   RealityProductionRouteActivationAuthorization,
 } from "../types/realityProductionRouteAuthorization";
@@ -141,6 +148,9 @@ type RealityActiveCommitReceipt = Readonly<{
   mansionCoordinateReferenceId: string;
   admissionRevision: number;
   activeRevision: number;
+  canonicalRevision: number;
+  recognitionReceipt:
+    RealityPressureRecognitionReceipt | null;
 }>;
 
 type PostCommitAdmissionTransactionState =
@@ -205,6 +215,8 @@ export function RealityProductionRouteEntry({
     useState<RealityActiveCommitReceipt | null>(null);
   const [hostAcceptanceFailure, setHostAcceptanceFailure] =
     useState<AcceptanceAssemblyFailure | null>(null);
+  const [continuitySuperseded, setContinuitySuperseded] =
+    useState(false);
   const [historicalLifeMemory] = useState(() => {
     const previousReality =
       resolveDynamicsInputContext({}).selectedPressureSeedContext;
@@ -233,6 +245,72 @@ export function RealityProductionRouteEntry({
       visualContinuity: routeVisualContinuity,
     }),
   );
+
+  useEffect(() => {
+    if (identityRecovery.status !== "READY") return undefined;
+    let disposed = false;
+    const unsubscribe =
+      subscribeToRealityAdventureContinuityRevision((notice) => {
+        const currentReceipt = activeCommitReceipt;
+        if (
+          currentReceipt !== null &&
+          currentReceipt.encounterCycleId !==
+            notice.encounterCycleId
+        ) {
+          return;
+        }
+        void recoverCurrentRealityEncounter({
+          identityReferences:
+            identityRecovery.identityReferences,
+        }).then((record) => {
+          if (
+            disposed ||
+            record === null ||
+            record.encounterCycleId !==
+              notice.encounterCycleId
+          ) {
+            return;
+          }
+          if (
+            record.lifecycle === "GRAVITY_ADMITTED" ||
+            record.lifecycle === "ACTIVE_IN_GRAVITY" ||
+            record.lifecycle === "TERMINAL"
+          ) {
+            setContinuitySuperseded(true);
+            return;
+          }
+          if (
+            record.lifecycle === "PRESSURE_RECOGNIZED" &&
+            record.realityIntent.state ===
+              "ACTIVE_IN_REALITY" &&
+            record.recognitionReceipt !== null
+          ) {
+            setActiveCommitReceipt((current) =>
+              current === null ||
+              current.encounterCycleId !==
+                record.encounterCycleId
+                ? current
+                : Object.freeze({
+                    ...current,
+                    activeRevision:
+                      record.realityIntent.revision,
+                    canonicalRevision:
+                      record.canonicalRevision,
+                    recognitionReceipt:
+                      record.recognitionReceipt,
+                  }),
+            );
+          }
+        });
+      });
+    return () => {
+      disposed = true;
+      unsubscribe();
+    };
+  }, [
+    activeCommitReceipt?.encounterCycleId,
+    identityRecovery,
+  ]);
 
   const routeReturningLifeMemory =
     routeState?.returningLifeMemory ?? null;
@@ -284,219 +362,219 @@ export function RealityProductionRouteEntry({
       );
     };
 
-    if (identityRecovery.status !== "READY") {
-      publishFailure(
-        Object.freeze({
-          stage: "ROUTE_AUTHORIZATION" as const,
-          reason: "IDENTITY_MISMATCH" as const,
-          guardReason: identityRecovery.reason,
-        }),
-        false,
-      );
-      return () => {
-        disposed = true;
-      };
-    }
+    void (async () => {
+      if (identityRecovery.status !== "READY") {
+        publishFailure(
+          Object.freeze({
+            stage: "ROUTE_AUTHORIZATION" as const,
+            reason: "IDENTITY_MISMATCH" as const,
+            guardReason: identityRecovery.reason,
+          }),
+          false,
+        );
+        return;
+      }
 
-    const currentIntent = readCurrentRealityEncounterIntent();
-    const committedTransaction =
-      committedPostCommitTransactionRef.current;
-    if (
-      committedTransaction !== null &&
-      currentIntent !== null &&
-      currentIntent.intentReferenceId ===
-        committedTransaction.admissionResult.admission
-          .intentReferenceId &&
-      currentIntent.encounterCycleId ===
-        committedTransaction.admissionResult.admission
-          .encounterCycleId &&
-      currentIntent.sourceReferenceId ===
-        identityRecovery.identityReferences.sourceReferenceId &&
-      currentIntent.starBeastIdentityReferenceId ===
-        identityRecovery.identityReferences
-          .starBeastIdentityReferenceId &&
-      currentIntent.mansionCoordinateReferenceId ===
-        identityRecovery.identityReferences
-          .mansionCoordinateReferenceId &&
-      ((currentIntent.state === "ACCEPTING_REALITY" &&
-        currentIntent.revision ===
+      const currentIntent = readCurrentRealityEncounterIntent();
+      const committedTransaction =
+        committedPostCommitTransactionRef.current;
+      if (
+        committedTransaction !== null &&
+        currentIntent !== null &&
+        currentIntent.intentReferenceId ===
           committedTransaction.admissionResult.admission
-            .intentRevision) ||
-        (currentIntent.state === "ACTIVE_IN_REALITY" &&
+            .intentReferenceId &&
+        currentIntent.encounterCycleId ===
+          committedTransaction.admissionResult.admission
+            .encounterCycleId &&
+        currentIntent.sourceReferenceId ===
+          identityRecovery.identityReferences.sourceReferenceId &&
+        currentIntent.starBeastIdentityReferenceId ===
+          identityRecovery.identityReferences
+            .starBeastIdentityReferenceId &&
+        currentIntent.mansionCoordinateReferenceId ===
+          identityRecovery.identityReferences
+            .mansionCoordinateReferenceId &&
+        ((currentIntent.state === "ACCEPTING_REALITY" &&
           currentIntent.revision ===
             committedTransaction.admissionResult.admission
-              .intentRevision +
-              1))
-    ) {
-      setPostCommitTransaction(committedTransaction);
-      return () => {
-        disposed = true;
-      };
-    }
+              .intentRevision) ||
+          (currentIntent.state === "ACTIVE_IN_REALITY" &&
+            currentIntent.revision ===
+              committedTransaction.admissionResult.admission
+                .intentRevision +
+                1))
+      ) {
+        setPostCommitTransaction(committedTransaction);
+        return;
+      }
 
-    const admissionResult =
-      attemptVersion > 0 &&
-      currentIntent?.state === "FAILED_RETRYABLE"
-        ? retryRealityEncounterAcceptance({
-            intentReferenceId: currentIntent.intentReferenceId,
-            identityReferences: identityRecovery.identityReferences,
-          })
-        : establishRealityEncounterAdmission({
-            intentReferenceId: requestedIntentReferenceId,
-            identityReferences: identityRecovery.identityReferences,
+      const admissionResult =
+        attemptVersion > 0 &&
+        currentIntent?.state === "FAILED_RETRYABLE"
+          ? await retryRealityEncounterAcceptance({
+              intentReferenceId: currentIntent.intentReferenceId,
+              identityReferences:
+                identityRecovery.identityReferences,
+            })
+          : await establishRealityEncounterAdmission({
+              intentReferenceId: requestedIntentReferenceId,
+              identityReferences:
+                identityRecovery.identityReferences,
+            });
+
+      if (admissionResult.status !== "READY") {
+        publishFailure(
+          Object.freeze({
+            stage:
+              admissionResult.reason ===
+              "RECOVERY_STORAGE_UNAVAILABLE"
+                ? ("RECOVERY" as const)
+                : ("ROUTE_AUTHORIZATION" as const),
+            reason:
+              admissionResult.reason ===
+              "RECOVERY_STORAGE_UNAVAILABLE"
+                ? ("RECOVERY_STORAGE_UNAVAILABLE" as const)
+                : ("INTENT_NOT_CURRENT" as const),
+            guardReason: admissionResult.reason,
+          }),
+          admissionResult.status === "RETRY_REQUIRED" ||
+            admissionResult.reason ===
+              "RECOVERY_STORAGE_UNAVAILABLE",
+        );
+        return;
+      }
+
+      const encounterAdmission = admissionResult.admission;
+      const authorization = authorizeRealityProductionRoute({
+        routeTarget: REALITY_PRODUCTION_ROUTE_TARGET,
+        identityEntryContext:
+          identityRecovery.realityEntryContext,
+        encounterAdmission,
+      });
+      if (authorization.status !== "READY") {
+        const rollback =
+          await rollbackRealityEncounterAdmission({
+            admission: encounterAdmission,
           });
+        publishFailure(
+          Object.freeze({
+            stage: "ROUTE_AUTHORIZATION" as const,
+            reason: "ROUTE_AUTHORIZATION_REJECTED" as const,
+            guardReason:
+              rollback.status === "ROLLED_BACK"
+                ? authorization.guardReason
+                : `${authorization.guardReason}:${rollback.reason}`,
+          }),
+          true,
+        );
+        return;
+      }
 
-    if (admissionResult.status !== "READY") {
-      publishFailure(
-        Object.freeze({
-          stage:
-            admissionResult.reason === "RECOVERY_STORAGE_UNAVAILABLE"
-              ? ("RECOVERY" as const)
-              : ("ROUTE_AUTHORIZATION" as const),
-          reason:
-            admissionResult.reason === "RECOVERY_STORAGE_UNAVAILABLE"
-              ? ("RECOVERY_STORAGE_UNAVAILABLE" as const)
-              : ("INTENT_NOT_CURRENT" as const),
-          guardReason: admissionResult.reason,
-        }),
-        admissionResult.status === "RETRY_REQUIRED" ||
-          admissionResult.reason === "RECOVERY_STORAGE_UNAVAILABLE",
-      );
-      return () => {
-        disposed = true;
-      };
-    }
+      const requestDateSource =
+        captureExplicitRealityRequestDateSource({
+          sourceReferenceId:
+            identityRecovery.identityReferences.sourceReferenceId,
+          calendarInstant: new Date(),
+        });
+      if (requestDateSource === null) {
+        const rollback =
+          await rollbackRealityEncounterAdmission({
+            admission: encounterAdmission,
+          });
+        publishFailure(
+          Object.freeze({
+            stage: "ACTIVATION_SOURCE" as const,
+            reason: "ACTIVATION_SOURCE_UNAVAILABLE" as const,
+            guardReason:
+              rollback.status === "ROLLED_BACK"
+                ? "EXPLICIT_REQUEST_DATE_UNAVAILABLE"
+                : `EXPLICIT_REQUEST_DATE_UNAVAILABLE:${rollback.reason}`,
+          }),
+          true,
+        );
+        return;
+      }
 
-    const encounterAdmission = admissionResult.admission;
-    const authorization = authorizeRealityProductionRoute({
-      routeTarget: REALITY_PRODUCTION_ROUTE_TARGET,
-      identityEntryContext: identityRecovery.realityEntryContext,
-      encounterAdmission,
-    });
-    if (authorization.status !== "READY") {
-      const rollback = rollbackRealityEncounterAdmission({
-        admission: encounterAdmission,
-      });
-      publishFailure(
-        Object.freeze({
-          stage: "ROUTE_AUTHORIZATION" as const,
-          reason: "ROUTE_AUTHORIZATION_REJECTED" as const,
-          guardReason:
-            rollback.status === "ROLLED_BACK"
-              ? authorization.guardReason
-              : `${authorization.guardReason}:${rollback.reason}`,
-        }),
-        true,
-      );
-      return () => {
-        disposed = true;
-      };
-    }
+      const activationSourceResult =
+        activateRealityRouteActivationSourceContext({
+          routeAuthorization: authorization,
+          encounterAdmission,
+          realityEntryContext:
+            identityRecovery.realityEntryContext,
+          lifeSourceSession:
+            identityRecovery.lifeSourceSession,
+          requestDateSource,
+        });
+      if (activationSourceResult.status !== "AVAILABLE") {
+        clearRealityRouteActivationSourceContextForAdmission(
+          encounterAdmission,
+        );
+        const rollback =
+          await rollbackRealityEncounterAdmission({
+            admission: encounterAdmission,
+          });
+        publishFailure(
+          Object.freeze({
+            stage: "ACTIVATION_SOURCE" as const,
+            reason: "ACTIVATION_SOURCE_UNAVAILABLE" as const,
+            guardReason:
+              rollback.status === "ROLLED_BACK"
+                ? activationSourceResult.reason
+                : `${activationSourceResult.reason}:${rollback.reason}`,
+          }),
+          true,
+        );
+        return;
+      }
 
-    const requestDateSource =
-      captureExplicitRealityRequestDateSource({
-        sourceReferenceId:
-          identityRecovery.identityReferences.sourceReferenceId,
-        calendarInstant: new Date(),
-      });
-    if (requestDateSource === null) {
-      const rollback = rollbackRealityEncounterAdmission({
-        admission: encounterAdmission,
-      });
-      publishFailure(
-        Object.freeze({
-          stage: "ACTIVATION_SOURCE" as const,
-          reason: "ACTIVATION_SOURCE_UNAVAILABLE" as const,
-          guardReason:
-            rollback.status === "ROLLED_BACK"
-              ? "EXPLICIT_REQUEST_DATE_UNAVAILABLE"
-              : `EXPLICIT_REQUEST_DATE_UNAVAILABLE:${rollback.reason}`,
-        }),
-        true,
-      );
-      return () => {
-        disposed = true;
-      };
-    }
+      const latestIntent =
+        readCurrentRealityEncounterIntent();
+      if (
+        latestIntent === null ||
+        latestIntent.state !== "ACCEPTING_REALITY" ||
+        latestIntent.intentReferenceId !==
+          encounterAdmission.intentReferenceId ||
+        latestIntent.encounterCycleId !==
+          encounterAdmission.encounterCycleId ||
+        latestIntent.revision !==
+          encounterAdmission.intentRevision ||
+        latestIntent.sourceReferenceId !==
+          encounterAdmission.identityReferences.sourceReferenceId
+      ) {
+        clearRealityRouteActivationSourceContextForAdmission(
+          encounterAdmission,
+        );
+        await rollbackRealityEncounterAdmission({
+          admission: encounterAdmission,
+        });
+        publishFailure(
+          Object.freeze({
+            stage: "ACTIVATION_SOURCE" as const,
+            reason: "INTENT_NOT_CURRENT" as const,
+            guardReason: "POST_COMMIT_TRANSACTION_STALE",
+          }),
+          true,
+        );
+        return;
+      }
 
-    const activationSourceResult =
-      activateRealityRouteActivationSourceContext({
-        routeAuthorization: authorization,
-        encounterAdmission,
-        realityEntryContext: identityRecovery.realityEntryContext,
-        lifeSourceSession: identityRecovery.lifeSourceSession,
-        requestDateSource,
-      });
-    if (activationSourceResult.status !== "AVAILABLE") {
-      clearRealityRouteActivationSourceContextForAdmission(
-        encounterAdmission,
-      );
-      const rollback = rollbackRealityEncounterAdmission({
-        admission: encounterAdmission,
-      });
-      publishFailure(
-        Object.freeze({
-          stage: "ACTIVATION_SOURCE" as const,
-          reason: "ACTIVATION_SOURCE_UNAVAILABLE" as const,
-          guardReason:
-            rollback.status === "ROLLED_BACK"
-              ? activationSourceResult.reason
-              : `${activationSourceResult.reason}:${rollback.reason}`,
-        }),
-        true,
-      );
-      return () => {
-        disposed = true;
-      };
-    }
+      const transactionKey = [
+        encounterAdmission.encounterCycleId,
+        encounterAdmission.identityReferences.sourceReferenceId,
+        encounterAdmission.identityReferences
+          .starBeastIdentityReferenceId,
+        encounterAdmission.identityReferences
+          .mansionCoordinateReferenceId,
+        String(encounterAdmission.intentRevision),
+        REALITY_PRODUCTION_ROUTE_TARGET,
+      ].join("|");
 
-    const latestIntent = readCurrentRealityEncounterIntent();
-    if (
-      latestIntent === null ||
-      latestIntent.state !== "ACCEPTING_REALITY" ||
-      latestIntent.intentReferenceId !==
-        encounterAdmission.intentReferenceId ||
-      latestIntent.encounterCycleId !==
-        encounterAdmission.encounterCycleId ||
-      latestIntent.revision !== encounterAdmission.intentRevision ||
-      latestIntent.sourceReferenceId !==
-        encounterAdmission.identityReferences.sourceReferenceId
-    ) {
-      clearRealityRouteActivationSourceContextForAdmission(
-        encounterAdmission,
-      );
-      rollbackRealityEncounterAdmission({
-        admission: encounterAdmission,
-      });
-      publishFailure(
-        Object.freeze({
-          stage: "ACTIVATION_SOURCE" as const,
-          reason: "INTENT_NOT_CURRENT" as const,
-          guardReason: "POST_COMMIT_TRANSACTION_STALE",
-        }),
-        true,
-      );
-      return () => {
-        disposed = true;
-      };
-    }
-
-    const transactionKey = [
-      encounterAdmission.encounterCycleId,
-      encounterAdmission.identityReferences.sourceReferenceId,
-      encounterAdmission.identityReferences
-        .starBeastIdentityReferenceId,
-      encounterAdmission.identityReferences
-        .mansionCoordinateReferenceId,
-      String(encounterAdmission.intentRevision),
-      REALITY_PRODUCTION_ROUTE_TARGET,
-    ].join("|");
-
-    if (
-      !disposed &&
-      postCommitTransactionEpochRef.current === transactionEpoch
-    ) {
-      const committedTransactionState = Object.freeze({
+      if (
+        !disposed &&
+        postCommitTransactionEpochRef.current === transactionEpoch
+      ) {
+        const committedTransactionState = Object.freeze({
           status: "READY" as const,
           attemptVersion,
           transactionKey,
@@ -504,10 +582,11 @@ export function RealityProductionRouteEntry({
           authorization,
           activationSourceResult,
         });
-      committedPostCommitTransactionRef.current =
-        committedTransactionState;
-      setPostCommitTransaction(committedTransactionState);
-    }
+        committedPostCommitTransactionRef.current =
+          committedTransactionState;
+        setPostCommitTransaction(committedTransactionState);
+      }
+    })();
 
     return () => {
       // Cleanup invalidates UI publication only. A committed Admission remains
@@ -669,16 +748,24 @@ export function RealityProductionRouteEntry({
     ) {
       return;
     }
-    const failure = failRealityEncounterAcceptance({
+    let cancelled = false;
+    void failRealityEncounterAcceptance({
       intentReferenceId: encounterAdmission.intentReferenceId,
       encounterCycleId: encounterAdmission.encounterCycleId,
       intentRevision: encounterAdmission.intentRevision,
       stage: assemblyFailure.stage,
       reason: assemblyFailure.reason,
+    }).then((failure) => {
+      if (
+        !cancelled &&
+        failure.status === "FAILED_RETRYABLE"
+      ) {
+        setHostAcceptanceFailure(assemblyFailure);
+      }
     });
-    if (failure.status === "FAILED_RETRYABLE") {
-      setHostAcceptanceFailure(assemblyFailure);
-    }
+    return () => {
+      cancelled = true;
+    };
   }, [assemblyFailure, encounterAdmission]);
 
   const retryCurrentEncounter = useCallback(() => {
@@ -725,7 +812,7 @@ export function RealityProductionRouteEntry({
   ]);
 
   const handleRealityAcceptanceOutcome = useCallback(
-    (outcome: RealityHostAcceptanceOutcome) => {
+    async (outcome: RealityHostAcceptanceOutcome) => {
       if (
         encounterAdmission === null ||
         outcome.intentReferenceId !==
@@ -740,7 +827,7 @@ export function RealityProductionRouteEntry({
         return;
       }
       if (outcome.status === "REALITY_HOST_UNAVAILABLE") {
-        const failure = failRealityEncounterAcceptance({
+        const failure = await failRealityEncounterAcceptance({
           intentReferenceId: outcome.intentReferenceId,
           encounterCycleId: outcome.encounterCycleId,
           intentRevision: outcome.intentRevision,
@@ -760,7 +847,7 @@ export function RealityProductionRouteEntry({
         return;
       }
       const commitResult =
-        commitRealityEncounterActive(outcome);
+        await commitRealityEncounterActive(outcome);
       if (
         commitResult.status === "ACTIVE" &&
         commitResult.intent.state === "ACTIVE_IN_REALITY" &&
@@ -791,6 +878,10 @@ export function RealityProductionRouteEntry({
             admissionRevision:
               encounterAdmission.intentRevision,
             activeRevision: commitResult.intent.revision,
+            canonicalRevision:
+              commitResult.canonicalRevision,
+            recognitionReceipt:
+              commitResult.recognitionReceipt,
           }),
         );
         return;
@@ -898,6 +989,25 @@ export function RealityProductionRouteEntry({
     );
   }
 
+  if (continuitySuperseded) {
+    return (
+      <main
+        className="gy-reality-route-guard"
+        data-reality-adventure-continuity="SUPERSEDED_BY_GRAVITY"
+      >
+        <p role="status">
+          这次现实已经由同一生命承接，继续回到它正在发生的地方。
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate(GUANYAO_ROUTES.dynamics)}
+        >
+          继续同行
+        </button>
+      </main>
+    );
+  }
+
   const visualContinuity = identityRecovery.visualContinuity;
   const currentRealityIntent =
     readCurrentRealityEncounterIntent();
@@ -959,6 +1069,10 @@ export function RealityProductionRouteEntry({
             encounterAdmission.intentRevision,
           activeRevision:
             currentRealityIntent.revision,
+          canonicalRevision:
+            activeCommitReceipt.canonicalRevision,
+          recognitionReceipt:
+            activeCommitReceipt.recognitionReceipt,
           activeIntent: currentRealityIntent,
         })
       : preActivePresentationReady
@@ -967,6 +1081,7 @@ export function RealityProductionRouteEntry({
             admissionRevision:
               encounterAdmission.intentRevision,
             activeRevision: null,
+            canonicalRevision: null,
             activeIntent: null,
           })
         : null;
@@ -981,10 +1096,11 @@ export function RealityProductionRouteEntry({
       </main>
     );
   }
-  const requestGravityTransfer = (
+  const requestGravityTransfer = async (
     request: GravityEntryTransferRequest,
   ) => {
-    const cutover = executeRealityToGravityCutover(request);
+    const cutover =
+      await executeRealityToGravityCutover(request);
     observeRealityToGravityCutoverResult(cutover);
     if (cutover.status === "COMMITTED") {
       navigate(GUANYAO_ROUTES.dynamics, {

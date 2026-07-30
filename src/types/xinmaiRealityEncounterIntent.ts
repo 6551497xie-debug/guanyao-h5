@@ -1,6 +1,9 @@
 import type {
   RealitySurfaceAdmissionTransaction,
 } from "./xinmaiRealitySurfaceAdmission";
+import type {
+  RealityPressureRecognitionReceipt,
+} from "./xinmaiRealityAdventureContinuity";
 
 export const XINMAI_REALITY_ENCOUNTER_INTENT_SCHEMA_VERSION =
   "XINMAI_REALITY_ENCOUNTER_INTENT_V1" as const;
@@ -144,7 +147,17 @@ export type RealityEncounterRequestResult =
         | "IDENTITY_REFERENCES_INVALID"
         | "QUALIFICATION_NOT_ALLOWED_FOR_ORIGIN"
         | "ENCOUNTER_ALREADY_ACTIVE"
-        | "CURRENT_IDENTITY_MISMATCH";
+        | "CURRENT_IDENTITY_MISMATCH"
+        | "TRANSACTION_STORAGE_UNAVAILABLE"
+        | "TRANSACTION_OPEN_BLOCKED"
+        | "TRANSACTION_ABORTED"
+        | "TRANSACTION_CONNECTION_CLOSED"
+        | "WRITE_UNCONFIRMED"
+        | "RECOVERY_CORRUPTED"
+        | "MUTATION_PAUSED"
+        | "LEGACY_WRITER_DETECTED"
+        | "LEGACY_SOURCE_CORRUPTED"
+        | "UNIQUE_CONSTRAINT_REJECTED";
     }>;
 
 export type RealityEncounterAdmissionResult =
@@ -223,6 +236,9 @@ export type RealityEncounterCommitResult =
       status: "ACTIVE";
       operation: "COMMIT_ACTIVE";
       intent: RealityEncounterIntent;
+      canonicalRevision: number;
+      recognitionReceipt:
+        RealityPressureRecognitionReceipt | null;
       reason: null;
     }>
   | Readonly<{

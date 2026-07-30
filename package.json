@@ -7,6 +7,8 @@
     "dev": "vite",
     "dev:xinmai-explicit-leave-acceptance": "vite --mode xinmai-acceptance",
     "dev:xinmai-gravity-entry-acceptance": "vite --mode xinmai-acceptance",
+    "dev:xinmai-reality-adventure-continuity-acceptance": "vite --mode xinmai-acceptance",
+    "check:xinmai-reality-adventure-continuity": "node scripts/check-xinmai-reality-adventure-continuity-store.mjs && node scripts/check-xinmai-pressure-recognition-receipt-authority.mjs && node scripts/check-xinmai-recognition-transfer-admission-atomicity.mjs && node scripts/check-xinmai-recognition-cross-tab-fencing.mjs && node scripts/check-xinmai-recognition-no-backfill.mjs && node scripts/check-xinmai-legacy-session-storage-authority-forbidden.mjs && node scripts/check-xinmai-gravity-route-canonical-recovery.mjs && node scripts/check-xinmai-reality-adventure-safe-withheld-forward-rollback.mjs && node scripts/check-xinmai-reality-adventure-browser-acceptance-harness.mjs",
     "check:xinmai-reality-pre-active-host-surface-atomic-correction": "node scripts/check-xinmai-reality-pre-active-host-surface-atomic-correction.mjs",
     "check:xinmai-gravity-entry-production-browser-acceptance-harness": "node scripts/check-xinmai-gravity-entry-production-browser-acceptance-harness.mjs",
     "check:xinmai-lived-growth-authority": "node scripts/check-xinmai-lived-growth-transaction-authority.mjs && node scripts/check-xinmai-lived-growth-transactional-persistence-cutover.mjs && node scripts/check-xinmai-lived-growth-post-formation-lineage-terminal.mjs && node scripts/check-xinmai-lived-growth-multi-tab-atomicity.mjs && node scripts/check-xinmai-choice-action-intention-boundary.mjs && node scripts/check-xinmai-lived-response-authority.mjs && node scripts/check-xinmai-crystal-eligibility-authority.mjs && node scripts/check-xinmai-formation-receipt-atomicity.mjs && node scripts/check-xinmai-crystal-formation-consumer.mjs && node scripts/check-xinmai-legacy-local-crystal-authority-forbidden.mjs && node scripts/check-xinmai-lived-growth-no-backfill.mjs && node scripts/check-xinmai-duplicate-crystal-formation-forbidden.mjs && node scripts/check-xinmai-lived-growth-production-browser-acceptance-harness.mjs && node scripts/check-xinmai-lived-growth-browser-acceptance-surface.mjs",
@@ -420,6 +422,7 @@
     "build:xinmai-explicit-leave-acceptance": "vite build --mode xinmai-acceptance --outDir dist-acceptance",
     "accept:xinmai-explicit-leave-navigation": "node scripts/run-xinmai-reality-explicit-leave-browser-acceptance.mjs",
     "accept:xinmai-gravity-entry": "node scripts/run-xinmai-gravity-entry-production-browser-acceptance.mjs",
+    "accept:xinmai-reality-adventure-continuity": "node scripts/run-xinmai-reality-adventure-continuity-browser-acceptance.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -59,6 +59,7 @@ import {
 import { resolveLifeWhisperVisualOutcomeTransition } from "../services/xinmaiLifeWhisperVisualOutcomeTransition";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
 import { requestRealityEncounter } from "../services/xinmaiRealityEncounterIntentController";
+import { observeRealityEncounterRequestOutcome } from "../services/gravityEntryAcceptanceRuntimePort";
 import { STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS } from "../types/starBeastRelationshipNamingAsset";
 import type {
   LifeWhisperRelationshipFact,
@@ -936,7 +937,7 @@ export function GenesisProductionExperiencePage({
     setRelationshipNamingState("SKIPPED");
   };
 
-  const enterReality = () => {
+  const enterReality = async () => {
     if (
       consumerSourceResult === null ||
       consumerSourceResult.status !== "READY" ||
@@ -960,7 +961,6 @@ export function GenesisProductionExperiencePage({
       recognitionRealityResult.session,
       "ENTER_REALITY",
     );
-    setRecognitionRealityResult(result);
     if (result.status === "READY") {
       clearLifeWhisperOutcomeWatchdog();
       lifeWhisperResponseCycleIdRef.current = null;
@@ -1012,14 +1012,18 @@ export function GenesisProductionExperiencePage({
           const intentResult =
             identityRecovery.status === "READY" &&
             qualification !== null
-              ? requestRealityEncounter({
+              ? await requestRealityEncounter({
                   origin: "FIRST_ENCOUNTER",
                   qualification,
                   identityReferences:
                     identityRecovery.identityReferences,
                 })
               : null;
+          if (intentResult !== null) {
+            observeRealityEncounterRequestOutcome(intentResult);
+          }
           if (intentResult?.status === "READY") {
+            setRecognitionRealityResult(result);
             // This brief hold preserves the existing same-body visual
             // continuity. It is not a Reality success authority.
             realityEntryTimerRef.current = window.setTimeout(() => {

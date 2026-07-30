@@ -5836,7 +5836,7 @@ export function LaunchLab({
     );
   };
 
-  const enterReturningNewReality = () => {
+  const enterReturningNewReality = async () => {
     if (
       !returningLifeWhisperRealityIntentReady ||
       !returningVisualReady ||
@@ -5862,7 +5862,7 @@ export function LaunchLab({
     const intentResult =
       identityRecovery.status === "READY" &&
       qualification !== null
-        ? requestRealityEncounter({
+        ? await requestRealityEncounter({
             origin: "RETURNING_LIFE_WORLD",
             qualification,
             identityReferences:

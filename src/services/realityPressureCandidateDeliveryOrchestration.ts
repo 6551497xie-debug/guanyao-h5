@@ -288,6 +288,7 @@ export function advanceRealityPressureCandidateDeliveryOrchestration(
     sourceReferenceId: candidateRequestContext.sourceReferenceId,
     candidateBundleReferenceId: sourceResult.context.bundleReferenceId,
     recognizedCandidateReferenceId: null,
+    recognizedCandidateRevisionReferenceId: null,
   });
   const consumerInput = Object.freeze({
     session: pressureSeedSession,

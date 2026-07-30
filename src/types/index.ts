@@ -3434,3 +3434,18 @@ export type {
 } from "./xinmaiCrystalEligibility";
 
 export type { XinmaiLivedGrowthEnvelope } from "./xinmaiLivedGrowthRecovery";
+
+export type {
+  RealityAdventureContinuityFailureReason,
+  RealityAdventureContinuityLifecycle,
+  RealityAdventureContinuityMigrationMetaRecord,
+  RealityAdventureContinuityReadResult,
+  RealityAdventureEncounterContinuityRecord,
+  RealityPressureCandidateRevisionProof,
+  RealityPressureRecognitionCommand,
+  RealityPressureRecognitionFact,
+  RealityPressureRecognitionOutcome,
+  RealityPressureRecognitionReceipt,
+  RealityPressureRecognitionReceiptLifecycle,
+  RealityToGravityTransferProof,
+} from "./xinmaiRealityAdventureContinuity";

@@ -1,21 +1,42 @@
 import fs from "node:fs";
-import process from "node:process";
 
-const read = (file) => fs.readFileSync(file, "utf8");
-const transaction = read("src/services/realityToGravityCutoverTransaction.ts");
-const route = read("src/pages/RealityProductionRouteEntry.tsx");
-const host = read("src/components/RealityProductionHost.tsx");
-const assert = (name, condition) => {
-  if (!condition) throw new Error(`FAIL | ${name}`);
-  console.log(`PASS | ${name}`);
+const cutover = fs.readFileSync(
+  "src/services/realityToGravityCutoverTransaction.ts",
+  "utf8",
+);
+const route = fs.readFileSync(
+  "src/pages/RealityProductionRouteEntry.tsx",
+  "utf8",
+);
+const host = fs.readFileSync(
+  "src/components/RealityProductionHost.tsx",
+  "utf8",
+);
+const hostContract = fs.readFileSync(
+  "src/types/realityProductionRouteEntry.ts",
+  "utf8",
+);
+const assert = (condition, message) => {
+  if (!condition) throw new Error(message);
 };
-
-assert("Reality Host produces typed transfer request", host.includes("XINMAI_GRAVITY_ENTRY_TRANSFER_REQUEST_V1"));
-assert("fixed timer is removed from Gravity success path", !host.includes("window.setTimeout(() => {\n      onContinueToGravity"));
-assert("Route invokes the single cutover transaction", route.includes("executeRealityToGravityCutover(request)"));
-assert("Route navigates only after COMMITTED", route.includes('cutover.status === "COMMITTED"'));
-assert("old selected seed handoff write is absent", !route.includes("writeSelectedPressureSeedContext"));
-assert("old direct Reality termination is absent", !route.includes("terminateRealityEncounter("));
-assert("durable envelope precedes target and source commit", transaction.lastIndexOf("writeRealityToGravityCutoverEnvelope") < transaction.lastIndexOf("commitPreparedGravityTransfer") && transaction.lastIndexOf("commitPreparedGravityTransfer") < transaction.lastIndexOf("commitRealityEncounterGravitySupersession"));
-assert("transaction does not own navigation", !transaction.includes("navigate("));
-process.exitCode = 0;
+for (const marker of [
+  "transactRealityAdventureContinuity",
+  "CONSUMED_BY_GRAVITY_TRANSFER",
+  "gravityTransfer: transfer",
+  "gravityAdmission: admission",
+  'lifecycle: "GRAVITY_ADMITTED"',
+  "deterministicDigest",
+]) {
+  assert(cutover.includes(marker), `atomic cutover missing ${marker}`);
+}
+assert(
+  hostContract.includes("request: GravityEntryTransferRequest") &&
+    host.includes("onRequestGravityTransfer("),
+  "Host typed request missing",
+);
+assert(route.includes("executeRealityToGravityCutover"), "Route cutover consumer missing");
+assert(route.includes('cutover.status === "COMMITTED"'), "Route navigates without commit proof");
+for (const forbidden of ["sessionStorage", "localStorage", "Math.random", "navigate("]) {
+  assert(!cutover.includes(forbidden), `cutover owns forbidden ${forbidden}`);
+}
+console.log("[XINMAI REALITY TO GRAVITY ATOMIC CUTOVER] PASS");

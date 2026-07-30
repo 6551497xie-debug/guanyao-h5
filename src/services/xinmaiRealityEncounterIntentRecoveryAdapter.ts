@@ -1,9 +1,7 @@
 import type {
   RealityEncounterIntent,
-  RealityEncounterRecoveryClearResult,
   RealityEncounterRecoveryReadResult,
   RealityEncounterRecoverySnapshot,
-  RealityEncounterRecoveryWriteResult,
 } from "../types/xinmaiRealityEncounterIntent";
 import {
   XINMAI_REALITY_ENCOUNTER_INTENT_SCHEMA_VERSION,
@@ -228,46 +226,6 @@ const freezeIntent = (
     provenance: Object.freeze({ ...intent.provenance }),
   });
 
-const createSnapshot = (
-  intent: RealityEncounterIntent,
-): RealityEncounterRecoverySnapshot =>
-  Object.freeze({
-    schemaVersion: XINMAI_REALITY_ENCOUNTER_RECOVERY_SCHEMA_VERSION,
-    source: "xinmai_reality_encounter_intent_recovery_adapter" as const,
-    intent: freezeIntent(intent),
-    writtenAt: new Date().toISOString(),
-  });
-
-export function writeRealityEncounterRecoveryCandidate(
-  intent: RealityEncounterIntent,
-): RealityEncounterRecoveryWriteResult {
-  const snapshot = createSnapshot(intent);
-  const storage = getSessionStorage();
-  if (storage === null) {
-    return Object.freeze({ status: "UNAVAILABLE" as const, snapshot });
-  }
-  try {
-    storage.setItem(RECOVERY_STORAGE_KEY, JSON.stringify(snapshot));
-    const stored = storage.getItem(RECOVERY_STORAGE_KEY);
-    if (stored === null) {
-      return Object.freeze({ status: "UNCONFIRMED" as const, snapshot });
-    }
-    const parsed = JSON.parse(stored) as unknown;
-    return Object.freeze({
-      status:
-        isSnapshot(parsed) &&
-        parsed.intent.intentReferenceId === intent.intentReferenceId &&
-        parsed.intent.encounterCycleId === intent.encounterCycleId &&
-        parsed.intent.revision === intent.revision
-          ? "CONFIRMED" as const
-          : "UNCONFIRMED" as const,
-      snapshot,
-    });
-  } catch {
-    return Object.freeze({ status: "UNAVAILABLE" as const, snapshot });
-  }
-}
-
 export function readRealityEncounterRecoveryCandidate():
   RealityEncounterRecoveryReadResult {
   const storage = getSessionStorage();
@@ -295,48 +253,13 @@ export function readRealityEncounterRecoveryCandidate():
   }
 }
 
-export function clearRealityEncounterRecoveryCandidate(
-  intentReferenceId: string,
-): RealityEncounterRecoveryClearResult {
-  const normalizedReferenceId = intentReferenceId.trim();
-  const storage = getSessionStorage();
-  if (storage === null) {
-    return Object.freeze({
-      status: "UNAVAILABLE" as const,
-      intentReferenceId: normalizedReferenceId,
-    });
-  }
-  try {
-    const current = readRealityEncounterRecoveryCandidate();
-    if (
-      current.status === "FOUND" &&
-      current.snapshot.intent.intentReferenceId !== normalizedReferenceId
-    ) {
-      return Object.freeze({
-        status: "UNCONFIRMED" as const,
-        intentReferenceId: normalizedReferenceId,
-      });
-    }
-    storage.removeItem(RECOVERY_STORAGE_KEY);
-    return Object.freeze({
-      status:
-        storage.getItem(RECOVERY_STORAGE_KEY) === null
-          ? "CONFIRMED" as const
-          : "UNCONFIRMED" as const,
-      intentReferenceId: normalizedReferenceId,
-    });
-  } catch {
-    return Object.freeze({
-      status: "UNAVAILABLE" as const,
-      intentReferenceId: normalizedReferenceId,
-    });
-  }
-}
-
 export const XinmaiRealityEncounterIntentRecoveryAdapter = Object.freeze({
-  write: writeRealityEncounterRecoveryCandidate,
   read: readRealityEncounterRecoveryCandidate,
-  update: writeRealityEncounterRecoveryCandidate,
-  markTerminal: writeRealityEncounterRecoveryCandidate,
-  clear: clearRealityEncounterRecoveryCandidate,
+  boundary: Object.freeze({
+    readOnlyLegacyAdapter: true as const,
+    noBackfill: true as const,
+    noStorageWrite: true as const,
+    noStorageClear: true as const,
+    noAuthority: true as const,
+  }),
 });

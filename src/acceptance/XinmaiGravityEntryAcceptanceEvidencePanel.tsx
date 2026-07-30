@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import {
   XINMAI_GRAVITY_ENTRY_ACCEPTANCE_SCENARIO,
+  readRealityAdventureContinuityAcceptanceSnapshot,
   readGravityEntryAcceptanceEvidence,
+  type RealityAdventureContinuityAcceptanceSnapshot,
   type XinmaiGravityEntryAcceptanceEvidence,
 } from "./xinmaiGravityEntryAcceptanceScenario";
 
@@ -9,10 +11,17 @@ export function XinmaiGravityEntryAcceptanceEvidencePanel() {
   const [events, setEvents] = useState<
     readonly XinmaiGravityEntryAcceptanceEvidence[]
   >(readGravityEntryAcceptanceEvidence);
+  const [continuity, setContinuity] =
+    useState<RealityAdventureContinuityAcceptanceSnapshot | null>(
+      null,
+    );
 
   useEffect(() => {
-    const update = () =>
+    const update = () => {
       setEvents(readGravityEntryAcceptanceEvidence());
+      void readRealityAdventureContinuityAcceptanceSnapshot()
+        .then(setContinuity);
+    };
     window.addEventListener(
       "xinmai-gravity-entry-acceptance-evidence",
       update,
@@ -41,6 +50,18 @@ export function XinmaiGravityEntryAcceptanceEvidencePanel() {
       data-xinmai-acceptance-latest-event={
         latest?.event ?? "NONE"
       }
+      data-xinmai-continuity-record-count={
+        continuity?.recordCount ?? 0
+      }
+      data-xinmai-recognition-receipt-count={
+        continuity?.recognizedReceiptCount ?? 0
+      }
+      data-xinmai-gravity-transfer-count={
+        continuity?.gravityTransferCount ?? 0
+      }
+      data-xinmai-gravity-admission-count={
+        continuity?.gravityAdmissionCount ?? 0
+      }
       style={{
         position: "fixed",
         left: 8,
@@ -62,6 +83,12 @@ export function XinmaiGravityEntryAcceptanceEvidencePanel() {
         Gravity Acceptance ·{" "}
         {XINMAI_GRAVITY_ENTRY_ACCEPTANCE_SCENARIO}
       </strong>
+      <p style={{ margin: "6px 0 0" }}>
+        Canonical · records {continuity?.recordCount ?? 0}
+        {" · "}receipts {continuity?.recognizedReceiptCount ?? 0}
+        {" · "}transfers {continuity?.gravityTransferCount ?? 0}
+        {" · "}admissions {continuity?.gravityAdmissionCount ?? 0}
+      </p>
       <ol style={{ margin: "8px 0 0", paddingLeft: 18 }}>
         {events.map((event) => (
           <li

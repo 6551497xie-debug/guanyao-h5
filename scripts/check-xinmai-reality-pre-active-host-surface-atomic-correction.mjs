@@ -101,7 +101,7 @@ try {
   assertIncludes(
     "Controller advances the Active revision",
     source.controller,
-    "const active = nextIntent(currentIntent",
+    "const active = nextIntent(intent",
   );
 
   for (const marker of [
@@ -124,13 +124,13 @@ try {
     );
   }
   assertEqual(
-    "Pressure commands and Gravity approach are Active-gated",
+    "Pressure commands, receipt recovery and Gravity approach are Active-gated",
     (
       source.host.match(
         /!realityInteractionActive \|\|/g,
       ) ?? []
     ).length,
-    4,
+    5,
   );
   assertExcludes(
     "Host cannot own Active Controller mutation",

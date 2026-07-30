@@ -97,9 +97,9 @@ const requestMatchesCurrentIntent = (
   return null;
 };
 
-export function executeRealityExplicitLeaveTermination(
+export async function executeRealityExplicitLeaveTermination(
   request: RealityExplicitLeaveRequest,
-): RealityExplicitLeaveTransactionResult {
+): Promise<RealityExplicitLeaveTransactionResult> {
   const currentIntent = readCurrentRealityEncounterIntent();
   if (currentIntent === null || currentIntent.state === "TERMINAL") {
     return Object.freeze({
@@ -157,7 +157,7 @@ export function executeRealityExplicitLeaveTermination(
     });
   }
 
-  const termination = terminateRealityEncounter({
+  const termination = await terminateRealityEncounter({
     intentReferenceId: request.intentReferenceId,
     encounterCycleId: request.encounterCycleId,
     expectedIntentRevision: request.expectedIntentRevision,
