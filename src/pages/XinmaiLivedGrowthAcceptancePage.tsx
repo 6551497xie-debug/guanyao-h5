@@ -13,6 +13,9 @@ import {
   readOpenXinmaiLivedGrowthReturnItems,
   type XinmaiLivedGrowthReturnItem,
 } from "../services/xinmaiChoiceActionIntentionController";
+import {
+  readChoiceGrowthTerminalSummary,
+} from "../services/xinmaiChoiceGrowthTerminalSummaryAdapter";
 import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
 import {
   readXinmaiGravityObservationContinuityState,
@@ -24,6 +27,9 @@ import {
 } from "../services/xinmaiLivedGrowthAcceptancePersistenceAdapter";
 import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityEncounterIntent";
 import type { XinmaiLivedGrowthEnvelope } from "../types/xinmaiLivedGrowthRecovery";
+import type {
+  ChoiceGrowthTerminalSummary,
+} from "../types/xinmaiChoicePresentationReadiness";
 
 const READY_INPUT = Object.freeze({
   status: "READY" as const,
@@ -103,11 +109,25 @@ export function XinmaiLivedGrowthAcceptancePage() {
       }),
     [scenario],
   );
+  const growthSummaryRequest = useMemo(
+    () =>
+      Object.freeze({
+        identityReferences,
+        sourceEncounterCycleId:
+          `acceptance-source-encounter:${scenario}`,
+        gravityCycleId: `acceptance-gravity:${scenario}`,
+        gravityObservationReferenceId:
+          `acceptance-gravity-observation:${scenario}`,
+      }),
+    [identityReferences, scenario],
+  );
   const [returnItems, setReturnItems] = useState<
     readonly XinmaiLivedGrowthReturnItem[]
   >(() => Object.freeze([]));
   const [canonicalEnvelope, setCanonicalEnvelope] =
     useState<XinmaiLivedGrowthEnvelope | null>(null);
+  const [growthTerminalSummary, setGrowthTerminalSummary] =
+    useState<ChoiceGrowthTerminalSummary | null>(null);
   const [observationEvidence, setObservationEvidence] = useState<
     Readonly<{
       checkpoint: string;
@@ -211,11 +231,13 @@ export function XinmaiLivedGrowthAcceptancePage() {
       readXinmaiGravityObservationContinuityState(
         `CURRENT:${identityReferences.sourceReferenceId}`,
       ),
-    ]).then(([items, canonical, observation]) => {
+      readChoiceGrowthTerminalSummary(growthSummaryRequest),
+    ]).then(([items, canonical, observation, terminalSummary]) => {
       setReturnItems(items);
       setCanonicalEnvelope(
         canonical.status === "FOUND" ? canonical.envelope : null,
       );
+      setGrowthTerminalSummary(terminalSummary);
       setObservationEvidence(
         observation.status === "FOUND" &&
           observation.record !== null
@@ -229,7 +251,7 @@ export function XinmaiLivedGrowthAcceptancePage() {
       );
       setRevision((current) => current + 1);
     });
-  }, [identityReferences]);
+  }, [growthSummaryRequest, identityReferences]);
 
   useEffect(() => {
     refreshAuthority();
@@ -306,15 +328,15 @@ export function XinmaiLivedGrowthAcceptancePage() {
       action,
       changeExperienceRoute: route,
     });
-    if (!formation || !action || !migrationImpact) {
+    if (!formation || !action || !route || !migrationImpact) {
       setFeedback("验收事实尚未准备完成。");
       return;
     }
-    const sourceEncounterCycleId =
-      `acceptance-source-encounter:${scenario}`;
-    const gravityCycleId = `acceptance-gravity:${scenario}`;
-    const gravityObservationReferenceId =
-      `acceptance-gravity-observation:${scenario}`;
+    const {
+      sourceEncounterCycleId,
+      gravityCycleId,
+      gravityObservationReferenceId,
+    } = growthSummaryRequest;
     const observationReady =
       await establishRecognizedGravityObservationForAcceptance({
         identityReferences,
@@ -332,6 +354,15 @@ export function XinmaiLivedGrowthAcceptancePage() {
       gravityCycleId,
       gravityObservationReferenceId,
       expectedObservationCheckpointRevision: 2,
+      observationProof: Object.freeze({
+        status: "OBSERVATION_RECOGNIZED" as const,
+        gravityObservationReferenceId,
+        checkpointRevision: 2,
+      }),
+      changeExperienceRouteProof: Object.freeze({
+        dimension: route.dimension,
+        sourceUnitId: migrationImpact.sourceUnit.unitId,
+      }),
       actionSummary: action.actionLine,
       formationSourceSnapshot: Object.freeze({
         formation,
@@ -464,6 +495,10 @@ export function XinmaiLivedGrowthAcceptancePage() {
         </p>
         <p data-testid="recovery-state">
           Recovery：{canonicalEnvelope ? "FOUND" : "SAFE_WITHHELD"}
+        </p>
+        <p data-testid="choice-terminal-summary">
+          Choice Summary：
+          {growthTerminalSummary?.state ?? "PENDING"}
         </p>
         <p data-testid="observation-checkpoint">
           Observation：

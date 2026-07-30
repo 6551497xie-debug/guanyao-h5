@@ -68,6 +68,36 @@ export function GravityDevelopmentFixtureRouteEntry() {
         choiceActionIntention: null,
         reason: "ADMISSION_NOT_CURRENT" as const,
       })}
+      growthTerminalSummary={Object.freeze({
+        state: "RECOVERY_UNAVAILABLE" as const,
+        request: Object.freeze({
+          identityReferences:
+            input.identity.status === "READY"
+              ? input.identity.identityReferences
+              : Object.freeze({
+                  sourceReferenceId: "development-fixture",
+                  starBeastIdentityReferenceId:
+                    "development-fixture",
+                  mansionCoordinateReferenceId:
+                    "development-fixture",
+                }),
+          sourceEncounterCycleId: "development-fixture",
+          gravityCycleId: "development-fixture",
+          gravityObservationReferenceId:
+            "development-fixture",
+        }),
+        canonicalRevision: null,
+        resolvedAt: new Date().toISOString(),
+        choiceActionIntention: null,
+        livedResponseFact: null,
+        crystalEligibility: null,
+        formationReceipt: null,
+        reason: "DEVELOPMENT_FIXTURE_ISOLATED",
+      })}
+      growthSummaryPending={false}
+      onGrowthTerminalSummaryRefreshRequested={
+        async () => undefined
+      }
       onObservationRecognitionRequested={async () =>
         Object.freeze({
           status: "REJECTED" as const,

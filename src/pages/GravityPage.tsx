@@ -64,7 +64,13 @@ import {
   bindChoiceActionIntentionToRealityEncounter,
   commitChoiceActionIntention,
 } from "../services/xinmaiChoiceActionIntentionController";
+import {
+  resolveChoicePresentationReadiness,
+} from "../services/xinmaiChoicePresentationReadinessResolver";
 import type { ChoiceActionIntention } from "../types/xinmaiChoiceActionIntention";
+import type {
+  ChoiceGrowthTerminalSummary,
+} from "../types/xinmaiChoicePresentationReadiness";
 import type {
   GravityObservationRecognitionOutcome,
   GravityObservationRecognitionProvenance,
@@ -135,6 +141,9 @@ export type GravityPageProps = Readonly<{
   experienceSmokeFixture: string | null;
   surfaceAttempt?: GravitySurfaceAdmissionAttempt;
   observationContinuityDecision: GravityObservationResumeDecision;
+  growthTerminalSummary: ChoiceGrowthTerminalSummary;
+  growthSummaryPending: boolean;
+  onGrowthTerminalSummaryRefreshRequested: () => Promise<void>;
   onObservationRecognitionRequested: (
     recognition: GravityObservationRecognitionProvenance,
     expectedCheckpointRevision: number,
@@ -2555,6 +2564,9 @@ function HexagramCodeDeliveryShell({
   experienceSmokeFixture,
   surfaceAttempt,
   observationContinuityDecision,
+  growthTerminalSummary,
+  growthSummaryPending,
+  onGrowthTerminalSummaryRefreshRequested,
   onObservationRecognitionRequested,
   onLifeSurfaceOutcome,
   onObservationSurfaceOutcome,
@@ -2608,7 +2620,8 @@ function HexagramCodeDeliveryShell({
   const [choiceAuthorityFeedback, setChoiceAuthorityFeedback] =
     useState<string | null>(null);
   const choiceMutationPendingRef = useRef(false);
-  const [transformationMomentActive, setTransformationMomentActive] = useState(false);
+  const [choiceMutationPending, setChoiceMutationPending] =
+    useState(false);
   const [innerViewRelation, setInnerViewRelation] = useState<
     "AWAITING" | "CONFIRMED" | "SELF_NAMED"
   >(() =>
@@ -2734,12 +2747,31 @@ function HexagramCodeDeliveryShell({
       : null;
   const choiceResponseTraceSourceSlot =
     resolveLifeUniverseCrystalSourceSlot(choiceResponseDimension);
-  const isRevisionActionPending =
-    hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE" &&
-    Boolean(singleModelRevisionAction) &&
-    innerViewRelation !== "AWAITING" &&
-    committedChoiceActionIntention === null &&
-    !transformationMomentActive;
+  const choicePresentationDecision =
+    resolveChoicePresentationReadiness({
+      surfaceAttempt: surfaceAttempt ?? null,
+      observationDecision: observationContinuityDecision,
+      experienceStage: displayExperienceState.stage,
+      formation: currentHexagramFormation,
+      assetCandidate: Object.freeze({
+        completionState:
+          hexagramAssetCandidate.completionState,
+        completedNodeCount:
+          hexagramAssetCandidate.completedNodeCount,
+      }),
+      revisionAction: singleModelRevisionAction,
+      changeExperienceRoute,
+      migrationImpact: crystalMigrationImpact,
+      growthTerminalSummary,
+      operationalState: Object.freeze({
+        summaryPending: growthSummaryPending,
+        choiceMutationPending,
+        recoveryFailure: null,
+      }),
+    });
+  const choicePresentationReady =
+    choicePresentationDecision.state ===
+    "READY_TO_PRESENT";
 
   useEffect(() => {
     if (
@@ -2787,17 +2819,38 @@ function HexagramCodeDeliveryShell({
         );
       }
     }
-    if (
-      observationContinuityDecision.status === "CHOICE_COMMITTED"
-    ) {
-      setCommittedChoiceActionIntention(
-        observationContinuityDecision.choiceActionIntention,
-      );
-      setTransformationMomentActive(true);
-    }
   }, [
     dynamicsInputContext.selectedPressureSeedContext,
     observationContinuityDecision,
+  ]);
+
+  useEffect(() => {
+    if (
+      choicePresentationDecision.state ===
+        "RESUME_COMMITTED" ||
+      choicePresentationDecision.state ===
+        "TERMINAL_BY_GROWTH"
+    ) {
+      setCommittedChoiceActionIntention(
+        choicePresentationDecision.choiceActionIntention,
+      );
+      setChoiceMutationPending(false);
+    }
+  }, [
+    choicePresentationDecision.state,
+    choicePresentationDecision.choiceActionIntention,
+  ]);
+
+  useEffect(() => {
+    if (
+      !growthSummaryPending &&
+      growthTerminalSummary.state !== "NONE"
+    ) {
+      setChoiceMutationPending(false);
+    }
+  }, [
+    growthSummaryPending,
+    growthTerminalSummary.state,
   ]);
 
   async function handleInnerViewRelationEstablished(
@@ -2873,12 +2926,8 @@ function HexagramCodeDeliveryShell({
   async function handleRevisionActionConfirm() {
     if (choiceMutationPendingRef.current) return;
     if (
-      surfaceAttempt === undefined ||
-      currentHexagramFormation === null ||
-      crystalMigrationImpact === null ||
-      singleModelRevisionAction === null ||
-      hexagramAssetCandidate.completionState !==
-        "READY_TO_CRYSTALLIZE"
+      choicePresentationDecision.state !==
+      "READY_TO_PRESENT"
     ) {
       setChoiceAuthorityFeedback(
         "这次回应还没有被完整保存，请稍后再试。",
@@ -2886,32 +2935,12 @@ function HexagramCodeDeliveryShell({
       return;
     }
     choiceMutationPendingRef.current = true;
+    setChoiceMutationPending(true);
+    let awaitingCanonicalSummary = false;
     try {
-      const result = await commitChoiceActionIntention({
-        identityReferences: surfaceAttempt.identityReferences,
-        sourceEncounterCycleId:
-          surfaceAttempt.sourceEncounterCycleId,
-        gravityCycleId: surfaceAttempt.gravityCycleId,
-        gravityObservationReferenceId:
-          surfaceAttempt.gravityObservationReferenceId,
-        expectedObservationCheckpointRevision:
-          observationContinuityDecision.status ===
-          "OBSERVATION_RECOGNIZED"
-            ? observationContinuityDecision.checkpointRevision
-            : 0,
-        actionSummary: singleModelRevisionAction.actionLine,
-        formationSourceSnapshot: Object.freeze({
-          formation: currentHexagramFormation,
-          migrationImpact: crystalMigrationImpact,
-          completedNodeCount: completedSixDimensionCount,
-          primaryDimension:
-            changeExperienceRoute?.dimension ??
-            sequentialCurrentSpaceId,
-          action: singleModelRevisionAction,
-          assetCompletionState:
-            "READY_TO_CRYSTALLIZE" as const,
-        }),
-      });
+      const result = await commitChoiceActionIntention(
+        choicePresentationDecision.structuralInput,
+      );
       if (
         result.status !== "COMMITTED" &&
         result.status !== "ALREADY_COMMITTED"
@@ -2923,9 +2952,18 @@ function HexagramCodeDeliveryShell({
       }
       setChoiceAuthorityFeedback(null);
       setCommittedChoiceActionIntention(result.intention);
-      setTransformationMomentActive(true);
+      awaitingCanonicalSummary = true;
+      await onGrowthTerminalSummaryRefreshRequested();
+    } catch {
+      awaitingCanonicalSummary = false;
+      setChoiceAuthorityFeedback(
+        "这次回应还没有被完整保存，请稍后再试。",
+      );
     } finally {
       choiceMutationPendingRef.current = false;
+      if (!awaitingCanonicalSummary) {
+        setChoiceMutationPending(false);
+      }
     }
   }
 
@@ -2947,6 +2985,7 @@ function HexagramCodeDeliveryShell({
     });
     if (intentResult.status !== "READY") return;
     choiceMutationPendingRef.current = true;
+    setChoiceMutationPending(true);
     try {
       const bound = await bindChoiceActionIntentionToRealityEncounter({
         choiceActionIntentionReferenceId:
@@ -2986,6 +3025,7 @@ function HexagramCodeDeliveryShell({
       });
     } finally {
       choiceMutationPendingRef.current = false;
+      setChoiceMutationPending(false);
     }
   }
 
@@ -3119,15 +3159,30 @@ function HexagramCodeDeliveryShell({
         }
         data-inner-view-analysis-stage="USER_LED_OBSERVATION_NOT_ANALYSIS"
         data-choice-response-state={
-          committedChoiceActionIntention
+          choicePresentationDecision.state ===
+          "RESUME_COMMITTED"
             ? "ACTION_INTENTION_COMMITTED"
-            : isRevisionActionPending
-            ? "OLD_PATH_RESTARTING_THEN_PAUSE"
-            : transformationMomentActive
-              ? "NEW_RESPONSE_POSSIBILITY"
+            : choicePresentationDecision.state ===
+                "READY_TO_PRESENT"
+              ? "READY_TO_PRESENT"
+              : choicePresentationDecision.state ===
+                  "TERMINAL_BY_GROWTH"
+                ? "TERMINAL_BY_GROWTH"
+                : choicePresentationDecision.state ===
+                    "SAFE_WITHHELD"
+                  ? "SAFE_WITHHELD"
               : choiceActionIntentionContinuation
                 ? "NEW_RESPONSE_POSSIBILITY"
                 : "INACTIVE"
+        }
+        data-choice-presentation-readiness={
+          choicePresentationDecision.state
+        }
+        data-choice-presentation-reason={
+          choicePresentationDecision.reason
+        }
+        data-choice-growth-terminal-summary={
+          growthTerminalSummary.state
         }
         data-choice-identity-effect="RESPONSE_ONLY"
         data-choice-body-continuity="SAME_CORE_SAME_BODY"
@@ -3327,9 +3382,14 @@ function HexagramCodeDeliveryShell({
             pointerEvents: lifeObservationStageWithheld ? "none" : "auto",
           }}
         >
-          {transformationMomentActive && singleModelRevisionAction ? (
+          {choicePresentationDecision.state ===
+            "RESUME_COMMITTED" &&
+          committedChoiceActionIntention ? (
             <TransformationMomentFocus
-              action={singleModelRevisionAction}
+              action={
+                committedChoiceActionIntention
+                  .formationSourceSnapshot.action
+              }
               presentation={changeExperiencePresentation}
               responseDimension={
                 choiceResponseDimension
@@ -3343,10 +3403,16 @@ function HexagramCodeDeliveryShell({
               toneColor={choiceToneColor}
               innerViewRelation={innerViewRelation}
             />
-          ) : isRevisionActionPending && singleModelRevisionAction ? (
+          ) : choicePresentationReady &&
+            choicePresentationDecision.state ===
+              "READY_TO_PRESENT" ? (
             <SingleModelRevisionActionFocus
-              action={singleModelRevisionAction}
-              presentation={changeExperiencePresentation}
+              action={
+                choicePresentationDecision.actionCandidate
+              }
+              presentation={
+                choicePresentationDecision.route.presentation
+              }
               onConfirm={handleRevisionActionConfirm}
               visualSource={realLifeVisualSource}
               toneColor={choiceToneColor}
@@ -3380,12 +3446,18 @@ function HexagramCodeDeliveryShell({
           data-hexagram-asset-candidate-state={hexagramAssetCandidate.completionState}
           data-current-crystal-end-state="FORMATION_RECEIPT_REQUIRED"
           data-model-revision-action={
-            isRevisionActionPending
+            choicePresentationDecision.state ===
+            "READY_TO_PRESENT"
               ? "pending"
-              : transformationMomentActive
+              : choicePresentationDecision.state ===
+                  "RESUME_COMMITTED"
                 ? "response_space_open"
-                : committedChoiceActionIntention
-                  ? "intention_committed"
+                : choicePresentationDecision.state ===
+                    "TERMINAL_BY_GROWTH"
+                  ? "terminal_by_growth"
+                  : choicePresentationDecision.state ===
+                      "SAFE_WITHHELD"
+                    ? "safe_withheld"
                   : "inactive"
           }
           data-change-experience-presentation={changeExperienceRoute?.dimension ?? "inactive"}
@@ -3410,7 +3482,7 @@ function HexagramCodeDeliveryShell({
             transition: "opacity 520ms ease",
           }}
         >
-          {transformationMomentActive || isRevisionActionPending ? "" : cosmicNarrativePhase === "node_complete" &&
+          {choicePresentationDecision.state !== "WITHHELD" ? "" : cosmicNarrativePhase === "node_complete" &&
             hexagramAssetCandidate.completionState === "READY_TO_CRYSTALLIZE"
               ? displayExperienceState.crystalCopy
               : ""}

@@ -2,7 +2,8 @@ import fs from "node:fs";
 const gravity = fs.readFileSync("src/pages/GravityPage.tsx", "utf8");
 const controller = fs.readFileSync("src/services/xinmaiChoiceActionIntentionController.ts", "utf8");
 for (const expected of [
-  "await commitChoiceActionIntention({",
+  "await commitChoiceActionIntention(",
+  "choicePresentationDecision.structuralInput",
   "CHOICE_ACTION_INTENTION_COMMITTED",
   "await bindChoiceActionIntentionToRealityEncounter({",
 ]) {
@@ -13,5 +14,12 @@ if (!controller.includes("noLivedResponseAuthority: true")) {
 }
 if (!controller.includes("executeXinmaiLivedGrowthTransaction")) {
   throw new Error("Choice mutations bypass the transaction authority");
+}
+if (
+  !controller.includes(
+    "validateChoiceActionIntentionPrerequisites(input)",
+  )
+) {
+  throw new Error("Choice controller bypasses shared prerequisites");
 }
 console.log("[XINMAI CHOICE ACTION INTENTION BOUNDARY] PASS");

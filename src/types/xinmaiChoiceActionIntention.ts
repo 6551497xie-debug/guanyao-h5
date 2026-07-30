@@ -2,6 +2,7 @@ import type { CurrentHexagramFormationResult } from "./currentHexagramFormation"
 import type { SingleModelRevisionAction } from "./dynamicsRevisionAction";
 import type { PersonaMigrationImpact } from "./personaTransmission";
 import type { RealityEncounterIdentityReferences } from "./xinmaiRealityEncounterIntent";
+import type { ChangeExperienceDimension } from "./changeExperience";
 
 export const XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION =
   "XINMAI_CHOICE_ACTION_INTENTION_V1" as const;
@@ -13,6 +14,17 @@ export type ChoiceFormationSourceSnapshot = Readonly<{
   primaryDimension: string;
   action: SingleModelRevisionAction;
   assetCompletionState: "READY_TO_CRYSTALLIZE";
+}>;
+
+export type ChoiceObservationStructuralProof = Readonly<{
+  status: "OBSERVATION_RECOGNIZED";
+  gravityObservationReferenceId: string;
+  checkpointRevision: number;
+}>;
+
+export type ChoiceChangeExperienceRouteProof = Readonly<{
+  dimension: ChangeExperienceDimension;
+  sourceUnitId: string;
 }>;
 
 export type ChoiceActionIntention = Readonly<{
@@ -50,6 +62,8 @@ export type CommitChoiceActionIntentionInput = Readonly<{
   gravityCycleId: string;
   gravityObservationReferenceId: string;
   expectedObservationCheckpointRevision: number;
+  observationProof: ChoiceObservationStructuralProof;
+  changeExperienceRouteProof: ChoiceChangeExperienceRouteProof;
   actionSummary: string;
   formationSourceSnapshot: ChoiceFormationSourceSnapshot;
 }>;

@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -27,6 +28,12 @@ import {
 import {
   resolveGravityEncounterResumeDecision,
 } from "../services/xinmaiGravityEncounterContinuityRecoveryAdapter";
+import {
+  readChoiceGrowthTerminalSummary,
+} from "../services/xinmaiChoiceGrowthTerminalSummaryAdapter";
+import {
+  subscribeToXinmaiLivedGrowthRecoveryRevision,
+} from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
 import type {
   GravityEntryFailureReason,
   GravityEntryAdmission,
@@ -40,6 +47,10 @@ import type {
   GravityObservationRecognitionProvenance,
   GravityObservationResumeDecision,
 } from "../types/xinmaiGravityObservationContinuity";
+import type {
+  ChoiceGrowthTerminalSummary,
+  ChoiceGrowthTerminalSummaryRequest,
+} from "../types/xinmaiChoicePresentationReadiness";
 
 type GravityRouteState =
   | Readonly<{ gravityRouteTicket?: GravityRouteTicket }>
@@ -53,6 +64,8 @@ type GravityRouteAssemblyState =
       admission: GravityEntryAdmission;
       runtimeInput: GravityProductionRuntimeInput;
       continuityDecision: GravityObservationResumeDecision;
+      growthTerminalSummary: ChoiceGrowthTerminalSummary;
+      growthSummaryPending: boolean;
     }>
   | Readonly<{
       status: "RETRYABLE" | "BLOCKED";
@@ -91,6 +104,22 @@ export function GravityProductionRouteEntry() {
       Object.freeze({ status: "PENDING" as const }),
     );
   const transactionEpochRef = useRef(0);
+  const growthSummaryEpochRef = useRef(0);
+
+  const createGrowthSummaryRequest = useCallback(
+    (
+      admission: GravityEntryAdmission,
+    ): ChoiceGrowthTerminalSummaryRequest =>
+      Object.freeze({
+        identityReferences: admission.identityReferences,
+        sourceEncounterCycleId:
+          admission.sourceReality.encounterCycleId,
+        gravityCycleId: admission.gravityCycleId,
+        gravityObservationReferenceId:
+          admission.gravityObservationReferenceId,
+      }),
+    [],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -161,10 +190,15 @@ export function GravityProductionRouteEntry() {
         );
         return;
       }
-      const continuityDecision =
-        await resolveGravityEncounterResumeDecision(
-          routeAdmission.intent,
-        );
+      const [continuityDecision, growthTerminalSummary] =
+        await Promise.all([
+          resolveGravityEncounterResumeDecision(
+            routeAdmission.intent,
+          ),
+          readChoiceGrowthTerminalSummary(
+            createGrowthSummaryRequest(routeAdmission.intent),
+          ),
+        ]);
       if (
         cancelled ||
         transactionEpochRef.current !== epoch
@@ -176,6 +210,8 @@ export function GravityProductionRouteEntry() {
           admission: routeAdmission.intent,
           runtimeInput: runtimeInput.input,
           continuityDecision,
+          growthTerminalSummary,
+          growthSummaryPending: false,
         }),
       );
     })();
@@ -187,6 +223,69 @@ export function GravityProductionRouteEntry() {
     routeTicket?.admissionReferenceId,
     routeTicket?.gravityCycleId,
     routeTicket?.gravityObservationReferenceId,
+    createGrowthSummaryRequest,
+  ]);
+
+  const readyGrowthSummaryRequest = useMemo(
+    () =>
+      assembly.status === "READY"
+        ? createGrowthSummaryRequest(assembly.admission)
+        : null,
+    [assembly, createGrowthSummaryRequest],
+  );
+
+  useEffect(() => {
+    if (readyGrowthSummaryRequest === null) return undefined;
+    let cancelled = false;
+    const refresh = () => {
+      const epoch = growthSummaryEpochRef.current + 1;
+      growthSummaryEpochRef.current = epoch;
+      setAssembly((current) =>
+        current.status === "READY"
+          ? Object.freeze({
+              ...current,
+              growthSummaryPending: true,
+            })
+          : current,
+      );
+      void readChoiceGrowthTerminalSummary(
+        readyGrowthSummaryRequest,
+      ).then((growthTerminalSummary) => {
+        if (
+          cancelled ||
+          growthSummaryEpochRef.current !== epoch
+        ) {
+          return;
+        }
+        setAssembly((current) =>
+          current.status === "READY" &&
+          current.admission.gravityCycleId ===
+            readyGrowthSummaryRequest.gravityCycleId &&
+          current.admission.gravityObservationReferenceId ===
+            readyGrowthSummaryRequest
+              .gravityObservationReferenceId
+            ? Object.freeze({
+                ...current,
+                growthTerminalSummary,
+                growthSummaryPending: false,
+              })
+            : current,
+        );
+      });
+    };
+    const unsubscribe =
+      subscribeToXinmaiLivedGrowthRecoveryRevision(refresh);
+    return () => {
+      cancelled = true;
+      growthSummaryEpochRef.current += 1;
+      unsubscribe();
+    };
+  }, [
+    readyGrowthSummaryRequest?.gravityCycleId,
+    readyGrowthSummaryRequest
+      ?.gravityObservationReferenceId,
+    readyGrowthSummaryRequest?.sourceEncounterCycleId,
+    readyGrowthSummaryRequest?.identityReferences.sourceReferenceId,
   ]);
 
   const handleAcceptanceOutcome = useCallback(
@@ -226,25 +325,34 @@ export function GravityProductionRouteEntry() {
         );
         return;
       }
-      void establishGravityObservationAvailable({
-        admission: active,
-        transaction: outcome.transaction,
-      }).then((continuityDecision) => {
-        setAssembly((current) =>
-          current.status === "READY" &&
-          current.admission.admissionReferenceId ===
-            outcome.admissionReferenceId &&
-          current.admission.gravityCycleId ===
-            outcome.gravityCycleId
-            ? Object.freeze({
-                ...current,
-                continuityDecision,
-              })
-            : current,
-        );
-      });
+      void Promise.all([
+        establishGravityObservationAvailable({
+          admission: active,
+          transaction: outcome.transaction,
+        }),
+        readChoiceGrowthTerminalSummary(
+          createGrowthSummaryRequest(active),
+        ),
+      ]).then(
+        ([continuityDecision, growthTerminalSummary]) => {
+          setAssembly((current) =>
+            current.status === "READY" &&
+            current.admission.admissionReferenceId ===
+              outcome.admissionReferenceId &&
+            current.admission.gravityCycleId ===
+              outcome.gravityCycleId
+              ? Object.freeze({
+                  ...current,
+                  continuityDecision,
+                  growthTerminalSummary,
+                  growthSummaryPending: false,
+                })
+              : current,
+          );
+        },
+      );
     },
-    [],
+    [createGrowthSummaryRequest],
   );
 
   const handleObservationRecognitionRequested = useCallback(
@@ -291,6 +399,43 @@ export function GravityProductionRouteEntry() {
     [assembly],
   );
 
+  const handleGrowthTerminalSummaryRefreshRequested =
+    useCallback(async (): Promise<void> => {
+      if (assembly.status !== "READY") return;
+      const request = createGrowthSummaryRequest(
+        assembly.admission,
+      );
+      const epoch = growthSummaryEpochRef.current + 1;
+      growthSummaryEpochRef.current = epoch;
+      setAssembly((current) =>
+        current.status === "READY"
+          ? Object.freeze({
+              ...current,
+              growthSummaryPending: true,
+            })
+          : current,
+      );
+      const growthTerminalSummary =
+        await readChoiceGrowthTerminalSummary(request);
+      if (growthSummaryEpochRef.current !== epoch) return;
+      setAssembly((current) =>
+        current.status === "READY" &&
+        current.admission.gravityCycleId ===
+          request.gravityCycleId &&
+        current.admission.gravityObservationReferenceId ===
+          request.gravityObservationReferenceId
+          ? Object.freeze({
+              ...current,
+              growthTerminalSummary,
+              growthSummaryPending: false,
+            })
+          : current,
+      );
+    }, [
+      assembly,
+      createGrowthSummaryRequest,
+    ]);
+
   const retry = useCallback(() => {
     if (
       assembly.status !== "RETRYABLE" ||
@@ -312,8 +457,13 @@ export function GravityProductionRouteEntry() {
       visualContinuity: identityRecovery.visualContinuity,
     });
     if (runtimeInput.status !== "READY") return;
-    void resolveGravityEncounterResumeDecision(result.intent).then(
-      (continuityDecision) => {
+    void Promise.all([
+      resolveGravityEncounterResumeDecision(result.intent),
+      readChoiceGrowthTerminalSummary(
+        createGrowthSummaryRequest(result.intent),
+      ),
+    ]).then(
+      ([continuityDecision, growthTerminalSummary]) => {
         setAssembly(
           Object.freeze({
             status: "READY" as const,
@@ -321,11 +471,17 @@ export function GravityProductionRouteEntry() {
             admission: result.intent,
             runtimeInput: runtimeInput.input,
             continuityDecision,
+            growthTerminalSummary,
+            growthSummaryPending: false,
           }),
         );
       },
     );
-  }, [assembly, identityRecovery]);
+  }, [
+    assembly,
+    createGrowthSummaryRequest,
+    identityRecovery,
+  ]);
 
   if (assembly.status !== "READY") {
     return (
@@ -365,6 +521,11 @@ export function GravityProductionRouteEntry() {
       admission={assembly.admission}
       runtimeInput={assembly.runtimeInput}
       continuityDecision={assembly.continuityDecision}
+      growthTerminalSummary={assembly.growthTerminalSummary}
+      growthSummaryPending={assembly.growthSummaryPending}
+      onGrowthTerminalSummaryRefreshRequested={
+        handleGrowthTerminalSummaryRefreshRequested
+      }
       onObservationRecognitionRequested={
         handleObservationRecognitionRequested
       }

@@ -26,6 +26,9 @@ import {
   createEphemeralXinmaiGrowthReference,
   createStableXinmaiGrowthReference,
 } from "./xinmaiLivedGrowthReference";
+import {
+  validateChoiceActionIntentionPrerequisites,
+} from "./xinmaiChoiceActionIntentionPrerequisiteValidator";
 
 type ChoiceMutationFailureReason =
   | "INVALID_INPUT"
@@ -79,17 +82,9 @@ export type XinmaiLivedGrowthReturnItem = Readonly<{
 export async function commitChoiceActionIntention(
   input: CommitChoiceActionIntentionInput,
 ): Promise<CommitChoiceActionIntentionResult> {
-  if (
-    Object.values(input.identityReferences).some((value) => !value.trim()) ||
-    !input.sourceEncounterCycleId.trim() ||
-    !input.gravityCycleId.trim() ||
-    !input.gravityObservationReferenceId.trim() ||
-    !Number.isInteger(input.expectedObservationCheckpointRevision) ||
-    input.expectedObservationCheckpointRevision < 1 ||
-    !input.actionSummary.trim() ||
-    input.formationSourceSnapshot.completedNodeCount < 6 ||
-    input.formationSourceSnapshot.assetCompletionState !== "READY_TO_CRYSTALLIZE"
-  ) {
+  const prerequisiteValidation =
+    validateChoiceActionIntentionPrerequisites(input);
+  if (prerequisiteValidation.status !== "VALID") {
     return Object.freeze({
       status: "REJECTED" as const,
       intention: null,

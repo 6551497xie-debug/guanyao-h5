@@ -3406,8 +3406,21 @@ export type {
 export type {
   ChoiceActionIntention,
   ChoiceFormationSourceSnapshot,
+  ChoiceObservationStructuralProof,
+  ChoiceChangeExperienceRouteProof,
   CommitChoiceActionIntentionInput,
 } from "./xinmaiChoiceActionIntention";
+
+export type {
+  ChoicePresentationLineage,
+  ChoiceGrowthTerminalSummaryRequest,
+  ChoiceGrowthTerminalSummary,
+  ChoicePresentationOperationalState,
+  ChoicePresentationReadinessInput,
+  ChoicePresentationWithheldReason,
+  ChoicePresentationSafeWithheldReason,
+  ChoicePresentationReadinessDecision,
+} from "./xinmaiChoicePresentationReadiness";
 
 export type {
   LivedResponseCandidate,

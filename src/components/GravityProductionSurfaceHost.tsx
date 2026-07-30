@@ -25,6 +25,9 @@ import type {
   GravityObservationRecognitionProvenance,
   GravityObservationResumeDecision,
 } from "../types/xinmaiGravityObservationContinuity";
+import type {
+  ChoiceGrowthTerminalSummary,
+} from "../types/xinmaiChoicePresentationReadiness";
 
 const GRAVITY_SURFACE_WATCHDOG_MS = 8_000;
 
@@ -50,6 +53,9 @@ export type GravityProductionSurfaceHostProps = Readonly<{
   admission: GravityEntryAdmission;
   runtimeInput: GravityProductionRuntimeInput;
   continuityDecision: GravityObservationResumeDecision;
+  growthTerminalSummary: ChoiceGrowthTerminalSummary;
+  growthSummaryPending: boolean;
+  onGrowthTerminalSummaryRefreshRequested: () => Promise<void>;
   onObservationRecognitionRequested: (
     recognition: GravityObservationRecognitionProvenance,
     expectedCheckpointRevision: number,
@@ -64,6 +70,9 @@ export function GravityProductionSurfaceHost({
   admission,
   runtimeInput,
   continuityDecision,
+  growthTerminalSummary,
+  growthSummaryPending,
+  onGrowthTerminalSummaryRefreshRequested,
   onObservationRecognitionRequested,
   onAcceptanceOutcome,
 }: GravityProductionSurfaceHostProps) {
@@ -210,6 +219,11 @@ export function GravityProductionSurfaceHost({
       experienceSmokeFixture={null}
       surfaceAttempt={surfaceAttempt}
       observationContinuityDecision={continuityDecision}
+      growthTerminalSummary={growthTerminalSummary}
+      growthSummaryPending={growthSummaryPending}
+      onGrowthTerminalSummaryRefreshRequested={
+        onGrowthTerminalSummaryRefreshRequested
+      }
       onObservationRecognitionRequested={
         onObservationRecognitionRequested
       }
