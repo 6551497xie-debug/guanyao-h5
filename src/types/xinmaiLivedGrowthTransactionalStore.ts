@@ -74,6 +74,8 @@ export type XinmaiLivedGrowthCanonicalReadResult =
       status: "FOUND";
       envelope: XinmaiLivedGrowthEnvelope;
       migration: XinmaiLivedGrowthMigrationMetaRecord;
+      canonicalProjections:
+        readonly XinmaiLivedGrowthCanonicalProjectionRecord[];
     }>
   | Readonly<{
       status:
@@ -83,6 +85,7 @@ export type XinmaiLivedGrowthCanonicalReadResult =
         | "SAFE_WITHHELD";
       envelope: null;
       migration: XinmaiLivedGrowthMigrationMetaRecord | null;
+      canonicalProjections: null;
       reason:
         | "TRANSACTION_STORAGE_UNAVAILABLE"
         | "TRANSACTION_OPEN_BLOCKED"

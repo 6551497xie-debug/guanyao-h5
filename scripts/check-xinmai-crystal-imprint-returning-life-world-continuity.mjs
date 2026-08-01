@@ -21,24 +21,25 @@ check(
 check(
   !launch.includes("readPersonalityRingLite") &&
     !launch.includes("LATEST_CRYSTAL_ON_SAME_BODY") &&
-    launch.includes(
-      'data-returning-life-body-imprint-authority="SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER"',
-    ),
+    launch.includes("readXinmaiCanonicalBodyImprintRecovery") &&
+    launch.includes("canonicalBodyImprintDecision"),
   "Returning life world still interprets PersonalityRingLite as Body Imprint",
 );
 check(
   !route.includes("readPersonalityRingLite") &&
-    route.includes("latestCrystalMemoryKey={") &&
-    route.includes("latestCrystalSourceSlot={"),
+    route.includes("readXinmaiCanonicalBodyImprintRecovery") &&
+    route.includes(
+      "canonicalBodyImprintDecision={canonicalBodyImprintDecision}",
+    ),
   "Reality Route still reads Legacy PersonalityRing as current Body memory",
 );
 check(
-  archive.includes('data-personality-ring-page="LEGACY_HISTORY_READ_ONLY"') &&
-    archive.includes(
-      'data-body-imprint-authority="SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER"',
-    ) &&
-    archive.includes("canonicalBodyImprintReadModelAvailable = false"),
-  "Legacy Archive still declares canonical Body Imprint success",
+  archive.includes(
+    'data-personality-ring-page="CANONICAL_BODY_IMPRINT_WITH_LEGACY_HISTORY"',
+  ) &&
+    archive.includes("readXinmaiCanonicalBodyImprintRecovery") &&
+    archive.includes('data-personality-ring-body-authority="FORBIDDEN"'),
+  "Archive does not separate canonical Body Imprint from Legacy history",
 );
 check(
   packageJson.scripts?.[

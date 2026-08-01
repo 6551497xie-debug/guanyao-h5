@@ -12,6 +12,10 @@ import type {
 } from "../types/genesisProductionExperiencePage";
 import type { GenesisWebGLRendererCoreFallback } from "../types/genesisWebGLRendererCore";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
+import {
+  XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
+  type XinmaiCanonicalBodyImprintDecision,
+} from "../types/xinmaiCanonicalBodyImprint";
 import type {
   RealityLifeSurfaceOutcome,
   RealitySurfaceAdmissionAttempt,
@@ -79,8 +83,8 @@ export function RealityLifeUniverseCanvas({
   innerViewApproachState = "INACTIVE",
   onApproachCurrentWeather,
   historicalRealityMemoryKey = null,
-  latestCrystalMemoryKey = null,
-  latestCrystalSourceSlot = null,
+  canonicalBodyImprintDecision =
+    XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
   choiceLifeTraceMemoryKey = null,
   choiceLifeTraceSourceSlot = null,
   lifeWhisperRelationshipVisualFact =
@@ -100,8 +104,7 @@ export function RealityLifeUniverseCanvas({
       | "BODY_APPROACHED";
     onApproachCurrentWeather?: () => void;
     historicalRealityMemoryKey?: string | null;
-    latestCrystalMemoryKey?: string | null;
-    latestCrystalSourceSlot?: number | null;
+    canonicalBodyImprintDecision?: XinmaiCanonicalBodyImprintDecision;
     choiceLifeTraceMemoryKey?: string | null;
     choiceLifeTraceSourceSlot?: number | null;
     lifeWhisperRelationshipVisualFact?: LifeWhisperRelationshipVisualFact;
@@ -360,13 +363,20 @@ export function RealityLifeUniverseCanvas({
             ...sharedInput,
           })
         : null,
-      latestCrystal: latestCrystalMemoryKey
-        ? resolveLifeUniverseCrystalImprintGeometry({
-            identityKey: latestCrystalMemoryKey,
-            ...sharedInput,
-            sourceSlot: latestCrystalSourceSlot,
-          })
-        : null,
+      canonicalBodyImprints:
+        canonicalBodyImprintDecision.status === "IMPRINT_AVAILABLE"
+          ? canonicalBodyImprintDecision.imprints.flatMap((imprint) => {
+              const geometry =
+                resolveLifeUniverseCrystalImprintGeometry({
+                  identityKey: imprint.deterministicGeometryKey,
+                  ...sharedInput,
+                  sourceSlot: imprint.sourceSlot,
+                });
+              return geometry
+                ? [Object.freeze({ imprint, geometry })]
+                : [];
+            })
+          : Object.freeze([]),
       choiceLifeTrace:
         choiceLifeTraceMemoryKey && choiceLifeTraceSourceSlot !== null
           ? resolveLifeUniverseCrystalImprintGeometry({
@@ -379,16 +389,10 @@ export function RealityLifeUniverseCanvas({
   }, [
     choiceLifeTraceMemoryKey,
     choiceLifeTraceSourceSlot,
+    canonicalBodyImprintDecision,
     historicalRealityMemoryKey,
-    latestCrystalMemoryKey,
-    latestCrystalSourceSlot,
     visualContinuity,
   ]);
-  const latestCrystalBodyPath = lifeMemoryGeometry.latestCrystal
-    ? `M ${lifeMemoryGeometry.latestCrystal.target[0]} ${lifeMemoryGeometry.latestCrystal.target[1]} L ${lifeMemoryGeometry.latestCrystal.stem[0]} ${lifeMemoryGeometry.latestCrystal.stem[1]} L ${lifeMemoryGeometry.latestCrystal.branchTarget[0]} ${lifeMemoryGeometry.latestCrystal.branchTarget[1]}`
-    : "";
-  const latestCrystalBodyPoint =
-    lifeMemoryGeometry.latestCrystal?.branchTarget ?? null;
   const choiceLifeTraceBodyPath = lifeMemoryGeometry.choiceLifeTrace
     ? `M ${lifeMemoryGeometry.choiceLifeTrace.target[0]} ${lifeMemoryGeometry.choiceLifeTrace.target[1]} L ${lifeMemoryGeometry.choiceLifeTrace.stem[0]} ${lifeMemoryGeometry.choiceLifeTrace.stem[1]} L ${lifeMemoryGeometry.choiceLifeTrace.branchTarget[0]} ${lifeMemoryGeometry.choiceLifeTrace.branchTarget[1]}`
     : "";
@@ -752,7 +756,7 @@ export function RealityLifeUniverseCanvas({
   return (
     <>
       {lifeMemoryGeometry.historicalReality ||
-      lifeMemoryGeometry.latestCrystal ||
+      lifeMemoryGeometry.canonicalBodyImprints.length > 0 ||
       lifeMemoryGeometry.choiceLifeTrace ? (
         <svg
           className="gy-reality-life-universe__memory-layer"
@@ -764,7 +768,9 @@ export function RealityLifeUniverseCanvas({
             lifeMemoryGeometry.historicalReality ? "MEMORY_ONLY" : "NONE"
           }
           data-reality-history-crystal={
-            lifeMemoryGeometry.latestCrystal ? "BODY_IMPRINT" : "NONE"
+            lifeMemoryGeometry.canonicalBodyImprints.length > 0
+              ? "CANONICAL_BODY_IMPRINT"
+              : canonicalBodyImprintDecision.status
           }
           data-reality-choice-life-trace={
             lifeMemoryGeometry.choiceLifeTrace
@@ -784,60 +790,73 @@ export function RealityLifeUniverseCanvas({
               filter="blur(2.2px)"
             />
           ) : null}
-          {lifeMemoryGeometry.latestCrystal && latestCrystalBodyPoint ? (
-            <g
-              className="gy-reality-life-universe__crystal-memory"
-              data-reality-crystal-imprint-source="ARCHIVED_USER_RECOGNIZED_RESPONSE"
-              data-reality-crystal-imprint-direction="SAME_RESPONSE_POSITION_INTO_SAME_BODY"
-              data-reality-crystal-imprint-form="LIFE_TEXTURE_NOT_COLLECTIBLE"
-              data-reality-crystal-imprint-status="REMEMBERED_NOT_CURRENT_EVENT"
-              data-reality-crystal-identity-invariant="SAME_CORE_SAME_BODY_SAME_LIFE"
-            >
-              <path
-                d={latestCrystalBodyPath}
-                fill="none"
-                stroke="rgba(232,200,138,0.08)"
-                strokeWidth="1.08"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                filter="blur(1.1px)"
-              />
-              <path
-                className="gy-reality-life-universe__crystal-memory-flow"
-                d={latestCrystalBodyPath}
-                fill="none"
-                stroke="rgba(255,239,190,0.48)"
-                strokeWidth="0.3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <circle
-                className="gy-reality-life-universe__crystal-memory-origin"
-                cx={lifeMemoryGeometry.latestCrystal.target[0]}
-                cy={lifeMemoryGeometry.latestCrystal.target[1]}
-                r="0.34"
-                fill="rgba(255,247,220,0.06)"
-                stroke="rgba(255,239,190,0.2)"
-                strokeWidth="0.14"
-              />
-              <g className="gy-reality-life-universe__crystal-memory-trace">
-                <path
-                  d={`M ${latestCrystalBodyPoint[0] - 0.62} ${latestCrystalBodyPoint[1] + 0.08} L ${latestCrystalBodyPoint[0] - 0.14} ${latestCrystalBodyPoint[1] - 0.46} L ${latestCrystalBodyPoint[0] + 0.5} ${latestCrystalBodyPoint[1] - 0.12} M ${latestCrystalBodyPoint[0] - 0.14} ${latestCrystalBodyPoint[1] - 0.46} L ${latestCrystalBodyPoint[0] - 0.08} ${latestCrystalBodyPoint[1] + 0.58}`}
-                  fill="none"
-                  stroke="rgba(255,239,190,0.48)"
-                  strokeWidth="0.24"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle
-                  cx={latestCrystalBodyPoint[0]}
-                  cy={latestCrystalBodyPoint[1]}
-                  r="0.17"
-                  fill="rgba(255,247,220,0.5)"
-                />
-              </g>
-            </g>
-          ) : null}
+          {lifeMemoryGeometry.canonicalBodyImprints.map(
+            ({ imprint, geometry }) => {
+              const bodyPath =
+                `M ${geometry.target[0]} ${geometry.target[1]} ` +
+                `L ${geometry.stem[0]} ${geometry.stem[1]} ` +
+                `L ${geometry.branchTarget[0]} ${geometry.branchTarget[1]}`;
+              const bodyPoint = geometry.branchTarget;
+              return (
+                <g
+                  key={imprint.imprintReferenceId}
+                  className="gy-reality-life-universe__crystal-memory"
+                  data-body-imprint-reference={imprint.imprintReferenceId}
+                  data-body-reference={imprint.bodyReferenceId}
+                  data-formation-reference={imprint.formationReferenceId}
+                  data-reality-crystal-imprint-source="CANONICAL_FORMATION_RECEIPT"
+                  data-reality-crystal-imprint-direction="SAME_RESPONSE_POSITION_INTO_SAME_BODY"
+                  data-reality-crystal-imprint-form="LIFE_TEXTURE_NOT_COLLECTIBLE"
+                  data-reality-crystal-imprint-status={imprint.salience}
+                  data-reality-crystal-identity-invariant="SAME_CORE_SAME_BODY_SAME_LIFE"
+                >
+                  <path
+                    d={bodyPath}
+                    fill="none"
+                    stroke="rgba(232,200,138,0.08)"
+                    strokeWidth="1.08"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    filter="blur(1.1px)"
+                  />
+                  <path
+                    className="gy-reality-life-universe__crystal-memory-flow"
+                    d={bodyPath}
+                    fill="none"
+                    stroke="rgba(255,239,190,0.48)"
+                    strokeWidth="0.3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle
+                    className="gy-reality-life-universe__crystal-memory-origin"
+                    cx={geometry.target[0]}
+                    cy={geometry.target[1]}
+                    r="0.34"
+                    fill="rgba(255,247,220,0.06)"
+                    stroke="rgba(255,239,190,0.2)"
+                    strokeWidth="0.14"
+                  />
+                  <g className="gy-reality-life-universe__crystal-memory-trace">
+                    <path
+                      d={`M ${bodyPoint[0] - 0.62} ${bodyPoint[1] + 0.08} L ${bodyPoint[0] - 0.14} ${bodyPoint[1] - 0.46} L ${bodyPoint[0] + 0.5} ${bodyPoint[1] - 0.12} M ${bodyPoint[0] - 0.14} ${bodyPoint[1] - 0.46} L ${bodyPoint[0] - 0.08} ${bodyPoint[1] + 0.58}`}
+                      fill="none"
+                      stroke="rgba(255,239,190,0.48)"
+                      strokeWidth="0.24"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <circle
+                      cx={bodyPoint[0]}
+                      cy={bodyPoint[1]}
+                      r="0.17"
+                      fill="rgba(255,247,220,0.5)"
+                    />
+                  </g>
+                </g>
+              );
+            },
+          )}
           {lifeMemoryGeometry.choiceLifeTrace &&
           choiceLifeTraceBodyPoint ? (
             <g

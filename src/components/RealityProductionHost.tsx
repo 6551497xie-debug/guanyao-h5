@@ -129,8 +129,7 @@ export function RealityProductionHost({
   genesisPresenceContinuityContext,
   visualContinuity,
   historicalRealityMemoryKey = null,
-  latestCrystalMemoryKey = null,
-  latestCrystalSourceSlot = null,
+  canonicalBodyImprintDecision,
   returningLifeWorldEntry = false,
   choiceReturn = null,
   choiceLifeTraceMemoryKey = null,
@@ -935,7 +934,9 @@ export function RealityProductionHost({
           : "AWAITING_NEW_RECOGNITION"
       }
       data-reality-crystal-memory-role={
-        latestCrystalMemoryKey ? "BODY_IMPRINT" : "NONE"
+        canonicalBodyImprintDecision.status === "IMPRINT_AVAILABLE"
+          ? "CANONICAL_BODY_IMPRINT"
+          : canonicalBodyImprintDecision.status
       }
       data-choice-response-state={
         choiceRhythmValidationActive
@@ -1009,8 +1010,7 @@ export function RealityProductionHost({
           pressureSeedSession.selectedPressureSeedContext
         }
         historicalRealityMemoryKey={historicalRealityMemoryKey}
-        latestCrystalMemoryKey={latestCrystalMemoryKey}
-        latestCrystalSourceSlot={latestCrystalSourceSlot}
+        canonicalBodyImprintDecision={canonicalBodyImprintDecision}
         choiceLifeTraceMemoryKey={choiceLifeTraceMemoryKey}
         choiceLifeTraceSourceSlot={choiceLifeTraceSourceSlot}
         realitySurfaceAdmissionAttempt={

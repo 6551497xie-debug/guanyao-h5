@@ -647,6 +647,26 @@ const isMigrationMeta = (
   );
 };
 
+const isCanonicalProjectionRecord = (
+  value: unknown,
+): value is XinmaiLivedGrowthCanonicalProjectionRecord => {
+  if (!value || typeof value !== "object") return false;
+  const candidate =
+    value as Partial<XinmaiLivedGrowthCanonicalProjectionRecord>;
+  return (
+    typeof candidate.crystalReferenceId === "string" &&
+    candidate.crystalReferenceId.trim().length > 0 &&
+    typeof candidate.formationReferenceId === "string" &&
+    candidate.formationReferenceId.trim().length > 0 &&
+    typeof candidate.choiceActionIntentionReferenceId === "string" &&
+    candidate.choiceActionIntentionReferenceId.trim().length > 0 &&
+    typeof candidate.formedAt === "string" &&
+    candidate.formedAt.trim().length > 0 &&
+    typeof candidate.formedCrystal === "object" &&
+    candidate.formedCrystal !== null
+  );
+};
+
 const markLegacyWriterDetected = async (
   database: IDBDatabase,
   meta: XinmaiLivedGrowthMigrationMetaRecord,
@@ -684,6 +704,7 @@ Promise<XinmaiLivedGrowthCanonicalReadResult> {
       status: "SAFE_WITHHELD" as const,
       envelope: null,
       migration: null,
+      canonicalProjections: null,
       reason: initialized.reason,
     });
   }
@@ -693,6 +714,7 @@ Promise<XinmaiLivedGrowthCanonicalReadResult> {
       status: "UNAVAILABLE" as const,
       envelope: null,
       migration: null,
+      canonicalProjections: null,
       reason:
         opened.status === "BLOCKED"
           ? "TRANSACTION_OPEN_BLOCKED" as const
@@ -704,12 +726,14 @@ Promise<XinmaiLivedGrowthCanonicalReadResult> {
     (resolve) => {
       let canonicalValue: unknown;
       let metaValue: unknown;
+      let projectionValues: unknown;
       let transaction: IDBTransaction;
       try {
         transaction = database.transaction(
           [
             XINMAI_LIVED_GROWTH_CANONICAL_STORE,
             XINMAI_LIVED_GROWTH_MIGRATION_META_STORE,
+            XINMAI_LIVED_GROWTH_CRYSTAL_PROJECTION_STORE,
           ],
           "readonly",
         );
@@ -719,6 +743,7 @@ Promise<XinmaiLivedGrowthCanonicalReadResult> {
             status: "UNAVAILABLE" as const,
             envelope: null,
             migration: null,
+            canonicalProjections: null,
             reason: "TRANSACTION_CONNECTION_CLOSED" as const,
           }),
         );
@@ -730,11 +755,17 @@ Promise<XinmaiLivedGrowthCanonicalReadResult> {
       const metaRequest = transaction
         .objectStore(XINMAI_LIVED_GROWTH_MIGRATION_META_STORE)
         .get(XINMAI_LIVED_GROWTH_V1_MIGRATION_META_ID);
+      const projectionRequest = transaction
+        .objectStore(XINMAI_LIVED_GROWTH_CRYSTAL_PROJECTION_STORE)
+        .getAll();
       canonicalRequest.onsuccess = () => {
         canonicalValue = canonicalRequest.result;
       };
       metaRequest.onsuccess = () => {
         metaValue = metaRequest.result;
+      };
+      projectionRequest.onsuccess = () => {
+        projectionValues = projectionRequest.result;
       };
       transaction.oncomplete = () => {
         const canonical = canonicalValue as
@@ -743,13 +774,16 @@ Promise<XinmaiLivedGrowthCanonicalReadResult> {
         if (
           canonical?.id !== XINMAI_LIVED_GROWTH_CANONICAL_RECORD_ID ||
           !isXinmaiLivedGrowthEnvelope(canonical.envelope) ||
-          !isMigrationMeta(metaValue)
+          !isMigrationMeta(metaValue) ||
+          !Array.isArray(projectionValues) ||
+          !projectionValues.every(isCanonicalProjectionRecord)
         ) {
           resolve(
             Object.freeze({
               status: "CORRUPTED" as const,
               envelope: null,
               migration: null,
+              canonicalProjections: null,
               reason: "RECOVERY_CORRUPTED" as const,
             }),
           );
@@ -760,6 +794,9 @@ Promise<XinmaiLivedGrowthCanonicalReadResult> {
             status: "FOUND" as const,
             envelope: canonical.envelope,
             migration: metaValue,
+            canonicalProjections: Object.freeze(
+              [...projectionValues] as XinmaiLivedGrowthCanonicalProjectionRecord[],
+            ),
           }),
         );
       };
@@ -769,6 +806,7 @@ Promise<XinmaiLivedGrowthCanonicalReadResult> {
             status: "SAFE_WITHHELD" as const,
             envelope: null,
             migration: null,
+            canonicalProjections: null,
             reason: "TRANSACTION_ABORTED" as const,
           }),
         );

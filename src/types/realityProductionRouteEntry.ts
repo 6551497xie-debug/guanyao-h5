@@ -12,6 +12,7 @@ import type {
   RealityEncounterIntent,
   RealityHostAcceptanceOutcome,
 } from "./xinmaiRealityEncounterIntent";
+import type { XinmaiCanonicalBodyImprintDecision } from "./xinmaiCanonicalBodyImprint";
 import type {
   GravityEntryTransferRequest,
   RealityToGravityCutoverTransactionResult,
@@ -217,8 +218,7 @@ export type RealityProductionHostProps = Readonly<{
     lifeArchetypeForceCondensationVisualCalibration: GenesisLifeArchetypeForceCondensationVisualCalibration;
   }>;
   historicalRealityMemoryKey?: string | null;
-  latestCrystalMemoryKey?: string | null;
-  latestCrystalSourceSlot?: number | null;
+  canonicalBodyImprintDecision: XinmaiCanonicalBodyImprintDecision;
   returningLifeWorldEntry?: boolean;
   choiceReturn?: "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED" | null;
   choiceLifeTraceMemoryKey?: string | null;

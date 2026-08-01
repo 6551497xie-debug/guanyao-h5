@@ -7,13 +7,16 @@ import {
   useState,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  drawLifeUniverseDeepSpace2D,
-  resolveLifeUniverseCrystalImprintGeometry,
-  resolveLifeUniverseCrystalSourceSlot,
-} from "../renderers/lifeUniverseStarField";
+import { drawLifeUniverseDeepSpace2D } from "../renderers/lifeUniverseStarField";
+import { readXinmaiCanonicalBodyImprintRecovery } from "../services/xinmaiCanonicalBodyImprintRecoveryAdapter";
+import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
+import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
 import { readPersistedGenesisVisualContinuity } from "../services/sessionService";
+import {
+  XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
+  type XinmaiCanonicalBodyImprintDecision,
+} from "../types/xinmaiCanonicalBodyImprint";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
 import "../styles/reality-pressure-presentation.css";
 
@@ -30,25 +33,26 @@ function SharedLifeUniverseFallback() {
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d");
     if (!canvas || !context) return undefined;
-
     let animationFrame = 0;
     const draw = () => {
       const bounds = canvas.getBoundingClientRect();
       const width = Math.max(1, bounds.width);
       const height = Math.max(1, bounds.height);
-      const pixelRatio = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
-      const targetWidth = Math.round(width * pixelRatio);
-      const targetHeight = Math.round(height * pixelRatio);
-      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
-      }
+      const pixelRatio = Math.min(
+        2,
+        Math.max(1, window.devicePixelRatio || 1),
+      );
+      canvas.width = Math.round(width * pixelRatio);
+      canvas.height = Math.round(height * pixelRatio);
       context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-      const universeSeconds = performance.now() / 1000;
-      drawLifeUniverseDeepSpace2D(context, width, height, universeSeconds);
+      drawLifeUniverseDeepSpace2D(
+        context,
+        width,
+        height,
+        performance.now() / 1000,
+      );
       animationFrame = window.requestAnimationFrame(draw);
     };
-
     animationFrame = window.requestAnimationFrame(draw);
     return () => window.cancelAnimationFrame(animationFrame);
   }, []);
@@ -63,296 +67,111 @@ function SharedLifeUniverseFallback() {
   );
 }
 
-function formatRingTime(createdAt: string) {
+function formatFormationTime(formedAt: string) {
   return new Intl.DateTimeFormat("zh-CN", {
     month: "numeric",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-  }).format(new Date(createdAt));
+  }).format(new Date(formedAt));
 }
 
-const PRESSURE_FIELD_DEPTH: Record<string, number> = {
-  POWER: 0.04,
-  INTEREST: 0.13,
-  RELATION: 0.22,
-  FAMILY: 0.31,
-  SOCIAL: 0.4,
-  EXISTENCE: 0.49,
-  BODY: 0.55,
-  EMOTION: 0.64,
-  THOUGHT: 0.73,
-  ACTION: 0.82,
-  MEMORY: 0.91,
-  MOTIVATION: 0.98,
-};
-
-function resolvePressureFieldDepth(pressureField: string | undefined) {
-  const normalizedField = pressureField?.trim().toUpperCase() ?? "";
-  return PRESSURE_FIELD_DEPTH[normalizedField] ?? 0.5;
-}
+type ArchiveRouteState =
+  | Readonly<{
+      visualContinuity?: RealityProductionHostProps["visualContinuity"];
+      formationReferenceId?: string;
+      archiveEntryCreatedAt?: string;
+    }>
+  | null;
 
 export function PersonalityRingPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const archiveArrivalCreatedAt = (
-    location.state as
-      | {
-          archiveEntryCreatedAt?: string;
-          visualContinuity?: RealityProductionHostProps["visualContinuity"];
-        }
-      | null
-  )?.archiveEntryCreatedAt;
-  const [ringState] = useState(() => readPersonalityRingLite());
-  const entries = useMemo(
+  const routeState = location.state as ArchiveRouteState;
+  const [legacyHistory] = useState(() => readPersonalityRingLite());
+  const [growthRevision, setGrowthRevision] = useState(0);
+  const visualContinuity = useMemo(
     () =>
-      [...ringState.entries].sort(
-        (left, right) =>
-          new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
-      ),
-    [ringState.entries],
+      routeState?.visualContinuity ??
+      readPersistedGenesisVisualContinuity(),
+    [routeState?.visualContinuity],
   );
-  const [selectedCreatedAt, setSelectedCreatedAt] = useState<string | null>(
+  const identityRecovery = useMemo(
     () =>
-      entries.find((entry) => entry.createdAt === archiveArrivalCreatedAt)
-        ?.createdAt ??
-      entries[0]?.createdAt ??
-      null,
+      recoverRealityRecognizedIdentity({ visualContinuity }),
+    [visualContinuity],
   );
-  const [revealedCreatedAt, setRevealedCreatedAt] = useState<string | null>(
-    () =>
-      entries.find((entry) => entry.createdAt === archiveArrivalCreatedAt)
-        ?.createdAt ??
-      entries[0]?.createdAt ??
-      null,
-  );
-  const [imprintMemoryVisible, setImprintMemoryVisible] = useState(
-    () => !archiveArrivalCreatedAt,
-  );
-  const imprintRevealTimerRef = useRef<number | null>(null);
-  const [imprintReplaySequence, setImprintReplaySequence] = useState(0);
-  const [imprintReplayPressurePosition, setImprintReplayPressurePosition] = useState(0.5);
-  useEffect(() => {
-    if (imprintReplaySequence === 0) return undefined;
-    const replayTimer = window.setTimeout(() => {
-      setImprintReplaySequence(0);
-    }, 1760);
-    return () => window.clearTimeout(replayTimer);
-  }, [imprintReplaySequence]);
+  const [bodyImprintDecision, setBodyImprintDecision] =
+    useState<XinmaiCanonicalBodyImprintDecision>(
+      XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
+    );
+  const [selectedImprintReferenceId, setSelectedImprintReferenceId] =
+    useState<string | null>(null);
+
   useEffect(
-    () => () => {
-      if (imprintRevealTimerRef.current !== null) {
-        window.clearTimeout(imprintRevealTimerRef.current);
-      }
-    },
+    () =>
+      subscribeToXinmaiLivedGrowthRecoveryRevision(() => {
+        setGrowthRevision((revision) => revision + 1);
+      }),
     [],
   );
-  useEffect(() => {
-    if (!archiveArrivalCreatedAt) return undefined;
-    imprintRevealTimerRef.current = window.setTimeout(() => {
-      setImprintMemoryVisible(true);
-      imprintRevealTimerRef.current = null;
-    }, 1_450);
-    return () => {
-      if (imprintRevealTimerRef.current !== null) {
-        window.clearTimeout(imprintRevealTimerRef.current);
-        imprintRevealTimerRef.current = null;
-      }
-    };
-  }, [archiveArrivalCreatedAt]);
-  const selectedEntry =
-    entries.find((entry) => entry.createdAt === selectedCreatedAt) ??
-    entries[0] ??
-    null;
-  const revealedEntry =
-    entries.find((entry) => entry.createdAt === revealedCreatedAt) ??
-    entries[0] ??
-    null;
-  const visibleEntries = entries.slice(0, 12);
-  const visibleTimeCoordinates = visibleEntries
-    .map((entry) => Date.parse(entry.createdAt))
-    .filter((coordinate) => Number.isFinite(coordinate));
-  const oldestVisibleTime =
-    visibleTimeCoordinates.length > 0 ? Math.min(...visibleTimeCoordinates) : 0;
-  const newestVisibleTime =
-    visibleTimeCoordinates.length > 0 ? Math.max(...visibleTimeCoordinates) : 0;
-  const visibleTimeSpan = Math.max(0, newestVisibleTime - oldestVisibleTime);
-  const visiblePositionedEntries = visibleEntries.map((entry) => {
-    const entryTime = Date.parse(entry.createdAt);
-    const timePosition =
-      Number.isFinite(entryTime) && visibleTimeSpan > 0
-        ? (entryTime - oldestVisibleTime) / visibleTimeSpan
-        : 1;
-    const pressureField = entry.pressure.pressureField?.trim() || "UNSPECIFIED";
-    return {
-      entry,
-      timePosition,
-      pressureField,
-      pressureFieldDepth: resolvePressureFieldDepth(pressureField),
-    };
-  });
-  const visualContinuity = (
-    location.state as
-      | { visualContinuity?: RealityProductionHostProps["visualContinuity"] }
-      | null
-  )?.visualContinuity ?? readPersistedGenesisVisualContinuity();
-  const visualContinuityReady =
-    visualContinuity !== null &&
-    visualContinuity.consumerSourceResult.consumerSource.sourceReferenceId ===
-      visualContinuity.sourceReferenceId &&
-    visualContinuity.consumerSourceResult.consumerSource.sourceExperienceMode ===
-      "REAL_USER_EXPERIENCE" &&
-    visualContinuity.consumerSourceResult.consumerSource.sourceProvenance ===
-      "REAL_USER_SESSION" &&
-    visualContinuity.visualCalibrationBundle.sourceReferenceId ===
-      visualContinuity.sourceReferenceId &&
-      visualContinuity.visualCalibrationBundle.runtimeStage === "COMPLETION";
-  const canonicalBodyImprintReadModelAvailable = false;
-  const visibleLifeImprints = (() => {
-    if (
-      !canonicalBodyImprintReadModelAvailable ||
-      !visualContinuityReady ||
-      !visualContinuity
-    ) {
-      return [];
-    }
-    const projectionBundle =
-      visualContinuity.consumerSourceResult.consumerSource.projectionBundle;
-    const morphology =
-      projectionBundle.morphologicalFieldAlignmentProjection
-        .morphologicalFieldExpression;
-    const birthMansionIndex =
-      projectionBundle.twentyEightMansionCoordinateProjection.birthMansion
-        .mansionIndex;
-    const normalizedOrbitPositions =
-      projectionBundle.twentyEightMansionCoordinateProjection.coordinates.map(
-        (coordinate) => coordinate.normalizedOrbitPosition,
-      );
-    return visiblePositionedEntries.flatMap((positionedEntry) => {
-      const sourceDimension =
-        positionedEntry.entry.transmission.primaryDimension?.trim().toLowerCase() ??
-        "unknown";
-      const sourceSlot =
-        resolveLifeUniverseCrystalSourceSlot(sourceDimension);
-      const geometry = resolveLifeUniverseCrystalImprintGeometry({
-        identityKey: `${visualContinuity.sourceReferenceId}:${positionedEntry.entry.crystal.copy}`,
-        birthMansionIndex,
-        normalizedOrbitPositions,
-        envelopeScale: morphology.envelopeScale,
-        postureBias: morphology.postureBias,
-        sourceSlot,
-      });
-      return geometry
-        ? [{ ...positionedEntry, geometry, sourceDimension, sourceSlot }]
-        : [];
-    });
-  })();
-  const selectedLifeImprint =
-    visibleLifeImprints.find(
-      ({ entry }) => entry.createdAt === selectedEntry?.createdAt,
-    ) ?? null;
-  const isCrystalArrival =
-    Boolean(archiveArrivalCreatedAt) &&
-    selectedEntry?.createdAt === archiveArrivalCreatedAt;
-  const selectedImprintGeometry = selectedLifeImprint?.geometry ?? null;
-  const selectedHexagramCoordinate = selectedEntry
-    ? selectedEntry.hexagram.hexagramName ??
-      selectedEntry.hexagram.hexagramTitle ??
-      selectedEntry.hexagram.hexagramCode ??
-      "本局坐标"
-    : "NONE";
-  const selectedLifeImprintAxis =
-    selectedEntry?.transmission.primaryDimension?.trim().toUpperCase() ||
-    selectedEntry?.pressure.pressureField?.trim().toUpperCase() ||
-    "UNSPECIFIED";
 
-  const replayLifeImprint = (
-    createdAt: string,
-    pressureField: string | undefined,
-  ) => {
-    if (!visualContinuityReady) {
-      if (imprintRevealTimerRef.current !== null) {
-        window.clearTimeout(imprintRevealTimerRef.current);
-        imprintRevealTimerRef.current = null;
-      }
-      setSelectedCreatedAt(createdAt);
-      setRevealedCreatedAt(createdAt);
-      setImprintMemoryVisible(true);
-      setImprintReplaySequence(0);
-      return;
+  useEffect(() => {
+    let disposed = false;
+    if (identityRecovery.status !== "READY") {
+      setBodyImprintDecision(
+        XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
+      );
+      return () => {
+        disposed = true;
+      };
     }
-    setImprintReplayPressurePosition(resolvePressureFieldDepth(pressureField));
-    setSelectedCreatedAt(createdAt);
-    if (imprintRevealTimerRef.current !== null) {
-      window.clearTimeout(imprintRevealTimerRef.current);
-    }
-    setImprintMemoryVisible(false);
-    imprintRevealTimerRef.current = window.setTimeout(() => {
-      setRevealedCreatedAt(createdAt);
-      setImprintMemoryVisible(true);
-      imprintRevealTimerRef.current = null;
-    }, 980);
-    setImprintReplaySequence((sequence) => sequence + 1);
-  };
+    void readXinmaiCanonicalBodyImprintRecovery({
+      identityReferences: identityRecovery.identityReferences,
+      visualContinuity: identityRecovery.visualContinuity,
+      focusedFormationReferenceId:
+        routeState?.formationReferenceId ?? null,
+    }).then((decision) => {
+      if (!disposed) setBodyImprintDecision(decision);
+    });
+    return () => {
+      disposed = true;
+    };
+  }, [
+    growthRevision,
+    identityRecovery,
+    routeState?.formationReferenceId,
+  ]);
+
+  const canonicalImprints =
+    bodyImprintDecision.status === "IMPRINT_AVAILABLE"
+      ? bodyImprintDecision.imprints
+      : Object.freeze([]);
+  const selectedImprint =
+    canonicalImprints.find(
+      (imprint) =>
+        imprint.imprintReferenceId === selectedImprintReferenceId,
+    ) ?? null;
 
   return (
     <main
-      aria-label="历史兼容记录"
-      data-personality-ring-page="LEGACY_HISTORY_READ_ONLY"
-      data-personality-ring-source="PERSONALITY_RING_LITE_PRESENTATION_CACHE"
-      data-body-imprint-authority="SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER"
-      data-personality-ring-entry-count={entries.length}
-      data-personality-ring-visual-language="LEGACY_HISTORY_NO_BODY_CLAIM"
-      data-personality-ring-coordinate-system="TIME_DEPTH_X_REALITY_PHASE"
-      data-personality-ring-pressure-privacy="FIELD_ONLY_NO_RAW_SURFACE"
-      data-personality-ring-coordinate-density="ONE_BODY_TWELVE_TRACE_BUDGET"
-      data-personality-ring-stack-interaction="REPEATED_SELECTED_NODE_TAP_NEWEST_TO_OLDEST"
-      data-personality-ring-selected-depth="BRIGHT_CURRENT_DIM_HISTORY"
-      data-personality-ring-continuity-priority="SAME_LIFE_BEFORE_HISTORY"
-      data-personality-ring-arrival={
-        isCrystalArrival ? "LEGACY_ARRIVAL_BODY_CLAIM_WITHHELD" : "LEGACY_HISTORY"
+      aria-label="生命留下的真实成长"
+      data-personality-ring-page="CANONICAL_BODY_IMPRINT_WITH_LEGACY_HISTORY"
+      data-body-imprint-authority={bodyImprintDecision.status}
+      data-body-imprint-recovery-owner="XINMAI_CANONICAL_BODY_IMPRINT_RECOVERY_ADAPTER"
+      data-body-imprint-projector="XINMAI_CANONICAL_BODY_IMPRINT_PROJECTION_V1"
+      data-canonical-body-reference={
+        bodyImprintDecision.bodyReferenceId ?? "NONE"
       }
-      data-personality-ring-memory-transition="PRESENT_BODY_TEXTURE_TO_TIME_MEMORY"
-      data-personality-ring-arrival-source-continuity={
-        isCrystalArrival
-          ? "SAME_SOURCE_POSITION_SAME_GEOMETRY"
-          : "ARCHIVED_BODY_MEMORY"
-      }
-      data-personality-ring-first-perception="BODY_IMPRINT_NOT_YET_CANONICAL"
-      data-personality-ring-collection-metaphor="EXCLUDED"
-      data-personality-ring-identity-mode={
-        visualContinuityReady
-          ? "REAL_USER_GENESIS_IDENTITY"
-          : "IDENTITY_UNAVAILABLE_SHARED_DEEP_SPACE"
-      }
-      data-personality-ring-core-presence={
-        visualContinuityReady ? "REAL_USER_GENESIS_CORE" : "WITHHELD_WITHOUT_IDENTITY"
-      }
-      data-personality-ring-source-reference={
-        visualContinuityReady && visualContinuity
-          ? visualContinuity.sourceReferenceId
-          : "NONE"
-      }
-      data-personality-ring-life-replay={
-        imprintReplaySequence > 0 ? "SAME_CORE_HISTORICAL_IMPRINT" : "IDLE"
-      }
-      data-personality-ring-replay-surface="NO_DETAIL_CARD"
-      data-personality-ring-replay-raw-pressure="EXCLUDED"
-      data-personality-ring-visual-authority={
-        visualContinuityReady
-          ? "REAL_USER_GENESIS_WEBGL"
-          : "SHARED_DEEP_SPACE_IDENTITY_WITHHELD"
-      }
-      data-legacy-r7-archive="ISOLATED_OUTSIDE_ACTIVE_1_0"
-      data-selected-imprint-identity="NONE"
-      data-selected-imprint-source-dimension={
-        selectedLifeImprint?.sourceDimension ?? "NONE"
-      }
-      data-selected-imprint-source-slot={
-        selectedLifeImprint?.sourceSlot ?? "NONE"
-      }
-      data-selected-hexagram-coordinate={selectedHexagramCoordinate}
+      data-canonical-body-imprint-count={canonicalImprints.length}
+      data-personality-ring-source="LEGACY_HISTORY_READ_ONLY"
+      data-personality-ring-entry-count={legacyHistory.entries.length}
+      data-personality-ring-body-authority="FORBIDDEN"
+      data-personality-ring-created-at-role="LEGACY_HISTORY_LABEL_ONLY"
+      data-personality-ring-crystal-copy-role="TEXT_ONLY_NO_BODY_AUTHORITY"
+      data-archive-mirror-projection-role="ARCHIVE_SYNC_ONLY"
+      data-legacy-r7-archive="ISOLATED_OUTSIDE_CANONICAL_BODY"
       style={{
         position: "fixed",
         inset: 0,
@@ -362,205 +181,17 @@ export function PersonalityRingPage() {
       }}
     >
       <div aria-hidden="true" style={{ position: "absolute", inset: 0 }}>
-        {visualContinuityReady && visualContinuity ? (
+        {identityRecovery.status === "READY" ? (
           <Suspense fallback={<SharedLifeUniverseFallback />}>
-            <RealityLifeUniverseCanvas visualContinuity={visualContinuity} />
+            <RealityLifeUniverseCanvas
+              visualContinuity={identityRecovery.visualContinuity}
+              canonicalBodyImprintDecision={bodyImprintDecision}
+            />
           </Suspense>
         ) : (
           <SharedLifeUniverseFallback />
         )}
       </div>
-
-      {visibleLifeImprints.length > 0 ? (
-        <section
-          aria-label="生命骨架中的历史印记"
-          data-personality-ring-memory-field="SAME_BODY_ACCUMULATION"
-          data-personality-ring-memory-budget={visibleLifeImprints.length}
-          data-personality-ring-time-axis="CREATED_AT_MEMORY_DEPTH"
-          data-personality-ring-pressure-axis="PRESSURE_FIELD_BREATH_PHASE"
-          data-time-axis-start={oldestVisibleTime || "NONE"}
-          data-time-axis-end={newestVisibleTime || "NONE"}
-          style={{
-            position: "absolute",
-            zIndex: 1,
-            inset: 0,
-            pointerEvents: "none",
-          }}
-        >
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            data-personality-ring-life-imprint-anchor="LIFE_CORE_TO_ACTIVE_SEVEN_MANSION_BODY"
-            data-personality-ring-life-imprint-topology="ATTACHED_NO_SECOND_SYMBOL"
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              display: "block",
-              overflow: "visible",
-            }}
-          >
-            {visibleLifeImprints
-              .filter(({ entry }) => entry.createdAt !== selectedEntry?.createdAt)
-              .map(({ entry, timePosition, pressureFieldDepth, geometry }) => {
-                const pathDensity = visibleLifeImprints.filter(
-                  (candidate) => candidate.geometry.path === geometry.path,
-                ).length;
-                const traceOpacity =
-                  (0.055 + timePosition * 0.07) / Math.sqrt(pathDensity);
-                return (
-                  <g
-                    key={entry.id}
-                    className="gy-personality-ring__memory-trace"
-                    data-personality-ring-memory-trace="DIM_ARCHIVED_BODY_BRANCH"
-                    data-imprint-created-at={entry.createdAt}
-                    data-imprint-time-position={timePosition.toFixed(6)}
-                    data-imprint-pressure-position={pressureFieldDepth.toFixed(6)}
-                    style={{
-                      opacity: traceOpacity,
-                      animationDuration: `${6.8 + pressureFieldDepth * 2.4}s`,
-                      animationDelay: `${-pressureFieldDepth * 5.4}s`,
-                    }}
-                  >
-                    <path
-                      d={geometry.path}
-                      fill="none"
-                      stroke="rgba(185,203,236,0.9)"
-                      strokeWidth="0.28"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <rect
-                      x={geometry.target[0] - 0.2}
-                      y={geometry.target[1] - 0.2}
-                      width="0.4"
-                      height="0.4"
-                      rx="0.07"
-                      fill="rgba(185,203,236,0.88)"
-                    />
-                  </g>
-                );
-              })}
-            {selectedImprintGeometry && selectedEntry ? (
-              <g
-                key={selectedEntry.id}
-                className={`gy-personality-ring__selected-body-trace${
-                  isCrystalArrival
-                    ? " gy-personality-ring__arrival-body-trace"
-                    : ""
-                }`}
-                data-personality-ring-memory-trace={
-                  isCrystalArrival
-                    ? "CURRENT_CRYSTAL_SETTLING_IN_SAME_BODY"
-                    : "BRIGHT_SELECTED_BODY_BRANCH"
-                }
-                data-personality-ring-imprint-form="BODY_TEXTURE_NOT_COLLECTIBLE"
-                data-personality-ring-imprint-temporal-state={
-                  isCrystalArrival
-                    ? "SETTLING_FROM_PRESENT_INTO_MEMORY"
-                    : "REMEMBERED_BODY_TEXTURE"
-                }
-              >
-                <path
-                  d={selectedImprintGeometry.path}
-                  fill="none"
-                  stroke="rgba(232,200,138,0.15)"
-                  strokeWidth="1.45"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  filter="blur(1.15px)"
-                />
-                <path
-                  d={selectedImprintGeometry.path}
-                  fill="none"
-                  stroke="rgba(255,239,190,0.74)"
-                  strokeWidth="0.58"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </g>
-            ) : null}
-          </svg>
-
-          {selectedLifeImprint ? (
-            <button
-              type="button"
-              aria-label="回望上一道生命印记"
-              className="gy-personality-ring__selected-memory-node"
-              data-personality-ring-memory-target="SELECTED_NODE_ONLY"
-              data-imprint-created-at={selectedLifeImprint.entry.createdAt}
-              data-imprint-time-position={selectedLifeImprint.timePosition.toFixed(6)}
-              data-imprint-pressure-field={selectedLifeImprint.pressureField}
-              data-imprint-pressure-position={selectedLifeImprint.pressureFieldDepth.toFixed(6)}
-              onClick={() => {
-                const selectedIndex = visibleLifeImprints.findIndex(
-                  (candidate) =>
-                    candidate.entry.createdAt === selectedLifeImprint.entry.createdAt,
-                );
-                const replayTarget =
-                  visibleLifeImprints[
-                    selectedIndex >= 0
-                      ? (selectedIndex + 1) % visibleLifeImprints.length
-                      : 0
-                  ];
-                if (!replayTarget) return;
-                replayLifeImprint(
-                  replayTarget.entry.createdAt,
-                  replayTarget.entry.pressure.pressureField,
-                );
-              }}
-              style={{
-                position: "absolute",
-                zIndex: 2_000_000,
-                left: `${selectedLifeImprint.geometry.target[0]}%`,
-                top: `${selectedLifeImprint.geometry.target[1]}%`,
-                width: 30,
-                height: 30,
-                border: 0,
-                borderRadius: "50%",
-                padding: 0,
-                background: "transparent",
-                transform: "translate(-50%, -50%)",
-                cursor: "pointer",
-                pointerEvents: "auto",
-              }}
-            />
-          ) : null}
-        </section>
-      ) : null}
-
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(180deg, rgba(2,3,6,0.34), transparent 28%, transparent 62%, rgba(2,3,6,0.9) 100%)",
-          pointerEvents: "none",
-        }}
-      />
-
-      {selectedEntry && imprintReplaySequence > 0 ? (
-        <div
-          key={`${selectedEntry.id}:${imprintReplaySequence}`}
-          aria-hidden="true"
-          className="gy-personality-ring__replay"
-          data-life-imprint-replay="SELECTED_BODY_TRACE_TO_SAME_CORE"
-          data-life-imprint-origin-created-at={selectedEntry.createdAt}
-          data-life-imprint-pressure-coordinate="ARCHIVED_PRESSURE_FIELD_PHASE"
-          data-life-imprint-pressure-position={imprintReplayPressurePosition.toFixed(6)}
-        >
-          <div
-            className="gy-personality-ring__life-echo"
-            data-life-imprint-response="CORE_RECOGNITION_OF_ATTACHED_MEMORY"
-            data-life-imprint-axis={selectedLifeImprintAxis}
-          >
-            <span />
-          </div>
-        </div>
-      ) : null}
 
       <header
         style={{
@@ -584,101 +215,96 @@ export function PersonalityRingPage() {
             background: "transparent",
             color: "rgba(220,205,169,0.48)",
             fontSize: 10,
-            letterSpacing: "0.08em",
           }}
         >
           返回
         </button>
-        <span
-          style={{
-            color: "rgba(220,205,169,0.58)",
-            fontSize: 10,
-            letterSpacing: "0.16em",
-          }}
-        >
-          历史记录
+        <span style={{ color: "rgba(220,205,169,0.58)", fontSize: 10 }}>
+          生命留痕
         </span>
         <span />
       </header>
 
       <section
         aria-live="polite"
-        data-personality-ring-memory-reveal={
-          imprintMemoryVisible
-            ? visualContinuityReady
-              ? "VISIBLE_AFTER_CORE"
-              : "VISIBLE_WITHOUT_IDENTITY_REPLAY"
-            : "WITHDRAWN_DURING_RETURN"
-        }
+        data-canonical-imprint-presentation={bodyImprintDecision.status}
         style={{
           position: "absolute",
           zIndex: 3,
-          right: 30,
-          bottom: "max(54px, calc(30px + env(safe-area-inset-bottom)))",
-          left: 30,
+          right: 26,
+          bottom: "max(40px, calc(24px + env(safe-area-inset-bottom)))",
+          left: 26,
           display: "grid",
           justifyItems: "center",
-          gap: 10,
+          gap: 12,
           textAlign: "center",
           textShadow: "0 0 22px rgba(2,3,6,0.96)",
-          opacity: imprintMemoryVisible ? 1 : 0,
-          transform: imprintMemoryVisible ? "translateY(0)" : "translateY(5px)",
-          transition: "opacity 360ms ease, transform 520ms cubic-bezier(0.2, 0.72, 0.22, 1)",
         }}
       >
-        <strong
-          data-personality-ring-selected-imprint="LIFE_IMPRINT_LINE"
-          style={{
-            maxWidth: 314,
-            color: isCrystalArrival
-              ? "rgba(245,236,210,0.72)"
-              : "rgba(255,239,196,0.9)",
-            fontSize: isCrystalArrival ? 13 : 16,
-            lineHeight: isCrystalArrival ? 1.72 : 1.65,
-            fontWeight: isCrystalArrival ? 540 : 620,
-            textWrap: "balance",
-          }}
-        >
-          {revealedEntry
-            ? "既有历史记录已保留；身体留痕等待正式投影。"
-            : "身体留痕尚未建立正式投影。"}
+        <strong style={{ maxWidth: 320, fontSize: 15, lineHeight: 1.7 }}>
+          {bodyImprintDecision.status === "IMPRINT_AVAILABLE"
+            ? `同一生命已经留下 ${canonicalImprints.length} 道正式成长留痕。`
+            : bodyImprintDecision.status === "NO_CANONICAL_IMPRINT"
+              ? legacyHistory.entries.length > 0
+                ? "旧的历史记录仍被保留，但不会被冒充为身体留痕。"
+                : "真实成长发生后，同一生命会在这里留下痕迹。"
+              : "身体留痕暂时无法确认；既有成长资产不会因此丢失。"}
         </strong>
-        {revealedEntry && isCrystalArrival ? (
-          <span
-            data-personality-ring-arrival-copy="CHANGE_REMEMBERED_BY_LIFE"
+
+        {canonicalImprints.length > 0 ? (
+          <div
+            role="list"
+            aria-label="正式身体留痕"
             style={{
-              color: "rgba(220,205,169,0.58)",
-              fontSize: 10,
-              lineHeight: 1.65,
-              letterSpacing: "0.06em",
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: 8,
             }}
           >
-            这条历史记录不会被解释为同一身体的正式留痕。
-          </span>
+            {canonicalImprints.map((imprint) => (
+              <button
+                key={imprint.imprintReferenceId}
+                type="button"
+                role="listitem"
+                data-imprint-reference={imprint.imprintReferenceId}
+                data-formation-reference={imprint.formationReferenceId}
+                onClick={() =>
+                  setSelectedImprintReferenceId(
+                    imprint.imprintReferenceId,
+                  )
+                }
+                style={{
+                  border: "1px solid rgba(232,200,138,0.2)",
+                  borderRadius: 999,
+                  padding: "7px 10px",
+                  background:
+                    selectedImprintReferenceId === imprint.imprintReferenceId
+                      ? "rgba(232,200,138,0.14)"
+                      : "rgba(2,3,6,0.38)",
+                  color: "rgba(255,239,196,0.82)",
+                  fontSize: 10,
+                }}
+              >
+                {imprint.primaryDimension ?? "现实回应"} · {formatFormationTime(imprint.formedAt)}
+              </button>
+            ))}
+          </div>
         ) : null}
-        {revealedEntry ? (
-          <time
-            dateTime={revealedEntry.createdAt}
-            style={{ color: "rgba(199,169,107,0.42)", fontSize: 9, letterSpacing: "0.08em" }}
+
+        {selectedImprint ? (
+          <small
+            data-selected-imprint-reference={
+              selectedImprint.imprintReferenceId
+            }
+            data-selected-crystal-reference={
+              selectedImprint.crystalReferenceId
+            }
+            style={{ color: "rgba(220,205,169,0.6)", lineHeight: 1.6 }}
           >
-            {formatRingTime(revealedEntry.createdAt)}
-          </time>
-        ) : (
-          <button
-            type="button"
-            onClick={() => navigate("/launch-lab")}
-            style={{
-              border: 0,
-              borderBottom: "1px solid rgba(199,169,107,0.26)",
-              padding: "5px 2px",
-              background: "transparent",
-              color: "rgba(255,226,158,0.64)",
-              fontSize: 10,
-            }}
-          >
-            回到生命星河
-          </button>
-        )}
+            这道留痕来自一次已经确认的现实回应，并属于同一生命身体。
+          </small>
+        ) : null}
       </section>
     </main>
   );

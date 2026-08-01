@@ -20,9 +20,9 @@ assert(
   "Production Returning consumers still read PersonalityRingLite",
 );
 assert(
-  files.launch.includes("SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER") &&
-    files.archive.includes("SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER"),
-  "Legacy Body Imprint is not safely withheld",
+  files.launch.includes("canonicalBodyImprintDecision") &&
+    files.archive.includes('data-personality-ring-body-authority="FORBIDDEN"'),
+  "Canonical cutover does not safely isolate Legacy Body Imprint",
 );
 for (const forbiddenApi of [
   "readPersonalityRingLite",
@@ -37,7 +37,9 @@ for (const forbiddenApi of [
 }
 assert(
   files.archive.includes("LEGACY_HISTORY_READ_ONLY") &&
-    files.archive.includes("LEGACY_HISTORY_NO_BODY_CLAIM"),
+    files.archive.includes("LEGACY_HISTORY_LABEL_ONLY") &&
+    !files.archive.includes("resolveLifeUniverseCrystalImprintGeometry") &&
+    !files.archive.includes("resolveLifeUniverseCrystalSourceSlot"),
   "Legacy Archive is not constrained to read-only history",
 );
 console.log("[XINMAI LEGACY BODY IMPRINT SAFE WITHHELD] PASS");

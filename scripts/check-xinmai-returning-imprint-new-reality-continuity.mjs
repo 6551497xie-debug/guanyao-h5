@@ -22,8 +22,8 @@ requireSource(
 );
 requireSource(
   launch,
-  "latestCrystalSourceSlot",
-  "Returning life world must carry the original Crystal body position.",
+  "canonicalBodyImprintDecision",
+  "Returning life world must carry canonical Body Imprint facts.",
 );
 requireSource(
   routeEntry,
@@ -62,13 +62,13 @@ requireSource(
 );
 requireSource(
   canvas,
-  'data-reality-crystal-imprint-status="REMEMBERED_NOT_CURRENT_EVENT"',
-  "Crystal must be remembered without becoming the current event.",
+  'data-reality-crystal-imprint-source="CANONICAL_FORMATION_RECEIPT"',
+  "Crystal memory must come from the canonical Formation Receipt.",
 );
 
 if (
   canvas.includes(
-    '<rect\n                x={lifeMemoryGeometry.latestCrystal.target[0]',
+    "lifeMemoryGeometry.latestCrystal",
   )
 ) {
   throw new Error(

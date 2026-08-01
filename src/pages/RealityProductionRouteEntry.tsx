@@ -37,6 +37,8 @@ import {
 import {
   subscribeToRealityAdventureContinuityRevision,
 } from "../services/xinmaiRealityAdventureContinuityRevisionObserver";
+import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
+import { readXinmaiCanonicalBodyImprintRecovery } from "../services/xinmaiCanonicalBodyImprintRecoveryAdapter";
 import {
   createRealityExplicitLeaveRequestFromAdmission,
   createRealityExplicitLeaveRequestFromIntent,
@@ -68,6 +70,10 @@ import type {
 import type {
   RealityRouteActivationSourceContextResult,
 } from "../types/realityRouteActivationSourceContext";
+import {
+  XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
+  type XinmaiCanonicalBodyImprintDecision,
+} from "../types/xinmaiCanonicalBodyImprint";
 
 export const REALITY_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
   RealityProductionRouteEntryBoundary = Object.freeze({
@@ -123,13 +129,12 @@ type RealityRouteState =
       visualContinuity?: RealityProductionHostProps["visualContinuity"];
       returningLifeMemory?: Readonly<{
         historicalRealityMemoryKey?: string | null;
-        latestCrystalMemoryKey?: string | null;
-        latestCrystalSourceSlot?: number | null;
       }>;
       returningEntry?: "SAME_LIFE_NEW_REALITY";
       choiceReturn?: "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED";
       choiceLifeTraceMemoryKey?: string;
       choiceLifeTraceSourceSlot?: number;
+      choiceActionIntentionReferenceId?: string;
     }>
   | null;
 
@@ -224,8 +229,6 @@ export function RealityProductionRouteEntry({
         previousReality?.selectedPressureSeedId?.trim() ||
         previousReality?.surface?.trim() ||
         null,
-      latestCrystalMemoryKey: null,
-      latestCrystalSourceSlot: null,
     });
   });
   const [identityRecovery] = useState(() =>
@@ -233,6 +236,40 @@ export function RealityProductionRouteEntry({
       visualContinuity: routeVisualContinuity,
     }),
   );
+  const [canonicalBodyImprintDecision, setCanonicalBodyImprintDecision] =
+    useState<XinmaiCanonicalBodyImprintDecision>(
+      XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
+    );
+
+  useEffect(() => {
+    if (identityRecovery.status !== "READY") {
+      setCanonicalBodyImprintDecision(
+        XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
+      );
+      return undefined;
+    }
+    let disposed = false;
+    const read = () => {
+      void readXinmaiCanonicalBodyImprintRecovery({
+        identityReferences: identityRecovery.identityReferences,
+        visualContinuity: identityRecovery.visualContinuity,
+        focusedChoiceActionIntentionReferenceId:
+          routeState?.choiceActionIntentionReferenceId ?? null,
+      }).then((decision) => {
+        if (!disposed) setCanonicalBodyImprintDecision(decision);
+      });
+    };
+    read();
+    const unsubscribe =
+      subscribeToXinmaiLivedGrowthRecoveryRevision(read);
+    return () => {
+      disposed = true;
+      unsubscribe();
+    };
+  }, [
+    identityRecovery,
+    routeState?.choiceActionIntentionReferenceId,
+  ]);
 
   useEffect(() => {
     if (identityRecovery.status !== "READY") return undefined;
@@ -1141,12 +1178,7 @@ export function RealityProductionRouteEntry({
         routeReturningLifeMemory?.historicalRealityMemoryKey ??
         historicalLifeMemory.historicalRealityMemoryKey
       }
-      latestCrystalMemoryKey={
-        null
-      }
-      latestCrystalSourceSlot={
-        null
-      }
+      canonicalBodyImprintDecision={canonicalBodyImprintDecision}
       returningLifeWorldEntry={returningLifeWorldEntry}
       choiceReturn={choiceReturn}
       choiceLifeTraceMemoryKey={choiceLifeTraceMemoryKey}

@@ -46,8 +46,9 @@ assert(
 );
 assert(
   !launch.includes("readPersonalityRingLite") &&
-    launch.includes("SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER"),
-  "Returning Body Imprint did not enter safe-withheld isolation",
+    launch.includes("readXinmaiCanonicalBodyImprintRecovery") &&
+    launch.includes("canonicalBodyImprintDecision"),
+  "Returning Body Imprint does not consume canonical recovery",
 );
 const executableGravity = stripComments(gravity);
 for (const legacy of [

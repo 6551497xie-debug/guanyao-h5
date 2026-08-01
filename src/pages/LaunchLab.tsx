@@ -88,6 +88,11 @@ import { XinmaiLivedResponseReturnSurface } from "../components/XinmaiLivedRespo
 import { readXinmaiChoiceReturningProvenanceRecovery } from "../services/xinmaiChoiceReturningProvenanceRecoveryAdapter";
 import type { XinmaiChoiceReturningProvenanceAdmission } from "../types/xinmaiChoiceReturningProvenance";
 import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
+import { readXinmaiCanonicalBodyImprintRecovery } from "../services/xinmaiCanonicalBodyImprintRecoveryAdapter";
+import {
+  XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
+  type XinmaiCanonicalBodyImprintDecision,
+} from "../types/xinmaiCanonicalBodyImprint";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
 import { writePersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
@@ -1392,12 +1397,47 @@ export function LaunchLab({
   // A persisted result is not yet a returning entrance. The returning path is
   // only valid when that exact life can also be restored visually.
   const returningLifeIdentity = returningVisualReady;
-  const returningRecognizedIdentity =
-    returningVisualContinuity === null
-      ? null
-      : recoverRealityRecognizedIdentity({
-          visualContinuity: returningVisualContinuity,
-        });
+  const returningRecognizedIdentity = useMemo(
+    () =>
+      returningVisualContinuity === null
+        ? null
+        : recoverRealityRecognizedIdentity({
+            visualContinuity: returningVisualContinuity,
+          }),
+    [returningVisualContinuity],
+  );
+  const [canonicalBodyImprintDecision, setCanonicalBodyImprintDecision] =
+    useState<XinmaiCanonicalBodyImprintDecision>(
+      XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
+    );
+  useEffect(() => {
+    let cancelled = false;
+    if (
+      returningRecognizedIdentity?.status !== "READY" ||
+      returningVisualContinuity === null
+    ) {
+      setCanonicalBodyImprintDecision(
+        XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
+      );
+      return () => {
+        cancelled = true;
+      };
+    }
+    void readXinmaiCanonicalBodyImprintRecovery({
+      identityReferences:
+        returningRecognizedIdentity.identityReferences,
+      visualContinuity: returningVisualContinuity,
+    }).then((decision) => {
+      if (!cancelled) setCanonicalBodyImprintDecision(decision);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    returningGrowthSurfaceRevision,
+    returningRecognizedIdentity,
+    returningVisualContinuity,
+  ]);
   const [
     returningChoiceAdmissions,
     setReturningChoiceAdmissions,
@@ -1444,7 +1484,8 @@ export function LaunchLab({
       ? null
       : returningDynamicsInput?.selectedPressureSeedContext ?? null;
   const returningHasReality = returningRealityContext !== null;
-  const returningHasCrystal = false;
+  const returningHasCrystal =
+    canonicalBodyImprintDecision.status === "IMPRINT_AVAILABLE";
   const returningTemporalState = returningHasReality
     ? "REALITY_ONLY"
     : "IDENTITY_ONLY";
@@ -5808,8 +5849,6 @@ export function LaunchLab({
             returningRealityContext?.selectedPressureSeedId?.trim() ||
             returningRealityContext?.surface?.trim() ||
             null,
-          latestCrystalMemoryKey: null,
-          latestCrystalSourceSlot: null,
         },
         returningEntry: "SAME_LIFE_NEW_REALITY",
       },
@@ -5836,10 +5875,9 @@ export function LaunchLab({
           !returningVisualReady
             ? "NOT_ACTIVE"
             : returningHasCrystal
-              ? "LATEST_IMPRINT_ATTACHED"
-              : "SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER"
+              ? "CANONICAL_IMPRINT_ATTACHED"
+              : canonicalBodyImprintDecision.status
         }
-        data-returning-life-body-imprint-authority="SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER"
         data-returning-life-crystal-source-continuity={
           !returningVisualReady
             ? "NOT_ACTIVE"
@@ -5847,12 +5885,11 @@ export function LaunchLab({
               ? "SAME_SOURCE_POSITION_SAME_GEOMETRY"
               : "NO_IMPRINT_YET"
         }
-        data-returning-life-crystal-source-dimension={
-          "NONE"
+        data-returning-life-body-imprint-authority={
+          canonicalBodyImprintDecision.status
         }
-        data-returning-life-crystal-source-slot={
-          "NONE"
-        }
+        data-returning-life-crystal-source-dimension="CANONICAL_TYPED_FACTS"
+        data-returning-life-crystal-source-slot="CANONICAL_TYPED_FACTS"
         data-returning-life-temporal-state={
           returningVisualReady ? returningTemporalState : "NOT_ACTIVE"
         }
@@ -5941,6 +5978,9 @@ export function LaunchLab({
             <Suspense fallback={null}>
               <RealityLifeUniverseCanvas
                 visualContinuity={returningVisualContinuity}
+                canonicalBodyImprintDecision={
+                  canonicalBodyImprintDecision
+                }
                 historicalRealityMemoryKey={
                   returningRealityContext?.selectedPressureSeedId?.trim() ||
                   returningRealityContext?.surface?.trim() ||
