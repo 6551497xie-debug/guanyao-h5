@@ -24,6 +24,10 @@ const formation = fs.readFileSync(
   "src/services/xinmaiCrystalFormationConsumer.ts",
   "utf8",
 );
+const orchestrator = fs.readFileSync(
+  "src/services/xinmaiCrystalFormationProductionOrchestrator.ts",
+  "utf8",
+);
 const acceptance = fs.readFileSync(
   "src/pages/XinmaiLivedGrowthAcceptancePage.tsx",
   "utf8",
@@ -75,8 +79,10 @@ for (const forbidden of [
 }
 assert(!legacy.includes("setItem("), "legacy V1 source remains writable");
 assert(
-  formation.includes("reconcileCanonicalFormationReceiptsToPersonalityRing"),
-  "derived Archive reconciliation is missing",
+  formation.includes('projection: "PENDING"') &&
+    !formation.includes("reconcileCanonicalFormationReceiptsToPersonalityRing") &&
+    orchestrator.includes("formCrystalFromEligibility"),
+  "production Formation is not isolated from the Legacy Archive mirror",
 );
 assert(
   acceptance.includes("readXinmaiLivedGrowthCanonicalState") &&

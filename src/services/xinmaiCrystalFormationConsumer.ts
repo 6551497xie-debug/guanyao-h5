@@ -9,7 +9,6 @@ import {
   rejectXinmaiLivedGrowthTransaction,
 } from "../types/xinmaiLivedGrowthTransaction";
 import { resolveDynamicsCurrentCrystalEndState } from "./guanyaoDynamicsCrystalRuntimeAdapter";
-import { reconcileCanonicalFormationReceiptsToPersonalityRing } from "./guanyaoDynamicsPersonalityRingDepositAdapter";
 import { xinmaiGrowthIdentityMatches } from "./xinmaiLivedGrowthIdentity";
 import { createStableXinmaiGrowthReference } from "./xinmaiLivedGrowthReference";
 import { executeXinmaiLivedGrowthTransaction } from "./xinmaiLivedGrowthTransactionAuthority";
@@ -50,74 +49,6 @@ const safeWithheld = (
   >["reason"],
 ): XinmaiCrystalFormationResult =>
   Object.freeze({ status: "SAFE_WITHHELD" as const, receipt: null, reason });
-
-const projectReceipt = async (
-  receipt: CrystalFormationReceipt,
-  canonicalReceipts: readonly CrystalFormationReceipt[],
-): Promise<CrystalFormationReceipt> => {
-  if (receipt.projection === "PROJECTED") return receipt;
-  const mirror =
-    reconcileCanonicalFormationReceiptsToPersonalityRing(
-      canonicalReceipts,
-    );
-  const projection =
-    mirror.status === "RECONCILED" ? "PROJECTED" : "RETRYABLE";
-  const transaction = await executeXinmaiLivedGrowthTransaction(
-    Object.freeze({
-      commandReferenceId: createStableXinmaiGrowthReference(
-        "growth-command:project-crystal",
-        receipt.formationReferenceId,
-      ),
-      commandType: "UPDATE_CRYSTAL_PROJECTION" as const,
-      identityReferences: receipt.identityReferences,
-      issuedAt: new Date().toISOString(),
-    }),
-    (current) => {
-      const currentReceipt = current.formationReceipts.find(
-        (candidate) =>
-          candidate.formationReferenceId ===
-          receipt.formationReferenceId,
-      );
-      if (
-        !currentReceipt ||
-        !xinmaiGrowthIdentityMatches(
-          currentReceipt.identityReferences,
-          receipt.identityReferences,
-        )
-      ) {
-        return rejectXinmaiLivedGrowthTransaction(
-          "PROVENANCE_MISMATCH",
-        );
-      }
-      if (currentReceipt.projection === "PROJECTED") {
-        return preserveXinmaiLivedGrowthTransaction(currentReceipt);
-      }
-      const updated: CrystalFormationReceipt = Object.freeze({
-        ...currentReceipt,
-        projection,
-        projectionUpdatedAt: new Date().toISOString(),
-      });
-      return commitXinmaiLivedGrowthTransaction(
-        {
-          ...current,
-          formationReceipts: Object.freeze(
-            current.formationReceipts.map((candidate) =>
-              candidate.formationReferenceId ===
-              receipt.formationReferenceId
-                ? updated
-                : candidate,
-            ),
-          ),
-        },
-        updated,
-      );
-    },
-  );
-  return transaction.status === "COMMITTED" ||
-    transaction.status === "ALREADY_COMMITTED"
-    ? transaction.value
-    : receipt;
-};
 
 export async function formCrystalFromEligibility(input: Readonly<{
   crystalEligibilityReferenceId: string;
@@ -342,16 +273,12 @@ export async function formCrystalFromEligibility(input: Readonly<{
     transaction.status === "COMMITTED" ||
     transaction.status === "ALREADY_COMMITTED"
   ) {
-    const projected = await projectReceipt(
-      transaction.value,
-      transaction.envelope.formationReceipts,
-    );
     return Object.freeze({
       status:
         transaction.status === "COMMITTED"
           ? "FORMED" as const
           : "ALREADY_FORMED" as const,
-      receipt: projected,
+      receipt: transaction.value,
       reason: null,
     });
   }

@@ -207,9 +207,16 @@ export function PersonalityRingPage() {
       "REAL_USER_SESSION" &&
     visualContinuity.visualCalibrationBundle.sourceReferenceId ===
       visualContinuity.sourceReferenceId &&
-    visualContinuity.visualCalibrationBundle.runtimeStage === "COMPLETION";
+      visualContinuity.visualCalibrationBundle.runtimeStage === "COMPLETION";
+  const canonicalBodyImprintReadModelAvailable = false;
   const visibleLifeImprints = (() => {
-    if (!visualContinuityReady || !visualContinuity) return [];
+    if (
+      !canonicalBodyImprintReadModelAvailable ||
+      !visualContinuityReady ||
+      !visualContinuity
+    ) {
+      return [];
+    }
     const projectionBundle =
       visualContinuity.consumerSourceResult.consumerSource.projectionBundle;
     const morphology =
@@ -291,11 +298,12 @@ export function PersonalityRingPage() {
 
   return (
     <main
-      aria-label="生命年轮"
-      data-personality-ring-page="ACTIVE_1_0"
-      data-personality-ring-source="PERSONALITY_RING_LITE"
+      aria-label="历史兼容记录"
+      data-personality-ring-page="LEGACY_HISTORY_READ_ONLY"
+      data-personality-ring-source="PERSONALITY_RING_LITE_PRESENTATION_CACHE"
+      data-body-imprint-authority="SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER"
       data-personality-ring-entry-count={entries.length}
-      data-personality-ring-visual-language="SAME_LIFE_UNIVERSE_TRAJECTORY"
+      data-personality-ring-visual-language="LEGACY_HISTORY_NO_BODY_CLAIM"
       data-personality-ring-coordinate-system="TIME_DEPTH_X_REALITY_PHASE"
       data-personality-ring-pressure-privacy="FIELD_ONLY_NO_RAW_SURFACE"
       data-personality-ring-coordinate-density="ONE_BODY_TWELVE_TRACE_BUDGET"
@@ -303,9 +311,7 @@ export function PersonalityRingPage() {
       data-personality-ring-selected-depth="BRIGHT_CURRENT_DIM_HISTORY"
       data-personality-ring-continuity-priority="SAME_LIFE_BEFORE_HISTORY"
       data-personality-ring-arrival={
-        isCrystalArrival
-          ? "CRYSTAL_SEDIMENT_CONTINUES_IN_SAME_BODY"
-          : "RETURNING_TO_LIFE_MEMORY"
+        isCrystalArrival ? "LEGACY_ARRIVAL_BODY_CLAIM_WITHHELD" : "LEGACY_HISTORY"
       }
       data-personality-ring-memory-transition="PRESENT_BODY_TEXTURE_TO_TIME_MEMORY"
       data-personality-ring-arrival-source-continuity={
@@ -313,7 +319,7 @@ export function PersonalityRingPage() {
           ? "SAME_SOURCE_POSITION_SAME_GEOMETRY"
           : "ARCHIVED_BODY_MEMORY"
       }
-      data-personality-ring-first-perception="LIFE_REMEMBERS_CHANGE"
+      data-personality-ring-first-perception="BODY_IMPRINT_NOT_YET_CANONICAL"
       data-personality-ring-collection-metaphor="EXCLUDED"
       data-personality-ring-identity-mode={
         visualContinuityReady
@@ -339,7 +345,7 @@ export function PersonalityRingPage() {
           : "SHARED_DEEP_SPACE_IDENTITY_WITHHELD"
       }
       data-legacy-r7-archive="ISOLATED_OUTSIDE_ACTIVE_1_0"
-      data-selected-imprint-identity={selectedEntry?.crystal.copy ?? "NONE"}
+      data-selected-imprint-identity="NONE"
       data-selected-imprint-source-dimension={
         selectedLifeImprint?.sourceDimension ?? "NONE"
       }
@@ -590,7 +596,7 @@ export function PersonalityRingPage() {
             letterSpacing: "0.16em",
           }}
         >
-          生命年轮
+          历史记录
         </span>
         <span />
       </header>
@@ -633,7 +639,9 @@ export function PersonalityRingPage() {
             textWrap: "balance",
           }}
         >
-          {revealedEntry?.crystal.copy ?? "你的第一道生命印记，仍在星河中等待发生。"}
+          {revealedEntry
+            ? "既有历史记录已保留；身体留痕等待正式投影。"
+            : "身体留痕尚未建立正式投影。"}
         </strong>
         {revealedEntry && isCrystalArrival ? (
           <span
@@ -645,7 +653,7 @@ export function PersonalityRingPage() {
               letterSpacing: "0.06em",
             }}
           >
-            这次回应，已经成为生命走过的一道纹理。
+            这条历史记录不会被解释为同一身体的正式留痕。
           </span>
         ) : null}
         {revealedEntry ? (

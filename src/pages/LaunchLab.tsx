@@ -84,7 +84,6 @@ import {
   projectReturningLifeWorldSurfaceReady,
 } from "../services/realityExplicitLeaveNavigationDeliveryRuntimePort";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
-import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { XinmaiLivedResponseReturnSurface } from "../components/XinmaiLivedResponseReturnSurface";
 import { readXinmaiChoiceReturningProvenanceRecovery } from "../services/xinmaiChoiceReturningProvenanceRecoveryAdapter";
 import type { XinmaiChoiceReturningProvenanceAdmission } from "../types/xinmaiChoiceReturningProvenance";
@@ -98,8 +97,6 @@ import {
   drawLifeUniverseCore2D,
   LIFE_UNIVERSE_STAR_FIELD,
   projectLifeUniverseStarToViewport,
-  resolveLifeUniverseCrystalImprintGeometry,
-  resolveLifeUniverseCrystalSourceSlot,
   resolveLifeUniverseCoreFrame,
 } from "../renderers/lifeUniverseStarField";
 
@@ -1258,9 +1255,6 @@ export function LaunchLab({
   const [returningDynamicsInput] = useState(() =>
     hasReturningLifeIdentity ? resolveDynamicsInputContext({}) : null,
   );
-  const [returningLifeArchive, setReturningLifeArchive] = useState(() =>
-    hasReturningLifeIdentity ? readPersonalityRingLite() : null,
-  );
   const [returningGrowthSurfaceRevision, setReturningGrowthSurfaceRevision] =
     useState(0);
   useEffect(
@@ -1449,80 +1443,14 @@ export function LaunchLab({
     returningStatePreview === "CRYSTAL_ONLY"
       ? null
       : returningDynamicsInput?.selectedPressureSeedContext ?? null;
-  const returningCrystalVisible =
-    returningStatePreview !== "IDENTITY_ONLY" &&
-    returningStatePreview !== "REALITY_ONLY";
-  const returningLatestImprint =
-    (returningCrystalVisible ? returningLifeArchive?.entries : null)
-      ?.slice()
-      .sort(
-        (left, right) =>
-          Date.parse(right.createdAt) - Date.parse(left.createdAt),
-      )[0] ?? null;
-  const returningLatestImprintSourceDimension =
-    returningLatestImprint?.transmission.primaryDimension
-      ?.trim()
-      .toLowerCase() ?? "unknown";
-  const returningLatestImprintSourceSlot =
-    resolveLifeUniverseCrystalSourceSlot(
-      returningLatestImprintSourceDimension,
-    );
-  const returningLatestImprintGeometry = useMemo(() => {
-    if (
-      !returningVisualReady ||
-      returningVisualContinuity === null ||
-      returningLatestImprint === null
-    ) {
-      return null;
-    }
-    const projectionBundle =
-      returningVisualContinuity.consumerSourceResult.consumerSource
-        .projectionBundle;
-    const morphology =
-      projectionBundle.morphologicalFieldAlignmentProjection
-        .morphologicalFieldExpression;
-    return resolveLifeUniverseCrystalImprintGeometry({
-      identityKey: `${returningVisualContinuity.sourceReferenceId}:${returningLatestImprint.crystal.copy}`,
-      birthMansionIndex:
-        projectionBundle.twentyEightMansionCoordinateProjection.birthMansion
-          .mansionIndex,
-      normalizedOrbitPositions:
-        projectionBundle.twentyEightMansionCoordinateProjection.coordinates.map(
-          (coordinate) => coordinate.normalizedOrbitPosition,
-        ),
-      envelopeScale: morphology.envelopeScale,
-      postureBias: morphology.postureBias,
-      sourceSlot: returningLatestImprintSourceSlot,
-    });
-  }, [
-    returningLatestImprint,
-    returningLatestImprintSourceSlot,
-    returningVisualContinuity,
-    returningVisualReady,
-  ]);
-  const returningLatestImprintBodyPath = returningLatestImprintGeometry
-    ? `M ${returningLatestImprintGeometry.target[0]} ${returningLatestImprintGeometry.target[1]} L ${returningLatestImprintGeometry.stem[0]} ${returningLatestImprintGeometry.stem[1]} L ${returningLatestImprintGeometry.branchTarget[0]} ${returningLatestImprintGeometry.branchTarget[1]}`
-    : "";
-  const returningLatestImprintBodyPoint =
-    returningLatestImprintGeometry?.branchTarget ?? null;
   const returningHasReality = returningRealityContext !== null;
-  const returningHasCrystal = returningLatestImprintGeometry !== null;
-  const returningTemporalState =
-    returningHasReality && returningHasCrystal
-      ? "REALITY_AND_CRYSTAL"
-      : returningHasReality
-        ? "REALITY_ONLY"
-        : returningHasCrystal
-          ? "CRYSTAL_ONLY"
-          : "IDENTITY_ONLY";
-  const returningExperienceCopy =
-    returningTemporalState === "REALITY_AND_CRYSTAL"
-      ? "现实经过，变化也留在它的生命纹路里。"
-      : returningTemporalState === "REALITY_ONLY"
-        ? "最近的现实，仍在它的呼吸里。"
-        : returningTemporalState === "CRYSTAL_ONLY"
-          ? "那次变化，仍在它的生命纹路里。"
-          : null;
+  const returningHasCrystal = false;
+  const returningTemporalState = returningHasReality
+    ? "REALITY_ONLY"
+    : "IDENTITY_ONLY";
+  const returningExperienceCopy = returningHasReality
+    ? "最近的现实，仍在它的呼吸里。"
+    : null;
   useEffect(
     () => () => {
       if (returningLifeWhisperOutcomeWatchdogRef.current !== null) {
@@ -5617,9 +5545,6 @@ export function LaunchLab({
   }, [
     commitPressureSeedCapture,
     navigate,
-    returningHasCrystal,
-    returningLatestImprint,
-    returningLatestImprintSourceSlot,
     returningLifeContext,
     returningLifeIdentity,
     returningRealityContext,
@@ -5883,12 +5808,8 @@ export function LaunchLab({
             returningRealityContext?.selectedPressureSeedId?.trim() ||
             returningRealityContext?.surface?.trim() ||
             null,
-          latestCrystalMemoryKey: returningLatestImprint
-            ? `${returningVisualContinuity.sourceReferenceId}:${returningLatestImprint.crystal.copy}`
-            : null,
-          latestCrystalSourceSlot: returningHasCrystal
-            ? returningLatestImprintSourceSlot
-            : null,
+          latestCrystalMemoryKey: null,
+          latestCrystalSourceSlot: null,
         },
         returningEntry: "SAME_LIFE_NEW_REALITY",
       },
@@ -5916,8 +5837,9 @@ export function LaunchLab({
             ? "NOT_ACTIVE"
             : returningHasCrystal
               ? "LATEST_IMPRINT_ATTACHED"
-              : "NO_IMPRINT_YET"
+              : "SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER"
         }
+        data-returning-life-body-imprint-authority="SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER"
         data-returning-life-crystal-source-continuity={
           !returningVisualReady
             ? "NOT_ACTIVE"
@@ -5926,12 +5848,10 @@ export function LaunchLab({
               : "NO_IMPRINT_YET"
         }
         data-returning-life-crystal-source-dimension={
-          returningHasCrystal
-            ? returningLatestImprintSourceDimension
-            : "NONE"
+          "NONE"
         }
         data-returning-life-crystal-source-slot={
-          returningHasCrystal ? returningLatestImprintSourceSlot : "NONE"
+          "NONE"
         }
         data-returning-life-temporal-state={
           returningVisualReady ? returningTemporalState : "NOT_ACTIVE"
@@ -6038,65 +5958,6 @@ export function LaunchLab({
                 }
               />
             </Suspense>
-            {returningLatestImprintGeometry &&
-            returningLatestImprintBodyPoint ? (
-              <svg
-                className="gy-returning-life-world__imprint"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-                data-returning-life-imprint="LATEST_CRYSTAL_ON_SAME_BODY"
-                data-returning-life-imprint-temporal-continuity="ARCHIVE_MEMORY_RESTORED_ON_SAME_BODY"
-                data-returning-life-imprint-source="ARCHIVED_USER_RECOGNIZED_RESPONSE"
-                data-returning-life-imprint-direction="SAME_RESPONSE_POSITION_INTO_SAME_BODY"
-                data-returning-life-imprint-form="LIFE_TEXTURE_NOT_COLLECTIBLE"
-                data-returning-life-imprint-status="REMEMBERED_NOT_CURRENT_EVENT"
-                data-returning-life-identity-invariant="SAME_CORE_SAME_BODY_SAME_LIFE"
-              >
-                <path
-                  d={returningLatestImprintBodyPath}
-                  fill="none"
-                  stroke="rgba(232,200,138,0.08)"
-                  strokeWidth="1.08"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  filter="blur(1.1px)"
-                />
-                <path
-                  className="gy-returning-life-world__imprint-flow"
-                  d={returningLatestImprintBodyPath}
-                  fill="none"
-                  stroke="rgba(255,239,190,0.28)"
-                  strokeWidth="0.3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle
-                  className="gy-returning-life-world__imprint-origin"
-                  cx={returningLatestImprintGeometry.target[0]}
-                  cy={returningLatestImprintGeometry.target[1]}
-                  r="0.34"
-                  fill="rgba(255,247,220,0.06)"
-                  stroke="rgba(255,239,190,0.2)"
-                  strokeWidth="0.14"
-                />
-                <g className="gy-returning-life-world__imprint-trace">
-                  <path
-                    d={`M ${returningLatestImprintBodyPoint[0] - 0.62} ${returningLatestImprintBodyPoint[1] + 0.08} L ${returningLatestImprintBodyPoint[0] - 0.14} ${returningLatestImprintBodyPoint[1] - 0.46} L ${returningLatestImprintBodyPoint[0] + 0.5} ${returningLatestImprintBodyPoint[1] - 0.12} M ${returningLatestImprintBodyPoint[0] - 0.14} ${returningLatestImprintBodyPoint[1] - 0.46} L ${returningLatestImprintBodyPoint[0] - 0.08} ${returningLatestImprintBodyPoint[1] + 0.58}`}
-                    fill="none"
-                    stroke="rgba(255,239,190,0.48)"
-                    strokeWidth="0.24"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <circle
-                    cx={returningLatestImprintBodyPoint[0]}
-                    cy={returningLatestImprintBodyPoint[1]}
-                    r="0.17"
-                    fill="rgba(255,247,220,0.5)"
-                  />
-                </g>
-              </svg>
-            ) : null}
           </div>
         ) : null}
         <canvas
@@ -6151,7 +6012,6 @@ export function LaunchLab({
                   }
                   admissions={returningChoiceAdmissions}
                   onAuthorityRevision={() => {
-                    setReturningLifeArchive(readPersonalityRingLite());
                     setReturningGrowthSurfaceRevision(
                       (revision) => revision + 1,
                     );

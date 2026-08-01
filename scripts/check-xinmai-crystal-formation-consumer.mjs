@@ -1,32 +1,40 @@
 import fs from "node:fs";
-const source = fs.readFileSync("src/services/xinmaiCrystalFormationConsumer.ts", "utf8");
+
+const source = fs.readFileSync(
+  "src/services/xinmaiCrystalFormationConsumer.ts",
+  "utf8",
+);
+const orchestrator = fs.readFileSync(
+  "src/services/xinmaiCrystalFormationProductionOrchestrator.ts",
+  "utf8",
+);
+
 for (const expected of [
   "executeXinmaiLivedGrowthTransaction",
   "LEGACY_MULTIPLE_FORMATION_RECEIPTS",
   "choiceActionIntentionReferenceId",
   "XINMAI_CRYSTAL_ELIGIBILITY",
-  "reconcileCanonicalFormationReceiptsToPersonalityRing",
+  'projection: "PENDING"',
   "SAFE_WITHHELD",
 ]) {
   if (!source.includes(expected)) throw new Error(`missing ${expected}`);
 }
-const projectionBlock = source.slice(
-  source.indexOf("const projectReceipt"),
-  source.indexOf("export async function formCrystalFromEligibility"),
-);
 if (
-  projectionBlock.indexOf("reconcileCanonicalFormationReceiptsToPersonalityRing") >
-  projectionBlock.indexOf("executeXinmaiLivedGrowthTransaction")
+  source.includes("reconcileCanonicalFormationReceiptsToPersonalityRing") ||
+  source.includes("readPersonalityRingLite") ||
+  source.includes("writePersistedPersonalityRingLiteState")
 ) {
-  throw new Error(
-    "Derived Archive mirror is not attempted after canonical Formation",
-  );
+  throw new Error("Legacy PersonalityRing mirror remains in Formation authority");
 }
-if (
-  projectionBlock.slice(
-    projectionBlock.indexOf("(current) =>"),
-  ).includes("reconcileCanonicalFormationReceiptsToPersonalityRing")
-) {
-  throw new Error("derived localStorage mirror leaked into IDB transaction");
+for (const expected of [
+  "readXinmaiLivedGrowthCanonicalState",
+  "formCrystalFromEligibility",
+  "RECOVERY_RETRY",
+  "IDB_TRANSACTION_COMPLETE",
+  "SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER",
+]) {
+  if (!orchestrator.includes(expected)) {
+    throw new Error(`Production Orchestrator missing ${expected}`);
+  }
 }
 console.log("[XINMAI CRYSTAL FORMATION CONSUMER] PASS");

@@ -44,9 +44,7 @@ import {
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { executeRealityToGravityCutover } from "../services/realityToGravityCutoverTransaction";
 import { observeRealityToGravityCutoverResult } from "../services/gravityEntryAcceptanceRuntimePort";
-import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { readXinmaiChoiceReturnResolutionProof } from "../services/xinmaiChoiceReturnResolutionProofAdapter";
-import { resolveLifeUniverseCrystalSourceSlot } from "../renderers/lifeUniverseStarField";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import type {
   RealityHostInteractionAuthority,
@@ -221,24 +219,13 @@ export function RealityProductionRouteEntry({
   const [historicalLifeMemory] = useState(() => {
     const previousReality =
       resolveDynamicsInputContext({}).selectedPressureSeedContext;
-    const latestCrystal =
-      readPersonalityRingLite()
-        .entries.slice()
-        .sort(
-          (left, right) =>
-            Date.parse(right.createdAt) - Date.parse(left.createdAt),
-        )[0] ?? null;
     return Object.freeze({
       historicalRealityMemoryKey:
         previousReality?.selectedPressureSeedId?.trim() ||
         previousReality?.surface?.trim() ||
         null,
-      latestCrystalMemoryKey: latestCrystal?.crystal.copy.trim() || null,
-      latestCrystalSourceSlot: latestCrystal
-        ? resolveLifeUniverseCrystalSourceSlot(
-            latestCrystal.transmission.primaryDimension,
-          )
-        : null,
+      latestCrystalMemoryKey: null,
+      latestCrystalSourceSlot: null,
     });
   });
   const [identityRecovery] = useState(() =>
@@ -1155,14 +1142,10 @@ export function RealityProductionRouteEntry({
         historicalLifeMemory.historicalRealityMemoryKey
       }
       latestCrystalMemoryKey={
-        routeReturningLifeMemory?.latestCrystalMemoryKey ??
-        (historicalLifeMemory.latestCrystalMemoryKey
-          ? `${visualContinuity.sourceReferenceId}:${historicalLifeMemory.latestCrystalMemoryKey}`
-          : null)
+        null
       }
       latestCrystalSourceSlot={
-        routeReturningLifeMemory?.latestCrystalSourceSlot ??
-        historicalLifeMemory.latestCrystalSourceSlot
+        null
       }
       returningLifeWorldEntry={returningLifeWorldEntry}
       choiceReturn={choiceReturn}

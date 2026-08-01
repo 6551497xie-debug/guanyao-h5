@@ -1,99 +1,56 @@
 import fs from "node:fs";
-import path from "node:path";
-import process from "node:process";
 
-const root = process.cwd();
-const launchPath = path.join(root, "src/pages/LaunchLab.tsx");
-const packagePath = path.join(root, "package.json");
-const launch = fs.readFileSync(launchPath, "utf8");
-const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+const launch = fs.readFileSync("src/pages/LaunchLab.tsx", "utf8");
+const route = fs.readFileSync(
+  "src/pages/RealityProductionRouteEntry.tsx",
+  "utf8",
+);
+const archive = fs.readFileSync("src/pages/PersonalityRingPage.tsx", "utf8");
+const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const failures = [];
-
-const requireIncludes = (label, source, markers) => {
-  for (const marker of markers) {
-    if (!source.includes(marker)) {
-      failures.push(`${label}: missing ${JSON.stringify(marker)}`);
-    }
-  }
+const check = (condition, message) => {
+  if (!condition) failures.push(message);
 };
 
-requireIncludes("persisted life identity stays authoritative", launch, [
-  "hasPersistedRecognizedLifeIdentity()",
-  "restorePersistedRealUserGenesisVisualSourceContext()",
-  "readPersistedGenesisVisualContinuity()",
-  'data-returning-life-world={',
-  '"SAME_RECOGNIZED_LIFE"',
-]);
-
-requireIncludes("latest archived imprint is restored", launch, [
-  "readPersonalityRingLite()",
-  "returningLatestImprint",
-  "returningLatestImprintSourceSlot",
-  "resolveLifeUniverseCrystalImprintGeometry({",
-  'data-returning-life-imprint="LATEST_CRYSTAL_ON_SAME_BODY"',
-]);
-
-requireIncludes("same source position becomes body memory", launch, [
-  "returningLatestImprintBodyPath",
-  "returningLatestImprintBodyPoint",
-  'data-returning-life-imprint-source="ARCHIVED_USER_RECOGNIZED_RESPONSE"',
-  'data-returning-life-imprint-direction="SAME_RESPONSE_POSITION_INTO_SAME_BODY"',
-  'data-returning-life-imprint-form="LIFE_TEXTURE_NOT_COLLECTIBLE"',
-  'data-returning-life-identity-invariant="SAME_CORE_SAME_BODY_SAME_LIFE"',
-]);
-
-requireIncludes("memory remains memory", launch, [
-  'data-returning-life-imprint-status="REMEMBERED_NOT_CURRENT_EVENT"',
-  'data-returning-life-priority="IDENTITY_THEN_STATE_THEN_EXPERIENCE_THEN_IMPRINT"',
-  '"那次变化，仍在它的生命纹路里。"',
-]);
-
-requireIncludes("returned imprint is a restrained trace", launch, [
-  "gy-returning-life-world__imprint-flow",
-  "gy-returning-life-world__imprint-origin",
-  "gy-returning-life-world__imprint-trace",
-  "@keyframes gy-returning-life-imprint-remember",
-]);
-
-const returningSurfaceStart = launch.indexOf(
-  'className="gy-returning-life-world__imprint"',
+check(
+  launch.includes("hasPersistedRecognizedLifeIdentity()") &&
+    launch.includes("restorePersistedRealUserGenesisVisualSourceContext()") &&
+    launch.includes("readPersistedGenesisVisualContinuity()"),
+  "same recognized life identity is not restored",
 );
-const returningSurfaceEnd = launch.indexOf(
-  "</svg>",
-  returningSurfaceStart,
+check(
+  !launch.includes("readPersonalityRingLite") &&
+    !launch.includes("LATEST_CRYSTAL_ON_SAME_BODY") &&
+    launch.includes(
+      'data-returning-life-body-imprint-authority="SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER"',
+    ),
+  "Returning life world still interprets PersonalityRingLite as Body Imprint",
 );
-const returningSurface =
-  returningSurfaceStart >= 0 && returningSurfaceEnd >= 0
-    ? launch.slice(returningSurfaceStart, returningSurfaceEnd)
-    : "";
-for (const forbidden of ["<rect", "LEVEL", "SCORE", "REWARD"]) {
-  if (returningSurface.includes(forbidden)) {
-    failures.push(
-      `returning imprint must stay a body texture: found ${JSON.stringify(forbidden)}`,
-    );
-  }
-}
-
-const script =
+check(
+  !route.includes("readPersonalityRingLite") &&
+    route.includes("latestCrystalMemoryKey={") &&
+    route.includes("latestCrystalSourceSlot={"),
+  "Reality Route still reads Legacy PersonalityRing as current Body memory",
+);
+check(
+  archive.includes('data-personality-ring-page="LEGACY_HISTORY_READ_ONLY"') &&
+    archive.includes(
+      'data-body-imprint-authority="SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER"',
+    ) &&
+    archive.includes("canonicalBodyImprintReadModelAvailable = false"),
+  "Legacy Archive still declares canonical Body Imprint success",
+);
+check(
   packageJson.scripts?.[
     "check-xinmai-crystal-imprint-returning-life-world-continuity"
-  ];
-if (
-  script !==
-  "node scripts/check-xinmai-crystal-imprint-returning-life-world-continuity.mjs"
-) {
-  failures.push("package script is missing or incorrect");
-}
+  ] ===
+    "node scripts/check-xinmai-crystal-imprint-returning-life-world-continuity.mjs",
+  "package script is missing or incorrect",
+);
 
 if (failures.length > 0) {
-  console.error(
-    `XINMAI Crystal imprint returning life world gate failed:\n${failures
-      .map((failure) => `- ${failure}`)
-      .join("\n")}`,
-  );
-  process.exit(1);
+  throw new Error(failures.join("\n"));
 }
-
 console.log(
-  "XINMAI Crystal imprint returning life world continuity gate passed.",
+  "XINMAI Legacy Body Imprint safe-withheld continuity gate passed.",
 );
