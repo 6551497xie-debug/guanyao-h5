@@ -3,7 +3,9 @@ import type { RealityEncounterIdentityReferences } from "./xinmaiRealityEncounte
 
 export type XinmaiLivedGrowthCommandType =
   | "COMMIT_CHOICE_INTENTION"
-  | "BIND_CHOICE_TO_ENCOUNTER"
+  | "CONFIRM_CHOICE_DEPARTURE"
+  | "CONFIRM_CHOICE_RETURN"
+  | "RESOLVE_CHOICE_RETURN_WITHOUT_FACT"
   | "CLOSE_CHOICE_WITHOUT_RECORD"
   | "CONFIRM_LIVED_RESPONSE"
   | "REVOKE_LIVED_RESPONSE"

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { XinmaiLivedResponseReturnSurface } from "../components/XinmaiLivedResponseReturnSurface";
 import { resolveCurrentHexagramFormation } from "../services/guanyaoCurrentHexagramFormationAdapter";
 import { resolveChoiceActionRoutes } from "../services/xinmaiChoiceActionRouteResolver";
 import { createChoiceRouteFormationSourceSnapshot } from "../services/xinmaiChoiceActionRouteGrowthProjection";
@@ -7,10 +6,7 @@ import { readPersonalityRingLite } from "../services/personalityRingLiteService"
 import { setPersonalityRingLiteAcceptanceWriteFailure } from "../services/guanyaoPersonalityRingLitePersistenceAdapter";
 import { formCrystalFromEligibility } from "../services/xinmaiCrystalFormationConsumer";
 import {
-  bindChoiceActionIntentionToRealityEncounter,
   commitChoiceActionIntention,
-  readOpenXinmaiLivedGrowthReturnItems,
-  type XinmaiLivedGrowthReturnItem,
 } from "../services/xinmaiChoiceActionIntentionController";
 import {
   readChoiceGrowthTerminalSummary,
@@ -120,9 +116,6 @@ export function XinmaiLivedGrowthAcceptancePage() {
       }),
     [identityReferences, scenario],
   );
-  const [returnItems, setReturnItems] = useState<
-    readonly XinmaiLivedGrowthReturnItem[]
-  >(() => Object.freeze([]));
   const [canonicalEnvelope, setCanonicalEnvelope] =
     useState<XinmaiLivedGrowthEnvelope | null>(null);
   const [growthTerminalSummary, setGrowthTerminalSummary] =
@@ -225,14 +218,12 @@ export function XinmaiLivedGrowthAcceptancePage() {
   }, [persistenceFault]);
   const refreshAuthority = useCallback(() => {
     void Promise.all([
-      readOpenXinmaiLivedGrowthReturnItems(identityReferences),
       readXinmaiLivedGrowthCanonicalState(),
       readXinmaiGravityObservationContinuityState(
         `CURRENT:${identityReferences.sourceReferenceId}`,
       ),
       readChoiceGrowthTerminalSummary(growthSummaryRequest),
-    ]).then(([items, canonical, observation, terminalSummary]) => {
-      setReturnItems(items);
+    ]).then(([canonical, observation, terminalSummary]) => {
       setCanonicalEnvelope(
         canonical.status === "FOUND" ? canonical.envelope : null,
       );
@@ -404,20 +395,6 @@ export function XinmaiLivedGrowthAcceptancePage() {
       setFeedback("行动意愿没有被正式保存。");
       return;
     }
-    const bound = await bindChoiceActionIntentionToRealityEncounter({
-      choiceActionIntentionReferenceId:
-        committed.intention.choiceActionIntentionReferenceId,
-      expectedIntentionRevision: committed.intention.revision,
-      targetEncounterCycleId: `acceptance-target-encounter:${scenario}`,
-      identityReferences,
-    });
-    if (
-      bound.status !== "BOUND" &&
-      bound.status !== "ALREADY_BOUND"
-    ) {
-      setFeedback("本轮 Reality 来源没有完成绑定。");
-      return;
-    }
     setFeedback(null);
     refreshAuthority();
   };
@@ -490,15 +467,6 @@ export function XinmaiLivedGrowthAcceptancePage() {
         >
           并发消费正式资格
         </button>
-      ) : null}
-      {returnItems.length > 0 ? (
-        <XinmaiLivedResponseReturnSurface
-          identityReferences={identityReferences}
-          returnItems={returnItems}
-          reducedMotion={reducedMotion}
-          onResolved={refreshAuthority}
-          onAuthorityRevision={refreshAuthority}
-        />
       ) : null}
       {feedback ? <p role="alert">{feedback}</p> : null}
       <section aria-label="权威状态">

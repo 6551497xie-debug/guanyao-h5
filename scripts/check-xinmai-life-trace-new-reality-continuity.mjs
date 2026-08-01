@@ -4,12 +4,12 @@ import { resolve } from "node:path";
 const read = (path) =>
   readFileSync(resolve(process.cwd(), path), "utf8");
 
-const gravity = read("src/pages/GravityPage.tsx");
+const returning = read("src/components/XinmaiLivedResponseReturnSurface.tsx");
+const launch = read("src/pages/LaunchLab.tsx");
 const route = read("src/pages/RealityProductionRouteEntry.tsx");
 const host = read("src/components/RealityProductionHost.tsx");
-const canvas = read("src/components/RealityLifeUniverseCanvas.tsx");
-const styles = read(
-  "src/styles/xinmai-choice-life-trace-reality-continuity.css",
+const resolutionProof = read(
+  "src/services/xinmaiChoiceReturnResolutionProofAdapter.ts",
 );
 
 const requireSource = (source, fragment, message) => {
@@ -19,64 +19,49 @@ const requireSource = (source, fragment, message) => {
 };
 
 requireSource(
-  gravity,
-  "choiceLifeTraceMemoryKey: choiceResponseTraceIdentityKey",
-  "Choice must carry the exact visual trace identity into the new Reality.",
+  returning,
+  "returnReceipt.realityProof.realityIntentReferenceId",
+  "Only the confirmed Return Receipt may carry the target Reality intent.",
 );
 requireSource(
-  gravity,
-  "choiceLifeTraceSourceSlot: choiceResponseTraceSourceSlot",
-  "Choice must carry the existing response source slot into Reality.",
+  returning,
+  "returnReceiptReferenceId:",
+  "The lived-response Fact must consume the exact Return Receipt.",
+);
+requireSource(
+  launch,
+  '"CHOICE_RETURN_LIVED_RESPONSE_RESOLVED"',
+  "Launch must mark only a resolved lived-response handoff.",
 );
 requireSource(
   route,
-  "choiceLifeTraceMemoryKey={choiceLifeTraceMemoryKey}",
-  "Reality Route Entry must pass the carried trace to its existing host.",
+  "readXinmaiChoiceReturnResolutionProof",
+  "Reality Route Entry must revalidate the Growth resolution proof.",
 );
 requireSource(
   route,
-  "choiceLifeTraceSourceSlot={choiceLifeTraceSourceSlot}",
-  "Reality Route Entry must preserve the carried trace source slot.",
+  "choiceReturn={choiceReturn}",
+  "Reality Route Entry must pass the typed return marker to its host.",
 );
 requireSource(
   host,
-  'data-choice-life-trace-continuity=',
-  "Reality Host must expose the same-body trace continuity.",
+  'choiceReturn === "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED"',
+  "Reality Host must consume the typed resolved-return marker.",
 );
 requireSource(
   host,
-  '"SAME_TRACE_SAME_BODY_NEW_REALITY"',
-  "The carried trace must remain on the same life body.",
+  'data-choice-body-continuity="SAME_CORE_SAME_BODY"',
+  "The resolved response must continue on the same life body.",
 );
 requireSource(
   host,
   'data-choice-life-trace-pressure-role="MEMORY_INFLUENCE_NOT_CURRENT_PRESSURE"',
-  "The carried trace must not restore old pressure as the current event.",
+  "Historical pressure must remain memory rather than current Reality.",
 );
 requireSource(
-  host,
-  'data-choice-crystal-stage="NOT_STARTED"',
-  "A carried Choice trace must not claim Crystal materialization.",
-);
-requireSource(
-  canvas,
-  'data-choice-life-trace-memory="SAME_BODY_FROM_CHOICE"',
-  "The existing Reality canvas must render the carried trace on the life body.",
-);
-requireSource(
-  canvas,
-  'data-choice-life-trace-crystal-state="NOT_MATERIALIZED"',
-  "The Reality trace must remain pre-Crystal.",
-);
-requireSource(
-  canvas,
-  "identityKey: choiceLifeTraceMemoryKey",
-  "Reality must consume the exact Choice trace geometry key.",
-);
-requireSource(
-  styles,
-  ".gy-reality-life-universe__choice-life-trace",
-  "The carried trace needs a restrained Reality visual state.",
+  resolutionProof,
+  'returnReceipt.state === "CONSUMED_BY_FACT"',
+  "The route proof must require a Return Receipt consumed by a Fact.",
 );
 
 for (const forbidden of [
@@ -87,11 +72,10 @@ for (const forbidden of [
   "升级",
 ]) {
   if (
-    gravity.includes(forbidden) ||
+    returning.includes(forbidden) ||
     route.includes(forbidden) ||
     host.includes(forbidden) ||
-    canvas.includes(forbidden) ||
-    styles.includes(forbidden)
+    resolutionProof.includes(forbidden)
   ) {
     throw new Error(`Forbidden continuity claim detected: ${forbidden}`);
   }

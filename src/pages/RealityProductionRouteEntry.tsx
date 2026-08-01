@@ -45,6 +45,7 @@ import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputCon
 import { executeRealityToGravityCutover } from "../services/realityToGravityCutoverTransaction";
 import { observeRealityToGravityCutoverResult } from "../services/gravityEntryAcceptanceRuntimePort";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
+import { readXinmaiChoiceReturnResolutionProof } from "../services/xinmaiChoiceReturnResolutionProofAdapter";
 import { resolveLifeUniverseCrystalSourceSlot } from "../renderers/lifeUniverseStarField";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import type {
@@ -128,7 +129,7 @@ type RealityRouteState =
         latestCrystalSourceSlot?: number | null;
       }>;
       returningEntry?: "SAME_LIFE_NEW_REALITY";
-      choiceContinuation?: "CHOICE_ACTION_INTENTION_CONTINUATION";
+      choiceReturn?: "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED";
       choiceLifeTraceMemoryKey?: string;
       choiceLifeTraceSourceSlot?: number;
     }>
@@ -316,13 +317,13 @@ export function RealityProductionRouteEntry({
     routeState?.returningLifeMemory ?? null;
   const returningLifeWorldEntry =
     routeState?.returningEntry === "SAME_LIFE_NEW_REALITY";
-  const choiceContinuation =
-    routeState?.choiceContinuation ===
-    "CHOICE_ACTION_INTENTION_CONTINUATION"
-      ? "CHOICE_ACTION_INTENTION_CONTINUATION"
+  const choiceReturn =
+    routeState?.choiceReturn ===
+    "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED"
+      ? "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED"
       : null;
   const choiceLifeTraceMemoryKey =
-    choiceContinuation !== null &&
+    choiceReturn !== null &&
     typeof routeState?.choiceLifeTraceMemoryKey === "string" &&
     routeState.choiceLifeTraceMemoryKey.trim().length > 0
       ? routeState.choiceLifeTraceMemoryKey
@@ -375,7 +376,28 @@ export function RealityProductionRouteEntry({
         return;
       }
 
-      const currentIntent = readCurrentRealityEncounterIntent();
+      let currentIntent = readCurrentRealityEncounterIntent();
+      if (currentIntent === null) {
+        const recoveredRecord = await recoverCurrentRealityEncounter({
+          identityReferences: identityRecovery.identityReferences,
+        });
+        currentIntent = recoveredRecord?.realityIntent ?? null;
+      }
+      if (currentIntent?.origin === "CHOICE_RETURN") {
+        const growthProof =
+          await readXinmaiChoiceReturnResolutionProof(currentIntent);
+        if (growthProof.status !== "READY") {
+          publishFailure(
+            Object.freeze({
+              stage: "ROUTE_AUTHORIZATION" as const,
+              reason: "INTENT_NOT_CURRENT" as const,
+              guardReason: growthProof.reason,
+            }),
+            true,
+          );
+          return;
+        }
+      }
       const committedTransaction =
         committedPostCommitTransactionRef.current;
       if (
@@ -1143,7 +1165,7 @@ export function RealityProductionRouteEntry({
         historicalLifeMemory.latestCrystalSourceSlot
       }
       returningLifeWorldEntry={returningLifeWorldEntry}
-      choiceContinuation={choiceContinuation}
+      choiceReturn={choiceReturn}
       choiceLifeTraceMemoryKey={choiceLifeTraceMemoryKey}
       choiceLifeTraceSourceSlot={choiceLifeTraceSourceSlot}
       onRealityAcceptanceOutcome={

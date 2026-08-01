@@ -1,13 +1,16 @@
 import fs from "node:fs";
 const gravity = fs.readFileSync("src/pages/GravityPage.tsx", "utf8");
 const controller = fs.readFileSync("src/services/xinmaiChoiceActionIntentionController.ts", "utf8");
+const provenance = fs.readFileSync("src/services/xinmaiChoiceReturningProvenanceController.ts", "utf8");
 for (const expected of [
   "await commitChoiceActionIntention(",
   "choicePresentationDecision.structuralInput",
-  "CHOICE_ACTION_INTENTION_COMMITTED",
-  "await bindChoiceActionIntentionToRealityEncounter({",
+  "await confirmXinmaiChoiceExplicitDeparture({",
 ]) {
   if (!gravity.includes(expected)) throw new Error(`missing ${expected}`);
+}
+if (gravity.includes("bindChoiceActionIntentionToRealityEncounter")) {
+  throw new Error("legacy Choice binding still owns departure success");
 }
 if (!controller.includes("noLivedResponseAuthority: true")) {
   throw new Error("Choice intention boundary missing");
@@ -35,5 +38,14 @@ for (const expected of [
 }
 if (controller.includes("changeExperienceRouteProof")) {
   throw new Error("Legacy Change Experience proof still grants Choice");
+}
+for (const expected of [
+  'commandType: "CONFIRM_CHOICE_DEPARTURE" as const',
+  'state: "DORMANT_DEPARTURE" as const',
+  "noTargetEncounterYet: true as const",
+]) {
+  if (!provenance.includes(expected)) {
+    throw new Error(`explicit departure boundary missing ${expected}`);
+  }
 }
 console.log("[XINMAI CHOICE ACTION INTENTION BOUNDARY] PASS");

@@ -4,6 +4,12 @@ import {
   type LivedResponseFact,
 } from "../types/xinmaiLivedResponse";
 import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityEncounterIntent";
+import { readXinmaiLivedGrowthCanonicalState } from "./xinmaiLivedGrowthTransactionalStore";
+import {
+  readXinmaiChoiceReturningRealityProof,
+  validateXinmaiChoiceReturningRealityProof,
+} from "./xinmaiChoiceReturningRealityProofAdapter";
+import { isXinmaiChoiceReturningProvenanceMutationEnabled } from "./xinmaiChoiceReturningProvenanceMutationPolicy";
 import {
   commitXinmaiLivedGrowthTransaction,
   preserveXinmaiLivedGrowthTransaction,
@@ -61,19 +67,74 @@ export async function confirmLivedResponseFact(
     intentionReferenceId: string;
     expectedIntentionRevision: number;
     expectedCurrentFactRevision: number;
+    returnReceiptReferenceId: string;
     identityReferences: RealityEncounterIdentityReferences;
   }>,
 ): Promise<ConfirmLivedResponseFactResult> {
+  if (!isXinmaiChoiceReturningProvenanceMutationEnabled()) {
+    return Object.freeze({
+      status: "SAFE_WITHHELD" as const,
+      fact: null,
+      reason: "MUTATION_PAUSED" as const,
+    });
+  }
   if (
     input.candidate.source !== "xinmai_lived_response_return_surface" ||
     input.candidate.state !== "AWAITING_USER_CONFIRMATION" ||
     input.candidate.choiceActionIntentionReferenceId !==
-      input.intentionReferenceId
+      input.intentionReferenceId ||
+    input.candidate.responseOutcome === "NOT_ATTEMPTED" ||
+    input.candidate.responseOutcome === "UNABLE_TO_CONTINUE"
   ) {
     return Object.freeze({
       status: "REJECTED" as const,
       fact: null,
       reason: "CANDIDATE_NOT_CONFIRMABLE" as const,
+    });
+  }
+  const recovered = await readXinmaiLivedGrowthCanonicalState();
+  if (recovered.status !== "FOUND") {
+    return Object.freeze({
+      status: "SAFE_WITHHELD" as const,
+      fact: null,
+      reason: recovered.reason,
+    });
+  }
+  const recoveredIntention = recovered.envelope.choiceActionIntentions.find(
+    (candidate) =>
+      candidate.choiceActionIntentionReferenceId === input.intentionReferenceId,
+  );
+  const recoveredReturn = recovered.envelope.choiceExplicitReturnReceipts.find(
+    (candidate) =>
+      candidate.returnReceiptReferenceId === input.returnReceiptReferenceId,
+  );
+  const recoveredDeparture = recoveredReturn
+    ? recovered.envelope.choiceExplicitDepartureReceipts.find(
+        (candidate) =>
+          candidate.departureReceiptReferenceId ===
+          recoveredReturn.departureReceiptReferenceId,
+      ) ?? null
+    : null;
+  if (!recoveredIntention || !recoveredReturn || !recoveredDeparture) {
+    return Object.freeze({
+      status: "REJECTED" as const,
+      fact: null,
+      reason: "PROVENANCE_MISMATCH" as const,
+    });
+  }
+  const proofResult = await readXinmaiChoiceReturningRealityProof({
+    intention: recoveredIntention,
+    departureReceipt: recoveredDeparture,
+    targetEncounterCycleId: recoveredReturn.targetEncounterCycleId,
+    returnIntentRequestReferenceId:
+      recoveredReturn.returnIntentRequestReferenceId,
+    returnAttemptRevision: recoveredReturn.returnAttemptRevision,
+  });
+  if (proofResult.status !== "READY") {
+    return Object.freeze({
+      status: "SAFE_WITHHELD" as const,
+      fact: null,
+      reason: proofResult.reason,
     });
   }
   const result = await executeXinmaiLivedGrowthTransaction(
@@ -96,6 +157,21 @@ export async function confirmLivedResponseFact(
       );
       if (!intention) {
         return rejectXinmaiLivedGrowthTransaction("INTENTION_NOT_FOUND");
+      }
+      const returnReceipt = current.choiceExplicitReturnReceipts.find(
+        (candidate) =>
+          candidate.returnReceiptReferenceId ===
+          input.returnReceiptReferenceId,
+      );
+      const departureReceipt = returnReceipt
+        ? current.choiceExplicitDepartureReceipts.find(
+            (candidate) =>
+              candidate.departureReceiptReferenceId ===
+              returnReceipt.departureReceiptReferenceId,
+          ) ?? null
+        : null;
+      if (!returnReceipt || !departureReceipt) {
+        return rejectXinmaiLivedGrowthTransaction("PROVENANCE_MISMATCH");
       }
       if (
         !xinmaiGrowthIdentityMatches(
@@ -134,7 +210,11 @@ export async function confirmLivedResponseFact(
           input.candidate.candidateReferenceId,
       );
       if (exactRetry) {
-        return preserveXinmaiLivedGrowthTransaction(exactRetry);
+        return returnReceipt.state === "CONSUMED_BY_FACT" &&
+          returnReceipt.consumedLivedResponseReferenceId ===
+            exactRetry.livedResponseReferenceId
+          ? preserveXinmaiLivedGrowthTransaction(exactRetry)
+          : rejectXinmaiLivedGrowthTransaction("PROVENANCE_MISMATCH");
       }
       if (intention.revision !== input.expectedIntentionRevision) {
         return rejectXinmaiLivedGrowthTransaction(
@@ -149,8 +229,21 @@ export async function confirmLivedResponseFact(
       }
       if (
         intention.targetEncounterCycleId === null ||
-        (intention.state !== "AWAITING_RETURN" &&
-          intention.state !== "REPORTED")
+        intention.state !== "COMMITTED" ||
+        returnReceipt.state !== "READY_FOR_LIVED_RESPONSE" ||
+        returnReceipt.consumedLivedResponseReferenceId !== null ||
+        departureReceipt.state !== "RETURN_IN_PROGRESS" ||
+        intention.targetEncounterCycleId !==
+          returnReceipt.targetEncounterCycleId ||
+        !validateXinmaiChoiceReturningRealityProof(
+          proofResult.proof,
+          intention,
+          departureReceipt,
+        ) ||
+        proofResult.proof.canonicalRevision <
+          returnReceipt.realityProof.canonicalRevision ||
+        proofResult.proof.fencingToken <
+          returnReceipt.realityProof.fencingToken
       ) {
         return rejectXinmaiLivedGrowthTransaction("PROVENANCE_MISMATCH");
       }
@@ -198,6 +291,19 @@ export async function confirmLivedResponseFact(
           noObjectiveRealityClaim: true as const,
         }),
       });
+      const consumedReturnReceipt = Object.freeze({
+        ...returnReceipt,
+        state: "CONSUMED_BY_FACT" as const,
+        consumedLivedResponseReferenceId: fact.livedResponseReferenceId,
+        revision: returnReceipt.revision + 1,
+        updatedAt: now,
+      });
+      const returnedDepartureReceipt = Object.freeze({
+        ...departureReceipt,
+        state: "RETURNED" as const,
+        revision: departureReceipt.revision + 1,
+        updatedAt: now,
+      });
       return commitXinmaiLivedGrowthTransaction(
         {
           ...current,
@@ -228,6 +334,22 @@ export async function confirmLivedResponseFact(
             ),
             fact,
           ]),
+          choiceExplicitDepartureReceipts: Object.freeze(
+            current.choiceExplicitDepartureReceipts.map((candidate) =>
+              candidate.departureReceiptReferenceId ===
+              returnedDepartureReceipt.departureReceiptReferenceId
+                ? returnedDepartureReceipt
+                : candidate,
+            ),
+          ),
+          choiceExplicitReturnReceipts: Object.freeze(
+            current.choiceExplicitReturnReceipts.map((candidate) =>
+              candidate.returnReceiptReferenceId ===
+              consumedReturnReceipt.returnReceiptReferenceId
+                ? consumedReturnReceipt
+                : candidate,
+            ),
+          ),
           crystalEligibilities: Object.freeze(
             current.crystalEligibilities.map((eligibility) =>
               eligibility.choiceActionIntentionReferenceId ===
@@ -272,6 +394,13 @@ export async function revokeLivedResponseFact(
     identityReferences: RealityEncounterIdentityReferences;
   }>,
 ): Promise<RevokeLivedResponseFactResult> {
+  if (!isXinmaiChoiceReturningProvenanceMutationEnabled()) {
+    return Object.freeze({
+      status: "SAFE_WITHHELD" as const,
+      fact: null,
+      reason: "MUTATION_PAUSED" as const,
+    });
+  }
   const result = await executeXinmaiLivedGrowthTransaction(
     Object.freeze({
       commandReferenceId: createStableXinmaiGrowthReference(

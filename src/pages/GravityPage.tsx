@@ -59,11 +59,12 @@ import type {
 } from "../types/xinmaiGravitySurfaceAdmission";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
-import { requestRealityEncounter } from "../services/xinmaiRealityEncounterIntentController";
 import {
-  bindChoiceActionIntentionToRealityEncounter,
   commitChoiceActionIntention,
 } from "../services/xinmaiChoiceActionIntentionController";
+import { confirmXinmaiChoiceExplicitDeparture } from "../services/xinmaiChoiceReturningProvenanceController";
+import { readXinmaiChoiceReturningProvenanceRecovery } from "../services/xinmaiChoiceReturningProvenanceRecoveryAdapter";
+import type { XinmaiChoiceReturningProvenanceAdmission } from "../types/xinmaiChoiceReturningProvenance";
 import {
   resolveChoicePresentationReadiness,
 } from "../services/xinmaiChoicePresentationReadinessResolver";
@@ -139,8 +140,8 @@ export type GravityPageProps = Readonly<{
   innerViewEntry:
     | "CURRENT_LIFE_WEATHER_BODY_APPROACHED"
     | null;
-  choiceContinuation:
-    | "CHOICE_ACTION_INTENTION_CONTINUATION"
+  choiceReturn:
+    | "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED"
     | null;
   experienceSmokeFixture: string | null;
   surfaceAttempt?: GravitySurfaceAdmissionAttempt;
@@ -1867,7 +1868,7 @@ function TransformationMomentFocus({
   responseDimension,
   responseTraceIdentityKey,
   onSediment,
-  onContinueToReality,
+  onExplicitDeparture,
   livedResponseRecognitionRequired = false,
   onRecognizeLivedResponse,
   visualSource,
@@ -1879,7 +1880,7 @@ function TransformationMomentFocus({
   responseDimension: string;
   responseTraceIdentityKey: string | null;
   onSediment?: () => void;
-  onContinueToReality?: () => void;
+  onExplicitDeparture?: () => void;
   livedResponseRecognitionRequired?: boolean;
   onRecognizeLivedResponse?: () => void;
   visualSource: RealLifeVisualSource | null;
@@ -1978,8 +1979,8 @@ function TransformationMomentFocus({
         onSediment ? "AVAILABLE" : "ISOLATED"
       }
       data-choice-return-to-reality={
-        onContinueToReality
-          ? "EXPLICIT_SAME_LIFE_CONTINUATION"
+        onExplicitDeparture
+          ? "EXPLICIT_REAL_LIFE_DEPARTURE"
           : "UNAVAILABLE"
       }
       data-choice-lived-response={
@@ -2212,18 +2213,18 @@ function TransformationMomentFocus({
             这一次，我没有完全被旧回应接管
           </button>
         ) : null}
-        {!onSediment && onContinueToReality ? (
+        {!onSediment && onExplicitDeparture ? (
           <button
             type="button"
             aria-label={
               livedResponseRecognitionRequired
                 ? "我还没有看见不同继续观察"
-                : "带着这点空间继续面对现实"
+                : "带着这一步回到生活"
             }
-            data-choice-reality-continuation="SAME_LIFE_NEW_REALITY"
+            data-choice-real-life-departure="USER_EXPLICIT_DEPARTURE"
             data-choice-change-claim="NONE"
             data-choice-crystal-claim="NONE"
-            onClick={onContinueToReality}
+            onClick={onExplicitDeparture}
             disabled={!responseSpaceSettled}
             style={{
               appearance: "none",
@@ -2245,9 +2246,40 @@ function TransformationMomentFocus({
           >
             {livedResponseRecognitionRequired
               ? "我还没有看见不同，继续观察"
-              : "带着这点空间，继续面对现实"}
+              : "带着这一步，回到生活"}
           </button>
         ) : null}
+      </div>
+    </section>
+  );
+}
+
+function DormantRealLifeDepartureFocus() {
+  return (
+    <section
+      aria-label="这一步已经被带回生活"
+      data-choice-departure-state="DORMANT_REAL_LIFE"
+      style={{
+        position: "absolute",
+        inset: 0,
+        zIndex: 5,
+        display: "grid",
+        placeItems: "center",
+        padding: 30,
+        background:
+          "radial-gradient(circle at 50% 42%, rgba(199,169,107,0.08), rgba(3,5,9,0.9) 58%, #030509)",
+        textAlign: "center",
+      }}
+    >
+      <div style={{ display: "grid", gap: 10, maxWidth: 320 }}>
+        <strong style={{ color: "rgba(245,240,226,0.88)", fontSize: 16 }}>
+          这一步已经被你带回生活。
+        </strong>
+        <span style={{ color: "rgba(220,205,169,0.62)", fontSize: 12, lineHeight: 1.8 }}>
+          不必证明它，也不必现在完成它。
+          <br />
+          等你愿意回来时，它会在这里等你。
+        </span>
       </div>
     </section>
   );
@@ -2565,7 +2597,7 @@ function HexagramCodeDeliveryShell({
   dynamicsInputContext,
   visualContinuity,
   innerViewEntry,
-  choiceContinuation,
+  choiceReturn,
   experienceSmokeFixture,
   surfaceAttempt,
   observationContinuityDecision,
@@ -2585,7 +2617,7 @@ function HexagramCodeDeliveryShell({
   const routeInnerViewEntry =
     innerViewEntry === "CURRENT_LIFE_WEATHER_BODY_APPROACHED";
   const choiceActionIntentionContinuation =
-    choiceContinuation === "CHOICE_ACTION_INTENTION_CONTINUATION";
+    choiceReturn === "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED";
   const arrivalVisualContinuity =
     visualContinuity !== null &&
     realLifeVisualSource !== null &&
@@ -2625,6 +2657,8 @@ function HexagramCodeDeliveryShell({
   );
   const [choiceAuthorityFeedback, setChoiceAuthorityFeedback] =
     useState<string | null>(null);
+  const [choiceReturningAdmission, setChoiceReturningAdmission] =
+    useState<XinmaiChoiceReturningProvenanceAdmission | null>(null);
   const choiceMutationPendingRef = useRef(false);
   const [choiceMutationPending, setChoiceMutationPending] =
     useState(false);
@@ -2857,6 +2891,43 @@ function HexagramCodeDeliveryShell({
     growthTerminalSummary.state,
   ]);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (
+      committedChoiceActionIntention === null ||
+      arrivalVisualContinuity === null
+    ) {
+      setChoiceReturningAdmission(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+    const identityRecovery = recoverRealityRecognizedIdentity({
+      visualContinuity: arrivalVisualContinuity,
+    });
+    if (identityRecovery.status !== "READY") {
+      setChoiceReturningAdmission(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+    void readXinmaiChoiceReturningProvenanceRecovery(
+      identityRecovery.identityReferences,
+    ).then((admissions) => {
+      if (cancelled) return;
+      setChoiceReturningAdmission(
+        admissions.find(
+          (admission) =>
+            admission.intention?.choiceActionIntentionReferenceId ===
+            committedChoiceActionIntention.choiceActionIntentionReferenceId,
+        ) ?? null,
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [arrivalVisualContinuity, committedChoiceActionIntention]);
+
   async function handleInnerViewRelationEstablished(
     relation: "CONFIRMED" | "SELF_NAMED",
   ): Promise<boolean> {
@@ -2971,7 +3042,7 @@ function HexagramCodeDeliveryShell({
     }
   }
 
-  async function handleChoiceContinueToReality() {
+  async function handleChoiceExplicitDeparture() {
     if (
       committedChoiceActionIntention === null ||
       choiceMutationPendingRef.current
@@ -2980,53 +3051,36 @@ function HexagramCodeDeliveryShell({
       visualContinuity: arrivalVisualContinuity,
     });
     if (identityRecovery.status !== "READY") return;
-    const intentResult = await requestRealityEncounter({
-      origin: "CHOICE_CONTINUATION",
-      qualification: "CHOICE_ACTION_INTENTION_COMMITTED",
-      identityReferences: identityRecovery.identityReferences,
-      choiceActionIntentionReferenceId:
-        committedChoiceActionIntention.choiceActionIntentionReferenceId,
-    });
-    if (intentResult.status !== "READY") return;
     choiceMutationPendingRef.current = true;
     setChoiceMutationPending(true);
     try {
-      const bound = await bindChoiceActionIntentionToRealityEncounter({
-        choiceActionIntentionReferenceId:
-          committedChoiceActionIntention.choiceActionIntentionReferenceId,
-        expectedIntentionRevision:
-          committedChoiceActionIntention.revision,
-        targetEncounterCycleId:
-          intentResult.intent.encounterCycleId,
+      const departed = await confirmXinmaiChoiceExplicitDeparture({
+        intention: committedChoiceActionIntention,
+        expectedIntentionRevision: committedChoiceActionIntention.revision,
         identityReferences: identityRecovery.identityReferences,
       });
       if (
-        bound.status !== "BOUND" &&
-        bound.status !== "ALREADY_BOUND"
+        departed.status !== "DEPARTED" &&
+        departed.status !== "ALREADY_DEPARTED"
       ) {
         setChoiceAuthorityFeedback(
-          "新的现实还没有接住这次回应，请稍后再试。",
+          "这一步还没有被完整保存，请稍后再试。",
         );
         return;
       }
-      navigate(GUANYAO_ROUTES.reality, {
-        state: {
-          intentReferenceId: intentResult.intent.intentReferenceId,
-          ...(arrivalVisualContinuity
-            ? { visualContinuity: arrivalVisualContinuity }
-            : {}),
-          choiceContinuation:
-            "CHOICE_ACTION_INTENTION_CONTINUATION",
-          choiceActionIntentionReferenceId:
-            bound.intention.choiceActionIntentionReferenceId,
-          ...(choiceResponseTraceIdentityKey
-            ? {
-                choiceLifeTraceMemoryKey: choiceResponseTraceIdentityKey,
-                choiceLifeTraceSourceSlot: choiceResponseTraceSourceSlot,
-              }
-            : {}),
-        },
-      });
+      setChoiceAuthorityFeedback(null);
+      setChoiceReturningAdmission(
+        Object.freeze({
+          state: "DORMANT_DEPARTURE" as const,
+          intention: departed.intention,
+          departureReceipt: departed.receipt,
+          returnReceipt: null,
+          currentFact: null,
+          currentEligibility: null,
+          formationReceipt: null,
+          reason: null,
+        }),
+      );
     } finally {
       choiceMutationPendingRef.current = false;
       setChoiceMutationPending(false);
@@ -3386,7 +3440,9 @@ function HexagramCodeDeliveryShell({
             pointerEvents: lifeObservationStageWithheld ? "none" : "auto",
           }}
         >
-          {choicePresentationDecision.state ===
+          {choiceReturningAdmission?.state === "DORMANT_DEPARTURE" ? (
+            <DormantRealLifeDepartureFocus />
+          ) : choicePresentationDecision.state ===
             "RESUME_COMMITTED" &&
           committedChoiceActionIntention ? (
             <TransformationMomentFocus
@@ -3400,7 +3456,7 @@ function HexagramCodeDeliveryShell({
               }
               responseTraceIdentityKey={choiceResponseTraceIdentityKey}
               onSediment={undefined}
-              onContinueToReality={handleChoiceContinueToReality}
+              onExplicitDeparture={handleChoiceExplicitDeparture}
               livedResponseRecognitionRequired={false}
               onRecognizeLivedResponse={undefined}
               visualSource={realLifeVisualSource}

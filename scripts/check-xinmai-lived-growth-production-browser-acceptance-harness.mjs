@@ -28,6 +28,11 @@ const acceptance = fs.readFileSync(
   "src/pages/XinmaiLivedGrowthAcceptancePage.tsx",
   "utf8",
 );
+const launch = fs.readFileSync("src/pages/LaunchLab.tsx", "utf8");
+const returningSurface = fs.readFileSync(
+  "src/components/XinmaiLivedResponseReturnSurface.tsx",
+  "utf8",
+);
 const legacy = fs.readFileSync(
   "src/services/xinmaiLivedGrowthRecoveryPersistenceAdapter.ts",
   "utf8",
@@ -75,8 +80,11 @@ assert(
 );
 assert(
   acceptance.includes("readXinmaiLivedGrowthCanonicalState") &&
-    acceptance.includes("reducedMotion={reducedMotion}"),
-  "real browser acceptance surface is not wired to canonical recovery",
+    launch.includes("readXinmaiChoiceReturningProvenanceRecovery") &&
+    returningSurface.includes(
+      'window.matchMedia("(prefers-reduced-motion: reduce)")',
+    ),
+  "production returning surface is not wired to typed canonical recovery",
 );
 
 // Required real-browser matrix markers. The executable browser run records

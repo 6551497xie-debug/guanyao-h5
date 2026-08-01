@@ -22,12 +22,14 @@ export type RealityEncounterIntentState =
 export type RealityEncounterOrigin =
   | "FIRST_ENCOUNTER"
   | "RETURNING_LIFE_WORLD"
+  | "CHOICE_RETURN"
   | "CHOICE_CONTINUATION";
 
 export type RealityEncounterQualification =
   | "WHISPER_RESPONSE_SETTLED"
   | "WHISPER_SKIPPED"
   | "RESPONSE_UNAVAILABLE_EXPLICITLY_CONTINUED"
+  | "EXPLICIT_RETURN_TO_CHOICE"
   | "CHOICE_ACTION_INTENTION_COMMITTED";
 
 export type RealityEncounterIdentityReferences = Readonly<{
@@ -78,6 +80,8 @@ export type RealityEncounterTerminalReason =
   | "INTENT_EXPIRED"
   | "IDENTITY_MISMATCH"
   | "RECOVERY_CANDIDATE_INVALID"
+  | "RETURN_WITHOUT_LIVED_RESPONSE"
+  | "USER_DECLINED_RECORD"
   | "USER_DATA_CLEARED";
 
 export type RealityEncounterIntent = Readonly<{
@@ -91,6 +95,10 @@ export type RealityEncounterIntent = Readonly<{
   origin: RealityEncounterOrigin;
   qualification: RealityEncounterQualification;
   choiceActionIntentionReferenceId: string | null;
+  departureReceiptReferenceId: string | null;
+  returnIntentRequestReferenceId: string | null;
+  returnAttemptRevision: number | null;
+  sourceEncounterCycleId: string | null;
   state: RealityEncounterIntentState;
   routeTarget: "/reality";
   issuedAt: string;
@@ -118,6 +126,10 @@ export type RealityEncounterAdmission = Readonly<{
   origin: RealityEncounterOrigin;
   qualification: RealityEncounterQualification;
   choiceActionIntentionReferenceId: string | null;
+  departureReceiptReferenceId: string | null;
+  returnIntentRequestReferenceId: string | null;
+  returnAttemptRevision: number | null;
+  sourceEncounterCycleId: string | null;
   identityReferences: RealityEncounterIdentityReferences;
   expiresAt: string;
 }>;
@@ -126,6 +138,10 @@ export type RealityEncounterRequestInput = Readonly<{
   origin: RealityEncounterOrigin;
   qualification: RealityEncounterQualification;
   choiceActionIntentionReferenceId?: string | null;
+  departureReceiptReferenceId?: string | null;
+  returnIntentRequestReferenceId?: string | null;
+  returnAttemptRevision?: number | null;
+  sourceEncounterCycleId?: string | null;
   identityReferences: RealityEncounterIdentityReferences;
   requestedAt?: string;
 }>;
@@ -146,6 +162,9 @@ export type RealityEncounterRequestResult =
       reason:
         | "IDENTITY_REFERENCES_INVALID"
         | "QUALIFICATION_NOT_ALLOWED_FOR_ORIGIN"
+        | "RETURN_INTENT_REQUEST_INVALID"
+        | "RETURN_SOURCE_ENCOUNTER_MISMATCH"
+        | "RETURN_INTENT_REQUEST_CONFLICT"
         | "ENCOUNTER_ALREADY_ACTIVE"
         | "CURRENT_IDENTITY_MISMATCH"
         | "TRANSACTION_STORAGE_UNAVAILABLE"

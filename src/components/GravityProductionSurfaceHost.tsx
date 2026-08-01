@@ -222,9 +222,9 @@ export function GravityProductionSurfaceHost({
       dynamicsInputContext={runtimeInput.dynamicsInputContext}
       visualContinuity={runtimeInput.visualContinuity}
       innerViewEntry="CURRENT_LIFE_WEATHER_BODY_APPROACHED"
-      choiceContinuation={
-        admission.sourceReality.origin === "CHOICE_CONTINUATION"
-          ? "CHOICE_ACTION_INTENTION_CONTINUATION"
+      choiceReturn={
+        admission.sourceReality.origin === "CHOICE_RETURN"
+          ? "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED"
           : null
       }
       experienceSmokeFixture={null}

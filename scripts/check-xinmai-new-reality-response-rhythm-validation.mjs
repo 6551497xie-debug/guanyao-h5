@@ -7,6 +7,8 @@ const files = Object.freeze({
   gravity: "src/pages/GravityPage.tsx",
   host: "src/components/RealityProductionHost.tsx",
   route: "src/pages/RealityProductionRouteEntry.tsx",
+  returnSurface: "src/components/XinmaiLivedResponseReturnSurface.tsx",
+  resolutionProof: "src/services/xinmaiChoiceReturnResolutionProofAdapter.ts",
   renderer: "src/renderers/genesisWebGLRendererCore.ts",
   hostType: "src/types/realityProductionRouteEntry.ts",
   packageManifest: "package.json",
@@ -38,7 +40,7 @@ const assertExcludes = (name, source, marker) => {
   'data-choice-body-continuity="SAME_CORE_SAME_BODY"',
   'data-choice-growth-claim="NONE"',
   "AWAITING_USER_RECOGNITION",
-  "CHOICE_ACTION_INTENTION_COMMITTED",
+  "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED",
 ].forEach((marker) =>
   assertIncludes("Dynamics carries one life rhythm through observation", sources.gravity, marker),
 );
@@ -56,14 +58,24 @@ const assertExcludes = (name, source, marker) => {
 );
 
 assertIncludes(
-  "Reality route preserves the existing Choice continuation",
+  "Reality route preserves the resolved return handoff",
   sources.route,
-  "choiceContinuation={choiceContinuation}",
+  "choiceReturn={choiceReturn}",
 );
 assertIncludes(
-  "Reality host contract reuses the existing continuation",
+  "Reality host contract reuses the typed resolved return",
   sources.hostType,
-  'choiceContinuation?: "CHOICE_ACTION_INTENTION_CONTINUATION" | null',
+  'choiceReturn?: "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED" | null',
+);
+assertIncludes(
+  "Fact handoff consumes one Return Receipt",
+  sources.returnSurface,
+  "returnReceiptReferenceId:",
+);
+assertIncludes(
+  "Route revalidates the resolved Fact lineage",
+  sources.resolutionProof,
+  'returnReceipt.state === "CONSUMED_BY_FACT"',
 );
 assertIncludes(
   "Shared renderer consumes the continued response rhythm",

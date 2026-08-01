@@ -5,21 +5,38 @@ const page = fs.readFileSync(
   "src/pages/XinmaiLivedGrowthAcceptancePage.tsx",
   "utf8",
 );
+const launch = fs.readFileSync("src/pages/LaunchLab.tsx", "utf8");
+const surface = fs.readFileSync(
+  "src/components/XinmaiLivedResponseReturnSurface.tsx",
+  "utf8",
+);
 const assert = (value, message) => {
   if (!value) throw new Error(message);
 };
 
 for (const marker of [
   "commitChoiceActionIntention",
-  "bindChoiceActionIntentionToRealityEncounter",
-  "<XinmaiLivedResponseReturnSurface",
   "readXinmaiLivedGrowthCanonicalState",
   "并发消费正式资格",
   'data-motion-presentation={reducedMotion ? "STATIC" : "MOTION_ALLOWED"}',
-  "reducedMotion={reducedMotion}",
   'data-development-only="true"',
 ]) {
   assert(page.includes(marker), `acceptance surface missing ${marker}`);
+}
+for (const marker of [
+  "<XinmaiLivedResponseReturnSurface",
+  "readXinmaiChoiceReturningProvenanceRecovery",
+]) {
+  assert(launch.includes(marker), `production returning surface missing ${marker}`);
+}
+for (const marker of [
+  "confirmXinmaiChoiceExplicitDeparture",
+  "confirmXinmaiChoiceExplicitReturn",
+  "resolveXinmaiChoiceReturnWithoutFact",
+  'window.matchMedia("(prefers-reduced-motion: reduce)")',
+  'pointerEvents: "auto"',
+]) {
+  assert(surface.includes(marker), `typed returning surface missing ${marker}`);
 }
 for (const forbidden of [
   "livedResponseRecognized",

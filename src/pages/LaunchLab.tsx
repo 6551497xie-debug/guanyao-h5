@@ -86,10 +86,8 @@ import {
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { XinmaiLivedResponseReturnSurface } from "../components/XinmaiLivedResponseReturnSurface";
-import {
-  readOpenXinmaiLivedGrowthReturnItems,
-  type XinmaiLivedGrowthReturnItem,
-} from "../services/xinmaiChoiceActionIntentionController";
+import { readXinmaiChoiceReturningProvenanceRecovery } from "../services/xinmaiChoiceReturningProvenanceRecoveryAdapter";
+import type { XinmaiChoiceReturningProvenanceAdmission } from "../types/xinmaiChoiceReturningProvenance";
 import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
 import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
 import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
@@ -1407,23 +1405,23 @@ export function LaunchLab({
           visualContinuity: returningVisualContinuity,
         });
   const [
-    returningLivedGrowthReturnItems,
-    setReturningLivedGrowthReturnItems,
-  ] = useState<readonly XinmaiLivedGrowthReturnItem[]>(() =>
+    returningChoiceAdmissions,
+    setReturningChoiceAdmissions,
+  ] = useState<readonly XinmaiChoiceReturningProvenanceAdmission[]>(() =>
     Object.freeze([]),
   );
   useEffect(() => {
     let cancelled = false;
     if (returningRecognizedIdentity?.status !== "READY") {
-      setReturningLivedGrowthReturnItems(Object.freeze([]));
+      setReturningChoiceAdmissions(Object.freeze([]));
       return () => {
         cancelled = true;
       };
     }
-    void readOpenXinmaiLivedGrowthReturnItems(
+    void readXinmaiChoiceReturningProvenanceRecovery(
       returningRecognizedIdentity.identityReferences,
-    ).then((items) => {
-      if (!cancelled) setReturningLivedGrowthReturnItems(items);
+    ).then((admissions) => {
+      if (!cancelled) setReturningChoiceAdmissions(admissions);
     });
     return () => {
       cancelled = true;
@@ -1433,7 +1431,9 @@ export function LaunchLab({
     returningGrowthSurfaceRevision,
   ]);
   const returningLivedResponseActive =
-    returningLivedGrowthReturnItems.length > 0;
+    returningChoiceAdmissions.some(
+      (admission) => admission.intention !== null,
+    );
   const returningLifeWhisperEntryReady =
     returningVisualReady && !returningLivedResponseActive;
   const returningLifeWhisperRealityIntentReady =
@@ -6149,12 +6149,29 @@ export function LaunchLab({
                   identityReferences={
                     returningRecognizedIdentity.identityReferences
                   }
-                  returnItems={returningLivedGrowthReturnItems}
-                  onResolved={() => {
+                  admissions={returningChoiceAdmissions}
+                  onAuthorityRevision={() => {
                     setReturningLifeArchive(readPersonalityRingLite());
                     setReturningGrowthSurfaceRevision(
                       (revision) => revision + 1,
                     );
+                  }}
+                  onRealityHandoff={(handoff) => {
+                    navigate(GUANYAO_ROUTES.reality, {
+                      state: {
+                        intentReferenceId: handoff.intentReferenceId,
+                        ...(returningVisualContinuity
+                          ? {
+                              visualContinuity:
+                                returningVisualContinuity,
+                            }
+                          : {}),
+                        choiceReturn:
+                          "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED",
+                        choiceActionIntentionReferenceId:
+                          handoff.choiceActionIntentionReferenceId,
+                      },
+                    });
                   }}
                 />
               ) : null}

@@ -4,7 +4,10 @@ import type {
   XinmaiLivedGrowthTransactionOutcome,
   XinmaiLivedGrowthTransactionSafeWithheldReason,
 } from "../types/xinmaiLivedGrowthTransaction";
-import type { XinmaiLivedGrowthEnvelope } from "../types/xinmaiLivedGrowthRecovery";
+import type {
+  XinmaiLivedGrowthEnvelope,
+  XinmaiLivedGrowthEnvelopeV1,
+} from "../types/xinmaiLivedGrowthRecovery";
 import {
   XINMAI_GRAVITY_OBSERVATION_CONTINUITY_SCHEMA_VERSION,
   XINMAI_GRAVITY_OBSERVATION_CONTINUITY_STORE,
@@ -34,7 +37,9 @@ import {
   XINMAI_LIVED_GROWTH_RECOVERY_STORAGE_KEY,
   createEmptyXinmaiLivedGrowthEnvelope,
   isXinmaiLivedGrowthEnvelope,
+  isXinmaiLivedGrowthLegacyEnvelopeV1,
   readXinmaiLivedGrowthRecoveryCandidate,
+  upgradeXinmaiLivedGrowthEnvelopeV1,
 } from "./xinmaiLivedGrowthRecoveryPersistenceAdapter";
 import { notifyXinmaiLivedGrowthCanonicalRevision } from "./xinmaiLivedGrowthRecoveryRevisionObserver";
 
@@ -52,7 +57,7 @@ const LEGACY_ABSENT_SENTINEL = "XINMAI_LEGACY_V1_ABSENT";
 type LegacySnapshot = Readonly<{
   raw: string | null;
   digest: string;
-  envelope: XinmaiLivedGrowthEnvelope | null;
+  envelope: XinmaiLivedGrowthEnvelopeV1 | null;
   status: "FOUND" | "NOT_FOUND" | "UNAVAILABLE" | "CORRUPTED";
 }>;
 
@@ -126,6 +131,45 @@ const createMeta = (
 const hasLegacyUniquenessConflict = (
   envelope: XinmaiLivedGrowthEnvelope,
 ): boolean => {
+  const departureIds = new Set<string>();
+  const departureLineages = new Set<string>();
+  for (const receipt of envelope.choiceExplicitDepartureReceipts) {
+    if (
+      departureIds.has(receipt.departureReceiptReferenceId) ||
+      departureLineages.has(receipt.choiceActionIntentionReferenceId)
+    ) {
+      return true;
+    }
+    departureIds.add(receipt.departureReceiptReferenceId);
+    departureLineages.add(receipt.choiceActionIntentionReferenceId);
+  }
+  const returnIds = new Set<string>();
+  const returnAttempts = new Set<string>();
+  const activeReturnDepartures = new Set<string>();
+  for (const receipt of envelope.choiceExplicitReturnReceipts) {
+    const attemptKey = [
+      receipt.departureReceiptReferenceId,
+      receipt.returnAttemptRevision,
+    ].join("::");
+    if (
+      returnIds.has(receipt.returnReceiptReferenceId) ||
+      returnAttempts.has(attemptKey)
+    ) {
+      return true;
+    }
+    if (receipt.state === "READY_FOR_LIVED_RESPONSE") {
+      if (
+        activeReturnDepartures.has(
+          receipt.departureReceiptReferenceId,
+        )
+      ) {
+        return true;
+      }
+      activeReturnDepartures.add(receipt.departureReceiptReferenceId);
+    }
+    returnIds.add(receipt.returnReceiptReferenceId);
+    returnAttempts.add(attemptKey);
+  }
   const eligibilityIds = new Set<string>();
   const eligibilityKeys = new Set<string>();
   for (const eligibility of envelope.crystalEligibilities) {
@@ -419,6 +463,49 @@ const initializeCanonicalState = async (
     const prepare = () => {
       if (!canonicalResolved || !metaResolved) return;
       if (canonicalValue && metaValue) {
+        const canonical = canonicalValue as
+          | Partial<XinmaiLivedGrowthCanonicalRecord>
+          | undefined;
+        if (
+          canonical?.id !== XINMAI_LIVED_GROWTH_CANONICAL_RECORD_ID ||
+          !isMigrationMeta(metaValue)
+        ) {
+          outcome = Object.freeze({
+            status: "SAFE_WITHHELD" as const,
+            reason: "RECOVERY_CORRUPTED" as const,
+          });
+          return;
+        }
+        if (isXinmaiLivedGrowthEnvelope(canonical.envelope)) {
+          outcome = Object.freeze({ status: "READY" as const });
+          return;
+        }
+        if (!isXinmaiLivedGrowthLegacyEnvelopeV1(canonical.envelope)) {
+          outcome = Object.freeze({
+            status: "SAFE_WITHHELD" as const,
+            reason: "RECOVERY_CORRUPTED" as const,
+          });
+          return;
+        }
+        const upgraded = upgradeXinmaiLivedGrowthEnvelopeV1(
+          canonical.envelope,
+        );
+        try {
+          canonicalStore.put(
+            Object.freeze({
+              id: XINMAI_LIVED_GROWTH_CANONICAL_RECORD_ID,
+              envelope: upgraded,
+            }),
+          );
+          writeEnvelopeIndexes(transaction, upgraded);
+        } catch {
+          try {
+            transaction.abort();
+          } catch {
+            // The transaction outcome remains authoritative.
+          }
+          return;
+        }
         outcome = Object.freeze({ status: "READY" as const });
         return;
       }
@@ -465,9 +552,9 @@ const initializeCanonicalState = async (
         });
         return;
       }
-      const envelope =
+      const envelope: XinmaiLivedGrowthEnvelope =
         snapshot.status === "FOUND" && snapshot.envelope
-          ? snapshot.envelope
+          ? upgradeXinmaiLivedGrowthEnvelopeV1(snapshot.envelope)
           : createEmptyXinmaiLivedGrowthEnvelope();
       const legacyConflict = hasLegacyUniquenessConflict(envelope);
       const canonicalRecord: XinmaiLivedGrowthCanonicalRecord =

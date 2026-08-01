@@ -132,7 +132,7 @@ export function RealityProductionHost({
   latestCrystalMemoryKey = null,
   latestCrystalSourceSlot = null,
   returningLifeWorldEntry = false,
-  choiceContinuation = null,
+  choiceReturn = null,
   choiceLifeTraceMemoryKey = null,
   choiceLifeTraceSourceSlot = null,
   onRealityAcceptanceOutcome,
@@ -577,7 +577,7 @@ export function RealityProductionHost({
         ? "PRESSURE_PAUSED"
         : "PRESSURE_OBSERVING";
   const choiceRhythmValidationActive =
-    choiceContinuation === "CHOICE_ACTION_INTENTION_CONTINUATION";
+    choiceReturn === "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED";
   const choiceLifeTraceCarried =
     choiceRhythmValidationActive &&
     choiceLifeTraceMemoryKey !== null &&

@@ -21,12 +21,16 @@ const assert = (value, message) => {
 
 for (const marker of [
   'data-lived-response-authority="USER_CONFIRMED_FACT"',
-  'data-crystal-eligibility-authority="FORMAL_AUTHORITY_ONLY"',
-  "formCrystalFromEligibility",
-  "让这次回应留在生命里",
+  "confirmLivedResponseFact",
+  "resolveCrystalEligibilityForFact",
+  "returnReceiptReferenceId:",
 ]) {
   assert(surface.includes(marker), `return surface missing ${marker}`);
 }
+assert(
+  !surface.includes("formCrystalFromEligibility"),
+  "Return surface must not form Crystal directly",
+);
 for (const marker of [
   "XINMAI_LIVED_RESPONSE_FACT",
   "XINMAI_CRYSTAL_ELIGIBILITY",

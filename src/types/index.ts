@@ -3449,7 +3449,20 @@ export type {
   CrystalFormationReceipt,
 } from "./xinmaiCrystalEligibility";
 
-export type { XinmaiLivedGrowthEnvelope } from "./xinmaiLivedGrowthRecovery";
+export type {
+  XinmaiLivedGrowthEnvelope,
+  XinmaiLivedGrowthEnvelopeV1,
+} from "./xinmaiLivedGrowthRecovery";
+
+export type {
+  XinmaiChoiceExplicitDepartureReceipt,
+  XinmaiChoiceExplicitReturnReceipt,
+  XinmaiChoiceNoFactResolution,
+  XinmaiChoiceReturningProvenanceAdmission,
+  XinmaiChoiceReturningRealityProof,
+  XinmaiChoiceReturningRealityProofResult,
+  XinmaiChoiceReturnResolutionProofResult,
+} from "./xinmaiChoiceReturningProvenance";
 
 export type {
   RealityAdventureContinuityFailureReason,

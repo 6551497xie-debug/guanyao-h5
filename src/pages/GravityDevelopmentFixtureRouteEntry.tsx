@@ -58,7 +58,7 @@ export function GravityDevelopmentFixtureRouteEntry() {
           ? "CURRENT_LIFE_WEATHER_BODY_APPROACHED"
           : null
       }
-      choiceContinuation={null}
+      choiceReturn={null}
       experienceSmokeFixture={input.experienceSmokeFixture}
       observationContinuityDecision={Object.freeze({
         status: "BLOCKED" as const,

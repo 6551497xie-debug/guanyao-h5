@@ -4,11 +4,6 @@ import {
   type CommitChoiceActionIntentionInput,
 } from "../types/xinmaiChoiceActionIntention";
 import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityEncounterIntent";
-import type {
-  CrystalEligibility,
-  CrystalFormationReceipt,
-} from "../types/xinmaiCrystalEligibility";
-import type { LivedResponseFact } from "../types/xinmaiLivedResponse";
 import {
   commitXinmaiLivedGrowthTransaction,
   preserveXinmaiLivedGrowthTransaction,
@@ -18,7 +13,6 @@ import { xinmaiGrowthIdentityMatches } from "./xinmaiLivedGrowthIdentity";
 import {
   executeXinmaiLivedGrowthTransaction,
 } from "./xinmaiLivedGrowthTransactionAuthority";
-import { readXinmaiLivedGrowthCanonicalState } from "./xinmaiLivedGrowthTransactionalStore";
 import {
   transactXinmaiGravityObservationContinuity,
 } from "./xinmaiLivedGrowthTransactionalStore";
@@ -57,17 +51,6 @@ export type CommitChoiceActionIntentionResult =
       reason: ChoiceMutationFailureReason | string;
     }>;
 
-export type BindChoiceActionIntentionResult =
-  | Readonly<{
-      status: "BOUND" | "ALREADY_BOUND";
-      intention: ChoiceActionIntention;
-    }>
-  | Readonly<{
-      status: "REJECTED" | "SAFE_WITHHELD";
-      intention: null;
-      reason: ChoiceMutationFailureReason | string;
-    }>;
-
 export type CloseChoiceActionIntentionResult =
   | Readonly<{
       status: "CLOSED" | "ALREADY_CLOSED";
@@ -79,12 +62,6 @@ export type CloseChoiceActionIntentionResult =
       reason: ChoiceMutationFailureReason | string;
     }>;
 
-export type XinmaiLivedGrowthReturnItem = Readonly<{
-  intention: ChoiceActionIntention;
-  currentFact: LivedResponseFact | null;
-  currentEligibility: CrystalEligibility | null;
-  formationReceipt: CrystalFormationReceipt | null;
-}>;
 
 export async function commitChoiceActionIntention(
   input: CommitChoiceActionIntentionInput,
@@ -322,168 +299,6 @@ export async function commitChoiceActionIntention(
         ? result.reason
         : "PERSISTENCE_UNAVAILABLE",
   });
-}
-
-export async function bindChoiceActionIntentionToRealityEncounter(
-  input: Readonly<{
-    choiceActionIntentionReferenceId: string;
-    expectedIntentionRevision: number;
-    targetEncounterCycleId: string;
-    identityReferences: RealityEncounterIdentityReferences;
-  }>,
-): Promise<BindChoiceActionIntentionResult> {
-  const result = await executeXinmaiLivedGrowthTransaction(
-    Object.freeze({
-      commandReferenceId: createStableXinmaiGrowthReference(
-        "growth-command:bind-choice",
-        input.choiceActionIntentionReferenceId,
-        input.targetEncounterCycleId,
-        String(input.expectedIntentionRevision),
-      ),
-      commandType: "BIND_CHOICE_TO_ENCOUNTER" as const,
-      identityReferences: input.identityReferences,
-      issuedAt: new Date().toISOString(),
-    }),
-    (current) => {
-      const intention = current.choiceActionIntentions.find(
-        (candidate) =>
-          candidate.choiceActionIntentionReferenceId ===
-          input.choiceActionIntentionReferenceId,
-      );
-      if (!intention) {
-        return rejectXinmaiLivedGrowthTransaction("INTENTION_NOT_FOUND");
-      }
-      if (
-        !xinmaiGrowthIdentityMatches(
-          intention.identityReferences,
-          input.identityReferences,
-        )
-      ) {
-        return rejectXinmaiLivedGrowthTransaction("IDENTITY_MISMATCH");
-      }
-      if (
-        intention.targetEncounterCycleId === input.targetEncounterCycleId &&
-        intention.state === "AWAITING_RETURN"
-      ) {
-        return preserveXinmaiLivedGrowthTransaction(intention);
-      }
-      if (intention.revision !== input.expectedIntentionRevision) {
-        return rejectXinmaiLivedGrowthTransaction(
-          "STALE_INTENTION_REVISION",
-        );
-      }
-      if (
-        intention.targetEncounterCycleId !== null ||
-        intention.state !== "COMMITTED"
-      ) {
-        return rejectXinmaiLivedGrowthTransaction("ENCOUNTER_MISMATCH");
-      }
-      const bound: ChoiceActionIntention = Object.freeze({
-        ...intention,
-        targetEncounterCycleId: input.targetEncounterCycleId,
-        state: "AWAITING_RETURN" as const,
-        revision: intention.revision + 1,
-        updatedAt: new Date().toISOString(),
-      });
-      return commitXinmaiLivedGrowthTransaction(
-        {
-          ...current,
-          choiceActionIntentions: Object.freeze(
-            current.choiceActionIntentions.map((candidate) =>
-              candidate.choiceActionIntentionReferenceId ===
-              input.choiceActionIntentionReferenceId
-                ? bound
-                : candidate,
-            ),
-          ),
-        },
-        bound,
-      );
-    },
-  );
-  if (
-    result.status === "COMMITTED" ||
-    result.status === "ALREADY_COMMITTED"
-  ) {
-    return Object.freeze({
-      status:
-        result.status === "COMMITTED"
-          ? "BOUND" as const
-          : "ALREADY_BOUND" as const,
-      intention: result.value,
-    });
-  }
-  return Object.freeze({
-    status: result.status,
-    intention: null,
-    reason: result.reason,
-  });
-}
-
-export async function readOutstandingChoiceActionIntentions(
-  identityReferences: RealityEncounterIdentityReferences,
-): Promise<readonly ChoiceActionIntention[]> {
-  return Object.freeze(
-    (await readOpenXinmaiLivedGrowthReturnItems(identityReferences))
-      .filter((item) => item.currentFact === null)
-      .map((item) => item.intention),
-  );
-}
-
-export async function readOpenXinmaiLivedGrowthReturnItems(
-  identityReferences: RealityEncounterIdentityReferences,
-): Promise<readonly XinmaiLivedGrowthReturnItem[]> {
-  const result = await readXinmaiLivedGrowthCanonicalState();
-  if (result.status !== "FOUND") return Object.freeze([]);
-  return Object.freeze(
-    result.envelope.choiceActionIntentions.filter(
-      (intention) =>
-        xinmaiGrowthIdentityMatches(
-          intention.identityReferences,
-          identityReferences,
-        ) &&
-        (intention.state === "COMMITTED" ||
-          intention.state === "AWAITING_RETURN" ||
-          intention.state === "REPORTED"),
-    ).map((intention) => {
-      const currentFact =
-        result.envelope.livedResponseFacts
-          .filter(
-            (fact) =>
-              fact.choiceActionIntentionReferenceId ===
-                intention.choiceActionIntentionReferenceId &&
-              fact.state === "CONFIRMED",
-          )
-          .sort(
-            (left, right) =>
-              right.userConfirmationRevision -
-              left.userConfirmationRevision,
-          )[0] ?? null;
-      const currentEligibility =
-        currentFact === null
-          ? null
-          : result.envelope.crystalEligibilities.find(
-              (eligibility) =>
-                eligibility.livedResponseReferenceId ===
-                  currentFact.livedResponseReferenceId &&
-                eligibility.livedResponseRevision ===
-                  currentFact.userConfirmationRevision &&
-                eligibility.state !== "INVALIDATED",
-            ) ?? null;
-      const formationReceipt =
-        result.envelope.formationReceipts.find(
-          (receipt) =>
-            receipt.choiceActionIntentionReferenceId ===
-            intention.choiceActionIntentionReferenceId,
-        ) ?? null;
-      return Object.freeze({
-        intention,
-        currentFact,
-        currentEligibility,
-        formationReceipt,
-      });
-    }).filter((item) => item.formationReceipt === null),
-  );
 }
 
 export async function closeChoiceActionIntentionWithoutRecord(

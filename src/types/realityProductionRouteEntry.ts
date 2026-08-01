@@ -220,7 +220,7 @@ export type RealityProductionHostProps = Readonly<{
   latestCrystalMemoryKey?: string | null;
   latestCrystalSourceSlot?: number | null;
   returningLifeWorldEntry?: boolean;
-  choiceContinuation?: "CHOICE_ACTION_INTENTION_CONTINUATION" | null;
+  choiceReturn?: "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED" | null;
   choiceLifeTraceMemoryKey?: string | null;
   choiceLifeTraceSourceSlot?: number | null;
   onRealityAcceptanceOutcome: (

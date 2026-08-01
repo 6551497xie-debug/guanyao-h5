@@ -42,6 +42,21 @@ const INTENT_KEYS = Object.freeze([
   "provenance",
 ]);
 
+const RETURN_INTENT_KEYS = Object.freeze([
+  "departureReceiptReferenceId",
+  "returnIntentRequestReferenceId",
+  "returnAttemptRevision",
+  "sourceEncounterCycleId",
+]);
+
+const hasIntentKeys = (value: Record<string, unknown>): boolean =>
+  Object.keys(value).every(
+    (key) =>
+      INTENT_KEYS.includes(key) || RETURN_INTENT_KEYS.includes(key),
+  ) && INTENT_KEYS.every((key) =>
+    Object.prototype.hasOwnProperty.call(value, key),
+  );
+
 const FAILURE_STAGES = Object.freeze([
   "RECOVERY",
   "ROUTE_LOAD",
@@ -79,6 +94,8 @@ const TERMINAL_REASONS = Object.freeze([
   "INTENT_EXPIRED",
   "IDENTITY_MISMATCH",
   "RECOVERY_CANDIDATE_INVALID",
+  "RETURN_WITHOUT_LIVED_RESPONSE",
+  "USER_DECLINED_RECORD",
   "USER_DATA_CLEARED",
 ]);
 
@@ -137,7 +154,19 @@ const isIntent = (value: unknown): value is RealityEncounterIntent => {
       ? value.terminalReason !== null
       : value.terminalReason === null;
   const qualificationValid =
-    value.origin === "CHOICE_CONTINUATION"
+    value.origin === "CHOICE_RETURN"
+      ? value.qualification === "EXPLICIT_RETURN_TO_CHOICE" &&
+        typeof value.choiceActionIntentionReferenceId === "string" &&
+        value.choiceActionIntentionReferenceId.trim().length > 0 &&
+        typeof value.departureReceiptReferenceId === "string" &&
+        value.departureReceiptReferenceId.trim().length > 0 &&
+        typeof value.returnIntentRequestReferenceId === "string" &&
+        value.returnIntentRequestReferenceId.trim().length > 0 &&
+        Number.isInteger(value.returnAttemptRevision) &&
+        Number(value.returnAttemptRevision) > 0 &&
+        typeof value.sourceEncounterCycleId === "string" &&
+        value.sourceEncounterCycleId.trim().length > 0
+      : value.origin === "CHOICE_CONTINUATION"
       ? value.qualification === "CHOICE_ACTION_INTENTION_COMMITTED" &&
         typeof value.choiceActionIntentionReferenceId === "string" &&
         value.choiceActionIntentionReferenceId.trim().length > 0
@@ -147,7 +176,7 @@ const isIntent = (value: unknown): value is RealityEncounterIntent => {
           value.qualification ===
             "RESPONSE_UNAVAILABLE_EXPLICITLY_CONTINUED");
   return (
-    hasOnlyKeys(value, INTENT_KEYS) &&
+    hasIntentKeys(value) &&
     value.schemaVersion ===
       XINMAI_REALITY_ENCOUNTER_INTENT_SCHEMA_VERSION &&
     value.source === "xinmai_reality_encounter_intent_controller" &&
@@ -163,11 +192,13 @@ const isIntent = (value: unknown): value is RealityEncounterIntent => {
     value.mansionCoordinateReferenceId.trim().length > 0 &&
     (value.origin === "FIRST_ENCOUNTER" ||
       value.origin === "RETURNING_LIFE_WORLD" ||
+      value.origin === "CHOICE_RETURN" ||
       value.origin === "CHOICE_CONTINUATION") &&
     (value.qualification === "WHISPER_RESPONSE_SETTLED" ||
       value.qualification === "WHISPER_SKIPPED" ||
       value.qualification ===
         "RESPONSE_UNAVAILABLE_EXPLICITLY_CONTINUED" ||
+      value.qualification === "EXPLICIT_RETURN_TO_CHOICE" ||
       value.qualification === "CHOICE_ACTION_INTENTION_COMMITTED") &&
     (value.choiceActionIntentionReferenceId === null ||
       (typeof value.choiceActionIntentionReferenceId === "string" &&
@@ -219,6 +250,12 @@ const freezeIntent = (
 ): RealityEncounterIntent =>
   Object.freeze({
     ...intent,
+    departureReceiptReferenceId:
+      intent.departureReceiptReferenceId ?? null,
+    returnIntentRequestReferenceId:
+      intent.returnIntentRequestReferenceId ?? null,
+    returnAttemptRevision: intent.returnAttemptRevision ?? null,
+    sourceEncounterCycleId: intent.sourceEncounterCycleId ?? null,
     failure:
       intent.failure === null
         ? null

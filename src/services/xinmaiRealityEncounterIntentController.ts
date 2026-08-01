@@ -78,8 +78,10 @@ const qualificationMatchesOrigin = (
   origin: RealityEncounterRequestInput["origin"],
   qualification: RealityEncounterQualification,
 ): boolean =>
-  origin === "CHOICE_CONTINUATION"
-    ? qualification === "CHOICE_ACTION_INTENTION_COMMITTED"
+  origin === "CHOICE_RETURN"
+    ? qualification === "EXPLICIT_RETURN_TO_CHOICE"
+    : origin === "CHOICE_CONTINUATION"
+      ? false
     : qualification === "WHISPER_RESPONSE_SETTLED" ||
       qualification === "WHISPER_SKIPPED" ||
       qualification ===
@@ -127,6 +129,12 @@ const createAdmission = (
     qualification: intent.qualification,
     choiceActionIntentionReferenceId:
       intent.choiceActionIntentionReferenceId,
+    departureReceiptReferenceId:
+      intent.departureReceiptReferenceId,
+    returnIntentRequestReferenceId:
+      intent.returnIntentRequestReferenceId,
+    returnAttemptRevision: intent.returnAttemptRevision,
+    sourceEncounterCycleId: intent.sourceEncounterCycleId,
     identityReferences: Object.freeze({
       sourceReferenceId: intent.sourceReferenceId,
       starBeastIdentityReferenceId:
@@ -241,19 +249,47 @@ export async function requestRealityEncounter(
   }
   const choiceActionIntentionReferenceId =
     input.choiceActionIntentionReferenceId?.trim() || null;
+  const departureReceiptReferenceId =
+    input.departureReceiptReferenceId?.trim() || null;
+  const returnIntentRequestReferenceId =
+    input.returnIntentRequestReferenceId?.trim() || null;
+  const sourceEncounterCycleId =
+    input.sourceEncounterCycleId?.trim() || null;
+  const returnAttemptRevision =
+    Number.isInteger(input.returnAttemptRevision) &&
+    Number(input.returnAttemptRevision) > 0
+      ? Number(input.returnAttemptRevision)
+      : null;
+  const choiceReturnRequestValid =
+    input.origin === "CHOICE_RETURN" &&
+    input.qualification === "EXPLICIT_RETURN_TO_CHOICE" &&
+    choiceActionIntentionReferenceId !== null &&
+    departureReceiptReferenceId !== null &&
+    returnIntentRequestReferenceId !== null &&
+    sourceEncounterCycleId !== null &&
+    returnAttemptRevision !== null;
+  const nonChoiceReturnRequestClean =
+    input.origin !== "CHOICE_RETURN" &&
+    departureReceiptReferenceId === null &&
+    returnIntentRequestReferenceId === null &&
+    sourceEncounterCycleId === null &&
+    returnAttemptRevision === null;
   if (
     !qualificationMatchesOrigin(input.origin, input.qualification) ||
-    (input.origin === "CHOICE_CONTINUATION" &&
-      choiceActionIntentionReferenceId === null) ||
-    (input.origin !== "CHOICE_CONTINUATION" &&
-      choiceActionIntentionReferenceId !== null)
+    (input.origin === "CHOICE_RETURN" && !choiceReturnRequestValid) ||
+    (input.origin !== "CHOICE_RETURN" &&
+      (choiceActionIntentionReferenceId !== null ||
+        !nonChoiceReturnRequestClean))
   ) {
     return Object.freeze({
       status: "BLOCKED" as const,
       operation: "REQUEST" as const,
       intent: currentIntent,
       persistence: null,
-      reason: "QUALIFICATION_NOT_ALLOWED_FOR_ORIGIN" as const,
+      reason:
+        input.origin === "CHOICE_RETURN"
+          ? "RETURN_INTENT_REQUEST_INVALID" as const
+          : "QUALIFICATION_NOT_ALLOWED_FOR_ORIGIN" as const,
     });
   }
   const activeIdentityKey = [
@@ -261,14 +297,86 @@ export async function requestRealityEncounter(
     identity.starBeastIdentityReferenceId,
     identity.mansionCoordinateReferenceId,
   ].join("::");
+  const canStartChoiceReturnFromRecord = (
+    record: RealityAdventureEncounterContinuityRecord,
+  ): boolean =>
+    input.origin === "CHOICE_RETURN" &&
+    record.encounterCycleId === sourceEncounterCycleId &&
+    (record.lifecycle === "GRAVITY_ADMITTED" ||
+      record.lifecycle === "ACTIVE_IN_GRAVITY" ||
+      (record.lifecycle === "TERMINAL" &&
+        record.terminalReason === "START_NEW_ENCOUNTER" &&
+        record.gravityAdmission !== null));
+  const createRequestedIntent = (
+    issuedAt: string,
+  ): RealityEncounterIntent =>
+    Object.freeze({
+      schemaVersion:
+        XINMAI_REALITY_ENCOUNTER_INTENT_SCHEMA_VERSION,
+      source:
+        "xinmai_reality_encounter_intent_controller" as const,
+      intentReferenceId: `reality-intent:${opaqueId()}`,
+      encounterCycleId: `reality-encounter:${opaqueId()}`,
+      ...identity,
+      origin: input.origin,
+      qualification: input.qualification,
+      choiceActionIntentionReferenceId,
+      departureReceiptReferenceId,
+      returnIntentRequestReferenceId,
+      returnAttemptRevision,
+      sourceEncounterCycleId,
+      state: "READY_TO_ENTER_REALITY" as const,
+      routeTarget: "/reality" as const,
+      issuedAt,
+      updatedAt: issuedAt,
+      expiresAt: new Date(
+        Date.parse(issuedAt) + INTENT_TTL_MS,
+      ).toISOString(),
+      revision: 1,
+      failure: null,
+      terminalReason: null,
+      provenance: Object.freeze({
+        userExplicitRequest: true as const,
+        identityAuthority:
+          "EXISTING_RECOGNIZED_LIFE" as const,
+        relationshipAuthority:
+          "EXISTING_RELATIONSHIP_RUNTIME" as const,
+        noGrowthAuthority: true as const,
+      }),
+    });
+  const activeChoiceReturnRecovery =
+    input.origin === "CHOICE_RETURN"
+      ? await readRealityAdventureContinuity({
+          kind: "ACTIVE_IDENTITY",
+          value: activeIdentityKey,
+        })
+      : null;
+  if (activeChoiceReturnRecovery?.status === "SAFE_WITHHELD") {
+    return storageBlockedRequest(
+      currentIntent,
+      activeChoiceReturnRecovery.reason,
+    );
+  }
+  const requestLookup =
+    input.origin === "CHOICE_RETURN" &&
+    activeChoiceReturnRecovery?.status === "NOT_FOUND"
+      ? Object.freeze({
+          kind: "ENCOUNTER" as const,
+          value: sourceEncounterCycleId as string,
+        })
+      : Object.freeze({
+          kind: "ACTIVE_IDENTITY" as const,
+          value: activeIdentityKey,
+        });
   const transaction =
     await transactRealityAdventureContinuity<RealityEncounterRequestResult>({
-      lookup: Object.freeze({
-        kind: "ACTIVE_IDENTITY" as const,
-        value: activeIdentityKey,
-      }),
+      lookup: requestLookup,
       mutate: (record) => {
-        if (record !== null && record.realityIntent.state !== "TERMINAL") {
+        if (
+          record !== null &&
+          (record.realityIntent.state !== "TERMINAL" ||
+            canStartChoiceReturnFromRecord(record))
+        ) {
           const existing = record.realityIntent;
           if (!identityMatches(existing, identity)) {
             return Object.freeze({
@@ -289,7 +397,15 @@ export async function requestRealityEncounter(
             existing.origin === input.origin &&
             existing.qualification === input.qualification &&
             existing.choiceActionIntentionReferenceId ===
-              choiceActionIntentionReferenceId
+              choiceActionIntentionReferenceId &&
+            existing.departureReceiptReferenceId ===
+              departureReceiptReferenceId &&
+            existing.returnIntentRequestReferenceId ===
+              returnIntentRequestReferenceId &&
+            existing.returnAttemptRevision ===
+              returnAttemptRevision &&
+            existing.sourceEncounterCycleId ===
+              sourceEncounterCycleId
           ) {
             return Object.freeze({
               status: "UNCHANGED" as const,
@@ -300,6 +416,92 @@ export async function requestRealityEncounter(
                 intent: existing,
                 persistence: "CONFIRMED" as const,
                 reason: null,
+              }),
+            });
+          }
+          if (
+            input.origin === "CHOICE_RETURN" &&
+            existing.returnIntentRequestReferenceId ===
+              returnIntentRequestReferenceId
+          ) {
+            return Object.freeze({
+              status: "REJECTED" as const,
+              record,
+              value: Object.freeze({
+                status: "BLOCKED" as const,
+                operation: "REQUEST" as const,
+                intent: existing,
+                persistence: null,
+                reason: "RETURN_INTENT_REQUEST_CONFLICT" as const,
+              }),
+            });
+          }
+          if (
+            canStartChoiceReturnFromRecord(record)
+          ) {
+            const retiredAt = new Date().toISOString();
+            const terminalIntent =
+              existing.state === "TERMINAL"
+                ? existing
+                : Object.freeze({
+                    ...existing,
+                    state: "TERMINAL" as const,
+                    updatedAt: retiredAt,
+                    revision: existing.revision + 1,
+                    failure: null,
+                    terminalReason: "START_NEW_ENCOUNTER" as const,
+                  });
+            const retiredRecord =
+              record.lifecycle === "TERMINAL"
+                ? record
+                : Object.freeze({
+                    ...record,
+                    canonicalRevision: record.canonicalRevision + 1,
+                    fencingToken: record.fencingToken + 1,
+                    activeIdentityKey: undefined,
+                    realityIntent: terminalIntent,
+                    recognitionReceipt:
+                      record.recognitionReceipt === null
+                        ? null
+                        : Object.freeze({
+                            ...record.recognitionReceipt,
+                            revision:
+                              record.recognitionReceipt.revision + 1,
+                            lifecycle: "TERMINAL" as const,
+                            updatedAt: retiredAt,
+                            terminalReason: "START_NEW_ENCOUNTER" as const,
+                          }),
+                    lifecycle: "TERMINAL" as const,
+                    updatedAt: retiredAt,
+                    terminalReason: "START_NEW_ENCOUNTER" as const,
+                  });
+            const nextReturnIntent = createRequestedIntent(retiredAt);
+            return Object.freeze({
+              status: "COMMIT" as const,
+              record: createContinuityRecord(nextReturnIntent),
+              retainedRecords: Object.freeze([retiredRecord]),
+              value: Object.freeze({
+                status: "READY" as const,
+                operation: "REQUEST" as const,
+                intent: nextReturnIntent,
+                persistence: "CONFIRMED" as const,
+                reason: null,
+              }),
+            });
+          }
+          if (
+            input.origin === "CHOICE_RETURN" &&
+            record.encounterCycleId !== sourceEncounterCycleId
+          ) {
+            return Object.freeze({
+              status: "REJECTED" as const,
+              record,
+              value: Object.freeze({
+                status: "BLOCKED" as const,
+                operation: "REQUEST" as const,
+                intent: existing,
+                persistence: null,
+                reason: "RETURN_SOURCE_ENCOUNTER_MISMATCH" as const,
               }),
             });
           }
@@ -335,37 +537,7 @@ export async function requestRealityEncounter(
               updatedAt: retiredAt,
               terminalReason: "INTENT_EXPIRED" as const,
             });
-            const issuedAt = retiredAt;
-            const nextIntent = Object.freeze({
-              schemaVersion:
-                XINMAI_REALITY_ENCOUNTER_INTENT_SCHEMA_VERSION,
-              source:
-                "xinmai_reality_encounter_intent_controller" as const,
-              intentReferenceId: `reality-intent:${opaqueId()}`,
-              encounterCycleId: `reality-encounter:${opaqueId()}`,
-              ...identity,
-              origin: input.origin,
-              qualification: input.qualification,
-              choiceActionIntentionReferenceId,
-              state: "READY_TO_ENTER_REALITY" as const,
-              routeTarget: "/reality" as const,
-              issuedAt,
-              updatedAt: issuedAt,
-              expiresAt: new Date(
-                Date.parse(issuedAt) + INTENT_TTL_MS,
-              ).toISOString(),
-              revision: 1,
-              failure: null,
-              terminalReason: null,
-              provenance: Object.freeze({
-                userExplicitRequest: true as const,
-                identityAuthority:
-                  "EXISTING_RECOGNIZED_LIFE" as const,
-                relationshipAuthority:
-                  "EXISTING_RELATIONSHIP_RUNTIME" as const,
-                noGrowthAuthority: true as const,
-              }),
-            });
+            const nextIntent = createRequestedIntent(retiredAt);
             return Object.freeze({
               status: "COMMIT" as const,
               record: createContinuityRecord(nextIntent),
@@ -391,37 +563,22 @@ export async function requestRealityEncounter(
             }),
           });
         }
-        const issuedAt = new Date().toISOString();
-        const intent = Object.freeze({
-          schemaVersion:
-            XINMAI_REALITY_ENCOUNTER_INTENT_SCHEMA_VERSION,
-          source:
-            "xinmai_reality_encounter_intent_controller" as const,
-          intentReferenceId: `reality-intent:${opaqueId()}`,
-          encounterCycleId: `reality-encounter:${opaqueId()}`,
-          ...identity,
-          origin: input.origin,
-          qualification: input.qualification,
-          choiceActionIntentionReferenceId,
-          state: "READY_TO_ENTER_REALITY" as const,
-          routeTarget: "/reality" as const,
-          issuedAt,
-          updatedAt: issuedAt,
-          expiresAt: new Date(
-            Date.parse(issuedAt) + INTENT_TTL_MS,
-          ).toISOString(),
-          revision: 1,
-          failure: null,
-          terminalReason: null,
-          provenance: Object.freeze({
-            userExplicitRequest: true as const,
-            identityAuthority:
-              "EXISTING_RECOGNIZED_LIFE" as const,
-            relationshipAuthority:
-              "EXISTING_RELATIONSHIP_RUNTIME" as const,
-            noGrowthAuthority: true as const,
-          }),
-        });
+        if (input.origin === "CHOICE_RETURN") {
+          return Object.freeze({
+            status: "REJECTED" as const,
+            record: null,
+            value: Object.freeze({
+              status: "BLOCKED" as const,
+              operation: "REQUEST" as const,
+              intent: null,
+              persistence: null,
+              reason: "RETURN_SOURCE_ENCOUNTER_MISMATCH" as const,
+            }),
+          });
+        }
+        const intent = createRequestedIntent(
+          new Date().toISOString(),
+        );
         return Object.freeze({
           status: "COMMIT" as const,
           record: createContinuityRecord(intent),
