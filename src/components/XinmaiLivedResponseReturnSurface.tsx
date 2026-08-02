@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CrystalFormationReceipt } from "../types/xinmaiCrystalEligibility";
 import type { XinmaiCrystalFormationProductionOutcome } from "../types/xinmaiCrystalFormationProduction";
+import type { XinmaiCrystalOwnershipPresentationOrigin } from "../types/xinmaiCrystalOwnershipPresentation";
 import type {
   LivedResponseCandidate,
   LivedResponseOutcome,
 } from "../types/xinmaiLivedResponse";
 import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityEncounterIntent";
 import type { XinmaiChoiceReturningProvenanceAdmission } from "../types/xinmaiChoiceReturningProvenance";
+import { XinmaiCrystalFormationOwnershipMoment } from "./XinmaiCrystalFormationOwnershipMoment";
 import { createLivedResponseCandidateReference } from "../services/xinmaiChoiceActionIntentionController";
 import {
   confirmXinmaiChoiceExplicitDeparture,
@@ -17,6 +19,7 @@ import {
   orchestrateProductionCrystalFormation,
   recoverProductionCrystalFormation,
 } from "../services/xinmaiCrystalFormationProductionOrchestrator";
+import { resolveXinmaiCrystalOwnershipPresentation } from "../services/xinmaiCrystalOwnershipPresentationResolver";
 import { resolveCrystalEligibilityForFact } from "../services/xinmaiCrystalEligibilityAuthority";
 import { confirmLivedResponseFact } from "../services/xinmaiLivedResponseAuthorityController";
 
@@ -74,7 +77,10 @@ export function XinmaiLivedResponseReturnSurface({
   const [confirmedFormation, setConfirmedFormation] = useState<Readonly<{
     choiceActionIntentionReferenceId: string;
     receipt: CrystalFormationReceipt;
+    presentationOrigin: XinmaiCrystalOwnershipPresentationOrigin;
   }> | null>(null);
+  const [ownershipPresentedCrystalReferenceId, setOwnershipPresentedCrystalReferenceId] =
+    useState<string | null>(null);
   const [formationFailure, setFormationFailure] =
     useState<FormationFailureReason | null>(null);
   const recoveryAttemptKeyRef = useRef<string | null>(null);
@@ -99,6 +105,39 @@ export function XinmaiLivedResponseReturnSurface({
     selectedChoiceReferenceId
       ? confirmedFormation.receipt
       : selected?.formationReceipt ?? null;
+  const currentPresentationOrigin: XinmaiCrystalOwnershipPresentationOrigin =
+    confirmedFormation?.choiceActionIntentionReferenceId ===
+    selectedChoiceReferenceId
+      ? confirmedFormation.presentationOrigin
+      : "CANONICAL_RECOVERY";
+  const ownershipPresentationDecision = useMemo(
+    () =>
+      resolveXinmaiCrystalOwnershipPresentation({
+        receipt: currentFormationReceipt,
+        actionSummary: selected?.intention?.actionSummary ?? null,
+        presentationOrigin: currentPresentationOrigin,
+        formationPending:
+          currentFormationReceipt === null &&
+          selected?.state === "TERMINAL_BY_GROWTH" &&
+          formationFailure === null,
+        safeWithheld: formationFailure !== null,
+        ownershipPresented:
+          currentFormationReceipt !== null &&
+          ownershipPresentedCrystalReferenceId ===
+            currentFormationReceipt.crystalReferenceId,
+        motionPreference: staticPresentation
+          ? "REDUCED_MOTION"
+          : "MOTION",
+      }),
+    [
+      currentFormationReceipt,
+      currentPresentationOrigin,
+      formationFailure,
+      ownershipPresentedCrystalReferenceId,
+      selected,
+      staticPresentation,
+    ],
+  );
 
   useEffect(() => {
     if (
@@ -131,9 +170,13 @@ export function XinmaiLivedResponseReturnSurface({
             choiceActionIntentionReferenceId:
               selected.intention.choiceActionIntentionReferenceId,
             receipt: result.receipt,
+            presentationOrigin:
+              result.status === "FORMED"
+                ? "CURRENT_TRANSACTION"
+                : "CANONICAL_RECOVERY",
           }),
         );
-        setFeedback("这次现实回应已经形成一颗结晶。");
+        setFeedback(null);
         onAuthorityRevision?.();
       } else {
         setFormationFailure(result.reason);
@@ -269,10 +312,14 @@ export function XinmaiLivedResponseReturnSurface({
           choiceActionIntentionReferenceId:
             intention.choiceActionIntentionReferenceId,
           receipt: formation.receipt,
+          presentationOrigin:
+            formation.status === "FORMED"
+              ? "CURRENT_TRANSACTION"
+              : "CANONICAL_RECOVERY",
         }),
       );
       setFormationFailure(null);
-      setFeedback("这次现实回应已经形成一颗结晶。");
+      setFeedback(null);
     } else {
       setFormationFailure(formation.reason);
       setFeedback("结晶尚未形成。事实与资格仍然保留，可以稍后重试。");
@@ -302,9 +349,13 @@ export function XinmaiLivedResponseReturnSurface({
           choiceActionIntentionReferenceId:
             intention.choiceActionIntentionReferenceId,
           receipt: result.receipt,
+          presentationOrigin:
+            result.status === "FORMED"
+              ? "CURRENT_TRANSACTION"
+              : "CANONICAL_RECOVERY",
         }),
       );
-      setFeedback("这次现实回应已经形成一颗结晶。");
+      setFeedback(null);
       onAuthorityRevision?.();
     } else {
       setFormationFailure(result.reason);
@@ -329,6 +380,7 @@ export function XinmaiLivedResponseReturnSurface({
 
   return (
     <section
+      className="xinmai-lived-response-return-surface"
       aria-label="现实回应回访"
       data-choice-returning-admission={selected.state}
       data-lived-response-authority="USER_CONFIRMED_FACT"
@@ -345,10 +397,16 @@ export function XinmaiLivedResponseReturnSurface({
       }
       data-body-imprint-authority="SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER"
       data-motion-presentation={staticPresentation ? "STATIC" : "MOTION_ALLOWED"}
+      data-ownership-surface-active={
+        currentFormationReceipt !== null ? "TRUE" : "FALSE"
+      }
       style={{
         display: "grid",
         gap: 12,
-        width: "min(100%, 340px)",
+        width:
+          currentFormationReceipt !== null
+            ? "min(100%, 460px)"
+            : "min(100%, 340px)",
         padding: "16px 18px",
         border: "1px solid rgba(207,189,150,0.14)",
         borderRadius: 16,
@@ -357,9 +415,13 @@ export function XinmaiLivedResponseReturnSurface({
         pointerEvents: "auto",
       }}
     >
-      <small>那一步仍属于同一段生命</small>
-      <strong>{intention.actionSummary}</strong>
-      {admissions.length > 1 ? (
+      {currentFormationReceipt === null ? (
+        <>
+          <small>那一步仍属于同一段生命</small>
+          <strong>{intention.actionSummary}</strong>
+        </>
+      ) : null}
+      {currentFormationReceipt === null && admissions.length > 1 ? (
         <div aria-label="选择要继续的现实回应">
           {admissions.map((admission) =>
             admission.intention ? (
@@ -425,22 +487,23 @@ export function XinmaiLivedResponseReturnSurface({
           </div>
         </>
       ) : currentFormationReceipt !== null ? (
-        <div
-          data-crystal-formation-presentation={
-            staticPresentation ? "STATIC_CONFIRMED" : "MOTION_CONFIRMED"
+        <XinmaiCrystalFormationOwnershipMoment
+          decision={ownershipPresentationDecision}
+          onOwnershipPresented={() =>
+            setOwnershipPresentedCrystalReferenceId(
+              currentFormationReceipt.crystalReferenceId,
+            )
           }
-          style={{ display: "grid", gap: 8 }}
-        >
-          <strong>这次现实回应，已经形成一颗结晶。</strong>
-          <small>{currentFormationReceipt.formedCrystal.crystal.copy}</small>
-          <button type="button" onClick={handoffConfirmedCrystal}>
-            带着这颗结晶，回到同一生命空间
-          </button>
-        </div>
+          onContinue={handoffConfirmedCrystal}
+        />
       ) : selected.state === "TERMINAL_BY_GROWTH" &&
         selected.currentEligibility !== null ? (
         <div style={{ display: "grid", gap: 8 }}>
-          <p role="status">真实回应已经保存，结晶仍在等待正式形成。</p>
+          <XinmaiCrystalFormationOwnershipMoment
+            decision={ownershipPresentationDecision}
+            onOwnershipPresented={() => undefined}
+            onContinue={handoffConfirmedCrystal}
+          />
           <button type="button" disabled={busy} onClick={retryFormation}>
             重试形成结晶
           </button>
