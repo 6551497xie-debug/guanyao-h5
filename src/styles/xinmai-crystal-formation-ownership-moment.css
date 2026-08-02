@@ -18,9 +18,11 @@
   ) {
   top: 0;
   bottom: 0;
+  min-height: 0;
   align-content: center;
   overflow-y: auto;
-  padding: 20px 0;
+  padding: clamp(10px, 2.5dvh, 20px) 0
+    max(clamp(10px, 2.5dvh, 20px), env(safe-area-inset-bottom));
   pointer-events: auto;
 }
 
@@ -32,9 +34,15 @@
 }
 
 .xinmai-lived-response-return-surface[data-ownership-surface-active="TRUE"] {
+  box-sizing: border-box;
+  min-height: 0;
   max-height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
+  padding-bottom: max(28px, calc(16px + env(safe-area-inset-bottom))) !important;
+  scroll-padding-block: 12px
+    max(28px, calc(16px + env(safe-area-inset-bottom)));
+  -webkit-overflow-scrolling: touch;
 }
 
 .xinmai-crystal-ownership--pending,
@@ -348,10 +356,13 @@
   display: grid;
   gap: 10px;
   justify-items: center;
+  padding-bottom: 2px;
+  scroll-margin-bottom: max(12px, env(safe-area-inset-bottom));
   text-align: center;
 }
 
 .xinmai-crystal-ownership__continue {
+  position: relative;
   width: min(100%, 320px);
   min-height: 46px;
   border: 1px solid rgba(190, 215, 205, 0.34);
@@ -364,6 +375,13 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 12px 34px rgba(0, 0, 0, 0.22);
   cursor: pointer;
+}
+
+.xinmai-crystal-ownership__continue::before {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  content: "";
 }
 
 .xinmai-crystal-ownership__continue:hover {
