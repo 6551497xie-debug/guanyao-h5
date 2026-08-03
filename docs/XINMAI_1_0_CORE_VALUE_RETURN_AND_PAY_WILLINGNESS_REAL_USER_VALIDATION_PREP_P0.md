@@ -470,32 +470,138 @@ CONTAMINATED
 
 只有`UNAIDED`可以作为A层通过的主要证据。
 
+### 8.4 冻结分母与路径状态
+
+研究报告必须同时保存以下人数，不得在分析时临时改变分母：
+
+```text
+N_RECRUITED
+已完成筛选并接受邀请的人数；未开始Day 0不算入组。
+
+N_ENROLLED
+完成知情同意并开始Day 0正式体验的人数。
+退出、缺席后续环节、技术阻断和合法未形成路径仍保留在此分母。
+
+N_DAY0_DEPARTED
+正式完成Explicit Departure的人数；B层自然回访的主分母。
+
+N_FORMATION_OBSERVED
+通过正式路径形成Crystal与Canonical Body Imprint并完成A层开放问题的人数；A层理解率分母。
+
+N_FREE_LOOP_COMPLETED
+完成免费首次成长闭环至Canonical Body Imprint与基础恢复的人数。
+
+N_SPONTANEOUS_RETURN
+在研究提醒前自主返回产品的人数。
+
+N_RETURNED_ANY
+包含自然回访与研究提醒后回访的总人数。
+
+N_CONCEPT_EXPOSED
+满足商业概念前置条件并实际看见免费基线卡与会员概念卡的人数。
+
+N_CONTINUITY_SELECTED
+主动选择至少一项长期连续性能力的人数。
+
+N_WAITLIST_INTENT
+单独同意留下非交易购买意向或等待名单意向的人数。
+```
+
+路径状态必须单列：
+
+| 状态 | 分母处理 | 不得解释为 |
+|---|---|---|
+| Day 0前未开始 | 计入`N_RECRUITED`，不计入`N_ENROLLED` | 产品理解失败 |
+| 入组后退出 | 保留在`N_ENROLLED`与退出人数；不进入任何成功分子 | 无兴趣或不愿付费 |
+| 请求删除研究数据 | 删除参与者明细与引用；只在同意允许时保留去标识聚合退出数 | 负向产品反馈 |
+| 尚未尝试 | 合法非Formation路径；保留在`N_ENROLLED`，不进入`N_FREE_LOOP_COMPLETED` | 研究失败、产品惩罚 |
+| 拒绝记录 | 合法非Formation路径；保留在`N_ENROLLED`，不进入商业概念暴露 | 没有真实行动 |
+| 技术阻断 | 保留在`N_ENROLLED`并单列`N_TECHNICAL_BLOCKED`，不能进入成功分子 | 用户不理解或不愿回来 |
+| 未自然回访 | 在`N_DAY0_DEPARTED`中计为未观察到自然回访 | 付费意愿为零 |
+| 研究提醒后回访 | 进入`N_RETURNED_ANY`，不进入`N_SPONTANEOUS_RETURN` | 自然回访 |
+
+任何阶段证据不足时输出`INCONCLUSIVE`，不得通过缩小分母获得`PASS`。
+
 ---
 
 ## 九、P0决策阈值
 
 小样本阈值只用于决定下一步，不代表市场规模或统计显著。
 
-### 9.1 A层阈值
+### 9.1 8–12人固定人数换算
 
-- ≥80%参与者无提示复述“现实回应 → 同一生命留下变化”；
+所有百分比必须同时报告`分子 / 分母`与对应人数。主队列人数换算冻结为：
+
+| 入组分母 | ≥80% | ≥75% | ≥50% | ≥40% | ≥25% | ≤20%最多 |
+|---:|---:|---:|---:|---:|---:|---:|
+| 8 | 7 | 6 | 4 | 4 | 2 | 1 |
+| 9 | 8 | 7 | 5 | 4 | 3 | 1 |
+| 10 | 8 | 8 | 5 | 4 | 3 | 2 |
+| 11 | 9 | 9 | 6 | 5 | 3 | 2 |
+| 12 | 10 | 9 | 6 | 5 | 3 | 2 |
+
+当分母是实际自然回访者或概念暴露者时，≥70%人数换算冻结为：
+
+| 实际分母 | ≥70%至少人数 |
+|---:|---:|
+| 4 | 3 |
+| 5 | 4 |
+| 6 | 5 |
+| 7 | 5 |
+| 8 | 6 |
+| 9 | 7 |
+| 10 | 7 |
+| 11 | 8 |
+| 12 | 9 |
+
+任何不在表中的实际分母使用向上取整；≤20%使用向下取整。报告中仍必须显示原始人数。
+
+### 9.2 A层阈值
+
+- 分母：`N_FORMATION_OBSERVED`；同时报告`N_FORMATION_OBSERVED / N_ENROLLED`；
+- ≥80%无提示复述“现实回应 → 同一生命留下变化”；
 - ≥75%区分“尝试”与“成功”；
 - ≥75%认出Returning是同一星兽；
-- ≤20%主要理解为奖励、星座、算命、AI报告或任务升级。
+- ≤20%主要理解为奖励、星座、算命、AI报告或任务升级；
+- `N_FORMATION_OBSERVED < 6`时，A层只能裁决`INCONCLUSIVE`，不得通过招募替换或排除合法未形成用户补足。
 
-### 9.2 B层阈值
+### 9.3 B层阈值
 
+- 主分母：`N_DAY0_DEPARTED`；同时报告`N_SPONTANEOUS_RETURN / N_ENROLLED`；
 - ≥50%在研究窗口内未经产品提醒主动回来；
 - 在主动回来者中，≥70%将动机指向同一生命、持续记忆或继续观察；
-- ≤20%只因新内容、安慰或视觉新鲜感回来；
+- 在`N_RETURNED_ANY`中，≤20%只因新内容、安慰或视觉新鲜感回来；
 - 研究提醒后回访必须单独报告，不能填补自然回访缺口。
 
-### 9.3 C层阈值
+### 9.4 C层三分母报告
 
-- ≥40%在完整免费闭环后主动选择至少一项长期连续性能力；
-- ≥70%能正确解释付费对象是持续服务，而非Crystal、命运或成长资格；
-- ≥25%自愿留下真实购买意向或等待名单同意；
-- 0名参与者认为停止付费会失去既有Identity、Crystal或Body Imprint；
+C层同一分子必须同时报告：
+
+```text
+N_CONTINUITY_SELECTED / N_ENROLLED
+N_CONTINUITY_SELECTED / N_FREE_LOOP_COMPLETED
+N_CONTINUITY_SELECTED / N_SPONTANEOUS_RETURN
+
+N_WAITLIST_INTENT / N_ENROLLED
+N_WAITLIST_INTENT / N_FREE_LOOP_COMPLETED
+N_WAITLIST_INTENT / N_SPONTANEOUS_RETURN
+```
+
+其中：
+
+- `N_ENROLLED`是商业漏斗与选择偏差的保守总分母；
+- `N_FREE_LOOP_COMPLETED`解释完整免费价值后的概念吸引力；
+- `N_SPONTANEOUS_RETURN`解释自然回访用户中的持续价值意愿；
+- `N_CONCEPT_EXPOSED`只用于验证概念理解和伦理误解，不能替代以上三个分母；
+- 如果任一分母为0，必须报告`0 / 0 — NOT OBSERVABLE`，不得省略该列；
+- 不能只引用自然回访用户中的最高比例裁决商业成立。
+
+### 9.5 C层阈值
+
+- `N_CONTINUITY_SELECTED / N_ENROLLED`达到≥40%对应人数；
+- `N_WAITLIST_INTENT / N_ENROLLED`达到≥25%对应人数；
+- 在`N_CONCEPT_EXPOSED`中，≥70%正确解释付费对象是持续服务，而非Crystal、命运或成长资格；
+- 在`N_CONCEPT_EXPOSED`中，0人认为停止付费会失去既有Identity、Crystal或Body Imprint；
 - 0次在禁止时点展示商业概念。
 
 阈值不达成时不得加强营销、提醒或稀缺话术。
@@ -607,18 +713,25 @@ RED — ETHICAL OFFER FAILURE
 
 ## 十三、刀后路径
 
-PREP通过后只允许申请：
+PREP绿色校准后，当前只允许准备研究工具，不允许申请执行Readiness Review：
 
 ```text
 XINMAI-1.0-CORE-VALUE-RETURN-AND-PAY-
-WILLINGNESS-REAL-USER-VALIDATION-
-EXECUTION-READINESS-REVIEW-P0
+WILLINGNESS-USER-VALIDATION-
+RESEARCH-INSTRUMENT-PACK-P0
 
-刀型：Research Readiness Review
-决策：MAP / EVIDENCE ONLY
+刀型：Research Artifact Prep
+决策：NOW — PREP ONLY
 ```
 
-Readiness Review必须核对：
+Execution Readiness Review继续被以下条件阻断：
+
+- Phase 3 Experience Closure；
+- C2外部Android Canonical证据与Delivery；
+- C3裁决/施工；
+- 正式研究版本冻结。
+
+条件满足后，Readiness Review必须核对：
 
 - 正式产品版本；
 - 参与者保护；
@@ -679,7 +792,16 @@ Phase 4：
 LOCKED
 
 Next：
-NOW — REAL-USER VALIDATION EXECUTION READINESS REVIEW READY
+NOW — RESEARCH INSTRUMENT PACK PREP READY
+
+Research Protocol：
+READY
+
+Research Execution：
+BLOCKED BY PHASE 3 / C2 / C3
+
+Execution Readiness Review：
+NOT YET ACTIONABLE
 ```
 
 研究总原则冻结为：
