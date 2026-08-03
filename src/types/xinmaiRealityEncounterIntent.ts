@@ -96,6 +96,7 @@ export type RealityEncounterIntent = Readonly<{
   qualification: RealityEncounterQualification;
   choiceActionIntentionReferenceId: string | null;
   departureReceiptReferenceId: string | null;
+  departureReconciliationReferenceId?: string | null;
   returnIntentRequestReferenceId: string | null;
   returnAttemptRevision: number | null;
   sourceEncounterCycleId: string | null;
@@ -127,6 +128,7 @@ export type RealityEncounterAdmission = Readonly<{
   qualification: RealityEncounterQualification;
   choiceActionIntentionReferenceId: string | null;
   departureReceiptReferenceId: string | null;
+  departureReconciliationReferenceId: string | null;
   returnIntentRequestReferenceId: string | null;
   returnAttemptRevision: number | null;
   sourceEncounterCycleId: string | null;
@@ -139,6 +141,7 @@ export type RealityEncounterRequestInput = Readonly<{
   qualification: RealityEncounterQualification;
   choiceActionIntentionReferenceId?: string | null;
   departureReceiptReferenceId?: string | null;
+  departureReconciliationReferenceId?: string | null;
   returnIntentRequestReferenceId?: string | null;
   returnAttemptRevision?: number | null;
   sourceEncounterCycleId?: string | null;
@@ -146,12 +149,18 @@ export type RealityEncounterRequestInput = Readonly<{
   requestedAt?: string;
 }>;
 
+export type RealityEncounterRequestDisposition =
+  | "CREATED"
+  | "ALREADY_CURRENT"
+  | "RECOVERED_EXACT_CHOICE_RETURN";
+
 export type RealityEncounterRequestResult =
   | Readonly<{
       status: "READY";
       operation: "REQUEST";
       intent: RealityEncounterIntent;
       persistence: "CONFIRMED" | "CURRENT_RUNTIME_ONLY";
+      requestDisposition: RealityEncounterRequestDisposition;
       reason: null;
     }>
   | Readonly<{
@@ -165,6 +174,8 @@ export type RealityEncounterRequestResult =
         | "RETURN_INTENT_REQUEST_INVALID"
         | "RETURN_SOURCE_ENCOUNTER_MISMATCH"
         | "RETURN_INTENT_REQUEST_CONFLICT"
+        | "DEPARTURE_RECONCILIATION_REQUIRED"
+        | "ACTIVE_ADVENTURE_REQUIRES_CONTINUATION"
         | "ENCOUNTER_ALREADY_ACTIVE"
         | "CURRENT_IDENTITY_MISMATCH"
         | "TRANSACTION_STORAGE_UNAVAILABLE"
@@ -176,6 +187,8 @@ export type RealityEncounterRequestResult =
         | "MUTATION_PAUSED"
         | "LEGACY_WRITER_DETECTED"
         | "LEGACY_SOURCE_CORRUPTED"
+        | "RETURN_CONFLICT_WINNER_NOT_VISIBLE"
+        | "RETURN_CONFLICT_PROOF_MISMATCH"
         | "UNIQUE_CONSTRAINT_REJECTED";
     }>;
 

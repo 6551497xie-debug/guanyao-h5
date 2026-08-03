@@ -2285,6 +2285,40 @@ function DormantRealLifeDepartureFocus() {
   );
 }
 
+function DepartureReconciliationPendingFocus({
+  busy,
+  onRetry,
+}: Readonly<{
+  busy: boolean;
+  onRetry: () => void;
+}>) {
+  return (
+    <section
+      aria-label="离场事实已经保存，生命周期仍在协调"
+      data-choice-departure-state="DEPARTURE_RECONCILIATION_PENDING"
+      style={{
+        position: "absolute",
+        inset: 0,
+        zIndex: 5,
+        display: "grid",
+        placeItems: "center",
+        padding: 30,
+        background: "rgba(3,5,9,0.94)",
+        textAlign: "center",
+      }}
+    >
+      <div style={{ display: "grid", gap: 12, maxWidth: 320 }}>
+        <p role="status" style={{ margin: 0, lineHeight: 1.8 }}>
+          离场事实已经保存。生命旅程仍在协调，既有资产不会丢失。
+        </p>
+        <button type="button" disabled={busy} onClick={onRetry}>
+          重试协调
+        </button>
+      </div>
+    </section>
+  );
+}
+
 /* Legacy page-owned Crystal deposit surface intentionally isolated by the
  * atomic Growth Authority cutover. New Formation is rendered only from a
  * confirmed Formation Receipt in the returning-life surface.
@@ -3061,10 +3095,29 @@ function HexagramCodeDeliveryShell({
       });
       if (
         departed.status !== "DEPARTED" &&
-        departed.status !== "ALREADY_DEPARTED"
+        departed.status !== "ALREADY_DEPARTED" &&
+        departed.status !== "DEPARTURE_RECONCILIATION_PENDING"
       ) {
         setChoiceAuthorityFeedback(
           "这一步还没有被完整保存，请稍后再试。",
+        );
+        return;
+      }
+      if (departed.status === "DEPARTURE_RECONCILIATION_PENDING") {
+        setChoiceAuthorityFeedback(
+          "离场事实已保存，生命周期仍在协调。可以安全重试。",
+        );
+        setChoiceReturningAdmission(
+          Object.freeze({
+            state: "DEPARTURE_RECONCILIATION_PENDING" as const,
+            intention: departed.intention,
+            departureReceipt: departed.receipt,
+            returnReceipt: null,
+            currentFact: null,
+            currentEligibility: null,
+            formationReceipt: null,
+            reason: "DEPARTURE_RECONCILIATION_PENDING" as const,
+          }),
         );
         return;
       }
@@ -3442,6 +3495,12 @@ function HexagramCodeDeliveryShell({
         >
           {choiceReturningAdmission?.state === "DORMANT_DEPARTURE" ? (
             <DormantRealLifeDepartureFocus />
+          ) : choiceReturningAdmission?.state ===
+            "DEPARTURE_RECONCILIATION_PENDING" ? (
+            <DepartureReconciliationPendingFocus
+              busy={choiceMutationPending}
+              onRetry={() => void handleChoiceExplicitDeparture()}
+            />
           ) : choicePresentationDecision.state ===
             "RESUME_COMMITTED" &&
           committedChoiceActionIntention ? (

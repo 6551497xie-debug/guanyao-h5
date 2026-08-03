@@ -8,6 +8,10 @@ const controller = fs.readFileSync(
   "src/services/xinmaiRealityEncounterIntentController.ts",
   "utf8",
 );
+const lifecycleOwner = fs.readFileSync(
+  "src/services/xinmaiRealityAdventureLifecycleReconciliationController.ts",
+  "utf8",
+);
 const app = fs.readFileSync("src/App.tsx", "utf8");
 const route = fs.readFileSync(
   "src/pages/RealityProductionRouteEntry.tsx",
@@ -26,10 +30,16 @@ for (const marker of [
 for (const marker of [
   "export async function terminateRealityEncounter",
   "transactRealityAdventureContinuity",
+  "terminalizeXinmaiRealityAdventureLifecycleRecord",
+]) {
+  assert(controller.includes(marker), `explicit leave authority missing ${marker}`);
+}
+for (const marker of [
+  "terminalizeXinmaiRealityAdventureLifecycleRecord",
   'state: "TERMINAL"',
   "activeIdentityKey: undefined",
 ]) {
-  assert(controller.includes(marker), `explicit leave authority missing ${marker}`);
+  assert(lifecycleOwner.includes(marker), `lifecycle owner missing ${marker}`);
 }
 assert(route.includes("createRealityExplicitLeaveRequestFromIntent"), "Route typed leave request missing");
 assert(app.includes("executeRealityExplicitLeaveTermination"), "App explicit leave owner missing");

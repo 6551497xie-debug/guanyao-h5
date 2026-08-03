@@ -21,11 +21,21 @@ import { createStableXinmaiGrowthReference } from "./xinmaiLivedGrowthReference"
 import { executeXinmaiLivedGrowthTransaction } from "./xinmaiLivedGrowthTransactionAuthority";
 import { readXinmaiLivedGrowthCanonicalState } from "./xinmaiLivedGrowthTransactionalStore";
 import {
+  readXinmaiChoiceReturnTargetLifecycle,
   readXinmaiChoiceReturningRealityProof,
   validateXinmaiChoiceReturningRealityProof,
 } from "./xinmaiChoiceReturningRealityProofAdapter";
 import { isXinmaiChoiceReturningProvenanceMutationEnabled } from "./xinmaiChoiceReturningProvenanceMutationPolicy";
 import { resolveXinmaiChoiceReturningProvenanceAdmission } from "./xinmaiChoiceReturningProvenanceAdmissionResolver";
+import {
+  createXinmaiChoiceDepartureReconciliationProof,
+  readXinmaiChoiceDepartureReconciliationProof,
+} from "./xinmaiChoiceDepartureReconciliationProofAdapter";
+import {
+  readXinmaiChoiceDepartureReconciliation,
+  reconcileXinmaiChoiceExplicitDeparture,
+} from "./xinmaiRealityAdventureLifecycleReconciliationController";
+import { isXinmaiRealityAdventureLifecycleReconciliationMutationEnabled } from "./xinmaiRealityAdventureLifecycleReconciliationMutationPolicy";
 import {
   requestRealityEncounter,
   terminateRealityEncounter,
@@ -45,6 +55,9 @@ type ProvenanceFailureReason =
   | "REALITY_INTENT_UNAVAILABLE"
   | "REALITY_PROOF_UNAVAILABLE"
   | "REALITY_PROOF_MISMATCH"
+  | "DEPARTURE_RECONCILIATION_PENDING"
+  | "DEPARTURE_RECONCILIATION_REQUIRED"
+  | "DEPARTURE_RECONCILIATION_MISMATCH"
   | "PROVENANCE_NOT_UNIQUE"
   | "PERSISTENCE_UNAVAILABLE";
 
@@ -53,6 +66,12 @@ export type XinmaiChoiceDepartureResult =
       status: "DEPARTED" | "ALREADY_DEPARTED";
       intention: ChoiceActionIntention;
       receipt: XinmaiChoiceExplicitDepartureReceipt;
+    }>
+  | Readonly<{
+      status: "DEPARTURE_RECONCILIATION_PENDING";
+      intention: ChoiceActionIntention;
+      receipt: XinmaiChoiceExplicitDepartureReceipt;
+      reason: ProvenanceFailureReason | string;
     }>
   | Readonly<{
       status: "REJECTED" | "SAFE_WITHHELD";
@@ -127,7 +146,10 @@ export async function confirmXinmaiChoiceExplicitDeparture(input: Readonly<{
   expectedIntentionRevision: number;
   identityReferences: RealityEncounterIdentityReferences;
 }>): Promise<XinmaiChoiceDepartureResult> {
-  if (!isXinmaiChoiceReturningProvenanceMutationEnabled()) {
+  if (
+    !isXinmaiChoiceReturningProvenanceMutationEnabled() ||
+    !isXinmaiRealityAdventureLifecycleReconciliationMutationEnabled()
+  ) {
     return failedDeparture("SAFE_WITHHELD", "MUTATION_PAUSED");
   }
   const result = await executeXinmaiLivedGrowthTransaction(
@@ -238,6 +260,33 @@ export async function confirmXinmaiChoiceExplicitDeparture(input: Readonly<{
     },
   );
   if (result.status === "COMMITTED" || result.status === "ALREADY_COMMITTED") {
+    const proofResult = createXinmaiChoiceDepartureReconciliationProof({
+      intention: result.value.intention,
+      departureReceipt: result.value.receipt,
+      observedGrowthEnvelopeRevision: result.envelope.revision,
+    });
+    if (proofResult.status !== "READY") {
+      return Object.freeze({
+        status: "DEPARTURE_RECONCILIATION_PENDING" as const,
+        intention: result.value.intention,
+        receipt: result.value.receipt,
+        reason: proofResult.reason,
+      });
+    }
+    const reconciliation =
+      await reconcileXinmaiChoiceExplicitDeparture(proofResult.proof);
+    if (
+      reconciliation.status !== "RECONCILED" &&
+      reconciliation.status !== "ALREADY_RECONCILED"
+    ) {
+      return Object.freeze({
+        status: "DEPARTURE_RECONCILIATION_PENDING" as const,
+        intention: result.value.intention,
+        receipt: result.value.receipt,
+        reason:
+          reconciliation.reason ?? "DEPARTURE_RECONCILIATION_PENDING",
+      });
+    }
     return Object.freeze({
       status: result.status === "COMMITTED" ? "DEPARTED" as const : "ALREADY_DEPARTED" as const,
       intention: result.value.intention,
@@ -250,7 +299,10 @@ export async function confirmXinmaiChoiceExplicitDeparture(input: Readonly<{
 export async function confirmXinmaiChoiceExplicitReturn(input: Readonly<{
   admission: Extract<XinmaiChoiceReturningProvenanceAdmission, { state: "DORMANT_DEPARTURE" }>;
 }>): Promise<XinmaiChoiceReturnResult> {
-  if (!isXinmaiChoiceReturningProvenanceMutationEnabled()) {
+  if (
+    !isXinmaiChoiceReturningProvenanceMutationEnabled() ||
+    !isXinmaiRealityAdventureLifecycleReconciliationMutationEnabled()
+  ) {
     return failedReturn("SAFE_WITHHELD", "MUTATION_PAUSED");
   }
   const recovered = await readXinmaiLivedGrowthCanonicalState();
@@ -268,6 +320,30 @@ export async function confirmXinmaiChoiceExplicitReturn(input: Readonly<{
   if (ready.length > 1) {
     return failedReturn("SAFE_WITHHELD", "PROVENANCE_NOT_UNIQUE");
   }
+  const departureProof = await readXinmaiChoiceDepartureReconciliationProof({
+    choiceActionIntentionReferenceId:
+      input.admission.intention.choiceActionIntentionReferenceId,
+    departureReceiptReferenceId:
+      input.admission.departureReceipt.departureReceiptReferenceId,
+    identityReferences: input.admission.intention.identityReferences,
+  });
+  if (departureProof.status !== "READY") {
+    return failedReturn(
+      "SAFE_WITHHELD",
+      "DEPARTURE_RECONCILIATION_MISMATCH",
+    );
+  }
+  const sourceReconciliation = await readXinmaiChoiceDepartureReconciliation({
+    proof: departureProof.proof,
+  });
+  if (sourceReconciliation.status !== "CURRENT") {
+    return failedReturn(
+      "SAFE_WITHHELD",
+      sourceReconciliation.status === "PENDING"
+        ? "DEPARTURE_RECONCILIATION_REQUIRED"
+        : "DEPARTURE_RECONCILIATION_MISMATCH",
+    );
+  }
   const returnAttemptRevision =
     ready[0]?.returnAttemptRevision ??
     Math.max(0, ...historicReturns.map((receipt) => receipt.returnAttemptRevision)) + 1;
@@ -283,6 +359,8 @@ export async function confirmXinmaiChoiceExplicitReturn(input: Readonly<{
       input.admission.intention.choiceActionIntentionReferenceId,
     departureReceiptReferenceId:
       input.admission.departureReceipt.departureReceiptReferenceId,
+    departureReconciliationReferenceId:
+      sourceReconciliation.reconciliation.reconciliationReferenceId,
     returnIntentRequestReferenceId,
     returnAttemptRevision,
     sourceEncounterCycleId: input.admission.intention.sourceEncounterCycleId,
@@ -443,7 +521,11 @@ export async function confirmXinmaiChoiceExplicitReturn(input: Readonly<{
   );
   if (result.status === "COMMITTED" || result.status === "ALREADY_COMMITTED") {
     return Object.freeze({
-      status: result.status === "COMMITTED" ? "RETURNED" as const : "ALREADY_RETURNED" as const,
+      status:
+        result.status === "COMMITTED" &&
+        requested.requestDisposition === "CREATED"
+          ? "RETURNED" as const
+          : "ALREADY_RETURNED" as const,
       intention: result.value.intention,
       departureReceipt: result.value.departureReceipt,
       returnReceipt: result.value.returnReceipt,
@@ -453,10 +535,20 @@ export async function confirmXinmaiChoiceExplicitReturn(input: Readonly<{
 }
 
 export async function resolveXinmaiChoiceReturnWithoutFact(input: Readonly<{
-  admission: Extract<XinmaiChoiceReturningProvenanceAdmission, { state: "READY_FOR_LIVED_RESPONSE" }>;
+  admission: Extract<
+    XinmaiChoiceReturningProvenanceAdmission,
+    {
+      state:
+        | "READY_FOR_LIVED_RESPONSE"
+        | "NO_FACT_TARGET_TERMINATION_PENDING";
+    }
+  >;
   resolution: XinmaiChoiceNoFactResolution;
 }>): Promise<XinmaiChoiceNoFactResolutionResult> {
-  if (!isXinmaiChoiceReturningProvenanceMutationEnabled()) {
+  if (
+    !isXinmaiChoiceReturningProvenanceMutationEnabled() ||
+    !isXinmaiRealityAdventureLifecycleReconciliationMutationEnabled()
+  ) {
     return failedResolution("SAFE_WITHHELD", "MUTATION_PAUSED");
   }
   const result = await executeXinmaiLivedGrowthTransaction(
@@ -595,6 +687,40 @@ export async function readXinmaiChoiceReturningProvenanceAdmissions(
     const departureReceipt = departures[0] ?? null;
     const returnReceipt = activeReturns[0] ?? returns.sort((left, right) => right.returnAttemptRevision - left.returnAttemptRevision)[0] ?? null;
     let realityProofState: "NOT_REQUIRED" | "CURRENT" | "UNAVAILABLE" | "MISMATCH" = "NOT_REQUIRED";
+    let departureReconciliationState:
+      | "NOT_REQUIRED"
+      | "CURRENT"
+      | "PENDING"
+      | "UNAVAILABLE"
+      | "MISMATCH" = "NOT_REQUIRED";
+    let targetTerminationState:
+      | "NOT_REQUIRED"
+      | "ACTIVE"
+      | "TERMINAL"
+      | "UNAVAILABLE"
+      | "MISMATCH" = "NOT_REQUIRED";
+    if (departureReceipt !== null && currentFact === null) {
+      const departureProof = createXinmaiChoiceDepartureReconciliationProof({
+        intention,
+        departureReceipt,
+        observedGrowthEnvelopeRevision: recovered.envelope.revision,
+      });
+      if (departureProof.status !== "READY") {
+        departureReconciliationState = "MISMATCH";
+      } else {
+        const reconciliation = await readXinmaiChoiceDepartureReconciliation({
+          proof: departureProof.proof,
+        });
+        departureReconciliationState =
+          reconciliation.status === "CURRENT"
+            ? "CURRENT"
+            : reconciliation.status === "PENDING"
+              ? "PENDING"
+              : reconciliation.reason === "RECOVERY_UNAVAILABLE"
+                ? "UNAVAILABLE"
+                : "MISMATCH";
+      }
+    }
     if (departureReceipt !== null && activeReturns[0] !== undefined && currentFact === null) {
       const candidate = activeReturns[0];
       const proof = await readXinmaiChoiceReturningRealityProof({
@@ -606,7 +732,26 @@ export async function readXinmaiChoiceReturningProvenanceAdmissions(
       });
       realityProofState = proof.status !== "READY" ? (proof.reason === "REALITY_PROOF_UNAVAILABLE" ? "UNAVAILABLE" : "MISMATCH") : (proof.proof.canonicalRevision < candidate.realityProof.canonicalRevision || proof.proof.fencingToken < candidate.realityProof.fencingToken ? "MISMATCH" : "CURRENT");
     }
-    admissions.push(resolveXinmaiChoiceReturningProvenanceAdmission({ intention, departureReceipt, returnReceipt, currentFact, currentEligibility, formationReceipt, realityProofState }));
+    if (
+      departureReceipt !== null &&
+      returnReceipt?.state === "RESOLVED_WITHOUT_FACT" &&
+      currentFact === null
+    ) {
+      const targetLifecycle = await readXinmaiChoiceReturnTargetLifecycle({
+        intention,
+        departureReceipt,
+        returnReceipt,
+      });
+      targetTerminationState =
+        targetLifecycle.status === "ACTIVE"
+          ? "ACTIVE"
+          : targetLifecycle.status === "TERMINAL"
+            ? "TERMINAL"
+            : targetLifecycle.reason === "REALITY_PROOF_UNAVAILABLE"
+              ? "UNAVAILABLE"
+              : "MISMATCH";
+    }
+    admissions.push(resolveXinmaiChoiceReturningProvenanceAdmission({ intention, departureReceipt, returnReceipt, currentFact, currentEligibility, formationReceipt, realityProofState, departureReconciliationState, targetTerminationState }));
   }
   return Object.freeze(admissions);
 }

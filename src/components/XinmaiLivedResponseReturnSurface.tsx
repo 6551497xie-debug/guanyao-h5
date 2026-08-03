@@ -193,7 +193,11 @@ export function XinmaiLivedResponseReturnSurface({
   const intention = selected.intention;
 
   const depart = async () => {
-    if (busy || selected.state !== "RESUME_COMMITTED") return;
+    if (
+      busy ||
+      (selected.state !== "RESUME_COMMITTED" &&
+        selected.state !== "DEPARTURE_RECONCILIATION_PENDING")
+    ) return;
     setBusy(true);
     setFeedback(null);
     const result = await confirmXinmaiChoiceExplicitDeparture({
@@ -204,9 +208,15 @@ export function XinmaiLivedResponseReturnSurface({
     setFeedback(
       result.status === "DEPARTED" || result.status === "ALREADY_DEPARTED"
         ? "这一步已经被你带回生活。"
-        : "这一步还没有被完整保存，请稍后再试。",
+        : result.status === "DEPARTURE_RECONCILIATION_PENDING"
+          ? "离场事实已保存，生命旅程仍在协调。既有资产不会丢失，可以稍后重试。"
+          : "这一步还没有被完整保存，请稍后再试。",
     );
-    if (result.status === "DEPARTED" || result.status === "ALREADY_DEPARTED") {
+    if (
+      result.status === "DEPARTED" ||
+      result.status === "ALREADY_DEPARTED" ||
+      result.status === "DEPARTURE_RECONCILIATION_PENDING"
+    ) {
       onAuthorityRevision?.();
     }
     setBusy(false);
@@ -233,7 +243,11 @@ export function XinmaiLivedResponseReturnSurface({
   const resolveWithoutFact = async (
     resolution: "NOT_ATTEMPTED" | "USER_REJECTED_RECORD",
   ) => {
-    if (busy || selected.state !== "READY_FOR_LIVED_RESPONSE") return;
+    if (
+      busy ||
+      (selected.state !== "READY_FOR_LIVED_RESPONSE" &&
+        selected.state !== "NO_FACT_TARGET_TERMINATION_PENDING")
+    ) return;
     setBusy(true);
     const result = await resolveXinmaiChoiceReturnWithoutFact({
       admission: selected,
@@ -241,9 +255,11 @@ export function XinmaiLivedResponseReturnSurface({
     });
     setFeedback(
       result.status === "RESOLVED" || result.status === "ALREADY_RESOLVED"
-        ? resolution === "NOT_ATTEMPTED"
-          ? "还没有尝试，也没有关系。这一步仍会等你。"
-          : "这次不作记录。你仍然可以继续同行。"
+        ? result.intentTermination === "RETRYABLE"
+          ? "你的选择已经保存，这次回访仍在安全结束，可以重试。"
+          : resolution === "NOT_ATTEMPTED"
+            ? "还没有尝试，也没有关系。这一步仍会等你。"
+            : "这次不作记录。你仍然可以继续同行。"
         : "这次选择尚未完整保存，请稍后再试。",
     );
     if (result.status === "RESOLVED" || result.status === "ALREADY_RESOLVED") {
@@ -444,6 +460,15 @@ export function XinmaiLivedResponseReturnSurface({
         <button type="button" disabled={busy} onClick={depart}>
           带着这一步，回到生活
         </button>
+      ) : selected.state === "DEPARTURE_RECONCILIATION_PENDING" ? (
+        <div style={{ display: "grid", gap: 8 }}>
+          <p role="status">
+            离场事实已经保存，生命旅程仍在协调。回访入口会在协调完成后开放。
+          </p>
+          <button type="button" disabled={busy} onClick={depart}>
+            重试协调
+          </button>
+        </div>
       ) : selected.state === "DORMANT_DEPARTURE" ? (
         <>
           <p>这一步已经被你带回生活。等你愿意时，再明确回来。</p>
@@ -451,6 +476,23 @@ export function XinmaiLivedResponseReturnSurface({
             我回来了
           </button>
         </>
+      ) : selected.state === "NO_FACT_TARGET_TERMINATION_PENDING" ? (
+        <div style={{ display: "grid", gap: 8 }}>
+          <p role="status">
+            你的选择已经保存，这次回访仍在安全结束。不会形成事实、结晶或新的现实。
+          </p>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() =>
+              void resolveWithoutFact(
+                selected.returnReceipt.noFactReason,
+              )
+            }
+          >
+            重试结束本次回访
+          </button>
+        </div>
       ) : selected.state === "READY_FOR_LIVED_RESPONSE" ? (
         <>
           <p>现实里，实际发生了什么？</p>

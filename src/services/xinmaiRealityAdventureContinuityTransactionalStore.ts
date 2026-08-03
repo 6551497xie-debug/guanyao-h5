@@ -12,6 +12,7 @@ import type {
   RealityAdventureContinuityMutationResult,
   RealityAdventureContinuityReadResult,
   RealityAdventureEncounterContinuityRecord,
+  RealityAdventureContinuityUniqueConstraintContext,
 } from "../types/xinmaiRealityAdventureContinuity";
 import {
   captureRealityAdventureLegacyDigestSnapshot,
@@ -79,6 +80,56 @@ const identityMatches = (
     right.starBeastIdentityReferenceId &&
   left.mansionCoordinateReferenceId ===
     right.mansionCoordinateReferenceId;
+
+const deterministicActiveIdentityKey = (
+  identity: Record<string, unknown>,
+): string =>
+  [
+    identity.sourceReferenceId,
+    identity.starBeastIdentityReferenceId,
+    identity.mansionCoordinateReferenceId,
+  ].join("::");
+
+const isDepartureReconciliation = (
+  value: unknown,
+  record: Record<string, unknown>,
+): boolean => {
+  if (!isRecord(value) || !isRecord(record.identityReferences)) {
+    return false;
+  }
+  return (
+    value.schemaVersion ===
+      "XINMAI_REALITY_GRAVITY_DEPARTURE_RECONCILIATION_V1" &&
+    validText(value.reconciliationReferenceId) &&
+    validText(value.departureReceiptReferenceId) &&
+    Number.isInteger(value.departureReceiptRevision) &&
+    Number(value.departureReceiptRevision) > 0 &&
+    validText(value.choiceActionIntentionReferenceId) &&
+    value.sourceEncounterCycleId === record.encounterCycleId &&
+    validText(value.gravityCycleId) &&
+    validText(value.gravityObservationReferenceId) &&
+    isIdentity(value.identityReferences) &&
+    identityMatches(
+      value.identityReferences as Record<string, unknown>,
+      record.identityReferences,
+    ) &&
+    Number.isInteger(value.observedGrowthEnvelopeRevision) &&
+    Number(value.observedGrowthEnvelopeRevision) > 0 &&
+    Number.isInteger(value.reconciledCanonicalRevision) &&
+    value.reconciledCanonicalRevision === record.canonicalRevision &&
+    Number.isInteger(value.reconciledFencingToken) &&
+    value.reconciledFencingToken === record.fencingToken &&
+    value.state === "EXPLICIT_DEPARTURE_RECONCILED" &&
+    validText(value.reconciledAt) &&
+    isRecord(value.provenance) &&
+    value.provenance.departureAuthority ===
+      "XINMAI_LIVED_GROWTH_TRANSACTION_AUTHORITY" &&
+    value.provenance.realityAuthority ===
+      "XINMAI_REALITY_ADVENTURE_CONTINUITY" &&
+    value.provenance.crossStoreAtomicityClaim === false &&
+    value.provenance.noActionCompletionClaim === true
+  );
+};
 
 const isCandidateRevision = (value: unknown): boolean =>
   isRecord(value) &&
@@ -172,8 +223,10 @@ const isCanonicalRecord = (
 ): value is RealityAdventureEncounterContinuityRecord => {
   if (
     !isRecord(value) ||
-    value.schemaVersion !==
-      "XINMAI_REALITY_ADVENTURE_ENCOUNTER_CONTINUITY_V1" ||
+    (value.schemaVersion !==
+      "XINMAI_REALITY_ADVENTURE_ENCOUNTER_CONTINUITY_V1" &&
+      value.schemaVersion !==
+        "XINMAI_REALITY_ADVENTURE_ENCOUNTER_CONTINUITY_V2") ||
     !validText(value.encounterCycleId) ||
     !Number.isInteger(value.canonicalRevision) ||
     Number(value.canonicalRevision) < 1 ||
@@ -198,6 +251,37 @@ const isCanonicalRecord = (
     value.provenance.noGrowthAuthority !== true
   ) {
     return false;
+  }
+  const expectedActiveIdentityKey = deterministicActiveIdentityKey(
+    value.identityReferences as Record<string, unknown>,
+  );
+  if (
+    (value.lifecycle === "TERMINAL" &&
+      value.activeIdentityKey !== undefined) ||
+    (value.lifecycle !== "TERMINAL" &&
+      value.activeIdentityKey !== expectedActiveIdentityKey)
+  ) {
+    return false;
+  }
+  if (
+    value.schemaVersion ===
+      "XINMAI_REALITY_ADVENTURE_ENCOUNTER_CONTINUITY_V2" &&
+    value.departureReconciliation !== null
+  ) {
+    const reconciliation = value.departureReconciliation;
+    if (
+      !isRecord(reconciliation) ||
+      !isDepartureReconciliation(reconciliation, value) ||
+      value.lifecycle !== "TERMINAL" ||
+      value.terminalReason !== "EXPLICIT_LEAVE" ||
+      !isRecord(value.gravityAdmission) ||
+      value.gravityAdmission.gravityCycleId !==
+        reconciliation.gravityCycleId ||
+      value.gravityAdmission.gravityObservationReferenceId !==
+        reconciliation.gravityObservationReferenceId
+    ) {
+      return false;
+    }
   }
   if (
     value.candidateRevision !== null &&
@@ -338,6 +422,22 @@ const freezeCanonicalRecord = (
       record.gravityAdmission === null
         ? null
         : Object.freeze({ ...record.gravityAdmission }),
+    ...("departureReconciliation" in record
+      ? {
+          departureReconciliation:
+            record.departureReconciliation === null
+              ? null
+              : Object.freeze({
+                  ...record.departureReconciliation,
+                  identityReferences: Object.freeze({
+                    ...record.departureReconciliation.identityReferences,
+                  }),
+                  provenance: Object.freeze({
+                    ...record.departureReconciliation.provenance,
+                  }),
+                }),
+        }
+      : {}),
     provenance: Object.freeze({ ...record.provenance }),
   });
 
@@ -656,6 +756,7 @@ export async function transactRealityAdventureContinuity<TValue>(
       record: null,
       value: null,
       reason: "MUTATION_PAUSED" as const,
+      uniqueConstraint: null,
     });
   }
   const { lookup, mutate: mutation } = input;
@@ -666,6 +767,7 @@ export async function transactRealityAdventureContinuity<TValue>(
       record: null,
       value: null,
       reason: openFailureReason(opened),
+      uniqueConstraint: null,
     });
   }
   const database = opened.database;
@@ -680,6 +782,7 @@ export async function transactRealityAdventureContinuity<TValue>(
         record: null,
         value: null,
         reason: "TRANSACTION_CONNECTION_CLOSED" as const,
+        uniqueConstraint: null,
       }));
       return;
     }
@@ -688,6 +791,9 @@ export async function transactRealityAdventureContinuity<TValue>(
       | null = null;
     let failureReason: RealityAdventureContinuityFailureReason | null =
       null;
+    let uniqueConstraint:
+      | RealityAdventureContinuityUniqueConstraintContext
+      | null = null;
     const store = transaction.objectStore(
       XINMAI_REALITY_ADVENTURE_CONTINUITY_STORE,
     );
@@ -775,18 +881,38 @@ export async function transactRealityAdventureContinuity<TValue>(
             }
             const retainedPut = store.put(retainedRecord);
             retainedPut.onerror = () => {
-              failureReason =
-                retainedPut.error?.name === "ConstraintError"
-                  ? "UNIQUE_CONSTRAINT_REJECTED"
-                  : "WRITE_UNCONFIRMED";
+              if (retainedPut.error?.name === "ConstraintError") {
+                failureReason = "UNIQUE_CONSTRAINT_REJECTED";
+                uniqueConstraint = Object.freeze({
+                  operation: "RETAINED_RECORD_PUT" as const,
+                  attemptedEncounterCycleId:
+                    retainedRecord.encounterCycleId,
+                  attemptedActiveIdentityKey:
+                    retainedRecord.activeIdentityKey ?? null,
+                });
+              } else {
+                failureReason = "WRITE_UNCONFIRMED";
+              }
             };
           }
           const put = store.put(decision.record);
           put.onerror = () => {
-            failureReason =
-              put.error?.name === "ConstraintError"
-                ? "UNIQUE_CONSTRAINT_REJECTED"
-                : "WRITE_UNCONFIRMED";
+            if (put.error?.name === "ConstraintError") {
+              failureReason = "UNIQUE_CONSTRAINT_REJECTED";
+              uniqueConstraint = Object.freeze({
+                operation: "CANONICAL_RECORD_PUT" as const,
+                attemptedEncounterCycleId:
+                  decision?.status === "COMMIT"
+                    ? decision.record.encounterCycleId
+                    : null,
+                attemptedActiveIdentityKey:
+                  decision?.status === "COMMIT"
+                    ? decision.record.activeIdentityKey ?? null
+                    : null,
+              });
+            } else {
+              failureReason = "WRITE_UNCONFIRMED";
+            }
           };
         }
       };
@@ -798,11 +924,17 @@ export async function transactRealityAdventureContinuity<TValue>(
         record: null,
         value: null,
         reason: failureReason ?? "TRANSACTION_ABORTED",
+        uniqueConstraint,
       }));
     };
     transaction.onerror = () => {
       if (transaction.error?.name === "ConstraintError") {
         failureReason = "UNIQUE_CONSTRAINT_REJECTED";
+        uniqueConstraint ??= Object.freeze({
+          operation: "TRANSACTION_UNKNOWN" as const,
+          attemptedEncounterCycleId: null,
+          attemptedActiveIdentityKey: null,
+        });
       }
     };
     transaction.oncomplete = () => {
@@ -813,6 +945,7 @@ export async function transactRealityAdventureContinuity<TValue>(
           record: null,
           value: null,
           reason: failureReason ?? "WRITE_UNCONFIRMED",
+          uniqueConstraint,
         }));
         return;
       }

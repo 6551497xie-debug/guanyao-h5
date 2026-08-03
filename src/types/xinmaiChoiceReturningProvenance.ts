@@ -134,6 +134,16 @@ export type XinmaiChoiceReturningProvenanceAdmission =
       }>)
   | (AdmissionAssets &
       Readonly<{
+        state: "DEPARTURE_RECONCILIATION_PENDING";
+        departureReceipt: XinmaiChoiceExplicitDepartureReceipt;
+        returnReceipt: null;
+        currentFact: null;
+        currentEligibility: null;
+        formationReceipt: null;
+        reason: "DEPARTURE_RECONCILIATION_PENDING";
+      }>)
+  | (AdmissionAssets &
+      Readonly<{
         state: "DORMANT_DEPARTURE";
         departureReceipt: XinmaiChoiceExplicitDepartureReceipt;
         returnReceipt: XinmaiChoiceExplicitReturnReceipt | null;
@@ -141,6 +151,20 @@ export type XinmaiChoiceReturningProvenanceAdmission =
         currentEligibility: null;
         formationReceipt: null;
         reason: null;
+      }>)
+  | (AdmissionAssets &
+      Readonly<{
+        state: "NO_FACT_TARGET_TERMINATION_PENDING";
+        departureReceipt: XinmaiChoiceExplicitDepartureReceipt;
+        returnReceipt: XinmaiChoiceExplicitReturnReceipt &
+          Readonly<{
+            state: "RESOLVED_WITHOUT_FACT";
+            noFactReason: XinmaiChoiceNoFactResolution;
+          }>;
+        currentFact: null;
+        currentEligibility: null;
+        formationReceipt: null;
+        reason: "TARGET_TERMINATION_PENDING";
       }>)
   | (AdmissionAssets &
       Readonly<{
@@ -178,6 +202,10 @@ export type XinmaiChoiceReturningProvenanceAdmission =
         | "TARGET_REALITY_BOUND_UNPROVEN"
         | "REALITY_PROOF_UNAVAILABLE"
         | "REALITY_PROOF_MISMATCH"
+        | "DEPARTURE_RECONCILIATION_UNAVAILABLE"
+        | "DEPARTURE_RECONCILIATION_MISMATCH"
+        | "TARGET_TERMINATION_UNAVAILABLE"
+        | "TARGET_TERMINATION_MISMATCH"
         | "PROVENANCE_NOT_UNIQUE";
     }>;
 

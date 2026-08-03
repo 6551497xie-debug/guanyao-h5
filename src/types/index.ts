@@ -3470,6 +3470,8 @@ export type {
   RealityAdventureContinuityMigrationMetaRecord,
   RealityAdventureContinuityReadResult,
   RealityAdventureEncounterContinuityRecord,
+  RealityAdventureEncounterContinuityRecordV1,
+  RealityAdventureEncounterContinuityRecordV2,
   RealityPressureCandidateRevisionProof,
   RealityPressureRecognitionCommand,
   RealityPressureRecognitionFact,
@@ -3478,3 +3480,11 @@ export type {
   RealityPressureRecognitionReceiptLifecycle,
   RealityToGravityTransferProof,
 } from "./xinmaiRealityAdventureContinuity";
+
+export type {
+  XinmaiChoiceDepartureReconciliationProof,
+  RealityAdventureDepartureReconciliation,
+  XinmaiChoiceDepartureReconciliationProofResult,
+  XinmaiRealityAdventureLifecycleReconciliationResult,
+  XinmaiRealityAdventureDepartureReconciliationReadResult,
+} from "./xinmaiRealityGravityDepartureReconciliation";

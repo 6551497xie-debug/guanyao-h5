@@ -16,6 +16,9 @@ import type {
   RealityProductionPressureSeedConsumerResult,
   RealityProductionPressureSeedSession,
 } from "./realityProductionPressureSeedConsumer";
+import type {
+  RealityAdventureDepartureReconciliation,
+} from "./xinmaiRealityGravityDepartureReconciliation";
 
 export const XINMAI_REALITY_ADVENTURE_CONTINUITY_DATABASE_NAME =
   "xinmai-reality-adventure-continuity" as const;
@@ -124,9 +127,7 @@ export type RealityAdventureContinuityLifecycle =
   | "ACTIVE_IN_GRAVITY"
   | "TERMINAL";
 
-export type RealityAdventureEncounterContinuityRecord = Readonly<{
-  schemaVersion:
-    "XINMAI_REALITY_ADVENTURE_ENCOUNTER_CONTINUITY_V1";
+type RealityAdventureEncounterContinuityRecordBase = Readonly<{
   encounterCycleId: string;
   canonicalRevision: number;
   fencingToken: number;
@@ -152,6 +153,26 @@ export type RealityAdventureEncounterContinuityRecord = Readonly<{
     noGrowthAuthority: true;
   }>;
 }>;
+
+export type RealityAdventureEncounterContinuityRecordV1 =
+  RealityAdventureEncounterContinuityRecordBase &
+  Readonly<{
+    schemaVersion:
+      "XINMAI_REALITY_ADVENTURE_ENCOUNTER_CONTINUITY_V1";
+  }>;
+
+export type RealityAdventureEncounterContinuityRecordV2 =
+  RealityAdventureEncounterContinuityRecordBase &
+  Readonly<{
+    schemaVersion:
+      "XINMAI_REALITY_ADVENTURE_ENCOUNTER_CONTINUITY_V2";
+    departureReconciliation:
+      RealityAdventureDepartureReconciliation | null;
+  }>;
+
+export type RealityAdventureEncounterContinuityRecord =
+  | RealityAdventureEncounterContinuityRecordV1
+  | RealityAdventureEncounterContinuityRecordV2;
 
 export type RealityAdventureLegacyMigrationStatus =
   | "CUTOVER_READY"
@@ -187,6 +208,15 @@ export type RealityAdventureContinuityFailureReason =
   | "LEGACY_WRITER_DETECTED"
   | "LEGACY_SOURCE_CORRUPTED"
   | "UNIQUE_CONSTRAINT_REJECTED";
+
+export type RealityAdventureContinuityUniqueConstraintContext = Readonly<{
+  operation:
+    | "CANONICAL_RECORD_PUT"
+    | "RETAINED_RECORD_PUT"
+    | "TRANSACTION_UNKNOWN";
+  attemptedEncounterCycleId: string | null;
+  attemptedActiveIdentityKey: string | null;
+}>;
 
 export type RealityAdventureContinuityReadResult =
   | Readonly<{
@@ -233,6 +263,9 @@ export type RealityAdventureContinuityMutationResult<TValue> =
       record: null;
       value: null;
       reason: RealityAdventureContinuityFailureReason;
+      uniqueConstraint:
+        | RealityAdventureContinuityUniqueConstraintContext
+        | null;
     }>;
 
 export type RealityPressureRecognitionCommand = Readonly<{

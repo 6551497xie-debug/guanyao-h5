@@ -8,6 +8,13 @@ import {
 import { xinmaiGrowthIdentityMatches } from "./xinmaiLivedGrowthIdentity";
 import { readRealityAdventureContinuity } from "./xinmaiRealityAdventureContinuityTransactionalStore";
 
+export type XinmaiChoiceReturnTargetLifecycleReadResult =
+  | Readonly<{ status: "ACTIVE" | "TERMINAL"; reason: null }>
+  | Readonly<{
+      status: "SAFE_WITHHELD";
+      reason: "REALITY_PROOF_UNAVAILABLE" | "REALITY_PROOF_MISMATCH";
+    }>;
+
 export const validateXinmaiChoiceReturningRealityProof = (
   proof: XinmaiChoiceReturningRealityProof,
   intention: ChoiceActionIntention,
@@ -69,6 +76,15 @@ export async function readXinmaiChoiceReturningRealityProof(input: Readonly<{
   }
   const record = recovered.record;
   const intent = record.realityIntent;
+  const source = await readRealityAdventureContinuity({
+    kind: "ENCOUNTER",
+    value: input.intention.sourceEncounterCycleId,
+  });
+  const sourceReconciliation =
+    source.status === "FOUND" &&
+    "departureReconciliation" in source.record
+      ? source.record.departureReconciliation
+      : null;
   if (
     record.encounterCycleId !== input.targetEncounterCycleId ||
     !xinmaiGrowthIdentityMatches(
@@ -78,10 +94,22 @@ export async function readXinmaiChoiceReturningRealityProof(input: Readonly<{
     intent.encounterCycleId !== input.targetEncounterCycleId ||
     intent.origin !== "CHOICE_RETURN" ||
     intent.qualification !== "EXPLICIT_RETURN_TO_CHOICE" ||
+    intent.departureReconciliationReferenceId === null ||
+    intent.departureReconciliationReferenceId === undefined ||
     intent.choiceActionIntentionReferenceId !==
       input.intention.choiceActionIntentionReferenceId ||
     intent.departureReceiptReferenceId !==
       input.departureReceipt.departureReceiptReferenceId ||
+    intent.departureReconciliationReferenceId === null ||
+    intent.departureReconciliationReferenceId === undefined ||
+    sourceReconciliation === null ||
+    sourceReconciliation.reconciliationReferenceId !==
+      intent.departureReconciliationReferenceId ||
+    sourceReconciliation.departureReceiptReferenceId !==
+      input.departureReceipt.departureReceiptReferenceId ||
+    source.status !== "FOUND" ||
+    source.record.lifecycle !== "TERMINAL" ||
+    source.record.activeIdentityKey !== undefined ||
     intent.returnIntentRequestReferenceId !==
       input.returnIntentRequestReferenceId ||
     intent.returnAttemptRevision !== input.returnAttemptRevision ||
@@ -136,8 +164,83 @@ export async function readXinmaiChoiceReturningRealityProof(input: Readonly<{
       });
 }
 
+export async function readXinmaiChoiceReturnTargetLifecycle(input: Readonly<{
+  intention: ChoiceActionIntention;
+  departureReceipt: XinmaiChoiceExplicitDepartureReceipt;
+  returnReceipt: Readonly<{
+    targetEncounterCycleId: string;
+    returnIntentRequestReferenceId: string;
+    returnAttemptRevision: number;
+    realityProof: XinmaiChoiceReturningRealityProof;
+  }>;
+}>): Promise<XinmaiChoiceReturnTargetLifecycleReadResult> {
+  const recovered = await readRealityAdventureContinuity({
+    kind: "ENCOUNTER",
+    value: input.returnReceipt.targetEncounterCycleId,
+  });
+  if (recovered.status !== "FOUND") {
+    return Object.freeze({
+      status: "SAFE_WITHHELD" as const,
+      reason: "REALITY_PROOF_UNAVAILABLE" as const,
+    });
+  }
+  const record = recovered.record;
+  const intent = record.realityIntent;
+  const proof = input.returnReceipt.realityProof;
+  if (
+    record.encounterCycleId !== input.returnReceipt.targetEncounterCycleId ||
+    intent.encounterCycleId !== input.returnReceipt.targetEncounterCycleId ||
+    intent.intentReferenceId !== proof.realityIntentReferenceId ||
+    intent.origin !== "CHOICE_RETURN" ||
+    intent.qualification !== "EXPLICIT_RETURN_TO_CHOICE" ||
+    intent.choiceActionIntentionReferenceId !==
+      input.intention.choiceActionIntentionReferenceId ||
+    intent.departureReceiptReferenceId !==
+      input.departureReceipt.departureReceiptReferenceId ||
+    intent.returnIntentRequestReferenceId !==
+      input.returnReceipt.returnIntentRequestReferenceId ||
+    intent.returnAttemptRevision !== input.returnReceipt.returnAttemptRevision ||
+    proof.targetEncounterCycleId !== input.returnReceipt.targetEncounterCycleId ||
+    proof.returnIntentRequestReferenceId !==
+      input.returnReceipt.returnIntentRequestReferenceId ||
+    !validateXinmaiChoiceReturningRealityProof(
+      proof,
+      input.intention,
+      input.departureReceipt,
+    ) ||
+    !xinmaiGrowthIdentityMatches(
+      record.identityReferences,
+      input.intention.identityReferences,
+    )
+  ) {
+    return Object.freeze({
+      status: "SAFE_WITHHELD" as const,
+      reason: "REALITY_PROOF_MISMATCH" as const,
+    });
+  }
+  const terminal =
+    record.lifecycle === "TERMINAL" &&
+    intent.state === "TERMINAL" &&
+    record.activeIdentityKey === undefined;
+  const active =
+    record.lifecycle !== "TERMINAL" &&
+    intent.state !== "TERMINAL" &&
+    record.activeIdentityKey !== undefined;
+  if (!terminal && !active) {
+    return Object.freeze({
+      status: "SAFE_WITHHELD" as const,
+      reason: "REALITY_PROOF_MISMATCH" as const,
+    });
+  }
+  return Object.freeze({
+    status: terminal ? "TERMINAL" as const : "ACTIVE" as const,
+    reason: null,
+  });
+}
+
 export const XinmaiChoiceReturningRealityProofAdapter = Object.freeze({
   read: readXinmaiChoiceReturningRealityProof,
+  readTargetLifecycle: readXinmaiChoiceReturnTargetLifecycle,
   validate: validateXinmaiChoiceReturningRealityProof,
   source: "REALITY_ADVENTURE_CONTINUITY_READ_ONLY" as const,
   readOnly: true as const,

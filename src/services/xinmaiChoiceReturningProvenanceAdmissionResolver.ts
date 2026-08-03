@@ -18,6 +18,18 @@ export type XinmaiChoiceReturningAdmissionResolverInput = Readonly<{
   currentEligibility: CrystalEligibility | null;
   formationReceipt: CrystalFormationReceipt | null;
   realityProofState: "NOT_REQUIRED" | "CURRENT" | "UNAVAILABLE" | "MISMATCH";
+  departureReconciliationState:
+    | "NOT_REQUIRED"
+    | "CURRENT"
+    | "PENDING"
+    | "UNAVAILABLE"
+    | "MISMATCH";
+  targetTerminationState:
+    | "NOT_REQUIRED"
+    | "ACTIVE"
+    | "TERMINAL"
+    | "UNAVAILABLE"
+    | "MISMATCH";
 }>;
 
 const safeWithheld = (
@@ -79,6 +91,60 @@ export function resolveXinmaiChoiceReturningProvenanceAdmission(
           reason: "EXPLICIT_DEPARTURE_REQUIRED" as const,
         });
   }
+  if (input.departureReconciliationState === "UNAVAILABLE") {
+    return safeWithheld(input, "DEPARTURE_RECONCILIATION_UNAVAILABLE");
+  }
+  if (input.departureReconciliationState === "MISMATCH") {
+    return safeWithheld(input, "DEPARTURE_RECONCILIATION_MISMATCH");
+  }
+  if (input.departureReconciliationState === "PENDING") {
+    return Object.freeze({
+      state: "DEPARTURE_RECONCILIATION_PENDING" as const,
+      intention: input.intention,
+      departureReceipt: input.departureReceipt,
+      returnReceipt: null,
+      currentFact: null,
+      currentEligibility: null,
+      formationReceipt: null,
+      reason: "DEPARTURE_RECONCILIATION_PENDING" as const,
+    });
+  }
+  if (input.departureReconciliationState !== "CURRENT") {
+    return safeWithheld(input, "DEPARTURE_RECONCILIATION_MISMATCH");
+  }
+  if (input.returnReceipt?.state === "RESOLVED_WITHOUT_FACT") {
+    if (input.targetTerminationState === "UNAVAILABLE") {
+      return safeWithheld(input, "TARGET_TERMINATION_UNAVAILABLE");
+    }
+    if (input.targetTerminationState === "MISMATCH") {
+      return safeWithheld(input, "TARGET_TERMINATION_MISMATCH");
+    }
+    if (
+      input.departureReceipt.state !== "DORMANT_DEPARTURE" ||
+      input.returnReceipt.noFactReason === null
+    ) {
+      return safeWithheld(input, "RECOVERY_CORRUPTED");
+    }
+    if (input.targetTerminationState === "ACTIVE") {
+      return Object.freeze({
+        state: "NO_FACT_TARGET_TERMINATION_PENDING" as const,
+        intention: input.intention,
+        departureReceipt: input.departureReceipt,
+        returnReceipt: Object.freeze({
+          ...input.returnReceipt,
+          state: "RESOLVED_WITHOUT_FACT" as const,
+          noFactReason: input.returnReceipt.noFactReason,
+        }),
+        currentFact: null,
+        currentEligibility: null,
+        formationReceipt: null,
+        reason: "TARGET_TERMINATION_PENDING" as const,
+      });
+    }
+    if (input.targetTerminationState !== "TERMINAL") {
+      return safeWithheld(input, "TARGET_TERMINATION_MISMATCH");
+    }
+  }
   const activeReturn =
     input.returnReceipt?.state === "READY_FOR_LIVED_RESPONSE"
       ? input.returnReceipt
@@ -127,7 +193,9 @@ export const XinmaiChoiceReturningProvenanceAdmissionResolver = Object.freeze({
   resolve: resolveXinmaiChoiceReturningProvenanceAdmission,
   states: Object.freeze([
     "RESUME_COMMITTED",
+    "DEPARTURE_RECONCILIATION_PENDING",
     "DORMANT_DEPARTURE",
+    "NO_FACT_TARGET_TERMINATION_PENDING",
     "READY_FOR_LIVED_RESPONSE",
     "RESUME_REPORTED",
     "TERMINAL_BY_GROWTH",

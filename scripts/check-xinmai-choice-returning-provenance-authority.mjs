@@ -16,6 +16,8 @@ const route = read("src/pages/RealityProductionRouteEntry.tsx");
 const gravity = read("src/pages/GravityPage.tsx");
 const launch = read("src/pages/LaunchLab.tsx");
 const surface = read("src/components/XinmaiLivedResponseReturnSurface.tsx");
+const departureProof = read("src/services/xinmaiChoiceDepartureReconciliationProofAdapter.ts");
+const lifecycleOwner = read("src/services/xinmaiRealityAdventureLifecycleReconciliationController.ts");
 
 const assertIncludes = (source, marker) => {
   if (!source.includes(marker)) throw new Error(`missing ${marker}`);
@@ -70,6 +72,7 @@ for (const marker of [
 
 for (const state of [
   "RESUME_COMMITTED",
+  "DEPARTURE_RECONCILIATION_PENDING",
   "DORMANT_DEPARTURE",
   "READY_FOR_LIVED_RESPONSE",
   "RESUME_REPORTED",
@@ -103,10 +106,22 @@ for (const marker of [
   "activeChoiceReturnRecovery",
   'kind: "ENCOUNTER" as const',
   'record.lifecycle === "TERMINAL"',
-  'record.terminalReason === "START_NEW_ENCOUNTER"',
-  'terminalReason: "START_NEW_ENCOUNTER" as const',
-  "retainedRecords: Object.freeze([retiredRecord])",
+  'record.terminalReason === "EXPLICIT_LEAVE"',
+  "departureReconciliationReferenceId",
+  'reason: "DEPARTURE_RECONCILIATION_REQUIRED"',
+  'reason: "ACTIVE_ADVENTURE_REQUIRES_CONTINUATION"',
 ]) assertIncludes(intent, marker);
+
+for (const marker of [
+  "readXinmaiLivedGrowthCanonicalState",
+  "createStableXinmaiGrowthReference",
+  "readOnly: true as const",
+]) assertIncludes(departureProof, marker);
+for (const marker of [
+  "reconcileXinmaiChoiceExplicitDeparture",
+  "activeIdentityKey: undefined",
+  'status: "ALREADY_RECONCILED"',
+]) assertIncludes(lifecycleOwner, marker);
 
 assertIncludes(gravity, "await confirmXinmaiChoiceExplicitDeparture({");
 if (gravity.includes("requestRealityEncounter({")) {
@@ -127,7 +142,7 @@ for (const forbidden of [
     throw new Error(`production consumer still uses ${forbidden}`);
   }
 }
-for (const source of [controller, proof, resolutionProof, resolver, recovery]) {
+for (const source of [controller, proof, departureProof, lifecycleOwner, resolutionProof, resolver, recovery]) {
   if (source.includes("localStorage") || source.includes("sessionStorage")) {
     throw new Error("provenance authority bypasses typed stores");
   }

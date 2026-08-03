@@ -27,6 +27,10 @@ import {
 import {
   isGravitySurfaceAdmissionTransactionValid,
 } from "./xinmaiGravitySurfaceAdmissionTransaction";
+import {
+  terminalizeXinmaiRealityAdventureLifecycleRecord,
+} from "./xinmaiRealityAdventureLifecycleReconciliationController";
+import { isXinmaiRealityAdventureLifecycleReconciliationMutationEnabled } from "./xinmaiRealityAdventureLifecycleReconciliationMutationPolicy";
 
 const GRAVITY_ENTRY_TTL_MS = 2 * 60 * 60 * 1_000;
 let currentAdmission: GravityEntryAdmission | null = null;
@@ -645,6 +649,9 @@ export async function terminateGravityEntry(input: Readonly<{
   terminalReason: GravityEntryAdmission["terminalReason"];
 }>): Promise<GravityEntryAdmission | null> {
   if (input.terminalReason === null) return currentAdmission;
+  if (!isXinmaiRealityAdventureLifecycleReconciliationMutationEnabled()) {
+    return currentAdmission;
+  }
   if (
     currentAdmissionAuthority === "READ_ONLY_LEGACY" &&
     currentAdmission?.admissionReferenceId ===
@@ -688,15 +695,27 @@ export async function terminateGravityEntry(input: Readonly<{
           failure: null,
           terminalReason: input.terminalReason,
         });
+        const realityTerminalReason =
+          input.terminalReason === "EXPLICIT_LEAVE"
+            ? "EXPLICIT_LEAVE" as const
+            : input.terminalReason === "ADMISSION_EXPIRED"
+              ? "INTENT_EXPIRED" as const
+              : input.terminalReason === "IDENTITY_MISMATCH"
+                ? "IDENTITY_MISMATCH" as const
+                : input.terminalReason === "RECOVERY_CANDIDATE_INVALID"
+                  ? "RECOVERY_CANDIDATE_INVALID" as const
+                  : input.terminalReason === "USER_DATA_CLEARED"
+                    ? "USER_DATA_CLEARED" as const
+                    : "START_NEW_ENCOUNTER" as const;
         return Object.freeze({
           status: "COMMIT" as const,
-          record: Object.freeze({
-            ...updateCanonicalAdmission(
-              record,
-              terminal,
-              "TERMINAL",
-            ),
-            activeIdentityKey: undefined,
+          record: terminalizeXinmaiRealityAdventureLifecycleRecord({
+            record: Object.freeze({
+              ...record,
+              gravityAdmission: terminal,
+            }),
+            terminalReason: realityTerminalReason,
+            terminalAt: terminal.updatedAt,
           }),
           value: "TERMINATED" as const,
         });

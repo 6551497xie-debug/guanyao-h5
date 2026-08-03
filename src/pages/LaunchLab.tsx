@@ -1218,6 +1218,8 @@ export function LaunchLab({
     setReturningRelationshipNameFeedback,
   ] = useState<"DELETE_UNCONFIRMED" | null>(null);
   const [returningLifeWhisperText, setReturningLifeWhisperText] = useState("");
+  const [returningRealityIntentFeedback, setReturningRealityIntentFeedback] =
+    useState<string | null>(null);
   const [returningLifeWhisperFact, setReturningLifeWhisperFact] =
     useState<LifeWhisperRelationshipFact>("NONE");
   const returningLifeWhisperFactRef =
@@ -5811,6 +5813,7 @@ export function LaunchLab({
       return;
     }
     clearReturningLifeWhisperOutcomeWatchdog();
+    setReturningRealityIntentFeedback(null);
     returningLifeWhisperResponseCycleIdRef.current = null;
     setReturningLifeWhisperText("");
     const identityRecovery = recoverRealityRecognizedIdentity({
@@ -5836,6 +5839,13 @@ export function LaunchLab({
           })
         : null;
     if (intentResult?.status !== "READY") {
+      setReturningRealityIntentFeedback(
+        intentResult?.reason === "ACTIVE_ADVENTURE_REQUIRES_CONTINUATION"
+          ? "当前同行尚未正式离场，请继续原来的选择。"
+          : intentResult?.reason === "DEPARTURE_RECONCILIATION_REQUIRED"
+            ? "离场事实已保存，生命旅程仍在协调。既有资产会被保留，可以稍后重试。"
+            : "新的现实暂时无法建立。既有生命资产仍被保留，可以稍后重试。",
+      );
       return;
     }
     navigate(GUANYAO_ROUTES.reality, {
@@ -6183,6 +6193,9 @@ export function LaunchLab({
                       >
                         和它一起进入新的现实
                       </button>
+                    ) : null}
+                    {returningRealityIntentFeedback ? (
+                      <p role="status">{returningRealityIntentFeedback}</p>
                     ) : null}
                   </div>
                 )}
