@@ -390,6 +390,13 @@
     linear-gradient(180deg, rgba(137, 190, 190, 0.22), rgba(16, 36, 44, 0.5));
 }
 
+.xinmai-crystal-ownership__exit-explanation {
+  margin: 0;
+  color: rgba(235, 231, 211, 0.8);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .xinmai-crystal-ownership__continue:focus-visible,
 .xinmai-crystal-ownership__crystal-touch:focus-visible {
   outline: 1px solid rgba(232, 228, 199, 0.72);

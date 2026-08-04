@@ -16,6 +16,7 @@ const route = read("src/pages/RealityProductionRouteEntry.tsx");
 const gravity = read("src/pages/GravityPage.tsx");
 const launch = read("src/pages/LaunchLab.tsx");
 const surface = read("src/components/XinmaiLivedResponseReturnSurface.tsx");
+const surfaceStyles = read("src/styles/xinmai-lived-response-checkpoint.css");
 const departureProof = read("src/services/xinmaiChoiceDepartureReconciliationProofAdapter.ts");
 const lifecycleOwner = read("src/services/xinmaiRealityAdventureLifecycleReconciliationController.ts");
 
@@ -132,7 +133,7 @@ assertIncludes(launch, "readXinmaiChoiceReturningProvenanceRecovery(");
 assertIncludes(launch, 'choiceReturn:');
 assertIncludes(surface, "confirmXinmaiChoiceExplicitReturn({");
 assertIncludes(surface, "我回来了");
-assertIncludes(surface, 'pointerEvents: "auto"');
+assertIncludes(surfaceStyles, "pointer-events: auto");
 assertIncludes(surface, 'window.matchMedia("(prefers-reduced-motion: reduce)")');
 for (const forbidden of [
   "readOpenXinmaiLivedGrowthReturnItems",

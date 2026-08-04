@@ -85,6 +85,7 @@ import {
 } from "../services/realityExplicitLeaveNavigationDeliveryRuntimePort";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { XinmaiLivedResponseReturnSurface } from "../components/XinmaiLivedResponseReturnSurface";
+import { resolveXinmaiLivedResponseCheckpointPresentation } from "../services/xinmaiLivedResponseCheckpointPresentationResolver";
 import { readXinmaiChoiceReturningProvenanceRecovery } from "../services/xinmaiChoiceReturningProvenanceRecoveryAdapter";
 import type { XinmaiChoiceReturningProvenanceAdmission } from "../types/xinmaiChoiceReturningProvenance";
 import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
@@ -1470,6 +1471,26 @@ export function LaunchLab({
     returningChoiceAdmissions.some(
       (admission) => admission.intention !== null,
     );
+  const baselineCheckpointDecision = useMemo(
+    () =>
+      resolveXinmaiLivedResponseCheckpointPresentation({
+        identityStatus:
+          returningRecognizedIdentity?.status === "READY"
+            ? "READY"
+            : "UNAVAILABLE",
+        admission: null,
+        currentFact: null,
+        currentEligibility: null,
+        formationReceipt: null,
+        formationRequestEvidence: null,
+        returnAcceptanceEvidence: null,
+        formationFailure: false,
+        ownershipDecision: null,
+        bodyImprintDecision: canonicalBodyImprintDecision,
+        motionPreference: "MOTION",
+      }),
+    [canonicalBodyImprintDecision, returningRecognizedIdentity],
+  );
   const returningLifeWhisperEntryReady =
     returningVisualReady && !returningLivedResponseActive;
   const returningLifeWhisperRealityIntentReady =
@@ -3106,12 +3127,12 @@ export function LaunchLab({
             ctx.fillStyle = `rgba(255,247,228,${(relationCopyAlpha * 0.92).toFixed(3)})`;
             ctx.font = `650 ${mainSize}px ${SANS}`;
             ctx.fillText(
-              returningLifeIdentity ? "你的生命仍在这里，" : CTA_LINES[0],
+              returningLifeIdentity ? "这里是你的生命世界。" : CTA_LINES[0],
               m.w / 2,
               m.h * 0.78,
             );
             ctx.fillText(
-              returningLifeIdentity ? "等你继续同行。" : CTA_LINES[1],
+              returningLifeIdentity ? "还没有新的现实回应。" : CTA_LINES[1],
               m.w / 2,
               m.h * 0.825,
             );
@@ -6049,9 +6070,13 @@ export function LaunchLab({
                   </b>
                 </small>
               ) : null}
-              <strong>你的生命仍在这里，</strong>
-              <strong>等你继续同行。</strong>
-              {returningExperienceCopy ? (
+              {!returningLivedResponseActive ? (
+                <>
+                  <strong>{baselineCheckpointDecision.headline}</strong>
+                  <small>{baselineCheckpointDecision.support}</small>
+                </>
+              ) : null}
+              {!returningLivedResponseActive && returningExperienceCopy ? (
                 <small>{returningExperienceCopy}</small>
               ) : null}
               {returningLivedResponseActive &&
@@ -6061,6 +6086,7 @@ export function LaunchLab({
                     returningRecognizedIdentity.identityReferences
                   }
                   admissions={returningChoiceAdmissions}
+                  bodyImprintDecision={canonicalBodyImprintDecision}
                   onAuthorityRevision={() => {
                     setReturningGrowthSurfaceRevision(
                       (revision) => revision + 1,

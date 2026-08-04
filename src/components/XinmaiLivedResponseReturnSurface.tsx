@@ -1,13 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CrystalFormationReceipt } from "../types/xinmaiCrystalEligibility";
+import type { XinmaiCanonicalBodyImprintDecision } from "../types/xinmaiCanonicalBodyImprint";
 import type { XinmaiCrystalFormationProductionOutcome } from "../types/xinmaiCrystalFormationProduction";
 import type { XinmaiCrystalOwnershipPresentationOrigin } from "../types/xinmaiCrystalOwnershipPresentation";
 import type {
   LivedResponseCandidate,
+  LivedResponseFact,
   LivedResponseOutcome,
 } from "../types/xinmaiLivedResponse";
 import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityEncounterIntent";
 import type { XinmaiChoiceReturningProvenanceAdmission } from "../types/xinmaiChoiceReturningProvenance";
+import type {
+  XinmaiLivedResponseFormationRequestEvidence,
+  XinmaiLivedResponseReturnAcceptanceEvidence,
+} from "../types/xinmaiLivedResponseCheckpointPresentation";
 import { XinmaiCrystalFormationOwnershipMoment } from "./XinmaiCrystalFormationOwnershipMoment";
 import { createLivedResponseCandidateReference } from "../services/xinmaiChoiceActionIntentionController";
 import {
@@ -22,14 +28,29 @@ import {
 import { resolveXinmaiCrystalOwnershipPresentation } from "../services/xinmaiCrystalOwnershipPresentationResolver";
 import { resolveCrystalEligibilityForFact } from "../services/xinmaiCrystalEligibilityAuthority";
 import { confirmLivedResponseFact } from "../services/xinmaiLivedResponseAuthorityController";
+import { resolveXinmaiLivedResponseCheckpointPresentation } from "../services/xinmaiLivedResponseCheckpointPresentationResolver";
+import "../styles/xinmai-lived-response-checkpoint.css";
 
 const FACT_OUTCOMES: readonly Readonly<{
   value: Exclude<LivedResponseOutcome, "NOT_ATTEMPTED" | "UNABLE_TO_CONTINUE">;
   label: string;
+  helper: string;
 }>[] = Object.freeze([
-  { value: "ATTEMPTED", label: "我试着做了" },
-  { value: "COMPLETED_AS_INTENDED", label: "我完成了原来的回应" },
-  { value: "CHANGED_RESPONSE", label: "现实里，我用了另一种回应" },
+  {
+    value: "ATTEMPTED",
+    label: "我试着做了",
+    helper: "确认后会形成一条真实回应记录，并进入 Crystal 形成确认。",
+  },
+  {
+    value: "COMPLETED_AS_INTENDED",
+    label: "我完成了原来的回应",
+    helper: "确认后会形成一条真实回应记录，并进入 Crystal 形成确认。",
+  },
+  {
+    value: "CHANGED_RESPONSE",
+    label: "现实里，我用了另一种回应",
+    helper: "改变回应同样可以成为真实记录，不要求符合原计划。",
+  },
 ]);
 
 export type XinmaiLivedResponseRealityHandoff = Readonly<{
@@ -48,12 +69,14 @@ export function XinmaiLivedResponseReturnSurface({
   admissions,
   onAuthorityRevision,
   onRealityHandoff,
+  bodyImprintDecision,
   reducedMotion = false,
 }: Readonly<{
   identityReferences: RealityEncounterIdentityReferences;
   admissions: readonly XinmaiChoiceReturningProvenanceAdmission[];
   onAuthorityRevision?: () => void;
   onRealityHandoff?: (handoff: XinmaiLivedResponseRealityHandoff) => void;
+  bodyImprintDecision: XinmaiCanonicalBodyImprintDecision;
   reducedMotion?: boolean;
 }>) {
   const [selectedReferenceId, setSelectedReferenceId] = useState(
@@ -83,7 +106,18 @@ export function XinmaiLivedResponseReturnSurface({
     useState<string | null>(null);
   const [formationFailure, setFormationFailure] =
     useState<FormationFailureReason | null>(null);
+  const [returnAcceptanceEvidence, setReturnAcceptanceEvidence] =
+    useState<XinmaiLivedResponseReturnAcceptanceEvidence | null>(null);
+  const [pendingFormationAuthorities, setPendingFormationAuthorities] =
+    useState<Readonly<{
+      fact: LivedResponseFact;
+      eligibility: NonNullable<
+        XinmaiChoiceReturningProvenanceAdmission["currentEligibility"]
+      >;
+    }> | null>(null);
   const recoveryAttemptKeyRef = useRef<string | null>(null);
+  const lastAnnouncementKeyRef = useRef<string | null>(null);
+  const [liveAnnouncement, setLiveAnnouncement] = useState("");
   const [nativeReducedMotion, setNativeReducedMotion] = useState(() =>
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -138,6 +172,69 @@ export function XinmaiLivedResponseReturnSurface({
       staticPresentation,
     ],
   );
+  const currentFact = pendingFormationAuthorities?.fact ?? selected?.currentFact ?? null;
+  const currentEligibility =
+    pendingFormationAuthorities?.eligibility ?? selected?.currentEligibility ?? null;
+  const formationRequestEvidence = useMemo<
+    XinmaiLivedResponseFormationRequestEvidence | null
+  >(
+    () =>
+      pendingFormationAuthorities === null
+        ? null
+        : Object.freeze({
+            source: "existing_fact_and_eligibility_authorities" as const,
+            choiceActionIntentionReferenceId:
+              pendingFormationAuthorities.fact.choiceActionIntentionReferenceId,
+            livedResponseReferenceId:
+              pendingFormationAuthorities.fact.livedResponseReferenceId,
+            crystalEligibilityReferenceId:
+              pendingFormationAuthorities.eligibility
+                .crystalEligibilityReferenceId,
+          }),
+    [pendingFormationAuthorities],
+  );
+  const checkpointDecision = useMemo(
+    () =>
+      resolveXinmaiLivedResponseCheckpointPresentation({
+        identityStatus: "READY",
+        admission: selected,
+        currentFact,
+        currentEligibility,
+        formationReceipt: currentFormationReceipt,
+        formationRequestEvidence,
+        returnAcceptanceEvidence,
+        formationFailure: formationFailure !== null,
+        ownershipDecision: ownershipPresentationDecision,
+        bodyImprintDecision,
+        motionPreference: staticPresentation ? "REDUCED_MOTION" : "MOTION",
+      }),
+    [
+      bodyImprintDecision,
+      currentEligibility,
+      currentFact,
+      currentFormationReceipt,
+      formationFailure,
+      formationRequestEvidence,
+      ownershipPresentationDecision,
+      returnAcceptanceEvidence,
+      selected,
+      staticPresentation,
+    ],
+  );
+
+  useEffect(() => {
+    if (
+      checkpointDecision.announcement === null ||
+      checkpointDecision.announcementReferenceId === null
+    ) {
+      setLiveAnnouncement("");
+      return;
+    }
+    const key = `${checkpointDecision.state}:${checkpointDecision.announcementReferenceId}`;
+    if (lastAnnouncementKeyRef.current === key) return;
+    lastAnnouncementKeyRef.current = key;
+    setLiveAnnouncement(checkpointDecision.announcement);
+  }, [checkpointDecision]);
 
   useEffect(() => {
     if (
@@ -158,6 +255,12 @@ export function XinmaiLivedResponseReturnSurface({
     let cancelled = false;
     setBusy(true);
     setFormationFailure(null);
+    setPendingFormationAuthorities(
+      Object.freeze({
+        fact: selected.currentFact,
+        eligibility: selected.currentEligibility,
+      }),
+    );
     void recoverProductionCrystalFormation({
       fact: selected.currentFact,
       eligibility: selected.currentEligibility,
@@ -182,6 +285,7 @@ export function XinmaiLivedResponseReturnSurface({
         setFormationFailure(result.reason);
         setFeedback("结晶尚未形成。事实与资格仍然保留，可以稍后重试。");
       }
+      setPendingFormationAuthorities(null);
       setBusy(false);
     });
     return () => {
@@ -229,13 +333,20 @@ export function XinmaiLivedResponseReturnSurface({
     const result = await confirmXinmaiChoiceExplicitReturn({
       admission: selected,
     });
-    setFeedback(
-      result.status === "RETURNED" || result.status === "ALREADY_RETURNED"
-        ? "欢迎回来。你可以诚实地说说现实里发生了什么。"
-        : "这次回来还没有被完整接住，请稍后再试。",
-    );
     if (result.status === "RETURNED" || result.status === "ALREADY_RETURNED") {
+      setReturnAcceptanceEvidence(
+        Object.freeze({
+          source: "xinmai_choice_returning_provenance_controller" as const,
+          choiceActionIntentionReferenceId:
+            result.intention.choiceActionIntentionReferenceId,
+          returnReceipt: result.returnReceipt,
+        }),
+      );
+      setFeedback(null);
       onAuthorityRevision?.();
+    } else {
+      setReturnAcceptanceEvidence(null);
+      setFeedback("这次回来还没有被完整接住，请稍后再试。");
     }
     setBusy(false);
   };
@@ -256,7 +367,7 @@ export function XinmaiLivedResponseReturnSurface({
     setFeedback(
       result.status === "RESOLVED" || result.status === "ALREADY_RESOLVED"
         ? result.intentTermination === "RETRYABLE"
-          ? "你的选择已经保存，这次回访仍在安全结束，可以重试。"
+          ? "你的选择已经保存，这次确认仍在安全结束，可以重试。"
           : resolution === "NOT_ATTEMPTED"
             ? "还没有尝试，也没有关系。这一步仍会等你。"
             : "这次不作记录。你仍然可以继续同行。"
@@ -316,6 +427,12 @@ export function XinmaiLivedResponseReturnSurface({
       setBusy(false);
       return;
     }
+    setPendingFormationAuthorities(
+      Object.freeze({
+        fact: fact.fact,
+        eligibility: eligibility.eligibility,
+      }),
+    );
     const formation = await orchestrateProductionCrystalFormation({
       trigger: "POST_FACT_COMMIT",
       fact: fact.fact,
@@ -340,6 +457,7 @@ export function XinmaiLivedResponseReturnSurface({
       setFormationFailure(formation.reason);
       setFeedback("结晶尚未形成。事实与资格仍然保留，可以稍后重试。");
     }
+    setPendingFormationAuthorities(null);
     onAuthorityRevision?.();
     setBusy(false);
   };
@@ -354,6 +472,12 @@ export function XinmaiLivedResponseReturnSurface({
     }
     setBusy(true);
     setFormationFailure(null);
+    setPendingFormationAuthorities(
+      Object.freeze({
+        fact: selected.currentFact,
+        eligibility: selected.currentEligibility,
+      }),
+    );
     const result = await recoverProductionCrystalFormation({
       fact: selected.currentFact,
       eligibility: selected.currentEligibility,
@@ -377,6 +501,7 @@ export function XinmaiLivedResponseReturnSurface({
       setFormationFailure(result.reason);
       setFeedback("结晶尚未形成。事实与资格仍然保留，可以稍后重试。");
     }
+    setPendingFormationAuthorities(null);
     setBusy(false);
   };
 
@@ -397,7 +522,13 @@ export function XinmaiLivedResponseReturnSurface({
   return (
     <section
       className="xinmai-lived-response-return-surface"
-      aria-label="现实回应回访"
+      aria-labelledby={
+        checkpointDecision.state === "OWNERSHIP_PRESENTED"
+          ? "xinmai-crystal-ownership-headline"
+          : "xinmai-lived-response-checkpoint-heading"
+      }
+      data-lived-response-checkpoint={checkpointDecision.state}
+      data-checkpoint-authority-writeback={checkpointDecision.authorityWriteback}
       data-choice-returning-admission={selected.state}
       data-lived-response-authority="USER_CONFIRMED_FACT"
       data-crystal-formation-authority="IDB_TRANSACTION_COMPLETE"
@@ -411,34 +542,35 @@ export function XinmaiLivedResponseReturnSurface({
       data-crystal-reference={
         currentFormationReceipt?.crystalReferenceId ?? "NONE"
       }
-      data-body-imprint-authority="SAFE_WITHHELD_UNTIL_CANONICAL_CUTOVER"
+      data-body-imprint-claim={checkpointDecision.bodyImprintClaim}
       data-motion-presentation={staticPresentation ? "STATIC" : "MOTION_ALLOWED"}
       data-ownership-surface-active={
-        currentFormationReceipt !== null ? "TRUE" : "FALSE"
+        checkpointDecision.state === "OWNERSHIP_PRESENTED" ? "TRUE" : "FALSE"
       }
-      style={{
-        display: "grid",
-        gap: 12,
-        width:
-          currentFormationReceipt !== null
-            ? "min(100%, 460px)"
-            : "min(100%, 340px)",
-        padding: "16px 18px",
-        border: "1px solid rgba(207,189,150,0.14)",
-        borderRadius: 16,
-        background: "rgba(2,3,6,0.72)",
-        backdropFilter: "blur(16px)",
-        pointerEvents: "auto",
-      }}
     >
-      {currentFormationReceipt === null ? (
-        <>
-          <small>那一步仍属于同一段生命</small>
-          <strong>{intention.actionSummary}</strong>
-        </>
+      {checkpointDecision.state !== "OWNERSHIP_PRESENTED" ? (
+        <header className="xinmai-lived-response-return-surface__heading">
+          <small>现实行动确认</small>
+          <h2 id="xinmai-lived-response-checkpoint-heading">
+            {checkpointDecision.headline}
+          </h2>
+          <p>{checkpointDecision.support}</p>
+          <blockquote>{intention.actionSummary}</blockquote>
+        </header>
       ) : null}
+      <p
+        className="xinmai-lived-response-return-surface__live"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {liveAnnouncement || feedback || ""}
+      </p>
       {currentFormationReceipt === null && admissions.length > 1 ? (
-        <div aria-label="选择要继续的现实回应">
+        <div
+          className="xinmai-lived-response-return-surface__choice-switcher"
+          aria-label="选择要继续确认的现实行动"
+        >
           {admissions.map((admission) =>
             admission.intention ? (
               <button
@@ -456,79 +588,81 @@ export function XinmaiLivedResponseReturnSurface({
           )}
         </div>
       ) : null}
-      {selected.state === "RESUME_COMMITTED" ? (
-        <button type="button" disabled={busy} onClick={depart}>
+      {checkpointDecision.state === "BASELINE_LIFE_WORLD" &&
+      checkpointDecision.baselineKind === "CHOICE_AWAITS_DEPARTURE" ? (
+        <button className="xinmai-lived-response-return-surface__primary" type="button" disabled={busy} onClick={depart}>
           带着这一步，回到生活
         </button>
-      ) : selected.state === "DEPARTURE_RECONCILIATION_PENDING" ? (
-        <div style={{ display: "grid", gap: 8 }}>
-          <p role="status">
-            离场事实已经保存，生命旅程仍在协调。回访入口会在协调完成后开放。
-          </p>
-          <button type="button" disabled={busy} onClick={depart}>
-            重试协调
-          </button>
-        </div>
-      ) : selected.state === "DORMANT_DEPARTURE" ? (
-        <>
-          <p>这一步已经被你带回生活。等你愿意时，再明确回来。</p>
-          <button type="button" disabled={busy} onClick={returnExplicitly}>
-            我回来了
-          </button>
-        </>
-      ) : selected.state === "NO_FACT_TARGET_TERMINATION_PENDING" ? (
-        <div style={{ display: "grid", gap: 8 }}>
-          <p role="status">
-            你的选择已经保存，这次回访仍在安全结束。不会形成事实、结晶或新的现实。
-          </p>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() =>
-              void resolveWithoutFact(
-                selected.returnReceipt.noFactReason,
-              )
-            }
-          >
-            重试结束本次回访
-          </button>
-        </div>
-      ) : selected.state === "READY_FOR_LIVED_RESPONSE" ? (
-        <>
-          <p>现实里，实际发生了什么？</p>
-          <div style={{ display: "grid", gap: 7 }}>
-            {FACT_OUTCOMES.map((item) => (
-              <label key={item.value}>
-                <input
-                  type="radio"
-                  name="xinmai-lived-response-outcome"
-                  checked={outcome === item.value}
-                  onChange={() => setOutcome(item.value)}
-                />
-                {item.label}
-              </label>
-            ))}
-          </div>
+      ) : checkpointDecision.state === "BASELINE_LIFE_WORLD" &&
+        checkpointDecision.baselineKind === "DEPARTURE_AWAITS_RETURN" ? (
+        <button className="xinmai-lived-response-return-surface__primary" type="button" disabled={busy} onClick={returnExplicitly}>
+          我回来了
+        </button>
+      ) : checkpointDecision.state === "READY_TO_CONFIRM_REAL_RESPONSE" ? (
+        <div className="xinmai-lived-response-return-surface__confirmation">
+          <fieldset className="xinmai-lived-response-return-surface__fact-choices">
+            <legend>选择真实发生的回应</legend>
+            {FACT_OUTCOMES.map((item) => {
+              const helperId = `xinmai-lived-response-${item.value.toLowerCase()}-helper`;
+              return (
+                <label key={item.value}>
+                  <span>
+                    <input
+                      type="radio"
+                      name="xinmai-lived-response-outcome"
+                      checked={outcome === item.value}
+                      aria-describedby={helperId}
+                      onChange={() => setOutcome(item.value)}
+                    />
+                    <b>{item.label}</b>
+                  </span>
+                  <small id={helperId}>{item.helper}</small>
+                </label>
+              );
+            })}
+          </fieldset>
           <textarea
             rows={2}
             maxLength={180}
             value={summary}
+            aria-label="补充实际发生的事实"
             onChange={(event) => setSummary(event.target.value)}
             placeholder="可以留下一句实际发生的事实"
           />
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            <button type="button" disabled={busy} onClick={() => void resolveWithoutFact("NOT_ATTEMPTED")}>
-              这一次还没有尝试
-            </button>
-            <button type="button" disabled={busy} onClick={() => void resolveWithoutFact("USER_REJECTED_RECORD")}>
-              我不想记录这次
-            </button>
+          <div className="xinmai-lived-response-return-surface__fact-submit">
             <button type="button" disabled={busy} onClick={confirmFact}>
               确认这是实际发生的
             </button>
+            <small>
+              确认后，系统才会依据这次真实回应检查 Crystal 是否正式形成。
+            </small>
           </div>
-        </>
-      ) : currentFormationReceipt !== null ? (
+          <div
+            className="xinmai-lived-response-return-surface__no-fact"
+            aria-label="这次不形成真实回应记录"
+          >
+            <div>
+              <button type="button" disabled={busy} onClick={() => void resolveWithoutFact("NOT_ATTEMPTED")}>
+                这一次还没有尝试
+              </button>
+              <small>不形成事实或 Crystal；这一步仍会等你。</small>
+            </div>
+            <div>
+              <button type="button" disabled={busy} onClick={() => void resolveWithoutFact("USER_REJECTED_RECORD")}>
+                我不想记录这次
+              </button>
+              <small>不记录、不形成，也没有惩罚。</small>
+            </div>
+          </div>
+        </div>
+      ) : checkpointDecision.state === "FORMATION_IN_PROGRESS" ? (
+        <div className="xinmai-lived-response-return-surface__progress" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      ) : checkpointDecision.state === "OWNERSHIP_PRESENTED" &&
+        currentFormationReceipt !== null ? (
         <XinmaiCrystalFormationOwnershipMoment
           decision={ownershipPresentationDecision}
           onOwnershipPresented={() =>
@@ -538,26 +672,42 @@ export function XinmaiLivedResponseReturnSurface({
           }
           onContinue={handoffConfirmedCrystal}
         />
-      ) : selected.state === "TERMINAL_BY_GROWTH" &&
+      ) : checkpointDecision.state === "SAFE_WITHHELD" &&
+        selected.state === "DEPARTURE_RECONCILIATION_PENDING" ? (
+        <div className="xinmai-lived-response-return-surface__recovery">
+          <button type="button" disabled={busy} onClick={depart}>
+            重试协调
+          </button>
+        </div>
+      ) : checkpointDecision.state === "SAFE_WITHHELD" &&
+        selected.state === "NO_FACT_TARGET_TERMINATION_PENDING" ? (
+        <div className="xinmai-lived-response-return-surface__recovery">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() =>
+              void resolveWithoutFact(
+                selected.returnReceipt.noFactReason,
+              )
+            }
+          >
+            重试结束本次确认
+          </button>
+        </div>
+      ) : checkpointDecision.state === "SAFE_WITHHELD" &&
+        selected.state === "TERMINAL_BY_GROWTH" &&
         selected.currentEligibility !== null ? (
-        <div style={{ display: "grid", gap: 8 }}>
-          <XinmaiCrystalFormationOwnershipMoment
-            decision={ownershipPresentationDecision}
-            onOwnershipPresented={() => undefined}
-            onContinue={handoffConfirmedCrystal}
-          />
+        <div className="xinmai-lived-response-return-surface__recovery">
           <button type="button" disabled={busy} onClick={retryFormation}>
             重试形成结晶
           </button>
         </div>
-      ) : selected.state === "RESUME_REPORTED" ? (
-        <p role="status">
-          真实回应已经保存，结晶资格尚未成立。不会提前进入完整闭环。
+      ) : null}
+      {feedback ? (
+        <p className="xinmai-lived-response-return-surface__feedback">
+          {feedback}
         </p>
-      ) : (
-        <p role="status">这次回访暂时无法确认。已有生命资产仍然保留。</p>
-      )}
-      {feedback ? <p role="status">{feedback}</p> : null}
+      ) : null}
     </section>
   );
 }

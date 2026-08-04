@@ -20,7 +20,6 @@ export function XinmaiCrystalFormationOwnershipMoment({
         className="xinmai-crystal-ownership xinmai-crystal-ownership--pending"
         data-crystal-formation-presentation="FORMATION_PENDING"
         data-crystal-success-authority="NOT_CONFIRMED"
-        role="status"
       >
         <span className="xinmai-crystal-ownership__pending-breath" aria-hidden="true" />
         <strong>这道现实回应正在被生命接住。</strong>
@@ -35,7 +34,6 @@ export function XinmaiCrystalFormationOwnershipMoment({
         className="xinmai-crystal-ownership xinmai-crystal-ownership--withheld"
         data-crystal-formation-presentation="SAFE_WITHHELD"
         data-crystal-success-authority="NOT_CONFIRMED"
-        role="status"
       >
         <strong>这道痕迹还没有被完整确认。</strong>
         <small>已经发生的事实仍被保留，可以稍后再试。</small>
@@ -117,7 +115,7 @@ export function XinmaiCrystalFormationOwnershipMoment({
         </button>
       </div>
 
-      <div className="xinmai-crystal-ownership__meaning" role="status" aria-live="polite">
+      <div className="xinmai-crystal-ownership__meaning">
         <small className="xinmai-crystal-ownership__eyebrow">
           {recovered ? "同一颗 Crystal 仍在这里" : "来自你真实走出的这一步"}
         </small>
@@ -137,6 +135,9 @@ export function XinmaiCrystalFormationOwnershipMoment({
             ? "它已经回应了你的触碰。"
             : "你可以轻触它，也可以直接继续。"}
         </small>
+        <p className="xinmai-crystal-ownership__exit-explanation">
+          继续后会离开这段确认画面，进入同一生命的下一段现实。
+        </p>
         <button
           className="xinmai-crystal-ownership__continue"
           type="button"

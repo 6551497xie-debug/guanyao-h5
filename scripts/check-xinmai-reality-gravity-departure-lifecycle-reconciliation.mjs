@@ -166,7 +166,7 @@ for (const marker of [
   'selected.state !== "DEPARTURE_RECONCILIATION_PENDING"',
   "重试协调",
   'selected.state !== "NO_FACT_TARGET_TERMINATION_PENDING"',
-  "重试结束本次回访",
+  "重试结束本次确认",
 ]) assertIncludes(surface, marker, "Returning retry surface");
 for (const marker of [
   'state: "NO_FACT_TARGET_TERMINATION_PENDING" as const',

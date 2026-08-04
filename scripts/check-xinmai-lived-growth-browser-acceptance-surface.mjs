@@ -10,6 +10,10 @@ const surface = fs.readFileSync(
   "src/components/XinmaiLivedResponseReturnSurface.tsx",
   "utf8",
 );
+const surfaceStyles = fs.readFileSync(
+  "src/styles/xinmai-lived-response-checkpoint.css",
+  "utf8",
+);
 const assert = (value, message) => {
   if (!value) throw new Error(message);
 };
@@ -34,10 +38,13 @@ for (const marker of [
   "confirmXinmaiChoiceExplicitReturn",
   "resolveXinmaiChoiceReturnWithoutFact",
   'window.matchMedia("(prefers-reduced-motion: reduce)")',
-  'pointerEvents: "auto"',
 ]) {
   assert(surface.includes(marker), `typed returning surface missing ${marker}`);
 }
+assert(
+  surfaceStyles.includes("pointer-events: auto"),
+  "typed returning surface is not interactable",
+);
 for (const forbidden of [
   "livedResponseRecognized",
   "localStorage",
