@@ -314,9 +314,14 @@ try {
     "rendererSnapshot.lifeWhisperVisualResponseOutcome",
   );
   assertIncludes(
-    "Static outcome requires a connected rendered surface",
+    "Static outcome requires a presenter commit proof",
     realityCanvas,
-    "staticLifeWhisperResponseRef.current?.isConnected !== true",
+    'sameLifeSurfaceCommitProof?.presenter !==\n      "SEMANTIC_STATIC_SAME_LIFE_BODY"',
+  );
+  assertExcludes(
+    "Static outcome no longer trusts DOM connection as authority",
+    realityCanvas,
+    ".isConnected",
   );
   assertIncludes(
     "Reduced Motion outcome is a semantic static presentation",
@@ -324,9 +329,14 @@ try {
     'status: "STATIC_RESPONSE_PRESENTED"',
   );
   assertIncludes(
-    "Reduced Motion browser override remains development-only",
+    "Native Reduced Motion is selected before a renderer is created",
     realityCanvas,
-    "import.meta.env.DEV",
+    'window.matchMedia("(prefers-reduced-motion: reduce)")',
+  );
+  assertExcludes(
+    "Reduced Motion query overrides are removed",
+    realityCanvas,
+    'searchParams.get("__xinmaiReducedMotion")',
   );
   assertIncludes(
     "Renderer failure browser path remains isolated from production",

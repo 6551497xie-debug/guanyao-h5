@@ -31,6 +31,7 @@ import type {
 import type {
   ChoiceGrowthTerminalSummary,
 } from "../types/xinmaiChoicePresentationReadiness";
+import type { XinmaiCanonicalBodyImprintDecision } from "../types/xinmaiCanonicalBodyImprint";
 
 const GRAVITY_SURFACE_WATCHDOG_MS = 8_000;
 
@@ -57,6 +58,7 @@ export type GravityProductionSurfaceHostProps = Readonly<{
   runtimeInput: GravityProductionRuntimeInput;
   continuityDecision: GravityObservationResumeDecision;
   growthTerminalSummary: ChoiceGrowthTerminalSummary;
+  canonicalBodyImprintDecision: XinmaiCanonicalBodyImprintDecision;
   growthSummaryPending: boolean;
   onGrowthTerminalSummaryRefreshRequested: () => Promise<void>;
   onObservationRecognitionRequested: (
@@ -74,6 +76,7 @@ export function GravityProductionSurfaceHost({
   runtimeInput,
   continuityDecision,
   growthTerminalSummary,
+  canonicalBodyImprintDecision,
   growthSummaryPending,
   onGrowthTerminalSummaryRefreshRequested,
   onObservationRecognitionRequested,
@@ -231,6 +234,7 @@ export function GravityProductionSurfaceHost({
       surfaceAttempt={surfaceAttempt}
       observationContinuityDecision={continuityDecision}
       growthTerminalSummary={growthTerminalSummary}
+      canonicalBodyImprintDecision={canonicalBodyImprintDecision}
       actionRouteResolution={actionRouteResolution}
       growthSummaryPending={growthSummaryPending}
       onGrowthTerminalSummaryRefreshRequested={

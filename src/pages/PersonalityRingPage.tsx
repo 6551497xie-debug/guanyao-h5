@@ -9,6 +9,7 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import { drawLifeUniverseDeepSpace2D } from "../renderers/lifeUniverseStarField";
 import { readXinmaiCanonicalBodyImprintRecovery } from "../services/xinmaiCanonicalBodyImprintRecoveryAdapter";
+import { resolveXinmaiSameLifeAccessibleSemanticMirror } from "../services/xinmaiSameLifeAccessibleSemanticMirror";
 import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
@@ -18,7 +19,9 @@ import {
   type XinmaiCanonicalBodyImprintDecision,
 } from "../types/xinmaiCanonicalBodyImprint";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
+import type { XinmaiSameLifeSurfaceOutcome } from "../types/xinmaiSameLifeSurfacePresentation";
 import "../styles/reality-pressure-presentation.css";
+import "../styles/xinmai-same-life-surface.css";
 
 const RealityLifeUniverseCanvas = lazy(() =>
   import("../components/RealityLifeUniverseCanvas").then((module) => ({
@@ -67,16 +70,6 @@ function SharedLifeUniverseFallback() {
   );
 }
 
-function formatFormationTime(formedAt: string) {
-  return new Intl.DateTimeFormat("zh-CN", {
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(new Date(formedAt));
-}
-
 type ArchiveRouteState =
   | Readonly<{
       visualContinuity?: RealityProductionHostProps["visualContinuity"];
@@ -108,6 +101,8 @@ export function PersonalityRingPage() {
     );
   const [selectedImprintReferenceId, setSelectedImprintReferenceId] =
     useState<string | null>(null);
+  const [sameLifeSurfaceOutcome, setSameLifeSurfaceOutcome] =
+    useState<XinmaiSameLifeSurfaceOutcome | null>(null);
 
   useEffect(
     () =>
@@ -153,9 +148,18 @@ export function PersonalityRingPage() {
       (imprint) =>
         imprint.imprintReferenceId === selectedImprintReferenceId,
     ) ?? null;
+  const accessibleSemanticMirror = useMemo(
+    () =>
+      resolveXinmaiSameLifeAccessibleSemanticMirror({
+        canonicalDecision: bodyImprintDecision,
+        surfaceOutcome: sameLifeSurfaceOutcome,
+      }),
+    [bodyImprintDecision, sameLifeSurfaceOutcome],
+  );
 
   return (
     <main
+      className="gy-same-life-archive"
       aria-label="生命留下的真实成长"
       data-personality-ring-page="CANONICAL_BODY_IMPRINT_WITH_LEGACY_HISTORY"
       data-body-imprint-authority={bodyImprintDecision.status}
@@ -184,8 +188,10 @@ export function PersonalityRingPage() {
         {identityRecovery.status === "READY" ? (
           <Suspense fallback={<SharedLifeUniverseFallback />}>
             <RealityLifeUniverseCanvas
+              sameLifeSurfaceConsumer="ARCHIVE"
               visualContinuity={identityRecovery.visualContinuity}
               canonicalBodyImprintDecision={bodyImprintDecision}
+              onSameLifeSurfaceOutcome={setSameLifeSurfaceOutcome}
             />
           </Suspense>
         ) : (
@@ -194,6 +200,7 @@ export function PersonalityRingPage() {
       </div>
 
       <header
+        className="gy-same-life-archive__header"
         style={{
           position: "absolute",
           zIndex: 3,
@@ -213,7 +220,7 @@ export function PersonalityRingPage() {
             border: 0,
             padding: "7px 0",
             background: "transparent",
-            color: "rgba(220,205,169,0.48)",
+            color: "rgba(236,222,188,0.78)",
             fontSize: 10,
           }}
         >
@@ -226,7 +233,8 @@ export function PersonalityRingPage() {
       </header>
 
       <section
-        aria-live="polite"
+        className="gy-same-life-archive__content"
+        aria-live="off"
         data-canonical-imprint-presentation={bodyImprintDecision.status}
         style={{
           position: "absolute",
@@ -251,22 +259,32 @@ export function PersonalityRingPage() {
               : "身体留痕暂时无法确认；既有成长资产不会因此丢失。"}
         </strong>
 
-        {canonicalImprints.length > 0 ? (
-          <div
-            role="list"
+        {accessibleSemanticMirror.items.length > 0 ? (
+          <ol
             aria-label="正式身体留痕"
             style={{
               display: "flex",
               flexWrap: "wrap",
               justifyContent: "center",
               gap: 8,
+              margin: 0,
+              padding: 0,
+              listStyle: "none",
             }}
           >
-            {canonicalImprints.map((imprint) => (
+            {accessibleSemanticMirror.items.map((item) => {
+              const imprint = canonicalImprints.find(
+                (candidate) =>
+                  candidate.imprintReferenceId === item.imprintReferenceId,
+              );
+              if (!imprint) return null;
+              return <li key={item.imprintReferenceId}>
               <button
-                key={imprint.imprintReferenceId}
                 type="button"
-                role="listitem"
+                aria-label={item.accessibleName}
+                aria-pressed={
+                  selectedImprintReferenceId === item.imprintReferenceId
+                }
                 data-imprint-reference={imprint.imprintReferenceId}
                 data-formation-reference={imprint.formationReferenceId}
                 onClick={() =>
@@ -286,10 +304,11 @@ export function PersonalityRingPage() {
                   fontSize: 10,
                 }}
               >
-                {imprint.primaryDimension ?? "现实回应"} · {formatFormationTime(imprint.formedAt)}
+                {item.visibleLabel}
               </button>
-            ))}
-          </div>
+              </li>;
+            })}
+          </ol>
         ) : null}
 
         {selectedImprint ? (

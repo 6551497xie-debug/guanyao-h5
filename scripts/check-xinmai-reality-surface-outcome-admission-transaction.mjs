@@ -225,14 +225,19 @@ try {
     assertIncludes("typed transaction contract", source.type, marker);
   }
   assertIncludes(
-    "life surface reports first rendered frame",
+    "life surface consumes a renderer-owned same-life commit proof",
+    source.lifeSurface,
+    "rendererSnapshot.sameLifeSurfaceCommitProof",
+  );
+  assertExcludes(
+    "life surface does not treat a rendered frame as presenter authority",
     source.lifeSurface,
     "rendererSnapshot.frameCount > 0",
   );
   assertIncludes(
     "life surface waits for the visible Reality phase",
     source.lifeSurface,
-    'arrivalPhaseRef.current === "SETTLED"',
+    'arrivalPhase !== "SETTLED"',
   );
   assertIncludes(
     "life surface exposes static fallback outcome",

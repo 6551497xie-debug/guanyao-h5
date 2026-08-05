@@ -24,6 +24,10 @@ import type {
   LifeWhisperRelationshipVisualFact,
   LifeWhisperRendererVisualResponseOutcome,
 } from "./xinmaiLifeWhisperRelationship";
+import type {
+  XinmaiSameLifeSurfaceCommitProof,
+  XinmaiSameLifeSurfaceFacts,
+} from "./xinmaiSameLifeSurfacePresentation";
 
 export type GenesisWebGLRendererCoreSceneProjection = Readonly<{
   semanticRole: "ISOLATED_WEBGL_LIFE_MANIFESTATION_SCENE";
@@ -92,6 +96,7 @@ export type GenesisWebGLRendererCoreInput = Readonly<{
   height: number;
   pixelRatio: number;
   reducedMotion: boolean;
+  sameLifeSurfaceFacts?: XinmaiSameLifeSurfaceFacts | null;
   readLifeWhisperRelationshipVisualFact?: () => LifeWhisperRelationshipVisualFact;
   twentyEightMansionCoordinateProjection?: GenesisTwentyEightMansionCoordinateProjection | null;
   timeSequenceRecognitionProjection?: GenesisTimeSequenceRecognitionProjection | null;
@@ -118,6 +123,7 @@ export type GenesisWebGLRendererCoreSnapshot = Readonly<{
   sourceRenderPlanReferenceId: string;
   contextState: GenesisWebGLRendererCoreContextState;
   lifeWhisperVisualResponseOutcome: LifeWhisperRendererVisualResponseOutcome | null;
+  sameLifeSurfaceCommitProof: XinmaiSameLifeSurfaceCommitProof | null;
   frameCount: number;
   width: number;
   height: number;

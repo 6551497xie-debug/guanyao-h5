@@ -240,15 +240,19 @@ export function RealityProductionRouteEntry({
     useState<XinmaiCanonicalBodyImprintDecision>(
       XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
     );
+  const [canonicalBodyImprintRecoveryReady, setCanonicalBodyImprintRecoveryReady] =
+    useState(false);
 
   useEffect(() => {
     if (identityRecovery.status !== "READY") {
+      setCanonicalBodyImprintRecoveryReady(false);
       setCanonicalBodyImprintDecision(
         XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
       );
       return undefined;
     }
     let disposed = false;
+    setCanonicalBodyImprintRecoveryReady(false);
     const read = () => {
       void readXinmaiCanonicalBodyImprintRecovery({
         identityReferences: identityRecovery.identityReferences,
@@ -256,7 +260,10 @@ export function RealityProductionRouteEntry({
         focusedChoiceActionIntentionReferenceId:
           routeState?.choiceActionIntentionReferenceId ?? null,
       }).then((decision) => {
-        if (!disposed) setCanonicalBodyImprintDecision(decision);
+        if (!disposed) {
+          setCanonicalBodyImprintDecision(decision);
+          setCanonicalBodyImprintRecoveryReady(true);
+        }
       });
     };
     read();
@@ -1139,6 +1146,16 @@ export function RealityProductionRouteEntry({
         data-guard-reason="REALITY_INTENT_ATTEMPT_NOT_CURRENT"
       >
         <p role="status">这一轮现实还没有被完整承接。</p>
+      </main>
+    );
+  }
+  if (!canonicalBodyImprintRecoveryReady) {
+    return (
+      <main
+        className="gy-reality-route-guard"
+        data-production-reality-status="SAME_LIFE_SURFACE_RECOVERING"
+      >
+        <p role="status">同一生命正在恢复它已经记住的痕迹。</p>
       </main>
     );
   }

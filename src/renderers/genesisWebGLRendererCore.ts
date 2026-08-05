@@ -53,6 +53,7 @@ import {
   DORMANT_LIFE_WHISPER_RELATIONSHIP_VISUAL_FACT,
   type LifeWhisperRendererVisualResponseOutcome,
 } from "../types/xinmaiLifeWhisperRelationship";
+import type { XinmaiSameLifeSurfaceCommitProof } from "../types/xinmaiSameLifeSurfacePresentation";
 import {
   LIFE_UNIVERSE_CORE_IDENTITY,
   LIFE_UNIVERSE_STAR_FIELD,
@@ -2207,6 +2208,44 @@ export function createGenesisWebGLRendererCore(
     bodyField,
     pressureTrace,
   );
+  const sameLifeSurfaceFacts = input.sameLifeSurfaceFacts ?? null;
+  const canonicalBodyImprintGroup = new Group();
+  const canonicalBodyImprintReferences: string[] = [];
+  if (
+    sameLifeSurfaceFacts !== null &&
+    sameLifeSurfaceFacts.sourceRenderPlanReferenceId ===
+      planReference.referenceId
+  ) {
+    const nodeCount = Math.max(1, finalNodePositions.length / 3);
+    for (const imprint of sameLifeSurfaceFacts.imprints) {
+      const nodeIndex = imprint.stableNodeIndex % nodeCount;
+      const offset = nodeIndex * 3;
+      const crystal = new Mesh(
+        new SphereGeometry(0.105, 5, 3),
+        new MeshBasicMaterial({
+          color: new Color(0x79c3c2),
+          transparent: true,
+          opacity:
+            imprint.salience === "CURRENT_FORMATION_FOCUS" ? 0.92 : 0.74,
+          blending: NormalBlending,
+          depthWrite: true,
+        }),
+      );
+      const identityAngle =
+        referenceUnit(imprint.deterministicGeometryKey) * Math.PI * 2;
+      crystal.position.set(
+        finalNodePositions[offset],
+        finalNodePositions[offset + 1],
+        finalNodePositions[offset + 2] + 0.025,
+      );
+      crystal.rotation.set(identityAngle * 0.14, identityAngle * 0.08, identityAngle);
+      crystal.scale.set(0.82, 1.28, 0.72);
+      crystal.name = `xinmai-body-imprint:${imprint.imprintReferenceId}`;
+      canonicalBodyImprintGroup.add(crystal);
+      canonicalBodyImprintReferences.push(imprint.imprintReferenceId);
+    }
+  }
+  structureGroup.add(canonicalBodyImprintGroup);
   // At the Genesis threshold, carry only the luminous joints of the same
   // stellar skeleton. Lines and animal outline remain absent until the later
   // manifestation stages earn them.
@@ -2408,6 +2447,9 @@ export function createGenesisWebGLRendererCore(
   root.add(coreIdentityGroup);
 
   let frameCount = 0;
+  let sameLifeSurfaceCommitProof:
+    | XinmaiSameLifeSurfaceCommitProof
+    | null = null;
   let recognitionResponseStartedAtMilliseconds: number | null = null;
   let lifeWhisperResponseStartedAtMilliseconds: number | null = null;
   let activeLifeWhisperResponseCycleId: string | null = null;
@@ -4803,6 +4845,24 @@ export function createGenesisWebGLRendererCore(
         choiceLifePauseWeight * 0.035 +
         choiceResponseSpaceProgress * 0.025;
       renderer.render(scene, camera);
+      if (
+        sameLifeSurfaceFacts !== null &&
+        sameLifeSurfaceFacts.sourceRenderPlanReferenceId ===
+          planReference.referenceId
+      ) {
+        sameLifeSurfaceCommitProof = Object.freeze({
+          presenter: "WEBGL_SAME_LIFE_BODY" as const,
+          sourceReferenceId: sameLifeSurfaceFacts.sourceReferenceId,
+          sourceRenderPlanReferenceId:
+            sameLifeSurfaceFacts.sourceRenderPlanReferenceId,
+          bodyReferenceId: sameLifeSurfaceFacts.bodyReferenceId,
+          imprintReferenceIds: Object.freeze([
+            ...canonicalBodyImprintReferences,
+          ]),
+          bodyPresenterCount: 1 as const,
+          webglContextCount: 1 as const,
+        });
+      }
       frameCount += 1;
       if (
         lifeWhisperResponseIsActive &&
@@ -4850,6 +4910,7 @@ export function createGenesisWebGLRendererCore(
         sourceRenderPlanReferenceId: planReference.referenceId,
         contextState,
         lifeWhisperVisualResponseOutcome,
+        sameLifeSurfaceCommitProof,
         frameCount,
         width,
         height,

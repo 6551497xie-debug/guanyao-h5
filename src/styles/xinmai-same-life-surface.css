@@ -1,0 +1,176 @@
+.gy-same-life-static-body {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.gy-same-life-surface__semantic-mirror {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.gy-same-life-static-body__world circle {
+  fill: rgba(180, 211, 218, 0.34);
+}
+
+.gy-same-life-static-body__spine,
+.gy-same-life-static-body__branch {
+  fill: none;
+  stroke: rgba(161, 216, 218, 0.72);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.gy-same-life-static-body__spine { stroke-width: 0.72; }
+.gy-same-life-static-body__branch { stroke-width: 0.46; }
+.gy-same-life-static-body__node {
+  fill: rgba(179, 226, 224, 0.68);
+  stroke: rgba(222, 244, 237, 0.72);
+  stroke-width: 0.22;
+}
+.gy-same-life-static-body__seam {
+  fill: none;
+  stroke: rgba(222, 188, 126, 0.74);
+  stroke-width: 0.45;
+}
+.gy-same-life-static-body__flow {
+  fill: none;
+  stroke: rgba(163, 222, 218, 0.84);
+  stroke-width: 0.32;
+}
+.gy-same-life-static-body__crystal {
+  fill: rgba(115, 190, 193, 0.86);
+  stroke: rgba(220, 241, 232, 0.92);
+  stroke-width: 0.38;
+}
+
+main[data-personality-ring-page="CANONICAL_BODY_IMPRINT_WITH_LEGACY_HISTORY"]
+  > header
+  > button {
+  color: rgba(236, 222, 188, 0.78) !important;
+}
+
+.gy-returning-life-world__cosmos-copy {
+  color: rgba(255, 247, 228, 0.72) !important;
+}
+
+.xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"]
+  .xinmai-crystal-ownership__eyebrow {
+  color: rgba(238, 226, 198, 0.78) !important;
+}
+
+.gy-returning-life-world__relationship-copy:has(
+    [data-crystal-formation-presentation="RECOVERED_EXISTING"]
+  ) {
+  align-content: end !important;
+  overflow: visible !important;
+  padding: 0 0 max(8px, env(safe-area-inset-bottom)) !important;
+}
+
+.xinmai-lived-response-return-surface:has(
+    [data-crystal-formation-presentation="RECOVERED_EXISTING"]
+  ) {
+  width: min(100%, 304px) !important;
+  max-height: min(31dvh, 230px) !important;
+  padding: 9px 12px !important;
+  background: rgba(2, 7, 11, 0.68) !important;
+}
+
+.xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"] {
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 6px 10px;
+  align-items: center;
+}
+
+.xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"]
+  .xinmai-crystal-ownership__scene {
+  grid-row: 1 / span 2;
+  min-height: 74px;
+}
+
+.xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"]
+  .xinmai-crystal-ownership__meaning blockquote {
+  max-height: 2.8em;
+  margin: 0;
+  overflow: hidden;
+}
+
+.xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"]
+  .xinmai-crystal-ownership__actions {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 240px) {
+  main[data-personality-ring-page="CANONICAL_BODY_IMPRINT_WITH_LEGACY_HISTORY"] {
+    display: grid;
+    grid-template-rows: auto minmax(320px, 82dvh) auto;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain;
+    scroll-padding-block: max(12px, env(safe-area-inset-top))
+      max(24px, env(safe-area-inset-bottom));
+  }
+
+  main[data-personality-ring-page="CANONICAL_BODY_IMPRINT_WITH_LEGACY_HISTORY"]
+    > header {
+    position: relative !important;
+    grid-row: 1;
+    inset: auto !important;
+    margin: max(12px, env(safe-area-inset-top)) 12px 0;
+  }
+
+  main[data-personality-ring-page="CANONICAL_BODY_IMPRINT_WITH_LEGACY_HISTORY"]
+    > div[aria-hidden="true"] {
+    position: relative !important;
+    grid-row: 2;
+    inset: auto !important;
+    min-height: 320px;
+    overflow: hidden;
+  }
+
+  main[data-personality-ring-page="CANONICAL_BODY_IMPRINT_WITH_LEGACY_HISTORY"]
+    > section[data-canonical-imprint-presentation] {
+    position: relative !important;
+    grid-row: 3;
+    inset: auto !important;
+    padding: 18px 14px
+      max(28px, calc(18px + env(safe-area-inset-bottom)));
+  }
+
+  .gy-returning-life-world__relationship-copy:has(
+      [data-crystal-formation-presentation="RECOVERED_EXISTING"]
+    ) {
+    align-content: start !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    padding: max(192px, 48dvh) 8px
+      max(24px, calc(14px + env(safe-area-inset-bottom))) !important;
+  }
+
+  .xinmai-lived-response-return-surface:has(
+      [data-crystal-formation-presentation="RECOVERED_EXISTING"]
+    ),
+  .xinmai-lived-response-return-surface[data-ownership-surface-active="TRUE"] {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"]
+    .xinmai-crystal-ownership__meaning blockquote {
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gy-same-life-static-body * { animation: none !important; }
+}

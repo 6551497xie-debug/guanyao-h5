@@ -35,6 +35,7 @@ import {
 import {
   readChoiceGrowthTerminalSummary,
 } from "../services/xinmaiChoiceGrowthTerminalSummaryAdapter";
+import { readXinmaiCanonicalBodyImprintRecovery } from "../services/xinmaiCanonicalBodyImprintRecoveryAdapter";
 import {
   subscribeToXinmaiLivedGrowthRecoveryRevision,
 } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
@@ -55,6 +56,7 @@ import type {
   ChoiceGrowthTerminalSummary,
   ChoiceGrowthTerminalSummaryRequest,
 } from "../types/xinmaiChoicePresentationReadiness";
+import type { XinmaiCanonicalBodyImprintDecision } from "../types/xinmaiCanonicalBodyImprint";
 
 type GravityRouteState =
   | Readonly<{ gravityRouteTicket?: GravityRouteTicket }>
@@ -69,6 +71,7 @@ type GravityRouteAssemblyState =
       runtimeInput: GravityProductionRuntimeInput;
       continuityDecision: GravityObservationResumeDecision;
       growthTerminalSummary: ChoiceGrowthTerminalSummary;
+      canonicalBodyImprintDecision: XinmaiCanonicalBodyImprintDecision;
       growthSummaryPending: boolean;
     }>
   | Readonly<{
@@ -195,7 +198,11 @@ export function GravityProductionRouteEntry() {
         );
         return;
       }
-      const [continuityDecision, growthTerminalSummary] =
+      const [
+        continuityDecision,
+        growthTerminalSummary,
+        canonicalBodyImprintDecision,
+      ] =
         await Promise.all([
           resolveGravityEncounterResumeDecision(
             routeAdmission.intent,
@@ -203,6 +210,10 @@ export function GravityProductionRouteEntry() {
           readChoiceGrowthTerminalSummary(
             createGrowthSummaryRequest(routeAdmission.intent),
           ),
+          readXinmaiCanonicalBodyImprintRecovery({
+            identityReferences: routeAdmission.intent.identityReferences,
+            visualContinuity: identityRecovery.visualContinuity,
+          }),
         ]);
       if (
         cancelled ||
@@ -216,6 +227,7 @@ export function GravityProductionRouteEntry() {
           runtimeInput: runtimeInput.input,
           continuityDecision,
           growthTerminalSummary,
+          canonicalBodyImprintDecision,
           growthSummaryPending: false,
         }),
       );
@@ -297,12 +309,21 @@ export function GravityProductionRouteEntry() {
                 identityRecovery.visualContinuity,
             });
           if (runtimeInput.status !== "READY") return;
-          const [continuityDecision, growthTerminalSummary] =
+          const [
+            continuityDecision,
+            growthTerminalSummary,
+            canonicalBodyImprintDecision,
+          ] =
             await Promise.all([
               resolveGravityEncounterResumeDecision(admission),
               readChoiceGrowthTerminalSummary(
                 createGrowthSummaryRequest(admission),
               ),
+              readXinmaiCanonicalBodyImprintRecovery({
+                identityReferences: admission.identityReferences,
+                visualContinuity:
+                  identityRecovery.visualContinuity,
+              }),
             ]);
           if (
             cancelled ||
@@ -317,6 +338,7 @@ export function GravityProductionRouteEntry() {
             runtimeInput: runtimeInput.input,
             continuityDecision,
             growthTerminalSummary,
+            canonicalBodyImprintDecision,
             growthSummaryPending: false,
           }));
         });
@@ -346,9 +368,16 @@ export function GravityProductionRouteEntry() {
             })
           : current,
       );
-      void readChoiceGrowthTerminalSummary(
-        readyGrowthSummaryRequest,
-      ).then((growthTerminalSummary) => {
+      void Promise.all([
+        readChoiceGrowthTerminalSummary(readyGrowthSummaryRequest),
+        readXinmaiCanonicalBodyImprintRecovery({
+          identityReferences:
+            readyGrowthSummaryRequest.identityReferences,
+          visualContinuity: identityRecovery.status === "READY"
+            ? identityRecovery.visualContinuity
+            : { sourceReferenceId: "UNAVAILABLE" },
+        }),
+      ]).then(([growthTerminalSummary, canonicalBodyImprintDecision]) => {
         if (
           cancelled ||
           growthSummaryEpochRef.current !== epoch
@@ -365,6 +394,7 @@ export function GravityProductionRouteEntry() {
             ? Object.freeze({
                 ...current,
                 growthTerminalSummary,
+                canonicalBodyImprintDecision,
                 growthSummaryPending: false,
               })
             : current,
@@ -560,8 +590,12 @@ export function GravityProductionRouteEntry() {
       readChoiceGrowthTerminalSummary(
         createGrowthSummaryRequest(result.intent),
       ),
+      readXinmaiCanonicalBodyImprintRecovery({
+        identityReferences: result.intent.identityReferences,
+        visualContinuity: identityRecovery.visualContinuity,
+      }),
     ]).then(
-      ([continuityDecision, growthTerminalSummary]) => {
+      ([continuityDecision, growthTerminalSummary, canonicalBodyImprintDecision]) => {
         setAssembly(
           Object.freeze({
             status: "READY" as const,
@@ -570,6 +604,7 @@ export function GravityProductionRouteEntry() {
             runtimeInput: runtimeInput.input,
             continuityDecision,
             growthTerminalSummary,
+            canonicalBodyImprintDecision,
             growthSummaryPending: false,
           }),
         );
@@ -620,6 +655,9 @@ export function GravityProductionRouteEntry() {
       runtimeInput={assembly.runtimeInput}
       continuityDecision={assembly.continuityDecision}
       growthTerminalSummary={assembly.growthTerminalSummary}
+      canonicalBodyImprintDecision={
+        assembly.canonicalBodyImprintDecision
+      }
       growthSummaryPending={assembly.growthSummaryPending}
       onGrowthTerminalSummaryRefreshRequested={
         handleGrowthTerminalSummaryRefreshRequested

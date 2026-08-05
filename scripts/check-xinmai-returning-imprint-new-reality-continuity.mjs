@@ -8,6 +8,8 @@ const launch = read("src/pages/LaunchLab.tsx");
 const routeEntry = read("src/pages/RealityProductionRouteEntry.tsx");
 const host = read("src/components/RealityProductionHost.tsx");
 const canvas = read("src/components/RealityLifeUniverseCanvas.tsx");
+const resolver = read("src/services/xinmaiSameLifeSurfaceHostResolver.ts");
+const renderer = read("src/renderers/genesisWebGLRendererCore.ts");
 
 const requireSource = (source, fragment, message) => {
   if (!source.includes(fragment)) {
@@ -56,13 +58,13 @@ requireSource(
   "Past experience must remain a texture, not the current event.",
 );
 requireSource(
-  canvas,
-  'data-reality-crystal-imprint-direction="SAME_RESPONSE_POSITION_INTO_SAME_BODY"',
+  resolver,
+  "stableNodeIndex",
   "Crystal must remain at the same response position on the same body.",
 );
 requireSource(
-  canvas,
-  'data-reality-crystal-imprint-source="CANONICAL_FORMATION_RECEIPT"',
+  renderer,
+  "canonicalBodyImprintGroup",
   "Crystal memory must come from the canonical Formation Receipt.",
 );
 

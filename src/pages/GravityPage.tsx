@@ -72,6 +72,7 @@ import type { ChoiceActionIntention } from "../types/xinmaiChoiceActionIntention
 import type {
   ChoiceGrowthTerminalSummary,
 } from "../types/xinmaiChoicePresentationReadiness";
+import type { XinmaiCanonicalBodyImprintDecision } from "../types/xinmaiCanonicalBodyImprint";
 import type {
   ChoiceActionRouteCandidate,
   ChoiceActionRouteResolution,
@@ -147,6 +148,7 @@ export type GravityPageProps = Readonly<{
   surfaceAttempt?: GravitySurfaceAdmissionAttempt;
   observationContinuityDecision: GravityObservationResumeDecision;
   growthTerminalSummary: ChoiceGrowthTerminalSummary;
+  canonicalBodyImprintDecision: XinmaiCanonicalBodyImprintDecision;
   actionRouteResolution: ChoiceActionRouteResolution;
   growthSummaryPending: boolean;
   onGrowthTerminalSummaryRefreshRequested: () => Promise<void>;
@@ -2636,6 +2638,7 @@ function HexagramCodeDeliveryShell({
   surfaceAttempt,
   observationContinuityDecision,
   growthTerminalSummary,
+  canonicalBodyImprintDecision,
   actionRouteResolution,
   growthSummaryPending,
   onGrowthTerminalSummaryRefreshRequested,
@@ -3363,6 +3366,8 @@ function HexagramCodeDeliveryShell({
             <Suspense fallback={null}>
               <RealityLifeUniverseCanvas
                 visualContinuity={arrivalVisualContinuity}
+                sameLifeSurfaceConsumer="GRAVITY"
+                canonicalBodyImprintDecision={canonicalBodyImprintDecision}
                 selectedPressureSeedContext={
                   dynamicsInputContext.selectedPressureSeedContext
                 }

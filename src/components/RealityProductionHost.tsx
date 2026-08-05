@@ -1002,6 +1002,7 @@ export function RealityProductionHost({
       data-crystal-readiness="NOT_READY"
     >
       <RealityLifeUniverseCanvas
+        sameLifeSurfaceConsumer="REALITY"
         visualContinuity={visualContinuity}
         currentRealityWeatherEnabled
         innerViewApproachState={innerViewApproachState}

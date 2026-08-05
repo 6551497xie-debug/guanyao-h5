@@ -1,12 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createGenesisWebGLRendererCore } from "../renderers/genesisWebGLRendererCore";
 import { resolveLifeUniverseCrystalImprintGeometry } from "../renderers/lifeUniverseStarField";
+import { projectPersonalStarBeastRenderPlanToLifePresence } from "../services/personalStarBeastLifePresenceProjection";
+import {
+  commitXinmaiSameLifeSurfaceOutcome,
+  resolveXinmaiSameLifeSurfaceFacts,
+  resolveXinmaiSameLifeSurfaceSelection,
+} from "../services/xinmaiSameLifeSurfaceHostResolver";
+import { resolveXinmaiSameLifeAccessibleSemanticMirror } from "../services/xinmaiSameLifeAccessibleSemanticMirror";
+import { XinmaiSemanticStaticSameLifeSurface } from "./XinmaiSemanticStaticSameLifeSurface";
 import { adaptRealLifeVisualSource } from "../services/realLifeVisualSourceAdapter";
 import { readRealUserGenesisVisualSourceContext } from "../services/realUserGenesisVisualSourceContext";
 import { projectGravityLifeSurfaceOutcomes } from "../services/gravityEntryAcceptanceRuntimePort";
 import "../styles/reality-life-entry-continuity.css";
 import "../styles/reality-inner-view-entry.css";
 import "../styles/xinmai-reality-seed-body-response.css";
+import "../styles/xinmai-same-life-surface.css";
 import type {
   GenesisProductionCanvasHostState,
 } from "../types/genesisProductionExperiencePage";
@@ -30,6 +39,11 @@ import {
   type LifeWhisperRelationshipVisualFact,
   type LifeWhisperSurfaceVisualResponseOutcome,
 } from "../types/xinmaiLifeWhisperRelationship";
+import type {
+  XinmaiSameLifeSurfaceCommitProof,
+  XinmaiSameLifeSurfaceConsumer,
+  XinmaiSameLifeSurfaceOutcome,
+} from "../types/xinmaiSameLifeSurfacePresentation";
 
 const REALITY_ARRIVAL_TIMING_MS = Object.freeze({
   IDENTITY_HOLD: 1_600,
@@ -94,6 +108,8 @@ export function RealityLifeUniverseCanvas({
   onRealityLifeSurfaceOutcome,
   gravitySurfaceAdmissionAttempt,
   onGravityLifeSurfaceOutcome,
+  sameLifeSurfaceConsumer = "REALITY",
+  onSameLifeSurfaceOutcome,
 }: Pick<RealityProductionHostProps, "visualContinuity"> &
   Readonly<{
     selectedPressureSeedContext?: SelectedPressureSeedContext | null;
@@ -119,14 +135,15 @@ export function RealityLifeUniverseCanvas({
     onGravityLifeSurfaceOutcome?: (
       outcome: GravityLifeSurfaceOutcome,
     ) => void;
+    sameLifeSurfaceConsumer?: XinmaiSameLifeSurfaceConsumer;
+    onSameLifeSurfaceOutcome?: (
+      outcome: XinmaiSameLifeSurfaceOutcome,
+    ) => void;
   }>) {
   const continuesRecognizedPressure = selectedPressureSeedContext !== null;
-  const reducedMotionRequested =
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-    (import.meta.env.DEV &&
-      new URLSearchParams(window.location.search).get(
-        "__xinmaiReducedMotion",
-      ) === "1");
+  const reducedMotionRequested = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
   const rendererFailureRequested =
     import.meta.env.DEV &&
     new URLSearchParams(window.location.search).get(
@@ -148,9 +165,6 @@ export function RealityLifeUniverseCanvas({
   onLifeWhisperVisualResponseOutcomeRef.current =
     onLifeWhisperVisualResponseOutcome;
   const lastDeliveredLifeWhisperOutcomeKeyRef = useRef<string | null>(null);
-  const staticLifeWhisperResponseRef = useRef<SVGSVGElement | null>(null);
-  const realityStaticLifeSurfaceRef =
-    useRef<SVGSVGElement | null>(null);
   const emitLifeWhisperVisualResponseOutcome = useCallback(
     (
       outcome: LifeWhisperSurfaceVisualResponseOutcomeInput,
@@ -249,8 +263,21 @@ export function RealityLifeUniverseCanvas({
       visualContinuity.sourceReferenceId,
     ],
   );
+  const onSameLifeSurfaceOutcomeRef = useRef(
+    onSameLifeSurfaceOutcome,
+  );
+  onSameLifeSurfaceOutcomeRef.current = onSameLifeSurfaceOutcome;
+  const lastDeliveredSameLifeSurfaceOutcomeKeyRef =
+    useRef<string | null>(null);
   const [rendererState, setRendererState] =
     useState<GenesisProductionCanvasHostState>("STARTING");
+  const [webglUnavailable, setWebglUnavailable] = useState(
+    rendererFailureRequested,
+  );
+  const [sameLifeSurfaceCommitProof, setSameLifeSurfaceCommitProof] =
+    useState<XinmaiSameLifeSurfaceCommitProof | null>(null);
+  const [sameLifeSurfaceOutcome, setSameLifeSurfaceOutcome] =
+    useState<XinmaiSameLifeSurfaceOutcome | null>(null);
   const [rendererFallbackReason, setRendererFallbackReason] =
     useState<GenesisWebGLRendererCoreFallback["reason"] | null>(null);
   const [
@@ -363,20 +390,6 @@ export function RealityLifeUniverseCanvas({
             ...sharedInput,
           })
         : null,
-      canonicalBodyImprints:
-        canonicalBodyImprintDecision.status === "IMPRINT_AVAILABLE"
-          ? canonicalBodyImprintDecision.imprints.flatMap((imprint) => {
-              const geometry =
-                resolveLifeUniverseCrystalImprintGeometry({
-                  identityKey: imprint.deterministicGeometryKey,
-                  ...sharedInput,
-                  sourceSlot: imprint.sourceSlot,
-                });
-              return geometry
-                ? [Object.freeze({ imprint, geometry })]
-                : [];
-            })
-          : Object.freeze([]),
       choiceLifeTrace:
         choiceLifeTraceMemoryKey && choiceLifeTraceSourceSlot !== null
           ? resolveLifeUniverseCrystalImprintGeometry({
@@ -389,7 +402,6 @@ export function RealityLifeUniverseCanvas({
   }, [
     choiceLifeTraceMemoryKey,
     choiceLifeTraceSourceSlot,
-    canonicalBodyImprintDecision,
     historicalRealityMemoryKey,
     visualContinuity,
   ]);
@@ -407,6 +419,58 @@ export function RealityLifeUniverseCanvas({
     choiceLifeTraceSourceSlot === null
       ? "NONE"
       : `SOURCE_SLOT_${choiceLifeTraceSourceSlot}`;
+  const sameLifeSurfaceFacts = useMemo(() => {
+    const source = visualContinuity.consumerSourceResult.consumerSource;
+    return resolveXinmaiSameLifeSurfaceFacts({
+      sourceReferenceId: visualContinuity.sourceReferenceId,
+      renderPlan: source.renderPlanResult.plan,
+      canonicalBodyImprintDecision,
+    });
+  }, [canonicalBodyImprintDecision, visualContinuity]);
+  const sameLifeSurfaceSelection = useMemo(
+    () =>
+      resolveXinmaiSameLifeSurfaceSelection({
+        facts: sameLifeSurfaceFacts,
+        nativeReducedMotion: reducedMotionRequested,
+        webglUnavailable,
+      }),
+    [reducedMotionRequested, sameLifeSurfaceFacts, webglUnavailable],
+  );
+  const staticLifePresence = useMemo(() => {
+    const source = visualContinuity.consumerSourceResult.consumerSource;
+    const projections = source.projectionBundle;
+    return source.renderPlanResult.plan === null
+      ? null
+      : projectPersonalStarBeastRenderPlanToLifePresence(
+          source.renderPlanResult.plan,
+          projections.timeSequenceRecognitionProjection,
+          projections.birthMansionIgnitionProjection,
+          projections.morphologicalFieldAlignmentProjection,
+          projections.lifeForceInfusionProjection,
+          projections.personalRevealProjection,
+          realityPressureConsumer.projection,
+        );
+  }, [realityPressureConsumer.projection, visualContinuity]);
+
+  useEffect(() => {
+    setSameLifeSurfaceOutcome(null);
+    lastDeliveredSameLifeSurfaceOutcomeKeyRef.current = null;
+  }, [
+    sameLifeSurfaceFacts?.bodyReferenceId,
+    sameLifeSurfaceFacts?.sourceReferenceId,
+    sameLifeSurfaceFacts?.sourceRenderPlanReferenceId,
+  ]);
+
+  useEffect(() => {
+    if (sameLifeSurfaceSelection.status !== "SAFE_WITHHELD") return;
+    const outcome = commitXinmaiSameLifeSurfaceOutcome({
+      selection: sameLifeSurfaceSelection,
+      proof: null,
+      consumer: sameLifeSurfaceConsumer,
+    });
+    setSameLifeSurfaceOutcome(outcome);
+    onSameLifeSurfaceOutcomeRef.current?.(outcome);
+  }, [sameLifeSurfaceConsumer, sameLifeSurfaceSelection]);
 
   useEffect(() => {
     if (continuesRecognizedPressure) {
@@ -451,6 +515,22 @@ export function RealityLifeUniverseCanvas({
   ]);
 
   useEffect(() => {
+    if (sameLifeSurfaceSelection.status === "SAFE_WITHHELD") {
+      setRendererFallbackReason(null);
+      setRealityLifeSurfaceUnavailableReason("SOURCE_NOT_READY");
+      setRendererState("BLOCKED");
+      return undefined;
+    }
+    if (sameLifeSurfaceSelection.status === "STATIC_SELECTED") {
+      setRendererFallbackReason(
+        sameLifeSurfaceSelection.reason === "NATIVE_REDUCED_MOTION"
+          ? "REDUCED_MOTION_REQUESTED"
+          : "RENDERER_INITIALIZATION_FAILED",
+      );
+      setRealityLifeSurfaceUnavailableReason(null);
+      setRendererState("FALLBACK_REQUIRED");
+      return undefined;
+    }
     const canvas = canvasRef.current;
     if (canvas === null) {
       setRendererFallbackReason(null);
@@ -475,15 +555,6 @@ export function RealityLifeUniverseCanvas({
       setRendererState("BLOCKED");
       return undefined;
     }
-    if (rendererFailureRequested) {
-      setRendererFallbackReason(null);
-      setRealityLifeSurfaceUnavailableReason(
-        "RENDERER_INITIALIZATION_FAILED",
-      );
-      setRendererState("BLOCKED");
-      return undefined;
-    }
-
     const bounds = canvas.getBoundingClientRect();
     const rendererResult = createGenesisWebGLRendererCore({
       canvas,
@@ -491,7 +562,8 @@ export function RealityLifeUniverseCanvas({
       width: Math.max(1, bounds.width),
       height: Math.max(1, bounds.height),
       pixelRatio: window.devicePixelRatio || 1,
-      reducedMotion: reducedMotionRequested,
+      reducedMotion: false,
+      sameLifeSurfaceFacts: sameLifeSurfaceSelection.facts,
       readLifeWhisperRelationshipVisualFact,
       twentyEightMansionCoordinateProjection:
         projectionBundle.twentyEightMansionCoordinateProjection,
@@ -523,15 +595,11 @@ export function RealityLifeUniverseCanvas({
     });
 
     if (rendererResult.status === "BLOCKED") {
-      setRendererFallbackReason(null);
-      setRealityLifeSurfaceUnavailableReason("RENDERER_BLOCKED");
-      setRendererState("BLOCKED");
+      setWebglUnavailable(true);
       return undefined;
     }
     if (rendererResult.status === "FALLBACK_REQUIRED") {
-      setRendererFallbackReason(rendererResult.fallback.reason);
-      setRealityLifeSurfaceUnavailableReason(null);
-      setRendererState("FALLBACK_REQUIRED");
+      setWebglUnavailable(true);
       return undefined;
     }
 
@@ -541,55 +609,34 @@ export function RealityLifeUniverseCanvas({
     const controller = rendererResult.controller;
     const startedAt = performance.now();
     let animationFrame = 0;
+    let active = true;
     const renderFrame = (timestamp: number) => {
       try {
         controller.renderFrame(timestamp - startedAt);
       } catch {
-        emitRealityLifeSurfaceOutcome({
-          status: "REALITY_LIFE_SURFACE_UNAVAILABLE",
-          reason: "RENDERER_INITIALIZATION_FAILED",
-          reportedAt: new Date().toISOString(),
-        });
-        emitGravityLifeSurfaceOutcome({
-          status: "GRAVITY_LIFE_SURFACE_UNAVAILABLE",
-          reason: "RENDERER_INITIALIZATION_FAILED",
-          reportedAt: new Date().toISOString(),
-        });
+        active = false;
+        setWebglUnavailable(true);
         return;
       }
       const rendererSnapshot = controller.getSnapshot();
       if (rendererSnapshot.contextState === "LOST") {
-        emitRealityLifeSurfaceOutcome({
-          status: "REALITY_LIFE_SURFACE_UNAVAILABLE",
-          reason: "WEBGL_CONTEXT_LOST",
-          reportedAt: new Date().toISOString(),
-        });
-        emitGravityLifeSurfaceOutcome({
-          status: "GRAVITY_LIFE_SURFACE_UNAVAILABLE",
-          reason: "WEBGL_CONTEXT_LOST",
-          reportedAt: new Date().toISOString(),
-        });
-      } else if (
-        rendererSnapshot.frameCount > 0 &&
-        arrivalPhaseRef.current === "SETTLED"
-      ) {
-        emitRealityLifeSurfaceOutcome({
-          status: "REALITY_LIFE_SURFACE_PRESENTED",
-          surfaceMode: "WEBGL_LIFE_UNIVERSE",
-          presentedAt: new Date().toISOString(),
-        });
-        emitGravityLifeSurfaceOutcome({
-          status: "GRAVITY_LIFE_SURFACE_PRESENTED",
-          surfaceMode: "WEBGL_SAME_LIFE_SURFACE",
-          presentedAt: new Date().toISOString(),
-        });
+        active = false;
+        setWebglUnavailable(true);
+        return;
+      }
+      if (rendererSnapshot.sameLifeSurfaceCommitProof !== null) {
+        setSameLifeSurfaceCommitProof(
+          rendererSnapshot.sameLifeSurfaceCommitProof,
+        );
       }
       const visualOutcome =
         rendererSnapshot.lifeWhisperVisualResponseOutcome;
       if (visualOutcome !== null) {
         emitLifeWhisperVisualResponseOutcome(visualOutcome);
       }
-      animationFrame = window.requestAnimationFrame(renderFrame);
+      if (active) {
+        animationFrame = window.requestAnimationFrame(renderFrame);
+      }
     };
     const resizeObserver = new ResizeObserver((entries) => {
       const entry = entries[0];
@@ -604,50 +651,77 @@ export function RealityLifeUniverseCanvas({
     resizeObserver.observe(canvas);
     animationFrame = window.requestAnimationFrame(renderFrame);
     return () => {
+      active = false;
       window.cancelAnimationFrame(animationFrame);
       resizeObserver.disconnect();
       controller.dispose();
     };
   }, [
-    emitRealityLifeSurfaceOutcome,
-    emitGravityLifeSurfaceOutcome,
     emitLifeWhisperVisualResponseOutcome,
     readLifeWhisperRelationshipVisualFact,
     realityPressureConsumer,
-    reducedMotionRequested,
-    rendererFailureRequested,
+    sameLifeSurfaceSelection,
     visualContinuity,
   ]);
 
   const realityStaticLifeSurfaceVisible =
-    (realitySurfaceAdmissionAttempt !== undefined ||
-      gravitySurfaceAdmissionAttempt !== undefined) &&
-    rendererState === "FALLBACK_REQUIRED" &&
-    rendererFallbackReason !== null;
+    sameLifeSurfaceSelection.status === "STATIC_SELECTED" &&
+    staticLifePresence !== null;
+
+  const acceptSameLifeSurfaceCommitProof = useCallback(
+    (proof: XinmaiSameLifeSurfaceCommitProof) => {
+      setSameLifeSurfaceCommitProof(proof);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (
-      !realityStaticLifeSurfaceVisible ||
       arrivalPhase !== "SETTLED" ||
-      realityStaticLifeSurfaceRef.current?.isConnected !== true
+      sameLifeSurfaceSelection.status === "SAFE_WITHHELD"
     ) {
       return;
     }
+    const outcome = commitXinmaiSameLifeSurfaceOutcome({
+      selection: sameLifeSurfaceSelection,
+      proof: sameLifeSurfaceCommitProof,
+      consumer: sameLifeSurfaceConsumer,
+    });
+    if (outcome.status === "SAME_LIFE_SURFACE_SAFE_WITHHELD") {
+      return;
+    }
+    const outcomeKey = `${outcome.status}:${outcome.facts.bodyReferenceId}:${outcome.facts.imprints
+      .map((imprint) => imprint.imprintReferenceId)
+      .join(",")}`;
+    if (lastDeliveredSameLifeSurfaceOutcomeKeyRef.current === outcomeKey) {
+      return;
+    }
+    lastDeliveredSameLifeSurfaceOutcomeKeyRef.current = outcomeKey;
+    setSameLifeSurfaceOutcome(outcome);
+    onSameLifeSurfaceOutcomeRef.current?.(outcome);
+    const staticPresented =
+      outcome.status === "STATIC_SAME_LIFE_SURFACE_PRESENTED";
     emitRealityLifeSurfaceOutcome({
       status: "REALITY_LIFE_SURFACE_PRESENTED",
-      surfaceMode: "SEMANTIC_STATIC_LIFE_UNIVERSE",
-      presentedAt: new Date().toISOString(),
+      surfaceMode: staticPresented
+        ? "SEMANTIC_STATIC_LIFE_UNIVERSE"
+        : "WEBGL_LIFE_UNIVERSE",
+      presentedAt: outcome.presentedAt,
     });
     emitGravityLifeSurfaceOutcome({
       status: "GRAVITY_LIFE_SURFACE_PRESENTED",
-      surfaceMode: "SEMANTIC_STATIC_SAME_LIFE_SURFACE",
-      presentedAt: new Date().toISOString(),
+      surfaceMode: staticPresented
+        ? "SEMANTIC_STATIC_SAME_LIFE_SURFACE"
+        : "WEBGL_SAME_LIFE_SURFACE",
+      presentedAt: outcome.presentedAt,
     });
   }, [
+    sameLifeSurfaceCommitProof,
+    sameLifeSurfaceConsumer,
+    sameLifeSurfaceSelection,
     emitRealityLifeSurfaceOutcome,
     emitGravityLifeSurfaceOutcome,
     arrivalPhase,
-    realityStaticLifeSurfaceVisible,
   ]);
 
   useEffect(() => {
@@ -687,6 +761,14 @@ export function RealityLifeUniverseCanvas({
       lifeWhisperRelationshipVisualFact.lifeWhisperResponsePhase ===
         "SETTLED") &&
     lifeWhisperRelationshipVisualFact.responseCycleId !== null;
+  const accessibleSemanticMirror = useMemo(
+    () =>
+      resolveXinmaiSameLifeAccessibleSemanticMirror({
+        canonicalDecision: canonicalBodyImprintDecision,
+        surfaceOutcome: sameLifeSurfaceOutcome,
+      }),
+    [canonicalBodyImprintDecision, sameLifeSurfaceOutcome],
+  );
 
   useEffect(() => {
     if (
@@ -699,31 +781,26 @@ export function RealityLifeUniverseCanvas({
       return undefined;
     }
 
-    let firstFrame = 0;
-    let presentedFrame = 0;
-    firstFrame = window.requestAnimationFrame(() => {
-      presentedFrame = window.requestAnimationFrame(() => {
-        if (staticLifeWhisperResponseRef.current?.isConnected !== true) {
-          return;
-        }
-        emitLifeWhisperVisualResponseOutcome({
-          responseCycleId:
-            lifeWhisperRelationshipVisualFact.responseCycleId as string,
-          status: "STATIC_RESPONSE_PRESENTED",
-          surfaceMode: "SEMANTIC_STATIC_FALLBACK",
-          reason: rendererFallbackReason,
-        });
-      });
+    if (
+      sameLifeSurfaceCommitProof?.presenter !==
+      "SEMANTIC_STATIC_SAME_LIFE_BODY"
+    ) {
+      return undefined;
+    }
+    emitLifeWhisperVisualResponseOutcome({
+      responseCycleId:
+        lifeWhisperRelationshipVisualFact.responseCycleId as string,
+      status: "STATIC_RESPONSE_PRESENTED",
+      surfaceMode: "SEMANTIC_STATIC_FALLBACK",
+      reason: rendererFallbackReason,
     });
-    return () => {
-      window.cancelAnimationFrame(firstFrame);
-      window.cancelAnimationFrame(presentedFrame);
-    };
+    return undefined;
   }, [
     emitLifeWhisperVisualResponseOutcome,
     lifeWhisperRelationshipVisualFact.lifeWhisperResponsePhase,
     lifeWhisperRelationshipVisualFact.responseCycleId,
     rendererFallbackReason,
+    sameLifeSurfaceCommitProof,
     staticLifeWhisperResponseVisible,
   ]);
 
@@ -755,8 +832,10 @@ export function RealityLifeUniverseCanvas({
 
   return (
     <>
+      <p className="gy-same-life-surface__semantic-mirror" aria-live="off">
+        {accessibleSemanticMirror.summary}
+      </p>
       {lifeMemoryGeometry.historicalReality ||
-      lifeMemoryGeometry.canonicalBodyImprints.length > 0 ||
       lifeMemoryGeometry.choiceLifeTrace ? (
         <svg
           className="gy-reality-life-universe__memory-layer"
@@ -767,11 +846,7 @@ export function RealityLifeUniverseCanvas({
           data-reality-history-pressure={
             lifeMemoryGeometry.historicalReality ? "MEMORY_ONLY" : "NONE"
           }
-          data-reality-history-crystal={
-            lifeMemoryGeometry.canonicalBodyImprints.length > 0
-              ? "CANONICAL_BODY_IMPRINT"
-              : canonicalBodyImprintDecision.status
-          }
+          data-reality-history-crystal="CANONICAL_IMPRINT_RENDERED_BY_UNIQUE_BODY_PRESENTER"
           data-reality-choice-life-trace={
             lifeMemoryGeometry.choiceLifeTrace
               ? "PRE_CRYSTAL_BODY_MEMORY"
@@ -790,73 +865,6 @@ export function RealityLifeUniverseCanvas({
               filter="blur(2.2px)"
             />
           ) : null}
-          {lifeMemoryGeometry.canonicalBodyImprints.map(
-            ({ imprint, geometry }) => {
-              const bodyPath =
-                `M ${geometry.target[0]} ${geometry.target[1]} ` +
-                `L ${geometry.stem[0]} ${geometry.stem[1]} ` +
-                `L ${geometry.branchTarget[0]} ${geometry.branchTarget[1]}`;
-              const bodyPoint = geometry.branchTarget;
-              return (
-                <g
-                  key={imprint.imprintReferenceId}
-                  className="gy-reality-life-universe__crystal-memory"
-                  data-body-imprint-reference={imprint.imprintReferenceId}
-                  data-body-reference={imprint.bodyReferenceId}
-                  data-formation-reference={imprint.formationReferenceId}
-                  data-reality-crystal-imprint-source="CANONICAL_FORMATION_RECEIPT"
-                  data-reality-crystal-imprint-direction="SAME_RESPONSE_POSITION_INTO_SAME_BODY"
-                  data-reality-crystal-imprint-form="LIFE_TEXTURE_NOT_COLLECTIBLE"
-                  data-reality-crystal-imprint-status={imprint.salience}
-                  data-reality-crystal-identity-invariant="SAME_CORE_SAME_BODY_SAME_LIFE"
-                >
-                  <path
-                    d={bodyPath}
-                    fill="none"
-                    stroke="rgba(232,200,138,0.08)"
-                    strokeWidth="1.08"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    filter="blur(1.1px)"
-                  />
-                  <path
-                    className="gy-reality-life-universe__crystal-memory-flow"
-                    d={bodyPath}
-                    fill="none"
-                    stroke="rgba(255,239,190,0.48)"
-                    strokeWidth="0.3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <circle
-                    className="gy-reality-life-universe__crystal-memory-origin"
-                    cx={geometry.target[0]}
-                    cy={geometry.target[1]}
-                    r="0.34"
-                    fill="rgba(255,247,220,0.06)"
-                    stroke="rgba(255,239,190,0.2)"
-                    strokeWidth="0.14"
-                  />
-                  <g className="gy-reality-life-universe__crystal-memory-trace">
-                    <path
-                      d={`M ${bodyPoint[0] - 0.62} ${bodyPoint[1] + 0.08} L ${bodyPoint[0] - 0.14} ${bodyPoint[1] - 0.46} L ${bodyPoint[0] + 0.5} ${bodyPoint[1] - 0.12} M ${bodyPoint[0] - 0.14} ${bodyPoint[1] - 0.46} L ${bodyPoint[0] - 0.08} ${bodyPoint[1] + 0.58}`}
-                      fill="none"
-                      stroke="rgba(255,239,190,0.48)"
-                      strokeWidth="0.24"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <circle
-                      cx={bodyPoint[0]}
-                      cy={bodyPoint[1]}
-                      r="0.17"
-                      fill="rgba(255,247,220,0.5)"
-                    />
-                  </g>
-                </g>
-              );
-            },
-          )}
           {lifeMemoryGeometry.choiceLifeTrace &&
           choiceLifeTraceBodyPoint ? (
             <g
@@ -924,42 +932,13 @@ export function RealityLifeUniverseCanvas({
         </svg>
       ) : null}
       {realityStaticLifeSurfaceVisible ? (
-        <svg
-          ref={realityStaticLifeSurfaceRef}
-          className="gy-reality-life-universe__static-life-response"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-          data-reality-static-life-universe="SAME_LIFE_PRESENTED"
-          data-source-reference-id={
-            visualContinuity.sourceReferenceId
-          }
-        >
-          <ellipse
-            cx="50"
-            cy="49"
-            rx="18"
-            ry="12"
-            fill="rgba(170, 213, 216, 0.035)"
-            stroke="rgba(190, 220, 220, 0.16)"
-            strokeWidth="0.22"
-          />
-          <path
-            d="M 34 50 Q 42 41 50 46 Q 58 40 67 50 Q 59 58 50 54 Q 41 59 34 50"
-            fill="none"
-            stroke="rgba(190, 220, 220, 0.24)"
-            strokeWidth="0.3"
-            strokeLinecap="round"
-          />
-          <circle
-            cx="50"
-            cy="50"
-            r="2.5"
-            fill="rgba(244, 235, 206, 0.34)"
-          />
-        </svg>
+        <XinmaiSemanticStaticSameLifeSurface
+          facts={sameLifeSurfaceSelection.facts}
+          lifePresence={staticLifePresence}
+          onCommitted={acceptSameLifeSurfaceCommitProof}
+        />
       ) : null}
-      <canvas
+      {sameLifeSurfaceSelection.status === "MOTION_SELECTED" ? <canvas
         ref={canvasRef}
         className="gy-reality-life-universe__canvas"
         style={{
@@ -987,41 +966,7 @@ export function RealityLifeUniverseCanvas({
         data-genesis-presence-visual-state="RECOGNIZED"
         data-source-reference-id={visualContinuity.sourceReferenceId}
         aria-hidden="true"
-      />
-      {staticLifeWhisperResponseVisible ? (
-        <svg
-          ref={staticLifeWhisperResponseRef}
-          className="gy-reality-life-universe__static-life-response"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-          data-life-whisper-static-response="SAME_LIFE_PRESENTED"
-          data-source-reference-id={visualContinuity.sourceReferenceId}
-        >
-          <ellipse
-            cx="50"
-            cy="49"
-            rx="18"
-            ry="12"
-            fill="rgba(170, 213, 216, 0.035)"
-            stroke="rgba(190, 220, 220, 0.16)"
-            strokeWidth="0.22"
-          />
-          <path
-            d="M 34 50 Q 42 41 50 46 Q 58 40 67 50 Q 59 58 50 54 Q 41 59 34 50"
-            fill="none"
-            stroke="rgba(190, 220, 220, 0.24)"
-            strokeWidth="0.3"
-            strokeLinecap="round"
-          />
-          <circle
-            cx="50"
-            cy="50"
-            r="2.5"
-            fill="rgba(244, 235, 206, 0.34)"
-          />
-        </svg>
-      ) : null}
+      /> : null}
       {selectedPressureSeedContext !== null &&
       realityPressureConsumer.status === "RESPONDING" ? (
         <svg

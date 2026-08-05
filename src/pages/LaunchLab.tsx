@@ -6008,6 +6008,7 @@ export function LaunchLab({
           >
             <Suspense fallback={null}>
               <RealityLifeUniverseCanvas
+                sameLifeSurfaceConsumer="RETURNING"
                 visualContinuity={returningVisualContinuity}
                 canonicalBodyImprintDecision={
                   canonicalBodyImprintDecision

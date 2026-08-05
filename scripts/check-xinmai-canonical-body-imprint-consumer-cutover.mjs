@@ -7,6 +7,9 @@ const files = {
   archive: read("src/pages/PersonalityRingPage.tsx"),
   host: read("src/components/RealityProductionHost.tsx"),
   canvas: read("src/components/RealityLifeUniverseCanvas.tsx"),
+  renderer: read("src/renderers/genesisWebGLRendererCore.ts"),
+  resolver: read("src/services/xinmaiSameLifeSurfaceHostResolver.ts"),
+  staticPresenter: read("src/components/XinmaiSemanticStaticSameLifeSurface.tsx"),
   hostTypes: read("src/types/realityProductionRouteEntry.ts"),
 };
 const assert = (condition, message) => {
@@ -55,12 +58,16 @@ assert(
   "Archive still interprets Legacy ordering or copy as Body Imprint",
 );
 assert(
-  files.canvas.includes(
-    'data-reality-crystal-imprint-source="CANONICAL_FORMATION_RECEIPT"',
-  ) &&
+  files.canvas.includes("sameLifeSurfaceFacts") &&
+    files.renderer.includes("sameLifeSurfaceFacts") &&
+    files.renderer.includes("canonicalBodyImprintGroup") &&
+    files.staticPresenter.includes("facts.imprints") &&
+    files.resolver.includes("resolveXinmaiSameLifeSurfaceFacts") &&
     !files.canvas.includes("localStorage") &&
     !files.canvas.includes("indexedDB") &&
-    !files.canvas.includes("PersonalityRingLite"),
+    !files.canvas.includes("PersonalityRingLite") &&
+    !files.renderer.includes("localStorage") &&
+    !files.renderer.includes("indexedDB"),
   "Canvas is not a typed-fact-only consumer",
 );
 console.log("[XINMAI CANONICAL BODY IMPRINT CONSUMER CUTOVER] PASS");

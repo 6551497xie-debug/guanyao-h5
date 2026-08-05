@@ -12,6 +12,7 @@ import {
 import {
   recoverRealityRecognizedIdentity,
 } from "../services/realityRecognizedIdentityRecoveryAdapter";
+import { XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION } from "../types/xinmaiCanonicalBodyImprint";
 
 export const GRAVITY_DEVELOPMENT_FIXTURE_ROUTE_BOUNDARY =
   Object.freeze({
@@ -60,6 +61,9 @@ export function GravityDevelopmentFixtureRouteEntry() {
       }
       choiceReturn={null}
       experienceSmokeFixture={input.experienceSmokeFixture}
+      canonicalBodyImprintDecision={
+        XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION
+      }
       observationContinuityDecision={Object.freeze({
         status: "BLOCKED" as const,
         gravityObservationReferenceId: "development-fixture",
