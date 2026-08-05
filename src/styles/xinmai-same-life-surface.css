@@ -71,30 +71,62 @@ main[data-personality-ring-page="CANONICAL_BODY_IMPRINT_WITH_LEGACY_HISTORY"]
 .gy-returning-life-world__relationship-copy:has(
     [data-crystal-formation-presentation="RECOVERED_EXISTING"]
   ) {
+  box-sizing: border-box;
   align-content: end !important;
-  overflow: visible !important;
-  padding: 0 0 max(8px, env(safe-area-inset-bottom)) !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+  padding: clamp(152px, 32dvh, 280px) 0
+    max(8px, env(safe-area-inset-bottom)) !important;
 }
 
 .xinmai-lived-response-return-surface:has(
     [data-crystal-formation-presentation="RECOVERED_EXISTING"]
   ) {
+  position: relative;
+  z-index: 1;
   width: min(100%, 304px) !important;
-  max-height: min(31dvh, 230px) !important;
+  max-height: min(38dvh, 280px) !important;
   padding: 9px 12px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+  scroll-padding-block: 12px
+    max(22px, calc(12px + env(safe-area-inset-bottom)));
+  isolation: isolate;
   background: rgba(2, 7, 11, 0.68) !important;
 }
 
 .xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"] {
-  grid-template-columns: 58px minmax(0, 1fr);
+  grid-template-areas:
+    "scene meaning"
+    "actions actions";
+  grid-template-columns: 68px minmax(0, 1fr);
   gap: 6px 10px;
-  align-items: center;
+  align-items: start;
+  min-width: 0;
+  isolation: isolate;
 }
 
 .xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"]
   .xinmai-crystal-ownership__scene {
-  grid-row: 1 / span 2;
-  min-height: 74px;
+  grid-area: scene;
+  z-index: 2;
+  min-height: 82px;
+  overflow: visible;
+}
+
+.xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"]
+  .xinmai-crystal-ownership__crystal-touch {
+  z-index: 2;
+  width: min(100%, 68px);
+  min-width: 0;
+  max-width: 68px;
+}
+
+.xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"]
+  .xinmai-crystal-ownership__meaning {
+  grid-area: meaning;
+  min-width: 0;
 }
 
 .xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"]
@@ -106,10 +138,28 @@ main[data-personality-ring-page="CANONICAL_BODY_IMPRINT_WITH_LEGACY_HISTORY"]
 
 .xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"]
   .xinmai-crystal-ownership__actions {
-  grid-column: 1 / -1;
+  grid-area: actions;
 }
 
 @media (max-width: 240px) {
+  html:has(
+      .xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"]
+    ),
+  body:has(
+      .xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"]
+    ),
+  #root:has(
+      .xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"]
+    ),
+  .xinmai-life-app:has(
+      .xinmai-crystal-ownership[data-crystal-formation-presentation="RECOVERED_EXISTING"]
+    ) {
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100%;
+    overflow-x: hidden !important;
+  }
+
   main[data-personality-ring-page="CANONICAL_BODY_IMPRINT_WITH_LEGACY_HISTORY"] {
     display: grid;
     grid-template-rows: auto minmax(320px, 82dvh) auto;
