@@ -1,0 +1,299 @@
+{
+  "manifestVersion": "1.0.0",
+  "packReferenceId": "XINMAI_C3_ORIGINAL_SYNTHETIC_CUE_COMMISSION_P0",
+  "packStatus": "COMMISSION_NOT_STARTED",
+  "releaseApproved": false,
+  "product": "XINMAI_1_0",
+  "selectedSourceDecision": "ORIGINAL_NO_SAMPLE_SYNTHESIS",
+  "selectedCreativeDirection": "MINERAL_ICE_CRYSTAL_RESONANCE",
+  "excludedDirections": [
+    "GUQIN_RECORDING",
+    "GUQIN_SIMULATION",
+    "SINGING_BOWL_RECORDING",
+    "CULTURAL_INSTRUMENT_COLLAGE",
+    "VICTORY_REWARD_SOUND",
+    "MEDITATION_TEMPLATE_SOUND"
+  ],
+  "cue": {
+    "cueContract": "OWNERSHIP_TOUCH_ACK_P0",
+    "assetReferenceId": "XINMAI_AUDIO_OWNERSHIP_TOUCH_ACK_P0",
+    "assetVersion": "0.0.0-commission-placeholder",
+    "releaseStatus": "NOT_APPROVED",
+    "requiredActiveCueCount": 1,
+    "loopAllowed": false,
+    "randomVariationAllowed": false,
+    "automaticPlaybackAllowed": false,
+    "allowedTrigger": {
+      "checkpointState": "OWNERSHIP_PRESENTED",
+      "ownershipAuthority": "IDB_TRANSACTION_COMPLETE",
+      "trustedActivation": "REAL_CRYSTAL_BUTTON",
+      "soundPreference": "SOUND_ALLOWED",
+      "documentVisible": true
+    },
+    "forbiddenTriggers": [
+      "PAGE_MOUNT",
+      "ROUTE_ENTRY",
+      "FORMATION_START",
+      "FORMATION_COMPLETE",
+      "RECOVERY_MOUNT",
+      "REFRESH",
+      "BACK_FORWARD",
+      "TIMER",
+      "RAF",
+      "CONTINUE_NAVIGATION",
+      "PAYWALL_OR_COMMERCIAL_PROMPT"
+    ],
+    "missingOrUnapprovedOutcome": "SENSORY_AUDIO_SAFE_WITHHELD",
+    "productAuthorityUnaffected": true
+  },
+  "commission": {
+    "status": "NOT_STARTED",
+    "commissioner": "REPLACE_ME",
+    "soundDesigner": "REPLACE_ME",
+    "contractReference": "REPLACE_ME",
+    "quoteReference": "REPLACE_ME",
+    "purchaseOrPaymentEvidenceReference": "REPLACE_ME",
+    "startDate": "REPLACE_ME",
+    "deliveryDate": "REPLACE_ME",
+    "candidateLimit": 3,
+    "candidateLabels": [
+      "A",
+      "B",
+      "C"
+    ],
+    "selectedCandidate": null
+  },
+  "originalityDeclaration": {
+    "status": "PENDING_SIGNED_DECLARATION",
+    "noThirdPartyRecordedSamples": null,
+    "noCommercialSamplePackRecordings": null,
+    "noFieldRecordings": null,
+    "noInstrumentRecordings": null,
+    "noExtractedAudio": null,
+    "noNamedPerformerOrRecordingImitation": null,
+    "declarant": "REPLACE_ME",
+    "signedAt": "REPLACE_ME",
+    "declarationDocumentReference": "REPLACE_ME"
+  },
+  "creatorAndRightsChain": {
+    "creator": "REPLACE_ME",
+    "collaborators": [],
+    "workForHireWhereValid": null,
+    "completeAssignment": null,
+    "exclusiveEquivalentLicense": null,
+    "workOrCompositionOwner": "REPLACE_ME",
+    "soundDesignAndPatchOwner": "REPLACE_ME",
+    "masterOwner": "REPLACE_ME",
+    "commercialUseAllowed": null,
+    "territory": "WORLDWIDE_REQUIRED",
+    "term": "PERPETUAL_REQUIRED",
+    "royaltyStatus": "FULLY_PAID_UP_ROYALTY_FREE_REQUIRED",
+    "transferable": null,
+    "sublicensableForHostingAndDistribution": null,
+    "platforms": [
+      "WEB",
+      "PWA",
+      "IOS",
+      "ANDROID",
+      "DESKTOP_WRAPPER",
+      "CDN",
+      "APP_STORES"
+    ],
+    "approvedUses": [
+      "IN_PRODUCT_PLAYBACK",
+      "REPRODUCTION",
+      "DISTRIBUTION",
+      "CACHING",
+      "BACKUP",
+      "TECHNICAL_TRANSCODING",
+      "TRIM",
+      "FADE",
+      "LOUDNESS_NORMALIZATION",
+      "COMPATIBILITY_EDIT"
+    ],
+    "advertisingOrPromotionUseAllowed": false,
+    "attribution": {
+      "required": null,
+      "exactText": "REPLACE_ME_OR_NOT_APPLICABLE",
+      "placement": "REPLACE_ME_OR_NOT_APPLICABLE"
+    },
+    "moralRightsAgreementReference": "REPLACE_ME",
+    "portfolioUseTerms": "REPLACE_ME",
+    "withdrawalAndReplacementTerms": "REPLACE_ME",
+    "rightsContact": "REPLACE_ME"
+  },
+  "toolsAndThirdPartyInventory": {
+    "daw": {
+      "name": "REPLACE_ME",
+      "version": "REPLACE_ME",
+      "licenseReference": "REPLACE_ME"
+    },
+    "synthesizers": [],
+    "effects": [],
+    "presets": [],
+    "wavetables": [],
+    "impulseResponses": [],
+    "fontsUsedInDocumentationOnly": [],
+    "containsSampleBasedPreset": null,
+    "containsThirdPartyRecordedMaterial": null,
+    "allThirdPartyLicensesCleared": false,
+    "inventoryReviewedBy": "REPLACE_ME",
+    "inventoryReviewedAt": "REPLACE_ME"
+  },
+  "aiAndGenerativeDisclosure": {
+    "generativeAiUsed": false,
+    "status": "PENDING_CREATOR_CONFIRMATION",
+    "modelOrService": "NOT_APPLICABLE_UNLESS_DISCLOSED",
+    "modelVersion": "NOT_APPLICABLE_UNLESS_DISCLOSED",
+    "generatedAt": "NOT_APPLICABLE_UNLESS_DISCLOSED",
+    "servicePlanAndCommercialTermsReference": "NOT_APPLICABLE_UNLESS_DISCLOSED",
+    "promptCustodyReference": "NOT_APPLICABLE_UNLESS_DISCLOSED",
+    "uploadedInputs": [],
+    "trainingAndOptOutDisclosure": "NOT_APPLICABLE_UNLESS_DISCLOSED",
+    "voiceOrPerformerImitationReview": "NOT_APPLICABLE_UNLESS_DISCLOSED",
+    "similarityReview": "NOT_APPLICABLE_UNLESS_DISCLOSED",
+    "approvedForUse": false
+  },
+  "creativeAndAcousticContract": {
+    "meaning": "ONE_RESTRAINED_RESPONSE_TO_USER_TOUCH_ON_AN_ALREADY_CONFIRMED_CRYSTAL",
+    "durationMilliseconds": {
+      "minimum": 420,
+      "maximum": 600,
+      "measured": null
+    },
+    "leadingSilenceMillisecondsMaximum": 20,
+    "attackMilliseconds": {
+      "minimum": 20,
+      "maximum": 90,
+      "measured": null
+    },
+    "tailSilenceMilliseconds": {
+      "minimum": 20,
+      "maximum": 50,
+      "measured": null
+    },
+    "integratedLoudnessLufs": {
+      "target": -24,
+      "toleranceLu": 2,
+      "measured": null
+    },
+    "rmsDbfs": {
+      "recommendedMinimum": -30,
+      "recommendedMaximum": -22,
+      "measured": null
+    },
+    "truePeakDbtpMaximum": -6,
+    "truePeakDbtpMeasured": null,
+    "primaryEnergyBandHz": {
+      "minimum": 160,
+      "maximum": 2400
+    },
+    "mobileReadabilityBandHz": {
+      "minimum": 300,
+      "maximum": 2400
+    },
+    "sub80HzAttenuationDbMinimum": 24,
+    "above6kHzAttenuationDbMinimum": 18,
+    "channels": 1,
+    "sampleRateHz": 48000,
+    "loop": false,
+    "secondStrike": false,
+    "pitchRandomization": false,
+    "spatialMovement": false,
+    "runtimeReverbRequired": false
+  },
+  "deliverables": {
+    "processedMaster": {
+      "status": "MISSING",
+      "fileName": "REPLACE_ME.wav",
+      "mediaType": "audio/wav",
+      "sampleRateHz": 48000,
+      "bitDepth": 24,
+      "channels": 1,
+      "sizeBytes": 0,
+      "sha256": "sha256:REPLACE_WITH_64_HEX",
+      "includedInProductBundle": false
+    },
+    "dryMaster": {
+      "status": "MISSING",
+      "fileName": "REPLACE_ME_DRY.wav",
+      "mediaType": "audio/wav",
+      "sampleRateHz": 48000,
+      "bitDepth": 24,
+      "channels": 1,
+      "sizeBytes": 0,
+      "sha256": "sha256:REPLACE_WITH_64_HEX",
+      "includedInProductBundle": false
+    },
+    "projectSource": {
+      "status": "MISSING",
+      "custodyReference": "REPLACE_ME",
+      "reproducible": false
+    },
+    "releaseEncodes": [
+      {
+        "status": "MISSING",
+        "fileName": "REPLACE_ME.webm",
+        "mediaType": "audio/webm; codecs=opus",
+        "codec": "OPUS",
+        "targetBitrateKbps": 48,
+        "sampleRateHz": 48000,
+        "channels": 1,
+        "sizeBytes": 0,
+        "sizeLimitBytes": 32768,
+        "sha256": "sha256:REPLACE_WITH_64_HEX"
+      },
+      {
+        "status": "MISSING",
+        "fileName": "REPLACE_ME.m4a",
+        "mediaType": "audio/mp4; codecs=mp4a.40.2",
+        "codec": "AAC_LC",
+        "targetBitrateKbps": 64,
+        "sampleRateHz": 48000,
+        "channels": 1,
+        "sizeBytes": 0,
+        "sizeLimitBytes": 32768,
+        "sha256": "sha256:REPLACE_WITH_64_HEX"
+      }
+    ],
+    "measurementReportReference": "REPLACE_ME",
+    "toolInventoryReference": "REPLACE_ME",
+    "rightsDocuments": [],
+    "sha256ListReference": "REPLACE_ME"
+  },
+  "acceptance": {
+    "blindListeningScorecardReference": "REPLACE_ME",
+    "mandatoryVetoPassed": false,
+    "scoreOutOf100": 0,
+    "minimumPassingScore": 85,
+    "androidSpeakerPassed": false,
+    "iphoneSpeakerPassed": false,
+    "laptopSpeakerPassed": false,
+    "headphonesPassed": false,
+    "quietEnvironmentPassed": false,
+    "ordinaryIndoorNoisePassed": false,
+    "noStartlePassed": false,
+    "noAddictiveFeedbackPassed": false,
+    "productApproved": false,
+    "culturalApproved": false,
+    "legalApproved": false,
+    "technicalApproved": false,
+    "accessibilityApproved": false
+  },
+  "replacementAndWithdrawal": {
+    "status": "NOT_ACTIVE",
+    "replacesAssetReferenceId": null,
+    "withdrawn": false,
+    "withdrawnAt": null,
+    "withdrawalReason": null,
+    "policyCounterReference": "REPLACE_ME",
+    "replacementAssetReferenceId": null
+  },
+  "manifestIntegrity": {
+    "status": "PLACEHOLDER_NOT_RELEASE_ELIGIBLE",
+    "generatedAt": "REPLACE_ME",
+    "generatedBy": "REPLACE_ME",
+    "reviewedBy": "REPLACE_ME",
+    "manifestSha256": "sha256:REPLACE_WITH_64_HEX"
+  }
+}
