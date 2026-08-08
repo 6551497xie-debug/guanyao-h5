@@ -6,6 +6,7 @@ import type {
   GravitySurfaceAdmissionAttempt,
 } from "../types/xinmaiGravitySurfaceAdmission";
 import "../styles/reality-gravity-presentation.css";
+import { useXinmaiContinuousSceneHost } from "./XinmaiContinuousSceneHostContext";
 
 const RESPONSE_TENDENCIES = Object.freeze([
   "M 52 50 C 57 50, 60 47, 64 44 C 68 41, 71 38, 76 35",
@@ -34,20 +35,23 @@ export function RealityGravityInertiaField({
   ) => void;
 }>) {
   const safeDepth = Math.max(1, Math.min(6, repetitionDepth));
-  const fieldRef = useRef<HTMLDivElement | null>(null);
   const lastOutcomeKeyRef = useRef<string | null>(null);
+  const { currentOutcome: continuousSceneOutcome } =
+    useXinmaiContinuousSceneHost();
+  const motionPresented =
+    continuousSceneOutcome?.status ===
+    "CONTINUOUS_SCENE_MOTION_PRESENTED";
   const reducedMotion =
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-    (import.meta.env.DEV &&
-      new URLSearchParams(window.location.search).get(
-        "__xinmaiReducedMotion",
-      ) === "1");
+    continuousSceneOutcome?.status ===
+    "CONTINUOUS_SCENE_STATIC_PRESENTED";
 
   useEffect(() => {
     if (
       !visible ||
       gravitySurfaceAdmissionAttempt === undefined ||
-      fieldRef.current?.isConnected !== true
+      continuousSceneOutcome === null ||
+      continuousSceneOutcome.consumerSurface !== "GRAVITY_CHOICE" ||
+      (!motionPresented && !reducedMotion)
     ) {
       return;
     }
@@ -76,6 +80,8 @@ export function RealityGravityInertiaField({
     }
   }, [
     gravitySurfaceAdmissionAttempt,
+    continuousSceneOutcome,
+    motionPresented,
     onGravityObservationSurfaceOutcome,
     reducedMotion,
     visible,
@@ -83,7 +89,6 @@ export function RealityGravityInertiaField({
 
   return (
     <div
-      ref={fieldRef}
       aria-hidden="true"
       className="gy-gravity-inertia-field"
       data-gravity-visual-consumer="RECOVERED_TRACE_RESPONSE_BIAS"

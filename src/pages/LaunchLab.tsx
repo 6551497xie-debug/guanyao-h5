@@ -105,6 +105,16 @@ import {
   projectLifeUniverseStarToViewport,
   resolveLifeUniverseCoreFrame,
 } from "../renderers/lifeUniverseStarField";
+import {
+  createXinmaiContinuousSceneDeferredCanvas2DRendererAdapter,
+  type XinmaiContinuousSceneDeferredCanvas2DSession,
+} from "../renderers/xinmaiContinuousSceneRendererAdapter";
+import { useXinmaiContinuousScenePresentation } from "../components/XinmaiContinuousSceneHostContext";
+import {
+  XINMAI_CONTINUOUS_SCENE_PRESENTATION_VERSION,
+  type XinmaiContinuousScenePresenterCommitProof,
+  type XinmaiContinuousSceneRendererFailure,
+} from "../types/xinmaiContinuousScenePresentation";
 
 const RealityLifeUniverseCanvas = lazy(() =>
   import("../components/RealityLifeUniverseCanvas").then((module) => ({
@@ -1177,7 +1187,8 @@ export function LaunchLab({
   explicitLeaveNavigationDeliveryTicket = null,
   onExplicitLeaveNavigationDeliveryOutcome,
 }: LaunchLabProps = {}) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [launchSceneSession, setLaunchSceneSession] =
+    useState<XinmaiContinuousSceneDeferredCanvas2DSession | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const lastExplicitLeaveDeliveryOutcomeKeyRef =
@@ -1546,6 +1557,82 @@ export function LaunchLab({
     (targetScene: SceneState, extra = "") => `gy-timeline-layer ${extra} ${scene === targetScene ? "on" : "off"}`,
     [scene],
   );
+  const acceptLaunchSceneSession = useCallback(
+    (session: XinmaiContinuousSceneDeferredCanvas2DSession) => {
+      setLaunchSceneSession(session);
+    },
+    [],
+  );
+  const closeLaunchSceneSession = useCallback(
+    (sessionReferenceId: string) => {
+      setLaunchSceneSession((current) =>
+        current?.sessionReferenceId === sessionReferenceId
+          ? null
+          : current,
+      );
+    },
+    [],
+  );
+  const launchSceneRuntimeFactory = useMemo(
+    () =>
+      createXinmaiContinuousSceneDeferredCanvas2DRendererAdapter({
+        factoryReferenceId: "CONTINUOUS_SCENE_ENTRY_BIRTH_CANVAS_2D_V1",
+        onSession: acceptLaunchSceneSession,
+        onSessionClosed: closeLaunchSceneSession,
+      }),
+    [acceptLaunchSceneSession, closeLaunchSceneSession],
+  );
+  const launchSceneRegistration = useMemo(
+    () =>
+      returningVisualReady
+        ? null
+        : Object.freeze({
+            registrationReferenceId: "CONTINUOUS_SCENE:ENTRY_BIRTH",
+            priority: 40,
+            input: Object.freeze({
+              schemaVersion:
+                XINMAI_CONTINUOUS_SCENE_PRESENTATION_VERSION,
+              consumerSurface: "ENTRY_BIRTH" as const,
+              sourceReferenceId: "PUBLIC_LIFE_WORLD",
+              sourceRenderPlanReferenceId:
+                "PUBLIC_LIFE_WORLD_DEPTH_FOUNDATION_V1",
+              identityReferenceId: null,
+              bodyReferenceId: null,
+              routeAdmissionEvidence: Object.freeze({
+                status: "CURRENT" as const,
+                admissionReferenceId: "ENTRY_BIRTH_ROUTE_ADMISSION",
+                revision: 0,
+              }),
+              nearObjectKind: "BIRTH_COORDINATE" as const,
+              nearObjectReferenceId: "BIRTH_COORDINATE_CONTROL",
+              nativeMotionPreference: window.matchMedia(
+                "(prefers-reduced-motion: reduce)",
+              ).matches
+                ? "REDUCED_MOTION" as const
+                : "MOTION_ALLOWED" as const,
+              qualityTier: "FULL" as const,
+              sameLifeSurface: null,
+            }),
+            runtimeFactory: launchSceneRuntimeFactory,
+            staticSurface: null,
+            canvasClassName: "light-field",
+            canvasAttributes: Object.freeze({
+              "data-launch-interaction-state": interactionState,
+              "data-launch-scene": scene,
+              "data-launch-timeline": timeline[scene],
+              "data-snapshot-index": String(snapshotIndex),
+            }),
+            pointerInteraction: "HOST_CANVAS" as const,
+          }),
+    [
+      interactionState,
+      launchSceneRuntimeFactory,
+      returningVisualReady,
+      scene,
+      snapshotIndex,
+    ],
+  );
+  useXinmaiContinuousScenePresentation(launchSceneRegistration);
 
   const setSceneState = useCallback((nextScene: SceneState) => {
     const currentScene = sceneRef.current;
@@ -1725,8 +1812,9 @@ export function LaunchLab({
   }, [enterNext, scene]);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const session = launchSceneSession;
+    if (session === null) return undefined;
+    const { canvas, context2D, plan } = session;
     const audio = makeAudio();
 
     const m = {
@@ -1833,17 +1921,9 @@ export function LaunchLab({
     function vibrate(p: number | number[]) {
       if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") navigator.vibrate(p);
     }
-    function resize() {
-      const c = canvasRef.current;
-      if (!c) return;
-      const rect = c.getBoundingClientRect();
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      c.width = Math.max(1, Math.floor(rect.width * dpr));
-      c.height = Math.max(1, Math.floor(rect.height * dpr));
-      const ctx = c.getContext("2d");
-      if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      m.w = rect.width;
-      m.h = rect.height;
+    function resize(width: number, height: number) {
+      m.w = Math.max(1, width);
+      m.h = Math.max(1, height);
       buildTextStars();
     }
 
@@ -5192,7 +5272,6 @@ export function LaunchLab({
 
     }
 
-    let raf = 0;
     let last = performance.now();
     let acc = 0;
     const STEP = 1 / 60;
@@ -5212,14 +5291,12 @@ export function LaunchLab({
         step(STEP);
         acc -= STEP;
       }
-      const ctx = canvasRef.current?.getContext("2d");
-      if (ctx) draw(ctx);
-      raf = requestAnimationFrame(frame);
+      draw(context2D);
     }
 
     function onDown(e: PointerEvent) {
       audio.ensure();
-      canvasRef.current?.setPointerCapture?.(e.pointerId);
+      canvas.setPointerCapture?.(e.pointerId);
       const r = canvas!.getBoundingClientRect();
       const x = e.clientX - r.left;
       const y = e.clientY - r.top;
@@ -5528,7 +5605,7 @@ export function LaunchLab({
     }
     function onUp(e?: PointerEvent) {
       try {
-        if (e) canvasRef.current?.releasePointerCapture?.(e.pointerId);
+        if (e) canvas.releasePointerCapture?.(e.pointerId);
       } catch {
         // ignore pointer capture release differences across browsers
       }
@@ -5585,29 +5662,63 @@ export function LaunchLab({
       m.clutched = false;
     }
 
-    resize();
-    window.addEventListener("resize", resize);
+    const bounds = canvas.getBoundingClientRect();
+    resize(bounds.width, bounds.height);
     window.addEventListener(BEAST_COLLAPSE_VISUAL_EVENT, routeEntryFromBeastCollapseEvent);
     window.addEventListener(NODE1_MIRROR_ACTIVATED_EVENT, activateNode1Mirror);
-    canvas.addEventListener("pointerdown", onDown);
-    canvas.addEventListener("pointermove", onMove);
-    canvas.addEventListener("pointerup", onUp);
-    canvas.addEventListener("pointercancel", onUp);
-    raf = requestAnimationFrame(frame);
+    let sceneCommitted = false;
+    const attach = session.attach(
+      Object.freeze({
+        renderFrame: (timestamp: number) => {
+          frame(timestamp);
+          sceneCommitted = true;
+        },
+        resize: (width: number, height: number) => {
+          resize(width, height);
+        },
+        handlePointerEvent: (
+          type: "pointerdown" | "pointermove" | "pointerup" | "pointercancel",
+          event: PointerEvent,
+        ) => {
+          if (type === "pointerdown") onDown(event);
+          else if (type === "pointermove") onMove(event);
+          else onUp(event);
+        },
+        readCommitProof: () =>
+          sceneCommitted
+            ? Object.freeze({
+                presenter: "CANVAS_2D_CONTINUOUS_SCENE" as const,
+                scenePlanReferenceId: plan.scenePlanReferenceId,
+                sourceReferenceId: plan.sourceReferenceId,
+                sourceRenderPlanReferenceId:
+                  plan.sourceRenderPlanReferenceId,
+                sceneHostCount: 1 as const,
+                worldPresenterCount: 1 as const,
+                worldContextCount: 1 as const,
+                webglContextCount: 0 as const,
+                rafOwnerCount: 1 as const,
+                bodyPresenterCount: 0 as const,
+                interactiveNearObjectCount:
+                  plan.depth.near.interactiveObjectCount,
+                sameLifeSurfaceCommitProof: null,
+              } satisfies XinmaiContinuousScenePresenterCommitProof)
+            : null,
+        readFailure: () => null satisfies XinmaiContinuousSceneRendererFailure | null,
+        dispose: () => {
+          entryHandoffRef.current = null;
+        },
+      }),
+    );
 
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
+      attach();
       window.removeEventListener(BEAST_COLLAPSE_VISUAL_EVENT, routeEntryFromBeastCollapseEvent);
       window.removeEventListener(NODE1_MIRROR_ACTIVATED_EVENT, activateNode1Mirror);
-      canvas.removeEventListener("pointerdown", onDown);
-      canvas.removeEventListener("pointermove", onMove);
-      canvas.removeEventListener("pointerup", onUp);
-      canvas.removeEventListener("pointercancel", onUp);
       entryHandoffRef.current = null;
     };
   }, [
     commitPressureSeedCapture,
+    launchSceneSession,
     navigate,
     returningLifeContext,
     returningLifeIdentity,
@@ -5887,7 +5998,7 @@ export function LaunchLab({
   };
 
   return (
-    <GyMobilePreviewFrame background="#020306">
+    <GyMobilePreviewFrame background="transparent">
       <div
         className={`light-beast-hitbox scene-${scene.toLowerCase()}${SNAPSHOT_MODE ? " snapshot-mode" : ""}`}
         data-production-collapse={isProductionCollapse ? "true" : "false"}
@@ -6032,24 +6143,6 @@ export function LaunchLab({
             </Suspense>
           </div>
         ) : null}
-        <canvas
-          ref={canvasRef}
-          className="light-field"
-          data-launch-interaction-state={interactionState}
-          data-launch-scene={scene}
-          data-launch-timeline={timeline[scene]}
-          data-snapshot-index={snapshotIndex}
-          style={{
-            position: "relative",
-            zIndex: returningVisualReady ? 2 : 0,
-            width: "100%",
-            height: "100%",
-            display: "block",
-            opacity: returningVisualReady ? 0 : 1,
-            touchAction: "none",
-            cursor: scene === "ENTRY" ? "pointer" : "default",
-          }}
-        />
         {returningVisualReady ? (
           <section
             className="gy-returning-life-world__copy"

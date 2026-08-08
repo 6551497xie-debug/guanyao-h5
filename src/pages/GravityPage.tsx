@@ -239,28 +239,6 @@ const GUANYAO_PRODUCT_RUNTIME_DEFINITION = Object.freeze({
   positioning: "六维生命显影与保护性惯性觉察",
 } satisfies ProductRuntimeDefinition);
 
-function CosmicPageStarField() {
-  return (
-    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.5 }}>
-      {Array.from({ length: 42 }).map((_, index) => (
-        <span
-          key={index}
-          style={{
-            position: "absolute",
-            left: `${4 + ((index * 19) % 92)}%`,
-            top: `${5 + ((index * 31) % 88)}%`,
-            width: index % 9 === 0 ? 3 : 2,
-            height: index % 9 === 0 ? 3 : 2,
-            borderRadius: 999,
-            background: index % 6 === 0 ? "rgba(199,169,107,0.5)" : "rgba(245,245,245,0.32)",
-            boxShadow: index % 6 === 0 ? "0 0 12px rgba(199,169,107,0.32)" : "0 0 8px rgba(245,245,245,0.18)",
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
 function CosmicFieldKeyframes() {
   return (
     <style>{`
@@ -334,48 +312,6 @@ function CosmicFieldKeyframes() {
         100% { opacity: 0; }
       }
     `}</style>
-  );
-}
-
-function CosmicNebulaScene({ toneColor }: { toneColor: string }) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        inset: "-10%",
-        background:
-          `radial-gradient(circle at 28% 30%, rgba(${toneColor},0.1), transparent 24%), radial-gradient(circle at 74% 62%, rgba(120,92,150,0.12), transparent 28%), radial-gradient(circle at 50% 50%, rgba(176,210,206,0.08), transparent 34%)`,
-        filter: "blur(12px)",
-        animation: "gy-nebula-drift 8s ease-in-out infinite",
-        pointerEvents: "none",
-      }}
-    />
-  );
-}
-
-function CosmicAmbientStars() {
-  return (
-    <div style={{ position: "absolute", inset: 0, opacity: 0.38, pointerEvents: "none" }}>
-      {Array.from({ length: 28 }).map((_, index) => {
-        const left = 8 + ((index * 17) % 84);
-        const top = 10 + ((index * 29) % 78);
-        return (
-          <span
-            key={index}
-            style={{
-              position: "absolute",
-              left: `${left}%`,
-              top: `${top}%`,
-              width: index % 7 === 0 ? 3 : 2,
-              height: index % 7 === 0 ? 3 : 2,
-              borderRadius: 999,
-              background: "rgba(245,245,245,0.62)",
-              boxShadow: "0 0 10px rgba(245,245,245,0.36)",
-            }}
-          />
-        );
-      })}
-    </div>
   );
 }
 
@@ -1392,8 +1328,8 @@ function CosmicBotanicsField({
         innerViewRelationEstablished ? "ESTABLISHED" : "AWAITING_USER_APPROACH"
       }
       data-life-universe-continuity="SAME_GENESIS_UNIVERSE"
-      data-dynamics-universe-background-authority={rendererOwnsUniverse ? "GENESIS_WEBGL" : "DOM_FALLBACK"}
-      data-dynamics-pressure-visual-authority={rendererOwnsUniverse ? "GENESIS_WEBGL_PROJECTION" : "DOM_FALLBACK"}
+      data-dynamics-universe-background-authority="CONTINUOUS_SCENE_HOST"
+      data-dynamics-pressure-visual-authority="TYPED_NEAR_PRESENTATION_ONLY"
       style={{
         "--visual-beast-intensity": visualState.primitives.BEAST.intensity,
         "--visual-pressure-intensity": visualState.primitives.PRESSURE.intensity,
@@ -1406,21 +1342,11 @@ function CosmicBotanicsField({
         borderRadius: 0,
         overflow: "hidden",
         padding: 0,
-        background: rendererOwnsUniverse
-          ? "transparent"
-          : `radial-gradient(circle at 52% 30%, rgba(80,58,120,${0.05 + visualState.primitives.PRESSURE.intensity * 0.08}), transparent 31%), radial-gradient(circle at 50% 55%, rgba(${toneColor},${0.035 + visualState.primitives.BEAST.coherence * 0.055}), transparent 42%)`,
-        boxShadow: !rendererOwnsUniverse &&
-          (activePetalState === "blooming" || visualState.primitives.PARTICLE.transitionEnergy > 0)
-            ? `inset 0 0 ${34 + visualState.primitives.PARTICLE.transitionEnergy * 22}px rgba(${toneColor},${0.04 + visualState.primitives.BEAST.coherence * 0.045})`
-            : "none",
+        background: "transparent",
+        boxShadow: "none",
       } as CSSProperties}
     >
       <CosmicFieldKeyframes />
-      {!rendererOwnsUniverse ? <div data-visual-primitive="PARTICLE" data-visual-layer="particle-nebula-field" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.background, pointerEvents: "none", opacity: particleLayerOpacity }}>
-        <CosmicNebulaScene toneColor={toneColor} />
-        <CosmicAmbientStars />
-      </div> : null}
-
       <div style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.entity, pointerEvents: coreVisible ? "auto" : "none", opacity: beastLayerOpacity }}>
         <LifeConstellationLayer
           toneColor={toneColor}
@@ -1433,8 +1359,8 @@ function CosmicBotanicsField({
         />
       </div>
 
-      <div data-visual-primitive="PRESSURE" data-visual-layer="pressure-blackhole-field" data-pressure-overlay={rendererOwnsUniverse ? "SUPPRESSED_BY_WEBGL_AUTHORITY" : "DOM_FALLBACK"} style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.structural, pointerEvents: "none", opacity: pressureLayerOpacity }}>
-        <BlackholeVortexScene toneColor={toneColor} visible={!rendererOwnsUniverse && showBlackholeStatus} status={experienceState.pressureCopy} />
+      <div data-visual-primitive="PRESSURE" data-visual-layer="pressure-blackhole-field" data-pressure-overlay="TYPED_NEAR_PRESENTATION_ONLY" style={{ position: "absolute", inset: 0, zIndex: visualState.zDepth.structural, pointerEvents: "none", opacity: pressureLayerOpacity }}>
+        <BlackholeVortexScene toneColor={toneColor} visible={showBlackholeStatus} status={experienceState.pressureCopy} />
       </div>
 
       <p
@@ -3341,8 +3267,7 @@ function HexagramCodeDeliveryShell({
           boxSizing: "border-box",
           padding: 0,
           display: "block",
-          background:
-            "radial-gradient(circle at 50% 36%, rgba(199,169,107,0.04), transparent 34%), #020306",
+          background: "transparent",
           color: "#f5f5f5",
           overflow: "hidden",
           position: "relative",
@@ -3400,7 +3325,7 @@ function HexagramCodeDeliveryShell({
             />
           </div>
         ) : (
-          <CosmicPageStarField />
+          <span data-dynamics-scene-state="CONTINUOUS_SCENE_SAFE_WITHHELD" />
         )}
         {arrivalBridgeActive && arrivalVisualContinuity ? (
           <div

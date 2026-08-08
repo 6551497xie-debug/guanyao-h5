@@ -20,6 +20,9 @@ const source = {
   lifeSurface: read(
     "src/components/RealityLifeUniverseCanvas.tsx",
   ),
+  sceneAdapter: read(
+    "src/renderers/xinmaiContinuousSceneRendererAdapter.ts",
+  ),
   pressureSurface: read(
     "src/components/RealityPressureSeedPresentation.tsx",
   ),
@@ -226,16 +229,16 @@ try {
   }
   assertIncludes(
     "life surface consumes a renderer-owned same-life commit proof",
-    source.lifeSurface,
-    "rendererSnapshot.sameLifeSurfaceCommitProof",
+    source.sceneAdapter,
+    "snapshot.sameLifeSurfaceCommitProof",
   );
   assertExcludes(
     "life surface does not treat a rendered frame as presenter authority",
     source.lifeSurface,
     "rendererSnapshot.frameCount > 0",
   );
-  assertIncludes(
-    "life surface waits for the visible Reality phase",
+  assertExcludes(
+    "typed life presentation does not wait for visual arrival choreography",
     source.lifeSurface,
     'arrivalPhase !== "SETTLED"',
   );

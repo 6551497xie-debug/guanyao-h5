@@ -1,5 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { createGenesisProductionRendererHost } from "../renderers/genesisProductionRendererHost";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createXinmaiContinuousSceneGenesisRendererAdapter } from "../renderers/xinmaiContinuousSceneRendererAdapter";
+import { createIsolatedWebGLPrototypeRenderPlanReference } from "../services/isolatedWebGLPrototypeRenderPlanReference";
+import {
+  useXinmaiContinuousScenePresentation,
+} from "./XinmaiContinuousSceneHostContext";
 import type {
   GenesisProductionCanvasHostBoundary,
   GenesisProductionCanvasHostState,
@@ -7,6 +11,9 @@ import type {
 } from "../types/genesisProductionExperiencePage";
 import type { GenesisWebGLRendererCoreFallback } from "../types/genesisWebGLRendererCore";
 import type { LifeWhisperSurfaceVisualResponseOutcome } from "../types/xinmaiLifeWhisperRelationship";
+import {
+  XINMAI_CONTINUOUS_SCENE_PRESENTATION_VERSION,
+} from "../types/xinmaiContinuousScenePresentation";
 
 type LifeWhisperSurfaceVisualResponseOutcomeInput =
   LifeWhisperSurfaceVisualResponseOutcome extends infer Outcome
@@ -68,12 +75,14 @@ export function GenesisProductionRendererCanvasHost({
   onLifeOriginDiscoveryRequest,
   onStateChange,
 }: GenesisProductionRendererCanvasHostProps) {
+  const [nativeReducedMotion, setNativeReducedMotion] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   const reducedMotionRequested =
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+    nativeReducedMotion ||
     isDevelopmentBrowserOverrideEnabled("__xinmaiReducedMotion");
   const rendererFailureRequested =
     isDevelopmentBrowserOverrideEnabled("__xinmaiRendererFailure");
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const lifeWhisperRelationshipVisualFactRef = useRef(
     lifeWhisperRelationshipVisualFact,
   );
@@ -89,7 +98,6 @@ export function GenesisProductionRendererCanvasHost({
   onLifeWhisperVisualResponseOutcomeRef.current =
     onLifeWhisperVisualResponseOutcome;
   const lastDeliveredLifeWhisperOutcomeKeyRef = useRef<string | null>(null);
-  const staticLifeWhisperResponseRef = useRef<SVGSVGElement | null>(null);
   const emitLifeWhisperVisualResponseOutcome = useCallback(
     (outcome: LifeWhisperSurfaceVisualResponseOutcomeInput) => {
       const outcomeKey =
@@ -115,98 +123,164 @@ export function GenesisProductionRendererCanvasHost({
     useState<GenesisWebGLRendererCoreFallback["reason"] | null>(null);
 
   useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setNativeReducedMotion(query.matches);
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+
+  const source = consumerSourceResult.consumerSource;
+  const sourceRenderPlanReferenceId = useMemo(
+    () =>
+      createIsolatedWebGLPrototypeRenderPlanReference(
+        source.renderPlanResult.plan,
+      ).referenceId,
+    [source.renderPlanResult.plan],
+  );
+  const runtimeFactory = useMemo(
+    () =>
+      rendererFailureRequested
+        ? null
+        : createXinmaiContinuousSceneGenesisRendererAdapter({
+            factoryReferenceId:
+              `CONTINUOUS_SCENE_GENESIS:${sourceRenderPlanReferenceId}`,
+            rendererInput: {
+              consumerSourceResult,
+              authorization:
+                routeAuthorization.productionRendererAuthorization,
+              readLifeWhisperRelationshipVisualFact,
+              genesisVisualRealization:
+                visualCalibrationBundle.genesisVisualRealization,
+              genesisPerspectiveCalibration:
+                visualCalibrationBundle.genesisPerspectiveCalibration,
+              genesisPresenceRecognitionCalibration:
+                visualCalibrationBundle.genesisPresenceRecognitionCalibration,
+              genesisSpatialDistanceCalibration:
+                visualCalibrationBundle.genesisSpatialDistanceCalibration,
+              fourSymbolDirectionFieldVisualCalibration,
+              lifeArchetypeForceCondensationVisualCalibration,
+            },
+            onLifeWhisperVisualOutcome: (outcome) => {
+              if (outcome !== null) {
+                emitLifeWhisperVisualResponseOutcome(outcome);
+              }
+            },
+          }),
+    [
+      consumerSourceResult,
+      emitLifeWhisperVisualResponseOutcome,
+      fourSymbolDirectionFieldVisualCalibration,
+      lifeArchetypeForceCondensationVisualCalibration,
+      readLifeWhisperRelationshipVisualFact,
+      rendererFailureRequested,
+      routeAuthorization.productionRendererAuthorization,
+      sourceRenderPlanReferenceId,
+      visualCalibrationBundle,
+    ],
+  );
+  const isLifeOriginDiscovery =
+    visualCalibrationBundle.runtimeStage === "COMPLETION";
+  const sceneRegistration = useMemo(
+    () =>
+      Object.freeze({
+        registrationReferenceId: "CONTINUOUS_SCENE:GENESIS",
+        priority: 80,
+        input: Object.freeze({
+          schemaVersion: XINMAI_CONTINUOUS_SCENE_PRESENTATION_VERSION,
+          consumerSurface: "GENESIS" as const,
+          sourceReferenceId: source.sourceReferenceId,
+          sourceRenderPlanReferenceId,
+          identityReferenceId: null,
+          bodyReferenceId: null,
+          routeAdmissionEvidence: Object.freeze({
+            status: "CURRENT" as const,
+            admissionReferenceId:
+              routeAuthorization.productionRendererAuthorization
+                .authorizationId,
+            revision: 0,
+          }),
+          nearObjectKind:
+            isLifeOriginDiscovery && lifeOriginDiscoveryPhase === "DORMANT"
+              ? "LIFE_ORIGIN" as const
+              : "NONE" as const,
+          nearObjectReferenceId:
+            isLifeOriginDiscovery && lifeOriginDiscoveryPhase === "DORMANT"
+              ? source.sourceReferenceId
+              : null,
+          nativeMotionPreference: reducedMotionRequested
+            ? "REDUCED_MOTION" as const
+            : "MOTION_ALLOWED" as const,
+          qualityTier: "FULL" as const,
+          sameLifeSurface: null,
+        }),
+        runtimeFactory,
+        staticSurface: null,
+        canvasClassName: "gy-genesis-production-experience__canvas",
+        canvasAttributes: Object.freeze({
+          "data-production-renderer-host-state": hostState,
+          "data-source-provenance": source.sourceProvenance,
+          "data-source-reference-id": source.sourceReferenceId,
+          "data-genesis-runtime-stage": visualCalibrationBundle.runtimeStage,
+          "data-genesis-direction-field-phase":
+            fourSymbolDirectionFieldVisualCalibration.phase,
+          "data-genesis-archetype-force-phase":
+            lifeArchetypeForceCondensationVisualCalibration.phase,
+          "data-life-origin-discovery-phase": isLifeOriginDiscovery
+            ? lifeOriginDiscoveryPhase
+            : "INACTIVE",
+        }),
+        pointerInteraction: "NONE" as const,
+      }),
+    [
+      fourSymbolDirectionFieldVisualCalibration.phase,
+      hostState,
+      isLifeOriginDiscovery,
+      lifeArchetypeForceCondensationVisualCalibration.phase,
+      lifeOriginDiscoveryPhase,
+      reducedMotionRequested,
+      routeAuthorization.productionRendererAuthorization.authorizationId,
+      runtimeFactory,
+      source.sourceProvenance,
+      source.sourceReferenceId,
+      sourceRenderPlanReferenceId,
+      visualCalibrationBundle.runtimeStage,
+    ],
+  );
+  const continuousSceneOutcome =
+    useXinmaiContinuousScenePresentation(sceneRegistration);
+
+  useEffect(() => {
     const updateState = (state: GenesisProductionCanvasHostState) => {
       setHostState(state);
       onStateChange?.(state);
     };
-    const canvas = canvasRef.current;
-    if (canvas === null) {
+    if (continuousSceneOutcome === null) {
+      updateState("STARTING");
+      return;
+    }
+    if (
+      continuousSceneOutcome.status ===
+      "CONTINUOUS_SCENE_MOTION_PRESENTED"
+    ) {
       setRendererFallbackReason(null);
-      updateState("BLOCKED");
-      return undefined;
+      updateState("RENDERING");
+      return;
     }
-    if (rendererFailureRequested) {
-      setRendererFallbackReason(null);
-      updateState("BLOCKED");
-      return undefined;
-    }
-
-    const bounds = canvas.getBoundingClientRect();
-    const rendererResult = createGenesisProductionRendererHost({
-      canvas,
-      consumerSourceResult,
-      authorization: routeAuthorization.productionRendererAuthorization,
-      width: Math.max(1, bounds.width),
-      height: Math.max(1, bounds.height),
-      pixelRatio: window.devicePixelRatio || 1,
-      reducedMotion: reducedMotionRequested,
-      readLifeWhisperRelationshipVisualFact,
-      genesisVisualRealization:
-        visualCalibrationBundle.genesisVisualRealization,
-      genesisPerspectiveCalibration:
-        visualCalibrationBundle.genesisPerspectiveCalibration,
-      genesisPresenceRecognitionCalibration:
-        visualCalibrationBundle.genesisPresenceRecognitionCalibration,
-      genesisSpatialDistanceCalibration:
-        visualCalibrationBundle.genesisSpatialDistanceCalibration,
-      fourSymbolDirectionFieldVisualCalibration,
-      lifeArchetypeForceCondensationVisualCalibration,
-    });
-
-    if (rendererResult.status === "BLOCKED") {
-      setRendererFallbackReason(null);
-      updateState("BLOCKED");
-      return undefined;
-    }
-    if (rendererResult.status === "FALLBACK_REQUIRED") {
-      setRendererFallbackReason(rendererResult.fallback.reason);
-      updateState("FALLBACK_REQUIRED");
-      return undefined;
-    }
-
-    setRendererFallbackReason(null);
-    updateState("RENDERING");
-    const controller = rendererResult.controller;
-    const stageStartedAt = performance.now();
-    let animationFrame = 0;
-    const renderFrame = (timestamp: number) => {
-      controller.renderFrame(timestamp - stageStartedAt);
-      const visualOutcome =
-        controller.getSnapshot().lifeWhisperVisualResponseOutcome;
-      if (visualOutcome !== null) {
-        emitLifeWhisperVisualResponseOutcome(visualOutcome);
-      }
-      animationFrame = window.requestAnimationFrame(renderFrame);
-    };
-    const resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry === undefined) return;
-      controller.resize(
-        Math.max(1, entry.contentRect.width),
-        Math.max(1, entry.contentRect.height),
-        window.devicePixelRatio || 1,
+    if (
+      continuousSceneOutcome.status ===
+      "CONTINUOUS_SCENE_STATIC_PRESENTED"
+    ) {
+      setRendererFallbackReason(
+        reducedMotionRequested
+          ? "REDUCED_MOTION_REQUESTED"
+          : "RENDERER_INITIALIZATION_FAILED",
       );
-    });
-
-    resizeObserver.observe(canvas);
-    animationFrame = window.requestAnimationFrame(renderFrame);
-    return () => {
-      window.cancelAnimationFrame(animationFrame);
-      resizeObserver.disconnect();
-      controller.dispose();
-    };
-  }, [
-    consumerSourceResult,
-    emitLifeWhisperVisualResponseOutcome,
-    fourSymbolDirectionFieldVisualCalibration,
-    lifeArchetypeForceCondensationVisualCalibration,
-    onStateChange,
-    readLifeWhisperRelationshipVisualFact,
-    reducedMotionRequested,
-    rendererFailureRequested,
-    routeAuthorization,
-    visualCalibrationBundle,
-  ]);
+      updateState("FALLBACK_REQUIRED");
+      return;
+    }
+    setRendererFallbackReason(null);
+    updateState("BLOCKED");
+  }, [continuousSceneOutcome, onStateChange, reducedMotionRequested]);
 
   const staticLifeWhisperResponseVisible =
     hostState === "FALLBACK_REQUIRED" &&
@@ -230,27 +304,22 @@ export function GenesisProductionRendererCanvasHost({
       return undefined;
     }
 
-    let firstFrame = 0;
-    let presentedFrame = 0;
-    firstFrame = window.requestAnimationFrame(() => {
-      presentedFrame = window.requestAnimationFrame(() => {
-        if (staticLifeWhisperResponseRef.current?.isConnected !== true) {
-          return;
-        }
-        emitLifeWhisperVisualResponseOutcome({
-          responseCycleId:
-            lifeWhisperRelationshipVisualFact.responseCycleId as string,
-          status: "STATIC_RESPONSE_PRESENTED",
-          surfaceMode: "SEMANTIC_STATIC_FALLBACK",
-          reason: rendererFallbackReason,
-        });
-      });
+    if (
+      continuousSceneOutcome?.status !==
+      "CONTINUOUS_SCENE_STATIC_PRESENTED"
+    ) {
+      return undefined;
+    }
+    emitLifeWhisperVisualResponseOutcome({
+      responseCycleId:
+        lifeWhisperRelationshipVisualFact.responseCycleId as string,
+      status: "STATIC_RESPONSE_PRESENTED",
+      surfaceMode: "SEMANTIC_STATIC_FALLBACK",
+      reason: rendererFallbackReason,
     });
-    return () => {
-      window.cancelAnimationFrame(firstFrame);
-      window.cancelAnimationFrame(presentedFrame);
-    };
+    return undefined;
   }, [
+    continuousSceneOutcome?.status,
     emitLifeWhisperVisualResponseOutcome,
     lifeWhisperRelationshipVisualFact.lifeWhisperResponsePhase,
     lifeWhisperRelationshipVisualFact.responseCycleId,
@@ -284,8 +353,6 @@ export function GenesisProductionRendererCanvasHost({
     lifeWhisperRelationshipVisualFact.responseCycleId,
   ]);
 
-  const isLifeOriginDiscovery =
-    visualCalibrationBundle.runtimeStage === "COMPLETION";
   const mansionProjection =
     consumerSourceResult.consumerSource.projectionBundle
       .twentyEightMansionCoordinateProjection;
@@ -296,111 +363,17 @@ export function GenesisProductionRendererCanvasHost({
 
   return (
     <>
-      <canvas
-        ref={canvasRef}
-        className="gy-genesis-production-experience__canvas"
-        data-production-renderer-host-state={hostState}
-        data-source-provenance={
-          consumerSourceResult.consumerSource.sourceProvenance
-        }
-        data-source-reference-id={
-          consumerSourceResult.consumerSource.sourceReferenceId
-        }
-        data-genesis-runtime-stage={visualCalibrationBundle.runtimeStage}
-        data-genesis-direction-field-phase={
-          fourSymbolDirectionFieldVisualCalibration.phase
-        }
-        data-genesis-archetype-force-phase={
-          lifeArchetypeForceCondensationVisualCalibration.phase
-        }
-        data-life-origin-discovery-phase={
-          isLifeOriginDiscovery ? lifeOriginDiscoveryPhase : undefined
-        }
-        aria-hidden={
-          isLifeOriginDiscovery &&
-          lifeOriginDiscoveryPhase === "DORMANT"
-            ? undefined
-            : true
-        }
-        aria-label={
-          isLifeOriginDiscovery &&
-          lifeOriginDiscoveryPhase === "DORMANT"
-            ? "轻触星河，发现属于你的生命星宿"
-            : undefined
-        }
-        role={
-          isLifeOriginDiscovery &&
-          lifeOriginDiscoveryPhase === "DORMANT"
-            ? "button"
-            : undefined
-        }
-        tabIndex={
-          isLifeOriginDiscovery &&
-          lifeOriginDiscoveryPhase === "DORMANT"
-            ? 0
-            : undefined
-        }
-        onClick={
-          isLifeOriginDiscovery &&
-          lifeOriginDiscoveryPhase === "DORMANT"
-            ? onLifeOriginDiscoveryRequest
-            : undefined
-        }
-        onKeyDown={(event) => {
-          if (
-            isLifeOriginDiscovery &&
-            lifeOriginDiscoveryPhase === "DORMANT" &&
-            (event.key === "Enter" || event.key === " ")
-          ) {
-            event.preventDefault();
-            onLifeOriginDiscoveryRequest();
-          }
-        }}
-      />
-      {staticLifeWhisperResponseVisible ? (
-        <svg
-          ref={staticLifeWhisperResponseRef}
-          className="gy-genesis-production-experience__static-life-response"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-          data-life-whisper-static-response="SAME_LIFE_PRESENTED"
-          data-source-reference-id={
-            consumerSourceResult.consumerSource.sourceReferenceId
-          }
-        >
-          <ellipse
-            cx="50"
-            cy="49"
-            rx="18"
-            ry="12"
-            fill="rgba(170, 213, 216, 0.035)"
-            stroke="rgba(190, 220, 220, 0.16)"
-            strokeWidth="0.22"
-          />
-          <path
-            d="M 34 50 Q 42 41 50 46 Q 58 40 67 50 Q 59 58 50 54 Q 41 59 34 50"
-            fill="none"
-            stroke="rgba(190, 220, 220, 0.24)"
-            strokeWidth="0.3"
-            strokeLinecap="round"
-          />
-          <circle
-            cx="50"
-            cy="50"
-            r="2.5"
-            fill="rgba(244, 235, 206, 0.34)"
-          />
-        </svg>
-      ) : null}
       {isLifeOriginDiscovery &&
       lifeOriginDiscoveryPhase === "DORMANT" ? (
-        <p
+        <button
+          type="button"
           className="gy-genesis-production-experience__origin-invitation"
-          aria-hidden="true"
+          aria-label="轻触星河，发现属于你的生命星宿"
+          data-continuous-scene-near-control="LIFE_ORIGIN"
+          onClick={onLifeOriginDiscoveryRequest}
         >
           轻触星河
-        </p>
+        </button>
       ) : null}
       {isLifeOriginDiscovery &&
       lifeOriginDiscoveryPhase === "REVEALED" ? (

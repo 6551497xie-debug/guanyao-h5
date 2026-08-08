@@ -29,6 +29,14 @@ const rendererPath = path.join(
   rootDir,
   "src/renderers/genesisWebGLRendererCore.ts",
 );
+const sceneAdapterPath = path.join(
+  rootDir,
+  "src/renderers/xinmaiContinuousSceneRendererAdapter.ts",
+);
+const sceneHostPath = path.join(
+  rootDir,
+  "src/components/XinmaiContinuousSceneHost.tsx",
+);
 const tempDir = fs.mkdtempSync(
   path.join(os.tmpdir(), `xinmai-first-response-${process.pid}-`),
 );
@@ -240,6 +248,8 @@ try {
 
   const page = fs.readFileSync(pagePath, "utf8");
   const host = fs.readFileSync(hostPath, "utf8");
+  const sceneAdapter = fs.readFileSync(sceneAdapterPath, "utf8");
+  const sceneHost = fs.readFileSync(sceneHostPath, "utf8");
   const props = fs.readFileSync(propsPath, "utf8");
   const renderer = fs.readFileSync(rendererPath, "utf8");
 
@@ -309,8 +319,8 @@ try {
   );
   assertIncludes(
     "Surface Host polls renderer visual outcome",
-    host,
-    "controller.getSnapshot().lifeWhisperVisualResponseOutcome",
+    sceneAdapter,
+    "snapshot.lifeWhisperVisualResponseOutcome",
   );
   assertIncludes(
     "Outcome de-duplication remains identity-scoped",
@@ -318,9 +328,14 @@ try {
     "consumerSourceResult.consumerSource.sourceReferenceId}:",
   );
   assertIncludes(
-    "Static outcome requires a connected rendered surface",
+    "Static outcome requires a typed presenter commit",
+    sceneHost,
+    "commitXinmaiContinuousSceneOutcome",
+  );
+  assertExcludes(
+    "Static outcome does not trust DOM connection",
     host,
-    "staticLifeWhisperResponseRef.current?.isConnected !== true",
+    ".isConnected",
   );
   assertIncludes(
     "Reduced Motion reports semantic static presentation",

@@ -17,10 +17,10 @@ const checks = [
   [
     "Reality keeps the approached body anchor on the existing life canvas",
     realityCanvas.includes(
-      'data-inner-view-approach-state={innerViewApproachState}',
+      '"data-inner-view-approach-state": innerViewApproachState',
     ) &&
       realityCanvas.includes(
-        'data-inner-view-body-anchor={`${realitySeedBodyTargetX}:48`}',
+        '"data-inner-view-body-anchor": `${realitySeedBodyTargetX}:48`',
       ),
   ],
   [

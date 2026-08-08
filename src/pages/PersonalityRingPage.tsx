@@ -3,11 +3,9 @@ import {
   Suspense,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { drawLifeUniverseDeepSpace2D } from "../renderers/lifeUniverseStarField";
 import { readXinmaiCanonicalBodyImprintRecovery } from "../services/xinmaiCanonicalBodyImprintRecoveryAdapter";
 import { resolveXinmaiSameLifeAccessibleSemanticMirror } from "../services/xinmaiSameLifeAccessibleSemanticMirror";
 import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
@@ -28,47 +26,6 @@ const RealityLifeUniverseCanvas = lazy(() =>
     default: module.RealityLifeUniverseCanvas,
   })),
 );
-
-function SharedLifeUniverseFallback() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const context = canvas?.getContext("2d");
-    if (!canvas || !context) return undefined;
-    let animationFrame = 0;
-    const draw = () => {
-      const bounds = canvas.getBoundingClientRect();
-      const width = Math.max(1, bounds.width);
-      const height = Math.max(1, bounds.height);
-      const pixelRatio = Math.min(
-        2,
-        Math.max(1, window.devicePixelRatio || 1),
-      );
-      canvas.width = Math.round(width * pixelRatio);
-      canvas.height = Math.round(height * pixelRatio);
-      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-      drawLifeUniverseDeepSpace2D(
-        context,
-        width,
-        height,
-        performance.now() / 1000,
-      );
-      animationFrame = window.requestAnimationFrame(draw);
-    };
-    animationFrame = window.requestAnimationFrame(draw);
-    return () => window.cancelAnimationFrame(animationFrame);
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden="true"
-      data-personality-ring-fallback="DEEP_SPACE_ONLY_IDENTITY_WITHHELD"
-      style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
-    />
-  );
-}
 
 type ArchiveRouteState =
   | Readonly<{
@@ -186,7 +143,7 @@ export function PersonalityRingPage() {
     >
       <div aria-hidden="true" style={{ position: "absolute", inset: 0 }}>
         {identityRecovery.status === "READY" ? (
-          <Suspense fallback={<SharedLifeUniverseFallback />}>
+          <Suspense fallback={null}>
             <RealityLifeUniverseCanvas
               sameLifeSurfaceConsumer="ARCHIVE"
               visualContinuity={identityRecovery.visualContinuity}
@@ -195,7 +152,9 @@ export function PersonalityRingPage() {
             />
           </Suspense>
         ) : (
-          <SharedLifeUniverseFallback />
+          <span
+            data-personality-ring-fallback="CONTINUOUS_SCENE_SAFE_WITHHELD"
+          />
         )}
       </div>
 

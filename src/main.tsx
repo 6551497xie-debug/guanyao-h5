@@ -11,6 +11,7 @@ import "./styles/xinmai-inner-view-choice-continuity.css";
 import "./styles/xinmai-choice-breath-hold-response.css";
 import "./styles/xinmai-choice-crystal-life-trace.css";
 import "./styles/xinmai-choice-life-trace-reality-continuity.css";
+import "./styles/xinmai-continuous-scene.css";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

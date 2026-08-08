@@ -18,6 +18,10 @@ const realityCanvasPath = path.join(
   rootDir,
   "src/components/RealityLifeUniverseCanvas.tsx",
 );
+const sceneAdapterPath = path.join(
+  rootDir,
+  "src/renderers/xinmaiContinuousSceneRendererAdapter.ts",
+);
 const rendererPath = path.join(
   rootDir,
   "src/renderers/genesisWebGLRendererCore.ts",
@@ -245,6 +249,7 @@ try {
 
   const launch = fs.readFileSync(launchPath, "utf8");
   const realityCanvas = fs.readFileSync(realityCanvasPath, "utf8");
+  const sceneAdapter = fs.readFileSync(sceneAdapterPath, "utf8");
   const renderer = fs.readFileSync(rendererPath, "utf8");
   const rendererTypes = fs.readFileSync(rendererTypesPath, "utf8");
   const relationshipTypes = fs.readFileSync(
@@ -305,13 +310,13 @@ try {
   );
   assertIncludes(
     "Surface Host consumes renderer snapshot",
-    realityCanvas,
-    "const rendererSnapshot = controller.getSnapshot()",
+    sceneAdapter,
+    "const snapshot = controller.getSnapshot()",
   );
   assertIncludes(
     "Surface Host preserves Life Whisper outcome consumption",
-    realityCanvas,
-    "rendererSnapshot.lifeWhisperVisualResponseOutcome",
+    sceneAdapter,
+    "snapshot.lifeWhisperVisualResponseOutcome",
   );
   assertIncludes(
     "Static outcome requires a presenter commit proof",

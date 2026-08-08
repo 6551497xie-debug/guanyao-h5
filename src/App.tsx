@@ -34,11 +34,6 @@ import { VisualSystemLabPage } from "./pages/VisualSystemLabPage";
 import { previewRoutes } from "./router/previewRoutes";
 import { GUANYAO_ROUTES, LEGACY_ROUTE_REDIRECTS } from "./routes/guanyaoRoutes";
 import {
-  drawLifeUniverseDeepSpace2D,
-  drawLifeUniverseCore2D,
-} from "./renderers/lifeUniverseStarField";
-import { readRealUserGenesisVisualSourceContext } from "./services/realUserGenesisVisualSourceContext";
-import {
   failRealityEncounterAcceptance,
   readCurrentRealityEncounterIntent,
   retryRealityEncounterAcceptance,
@@ -93,94 +88,15 @@ const XinmaiLivedGrowthAcceptancePage = import.meta.env.DEV
   : null;
 
 function LifeUniverseRouteFallback() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (canvas === null) return;
-    const context = canvas.getContext("2d");
-    if (context === null) return;
-
-    let animationFrame = 0;
-    const draw = () => {
-      const bounds = canvas.getBoundingClientRect();
-      const width = Math.max(1, bounds.width);
-      const height = Math.max(1, bounds.height);
-      const pixelRatio = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
-      const targetWidth = Math.round(width * pixelRatio);
-      const targetHeight = Math.round(height * pixelRatio);
-      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
-      }
-      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-      const universeSeconds = performance.now() / 1000;
-      drawLifeUniverseDeepSpace2D(
-        context,
-        width,
-        height,
-        universeSeconds,
-      );
-      const lifeSourceContext = readRealUserGenesisVisualSourceContext();
-      const birthMansionIndex =
-        lifeSourceContext?.lifeSourceSession.starbeastDerivationResult.mansionIndex ?? -1;
-      const coreX = width * 0.5;
-      const coreY = height * 0.48;
-      const orbitRadiusX = Math.min(width * 0.43, 168);
-      const orbitRadiusY = Math.min(width * 0.19, 74);
-      // The accessible fallback preserves the same 28-mansion topology without
-      // turning it into a rotating astrological dial. Time is carried by the
-      // shared field and core breath, not by an orbiting interface.
-      const orbitPhase = 0;
-      context.strokeStyle = "rgba(147,172,211,0.07)";
-      context.lineWidth = 1;
-      context.beginPath();
-      for (let index = 0; index < 28; index += 1) {
-        const angle = (index / 28) * Math.PI * 2 - Math.PI / 2 + orbitPhase;
-        const x = coreX + Math.cos(angle) * orbitRadiusX;
-        const y = coreY + Math.sin(angle) * orbitRadiusY;
-        if (index === 0) context.moveTo(x, y);
-        else context.lineTo(x, y);
-      }
-      context.closePath();
-      context.stroke();
-      for (let index = 0; index < 28; index += 1) {
-        const angle = (index / 28) * Math.PI * 2 - Math.PI / 2 + orbitPhase;
-        const x = coreX + Math.cos(angle) * orbitRadiusX;
-        const y = coreY + Math.sin(angle) * orbitRadiusY;
-        const isBirthMansion = index === birthMansionIndex;
-        context.fillStyle = isBirthMansion
-          ? "rgba(255,247,228,0.94)"
-          : "rgba(185,203,236,0.3)";
-        context.shadowColor = isBirthMansion
-          ? "rgba(255,247,228,0.82)"
-          : "rgba(185,203,236,0.24)";
-        context.shadowBlur = isBirthMansion ? 18 : 3;
-        context.beginPath();
-        context.arc(x, y, isBirthMansion ? 4.2 : 1.2, 0, Math.PI * 2);
-        context.fill();
-      }
-      context.shadowBlur = 0;
-      drawLifeUniverseCore2D(
-        context,
-        width,
-        height,
-        universeSeconds,
-        0.72,
-      );
-      animationFrame = window.requestAnimationFrame(draw);
-    };
-
-    animationFrame = window.requestAnimationFrame(draw);
-    return () => window.cancelAnimationFrame(animationFrame);
-  }, []);
-
   return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden="true"
-      style={{ position: "fixed", inset: 0, width: "100%", height: "100%", background: "#020306" }}
-    />
+    <div
+      className="xinmai-continuous-scene-route-pending"
+      role="status"
+      aria-live="polite"
+      data-continuous-scene-route-pending="TRUE"
+    >
+      正在确认同一片生命世界
+    </div>
   );
 }
 

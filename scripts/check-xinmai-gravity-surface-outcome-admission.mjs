@@ -9,6 +9,10 @@ const observation = fs.readFileSync(
   "src/components/RealityGravityInertiaField.tsx",
   "utf8",
 );
+const sceneHost = fs.readFileSync(
+  "src/components/XinmaiContinuousSceneHost.tsx",
+  "utf8",
+);
 const host = fs.readFileSync(
   "src/components/GravityProductionSurfaceHost.tsx",
   "utf8",
@@ -25,11 +29,17 @@ const watchdogBlock = host.slice(
   host.indexOf("const watchdog = window.setTimeout"),
   host.indexOf("return ("),
 );
-assert("same-life Canvas emits Motion outcome", canvas.includes("WEBGL_SAME_LIFE_SURFACE"));
-assert("same-life Canvas emits Static outcome", canvas.includes("SEMANTIC_STATIC_SAME_LIFE_SURFACE"));
+assert("same-life Host emits Motion outcome", canvas.includes("WEBGL_SAME_LIFE_SURFACE"));
+assert("same-life Host emits Static outcome", canvas.includes("SEMANTIC_STATIC_SAME_LIFE_SURFACE"));
 assert("observation emits Motion outcome", observation.includes("MOTION_FIRST_GRAVITY_OBSERVATION"));
 assert("observation emits Reduced Motion Static outcome", observation.includes("STATIC_FIRST_GRAVITY_OBSERVATION"));
-assert("outcomes are emitted after committed surface presence", observation.includes("fieldRef.current?.isConnected"));
+assert(
+  "outcomes are emitted after committed typed scene presence",
+  observation.includes("CONTINUOUS_SCENE_MOTION_PRESENTED") &&
+    observation.includes("CONTINUOUS_SCENE_STATIC_PRESENTED") &&
+    !observation.includes("fieldRef.current?.isConnected") &&
+    sceneHost.includes("commitXinmaiContinuousSceneOutcome"),
+);
 assert("Host aggregates typed outcomes", host.includes("resolveGravitySurfaceAdmissionTransaction"));
 assert(
   "watchdog reports failure only",

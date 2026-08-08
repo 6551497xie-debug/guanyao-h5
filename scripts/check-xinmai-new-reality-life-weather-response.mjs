@@ -31,7 +31,7 @@ requireSource(
 );
 requireSource(
   canvas,
-  'data-reality-life-weather-source=',
+  '"data-reality-life-weather-source":',
   "The visual consumer must expose the source of current life weather.",
 );
 requireSource(

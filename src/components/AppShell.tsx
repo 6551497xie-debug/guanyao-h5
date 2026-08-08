@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { TimeSandglassReadout } from "./visual/TimeSandglassReadout";
 import { XinmaiEntryThreshold } from "./XinmaiEntryThreshold";
 import { XinmaiLifeReflectionGuide } from "./XinmaiLifeReflectionGuide";
+import { XinmaiContinuousSceneHost } from "./XinmaiContinuousSceneHost";
 
 type AppShellProps = {
   children: ReactNode;
@@ -57,11 +58,13 @@ export function AppShell({ children }: AppShellProps) {
         data-xinmai-screen-range={screenRange}
         data-xinmai-journey="ENTER_FIND_RECOGNIZE_ACCOMPANY_UNDERSTAND_RESPOND_SEDIMENT_BECOME"
       >
-        <XinmaiEntryThreshold active={isXinmaiThresholdRoute} />
-        {surface === "REALITY" ? (
-          <XinmaiLifeReflectionGuide surface="REALITY" />
-        ) : null}
-        {children}
+        <XinmaiContinuousSceneHost>
+          <XinmaiEntryThreshold active={isXinmaiThresholdRoute} />
+          {surface === "REALITY" ? (
+            <XinmaiLifeReflectionGuide surface="REALITY" />
+          ) : null}
+          {children}
+        </XinmaiContinuousSceneHost>
       </div>
     );
   }

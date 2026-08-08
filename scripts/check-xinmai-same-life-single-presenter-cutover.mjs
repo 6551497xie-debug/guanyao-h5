@@ -5,6 +5,8 @@ const canvas = read("src/components/RealityLifeUniverseCanvas.tsx");
 const renderer = read("src/renderers/genesisWebGLRendererCore.ts");
 const resolver = read("src/services/xinmaiSameLifeSurfaceHostResolver.ts");
 const staticPresenter = read("src/components/XinmaiSemanticStaticSameLifeSurface.tsx");
+const sceneHost = read("src/components/XinmaiContinuousSceneHost.tsx");
+const sceneAdapter = read("src/renderers/xinmaiContinuousSceneRendererAdapter.ts");
 const gravityRoute = read("src/pages/GravityProductionRouteEntry.tsx");
 const gravityHost = read("src/components/GravityProductionSurfaceHost.tsx");
 const gravityPage = read("src/pages/GravityPage.tsx");
@@ -28,15 +30,20 @@ for (const forbidden of [
   assert(!canvas.includes(forbidden), `Forbidden success source remains: ${forbidden}`);
 }
 assert(
-  canvas.includes('sameLifeSurfaceSelection.status === "MOTION_SELECTED" ? <canvas') &&
+  !canvas.includes("<canvas") &&
+    sceneHost.includes("<canvas") &&
     canvas.includes("XinmaiSemanticStaticSameLifeSurface") &&
-    canvas.includes("sameLifeSurfaceCommitProof"),
-  "Host does not select exactly one committed body presenter",
+    canvas.includes("sameLifeSurfaceCommitProof") &&
+    sceneAdapter.includes('presenter: "WEBGL_CONTINUOUS_SCENE"') &&
+    sceneHost.includes("bodyPresenterCount: bodyRequired ? 1 as const : 0 as const"),
+  "AppShell Host does not select exactly one committed body presenter",
 );
 assert(
   renderer.includes("canonicalBodyImprintGroup") &&
     renderer.includes('presenter: "WEBGL_SAME_LIFE_BODY"') &&
-    staticPresenter.includes('webglContextCount: 0 as const'),
+    staticPresenter.includes('webglContextCount: 0 as const') &&
+    sceneAdapter.includes("snapshot.sameLifeSurfaceCommitProof") &&
+    sceneHost.includes("sameLifeSurfaceCommitProof: sameLifeProof"),
   "Motion/static presenter proof is incomplete",
 );
 assert(
