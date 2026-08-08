@@ -2,6 +2,7 @@ import type { ChronoProfile, GuanyaoSession, MotherCodeResult, SceneSeed, SceneS
 import type { GenesisStarBeastPresenceVisualRealization } from "../types/genesisStarBeastPresenceVisualRealization";
 import type { LaunchLifeSourceSession } from "../types/launchLifeSourceSession";
 import type { RealUserGenesisVisualSourceContext } from "../types/realUserGenesisVisualSourceContext";
+import type { XinmaiGenesisBirthSourcePersistenceRepresentations } from "../types/xinmaiGenesisBirthSourceRecovery";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
 import {
   STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS,
@@ -77,6 +78,28 @@ const STARBEAST_RELATIONSHIP_NAMING_ASSET_KEY =
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+const isLaunchLifeSourceSession = (
+  value: unknown,
+): value is LaunchLifeSourceSession =>
+  isRecord(value) &&
+  value.schemaVersion === "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V1" &&
+  value.source === "launch_life_source_session" &&
+  value.sourceKind === "REAL_ENGINE_RESULT" &&
+  typeof value.sourceReferenceId === "string" &&
+  value.sourceReferenceId.trim().length > 0 &&
+  isRecord(value.birthCoordinate) &&
+  isRecord(value.starbeastDerivationResult) &&
+  isRecord(value.motherCodeLandingResult) &&
+  isRecord(value.originMotherResult);
+
+const XINMAI_GENESIS_BIRTH_SOURCE_PERSISTENCE_BOUNDARY = Object.freeze({
+  canonicalPrimary: true as const,
+  originMirrorCorroborationOnly: true as const,
+  conflictSafeWithheld: true as const,
+  noBackfill: true as const,
+  noMutation: true as const,
+});
 
 const readPersistedAsset = (key: string): unknown => {
   const session = readPersistedSessionState<Record<string, unknown>>();
@@ -166,29 +189,66 @@ export function persistLaunchLifeSourceSession(
 
 export function readPersistedLaunchLifeSourceSession():
   LaunchLifeSourceSession | null {
-  const sessionValue = readPersistedAsset(LIFE_SOURCE_SESSION_ASSET_KEY);
+  const representations =
+    readPersistedLaunchLifeSourceRecoveryRepresentations();
+  if (
+    representations.status === "MATCHED" ||
+    representations.status === "PRIMARY_ONLY"
+  ) {
+    return representations.primary;
+  }
+  if (representations.status === "ORIGIN_MIRROR_ONLY") {
+    return representations.originMirror;
+  }
+  return null;
+}
+
+export function readPersistedLaunchLifeSourceRecoveryRepresentations():
+  XinmaiGenesisBirthSourcePersistenceRepresentations {
+  const primaryValue = readPersistedAsset(LIFE_SOURCE_SESSION_ASSET_KEY);
   const originMotherContext = readPersistedOriginMotherContext();
-  const originLifeSourceSession =
+  const originMirrorValue =
     isRecord(originMotherContext) &&
     "lifeSourceSession" in originMotherContext
       ? originMotherContext.lifeSourceSession
       : null;
-  const value = sessionValue ?? originLifeSourceSession;
-  if (
-    !isRecord(value) ||
-    value.schemaVersion !== "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V1" ||
-    value.source !== "launch_life_source_session" ||
-    value.sourceKind !== "REAL_ENGINE_RESULT" ||
-    typeof value.sourceReferenceId !== "string" ||
-    value.sourceReferenceId.trim().length === 0 ||
-    !isRecord(value.birthCoordinate) ||
-    !isRecord(value.starbeastDerivationResult) ||
-    !isRecord(value.motherCodeLandingResult) ||
-    !isRecord(value.originMotherResult)
+  const primary = isLaunchLifeSourceSession(primaryValue)
+    ? primaryValue
+    : null;
+  const originMirror = isLaunchLifeSourceSession(originMirrorValue)
+    ? originMirrorValue
+    : null;
+  const primaryPresent = primaryValue !== null;
+  const originMirrorPresent = originMirrorValue !== null;
+
+  let status: XinmaiGenesisBirthSourcePersistenceRepresentations["status"];
+  if (primaryPresent && primary === null) {
+    status = "INVALID_PRIMARY";
+  } else if (originMirrorPresent && originMirror === null) {
+    status = "INVALID_ORIGIN_MIRROR";
+  } else if (primary === null && originMirror === null) {
+    status = "NOT_FOUND";
+  } else if (primary !== null && originMirror === null) {
+    status = "PRIMARY_ONLY";
+  } else if (primary === null && originMirror !== null) {
+    status = "ORIGIN_MIRROR_ONLY";
+  } else if (
+    primary?.sourceReferenceId === originMirror?.sourceReferenceId
   ) {
-    return null;
+    status = "MATCHED";
+  } else {
+    status = "CONFLICT";
   }
-  return value as LaunchLifeSourceSession;
+
+  return Object.freeze({
+    status,
+    primary,
+    originMirror,
+    primarySourceReferenceId: primary?.sourceReferenceId ?? null,
+    originMirrorSourceReferenceId:
+      originMirror?.sourceReferenceId ?? null,
+    boundary: XINMAI_GENESIS_BIRTH_SOURCE_PERSISTENCE_BOUNDARY,
+  });
 }
 
 export function persistRecognizedGenesisLifeAssets(input: Readonly<{
@@ -565,13 +625,28 @@ export function hasPersistedRecognizedLifeIdentity(): boolean {
   );
 }
 
-export function restorePersistedRealUserGenesisVisualSourceContext():
-  RealUserGenesisVisualSourceContext | null {
-  const activeContext = readRealUserGenesisVisualSourceContext();
-  if (activeContext !== null) return activeContext;
-
+export function restorePersistedRealUserGenesisVisualSourceContext(
+  expectedSourceReferenceId: string | null = null,
+): RealUserGenesisVisualSourceContext | null {
   const persistedSession = readPersistedLaunchLifeSourceSession();
+  const activeContext = readRealUserGenesisVisualSourceContext();
+  if (
+    activeContext !== null &&
+    persistedSession !== null &&
+    activeContext.sourceReferenceId === persistedSession.sourceReferenceId &&
+    (expectedSourceReferenceId === null ||
+      activeContext.sourceReferenceId === expectedSourceReferenceId)
+  ) {
+    return activeContext;
+  }
+  if (activeContext !== null) return null;
   if (persistedSession === null) return null;
+  if (
+    expectedSourceReferenceId !== null &&
+    persistedSession.sourceReferenceId !== expectedSourceReferenceId
+  ) {
+    return null;
+  }
 
   const restoredMotherCodeLandingResult = Object.freeze({
     ...persistedSession.motherCodeLandingResult,
@@ -629,8 +704,7 @@ function resolvePersistedGenesisVisualContinuity():
   RealityProductionHostProps["visualContinuity"] | null {
   const presenceVisualRealization =
     readPersistedGenesisPresenceVisualRealization();
-  const realUserContext =
-    restorePersistedRealUserGenesisVisualSourceContext();
+  const realUserContext = readRealUserGenesisVisualSourceContext();
   if (
     presenceVisualRealization === null ||
     realUserContext === null ||

@@ -24,6 +24,8 @@ const files = {
   observationSurface:
     "src/components/RealityGravityInertiaField.tsx",
   launch: "src/pages/LaunchLab.tsx",
+  admissionController:
+    "src/services/xinmaiGenesisBirthCoordinateAdmissionController.ts",
   genesis: "src/pages/GenesisProductionExperiencePage.tsx",
   realityHost: "src/components/RealityProductionHost.tsx",
 };
@@ -143,7 +145,7 @@ includes(
 );
 includes(
   "Launch still executes the real source path",
-  source.launch,
+  source.admissionController,
   "createLaunchLifeSourceSession({",
 );
 includes(

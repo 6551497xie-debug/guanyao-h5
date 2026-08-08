@@ -9,10 +9,12 @@ const typePath = path.join(rootDir, "src/types/launchLifeSourceSession.ts");
 const sessionPath = path.join(rootDir, "src/services/launchLifeSourceSession.ts");
 const originAdapterPath = path.join(rootDir, "src/services/guanyaoLaunchOriginMotherInputAdapter.ts");
 const launchPath = path.join(rootDir, "src/pages/LaunchLab.tsx");
+const admissionControllerPath = path.join(rootDir, "src/services/xinmaiGenesisBirthCoordinateAdmissionController.ts");
 const typeSource = fs.readFileSync(typePath, "utf8");
 const sessionSource = fs.readFileSync(sessionPath, "utf8");
 const originAdapterSource = fs.readFileSync(originAdapterPath, "utf8");
 const launchSource = fs.readFileSync(launchPath, "utf8");
+const admissionControllerSource = fs.readFileSync(admissionControllerPath, "utf8");
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "guanyao-launch-life-source-session-"));
 
 const assertEqual = (name, actual, expected) => {
@@ -74,7 +76,10 @@ try {
   assertIncludes("origin adapter owns mother code engine result acquisition", originAdapterSource, "runMotherCodeLandingEngine");
   assertIncludes("origin adapter exposes complete source result set", originAdapterSource, "resolveLaunchOriginMotherSourceResults");
   assertIncludes("launch stores one session slot", launchSource, "lifeSourceSession: null as LaunchLifeSourceSession | null");
-  assertIncludes("launch captures session at confirmed reveal", launchSource, "captureLaunchLifeSourceSession().originMotherResult");
+  assertIncludes("single admission controller captures session after explicit confirmation", admissionControllerSource, "createLaunchLifeSourceSession({");
+  assertIncludes("launch delegates explicit confirmation to the admission controller", launchSource, "confirmXinmaiGenesisBirthCoordinate({");
+  assertIncludes("launch supplies the typed confirmation intent", launchSource, 'intent: "CONFIRM_BIRTH_COORDINATE"');
+  assertIncludes("launch supplies the immutable input session", launchSource, "inputSession: confirmingSession");
   assertIncludes("launch reuses captured origin result", launchSource, "m.lifeSourceSession?.originMotherResult");
   assertIncludes("launch invalidates session when tuning resets", launchSource, "m.lifeSourceSession = null");
   assertExcludes("launch does not invoke visual source adapter", launchSource, "adaptRealLifeVisualSource");

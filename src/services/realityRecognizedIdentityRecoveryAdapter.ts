@@ -5,10 +5,8 @@ import {
 import {
   readPersistedGenesisPresenceVisualRealization,
   readPersistedGenesisVisualContinuity,
-  readPersistedLaunchLifeSourceSession,
-  restorePersistedRealUserGenesisVisualSourceContext,
 } from "./sessionService";
-import { readRealUserGenesisVisualSourceContext } from "./realUserGenesisVisualSourceContext";
+import { recoverXinmaiGenesisBirthSource } from "./xinmaiGenesisBirthSourceRecoveryController";
 import type { GenesisProductionRealityEntryContext } from "../types/genesisProductionRecognitionRealityEntry";
 import type { GenesisStarBeastPresenceVisualRealization } from "../types/genesisStarBeastPresenceVisualRealization";
 import type { LaunchLifeSourceSession } from "../types/launchLifeSourceSession";
@@ -66,18 +64,29 @@ const unavailable = (
 export function recoverRealityRecognizedIdentity(
   input: RealityRecognizedIdentityRecoveryInput = {},
 ): RealityRecognizedIdentityRecoveryResult {
-  const realUserContext =
-    readRealUserGenesisVisualSourceContext() ??
-    restorePersistedRealUserGenesisVisualSourceContext();
-  const lifeSourceSession =
-    realUserContext?.lifeSourceSession ??
-    readPersistedLaunchLifeSourceSession();
-  if (realUserContext === null || lifeSourceSession === null) {
+  const presenceVisualRealization =
+    input.presenceVisualRealization ??
+    readPersistedGenesisPresenceVisualRealization();
+  const expectedSourceReferenceId =
+    input.visualContinuity?.sourceReferenceId ??
+    presenceVisualRealization?.sourceReferenceId ??
+    null;
+  const sourceRecovery = recoverXinmaiGenesisBirthSource({
+    intent: "RESTORE_RECOGNIZED_REALITY",
+    expectedSourceReferenceId,
+    recognizedSourceReferenceId:
+      presenceVisualRealization?.sourceReferenceId ?? null,
+  });
+  if (sourceRecovery.status !== "READY") {
     return unavailable(
-      "SOURCE_NOT_READY",
+      sourceRecovery.status === "SAFE_WITHHELD"
+        ? "BLOCKED"
+        : "SOURCE_NOT_READY",
       "RECOGNIZED_IDENTITY_NOT_AVAILABLE",
     );
   }
+  const realUserContext = sourceRecovery.context;
+  const lifeSourceSession = sourceRecovery.lifeSourceSession;
 
   const visualContinuity =
     input.visualContinuity ?? readPersistedGenesisVisualContinuity();
@@ -87,9 +96,6 @@ export function recoverRealityRecognizedIdentity(
       "VISUAL_CONTINUITY_NOT_AVAILABLE",
     );
   }
-  const presenceVisualRealization =
-    input.presenceVisualRealization ??
-    readPersistedGenesisPresenceVisualRealization();
   if (presenceVisualRealization === null) {
     return unavailable(
       "SOURCE_NOT_READY",

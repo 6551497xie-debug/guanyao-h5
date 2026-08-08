@@ -368,11 +368,11 @@ export function GenesisProductionRendererCanvasHost({
         <button
           type="button"
           className="gy-genesis-production-experience__origin-invitation"
-          aria-label="轻触星河，发现属于你的生命星宿"
+          aria-label="轻触这束光，发现属于你的生命星宿"
           data-continuous-scene-near-control="LIFE_ORIGIN"
           onClick={onLifeOriginDiscoveryRequest}
         >
-          轻触星河
+          轻触这束光
         </button>
       ) : null}
       {isLifeOriginDiscovery &&

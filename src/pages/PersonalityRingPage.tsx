@@ -11,7 +11,6 @@ import { resolveXinmaiSameLifeAccessibleSemanticMirror } from "../services/xinma
 import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
-import { readPersistedGenesisVisualContinuity } from "../services/sessionService";
 import {
   XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
   type XinmaiCanonicalBodyImprintDecision,
@@ -41,16 +40,12 @@ export function PersonalityRingPage() {
   const routeState = location.state as ArchiveRouteState;
   const [legacyHistory] = useState(() => readPersonalityRingLite());
   const [growthRevision, setGrowthRevision] = useState(0);
-  const visualContinuity = useMemo(
-    () =>
-      routeState?.visualContinuity ??
-      readPersistedGenesisVisualContinuity(),
-    [routeState?.visualContinuity],
-  );
   const identityRecovery = useMemo(
     () =>
-      recoverRealityRecognizedIdentity({ visualContinuity }),
-    [visualContinuity],
+      recoverRealityRecognizedIdentity({
+        visualContinuity: routeState?.visualContinuity ?? null,
+      }),
+    [routeState?.visualContinuity],
   );
   const [bodyImprintDecision, setBodyImprintDecision] =
     useState<XinmaiCanonicalBodyImprintDecision>(

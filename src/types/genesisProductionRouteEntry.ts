@@ -1,7 +1,8 @@
 export type GenesisProductionRouteEntryBoundary = Readonly<{
   productionRouteEntryOnly: true;
   exactGenesisRouteOnly: true;
-  inMemoryRealUserContextOnly: true;
+  inMemoryRealUserContextOnly: false;
+  typedRecoveryOwnerRequired: true;
   routeAuthorizationRequired: true;
   sourceNotReadyRecoveryRequired: true;
   sourceReferenceExcludedFromUrl: true;

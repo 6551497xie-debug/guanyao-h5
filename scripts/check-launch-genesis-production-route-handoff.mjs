@@ -10,6 +10,7 @@ const paths = {
   service: "src/services/launchGenesisProductionRouteHandoff.ts",
   contextService: "src/services/realUserGenesisVisualSourceContext.ts",
   launch: "src/pages/LaunchLab.tsx",
+  admissionController: "src/services/xinmaiGenesisBirthCoordinateAdmissionController.ts",
   genesisEntry: "src/pages/GenesisProductionRouteEntry.tsx",
   packageManifest: "package.json",
 };
@@ -81,14 +82,20 @@ try {
   );
 
   [
-    "resolveLaunchGenesisProductionRouteHandoff({",
     'setLaunchInteractionState("GENESIS_HANDOFF")',
-    "navigate(handoff.routeTarget)",
-    "captureLaunchLifeSourceSession()",
-    "if (DEBUG_TIMELINE)",
-    "openMotherCodeReveal()",
+    "navigate(result.handoff.routeTarget)",
+    "confirmXinmaiGenesisBirthCoordinate({",
+    'intent: "CONFIRM_BIRTH_COORDINATE"',
+    "inputSession: confirmingSession",
   ].forEach((marker) =>
-    assertIncludes("Launch owns the explicit production handoff", source.launch, marker),
+    assertIncludes("Launch consumes the explicit production handoff", source.launch, marker),
+  );
+  [
+    "resolveLaunchGenesisProductionRouteHandoff({",
+    'handoff.status !== "READY"',
+    'status: "ACCEPTED" as const',
+  ].forEach((marker) =>
+    assertIncludes("single admission controller owns handoff orchestration", source.admissionController, marker),
   );
   assertExcludes(
     "Launch does not hardcode the Genesis route",

@@ -1,10 +1,11 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { GenesisProductionExperiencePage } from "./GenesisProductionExperiencePage";
 import {
   authorizeGenesisProductionRoute,
   GENESIS_PRODUCTION_ROUTE_TARGET,
 } from "../services/genesisProductionRouteAuthorization";
-import { readRealUserGenesisVisualSourceContext } from "../services/realUserGenesisVisualSourceContext";
+import { recoverXinmaiGenesisBirthSource } from "../services/xinmaiGenesisBirthSourceRecoveryController";
 import type { GenesisProductionRouteEntryBoundary } from "../types/genesisProductionRouteEntry";
 import "../styles/genesis-production-experience.css";
 
@@ -12,7 +13,8 @@ export const GENESIS_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
   GenesisProductionRouteEntryBoundary = Object.freeze({
     productionRouteEntryOnly: true,
     exactGenesisRouteOnly: true,
-    inMemoryRealUserContextOnly: true,
+    inMemoryRealUserContextOnly: false,
+    typedRecoveryOwnerRequired: true,
     routeAuthorizationRequired: true,
     sourceNotReadyRecoveryRequired: true,
     sourceReferenceExcludedFromUrl: true,
@@ -29,7 +31,14 @@ export const GENESIS_PRODUCTION_ROUTE_ENTRY_BOUNDARY:
 
 export function GenesisProductionRouteEntry() {
   const navigate = useNavigate();
-  const context = readRealUserGenesisVisualSourceContext();
+  const recovery = useMemo(
+    () =>
+      recoverXinmaiGenesisBirthSource({
+        intent: "AUTHORIZE_GENESIS_ROUTE",
+      }),
+    [],
+  );
+  const context = recovery.status === "READY" ? recovery.context : null;
   const authorization = authorizeGenesisProductionRoute({
     routeTarget: GENESIS_PRODUCTION_ROUTE_TARGET,
     sourceReferenceId: context?.sourceReferenceId ?? null,
@@ -41,6 +50,10 @@ export function GenesisProductionRouteEntry() {
         className="gy-genesis-production-experience gy-genesis-production-experience--source-not-ready"
         data-production-genesis-status="SOURCE_NOT_READY"
         data-guard-reason={authorization.guardReason}
+        data-genesis-source-recovery-status={recovery.status}
+        data-genesis-source-recovery-reason={
+          recovery.status === "READY" ? undefined : recovery.reason
+        }
       >
         <div className="gy-genesis-production-experience__recovery">
           <p role="status">SOURCE_NOT_READY</p>

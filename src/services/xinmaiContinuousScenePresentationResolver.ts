@@ -112,9 +112,7 @@ export function resolveXinmaiContinuousScenePresentation(
       hitRegionContract:
         input.nearObjectKind === "NONE"
           ? "NONE" as const
-          : input.consumerSurface === "ENTRY_BIRTH"
-            ? "HOST_CANVAS_SINGLE_TARGET" as const
-            : "NATIVE_CONTROL" as const,
+          : "NATIVE_CONTROL" as const,
     }),
   });
 

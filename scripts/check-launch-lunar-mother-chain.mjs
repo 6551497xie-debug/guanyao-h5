@@ -10,10 +10,12 @@ const trigramPath = path.join(rootDir, "src/services/guanyaoLunarTrigramLandingR
 const starbeastPath = path.join(rootDir, "src/services/guanyaoStarbeastEngineService.ts");
 const visualPath = path.join(rootDir, "src/data/fourBeastTrigramVisualGrammar.ts");
 const launchPath = path.join(rootDir, "src/pages/LaunchLab.tsx");
+const admissionControllerPath = path.join(rootDir, "src/services/xinmaiGenesisBirthCoordinateAdmissionController.ts");
 const adapterPath = path.join(rootDir, "src/services/guanyaoLaunchOriginMotherInputAdapter.ts");
 const starbeastSourcePath = path.join(rootDir, "src/services/guanyaoLaunchStarbeastDerivationSourceAdapter.ts");
 const fusionSource = fs.readFileSync(fusionPath, "utf8");
 const launchSource = fs.readFileSync(launchPath, "utf8");
+const admissionControllerSource = fs.readFileSync(admissionControllerPath, "utf8");
 const adapterSource = fs.readFileSync(adapterPath, "utf8");
 const starbeastSource = fs.readFileSync(starbeastSourcePath, "utf8");
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "guanyao-launch-mother-chain-"));
@@ -72,7 +74,7 @@ try {
   assertIncludes("launch starbeast source consumes birth-date resolver", starbeastSource, "resolveStarbeastFromBirthDate(input)");
   assertIncludes("adapter feeds resolved trigram landing", adapterSource, "trigramLanding: sources.motherCodeLandingResult.trigramLanding");
   assertIncludes("adapter feeds resolved four symbol", adapterSource, "fourSymbol: sources.starbeastDerivationResult.fourSymbol");
-  assertIncludes("launch captures origin mother source results", launchSource, "resolveLaunchOriginMotherSourceResults(launchInput)");
+  assertIncludes("admission controller captures origin mother source results", admissionControllerSource, "resolveLaunchOriginMotherSourceResults(launchInput)");
   assertExcludes("launch no longer calls lunar trigram resolver", launchSource, "resolveLunarTrigramLanding");
   assertExcludes("launch no longer calls starbeast resolver", launchSource, "resolveStarbeastFromBirthDate");
   assertExcludes("launch no longer calls fusion engine", launchSource, "runGeoChronoMotherFusionEngine");

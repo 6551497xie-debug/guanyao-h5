@@ -9,10 +9,12 @@ const adapterPath = path.join(rootDir, "src/services/guanyaoLaunchOriginMotherIn
 const starbeastSourcePath = path.join(rootDir, "src/services/guanyaoLaunchStarbeastDerivationSourceAdapter.ts");
 const inputTypePath = path.join(rootDir, "src/types/guanyaoLaunchOriginMother.ts");
 const launchPath = path.join(rootDir, "src/pages/LaunchLab.tsx");
+const admissionControllerPath = path.join(rootDir, "src/services/xinmaiGenesisBirthCoordinateAdmissionController.ts");
 const adapterSource = fs.readFileSync(adapterPath, "utf8");
 const starbeastSource = fs.readFileSync(starbeastSourcePath, "utf8");
 const inputTypeSource = fs.readFileSync(inputTypePath, "utf8");
 const launchSource = fs.readFileSync(launchPath, "utf8");
+const admissionControllerSource = fs.readFileSync(admissionControllerPath, "utf8");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-launch-origin-mother-adapter-${process.pid}.mjs`);
 const tempStarbeastSourceModulePath = path.join(os.tmpdir(), `guanyao-launch-starbeast-source-${process.pid}.mjs`);
 
@@ -76,8 +78,8 @@ try {
   assertExcludes("adapter does not depend on Launch state", adapterSource, "m.coords");
   assertExcludes("adapter does not depend on visual nodes", adapterSource, "NODES");
   assertExcludes("adapter does not own eight-division arithmetic", adapterSource, "fieldSeed");
-  assertIncludes("launch captures complete origin source results", launchSource, "resolveLaunchOriginMotherSourceResults(launchInput)");
-  assertIncludes("launch stores immutable life source session", launchSource, "createLaunchLifeSourceSession({");
+  assertIncludes("admission controller captures complete origin source results", admissionControllerSource, "resolveLaunchOriginMotherSourceResults(launchInput)");
+  assertIncludes("admission controller stores immutable life source session", admissionControllerSource, "createLaunchLifeSourceSession({");
   assertExcludes("launch does not call fusion engine", launchSource, "runGeoChronoMotherFusionEngine");
   assertExcludes("launch does not call trigram resolver", launchSource, "resolveLunarTrigramLanding");
   assertExcludes("launch does not call starbeast resolver", launchSource, "resolveStarbeastFromBirthDate");

@@ -278,6 +278,18 @@ export type {
   RealUserGenesisVisualSourceContextInput,
 } from "./realUserGenesisVisualSourceContext";
 export type {
+  XinmaiGenesisBirthSourcePersistenceRepresentations,
+  XinmaiGenesisBirthSourcePersistenceState,
+  XinmaiGenesisBirthSourceRecoveryBoundary,
+  XinmaiGenesisBirthSourceRecoveryIntent,
+  XinmaiGenesisBirthSourceRecoveryNotReadyReason,
+  XinmaiGenesisBirthSourceRecoveryProof,
+  XinmaiGenesisBirthSourceRecoveryReadyOutcome,
+  XinmaiGenesisBirthSourceRecoveryRequest,
+  XinmaiGenesisBirthSourceRecoveryResult,
+  XinmaiGenesisBirthSourceRecoveryWithheldReason,
+} from "./xinmaiGenesisBirthSourceRecovery";
+export type {
   ProductionIdentitySourceAdapterReadinessBlocked,
   ProductionIdentitySourceAdapterReadinessBlockedReason,
   ProductionIdentitySourceAdapterReadinessBoundary,

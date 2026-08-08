@@ -48,6 +48,9 @@ export function activateRealUserGenesisVisualSourceContext(
       context: activeContext,
     });
   }
+  if (activeContext !== null) {
+    return blocked("ACTIVE_SOURCE_REFERENCE_CONFLICT");
+  }
 
   if (input.visualSourceAdapterInput.sourceReferenceId !== session.sourceReferenceId) {
     return blocked("SOURCE_REFERENCE_MISMATCH");

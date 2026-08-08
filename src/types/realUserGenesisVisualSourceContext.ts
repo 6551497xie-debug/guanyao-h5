@@ -39,7 +39,8 @@ export type RealUserGenesisVisualSourceContext = Readonly<{
 export type RealUserGenesisVisualSourceContextBlockedReason =
   | "SOURCE_KIND_NOT_REAL"
   | "SOURCE_REFERENCE_MISMATCH"
-  | "VISUAL_PROVENANCE_MISMATCH";
+  | "VISUAL_PROVENANCE_MISMATCH"
+  | "ACTIVE_SOURCE_REFERENCE_CONFLICT";
 
 export type RealUserGenesisVisualSourceContextActivationResult =
   | Readonly<{

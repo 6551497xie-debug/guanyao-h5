@@ -9,6 +9,7 @@ const paths = Object.freeze({
   app: "src/App.tsx",
   home: "src/pages/GenesisLab.tsx",
   launch: "src/pages/LaunchLab.tsx",
+  admissionController: "src/services/xinmaiGenesisBirthCoordinateAdmissionController.ts",
   genesis: "src/pages/GenesisProductionExperiencePage.tsx",
   reality: "src/pages/RealityProductionRouteEntry.tsx",
   routes: "src/routes/guanyaoRoutes.ts",
@@ -49,19 +50,25 @@ try {
     "进入观爻",
   ].forEach((marker) => assertIncludes("Home opens the Life Coordinate journey", source.home, marker));
   [
-    'return <GenesisLab onComplete={() => navigate("/launch-lab")} />',
-    'path="/launch-lab" element={<LaunchLab />} />',
+    '<Route path="/genesis-lab" element={<GenesisLab />} />',
+    'path="/launch-lab"\n          element={\n            <LaunchLab',
     "path={GUANYAO_ROUTES.genesis}",
     "path={GUANYAO_ROUTES.reality}",
   ].forEach((marker) => assertIncludes("formal route chain is registered", source.app, marker));
   [
     'kicker: "生命坐标"',
-    'bodyPrimary: "建立你的生命坐标"',
-    "captureLaunchLifeSourceSession",
+    'bodyPrimary: "让星河记住你的出生时间"',
+    "<XinmaiGenesisBirthCoordinateControls",
+    "confirmXinmaiGenesisBirthCoordinate({",
+    'intent: "CONFIRM_BIRTH_COORDINATE"',
+    "inputSession: confirmingSession",
+    "navigate(result.handoff.routeTarget)",
+  ].forEach((marker) => assertIncludes("Launch delegates and consumes the real life source", source.launch, marker));
+  [
+    "createLaunchLifeSourceSession",
     "activateRealUserGenesisVisualSourceContext",
     "resolveLaunchGenesisProductionRouteHandoff",
-    "navigate(handoff.routeTarget)",
-  ].forEach((marker) => assertIncludes("Launch creates and hands off the real life source", source.launch, marker));
+  ].forEach((marker) => assertIncludes("single admission controller creates the real life source", source.admissionController, marker));
   [
     'trigger: "TIME_DELIVERY"',
     '"COORDINATE_SEEKING"',
@@ -76,8 +83,8 @@ try {
   ].forEach((marker) => assertIncludes("Genesis owns the complete manifestation journey", source.genesis, marker));
   [
     "readGenesisRealityPresenceContinuityContext",
-    'continuityState !==\n      "CARRIED_TO_REALITY"',
-    "genesisPresenceContinuityContext={genesisPresenceContinuityContext}",
+    '.continuityState !== "CARRIED_TO_REALITY"',
+    "genesisPresenceContinuityContext={\n        genesisPresenceContinuityContext\n      }",
   ].forEach((marker) => assertIncludes("Reality requires the recognized Presence", source.reality, marker));
   assertIncludes("formal Genesis route remains exact", source.routes, 'genesis: "/genesis"');
   assertIncludes("formal Reality route remains exact", source.routes, 'reality: "/reality"');

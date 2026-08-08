@@ -19,6 +19,7 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { EntryCardRendererOptions } from "../components/entry/EntryCardRenderer";
+import { XinmaiGenesisBirthCoordinateControls } from "../components/XinmaiGenesisBirthCoordinateControls";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import {
   getFourBeastTrigramVisualGrammar,
@@ -34,17 +35,8 @@ import type { GeoChronoMotherFusionResult } from "../types/guanyaoGeoChronoMothe
 import type { LaunchLifeSourceSession } from "../types/launchLifeSourceSession";
 import type { LaunchOriginMotherInput } from "../types/guanyaoLaunchOriginMother";
 import type { FourSymbol } from "../types/guanyaoStarbeast";
-import type { DynamicsMotherHandoff } from "../types/gravityRuntimeInput";
-import { buildDynamicsMotherHandoff } from "../services/guanyaoDynamicsMotherHandoffAdapter";
+import { resolveLaunchOriginMother } from "../services/guanyaoLaunchOriginMotherInputAdapter";
 import {
-  resolveLaunchOriginMother,
-  resolveLaunchOriginMotherSourceResults,
-} from "../services/guanyaoLaunchOriginMotherInputAdapter";
-import { createLaunchLifeSourceSession } from "../services/launchLifeSourceSession";
-import { resolveLaunchGenesisProductionRouteHandoff } from "../services/launchGenesisProductionRouteHandoff";
-import { resolveLaunchLifeVisualSource } from "../services/launchLifeVisualSourceResolver";
-import {
-  activateRealUserGenesisVisualSourceContext,
   clearRealUserGenesisVisualSourceContext,
 } from "../services/realUserGenesisVisualSourceContext";
 import {
@@ -52,11 +44,10 @@ import {
   createStarBeastRelationshipNamingAsset,
   deleteStarBeastRelationshipNamingAsset,
   hasPersistedRecognizedLifeIdentity,
-  persistLaunchLifeSourceSession,
+  readPersistedGenesisPresenceVisualRealization,
   readPersistedGenesisVisualContinuity,
   readStarBeastRelationshipNamingAsset,
   renameStarBeastRelationshipNamingAsset,
-  restorePersistedRealUserGenesisVisualSourceContext,
 } from "../services/sessionService";
 import {
   STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS,
@@ -94,10 +85,19 @@ import {
   XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
   type XinmaiCanonicalBodyImprintDecision,
 } from "../types/xinmaiCanonicalBodyImprint";
-import { writeMotherCodeProfile } from "../services/guanyaoMotherCodeProfilePersistenceAdapter";
-import { writeOriginMotherContext } from "../services/guanyaoOriginMotherContextPersistenceAdapter";
-import { writePersonaOutputSnapshot } from "../services/guanyaoPersonaSnapshotPersistenceAdapter";
 import { resolveBirthCalendarFromGregorianDate } from "../services/guanyaoBirthCalendarService";
+import { confirmXinmaiGenesisBirthCoordinate } from "../services/xinmaiGenesisBirthCoordinateAdmissionController";
+import { recoverXinmaiGenesisBirthSource } from "../services/xinmaiGenesisBirthSourceRecoveryController";
+import {
+  beginXinmaiGenesisBirthCoordinateInput,
+  createXinmaiGenesisBirthCoordinateInputSession,
+  markXinmaiGenesisBirthCoordinateAccepted,
+  markXinmaiGenesisBirthCoordinateConfirming,
+  markXinmaiGenesisBirthCoordinateSafeWithheld,
+  resolveXinmaiGenesisBirthCoordinatePresentation,
+  updateXinmaiGenesisBirthCoordinateInput,
+} from "../services/xinmaiGenesisBirthCoordinatePresentationResolver";
+import type { XinmaiGenesisBirthCoordinateInputSession } from "../types/xinmaiGenesisBirthCoordinatePresentation";
 import {
   drawLifeUniverseDeepSpace2D,
   drawLifeUniverseCore2D,
@@ -1195,13 +1195,18 @@ export function LaunchLab({
     useRef<string | null>(null);
   const [returningLifeContext] = useState(() => {
     const forcedEntry = getEntryUserTypePreviewOverride();
-    if (
-      forcedEntry === "NEW_USER" ||
-      !hasPersistedRecognizedLifeIdentity()
-    ) {
-      return null;
-    }
-    return restorePersistedRealUserGenesisVisualSourceContext();
+    if (forcedEntry === "NEW_USER") return null;
+    const recognizedPresence =
+      readPersistedGenesisPresenceVisualRealization();
+    const recovery = recoverXinmaiGenesisBirthSource({
+      intent: "RESTORE_RETURNING_LIFE",
+      recognizedSourceReferenceId:
+        recognizedPresence?.sourceReferenceId ?? null,
+    });
+    if (recovery.status !== "READY") return null;
+    return hasPersistedRecognizedLifeIdentity()
+      ? recovery.context
+      : null;
   });
   const hasReturningLifeIdentity = returningLifeContext !== null;
   const [returningVisualContinuity] = useState(() =>
@@ -1289,6 +1294,40 @@ export function LaunchLab({
     returningVisualContinuity !== null &&
     returningVisualContinuity.sourceReferenceId ===
       returningLifeContext.sourceReferenceId;
+  const [birthCoordinateSession, setBirthCoordinateSession] =
+    useState<XinmaiGenesisBirthCoordinateInputSession>(() =>
+      createXinmaiGenesisBirthCoordinateInputSession(),
+    );
+  const birthCoordinateDecision = useMemo(
+    () =>
+      resolveXinmaiGenesisBirthCoordinatePresentation(birthCoordinateSession),
+    [birthCoordinateSession],
+  );
+  const confirmBirthCoordinate = useCallback(() => {
+    const confirmingSession = markXinmaiGenesisBirthCoordinateConfirming(
+      birthCoordinateSession,
+    );
+    setBirthCoordinateSession(confirmingSession);
+    if (confirmingSession.status !== "CONFIRMING") return;
+    const result = confirmXinmaiGenesisBirthCoordinate({
+      intent: "CONFIRM_BIRTH_COORDINATE",
+      inputSession: confirmingSession,
+    });
+    if (result.status !== "ACCEPTED") {
+      setBirthCoordinateSession(
+        markXinmaiGenesisBirthCoordinateSafeWithheld(
+          confirmingSession,
+          result.reason,
+        ),
+      );
+      return;
+    }
+    setBirthCoordinateSession(
+      markXinmaiGenesisBirthCoordinateAccepted(confirmingSession),
+    );
+    setLaunchInteractionState("GENESIS_HANDOFF");
+    navigate(result.handoff.routeTarget);
+  }, [birthCoordinateSession, navigate]);
   useEffect(() => {
     const ticket = explicitLeaveNavigationDeliveryTicket;
     const report = onExplicitLeaveNavigationDeliveryOutcome;
@@ -1549,7 +1588,6 @@ export function LaunchLab({
   const timelineRunIdRef = useRef(0);
   const nodeTimelineStartedAtRef = useRef(0);
   const entryHandoffRef = useRef<((mode: EntryHandoffMode) => void) | null>(null);
-  const dynamicsMotherHandoffRef = useRef<DynamicsMotherHandoff | null>(null);
   const showInternalNodeCopy = DEBUG_TIMELINE;
   const collapsePhase = "none";
   const isProductionCollapse = false;
@@ -1622,7 +1660,7 @@ export function LaunchLab({
               "data-launch-timeline": timeline[scene],
               "data-snapshot-index": String(snapshotIndex),
             }),
-            pointerInteraction: "HOST_CANVAS" as const,
+            pointerInteraction: "NONE" as const,
           }),
     [
       interactionState,
@@ -1725,7 +1763,10 @@ export function LaunchLab({
 
   const enterNext = useCallback(() => {
     if (sceneRef.current !== "HANDOFF") return;
-    entryHandoffRef.current?.(getEntryUserTypePreviewOverride() ?? getEntryUserType());
+    const entryType =
+      getEntryUserTypePreviewOverride() ?? getEntryUserType();
+    if (entryType === "NEW_USER") return;
+    entryHandoffRef.current?.(entryType);
   }, []);
 
   const triggerClickFlash = useCallback(() => {
@@ -1894,7 +1935,6 @@ export function LaunchLab({
       m.node1State = null;
       m.node1T = 0;
       m.pendingAxisMode = mode;
-      dynamicsMotherHandoffRef.current = null;
       if (mode === "OLD_USER") {
         openPressureSeedAxis();
         return;
@@ -2206,96 +2246,6 @@ export function LaunchLab({
       return m.lifeSourceSession?.originMotherResult
         ?? resolveLaunchOriginMother(buildLaunchOriginMotherInput());
     }
-    function captureLaunchLifeSourceSession(): LaunchLifeSourceSession {
-      if (m.lifeSourceSession) return m.lifeSourceSession;
-
-      const launchInput = buildLaunchOriginMotherInput();
-      const sourceResults = resolveLaunchOriginMotherSourceResults(launchInput);
-      const mansionIndex = sourceResults.starbeastDerivationResult.mansionIndex;
-      m.lifeBeastMansionIndex = mansionIndex;
-      m.lifeBeastGroupStart = Math.floor(mansionIndex / 7) * 7;
-      const sessionResult = createLaunchLifeSourceSession({
-        sourceReferenceId: [
-          "launch",
-          `${launchInput.birth.year}-${pad2(launchInput.birth.month)}-${pad2(launchInput.birth.day)}`,
-          launchInput.birth.hourBranch,
-        ].join(":"),
-        birthCoordinate: launchInput.birth,
-        ...sourceResults,
-      });
-
-      if (sessionResult.status !== "AVAILABLE") {
-        throw new Error(`LAUNCH_LIFE_SOURCE_SESSION_BLOCKED:${sessionResult.reason}`);
-      }
-
-      const visualSourceResult = resolveLaunchLifeVisualSource(sessionResult.session);
-      if (visualSourceResult.status !== "AVAILABLE") {
-        throw new Error(
-          `LAUNCH_LIFE_VISUAL_SOURCE_BLOCKED:${visualSourceResult.reason}`,
-        );
-      }
-
-      const visualContextResult = activateRealUserGenesisVisualSourceContext({
-        lifeSourceSession: sessionResult.session,
-        visualSourceAdapterInput: visualSourceResult.input,
-        visualSource: visualSourceResult.visualSource,
-      });
-      if (visualContextResult.status !== "AVAILABLE") {
-        throw new Error(
-          `REAL_USER_GENESIS_VISUAL_SOURCE_CONTEXT_BLOCKED:${visualContextResult.reason}`,
-        );
-      }
-
-      persistLaunchLifeSourceSession(sessionResult.session);
-      m.lifeSourceSession = sessionResult.session;
-      return sessionResult.session;
-    }
-    function persistOriginMotherContext(reveal: GeoChronoMotherFusionResult) {
-      if (m.pendingAxisMode !== "NEW_USER" || m.originMotherContextPersistenceAttempted) return;
-
-      const motherHandoff = buildDynamicsMotherHandoff(reveal);
-
-      try {
-        dynamicsMotherHandoffRef.current = Object.freeze({
-          motherCodeProfile: writeMotherCodeProfile(motherHandoff.motherCodeProfile),
-          originMotherContext: writeOriginMotherContext({
-            ...motherHandoff.originMotherContext,
-            lifeSourceSession: m.lifeSourceSession,
-          }),
-          personaOutputSnapshot: writePersonaOutputSnapshot(motherHandoff.personaOutputSnapshot),
-        });
-        m.originMotherContextPersistenceAttempted = true;
-      } catch (error) {
-        console.warn("[LaunchLab] failed to persist launch mother assets", error);
-      }
-    }
-    function enterProductionGenesis() {
-      const lifeSourceSession = captureLaunchLifeSourceSession();
-      const handoff = resolveLaunchGenesisProductionRouteHandoff({
-        lifeSourceSession,
-      });
-      if (handoff.status !== "READY") {
-        throw new Error(
-          `LAUNCH_GENESIS_PRODUCTION_HANDOFF_BLOCKED:${handoff.guardReason}`,
-        );
-      }
-      setLaunchInteractionState("GENESIS_HANDOFF");
-      navigate(handoff.routeTarget);
-    }
-    function beginProductionGenesisContinuity() {
-      if (m.genesisContinuityStarted) return;
-      const lifeSourceSession = captureLaunchLifeSourceSession();
-      persistOriginMotherContext(lifeSourceSession.originMotherResult);
-      m.genesisContinuityStarted = true;
-      m.railProgress = 1;
-      m.phaseX = ORIGIN_RAIL_COLS - 1;
-      m.clutched = true;
-      m.state = STATE.DISPLAY_LOCK;
-      m.t = 0;
-      audio.form();
-      vibrate([0, 18, 24]);
-      window.setTimeout(() => enterProductionGenesis(), CFG.firstPresenceSeconds * 1000);
-    }
     function buildEntryTransitionSnapshot(): EntryTransitionSnapshot {
       return {
         chrono: "光痕已显现",
@@ -2327,8 +2277,6 @@ export function LaunchLab({
       m.lifeBeastMansionIndex = null;
       m.lifeBeastGroupStart = null;
       clearRealUserGenesisVisualSourceContext();
-      m.originMotherContextPersistenceAttempted = false;
-      dynamicsMotherHandoffRef.current = null;
       m.railProgress = 0;
       m.phaseX = 0;
       m.dragging = false;
@@ -2387,8 +2335,8 @@ export function LaunchLab({
       }, ENTRY_HANDOFF_DELAY_MS);
     }
     function openMotherCodeReveal() {
-      const originMother = captureLaunchLifeSourceSession().originMotherResult;
-      persistOriginMotherContext(originMother);
+      const originMother = resolveOriginMotherCode();
+      void originMother;
       m.railProgress = 0;
       m.phaseX = 0;
       m.dragging = false;
@@ -2523,7 +2471,6 @@ export function LaunchLab({
             openMotherCodeReveal();
             return;
           }
-          beginProductionGenesisContinuity();
           return;
         }
         completeEntryCanvasHandoff();
@@ -2537,12 +2484,10 @@ export function LaunchLab({
         // The four familiar wheels form one birth-time input. Confirmation
         // accepts the complete value at once; there is no staged lesson or
         // year → month → day → hour checkpoint sequence.
-        captureLaunchLifeSourceSession();
         if (DEBUG_TIMELINE) {
           openMotherCodeReveal();
           return;
         }
-        beginProductionGenesisContinuity();
         return;
       }
       completeEntryCanvasHandoff();
@@ -2731,10 +2676,6 @@ export function LaunchLab({
       }
       switch (m.state) {
         case STATE.STARFIELD_IDLE: {
-          if (!m.pulsed && m.t > 0.16) {
-            m.pulsed = true;
-            vibrate([0, 12, 60]);
-          }
           if (m.moonReleaseStarted && m.moonReleaseT >= CFG.moonReleaseSeconds) {
             if (!returningLifeIdentity) {
               enterTimeInjectionFromMoon();
@@ -2847,7 +2788,8 @@ export function LaunchLab({
         lifeUniverseGravity,
       );
       const currentScene = sceneRef.current;
-      const entryVisualCopyActive = currentScene === "ENTRY";
+      const entryVisualCopyActive =
+        currentScene === "ENTRY" && Boolean(returningLifeIdentity);
       const entryState = toStarbeastEntryState(m.state);
       const starbeastState = resolveStarbeastRenderState(entryState);
       const convergenceActive = isConvergenceState();
@@ -6087,6 +6029,9 @@ export function LaunchLab({
             : "NOT_ACTIVE"
         }
         data-returning-life-priority="IDENTITY_THEN_STATE_THEN_EXPERIENCE_THEN_IMPRINT"
+        data-birth-coordinate-presentation={
+          returningVisualReady ? "NOT_ACTIVE" : birthCoordinateDecision.state
+        }
         data-reality-pressure-visual-state={
           returningVisualReady
             ? returningHasReality
@@ -6112,6 +6057,23 @@ export function LaunchLab({
           aria-hidden="true"
           style={{ display: "none" }}
         />
+        {!returningVisualReady ? (
+          <XinmaiGenesisBirthCoordinateControls
+            draft={birthCoordinateSession.draft}
+            decision={birthCoordinateDecision}
+            onBegin={() => {
+              setBirthCoordinateSession((current) =>
+                beginXinmaiGenesisBirthCoordinateInput(current),
+              );
+            }}
+            onDraftChange={(draft) => {
+              setBirthCoordinateSession((current) =>
+                updateXinmaiGenesisBirthCoordinateInput(current, draft),
+              );
+            }}
+            onConfirm={confirmBirthCoordinate}
+          />
+        ) : null}
         {returningVisualReady && returningVisualContinuity ? (
           <div
             className="gy-returning-life-world"

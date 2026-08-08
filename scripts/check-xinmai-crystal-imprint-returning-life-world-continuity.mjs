@@ -14,9 +14,15 @@ const check = (condition, message) => {
 
 check(
   launch.includes("hasPersistedRecognizedLifeIdentity()") &&
-    launch.includes("restorePersistedRealUserGenesisVisualSourceContext()") &&
+    launch.includes("recoverXinmaiGenesisBirthSource({") &&
+    launch.includes('intent: "RESTORE_RETURNING_LIFE"') &&
+    launch.includes('recovery.status !== "READY"') &&
     launch.includes("readPersistedGenesisVisualContinuity()"),
   "same recognized life identity is not restored",
+);
+check(
+  !launch.includes("restorePersistedRealUserGenesisVisualSourceContext()"),
+  "Returning life world bypasses the single recovery owner",
 );
 check(
   !launch.includes("readPersonalityRingLite") &&
