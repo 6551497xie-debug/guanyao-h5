@@ -5,6 +5,9 @@ import type {
   GravityObservationSurfaceOutcome,
   GravitySurfaceAdmissionAttempt,
 } from "../types/xinmaiGravitySurfaceAdmission";
+import type {
+  XinmaiRealityGravityChoiceSceneSemanticProjection,
+} from "../types/xinmaiRealityGravityChoiceSceneSemanticPresentation";
 import "../styles/reality-gravity-presentation.css";
 import { useXinmaiContinuousSceneHost } from "./XinmaiContinuousSceneHostContext";
 
@@ -19,16 +22,27 @@ const RECOVERY_SEDIMENTS = Object.freeze([
   [56.6, 48.2, 0.12],
 ] as const);
 
+const CHOICE_FIELD_PATHS = Object.freeze({
+  protection:
+    "M 51 51 C 46 47, 40 43, 33 39 C 27 36, 23 33, 19 29",
+  possibility:
+    "M 51 51 C 57 48, 63 44, 69 39 C 74 35, 79 32, 84 28",
+});
+
 export function RealityGravityInertiaField({
   repetitionDepth,
   activeObservation,
   visible,
+  semanticProjection,
   gravitySurfaceAdmissionAttempt,
   onGravityObservationSurfaceOutcome,
 }: Readonly<{
   repetitionDepth: number;
   activeObservation: string;
   visible: boolean;
+  semanticProjection:
+    | XinmaiRealityGravityChoiceSceneSemanticProjection
+    | null;
   gravitySurfaceAdmissionAttempt?: GravitySurfaceAdmissionAttempt;
   onGravityObservationSurfaceOutcome?: (
     outcome: GravityObservationSurfaceOutcome,
@@ -44,6 +58,17 @@ export function RealityGravityInertiaField({
   const reducedMotion =
     continuousSceneOutcome?.status ===
     "CONTINUOUS_SCENE_STATIC_PRESENTED";
+  const semanticStage =
+    semanticProjection?.status === "PRESENTABLE"
+      ? semanticProjection.semanticStage
+      : "SAFE_WITHHELD";
+  const observationVisible =
+    visible &&
+    (semanticStage === "GRAVITY_OBSERVING" ||
+      semanticStage === "GRAVITY_RECOGNIZED");
+  const choiceReady = visible && semanticStage === "CHOICE_READY";
+  const choiceCommitted =
+    visible && semanticStage === "CHOICE_COMMITTED";
 
   useEffect(() => {
     if (
@@ -93,12 +118,25 @@ export function RealityGravityInertiaField({
       className="gy-gravity-inertia-field"
       data-gravity-visual-consumer="RECOVERED_TRACE_RESPONSE_BIAS"
       data-inertia-path-state={
-        visible ? "MEMORY_GUIDING" : "MEMORY_RESTING"
+        observationVisible
+          ? "MEMORY_GUIDING"
+          : choiceReady
+            ? "CHOICE_COMPARISON_READY"
+            : choiceCommitted
+              ? "CHOICE_DIRECTION_HELD"
+              : "MEMORY_RESTING"
       }
       data-inertia-meaning="PAST_SHAPES_NEXT_RESPONSE_NOT_DESTINY"
       data-recovery-trace-consumption="DIRECTIONAL_BIAS_ONLY"
       data-life-identity-effect="STATE_ONLY"
-      data-choice-space="RESERVED_NOT_ACTIVE"
+      data-choice-space={
+        choiceReady
+          ? "PROTECTION_BENEFIT_COST_BALANCE"
+          : choiceCommitted
+            ? "COMMITTED_NOT_LIVED"
+            : "RESERVED_NOT_ACTIVE"
+      }
+      data-scene-semantic-stage={semanticStage}
       data-observation-entry={activeObservation}
       data-observation-surface-mode={
         reducedMotion
@@ -137,7 +175,9 @@ export function RealityGravityInertiaField({
               stroke="url(#gy-gravity-memory-guidance)"
               style={{
                 animationDelay: `${index * 2_700}ms`,
-                opacity: visible ? 0.32 - index * 0.075 : 0,
+                  opacity: observationVisible
+                    ? 0.32 - index * 0.075
+                    : 0,
               }}
             />
           ))}
@@ -151,11 +191,58 @@ export function RealityGravityInertiaField({
                 r={index === 0 ? 0.28 : 0.19}
                 style={{
                   animationDelay: `${900 + index * 520}ms`,
-                  opacity: visible ? opacity : 0,
+                  opacity: observationVisible ? opacity : 0,
                 }}
               />
             ),
           )}
+        </g>
+        <g
+          data-choice-force-field={
+            choiceReady
+              ? "COMPARABLE_WITHOUT_JUDGMENT"
+              : choiceCommitted
+                ? "COMMITTED_WITHOUT_COMPLETION"
+                : "INACTIVE"
+          }
+          style={{
+            opacity: choiceReady || choiceCommitted ? 1 : 0,
+            transition: reducedMotion ? "none" : "opacity 420ms ease",
+          }}
+        >
+          <path
+            d={CHOICE_FIELD_PATHS.protection}
+            fill="none"
+            stroke="rgba(210, 224, 238, 0.34)"
+            strokeWidth="0.42"
+            strokeLinecap="round"
+            strokeDasharray={choiceCommitted ? "1.4 2.8" : "none"}
+          />
+          <path
+            d={CHOICE_FIELD_PATHS.possibility}
+            fill="none"
+            stroke="rgba(222, 202, 156, 0.42)"
+            strokeWidth={choiceCommitted ? "0.72" : "0.42"}
+            strokeLinecap="round"
+          />
+          <circle
+            cx="19"
+            cy="29"
+            r="1.15"
+            fill="rgba(210, 224, 238, 0.42)"
+          />
+          <circle
+            cx="84"
+            cy="28"
+            r={choiceCommitted ? "1.8" : "1.15"}
+            fill="rgba(222, 202, 156, 0.52)"
+          />
+          <circle
+            cx="51"
+            cy="51"
+            r="1.4"
+            fill="rgba(245, 241, 226, 0.56)"
+          />
         </g>
       </svg>
     </div>

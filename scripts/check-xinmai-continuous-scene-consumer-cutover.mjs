@@ -11,6 +11,7 @@ const genesis = read("src/components/GenesisProductionRendererCanvasHost.tsx");
 const reality = read("src/components/RealityLifeUniverseCanvas.tsx");
 const gravity = read("src/pages/GravityPage.tsx");
 const archive = read("src/pages/PersonalityRingPage.tsx");
+const sceneCss = read("src/styles/xinmai-continuous-scene.css");
 const packageJson = JSON.parse(read("package.json"));
 
 for (const [name, source] of Object.entries({
@@ -55,6 +56,27 @@ assert(
   app.includes('data-continuous-scene-route-pending="TRUE"') &&
     !app.includes("drawLifeUniverseRouteFallback"),
   "App fallback must be semantic-only and must not claim a second world",
+);
+assert(
+  /\.xinmai-continuous-scene-host\s*\{[^}]*pointer-events:\s*none;/s.test(
+    sceneCss,
+  ),
+  "Continuous Scene Host container must never become an implicit pointer owner",
+);
+assert(
+  /\.xinmai-continuous-scene-host\[data-continuous-scene-outcome="CONTINUOUS_SCENE_SAFE_WITHHELD"\]\s*\{[^}]*background:\s*transparent;[^}]*pointer-events:\s*none;/s.test(
+    sceneCss,
+  ),
+  "SAFE_WITHHELD Host must remain transparent and pass native recovery controls through",
+);
+assert(
+  /\.xinmai-continuous-scene-host__canvas\[data-continuous-scene-pointer-owner="HOST_CANVAS"\]\s*\{[^}]*pointer-events:\s*auto;/s.test(
+    sceneCss,
+  ) &&
+    /\.xinmai-continuous-scene-host__canvas\[data-continuous-scene-pointer-owner="NONE"\]\s*\{[^}]*pointer-events:\s*none;/s.test(
+      sceneCss,
+    ),
+  "Only an explicitly registered Host Canvas may own Continuous Scene pointer input",
 );
 assert(
   packageJson.scripts?.["check:xinmai-continuous-scene-consumer-cutover"] ===

@@ -9,6 +9,8 @@ import {
   resolveXinmaiSameLifeSurfaceSelection,
 } from "../services/xinmaiSameLifeSurfaceHostResolver";
 import { resolveXinmaiSameLifeAccessibleSemanticMirror } from "../services/xinmaiSameLifeAccessibleSemanticMirror";
+import { resolveXinmaiRealityGravityChoiceSceneAccessibleSemanticMirror } from "../services/xinmaiRealityGravityChoiceSceneAccessibleSemanticMirror";
+import { resolveXinmaiRealityGravityChoiceSceneSemanticPresentation } from "../services/xinmaiRealityGravityChoiceSceneSemanticResolver";
 import { XinmaiSemanticStaticSameLifeSurface } from "./XinmaiSemanticStaticSameLifeSurface";
 import {
   useXinmaiContinuousScenePresentation,
@@ -53,6 +55,11 @@ import {
   type XinmaiContinuousSceneConsumerSurface,
   type XinmaiContinuousSceneNearObjectKind,
 } from "../types/xinmaiContinuousScenePresentation";
+import {
+  XINMAI_REALITY_GRAVITY_CHOICE_SCENE_SEMANTIC_VERSION,
+  type XinmaiRealityGravityChoiceSceneSemanticFacts,
+  type XinmaiRealityGravityChoiceSceneSemanticProjection,
+} from "../types/xinmaiRealityGravityChoiceSceneSemanticPresentation";
 
 const REALITY_ARRIVAL_TIMING_MS = Object.freeze({
   IDENTITY_HOLD: 1_600,
@@ -119,6 +126,8 @@ export function RealityLifeUniverseCanvas({
   onGravityLifeSurfaceOutcome,
   sameLifeSurfaceConsumer = "REALITY",
   onSameLifeSurfaceOutcome,
+  sceneSemanticFacts = null,
+  onSceneSemanticProjection,
 }: Pick<RealityProductionHostProps, "visualContinuity"> &
   Readonly<{
     selectedPressureSeedContext?: SelectedPressureSeedContext | null;
@@ -147,6 +156,14 @@ export function RealityLifeUniverseCanvas({
     sameLifeSurfaceConsumer?: XinmaiSameLifeSurfaceConsumer;
     onSameLifeSurfaceOutcome?: (
       outcome: XinmaiSameLifeSurfaceOutcome,
+    ) => void;
+    sceneSemanticFacts?:
+      | XinmaiRealityGravityChoiceSceneSemanticFacts
+      | null;
+    onSceneSemanticProjection?: (
+      projection:
+        | XinmaiRealityGravityChoiceSceneSemanticProjection
+        | null,
     ) => void;
   }>) {
   const continuesRecognizedPressure = selectedPressureSeedContext !== null;
@@ -734,28 +751,6 @@ export function RealityLifeUniverseCanvas({
             : "REALITY",
     [sameLifeSurfaceConsumer],
   );
-  const continuousSceneNearObject = useMemo<
-    XinmaiContinuousSceneNearObjectKind
-  >(
-    () =>
-      continuousSceneSurface === "GRAVITY_CHOICE"
-        ? "GRAVITY_OBSERVATION"
-        : continuousSceneSurface === "RETURNING_OWNERSHIP"
-          ? sameLifeSurfaceFacts !== null &&
-            sameLifeSurfaceFacts.imprints.length > 0
-            ? "CRYSTAL_OWNERSHIP"
-            : "LIVED_RESPONSE"
-          : continuousSceneSurface === "ARCHIVE"
-            ? "ARCHIVE_IMPRINT"
-            : selectedPressureSeedContext === null
-              ? "NONE"
-              : "REALITY_WEATHER_NODE",
-    [
-      continuousSceneSurface,
-      sameLifeSurfaceFacts,
-      selectedPressureSeedContext,
-    ],
-  );
   const acceptMotionSameLifeCommitProof = useCallback(
     (proof: XinmaiSameLifeSurfaceCommitProof) => {
       setSameLifeSurfaceCommitProof(proof);
@@ -910,6 +905,118 @@ export function RealityLifeUniverseCanvas({
     realitySurfaceAdmissionAttempt,
     visualContinuity.sourceReferenceId,
   ]);
+  const sceneSemanticProjection = useMemo(() => {
+    if (
+      (continuousSceneSurface !== "REALITY" &&
+        continuousSceneSurface !== "GRAVITY_CHOICE") ||
+      sceneSemanticFacts === null ||
+      sceneSemanticFacts.consumerSurface !== continuousSceneSurface
+    ) {
+      return null;
+    }
+    const sourceEncounterCycleId =
+      continuousSceneSurface === "REALITY"
+        ? realitySurfaceAdmissionAttempt?.encounterCycleId ?? ""
+        : gravitySurfaceAdmissionAttempt?.sourceEncounterCycleId ?? "";
+    return resolveXinmaiRealityGravityChoiceSceneSemanticPresentation({
+      schemaVersion:
+        XINMAI_REALITY_GRAVITY_CHOICE_SCENE_SEMANTIC_VERSION,
+      lineage: Object.freeze({
+        sourceReferenceId: visualContinuity.sourceReferenceId,
+        sourceRenderPlanReferenceId,
+        identityReferenceId:
+          sameLifeSurfaceFacts?.starBeastIdentityReferenceId ?? null,
+        bodyReferenceId: sameLifeSurfaceFacts?.bodyReferenceId ?? null,
+        routeAdmissionStatus: routeAdmissionEvidence.status,
+        routeAdmissionReferenceId:
+          routeAdmissionEvidence.admissionReferenceId,
+        routeAdmissionRevision: routeAdmissionEvidence.revision,
+        sourceEncounterCycleId,
+        gravityCycleId:
+          gravitySurfaceAdmissionAttempt?.gravityCycleId ?? null,
+        gravityObservationReferenceId:
+          gravitySurfaceAdmissionAttempt?.gravityObservationReferenceId ??
+          null,
+      }),
+      facts: sceneSemanticFacts,
+    });
+  }, [
+    continuousSceneSurface,
+    gravitySurfaceAdmissionAttempt,
+    realitySurfaceAdmissionAttempt?.encounterCycleId,
+    routeAdmissionEvidence,
+    sameLifeSurfaceFacts?.bodyReferenceId,
+    sameLifeSurfaceFacts?.starBeastIdentityReferenceId,
+    sceneSemanticFacts,
+    sourceRenderPlanReferenceId,
+    visualContinuity.sourceReferenceId,
+  ]);
+  const continuousSceneNearObject = useMemo<
+    XinmaiContinuousSceneNearObjectKind
+  >(
+    () => {
+      if (
+        continuousSceneSurface === "REALITY" ||
+        continuousSceneSurface === "GRAVITY_CHOICE"
+      ) {
+        return sceneSemanticProjection?.status === "PRESENTABLE"
+          ? sceneSemanticProjection.nearObjectKind
+          : "NONE";
+      }
+      if (continuousSceneSurface === "RETURNING_OWNERSHIP") {
+        return sameLifeSurfaceFacts !== null &&
+          sameLifeSurfaceFacts.imprints.length > 0
+          ? "CRYSTAL_OWNERSHIP"
+          : "LIVED_RESPONSE";
+      }
+      return continuousSceneSurface === "ARCHIVE"
+        ? "ARCHIVE_IMPRINT"
+        : "NONE";
+    },
+    [
+      continuousSceneSurface,
+      sameLifeSurfaceFacts,
+      sceneSemanticProjection,
+    ],
+  );
+  const sceneSemanticMirror = useMemo(
+    () =>
+      resolveXinmaiRealityGravityChoiceSceneAccessibleSemanticMirror(
+        sceneSemanticProjection,
+      ),
+    [sceneSemanticProjection],
+  );
+  useEffect(() => {
+    onSceneSemanticProjection?.(sceneSemanticProjection);
+  }, [onSceneSemanticProjection, sceneSemanticProjection]);
+  const hasObservedSemanticProjectionRef = useRef(
+    sceneSemanticProjection?.semanticProjectionReferenceId !== undefined &&
+      sceneSemanticProjection?.semanticProjectionReferenceId !== null,
+  );
+  const lastSemanticProjectionReferenceRef = useRef(
+    sceneSemanticProjection?.semanticProjectionReferenceId ?? null,
+  );
+  const [sceneSemanticAnnouncement, setSceneSemanticAnnouncement] =
+    useState("");
+  useEffect(() => {
+    const reference =
+      sceneSemanticProjection?.semanticProjectionReferenceId ?? null;
+    if (
+      reference === null ||
+      reference === lastSemanticProjectionReferenceRef.current
+    ) {
+      return;
+    }
+    if (!hasObservedSemanticProjectionRef.current) {
+      hasObservedSemanticProjectionRef.current = true;
+      lastSemanticProjectionReferenceRef.current = reference;
+      return;
+    }
+    lastSemanticProjectionReferenceRef.current = reference;
+    setSceneSemanticAnnouncement(
+      sceneSemanticMirror.transitionAnnouncement,
+    );
+  }, [sceneSemanticMirror.transitionAnnouncement, sceneSemanticProjection]);
   const continuousSceneRegistration = useMemo(
     () =>
       Object.freeze({
@@ -928,9 +1035,13 @@ export function RealityLifeUniverseCanvas({
           routeAdmissionEvidence,
           nearObjectKind: continuousSceneNearObject,
           nearObjectReferenceId:
-            selectedPressureSeedContext?.selectedPressureSeedId ??
-            sameLifeSurfaceFacts?.imprints[0]?.imprintReferenceId ??
-            null,
+            sceneSemanticProjection?.status === "PRESENTABLE"
+              ? sceneSemanticProjection.nearObjectReferenceId
+              : continuousSceneSurface === "RETURNING_OWNERSHIP" ||
+                  continuousSceneSurface === "ARCHIVE"
+                ? sameLifeSurfaceFacts?.imprints[0]
+                    ?.imprintReferenceId ?? null
+                : null,
           nativeMotionPreference: reducedMotionRequested
             ? "REDUCED_MOTION" as const
             : "MOTION_ALLOWED" as const,
@@ -939,6 +1050,7 @@ export function RealityLifeUniverseCanvas({
             selection: sameLifeSurfaceSelection,
             publicOutcome: sameLifeSurfaceOutcome,
           }),
+          semanticProjection: sceneSemanticProjection,
         }),
         runtimeFactory: continuousSceneRuntimeFactory,
         staticSurface: staticSceneSurface,
@@ -986,7 +1098,7 @@ export function RealityLifeUniverseCanvas({
       sameLifeSurfaceFacts,
       sameLifeSurfaceOutcome,
       sameLifeSurfaceSelection,
-      selectedPressureSeedContext?.selectedPressureSeedId,
+      sceneSemanticProjection,
       sourceRenderPlanReferenceId,
       staticSceneSurface,
       visualContinuity.sourceReferenceId,
@@ -997,6 +1109,26 @@ export function RealityLifeUniverseCanvas({
 
   return (
     <>
+      {continuousSceneSurface === "REALITY" ||
+      continuousSceneSurface === "GRAVITY_CHOICE" ? (
+        <>
+          <p
+            className="gy-same-life-surface__semantic-mirror"
+            aria-live="off"
+            data-scene-semantic-mirror={sceneSemanticMirror.status}
+          >
+            {sceneSemanticMirror.summary}
+          </p>
+          <p
+            className="gy-same-life-surface__semantic-mirror"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {sceneSemanticAnnouncement}
+          </p>
+        </>
+      ) : null}
       <p className="gy-same-life-surface__semantic-mirror" aria-live="off">
         {accessibleSemanticMirror.summary}
       </p>

@@ -41,6 +41,9 @@ import {
 import type {
   RealityPressureRecognitionReceipt,
 } from "../types/xinmaiRealityAdventureContinuity";
+import type {
+  XinmaiRealitySceneSemanticFacts,
+} from "../types/xinmaiRealityGravityChoiceSceneSemanticPresentation";
 
 const MINIMUM_SURFACE_OUTCOME_WATCHDOG_MS = 8_000;
 
@@ -607,6 +610,33 @@ export function RealityProductionHost({
       : pressureVisualState === "PRESSURE_PAUSED"
         ? "CURRENT_REALITY_HELD_AT_DISTANCE"
         : "QUIET_IDENTITY_WITH_MEMORY";
+  const realitySceneSemanticFacts = useMemo<
+    XinmaiRealitySceneSemanticFacts
+  >(
+    () =>
+      Object.freeze({
+        consumerSurface: "REALITY" as const,
+        captureState: pressureSeedSession.captureState,
+        selectedPressureSeedId:
+          pressureSeedSession.selectedPressureSeedContext
+            ?.selectedPressureSeedId ?? null,
+        recognitionReceiptReferenceId:
+          recognitionAuthorityState?.receipt
+            .recognitionReceiptReferenceId ?? null,
+        recognitionReceiptRevision:
+          recognitionAuthorityState?.receipt.revision ?? null,
+        recognitionReceiptLifecycle:
+          recognitionAuthorityState?.receipt.lifecycle ?? null,
+        recognitionCanonicalRevision:
+          recognitionAuthorityState?.canonicalRevision ?? null,
+      }),
+    [
+      pressureSeedSession.captureState,
+      pressureSeedSession.selectedPressureSeedContext
+        ?.selectedPressureSeedId,
+      recognitionAuthorityState,
+    ],
+  );
 
   const applyConsumerResult = (
     nextConsumerResult: RealityProductionPressureSeedConsumerResult,
@@ -1010,6 +1040,7 @@ export function RealityProductionHost({
         selectedPressureSeedContext={
           pressureSeedSession.selectedPressureSeedContext
         }
+        sceneSemanticFacts={realitySceneSemanticFacts}
         historicalRealityMemoryKey={historicalRealityMemoryKey}
         canonicalBodyImprintDecision={canonicalBodyImprintDecision}
         choiceLifeTraceMemoryKey={choiceLifeTraceMemoryKey}

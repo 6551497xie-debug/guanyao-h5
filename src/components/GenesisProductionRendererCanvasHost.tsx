@@ -212,6 +212,7 @@ export function GenesisProductionRendererCanvasHost({
             : "MOTION_ALLOWED" as const,
           qualityTier: "FULL" as const,
           sameLifeSurface: null,
+          semanticProjection: null,
         }),
         runtimeFactory,
         staticSurface: null,

@@ -10,6 +10,12 @@
   overflow: hidden;
   background: #020306;
   contain: layout paint size;
+  pointer-events: none;
+}
+
+.xinmai-continuous-scene-host[data-continuous-scene-outcome="CONTINUOUS_SCENE_SAFE_WITHHELD"] {
+  background: transparent;
+  pointer-events: none;
 }
 
 .xinmai-continuous-scene-host__canvas,
@@ -23,6 +29,10 @@
 .xinmai-continuous-scene-host__canvas {
   display: block;
   touch-action: none;
+}
+
+.xinmai-continuous-scene-host__canvas[data-continuous-scene-pointer-owner="HOST_CANVAS"] {
+  pointer-events: auto;
 }
 
 .xinmai-continuous-scene-host__canvas[data-continuous-scene-pointer-owner="NONE"] {

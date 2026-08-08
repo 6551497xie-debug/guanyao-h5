@@ -30,6 +30,8 @@ const scenePlanReference = (input: XinmaiContinuousSceneInput): string =>
       String(input.routeAdmissionEvidence.revision),
       input.nearObjectKind,
       input.nearObjectReferenceId ?? "NO_NEAR_OBJECT",
+      input.semanticProjection?.semanticProjectionReferenceId ??
+        "NO_SEMANTIC_PROJECTION",
     ].join(":"),
   ).toString(36)}`;
 
@@ -67,6 +69,38 @@ export function resolveXinmaiContinuousScenePresentation(
     return withheld(input, "RENDER_PLAN_REFERENCE_MISSING");
   }
 
+  const semanticProjectionRequired =
+    input.consumerSurface === "REALITY" ||
+    input.consumerSurface === "GRAVITY_CHOICE";
+  const semanticProjection = input.semanticProjection;
+  if (semanticProjectionRequired && semanticProjection === null) {
+    return withheld(input, "SEMANTIC_PROJECTION_REQUIRED");
+  }
+  if (
+    semanticProjection !== null &&
+    semanticProjection.status === "SAFE_WITHHELD"
+  ) {
+    return withheld(input, "SEMANTIC_PROJECTION_SAFE_WITHHELD");
+  }
+  if (
+    semanticProjection !== null &&
+    semanticProjection.status === "PRESENTABLE" &&
+    (semanticProjection.lineage.sourceReferenceId !==
+      input.sourceReferenceId ||
+      semanticProjection.lineage.sourceRenderPlanReferenceId !==
+        input.sourceRenderPlanReferenceId ||
+      semanticProjection.lineage.identityReferenceId !==
+        input.identityReferenceId ||
+      semanticProjection.lineage.bodyReferenceId !==
+        input.bodyReferenceId ||
+      semanticProjection.lineage.routeAdmissionReferenceId !==
+        input.routeAdmissionEvidence.admissionReferenceId ||
+      semanticProjection.lineage.routeAdmissionRevision !==
+        input.routeAdmissionEvidence.revision)
+  ) {
+    return withheld(input, "SEMANTIC_PROJECTION_MISMATCH");
+  }
+
   const sameLifeSelection = input.sameLifeSurface?.selection ?? null;
   if (sameLifeSelection?.status === "SAFE_WITHHELD") {
     return withheld(input, "SAME_LIFE_FACTS_UNAVAILABLE");
@@ -85,6 +119,15 @@ export function resolveXinmaiContinuousScenePresentation(
 
   const sceneReference = scenePlanReference(input);
   const requiresBody = sameLifeSelection !== null;
+  const presentableSemanticProjection =
+    semanticProjection?.status === "PRESENTABLE"
+      ? semanticProjection
+      : null;
+  const nearObjectKind =
+    presentableSemanticProjection?.nearObjectKind ?? input.nearObjectKind;
+  const nearObjectReferenceId =
+    presentableSemanticProjection?.nearObjectReferenceId ??
+    input.nearObjectReferenceId;
   const depth: XinmaiContinuousSceneDepthPlan = Object.freeze({
     far: Object.freeze({
       topologyReferenceId: `FAR:${input.sourceRenderPlanReferenceId}`,
@@ -105,12 +148,12 @@ export function resolveXinmaiContinuousScenePresentation(
         ) ?? Object.freeze([]),
     }),
     near: Object.freeze({
-      interactiveObjectKind: input.nearObjectKind,
-      objectReferenceId: input.nearObjectReferenceId,
+      interactiveObjectKind: nearObjectKind,
+      objectReferenceId: nearObjectReferenceId,
       interactiveObjectCount:
-        input.nearObjectKind === "NONE" ? 0 as const : 1 as const,
+        nearObjectKind === "NONE" ? 0 as const : 1 as const,
       hitRegionContract:
-        input.nearObjectKind === "NONE"
+        nearObjectKind === "NONE"
           ? "NONE" as const
           : "NATIVE_CONTROL" as const,
     }),
@@ -132,6 +175,7 @@ export function resolveXinmaiContinuousScenePresentation(
     ),
     depth,
     sameLifeSurfaceSelection: sameLifeSelection,
+    semanticProjection: presentableSemanticProjection,
   });
 }
 

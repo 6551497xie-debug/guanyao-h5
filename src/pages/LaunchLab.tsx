@@ -1650,6 +1650,7 @@ export function LaunchLab({
                 : "MOTION_ALLOWED" as const,
               qualityTier: "FULL" as const,
               sameLifeSurface: null,
+              semanticProjection: null,
             }),
             runtimeFactory: launchSceneRuntimeFactory,
             staticSurface: null,

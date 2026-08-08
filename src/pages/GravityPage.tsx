@@ -82,6 +82,10 @@ import type {
   GravityObservationRecognitionProvenance,
   GravityObservationResumeDecision,
 } from "../types/xinmaiGravityObservationContinuity";
+import type {
+  XinmaiGravityChoiceSceneSemanticFacts,
+  XinmaiRealityGravityChoiceSceneSemanticProjection,
+} from "../types/xinmaiRealityGravityChoiceSceneSemanticPresentation";
 import { RealityGravityInertiaField } from "../components/RealityGravityInertiaField";
 import { XinmaiLifeReflectionGuide } from "../components/XinmaiLifeReflectionGuide";
 import {
@@ -95,39 +99,6 @@ import "../styles/reality-pressure-presentation.css";
 const USE_COSMIC_BOTANICS_SIX_SPACE = true;
 const LEGACY_DYNAMICS_FLOW_ISOLATED = true;
 const LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED = true;
-
-function playCrystalUnderstandingTone() {
-  try {
-    const AudioContextConstructor =
-      window.AudioContext ??
-      (
-        window as unknown as {
-          webkitAudioContext?: typeof AudioContext;
-        }
-      ).webkitAudioContext;
-    if (!AudioContextConstructor) return;
-
-    const context = new AudioContextConstructor();
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    const startedAt = context.currentTime;
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(392, startedAt);
-    oscillator.frequency.exponentialRampToValueAtTime(349.23, startedAt + 0.72);
-    gain.gain.setValueAtTime(0.0001, startedAt);
-    gain.gain.exponentialRampToValueAtTime(0.018, startedAt + 0.06);
-    gain.gain.exponentialRampToValueAtTime(0.0001, startedAt + 0.82);
-    oscillator.connect(gain).connect(context.destination);
-    oscillator.start(startedAt);
-    oscillator.stop(startedAt + 0.86);
-    oscillator.addEventListener("ended", () => {
-      context.close().catch(() => {});
-    });
-  } catch {
-    // Sound is an optional single acknowledgement; visual continuity remains
-    // complete when audio is unavailable or disabled by the browser.
-  }
-}
 
 const RealityLifeUniverseCanvas = lazy(() =>
   import("../components/RealityLifeUniverseCanvas").then((module) => ({
@@ -2599,6 +2570,8 @@ function HexagramCodeDeliveryShell({
     arrivalBridgeActive ||
     (gravityEntryContinuityActive && !innerViewBodyContinuityActive);
   const [contextWhisperVisible, setContextWhisperVisible] = useState(false);
+  const [gravitySceneSemanticProjection, setGravitySceneSemanticProjection] =
+    useState<XinmaiRealityGravityChoiceSceneSemanticProjection | null>(null);
   const [dynamicsInputReadiness] = useState<DynamicsInputReadiness>(() =>
     resolveDynamicsInputReadiness(dynamicsInputContext),
   );
@@ -2773,6 +2746,33 @@ function HexagramCodeDeliveryShell({
   const choicePresentationReady =
     choicePresentationDecision.state ===
     "READY_TO_PRESENT";
+  const gravitySceneSemanticFacts = useMemo<
+    XinmaiGravityChoiceSceneSemanticFacts | null
+  >(
+    () =>
+      surfaceAttempt === undefined
+        ? null
+        : Object.freeze({
+            consumerSurface: "GRAVITY_CHOICE" as const,
+            gravityAdmissionReferenceId:
+              surfaceAttempt.admissionReferenceId,
+            gravityAdmissionRevision: surfaceAttempt.admissionRevision,
+            gravityCycleId: surfaceAttempt.gravityCycleId,
+            sourceEncounterCycleId:
+              surfaceAttempt.sourceEncounterCycleId,
+            gravityObservationReferenceId:
+              surfaceAttempt.gravityObservationReferenceId,
+            observationDecision: observationContinuityDecision,
+            choiceDecision: choicePresentationDecision,
+            actionRouteResolution,
+          }),
+    [
+      actionRouteResolution,
+      choicePresentationDecision,
+      observationContinuityDecision,
+      surfaceAttempt,
+    ],
+  );
 
   useEffect(() => {
     if (
@@ -3296,6 +3296,10 @@ function HexagramCodeDeliveryShell({
                 selectedPressureSeedContext={
                   dynamicsInputContext.selectedPressureSeedContext
                 }
+                sceneSemanticFacts={gravitySceneSemanticFacts}
+                onSceneSemanticProjection={
+                  setGravitySceneSemanticProjection
+                }
                 innerViewApproachState={
                   innerViewBodyContinuityActive
                     ? "BODY_APPROACHED"
@@ -3318,6 +3322,7 @@ function HexagramCodeDeliveryShell({
                   cosmicNarrativePhase === "node_active" ||
                   cosmicNarrativePhase === "node_complete")
               }
+              semanticProjection={gravitySceneSemanticProjection}
               gravitySurfaceAdmissionAttempt={surfaceAttempt}
               onGravityObservationSurfaceOutcome={
                 onObservationSurfaceOutcome

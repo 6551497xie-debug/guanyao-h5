@@ -3,6 +3,9 @@ import type {
   XinmaiSameLifeSurfaceOutcome,
   XinmaiSameLifeSurfaceSelection,
 } from "./xinmaiSameLifeSurfacePresentation";
+import type {
+  XinmaiRealityGravityChoiceSceneSemanticProjection,
+} from "./xinmaiRealityGravityChoiceSceneSemanticPresentation";
 
 export const XINMAI_CONTINUOUS_SCENE_PRESENTATION_VERSION =
   "XINMAI_CONTINUOUS_SCENE_PRESENTATION_V1" as const;
@@ -58,6 +61,9 @@ export type XinmaiContinuousSceneInput = Readonly<{
   nativeMotionPreference: XinmaiContinuousSceneNativeMotionPreference;
   qualityTier: XinmaiContinuousSceneQualityTier;
   sameLifeSurface: XinmaiContinuousSceneSameLifeInput | null;
+  semanticProjection:
+    | XinmaiRealityGravityChoiceSceneSemanticProjection
+    | null;
 }>;
 
 export type XinmaiContinuousSceneDepthPlan = Readonly<{
@@ -93,6 +99,9 @@ export type XinmaiContinuousSceneSafeWithheldReason =
   | "SAME_LIFE_PROOF_UNAVAILABLE"
   | "PRESENTER_UNAVAILABLE"
   | "PRESENTER_COMMIT_MISMATCH"
+  | "SEMANTIC_PROJECTION_REQUIRED"
+  | "SEMANTIC_PROJECTION_SAFE_WITHHELD"
+  | "SEMANTIC_PROJECTION_MISMATCH"
   | "WEBGL_INITIALIZATION_FAILED"
   | "WEBGL_RUNTIME_FAILED";
 
@@ -107,6 +116,12 @@ export type XinmaiContinuousScenePlan =
       stableVisualSeed: number;
       depth: XinmaiContinuousSceneDepthPlan;
       sameLifeSurfaceSelection: XinmaiSameLifeSurfaceSelection | null;
+      semanticProjection:
+        | Extract<
+            XinmaiRealityGravityChoiceSceneSemanticProjection,
+            { status: "PRESENTABLE" }
+          >
+        | null;
     }>
   | Readonly<{
       status: "SAFE_WITHHELD";
