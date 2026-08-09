@@ -5,11 +5,11 @@ SIXTY_PLUS salience comes from the continuity, migration, exit, and renegotiatio
 ## Portfolio structure
 
 - POWER: account identity migration, continuing contract authority, and explicit role exit.
-- INTEREST: settlement continuity, independently operated channel revenue, and shared workspace exit.
+- INTEREST: settlement continuity, independently operated channel revenue, and exit from a shared-living storage service.
 - RELATION: contact continuity across cities, equal travel information, and shared digital archive boundaries.
-- FAMILY: non-co-resident household access, common-item access, and two-generation communication agreements without assumed spouse, children, care duty, or property ownership.
-- SOCIAL: continuity of real-world group participation, creative visibility, and friendship reciprocity.
-- EXISTENCE: continuing work-role definition, daily time access, and an active creative-direction transition.
+- FAMILY: non-co-resident household access, household-tool access, and two-generation communication agreements without assumed spouse, children, care duty, or property ownership.
+- SOCIAL: continuity of real-world group participation, creative visibility, and a friendship-group plan boundary.
+- EXISTENCE: continuing work-role definition, explicit daily schedule access, and an active creative-direction transition.
 
 The sample includes continued employment/independent work, separate and shared living systems, bilateral relationships, family coordination, friendship/community life, digital identity, creative work, travel, and direction change. None is framed as an exceptional achievement “despite” age.
 
@@ -21,6 +21,8 @@ No item assumes spouse, children, grandchildren, housing ownership, chronic illn
 
 ## Manual semantic comparison
 
-Comparison included ESTABLISHING 90, MID_LIFE locked 90, YOUTH locked 90, RESTRUCTURING locked 90, and Draft Pool. Exact matches and Jaccard ≥0.25 are zero. Five low-similarity-band pairs were inspected as lexical adjacency only; none reuses the same actor/resource/consequence structure.
+Comparison included ESTABLISHING 90, MID_LIFE locked 90, YOUTH locked 90, RESTRUCTURING locked 90, and Draft Pool. Exact matches and Jaccard ≥0.25 are zero. The remaining single low-similarity-band pair was inspected as lexical adjacency only and does not reuse the same actor/resource/consequence structure.
 
-The author must not independently accept this sample. Product Control should test whether the 18-item combination remains recognizably SIXTY_PLUS without age labels, and whether account migration and historical continuity avoid becoming an administrative template.
+Round 1 preserves the portfolio's ordinary continued work, shared and separate living, group friendship, community participation, digital identity, travel, and creative direction. The revisions add concrete objects and actors without introducing retirement, decline, family proxy, digital weakness, property ownership, spouse, or care-duty assumptions.
+
+The author does not accept the four revised items. Product Control R2 should test whether the 18-item combination remains recognizably SIXTY_PLUS without age labels, and whether account migration and historical continuity avoid becoming an administrative template.
