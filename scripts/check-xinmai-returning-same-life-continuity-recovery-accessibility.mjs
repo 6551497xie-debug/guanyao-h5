@@ -9,6 +9,7 @@ const resolver = read("src/services/xinmaiReturningSameLifeContinuityPresentatio
 const surface = read("src/components/XinmaiLivedResponseReturnSurface.tsx");
 const mirror = read("src/services/xinmaiSameLifeAccessibleSemanticMirror.ts");
 const ownership = read("src/services/xinmaiCrystalOwnershipPresentationResolver.ts");
+const visualSystem = read("src/styles/xinmai-visual-life-system.css");
 const packageJson = JSON.parse(read("package.json"));
 
 assert(
@@ -28,6 +29,15 @@ assert(
     !resolver.includes("aria-live") &&
     !resolver.includes("role=\"status\""),
   "V4 introduced a duplicate live-region owner",
+);
+assert(
+  visualSystem.includes(".xinmai-crystal-ownership__crystal-line,") &&
+    visualSystem.includes(".xinmai-crystal-ownership__actions") &&
+    visualSystem.includes("color: rgba(185, 203, 236, 0.62);") &&
+    !visualSystem.match(
+      /\.xinmai-crystal-ownership__crystal-line,[\s\S]{0,320}color:\s*rgba\(185,\s*203,\s*236,\s*0\.48\)/,
+    ),
+  "Ownership auxiliary text contrast correction is missing or has regressed",
 );
 assert(
   packageJson.scripts?.["check:xinmai-returning-same-life-continuity-recovery-accessibility"] ===

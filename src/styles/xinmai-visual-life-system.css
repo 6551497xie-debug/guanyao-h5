@@ -405,6 +405,16 @@ body {
 
 .xinmai-life-app[data-xinmai-surface="ENTRY"]
   .gy-returning-life-world__relationship-copy
+  .xinmai-crystal-ownership__crystal-line,
+.xinmai-life-app[data-xinmai-surface="ENTRY"]
+  .gy-returning-life-world__relationship-copy
+  .xinmai-crystal-ownership__actions
+  small {
+  color: rgba(185, 203, 236, 0.62);
+}
+
+.xinmai-life-app[data-xinmai-surface="ENTRY"]
+  .gy-returning-life-world__relationship-copy
   span {
   color: rgba(255, 239, 191, 0.62);
 }
