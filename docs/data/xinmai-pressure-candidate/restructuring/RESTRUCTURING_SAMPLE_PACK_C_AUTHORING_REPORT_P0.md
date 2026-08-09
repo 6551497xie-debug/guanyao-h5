@@ -1,10 +1,10 @@
 # RESTRUCTURING Representative Sample Pack C — Authoring Report P0
 
-Status: `18 SAMPLE_DRAFT / AI_ASSISTED / READY FOR INDEPENDENT CONTROL TOWER REVIEW / NOT_PRODUCTION`
+Status: `13 SAMPLE_ACCEPTED / 5 SAMPLE_DRAFT / AI_ASSISTED / NOT_PRODUCTION`
 
 Life Stage: `RESTRUCTURING` (`45–59`, frozen router reference only)
 
-The construction window is the AI-assisted author. Editorial, Safety, Overlap, Product Control, approval, and lock fields remain empty. Mechanical checks do not constitute `SAMPLE_ACCEPTED`.
+The construction window is the AI-assisted author. Product Control Tower independently accepted 13 unchanged samples in Round 1. The five author-revised samples remain unreviewed `SAMPLE_DRAFT`; their reviewer, approval, and lock fields are empty. Mechanical checks do not constitute acceptance.
 
 ## Exact sample matrix
 
@@ -16,14 +16,14 @@ The construction window is the AI-assisted author. Editorial, Safety, Overlap, P
 | INTEREST | RULE_OR_INFORMATION_GAP | PARTNERSHIP_CONTRACT | 合作模式改为分段结算，旧项目余款怎样处理没有写明 | 旧余款还没有结算口径 |
 | INTEREST | POWER_OR_RESOURCE_ASYMMETRY | COMPENSATION | 岗位职责减掉一部分，固定报酬却连同全部补贴一起暂停 | 本月结算少了两项 |
 | INTEREST | BOUNDARY_OR_COMMITMENT_BREAK | OPPORTUNITY_EXIT | 双方约好旧业务停止接单，对方又以你的名义签下新单 | 交付责任再次落到你名下 |
-| RELATION | RULE_OR_INFORMATION_GAP | COMMITMENT | 两人的固定见面改为按月，临时变动如何补上没说定 | 下次日期一直没有落定 |
-| RELATION | POWER_OR_RESOURCE_ASYMMETRY | REPAIR_TRANSITION | 重新约定联系边界时，对方保留随时来电，却限制你的回应时段 | 你的重要消息只能等待 |
+| RELATION | RULE_OR_INFORMATION_GAP | COMMITMENT | 两人改在不同住处生活后，原来的固定见面怎么重排还没说定 | 双方还不能确定下次见面时间 |
+| RELATION | POWER_OR_RESOURCE_ASYMMETRY | REPAIR_TRANSITION | 对方要求有事可以随时联系你，却只在指定时段回复你的消息 | 下周见面是否取消还没得到回复 |
 | RELATION | BOUNDARY_OR_COMMITMENT_BREAK | SHARED_DECISION_BOUNDARY | 约好各自决定工作变化，对方却替双方回复了搬迁邀请 | 共同安排已经被外部确认 |
-| FAMILY | RULE_OR_INFORMATION_GAP | MAJOR_DECISIONS | 家人开始分别管理住处，公共物品如何处置还没说定 | 共用物品还没有去向 |
-| FAMILY | POWER_OR_RESOURCE_ASYMMETRY | HOUSEHOLD_LABOR | 家庭分工重排后，新任务都进入你的日历，其他人的时段未公开 | 三项日常事务撞在同一天 |
+| FAMILY | RULE_OR_INFORMATION_GAP | MAJOR_DECISIONS | 家人不再共同居住，留在原处的共用物品由谁搬走还没说定 | 原住处还腾不出搬运空间 |
+| FAMILY | POWER_OR_RESOURCE_ASYMMETRY | HOUSEHOLD_LABOR | 家庭重新分工后，买菜和清洁只按你的时间排 | 其他人能接手的时间还没确认 |
 | FAMILY | BOUNDARY_OR_COMMITMENT_BREAK | MONEY_RESOURCES | 家人约好重新核对共同支出后再付款，对方却沿用旧比例扣款 | 新的分担安排没有生效 |
 | SOCIAL | RULE_OR_INFORMATION_GAP | WORKPLACE_PEERS | 跨组轮值开始后，临时消息由谁同步给未当班的人没说明 | 两次调整都有人错过 |
-| SOCIAL | POWER_OR_RESOURCE_ASYMMETRY | COMMUNITY_GROUP | 社群换了组织方式，原执行者仍做事却没有议程入口 | 你的提案只能会后补交 |
+| SOCIAL | POWER_OR_RESOURCE_ASYMMETRY | COMMUNITY_GROUP | 社群换了组织方式后，你仍负责通知成员，却不能参与活动选择 | 下一场活动已经由少数人选定 |
 | SOCIAL | BOUNDARY_OR_COMMITMENT_BREAK | FRIENDSHIP | 朋友群合并后约好不转旧群消息，有人却直接贴出聊天截图 | 原群内容已被更多人看到 |
 | EXISTENCE | RULE_OR_INFORMATION_GAP | WORK_ROLE_MEANING | 工作内容换成顾问支持后，哪些旧任务算结束没有说明 | 新旧事项仍同时进入日程 |
 | EXISTENCE | POWER_OR_RESOURCE_ASYMMETRY | TIME_STRUCTURE | 新安排要求白天到场，旧职责仍占用全部晚间时段 | 白天和晚间之间没有空档 |
@@ -39,12 +39,15 @@ The construction window is the AI-assisted author. Editorial, Safety, Overlap, P
 | different contexts within every field | 3 / 3 / 3 / 3 / 3 / 3 |
 | responsibility leads | 6 / 6 / 6 |
 | metadata, length, hash | 18/18 |
+| `SAMPLE_ACCEPTED / SAMPLE_DRAFT` | 13 / 5 |
+| accepted reviewer lineage | 13/13 |
+| revised reviewer/approval/lock empty | 5/5 |
 | normalized exact duplicate inside sample | 0 |
 | internal bigram Jaccard ≥0.25 | 0 |
 | exact match vs ESTABLISHING, MID_LIFE locked 90, YOUTH locked 90, Draft Pool | 0 |
 | cross-source bigram Jaccard ≥0.25 | 0 |
-| cross-source pairs 0.20–0.25 | 6 |
+| cross-source pairs 0.20–0.25 | 0 |
 | frozen safety/stereotype hits | 0 |
 | Runtime / Production Catalog changes | 0 / 0 |
 
-Exit: `RESTRUCTURING SAMPLE PACK C READY FOR INDEPENDENT CONTROL TOWER REVIEW`.
+Exit: `RESTRUCTURING FINAL 5 ITEMS READY FOR INDEPENDENT R2 REVIEW`.

@@ -13,8 +13,10 @@ RESTRUCTURING salience comes from observable reconfiguration: a previous structu
 
 The sample includes employment, independent cooperation, separate residence management, bilateral relationships, family negotiation, friend/community groups, digital communication, and independent creative direction. It does not reduce the stage to dismissal, job transfer, care duty, or retirement preparation.
 
+Round 1 revisions strengthen non-work structures without adding age proof: two-person living and contact rhythms are renegotiated through observable arrangements; family residence and household work are expressed in natural domestic language; community participation uses activity choice rather than corporate meeting vocabulary. These changes preserve pack-level restructuring salience while the five items remain pending independent R2 review.
+
 ## Frozen stereotype scan
 
 Zero items use or imply: decline, aging, “midlife crisis”, menopause/andropause, illness, redundancy, empty nest, caregiving parents, children leaving, marriage crisis, mortgage pressure, retirement countdown, “人生下半场”, “重新出发”, “来不及”, “年龄大了”, management status, asset ownership, or stable-career entitlement.
 
-The author must not independently accept the sample. Product Control should specifically review whether repeated “旧/新” language reflects real structural mismatch rather than becoming a formula, and whether the pack is sufficiently broader than work reorganization.
+The author has not independently accepted the five revised samples. Product Control should review their naturalness, field boundaries, and cross-pack overlap before any full-pack expansion.
