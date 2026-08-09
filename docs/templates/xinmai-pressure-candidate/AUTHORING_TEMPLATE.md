@@ -37,7 +37,8 @@ An author self-check is not a review. The author and the same authoring pass lea
 ## Author self-check
 
 - [ ] This is one observable occurrence, not an explanation, diagnosis, prediction, or advice.
-- [ ] It fits the assigned stage because actors/commitments/constraints differ, not because an age word was inserted.
+- [ ] It has credible stage salience through observable actors, commitments, constraints, or choices and contributes to the pack portfolio; it need not exclude adjacent adult stages.
+- [ ] Its stage fit does not depend on an age word, decorative tenure/count, or “长期”; any duration is necessary to the event itself.
 - [ ] It fits exactly one primary Pressure Field and one coverage slot.
 - [ ] The person can answer “像我 / 不完全是 / 不是现在” within two seconds.
 - [ ] No age, disease, retirement, marriage/fertility, wealth, or generation shame/stereotype appears.

@@ -26,7 +26,7 @@ The age owner and exact boundaries remain the existing frozen Life Stage router.
 | `RESTRUCTURING` | 45–59 | role, skill, industry, relationship, household, or resource reconfiguration; changing responsibilities and autonomy | inevitable redundancy, empty nest, menopause/andropause, loss of relevance, decline, retirement countdown |
 | `SIXTY_PLUS` | 60+ | diverse work/retirement combinations, resource and time autonomy, community participation, family boundaries, access and daily structure | frail, sick, lonely, digitally incapable, dependent, out of date, or universally anxious about retirement and care |
 
-An item is rejected if replacing only an age word would make it fit another stage. A valid stage difference changes the actors, commitments, constraints, or available choices in the observable situation.
+Stage authenticity means stage salience, not stage exclusivity. One candidate may also plausibly occur in an adjacent adult stage. It must still contribute a credible observable actor, commitment, constraint, or available choice to the assigned stage's portfolio. A pack earns authenticity from the distribution across all fields and slots: role transitions, existing commitments running in parallel, limited time/resources, care or shared-life coordination, and exit or reselection. An item is rejected when its stage fit depends only on an age word, a decorative exact tenure/count, or the word “长期”. A duration remains only when the event itself depends on that duration.
 
 ## 3. Unified Pressure Field definitions
 
@@ -142,6 +142,7 @@ A pack may be `PRODUCT_CONTROL_LOCKED` only when:
 - metadata completeness, stable-ID uniqueness, normalized exact-match checks, and semantic overlap review are 100%;
 - every item passes the review scorecard with no hard rejection;
 - every stage stereotype audit and Trinity responsibility distribution passes;
+- individual stage-salience and pack-level portfolio-authenticity reviews both pass; no item is required to exclude adjacent adult stages;
 - AI-assisted drafts are disclosed and have complete independent human approvals;
 - Product Control samples every field and records a pack report;
 - the pack remains outside Production Catalog until all four packs are locked.

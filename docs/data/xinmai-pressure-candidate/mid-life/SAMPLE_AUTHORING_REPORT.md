@@ -1,35 +1,46 @@
-# MID_LIFE Representative Sample Pack A — R1 Authoring Report P0
+# MID_LIFE Representative Sample Pack A — R2 Authoring Report P0
 
-Status: `SAMPLE_DRAFT / ROUND_1_REVISED / SECOND_INDEPENDENT_REVIEW_REQUIRED / NOT_PRODUCTION`
+Status: `SAMPLE_DRAFT / ROUND_2_REVISED / FINAL_REPRESENTATIVE_REVIEW_REQUIRED / NOT_PRODUCTION`
 
-This is an authoring report, not an Editorial, Safety, Overlap, Product Control, or `SAMPLE_ACCEPTED` decision. All 18 records remain `AI_ASSISTED`; every reviewer and lock field is empty. Runtime and Production Catalog exposure remain zero.
+This is an authoring report, not a review or `SAMPLE_ACCEPTED` decision. All 18 records remain `AI_ASSISTED`; reviewer and lock fields remain empty. Runtime and Production Catalog exposure are zero.
 
-## 1. Matrix
+## 1. Frozen R2 standard
+
+- Stage authenticity is credible stage salience, not age-stage exclusivity.
+- A candidate may also happen in an adjacent adult stage.
+- The complete pack portfolio—not artificial biography in every line—must distribute role transition, existing commitments in parallel, limited time/resources, care/shared-life coordination, and exit/reselection.
+- Exact tenure/count and “长期” are prohibited when used only as stage proof. Duration stays only when the event itself depends on it.
+- Mechanical age-word substitution, stereotyping, diagnosis, advice, and overlap standards remain unchanged.
+
+## 2. Matrix and portfolio
 
 | Field | Rule/information gap | Power/resource asymmetry | Boundary/commitment break |
 |---|---|---|---|
-| POWER | accumulated-role handoff | twelfth-renewal client scope | old-role approval after transition |
-| INTEREST | established income rule after role change | recurring shared-household budget | exit from ten-year collaboration |
-| RELATION | six prior co-living renewals | two established work schedules | shared-expense decision before renewal |
+| POWER | new/old delivery without handoff | renewed scope on original team/schedule | old-role approval after transition |
+| INTEREST | settlement rule after role change | recurring shared-household budget | agreed exit with quarter still held |
+| RELATION | co-living renewal unanswered | this month's schedule changes shifted to one person | shared-expense decision before renewal |
 | FAMILY | new care coordination | agreed household procurement turn | relative move-in date decision |
-| SOCIAL | eight-year community role | long-standing peer visibility/access | fifteen-year friendship reciprocity |
+| SOCIAL | fixed community duty after rule change | peer visibility/access after reorganization | stable friend-network reciprocity |
 | EXISTENCE | work/care schedule collision | published rest-access schedule | new-industry transition pulled by old client |
 
-Every field uses three different contexts and all three mechanics. The SOCIAL asymmetry item now concerns group visibility/access rather than workplace resources. The EXISTENCE items separately cover time structure, body/energy access, and transition/direction.
+Portfolio evidence:
 
-## 2. R1 stage-authenticity response
+- role transition: POWER transition, INTEREST settlement, EXISTENCE new-industry direction;
+- existing commitments in parallel: POWER handoff/delivery and RELATION shared arrangements;
+- limited time/resources: client capacity, household budget, meeting/rest schedules;
+- care/shared-life coordination: RELATION renewal, FAMILY care/labor/decision, EXISTENCE schedule;
+- exit/reselection: INTEREST partnership exit and EXISTENCE direction change.
 
-R1 does not add “长期 / 有限 / 多重责任 / 中年” as stage labels. It changes the event structures:
+The portfolio does not assume marriage, children, parent care, management, property ownership, illness, decline, or wealth level.
 
-- accumulated prior-role obligations remain after more than one role change;
-- repeated renewals and established income/service arrangements create concrete exit and renegotiation costs;
-- recurring shared-life agreements reach a new decision point;
-- established community, peer, and friendship roles encounter a visible reciprocity or access break;
-- a direction transition competes with an observable prior client commitment.
+## 3. R2 change accounting
 
-These circumstances are not declared universal for MID_LIFE. Each candidate is only one recognizable reality option. No item assumes marriage, children, parent care, management, property ownership, illness, decline, or wealth level.
+- 8 records are byte-for-byte unchanged from R1, matching the Control Tower KEEP list.
+- 10 records remove decorative years, renewal counts, or artificial biography while retaining the same semantic slot and stable ID.
+- The two IDs retired in R1 remain retired with their replacement links; R2 creates no additional ID retirement.
+- All records remain `SAMPLE_DRAFT`; none are scored, reviewed, accepted, or locked by the author.
 
-## 3. Responsibility distribution
+## 4. Responsibility distribution
 
 | Responsibility lead | Count |
 |---|---:|
@@ -37,49 +48,42 @@ These circumstances are not declared universal for MID_LIFE. Each candidate is o
 | Body/time/resource constraint | 6 |
 | Negotiated choice/boundary | 6 |
 
-## 4. Retired and replacement IDs
-
-| Retired ID | R1 reason | Replacement ID |
-|---|---|---|
-| `PC-MID_LIFE-SOCIAL-WORKPLACE_PEERS-RESOURCE_ASYMMETRY-01` | content belonged to POWER/INTEREST rather than SOCIAL | `PC-MID_LIFE-SOCIAL-WORKPLACE_PEERS-ACCESS_ASYMMETRY-02` |
-| `PC-MID_LIFE-EXISTENCE-TRANSITION_DIRECTION-BOUNDARY_BREAK-01` | duplicated rest-access theme and lacked transition/direction | `PC-MID_LIFE-EXISTENCE-TRANSITION_DIRECTION-OLD_COMMITMENT_BREAK-02` |
-
-Retired IDs are recorded in the pack and are not reused.
-
 ## 5. Updated overlap scan
 
-Comparison sets: revised 18, Round 0 18 from commit `8fe201a…`, existing ESTABLISHING 90, and the Draft Pool.
+Comparison sets: R2 18, R1 18 (`7ad002a…`), Round 0 18 (`8fe201a…`), existing ESTABLISHING 90, and Draft Pool.
 
 | Scan | Result |
 |---|---|
-| normalized exact duplicates inside revised 18 | 0 |
-| normalized exact matches against old 18 | 1, the Control Tower `KEEP` FAMILY/CARE surface |
-| normalized exact matches against ESTABLISHING 90 + Draft Pool | 0 |
-| highest revised-internal character-bigram Jaccard | 0.128 |
-| highest revised-vs-old non-identical neighborhood | 0.226, RELATION repair/transition revision against its prior wording |
-| highest revised-vs-ESTABLISHING/Draft Pool Jaccard | 0.143 |
+| normalized exact duplicates inside R2 18 | 0 |
+| unchanged records against R1 | 8, exactly the KEEP list |
+| exact R2 text fields found in R1 | 24/36, including 16 fields from KEEP records and unchanged shells retained in revised records |
+| normalized exact R2 text matches against Round 0 | 1, the retained FAMILY/CARE surface |
+| normalized exact R2 matches against ESTABLISHING 90 + Draft Pool | 0 |
+| highest R2-internal character-bigram Jaccard | 0.135, POWER vs INTEREST role-change surfaces; distinct authority vs settlement fields |
+| highest non-identical R2-vs-R1 Jaccard | 0.667, the same INTEREST exit item after deleting decorative tenure |
+| highest R2-vs-ESTABLISHING/Draft Pool Jaccard | 0.143 |
 
-Human attention remains required for:
+Human review attention:
 
-1. POWER transition and INTEREST compensation both start from a role change, but differ in approval authority versus income rules.
-2. INTEREST shared budget and FAMILY household procurement both occur in shared living, but differ in money allocation versus execution of agreed labor.
-3. RELATION co-living renewal and RELATION repair before renewal share a decision horizon but represent information absence versus a broken meeting commitment.
-4. FAMILY care scheduling and EXISTENCE work/care schedule collision both mention coordination; the former owns family responsibility assignment, the latter owns daily-time structure.
-5. SOCIAL workplace-peer access must remain about visibility and group role, not resource allocation.
+1. POWER transition and INTEREST compensation share a role-change trigger but must remain authority/approval versus money/settlement.
+2. INTEREST shared budget and FAMILY procurement both use shared living but must remain resource allocation versus agreed labor execution.
+3. RELATION schedule asymmetry and EXISTENCE rest access both touch time; one is reciprocity in a close relationship, the other is daily body/energy access.
+4. SOCIAL workplace-peer access must remain belonging/visibility/group role, never drift back to resource allocation.
+5. EXISTENCE time structure and FAMILY care may share one schedule, but only the former presents the collision of life domains.
 
-The scan is authoring evidence only; it cannot accept or reject semantic overlap.
+Automated scans are authoring evidence only and do not replace independent semantic review.
 
 ## 6. Mechanical self-check
 
 | Check | Result |
 |---|---|
 | JSON parse / required metadata / hashes | 18/18 |
-| stable IDs | 18 active unique; 2 retired with replacement links |
+| stable IDs | 18 active unique; 2 prior retired IDs retain replacement links |
 | workflow / assistance | 18/18 `SAMPLE_DRAFT` and `AI_ASSISTED` |
 | reviewer / lock fields | 18/18 empty |
 | surface length | 18/18 within 12–30 Chinese characters excluding punctuation |
 | shell length | 18/18 within 6–20 Chinese characters excluding punctuation |
 | fields / mechanics / contexts | exact 6 × 3; three distinct contexts per field |
-| Production Catalog or Runtime reference | 0 |
+| Runtime / Production Catalog / Adapter / Gate / Page | 0 changes |
 
-Exit requested after the docs/data-only commit: `SAMPLE PACK A R1 — READY FOR SECOND INDEPENDENT REVIEW`.
+Requested exit: `SAMPLE PACK A R2 — READY FOR FINAL REPRESENTATIVE REVIEW`.
