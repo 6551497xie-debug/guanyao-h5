@@ -7,3 +7,5 @@ No draft uses or implies aging decline, midlife crisis, failure, redundancy, men
 No item diagnoses personality, trauma, motivation, relationship quality, or mental/physical condition. No shell gives advice or urges risky action. Family and intergenerational scenes do not assign duty by gender, age, property status, or kinship rank.
 
 Human independent review remains required for contextual stereotyping, especially whether repeated access and handoff events overrepresent formal urban systems.
+
+R1 revisions replace repeated appointment accompaniment, equipment scarcity, visitor-stay, procurement-list, shared-service account, and platform-operation patterns with plant/animal/remote support, channel access, household restoration, concrete room use, personal commuting cost, and observable daily rhythm. Frozen safety/stereotype scan remains at zero hits.

@@ -7,3 +7,5 @@ The portfolio distributes this salience across organizational authority, contrac
 The pack is not a synonym for MID_LIFE: it emphasizes visible reallocation of existing structures rather than merely concurrent commitments or limited time. It also avoids constructing a contrast in which YOUTH lacks responsibility and RESTRUCTURING owns authority or assets.
 
 Independent review should test whether each event remains recognizable without its taxonomy label and whether the combined pack feels broader than work reorganization.
+
+R1 revisions specifically remove abstract process shells and cross-stage semantic reuse. The revised set adds distinct household restoration, family plant/animal/remote support, friend-group continuity, social posting visibility, personal commuting baseline, and constrained direction-start events while preserving field boundaries.

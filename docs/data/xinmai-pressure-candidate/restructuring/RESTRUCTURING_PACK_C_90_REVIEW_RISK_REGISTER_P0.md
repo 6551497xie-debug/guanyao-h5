@@ -1,6 +1,6 @@
 # RESTRUCTURING Content Pack C 90 — Review Risk Register P0
 
-Status: `OPEN FOR INDEPENDENT REVIEW`.
+Status: `R1 COMPLETE / 18 REVISED ITEMS OPEN FOR INDEPENDENT R2 REVIEW`.
 
 | Risk | Evidence | Review request |
 |---|---|---|
@@ -10,4 +10,4 @@ Status: `OPEN FOR INDEPENDENT REVIEW`.
 | household purchase/movement adjacency | shared-resource and family-decision contexts can resemble neighboring stages | confirm actors, resource, and boundary are stage-salient rather than template swaps |
 | responsibility concentration | access asymmetry can make the user appear passive | confirm the full pack preserves environment/resource/negotiated responsibility balance |
 
-No risk is closed by the author. Reviewer, approval, and lock fields for all 72 new drafts remain empty.
+R1 independently accepted 54 authored records. The 18 revised items retain empty reviewer, approval, and lock fields. No risk is closed by the author; R2 must evaluate semantic—not merely character—distance from locked stages.

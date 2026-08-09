@@ -13,3 +13,5 @@ Each item has one primary structure for portfolio counting; counts sum to 90.
 | personal rhythm, baseline, and direction | 12 | 13.3% |
 
 Employment and organizational content is the largest single group but remains below one quarter. The remaining 76.7% spans economic cooperation, living structures, relationships, family, community/digital participation, body-time access, and direction.
+
+R1 item-level revision does not change these primary-structure counts. It changes event semantics only within the 18 returned slots.
