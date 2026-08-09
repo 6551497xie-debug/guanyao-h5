@@ -1,18 +1,16 @@
-# MID_LIFE Content Pack A 90 — Independent Review Risk Register P0
+# MID_LIFE Content Pack A 90 — R1 Revision Risk Register
 
-All risks remain open until independent review. None is an author acceptance decision.
+Only the following risks remain in scope for independent R2. Previously accepted 77 items are frozen.
 
-| ID | Risk | Evidence | Required independent check |
-|---|---|---|---|
-| R-01 | Decorative time specificity | 36/72 new drafts contain a date/time/deadline token | Confirm each number or deadline materially changes the observable pressure; remove it when it only makes copy look concrete |
-| R-02 | Work-centered portfolio drift | POWER necessarily contains organizational contexts; INTEREST and EXISTENCE also include work transitions | Sample across every field and confirm people outside urban project work can still recognize enough of the pack |
-| R-03 | Shared-life field boundary | INTEREST, RELATION, FAMILY, and EXISTENCE all contain shared-living or care situations | Confirm primary stake is respectively money, bilateral relationship, family/household responsibility, or whole-life baseline/time structure |
-| R-04 | Authority versus settlement boundary | POWER and INTEREST both include role changes | Confirm POWER items concern decisions/access/voice while INTEREST items concern money/terms/allocation |
-| R-05 | Accepted-sample legacy similarity | one accepted POWER shell has Jaccard 0.25 against Draft Pool wording | Reconfirm earlier acceptance in 90-item context; do not silently change accepted copy |
-| R-06 | “长期照护” reuse | accepted sample 10 contains the semantic duration; new 72 contain zero “长期” | Ensure future revisions do not turn the accepted exception into a stage-proof template |
-| R-07 | Mechanic readability | every context has all three mechanics, which can encourage structural repetition | Verify users can distinguish missing rule, unequal power/resource, and broken boundary/commitment without reading metadata |
-| R-08 | Actor and action diversity | matrix is mechanically complete, but some actions recur around informing, deciding, replying, or scheduling | Inspect each 15-item field for varied actors, verbs, consequences, and life structures; reject synonym padding |
-| R-09 | Non-normative life structures | the pack avoids explicit marriage/children/property assumptions | Confirm shared living, care, debt, work, and relationship items do not imply those assumptions indirectly |
-| R-10 | Author-review separation | all 72 drafts are AI-assisted and mechanically checked by the authoring window | Product Control must independently perform Editorial, Safety, Overlap, and lock decisions; no automatic promotion |
+| ID | Revised area | R2 check |
+|---|---|---|
+| R1 | INTEREST opportunity/exit | Guarantee deposit and available funds must remain economic/resource facts, not decision authority |
+| R2 | RELATION commitment | Travel-date reservation and weekend meeting must read as bilateral commitments, not FAMILY or generic shared decisions |
+| R3 | FAMILY intergenerational cohabitation | “两代/不同辈” must establish context without implying burden, property, children, or compulsory care |
+| R4 | SOCIAL friendship | Meeting, notification, travel burden, and inclusion must feel like real group friendship rather than contact administration or intimate dyad |
+| R5 | SOCIAL belonging/exit | Participation slots and access must avoid seniority, insider entitlement, and exclusionary value judgments |
+| R6 | EXISTENCE work-role meaning | Observable duty/content mismatch must not drift into POWER authority, SOCIAL recognition, promotion, or honor |
+| R7 | Replacement governance | Retired sample history and replacement link must remain intact; replacement cannot inherit prior ACCEPT status |
+| R8 | Full-pack overlap | Reconfirm exact 0 and internal bigram ≥0.25 count 0 after semantic review |
 
-Recommended independent sampling order: SOCIAL and EXISTENCE boundary audit, RELATION/FAMILY separation, INTEREST/POWER separation, then within-field 15-item diversity.
+Portfolio-level urban-work bias remains a future all-stage risk and is not authorization to expand this 13-item knife.

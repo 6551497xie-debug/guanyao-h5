@@ -7,6 +7,7 @@
   "production_catalog_eligible": false,
   "runtime_ai_dependency": 0,
   "candidate_count": 18,
+  "active_candidate_count_after_pack_review_round_1": 17,
   "workflow_status": "SAMPLE_ACCEPTED",
   "revision_round": 2,
   "revises_commit": "7ad002a107de7d8686e382f7cbf6e0559ba95662",
@@ -26,6 +27,11 @@
       "stable_id": "PC-MID_LIFE-EXISTENCE-TRANSITION_DIRECTION-BOUNDARY_BREAK-01",
       "reason": "ROUND_1_REJECTED_CONTEXT_OVERLAP",
       "replacement_stable_id": "PC-MID_LIFE-EXISTENCE-TRANSITION_DIRECTION-OLD_COMMITMENT_BREAK-02"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-FRIENDSHIP-COMMITMENT_BREAK-01",
+      "reason": "PACK_REVIEW_ROUND_1_REVISED_FRIENDSHIP_INTERACTION",
+      "replacement_stable_id": "PC-MID_LIFE-SOCIAL-FRIENDSHIP-INCLUSION_COMMITMENT_BREAK-02"
     }
   ],
   "candidates": [
@@ -477,8 +483,11 @@
       "locked_at": null,
       "content_hash": "sha256:305d9aa094c162299ea293d774b082546fc32a471861f2af291d0aa17762effc",
       "target_catalog_revision": "PACK_A_MID_LIFE_SAMPLE_P0_NOT_PRODUCTION",
-      "workflow_status": "SAMPLE_ACCEPTED",
-      "decision_notes": "Awaiting independent Control Tower review."
+      "workflow_status": "SAMPLE_RETIRED",
+      "retired_at": "2026-08-10",
+      "retirement_reason": "PACK_REVIEW_ROUND_1_REVISED_FRIENDSHIP_INTERACTION",
+      "replacement_stable_id": "PC-MID_LIFE-SOCIAL-FRIENDSHIP-INCLUSION_COMMITMENT_BREAK-02",
+      "decision_notes": "Historical SAMPLE_ACCEPTED review retained; retired during full-pack review and replaced by a PACK_DRAFT item."
     },
     {
       "stable_id": "PC-MID_LIFE-EXISTENCE-TIME_STRUCTURE-RULE_GAP-01",
