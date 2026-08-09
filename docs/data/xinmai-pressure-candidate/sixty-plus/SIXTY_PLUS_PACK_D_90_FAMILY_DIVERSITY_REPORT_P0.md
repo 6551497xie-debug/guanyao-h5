@@ -4,10 +4,10 @@ The FAMILY field contains 15 items across five contexts and three mechanics each
 
 | Family structure | Count | Boundary |
 |---|---:|---|
-| low-risk care coordination | 3 | plants, boarded animal, remote practical assistance |
-| household labor | 3 | kitchens, cleaning tools, shared passage |
-| money/resources | 3 | common costs without income or ownership assumptions |
+| low-risk care coordination | 3 | short-term item receipt, life-service arrival, paper-notice handoff |
+| household labor | 3 | kitchens, cleaning tools, washing shared cookware |
+| money/resources | 3 | common costs and returned travel funds without ownership assumptions |
 | major decisions | 3 | keys, shared space, common furniture |
 | intergenerational cohabitation | 3 | two-generation communication, room use, storage |
 
-Explicit spouse, child, grandchild, parent-care, empty-nest, homeownership, illness, and fixed caregiver assumptions are all zero. “Family” may mean several relatives, two generations, or people coordinating a shared family matter; it does not prescribe household form or duty.
+The CARE trio no longer uses plants, animals, remote operation, online access, document appointments, or any object trio already present in a locked stage. Explicit spouse, child, grandchild, parent-care, empty-nest, homeownership, illness, and fixed caregiver assumptions remain zero.

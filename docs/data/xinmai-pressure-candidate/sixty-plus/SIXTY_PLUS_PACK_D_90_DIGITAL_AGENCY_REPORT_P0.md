@@ -1,15 +1,15 @@
 # SIXTY_PLUS Content Pack D 90 — Digital Agency Report P0
 
-Thirty-four items contain a broad digital-substrate token such as account, platform, page, group, link, calendar, or online entry. Only three items belong to the primary `DIGITAL_SOCIAL_VISIBILITY` context; the rest use digital systems as ordinary infrastructure for work, payment, relationships, or community life.
+R1 reduces semantically digital/administrative substrate from 34 to 25 items. At least nine records leave account, platform, calendar, subscription, channel-record, or remote-operation structures for observable physical decisions, spaces, services, relationship actions, family coordination, and daily costs.
 
 | Field | Broad digital-substrate items |
 |---|---:|
-| POWER | 8 |
-| INTEREST | 5 |
-| RELATION | 2 |
-| FAMILY | 2 |
-| SOCIAL | 13 |
-| EXISTENCE | 4 |
-| **Total** | **34** |
+| POWER | 6 |
+| INTEREST | 4 |
+| RELATION | 1 |
+| FAMILY | 1 |
+| SOCIAL | 10 |
+| EXISTENCE | 3 |
+| **Total** | **25** |
 
-Every digital pressure is a rule, permission, migration, visibility, attribution, or boundary fact. None attributes the problem to user skill, asks a younger person or family member to operate on the user's behalf, or treats platform use as surprising. The open review risk is digital/admin density, not ageist capability framing.
+The raw lexical proxy returns 26 because “朋友群” in the accepted sample denotes the friend collective, not a chat-system dependency; manual semantic classification therefore records 25. Only three items belong to primary `DIGITAL_SOCIAL_VISIBILITY`. No remaining digital pressure attributes the problem to user skill, asks a younger person or family member to operate on the user's behalf, or treats platform use as surprising.

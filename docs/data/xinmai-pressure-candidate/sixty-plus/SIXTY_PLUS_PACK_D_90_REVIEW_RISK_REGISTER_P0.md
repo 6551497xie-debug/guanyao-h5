@@ -2,13 +2,13 @@
 
 | Risk | State | Independent-review focus |
 |---|---|---|
-| digital and administrative density | OPEN | 34 broad digital-substrate items; verify lived realism and reduce any account/page repetition |
+| digital and administrative density | CONTROLLED / REVIEW | reduced from 34 to 25 semantic digital-substrate items; verify remaining systems are ordinary infrastructure |
 | continuity becoming archival | OPEN | verify current consequence remains stronger than historical-record language |
-| overlap with RESTRUCTURING | CONTROLLED / REVIEW | exact and high similarity are zero after rewrites; inspect eight lexical-band pairs manually |
+| overlap with locked stages | CONTROLLED / REVIEW | exact and high similarity are zero; inspect four lexical-band pairs and the replaced CARE trio manually |
 | work and contract weighting | OPEN | 27 primary work/contract items; verify non-work structures remain equally vivid |
 | friendship reverting to organization labor | CONTROLLED | sample uses group confirmation boundary; new slots use plan continuity and shared-photo access, not event staffing |
-| family reduced to care or descendants | CLOSED IN DRAFT | 3/15 low-risk care contexts; explicit descendant/care-recipient assumptions zero |
+| family reduced to care or descendants | CLOSED IN DRAFT | revised CARE trio uses item receipt, service arrival, and paper handoff; descendant/care-recipient assumptions zero |
 | digital weakness or proxy operation | CLOSED IN DRAFT | capability judgment and proxy actor counts are zero |
-| author self-review | CLOSED | all 72 drafts keep reviewer, approval, and lock fields empty |
+| author self-review | CLOSED | 54 items carry independent R1 lineage; the 18 author revisions retain empty reviewer, approval, and lock fields |
 
 Mechanical success does not close the open editorial risks and does not constitute `PACK_ACCEPTED`.

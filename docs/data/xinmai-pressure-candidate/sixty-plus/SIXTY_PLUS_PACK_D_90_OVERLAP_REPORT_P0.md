@@ -9,18 +9,15 @@ Scope: complete 90-item pack against ESTABLISHING 90, MID_LIFE locked 90, YOUTH 
 | internal 0.20–0.25 band | 0 |
 | cross-source normalized exact | 0 |
 | cross-source bigram Jaccard ≥0.25 | 0 |
-| cross-source 0.20–0.25 band | 8 |
+| cross-source 0.20–0.25 band | 4 |
 
-The first authoring pass exposed direct RESTRUCTURING adjacency in work-role, body-routine, time, financial-baseline, belonging, and direction slots. Those drafts were rewritten before this report. The final scan has no high-similarity pair.
+R1 additionally replaced the FAMILY CARE object trio and the relation/financial structures identified by independent semantic review. The revised scan has no exact or high-similarity pair.
 
-## Manual review of the eight lexical-band pairs
+## Manual review of the four remaining lexical-band pairs
 
 - Partnership billing continuity uses simultaneous legacy/new billing, not RESTRUCTURING's unsettled project balance.
-- Financial-baseline timing uses two receipt dates against a transport charge, not a single monthly receipt-date shift.
-- Repair-transition asymmetry uses a reciprocal call/response window, not location and meeting-time control.
-- FAMILY CARE uses shared plants, a boarded animal, and remote task calls; it does not reuse YOUTH's bilateral storage commitment or household chore mechanics.
 - Two-generation room use concerns temporary sleeping-space confirmation, not MID_LIFE's shared-room time allocation.
 - Time-structure travel accounting concerns two physical destinations, not an online/offline calendar split.
 - Family money renewal changes everyone's payable amount; it does not reuse the locked order-placement event.
 
-Manual comparison considered actor, resource, commitment, and immediate consequence, rather than relying on character similarity alone. The eight pairs are not semantic duplicates, but remain visible to independent review.
+The revised CARE trio was manually compared with all four locked stages: short-term item receipt, life-service arrival, and paper-notice handoff share neither object nor consequence with plant care, animal logistics, remote assistance, appointment accompaniment, or household-task trios. Manual comparison considered actor, resource, commitment, and immediate consequence. The four lexical-band pairs are not semantic duplicates, but remain visible to R2.
