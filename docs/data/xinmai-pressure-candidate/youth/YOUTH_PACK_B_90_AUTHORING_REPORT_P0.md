@@ -1,10 +1,10 @@
 # YOUTH Content Pack B 90 — Authoring Report P0
 
-Status: `89 ACCEPTED / 1 REVISED PACK_DRAFT / FINAL REVIEW REQUIRED / NOT PACK_ACCEPTED / NOT_PRODUCTION`
+Status: `90 / 90 ACCEPT / PACK_ACCEPTED / CONTENT_LOCKED / NOT_PRODUCTION`
 
 - Calibration baseline: 18 independently accepted representative samples; unchanged.
-- New authoring: 72 records; 71 independently accepted pending full pack and 1 revised `PACK_DRAFT / AI_ASSISTED`.
-- Revised-record reviewer, approval, and lock fields: 1/1 empty.
+- New authoring: 72 records; all independently accepted and content-locked with the 18 calibration samples.
+- Production Catalog eligibility remains false.
 - Production Catalog eligibility: false; Runtime AI dependency: 0.
 - Runtime, Adapter, Gate, Page, Schema, and Store changes: 0.
 
@@ -24,6 +24,6 @@ Status: `89 ACCEPTED / 1 REVISED PACK_DRAFT / FINAL REVIEW REQUIRED / NOT PACK_A
 | cross-source bigram Jaccard ≥0.25 | 0 |
 | frozen safety/stereotype hits | 0 |
 
-Mechanical checks do not constitute independent acceptance. The author cannot promote the final revised draft.
+Independent Product Control acceptance—not mechanical checks—accepts and locks the complete pack.
 
-Exit: `YOUTH FINAL 1 PACK ITEM READY FOR CONTROL TOWER REVIEW`.
+Exit: `YOUTH CONTENT PACK B 90 PACK_ACCEPTED / CONTENT_LOCKED / NOT_PRODUCTION`.
