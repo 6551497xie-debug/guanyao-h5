@@ -35,4 +35,13 @@ Only the 18 Product Control items changed. The other 72 active items retain surf
 
 Mechanical and semantic author checks do not accept the revised items.
 
-Exit: `YOUTH 18 REVISED ITEMS READY FOR INDEPENDENT R2 REVIEW`.
+## Round 2 final correction
+
+`PC-YOUTH-RELATION-COMMUNICATION-RESOURCE_ASYMMETRY-01`
+
+- R1 wording: `你把两人的出行证件信息发给对方，对方只回了自己的车次｜你的同行安排仍没有确认`
+- R2 wording: `你把两人可选的车次发给对方，对方只确认了自己的那一程｜你的同行安排仍没有确认`
+- New hash: `sha256:9d2e8a93add78c48104d5317f18b3794dcd340ce23c5dc26ec79b93835a0801a`
+- Status: `PACK_DRAFT / AI_ASSISTED / FINAL REVIEW REQUIRED`
+
+Exit: `YOUTH FINAL 1 PACK ITEM READY FOR CONTROL TOWER REVIEW`.

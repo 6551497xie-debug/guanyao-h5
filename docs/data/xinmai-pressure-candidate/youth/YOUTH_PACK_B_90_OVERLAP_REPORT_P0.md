@@ -13,4 +13,4 @@ Normalization uses Unicode NFKC with punctuation and whitespace removed. Approxi
 | cross-source pairs ≥0.20 and <0.25 | 11 |
 | maximum internal/cross-source score | 0.231 / 0.231 |
 
-All 18 revised situations were also compared semantically by actor, resource, commitment, immediate consequence, field boundary, and stage role. The opportunity item now uses shared equipment allocation rather than the locked MID_LIFE deposit/frozen-funds mechanism; FRIENDSHIP uses group coordination, accommodation, and forwarding consent rather than project administration; the four EXISTENCE revisions use daily rhythm, fixed-versus-flexible time, personal baseline cost, and independent-work direction. Sub-threshold neighborhoods remain for independent review and are not author acceptance.
+The final correction was compared semantically by actor, information object, confirmation responsibility, immediate consequence, field boundary, and stage role. It now uses selectable train journeys on both sides of the exchange and contains no identity-document object. Sub-threshold neighborhoods remain for independent review and are not author acceptance.
