@@ -1,10 +1,10 @@
 # RESTRUCTURING Representative Sample Pack C — Authoring Report P0
 
-Status: `13 SAMPLE_ACCEPTED / 5 SAMPLE_DRAFT / AI_ASSISTED / NOT_PRODUCTION`
+Status: `17 SAMPLE_ACCEPTED / 1 SAMPLE_DRAFT / AI_ASSISTED / NOT_PRODUCTION`
 
 Life Stage: `RESTRUCTURING` (`45–59`, frozen router reference only)
 
-The construction window is the AI-assisted author. Product Control Tower independently accepted 13 unchanged samples in Round 1. The five author-revised samples remain unreviewed `SAMPLE_DRAFT`; their reviewer, approval, and lock fields are empty. Mechanical checks do not constitute acceptance.
+The construction window is the AI-assisted author. Product Control Tower independently accepted 13 samples in Round 1 and four more in Round 2. The final author-corrected shell remains unreviewed `SAMPLE_DRAFT`; its reviewer, approval, and lock fields are empty. Mechanical checks do not constitute acceptance.
 
 ## Exact sample matrix
 
@@ -19,7 +19,7 @@ The construction window is the AI-assisted author. Product Control Tower indepen
 | RELATION | RULE_OR_INFORMATION_GAP | COMMITMENT | 两人改在不同住处生活后，原来的固定见面怎么重排还没说定 | 双方还不能确定下次见面时间 |
 | RELATION | POWER_OR_RESOURCE_ASYMMETRY | REPAIR_TRANSITION | 对方要求有事可以随时联系你，却只在指定时段回复你的消息 | 下周见面是否取消还没得到回复 |
 | RELATION | BOUNDARY_OR_COMMITMENT_BREAK | SHARED_DECISION_BOUNDARY | 约好各自决定工作变化，对方却替双方回复了搬迁邀请 | 共同安排已经被外部确认 |
-| FAMILY | RULE_OR_INFORMATION_GAP | MAJOR_DECISIONS | 家人不再共同居住，留在原处的共用物品由谁搬走还没说定 | 原住处还腾不出搬运空间 |
+| FAMILY | RULE_OR_INFORMATION_GAP | MAJOR_DECISIONS | 家人不再共同居住，留在原处的共用物品由谁搬走还没说定 | 搬离日期临近，房间仍无法清空 |
 | FAMILY | POWER_OR_RESOURCE_ASYMMETRY | HOUSEHOLD_LABOR | 家庭重新分工后，买菜和清洁只按你的时间排 | 其他人能接手的时间还没确认 |
 | FAMILY | BOUNDARY_OR_COMMITMENT_BREAK | MONEY_RESOURCES | 家人约好重新核对共同支出后再付款，对方却沿用旧比例扣款 | 新的分担安排没有生效 |
 | SOCIAL | RULE_OR_INFORMATION_GAP | WORKPLACE_PEERS | 跨组轮值开始后，临时消息由谁同步给未当班的人没说明 | 两次调整都有人错过 |
@@ -39,9 +39,9 @@ The construction window is the AI-assisted author. Product Control Tower indepen
 | different contexts within every field | 3 / 3 / 3 / 3 / 3 / 3 |
 | responsibility leads | 6 / 6 / 6 |
 | metadata, length, hash | 18/18 |
-| `SAMPLE_ACCEPTED / SAMPLE_DRAFT` | 13 / 5 |
-| accepted reviewer lineage | 13/13 |
-| revised reviewer/approval/lock empty | 5/5 |
+| `SAMPLE_ACCEPTED / SAMPLE_DRAFT` | 17 / 1 |
+| accepted reviewer lineage | 17/17 |
+| revised reviewer/approval/lock empty | 1/1 |
 | normalized exact duplicate inside sample | 0 |
 | internal bigram Jaccard ≥0.25 | 0 |
 | exact match vs ESTABLISHING, MID_LIFE locked 90, YOUTH locked 90, Draft Pool | 0 |
@@ -50,4 +50,4 @@ The construction window is the AI-assisted author. Product Control Tower indepen
 | frozen safety/stereotype hits | 0 |
 | Runtime / Production Catalog changes | 0 / 0 |
 
-Exit: `RESTRUCTURING FINAL 5 ITEMS READY FOR INDEPENDENT R2 REVIEW`.
+Exit: `RESTRUCTURING FINAL 1 ITEM READY FOR CONTROL TOWER REVIEW`.

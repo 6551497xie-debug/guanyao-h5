@@ -13,10 +13,10 @@ RESTRUCTURING salience comes from observable reconfiguration: a previous structu
 
 The sample includes employment, independent cooperation, separate residence management, bilateral relationships, family negotiation, friend/community groups, digital communication, and independent creative direction. It does not reduce the stage to dismissal, job transfer, care duty, or retirement preparation.
 
-Round 1 revisions strengthen non-work structures without adding age proof: two-person living and contact rhythms are renegotiated through observable arrangements; family residence and household work are expressed in natural domestic language; community participation uses activity choice rather than corporate meeting vocabulary. These changes preserve pack-level restructuring salience while the five items remain pending independent R2 review.
+Round 1 revisions strengthen non-work structures without adding age proof: two-person living and contact rhythms are renegotiated through observable arrangements; family residence and household work are expressed in natural domestic language; community participation uses activity choice rather than corporate meeting vocabulary. Product Control accepted four of these in Round 2. The remaining family-residence item now changes only its shell to an approaching move date and an uncleared room, preserving the accepted surface and field boundary.
 
 ## Frozen stereotype scan
 
 Zero items use or imply: decline, aging, “midlife crisis”, menopause/andropause, illness, redundancy, empty nest, caregiving parents, children leaving, marriage crisis, mortgage pressure, retirement countdown, “人生下半场”, “重新出发”, “来不及”, “年龄大了”, management status, asset ownership, or stable-career entitlement.
 
-The author has not independently accepted the five revised samples. Product Control should review their naturalness, field boundaries, and cross-pack overlap before any full-pack expansion.
+The author has not independently accepted the final corrected sample. Product Control should review its shell naturalness and cross-pack overlap before any full-pack expansion.
