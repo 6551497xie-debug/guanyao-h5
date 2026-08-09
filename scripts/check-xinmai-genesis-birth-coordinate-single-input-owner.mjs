@@ -33,14 +33,17 @@ for (const legacyOwner of [
 }
 assert(
   controls.includes("<fieldset") &&
-    controls.includes('type="number"') &&
+    controls.includes('type="date"') &&
     controls.includes('type="time"') &&
     controls.includes('value="EXACT"') &&
     controls.includes('value="APPROXIMATE_RANGE"') &&
     controls.includes('value="UNKNOWN"') &&
     !controls.includes("XINMAI_GENESIS_BIRTH_HOUR_BRANCHES") &&
     !controls.includes("hourBranch: event.target.value") &&
-    controls.includes("确认原始输入与推导结果") &&
+    controls.includes("确认这组生命起点") &&
+    controls.includes('data-chrono-visual-shell="AXIS_GRAMMAR_REWIRED_TO_RAW_BIRTH_INPUT"') &&
+    controls.includes("onChange") &&
+    !controls.includes("ChronoAxisDualEngine") &&
     controls.includes("onConfirm"),
   "Native birth-coordinate control group is incomplete",
 );

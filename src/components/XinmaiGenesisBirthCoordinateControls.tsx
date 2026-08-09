@@ -20,6 +20,39 @@ const formatLunar = (
   return `${lunar.relatedYear}年${lunar.isLeapMonth ? "闰" : ""}${lunar.month}月${lunar.day}日`;
 };
 
+const formatCivilDate = (draft: XinmaiGenesisBirthCoordinateDraft): string => {
+  if (draft.year === null || draft.month === null || draft.day === null) return "";
+  return [
+    String(draft.year).padStart(4, "0"),
+    String(draft.month).padStart(2, "0"),
+    String(draft.day).padStart(2, "0"),
+  ].join("-");
+};
+
+const validationRecoveryCopy = (
+  decision: XinmaiGenesisBirthCoordinatePresentationDecision,
+): string => {
+  if (decision.validation.status === "VALID") {
+    return "原始输入与推导结果一致后，才会形成唯一生命起点。";
+  }
+  switch (decision.validation.reason) {
+    case "YEAR_OUTSIDE_SUPPORTED_RANGE":
+      return "请填写系统支持范围内的公历年份。";
+    case "MONTH_OUTSIDE_RANGE":
+    case "DAY_OUTSIDE_RANGE":
+    case "DATE_DOES_NOT_EXIST":
+      return "这个公历日期不存在，请重新选择日期。";
+    case "BIRTH_TIME_UNRESOLVED":
+      return "日期会保留；补充当地时间后才能形成个性化生命起点。";
+    case "APPROXIMATE_RANGE_CROSSES_HOUR_BRANCH":
+      return "这个时间范围跨越了两个时辰。请缩小范围，或改为具体时间。";
+    case "CALENDAR_UNAVAILABLE":
+      return "农历推导暂时不可用。原始输入会保留，请稍后重试。";
+    case "INVALID_LOCAL_TIME":
+      return "请填写完整的当地钟表时间，或选择一个有效时间范围。";
+  }
+};
+
 export function XinmaiGenesisBirthCoordinateControls({
   draft,
   decision,
@@ -27,9 +60,14 @@ export function XinmaiGenesisBirthCoordinateControls({
   onDraftChange,
   onConfirm,
 }: XinmaiGenesisBirthCoordinateControlsProps) {
-  const updateNumber = (field: "year" | "month" | "day", value: string) => {
-    const numeric = value.trim() === "" ? null : Number(value);
-    onDraftChange(Object.freeze({ ...draft, [field]: numeric }));
+  const updateCivilDate = (value: string) => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    onDraftChange(Object.freeze({
+      ...draft,
+      year: match ? Number(match[1]) : null,
+      month: match ? Number(match[2]) : null,
+      day: match ? Number(match[3]) : null,
+    }));
   };
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -41,8 +79,14 @@ export function XinmaiGenesisBirthCoordinateControls({
       aria-labelledby="xinmai-genesis-birth-coordinate-title"
       data-birth-coordinate-state={decision.state}
       data-scene-enrichment={decision.sceneEnrichment}
+      data-birth-coordinate-validation={
+        decision.validation.status === "VALID"
+          ? "VALID"
+          : decision.validation.reason
+      }
     >
       <div className="xinmai-genesis-birth-coordinate__copy">
+        <span className="xinmai-genesis-birth-coordinate__eyebrow">生命起点 · 时间坐标</span>
         <h1 id="xinmai-genesis-birth-coordinate-title">{decision.headline}</h1>
         <p>{decision.support}</p>
       </div>
@@ -52,76 +96,127 @@ export function XinmaiGenesisBirthCoordinateControls({
         </button>
       ) : null}
       {decision.showCoordinateFields ? (
-        <form onSubmit={submit} noValidate>
-          <fieldset disabled={decision.primaryAction === "NONE"}>
-            <legend>当地民用公历出生日期与时间</legend>
-            <p>请按出生证明或家人记忆中的当地时间填写。系统不会进行真太阳时、时区或夏令时换算。</p>
-            <div className="xinmai-genesis-birth-coordinate__fields">
-              {(["year", "month", "day"] as const).map((field) => (
-                <label key={field}>
-                  <span>{field === "year" ? "出生年份" : field === "month" ? "出生月份" : "出生日期"}</span>
+        <form onSubmit={submit} noValidate aria-describedby="xinmai-genesis-birth-coordinate-feedback">
+          <fieldset>
+            <legend>让时间进入同一生命核心</legend>
+            <p className="xinmai-genesis-birth-coordinate__instruction">
+              按出生证明或家人记忆中的当地时间填写。系统只从公历日期与当地钟表时间推导农历和时辰。
+            </p>
+            <div
+              className="xinmai-genesis-birth-coordinate__instrument"
+              data-chrono-visual-shell="AXIS_GRAMMAR_REWIRED_TO_RAW_BIRTH_INPUT"
+            >
+              <div className="xinmai-genesis-birth-coordinate__axis" aria-hidden="true">
+                <span className="xinmai-genesis-birth-coordinate__axis-line" />
+                <span className="xinmai-genesis-birth-coordinate__core" />
+                <span className="xinmai-genesis-birth-coordinate__axis-line" />
+              </div>
+              <div className="xinmai-genesis-birth-coordinate__fields">
+                <label className="xinmai-genesis-birth-coordinate__date-field">
+                  <span>当地民用公历出生日期</span>
                   <input
-                    type="number"
-                    inputMode="numeric"
-                    min={field === "year" ? "1901" : "1"}
-                    max={field === "year" ? "2100" : field === "month" ? "12" : "31"}
-                    value={draft[field] ?? ""}
-                    onChange={(event) => updateNumber(field, event.target.value)}
-                    autoComplete={field === "year" ? "bday-year" : field === "month" ? "bday-month" : "bday-day"}
+                    type="date"
+                    min="1901-01-01"
+                    max="2100-12-31"
+                    value={formatCivilDate(draft)}
+                    onChange={(event) => updateCivilDate(event.currentTarget.value)}
+                    autoComplete="bday"
                   />
                 </label>
-              ))}
-              <label>
-                <span>时间精度</span>
-                <select
-                  value={draft.precision}
-                  onChange={(event) => onDraftChange(Object.freeze({
-                    ...draft,
-                    precision: event.target.value as typeof draft.precision,
-                  }))}
-                >
-                  <option value="EXACT">知道具体时间</option>
-                  <option value="APPROXIMATE_RANGE">只知道时间范围</option>
-                  <option value="UNKNOWN">暂时不知道</option>
-                </select>
-              </label>
-              {draft.precision === "EXACT" ? (
                 <label>
-                  <span>当地钟表时间</span>
-                  <input type="time" value={draft.exactLocalTime} onChange={(event) => onDraftChange(Object.freeze({ ...draft, exactLocalTime: event.target.value }))} />
+                  <span>时间记忆</span>
+                  <select
+                    value={draft.precision}
+                    onChange={(event) => onDraftChange(Object.freeze({
+                      ...draft,
+                      precision: event.target.value as typeof draft.precision,
+                    }))}
+                  >
+                    <option value="EXACT">知道具体时间</option>
+                    <option value="APPROXIMATE_RANGE">只知道时间范围</option>
+                    <option value="UNKNOWN">暂时不知道</option>
+                  </select>
                 </label>
-              ) : null}
-              {draft.precision === "APPROXIMATE_RANGE" ? (
-                <>
-                  <label>
-                    <span>最早时间</span>
-                    <input type="time" value={draft.approximateRangeStart} onChange={(event) => onDraftChange(Object.freeze({ ...draft, approximateRangeStart: event.target.value }))} />
+                {draft.precision === "EXACT" ? (
+                  <label className="xinmai-genesis-birth-coordinate__time-field">
+                    <span>当地钟表时间</span>
+                    <input
+                      type="time"
+                      value={draft.exactLocalTime}
+                      onChange={(event) => onDraftChange(Object.freeze({
+                        ...draft,
+                        exactLocalTime: event.currentTarget.value,
+                      }))}
+                      autoComplete="bday-time"
+                    />
                   </label>
-                  <label>
-                    <span>最晚时间</span>
-                    <input type="time" value={draft.approximateRangeEnd} onChange={(event) => onDraftChange(Object.freeze({ ...draft, approximateRangeEnd: event.target.value }))} />
-                  </label>
-                </>
-              ) : null}
+                ) : null}
+                {draft.precision === "APPROXIMATE_RANGE" ? (
+                  <>
+                    <label>
+                      <span>最早时间</span>
+                      <input
+                        type="time"
+                        value={draft.approximateRangeStart}
+                        onChange={(event) => onDraftChange(Object.freeze({
+                          ...draft,
+                          approximateRangeStart: event.currentTarget.value,
+                        }))}
+                      />
+                    </label>
+                    <label>
+                      <span>最晚时间</span>
+                      <input
+                        type="time"
+                        value={draft.approximateRangeEnd}
+                        onChange={(event) => onDraftChange(Object.freeze({
+                          ...draft,
+                          approximateRangeEnd: event.currentTarget.value,
+                        }))}
+                      />
+                    </label>
+                  </>
+                ) : null}
+              </div>
             </div>
             {decision.derivationReceipt ? (
-              <p className="xinmai-genesis-birth-coordinate__summary">
-                原始输入：{decision.derivationReceipt.canonicalGregorianBirthDate} · {draft.precision === "EXACT" ? draft.exactLocalTime : `${draft.approximateRangeStart}–${draft.approximateRangeEnd}`}<br />
-                系统推导：农历{formatLunar(decision.derivationReceipt)} · {decision.derivationReceipt.derivedHourBranch}
-              </p>
+              <div className="xinmai-genesis-birth-coordinate__summary" data-birth-source-derivation="READY">
+                <span>请确认这组生命起点</span>
+                <strong>
+                  {decision.derivationReceipt.canonicalGregorianBirthDate}
+                  <i aria-hidden="true">·</i>
+                  {draft.precision === "EXACT"
+                    ? draft.exactLocalTime
+                    : `${draft.approximateRangeStart}–${draft.approximateRangeEnd}`}
+                </strong>
+                <span>系统确定性推导</span>
+                <strong>农历{formatLunar(decision.derivationReceipt)} · {decision.derivationReceipt.derivedHourBranch}</strong>
+              </div>
             ) : draft.precision === "UNKNOWN" ? (
-              <p className="xinmai-genesis-birth-coordinate__summary">日期可暂存；不会猜测时辰，也不会形成个性化生命身份。</p>
+              <p className="xinmai-genesis-birth-coordinate__summary" data-birth-source-derivation="UNRESOLVED">
+                日期会保留；系统不会猜测时辰，也不会形成个性化生命身份。
+              </p>
             ) : null}
-            {decision.primaryAction === "CONFIRM" ? (
-              <button className="xinmai-genesis-birth-coordinate__primary" type="submit" disabled={!decision.confirmationEnabled}>
-                确认原始输入与推导结果
-              </button>
-            ) : null}
+            <p
+              id="xinmai-genesis-birth-coordinate-feedback"
+              className="xinmai-genesis-birth-coordinate__feedback"
+              data-birth-coordinate-feedback={decision.validation.status}
+            >
+              {validationRecoveryCopy(decision)}
+            </p>
+            <button
+              className="xinmai-genesis-birth-coordinate__primary"
+              type="submit"
+              disabled={!decision.confirmationEnabled}
+              aria-disabled={!decision.confirmationEnabled}
+            >
+              {decision.confirmationEnabled ? "确认这组生命起点" : "完成输入后确认"}
+            </button>
           </fieldset>
         </form>
       ) : null}
       <p className="xinmai-genesis-birth-coordinate__status" role="status" aria-live="polite" aria-atomic="true">
-        {decision.state === "BIRTH_SOURCE_ACCEPTED" || decision.state === "SAFE_WITHHELD" || decision.state === "BIRTH_COORDINATE_READY" ? decision.support : ""}
+        {decision.state === "LIFE_WORLD_BASELINE" ? "" : decision.support}
       </p>
     </section>
   );

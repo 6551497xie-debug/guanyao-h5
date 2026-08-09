@@ -41,6 +41,7 @@
     "check:xinmai-genesis-birth-coordinate-continuous-scene-contract": "node scripts/check-xinmai-genesis-birth-coordinate-continuous-scene-contract.mjs",
     "check:xinmai-genesis-birth-coordinate-motion-static-accessibility": "node scripts/check-xinmai-genesis-birth-coordinate-motion-static-accessibility.mjs",
     "check:xinmai-genesis-birth-coordinate-forward-counter": "node scripts/check-xinmai-genesis-birth-coordinate-forward-counter.mjs",
+    "check:xinmai-birth-coordinate-formal-experience-convergence": "node scripts/check-xinmai-birth-coordinate-formal-experience-convergence.mjs",
     "check:xinmai-genesis-birth-source-recovery-single-owner": "node scripts/check-xinmai-genesis-birth-source-recovery-single-owner.mjs",
     "check:xinmai-genesis-birth-source-persistence-reconciliation": "node scripts/check-xinmai-genesis-birth-source-persistence-reconciliation.mjs",
     "check:xinmai-genesis-birth-source-route-recovery-cutover": "node scripts/check-xinmai-genesis-birth-source-route-recovery-cutover.mjs",

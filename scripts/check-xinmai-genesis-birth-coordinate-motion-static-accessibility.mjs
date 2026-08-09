@@ -12,10 +12,12 @@ const packageJson = JSON.parse(read("package.json"));
 
 for (const token of [
   'aria-labelledby="xinmai-genesis-birth-coordinate-title"',
-  "<legend>当地民用公历出生日期与时间</legend>",
+  "<legend>让时间进入同一生命核心</legend>",
+  'type="date"',
   'type="time"',
   'value="UNKNOWN"',
-  "系统不会进行真太阳时、时区或夏令时换算",
+  "系统只从公历日期与当地钟表时间推导农历和时辰",
+  "这个时间范围跨越了两个时辰",
   'role="status"',
   'aria-live="polite"',
   'aria-atomic="true"',

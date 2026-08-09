@@ -4,20 +4,17 @@
   inset: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   align-items: center;
-  gap: 16px;
+  justify-content: flex-end;
+  gap: 14px;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: max(32px, env(safe-area-inset-top)) 20px
-    max(28px, env(safe-area-inset-bottom));
+  padding: max(28px, env(safe-area-inset-top)) 18px
+    max(24px, env(safe-area-inset-bottom));
   color: #f7edd8;
-  background: linear-gradient(
-    180deg,
-    rgba(2, 3, 6, 0.04) 18%,
-    rgba(2, 3, 6, 0.56) 58%,
-    rgba(2, 3, 6, 0.9) 100%
-  );
+  background:
+    radial-gradient(circle at 50% 43%, rgba(232, 200, 138, 0.08), transparent 26%),
+    linear-gradient(180deg, rgba(2, 3, 6, 0.02) 10%, rgba(2, 3, 6, 0.5) 55%, rgba(2, 3, 6, 0.92) 100%);
   pointer-events: none;
 }
 
@@ -25,12 +22,22 @@
 .xinmai-genesis-birth-coordinate form,
 .xinmai-genesis-birth-coordinate__primary,
 .xinmai-genesis-birth-coordinate__status {
-  width: min(100%, 420px);
+  width: min(100%, 430px);
   pointer-events: auto;
 }
 
 .xinmai-genesis-birth-coordinate__copy {
   text-align: center;
+}
+
+.xinmai-genesis-birth-coordinate__eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: #cfb982;
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 .xinmai-genesis-birth-coordinate h1 {
@@ -45,22 +52,84 @@
 .xinmai-genesis-birth-coordinate p {
   margin: 8px 0 0;
   color: #e7dcc3;
-  font-size: 1rem;
+  font-size: 0.95rem;
   line-height: 1.55;
 }
 
-.xinmai-genesis-birth-coordinate form,
+.xinmai-genesis-birth-coordinate form {
+  border: 1px solid rgba(232, 200, 138, 0.24);
+  border-radius: 24px;
+  padding: 16px;
+  background: rgba(7, 10, 17, 0.72);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(14px);
+}
+
 .xinmai-genesis-birth-coordinate fieldset {
+  display: grid;
+  gap: 12px;
   margin: 0;
   padding: 0;
   border: 0;
 }
 
 .xinmai-genesis-birth-coordinate legend {
-  margin-bottom: 10px;
+  width: 100%;
+  margin: 0;
   color: #fff3d0;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 650;
+  text-align: center;
+}
+
+.xinmai-genesis-birth-coordinate__instruction {
+  margin: 0 !important;
+  color: #d6ccb8 !important;
+  font-size: 0.82rem !important;
+  text-align: center;
+}
+
+.xinmai-genesis-birth-coordinate__instrument {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  padding-top: 34px;
+}
+
+.xinmai-genesis-birth-coordinate__axis {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  display: grid;
+  grid-template-columns: minmax(36px, 96px) 20px minmax(36px, 96px);
+  align-items: center;
+  transform: translateX(-50%);
+  opacity: 0.88;
+  pointer-events: none;
+}
+
+.xinmai-genesis-birth-coordinate__axis-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(232, 200, 138, 0.72));
+}
+
+.xinmai-genesis-birth-coordinate__axis-line:last-child {
+  transform: scaleX(-1);
+}
+
+.xinmai-genesis-birth-coordinate__core {
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(255, 236, 190, 0.9);
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff1c6 0 12%, #c9a85f 18%, rgba(201, 168, 95, 0.12) 54%, transparent 70%);
+  box-shadow: 0 0 24px rgba(232, 200, 138, 0.48);
+  animation: xinmai-birth-core-breathe 4.8s ease-in-out infinite;
+}
+
+.xinmai-genesis-birth-coordinate[data-birth-coordinate-validation="VALID"]
+  .xinmai-genesis-birth-coordinate__core {
+  box-shadow: 0 0 30px rgba(255, 220, 143, 0.72);
 }
 
 .xinmai-genesis-birth-coordinate__fields {
@@ -69,12 +138,16 @@
   gap: 10px;
 }
 
+.xinmai-genesis-birth-coordinate__date-field {
+  grid-column: 1 / -1;
+}
+
 .xinmai-genesis-birth-coordinate label {
   display: grid;
   gap: 6px;
   min-width: 0;
   color: #f2e5c9;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
 }
 
 .xinmai-genesis-birth-coordinate input,
@@ -91,7 +164,13 @@
   border: 1px solid rgba(232, 200, 138, 0.42);
   padding: 10px 12px;
   color: #fff7e4;
-  background: rgba(12, 16, 25, 0.9);
+  color-scheme: dark;
+  background: rgba(12, 16, 25, 0.86);
+}
+
+.xinmai-genesis-birth-coordinate input[type="time"] {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
 }
 
 .xinmai-genesis-birth-coordinate input:focus-visible,
@@ -111,39 +190,121 @@
 }
 
 .xinmai-genesis-birth-coordinate__primary:disabled {
-  color: #aaa08d;
-  background: #3d382f;
-  border-color: #5f5749;
+  color: #d1c6b1;
+  background: #403a31;
+  border-color: #736856;
   cursor: not-allowed;
+  opacity: 1;
 }
 
 .xinmai-genesis-birth-coordinate__summary {
+  display: grid;
+  gap: 4px;
+  margin: 0 !important;
+  border: 1px solid rgba(232, 200, 138, 0.24);
+  border-radius: 16px;
+  padding: 12px 14px;
   color: #f2e5c9 !important;
   font-variant-numeric: tabular-nums;
   text-align: center;
+  background: rgba(232, 200, 138, 0.06);
+}
+
+.xinmai-genesis-birth-coordinate__summary span {
+  color: #cfc3aa;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+
+.xinmai-genesis-birth-coordinate__summary strong {
+  color: #fff0c8;
+  font-size: 0.9rem;
+  font-style: normal;
+  font-weight: 650;
+}
+
+.xinmai-genesis-birth-coordinate__summary i {
+  margin-inline: 6px;
+  font-style: normal;
+}
+
+.xinmai-genesis-birth-coordinate__feedback {
+  min-height: 2.7em;
+  margin: 0 !important;
+  color: #efe1c4 !important;
+  font-size: 0.82rem !important;
+  text-align: center;
+}
+
+.xinmai-genesis-birth-coordinate__feedback[data-birth-coordinate-feedback="INVALID"] {
+  border-left: 2px solid #e3bc77;
+  padding-left: 10px;
+  text-align: left;
 }
 
 .xinmai-genesis-birth-coordinate__status {
-  min-height: 1.5em;
-  margin: 0 !important;
-  text-align: center;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px !important;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes xinmai-birth-core-breathe {
+  0%,
+  100% {
+    transform: scale(0.96);
+    opacity: 0.76;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 430px) {
+  .xinmai-genesis-birth-coordinate {
+    justify-content: flex-start;
+    padding-inline: 14px;
+  }
+
+  .xinmai-genesis-birth-coordinate form {
+    padding: 14px;
+  }
 }
 
 @media (max-width: 360px), (min-resolution: 1.75dppx) and (max-width: 760px) {
   .xinmai-genesis-birth-coordinate {
-    justify-content: flex-start;
-    padding-inline: 16px;
+    gap: 12px;
+    padding-inline: 12px;
   }
 
   .xinmai-genesis-birth-coordinate__fields {
     grid-template-columns: 1fr;
   }
+
+  .xinmai-genesis-birth-coordinate__date-field {
+    grid-column: auto;
+  }
+
+  .xinmai-genesis-birth-coordinate__copy p,
+  .xinmai-genesis-birth-coordinate__instruction {
+    font-size: 0.78rem !important;
+  }
 }
+
 @media (prefers-reduced-motion: reduce) {
   .xinmai-genesis-birth-coordinate *,
   .xinmai-genesis-birth-coordinate *::before,
   .xinmai-genesis-birth-coordinate *::after {
     animation: none !important;
     transition: none !important;
+  }
+
+  .xinmai-genesis-birth-coordinate__core {
+    opacity: 1;
   }
 }

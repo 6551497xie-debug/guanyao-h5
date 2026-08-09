@@ -126,6 +126,55 @@ const deriveDraft = (draft: XinmaiGenesisBirthCoordinateDraft, revision: number)
     : deriveXinmaiGenesisBirthSource({ rawInput, inputRevision: revision });
 };
 
+const validationSupport = (
+  validation: XinmaiGenesisBirthCoordinateValidation,
+): string => {
+  if (validation.status === "VALID") {
+    return "请核对原始公历输入与系统推导的农历、时辰。";
+  }
+  switch (validation.reason) {
+    case "YEAR_OUTSIDE_SUPPORTED_RANGE":
+      return "请先选择系统支持范围内的公历出生日期。";
+    case "MONTH_OUTSIDE_RANGE":
+    case "DAY_OUTSIDE_RANGE":
+    case "DATE_DOES_NOT_EXIST":
+      return "这个公历日期无法成立，请重新选择日期。";
+    case "BIRTH_TIME_UNRESOLVED":
+      return "日期可以保留；补充当地时间后，才能形成个性化生命起点。";
+    case "APPROXIMATE_RANGE_CROSSES_HOUR_BRANCH":
+      return "这个范围跨越了两个时辰。请缩小范围，或改为具体时间。";
+    case "CALENDAR_UNAVAILABLE":
+      return "农历推导暂时不可用。原始输入会保留，请稍后重试。";
+    case "INVALID_LOCAL_TIME":
+      return "请补全当地钟表时间，或填写一个有效的时间范围。";
+  }
+};
+
+const withheldSupport = (
+  reason: XinmaiGenesisBirthCoordinateAdmissionFailureReason | null,
+): string => {
+  switch (reason) {
+    case "PERSISTED_SOURCE_CONFLICT":
+    case "ACTIVE_SOURCE_REFERENCE_CONFLICT":
+      return "已有另一份生命起点仍在使用。现有事实不会被覆盖；请核对后再确认。";
+    case "PERSISTENCE_RECOVERY_MISMATCH":
+      return "生命起点已保存，但当前恢复结果尚未一致。请保留本页并稍后重试。";
+    case "GENESIS_HANDOFF_BLOCKED":
+      return "生命起点已经确认，但下一段生命显现尚未准备好。请稍后重试。";
+    case "BIRTH_TIME_UNRESOLVED":
+    case "INVALID_BIRTH_COORDINATE":
+      return "这组日期与时间尚未形成完整生命起点。请按提示调整后重试。";
+    case "ENGINE_UNAVAILABLE":
+    case "LIFE_SOURCE_SESSION_BLOCKED":
+    case "VISUAL_SOURCE_BLOCKED":
+    case "VISUAL_CONTEXT_BLOCKED":
+    case "DERIVATION_RECEIPT_MISMATCH":
+      return "这次确认暂时无法完成。现有生命事实不会改变；你可以核对输入后重试。";
+    case null:
+      return "这次确认暂时无法完成。现有生命事实不会改变；你可以核对输入后重试。";
+  }
+};
+
 const sessionWith = (
   current: XinmaiGenesisBirthCoordinateInputSession,
   patch: Partial<XinmaiGenesisBirthCoordinateInputSession>,
@@ -206,33 +255,51 @@ export function resolveXinmaiGenesisBirthCoordinatePresentation(
 ): XinmaiGenesisBirthCoordinatePresentationDecision {
   const validation = validateXinmaiGenesisBirthCoordinate(input.draft, input.revision);
   const derivationReceipt = input.derivation.status === "READY" ? input.derivation.receipt : null;
-  const spatialEnrichment = XINMAI_GENESIS_BIRTH_COORDINATE_PRESENTATION_POLICY === "SAFE_WITHHELD" ? "SAFE_WITHHELD" as const : null;
+  if (XINMAI_GENESIS_BIRTH_COORDINATE_PRESENTATION_POLICY !== "ENABLED") {
+    return Object.freeze({
+      state: "SAFE_WITHHELD" as const,
+      headline: "生命起点确认暂时停下",
+      support: "既有生命事实仍被保留；新的出生坐标确认与下一段显现暂时不可用。",
+      primaryAction: "NONE" as const,
+      showCoordinateFields: true,
+      confirmationEnabled: false,
+      validation,
+      derivationReceipt,
+      sceneEnrichment: "SAFE_WITHHELD" as const,
+    });
+  }
   if (input.status === "SAFE_WITHHELD") {
-    return Object.freeze({ state: "SAFE_WITHHELD" as const, headline: "生命坐标暂时无法确认", support: "现有生命事实不会改变。请核对出生证明或家人记忆中的当地日期与时间。", primaryAction: "NONE" as const, showCoordinateFields: true, confirmationEnabled: false, validation, derivationReceipt, sceneEnrichment: "SAFE_WITHHELD" as const });
+    return Object.freeze({
+      state: "SAFE_WITHHELD" as const,
+      headline: "生命坐标暂时无法确认",
+      support: withheldSupport(input.failureReason),
+      primaryAction: "CONFIRM" as const,
+      showCoordinateFields: true,
+      confirmationEnabled: validation.status === "VALID",
+      validation,
+      derivationReceipt,
+      sceneEnrichment: "SAFE_WITHHELD" as const,
+    });
   }
   if (input.status === "LIFE_WORLD_BASELINE") {
-    return Object.freeze({ state: "LIFE_WORLD_BASELINE" as const, headline: "先让这片生命世界认识你的时间", support: "请按出生证明或家人记忆中的当地日期与钟表时间填写；农历与时辰由系统确定性推导。", primaryAction: "BEGIN" as const, showCoordinateFields: false, confirmationEnabled: false, validation, derivationReceipt, sceneEnrichment: spatialEnrichment ?? "GENERIC_LIFE_WORLD" as const });
+    return Object.freeze({ state: "LIFE_WORLD_BASELINE" as const, headline: "先让这片生命世界认识你的时间", support: "请按出生证明或家人记忆中的当地日期与钟表时间填写；农历与时辰由系统确定性推导。", primaryAction: "BEGIN" as const, showCoordinateFields: false, confirmationEnabled: false, validation, derivationReceipt, sceneEnrichment: "GENERIC_LIFE_WORLD" as const });
   }
   if (input.status === "ACCEPTED") {
-    return Object.freeze({ state: "BIRTH_SOURCE_ACCEPTED" as const, headline: "生命坐标已经确认", support: "同一片生命世界会从这个起点继续显现。", primaryAction: "NONE" as const, showCoordinateFields: false, confirmationEnabled: false, validation, derivationReceipt, sceneEnrichment: spatialEnrichment ?? "CONFIRMED_BIRTH_SOURCE" as const });
+    return Object.freeze({ state: "BIRTH_SOURCE_ACCEPTED" as const, headline: "生命坐标已经确认", support: "同一片生命世界会从这个起点继续显现。", primaryAction: "NONE" as const, showCoordinateFields: false, confirmationEnabled: false, validation, derivationReceipt, sceneEnrichment: "CONFIRMED_BIRTH_SOURCE" as const });
   }
   if (input.status === "CONFIRMING") {
-    return Object.freeze({ state: "BIRTH_COORDINATE_READY" as const, headline: "正在确认这次生命起点", support: "只有正式来源恢复一致后，才会继续进入生命显现。", primaryAction: "NONE" as const, showCoordinateFields: true, confirmationEnabled: false, validation, derivationReceipt, sceneEnrichment: spatialEnrichment ?? "GENERIC_LIFE_WORLD" as const });
+    return Object.freeze({ state: "BIRTH_COORDINATE_READY" as const, headline: "正在确认这次生命起点", support: "只有正式来源恢复一致后，才会继续进入生命显现。", primaryAction: "NONE" as const, showCoordinateFields: true, confirmationEnabled: false, validation, derivationReceipt, sceneEnrichment: "GENERIC_LIFE_WORLD" as const });
   }
   return Object.freeze({
     state: validation.status === "VALID" ? "BIRTH_COORDINATE_READY" as const : "BIRTH_COORDINATE_EDITING" as const,
     headline: "确认你的生命起点",
-    support: input.draft.precision === "UNKNOWN"
-      ? "日期可以暂存；出生时间未解决前，不会形成个性化生命身份。"
-      : validation.status === "VALID"
-        ? "请核对原始公历输入与系统推导的农历、时辰。"
-        : "请填写有效的当地民用公历日期与钟表时间。",
+    support: validationSupport(validation),
     primaryAction: "CONFIRM" as const,
     showCoordinateFields: true,
     confirmationEnabled: validation.status === "VALID",
     validation,
     derivationReceipt,
-    sceneEnrichment: spatialEnrichment ?? "GENERIC_LIFE_WORLD" as const,
+    sceneEnrichment: "GENERIC_LIFE_WORLD" as const,
   });
 }
 
