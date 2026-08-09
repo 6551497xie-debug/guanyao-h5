@@ -6,6 +6,7 @@ import type {
   RealityPressureCandidateRequestContextBridgeInput,
   RealityPressureCandidateRequestContextBridgeResult,
 } from "../types/realityPressureCandidateRequestContextBridge";
+import { isTrustedXinmaiLaunchLifeSourceSession } from "./xinmaiLaunchLifeSourceSessionValidator";
 
 export const REALITY_PRESSURE_CANDIDATE_REQUEST_CONTEXT_BRIDGE_BOUNDARY:
   RealityPressureCandidateRequestContextBridgeBoundary = Object.freeze({
@@ -126,25 +127,11 @@ const blocked = (
   boundary: REALITY_PRESSURE_CANDIDATE_REQUEST_CONTEXT_BRIDGE_BOUNDARY,
 });
 
-const isRealLifeSourceSession = (
-  session: LaunchLifeSourceSession,
-): boolean =>
-  Object.isFrozen(session) &&
-  session.schemaVersion === "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V1" &&
-  session.source === "launch_life_source_session" &&
-  session.sourceKind === "REAL_ENGINE_RESULT" &&
-  session.provenance.sourceKind === "REAL_ENGINE_RESULT" &&
-  session.provenance.birthSource === "LAUNCH_USER_CONFIRMED" &&
-  session.boundary.immutableCarrier === true &&
-  session.boundary.existingEngineResultsOnly === true &&
-  session.boundary.noEngineInvocation === true &&
-  session.boundary.noStorageWrite === true;
-
 export function bridgeRealityPressureCandidateRequestContext(
   input: RealityPressureCandidateRequestContextBridgeInput,
 ): RealityPressureCandidateRequestContextBridgeResult {
   const session = input.lifeSourceSession;
-  if (!isRealLifeSourceSession(session)) {
+  if (!isTrustedXinmaiLaunchLifeSourceSession(session)) {
     return sourceNotReady("REAL_LIFE_SOURCE_SESSION_REQUIRED");
   }
   const sourceReferenceId = session.sourceReferenceId.trim();
@@ -199,7 +186,7 @@ export function bridgeRealityPressureCandidateRequestContext(
   });
   const provenance = Object.freeze({
     lifeSource: "LAUNCH_LIFE_SOURCE_SESSION" as const,
-    birthSource: "LAUNCH_USER_CONFIRMED" as const,
+    birthSource: session.provenance.birthSource,
     ageResolution:
       "CONFIRMED_BIRTH_COORDINATE_AGE_ROUTING" as const,
     noPressureInference: true as const,

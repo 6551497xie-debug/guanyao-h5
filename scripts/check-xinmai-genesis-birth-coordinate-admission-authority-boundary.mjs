@@ -10,6 +10,8 @@ const resolver = read("src/services/xinmaiGenesisBirthCoordinatePresentationReso
 const packageJson = JSON.parse(read("package.json"));
 
 for (const token of [
+  "birthSourceDerivationReceipt",
+  "derivation.status === \"READY\"",
   "resolveLaunchOriginMotherSourceResults",
   "createLaunchLifeSourceSession",
   "resolveLaunchLifeVisualSource",
@@ -20,6 +22,12 @@ for (const token of [
 ]) {
   assert(controller.includes(token), `Existing admission authority missing: ${token}`);
 }
+assert(
+  !controller.includes('"酉时"') &&
+    !controller.includes("HOUR_BRANCHES") &&
+    !controller.includes("draft.hourBranch"),
+  "Admission retains a direct hour-branch producer",
+);
 for (const forbidden of [
   "localStorage",
   "sessionStorage",

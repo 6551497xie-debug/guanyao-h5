@@ -7,6 +7,7 @@ import type {
   RealityPressureExplicitRequestDateSource,
 } from "../types/realityPressureCandidateActivationContext";
 import { REALITY_PRESSURE_CANDIDATE_ACTIVATION_CONTEXT_BOUNDARY } from "./realityPressureCandidateActivationContextContract";
+import { isTrustedXinmaiLaunchLifeSourceSession } from "./xinmaiLaunchLifeSourceSessionValidator";
 
 const forbiddenSourceMarkers = [
   "fixture",
@@ -74,25 +75,6 @@ const isAuthorizedRealitySource = (
   authorization.sourceContext.sourceReferenceId ===
     authorization.sourceReferenceId;
 
-const isRealLifeSourceSession = (
-  session: LaunchLifeSourceSession | null | undefined,
-): session is LaunchLifeSourceSession =>
-  Boolean(
-    session &&
-      Object.isFrozen(session) &&
-      Object.isFrozen(session.provenance) &&
-      session.schemaVersion === "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V1" &&
-      session.source === "launch_life_source_session" &&
-      session.sourceKind === "REAL_ENGINE_RESULT" &&
-      session.sourceReferenceId.trim().length > 0 &&
-      session.provenance.sourceKind === "REAL_ENGINE_RESULT" &&
-      session.provenance.birthSource === "LAUNCH_USER_CONFIRMED" &&
-      session.provenance.sourceReferenceId === session.sourceReferenceId &&
-      session.boundary.immutableCarrier === true &&
-      session.boundary.existingEngineResultsOnly === true &&
-      session.boundary.noEngineInvocation === true,
-  );
-
 const isExplicitRequestDateSource = (
   requestDateSource: RealityPressureExplicitRequestDateSource | null | undefined,
 ): requestDateSource is RealityPressureExplicitRequestDateSource =>
@@ -120,7 +102,7 @@ export function createRealityPressureCandidateActivationContext(
     );
   }
   const lifeSourceSession = input.lifeSourceSession;
-  if (!isRealLifeSourceSession(lifeSourceSession)) {
+  if (!isTrustedXinmaiLaunchLifeSourceSession(lifeSourceSession)) {
     return unavailable(
       "SOURCE_NOT_READY",
       "REAL_LIFE_SOURCE_SESSION_REQUIRED",

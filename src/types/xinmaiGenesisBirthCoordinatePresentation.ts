@@ -1,30 +1,22 @@
-import type { HourBranch } from "./guanyaoCausalEngine";
 import type { LaunchGenesisProductionRouteHandoffResult } from "./launchGenesisProductionRouteHandoff";
 import type { LaunchLifeSourceSession } from "./launchLifeSourceSession";
+import type {
+  XinmaiGenesisBirthSourceDerivationReceipt,
+  XinmaiGenesisBirthSourceDerivationResult,
+  XinmaiGenesisBirthTimePrecision,
+} from "./xinmaiGenesisBirthSourceDerivation";
 
 export const XINMAI_GENESIS_BIRTH_COORDINATE_PRESENTATION_VERSION =
   "XINMAI_GENESIS_BIRTH_COORDINATE_PRESENTATION_V1" as const;
 
-export const XINMAI_GENESIS_BIRTH_HOUR_BRANCHES = Object.freeze([
-  "子时",
-  "丑时",
-  "寅时",
-  "卯时",
-  "辰时",
-  "巳时",
-  "午时",
-  "未时",
-  "申时",
-  "酉时",
-  "戌时",
-  "亥时",
-] as const satisfies readonly HourBranch[]);
-
 export type XinmaiGenesisBirthCoordinateDraft = Readonly<{
-  year: number;
-  month: number;
-  day: number;
-  hourBranch: HourBranch;
+  year: number | null;
+  month: number | null;
+  day: number | null;
+  precision: XinmaiGenesisBirthTimePrecision;
+  exactLocalTime: string;
+  approximateRangeStart: string;
+  approximateRangeEnd: string;
 }>;
 
 export type XinmaiGenesisBirthCoordinateInputStatus =
@@ -47,11 +39,16 @@ export type XinmaiGenesisBirthCoordinateValidation =
         | "MONTH_OUTSIDE_RANGE"
         | "DAY_OUTSIDE_RANGE"
         | "DATE_DOES_NOT_EXIST"
-        | "HOUR_BRANCH_UNRECOGNIZED";
+        | "BIRTH_TIME_UNRESOLVED"
+        | "INVALID_LOCAL_TIME"
+        | "APPROXIMATE_RANGE_CROSSES_HOUR_BRANCH"
+        | "CALENDAR_UNAVAILABLE";
     }>;
 
 export type XinmaiGenesisBirthCoordinateAdmissionFailureReason =
   | "INVALID_BIRTH_COORDINATE"
+  | "BIRTH_TIME_UNRESOLVED"
+  | "DERIVATION_RECEIPT_MISMATCH"
   | "LIFE_SOURCE_SESSION_BLOCKED"
   | "VISUAL_SOURCE_BLOCKED"
   | "VISUAL_CONTEXT_BLOCKED"
@@ -76,6 +73,7 @@ export type XinmaiGenesisBirthCoordinateInputSession = Readonly<{
   revision: number;
   draft: XinmaiGenesisBirthCoordinateDraft;
   validation: XinmaiGenesisBirthCoordinateValidation;
+  derivation: XinmaiGenesisBirthSourceDerivationResult;
   failureReason: XinmaiGenesisBirthCoordinateAdmissionFailureReason | null;
   boundary: XinmaiGenesisBirthCoordinateInputSessionBoundary;
 }>;
@@ -96,6 +94,7 @@ export type XinmaiGenesisBirthCoordinatePresentationDecision = Readonly<{
   showCoordinateFields: boolean;
   confirmationEnabled: boolean;
   validation: XinmaiGenesisBirthCoordinateValidation;
+  derivationReceipt: XinmaiGenesisBirthSourceDerivationReceipt | null;
   sceneEnrichment: "GENERIC_LIFE_WORLD" | "CONFIRMED_BIRTH_SOURCE" | "SAFE_WITHHELD";
 }>;
 

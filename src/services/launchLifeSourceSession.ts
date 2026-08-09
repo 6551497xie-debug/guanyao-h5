@@ -61,6 +61,24 @@ export function createLaunchLifeSourceSession(
     return blocked("BIRTH_SOURCE_MISMATCH");
   }
 
+  const receipt = input.birthSourceDerivationReceipt;
+  if (
+    receipt !== undefined &&
+    (receipt.canonicalGregorianBirthDate !==
+      toGregorianBirthDate(input.birthCoordinate) ||
+      receipt.derivedHourBranch !== input.birthCoordinate.hourBranch ||
+      receipt.calendarResolution.lunarBirthDate.relatedYear !==
+        input.starbeastDerivationResult.lunarBirthDate.relatedYear ||
+      receipt.calendarResolution.lunarBirthDate.month !==
+        input.starbeastDerivationResult.lunarBirthDate.month ||
+      receipt.calendarResolution.lunarBirthDate.day !==
+        input.starbeastDerivationResult.lunarBirthDate.day ||
+      receipt.calendarResolution.lunarBirthDate.isLeapMonth !==
+        input.starbeastDerivationResult.lunarBirthDate.isLeapMonth)
+  ) {
+    return blocked("BIRTH_DERIVATION_RECEIPT_MISMATCH");
+  }
+
   if (
     input.starbeastDerivationResult.fourSymbol !==
     input.originMotherResult.starbeast.fourSymbol
@@ -83,22 +101,39 @@ export function createLaunchLifeSourceSession(
     motherCodeLandingResult: input.motherCodeLandingResult,
     originMotherResult: input.originMotherResult,
   });
-  const session: LaunchLifeSourceSession = {
-    schemaVersion: "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V1",
-    source: "launch_life_source_session",
-    sourceKind: "REAL_ENGINE_RESULT",
+  const shared = {
+    source: "launch_life_source_session" as const,
+    sourceKind: "REAL_ENGINE_RESULT" as const,
     sourceReferenceId,
     ...sourceSnapshot,
-    provenance: {
-      sourceKind: "REAL_ENGINE_RESULT",
-      sourceReferenceId,
-      birthSource: "LAUNCH_USER_CONFIRMED",
-      starbeastSource: "guanyao_starbeast_engine",
-      motherCodeSource: "guanyao_lunar_mother_code_landing",
-      originMotherSource: "guanyao_geo_chrono_mother_fusion",
-    },
     boundary: LAUNCH_LIFE_SOURCE_SESSION_BOUNDARY,
   };
+  const session: LaunchLifeSourceSession = receipt === undefined
+    ? {
+        ...shared,
+        schemaVersion: "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V1" as const,
+        provenance: {
+          sourceKind: "REAL_ENGINE_RESULT" as const,
+          sourceReferenceId,
+          birthSource: "LAUNCH_USER_CONFIRMED" as const,
+          starbeastSource: "guanyao_starbeast_engine" as const,
+          motherCodeSource: "guanyao_lunar_mother_code_landing" as const,
+          originMotherSource: "guanyao_geo_chrono_mother_fusion" as const,
+        },
+      }
+    : {
+        ...shared,
+        schemaVersion: "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V2" as const,
+        birthSourceDerivationReceipt: structuredClone(receipt),
+        provenance: {
+          sourceKind: "REAL_ENGINE_RESULT" as const,
+          sourceReferenceId,
+          birthSource: "LAUNCH_USER_CONFIRMED_DERIVATION_RECEIPT" as const,
+          starbeastSource: "guanyao_starbeast_engine" as const,
+          motherCodeSource: "guanyao_lunar_mother_code_landing" as const,
+          originMotherSource: "guanyao_geo_chrono_mother_fusion" as const,
+        },
+      };
 
   return Object.freeze({
     status: "AVAILABLE" as const,

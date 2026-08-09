@@ -98,7 +98,9 @@ const isCandidateRequestContextValid = (
   context.ageSegmentRole === "CATALOG_ROUTING_ONLY" &&
   context.candidateRequest.ageSegmentRole === "CATALOG_ROUTING_ONLY" &&
   context.provenance.lifeSource === "LAUNCH_LIFE_SOURCE_SESSION" &&
-  context.provenance.birthSource === "LAUNCH_USER_CONFIRMED" &&
+  (context.provenance.birthSource === "LAUNCH_USER_CONFIRMED" ||
+    context.provenance.birthSource ===
+      "LAUNCH_USER_CONFIRMED_DERIVATION_RECEIPT") &&
   context.provenance.noPressureInference === true;
 
 export function initializeRealityPressureCandidateDeliveryOrchestration(

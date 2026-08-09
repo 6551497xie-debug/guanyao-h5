@@ -9,6 +9,7 @@ import type {
   RealityRouteActivationSourceContextInput,
   RealityRouteActivationSourceContextResult,
 } from "../types/realityRouteActivationSourceContext";
+import { isTrustedXinmaiLaunchLifeSourceSession } from "./xinmaiLaunchLifeSourceSessionValidator";
 
 export const REALITY_ROUTE_ACTIVATION_SOURCE_CONTEXT_BOUNDARY:
   RealityRouteActivationSourceContextBoundary = Object.freeze({
@@ -121,25 +122,6 @@ export function captureExplicitRealityRequestDateSource(
   });
 }
 
-const isRealLifeSourceSession = (
-  session: LaunchLifeSourceSession | null | undefined,
-): session is LaunchLifeSourceSession =>
-  Boolean(
-    session &&
-      Object.isFrozen(session) &&
-      Object.isFrozen(session.provenance) &&
-      session.schemaVersion === "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V1" &&
-      session.source === "launch_life_source_session" &&
-      session.sourceKind === "REAL_ENGINE_RESULT" &&
-      session.sourceReferenceId.trim().length > 0 &&
-      session.provenance.sourceKind === "REAL_ENGINE_RESULT" &&
-      session.provenance.birthSource === "LAUNCH_USER_CONFIRMED" &&
-      session.provenance.sourceReferenceId === session.sourceReferenceId &&
-      session.boundary.immutableCarrier === true &&
-      session.boundary.existingEngineResultsOnly === true &&
-      session.boundary.noEngineInvocation === true,
-  );
-
 const isExplicitRequestDateSource = (
   source: RealityPressureExplicitRequestDateSource | null | undefined,
 ): source is RealityPressureExplicitRequestDateSource =>
@@ -197,7 +179,7 @@ export function activateRealityRouteActivationSourceContext(
     return unavailable("BLOCKED", "ENCOUNTER_ADMISSION_INVALID");
   }
   const lifeSourceSession = input.lifeSourceSession;
-  if (!isRealLifeSourceSession(lifeSourceSession)) {
+  if (!isTrustedXinmaiLaunchLifeSourceSession(lifeSourceSession)) {
     return unavailable(
       "SOURCE_NOT_READY",
       "REAL_LIFE_SOURCE_SESSION_REQUIRED",

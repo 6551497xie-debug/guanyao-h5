@@ -6,26 +6,12 @@ import type {
   ProductionIdentitySourceInputNormalizerResult,
   ProductionIdentitySourceInputNormalizerUnavailableReason,
 } from "../types/productionIdentitySourceInputNormalizer";
-import type { ChronoCoordinate, HourBranch } from "../types/guanyaoCausalEngine";
+import type { ChronoCoordinate } from "../types/guanyaoCausalEngine";
 import {
   GUANYAO_HOUR_BRANCH_ORDINALS,
 } from "./guanyaoLunarTrigramLandingResolver";
 import { resolveBirthCalendarFromGregorianDate } from "./guanyaoBirthCalendarService";
-
-const HOUR_BRANCHES: readonly HourBranch[] = [
-  "子时",
-  "丑时",
-  "寅时",
-  "卯时",
-  "辰时",
-  "巳时",
-  "午时",
-  "未时",
-  "申时",
-  "酉时",
-  "戌时",
-  "亥时",
-];
+import { deriveXinmaiHourBranchFromExactLocalTime } from "./xinmaiBirthTimeDerivationService";
 
 const NORMALIZER_BOUNDARY: ProductionIdentitySourceInputNormalizerBoundary =
   Object.freeze({
@@ -64,15 +50,6 @@ const blocked = (
     normalizationReference: null,
     boundary: NORMALIZER_BOUNDARY,
   });
-
-function resolveHourBranch(localBirthTime: string): HourBranch | null {
-  const match = /^(?:[01]\d|2[0-3]):[0-5]\d$/.exec(localBirthTime.trim());
-  if (!match) return null;
-
-  const hour = Number(localBirthTime.slice(0, 2));
-  const branchIndex = hour === 23 ? 0 : Math.floor((hour + 1) / 2);
-  return HOUR_BRANCHES[branchIndex] ?? null;
-}
 
 function resolveLocationReference(
   input: ProductionIdentitySourceInputNormalizerInput["birthLocationContext"],
@@ -122,7 +99,7 @@ export function normalizeProductionIdentitySourceInput(
     return unavailable("CALENDAR_ENGINE_UNAVAILABLE");
   }
 
-  const hourBranch = resolveHourBranch(input.localBirthTime);
+  const hourBranch = deriveXinmaiHourBranchFromExactLocalTime(input.localBirthTime);
   if (hourBranch === null) {
     return blocked("INVALID_TIME");
   }

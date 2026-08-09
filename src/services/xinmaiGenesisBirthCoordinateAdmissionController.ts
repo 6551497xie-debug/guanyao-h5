@@ -1,9 +1,8 @@
-import type { HourBranch } from "../types/guanyaoCausalEngine";
 import type {
   XinmaiGenesisBirthCoordinateAdmissionResult,
-  XinmaiGenesisBirthCoordinateDraft,
   XinmaiGenesisBirthCoordinateInputSession,
 } from "../types/xinmaiGenesisBirthCoordinatePresentation";
+import type { XinmaiGenesisBirthSourceDerivationReceipt } from "../types/xinmaiGenesisBirthSourceDerivation";
 import type { LaunchOriginMotherInput } from "../types/guanyaoLaunchOriginMother";
 import { buildDynamicsMotherHandoff } from "./guanyaoDynamicsMotherHandoffAdapter";
 import { resolveLaunchOriginMotherSourceResults } from "./guanyaoLaunchOriginMotherInputAdapter";
@@ -17,27 +16,10 @@ import { persistLaunchLifeSourceSession } from "./sessionService";
 import { recoverXinmaiGenesisBirthSource } from "./xinmaiGenesisBirthSourceRecoveryController";
 import { validateXinmaiGenesisBirthCoordinate } from "./xinmaiGenesisBirthCoordinatePresentationResolver";
 
-const HOUR_BRANCHES: readonly HourBranch[] = Object.freeze([
-  "子时",
-  "丑时",
-  "寅时",
-  "卯时",
-  "辰时",
-  "巳时",
-  "午时",
-  "未时",
-  "申时",
-  "酉时",
-  "戌时",
-  "亥时",
-]);
-
 const UNCOLLECTED_BIRTH_CONTEXT = Object.freeze({
   province: "未采集",
   city: "未采集",
 });
-
-const padDateUnit = (value: number): string => String(value).padStart(2, "0");
 
 const withheld = (
   reason: Extract<
@@ -55,24 +37,20 @@ const withheld = (
   });
 
 const toSourceReferenceId = (
-  draft: XinmaiGenesisBirthCoordinateDraft,
+  receiptReferenceId: string,
 ): string =>
-  [
-    "launch",
-    `${draft.year}-${padDateUnit(draft.month)}-${padDateUnit(draft.day)}`,
-    draft.hourBranch,
-  ].join(":");
+  `launch:v2:${receiptReferenceId}`;
 
 const toLaunchOriginInput = (
-  draft: XinmaiGenesisBirthCoordinateDraft,
+  receipt: XinmaiGenesisBirthSourceDerivationReceipt,
 ): LaunchOriginMotherInput => ({
   birth: {
-    year: draft.year,
-    month: draft.month,
-    day: draft.day,
-    hourBranch: draft.hourBranch,
+    year: receipt.rawInput.localCivilGregorianDate.year,
+    month: receipt.rawInput.localCivilGregorianDate.month,
+    day: receipt.rawInput.localCivilGregorianDate.day,
+    hourBranch: receipt.derivedHourBranch,
   },
-  periodIndex: Math.max(0, HOUR_BRANCHES.indexOf(draft.hourBranch)),
+  periodIndex: receipt.derivedHourBranchOrdinal - 1,
   geo: UNCOLLECTED_BIRTH_CONTEXT,
   starbeast: {
     nodeCount: 28,
@@ -93,6 +71,7 @@ const hasTrustedInputSessionBoundary = (
   session.status === "CONFIRMING" &&
   session.revision > 0 &&
   session.validation.status === "VALID" &&
+  session.derivation.status === "READY" &&
   session.boundary.sessionOnly &&
   session.boundary.noStorage &&
   session.boundary.noIdentity &&
@@ -109,18 +88,23 @@ export function confirmXinmaiGenesisBirthCoordinate(
   ) {
     return withheld("INVALID_BIRTH_COORDINATE");
   }
-  const { draft } = request.inputSession;
-  if (validateXinmaiGenesisBirthCoordinate(draft).status !== "VALID") {
+  const { draft, derivation } = request.inputSession;
+  if (
+    validateXinmaiGenesisBirthCoordinate(draft, request.inputSession.revision).status !== "VALID" ||
+    derivation.status !== "READY"
+  ) {
     return withheld("INVALID_BIRTH_COORDINATE");
   }
 
-  const sourceReferenceId = toSourceReferenceId(draft);
+  const receipt = derivation.receipt;
+  const sourceReferenceId = toSourceReferenceId(receipt.receiptReferenceId);
   try {
-    const launchInput = toLaunchOriginInput(draft);
+    const launchInput = toLaunchOriginInput(receipt);
     const sourceResults = resolveLaunchOriginMotherSourceResults(launchInput);
     const sessionResult = createLaunchLifeSourceSession({
       sourceReferenceId,
       birthCoordinate: launchInput.birth,
+      birthSourceDerivationReceipt: receipt,
       ...sourceResults,
     });
     if (sessionResult.status !== "AVAILABLE") {

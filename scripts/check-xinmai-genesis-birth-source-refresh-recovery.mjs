@@ -37,6 +37,10 @@ try {
     [
       `export { resolveLaunchOriginMotherSourceResults } from ${modulePath("src/services/guanyaoLaunchOriginMotherInputAdapter.ts")};`,
       `export { createLaunchLifeSourceSession } from ${modulePath("src/services/launchLifeSourceSession.ts")};`,
+      `export { deriveXinmaiGenesisBirthSource } from ${modulePath("src/services/xinmaiGenesisBirthSourceDerivationController.ts")};`,
+      `export { XINMAI_GENESIS_BIRTH_SOURCE_DERIVATION_POLICY } from ${modulePath("src/services/xinmaiGenesisBirthSourceDerivationPolicy.ts")};`,
+      `export { resolveBirthCalendarFromGregorianDate } from ${modulePath("src/services/guanyaoBirthCalendarService.ts")};`,
+      `export { createXinmaiBirthSourceReceiptReferenceId, deriveXinmaiHourBranchFromExactLocalTime } from ${modulePath("src/services/xinmaiBirthTimeDerivationService.ts")};`,
       `export { persistLaunchLifeSourceSession, readPersistedLaunchLifeSourceRecoveryRepresentations } from ${modulePath("src/services/sessionService.ts")};`,
       `export { writeOriginMotherContext } from ${modulePath("src/services/guanyaoOriginMotherContextPersistenceAdapter.ts")};`,
       `export { recoverXinmaiGenesisBirthSource } from ${modulePath("src/services/xinmaiGenesisBirthSourceRecoveryController.ts")};`,
@@ -84,6 +88,73 @@ try {
     localStorage.clear();
     runtime.clearRealUserGenesisVisualSourceContext();
   };
+
+  const receiptResult = runtime.deriveXinmaiGenesisBirthSource({
+    inputRevision: 7,
+    rawInput: {
+      localCivilGregorianDate: { year: 1995, month: 6, day: 2 },
+      precision: "EXACT",
+      exactLocalTime: "23:30",
+      approximateRangeStart: null,
+      approximateRangeEnd: null,
+      localityPolicy: "LOCAL_CIVIL_TIME_AS_RECORDED_NO_CONVERSION",
+    },
+  });
+  let existingV2Receipt;
+  if (runtime.XINMAI_GENESIS_BIRTH_SOURCE_DERIVATION_POLICY === "ENABLED") {
+    assert(receiptResult.status === "READY", "V2 receipt did not derive");
+    existingV2Receipt = receiptResult.receipt;
+  } else {
+    assert(
+      receiptResult.status === "SAFE_WITHHELD" && receiptResult.receipt === null,
+      "Counter formed a new receipt",
+    );
+    const calendar = runtime.resolveBirthCalendarFromGregorianDate({ year: 1995, month: 6, day: 2 });
+    const branch = runtime.deriveXinmaiHourBranchFromExactLocalTime("23:30");
+    assert(calendar.status === "READY" && branch === "子时", "existing receipt fixture inputs invalid");
+    existingV2Receipt = Object.freeze({
+      schemaVersion: "XINMAI_GENESIS_BIRTH_SOURCE_DERIVATION_RECEIPT_V1",
+      receiptReferenceId: runtime.createXinmaiBirthSourceReceiptReferenceId({ gregorianBirthDate: calendar.gregorianBirthDate, precision: "EXACT", inputEvidence: "23:30", hourBranch: branch }),
+      inputRevision: 7,
+      rawInput: Object.freeze({ localCivilGregorianDate: Object.freeze({ year: 1995, month: 6, day: 2 }), precision: "EXACT", exactLocalTime: "23:30", approximateRangeStart: null, approximateRangeEnd: null, localityPolicy: "LOCAL_CIVIL_TIME_AS_RECORDED_NO_CONVERSION" }),
+      canonicalGregorianBirthDate: calendar.gregorianBirthDate,
+      calendarResolution: calendar,
+      derivedHourBranch: branch,
+      derivedHourBranchOrdinal: 1,
+      rules: Object.freeze({ timeDerivation: "XINMAI_LOCAL_CIVIL_HOUR_BRANCH_V1", ziHour: "23:00_TO_00:59", civilDate: "USER_GREGORIAN_DATE_UNCHANGED", calendar: "GUANYAO_BIRTH_CALENDAR_V1", noBirthplaceOrTimezoneConversion: true }),
+      authority: Object.freeze({ rawInputUserConfirmed: true, branchAndLunarDeterministicallyDerived: true, immutableReceipt: true, noDirectDerivedValueWrite: true }),
+    });
+  }
+  const v2Input = {
+    birth: { year: 1995, month: 6, day: 2, hourBranch: existingV2Receipt.derivedHourBranch },
+    periodIndex: existingV2Receipt.derivedHourBranchOrdinal - 1,
+    geo: { province: "未采集", city: "未采集" },
+    starbeast: { nodeCount: 28, primaryNodeIndex: 14, originLightTrace: "28光兽入口" },
+  };
+  const v2Sources = runtime.resolveLaunchOriginMotherSourceResults(v2Input);
+  const v2SourceReferenceId = `launch:v2:${existingV2Receipt.receiptReferenceId}`;
+  const v2SessionResult = runtime.createLaunchLifeSourceSession({
+    sourceReferenceId: v2SourceReferenceId,
+    birthCoordinate: v2Input.birth,
+    birthSourceDerivationReceipt: existingV2Receipt,
+    ...v2Sources,
+  });
+  assert(v2SessionResult.status === "AVAILABLE", "V2 source session setup blocked");
+
+  reset();
+  runtime.persistLaunchLifeSourceSession(v2SessionResult.session);
+  runtime.writeOriginMotherContext({ lifeSourceSession: v2SessionResult.session });
+  const recoveredV2 = runtime.recoverXinmaiGenesisBirthSource({
+    intent: "AUTHORIZE_GENESIS_ROUTE",
+    expectedSourceReferenceId: v2SourceReferenceId,
+  });
+  assert(
+    recoveredV2.status === "READY" &&
+      recoveredV2.sourceReferenceId === v2SourceReferenceId &&
+      recoveredV2.lifeSourceSession.schemaVersion === "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V2" &&
+      recoveredV2.lifeSourceSession.birthSourceDerivationReceipt.receiptReferenceId === existingV2Receipt.receiptReferenceId,
+    "V2 typed receipt did not survive persistence recovery",
+  );
 
   reset();
   const missing = runtime.recoverXinmaiGenesisBirthSource({

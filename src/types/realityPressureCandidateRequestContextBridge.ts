@@ -59,7 +59,9 @@ export type RealityPressureCandidateRequestContext = Readonly<{
   candidateRequest: RealityPressureCandidateCatalogRequest;
   provenance: Readonly<{
     lifeSource: "LAUNCH_LIFE_SOURCE_SESSION";
-    birthSource: "LAUNCH_USER_CONFIRMED";
+    birthSource:
+      | "LAUNCH_USER_CONFIRMED"
+      | "LAUNCH_USER_CONFIRMED_DERIVATION_RECEIPT";
     ageResolution: "CONFIRMED_BIRTH_COORDINATE_AGE_ROUTING";
     noPressureInference: true;
   }>;

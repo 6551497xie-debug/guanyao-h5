@@ -6,6 +6,7 @@ import type {
 import type {
   LaunchLifeSourceSession,
 } from "../types/launchLifeSourceSession";
+import { isTrustedXinmaiLaunchLifeSourceSession } from "./xinmaiLaunchLifeSourceSessionValidator";
 
 export type GravityProductionRuntimeInputResult =
   | Readonly<{
@@ -49,10 +50,7 @@ export function resolveGravityProductionRuntimeInput(input: Readonly<{
   }
   const lifeSourceSession = input.lifeSourceSession;
   if (
-    lifeSourceSession === null ||
-    lifeSourceSession.schemaVersion !==
-      "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V1" ||
-    lifeSourceSession.source !== "launch_life_source_session" ||
+    !isTrustedXinmaiLaunchLifeSourceSession(lifeSourceSession) ||
     lifeSourceSession.sourceReferenceId !==
       admission.identityReferences.sourceReferenceId
   ) {

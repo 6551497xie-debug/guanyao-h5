@@ -97,6 +97,10 @@ import { resolveBirthCalendarFromGregorianDate } from "../services/guanyaoBirthC
 import { confirmXinmaiGenesisBirthCoordinate } from "../services/xinmaiGenesisBirthCoordinateAdmissionController";
 import { recoverXinmaiGenesisBirthSource } from "../services/xinmaiGenesisBirthSourceRecoveryController";
 import {
+  persistXinmaiGenesisBirthCoordinateDraft,
+  recoverXinmaiGenesisBirthCoordinateDraft,
+} from "../services/xinmaiGenesisBirthInputDraftPersistenceAdapter";
+import {
   beginXinmaiGenesisBirthCoordinateInput,
   createXinmaiGenesisBirthCoordinateInputSession,
   markXinmaiGenesisBirthCoordinateAccepted,
@@ -1304,7 +1308,9 @@ export function LaunchLab({
       returningLifeContext.sourceReferenceId;
   const [birthCoordinateSession, setBirthCoordinateSession] =
     useState<XinmaiGenesisBirthCoordinateInputSession>(() =>
-      createXinmaiGenesisBirthCoordinateInputSession(),
+      createXinmaiGenesisBirthCoordinateInputSession(
+        recoverXinmaiGenesisBirthCoordinateDraft() ?? undefined,
+      ),
     );
   const birthCoordinateDecision = useMemo(
     () =>
@@ -6139,6 +6145,7 @@ export function LaunchLab({
               );
             }}
             onDraftChange={(draft) => {
+              persistXinmaiGenesisBirthCoordinateDraft(draft);
               setBirthCoordinateSession((current) =>
                 updateXinmaiGenesisBirthCoordinateInput(current, draft),
               );

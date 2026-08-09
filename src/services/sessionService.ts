@@ -3,6 +3,7 @@ import type { GenesisStarBeastPresenceVisualRealization } from "../types/genesis
 import type { LaunchLifeSourceSession } from "../types/launchLifeSourceSession";
 import type { RealUserGenesisVisualSourceContext } from "../types/realUserGenesisVisualSourceContext";
 import type { XinmaiGenesisBirthSourcePersistenceRepresentations } from "../types/xinmaiGenesisBirthSourceRecovery";
+import type { XinmaiGenesisBirthInputDraftAsset } from "../types/xinmaiGenesisBirthSourceDerivation";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
 import {
   STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS,
@@ -42,6 +43,7 @@ import {
   writeOriginMotherContext,
 } from "./guanyaoOriginMotherContextPersistenceAdapter";
 import { initializeTimeSandglassAfterChrono } from "./timeSandglassService";
+import { isRecoverableXinmaiLaunchLifeSourceSession } from "./xinmaiLaunchLifeSourceSessionValidator";
 
 const defaultSession: GuanyaoSession = {
   chronoProfile: null,
@@ -75,6 +77,7 @@ const GENESIS_PRESENCE_REALIZATION_ASSET_KEY =
   "genesisPresenceVisualRealization";
 const STARBEAST_RELATIONSHIP_NAMING_ASSET_KEY =
   "starBeastRelationshipNamingAsset";
+const GENESIS_BIRTH_INPUT_DRAFT_ASSET_KEY = "xinmaiGenesisBirthInputDraft";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -83,7 +86,8 @@ const isLaunchLifeSourceSession = (
   value: unknown,
 ): value is LaunchLifeSourceSession =>
   isRecord(value) &&
-  value.schemaVersion === "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V1" &&
+  (value.schemaVersion === "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V1" ||
+    value.schemaVersion === "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V2") &&
   value.source === "launch_life_source_session" &&
   value.sourceKind === "REAL_ENGINE_RESULT" &&
   typeof value.sourceReferenceId === "string" &&
@@ -91,7 +95,49 @@ const isLaunchLifeSourceSession = (
   isRecord(value.birthCoordinate) &&
   isRecord(value.starbeastDerivationResult) &&
   isRecord(value.motherCodeLandingResult) &&
-  isRecord(value.originMotherResult);
+  isRecord(value.originMotherResult) &&
+  isRecord(value.provenance) &&
+  isRecord(value.boundary) &&
+  (value.schemaVersion === "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V1" ||
+    (isRecord(value.birthSourceDerivationReceipt) &&
+      value.birthSourceDerivationReceipt.schemaVersion ===
+        "XINMAI_GENESIS_BIRTH_SOURCE_DERIVATION_RECEIPT_V1" &&
+      typeof value.birthSourceDerivationReceipt.receiptReferenceId === "string" &&
+      value.birthSourceDerivationReceipt.receiptReferenceId.trim().length > 0 &&
+      value.sourceReferenceId ===
+        `launch:v2:${value.birthSourceDerivationReceipt.receiptReferenceId}` &&
+      typeof value.birthSourceDerivationReceipt.derivedHourBranch === "string" &&
+      value.birthCoordinate.hourBranch ===
+        value.birthSourceDerivationReceipt.derivedHourBranch)) &&
+  isRecoverableXinmaiLaunchLifeSourceSession(
+    value as unknown as LaunchLifeSourceSession,
+  );
+
+const launchLifeSourceSessionsMatch = (
+  primary: LaunchLifeSourceSession,
+  mirror: LaunchLifeSourceSession,
+): boolean =>
+  primary.sourceReferenceId === mirror.sourceReferenceId &&
+  primary.schemaVersion === mirror.schemaVersion &&
+  (primary.schemaVersion === "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V1" ||
+    (mirror.schemaVersion === "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V2" &&
+      primary.birthSourceDerivationReceipt.receiptReferenceId ===
+        mirror.birthSourceDerivationReceipt.receiptReferenceId));
+
+const isGenesisBirthInputDraftAsset = (
+  value: unknown,
+): value is XinmaiGenesisBirthInputDraftAsset =>
+  isRecord(value) &&
+  value.schemaVersion === "XINMAI_GENESIS_BIRTH_INPUT_DRAFT_V1" &&
+  isRecord(value.date) &&
+  (value.precision === "EXACT" ||
+    value.precision === "APPROXIMATE_RANGE" ||
+    value.precision === "UNKNOWN") &&
+  typeof value.exactLocalTime === "string" &&
+  typeof value.approximateRangeStart === "string" &&
+  typeof value.approximateRangeEnd === "string" &&
+  value.nonAuthoritativeDraft === true &&
+  value.cannotFormIdentity === true;
 
 const XINMAI_GENESIS_BIRTH_SOURCE_PERSISTENCE_BOUNDARY = Object.freeze({
   canonicalPrimary: true as const,
@@ -187,6 +233,18 @@ export function persistLaunchLifeSourceSession(
   }
 }
 
+export function persistXinmaiGenesisBirthInputDraft(
+  draft: XinmaiGenesisBirthInputDraftAsset,
+): void {
+  writePersistedAssets({ [GENESIS_BIRTH_INPUT_DRAFT_ASSET_KEY]: draft });
+}
+
+export function readXinmaiGenesisBirthInputDraft():
+  XinmaiGenesisBirthInputDraftAsset | null {
+  const value = readPersistedAsset(GENESIS_BIRTH_INPUT_DRAFT_ASSET_KEY);
+  return isGenesisBirthInputDraftAsset(value) ? value : null;
+}
+
 export function readPersistedLaunchLifeSourceSession():
   LaunchLifeSourceSession | null {
   const representations =
@@ -233,7 +291,9 @@ export function readPersistedLaunchLifeSourceRecoveryRepresentations():
   } else if (primary === null && originMirror !== null) {
     status = "ORIGIN_MIRROR_ONLY";
   } else if (
-    primary?.sourceReferenceId === originMirror?.sourceReferenceId
+    primary !== null &&
+    originMirror !== null &&
+    launchLifeSourceSessionsMatch(primary, originMirror)
   ) {
     status = "MATCHED";
   } else {
@@ -660,6 +720,13 @@ export function restorePersistedRealUserGenesisVisualSourceContext(
   const sessionResult = createLaunchLifeSourceSession({
     sourceReferenceId: persistedSession.sourceReferenceId,
     birthCoordinate: persistedSession.birthCoordinate,
+    ...(persistedSession.schemaVersion ===
+    "GUANYAO_LAUNCH_LIFE_SOURCE_SESSION_V2"
+      ? {
+          birthSourceDerivationReceipt:
+            persistedSession.birthSourceDerivationReceipt,
+        }
+      : {}),
     starbeastDerivationResult:
       persistedSession.starbeastDerivationResult,
     motherCodeLandingResult: restoredMotherCodeLandingResult,

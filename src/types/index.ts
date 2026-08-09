@@ -262,12 +262,22 @@ export type {
 } from "./genesisTwentyEightMansionVisualLayerCalibration";
 export type {
   LaunchLifeSourceSession,
+  LaunchLifeSourceSessionV1,
+  LaunchLifeSourceSessionV2,
   LaunchLifeSourceSessionBlockedReason,
   LaunchLifeSourceSessionBoundary,
   LaunchLifeSourceSessionInput,
   LaunchLifeSourceSessionProvenance,
   LaunchLifeSourceSessionResult,
 } from "./launchLifeSourceSession";
+export type {
+  XinmaiGenesisBirthInputDraftAsset,
+  XinmaiGenesisBirthSourceDerivationFailureReason,
+  XinmaiGenesisBirthSourceDerivationReceipt,
+  XinmaiGenesisBirthSourceDerivationResult,
+  XinmaiGenesisBirthSourceRawInput,
+  XinmaiGenesisBirthTimePrecision,
+} from "./xinmaiGenesisBirthSourceDerivation";
 export type { LaunchLifeSourceVisualAdapterInputBridgeBoundary } from "./launchLifeSourceVisualAdapterInputBridge";
 export type { LaunchLifeVisualSourceResolverBoundary } from "./launchLifeVisualSourceResolver";
 export type {
