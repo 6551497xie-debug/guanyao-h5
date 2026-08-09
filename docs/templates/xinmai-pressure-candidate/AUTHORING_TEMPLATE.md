@@ -11,8 +11,8 @@ pressure_mechanic: RULE_OR_INFORMATION_GAP
 surface_zh_cn: "<12–30 Chinese characters; observable actor/action/context>"
 shell_zh_cn: "<6–20 Chinese characters; immediate concrete stake>"
 source_language: zh-CN
-draft_assistance: NONE # NONE | AI_ASSISTED
-assistance_record_ref: null
+draft_assistance: AI_ASSISTED # construction-window authoring must disclose AI_ASSISTED
+assistance_record_ref: "<required authoring-pass reference>"
 author_id: "<editorial identity>"
 authored_at: "<ISO-8601 date>"
 source_material_refs: [] # no personal user data
@@ -23,11 +23,16 @@ safety_reviewer: null
 safety_reviewed_at: null
 overlap_reviewer: null
 overlap_reviewed_at: null
+product_control_reviewer: null
+product_control_reviewed_at: null
+locked_at: null
 content_hash: "<computed after wording is stable>"
 target_catalog_revision: "<pack target; not a production revision>"
 workflow_status: DRAFT
 decision_notes: ""
 ```
+
+An author self-check is not a review. The author and the same authoring pass leave every reviewer and lock field empty and cannot promote the record. An independent Product Control Tower may perform the four review roles using the frozen scorecard. The user is not the item-by-item reviewer.
 
 ## Author self-check
 

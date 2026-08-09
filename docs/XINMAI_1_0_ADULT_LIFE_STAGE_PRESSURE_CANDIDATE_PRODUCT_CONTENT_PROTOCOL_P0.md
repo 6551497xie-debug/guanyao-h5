@@ -91,6 +91,7 @@ Required fields:
 - `draft_assistance: NONE | AI_ASSISTED`; when assisted, `assistance_record_ref` is required.
 - `author_id`, `authored_at`, `source_material_refs` (no personal user data).
 - `risk_tags`, `editorial_reviewer`, `editorial_reviewed_at`, `safety_reviewer`, `safety_reviewed_at`, `overlap_reviewer`, `overlap_reviewed_at`.
+- `product_control_reviewer`, `product_control_reviewed_at`, and `locked_at`; all remain empty before independent review and lock.
 - `content_hash`, `target_catalog_revision`, `workflow_status`, `decision_notes`.
 
 Stable IDs never encode wording revisions. Text changes update `content_hash` and return the item to `DRAFT`. Deleted IDs are retired and never reused. Sorting is deterministic by Life Stage order, Field order, context order, mechanic order, then `stable_id`. Duplicate stable IDs, duplicate normalized surfaces, and materially overlapping situations are hard failures.
@@ -106,7 +107,9 @@ Before full-pack authoring, representative samples follow:
 `SAMPLE_DRAFT → SAMPLE_REVIEW → SAMPLE_ACCEPTED → FULL_PACK_AUTHORIZED`
 
 - Rejection at any review returns the item to `DRAFT` with a reason and invalidates downstream approvals.
-- Authors cannot review or lock their own item. Editorial, safety, overlap, and Product Control decisions are separately attributable.
+- Authors and the same authoring pass cannot review, lock, or automatically promote their own items. A construction window acting as an AI-assisted author must record `draft_assistance: AI_ASSISTED` and an assistance reference.
+- An independent Product Control Tower may execute Editorial, Safety, Duplicate/Overlap, and Product Control review under the frozen scorecard. Each role decision remains separately attributable even when the same independent Control Tower performs the review sequence.
+- The user does not review all 360 items. The user judges product direction at representative-sample and final real-experience stages; item-level governance remains with the independent Product Control Tower.
 - Product Control locks only a complete 90-item pack after every field and coverage slot passes.
 - AI may assist offline drafting only. Assistance must be disclosed. AI cannot review, promote, lock, translate into authority, or generate at runtime.
 - No prompt or real-user personal content may be retained in provenance. Source references must be public/editorial or synthetic situation references.
