@@ -8,7 +8,7 @@
   "production_catalog_eligible": false,
   "runtime_ai_dependency": 0,
   "candidate_count": 18,
-  "workflow_status": "SAMPLE_DRAFT",
+  "workflow_status": "SAMPLE_ACCEPTED",
   "draft_assistance": "AI_ASSISTED",
   "assistance_record_ref": "CODEX_AUTHORING_PASS:XINMAI-1.0-YOUTH-PRESSURE-CANDIDATE-REPRESENTATIVE-SAMPLE-PACK-B-AUTHORING-P0",
   "source_reference_registry": {
@@ -794,27 +794,27 @@
         "OLD_COMMITMENT_BREAK"
       ],
       "responsibility_lead": "NEGOTIATED_CHOICE_OR_BOUNDARY",
-      "editorial_reviewer": null,
-      "editorial_reviewed_at": null,
-      "safety_reviewer": null,
-      "safety_reviewed_at": null,
-      "overlap_reviewer": null,
-      "overlap_reviewed_at": null,
-      "product_control_reviewer": null,
-      "product_control_reviewed_at": null,
+      "editorial_reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "editorial_reviewed_at": "2026-08-10",
+      "safety_reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "safety_reviewed_at": "2026-08-10",
+      "overlap_reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "overlap_reviewed_at": "2026-08-10",
+      "product_control_reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "product_control_reviewed_at": "2026-08-10",
       "approved_by": null,
       "approved_at": null,
       "locked_at": null,
       "content_hash": "sha256:a5c7a0e4bdc350d668e04fc8217d1af3a224c170433053abbcc0c997f918ce36",
       "target_catalog_revision": "PACK_B_YOUTH_SAMPLE_P0_NOT_PRODUCTION",
-      "workflow_status": "SAMPLE_DRAFT",
-      "decision_notes": "Round 2 grammar correction; awaiting independent final review.",
-      "independent_review_round": 2,
-      "review_decision": "REVISE"
+      "workflow_status": "SAMPLE_ACCEPTED",
+      "decision_notes": "Final independent review accepted; calibration sample only, not approved, locked, or Production eligible.",
+      "independent_review_round": "FINAL",
+      "review_decision": "ACCEPT"
     }
   ],
-  "review_round": 2,
-  "review_decision": "2_ACCEPT_1_REVISE",
-  "accepted_candidate_count": 17,
-  "draft_candidate_count": 1
+  "review_round": "FINAL",
+  "review_decision": "18_ACCEPT",
+  "accepted_candidate_count": 18,
+  "draft_candidate_count": 0
 }

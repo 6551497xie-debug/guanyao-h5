@@ -1,12 +1,12 @@
 # YOUTH Representative Sample Pack B — Authoring Report P0
 
-Status: `17 SAMPLE_ACCEPTED / 1 SAMPLE_DRAFT / AI_ASSISTED / FINAL REVIEW REQUIRED / NOT_PRODUCTION`
+Status: `18 / 18 SAMPLE_ACCEPTED / CALIBRATION ONLY / NOT_PRODUCTION`
 
 Life Stage: `YOUTH` (`18–24`, frozen router reference only)
 
 Authoring pass: `XINMAI-1.0-YOUTH-PRESSURE-CANDIDATE-REPRESENTATIVE-SAMPLE-PACK-B-AUTHORING-P0`
 
-The construction window is the AI-assisted author and performs mechanical self-checks only. Product Control Tower independently accepted 17 items; their four reviewer roles are attributed in data. The single revised item keeps reviewer, approval, and lock fields empty. This report does not claim pack-level `SAMPLE_ACCEPTED`.
+The construction window is the AI-assisted author and performed mechanical self-checks only. Product Control Tower independently accepted all 18 items; their four reviewer roles are attributed in data. Approval and lock fields remain empty because this is representative calibration, not a complete content-pack lock.
 
 ## Exact sample matrix
 
@@ -43,9 +43,9 @@ The construction window is the AI-assisted author and performs mechanical self-c
 | body/time/resource led | 6 |
 | negotiated choice/boundary led | 6 |
 | metadata completeness | 18/18 |
-| `SAMPLE_ACCEPTED / SAMPLE_DRAFT` | 17 / 1 |
-| accepted reviewer lineage | 17/17 |
-| revised reviewer / approval / lock fields empty | 1/1 |
+| `SAMPLE_ACCEPTED / SAMPLE_DRAFT` | 18 / 0 |
+| accepted reviewer lineage | 18/18 |
+| approval / lock fields empty | 18/18 |
 | Production Catalog entries | 0 |
 | Runtime AI dependency | 0 |
 
@@ -70,9 +70,9 @@ Normalization uses Unicode NFKC with punctuation and whitespace removed. Approxi
 
 Content hashes are SHA-256 over `stable_id`, `surface_zh_cn`, and `shell_zh_cn`, separated by U+001F.
 
-## Independent-review risk list
+## Expansion constraints
 
-- Final review scope is limited to the corrected EXISTENCE direction-transition item.
-- Independent review must confirm that “答应你退出后” unambiguously makes the user the exiting party and preserves the broken old-side scheduling promise.
+- Full-pack authoring must not let training, education, employment, shared living, or immediate deadlines dominate the portfolio.
+- Sample acceptance does not accept, approve, lock, or expose any future 72-item draft.
 
-Exit: `YOUTH FINAL 1 ITEM READY FOR CONTROL TOWER REVIEW`.
+Exit: `YOUTH PACK B 90 AUTHORING READY`.

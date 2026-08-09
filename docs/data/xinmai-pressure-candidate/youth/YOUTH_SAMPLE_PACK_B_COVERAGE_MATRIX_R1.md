@@ -1,6 +1,6 @@
 # YOUTH Representative Sample Pack B — Coverage Matrix R1
 
-Status: `17 SAMPLE_ACCEPTED / 1 SAMPLE_DRAFT / NOT_PRODUCTION`
+Status: `18 SAMPLE_ACCEPTED / CALIBRATION COMPLETE / NOT_PRODUCTION`
 
 | Field | Rule/information gap | Power/resource asymmetry | Boundary/commitment break | Total |
 |---|---|---|---|---:|
