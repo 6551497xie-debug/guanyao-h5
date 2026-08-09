@@ -1,79 +1,85 @@
-# MID_LIFE Representative Sample Pack A — Authoring Report P0
+# MID_LIFE Representative Sample Pack A — R1 Authoring Report P0
 
-Status: `SAMPLE_DRAFT / INDEPENDENT_REVIEW_REQUIRED / NOT_PRODUCTION`
+Status: `SAMPLE_DRAFT / ROUND_1_REVISED / SECOND_INDEPENDENT_REVIEW_REQUIRED / NOT_PRODUCTION`
 
-This report is an author self-check, not Editorial, Safety, Overlap, or Product Control approval. All 18 records disclose `AI_ASSISTED`; reviewer and lock fields are empty. No user data was used. The existing Draft Pool was consulted only as an editorial overlap source and no line was promoted mechanically.
+This is an authoring report, not an Editorial, Safety, Overlap, Product Control, or `SAMPLE_ACCEPTED` decision. All 18 records remain `AI_ASSISTED`; every reviewer and lock field is empty. Runtime and Production Catalog exposure remain zero.
 
-## 1. Sample distribution
+## 1. Matrix
 
-| Field | Rule/information gap context | Power/resource asymmetry context | Boundary/commitment break context |
+| Field | Rule/information gap | Power/resource asymmetry | Boundary/commitment break |
 |---|---|---|---|
-| POWER | project/organization | client/platform | transition/exit |
-| INTEREST | compensation | shared household resources | opportunity/exit |
-| RELATION | communication | time/attention | repair/transition |
-| FAMILY | care | household labor | major decisions |
-| SOCIAL | community/group | workplace peers | friendship |
-| EXISTENCE | time structure | body/energy routine | transition/direction |
+| POWER | accumulated-role handoff | twelfth-renewal client scope | old-role approval after transition |
+| INTEREST | established income rule after role change | recurring shared-household budget | exit from ten-year collaboration |
+| RELATION | six prior co-living renewals | two established work schedules | shared-expense decision before renewal |
+| FAMILY | new care coordination | agreed household procurement turn | relative move-in date decision |
+| SOCIAL | eight-year community role | long-standing peer visibility/access | fifteen-year friendship reciprocity |
+| EXISTENCE | work/care schedule collision | published rest-access schedule | new-industry transition pulled by old client |
 
-Result: six fields × three mechanics = 18; each field uses three distinct contexts. No sample is marked accepted or locked.
+Every field uses three different contexts and all three mechanics. The SOCIAL asymmetry item now concerns group visibility/access rather than workplace resources. The EXISTENCE items separately cover time structure, body/energy access, and transition/direction.
 
-## 2. MID_LIFE distinction
+## 2. R1 stage-authenticity response
 
-The sample set uses simultaneous long-term commitments, constrained time/resources, care coordination, and role adjustment as routing-relevant circumstances. It does not assume marriage, children, parent care, management, asset ownership, illness, decline, or a “midlife crisis”. “共同生活”, “家人”, and “长期关系” intentionally leave household and relationship form open.
+R1 does not add “长期 / 有限 / 多重责任 / 中年” as stage labels. It changes the event structures:
+
+- accumulated prior-role obligations remain after more than one role change;
+- repeated renewals and established income/service arrangements create concrete exit and renegotiation costs;
+- recurring shared-life agreements reach a new decision point;
+- established community, peer, and friendship roles encounter a visible reciprocity or access break;
+- a direction transition competes with an observable prior client commitment.
+
+These circumstances are not declared universal for MID_LIFE. Each candidate is only one recognizable reality option. No item assumes marriage, children, parent care, management, property ownership, illness, decline, or wealth level.
 
 ## 3. Responsibility distribution
 
-| Responsibility lead | Count | Intended editorial check |
-|---|---:|---|
-| Environment/system/other actor | 6 | changed rules, absent notice, or another actor's decision |
-| Body/time/resource constraint | 6 | scheduling, rest, budget, and available-resource limits |
-| Negotiated choice/boundary | 6 | an agreed coordination, transition, or boundary is not honored |
+| Responsibility lead | Count |
+|---|---:|
+| Environment/system/other actor | 6 |
+| Body/time/resource constraint | 6 |
+| Negotiated choice/boundary | 6 |
 
-This balanced sample is for calibration only. It does not pre-approve the future 15-item node distribution.
+## 4. Retired and replacement IDs
 
-## 4. Risk tags and review attention
+| Retired ID | R1 reason | Replacement ID |
+|---|---|---|
+| `PC-MID_LIFE-SOCIAL-WORKPLACE_PEERS-RESOURCE_ASYMMETRY-01` | content belonged to POWER/INTEREST rather than SOCIAL | `PC-MID_LIFE-SOCIAL-WORKPLACE_PEERS-ACCESS_ASYMMETRY-02` |
+| `PC-MID_LIFE-EXISTENCE-TRANSITION_DIRECTION-BOUNDARY_BREAK-01` | duplicated rest-access theme and lacked transition/direction | `PC-MID_LIFE-EXISTENCE-TRANSITION_DIRECTION-OLD_COMMITMENT_BREAK-02` |
 
-- `NON_NORMATIVE_HOUSEHOLD`, `NON_NORMATIVE_RELATIONSHIP`, and `NON_ASSUMPTIVE_FAMILY` flag wording that must stay open to different life arrangements.
-- `NO_HEALTH_INFERENCE` guards the rest-access item from becoming an age or disease claim.
-- `TIME_RESOURCE`, `MULTI_COMMITMENT`, and `ROLE_ADJUSTMENT` carry MID_LIFE context but must not become repetitive shorthand during full-pack authoring.
-- `COMMITMENT_BREAK` and `BOUNDARY_BREAK` require Control Tower review to confirm the observable agreement is explicit enough.
+Retired IDs are recorded in the pack and are not reused.
 
-## 5. Known semantic-overlap risks for independent review
+## 5. Updated overlap scan
 
-These are not duplicate findings; they are the closest conceptual neighborhoods requiring human review:
+Comparison sets: revised 18, Round 0 18 from commit `8fe201a…`, existing ESTABLISHING 90, and the Draft Pool.
 
-1. POWER transition/exit and EXISTENCE time-structure both involve role adjustment. The former is about responsibility authority continuing after handoff; the latter is about daily structure lacking a boundary.
-2. INTEREST shared resources and FAMILY household labor both occur in shared living. The former is budget decision allocation; the latter is labor allocation.
-3. POWER client scope and EXISTENCE rest boundary both involve scheduling. The former is client control over scope and delivery; the latter is preservation of a recurring daily-life boundary.
-4. RELATION time/attention and SOCIAL friendship coordination both involve limited time. The former concerns reciprocity inside a close ongoing relationship; the latter concerns group/friendship coordination labor.
-5. Draft Pool contains nearby themes of changed duties, missing notice, uneven household/family control, and unavailable rest. Exact wording was not reused; Control Tower must decide whether any situation is materially too close.
+| Scan | Result |
+|---|---|
+| normalized exact duplicates inside revised 18 | 0 |
+| normalized exact matches against old 18 | 1, the Control Tower `KEEP` FAMILY/CARE surface |
+| normalized exact matches against ESTABLISHING 90 + Draft Pool | 0 |
+| highest revised-internal character-bigram Jaccard | 0.128 |
+| highest revised-vs-old non-identical neighborhood | 0.226, RELATION repair/transition revision against its prior wording |
+| highest revised-vs-ESTABLISHING/Draft Pool Jaccard | 0.143 |
 
-## 6. Author self-check results
+Human attention remains required for:
+
+1. POWER transition and INTEREST compensation both start from a role change, but differ in approval authority versus income rules.
+2. INTEREST shared budget and FAMILY household procurement both occur in shared living, but differ in money allocation versus execution of agreed labor.
+3. RELATION co-living renewal and RELATION repair before renewal share a decision horizon but represent information absence versus a broken meeting commitment.
+4. FAMILY care scheduling and EXISTENCE work/care schedule collision both mention coordination; the former owns family responsibility assignment, the latter owns daily-time structure.
+5. SOCIAL workplace-peer access must remain about visibility and group role, not resource allocation.
+
+The scan is authoring evidence only; it cannot accept or reject semantic overlap.
+
+## 6. Mechanical self-check
 
 | Check | Result |
 |---|---|
-| JSON parse and required metadata | 18/18 present |
-| stable IDs | 18 unique |
-| workflow status | 18/18 `SAMPLE_DRAFT` |
-| assistance disclosure | 18/18 `AI_ASSISTED`, same recorded authoring-pass reference |
-| reviewer/lock fields | 18/18 empty |
+| JSON parse / required metadata / hashes | 18/18 |
+| stable IDs | 18 active unique; 2 retired with replacement links |
+| workflow / assistance | 18/18 `SAMPLE_DRAFT` and `AI_ASSISTED` |
+| reviewer / lock fields | 18/18 empty |
 | surface length | 18/18 within 12–30 Chinese characters excluding punctuation |
 | shell length | 18/18 within 6–20 Chinese characters excluding punctuation |
-| fields/mechanics | 6 fields × 3 mechanics exactly |
-| distinct contexts per field | 3/3 in every field |
-| normalized exact duplicate within samples | 0 |
-| normalized exact match against existing ESTABLISHING 90 and Draft Pool | 0 |
-| character-bigram similarity scan | highest observed Jaccard 0.176; no automatic rejection triggered |
-| Production Catalog imports or runtime references | 0 |
+| fields / mechanics / contexts | exact 6 × 3; three distinct contexts per field |
+| Production Catalog or Runtime reference | 0 |
 
-The normalized exact scan removes punctuation and whitespace before comparing surfaces and shells. The supplementary character-bigram scan compares each new surface/shell with existing ESTABLISHING and Draft Pool strings; its closest neighborhood is the EXISTENCE time-structure sample versus an existing multi-responsibility shell. Both scans are authoring information only and do not replace independent semantic-overlap review.
-
-## 7. Governance correction applied
-
-- Construction-window authoring is explicitly `AI_ASSISTED` with a required assistance reference.
-- The author and same authoring pass cannot self-review, self-lock, or auto-promote.
-- Independent Product Control Tower may execute all four frozen review roles with separately attributable decisions.
-- The user is not assigned item-by-item review of 360 candidates; user judgment remains at representative direction and final real experience.
-- Runtime AI dependency remains 0, and no AI-assisted draft can enter Catalog without independent review and lock.
-
-Requested exit after commit: `SAMPLE PACK A — READY FOR INDEPENDENT CONTROL TOWER REVIEW`.
+Exit requested after the docs/data-only commit: `SAMPLE PACK A R1 — READY FOR SECOND INDEPENDENT REVIEW`.
