@@ -1,8 +1,8 @@
 # MID_LIFE Content Pack A 90 — Coverage Matrix P0
 
-Status: `88 PACK_ACCEPTED / 2 PACK_DRAFT / FINAL REVIEW REQUIRED / NOT_PRODUCTION`
+Status: `90 PACK_ACCEPTED / CONTENT_LOCKED / NOT_PRODUCTION`
 
-Active composition after Round 2: 17 accepted calibration samples + 71 accepted authored records + 2 revised `PACK_DRAFT` = 90. One formerly accepted friendship sample is retained as retired history and excluded from active coverage.
+Final active composition: 17 accepted calibration samples + 73 accepted authored records = 90. One formerly accepted friendship sample is retained as retired history and excluded from active coverage.
 
 Each cell below is `[RULE_OR_INFORMATION_GAP, POWER_OR_RESOURCE_ASYMMETRY, BOUNDARY_OR_COMMITMENT_BREAK]`. Required and actual counts are `[1,1,1]` for every context.
 

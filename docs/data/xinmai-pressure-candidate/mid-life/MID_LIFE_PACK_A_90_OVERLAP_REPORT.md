@@ -1,6 +1,6 @@
-# MID_LIFE Content Pack A 90 — Final Two-Item R2 Overlap Report
+# MID_LIFE Content Pack A 90 — Final Locked Overlap Report
 
-Status: `AUTHORING SCAN ONLY / 2 ITEMS REQUIRE INDEPENDENT CONTROL TOWER REVIEW`
+Status: `INDEPENDENT REVIEW COMPLETE / PACK_ACCEPTED / CONTENT_LOCKED`
 
 Active set: 90 items. The retired friendship sample is excluded; its replacement is included.
 
@@ -21,4 +21,4 @@ The five internal neighborhoods remain below 0.25 and concern distinguishable st
 
 The sole legacy 0.25 pair remains the accepted POWER sample shell “你的版本没有进入讨论” versus Draft Pool wording “你的选择暂时没有进入安排”. That accepted text did not change in this knife.
 
-Control Tower must review the two revised items semantically; these metrics are not acceptance.
+Product Control Tower independently accepted both final items. These metrics remain supporting evidence rather than the source of acceptance.

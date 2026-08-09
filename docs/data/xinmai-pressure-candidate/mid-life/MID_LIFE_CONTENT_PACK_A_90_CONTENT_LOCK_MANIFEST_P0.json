@@ -1,0 +1,3260 @@
+{
+  "manifest_id": "XINMAI_MID_LIFE_CONTENT_PACK_A_90_CONTENT_LOCK_P0",
+  "life_stage": "MID_LIFE",
+  "pack_status": "PACK_ACCEPTED",
+  "active_item_count": 90,
+  "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+  "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+  "approved_at": "2026-08-10",
+  "locked_at": "2026-08-10",
+  "lock_scope": "EDITORIAL_CONTENT_IMMUTABILITY_ONLY",
+  "lock_digest_algorithm": "sha256(stable_id\\u001fsurface_zh_cn\\u001fshell_zh_cn\\u001fcontent_hash joined by newline in manifest order)",
+  "lock_digest": "sha256:53a90d7aa60ea7b4850d58fd23e7ad40e8f7751d7ab11b836229e2cf11430b56",
+  "production_catalog_eligible": false,
+  "production_catalog_migrated": false,
+  "runtime_ai_dependency": 0,
+  "runtime_changes": 0,
+  "source_parent_commit": "d5777071492b751d5034d17b0b100c1e528d4d41",
+  "items": [
+    {
+      "stable_id": "PC-MID_LIFE-POWER-PROJECT_ORGANIZATION-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "PROJECT_ORGANIZATION",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "新职责本周生效，旧业务仍没交接人",
+      "shell_zh_cn": "新旧两边都在本周交付",
+      "content_hash": "sha256:5cf8231e76656dbe8200a67bac5662c9f52219cd43833326ec57978506ab3256",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-POWER-CLIENT_PLATFORM-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "CLIENT_PLATFORM",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "续约后服务范围翻倍，对方仍要求原团队按原排期交付",
+      "shell_zh_cn": "新增任务没有新增人手和时间",
+      "content_hash": "sha256:90967741ed0108f6c9ab7f7d59b20c17851ea8a49dee8084fe17ccbf47ce0ce2",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-POWER-TRANSITION_EXIT-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "TRANSITION_EXIT",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "你转到新角色的首周，旧岗位审批仍全部发到你名下",
+      "shell_zh_cn": "两边流程都在等你签字",
+      "content_hash": "sha256:6b53d9e71dcd1e0776880be4542dd8492443847c3a992b909f71ae8bc3bdffff",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-COMPENSATION-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "COMPENSATION",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "你转到新角色后，原项目结算被暂停，新计法还没公布",
+      "shell_zh_cn": "本月两笔固定付款没着落",
+      "content_hash": "sha256:8c38b6c45883486e1f09b1b461c14d08c96a74dd973d79a08f8648ec9697c083",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-SHARED_HOUSEHOLD_RESOURCES-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "SHARED_HOUSEHOLD_RESOURCES",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "共同生活的固定账单新增续费，对方却独自删掉备用预算",
+      "shell_zh_cn": "下周续费没有可用额度",
+      "content_hash": "sha256:a47f55dee1a1b9a750b9a5c8db52853534c32ea7ea804393d6445bbde6941a40",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-OPPORTUNITY_EXIT-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "OPPORTUNITY_EXIT",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "你按约结束合作，对方仍把下季度档期标为独占",
+      "shell_zh_cn": "三个空档还不能接新项目",
+      "content_hash": "sha256:ce82be03aa99d83a6146e3ea5fe0f3249d07728075115e6faf9c9414d4b805b1",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-COMMUNICATION-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "COMMUNICATION",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "共同居住的租约下周到期，对方还没回应是否继续合住",
+      "shell_zh_cn": "房东只把房间留到周五",
+      "content_hash": "sha256:0249a6e1ee36bace37f478431a56ba795264eddff6bac0d173a3675353b3fe01",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-TIME_ATTENTION-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "TIME_ATTENTION",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "双方本月都改了排期，四次见面仍全挪到你的休息日",
+      "shell_zh_cn": "你的四个休息日都被占用",
+      "content_hash": "sha256:36aa1d80b4b6da0bfae255c6f8a7704ea92cb5e07587e7434e4f2202a398a3d5",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-REPAIR_TRANSITION-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "REPAIR_TRANSITION",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "你们约好在续租前重排共同开支，对方当天临时离开",
+      "shell_zh_cn": "续租日期只剩三天",
+      "content_hash": "sha256:72334715a3f75f0ac78eeb8e54166d86e1e62a713cc52bb5f92fa03511452d52",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-CARE-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "CARE",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "家里新增一项长期照护，谁来协调还没说定",
+      "shell_zh_cn": "下周三次接送还没人排",
+      "content_hash": "sha256:dceb613f6da0335952b053ef8727f35bed391c07a844e1e3c2a79b4f38b5fc10",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-HOUSEHOLD_LABOR-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "HOUSEHOLD_LABOR",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "共同生活者确认轮流采购后，本周清单又全部发给你",
+      "shell_zh_cn": "今晚还缺四样日用品",
+      "content_hash": "sha256:cdb3bee9f67478f5a9e7722a24ba7db526a42a1f4b5ec86257b6f9ab070678a8",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-MAJOR_DECISIONS-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "MAJOR_DECISIONS",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "家人答应商量亲属来住的日期，却先订了下周搬车",
+      "shell_zh_cn": "你的两周排期要重新安排",
+      "content_hash": "sha256:0b5a6dc5ebb9a76962de7415af65ac17e58e3611a3a0265a0c01ebcb40d5dbd2",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-COMMUNITY_GROUP-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "COMMUNITY_GROUP",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "你已有固定社群值班，规则改后本月班次翻倍却无人说明",
+      "shell_zh_cn": "本月多出四次夜间值班",
+      "content_hash": "sha256:6a14dc242444445fba024adf4196afc6419fd28ed0a73ef4b41a1cb8fe4f52e2",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-WORKPLACE_PEERS-ACCESS_ASYMMETRY-02",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "WORKPLACE_PEERS",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "部门重组后，原协作同事另建决策群，没有邀请你",
+      "shell_zh_cn": "本周三次讨论都在会后才收到",
+      "content_hash": "sha256:299a2e063ee6be8c928a4301fd0f764b5d6fd93b523bc0a58eb77e2cd1b7f994",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-TIME_STRUCTURE-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "TIME_STRUCTURE",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "工作排班本周更换，家中照护的三个时段仍没人确认",
+      "shell_zh_cn": "下周三个晚间时段重叠",
+      "content_hash": "sha256:03ae2e21158adf1c2a1ceb115dd3beaedbb1571607460ce78b9e35e8b125818c",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-BODY_ENERGY_ROUTINE-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "BODY_ENERGY_ROUTINE",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "排班表连续三周只留一天休息，本周仍照原表发布",
+      "shell_zh_cn": "下一次完整休息还要等九天",
+      "content_hash": "sha256:501be55ee0d404fe318fcccb6a6db5692841422d3cc200d6a4a1551eec6888be",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-TRANSITION_DIRECTION-OLD_COMMITMENT_BREAK-02",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "TRANSITION_DIRECTION",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "你为转入新行业停掉旧接单，旧客户又追加三个月需求",
+      "shell_zh_cn": "新方向的两次面试要改期",
+      "content_hash": "sha256:f414d814315270dfaa38288a3e32d9e99dfe4301bb518f3da4ae83372c582446",
+      "source_file": "MID_LIFE_REPRESENTATIVE_SAMPLE_PACK_A_P0.json",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-POWER-DIRECT_AUTHORITY-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "DIRECT_AUTHORITY",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "新负责人到任后，哪些决定仍由你签字没有说明",
+      "shell_zh_cn": "今天三项申请都停在你这里",
+      "content_hash": "sha256:d0785f72d8482622ef568d73835b74b9a61e1a8941cee2cf730f3254a80f2f60",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-POWER-DIRECT_AUTHORITY-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "DIRECT_AUTHORITY",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "负责人要求你承担结果，却把关键权限留给另一人",
+      "shell_zh_cn": "同一件事要等两次批准",
+      "content_hash": "sha256:fda219a62c486020a0b8e942f82b8c940908f70375f8517ba4c1e5a2eac11ffa",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-POWER-DIRECT_AUTHORITY-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "DIRECT_AUTHORITY",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "对方答应会前共同定方案，开场后却直接替你宣布",
+      "shell_zh_cn": "你的版本没有进入讨论",
+      "content_hash": "sha256:b2b5ea825f3b10f08f335d4f58dc043f0647ec1489e7df7ca9106fc2c5fcad06",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-POWER-PROJECT_ORGANIZATION-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "PROJECT_ORGANIZATION",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "项目合并后，你负责交付却拿不到另一组的进度",
+      "shell_zh_cn": "本周节点缺一半信息",
+      "content_hash": "sha256:192002cfd956ba7f1cab18a997d337c0c4cb655412a5ccf82efe0d470245da46",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-POWER-PROJECT_ORGANIZATION-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "PROJECT_ORGANIZATION",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "团队约好轮换救急，本次缺口又只通知你补上",
+      "shell_zh_cn": "原定事项要让出两天",
+      "content_hash": "sha256:303f1a2ec8fd13a3dc2b02ccc3351c52a3445749119f35b2900e8ec2d2c20b6a",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-POWER-CLIENT_PLATFORM-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "CLIENT_PLATFORM",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "平台更换审核规则，已提交的内容按哪版处理没说明",
+      "shell_zh_cn": "三项发布都停在审核中",
+      "content_hash": "sha256:0619ddad0386f22581a5b773d3b0a68d670637952f8be9f7a44b85fe1dd06294",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-POWER-CLIENT_PLATFORM-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "CLIENT_PLATFORM",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "客户答应由双方确认改动，上线前却直接换了版本",
+      "shell_zh_cn": "你交付的内容无法对上",
+      "content_hash": "sha256:3e1e71cbcc9173c9af3a9e56c74c4bbe0310b1a716d1ea1702b1b3e0a63aaa99",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-POWER-PUBLIC_EVALUATION-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "PUBLIC_EVALUATION",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "公开评审临时增加一项标准，会前没有给出定义",
+      "shell_zh_cn": "已经完成的部分要重核",
+      "content_hash": "sha256:e703a9b74ceb89c17acae7ce6b6cdc0ffd1346b4e5010bb527cffb688689e5d9",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-POWER-PUBLIC_EVALUATION-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "PUBLIC_EVALUATION",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "同场评审中，对方能看全部材料，你只能看摘要",
+      "shell_zh_cn": "回应时缺少原始依据",
+      "content_hash": "sha256:c7a367e8e657bc6c241b6cab44129dab089010f1dcd18bf98ce1345b379dcaf7",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-POWER-PUBLIC_EVALUATION-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "PUBLIC_EVALUATION",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "主持人答应给你回应时间，却在提问后直接结束",
+      "shell_zh_cn": "三项质疑没有机会说明",
+      "content_hash": "sha256:112884c78899c519d1b9cb73fcf5ada9f020dcc8d4c14613a2c37ce48c62888d",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-POWER-TRANSITION_EXIT-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "TRANSITION_EXIT",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "你开始交接后，哪些事项还能由你决定没有列清",
+      "shell_zh_cn": "今天两项请求无人接手",
+      "content_hash": "sha256:14f17549ce7c592cd8294277aabb32a6ab560c1d8a6b52260376e0143ed0fb0e",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-POWER-TRANSITION_EXIT-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "POWER",
+      "coverage_context": "TRANSITION_EXIT",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "退出原角色后，你仍担责却看不到后续处理记录",
+      "shell_zh_cn": "结果出错仍会追到你",
+      "content_hash": "sha256:6d7d383de4a5e80e3432390af3e3365474ea928a5dda8da87074081731b5cd19",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-COMPENSATION-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "COMPENSATION",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "同样新增职责，另一岗位已有补贴，你的仍按原标准",
+      "shell_zh_cn": "本月收入少一项补偿",
+      "content_hash": "sha256:3d299877682a747a426d84c2fa16a5abced9086f1438a691328204f3a6b6ccd7",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-COMPENSATION-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "COMPENSATION",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "对方答应本月补齐差额，到账时仍沿用旧金额",
+      "shell_zh_cn": "两笔固定支出需要改期",
+      "content_hash": "sha256:c40bb956570f9a13776fba365253fb4c261ee565913f232042590bc66a08f63b",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-PARTNERSHIP_CONTRACT-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "PARTNERSHIP_CONTRACT",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "合作者发来新版合同，新增费用由谁承担没有写明",
+      "shell_zh_cn": "本周签约无法确认成本",
+      "content_hash": "sha256:522ed553004e3ff0904a7ded2cb80095c38a8aeac1c4ad50c231cffbce7283ac",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-PARTNERSHIP_CONTRACT-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "PARTNERSHIP_CONTRACT",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "双方共同投入的项目，只给一方查看完整账目",
+      "shell_zh_cn": "本月分配没有核对依据",
+      "content_hash": "sha256:f19c884dcae22c6d2dea50b22c28e2a1b88c4fcd7bf2fbcfd7b420f310caf32b",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-PARTNERSHIP_CONTRACT-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "PARTNERSHIP_CONTRACT",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "约定先确认报价再开工，对方却已按低价接下订单",
+      "shell_zh_cn": "这单工时覆盖不了成本",
+      "content_hash": "sha256:c67c700b3424c8803cc665c730a288b200584194bb8f62790b7bba95d3c42764",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-SHARED_HOUSEHOLD_RESOURCES-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "SHARED_HOUSEHOLD_RESOURCES",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "共同生活的新账单开始扣款，分担比例还没说定",
+      "shell_zh_cn": "这笔扣款还没人分担",
+      "content_hash": "sha256:729828d46426b724df6161fa91da267323b5dd5d7ed369feb9b554ac2e91dabf",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-SHARED_HOUSEHOLD_RESOURCES-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "SHARED_HOUSEHOLD_RESOURCES",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "双方约好大额支出先商量，对方当天直接付款",
+      "shell_zh_cn": "下一笔固定费用缺口出现",
+      "content_hash": "sha256:788d649adc66648ee530951a8709f418d827aeb616f71a65e8d0fc55d64bb4bf",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-INVESTMENT_DEBT-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "INVESTMENT_DEBT",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "借款续期通知已经到达，新利率何时生效没写清",
+      "shell_zh_cn": "扣款日前仍不知道要还多少",
+      "content_hash": "sha256:12f336a34b6d2cd816cb569b84459009287e52cc4fc3c6e28c72b10f6c65b413",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-INVESTMENT_DEBT-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "INVESTMENT_DEBT",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "共同承担的借款只允许一人调整还款计划",
+      "shell_zh_cn": "你的收入变化无法计入",
+      "content_hash": "sha256:7338f060e6d30c6a2909ed07303b320ae038200e982a2d8a370c80c5e4b6f743",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-INVESTMENT_DEBT-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "INVESTMENT_DEBT",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "对方答应按约归还垫款，到期只转来其中一部分",
+      "shell_zh_cn": "下周采购还缺一笔钱",
+      "content_hash": "sha256:454d649824ec853785093da6a97b896e41c5f0ce1acf6678bf464b3e6a0ab908",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-OPPORTUNITY_EXIT-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "OPPORTUNITY_EXIT",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "退出方案已经提出，剩余分成怎样结算没有回复",
+      "shell_zh_cn": "下月预算少了这笔结算",
+      "content_hash": "sha256:3ab4efeb437e85dd5bc20694cd0a5c4175656edffa312e99602231951c8d9126",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-INTEREST-OPPORTUNITY_EXIT-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "INTEREST",
+      "coverage_context": "OPPORTUNITY_EXIT",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "新合作要求本周确认，原项目的保证金仍未退回",
+      "shell_zh_cn": "现有资金只够留下一项",
+      "content_hash": "sha256:efb0656e07598edb796ad926f062e1617252d671dd1ca2becb5cd3d60f55c0f9",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-COMMUNICATION-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "COMMUNICATION",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "你说完共同安排的顾虑，对方只定下自己的时间",
+      "shell_zh_cn": "你的可用时段没有被计算",
+      "content_hash": "sha256:5a328102661526d864db7be7c03c49650d21855f479fa737402d8b918be13ecd",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-COMMUNICATION-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "COMMUNICATION",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "对方答应今晚回复重要决定，到睡前仍没有消息",
+      "shell_zh_cn": "明早是否同行还没定",
+      "content_hash": "sha256:32e3250326b4bd42bb6f6b272cb832597c068a8e18752b8c85b478941799b8a6",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-TIME_ATTENTION-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "TIME_ATTENTION",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "双方本月都换了作息，下一次见面由谁调整没说定",
+      "shell_zh_cn": "本周没有共同空档",
+      "content_hash": "sha256:2fd9b3c3154789ad08b95df02d59aa2d0ff1542c4b4b44dff52462d1ebda6c08",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-TIME_ATTENTION-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "TIME_ATTENTION",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "约好轮流改期后，对方又把本次调整留给你",
+      "shell_zh_cn": "你原定的见面要往后移",
+      "content_hash": "sha256:1d4ca3dd1f3ce247662622ca8b26b5ec73354e4a13807597a22036500901a6c9",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-COMMITMENT-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "COMMITMENT",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "共同生活是否继续已经提上日程，对方不说明期限",
+      "shell_zh_cn": "下月住处无法确定",
+      "content_hash": "sha256:e8f920223673831b760c301ae4b6d06bb6437454be890a149f750813cb7504ea",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-COMMITMENT-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "COMMITMENT",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "对方要求你先保留共同出行日期，自己的时间却不确认",
+      "shell_zh_cn": "两张车票的退改期限只剩一天",
+      "content_hash": "sha256:d7f2756cf7de700f4c16f671c3d10fbb18dd6209b560c6858b769aa67d0a8011",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-COMMITMENT-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "COMMITMENT",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "你们约好结束固定的周末见面，对方又以两人名义订了下月行程",
+      "shell_zh_cn": "两人的下月订单已经生成",
+      "content_hash": "sha256:fcdb6ccd4b16107c3ca619625b505562c98e1a4cd14e3fb10826386264960764",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-SHARED_DECISION_BOUNDARY-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "SHARED_DECISION_BOUNDARY",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "要不要接下新的共同责任，讨论前没有列出分工",
+      "shell_zh_cn": "决定日期已经临近",
+      "content_hash": "sha256:b237180a6fe3c5b68e8ead733dd3a8f4e08a6f0a747bf6d41e59f5255d71b553",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-SHARED_DECISION_BOUNDARY-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "SHARED_DECISION_BOUNDARY",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "共同计划需要两人同意，对方却独自保留最终决定",
+      "shell_zh_cn": "下周执行只按对方时间",
+      "content_hash": "sha256:908700b12634fe77d1f8581a0067ba9ca09dc13fb0ad683322e951f421b72e06",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-SHARED_DECISION_BOUNDARY-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "SHARED_DECISION_BOUNDARY",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "约好不替对方答应事情，对方仍以两人名义确认",
+      "shell_zh_cn": "你下周多出一次承诺",
+      "content_hash": "sha256:303fca72ba299cec8785e82ed30e0b46d490c287bcaee9a528cfc3d09d0c2669",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-REPAIR_TRANSITION-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "REPAIR_TRANSITION",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "冲突后约定重新说明边界，谈话时间一直没有确定",
+      "shell_zh_cn": "同一件事再次发生",
+      "content_hash": "sha256:5bb979b3cfaa68d6d647c87d1406b1787e5bbc2606ad74195a1cb355c58d024b",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-RELATION-REPAIR_TRANSITION-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "RELATION",
+      "coverage_context": "REPAIR_TRANSITION",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "修复关系的行动都由你安排，对方只决定是否出现",
+      "shell_zh_cn": "三次预留时间都落空",
+      "content_hash": "sha256:92a37335572bc92afd7a658d19d55cf4c9efcfc862d571c6e190e15d3a7e2152",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-CARE-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "CARE",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "照护事项由多人商量，实际联络却只留给你",
+      "shell_zh_cn": "今天四通电话都要你处理",
+      "content_hash": "sha256:e2db22a0afbec3188707c057f9ec823978d1da55c81c73819d40f891837ae349",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-CARE-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "CARE",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "家人答应接替一次陪同，到当天又让你过去",
+      "shell_zh_cn": "原定工作要临时取消",
+      "content_hash": "sha256:102d099dac9f9d5d23e4de238deba51c99298900a966a6946035b20fd10ba257",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-HOUSEHOLD_LABOR-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "HOUSEHOLD_LABOR",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "共同生活者换了作息，本周家务怎样轮换没说定",
+      "shell_zh_cn": "今晚两项事情没人做",
+      "content_hash": "sha256:1c56bf2d79f44632fe65912431fec47f9f26776063fbfc27efaa2e106a1ed8e3",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-HOUSEHOLD_LABOR-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "HOUSEHOLD_LABOR",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "确认各自负责一项家务后，对方又把那项留在原处",
+      "shell_zh_cn": "明早使用前还得补做",
+      "content_hash": "sha256:21247cf4a56a5c1b502f0a0c3d0f2d6240b334bab7b0927c4b1ac42e50ed7279",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-MONEY_RESOURCES-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "MONEY_RESOURCES",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "家庭共同费用新增一项，谁负责付款还没确认",
+      "shell_zh_cn": "扣款日只剩两天",
+      "content_hash": "sha256:6ea391fec54c20cca975da062e1934602de72ec1ef0f3e738bc9d6bcbc77616b",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-MONEY_RESOURCES-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "MONEY_RESOURCES",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "家庭费用由多人使用，账户明细却只给一人查看",
+      "shell_zh_cn": "本月分担无法核对",
+      "content_hash": "sha256:f3c4fbe117ae1eed60d4a8618aaaeeeac77fe499492a7322dfa49e1e10d6c6a5",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-MONEY_RESOURCES-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "MONEY_RESOURCES",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "家人答应先确认费用再办理，却已替大家下单",
+      "shell_zh_cn": "每个人要补的金额变了",
+      "content_hash": "sha256:65e64cec7461f6b8d1de2b055173535053d93b9127428ccd12291ebd386edb8e",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-MAJOR_DECISIONS-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "MAJOR_DECISIONS",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "亲属准备来住一段时间，离开日期还没人确认",
+      "shell_zh_cn": "下月房间安排悬着",
+      "content_hash": "sha256:f6ec615e03c7982a55be76ac7ab599cfde3cc503de2b32e3e2414f3032ab07c3",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-MAJOR_DECISIONS-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "MAJOR_DECISIONS",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "家庭共同决定只在群里征询，最终时间由一人定下",
+      "shell_zh_cn": "你的排期没有被考虑",
+      "content_hash": "sha256:9f4f456da6ff9d69e8f1588850be5ada8a6d584439dc97d70f82b338353dff06",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-INTERGENERATIONAL_COHABITATION-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "INTERGENERATIONAL_COHABITATION",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "两代家人开始同住，公共房间的使用时间还没说定",
+      "shell_zh_cn": "今晚谁能使用没有规则",
+      "content_hash": "sha256:56d91d0a0c75694f41b6cdc88f46569355f563646ff6d55ec711dd137832ca0b",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-INTERGENERATIONAL_COHABITATION-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "INTERGENERATIONAL_COHABITATION",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "两代亲属共用一个房间，收纳空间只由一方分配",
+      "shell_zh_cn": "你的物品只能放在过道",
+      "content_hash": "sha256:262417ebabbc8f1bb5e96241845939fb25d3c440ca3813d6144806d4d4a0aa62",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-FAMILY-INTERGENERATIONAL_COHABITATION-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "FAMILY",
+      "coverage_context": "INTERGENERATIONAL_COHABITATION",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "两代家人约好确认入住日期后再送行李，行李却提前到了门口",
+      "shell_zh_cn": "今晚没有预留放置空间",
+      "content_hash": "sha256:4f1989b49a9fbf7dfae73cb651c4b6cece80c96ea525d736d4470f8defd2f2a6",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-WORKPLACE_PEERS-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "WORKPLACE_PEERS",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "原协作组拆分后，谁继续参加例会没有通知",
+      "shell_zh_cn": "本周讨论少了你的席位",
+      "content_hash": "sha256:5d5003e6ae67d95911505bb43df0a07c7f7dc495e3d91c8a7fdbf17d27d653b9",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-WORKPLACE_PEERS-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "WORKPLACE_PEERS",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "同事约好互相补位，你需要时却没人回应",
+      "shell_zh_cn": "今天的环节只剩你承担",
+      "content_hash": "sha256:b149aaeb4c14654bac06730ff8e9fb4d5337a2806ac32a94c703fde12f242415",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-FRIENDSHIP-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "FRIENDSHIP",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "朋友们改到新的见面地点，谁负责通知还没说定",
+      "shell_zh_cn": "两个人仍去了原来的地方",
+      "content_hash": "sha256:f3da2e04badc0660e65acad378dbd6d19979a8e46ec5f1b8c51310e4206d706c",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-FRIENDSHIP-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "FRIENDSHIP",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "朋友们约见时，地点连续三次都由同一小群先定",
+      "shell_zh_cn": "你每次都要多转两趟车",
+      "content_hash": "sha256:72de959f92a7cdb5a8d09469a32bc9dbd147595a66e8db37afdcb606a12d7c6d",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-FRIENDSHIP-INCLUSION_COMMITMENT_BREAK-02",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "FRIENDSHIP",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "朋友们约好聚会改期时互相说明，这次却没人告诉你",
+      "shell_zh_cn": "你到场后才知道日期已改",
+      "content_hash": "sha256:418191027a493058e9e82be72de837448bbe13cb8595956f2872fabebc615f2a",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-COMMUNITY_GROUP-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "COMMUNITY_GROUP",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "社群活动由大家共同筹备，场地权限却只给少数人",
+      "shell_zh_cn": "你的准备无法进入现场",
+      "content_hash": "sha256:a043f9a09ffb44516b1dc6b44931e766de0ccacda343d662bdeb403b41404942",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-COMMUNITY_GROUP-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "COMMUNITY_GROUP",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "小组答应轮换主持，临近开始又让你继续顶上",
+      "shell_zh_cn": "今晚个人安排被挪到下周",
+      "content_hash": "sha256:ae2bb81717b9375b941dd50a8be62db5fa73e44c205e610f973788232759605e",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-DIGITAL_SOCIAL_VISIBILITY-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "DIGITAL_SOCIAL_VISIBILITY",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "群聊迁到新平台后，旧成员如何加入没有说明",
+      "shell_zh_cn": "三条重要通知没有收到",
+      "content_hash": "sha256:abe0efb1650fc5379622bca000c5721fe9a15843e05277f3a64ea7890766e09d",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-DIGITAL_SOCIAL_VISIBILITY-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "DIGITAL_SOCIAL_VISIBILITY",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "同一社群发布近况，只有部分成员能看到完整内容",
+      "shell_zh_cn": "你收到的信息总晚一步",
+      "content_hash": "sha256:c306124a941b8827ef0ad11dcbd8bf616d8c79b90815d423ae15fec06e33b799",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-DIGITAL_SOCIAL_VISIBILITY-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "DIGITAL_SOCIAL_VISIBILITY",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "大家约好不公开私下内容，有人却把截图发进大群",
+      "shell_zh_cn": "原本的小范围讨论被扩散",
+      "content_hash": "sha256:ed8b1c9f458b857505ca297865bb10b50a7a474d5eed7cb9002b57a93400533d",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-BELONGING_EXIT-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "BELONGING_EXIT",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "固定参加的活动换了场地，原参与者怎样保留名额没说明",
+      "shell_zh_cn": "下次报名入口还没开放",
+      "content_hash": "sha256:d5a7c94f03fcc0e0b0fcbaae0b40d5b8141a3fb82558dc58fe281fdf9174b996",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-BELONGING_EXIT-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "BELONGING_EXIT",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "活动发言时段被少数人提前占满，其他人没有报名入口",
+      "shell_zh_cn": "你的回应只能留到结束后",
+      "content_hash": "sha256:788cb199040112792042cba1b579f7b89bd1b0770dc9124f580837b714ba314c",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-SOCIAL-BELONGING_EXIT-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "SOCIAL",
+      "coverage_context": "BELONGING_EXIT",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "你说明暂时退出一次活动，群里仍把任务算在你名下",
+      "shell_zh_cn": "本周需要重新找人接手",
+      "content_hash": "sha256:9c7ebfbb35d1ea1bda5263786ba41650e37519d90b480859795acc18fdae4479",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-BODY_ENERGY_ROUTINE-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "BODY_ENERGY_ROUTINE",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "最近工作时段变化，吃饭和休息怎样安排还没稳定",
+      "shell_zh_cn": "今天两餐只能临时解决",
+      "content_hash": "sha256:3823cc54f87cc048fd8c69b828ca5f2613c7b824471e6b1e0af37ea584877c49",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-BODY_ENERGY_ROUTINE-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "BODY_ENERGY_ROUTINE",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "你划出每天的停工时间，合作方仍在那段反复来电",
+      "shell_zh_cn": "连续三个晚上没有完整休息",
+      "content_hash": "sha256:259278f221158cec305194dec7362190d3392d88b65183a71034598a89e61681",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-TIME_STRUCTURE-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "TIME_STRUCTURE",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "工作和照护时段同时变化，可调整的只有你的部分",
+      "shell_zh_cn": "下周四个时段发生重叠",
+      "content_hash": "sha256:a257a336f31c7fe0c7ae7e82cf8d04164ae4d3cdd9ae148628b57ade545b9e8c",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-TIME_STRUCTURE-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "TIME_STRUCTURE",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "你已停掉一个晚间安排，新的请求又占进同一时段",
+      "shell_zh_cn": "原本留下的空档再次消失",
+      "content_hash": "sha256:11210695201e984189660bf58516b641ee8f612e328a5e78dc9fe1210cfcf033",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-WORK_ROLE_MEANING-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "WORK_ROLE_MEANING",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "原来的工作内容结束后，新角色具体做什么没人说明",
+      "shell_zh_cn": "每天到岗却没有明确任务",
+      "content_hash": "sha256:378ceeb749c9d8ecc1e138b72f15f39d3fcb48f6809b383bae864e9db301ad30",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-WORK_ROLE_MEANING-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "WORK_ROLE_MEANING",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "你每天仍在做现场服务，职责表却只列文书整理",
+      "shell_zh_cn": "实际工作没有写进新角色",
+      "content_hash": "sha256:1d094948650ef13c47c3c69fa320ea956637b7b56cf3a681246fbb8fb920ebb0",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-WORK_ROLE_MEANING-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "WORK_ROLE_MEANING",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "你已书面退出周末培训，下一期排班仍把你列为讲师",
+      "shell_zh_cn": "下月两个周末又被占用",
+      "content_hash": "sha256:6201c1f16c2c261d06cf6026afd67f8ccbe83cf89514fb822b2703a5550cfecf",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-FINANCIAL_BASELINE-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "FINANCIAL_BASELINE",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "独居后的第一张整月账单到了，固定开销还没算清",
+      "shell_zh_cn": "月底还剩多少现在算不出",
+      "content_hash": "sha256:964a6fd4ce8a34ba5f50a5a4d6a3004dff23c436f7c42b18af79f1f8101f050f",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-FINANCIAL_BASELINE-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "FINANCIAL_BASELINE",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "收入减少后，必要开销能调整的部分只剩在你这边",
+      "shell_zh_cn": "下周两项支出要重排",
+      "content_hash": "sha256:ec79e6978fb91055e2053f09fb6255432474b035f8e2cebccf1da562297bcee2",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-FINANCIAL_BASELINE-COMMITMENT_BREAK-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "FINANCIAL_BASELINE",
+      "pressure_mechanic": "BOUNDARY_OR_COMMITMENT_BREAK",
+      "surface_zh_cn": "共同承担者答应按时转来费用，到期仍没有到账",
+      "shell_zh_cn": "本周基本开销出现缺口",
+      "content_hash": "sha256:c4f02fe02214a89ac8ccd443a769ccd4b3e1cbc7991b307606579c6d8f13f194",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-TRANSITION_DIRECTION-RULE_GAP-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "TRANSITION_DIRECTION",
+      "pressure_mechanic": "RULE_OR_INFORMATION_GAP",
+      "surface_zh_cn": "你准备结束现有工作，新方向何时开始还没有答复",
+      "shell_zh_cn": "新方向的起步日期仍空着",
+      "content_hash": "sha256:3938bc1f26d8fa25edc0135e72eda218a75389bcae494a8730883a5bfcdb1ecf",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    },
+    {
+      "stable_id": "PC-MID_LIFE-EXISTENCE-TRANSITION_DIRECTION-RESOURCE_ASYMMETRY-01",
+      "life_stage": "MID_LIFE",
+      "pressure_field": "EXISTENCE",
+      "coverage_context": "TRANSITION_DIRECTION",
+      "pressure_mechanic": "POWER_OR_RESOURCE_ASYMMETRY",
+      "surface_zh_cn": "转向新领域需要学习时间，旧工作却占满所有白天",
+      "shell_zh_cn": "本周没有完整练习时段",
+      "content_hash": "sha256:99ddb8dc44aff5478ffe7c1a9f800c0d6dd5ee85b1ea241175ea90d07c407b06",
+      "source_file": "MID_LIFE_CONTENT_PACK_A_72_DRAFT_P0.yaml",
+      "review_lineage": {
+        "editorial": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "safety": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "overlap": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        },
+        "product_control": {
+          "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+          "date": "2026-08-10",
+          "decision": "ACCEPT"
+        }
+      },
+      "approved_by": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "approved_at": "2026-08-10",
+      "locked_at": "2026-08-10"
+    }
+  ]
+}

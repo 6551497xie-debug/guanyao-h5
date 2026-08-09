@@ -1,21 +1,21 @@
-# MID_LIFE Content Pack A 90 — Final Two-Item Revision R2 Report
+# MID_LIFE Content Pack A 90 — Final Acceptance and Content Lock Report
 
-Status: `FINAL 2 ITEMS READY FOR CONTROL TOWER REVIEW / NOT PACK_ACCEPTED / NOT_PRODUCTION`
+Status: `90 / 90 ACCEPT / PACK_ACCEPTED / CONTENT_LOCKED / NOT_PRODUCTION`
 
 ## Review state
 
-- Round 2 decision: 11 ACCEPT / 2 REVISE / 0 REJECT.
+- Final decision: 90 ACCEPT / 0 REVISE / 0 REJECT.
 - Reviewer: `XINMAI_PRODUCT_CONTROL_TOWER`; date: `2026-08-10`.
-- Active accepted content: 17 accepted calibration samples + 71 accepted authored records = 88.
-- Active pending content: 2 same-ID revisions = 2 `PACK_DRAFT / AI_ASSISTED`.
+- Active accepted content: 17 accepted calibration samples + 73 accepted authored records = 90.
+- Active pending content: 0.
 - Retired history: the previously accepted friendship sample remains unchanged with its full review provenance and is excluded from active coverage.
-- Production lock and Catalog eligibility: 0.
+- Content lock: 90/90; Production Catalog eligibility: false.
 
 ## Scope proof
 
-- Only the exact two Control Tower items were revised.
-- The other 88 active items retain surface, shell, stable ID, and content hash byte-for-byte from parent commit `aad62b81e05ba86a02d6db9a4ccfd1e7bf7d2582`.
-- Both revised items retain their stable IDs.
+- No item text was revised in the acceptance-and-lock knife.
+- All 90 active items retain surface, shell, stable ID, and content hash byte-for-byte from parent commit `d5777071492b751d5034d17b0b100c1e528d4d41`.
+- The final two items now carry independent acceptance lineage.
 - The replacement friendship item is now independently accepted; its retired predecessor and replacement links remain unchanged.
 - No protocol, Runtime, Catalog, Adapter, Gate, Page, Schema, or Store file changed.
 
@@ -24,7 +24,7 @@ Status: `FINAL 2 ITEMS READY FOR CONTROL TOWER REVIEW / NOT PACK_ACCEPTED / NOT_
 | Check | Result |
 |---|---|
 | active items | 90 |
-| accepted / pending review | 88 / 2 |
+| accepted / pending review | 90 / 0 |
 | fields | six × 15 |
 | mechanics | 30 / 30 / 30 |
 | coverage slots | 30 contexts × 3 mechanics, each occupied once |
@@ -35,7 +35,7 @@ Status: `FINAL 2 ITEMS READY FOR CONTROL TOWER REVIEW / NOT PACK_ACCEPTED / NOT_
 | internal bigram Jaccard ≥0.25 | 0 |
 | safety/stereotype frozen keyword hits | 0 |
 
-Mechanical results do not accept the two revised items. Their reviewer, approval, and lock fields remain empty.
+Independent Product Control acceptance—not mechanical results—accepts and content-locks the complete pack. The lock does not authorize Production Catalog migration.
 
 ## Replacement
 
@@ -44,4 +44,4 @@ Mechanical results do not accept the two revised items. Their reviewer, approval
 - Old wording/hash/review history: preserved.
 - Replacement status: `PACK_ACCEPTED / ACCEPT`; not approved, locked, or Production Catalog eligible.
 
-Exit: `FINAL 2 ITEMS READY FOR CONTROL TOWER REVIEW`.
+Exit: `MID_LIFE CONTENT PACK A 90 PACK_ACCEPTED / CONTENT_LOCKED / NOT_PRODUCTION`.
