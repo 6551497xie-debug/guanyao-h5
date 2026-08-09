@@ -1,5 +1,7 @@
 # YOUTH Content Pack B 90 — Coverage Matrix P0
 
+Status: `72 ACCEPTED / 18 PACK_DRAFT / NOT PACK_ACCEPTED / NOT_PRODUCTION`
+
 Each cell is `[RULE_OR_INFORMATION_GAP, POWER_OR_RESOURCE_ASYMMETRY, BOUNDARY_OR_COMMITMENT_BREAK]`; every context is `[1,1,1]`.
 
 | Field | Context 1 | Context 2 | Context 3 | Context 4 | Context 5 | Total |

@@ -9,13 +9,13 @@ These are lexical signals and are intentionally non-exclusive; one item may cont
 | Structure signal | Active items |
 |---|---:|
 | training/education/learning | 3 |
-| employment/work | 30 |
-| gig/individual/platform work | 10 |
-| shared living | 9 |
-| family coordination | 11 |
-| peer/community participation | 13 |
+| employment/work | 29 |
+| gig/individual/platform work | 12 |
+| shared living | 8 |
+| family coordination | 12 |
+| peer/community participation | 14 |
 | digital space/access | 16 |
-| direction/exit/transition | 14 |
+| direction/exit/transition | 12 |
 | immediate tonight/tomorrow/this-week deadline | 9 |
 
 ## How the portfolio avoids YOUTH stereotypes
