@@ -8,3 +8,5 @@ Normalization: Unicode NFKC, punctuation and whitespace removed. Approximation: 
 | ESTABLISHING 90 + MID_LIFE locked 90 + YOUTH locked 90 + Draft Pool | 0 | 0 | 6 |
 
 R1 feedback identified semantic reuse that character similarity did not catch. All 18 returned records were rewritten against their locked-stage semantic analogues, then rescanned. The remaining review-band pairs require independent R2 inspection; mechanical clearance does not constitute acceptance.
+
+R2 accepted 17 revised items. The final correction changes only `操作空间` to the household-natural `可用台面`; exact, threshold, and review-band counts remain unchanged. Final independent review is still required.

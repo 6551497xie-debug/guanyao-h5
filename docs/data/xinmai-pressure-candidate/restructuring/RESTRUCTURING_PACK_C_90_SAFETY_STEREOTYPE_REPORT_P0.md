@@ -9,3 +9,5 @@ No item diagnoses personality, trauma, motivation, relationship quality, or ment
 Human independent review remains required for contextual stereotyping, especially whether repeated access and handoff events overrepresent formal urban systems.
 
 R1 revisions replace repeated appointment accompaniment, equipment scarcity, visitor-stay, procurement-list, shared-service account, and platform-operation patterns with plant/animal/remote support, channel access, household restoration, concrete room use, personal commuting cost, and observable daily rhythm. Frozen safety/stereotype scan remains at zero hits.
+
+The final shell correction adds no generational judgment, hygiene shame, or assumed household role.

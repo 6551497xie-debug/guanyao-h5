@@ -9,3 +9,5 @@ The pack is not a synonym for MID_LIFE: it emphasizes visible reallocation of ex
 Independent review should test whether each event remains recognizable without its taxonomy label and whether the combined pack feels broader than work reorganization.
 
 R1 revisions specifically remove abstract process shells and cross-stage semantic reuse. The revised set adds distinct household restoration, family plant/animal/remote support, friend-group continuity, social posting visibility, personal commuting baseline, and constrained direction-start events while preserving field boundaries.
+
+R2 leaves one purely linguistic household consequence pending: the accepted intergenerational kitchen event now ends with an observable breakfast-time lack of usable counter space.
