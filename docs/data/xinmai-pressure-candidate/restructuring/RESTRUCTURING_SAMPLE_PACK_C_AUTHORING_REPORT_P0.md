@@ -1,10 +1,10 @@
 # RESTRUCTURING Representative Sample Pack C — Authoring Report P0
 
-Status: `17 SAMPLE_ACCEPTED / 1 SAMPLE_DRAFT / AI_ASSISTED / NOT_PRODUCTION`
+Status: `18 / 18 SAMPLE_ACCEPTED / CALIBRATION ONLY / NOT_PRODUCTION`
 
 Life Stage: `RESTRUCTURING` (`45–59`, frozen router reference only)
 
-The construction window is the AI-assisted author. Product Control Tower independently accepted 13 samples in Round 1 and four more in Round 2. The final author-corrected shell remains unreviewed `SAMPLE_DRAFT`; its reviewer, approval, and lock fields are empty. Mechanical checks do not constitute acceptance.
+The construction window is the AI-assisted author. Product Control Tower independently accepted all 18 calibration samples across Round 1, Round 2, and Final Review. Approval and lock remain empty because this is representative calibration rather than a complete content-pack lock.
 
 ## Exact sample matrix
 
@@ -39,9 +39,9 @@ The construction window is the AI-assisted author. Product Control Tower indepen
 | different contexts within every field | 3 / 3 / 3 / 3 / 3 / 3 |
 | responsibility leads | 6 / 6 / 6 |
 | metadata, length, hash | 18/18 |
-| `SAMPLE_ACCEPTED / SAMPLE_DRAFT` | 17 / 1 |
-| accepted reviewer lineage | 17/17 |
-| revised reviewer/approval/lock empty | 1/1 |
+| `SAMPLE_ACCEPTED / SAMPLE_DRAFT` | 18 / 0 |
+| accepted reviewer lineage | 18/18 |
+| approval / lock fields empty | 18/18 |
 | normalized exact duplicate inside sample | 0 |
 | internal bigram Jaccard ≥0.25 | 0 |
 | exact match vs ESTABLISHING, MID_LIFE locked 90, YOUTH locked 90, Draft Pool | 0 |
@@ -50,4 +50,4 @@ The construction window is the AI-assisted author. Product Control Tower indepen
 | frozen safety/stereotype hits | 0 |
 | Runtime / Production Catalog changes | 0 / 0 |
 
-Exit: `RESTRUCTURING FINAL 1 ITEM READY FOR CONTROL TOWER REVIEW`.
+Exit: `RESTRUCTURING PACK C 90 AUTHORING READY`.

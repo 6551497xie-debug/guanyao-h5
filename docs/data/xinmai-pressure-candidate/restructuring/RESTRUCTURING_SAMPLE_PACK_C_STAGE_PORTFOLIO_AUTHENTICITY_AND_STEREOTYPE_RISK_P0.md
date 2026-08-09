@@ -19,4 +19,4 @@ Round 1 revisions strengthen non-work structures without adding age proof: two-p
 
 Zero items use or imply: decline, aging, “midlife crisis”, menopause/andropause, illness, redundancy, empty nest, caregiving parents, children leaving, marriage crisis, mortgage pressure, retirement countdown, “人生下半场”, “重新出发”, “来不及”, “年龄大了”, management status, asset ownership, or stable-career entitlement.
 
-The author has not independently accepted the final corrected sample. Product Control should review its shell naturalness and cross-pack overlap before any full-pack expansion.
+Product Control accepted all 18 representative samples. Full-pack authoring may use them as calibration, while each new draft still requires independent review before any content lock or Production Catalog migration.
