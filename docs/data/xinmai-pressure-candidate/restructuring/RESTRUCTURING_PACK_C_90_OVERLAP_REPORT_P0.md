@@ -10,3 +10,5 @@ Normalization: Unicode NFKC, punctuation and whitespace removed. Approximation: 
 R1 feedback identified semantic reuse that character similarity did not catch. All 18 returned records were rewritten against their locked-stage semantic analogues, then rescanned. The remaining review-band pairs require independent R2 inspection; mechanical clearance does not constitute acceptance.
 
 R2 accepted 17 revised items. The final correction changes only `操作空间` to the household-natural `可用台面`; exact, threshold, and review-band counts remain unchanged. Final independent review is still required.
+
+Final independent review accepted the remaining item. The overlap report is frozen with the content lock; it does not authorize Production Catalog migration.

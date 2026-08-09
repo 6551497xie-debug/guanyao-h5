@@ -1,6 +1,6 @@
 # RESTRUCTURING Content Pack C 90 — Review Risk Register P0
 
-Status: `R2 COMPLETE / FINAL 1 PACK ITEM OPEN FOR CONTROL TOWER REVIEW`.
+Status: `FINAL REVIEW COMPLETE / CONTENT_LOCKED / MIGRATION RISKS RETAINED`.
 
 | Risk | Evidence | Review request |
 |---|---|---|
@@ -10,4 +10,4 @@ Status: `R2 COMPLETE / FINAL 1 PACK ITEM OPEN FOR CONTROL TOWER REVIEW`.
 | household purchase/movement adjacency | shared-resource and family-decision contexts can resemble neighboring stages | confirm actors, resource, and boundary are stage-salient rather than template swaps |
 | responsibility concentration | access asymmetry can make the user appear passive | confirm the full pack preserves environment/resource/negotiated responsibility balance |
 
-R1 independently accepted 54 authored records; R2 accepted 17 revised records. The final corrected item retains empty reviewer, approval, and lock fields. No risk is closed by the author; final review must confirm the natural-language shell without inferring content acceptance from mechanical checks.
+R1 independently accepted 54 authored records; R2 accepted 17 revised records; final review accepted the last item. Content acceptance closes editorial review but does not erase migration risks or authorize Production Catalog exposure.

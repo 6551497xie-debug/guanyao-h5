@@ -1,8 +1,8 @@
 # RESTRUCTURING Content Pack C 90 — Authoring Report P0
 
-Status: `18 SAMPLE_ACCEPTED / 71 PACK_ACCEPTED_PENDING_FULL_PACK / 1 PACK_DRAFT / NOT_PRODUCTION`
+Status: `90 PACK_ACCEPTED / CONTENT_LOCKED / NOT_PRODUCTION`
 
-The accepted representative sample remains unchanged. Product Control independently accepted 54 authored records in R1 and 17 revised records in R2. The construction window changed only the final returned shell; that item remains `PACK_DRAFT / AI_ASSISTED` with reviewer, approval, and lock fields empty. No author-side acceptance occurred.
+Product Control independently accepted all 90 records across sample review, R1, R2, and final review. All records are approved and content-locked by `XINMAI_PRODUCT_CONTROL_TOWER` on `2026-08-10`. Content lock means editorial immutability only; Production Catalog migration remains deferred.
 
 ## Mechanical result
 
@@ -39,4 +39,4 @@ Content hashes use SHA-256 over `stable_id`, `surface_zh_cn`, and `shell_zh_cn`,
 
 These terms occur only in accepted calibration content; none became a repeated authoring prefix.
 
-Exit: `RESTRUCTURING FINAL 1 PACK ITEM READY FOR CONTROL TOWER REVIEW`.
+Exit: `RESTRUCTURING PACK C 90 AUTHORING COMPLETE / CONTENT_LOCKED / NOT_PRODUCTION`.
