@@ -83,16 +83,12 @@ try {
 
   [
     "export function GenesisProductionRendererCanvasHost",
-    "createGenesisProductionRendererHost({",
+    "createXinmaiContinuousSceneGenesisRendererAdapter({",
+    "useXinmaiContinuousScenePresentation(sceneRegistration)",
+    "const sceneRegistration = useMemo(",
     "routeAuthorization.productionRendererAuthorization",
     "consumerSourceResult,",
-    "controller.renderFrame",
-    "window.requestAnimationFrame",
-    "new ResizeObserver",
-    "controller.resize",
-    "window.cancelAnimationFrame",
-    "resizeObserver.disconnect()",
-    "controller.dispose()",
+    'pointerInteraction: "NONE" as const',
     "productionRendererHostOnly: true",
     "noRendererCoreInvocation: true",
     "noTimelineMutation: true",
@@ -111,6 +107,10 @@ try {
     "useNavigate",
     "localStorage",
     "sessionStorage",
+    "createGenesisProductionRendererHost",
+    "window.requestAnimationFrame",
+    "new ResizeObserver",
+    "controller.renderFrame",
   ].forEach((marker) => assertExcludes("canvas host bypasses no production boundary", source.canvasHost, marker));
 
   [

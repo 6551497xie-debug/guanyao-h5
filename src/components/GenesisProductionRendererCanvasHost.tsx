@@ -70,9 +70,9 @@ export function GenesisProductionRendererCanvasHost({
   fourSymbolDirectionFieldVisualCalibration,
   lifeArchetypeForceCondensationVisualCalibration,
   lifeOriginDiscoveryPhase,
+  lifeOriginControlReadiness,
   lifeWhisperRelationshipVisualFact,
   onLifeWhisperVisualResponseOutcome,
-  onLifeOriginDiscoveryRequest,
   onStateChange,
 }: GenesisProductionRendererCanvasHostProps) {
   const [nativeReducedMotion, setNativeReducedMotion] = useState(
@@ -200,12 +200,14 @@ export function GenesisProductionRendererCanvasHost({
             revision: 0,
           }),
           nearObjectKind:
-            isLifeOriginDiscovery && lifeOriginDiscoveryPhase === "DORMANT"
+            lifeOriginControlReadiness.status === "READY" &&
+            lifeOriginControlReadiness.sceneNearObject === "LIFE_ORIGIN"
               ? "LIFE_ORIGIN" as const
               : "NONE" as const,
           nearObjectReferenceId:
-            isLifeOriginDiscovery && lifeOriginDiscoveryPhase === "DORMANT"
-              ? source.sourceReferenceId
+            lifeOriginControlReadiness.status === "READY" &&
+            lifeOriginControlReadiness.sceneNearObject === "LIFE_ORIGIN"
+              ? lifeOriginControlReadiness.sourceReferenceId
               : null,
           nativeMotionPreference: reducedMotionRequested
             ? "REDUCED_MOTION" as const
@@ -237,6 +239,7 @@ export function GenesisProductionRendererCanvasHost({
       hostState,
       isLifeOriginDiscovery,
       lifeArchetypeForceCondensationVisualCalibration.phase,
+      lifeOriginControlReadiness,
       lifeOriginDiscoveryPhase,
       reducedMotionRequested,
       routeAuthorization.productionRendererAuthorization.authorizationId,
@@ -364,18 +367,6 @@ export function GenesisProductionRendererCanvasHost({
 
   return (
     <>
-      {isLifeOriginDiscovery &&
-      lifeOriginDiscoveryPhase === "DORMANT" ? (
-        <button
-          type="button"
-          className="gy-genesis-production-experience__origin-invitation"
-          aria-label="轻触这束光，发现属于你的生命星宿"
-          data-continuous-scene-near-control="LIFE_ORIGIN"
-          onClick={onLifeOriginDiscoveryRequest}
-        >
-          轻触这束光
-        </button>
-      ) : null}
       {isLifeOriginDiscovery &&
       lifeOriginDiscoveryPhase === "REVEALED" ? (
         <p

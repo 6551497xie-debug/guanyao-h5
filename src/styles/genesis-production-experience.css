@@ -38,15 +38,28 @@
   transform: translateX(-50%);
   font-family: var(--gy-font-serif);
   text-align: center;
-  pointer-events: none;
 }
 
 .gy-genesis-production-experience__origin-invitation {
   top: 72%;
+  min-width: 128px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 0;
   color: rgb(187 213 214 / 54%);
+  background: transparent;
   font-size: 12px;
   letter-spacing: 0.22em;
+  cursor: pointer;
+  touch-action: manipulation;
+  pointer-events: auto;
+  appearance: none;
   animation: gy-genesis-origin-invitation-breathe 4.8s ease-in-out infinite;
+}
+
+.gy-genesis-production-experience__origin-invitation:focus-visible {
+  outline: 2px solid rgb(225 231 207 / 88%);
+  outline-offset: 4px;
 }
 
 .gy-genesis-production-experience__origin-identity {
@@ -55,7 +68,46 @@
   font-size: 13px;
   letter-spacing: 0.18em;
   text-shadow: 0 0 24px rgb(139 190 199 / 28%);
+  pointer-events: none;
   animation: gy-genesis-origin-identity-reveal 1.2s ease-out both;
+}
+
+.gy-genesis-production-experience__origin-safe-withheld {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: max(40px, env(safe-area-inset-bottom));
+  width: min(84%, 320px);
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  color: rgb(226 222 205 / 78%);
+  text-align: center;
+}
+
+.gy-genesis-production-experience__origin-safe-withheld p {
+  margin: 0;
+  font: 12px/1.65 var(--gy-font-serif);
+  letter-spacing: 0.08em;
+}
+
+.gy-genesis-production-experience__origin-safe-withheld button {
+  min-width: 128px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 0;
+  color: rgb(238 226 198 / 86%);
+  background: transparent;
+  font: 12px var(--gy-font-serif);
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.gy-genesis-production-experience__origin-safe-withheld button:focus-visible {
+  outline: 2px solid rgb(225 231 207 / 88%);
+  outline-offset: 4px;
 }
 
 @keyframes gy-genesis-origin-invitation-breathe {
@@ -367,6 +419,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .gy-genesis-production-experience__origin-invitation,
+  .gy-genesis-production-experience__origin-identity,
   .gy-genesis-production-experience__life-whisper,
   .gy-genesis-production-experience__relationship-naming {
     animation: none;

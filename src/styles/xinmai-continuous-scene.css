@@ -64,13 +64,5 @@
   color: rgb(238 226 198 / 58%);
   font-size: 12px;
   text-align: center;
-}
-
-.gy-genesis-production-experience__origin-invitation {
-  min-width: 128px;
-  min-height: 44px;
-  border: 0;
-  padding: 10px 16px;
-  background: transparent;
-  pointer-events: auto;
+  pointer-events: none;
 }

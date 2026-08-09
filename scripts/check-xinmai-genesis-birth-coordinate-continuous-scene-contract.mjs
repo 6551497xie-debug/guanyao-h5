@@ -9,6 +9,7 @@ const launch = read("src/pages/LaunchLab.tsx");
 const sceneResolver = read("src/services/xinmaiContinuousScenePresentationResolver.ts");
 const sceneHost = read("src/components/XinmaiContinuousSceneHost.tsx");
 const genesis = read("src/components/GenesisProductionRendererCanvasHost.tsx");
+const genesisPage = read("src/pages/GenesisProductionExperiencePage.tsx");
 const packageJson = JSON.parse(read("package.json"));
 
 assert(
@@ -24,7 +25,9 @@ assert(
 );
 assert(
   sceneHost.includes("XinmaiContinuousSceneHost") &&
-    genesis.includes("轻触这束光") &&
+    genesisPage.includes("轻触这束光") &&
+    genesis.includes("lifeOriginControlReadiness") &&
+    !genesis.includes("<button") &&
     !genesis.includes("轻触星河，发现属于你的生命星宿"),
   "Genesis does not preserve the single Host to visible-object contract",
 );

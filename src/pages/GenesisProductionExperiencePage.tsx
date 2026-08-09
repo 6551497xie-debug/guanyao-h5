@@ -57,6 +57,8 @@ import {
   resolveRelationshipNamingEntryEligibility,
 } from "../services/xinmaiRelationshipNamingPresentationState";
 import { resolveLifeWhisperVisualOutcomeTransition } from "../services/xinmaiLifeWhisperVisualOutcomeTransition";
+import { resolveXinmaiGenesisLifeOriginNativeControlReadiness } from "../services/xinmaiGenesisLifeOriginNativeControlReadinessResolver";
+import { XINMAI_GENESIS_LIFE_ORIGIN_NATIVE_CONTROL_PRESENTATION_POLICY } from "../services/xinmaiGenesisLifeOriginNativeControlPresentationPolicy";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
 import { requestRealityEncounter } from "../services/xinmaiRealityEncounterIntentController";
 import { observeRealityEncounterRequestOutcome } from "../services/gravityEntryAcceptanceRuntimePort";
@@ -67,6 +69,10 @@ import type {
   LifeWhisperSurfaceVisualResponseOutcome,
   LifeWhisperUnavailableContinuation,
 } from "../types/xinmaiLifeWhisperRelationship";
+import type {
+  XinmaiGenesisLifeOriginActivationRevalidation,
+  XinmaiGenesisLifeOriginDiscoveryPhase,
+} from "../types/xinmaiGenesisLifeOriginNativeControlReadiness";
 import "../styles/genesis-production-experience.css";
 
 const ENTRANCE_COORDINATE_CONTINUITY_HOLD_MS = Object.freeze({
@@ -232,9 +238,10 @@ export function GenesisProductionExperiencePage({
   const [recognitionPromptReady, setRecognitionPromptReady] = useState(false);
   const [recognitionResponseSettled, setRecognitionResponseSettled] =
     useState(false);
-  const [lifeOriginDiscoveryPhase, setLifeOriginDiscoveryPhase] = useState<
-    "DORMANT" | "DISCOVERING" | "REVEALED"
-  >("DORMANT");
+  const [lifeOriginDiscoveryPhase, setLifeOriginDiscoveryPhase] =
+    useState<XinmaiGenesisLifeOriginDiscoveryPhase>("DORMANT");
+  const [lifeOriginActivationRevalidation, setLifeOriginActivationRevalidation] =
+    useState<XinmaiGenesisLifeOriginActivationRevalidation>("CURRENT");
   const [lifeWhisperText, setLifeWhisperText] = useState("");
   const [lifeWhisperFact, setLifeWhisperFact] =
     useState<LifeWhisperRelationshipFact>("NONE");
@@ -326,6 +333,36 @@ export function GenesisProductionExperiencePage({
     manifestationExperienceResult?.status === "READY" &&
     manifestationExperienceResult.session.currentState ===
       "PRESENCE_APPROACHING";
+  const lifeOriginControlReadinessInput = useMemo(
+    () =>
+      Object.freeze({
+        policy:
+          XINMAI_GENESIS_LIFE_ORIGIN_NATIVE_CONTROL_PRESENTATION_POLICY,
+        routeAuthorization,
+        consumerSourceResult,
+        productionRuntimeResult,
+        manifestationExperienceResult,
+        recognitionRealityResult,
+        discoveryPhase: lifeOriginDiscoveryPhase,
+        activationRevalidation: lifeOriginActivationRevalidation,
+      }),
+    [
+      consumerSourceResult,
+      lifeOriginActivationRevalidation,
+      lifeOriginDiscoveryPhase,
+      manifestationExperienceResult,
+      productionRuntimeResult,
+      recognitionRealityResult,
+      routeAuthorization,
+    ],
+  );
+  const lifeOriginControlReadiness = useMemo(
+    () =>
+      resolveXinmaiGenesisLifeOriginNativeControlReadiness(
+        lifeOriginControlReadinessInput,
+      ),
+    [lifeOriginControlReadinessInput],
+  );
   const presenceRecognitionPhase: GenesisPresenceRecognitionPhase =
     recognitionRealityResult?.status === "READY"
       ? recognitionRealityResult.session.recognitionConfirmed
@@ -403,6 +440,7 @@ export function GenesisProductionExperiencePage({
     setRecognitionPromptReady(false);
     setRecognitionResponseSettled(false);
     setLifeOriginDiscoveryPhase("DORMANT");
+    setLifeOriginActivationRevalidation("CURRENT");
     setLifeWhisperText("");
     setLifeWhisperFact("NONE");
     lifeWhisperFactRef.current = "NONE";
@@ -722,25 +760,22 @@ export function GenesisProductionExperiencePage({
   ]);
 
   const beginLifeOriginDiscovery = useCallback(() => {
-    if (
-      productionRuntimeResult?.status !== "READY" ||
-      productionRuntimeResult.session.currentStage !== "COMPLETION" ||
-      recognitionInteractionAvailability !== "RECOGNITION_CONFIRM" ||
-      lifeOriginDiscoveryPhase !== "DORMANT"
-    ) {
+    const revalidatedReadiness =
+      resolveXinmaiGenesisLifeOriginNativeControlReadiness(
+        lifeOriginControlReadinessInput,
+      );
+    if (revalidatedReadiness.status !== "READY") {
+      setLifeOriginActivationRevalidation("SAFE_WITHHELD");
       return;
     }
+    setLifeOriginActivationRevalidation("CURRENT");
     setRecognitionPromptReady(false);
     setLifeOriginDiscoveryPhase("DISCOVERING");
     lifeOriginDiscoveryTimerRef.current = window.setTimeout(() => {
       lifeOriginDiscoveryTimerRef.current = null;
       setLifeOriginDiscoveryPhase("REVEALED");
     }, LIFE_ORIGIN_DISCOVERY_DURATION_MS);
-  }, [
-    lifeOriginDiscoveryPhase,
-    productionRuntimeResult,
-    recognitionInteractionAvailability,
-  ]);
+  }, [lifeOriginControlReadinessInput]);
 
   const confirmRecognition = () => {
     if (
@@ -1126,6 +1161,12 @@ export function GenesisProductionExperiencePage({
           : "NOT_ACTIVE"
       }
       data-genesis-life-origin-discovery={lifeOriginDiscoveryPhase}
+      data-genesis-life-origin-native-control-readiness={
+        lifeOriginControlReadiness.status
+      }
+      data-genesis-life-origin-native-control-reason={
+        lifeOriginControlReadiness.reason ?? "NONE"
+      }
       data-life-whisper-entry-ready={
         lifeWhisperEntryReady ? "READY" : "NOT_READY"
       }
@@ -1161,6 +1202,7 @@ export function GenesisProductionExperiencePage({
           archetypeForceCalibrationResult.calibration
         }
         lifeOriginDiscoveryPhase={lifeOriginDiscoveryPhase}
+        lifeOriginControlReadiness={lifeOriginControlReadiness}
         lifeWhisperRelationshipVisualFact={{
           lifeWhisperFact,
           lifeWhisperResponsePhase,
@@ -1169,9 +1211,43 @@ export function GenesisProductionExperiencePage({
         onLifeWhisperVisualResponseOutcome={
           handleLifeWhisperVisualResponseOutcome
         }
-        onLifeOriginDiscoveryRequest={beginLifeOriginDiscovery}
         onStateChange={setCanvasHostState}
       />
+      {lifeOriginControlReadiness.status === "READY" ? (
+        <button
+          type="button"
+          className="gy-genesis-production-experience__origin-invitation"
+          aria-label="轻触这束光，发现属于你的生命星宿"
+          data-continuous-scene-near-control="LIFE_ORIGIN"
+          data-genesis-life-origin-native-control="READY"
+          disabled={false}
+          aria-disabled={undefined}
+          tabIndex={0}
+          onClick={beginLifeOriginDiscovery}
+        >
+          轻触这束光
+        </button>
+      ) : null}
+      {lifeOriginControlReadiness.status === "SAFE_WITHHELD" ? (
+        <section
+          className="gy-genesis-production-experience__origin-safe-withheld"
+          data-genesis-life-origin-native-control="SAFE_WITHHELD"
+          data-genesis-life-origin-safe-withheld-reason={
+            lifeOriginControlReadiness.reason
+          }
+          aria-label="生命来源确认状态"
+        >
+          <p role="status" aria-live="polite">
+            这束光暂时无法确认。已保存的出生信息仍被保留。
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate("/launch-lab", { replace: true })}
+          >
+            返回出生信息
+          </button>
+        </section>
+      ) : null}
       {lifeWhisperEntryReady && !relationshipNamingReady ? (
         <section
           className="gy-genesis-production-experience__life-whisper"

@@ -66,7 +66,14 @@ const assertions = [
   ],
   [
     "the discovery is initiated by the user and resolves inside five seconds",
-    canvasHostSource.includes("onLifeOriginDiscoveryRequest") &&
+    experiencePageSource.includes(
+      "resolveXinmaiGenesisLifeOriginNativeControlReadiness",
+    ) &&
+      experiencePageSource.includes(
+        'data-genesis-life-origin-native-control="READY"',
+      ) &&
+      canvasHostSource.includes("lifeOriginControlReadiness") &&
+      !canvasHostSource.includes("onLifeOriginDiscoveryRequest") &&
       canvasHostSource.includes("data-life-origin-discovery-phase") &&
       experiencePageSource.includes(
         "const LIFE_ORIGIN_DISCOVERY_DURATION_MS = 5_200;",

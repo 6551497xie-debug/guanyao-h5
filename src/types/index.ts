@@ -2995,6 +2995,22 @@ export type {
 } from "./genesisProductionExperiencePage";
 
 export type {
+  XinmaiGenesisLifeOriginDiscoveryPhase,
+  XinmaiGenesisLifeOriginNativeControlPresentationPolicy,
+  XinmaiGenesisLifeOriginActivationRevalidation,
+  XinmaiGenesisLifeOriginNativeControlWaitingReason,
+  XinmaiGenesisLifeOriginNativeControlConsumedReason,
+  XinmaiGenesisLifeOriginNativeControlSafeWithheldReason,
+  XinmaiGenesisLifeOriginNativeControlReadinessBoundary,
+  XinmaiGenesisLifeOriginNativeControlReadinessInput,
+  XinmaiGenesisLifeOriginNativeControlWaiting,
+  XinmaiGenesisLifeOriginNativeControlReady,
+  XinmaiGenesisLifeOriginNativeControlConsumed,
+  XinmaiGenesisLifeOriginNativeControlSafeWithheld,
+  XinmaiGenesisLifeOriginNativeControlReadiness,
+} from "./xinmaiGenesisLifeOriginNativeControlReadiness";
+
+export type {
   GenesisProductionRuntimeTrigger,
   GenesisProductionRuntimeInteraction,
   GenesisProductionRuntimeStatus,

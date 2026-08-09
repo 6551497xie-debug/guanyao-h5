@@ -46,6 +46,8 @@
     "check:xinmai-genesis-birth-source-route-recovery-cutover": "node scripts/check-xinmai-genesis-birth-source-route-recovery-cutover.mjs",
     "check:xinmai-genesis-birth-source-active-context-fencing": "node scripts/check-xinmai-genesis-birth-source-active-context-fencing.mjs",
     "check:xinmai-genesis-birth-source-refresh-recovery": "node scripts/check-xinmai-genesis-birth-source-refresh-recovery.mjs",
+    "check:xinmai-genesis-life-origin-native-control-readiness": "node scripts/check-xinmai-genesis-life-origin-native-control-readiness.mjs",
+    "check:xinmai-genesis-life-origin-native-control-production-hit-target": "node scripts/check-xinmai-genesis-life-origin-native-control-production-hit-target.mjs",
     "check:xinmai-choice-returning-provenance-authority": "node scripts/check-xinmai-choice-returning-provenance-authority.mjs",
     "check:xinmai-choice-return-idempotent-conflict-recovery": "node scripts/check-xinmai-choice-return-idempotent-conflict-recovery.mjs",
     "check:xinmai-gravity-observation-continuity": "node scripts/check-xinmai-gravity-observation-continuity-authority.mjs && node scripts/check-xinmai-gravity-observation-continuity-browser-contract.mjs",
