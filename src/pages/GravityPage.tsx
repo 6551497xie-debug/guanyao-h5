@@ -122,6 +122,7 @@ export type GravityPageProps = Readonly<{
   canonicalBodyImprintDecision: XinmaiCanonicalBodyImprintDecision;
   actionRouteResolution: ChoiceActionRouteResolution;
   growthSummaryPending: boolean;
+  onExplicitDepartureCommitted: () => void;
   onGrowthTerminalSummaryRefreshRequested: () => Promise<void>;
   onObservationRecognitionRequested: (
     recognition: GravityObservationRecognitionProvenance,
@@ -2538,6 +2539,7 @@ function HexagramCodeDeliveryShell({
   canonicalBodyImprintDecision,
   actionRouteResolution,
   growthSummaryPending,
+  onExplicitDepartureCommitted,
   onGrowthTerminalSummaryRefreshRequested,
   onObservationRecognitionRequested,
   onLifeSurfaceOutcome,
@@ -3063,6 +3065,7 @@ function HexagramCodeDeliveryShell({
           reason: null,
         }),
       );
+      onExplicitDepartureCommitted();
     } finally {
       choiceMutationPendingRef.current = false;
       setChoiceMutationPending(false);

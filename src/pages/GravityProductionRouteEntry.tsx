@@ -564,6 +564,10 @@ export function GravityProductionRouteEntry() {
       createGrowthSummaryRequest,
     ]);
 
+  const handleExplicitDepartureCommitted = useCallback(() => {
+    navigate("/launch-lab", { replace: true });
+  }, [navigate]);
+
   const retry = useCallback(async () => {
     if (
       assembly.status !== "RETRYABLE" ||
@@ -659,6 +663,9 @@ export function GravityProductionRouteEntry() {
         assembly.canonicalBodyImprintDecision
       }
       growthSummaryPending={assembly.growthSummaryPending}
+      onExplicitDepartureCommitted={
+        handleExplicitDepartureCommitted
+      }
       onGrowthTerminalSummaryRefreshRequested={
         handleGrowthTerminalSummaryRefreshRequested
       }

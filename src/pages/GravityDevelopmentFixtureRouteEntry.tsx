@@ -106,6 +106,7 @@ export function GravityDevelopmentFixtureRouteEntry() {
         reason: "OBSERVATION_NOT_RECOGNIZED" as const,
       })}
       growthSummaryPending={false}
+      onExplicitDepartureCommitted={() => undefined}
       onGrowthTerminalSummaryRefreshRequested={
         async () => undefined
       }

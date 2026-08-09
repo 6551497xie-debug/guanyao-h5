@@ -60,6 +60,7 @@ export type GravityProductionSurfaceHostProps = Readonly<{
   growthTerminalSummary: ChoiceGrowthTerminalSummary;
   canonicalBodyImprintDecision: XinmaiCanonicalBodyImprintDecision;
   growthSummaryPending: boolean;
+  onExplicitDepartureCommitted: () => void;
   onGrowthTerminalSummaryRefreshRequested: () => Promise<void>;
   onObservationRecognitionRequested: (
     recognition: GravityObservationRecognitionProvenance,
@@ -78,6 +79,7 @@ export function GravityProductionSurfaceHost({
   growthTerminalSummary,
   canonicalBodyImprintDecision,
   growthSummaryPending,
+  onExplicitDepartureCommitted,
   onGrowthTerminalSummaryRefreshRequested,
   onObservationRecognitionRequested,
   onAcceptanceOutcome,
@@ -237,6 +239,7 @@ export function GravityProductionSurfaceHost({
       canonicalBodyImprintDecision={canonicalBodyImprintDecision}
       actionRouteResolution={actionRouteResolution}
       growthSummaryPending={growthSummaryPending}
+      onExplicitDepartureCommitted={onExplicitDepartureCommitted}
       onGrowthTerminalSummaryRefreshRequested={
         onGrowthTerminalSummaryRefreshRequested
       }
