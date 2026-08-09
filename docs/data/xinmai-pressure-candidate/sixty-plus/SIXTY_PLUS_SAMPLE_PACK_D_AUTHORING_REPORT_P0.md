@@ -1,10 +1,10 @@
 # SIXTY_PLUS Representative Sample Pack D — Authoring Report P0
 
-Status: `14 SAMPLE_ACCEPTED / 4 SAMPLE_DRAFT / AI_ASSISTED / READY FOR INDEPENDENT R2 REVIEW / NOT_PRODUCTION`
+Status: `18 SAMPLE_ACCEPTED / AI_ASSISTED / REPRESENTATIVE CALIBRATION ACCEPTED / NOT_PRODUCTION`
 
 Life Stage: `SIXTY_PLUS` (`60+`, frozen router reference only)
 
-The construction window is the AI-assisted author. Four revised items retain empty reviewer, approval, and lock fields. Fourteen independently accepted items contain the Product Control Tower review lineage, while approval and lock remain empty. Mechanical checks do not accept the four pending items or the pack.
+The construction window is the AI-assisted author. All 18 items contain independent Product Control Tower review lineage. Approval and lock remain empty because representative calibration acceptance does not make the sample a Production Catalog content lock.
 
 ## Exact sample matrix
 
@@ -47,6 +47,6 @@ The construction window is the AI-assisted author. Four revised items retain emp
 | frozen ageism/safety hits | 0 |
 | Runtime / Production Catalog changes | 0 / 0 |
 
-The 14 non-revised items retain stable ID, surface, shell, and content hash byte-for-byte from parent `915f4adc50017391e02fab9bb9bd9209568ff2c2`. The four revised hashes recompute successfully using SHA-256 over `stable_id`, `surface_zh_cn`, and `shell_zh_cn`, separated by U+001F.
+All 18 items retain stable ID, surface, shell, and content hash byte-for-byte from parent `c73ffd883d6d44249f6e80f7d39b869ce18317df`.
 
-Exit: `SIXTY_PLUS FINAL 4 ITEMS READY FOR INDEPENDENT R2 REVIEW`.
+Exit: `SIXTY_PLUS PACK D 90 AUTHORING READY`.
