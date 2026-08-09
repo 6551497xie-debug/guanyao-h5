@@ -59,14 +59,23 @@ export function XinmaiCrystalFormationOwnershipMoment({
       data-authority-writeback="FORBIDDEN"
       aria-labelledby="xinmai-crystal-ownership-headline"
     >
-      <div className="xinmai-crystal-ownership__scene" aria-hidden="true">
-        <div className="xinmai-crystal-ownership__release-field" />
-        <div className="xinmai-crystal-ownership__condensing-field">
+      <div className="xinmai-crystal-ownership__scene">
+        <div
+          className="xinmai-crystal-ownership__release-field"
+          aria-hidden="true"
+        />
+        <div
+          className="xinmai-crystal-ownership__condensing-field"
+          aria-hidden="true"
+        >
           {CONDENSING_SHARDS.map((shard) => (
             <i key={shard} />
           ))}
         </div>
-        <div className="xinmai-crystal-ownership__settling-ring" />
+        <div
+          className="xinmai-crystal-ownership__settling-ring"
+          aria-hidden="true"
+        />
         <button
           className="xinmai-crystal-ownership__crystal-touch"
           type="button"
@@ -77,8 +86,8 @@ export function XinmaiCrystalFormationOwnershipMoment({
           <svg
             className="xinmai-crystal-ownership__crystal"
             viewBox="0 0 180 216"
-            role="img"
-            aria-label="由这次现实回应形成的 Crystal"
+            aria-hidden="true"
+            focusable="false"
           >
             <path
               className="xinmai-crystal-ownership__crystal-shadow"
@@ -111,7 +120,10 @@ export function XinmaiCrystalFormationOwnershipMoment({
               d="m90 72 19 28-19 43-19-43Z"
             />
           </svg>
-          <span className="xinmai-crystal-ownership__touch-ring" />
+          <span
+            className="xinmai-crystal-ownership__touch-ring"
+            aria-hidden="true"
+          />
         </button>
       </div>
 

@@ -81,6 +81,44 @@ for (const marker of [
 ]) {
   assert(moment.includes(marker), `Ownership moment missing ${marker}`);
 }
+
+assert(
+  moment.includes('className="xinmai-crystal-ownership__scene">') &&
+    !moment.includes(
+      'className="xinmai-crystal-ownership__scene" aria-hidden="true"',
+    ),
+  "Ownership scene hides its interactive Crystal from the accessibility tree",
+);
+assert(
+  (moment.match(/className="xinmai-crystal-ownership__crystal-touch"/g) ?? [])
+    .length === 1 &&
+    moment.includes(
+      'aria-label="轻触这颗 Crystal，确认它来自这次现实回应"',
+    ) &&
+    moment.includes("aria-pressed={ownershipPresented}"),
+  "Ownership must expose exactly one named, stateful Crystal button",
+);
+for (const decorativeClass of [
+  "xinmai-crystal-ownership__release-field",
+  "xinmai-crystal-ownership__condensing-field",
+  "xinmai-crystal-ownership__settling-ring",
+  "xinmai-crystal-ownership__touch-ring",
+]) {
+  assert(
+    new RegExp(
+      `className="${decorativeClass}"[\\s\\S]{0,120}aria-hidden="true"`,
+    ).test(moment),
+    `decorative Ownership layer is exposed: ${decorativeClass}`,
+  );
+}
+assert(
+  /className="xinmai-crystal-ownership__crystal"[\s\S]{0,160}aria-hidden="true"[\s\S]{0,80}focusable="false"/.test(
+    moment,
+  ) &&
+    !moment.includes('role="img"') &&
+    !moment.includes('aria-label="由这次现实回应形成的 Crystal"'),
+  "decorative Crystal SVG duplicates the native button semantics",
+);
 for (const copy of [
   "你真实走出的这一步，留下了痕迹。",
   "它不证明你更好，只记得你曾经这样选择。",
