@@ -1,6 +1,6 @@
 # YOUTH Representative Sample Pack B — Overlap Report R1
 
-Status: `AUTHORING SCAN ONLY / 3 ITEMS REQUIRE INDEPENDENT R2`
+Status: `AUTHORING SCAN ONLY / 1 ITEM REQUIRES INDEPENDENT FINAL REVIEW`
 
 Normalization uses Unicode NFKC with punctuation and whitespace removed. Approximate comparison uses unique Chinese-character bigram Jaccard similarity across surfaces and shells.
 
@@ -14,4 +14,4 @@ Normalization uses Unicode NFKC with punctuation and whitespace removed. Approxi
 | cross-source bigram Jaccard ≥0.25 | 0 |
 | cross-source maximum Jaccard | 0.214 |
 
-The three revisions introduce no new exact or threshold-level approximate overlap. Mechanical results do not accept revised content.
+The one-character grammar correction introduces no new exact or threshold-level approximate overlap. Mechanical results do not accept revised content.

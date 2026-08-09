@@ -1,6 +1,6 @@
 # YOUTH Representative Sample Pack B — Coverage Matrix R1
 
-Status: `15 SAMPLE_ACCEPTED / 3 SAMPLE_DRAFT / NOT_PRODUCTION`
+Status: `17 SAMPLE_ACCEPTED / 1 SAMPLE_DRAFT / NOT_PRODUCTION`
 
 | Field | Rule/information gap | Power/resource asymmetry | Boundary/commitment break | Total |
 |---|---|---|---|---:|
@@ -13,4 +13,4 @@ Status: `15 SAMPLE_ACCEPTED / 3 SAMPLE_DRAFT / NOT_PRODUCTION`
 
 Totals: six fields × three items; mechanics `6/6/6`; 18 unique field/context/mechanic slots. Responsibility leads remain environment/system/other actor `6`, body/time/resource `6`, negotiated choice/boundary `6`.
 
-The revised portfolio contains two training structures rather than four: institutional qualification in POWER and schedule structure in EXISTENCE. SOCIAL now uses community participation; direction transition now uses a new work arrangement and a broken old-team exit promise.
+The portfolio contains two training structures rather than four: institutional qualification in POWER and schedule structure in EXISTENCE. SOCIAL uses community participation; direction transition uses a new work arrangement and an explicit promise made to the user exiting the old team.

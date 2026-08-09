@@ -1,12 +1,10 @@
 # YOUTH Representative Sample Pack B — R1 Review Risk Register
 
-Only the three revised items remain open for independent R2. The other 15 items are frozen.
+Only the final grammar-corrected item remains open for independent review. The other 17 items are frozen.
 
 | Risk | Item | Independent R2 check |
 |---|---|---|
-| R1 | RELATION communication rule | “仍未回复” must remain an ordinary observable delay, not imply emergency, abandonment, or diagnosis |
-| R2 | SOCIAL community-group rule | Community participation must feel distinct from school, work, and training structures while preserving changed entry rules |
-| R3 | EXISTENCE transition-direction break | New cooperation and the old-team exit promise must express direction conflict rather than compensation, authority, or a MID_LIFE client-exit copy |
-| R4 | Pack portfolio | Two remaining training structures must stay field-distinct and must not make YOUTH synonymous with being cultivated or instructed |
+| R1 | EXISTENCE transition-direction break | “原团队答应你退出后” must unambiguously identify the user as the exiting party and the old team as the party breaking the no-more-scheduling promise |
+| R2 | Full-pack integrity | Confirm exact duplicate 0, high-similarity threshold hits 0, and frozen 17-item text/ID/hash drift 0 |
 
 No risk entry authorizes protocol, Runtime, Catalog, or accepted-item changes.

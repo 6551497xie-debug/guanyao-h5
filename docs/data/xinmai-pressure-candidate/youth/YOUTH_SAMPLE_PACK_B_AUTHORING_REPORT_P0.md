@@ -1,12 +1,12 @@
 # YOUTH Representative Sample Pack B — Authoring Report P0
 
-Status: `15 SAMPLE_ACCEPTED / 3 SAMPLE_DRAFT / AI_ASSISTED / R2 REQUIRED / NOT_PRODUCTION`
+Status: `17 SAMPLE_ACCEPTED / 1 SAMPLE_DRAFT / AI_ASSISTED / FINAL REVIEW REQUIRED / NOT_PRODUCTION`
 
 Life Stage: `YOUTH` (`18–24`, frozen router reference only)
 
 Authoring pass: `XINMAI-1.0-YOUTH-PRESSURE-CANDIDATE-REPRESENTATIVE-SAMPLE-PACK-B-AUTHORING-P0`
 
-The construction window is the AI-assisted author and performs mechanical self-checks only. Product Control Tower independently accepted 15 items; their four reviewer roles are attributed in data. The three revised items keep reviewer, approval, and lock fields empty. This report does not claim pack-level `SAMPLE_ACCEPTED`.
+The construction window is the AI-assisted author and performs mechanical self-checks only. Product Control Tower independently accepted 17 items; their four reviewer roles are attributed in data. The single revised item keeps reviewer, approval, and lock fields empty. This report does not claim pack-level `SAMPLE_ACCEPTED`.
 
 ## Exact sample matrix
 
@@ -29,7 +29,7 @@ The construction window is the AI-assisted author and performs mechanical self-c
 | SOCIAL | BOUNDARY_OR_COMMITMENT_BREAK | BELONGING_EXIT | `PC-YOUTH-SOCIAL-BELONGING_EXIT-COMMITMENT_BREAK-01` | 管理员答应退出后撤下分工，新一轮名单仍有你的名字 | 群里仍在催你交本周任务 |
 | EXISTENCE | RULE_OR_INFORMATION_GAP | TIME_STRUCTURE | `PC-YOUTH-EXISTENCE-TIME_STRUCTURE-RULE_GAP-01` | 训练课改到晚班结束后，线上补课规则仍未公布 | 同一时段的工作无法确认 |
 | EXISTENCE | POWER_OR_RESOURCE_ASYMMETRY | BODY_ENERGY_ROUTINE | `PC-YOUTH-EXISTENCE-BODY_ENERGY_ROUTINE-RESOURCE_ASYMMETRY-01` | 轮班表连续安排收班再开班，两班间隔只剩六小时 | 下一次休息被通勤占满 |
-| EXISTENCE | BOUNDARY_OR_COMMITMENT_BREAK | TRANSITION_DIRECTION | `PC-YOUTH-EXISTENCE-TRANSITION_DIRECTION-COMMITMENT_BREAK-01` | 原团队答应退出后不再排班，新合作首日却撞上旧班次 | 两个安排都要求当天到场 |
+| EXISTENCE | BOUNDARY_OR_COMMITMENT_BREAK | TRANSITION_DIRECTION | `PC-YOUTH-EXISTENCE-TRANSITION_DIRECTION-COMMITMENT_BREAK-01` | 原团队答应你退出后不再排班，新合作首日却撞上旧班次 | 两个安排都要求当天到场 |
 
 ## Coverage and responsibility distribution
 
@@ -43,9 +43,9 @@ The construction window is the AI-assisted author and performs mechanical self-c
 | body/time/resource led | 6 |
 | negotiated choice/boundary led | 6 |
 | metadata completeness | 18/18 |
-| `SAMPLE_ACCEPTED / SAMPLE_DRAFT` | 15 / 3 |
-| accepted reviewer lineage | 15/15 |
-| revised reviewer / approval / lock fields empty | 3/3 |
+| `SAMPLE_ACCEPTED / SAMPLE_DRAFT` | 17 / 1 |
+| accepted reviewer lineage | 17/17 |
+| revised reviewer / approval / lock fields empty | 1/1 |
 | Production Catalog entries | 0 |
 | Runtime AI dependency | 0 |
 
@@ -72,8 +72,7 @@ Content hashes are SHA-256 over `stable_id`, `surface_zh_cn`, and `shell_zh_cn`,
 
 ## Independent-review risk list
 
-- R2 scope is limited to the revised RELATION communication, SOCIAL community group, and EXISTENCE direction-transition items.
-- The pack now contains two training structures rather than four; independent review must confirm that the remaining POWER and EXISTENCE uses are field-distinct.
-- The revised direction item must remain about a chosen direction and broken exit promise, not compensation, authority, or a MID_LIFE client-exit copy.
+- Final review scope is limited to the corrected EXISTENCE direction-transition item.
+- Independent review must confirm that “答应你退出后” unambiguously makes the user the exiting party and preserves the broken old-side scheduling promise.
 
-Exit: `YOUTH FINAL 3 ITEMS READY FOR INDEPENDENT R2 REVIEW`.
+Exit: `YOUTH FINAL 1 ITEM READY FOR CONTROL TOWER REVIEW`.
