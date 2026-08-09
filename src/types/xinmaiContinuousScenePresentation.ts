@@ -6,6 +6,9 @@ import type {
 import type {
   XinmaiRealityGravityChoiceSceneSemanticProjection,
 } from "./xinmaiRealityGravityChoiceSceneSemanticPresentation";
+import type {
+  XinmaiReturningSameLifeContinuityPresentationProjection,
+} from "./xinmaiReturningSameLifeContinuityPresentation";
 
 export const XINMAI_CONTINUOUS_SCENE_PRESENTATION_VERSION =
   "XINMAI_CONTINUOUS_SCENE_PRESENTATION_V1" as const;
@@ -63,6 +66,7 @@ export type XinmaiContinuousSceneInput = Readonly<{
   sameLifeSurface: XinmaiContinuousSceneSameLifeInput | null;
   semanticProjection:
     | XinmaiRealityGravityChoiceSceneSemanticProjection
+    | XinmaiReturningSameLifeContinuityPresentationProjection
     | null;
 }>;
 
@@ -105,6 +109,34 @@ export type XinmaiContinuousSceneSafeWithheldReason =
   | "WEBGL_INITIALIZATION_FAILED"
   | "WEBGL_RUNTIME_FAILED";
 
+export type XinmaiContinuousSceneSemanticLayerPlan =
+  | Readonly<{
+      status: "NOT_REQUIRED";
+      projectionFamily: null;
+      projectionReferenceId: null;
+      reason: null;
+      upstreamReason: null;
+    }>
+  | Readonly<{
+      status: "PRESENTED";
+      projectionFamily:
+        | "REALITY_GRAVITY_CHOICE"
+        | "RETURNING_ARCHIVE";
+      projectionReferenceId: string;
+      reason: null;
+      upstreamReason: null;
+    }>
+  | Readonly<{
+      status: "SAFE_WITHHELD";
+      projectionFamily: "RETURNING_ARCHIVE";
+      projectionReferenceId: string | null;
+      reason:
+        | "SEMANTIC_PROJECTION_REQUIRED"
+        | "SEMANTIC_PROJECTION_SAFE_WITHHELD"
+        | "SEMANTIC_PROJECTION_MISMATCH";
+      upstreamReason: string | null;
+    }>;
+
 export type XinmaiContinuousScenePlan =
   | Readonly<{
       status: "PRESENTABLE";
@@ -116,9 +148,14 @@ export type XinmaiContinuousScenePlan =
       stableVisualSeed: number;
       depth: XinmaiContinuousSceneDepthPlan;
       sameLifeSurfaceSelection: XinmaiSameLifeSurfaceSelection | null;
+      semanticProjectionLayer: XinmaiContinuousSceneSemanticLayerPlan;
       semanticProjection:
         | Extract<
             XinmaiRealityGravityChoiceSceneSemanticProjection,
+            { status: "PRESENTABLE" }
+          >
+        | Extract<
+            XinmaiReturningSameLifeContinuityPresentationProjection,
             { status: "PRESENTABLE" }
           >
         | null;

@@ -29,6 +29,10 @@ import { resolveXinmaiCrystalOwnershipPresentation } from "../services/xinmaiCry
 import { resolveCrystalEligibilityForFact } from "../services/xinmaiCrystalEligibilityAuthority";
 import { confirmLivedResponseFact } from "../services/xinmaiLivedResponseAuthorityController";
 import { resolveXinmaiLivedResponseCheckpointPresentation } from "../services/xinmaiLivedResponseCheckpointPresentationResolver";
+import { resolveXinmaiReturningSameLifeContinuityPresentation } from "../services/xinmaiReturningSameLifeContinuityPresentationResolver";
+import type {
+  XinmaiReturningSameLifeContinuityPresentationProjection,
+} from "../types/xinmaiReturningSameLifeContinuityPresentation";
 import "../styles/xinmai-lived-response-checkpoint.css";
 
 const FACT_OUTCOMES: readonly Readonly<{
@@ -70,6 +74,8 @@ export function XinmaiLivedResponseReturnSurface({
   onAuthorityRevision,
   onRealityHandoff,
   bodyImprintDecision,
+  sourceRenderPlanReferenceId,
+  onSameLifeContinuityProjection,
   reducedMotion = false,
 }: Readonly<{
   identityReferences: RealityEncounterIdentityReferences;
@@ -77,6 +83,10 @@ export function XinmaiLivedResponseReturnSurface({
   onAuthorityRevision?: () => void;
   onRealityHandoff?: (handoff: XinmaiLivedResponseRealityHandoff) => void;
   bodyImprintDecision: XinmaiCanonicalBodyImprintDecision;
+  sourceRenderPlanReferenceId: string;
+  onSameLifeContinuityProjection?: (
+    projection: XinmaiReturningSameLifeContinuityPresentationProjection,
+  ) => void;
   reducedMotion?: boolean;
 }>) {
   const [selectedReferenceId, setSelectedReferenceId] = useState(
@@ -221,6 +231,39 @@ export function XinmaiLivedResponseReturnSurface({
       staticPresentation,
     ],
   );
+  const sameLifeContinuityProjection = useMemo(
+    () =>
+      resolveXinmaiReturningSameLifeContinuityPresentation({
+        consumerSurface: "RETURNING_OWNERSHIP",
+        identityStatus: "READY",
+        sourceReferenceId: identityReferences.sourceReferenceId,
+        sourceRenderPlanReferenceId,
+        canonicalBodyImprintDecision: bodyImprintDecision,
+        checkpointDecision,
+        admission: selected,
+        currentFact,
+        currentEligibility,
+        formationReceipt: currentFormationReceipt,
+        returnAcceptanceEvidence,
+        ownershipDecision: ownershipPresentationDecision,
+      }),
+    [
+      bodyImprintDecision,
+      checkpointDecision,
+      currentEligibility,
+      currentFact,
+      currentFormationReceipt,
+      identityReferences.sourceReferenceId,
+      ownershipPresentationDecision,
+      returnAcceptanceEvidence,
+      selected,
+      sourceRenderPlanReferenceId,
+    ],
+  );
+
+  useEffect(() => {
+    onSameLifeContinuityProjection?.(sameLifeContinuityProjection);
+  }, [onSameLifeContinuityProjection, sameLifeContinuityProjection]);
 
   useEffect(() => {
     if (
@@ -506,7 +549,14 @@ export function XinmaiLivedResponseReturnSurface({
   };
 
   const handoffConfirmedCrystal = () => {
-    if (currentFormationReceipt === null || selected.returnReceipt === null) {
+    if (
+      currentFormationReceipt === null ||
+      selected.returnReceipt === null ||
+      sameLifeContinuityProjection.status !== "PRESENTABLE" ||
+      sameLifeContinuityProjection.checkpointState !== "OWNERSHIP_PRESENTED" ||
+      sameLifeContinuityProjection.lineage.crystalReferenceId !==
+        currentFormationReceipt.crystalReferenceId
+    ) {
       return;
     }
     onRealityHandoff?.({
@@ -546,6 +596,12 @@ export function XinmaiLivedResponseReturnSurface({
       data-motion-presentation={staticPresentation ? "STATIC" : "MOTION_ALLOWED"}
       data-ownership-surface-active={
         checkpointDecision.state === "OWNERSHIP_PRESENTED" ? "TRUE" : "FALSE"
+      }
+      data-returning-same-life-continuity={
+        sameLifeContinuityProjection.status
+      }
+      data-returning-same-life-continuity-reference={
+        sameLifeContinuityProjection.semanticProjectionReferenceId ?? "NONE"
       }
     >
       {checkpointDecision.state !== "OWNERSHIP_PRESENTED" ? (
@@ -662,7 +718,10 @@ export function XinmaiLivedResponseReturnSurface({
           <span />
         </div>
       ) : checkpointDecision.state === "OWNERSHIP_PRESENTED" &&
-        currentFormationReceipt !== null ? (
+        currentFormationReceipt !== null &&
+        sameLifeContinuityProjection.status === "PRESENTABLE" &&
+        sameLifeContinuityProjection.checkpointState ===
+          "OWNERSHIP_PRESENTED" ? (
         <XinmaiCrystalFormationOwnershipMoment
           decision={ownershipPresentationDecision}
           onOwnershipPresented={() =>

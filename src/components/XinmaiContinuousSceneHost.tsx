@@ -450,6 +450,17 @@ export function XinmaiContinuousSceneHost({
         data-continuous-scene-plan={
           plan?.scenePlanReferenceId ?? "NONE"
         }
+        data-continuous-scene-semantic-layer={
+          plan?.status === "PRESENTABLE"
+            ? plan.semanticProjectionLayer.status
+            : "SCENE_WITHHELD"
+        }
+        data-continuous-scene-semantic-layer-reason={
+          plan?.status === "PRESENTABLE" &&
+          plan.semanticProjectionLayer.status === "SAFE_WITHHELD"
+            ? plan.semanticProjectionLayer.reason
+            : "NONE"
+        }
         data-continuous-scene-world-presenter-count={
           currentOutcome !== null &&
           currentOutcome.status !== "CONTINUOUS_SCENE_SAFE_WITHHELD"

@@ -6,6 +6,7 @@ import type {
   XinmaiContinuousScenePlan,
   XinmaiContinuousScenePresenterCommitProof,
   XinmaiContinuousSceneSafeWithheldReason,
+  XinmaiContinuousSceneSemanticLayerPlan,
 } from "../types/xinmaiContinuousScenePresentation";
 
 const hashStableReference = (value: string): number => {
@@ -16,6 +17,13 @@ const hashStableReference = (value: string): number => {
   }
   return hash >>> 0;
 };
+
+const sameReferenceOrder = (
+  left: readonly string[],
+  right: readonly string[],
+): boolean =>
+  left.length === right.length &&
+  left.every((reference, index) => reference === right[index]);
 
 const scenePlanReference = (input: XinmaiContinuousSceneInput): string =>
   `CONTINUOUS_SCENE:${hashStableReference(
@@ -69,35 +77,56 @@ export function resolveXinmaiContinuousScenePresentation(
     return withheld(input, "RENDER_PLAN_REFERENCE_MISSING");
   }
 
-  const semanticProjectionRequired =
+  const realityGravityProjectionRequired =
     input.consumerSurface === "REALITY" ||
     input.consumerSurface === "GRAVITY_CHOICE";
+  const returningArchiveProjectionRequired =
+    input.consumerSurface === "RETURNING_OWNERSHIP" ||
+    input.consumerSurface === "ARCHIVE";
+  const semanticProjectionRequired =
+    realityGravityProjectionRequired || returningArchiveProjectionRequired;
   const semanticProjection = input.semanticProjection;
-  if (semanticProjectionRequired && semanticProjection === null) {
+  if (realityGravityProjectionRequired && semanticProjection === null) {
     return withheld(input, "SEMANTIC_PROJECTION_REQUIRED");
   }
   if (
+    realityGravityProjectionRequired &&
     semanticProjection !== null &&
     semanticProjection.status === "SAFE_WITHHELD"
   ) {
     return withheld(input, "SEMANTIC_PROJECTION_SAFE_WITHHELD");
   }
-  if (
-    semanticProjection !== null &&
-    semanticProjection.status === "PRESENTABLE" &&
-    (semanticProjection.lineage.sourceReferenceId !==
-      input.sourceReferenceId ||
+  let semanticProjectionMismatch = false;
+  if (semanticProjection !== null && semanticProjection.status === "PRESENTABLE") {
+    const realityGravityProjection = "semanticStage" in semanticProjection;
+    const returningArchiveProjection = "checkpointState" in semanticProjection;
+    const commonLineageMismatch =
+      semanticProjection.lineage.sourceReferenceId !== input.sourceReferenceId ||
       semanticProjection.lineage.sourceRenderPlanReferenceId !==
         input.sourceRenderPlanReferenceId ||
       semanticProjection.lineage.identityReferenceId !==
         input.identityReferenceId ||
-      semanticProjection.lineage.bodyReferenceId !==
-        input.bodyReferenceId ||
-      semanticProjection.lineage.routeAdmissionReferenceId !==
+      semanticProjection.lineage.bodyReferenceId !== input.bodyReferenceId;
+    const wrongProjectionFamily =
+      (realityGravityProjectionRequired && !realityGravityProjection) ||
+      (returningArchiveProjectionRequired && !returningArchiveProjection) ||
+      (returningArchiveProjection &&
+        semanticProjection.consumerSurface !== input.consumerSurface);
+    const routeLineageMismatch =
+      realityGravityProjection &&
+      (semanticProjection.lineage.routeAdmissionReferenceId !==
         input.routeAdmissionEvidence.admissionReferenceId ||
-      semanticProjection.lineage.routeAdmissionRevision !==
-        input.routeAdmissionEvidence.revision)
-  ) {
+        semanticProjection.lineage.routeAdmissionRevision !==
+          input.routeAdmissionEvidence.revision);
+    if (
+      commonLineageMismatch ||
+      wrongProjectionFamily ||
+      routeLineageMismatch
+    ) {
+      semanticProjectionMismatch = true;
+    }
+  }
+  if (realityGravityProjectionRequired && semanticProjectionMismatch) {
     return withheld(input, "SEMANTIC_PROJECTION_MISMATCH");
   }
 
@@ -116,18 +145,97 @@ export function resolveXinmaiContinuousScenePresentation(
       return withheld(input, "IDENTITY_REFERENCE_MISMATCH");
     }
   }
+  if (
+    semanticProjection !== null &&
+    semanticProjection.status === "PRESENTABLE" &&
+    "checkpointState" in semanticProjection &&
+    !semanticProjectionMismatch
+  ) {
+    if (sameLifeSelection === null) {
+      return withheld(input, "SAME_LIFE_FACTS_UNAVAILABLE");
+    }
+    const sameLifeFacts = sameLifeSelection.facts;
+    const sameLifeReferences = sameLifeFacts.imprints.map(
+      (imprint) => imprint.imprintReferenceId,
+    );
+    const currentImprint =
+      semanticProjection.lineage.imprintReferenceId === null
+        ? null
+        : sameLifeFacts.imprints.find(
+            (imprint) =>
+              imprint.imprintReferenceId ===
+              semanticProjection.lineage.imprintReferenceId,
+          ) ?? null;
+    if (
+      !sameReferenceOrder(
+        semanticProjection.canonicalImprintReferenceIds,
+        sameLifeReferences,
+      ) ||
+      (semanticProjection.lineage.imprintReferenceId !== null &&
+        (currentImprint === null ||
+          currentImprint.crystalReferenceId !==
+            semanticProjection.lineage.crystalReferenceId ||
+          currentImprint.bodyReferenceId !==
+            semanticProjection.lineage.bodyReferenceId ||
+          currentImprint.stableNodeIndex !==
+            semanticProjection.lineage.stableNodeIndex))
+    ) {
+      semanticProjectionMismatch = true;
+    }
+  }
 
   const sceneReference = scenePlanReference(input);
   const requiresBody = sameLifeSelection !== null;
   const presentableSemanticProjection =
-    semanticProjection?.status === "PRESENTABLE"
+    semanticProjection?.status === "PRESENTABLE" &&
+    !semanticProjectionMismatch
       ? semanticProjection
       : null;
-  const nearObjectKind =
-    presentableSemanticProjection?.nearObjectKind ?? input.nearObjectKind;
-  const nearObjectReferenceId =
-    presentableSemanticProjection?.nearObjectReferenceId ??
-    input.nearObjectReferenceId;
+  const semanticProjectionLayer: XinmaiContinuousSceneSemanticLayerPlan =
+    !semanticProjectionRequired
+      ? Object.freeze({
+          status: "NOT_REQUIRED" as const,
+          projectionFamily: null,
+          projectionReferenceId: null,
+          reason: null,
+          upstreamReason: null,
+        })
+      : presentableSemanticProjection !== null
+        ? Object.freeze({
+            status: "PRESENTED" as const,
+            projectionFamily: realityGravityProjectionRequired
+              ? "REALITY_GRAVITY_CHOICE" as const
+              : "RETURNING_ARCHIVE" as const,
+            projectionReferenceId:
+              presentableSemanticProjection.semanticProjectionReferenceId,
+            reason: null,
+            upstreamReason: null,
+          })
+        : Object.freeze({
+            status: "SAFE_WITHHELD" as const,
+            projectionFamily: "RETURNING_ARCHIVE" as const,
+            projectionReferenceId:
+              semanticProjection?.semanticProjectionReferenceId ?? null,
+            reason: semanticProjectionMismatch
+              ? "SEMANTIC_PROJECTION_MISMATCH" as const
+              : semanticProjection === null
+                ? "SEMANTIC_PROJECTION_REQUIRED" as const
+                : "SEMANTIC_PROJECTION_SAFE_WITHHELD" as const,
+            upstreamReason:
+              semanticProjection?.status === "SAFE_WITHHELD"
+                ? semanticProjection.reason
+                : null,
+          });
+  const v4LayerWithheld =
+    semanticProjectionLayer.status === "SAFE_WITHHELD" &&
+    semanticProjectionLayer.projectionFamily === "RETURNING_ARCHIVE";
+  const nearObjectKind = v4LayerWithheld
+    ? "NONE" as const
+    : presentableSemanticProjection?.nearObjectKind ?? input.nearObjectKind;
+  const nearObjectReferenceId = v4LayerWithheld
+    ? null
+    : presentableSemanticProjection?.nearObjectReferenceId ??
+      input.nearObjectReferenceId;
   const depth: XinmaiContinuousSceneDepthPlan = Object.freeze({
     far: Object.freeze({
       topologyReferenceId: `FAR:${input.sourceRenderPlanReferenceId}`,
@@ -175,6 +283,7 @@ export function resolveXinmaiContinuousScenePresentation(
     ),
     depth,
     sameLifeSurfaceSelection: sameLifeSelection,
+    semanticProjectionLayer,
     semanticProjection: presentableSemanticProjection,
   });
 }

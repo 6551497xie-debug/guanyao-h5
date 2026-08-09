@@ -8,6 +8,11 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import { readXinmaiCanonicalBodyImprintRecovery } from "../services/xinmaiCanonicalBodyImprintRecoveryAdapter";
 import { resolveXinmaiSameLifeAccessibleSemanticMirror } from "../services/xinmaiSameLifeAccessibleSemanticMirror";
+import {
+  applyXinmaiReturningSameLifeContinuitySceneProjectionPolicy,
+  resolveXinmaiReturningSameLifeContinuityPresentation,
+} from "../services/xinmaiReturningSameLifeContinuityPresentationResolver";
+import { createIsolatedWebGLPrototypeRenderPlanReference } from "../services/isolatedWebGLPrototypeRenderPlanReference";
 import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
@@ -100,6 +105,44 @@ export function PersonalityRingPage() {
       (imprint) =>
         imprint.imprintReferenceId === selectedImprintReferenceId,
     ) ?? null;
+  const archiveSourceRenderPlanReferenceId = useMemo(
+    () =>
+      identityRecovery.status === "READY"
+        ? createIsolatedWebGLPrototypeRenderPlanReference(
+            identityRecovery.visualContinuity.consumerSourceResult
+              .consumerSource.renderPlanResult.plan,
+          ).referenceId
+        : "",
+    [identityRecovery],
+  );
+  const archiveSameLifeContinuityProjection = useMemo(
+    () =>
+      resolveXinmaiReturningSameLifeContinuityPresentation({
+        consumerSurface: "ARCHIVE",
+        identityStatus:
+          identityRecovery.status === "READY" ? "READY" : "UNAVAILABLE",
+        sourceReferenceId:
+          identityRecovery.status === "READY"
+            ? identityRecovery.identityReferences.sourceReferenceId
+            : "",
+        sourceRenderPlanReferenceId: archiveSourceRenderPlanReferenceId,
+        canonicalBodyImprintDecision: bodyImprintDecision,
+        selectedImprintReferenceId,
+      }),
+    [
+      archiveSourceRenderPlanReferenceId,
+      bodyImprintDecision,
+      identityRecovery,
+      selectedImprintReferenceId,
+    ],
+  );
+  const archiveSameLifeSceneProjection = useMemo(
+    () =>
+      applyXinmaiReturningSameLifeContinuitySceneProjectionPolicy(
+        archiveSameLifeContinuityProjection,
+      ),
+    [archiveSameLifeContinuityProjection],
+  );
   const accessibleSemanticMirror = useMemo(
     () =>
       resolveXinmaiSameLifeAccessibleSemanticMirror({
@@ -144,6 +187,9 @@ export function PersonalityRingPage() {
               visualContinuity={identityRecovery.visualContinuity}
               canonicalBodyImprintDecision={bodyImprintDecision}
               onSameLifeSurfaceOutcome={setSameLifeSurfaceOutcome}
+              sameLifeContinuityProjection={
+                archiveSameLifeSceneProjection
+              }
             />
           </Suspense>
         ) : (

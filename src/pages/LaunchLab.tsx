@@ -77,6 +77,14 @@ import {
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { XinmaiLivedResponseReturnSurface } from "../components/XinmaiLivedResponseReturnSurface";
 import { resolveXinmaiLivedResponseCheckpointPresentation } from "../services/xinmaiLivedResponseCheckpointPresentationResolver";
+import {
+  applyXinmaiReturningSameLifeContinuitySceneProjectionPolicy,
+  resolveXinmaiReturningSameLifeContinuityPresentation,
+} from "../services/xinmaiReturningSameLifeContinuityPresentationResolver";
+import { createIsolatedWebGLPrototypeRenderPlanReference } from "../services/isolatedWebGLPrototypeRenderPlanReference";
+import type {
+  XinmaiReturningSameLifeContinuityPresentationProjection,
+} from "../types/xinmaiReturningSameLifeContinuityPresentation";
 import { readXinmaiChoiceReturningProvenanceRecovery } from "../services/xinmaiChoiceReturningProvenanceRecoveryAdapter";
 import type { XinmaiChoiceReturningProvenanceAdmission } from "../types/xinmaiChoiceReturningProvenance";
 import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
@@ -1521,6 +1529,13 @@ export function LaunchLab({
     returningChoiceAdmissions.some(
       (admission) => admission.intention !== null,
     );
+  const returningSourceRenderPlanReferenceId = useMemo(() => {
+    if (returningVisualContinuity === null) return "";
+    return createIsolatedWebGLPrototypeRenderPlanReference(
+      returningVisualContinuity.consumerSourceResult.consumerSource
+        .renderPlanResult.plan,
+    ).referenceId;
+  }, [returningVisualContinuity]);
   const baselineCheckpointDecision = useMemo(
     () =>
       resolveXinmaiLivedResponseCheckpointPresentation({
@@ -1540,6 +1555,62 @@ export function LaunchLab({
         motionPreference: "MOTION",
       }),
     [canonicalBodyImprintDecision, returningRecognizedIdentity],
+  );
+  const baselineSameLifeContinuityProjection = useMemo(
+    () =>
+      resolveXinmaiReturningSameLifeContinuityPresentation({
+        consumerSurface: "RETURNING_OWNERSHIP",
+        identityStatus:
+          returningRecognizedIdentity?.status === "READY"
+            ? "READY"
+            : "UNAVAILABLE",
+        sourceReferenceId:
+          returningRecognizedIdentity?.status === "READY"
+            ? returningRecognizedIdentity.identityReferences.sourceReferenceId
+            : "",
+        sourceRenderPlanReferenceId: returningSourceRenderPlanReferenceId,
+        canonicalBodyImprintDecision,
+        checkpointDecision: baselineCheckpointDecision,
+        admission: null,
+        currentFact: null,
+        currentEligibility: null,
+        formationReceipt: null,
+        returnAcceptanceEvidence: null,
+        ownershipDecision: null,
+      }),
+    [
+      baselineCheckpointDecision,
+      canonicalBodyImprintDecision,
+      returningRecognizedIdentity,
+      returningSourceRenderPlanReferenceId,
+    ],
+  );
+  const [activeSameLifeContinuityProjection, setActiveSameLifeContinuityProjection] =
+    useState<XinmaiReturningSameLifeContinuityPresentationProjection | null>(
+      null,
+    );
+  const acceptSameLifeContinuityProjection = useCallback(
+    (projection: XinmaiReturningSameLifeContinuityPresentationProjection) => {
+      setActiveSameLifeContinuityProjection(projection);
+    },
+    [],
+  );
+  useEffect(() => {
+    if (!returningLivedResponseActive) {
+      setActiveSameLifeContinuityProjection(null);
+    }
+  }, [returningLivedResponseActive]);
+  const returningSameLifeContinuityProjection = returningLivedResponseActive
+    ? activeSameLifeContinuityProjection
+    : baselineSameLifeContinuityProjection;
+  const returningSameLifeSceneProjection = useMemo(
+    () =>
+      returningSameLifeContinuityProjection === null
+        ? null
+        : applyXinmaiReturningSameLifeContinuitySceneProjectionPolicy(
+            returningSameLifeContinuityProjection,
+          ),
+    [returningSameLifeContinuityProjection],
   );
   const returningLifeWhisperEntryReady =
     returningVisualReady && !returningLivedResponseActive;
@@ -6102,6 +6173,9 @@ export function LaunchLab({
                 onLifeWhisperVisualResponseOutcome={
                   handleReturningLifeWhisperVisualResponseOutcome
                 }
+                sameLifeContinuityProjection={
+                  returningSameLifeSceneProjection
+                }
               />
             </Suspense>
           </div>
@@ -6144,6 +6218,12 @@ export function LaunchLab({
                   }
                   admissions={returningChoiceAdmissions}
                   bodyImprintDecision={canonicalBodyImprintDecision}
+                  sourceRenderPlanReferenceId={
+                    returningSourceRenderPlanReferenceId
+                  }
+                  onSameLifeContinuityProjection={
+                    acceptSameLifeContinuityProjection
+                  }
                   onAuthorityRevision={() => {
                     setReturningGrowthSurfaceRevision(
                       (revision) => revision + 1,
