@@ -9,6 +9,6 @@
 | friendship reverting to organization labor | CONTROLLED | sample uses group confirmation boundary; new slots use plan continuity and shared-photo access, not event staffing |
 | family reduced to care or descendants | CLOSED IN DRAFT | revised CARE trio uses item receipt, service arrival, and paper handoff; descendant/care-recipient assumptions zero |
 | digital weakness or proxy operation | CLOSED IN DRAFT | capability judgment and proxy actor counts are zero |
-| author self-review | CLOSED | 54 items carry independent R1 lineage; the 18 author revisions retain empty reviewer, approval, and lock fields |
+| author self-review | CLOSED | 65 new items carry independent R1/R2 lineage; the seven author revisions retain empty reviewer, approval, and lock fields |
 
 Mechanical success does not close the open editorial risks and does not constitute `PACK_ACCEPTED`.
