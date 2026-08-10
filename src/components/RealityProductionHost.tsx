@@ -423,6 +423,8 @@ export function RealityProductionHost({
             candidateBundleRevisionReferenceId:
               receipt.fact.candidateRevision
                 .candidateBundleRevisionReferenceId,
+            catalogRevision:
+              receipt.fact.candidateRevision.catalogRevision,
           });
     if (
       recoveredSourceResult.status !== "READY" ||

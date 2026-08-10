@@ -8,6 +8,7 @@ import type {
   RealityProductionPressureSeedSession,
 } from "./realityProductionPressureSeedConsumer";
 import type { RealityProductionRouteActivationAuthorization } from "./realityProductionRouteAuthorization";
+import type { RealityPressureFailureEnvelope } from "./realityPressureFailureEnvelope";
 
 export type RealityPressureActivationDeliveryOrchestrationBridgeBoundary =
   Readonly<{
@@ -75,6 +76,7 @@ export type RealityPressureActivationDeliveryOrchestrationBridgeResult =
       }>;
       reason: null;
       orchestrationReason: null;
+      failure: null;
       boundary: RealityPressureActivationDeliveryOrchestrationBridgeBoundary;
     }>
   | Readonly<{
@@ -93,6 +95,7 @@ export type RealityPressureActivationDeliveryOrchestrationBridgeResult =
       }>;
       reason: null;
       orchestrationReason: null;
+      failure: null;
       boundary: RealityPressureActivationDeliveryOrchestrationBridgeBoundary;
     }>
   | Readonly<{
@@ -106,5 +109,6 @@ export type RealityPressureActivationDeliveryOrchestrationBridgeResult =
       provenance: null;
       reason: RealityPressureActivationDeliveryOrchestrationBridgeBlockedReason;
       orchestrationReason: RealityPressureCandidateDeliveryOrchestrationBlockedReason | null;
+      failure: RealityPressureFailureEnvelope;
       boundary: RealityPressureActivationDeliveryOrchestrationBridgeBoundary;
     }>;

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "XINMAI_PRESSURE_CANDIDATE_CATALOG_BUILD_REPORT_V1",
+  "compiler": "scripts/compile-xinmai-pressure-candidate-catalog.mjs",
+  "legacyRevision": "GUANYAO_PRESSURE_SEED_MATRIX_CATALOG_2026_07_30_P0",
+  "targetRevision": "GUANYAO_PRESSURE_SEED_MATRIX_CATALOG_2026_08_10_FIVE_STAGE_450_P0",
+  "artifactDigest": "sha256:f615d2be422b59d30d73358975df489b99779deeb894ec4231b830d79ed32453",
+  "counts": {
+    "total": 450,
+    "byStage": {
+      "YOUTH": 90,
+      "ESTABLISHING": 90,
+      "MID_LIFE": 90,
+      "RESTRUCTURING": 90,
+      "SIXTY_PLUS": 90
+    },
+    "byNature": {
+      "EVALUATION": 31,
+      "RESOURCE": 150,
+      "ATTACHMENT": 38,
+      "CONTROL": 87,
+      "OBLIGATION": 79,
+      "BELONGING": 49,
+      "IDENTITY": 14,
+      "SURVIVAL": 2
+    }
+  },
+  "manifestDigests": {
+    "YOUTH:content": "sha256:4978cf1b39338fe1a71e4d30079a96086574b0a6bd4b2d9c989d7ebed0a0b725",
+    "YOUTH:binding": "sha256:de014af43aee7c753563504d6dfaf4b8fc35a38c325c09848af4190b3454b4ec",
+    "MID_LIFE:content": "sha256:53a90d7aa60ea7b4850d58fd23e7ad40e8f7751d7ab11b836229e2cf11430b56",
+    "MID_LIFE:binding": "sha256:ccde306a2ffd6ab1b9e0d7f2d9727021eb618963035ec0ab406e50c5408e52db",
+    "RESTRUCTURING:content": "sha256:45f9b9febc4b4eae00499679241e2fdd18617ef9744da83c555f9e1b25da33d6",
+    "RESTRUCTURING:binding": "sha256:7d6edbd60daf78c8edf66a035358dcb2106b47d216b41757be596bc73c11f009",
+    "SIXTY_PLUS:content": "sha256:d9d44e698ca5c22aa4b35fe7bde48550c37d8e653fc0b7fc1005bcf0c87a27fe",
+    "SIXTY_PLUS:binding": "sha256:0a24234c7162f1d8ad82876cb0598c77df856fac375109454ea9f3f4f62a3570"
+  },
+  "acceptedShellOverlapException": {
+    "shell": "同一小时出现两项签到",
+    "count": 2
+  },
+  "runtimeMetadataExcluded": [
+    "authoringStableId",
+    "contentHash",
+    "reviewer",
+    "approval",
+    "lock",
+    "AI_ASSISTED",
+    "Draft",
+    "Fixture",
+    "Acceptance"
+  ]
+}

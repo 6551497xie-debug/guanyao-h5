@@ -60,6 +60,7 @@ import {
 import { resolveLifeWhisperVisualOutcomeTransition } from "../services/xinmaiLifeWhisperVisualOutcomeTransition";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
 import { requestRealityEncounter } from "../services/xinmaiRealityEncounterIntentController";
+import { resolveXinmaiRealityEntryPresentation } from "../services/xinmaiRealityEntryPresentationResolver";
 import type {
   LifeWhisperRelationshipFact,
   LifeWhisperRelationshipResponsePhase,
@@ -1627,6 +1628,15 @@ export function LaunchLab({
       lifeWhisperResponsePhase: returningLifeWhisperResponsePhase,
       unavailableContinuation:
         returningLifeWhisperUnavailableContinuation,
+    });
+  const returningRealityEntryPresentation =
+    resolveXinmaiRealityEntryPresentation({
+      relationshipAvailable:
+        returningRelationshipNaming.status === "AVAILABLE",
+      entryIntentReady: returningLifeWhisperRealityIntentReady,
+      deliveryReady: returningLifeWhisperRealityIntentReady,
+      failure: null,
+      authorityRetryAvailable: false,
     });
   const returningRealityContext =
     returningStatePreview === "IDENTITY_ONLY" ||
@@ -6087,9 +6097,7 @@ export function LaunchLab({
         }
         data-returning-reality-intent={
           returningVisualReady
-            ? returningLifeWhisperRealityIntentReady
-              ? "READY"
-              : "AWAITING_RELATIONSHIP"
+            ? returningRealityEntryPresentation.state
             : "NOT_ACTIVE"
         }
         data-returning-life-whisper-raw-text-persistence="NONE"

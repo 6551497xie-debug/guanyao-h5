@@ -7,6 +7,7 @@ import type {
   RealityProductionPressureSeedSession,
 } from "./realityProductionPressureSeedConsumer";
 import type { RealityProductionRouteActivationAuthorization } from "./realityProductionRouteAuthorization";
+import type { RealityPressureFailureEnvelope } from "./realityPressureFailureEnvelope";
 
 export type RealityPressureCandidateDeliveryOrchestrationBoundary = Readonly<{
   productionDeliveryOrchestrationOnly: true;
@@ -70,6 +71,7 @@ export type RealityPressureCandidateDeliveryOrchestrationResult =
       candidateSourceContext: RealityPressureSeedCandidateSourceContext;
       consumerInput: RealityProductionPressureSeedConsumerInitializeInput;
       reason: null;
+      failure: null;
       boundary: RealityPressureCandidateDeliveryOrchestrationBoundary;
     }>
   | Readonly<{
@@ -80,6 +82,7 @@ export type RealityPressureCandidateDeliveryOrchestrationResult =
       candidateSourceContext: RealityPressureSeedCandidateSourceContext;
       consumerInput: RealityProductionPressureSeedConsumerAdvanceInput;
       reason: null;
+      failure: null;
       boundary: RealityPressureCandidateDeliveryOrchestrationBoundary;
     }>
   | Readonly<{
@@ -90,5 +93,6 @@ export type RealityPressureCandidateDeliveryOrchestrationResult =
       candidateSourceContext: null;
       consumerInput: null;
       reason: RealityPressureCandidateDeliveryOrchestrationBlockedReason;
+      failure: RealityPressureFailureEnvelope;
       boundary: RealityPressureCandidateDeliveryOrchestrationBoundary;
     }>;

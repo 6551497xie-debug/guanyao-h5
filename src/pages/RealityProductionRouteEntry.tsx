@@ -47,6 +47,8 @@ import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputCon
 import { executeRealityToGravityCutover } from "../services/realityToGravityCutoverTransaction";
 import { observeRealityToGravityCutoverResult } from "../services/gravityEntryAcceptanceRuntimePort";
 import { readXinmaiChoiceReturnResolutionProof } from "../services/xinmaiChoiceReturnResolutionProofAdapter";
+import { resolveXinmaiRealityEntryPresentation } from "../services/xinmaiRealityEntryPresentationResolver";
+import { createRealityPressureFailureEnvelope } from "../types/realityPressureFailureEnvelope";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import type {
   RealityHostInteractionAuthority,
@@ -981,6 +983,30 @@ export function RealityProductionRouteEntry({
       currentIntent?.state === "FAILED_RETRYABLE" ||
       postCommitTransaction.status === "FAILED" &&
         postCommitTransaction.retryAvailable;
+    const authorityFailure =
+      deliveryResult && deliveryResult.status !== "READY"
+        ? deliveryResult.failure
+        : acceptanceFailure !== null
+          ? createRealityPressureFailureEnvelope(
+              acceptanceFailure.stage === "ROUTE_AUTHORIZATION" ||
+                acceptanceFailure.stage === "ACTIVATION_SOURCE"
+                ? "ADMISSION_NOT_READY"
+                : acceptanceFailure.stage === "RECOVERY" ||
+                    acceptanceFailure.stage === "ROUTE_LOAD"
+                  ? "INTENT_NOT_READY"
+                  : "LIFECYCLE_NOT_READY",
+              retryAvailable ? "RETRYABLE" : "NON_RETRYABLE",
+              "ROUTE_HOST",
+              acceptanceFailure.guardReason,
+            )
+          : null;
+    const entryPresentation = resolveXinmaiRealityEntryPresentation({
+      relationshipAvailable: identityRecovery.status === "READY",
+      entryIntentReady: currentIntent !== null,
+      deliveryReady: deliveryResult?.status === "READY",
+      failure: authorityFailure,
+      authorityRetryAvailable: retryAvailable,
+    });
     return (
       <main
         className="gy-reality-route-guard"
@@ -1001,11 +1027,14 @@ export function RealityProductionRouteEntry({
         data-reality-post-commit-transaction={
           postCommitTransaction.status
         }
+        data-reality-entry-presentation={entryPresentation.state}
+        data-reality-entry-typed-cause={entryPresentation.typedCause}
+        data-reality-entry-retryability={entryPresentation.retryability}
       >
         <p role="status">
-          这一次现实还没有被完整承接。
+          {entryPresentation.message}
         </p>
-        {retryAvailable ? (
+        {entryPresentation.showRetry && retryAvailable ? (
           <button
             type="button"
             data-interaction="RETRY_SAME_REALITY_ENCOUNTER"
@@ -1013,7 +1042,7 @@ export function RealityProductionRouteEntry({
           >
             继续这一轮
           </button>
-        ) : currentIntent === null ? (
+        ) : entryPresentation.showReturnToLifeWorld && currentIntent === null ? (
           <button
             type="button"
             onClick={onReturnToLifeWorld}

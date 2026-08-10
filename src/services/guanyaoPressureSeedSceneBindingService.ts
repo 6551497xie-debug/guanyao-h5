@@ -66,6 +66,7 @@ export interface GuanyaoPressureSeedMatrixSlotContext {
   ageSegment: GuanyaoAgeSegment;
   pressureField: GuanyaoPressureField;
   fieldSeedOffset: number;
+  catalogMatrix?: readonly PressureSeedMatrixNode[];
 }
 
 export interface GuanyaoSelectedPressureSeedContext {
@@ -268,8 +269,12 @@ function resolveRuntimeAgeGroup(context: GuanyaoPressureSeedSceneContext = {}): 
   return defaultAgeGroup;
 }
 
-function findMatrixNode(ageGroup: PressureSeedAgeGroup, pressureField: PressureSeedField): PressureSeedMatrixNode | undefined {
-  return GUANYAO_PRESSURE_SEED_MATRIX_V2.find(
+function findMatrixNode(
+  ageGroup: PressureSeedAgeGroup,
+  pressureField: PressureSeedField,
+  catalogMatrix: readonly PressureSeedMatrixNode[] = GUANYAO_PRESSURE_SEED_MATRIX_V2,
+): PressureSeedMatrixNode | undefined {
+  return catalogMatrix.find(
     (node) => node.ageGroup === ageGroup && node.pressureField === pressureField,
   );
 }
@@ -503,7 +508,11 @@ export function getPressureSeedSceneCandidateAtMatrixSlot(
     return undefined;
   }
 
-  const node = findMatrixNode(context.ageSegment, context.pressureField);
+  const node = findMatrixNode(
+    context.ageSegment,
+    context.pressureField,
+    context.catalogMatrix,
+  );
   if (!node || node.status !== "locked") return undefined;
 
   const matrixSeed = node.seeds[context.fieldSeedOffset];

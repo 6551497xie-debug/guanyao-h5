@@ -4,6 +4,7 @@ import type { RealityPressureSeedCandidateSourceContext } from "./realityPressur
 import type { RealityProductionPressureSeedConsumerInitializeInput } from "./realityProductionPressureSeedConsumer";
 import type { RealityProductionRouteActivationAuthorization } from "./realityProductionRouteAuthorization";
 import type { RealityRouteCandidateRequestContextBridgeResult } from "./realityRouteCandidateRequestContextBridge";
+import type { RealityPressureFailureEnvelope } from "./realityPressureFailureEnvelope";
 
 export type RealityRouteDeliveryOrchestrationBridgeBoundary = Readonly<{
   routeCandidateRequestToExistingDeliveryBridgeOnly: true;
@@ -66,6 +67,7 @@ export type RealityRouteDeliveryOrchestrationBridgeResult =
       }>;
       reason: null;
       deliveryBridgeReason: null;
+      failure: null;
       boundary: RealityRouteDeliveryOrchestrationBridgeBoundary;
     }>
   | Readonly<{
@@ -80,5 +82,6 @@ export type RealityRouteDeliveryOrchestrationBridgeResult =
       provenance: null;
       reason: RealityRouteDeliveryOrchestrationBridgeBlockedReason;
       deliveryBridgeReason: RealityPressureActivationDeliveryOrchestrationBridgeBlockedReason | null;
+      failure: RealityPressureFailureEnvelope;
       boundary: RealityRouteDeliveryOrchestrationBridgeBoundary;
     }>;

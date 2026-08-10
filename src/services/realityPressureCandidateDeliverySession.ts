@@ -7,6 +7,11 @@ import type {
   RealityPressureCandidateDeliverySessionInitializeInput,
   RealityPressureCandidateDeliverySessionResult,
 } from "../types/realityPressureCandidateDeliverySession";
+import {
+  appendRealityPressureFailureStage,
+  createRealityPressureFailureEnvelope,
+  type RealityPressureFailureEnvelope,
+} from "../types/realityPressureFailureEnvelope";
 
 export const REALITY_PRESSURE_CANDIDATE_DELIVERY_SESSION_BOUNDARY:
   RealityPressureCandidateDeliverySessionBoundary = Object.freeze({
@@ -62,11 +67,26 @@ const blocked = (
   operation: "INITIALIZE" | "ADVANCE",
   reason: RealityPressureCandidateDeliverySessionBlockedReason,
   session: RealityPressureCandidateDeliverySession | null,
+  innerFailure: RealityPressureFailureEnvelope | null = null,
 ): RealityPressureCandidateDeliverySessionResult => Object.freeze({
   status: "BLOCKED" as const,
   operation,
   session,
   reason,
+  failure: innerFailure
+    ? appendRealityPressureFailureStage(
+        innerFailure,
+        "DELIVERY_SESSION",
+        reason,
+      )
+    : createRealityPressureFailureEnvelope(
+        reason === "CANDIDATE_SOURCE_NOT_READY"
+          ? "DELIVERY_NOT_READY"
+          : "BUNDLE_BUILD_CONFLICT",
+        "NON_RETRYABLE",
+        "DELIVERY_SESSION",
+        reason,
+      ),
   boundary: REALITY_PRESSURE_CANDIDATE_DELIVERY_SESSION_BOUNDARY,
 });
 
@@ -157,7 +177,12 @@ export function initializeRealityPressureCandidateDeliverySession(
 ): RealityPressureCandidateDeliverySessionResult {
   const sourceResult = input.candidateSourceResult;
   if (sourceResult.status !== "READY") {
-    return blocked("INITIALIZE", "CANDIDATE_SOURCE_NOT_READY", null);
+    return blocked(
+      "INITIALIZE",
+      "CANDIDATE_SOURCE_NOT_READY",
+      null,
+      sourceResult.failure,
+    );
   }
   if (!isReadySourceResult(sourceResult)) {
     return blocked("INITIALIZE", "CANDIDATE_SOURCE_CONTEXT_INVALID", null);
@@ -187,6 +212,7 @@ export function initializeRealityPressureCandidateDeliverySession(
     operation: "INITIALIZE" as const,
     session,
     reason: null,
+    failure: null,
     boundary: REALITY_PRESSURE_CANDIDATE_DELIVERY_SESSION_BOUNDARY,
   });
 }
@@ -199,7 +225,12 @@ export function advanceRealityPressureCandidateDeliverySession(
     return blocked("ADVANCE", "DELIVERY_SESSION_INVALID", session);
   }
   if (sourceResult.status !== "READY") {
-    return blocked("ADVANCE", "CANDIDATE_SOURCE_NOT_READY", session);
+    return blocked(
+      "ADVANCE",
+      "CANDIDATE_SOURCE_NOT_READY",
+      session,
+      sourceResult.failure,
+    );
   }
   if (!isReadySourceResult(sourceResult)) {
     return blocked("ADVANCE", "CANDIDATE_SOURCE_CONTEXT_INVALID", session);
@@ -250,6 +281,7 @@ export function advanceRealityPressureCandidateDeliverySession(
     operation: "ADVANCE" as const,
     session: nextSession,
     reason: null,
+    failure: null,
     boundary: REALITY_PRESSURE_CANDIDATE_DELIVERY_SESSION_BOUNDARY,
   });
 }

@@ -12,6 +12,11 @@ import {
   advanceRealityPressureCandidateDeliveryOrchestration,
   initializeRealityPressureCandidateDeliveryOrchestration,
 } from "./realityPressureCandidateDeliveryOrchestration";
+import {
+  appendRealityPressureFailureStage,
+  createRealityPressureFailureEnvelope,
+  type RealityPressureFailureEnvelope,
+} from "../types/realityPressureFailureEnvelope";
 
 export const REALITY_PRESSURE_ACTIVATION_DELIVERY_ORCHESTRATION_BRIDGE_BOUNDARY:
   RealityPressureActivationDeliveryOrchestrationBridgeBoundary = Object.freeze({
@@ -63,6 +68,7 @@ const unavailable = (
   deliverySession: RealityPressureCandidateDeliverySession | null,
   reason: RealityPressureActivationDeliveryOrchestrationBridgeBlockedReason,
   orchestrationReason: RealityPressureCandidateDeliveryOrchestrationBlockedReason | null = null,
+  innerFailure: RealityPressureFailureEnvelope | null = null,
 ): RealityPressureActivationDeliveryOrchestrationBridgeResult => Object.freeze({
   status,
   operation,
@@ -74,6 +80,16 @@ const unavailable = (
   provenance: null,
   reason,
   orchestrationReason,
+  failure: innerFailure
+    ? appendRealityPressureFailureStage(innerFailure, "ROUTE_HOST", reason)
+    : createRealityPressureFailureEnvelope(
+        reason === "DELIVERY_ORCHESTRATION_NOT_READY"
+          ? "DELIVERY_NOT_READY"
+          : "SOURCE_INVALID",
+        "NON_RETRYABLE",
+        "ROUTE_HOST",
+        reason,
+      ),
   boundary: REALITY_PRESSURE_ACTIVATION_DELIVERY_ORCHESTRATION_BRIDGE_BOUNDARY,
 });
 
@@ -171,6 +187,9 @@ export function initializeRealityPressureActivationDeliveryOrchestration(
       orchestrationResult.status === "READY"
         ? null
         : orchestrationResult.reason,
+      orchestrationResult.status === "READY"
+        ? null
+        : orchestrationResult.failure,
     );
   }
 
@@ -185,6 +204,7 @@ export function initializeRealityPressureActivationDeliveryOrchestration(
     provenance: createProvenance(sourceReferenceId),
     reason: null,
     orchestrationReason: null,
+    failure: null,
     boundary:
       REALITY_PRESSURE_ACTIVATION_DELIVERY_ORCHESTRATION_BRIDGE_BOUNDARY,
   });
@@ -258,6 +278,9 @@ export function advanceRealityPressureActivationDeliveryOrchestration(
       orchestrationResult.status === "READY"
         ? null
         : orchestrationResult.reason,
+      orchestrationResult.status === "READY"
+        ? null
+        : orchestrationResult.failure,
     );
   }
 
@@ -272,6 +295,7 @@ export function advanceRealityPressureActivationDeliveryOrchestration(
     provenance: createProvenance(sourceReferenceId),
     reason: null,
     orchestrationReason: null,
+    failure: null,
     boundary:
       REALITY_PRESSURE_ACTIVATION_DELIVERY_ORCHESTRATION_BRIDGE_BOUNDARY,
   });

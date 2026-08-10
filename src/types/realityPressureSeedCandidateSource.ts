@@ -6,6 +6,7 @@ import type {
   RealityPressureSeedCandidateBundle,
   RealityPressureSeedCandidateRequest,
 } from "./realityPressureSeedCaptureContract";
+import type { RealityPressureFailureEnvelope } from "./realityPressureFailureEnvelope";
 
 export type RealityPressureSeedCandidateSourceBoundary = Readonly<{
   productionCandidateSourceOnly: true;
@@ -68,7 +69,14 @@ export type RealityPressureSeedCandidateSourceBlockedReason =
   | "CANDIDATE_BUNDLE_NOT_AVAILABLE"
   | "CANDIDATE_CATALOG_EXHAUSTED"
   | "CANDIDATE_SOURCE_AGE_SEGMENT_MISMATCH"
-  | "CANDIDATE_SOURCE_FALLBACK_DETECTED";
+  | "CANDIDATE_SOURCE_FALLBACK_DETECTED"
+  | "STAGE_NOT_IN_CATALOG"
+  | "CATALOG_REVISION_UNKNOWN"
+  | "CATALOG_ARTIFACT_UNAVAILABLE"
+  | "SOURCE_REVISION_MISMATCH"
+  | "RUNTIME_ID_BINDING_MISSING"
+  | "PRESSURE_NATURE_BINDING_MISSING"
+  | "TARGET_450_NEW_CREATION_SAFE_WITHHELD";
 
 export type RealityPressureSeedCandidateSourceResult =
   | Readonly<{
@@ -77,6 +85,7 @@ export type RealityPressureSeedCandidateSourceResult =
       request: RealityPressureSeedCandidateRequest;
       context: RealityPressureSeedCandidateSourceContext;
       reason: null;
+      failure: null;
       boundary: RealityPressureSeedCandidateSourceBoundary;
     }>
   | Readonly<{
@@ -85,5 +94,6 @@ export type RealityPressureSeedCandidateSourceResult =
       request: RealityPressureSeedCandidateRequest;
       context: null;
       reason: RealityPressureSeedCandidateSourceBlockedReason;
+      failure: RealityPressureFailureEnvelope;
       boundary: RealityPressureSeedCandidateSourceBoundary;
     }>;

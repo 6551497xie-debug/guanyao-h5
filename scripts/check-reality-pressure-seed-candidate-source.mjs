@@ -194,13 +194,23 @@ try {
   assertEqual("untracked cursor is blocked", wrongCursor.status, "BLOCKED");
   assertEqual("cursor mismatch is explicit", wrongCursor.reason, "CANDIDATE_CURSOR_MISMATCH");
 
-  const unavailableAge = resolve({ ...baseRequest, ageSegment: "MID_LIFE" });
-  assertEqual("missing age catalog never falls back", unavailableAge.status, "SOURCE_NOT_READY");
-  assertEqual(
-    "age catalog mismatch is explicit",
-    unavailableAge.reason,
-    "CANDIDATE_BUNDLE_NOT_AVAILABLE",
-  );
+  for (const ageSegment of [
+    "YOUTH",
+    "ESTABLISHING",
+    "MID_LIFE",
+    "RESTRUCTURING",
+    "SIXTY_PLUS",
+  ]) {
+    const stageResult = resolve({ ...baseRequest, ageSegment });
+    assertEqual(`${ageSegment} catalog resolves without fallback`, stageResult.status, "READY");
+    assertEqual(
+      `${ageSegment} preserves requested stage`,
+      stageResult.context.candidateRecords.every(
+        (record) => record.seed.primaryAge === ageSegment,
+      ),
+      true,
+    );
+  }
 
   const ready = resolve(baseRequest);
   assertEqual("explicit real request resolves candidates", ready.status, "READY");

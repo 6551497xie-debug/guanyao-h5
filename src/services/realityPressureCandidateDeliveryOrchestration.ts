@@ -12,6 +12,11 @@ import {
   initializeRealityPressureCandidateDeliverySession,
 } from "./realityPressureCandidateDeliverySession";
 import { resolveRealityPressureSeedCandidateSource } from "./realityPressureSeedCandidateSource";
+import {
+  appendRealityPressureFailureStage,
+  createRealityPressureFailureEnvelope,
+  type RealityPressureFailureEnvelope,
+} from "../types/realityPressureFailureEnvelope";
 
 export const REALITY_PRESSURE_CANDIDATE_DELIVERY_ORCHESTRATION_BOUNDARY:
   RealityPressureCandidateDeliveryOrchestrationBoundary = Object.freeze({
@@ -68,6 +73,7 @@ const unavailable = (
   sourceReferenceId: string | null,
   deliverySession: RealityPressureCandidateDeliverySession | null,
   reason: RealityPressureCandidateDeliveryOrchestrationBlockedReason,
+  innerFailure: RealityPressureFailureEnvelope | null = null,
 ): RealityPressureCandidateDeliveryOrchestrationResult => Object.freeze({
   status,
   operation,
@@ -76,6 +82,22 @@ const unavailable = (
   candidateSourceContext: null,
   consumerInput: null,
   reason,
+  failure: innerFailure
+    ? appendRealityPressureFailureStage(
+        innerFailure,
+        "DELIVERY_ORCHESTRATOR",
+        reason,
+      )
+    : createRealityPressureFailureEnvelope(
+        reason === "REALITY_ROUTE_AUTHORIZATION_REQUIRED"
+          ? "ADMISSION_NOT_READY"
+          : reason === "PRESSURE_SEED_SESSION_INVALID"
+            ? "LIFECYCLE_NOT_READY"
+            : "DELIVERY_NOT_READY",
+        "NON_RETRYABLE",
+        "DELIVERY_ORCHESTRATOR",
+        reason,
+      ),
   boundary: REALITY_PRESSURE_CANDIDATE_DELIVERY_ORCHESTRATION_BOUNDARY,
 });
 
@@ -154,6 +176,7 @@ export function initializeRealityPressureCandidateDeliveryOrchestration(
       requestContext.sourceReferenceId,
       null,
       "CANDIDATE_SOURCE_NOT_READY",
+      sourceResult.failure,
     );
   }
   const deliveryResult = initializeRealityPressureCandidateDeliverySession({
@@ -166,6 +189,7 @@ export function initializeRealityPressureCandidateDeliveryOrchestration(
       requestContext.sourceReferenceId,
       null,
       "DELIVERY_SESSION_BLOCKED",
+      deliveryResult.failure,
     );
   }
 
@@ -181,6 +205,7 @@ export function initializeRealityPressureCandidateDeliveryOrchestration(
     candidateSourceContext: sourceResult.context,
     consumerInput,
     reason: null,
+    failure: null,
     boundary: REALITY_PRESSURE_CANDIDATE_DELIVERY_ORCHESTRATION_BOUNDARY,
   });
 }
@@ -269,6 +294,7 @@ export function advanceRealityPressureCandidateDeliveryOrchestration(
       candidateRequestContext.sourceReferenceId,
       deliverySession,
       "CANDIDATE_SOURCE_NOT_READY",
+      sourceResult.failure,
     );
   }
   const deliveryResult = advanceRealityPressureCandidateDeliverySession({
@@ -282,6 +308,7 @@ export function advanceRealityPressureCandidateDeliveryOrchestration(
       candidateRequestContext.sourceReferenceId,
       deliverySession,
       "DELIVERY_SESSION_BLOCKED",
+      deliveryResult.failure,
     );
   }
 
@@ -305,6 +332,7 @@ export function advanceRealityPressureCandidateDeliveryOrchestration(
     candidateSourceContext: sourceResult.context,
     consumerInput,
     reason: null,
+    failure: null,
     boundary: REALITY_PRESSURE_CANDIDATE_DELIVERY_ORCHESTRATION_BOUNDARY,
   });
 }

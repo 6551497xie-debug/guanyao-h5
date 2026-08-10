@@ -9,6 +9,11 @@ import type {
 import type { RealityRouteCandidateRequestContextBridgeResult } from "../types/realityRouteCandidateRequestContextBridge";
 import { initializeRealityPressureActivationDeliveryOrchestration } from "./realityPressureActivationDeliveryOrchestrationBridge";
 import { REALITY_ROUTE_CANDIDATE_REQUEST_CONTEXT_BRIDGE_BOUNDARY } from "./realityRouteCandidateRequestContextBridge";
+import {
+  appendRealityPressureFailureStage,
+  createRealityPressureFailureEnvelope,
+  type RealityPressureFailureEnvelope,
+} from "../types/realityPressureFailureEnvelope";
 
 export const REALITY_ROUTE_DELIVERY_ORCHESTRATION_BRIDGE_BOUNDARY:
   RealityRouteDeliveryOrchestrationBridgeBoundary = Object.freeze({
@@ -60,6 +65,7 @@ const unavailable = (
   deliverySession: RealityPressureCandidateDeliverySession | null,
   reason: RealityRouteDeliveryOrchestrationBridgeBlockedReason,
   deliveryBridgeReason: RealityPressureActivationDeliveryOrchestrationBridgeBlockedReason | null = null,
+  innerFailure: RealityPressureFailureEnvelope | null = null,
 ): RealityRouteDeliveryOrchestrationBridgeResult => Object.freeze({
   status,
   operation: "INITIALIZE" as const,
@@ -72,6 +78,18 @@ const unavailable = (
   provenance: null,
   reason,
   deliveryBridgeReason,
+  failure: innerFailure
+    ? appendRealityPressureFailureStage(innerFailure, "ROUTE_HOST", reason)
+    : createRealityPressureFailureEnvelope(
+        reason === "REALITY_ROUTE_AUTHORIZATION_REQUIRED"
+          ? "ADMISSION_NOT_READY"
+          : reason === "DELIVERY_ORCHESTRATION_NOT_READY"
+            ? "DELIVERY_NOT_READY"
+            : "SOURCE_INVALID",
+        "NON_RETRYABLE",
+        "ROUTE_HOST",
+        reason,
+      ),
   boundary: REALITY_ROUTE_DELIVERY_ORCHESTRATION_BRIDGE_BOUNDARY,
 });
 
@@ -178,6 +196,7 @@ export function bridgeRealityRouteDeliveryOrchestration(
       deliveryResult.deliverySession,
       "DELIVERY_ORCHESTRATION_NOT_READY",
       deliveryResult.status === "READY" ? null : deliveryResult.reason,
+      deliveryResult.status === "READY" ? null : deliveryResult.failure,
     );
   }
   if (
@@ -218,6 +237,7 @@ export function bridgeRealityRouteDeliveryOrchestration(
     }),
     reason: null,
     deliveryBridgeReason: null,
+    failure: null,
     boundary: REALITY_ROUTE_DELIVERY_ORCHESTRATION_BRIDGE_BOUNDARY,
   });
 }

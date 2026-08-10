@@ -1,4 +1,5 @@
 import type { RealityPressureSeedCandidateSourceResult } from "./realityPressureSeedCandidateSource";
+import type { RealityPressureFailureEnvelope } from "./realityPressureFailureEnvelope";
 
 export type RealityPressureCandidateDeliverySessionBoundary = Readonly<{
   deliverySessionOnly: true;
@@ -68,6 +69,7 @@ export type RealityPressureCandidateDeliverySessionResult =
       operation: "INITIALIZE" | "ADVANCE";
       session: RealityPressureCandidateDeliverySession;
       reason: null;
+      failure: null;
       boundary: RealityPressureCandidateDeliverySessionBoundary;
     }>
   | Readonly<{
@@ -75,5 +77,6 @@ export type RealityPressureCandidateDeliverySessionResult =
       operation: "INITIALIZE" | "ADVANCE";
       session: RealityPressureCandidateDeliverySession | null;
       reason: RealityPressureCandidateDeliverySessionBlockedReason;
+      failure: RealityPressureFailureEnvelope;
       boundary: RealityPressureCandidateDeliverySessionBoundary;
     }>;
