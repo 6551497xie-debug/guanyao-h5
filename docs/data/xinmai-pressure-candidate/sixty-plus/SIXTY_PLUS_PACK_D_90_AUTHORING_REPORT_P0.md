@@ -1,8 +1,8 @@
 # SIXTY_PLUS Content Pack D 90 — Authoring Report P0
 
-Status: `83 ACCEPTED + 7 PACK_DRAFT / AI_ASSISTED / READY FOR INDEPENDENT R3 REVIEW / NOT_PRODUCTION`
+Status: `90 / 90 PACK_ACCEPTED / CONTENT_LOCKED / NOT_PRODUCTION`
 
-The accepted 18-item calibration sample remains unchanged. Product Control Tower has independently accepted 65 of the 72 newly authored records across R1 and R2. The seven directed R2 revisions remain `PACK_DRAFT / AI_ASSISTED`; the author did not review, approve, lock, or promote them.
+The accepted 18-item calibration sample remains unchanged. Product Control Tower independently accepted all 72 newly authored records across R1, R2, and R3. All 90 records are approved and content-locked by `XINMAI_PRODUCT_CONTROL_TOWER` on `2026-08-10`; this editorial lock does not authorize Production Catalog migration.
 
 ## Mechanical result
 
@@ -26,8 +26,8 @@ The accepted 18-item calibration sample remains unchanged. Product Control Tower
 | frozen ageism/safety hits | 0 |
 | Production Catalog / Runtime changes | 0 / 0 |
 
-Content hashes use SHA-256 over `stable_id`, `surface_zh_cn`, and `shell_zh_cn`, separated by U+001F. The 65 independently accepted new records contain Product Control Tower review lineage and remain pending full-pack acceptance; approval and lock are empty. The seven revised records retain empty reviewer, approval, and lock fields.
+Content hashes use SHA-256 over `stable_id`, `surface_zh_cn`, and `shell_zh_cn`, separated by U+001F. All 90 records contain complete independent review, approval, and lock lineage. `production_catalog_eligible=false`, Catalog migration is `NOT_PERFORMED`, and Runtime AI dependency is `0`.
 
-Exactly seven records changed surface and/or shell plus content hash from parent `6a009b05d522c543da6a90b8c545ea69da691503`. The other 83 active records retain stable ID, surface, shell, and hash byte-for-byte.
+Relative to parent `5480f96b2ddf7285809562da7627d26139453cc5`, all 90 records retain stable ID, surface, shell, and content hash byte-for-byte. Only review, approval, lock, report, and manifest metadata changed.
 
-Exit: `SIXTY_PLUS FINAL 7 ITEMS READY FOR INDEPENDENT R3 REVIEW`.
+Exit: `SIXTY_PLUS Pack D: PACK_ACCEPTED / CONTENT_LOCKED / NOT_PRODUCTION`.

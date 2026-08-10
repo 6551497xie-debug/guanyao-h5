@@ -1,6 +1,6 @@
 # SIXTY_PLUS Content Pack D 90 — Coverage Matrix P0
 
-Status: `83 ACCEPTED + 7 PACK_DRAFT / NOT_PRODUCTION`
+Status: `90 / 90 PACK_ACCEPTED / CONTENT_LOCKED / NOT_PRODUCTION`
 
 Every context cell contains exactly one `RULE_OR_INFORMATION_GAP`, one `POWER_OR_RESOURCE_ASYMMETRY`, and one `BOUNDARY_OR_COMMITMENT_BREAK` item.
 
