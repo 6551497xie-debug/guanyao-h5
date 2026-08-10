@@ -6,11 +6,11 @@ This is an authoring distribution, not an acceptance target or quota.
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | POWER | 2 | 3 | 0 | 5 | 3 | 0 | 2 | 0 | 15 |
 | INTEREST | 0 | 12 | 0 | 3 | 0 | 0 | 0 | 0 | 15 |
-| RELATION | 0 | 5 | 3 | 4 | 3 | 0 | 0 | 0 | 15 |
+| RELATION | 0 | 5 | 3 | 5 | 2 | 0 | 0 | 0 | 15 |
 | FAMILY | 0 | 5 | 0 | 6 | 4 | 0 | 0 | 0 | 15 |
 | SOCIAL | 0 | 2 | 0 | 2 | 1 | 7 | 3 | 0 | 15 |
 | EXISTENCE | 0 | 11 | 0 | 1 | 2 | 0 | 1 | 0 | 15 |
-| **TOTAL** | **2** | **38** | **3** | **21** | **13** | **7** | **6** | **0** | **90** |
+| **TOTAL** | **2** | **38** | **3** | **22** | **12** | **7** | **6** | **0** | **90** |
 
 ## Mechanic distribution
 
@@ -18,7 +18,7 @@ This is an authoring distribution, not an acceptance target or quota.
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | RULE_OR_INFORMATION_GAP | 2 | 11 | 2 | 6 | 4 | 4 | 1 | 0 | 30 |
 | POWER_OR_RESOURCE_ASYMMETRY | 0 | 18 | 0 | 7 | 1 | 2 | 2 | 0 | 30 |
-| BOUNDARY_OR_COMMITMENT_BREAK | 0 | 9 | 1 | 8 | 8 | 1 | 3 | 0 | 30 |
+| BOUNDARY_OR_COMMITMENT_BREAK | 0 | 9 | 1 | 9 | 7 | 1 | 3 | 0 | 30 |
 
 ## IDENTITY
 
