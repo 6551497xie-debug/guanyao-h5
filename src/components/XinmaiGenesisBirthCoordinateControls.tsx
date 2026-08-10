@@ -1,4 +1,10 @@
+import { useLayoutEffect, useRef } from "react";
 import type { FormEvent } from "react";
+import {
+  syncXinmaiGenesisBirthNativeInput,
+  XINMAI_GENESIS_BIRTH_NATIVE_INPUT_SYNC_POLICY,
+} from "../services/xinmaiGenesisBirthNativeInputAdapter";
+import type { XinmaiGenesisBirthNativeInput } from "../services/xinmaiGenesisBirthNativeInputAdapter";
 import type {
   XinmaiGenesisBirthCoordinateDraft,
   XinmaiGenesisBirthCoordinatePresentationDecision,
@@ -60,14 +66,15 @@ export function XinmaiGenesisBirthCoordinateControls({
   onDraftChange,
   onConfirm,
 }: XinmaiGenesisBirthCoordinateControlsProps) {
-  const updateCivilDate = (value: string) => {
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-    onDraftChange(Object.freeze({
-      ...draft,
-      year: match ? Number(match[1]) : null,
-      month: match ? Number(match[2]) : null,
-      day: match ? Number(match[3]) : null,
-    }));
+  const latestDraftRef = useRef(draft);
+  useLayoutEffect(() => {
+    latestDraftRef.current = draft;
+  }, [draft]);
+  const syncNativeInput = (input: XinmaiGenesisBirthNativeInput) => {
+    const result = syncXinmaiGenesisBirthNativeInput(latestDraftRef.current, input);
+    if (result.status !== "UPDATED") return;
+    latestDraftRef.current = result.draft;
+    onDraftChange(result.draft);
   };
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -84,6 +91,7 @@ export function XinmaiGenesisBirthCoordinateControls({
           ? "VALID"
           : decision.validation.reason
       }
+      data-native-input-sync={XINMAI_GENESIS_BIRTH_NATIVE_INPUT_SYNC_POLICY}
     >
       <div className="xinmai-genesis-birth-coordinate__copy">
         <span className="xinmai-genesis-birth-coordinate__eyebrow">生命起点 · 时间坐标</span>
@@ -97,7 +105,7 @@ export function XinmaiGenesisBirthCoordinateControls({
       ) : null}
       {decision.showCoordinateFields ? (
         <form onSubmit={submit} noValidate aria-describedby="xinmai-genesis-birth-coordinate-feedback">
-          <fieldset>
+          <fieldset disabled={XINMAI_GENESIS_BIRTH_NATIVE_INPUT_SYNC_POLICY !== "ENABLED"}>
             <legend>让时间进入同一生命核心</legend>
             <p className="xinmai-genesis-birth-coordinate__instruction">
               按出生证明或家人记忆中的当地时间填写。系统只从公历日期与当地钟表时间推导农历和时辰。
@@ -115,22 +123,31 @@ export function XinmaiGenesisBirthCoordinateControls({
                 <label className="xinmai-genesis-birth-coordinate__date-field">
                   <span>当地民用公历出生日期</span>
                   <input
+                    id="xinmai-birth-civil-date"
+                    name="xinmai-birth-civil-date"
                     type="date"
                     min="1901-01-01"
                     max="2100-12-31"
                     value={formatCivilDate(draft)}
-                    onChange={(event) => updateCivilDate(event.currentTarget.value)}
+                    onInput={(event) => syncNativeInput({ field: "CIVIL_DATE", value: event.currentTarget.value })}
+                    onChange={(event) => syncNativeInput({ field: "CIVIL_DATE", value: event.currentTarget.value })}
                     autoComplete="bday"
                   />
                 </label>
                 <label>
                   <span>时间记忆</span>
                   <select
+                    id="xinmai-birth-time-precision"
+                    name="xinmai-birth-time-precision"
                     value={draft.precision}
-                    onChange={(event) => onDraftChange(Object.freeze({
-                      ...draft,
-                      precision: event.target.value as typeof draft.precision,
-                    }))}
+                    onInput={(event) => syncNativeInput({
+                      field: "PRECISION",
+                      value: event.currentTarget.value as typeof draft.precision,
+                    })}
+                    onChange={(event) => syncNativeInput({
+                      field: "PRECISION",
+                      value: event.currentTarget.value as typeof draft.precision,
+                    })}
                   >
                     <option value="EXACT">知道具体时间</option>
                     <option value="APPROXIMATE_RANGE">只知道时间范围</option>
@@ -141,12 +158,12 @@ export function XinmaiGenesisBirthCoordinateControls({
                   <label className="xinmai-genesis-birth-coordinate__time-field">
                     <span>当地钟表时间</span>
                     <input
+                      id="xinmai-birth-exact-time"
+                      name="xinmai-birth-exact-time"
                       type="time"
                       value={draft.exactLocalTime}
-                      onChange={(event) => onDraftChange(Object.freeze({
-                        ...draft,
-                        exactLocalTime: event.currentTarget.value,
-                      }))}
+                      onInput={(event) => syncNativeInput({ field: "EXACT_LOCAL_TIME", value: event.currentTarget.value })}
+                      onChange={(event) => syncNativeInput({ field: "EXACT_LOCAL_TIME", value: event.currentTarget.value })}
                       autoComplete="bday-time"
                     />
                   </label>
@@ -156,23 +173,23 @@ export function XinmaiGenesisBirthCoordinateControls({
                     <label>
                       <span>最早时间</span>
                       <input
+                        id="xinmai-birth-range-start"
+                        name="xinmai-birth-range-start"
                         type="time"
                         value={draft.approximateRangeStart}
-                        onChange={(event) => onDraftChange(Object.freeze({
-                          ...draft,
-                          approximateRangeStart: event.currentTarget.value,
-                        }))}
+                        onInput={(event) => syncNativeInput({ field: "APPROXIMATE_RANGE_START", value: event.currentTarget.value })}
+                        onChange={(event) => syncNativeInput({ field: "APPROXIMATE_RANGE_START", value: event.currentTarget.value })}
                       />
                     </label>
                     <label>
                       <span>最晚时间</span>
                       <input
+                        id="xinmai-birth-range-end"
+                        name="xinmai-birth-range-end"
                         type="time"
                         value={draft.approximateRangeEnd}
-                        onChange={(event) => onDraftChange(Object.freeze({
-                          ...draft,
-                          approximateRangeEnd: event.currentTarget.value,
-                        }))}
+                        onInput={(event) => syncNativeInput({ field: "APPROXIMATE_RANGE_END", value: event.currentTarget.value })}
+                        onChange={(event) => syncNativeInput({ field: "APPROXIMATE_RANGE_END", value: event.currentTarget.value })}
                       />
                     </label>
                   </>
