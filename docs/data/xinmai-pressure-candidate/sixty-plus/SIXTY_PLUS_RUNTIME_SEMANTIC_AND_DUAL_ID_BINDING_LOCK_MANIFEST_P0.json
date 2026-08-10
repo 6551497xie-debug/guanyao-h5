@@ -1,0 +1,2359 @@
+{
+  "manifestId": "XINMAI_SIXTY_PLUS_RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_LOCK_P0",
+  "lifeStage": "SIXTY_PLUS",
+  "bindingStatus": "BINDING_ACCEPTED",
+  "recordCount": 90,
+  "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+  "approvedAt": "2026-08-10",
+  "lockedAt": "2026-08-10",
+  "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY",
+  "digestAlgorithm": "sha256(authoringStableId\\u001fsourceContentHash\\u001fruntimeSlot\\u001fruntimeSeedId\\u001fpressureNature\\u001fbindingReason\\u001fbindingAuthor\\u001fbindingAuthoringDate\\u001findependentBindingReviewer\\u001freviewDate\\u001freviewDecision\\u001fapprovedBy\\u001fapprovedAt\\u001flockedAt joined by newline in binding pack order)",
+  "digest": "sha256:0a24234c7162f1d8ad82876cb0598c77df856fac375109454ea9f3f4f62a3570",
+  "productionEligible": false,
+  "productionCatalogMigrated": false,
+  "runtimeChanges": 0,
+  "catalogChanges": 0,
+  "sourceBindingPack": "SIXTY_PLUS_RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_PACK_P0.json",
+  "items": [
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-DIRECT_AUTHORITY-RULE_GAP-01",
+      "sourceContentHash": "sha256:ab0d493359125d5c56e3f6ec6f505b3ae439b0a9c8a019eeb2fb2e1ae59394ba",
+      "runtimeSlot": "01",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_01",
+      "pressureNature": "CONTROL",
+      "bindingReason": "审批记录在实名主体更换后是否仍有决定效力没有定义，核心是旧负责人和新负责人谁拥有有效审批权。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-DIRECT_AUTHORITY-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:bbe0de3e19d1e59edb0d7e4a50908d7ab416455a12bb5656656310d1febeec1e",
+      "runtimeSlot": "02",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_02",
+      "pressureNature": "CONTROL",
+      "bindingReason": "用户仍对现场结果作说明却不能签署最终验收，后续 Choice 面对的是承担结果与确认权被拆开的决定边界。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-DIRECT_AUTHORITY-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:1fc6ef82452f448e33144e60540737c7436c5e503752de1599ec41af40303ffa",
+      "runtimeSlot": "03",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_03",
+      "pressureNature": "OBLIGATION",
+      "bindingReason": "旧授权已约定撤销却仍要求用户签名，核心是已经解除的签署责任被重新施加并阻住当日流程。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-PROJECT_ORGANIZATION-RULE_GAP-01",
+      "sourceContentHash": "sha256:a3f4c9ab71da2a755bc259417b530a16a2b9fe431901d69cab7a6dcb2206807c",
+      "runtimeSlot": "04",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_04",
+      "pressureNature": "EVALUATION",
+      "bindingReason": "跨期变更缺少统一认定记录，后续 Choice 需要处理的是本次交付究竟按哪个版本被确认，而非单纯取得资料。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-PROJECT_ORGANIZATION-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:c401ffc013011be235f7e330c1c99368ac7494cf0c95bc5b727e2b1415e278f3",
+      "runtimeSlot": "05",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_05",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "项目继续使用用户成果，但核对改动所需的完整修订记录不可得，核心是验证成果变化的信息资源缺口。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-PROJECT_ORGANIZATION-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:27e87c4a07e60084f9352efb4798465bbb9b4de8cbb5c698a0b0eb9ddcfe36ed",
+      "runtimeSlot": "06",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_06",
+      "pressureNature": "IDENTITY",
+      "bindingReason": "续作发布删除原作者署名，使已经贡献的作品与作者归属断开；后续 Choice 应携带创作经历和作者身份的连续性。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-CLIENT_PLATFORM-RULE_GAP-01",
+      "sourceContentHash": "sha256:ee0f97a515bba9275e1fc7078dbe0c340696071d382549b385abf9f2cd8609f3",
+      "runtimeSlot": "07",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_07",
+      "pressureNature": "CONTROL",
+      "bindingReason": "分批交付后终验决定者未被指定，首批成品能否通过取决于尚未明确的最终确认权。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-CLIENT_PLATFORM-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:c5978712032396f3b589b8f3e615758ba7d5d59d59bd3769233b924fcf3f52cc",
+      "runtimeSlot": "08",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_08",
+      "pressureNature": "CONTROL",
+      "bindingReason": "用户继续完成合作却失去修改合同范围的入口，核心是交付责任仍在而范围决定权转给他人。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-CLIENT_PLATFORM-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:dbc1d8fbcbef31762e773b142b1d50930013f5fc55fd918df9d005f6e4ef5cf8",
+      "runtimeSlot": "09",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_09",
+      "pressureNature": "CONTROL",
+      "bindingReason": "平台承诺保留发布权限却将入口转走，当前阻断来自用户已获许可被实际撤回，而非内容资源不足。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-PUBLIC_EVALUATION-RULE_GAP-01",
+      "sourceContentHash": "sha256:ede598965336e583b1a580228a653ac8447d00c3102611f8d3fe15ff0371e73c",
+      "runtimeSlot": "10",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_10",
+      "pressureNature": "EVALUATION",
+      "bindingReason": "旧回应迁移后是否计入不明，导致同一事项再次被要求说明，核心是既有回应在评议中如何被认定。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-PUBLIC_EVALUATION-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:a6bb9e5fde53f250db4d429b5460bd8b5168469ea9d6822a27c8bc7359c87ba0",
+      "runtimeSlot": "11",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_11",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "公开评议使用完整历史记录，却只让用户看到摘要，后续 Choice 缺少对被评议原文进行回应的信息资源。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-PUBLIC_EVALUATION-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:0375b60146353208c33470cdc5d52820c8e77fd3c6fc31e1d1049f8be789dec4",
+      "runtimeSlot": "12",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_12",
+      "pressureNature": "IDENTITY",
+      "bindingReason": "主持方未履行更正旧称谓的承诺，公开页面继续用过期角色指认用户，核心是公共身份记录与当前角色不一致。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-TRANSITION_EXIT-RULE_GAP-01",
+      "sourceContentHash": "sha256:b2ae80d895133133bc8a977edc1e192ea2530212800e3668f0636d58bb0c3548",
+      "runtimeSlot": "13",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_13",
+      "pressureNature": "OBLIGATION",
+      "bindingReason": "用户已退出轮值但遗留事项没有正式接收者，通知继续进入旧账号，核心是退出后的责任仍未完成转移。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-TRANSITION_EXIT-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:3ef20aaf23f1cdbbccf17d4997e4230c9b2a554f480a681e926043aef0bd59cc",
+      "runtimeSlot": "14",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_14",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "职责已移交却只收到问责通知、看不到处理进度，用户在回复期限内缺少形成有效回应所需的信息资源。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-POWER-TRANSITION_EXIT-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:f2f147f2f76d1e01d3564d941ce8bc6332e608bcf4b477045a08c90089892856",
+      "runtimeSlot": "15",
+      "runtimeSeedId": "SIXTY_PLUS_POWER_15",
+      "pressureNature": "OBLIGATION",
+      "bindingReason": "撤下原负责人姓名的约定被打破，新通知仍要求用户签字并记录遗留事项，已退出责任继续绑定用户。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-COMPENSATION-RULE_GAP-01",
+      "sourceContentHash": "sha256:e0d89181a744f17d5e398c46eb37a5367e5d94fcf6e2ca7a547dfedf490a57d0",
+      "runtimeSlot": "01",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_01",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "先前未付服务采用原价还是新价没有依据，后续 Choice 面对的是应得报酬数额无法确定的资金资源问题。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-COMPENSATION-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:1788b0677105b96eb401dd926a6913c3690d5b1a4e887e798cc48f053945e78d",
+      "runtimeSlot": "02",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_02",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "用户持续提供服务却无法查看计费明细，实际到账金额缺少可核对依据，核心是报酬信息和资金资源不可见。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-COMPENSATION-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:bea2da47f7338e1700e3ae95408eb27b62bce17306940b129ed5df37cd60a8f6",
+      "runtimeSlot": "03",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_03",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "分成比例承诺未被兑现，首期到账已经减少，后续 Choice 需要处理的是明确缺失的报酬资源。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-PARTNERSHIP_CONTRACT-RULE_GAP-01",
+      "sourceContentHash": "sha256:f81af5de9cbfa80b561aa0fdc94285362ba54f0413f732039917b48626e55a6f",
+      "runtimeSlot": "04",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_04",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "旧余额并入新分段账单的规则缺失并产生重复计费，核心是费用与余额如何归集的资金资源不确定。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-PARTNERSHIP_CONTRACT-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:1b56bef049d2159f8a3959057082af222a47f77c256f7b9e3adfc36c9b330d79",
+      "runtimeSlot": "05",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_05",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "续期需要双方确认，但用户拿不到完整成本表而无法核对分配数，核心是谈判和分配所需的信息资源。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-PARTNERSHIP_CONTRACT-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:6a78c97a4759062fc0c2856aed9738f39fc1f75803b05ab15e39ce22e1b15680",
+      "runtimeSlot": "06",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_06",
+      "pressureNature": "CONTROL",
+      "bindingReason": "收款主体本应经双方确认却被单方写入新发票，核心是款项去向的共同决定边界被越过。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-SHARED_HOUSEHOLD_RESOURCES-RULE_GAP-01",
+      "sourceContentHash": "sha256:b3b8d7240c72a887feb256174cb060ce96dca508c1b6abdfc57de64f6edd6308",
+      "runtimeSlot": "07",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_07",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "腾空储物室涉及清空费用和剩余空间分配，规则未定直接阻住搬运，核心是共同空间与费用资源的配置。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-SHARED_HOUSEHOLD_RESOURCES-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:5f78c7b68fbe226ca7f96e75eb7bbae8be79df5ee1f103692b721c57cb1cb041",
+      "runtimeSlot": "08",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_08",
+      "pressureNature": "CONTROL",
+      "bindingReason": "双方继续承担共同费用，但只有一人能调整套餐，后续 Choice 面对的是共同支出的修改权集中于单方。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-SHARED_HOUSEHOLD_RESOURCES-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:239bd251d1adbec26763f125656e3c87f267332b9dabb1b5e97c23a1c54867db",
+      "runtimeSlot": "09",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_09",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "停用共享储物柜并退款的约定未兑现，下一期仍被扣款，核心是预付款和公共费用资源继续流失。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-INVESTMENT_DEBT-RULE_GAP-01",
+      "sourceContentHash": "sha256:3bf428cef2007a69440c614c007261cd76502262288bfe9118081f25a46a0f37",
+      "runtimeSlot": "10",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_10",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "旧欠款是否并入新归还主体没有规则，两张记录金额不一，核心是可追索欠款数额无法确定。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-INVESTMENT_DEBT-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:99193d74853818d6a8afd675ae0262131242964c1dc363bfbf63a0b92f4c167d",
+      "runtimeSlot": "11",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_11",
+      "pressureNature": "CONTROL",
+      "bindingReason": "共同承担款项却只有另一方能选择延期，用户无法调整自己的付款日期，核心是还款安排决定权不对等。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-INVESTMENT_DEBT-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:cd1c9386eccb1b993629a3995c799185ed21e82685a2721a1b840d69ac11a498",
+      "runtimeSlot": "12",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_12",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "先归还旧垫款的承诺被跳过并新增扣费，后续 Choice 面对的是旧资金未回收且新支出已经发生。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-OPPORTUNITY_EXIT-RULE_GAP-01",
+      "sourceContentHash": "sha256:dbd9c56ee945b316385d0a5f89ddc90b7f3a7226b8a7665228b4e13e8eef20a7",
+      "runtimeSlot": "13",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_13",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "原渠道停止后未完成分成缺少结算期，连带使新渠道报价没有成本依据，核心是结算和报价所需资金信息缺口。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-OPPORTUNITY_EXIT-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:906730ee9f44624b574384afeb20987ad1f11f2a69a3359b0ee8cd81a0e343a8",
+      "runtimeSlot": "14",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_14",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "业务已迁到新渠道，但收入明细只向经办方开放，用户无法核对本期分成这一直接资金资源。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-INTEREST-OPPORTUNITY_EXIT-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:3322161122fe60645187039fa7b8ea81d038b6408c22d4a95a10df691803c3a7",
+      "runtimeSlot": "15",
+      "runtimeSeedId": "SIXTY_PLUS_INTEREST_15",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "原渠道名额未按承诺释放，导致新合作无法提交申请，核心是进入新机会所需的渠道名额仍被占用。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-COMMUNICATION-RULE_GAP-01",
+      "sourceContentHash": "sha256:e9359cb01b229a2a472609d4d42daa66e5121968eb3cb5b39c532a1ea7f5051c",
+      "runtimeSlot": "01",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_01",
+      "pressureNature": "ATTACHMENT",
+      "bindingReason": "两人迁居后原有每周通话是否延续未被约定，核心是双边联系节律和关系连接如何继续。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-COMMUNICATION-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:3aaa446f606676bfe2ff0d0f01fe6bb0c38a76e63ee64717950822442078fb24",
+      "runtimeSlot": "02",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_02",
+      "pressureNature": "CONTROL",
+      "bindingReason": "共同搬运时间本应由两人商量，对方却在未询问用户时直接确定，核心是双边安排的共同决定权被越过。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-COMMUNICATION-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:15cca5e7374dcc1a7c44d5f1b15e599e69e20778c86f3347e18e9c4618e2a6a6",
+      "runtimeSlot": "03",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_03",
+      "pressureNature": "ATTACHMENT",
+      "bindingReason": "双方约好停用旧号码，对方仍把安排发到旧端导致用户错过变更，核心是双边沟通连接没有迁移到可达渠道。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-TIME_ATTENTION-RULE_GAP-01",
+      "sourceContentHash": "sha256:2e4a2c91c533811cd2d7b4672e4ada8459525c8997da51e06b35b39ae5521d50",
+      "runtimeSlot": "04",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_04",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "往返两地后共同采购日未确定，使本周食材无人领取，核心是双方可用于共同事务的时间资源未被协调。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-TIME_ATTENTION-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:f2157a72cddf506d4e60539e08e57eac3b2412c34e36a1fd6fa90f1f553f5ebc",
+      "runtimeSlot": "05",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_05",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "共同出行的改签信息只到达对方，用户行程停在旧日期，核心是调整共同时间所需的信息资源不对等。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-TIME_ATTENTION-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:ec92e7b95eb4c5f942ce3314d7978ae70e78ba77504e492df813c49d71b3fd6e",
+      "runtimeSlot": "06",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_06",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "轮换承担跨城路程的约定被打破，用户单方多承担半天往返，后续 Choice 面对的是时间资源负担失衡。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-COMMITMENT-RULE_GAP-01",
+      "sourceContentHash": "sha256:9b7843e11c19dfdb63e0c06fefe04a38e77506d578f3865e575e7af960659ab4",
+      "runtimeSlot": "07",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_07",
+      "pressureNature": "OBLIGATION",
+      "bindingReason": "两人决定结束共用工作空间，但剩余预订的取消责任没有落定，双方名额仍被下一期承诺占用。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-COMMITMENT-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:c5119433a57156022104bd0f06f696bb2bd1f75ad9cdcc09e4c875d5e5f8c6e6",
+      "runtimeSlot": "08",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_08",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "共同结束储物租用时取件清单只发给对方，用户物品仍在柜内，核心是取回个人材料所需的信息与进入资源。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-COMMITMENT-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:37e6e4ca0b24f96d780209a19793bec0593011fa8ac3f9b80b3efc68748b123a",
+      "runtimeSlot": "09",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_09",
+      "pressureNature": "CONTROL",
+      "bindingReason": "双方已经约定结束共用工作室，对方却未经用户确认以两人名义续订；核心是用户对双边承诺是否继续的决定权与代表边界被越过。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-SHARED_DECISION_BOUNDARY-RULE_GAP-01",
+      "sourceContentHash": "sha256:bda402bb9d0d3d5ffba5310afcfa713f07341d5826788c9b404d0963fd990434",
+      "runtimeSlot": "10",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_10",
+      "pressureNature": "CONTROL",
+      "bindingReason": "分别管理住处后共同收件地址由谁修改未定，核心是能代表双方改变现实收件安排的权限边界。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-SHARED_DECISION_BOUNDARY-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:1344634757c0170e3396129dbeca4e9c7f37f0c760526244550e660a3caa0d34",
+      "runtimeSlot": "11",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_11",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "共同旅行改线时完整交通资料只给一方，用户无法确认衔接段，核心是完成共同决定所需的信息资源缺失。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-SHARED_DECISION_BOUNDARY-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:99df570e27a269093487a396ae3fbe17bb5e80ee8fb566b36bcffd6266879e0d",
+      "runtimeSlot": "12",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_12",
+      "pressureNature": "CONTROL",
+      "bindingReason": "双方约好停止共用旧相册，对方仍上传共同照片并向旧联系人公开，核心是共同影像传播边界被单方改变。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-REPAIR_TRANSITION-RULE_GAP-01",
+      "sourceContentHash": "sha256:5e6c1b32d2351d40a296acbb1599cffd83ac9a6977d4d95774edb62b32c64701",
+      "runtimeSlot": "13",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_13",
+      "pressureNature": "ATTACHMENT",
+      "bindingReason": "恢复联系后寄存物品何时取回没有约定，使下次见面无法确认，核心是修复后的双边接触和连接尚未落地。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-REPAIR_TRANSITION-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:ab287adbf249af5b1052ac12f8d5713af8dd7ecbdb66ce19209c6cf34f6748f6",
+      "runtimeSlot": "14",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_14",
+      "pressureNature": "OBLIGATION",
+      "bindingReason": "双方约好各自整理待确认事项，却只要求用户先交完整清单，核心是关系修复投入被单方持续承担。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-RELATION-REPAIR_TRANSITION-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:166c6fecbdf8fbfd22b348591ea3f8690d5e36e56ab6c135466b296b04a1251e",
+      "runtimeSlot": "15",
+      "runtimeSeedId": "SIXTY_PLUS_RELATION_15",
+      "pressureNature": "CONTROL",
+      "bindingReason": "恢复联系应先私下确认的边界被打破，未确认消息进入共同群，核心是双边信息对外传播的控制被越过。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-CARE-RULE_GAP-01",
+      "sourceContentHash": "sha256:07b660aaca3c4a1c7b264748b86ab0bc0d8ffcbf7214b7cf592c6f85d1128185",
+      "runtimeSlot": "01",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_01",
+      "pressureNature": "OBLIGATION",
+      "bindingReason": "家人轮流为晚归者留饭，但隔夜后的处理责任未约定，核心是互相照应中的后续任务由谁承接。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-CARE-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:301f35841f0c8345456cd7a9b0edca83506d45e0032c7bf06d9c7400577d6852",
+      "runtimeSlot": "02",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_02",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "生活服务到场时段只通知一人，其他家人无法在约定时间开门，核心是完成共同事务所需的时间信息资源不对等。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-CARE-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:9f59005316ba523c11393ac284d132e6b51fdd16c5f0851fef65e7a19de82fe5",
+      "runtimeSlot": "03",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_03",
+      "pressureNature": "OBLIGATION",
+      "bindingReason": "家人承诺互相转交纸质通知却未交付原件，期限临近，核心是共同事务的信息交接责任没有履行。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-HOUSEHOLD_LABOR-RULE_GAP-01",
+      "sourceContentHash": "sha256:9c9ae20399f7b791bd0fb7f060ee3985b0c9b8dfa2547b9a73df99a429b51d80",
+      "runtimeSlot": "04",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_04",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "家人分开使用厨房后炊具如何分配未定，今晚做饭缺少工具，核心是日常劳动所需物品资源不可用。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-HOUSEHOLD_LABOR-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:c6eb4142f3c7ed514e13d188d78b1a486a07f3ac5e19d4ce72823bb8950c576d",
+      "runtimeSlot": "05",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_05",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "清洁工具已移位但取用密码只由一人掌握，地面清洁无法开始，核心是家务工具的实际取得不对等。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-HOUSEHOLD_LABOR-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:814dbfd25fec621702ba12d7d55c94febdf627cb657afee7e8ff920cd45db40e",
+      "runtimeSlot": "06",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_06",
+      "pressureNature": "OBLIGATION",
+      "bindingReason": "用完炊具后清洗的约定被打破，整套餐具不可用，核心是已确认的家务责任未履行并转给下一使用者。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-MONEY_RESOURCES-RULE_GAP-01",
+      "sourceContentHash": "sha256:61015d791ff6ad17dbe9ecb51e1d3884ce86bf851a677149867efe5f710bc0cb",
+      "runtimeSlot": "07",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_07",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "共同旅行退款用于下次还是分别领回未定且到账数不同，核心是家庭共同资金的归属与可用数额不清。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-MONEY_RESOURCES-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:9cfaa72890eea5ea7bf598a7cfbea16517e5cc4a687db0068527893f1caee4fd",
+      "runtimeSlot": "08",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_08",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "家人共同承担固定费用但明细只给一人，用户无法核对分担数，核心是共同资金信息资源不可得。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-MONEY_RESOURCES-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:47c305ee03905f06a378ede390edf33a152d2005fede88fb36b6e33ae40eb6c7",
+      "runtimeSlot": "09",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_09",
+      "pressureNature": "CONTROL",
+      "bindingReason": "新增家庭费用本应共同确认，却有人替所有人续订并改变应付额，核心是共同支出的决定边界被越过。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-MAJOR_DECISIONS-RULE_GAP-01",
+      "sourceContentHash": "sha256:902ea4d5f59ea615dac1bc29cc95b0094b3f6c29bde0e0200c8695411ed96a9c",
+      "runtimeSlot": "10",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_10",
+      "pressureNature": "CONTROL",
+      "bindingReason": "家人分开居住后公共钥匙保管者未确定，仍需进入原住处的人缺少明确许可，核心是进入权由谁掌握。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-MAJOR_DECISIONS-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:10355b74be32117023d21d9d1a40a17af124696220869d5e4c52845af61e744e",
+      "runtimeSlot": "11",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_11",
+      "pressureNature": "CONTROL",
+      "bindingReason": "原住处改作共享空间时方案只向部分人开放并删去用户时段，核心是共同空间用途和使用权被单方决定。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-MAJOR_DECISIONS-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:6818b512d6d5692c56ea9eaaee6c2971dae61e6945ea4f32a14c4d484c0f3e2e",
+      "runtimeSlot": "12",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_12",
+      "pressureNature": "CONTROL",
+      "bindingReason": "共用家具应逐一确认后再搬动，却已被送走并使房间不可用，核心是家庭共同物品处置权被越过。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-INTERGENERATIONAL_COHABITATION-RULE_GAP-01",
+      "sourceContentHash": "sha256:69ba544a9050cc7bbbae52d702c257b8558759dcc874167b07a2e1174721cde8",
+      "runtimeSlot": "13",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_13",
+      "pressureNature": "CONTROL",
+      "bindingReason": "两代家人轮用公共房间时，临时过夜由谁确认没有规则，核心是共享空间临时使用的许可边界不明。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-INTERGENERATIONAL_COHABITATION-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:3cc31d82637e6dc12c99c1f817b67e05967193603c24de26320bb663637be5a2",
+      "runtimeSlot": "14",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_14",
+      "pressureNature": "CONTROL",
+      "bindingReason": "客厅收纳位置只由一人重新划定，用户日常物品失去位置，核心是共同空间分配决定权集中于单方。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-FAMILY-INTERGENERATIONAL_COHABITATION-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:014d7539203b092c0a3e41e3f76e19a9c23d50529f55c6b26f33c44e8c9b0067",
+      "runtimeSlot": "15",
+      "runtimeSeedId": "SIXTY_PLUS_FAMILY_15",
+      "pressureNature": "OBLIGATION",
+      "bindingReason": "两代家人已约好停用旧群，有人仍在那里确定聚餐，核心是通知迁移承诺未履行并造成家庭协调责任断裂。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-WORKPLACE_PEERS-RULE_GAP-01",
+      "sourceContentHash": "sha256:0f4158176d089092c34299f6bf1759ca1f5cdc1da4e4beedd65ee54b67631e9a",
+      "runtimeSlot": "01",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_01",
+      "pressureNature": "BELONGING",
+      "bindingReason": "轮流到场后缺席同伴如何获知决定没有规则，用户在合作群体中的持续参与和信息位置无法维持。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-WORKPLACE_PEERS-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:8c3411bac0c0fa888b0a50af540fac510d4be308449c60914867df72f27ac400",
+      "runtimeSlot": "02",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_02",
+      "pressureNature": "BELONGING",
+      "bindingReason": "同伴继续引用用户记录却把完整讨论放在用户不可见的新群，核心是用户失去回应原议题的群体参与位置。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-WORKPLACE_PEERS-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:c9709ae2f5b53cd07d84f7ed716ad790d4835bbb18936b8fe5448b5a35c7938e",
+      "runtimeSlot": "03",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_03",
+      "pressureNature": "IDENTITY",
+      "bindingReason": "伙伴承诺保留共同署名却只显示当前经办人，公开成果与用户贡献的归属被切断，核心是共同工作身份记录。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-FRIENDSHIP-RULE_GAP-01",
+      "sourceContentHash": "sha256:a8326fecfe71b4411822ca36762b2840da1d05bedcb13f25ea5ebf8d8a7abd29",
+      "runtimeSlot": "04",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_04",
+      "pressureNature": "BELONGING",
+      "bindingReason": "朋友迁居后临时到访的通知约定缺失，已有成员到站而其他人不知情，核心是朋友群中的信息互惠和参与位置。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-FRIENDSHIP-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:0c623002ad3f536883e9fd779288390651a0fbaec9e1f5e40414f2c0c227f609",
+      "runtimeSlot": "05",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_05",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "朋友共同保存旅行照片却只给部分人下载权限，用户无法取回自己的原图，核心是共同资料资源的取得不对等。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-FRIENDSHIP-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:144fd0810ab6fe0ba6872d5bfb3d95d513b6bf42a945b660da0c04e63eae56f7",
+      "runtimeSlot": "06",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_06",
+      "pressureNature": "CONTROL",
+      "bindingReason": "朋友群约好取消预订前共同确认，却有人单方退掉整组订单，核心是群体共同计划的取消权被越过。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-COMMUNITY_GROUP-RULE_GAP-01",
+      "sourceContentHash": "sha256:81fe83e92448eea863c5f73da81288150abc7676c58e7e863c4e067ba04d35a1",
+      "runtimeSlot": "07",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_07",
+      "pressureNature": "BELONGING",
+      "bindingReason": "固定活动拆到两个地点却未说明原参与者如何选择，核心是既有成员进入下一场活动的参与位置不明。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-COMMUNITY_GROUP-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:9ae8458e611b089ada7a1f0716649ee87970ee238c7cc4beba57b77b7ab511da",
+      "runtimeSlot": "08",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_08",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "社群仍要求用户提供作品，但展示位置已被少数人占完，核心是参与展示所需的有限空间资源不可得。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-COMMUNITY_GROUP-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:d5fd0892ff8501988af6451392a34a2a8d87df8c50e13a91486fc1377696537c",
+      "runtimeSlot": "09",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_09",
+      "pressureNature": "OBLIGATION",
+      "bindingReason": "更换负责人后应同步通知的承诺未履行，报名仍进入旧联系人，核心是社群协调责任没有完成交接。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-DIGITAL_SOCIAL_VISIBILITY-RULE_GAP-01",
+      "sourceContentHash": "sha256:6e321d2369636ff603765d7e700033fa05d38392a97caff266b6ac37e8d6d470",
+      "runtimeSlot": "10",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_10",
+      "pressureNature": "IDENTITY",
+      "bindingReason": "主页实名主体更换后旧成员作品是否保留未定，核心是既有创作与作者经历在新社群记录中的连续归属。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-DIGITAL_SOCIAL_VISIBILITY-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:85a37a52a284fe63ae27aeacf3c44304eb89a58e3ae19089d73d0b2d40514ff1",
+      "runtimeSlot": "11",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_11",
+      "pressureNature": "IDENTITY",
+      "bindingReason": "共同创作展继续使用用户作品却不让用户更正署名，核心是作品被展示时作者身份和贡献归属失真。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-DIGITAL_SOCIAL_VISIBILITY-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:ccf75d14b27cc63149c4d3570e37e08eaeb23d410910597630356415d38c8f98",
+      "runtimeSlot": "12",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_12",
+      "pressureNature": "CONTROL",
+      "bindingReason": "社群承诺撤下旧简介却再次公开过期联系方式，核心是个人资料对外传播边界未按约束收回。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-BELONGING_EXIT-RULE_GAP-01",
+      "sourceContentHash": "sha256:ea560890a416e2ee48b3cc480e1a79179338e0f43f2c6bb3779d5145988ce854",
+      "runtimeSlot": "13",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_13",
+      "pressureNature": "BELONGING",
+      "bindingReason": "固定社群拆分后原成员选择路径未说明，而新入口已开放，核心是用户在重组群体中的成员去向和进入位置。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-BELONGING_EXIT-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:a840a04f33f228f60d362854517b5f1f61408fd1c23b52833c4b326fcf4e6764",
+      "runtimeSlot": "14",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_14",
+      "pressureNature": "BELONGING",
+      "bindingReason": "刊物继续使用用户专栏却不给新选题入口，用户无法提交主题，核心是持续贡献者在新编组中的参与位置被排除。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-SOCIAL-BELONGING_EXIT-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:0c9fdd5a1b9579d340b84a840a212eed06ca3867853089de8203a7ae0b0365be",
+      "runtimeSlot": "15",
+      "runtimeSeedId": "SIXTY_PLUS_SOCIAL_15",
+      "pressureNature": "BELONGING",
+      "bindingReason": "社群承诺保留旧成员投稿却在首期漏收已交稿件，核心是用户的既有成员投稿在新版群体中未获参与位置。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-BODY_ENERGY_ROUTINE-RULE_GAP-01",
+      "sourceContentHash": "sha256:cc5e6ce4ee09a2b2895a0db14d80117f30f29fe804db7184a4f4f0a9464dfd76",
+      "runtimeSlot": "01",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_01",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "两段创作更换场地后没有预留交接休息，连续安排只剩布置时间，核心是日常节律所需的恢复时间资源被压缩。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-BODY_ENERGY_ROUTINE-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:16459ae7cf58212a4edc9a037a36d74cd7fae9cd244897f1f66ade8133d2d376",
+      "runtimeSlot": "02",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_02",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "早班与晚课相隔两城且双方签到时间固定，中间只够换乘，核心是通勤之间可支配时间资源不足。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-BODY_ENERGY_ROUTINE-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:6f4211f97d1d4c7f853f095a360732c7eebc4f8f6fbb2ec1e4383153ee2dddc9",
+      "runtimeSlot": "03",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_03",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "已确认跨城返程后不接早间事项，清单却新增签到并压缩睡眠，核心是被承诺保留的恢复时间资源被占用。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-TIME_STRUCTURE-RULE_GAP-01",
+      "sourceContentHash": "sha256:eca564687447783146fce0bc1b6628f92cd04a7bb17f9047f01641db671a2b36",
+      "runtimeSlot": "04",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_04",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "事务分布到两地后往返时间未计入，同一小时出现两项签到，核心是日程中真实通勤时间资源没有被承认。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-TIME_STRUCTURE-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:1b7fe3cef8b34ed42ee9e295ff10964451a9a1b25314a6a9b41ac0d1751843bd",
+      "runtimeSlot": "05",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_05",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "课程改期而固定值班没有调整入口，使通勤和进餐无空档，核心是两个安排争夺同一段时间资源。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-TIME_STRUCTURE-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:e6d2ebf1be3c716caf10f3e1a07d61880b334cf8e49dbae6bb27bf8d3659a2a6",
+      "runtimeSlot": "06",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_06",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "约定保留的无约下午被合作方再次安排现场任务，核心是已划出的自主时间资源被外部占用。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-WORK_ROLE_MEANING-RULE_GAP-01",
+      "sourceContentHash": "sha256:c8ff41f47a4b4445c275b78efbc17a95f58b4e4cd6cac4e3a606b5870e48fa1a",
+      "runtimeSlot": "07",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_07",
+      "pressureNature": "OBLIGATION",
+      "bindingReason": "合作改为按需支持后哪些固定职责保留不明，旧清单仍不断发来，核心是原工作责任没有明确退出。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-WORK_ROLE_MEANING-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:18618874cc01247c7fd1b0b44aa24d867bd6414fc98ed63e8caaa6b373903f8b",
+      "runtimeSlot": "08",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_08",
+      "pressureNature": "IDENTITY",
+      "bindingReason": "用户作品和实际授课继续存在，介绍页却只记录资料提供，核心是持续工作内容与公开角色定义发生错位。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-WORK_ROLE_MEANING-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:f44cd2925d47faf3c0c266c510a234b49a18ee1e98d5dade3b7e9ca574434575",
+      "runtimeSlot": "09",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_09",
+      "pressureNature": "OBLIGATION",
+      "bindingReason": "用户已停止担任课程联系人，报名页仍把咨询电话指向用户，核心是已退出的联络责任继续被施加。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-FINANCIAL_BASELINE-RULE_GAP-01",
+      "sourceContentHash": "sha256:b21763ebba9c7443f182fa0b7f07b7169fb4d34520c6a8ab73bf0072c4cd46a8",
+      "runtimeSlot": "10",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_10",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "住处固定费用改为按季收取但首期算法未定，账单多出整月，核心是基本生活成本数额无法确认。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-FINANCIAL_BASELINE-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:b54540513930adac7686ab14098f63c23a7c33a626f49297cf2b013004036953",
+      "runtimeSlot": "11",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_11",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "维持原住处价格要求一次缴清全年费用，而收入按单次结算，核心是固定成本门槛与可用现金节律不匹配。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-FINANCIAL_BASELINE-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:238f703146664420194adda41118732a35aa3740123a483adc9402b008e0396c",
+      "runtimeSlot": "12",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_12",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "旧地址网络已确认停用却继续扣费，与新地址费用并存，核心是基本生活预算被重复占用而非最低生存即时失守。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-TRANSITION_DIRECTION-RULE_GAP-01",
+      "sourceContentHash": "sha256:32f8e1a8c78f559fb9e516871380534794ad0e4ce3c20f444a5171ac46971052",
+      "runtimeSlot": "13",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_13",
+      "pressureNature": "CONTROL",
+      "bindingReason": "用户迁城继续接单时旧合作区域何时解除未定，新地址不能发布，核心是业务地域状态由谁释放的许可边界。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-TRANSITION_DIRECTION-RESOURCE_ASYMMETRY-01",
+      "sourceContentHash": "sha256:4ddc4e2dd3c7ee1c792bb00a951470d5ac5794cd878faed9a277a5ee55ec66c3",
+      "runtimeSlot": "14",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_14",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "新创作已有展示窗口，但旧平台不提供作品导出，首轮展品缺少原始文件，核心是创作所需材料资源被锁住。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    },
+    {
+      "authoringStableId": "PC-SIXTY_PLUS-EXISTENCE-TRANSITION_DIRECTION-COMMITMENT_BREAK-01",
+      "sourceContentHash": "sha256:e83914bc61db6e420b1cb4281b716fd9ef78fc280ef44c7ce1b49619b18a6df8",
+      "runtimeSlot": "15",
+      "runtimeSeedId": "SIXTY_PLUS_EXISTENCE_15",
+      "pressureNature": "RESOURCE",
+      "bindingReason": "原工作室未按约归还作品档案，使新系列无法使用旧素材，核心是继续创作所需的既有材料资源不可得。",
+      "authorLineage": {
+        "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
+        "bindingAuthoringDate": "2026-08-10",
+        "draftAssistance": "AI_ASSISTED",
+        "assistanceReference": "XINMAI-1.0-SIXTY-PLUS-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0"
+      },
+      "independentReviewerLineage": {
+        "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "reviewDate": "2026-08-10",
+        "reviewDecision": "ACCEPT"
+      },
+      "approvalLockLineage": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10",
+        "lockedAt": "2026-08-10",
+        "lockScope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
+      "productionEligible": false
+    }
+  ]
+}

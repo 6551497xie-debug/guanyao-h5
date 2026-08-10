@@ -1,10 +1,10 @@
 # SIXTY_PLUS Runtime Semantic Binding Review Risk Register P0
 
-Status: `R1 INDEPENDENTLY REVIEWED / 49 ACCEPT / 1 REVISED FOR R2`
+Status: `FINAL INDEPENDENT REVIEW COMPLETE / 50 ACCEPTED`
 
 Author: `XINMAI_CODEX_BINDING_AUTHORING_WINDOW`
 
-The author closed no risk. `XINMAI_PRODUCT_CONTROL_TOWER` independently accepted the original binding for 49 rows on `2026-08-10`. Row 20 was revised from `OBLIGATION` to `CONTROL` and alone remains `OPEN_FOR_INDEPENDENT_R2_REVIEW`.
+The author closed no risk. `XINMAI_PRODUCT_CONTROL_TOWER` independently accepted 49 original bindings in R1 and accepted the revised row 20 binding in R2 on `2026-08-10`.
 
 | # | Runtime seed ID | Draft | Alternate | Category | Open review question |
 |---:|---|---|---|---|---|
@@ -27,7 +27,7 @@ The author closed no risk. `XINMAI_PRODUCT_CONTROL_TOWER` independently accepted
 | 17 | `SIXTY_PLUS_RELATION_03` | ATTACHMENT | RESOURCE | DIGITAL_CHANNEL_SHELL | 安排继续发旧端主要切断双边连接，还是造成信息资源不可达？ |
 | 18 | `SIXTY_PLUS_RELATION_04` | RESOURCE | ATTACHMENT | ATTACHMENT_RESOURCE | 共同采购日未定主要占用时间资源，还是关系联系节律未落地？ |
 | 19 | `SIXTY_PLUS_RELATION_07` | OBLIGATION | RESOURCE | OBLIGATION_RESOURCE | 结束共用空间后的剩余预订，是取消承诺未承接还是名额资源占用？ |
-| 20 | `SIXTY_PLUS_RELATION_09` | CONTROL | OBLIGATION | R1_REVISED_CONTROL_OBLIGATION | 总控裁决为双边承诺是否继续的决定权与代表边界；修订绑定等待独立 R2。 |
+| 20 | `SIXTY_PLUS_RELATION_09` | CONTROL | OBLIGATION | R2_ACCEPTED_CONTROL_OBLIGATION | 总控确认双边承诺是否继续的决定权与代表边界是核心语义。 |
 | 21 | `SIXTY_PLUS_RELATION_12` | CONTROL | ATTACHMENT | ATTACHMENT_CONTROL | 旧相册继续上传是传播边界控制，还是双边连接约定破裂？ |
 | 22 | `SIXTY_PLUS_RELATION_13` | ATTACHMENT | RESOURCE | ATTACHMENT_RESOURCE | 物品取回未定主要阻断关系修复后的见面，还是物品资源回收？ |
 | 23 | `SIXTY_PLUS_RELATION_14` | OBLIGATION | ATTACHMENT | ATTACHMENT_OBLIGATION | 只要求用户交清单是修复劳动责任集中，还是连接投入不对等？ |
@@ -62,16 +62,17 @@ The author closed no risk. `XINMAI_PRODUCT_CONTROL_TOWER` independently accepted
 ## R1 disposition
 
 - Independently accepted unchanged: 49 author-identified risks.
-- Revised and still draft: `SIXTY_PLUS_RELATION_09`, `OBLIGATION → CONTROL`.
+- Revised in R1 and independently accepted in R2: `SIXTY_PLUS_RELATION_09`, `OBLIGATION → CONTROL`.
 - Revised reason: 双方已经约定结束共用工作室，对方却未经用户确认以两人名义续订；核心是用户对双边承诺是否继续的决定权与代表边界被越过。
 - Reviewer: `XINMAI_PRODUCT_CONTROL_TOWER`
 - Review date: `2026-08-10`
-- Author acceptance of revised item: none.
+- R2 decision: `ACCEPT`.
+- Author acceptance: none; all acceptance came from `XINMAI_PRODUCT_CONTROL_TOWER`.
 
-## Remaining independent review
+## Final disposition
 
-- Independently review only the revised `SIXTY_PLUS_RELATION_09` nature and reason.
-- Confirm its CONTROL binding remains aligned with the locked YOUTH joint-renewal semantic precedent.
+- All 50 author-identified risks have independent Product Control disposition.
+- `SIXTY_PLUS_RELATION_09` CONTROL binding is aligned with the locked YOUTH joint-renewal semantic precedent.
 - All six IDENTITY items and all RESOURCE↔SURVIVAL boundaries were accepted unchanged in R1.
 
-Mechanical scans do not accept the revised item.
+The final pack lock is recorded separately; this register preserves the review lineage.
