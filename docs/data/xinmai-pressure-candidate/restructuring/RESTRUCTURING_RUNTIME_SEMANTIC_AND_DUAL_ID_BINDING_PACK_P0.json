@@ -2,16 +2,22 @@
   "bindingPackId": "XINMAI_RESTRUCTURING_RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_PACK_P0",
   "lifeStage": "RESTRUCTURING",
   "recordCount": 90,
-  "workflowStatus": "BINDING_DRAFT",
+  "workflowStatus": "BINDING_ACCEPTED",
   "draftAssistance": "AI_ASSISTED",
   "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
   "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
   "bindingAuthoringDate": "2026-08-10",
-  "independentBindingReviewer": null,
-  "reviewDate": null,
-  "reviewDecision": null,
-  "approval": null,
-  "lock": null,
+  "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+  "reviewDate": "2026-08-10",
+  "reviewDecision": "ACCEPT",
+  "approval": {
+    "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+    "approvedAt": "2026-08-10"
+  },
+  "lock": {
+    "lockedAt": "2026-08-10",
+    "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+  },
   "productionEligible": false,
   "sourceContentLockManifest": "RESTRUCTURING_CONTENT_PACK_C_90_CONTENT_LOCK_MANIFEST_P0.json",
   "sourceContentLockDigest": "sha256:45f9b9febc4b4eae00499679241e2fdd18617ef9744da83c555f9e1b25da33d6",
@@ -91,16 +97,22 @@
       "runtimeSlot": "01",
       "runtimeSeedId": "RESTRUCTURING_POWER_01",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -117,16 +129,22 @@
       "runtimeSlot": "02",
       "runtimeSeedId": "RESTRUCTURING_POWER_02",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -143,16 +161,22 @@
       "runtimeSlot": "03",
       "runtimeSeedId": "RESTRUCTURING_POWER_03",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -169,16 +193,22 @@
       "runtimeSlot": "04",
       "runtimeSeedId": "RESTRUCTURING_POWER_04",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -195,16 +225,22 @@
       "runtimeSlot": "05",
       "runtimeSeedId": "RESTRUCTURING_POWER_05",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -221,16 +257,22 @@
       "runtimeSlot": "06",
       "runtimeSeedId": "RESTRUCTURING_POWER_06",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -247,16 +289,22 @@
       "runtimeSlot": "07",
       "runtimeSeedId": "RESTRUCTURING_POWER_07",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -273,16 +321,22 @@
       "runtimeSlot": "08",
       "runtimeSeedId": "RESTRUCTURING_POWER_08",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -299,16 +353,22 @@
       "runtimeSlot": "09",
       "runtimeSeedId": "RESTRUCTURING_POWER_09",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -325,16 +385,22 @@
       "runtimeSlot": "10",
       "runtimeSeedId": "RESTRUCTURING_POWER_10",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -351,16 +417,22 @@
       "runtimeSlot": "11",
       "runtimeSeedId": "RESTRUCTURING_POWER_11",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -377,16 +449,22 @@
       "runtimeSlot": "12",
       "runtimeSeedId": "RESTRUCTURING_POWER_12",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -403,16 +481,22 @@
       "runtimeSlot": "13",
       "runtimeSeedId": "RESTRUCTURING_POWER_13",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -429,16 +513,22 @@
       "runtimeSlot": "14",
       "runtimeSeedId": "RESTRUCTURING_POWER_14",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -455,16 +545,22 @@
       "runtimeSlot": "15",
       "runtimeSeedId": "RESTRUCTURING_POWER_15",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -481,16 +577,22 @@
       "runtimeSlot": "01",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_01",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -507,16 +609,22 @@
       "runtimeSlot": "02",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_02",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -533,16 +641,22 @@
       "runtimeSlot": "03",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_03",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -559,16 +673,22 @@
       "runtimeSlot": "04",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_04",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -585,16 +705,22 @@
       "runtimeSlot": "05",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_05",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -611,16 +737,22 @@
       "runtimeSlot": "06",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_06",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -637,16 +769,22 @@
       "runtimeSlot": "07",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_07",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -663,16 +801,22 @@
       "runtimeSlot": "08",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_08",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -689,16 +833,22 @@
       "runtimeSlot": "09",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_09",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -715,16 +865,22 @@
       "runtimeSlot": "10",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_10",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -741,16 +897,22 @@
       "runtimeSlot": "11",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_11",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -767,16 +929,22 @@
       "runtimeSlot": "12",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_12",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -793,16 +961,22 @@
       "runtimeSlot": "13",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_13",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -819,16 +993,22 @@
       "runtimeSlot": "14",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_14",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -845,16 +1025,22 @@
       "runtimeSlot": "15",
       "runtimeSeedId": "RESTRUCTURING_INTEREST_15",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -871,16 +1057,22 @@
       "runtimeSlot": "01",
       "runtimeSeedId": "RESTRUCTURING_RELATION_01",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -897,16 +1089,22 @@
       "runtimeSlot": "02",
       "runtimeSeedId": "RESTRUCTURING_RELATION_02",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -923,16 +1121,22 @@
       "runtimeSlot": "03",
       "runtimeSeedId": "RESTRUCTURING_RELATION_03",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -949,16 +1153,22 @@
       "runtimeSlot": "04",
       "runtimeSeedId": "RESTRUCTURING_RELATION_04",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -975,16 +1185,22 @@
       "runtimeSlot": "05",
       "runtimeSeedId": "RESTRUCTURING_RELATION_05",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1001,16 +1217,22 @@
       "runtimeSlot": "06",
       "runtimeSeedId": "RESTRUCTURING_RELATION_06",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1027,16 +1249,22 @@
       "runtimeSlot": "07",
       "runtimeSeedId": "RESTRUCTURING_RELATION_07",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1053,16 +1281,22 @@
       "runtimeSlot": "08",
       "runtimeSeedId": "RESTRUCTURING_RELATION_08",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1079,16 +1313,22 @@
       "runtimeSlot": "09",
       "runtimeSeedId": "RESTRUCTURING_RELATION_09",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1105,16 +1345,22 @@
       "runtimeSlot": "10",
       "runtimeSeedId": "RESTRUCTURING_RELATION_10",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1131,16 +1377,22 @@
       "runtimeSlot": "11",
       "runtimeSeedId": "RESTRUCTURING_RELATION_11",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1157,16 +1409,22 @@
       "runtimeSlot": "12",
       "runtimeSeedId": "RESTRUCTURING_RELATION_12",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1183,16 +1441,22 @@
       "runtimeSlot": "13",
       "runtimeSeedId": "RESTRUCTURING_RELATION_13",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1209,16 +1473,22 @@
       "runtimeSlot": "14",
       "runtimeSeedId": "RESTRUCTURING_RELATION_14",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1235,16 +1505,22 @@
       "runtimeSlot": "15",
       "runtimeSeedId": "RESTRUCTURING_RELATION_15",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1261,16 +1537,22 @@
       "runtimeSlot": "01",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_01",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1287,16 +1569,22 @@
       "runtimeSlot": "02",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_02",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1313,16 +1601,22 @@
       "runtimeSlot": "03",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_03",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1339,16 +1633,22 @@
       "runtimeSlot": "04",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_04",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1365,16 +1665,22 @@
       "runtimeSlot": "05",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_05",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1391,16 +1697,22 @@
       "runtimeSlot": "06",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_06",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1417,16 +1729,22 @@
       "runtimeSlot": "07",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_07",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1443,16 +1761,22 @@
       "runtimeSlot": "08",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_08",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1469,16 +1793,22 @@
       "runtimeSlot": "09",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_09",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1495,16 +1825,22 @@
       "runtimeSlot": "10",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_10",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1521,16 +1857,22 @@
       "runtimeSlot": "11",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_11",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1547,16 +1889,22 @@
       "runtimeSlot": "12",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_12",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1573,16 +1921,22 @@
       "runtimeSlot": "13",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_13",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1599,16 +1953,22 @@
       "runtimeSlot": "14",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_14",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1625,16 +1985,22 @@
       "runtimeSlot": "15",
       "runtimeSeedId": "RESTRUCTURING_FAMILY_15",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1651,16 +2017,22 @@
       "runtimeSlot": "01",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_01",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1677,16 +2049,22 @@
       "runtimeSlot": "02",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_02",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1703,16 +2081,22 @@
       "runtimeSlot": "03",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_03",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1729,16 +2113,22 @@
       "runtimeSlot": "04",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_04",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1755,16 +2145,22 @@
       "runtimeSlot": "05",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_05",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1781,16 +2177,22 @@
       "runtimeSlot": "06",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_06",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1807,16 +2209,22 @@
       "runtimeSlot": "07",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_07",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1833,16 +2241,22 @@
       "runtimeSlot": "08",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_08",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1859,16 +2273,22 @@
       "runtimeSlot": "09",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_09",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1885,16 +2305,22 @@
       "runtimeSlot": "10",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_10",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1911,16 +2337,22 @@
       "runtimeSlot": "11",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_11",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1937,16 +2369,22 @@
       "runtimeSlot": "12",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_12",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1963,16 +2401,22 @@
       "runtimeSlot": "13",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_13",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -1989,16 +2433,22 @@
       "runtimeSlot": "14",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_14",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2015,16 +2465,22 @@
       "runtimeSlot": "15",
       "runtimeSeedId": "RESTRUCTURING_SOCIAL_15",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2041,16 +2497,22 @@
       "runtimeSlot": "01",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_01",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2067,16 +2529,22 @@
       "runtimeSlot": "02",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_02",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2093,16 +2561,22 @@
       "runtimeSlot": "03",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_03",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2119,16 +2593,22 @@
       "runtimeSlot": "04",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_04",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2145,16 +2625,22 @@
       "runtimeSlot": "05",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_05",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2171,16 +2657,22 @@
       "runtimeSlot": "06",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_06",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2197,16 +2689,22 @@
       "runtimeSlot": "07",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_07",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2223,16 +2721,22 @@
       "runtimeSlot": "08",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_08",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2249,16 +2753,22 @@
       "runtimeSlot": "09",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_09",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2275,16 +2785,22 @@
       "runtimeSlot": "10",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_10",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2301,16 +2817,22 @@
       "runtimeSlot": "11",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_11",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2327,16 +2849,22 @@
       "runtimeSlot": "12",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_12",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2353,16 +2881,22 @@
       "runtimeSlot": "13",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_13",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2379,16 +2913,22 @@
       "runtimeSlot": "14",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_14",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     },
     {
@@ -2405,17 +2945,33 @@
       "runtimeSlot": "15",
       "runtimeSeedId": "RESTRUCTURING_EXISTENCE_15",
       "slotAssignmentBasis": "LOCKED_COVERAGE_MATRIX_CONTEXT_ORDER_THEN_RULE_ASYMMETRY_BREAK",
-      "workflowStatus": "BINDING_DRAFT",
+      "workflowStatus": "BINDING_ACCEPTED",
       "draftAssistance": "AI_ASSISTED",
       "assistanceReference": "XINMAI-1.0-RESTRUCTURING-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0",
       "bindingAuthor": "XINMAI_CODEX_BINDING_AUTHORING_WINDOW",
       "bindingAuthoringDate": "2026-08-10",
-      "independentBindingReviewer": null,
-      "reviewDate": null,
-      "reviewDecision": null,
-      "approval": null,
-      "lock": null,
+      "independentBindingReviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+      "reviewDate": "2026-08-10",
+      "reviewDecision": "ACCEPT",
+      "approval": {
+        "approvedBy": "XINMAI_PRODUCT_CONTROL_TOWER",
+        "approvedAt": "2026-08-10"
+      },
+      "lock": {
+        "lockedAt": "2026-08-10",
+        "scope": "RUNTIME_SEMANTIC_AND_DUAL_ID_BINDING_IMMUTABILITY_ONLY"
+      },
       "productionEligible": false
     }
-  ]
+  ],
+  "finalIndependentReview": {
+    "reviewer": "XINMAI_PRODUCT_CONTROL_TOWER",
+    "reviewDate": "2026-08-10",
+    "decision": "ACCEPT",
+    "acceptedCount": 90,
+    "reviseCount": 0,
+    "rejectedCount": 0,
+    "packAccepted": true,
+    "reviewedOpenRiskCount": 33
+  }
 }
