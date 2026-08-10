@@ -17,7 +17,13 @@ type XinmaiLifeReflectionGuideProps = Readonly<{
   onSelfName?: () => void;
   onPause?: () => void;
   onResume?: () => void;
-  onContinue?: () => void;
+  finalActionState?:
+    | "PREPARING"
+    | "READY"
+    | "SAVING"
+    | "RETRYABLE"
+    | "SAFE_WITHHELD";
+  onContinue?: () => Promise<boolean>;
 }>;
 
 const REFLECTION_STEPS = Object.freeze([
@@ -53,9 +59,11 @@ export function XinmaiLifeReflectionGuide({
   onSelfName,
   onPause,
   onResume,
+  finalActionState = "READY",
   onContinue,
 }: XinmaiLifeReflectionGuideProps) {
   const [lifeContinuityStable, setLifeContinuityStable] = useState(false);
+  const [continuePending, setContinuePending] = useState(false);
 
   if (surface === "REALITY") {
     return (
@@ -317,17 +325,70 @@ export function XinmaiLifeReflectionGuide({
               它仍在这里
             </span>
           ) : (
-            <button
-              type="button"
-              data-xinmai-relation-action="SETTLE_INTO_LIFE_NO_ROUTE"
-              data-xinmai-choice-trigger="WITHHELD"
-              onClick={() => {
-                setLifeContinuityStable(true);
-                onContinue?.();
-              }}
+            <div
+              data-xinmai-dimension-commit-state={finalActionState}
+              style={{ display: "grid", gap: 8, justifyItems: "center" }}
             >
-              让它继续呼吸
-            </button>
+              <span role="status" aria-live="polite">
+                {finalActionState === "PREPARING"
+                  ? "你已经确认了这份理解；生命观察正在准备，尚未保存。"
+                  : finalActionState === "SAVING"
+                    ? "正在保存这一维的生命观察。"
+                    : finalActionState === "RETRYABLE"
+                      ? "这一维的观察还没有保存，可以重新尝试。"
+                      : finalActionState === "SAFE_WITHHELD"
+                        ? "这一维暂时无法保存，已有生命记录仍被保留。"
+                        : "你已经确认了这份理解；这一维观察尚未保存。"}
+              </span>
+              <button
+                type="button"
+                data-xinmai-relation-action="SETTLE_INTO_LIFE_NO_ROUTE"
+                data-xinmai-choice-trigger="WITHHELD"
+                disabled={
+                  continuePending ||
+                  finalActionState === "PREPARING" ||
+                  finalActionState === "SAVING" ||
+                  finalActionState === "SAFE_WITHHELD"
+                }
+                aria-busy={
+                  continuePending ||
+                  finalActionState === "PREPARING" ||
+                  finalActionState === "SAVING"
+                    ? "true"
+                    : undefined
+                }
+                onClick={async () => {
+                  if (
+                    continuePending ||
+                    finalActionState === "PREPARING" ||
+                    finalActionState === "SAVING" ||
+                    finalActionState === "SAFE_WITHHELD"
+                  ) return;
+                  setContinuePending(true);
+                  try {
+                    const saved = await onContinue?.();
+                    if (saved) setLifeContinuityStable(true);
+                  } finally {
+                    setContinuePending(false);
+                  }
+                }}
+              >
+                {continuePending || finalActionState === "SAVING"
+                  ? "正在保存这一维观察"
+                  : finalActionState === "PREPARING"
+                    ? "生命观察正在准备"
+                    : finalActionState === "RETRYABLE"
+                      ? "重新保存这一维观察"
+                      : finalActionState === "SAFE_WITHHELD"
+                        ? "这一维暂时无法保存"
+                        : "让它继续呼吸"}
+              </button>
+              {finalActionState === "SAFE_WITHHELD" ? (
+                <button type="button" onClick={onPause}>
+                  先停在这里
+                </button>
+              ) : null}
+            </div>
           )
         ) : null}
       </div>

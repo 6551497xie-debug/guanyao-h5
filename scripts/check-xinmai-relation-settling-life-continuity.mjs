@@ -36,7 +36,8 @@ const checks = [
       'data-xinmai-relation-action="SETTLE_INTO_LIFE_NO_ROUTE"',
     ) &&
       guide.includes("setLifeContinuityStable(true);") &&
-      guide.includes("onContinue?.();") &&
+      guide.includes("const saved = await onContinue?.();") &&
+      guide.includes("if (saved) setLifeContinuityStable(true);") &&
       guide.includes('data-xinmai-route-transition="NONE"') &&
       guide.includes('data-xinmai-module-transition="NONE"') &&
       !guide.includes("NAVIGATE_TO_CHOICE"),

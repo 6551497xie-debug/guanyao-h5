@@ -41,8 +41,8 @@ const explicitContinuation = page.slice(
   page.indexOf("function handleLifeCoreApproach()"),
 );
 assert(
-  explicitContinuation.includes("if (!innerViewRelationEstablished) return;") &&
-    explicitContinuation.includes("onNodeBloom();"),
+  explicitContinuation.includes("if (!innerViewRelationEstablished) return false;") &&
+    explicitContinuation.includes("return onNodeBloom();"),
   "the explicit final continuation is not the sole item-commit presentation path",
 );
 
@@ -57,7 +57,8 @@ assert(
 assert(
   guide.includes("const [lifeContinuityStable, setLifeContinuityStable] = useState(false)") &&
     guide.includes("setLifeContinuityStable(true);") &&
-    guide.includes("onContinue?.();"),
+    guide.includes("const saved = await onContinue?.();") &&
+    guide.includes("if (saved) setLifeContinuityStable(true);"),
   "the final local settling state is not explicit or resettable by dimension remount",
 );
 

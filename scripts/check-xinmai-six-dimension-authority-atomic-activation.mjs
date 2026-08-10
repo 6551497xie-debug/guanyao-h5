@@ -120,7 +120,8 @@ assert(
 );
 assert(
   reflectionGuide.includes("onContinue,") &&
-    reflectionGuide.includes("onContinue?.();") &&
+    reflectionGuide.includes("const saved = await onContinue?.();") &&
+    reflectionGuide.includes("if (saved) setLifeContinuityStable(true);") &&
     page.includes("key={sequentialCurrentSpaceId}") &&
     page.includes('data-dynamics-current-dimension-label={currentDimensionLabel}') &&
     !page.includes("initialInnerViewRelation={innerViewRelation}") &&

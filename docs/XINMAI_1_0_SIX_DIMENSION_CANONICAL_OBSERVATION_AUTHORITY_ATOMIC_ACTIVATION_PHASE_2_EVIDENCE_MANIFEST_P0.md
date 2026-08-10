@@ -141,3 +141,58 @@ Screenshot bytes are physical-pixel outputs at DPR 1.4 and therefore are not exp
 - `/private/tmp/xinmai-six-dimension-corrective-archive-320x568.jpg`
 
 Native `prefers-reduced-motion` remained `false`; no CSS, query parameter, script or event simulation was used to claim reduced-motion evidence. Visible controls retained button semantics and accessible names throughout the six dimension-specific sequences and downstream actions.
+
+## First-item authority-readiness corrective evidence
+
+Corrective parent: `267d087b943e87a8c238eb306ab99b365b3cee55`.
+
+Hashed Production origins: `http://127.0.0.1:5498` and `http://127.0.0.1:5499`.
+
+The final dimension action is now a read-only presentation of typed Authority readiness. It is enabled only when the canonical observation set exists, its lifecycle is `OPEN`, the current dimension item is still pending, and no mutation is in flight. No timer delays readiness and no Authority, Store, Receipt, Choice, Growth, Crystal or Body contract changed.
+
+### Deliberate earliest-click evidence
+
+On both clean origins the first BODY reflection controls were activated immediately after entering Gravity. The first, second and third approach and explicit `这像我` acknowledgement completed while the public Authority still reported:
+
+- `data-six-dimension-authority=LOADING`
+- `data-six-dimension-commit-readiness=PREPARING`
+- observed count `0`
+- completion receipt `NONE`
+
+The resulting final control was a real disabled button named `生命观察正在准备`, with `disabled=true` and `aria-busy=true`. Its adjacent live status said `你已经确认了这份理解；生命观察正在准备，尚未保存。` No persisted-observation success was announced, the count remained zero, and the canonical mutation callback was not called. A final post-build run captured the typed transition itself: the control was read as disabled/busy while the main surface still reported `LOADING/PREPARING/0`, then the same mounted presentation changed to the ready action as Authority opened.
+
+When the typed Authority changed to `OPEN`, without refresh or another relationship action:
+
+- commit readiness changed automatically to `READY`;
+- the status changed to `你已经确认了这份理解；这一维观察尚未保存。`;
+- the enabled final button became `让它继续呼吸`;
+- one visible click produced count `0 → 1`, kept receipt `NONE`, and opened EMOTION at its own `OBSERVING` step.
+
+The final control is also disabled and marked busy while a mutation is in flight. A failed result does not set presentation-local `lifeContinuityStable`; Authority-owned retryability maps either to the visible `重新保存这一维观察` action or to a non-retryable protective state with `先停在这里`. Duplicate in-flight submission remains fenced by both presentation state and the existing transition lock.
+
+### Continuous and downstream regression
+
+The same origin then completed the remaining dimensions without refresh:
+
+| Canonical count | Authority | Receipt |
+|---:|---|---|
+| 1 | `OPEN` | `NONE` |
+| 2 | `OPEN` | `NONE` |
+| 3 | `OPEN` | `NONE` |
+| 4 | `OPEN` | `NONE` |
+| 5 | `OPEN` | `NONE` |
+| 6 | `COMPLETED` | one immutable receipt |
+
+The completion receipt evidence digest ended in `9c2cf458a5ccefed4416e18bc957d6fa17359c72797a89aabe130948235ad9b5`. The same chain completed a visible long-press Choice V3, explicit Departure, explicit Return and `ATTEMPTED` response, producing exactly one Crystal/Body lineage. Receipt alone still produced no Crystal.
+
+### Viewport evidence
+
+| CSS viewport | `visualViewport` | DPR | `scrollWidth` | Result |
+|---|---|---:|---:|---|
+| 390×844 | 390×844.286, scale 1 | 1.4 | 390 | current dimension, pre-save status and final action reachable; no horizontal overflow |
+| 320×568 | 320×567.857, scale 1 | 1.4 | same controls reachable; no horizontal overflow |
+
+- `/private/tmp/xinmai-six-dimension-first-item-readiness-390x844.jpg`
+- `/private/tmp/xinmai-six-dimension-first-item-readiness-320x568.jpg`
+
+The final action remains a native button with a stable accessible name, disabled semantics and `aria-busy` while saving. Native `prefers-reduced-motion` remained `false`; motion/reduced-motion branches do not participate in readiness, acknowledgement or persistence facts.

@@ -155,6 +155,13 @@ const SIX_SPACE_SHORT_LABELS: Record<SixSpaceId, string> = {
   goal: "动机",
 };
 
+type SixDimensionCommitPresentationState =
+  | "PREPARING"
+  | "READY"
+  | "SAVING"
+  | "RETRYABLE"
+  | "SAFE_WITHHELD";
+
 function createNodeRunningExecutionSnapshot(context: SelectedPressureSeedContext | null) {
   const seedSnapshot = GuanyaoRuntimeEngine.createSnapshot(context);
   const engineReadySnapshot = GuanyaoRuntimeEngine.run(seedSnapshot, {
@@ -371,6 +378,7 @@ function NodeProgressionPanel({
   toneColor,
   activeNode,
   currentDimensionLabel,
+  finalActionState,
   phase,
   onApproach,
   onConfirm,
@@ -387,6 +395,7 @@ function NodeProgressionPanel({
     dimensionUnderstanding?: string;
   };
   currentDimensionLabel: string;
+  finalActionState: SixDimensionCommitPresentationState;
   phase:
     | "OBSERVING"
     | "FIRST_APPROACH"
@@ -400,7 +409,7 @@ function NodeProgressionPanel({
   onSelfName: () => void;
   onPause: () => void;
   onResume: () => void;
-  onContinue: () => void;
+  onContinue: () => Promise<boolean>;
 }) {
   const [firstPauseInvitationVisible, setFirstPauseInvitationVisible] = useState(false);
   const hasShownFirstPauseInvitationRef = useRef(false);
@@ -483,6 +492,7 @@ function NodeProgressionPanel({
         phase={phase}
         observation={livingSentence}
         understanding={activeNode.dimensionUnderstanding}
+        finalActionState={finalActionState}
         onApproach={onApproach}
         onConfirm={onConfirm}
         onSelfName={onSelfName}
@@ -1149,6 +1159,7 @@ function CosmicBotanicsField({
   activeNodeIndex,
   narrativePhase,
   onNodeBloom,
+  finalActionState,
   visualSource,
   visualState,
   experienceState,
@@ -1161,7 +1172,8 @@ function CosmicBotanicsField({
   petalStates: Record<SixSpaceId, CosmicPetalState>;
   activeNodeIndex: number;
   narrativePhase: CosmicNarrativePhase;
-  onNodeBloom: () => void;
+  onNodeBloom: () => Promise<boolean>;
+  finalActionState: SixDimensionCommitPresentationState;
   visualSource: RealLifeVisualSource | null;
   visualState: VisualState;
   experienceState: ExperienceState;
@@ -1266,9 +1278,9 @@ function CosmicBotanicsField({
     setInnerViewPhase(innerViewPhaseBeforePauseRef.current);
   }
 
-  function continueObservation() {
-    if (!innerViewRelationEstablished) return;
-    onNodeBloom();
+  async function continueObservation(): Promise<boolean> {
+    if (!innerViewRelationEstablished) return false;
+    return onNodeBloom();
   }
 
   function handleLifeCoreApproach() {
@@ -1386,6 +1398,7 @@ function CosmicBotanicsField({
           toneColor={toneColor}
           activeNode={experienceState.nodeCopy}
           currentDimensionLabel={SIX_SPACE_SHORT_LABELS[activeConfig.id]}
+          finalActionState={finalActionState}
           phase={innerViewPhase}
           onApproach={approachLifeState}
           onConfirm={confirmLifeState}
@@ -2639,6 +2652,8 @@ function HexagramCodeDeliveryShell({
   const recoveredObservationPresentationRef =
     useRef<string | null>(null);
   const dimensionTransitionLockRef = useRef(false);
+  const [sixDimensionMutationPending, setSixDimensionMutationPending] =
+    useState(false);
   const runtimeProjection = GuanyaoRuntimeEngine.project(executionSnapshot);
   const {
     sixSpaceConfigs,
@@ -2660,6 +2675,33 @@ function HexagramCodeDeliveryShell({
     sixDimensionState: cosmicBotanicsRuntime.sixDimensionState,
   });
   const sequentialCurrentSpaceId = sixSpaceProgress.currentSpaceId;
+  const currentCanonicalDimensionItem =
+    sixDimensionAuthority.observationSet?.items.find(
+      (item) => item.dimensionId === sequentialCurrentSpaceId,
+    ) ?? null;
+  const canonicalObservationSetOpen =
+    sixDimensionAuthority.observationSet?.lifecycle === "OPEN";
+  const canonicalDimensionPending =
+    currentCanonicalDimensionItem !== null &&
+    currentCanonicalDimensionItem.state !== "OBSERVED";
+  const authorityAllowsRetry =
+    sixDimensionAuthority.status === "SAFE_WITHHELD" &&
+    sixDimensionAuthority.cause?.retryability !== "NOT_RETRYABLE";
+  const sixDimensionCommitReady =
+    canonicalObservationSetOpen &&
+    canonicalDimensionPending &&
+    !sixDimensionMutationPending &&
+    (sixDimensionAuthority.status === "OPEN" || authorityAllowsRetry);
+  const sixDimensionCommitPresentationState: SixDimensionCommitPresentationState =
+    sixDimensionMutationPending
+      ? "SAVING"
+      : sixDimensionAuthority.status === "LOADING"
+        ? "PREPARING"
+        : sixDimensionCommitReady
+          ? authorityAllowsRetry
+            ? "RETRYABLE"
+            : "READY"
+          : "SAFE_WITHHELD";
   const completedSixDimensionCount = sixSpaceProgress.completedSpaceCount;
   const visualState = resolveDynamicsVisualState({
     completedNodeCount: executionSnapshot.node.completed.length,
@@ -3109,13 +3151,16 @@ function HexagramCodeDeliveryShell({
     }
   }
 
-  async function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
+  async function handleSpatialInteraction(
+    eventType: SpatialIntent["type"],
+    context: SpatialIntent["payload"] = {},
+  ): Promise<boolean> {
     if (eventType !== "CORE_STAR_BLOOM") {
       setExecutionSnapshot((current) => GuanyaoRuntimeEngine.run(current, { type: eventType, payload: context }));
-      return;
+      return true;
     }
 
-    if (dimensionTransitionLockRef.current) return;
+    if (dimensionTransitionLockRef.current) return false;
     dimensionTransitionLockRef.current = true;
 
     try {
@@ -3127,7 +3172,7 @@ function HexagramCodeDeliveryShell({
         setChoiceAuthorityFeedback(
           "这一维的观察还没有被保存，请按当前状态重新尝试。",
         );
-        return;
+        return false;
       }
       setChoiceAuthorityFeedback(null);
 
@@ -3139,22 +3184,31 @@ function HexagramCodeDeliveryShell({
       if (activeDimensionIndex < DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS.length - 1) {
         setActiveDimensionIndex((previous) => Math.min(DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS.length - 1, previous + 1));
         setExecutionSnapshot(createNodeRunningExecutionSnapshot(dynamicsInputContext.selectedPressureSeedContext));
-        return;
+        return true;
       }
 
       setExecutionSnapshot(completedSpaceSnapshot);
+      return true;
     } finally {
       dimensionTransitionLockRef.current = false;
     }
   }
 
-  function bloomCosmicNode() {
-    void handleSpatialInteraction("CORE_STAR_BLOOM", {
-      nodeIndex: executionSnapshot.node.current,
-      dimension: sequentialCurrentSpaceId,
-      context: "focus",
-      triggerStrength: 1,
-    });
+  async function bloomCosmicNode(): Promise<boolean> {
+    if (!sixDimensionCommitReady || dimensionTransitionLockRef.current) {
+      return false;
+    }
+    setSixDimensionMutationPending(true);
+    try {
+      return await handleSpatialInteraction("CORE_STAR_BLOOM", {
+        nodeIndex: executionSnapshot.node.current,
+        dimension: sequentialCurrentSpaceId,
+        context: "focus",
+        triggerStrength: 1,
+      });
+    } finally {
+      setSixDimensionMutationPending(false);
+    }
   }
 
   useEffect(() => {
@@ -3228,6 +3282,9 @@ function HexagramCodeDeliveryShell({
         }
         data-gravity-observation-authority="TYPED_RESUME_DECISION_READ_ONLY_MIRROR"
         data-six-dimension-authority={sixDimensionAuthority.status}
+        data-six-dimension-commit-readiness={
+          sixDimensionCommitPresentationState
+        }
         data-six-dimension-observed-count={completedDimensionIds.length}
         data-six-dimension-observation-set-reference={
           sixDimensionAuthority.observationSet?.observationSetId ?? "NONE"
@@ -3351,6 +3408,12 @@ function HexagramCodeDeliveryShell({
           position: "relative",
         }}
       >
+        <style>{`
+          .gy-reality-life-universe [data-scene-semantic-mirror="GRAVITY_RECOGNIZED"],
+          .gy-reality-life-universe [data-scene-semantic-mirror="GRAVITY_RECOGNIZED"] + .gy-same-life-surface__semantic-mirror {
+            display: none;
+          }
+        `}</style>
         {arrivalVisualContinuity ? (
           <div
             className="gy-reality-life-universe"
@@ -3557,6 +3620,7 @@ function HexagramCodeDeliveryShell({
               activeNodeIndex={sixSpaceProgress.completedInnerNodeCount}
               narrativePhase={cosmicNarrativePhase}
               onNodeBloom={bloomCosmicNode}
+              finalActionState={sixDimensionCommitPresentationState}
               visualSource={realLifeVisualSource}
               visualState={visualState}
               experienceState={displayExperienceState}
@@ -3655,7 +3719,9 @@ function HexagramCodeDeliveryShell({
             whiteSpace: "nowrap",
           }}
         >
-          {sixDimensionAuthority.status === "COMPLETED"
+          {sixDimensionAuthority.status === "LOADING"
+            ? `生命观察正在准备；已保存 ${completedDimensionIds.length} 个生命观察，当前是${SIX_SPACE_SHORT_LABELS[sequentialCurrentSpaceId]}。`
+            : sixDimensionAuthority.status === "COMPLETED"
             ? "六个生命观察已分别确认，现实选择入口已经可以继续核对。"
             : `已确认 ${completedDimensionIds.length} 个生命观察；当前是${SIX_SPACE_SHORT_LABELS[sequentialCurrentSpaceId]}。`}
         </p>
