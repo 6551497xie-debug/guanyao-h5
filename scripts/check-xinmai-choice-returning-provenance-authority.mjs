@@ -36,7 +36,7 @@ for (const marker of [
 assertIncludes(envelope, "XINMAI_LIVED_GROWTH_RECOVERY_V2");
 assertIncludes(envelope, "choiceExplicitDepartureReceipts");
 assertIncludes(envelope, "choiceExplicitReturnReceipts");
-assertIncludes(storeTypes, "XINMAI_LIVED_GROWTH_DATABASE_VERSION = 2");
+assertIncludes(storeTypes, "XINMAI_LIVED_GROWTH_DATABASE_VERSION = 3");
 for (const marker of [
   "isXinmaiLivedGrowthLegacyEnvelopeV1",
   "upgradeXinmaiLivedGrowthEnvelopeV1",

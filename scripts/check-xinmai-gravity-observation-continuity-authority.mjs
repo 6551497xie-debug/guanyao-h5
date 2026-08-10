@@ -46,7 +46,7 @@ assert(
 );
 assert(
   "Checkpoint is a dedicated V2 IndexedDB store",
-  /DATABASE_VERSION\s*=\s*2/.test(storeTypes) &&
+  /DATABASE_VERSION\s*=\s*3/.test(storeTypes) &&
     store.includes("XINMAI_GRAVITY_OBSERVATION_CONTINUITY_STORE") &&
     store.includes('"gravityObservationReferenceId"') &&
     store.includes("{ unique: true }"),

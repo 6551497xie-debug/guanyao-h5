@@ -17,6 +17,12 @@ import {
   type GravityObservationContinuityTransactionOutcome,
 } from "../types/xinmaiGravityObservationContinuity";
 import {
+  XINMAI_SIX_DIMENSION_COMMAND_FENCE_STORE,
+  XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_STORE,
+  XINMAI_SIX_DIMENSION_OBSERVATION_SET_STORE,
+  type SixDimensionAuthorityReadResult,
+} from "../types/xinmaiSixDimensionObservation";
+import {
   XINMAI_LIVED_GROWTH_CANONICAL_RECORD_ID,
   XINMAI_LIVED_GROWTH_CANONICAL_STORE,
   XINMAI_LIVED_GROWTH_CRYSTAL_PROJECTION_STORE,
@@ -42,6 +48,12 @@ import {
   upgradeXinmaiLivedGrowthEnvelopeV1,
 } from "./xinmaiLivedGrowthRecoveryPersistenceAdapter";
 import { notifyXinmaiLivedGrowthCanonicalRevision } from "./xinmaiLivedGrowthRecoveryRevisionObserver";
+import {
+  isCanonicalSixDimensionObservationSet,
+  isSixDimensionCommandFenceRecord,
+  isSixDimensionCompletionReceipt,
+  validateSixDimensionSetReceiptPair,
+} from "./xinmaiSixDimensionObservationEvidenceValidator";
 
 const STORE_NAMES: string[] = [
   XINMAI_LIVED_GROWTH_CANONICAL_STORE,
@@ -50,6 +62,9 @@ const STORE_NAMES: string[] = [
   XINMAI_LIVED_GROWTH_FORMATION_INDEX_STORE,
   XINMAI_LIVED_GROWTH_CRYSTAL_PROJECTION_STORE,
   XINMAI_GRAVITY_OBSERVATION_CONTINUITY_STORE,
+  XINMAI_SIX_DIMENSION_OBSERVATION_SET_STORE,
+  XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_STORE,
+  XINMAI_SIX_DIMENSION_COMMAND_FENCE_STORE,
 ];
 
 const LEGACY_ABSENT_SENTINEL = "XINMAI_LEGACY_V1_ABSENT";
@@ -321,6 +336,71 @@ const openCanonicalDatabase = (): Promise<OpenDatabaseResult> =>
           "gravityObservationReferenceId",
           "gravityObservationReferenceId",
           { unique: true },
+        );
+      }
+      if (
+        !database.objectStoreNames.contains(
+          XINMAI_SIX_DIMENSION_OBSERVATION_SET_STORE,
+        )
+      ) {
+        const observationSetStore = database.createObjectStore(
+          XINMAI_SIX_DIMENSION_OBSERVATION_SET_STORE,
+          { keyPath: "observationSetId" },
+        );
+        observationSetStore.createIndex(
+          "canonicalLineageKey",
+          "canonicalLineageKey",
+          { unique: true },
+        );
+        observationSetStore.createIndex(
+          "identityKey",
+          "identityKey",
+          { unique: false },
+        );
+        observationSetStore.createIndex(
+          "encounterCycleId",
+          "encounterCycleId",
+          { unique: false },
+        );
+      }
+      if (
+        !database.objectStoreNames.contains(
+          XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_STORE,
+        )
+      ) {
+        const completionReceiptStore = database.createObjectStore(
+          XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_STORE,
+          { keyPath: "completionReceiptReferenceId" },
+        );
+        completionReceiptStore.createIndex(
+          "observationSetId",
+          "observationSetId",
+          { unique: true },
+        );
+        completionReceiptStore.createIndex(
+          "evidenceDigest",
+          "evidenceDigest",
+          { unique: true },
+        );
+      }
+      if (
+        !database.objectStoreNames.contains(
+          XINMAI_SIX_DIMENSION_COMMAND_FENCE_STORE,
+        )
+      ) {
+        const commandFenceStore = database.createObjectStore(
+          XINMAI_SIX_DIMENSION_COMMAND_FENCE_STORE,
+          { keyPath: "commandReferenceId" },
+        );
+        commandFenceStore.createIndex(
+          "outcomeReferenceId",
+          "outcomeReferenceId",
+          { unique: true },
+        );
+        commandFenceStore.createIndex(
+          "observationSetId",
+          "observationSetId",
+          { unique: false },
         );
       }
     };
@@ -1451,6 +1531,177 @@ export async function transactXinmaiGravityObservationContinuity<
   return outcome;
 }
 
+const sixDimensionStorageCause = (
+  code:
+    | "TRANSACTION_STORAGE_UNAVAILABLE"
+    | "TRANSACTION_OPEN_BLOCKED"
+    | "TRANSACTION_ABORTED"
+    | "TRANSACTION_CONNECTION_CLOSED"
+    | "RECOVERY_CORRUPTED"
+    | "CANONICAL_UNIQUENESS_VIOLATION",
+  retryability:
+    | "RETRY_AFTER_ENVIRONMENT_RECOVERY"
+    | "NOT_RETRYABLE",
+) =>
+  Object.freeze({
+    owner: "STORAGE" as const,
+    code,
+    retryability,
+    innerCause: null,
+  });
+
+export async function readXinmaiSixDimensionAuthoritySnapshot(): Promise<SixDimensionAuthorityReadResult> {
+  const opened = await openCanonicalDatabase();
+  if (opened.status !== "OPEN") {
+    return Object.freeze({
+      status:
+        opened.status === "BLOCKED"
+          ? "SAFE_WITHHELD" as const
+          : "UNAVAILABLE" as const,
+      snapshot: null,
+      cause:
+        opened.status === "BLOCKED"
+          ? sixDimensionStorageCause(
+              "TRANSACTION_OPEN_BLOCKED",
+              "RETRY_AFTER_ENVIRONMENT_RECOVERY",
+            )
+          : sixDimensionStorageCause(
+              "TRANSACTION_STORAGE_UNAVAILABLE",
+              "RETRY_AFTER_ENVIRONMENT_RECOVERY",
+            ),
+    });
+  }
+  const database = opened.database;
+  const result = await new Promise<SixDimensionAuthorityReadResult>(
+    (resolve) => {
+      let transaction: IDBTransaction;
+      try {
+        transaction = database.transaction(
+          [
+            XINMAI_SIX_DIMENSION_OBSERVATION_SET_STORE,
+            XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_STORE,
+            XINMAI_SIX_DIMENSION_COMMAND_FENCE_STORE,
+          ],
+          "readonly",
+        );
+      } catch {
+        resolve(
+          Object.freeze({
+            status: "SAFE_WITHHELD" as const,
+            snapshot: null,
+            cause: sixDimensionStorageCause(
+              "TRANSACTION_CONNECTION_CLOSED",
+              "RETRY_AFTER_ENVIRONMENT_RECOVERY",
+            ),
+          }),
+        );
+        return;
+      }
+      let observationSets: unknown = null;
+      let completionReceipts: unknown = null;
+      let commandFences: unknown = null;
+      const observationRequest = transaction
+        .objectStore(XINMAI_SIX_DIMENSION_OBSERVATION_SET_STORE)
+        .getAll();
+      const receiptRequest = transaction
+        .objectStore(XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_STORE)
+        .getAll();
+      const fenceRequest = transaction
+        .objectStore(XINMAI_SIX_DIMENSION_COMMAND_FENCE_STORE)
+        .getAll();
+      observationRequest.onsuccess = () => {
+        observationSets = observationRequest.result;
+      };
+      receiptRequest.onsuccess = () => {
+        completionReceipts = receiptRequest.result;
+      };
+      fenceRequest.onsuccess = () => {
+        commandFences = fenceRequest.result;
+      };
+      transaction.oncomplete = () => {
+        if (
+          !Array.isArray(observationSets) ||
+          !Array.isArray(completionReceipts) ||
+          !Array.isArray(commandFences) ||
+          !observationSets.every(isCanonicalSixDimensionObservationSet) ||
+          !completionReceipts.every(isSixDimensionCompletionReceipt) ||
+          !commandFences.every(isSixDimensionCommandFenceRecord)
+        ) {
+          resolve(
+            Object.freeze({
+              status: "CORRUPTED" as const,
+              snapshot: null,
+              cause: sixDimensionStorageCause(
+                "RECOVERY_CORRUPTED",
+                "NOT_RETRYABLE",
+              ),
+            }),
+          );
+          return;
+        }
+        const receiptBySet = new Map(
+          completionReceipts.map((receipt) => [
+            receipt.observationSetId,
+            receipt,
+          ]),
+        );
+        const setIds = new Set(
+          observationSets.map((set) => set.observationSetId),
+        );
+        const pairMismatch = observationSets.some((set) =>
+          !validateSixDimensionSetReceiptPair(
+            set,
+            receiptBySet.get(set.observationSetId) ?? null,
+          )) || completionReceipts.some(
+            (receipt) => !setIds.has(receipt.observationSetId),
+          ) || commandFences.some(
+            (fence) => !setIds.has(fence.observationSetId),
+          );
+        if (pairMismatch) {
+          resolve(
+            Object.freeze({
+              status: "CORRUPTED" as const,
+              snapshot: null,
+              cause: sixDimensionStorageCause(
+                "CANONICAL_UNIQUENESS_VIOLATION",
+                "NOT_RETRYABLE",
+              ),
+            }),
+          );
+          return;
+        }
+        resolve(
+          Object.freeze({
+            status: "FOUND" as const,
+            snapshot: Object.freeze({
+              observationSets: Object.freeze([...observationSets]),
+              completionReceipts: Object.freeze([
+                ...completionReceipts,
+              ]),
+              commandFences: Object.freeze([...commandFences]),
+            }),
+            cause: null,
+          }),
+        );
+      };
+      transaction.onabort = () =>
+        resolve(
+          Object.freeze({
+            status: "SAFE_WITHHELD" as const,
+            snapshot: null,
+            cause: sixDimensionStorageCause(
+              "TRANSACTION_ABORTED",
+              "RETRY_AFTER_ENVIRONMENT_RECOVERY",
+            ),
+          }),
+        );
+      transaction.onerror = () => undefined;
+    },
+  );
+  database.close();
+  return result;
+}
+
 export const XinmaiLivedGrowthTransactionalStore = Object.freeze({
   databaseName: XINMAI_LIVED_GROWTH_DATABASE_NAME,
   databaseVersion: XINMAI_LIVED_GROWTH_DATABASE_VERSION,
@@ -1462,7 +1713,15 @@ export const XinmaiLivedGrowthTransactionalStore = Object.freeze({
     XINMAI_LIVED_GROWTH_CRYSTAL_PROJECTION_STORE,
   gravityObservationContinuityStore:
     XINMAI_GRAVITY_OBSERVATION_CONTINUITY_STORE,
+  sixDimensionObservationSetStore:
+    XINMAI_SIX_DIMENSION_OBSERVATION_SET_STORE,
+  sixDimensionCompletionReceiptStore:
+    XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_STORE,
+  sixDimensionCommandFenceStore:
+    XINMAI_SIX_DIMENSION_COMMAND_FENCE_STORE,
   read: readXinmaiLivedGrowthCanonicalState,
+  readSixDimensionAuthority:
+    readXinmaiSixDimensionAuthoritySnapshot,
   transact: transactXinmaiLivedGrowthCanonicalState,
   successAuthority: "IDB_TRANSACTION_COMPLETE" as const,
   legacyV1: "READ_ONLY_NO_BACKFILL" as const,
