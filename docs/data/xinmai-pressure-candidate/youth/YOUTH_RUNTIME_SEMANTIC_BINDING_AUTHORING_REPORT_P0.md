@@ -1,49 +1,42 @@
 # YOUTH Runtime Semantic Binding Authoring Report P0
 
-Blade: `XINMAI-1.0-YOUTH-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-AND-DUAL-ID-BINDING-PACK-AUTHORING-P0`
+Blade: `XINMAI-1.0-YOUTH-PRESSURE-CANDIDATE-90-RUNTIME-SEMANTIC-BINDING-1-ITEM-REVISION-R1-P0`
 
-Status: `BINDING_DRAFT / AI_ASSISTED / NOT REVIEWED / NOT PRODUCTION`
+Status: `R1 89 ACCEPT / 1 REVISED BINDING_DRAFT / NOT FULL-PACK ACCEPTED / NOT PRODUCTION`
 
-## Authoring boundary
+## Governance
 
-- Binding author: `XINMAI_CODEX_BINDING_AUTHORING_WINDOW`
-- Authoring date: `2026-08-10`
-- Independent binding reviewer: `null`
-- Review decision / approval / lock: `null / null / null`
-- Source: locked YOUTH Content Pack B 90, manifest digest `sha256:4978cf1b39338fe1a71e4d30079a96086574b0a6bd4b2d9c989d7ebed0a0b725`
-- Runtime, Catalog, Compiler, Revision Registry, Presentation and other-stage binding changes: `0`
+- Original binding author: `XINMAI_CODEX_BINDING_AUTHORING_WINDOW`
+- R1 independent reviewer: `XINMAI_PRODUCT_CONTROL_TOWER`
+- R1 review date: `2026-08-10`
+- R1 result: `89 ACCEPT / 1 REVISE / 0 REJECT`
+- Full pack accepted: `false`
+- Approval / lock: `null / null`
+- Runtime, Catalog, Compiler, Revision Registry and Presentation changes: `0`
 
-This is authorship only. No record is accepted, approved or locked.
+The author records the external decision but does not accept the revised item.
 
-## Slot and dual-ID method
+## Strict one-item revision
 
-Each field follows the locked YOUTH Coverage Matrix context order. Within every context the explicit order is RULE → ASYMMETRY → BREAK. Runtime IDs derive only from `YOUTH + field + explicit reviewed slot`. Source array order, surface, hash and pressureNature never assign slots.
+| Runtime ID | Before | After | revised binding reason |
+|---|---|---|---|
+| `YOUTH_POWER_06` | `EVALUATION` | `BELONGING` | 小组约定轮流展示却跳过用户的部分，文本没有评分或评价事实；核心是用户在协作成果展示中的参与位置与可见性被排除。 |
 
-## Semantic method
+The item remains `BINDING_DRAFT / AI_ASSISTED` with reviewer/date/decision null. Source, slot and both IDs are unchanged.
 
-Each nature was authored from the pressure downstream Choice should carry. No MID_LIFE distribution quota or reason text was reused. Platform, employment and training surfaces were resolved by their actual evaluation/resource/control/obligation/belonging consequence rather than treated as a YOUTH identity template.
+## Accepted-record landing
 
-`SURVIVAL` appears zero times. Ordinary deductions, shared-living costs, transport costs, rest pressure and training conflicts do not prove immediate loss of minimum food, housing or personal safety.
+The other 89 records retain nature, reason, slot, Runtime ID, authoring stable ID and source hash byte-for-byte. Only record-level review lineage changes to `BINDING_ACCEPTED_PENDING_FULL_PACK / XINMAI_PRODUCT_CONTROL_TOWER / 2026-08-10 / ACCEPT`.
 
-## Mechanical author self-check (not acceptance)
+## Mechanical verification
 
-- locked source/manifest/binding: 90/90/90
-- six fields ×15; slots 01..15 once per field
-- Runtime IDs: 90 unique; stable ID ↔ Runtime ID bijection 90/90
-- pressureNature in eight-value domain: 90/90
-- non-empty, exact-unique binding reasons: 90/90
-- reviewer/date/decision/approval/lock null: 90/90
-- workflow `BINDING_DRAFT`: 90/90
+- records: 90
+- R1 accepted lineage: 89/89
+- revised draft reviewer fields null: 1/1
+- source stable ID/hash/surface/shell match: 90/90
+- fields: six ×15; slots 01..15 exactly once per field
+- Runtime IDs unique and dual-ID bijection: 90/90
+- distribution: EVALUATION 5 / RESOURCE 31 / ATTACHMENT 6 / CONTROL 18 / OBLIGATION 17 / BELONGING 10 / IDENTITY 3 / SURVIVAL 0
 - production eligible: 90/90 false
 
-## Cross-stage calibration
-
-- POWER evaluation/control/obligation decisions were compared with locked MID_LIFE counterparts; shared structures remain open risks where the carried consequence may differ.
-- Clear role exit followed by new duties is drafted OBLIGATION, following the accepted MID_LIFE R2 distinction rather than treating all direction scenes as IDENTITY.
-- Financial inconvenience remains RESOURCE; no YOUTH item copies the rejected MID_LIFE SURVIVAL escalation.
-- Digital scenes span EVALUATION, CONTROL, BELONGING and IDENTITY according to consequence; they do not share a platform default.
-- Exact duplicate binding reasons against MID_LIFE locked bindings: 0.
-
-## Portfolio risks
-
-Training appears in POWER_01 and EXISTENCE_04 only and does not determine either nature. Employment/zero-work/platform contexts remain real structures rather than YOUTH essence. These portfolio checks remain open to independent review.
+Only `YOUTH_POWER_06` awaits independent R2. RESTRUCTURING is not started.
