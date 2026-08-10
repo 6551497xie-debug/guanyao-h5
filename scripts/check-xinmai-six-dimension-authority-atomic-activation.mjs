@@ -121,9 +121,15 @@ assert(
 assert(
   reflectionGuide.includes("onContinue,") &&
     reflectionGuide.includes("onContinue?.();") &&
+    page.includes("key={sequentialCurrentSpaceId}") &&
+    page.includes('data-dynamics-current-dimension-label={currentDimensionLabel}') &&
+    !page.includes("initialInnerViewRelation={innerViewRelation}") &&
+    page.includes(
+      'function handleLifeCoreApproach() {\n    if (!innerViewRelationEstablished) {\n      approachLifeState();\n    }\n  }',
+    ) &&
     page.includes("finally {") &&
     page.includes("dimensionTransitionLockRef.current = false;"),
-  "explicit continuation is not wired to the item command or its lock can strand the user",
+  "per-dimension reflection can inherit prior state, bypass final continuation, or strand its lock",
 );
 assert(
   page.includes("confirmButtonRef.current?.blur();") &&

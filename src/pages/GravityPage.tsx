@@ -370,6 +370,7 @@ function NodeProgressionPanel({
   visible,
   toneColor,
   activeNode,
+  currentDimensionLabel,
   phase,
   onApproach,
   onConfirm,
@@ -385,6 +386,7 @@ function NodeProgressionPanel({
     dimensionInsight?: string;
     dimensionUnderstanding?: string;
   };
+  currentDimensionLabel: string;
   phase:
     | "OBSERVING"
     | "FIRST_APPROACH"
@@ -462,6 +464,20 @@ function NodeProgressionPanel({
         animation: "gy-copy-fade-in 520ms ease both",
       }}
     >
+      <span
+        role="status"
+        aria-live="polite"
+        data-dynamics-current-dimension-label={currentDimensionLabel}
+        style={{
+          display: "block",
+          marginBottom: 8,
+          color: `rgba(${toneColor},0.72)`,
+          fontSize: 11,
+          letterSpacing: "0.08em",
+        }}
+      >
+        当前观察 · {currentDimensionLabel}
+      </span>
       <XinmaiLifeReflectionGuide
         surface="REFLECTION"
         phase={phase}
@@ -1137,7 +1153,6 @@ function CosmicBotanicsField({
   visualState,
   experienceState,
   innerViewEntryEstablished,
-  initialInnerViewRelation,
   onInnerViewRelationEstablished,
 }: {
   configs: SixSpaceConfig[];
@@ -1151,10 +1166,6 @@ function CosmicBotanicsField({
   visualState: VisualState;
   experienceState: ExperienceState;
   innerViewEntryEstablished: boolean;
-  initialInnerViewRelation:
-    | "AWAITING"
-    | "CONFIRMED"
-    | "SELF_NAMED";
   onInnerViewRelationEstablished: (
     relation: "CONFIRMED" | "SELF_NAMED",
   ) => Promise<boolean>;
@@ -1167,17 +1178,9 @@ function CosmicBotanicsField({
     | "CONFIRMED"
     | "SELF_NAMED"
     | "PAUSED"
-  >(() =>
-    initialInnerViewRelation === "CONFIRMED"
-      ? "CONFIRMED"
-      : initialInnerViewRelation === "SELF_NAMED"
-        ? "SELF_NAMED"
-        : innerViewEntryEstablished
-          ? "FIRST_APPROACH"
-          : "OBSERVING",
-  );
+  >("OBSERVING");
   const [innerViewRelationEstablished, setInnerViewRelationEstablished] =
-    useState(() => initialInnerViewRelation !== "AWAITING");
+    useState(false);
   const relationMutationPendingRef = useRef(false);
   const innerViewPhaseBeforePauseRef = useRef<
     "FIRST_APPROACH" | "SECOND_APPROACH" | "THIRD_APPROACH"
@@ -1223,12 +1226,6 @@ function CosmicBotanicsField({
       return currentPhase;
     });
   }
-
-  useEffect(() => {
-    if (initialInnerViewRelation === "AWAITING") return;
-    setInnerViewRelationEstablished(true);
-    setInnerViewPhase(initialInnerViewRelation);
-  }, [initialInnerViewRelation]);
 
   async function confirmLifeState() {
     if (relationMutationPendingRef.current) return;
@@ -1277,9 +1274,7 @@ function CosmicBotanicsField({
   function handleLifeCoreApproach() {
     if (!innerViewRelationEstablished) {
       approachLifeState();
-      return;
     }
-    onNodeBloom();
   }
 
   return (
@@ -1306,6 +1301,8 @@ function CosmicBotanicsField({
           : "GRAVITY_DIRECT_OBSERVATION"
       }
       data-dynamics-inner-view-sequence="SEE_UNDERSTAND_TRANSFORM"
+      data-dynamics-active-dimension={activeConfig.id}
+      data-dynamics-dimension-presentation-token={`${activeConfig.id}:${activeDimensionStep}`}
       data-dynamics-inner-view-relation={
         innerViewRelationEstablished ? "ESTABLISHED" : "AWAITING_USER_APPROACH"
       }
@@ -1388,6 +1385,7 @@ function CosmicBotanicsField({
           visible={showNodePanel}
           toneColor={toneColor}
           activeNode={experienceState.nodeCopy}
+          currentDimensionLabel={SIX_SPACE_SHORT_LABELS[activeConfig.id]}
           phase={innerViewPhase}
           onApproach={approachLifeState}
           onConfirm={confirmLifeState}
@@ -3551,6 +3549,7 @@ function HexagramCodeDeliveryShell({
             />
           ) : (
             <CosmicBotanicsField
+              key={sequentialCurrentSpaceId}
               configs={sixSpaceConfigs}
               activeDimensionStep={sixSpaceProgress.currentSpaceStep}
               pressureSeedSurface={selectedPressureSeedSurface}
@@ -3564,7 +3563,6 @@ function HexagramCodeDeliveryShell({
               innerViewEntryEstablished={
                 routeInnerViewEntry && arrivalVisualContinuity !== null
               }
-              initialInnerViewRelation={innerViewRelation}
               onInnerViewRelationEstablished={
                 handleInnerViewRelationEstablished
               }

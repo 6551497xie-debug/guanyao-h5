@@ -33,16 +33,12 @@ const checks = [
       ),
   ],
   [
-    "the first Reality-led inner-view frame begins at existing meridian depth one",
+    "the Reality-led body anchor is preserved while each dimension begins its own reflection",
     gravityPage.includes(
       'useState<\n    | "OBSERVING"\n    | "FIRST_APPROACH"',
     ) &&
-      gravityPage.includes(
-        'initialInnerViewRelation === "CONFIRMED"\n      ? "CONFIRMED"',
-      ) &&
-      gravityPage.includes(
-        'innerViewEntryEstablished\n          ? "FIRST_APPROACH"\n          : "OBSERVING"',
-      ) &&
+      gravityPage.includes('>("OBSERVING");') &&
+      gravityPage.includes('key={sequentialCurrentSpaceId}') &&
       gravityPage.includes(
         'data-inner-view-meridian-source="EXISTING_BIRTH_MANSION_BODY_RELATION"',
       ),

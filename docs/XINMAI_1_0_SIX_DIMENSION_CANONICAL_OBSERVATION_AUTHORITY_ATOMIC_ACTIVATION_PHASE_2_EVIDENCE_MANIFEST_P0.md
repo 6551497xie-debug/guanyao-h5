@@ -94,3 +94,50 @@ Native `prefers-reduced-motion` was `false` during this run. Motion changes do n
 
 - Baseline rendering telemetry emits Canvas readback and WebGL texture warnings in headless Chrome. No application exception, unhandled rejection, authority failure or React accessibility-focus warning occurred after the Phase 2 focus corrections. These rendering warnings pre-exist the blade and are not modified because visual/WebGL work is explicitly out of scope.
 - Native reduced-motion `true` remains a Control Tower environment evidence item; no CSS, query, script emulation or system-setting mutation was used.
+
+## Per-dimension reflection-state corrective evidence
+
+Corrective parent: `37ef5b5d5d9e455c88390192c21e4c1077413410`.
+
+Hashed Production origins: `http://127.0.0.1:5496` and `http://127.0.0.1:5497`.
+
+The corrective keeps the canonical observation set, item command, completion receipt and Choice V3 contracts unchanged. It resets only the mounted presentation identity for the newly pending dimension. Each pending dimension now starts at `OBSERVING`, with its local relationship/confirmation state unset and the life-reflection continuity guide remounted for that dimension. Global Identity, Gravity recognition and the persisted canonical subset are preserved.
+
+### Continuous causality
+
+- A clean visible-control journey advanced `0 → 1 → 2 → 3 → 4 → 5 → 6` without refresh, back navigation, hidden targets or coordinate-only actions.
+- Every dimension visibly identified the current observation and exposed its own first approach, second approach, third approach, explicit acknowledgement and final continue controls.
+- The canonical count incremented only after that dimension's final explicit continue action.
+- Immediately after each commit, the next dimension opened at `OBSERVING`; it did not inherit `CONFIRMED`, `SELF_NAMED`, `PAUSED` or stable state from the prior dimension.
+- The life-core approach control no longer calls the canonical commit callback merely because the global relationship is already recognized.
+- Receipt remained `NONE` through count 5. Count 6 produced one completion receipt; its evidence digest ended in `7836928227217ffee19b30a0099e7dadf25411d009cc1a0a141aa3407b788cc5` on the refresh-matrix origin.
+
+### Refresh and alternate-path matrix
+
+| Checkpoint | Before reload | After reload | Pending presentation | Receipt |
+|---:|---:|---:|---|---|
+| 1 | body only | body only | emotion / `OBSERVING` / first approach | `NONE` |
+| 2 | body + emotion | same two | thought / `OBSERVING` / first approach | `NONE` |
+| 3 | first three | same three | action / `OBSERVING` / first approach | `NONE` |
+| 4 | first four | same four | memory / `OBSERVING` / first approach | `NONE` |
+| 5 | first five | same five | goal / `OBSERVING` / first approach | `NONE` |
+
+The representative later `goal` dimension also passed `PAUSED → resume → THIRD_APPROACH → SELF_NAMED → final continue`; no step committed evidence before final continue.
+
+### Downstream regression
+
+After the unique receipt, the same formal journey completed a visible long-press Choice, explicit Departure, explicit Return and `ATTEMPTED` lived response. Receipt alone still showed no Crystal. The legitimate return formed one Crystal/Body lineage, and Archive showed exactly one formal growth trace before and after refresh. No second Fact, Formation Receipt, Crystal or Body Imprint was presented.
+
+### Corrective viewport evidence
+
+| CSS viewport | `visualViewport` | DPR | `scrollWidth` | Result |
+|---|---|---:|---:|---|
+| 390×844 | 390×844.286, scale 1 | 1.4 | 390 | full-width Archive/Body trace; no horizontal overflow |
+| 320×568 | 320×567.857, scale 1 | 1.4 | 320 | full-width Archive/Body trace; no horizontal overflow |
+
+Screenshot bytes are physical-pixel outputs at DPR 1.4 and therefore are not expected to equal the CSS viewport dimensions one-for-one:
+
+- `/private/tmp/xinmai-six-dimension-corrective-archive-390x844.jpg`
+- `/private/tmp/xinmai-six-dimension-corrective-archive-320x568.jpg`
+
+Native `prefers-reduced-motion` remained `false`; no CSS, query parameter, script or event simulation was used to claim reduced-motion evidence. Visible controls retained button semantics and accessible names throughout the six dimension-specific sequences and downstream actions.
