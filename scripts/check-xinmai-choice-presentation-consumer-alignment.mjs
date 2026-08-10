@@ -71,9 +71,14 @@ requireSource(
   'input.actionRouteResolution.status !== "READY"',
 );
 requireSource(
-  "Route formation projection required before ready",
+  "Receipt-bound Route formation projection required before ready",
   resolver,
-  "createChoiceRouteFormationSourceSnapshot({",
+  "createChoiceRouteFormationSourceSnapshotV2({",
+);
+requireSource(
+  "Choice V3 receipt prerequisite shared with commit",
+  controller,
+  "validateChoiceActionIntentionV3Prerequisites(input)",
 );
 requireSource(
   "Host owns typed production Route resolution",

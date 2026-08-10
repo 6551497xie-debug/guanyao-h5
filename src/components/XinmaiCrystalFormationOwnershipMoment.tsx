@@ -153,7 +153,10 @@ export function XinmaiCrystalFormationOwnershipMoment({
         <button
           className="xinmai-crystal-ownership__continue"
           type="button"
-          onClick={onContinue}
+          onClick={(event) => {
+            event.currentTarget.blur();
+            onContinue();
+          }}
         >
           带着这道痕迹，继续同行
         </button>

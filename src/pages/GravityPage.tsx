@@ -60,7 +60,7 @@ import type {
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
 import {
-  commitChoiceActionIntention,
+  commitChoiceActionIntentionV3,
 } from "../services/xinmaiChoiceActionIntentionController";
 import { confirmXinmaiChoiceExplicitDeparture } from "../services/xinmaiChoiceReturningProvenanceController";
 import { readXinmaiChoiceReturningProvenanceRecovery } from "../services/xinmaiChoiceReturningProvenanceRecoveryAdapter";
@@ -82,6 +82,11 @@ import type {
   GravityObservationRecognitionProvenance,
   GravityObservationResumeDecision,
 } from "../types/xinmaiGravityObservationContinuity";
+import type {
+  SixDimensionId,
+  SixDimensionPresentationAuthorityState,
+  SixDimensionTypedAcknowledgement,
+} from "../types/xinmaiSixDimensionObservation";
 import type {
   XinmaiGravityChoiceSceneSemanticFacts,
   XinmaiRealityGravityChoiceSceneSemanticProjection,
@@ -121,6 +126,11 @@ export type GravityPageProps = Readonly<{
   growthTerminalSummary: ChoiceGrowthTerminalSummary;
   canonicalBodyImprintDecision: XinmaiCanonicalBodyImprintDecision;
   actionRouteResolution: ChoiceActionRouteResolution;
+  sixDimensionAuthority: SixDimensionPresentationAuthorityState;
+  onSixDimensionAcknowledgement: (
+    dimensionId: SixDimensionId,
+    acknowledgement: SixDimensionTypedAcknowledgement,
+  ) => Promise<boolean>;
   growthSummaryPending: boolean;
   onExplicitDepartureCommitted: () => void;
   onGrowthTerminalSummaryRefreshRequested: () => Promise<void>;
@@ -415,7 +425,7 @@ function NodeProgressionPanel({
       data-dynamics-node-language="LIFE_UNIVERSE_WHISPER"
       data-dynamics-node-composition="SINGLE_LIVING_SENTENCE"
       data-dynamics-six-dimension-role="LIFE_STATE_REVEAL_NOT_ANALYSIS"
-      data-dynamics-evidence-level="SIX_DIMENSION_OBSERVATION"
+      data-dynamics-evidence-level="PRESENTED_PENDING_EXPLICIT_ACKNOWLEDGEMENT"
       data-dynamics-dust-explanation="PROTECTIVE_RESPONSE_CANDIDATE_ONLY"
       data-dynamics-dust-layer="UNRESOLVED"
       data-dynamics-user-confirmation="REQUIRED_BEFORE_DUST_MEANING"
@@ -1446,6 +1456,7 @@ function SingleModelRevisionActionFocus({
   const breathHoldTimerRef = useRef<number | null>(null);
   const breathHoldResetTimerRef = useRef<number | null>(null);
   const breathHoldCompletedRef = useRef(false);
+  const confirmButtonRef = useRef<HTMLButtonElement | null>(null);
   const responseGapReady = responseGapPhase === "RESPONSE_GAP_OPEN";
   const coreAnchorTop = visualSource
     ? `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`
@@ -1488,6 +1499,7 @@ function SingleModelRevisionActionFocus({
     breathHoldTimerRef.current = window.setTimeout(() => {
       breathHoldCompletedRef.current = true;
       breathHoldTimerRef.current = null;
+      confirmButtonRef.current?.blur();
       onConfirm();
     }, 1_800);
   }
@@ -1596,6 +1608,7 @@ function SingleModelRevisionActionFocus({
       />
 
       <button
+        ref={confirmButtonRef}
         type="button"
         aria-label="按住生命核心，陪它完成一次呼吸"
         className="gy-choice-response-gap__confirm"
@@ -2124,7 +2137,10 @@ function TransformationMomentFocus({
             data-choice-real-life-departure="USER_EXPLICIT_DEPARTURE"
             data-choice-change-claim="NONE"
             data-choice-crystal-claim="NONE"
-            onClick={onExplicitDeparture}
+            onClick={(event) => {
+              event.currentTarget.blur();
+              onExplicitDeparture();
+            }}
             disabled={!responseSpaceSettled}
             style={{
               appearance: "none",
@@ -2538,10 +2554,12 @@ function HexagramCodeDeliveryShell({
   growthTerminalSummary,
   canonicalBodyImprintDecision,
   actionRouteResolution,
+  sixDimensionAuthority,
   growthSummaryPending,
   onExplicitDepartureCommitted,
   onGrowthTerminalSummaryRefreshRequested,
   onObservationRecognitionRequested,
+  onSixDimensionAcknowledgement,
   onLifeSurfaceOutcome,
   onObservationSurfaceOutcome,
 }: GravityPageProps) {
@@ -2584,7 +2602,15 @@ function HexagramCodeDeliveryShell({
     GuanyaoRuntimeEngine.createSnapshot(dynamicsInputContext.selectedPressureSeedContext),
   );
   const [activeDimensionIndex, setActiveDimensionIndex] = useState(0);
-  const [completedDimensionIds, setCompletedDimensionIds] = useState<readonly SixSpaceId[]>([]);
+  const completedDimensionIds = useMemo<readonly SixSpaceId[]>(
+    () =>
+      Object.freeze(
+        sixDimensionAuthority.observationSet?.items
+          .filter((item) => item.state === "OBSERVED")
+          .map((item) => item.dimensionId) ?? [],
+      ),
+    [sixDimensionAuthority.observationSet],
+  );
   const [
     committedChoiceActionIntention,
     setCommittedChoiceActionIntention,
@@ -2739,10 +2765,16 @@ function HexagramCodeDeliveryShell({
       }),
       actionRouteResolution,
       growthTerminalSummary,
-      operationalState: Object.freeze({
+    operationalState: Object.freeze({
         summaryPending: growthSummaryPending,
         choiceMutationPending,
         recoveryFailure: null,
+      }),
+      newChoiceV3Authority: Object.freeze({
+        observationSet: sixDimensionAuthority.observationSet,
+        completionReceipt:
+          sixDimensionAuthority.completionReceipt,
+        cause: sixDimensionAuthority.cause,
       }),
     });
   const choicePresentationReady =
@@ -2796,35 +2828,42 @@ function HexagramCodeDeliveryShell({
         recoveredObservationPresentationRef.current =
           observationContinuityDecision
             .gravityObservationReferenceId;
-        const finalDimension =
-          DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS[
-            DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS.length - 1
-          ];
-        setActiveDimensionIndex(
-          DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS.length - 1,
-        );
-        setCompletedDimensionIds(
-          Object.freeze([
-            ...DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS,
-          ]),
-        );
-        setExecutionSnapshot(
-          completeCurrentSpaceWithExistingEngine(
-            createNodeRunningExecutionSnapshot(
-              dynamicsInputContext.selectedPressureSeedContext,
-            ),
-            {
-              dimension: finalDimension,
-              context: "focus",
-              triggerStrength: 1,
-            },
-          ),
-        );
       }
     }
   }, [
     dynamicsInputContext.selectedPressureSeedContext,
     observationContinuityDecision,
+  ]);
+
+  useEffect(() => {
+    const set = sixDimensionAuthority.observationSet;
+    if (set === null) return;
+    const firstPendingIndex = set.items.findIndex(
+      (item) => item.state !== "OBSERVED",
+    );
+    const nextIndex =
+      firstPendingIndex < 0
+        ? DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS.length - 1
+        : firstPendingIndex;
+    setActiveDimensionIndex(nextIndex);
+    const base = createNodeRunningExecutionSnapshot(
+      dynamicsInputContext.selectedPressureSeedContext,
+    );
+    setExecutionSnapshot(
+      firstPendingIndex < 0
+        ? completeCurrentSpaceWithExistingEngine(base, {
+            dimension:
+              DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS[
+                DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS.length - 1
+              ],
+            context: "focus",
+            triggerStrength: 1,
+          })
+        : base,
+    );
+  }, [
+    dynamicsInputContext.selectedPressureSeedContext,
+    sixDimensionAuthority.observationSet,
   ]);
 
   useEffect(() => {
@@ -2978,7 +3017,7 @@ function HexagramCodeDeliveryShell({
     setChoiceMutationPending(true);
     let awaitingCanonicalSummary = false;
     try {
-      const result = await commitChoiceActionIntention(
+      const result = await commitChoiceActionIntentionV3(
         choicePresentationDecision.structuralInput,
       );
       if (
@@ -3072,36 +3111,47 @@ function HexagramCodeDeliveryShell({
     }
   }
 
-  function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
+  async function handleSpatialInteraction(eventType: SpatialIntent["type"], context: SpatialIntent["payload"] = {}) {
     if (eventType !== "CORE_STAR_BLOOM") {
       setExecutionSnapshot((current) => GuanyaoRuntimeEngine.run(current, { type: eventType, payload: context }));
       return;
     }
 
-    if (executionSnapshot.runtime.enginePhase === "COMPLETE") return;
     if (dimensionTransitionLockRef.current) return;
     dimensionTransitionLockRef.current = true;
 
-    const completedSpaceSnapshot = completeCurrentSpaceWithExistingEngine(
-      executionSnapshot,
-      context,
-    );
+    try {
+      const acknowledged = await onSixDimensionAcknowledgement(
+        sequentialCurrentSpaceId,
+        "IMPACT_RECOGNIZED_PRESENT",
+      );
+      if (!acknowledged) {
+        setChoiceAuthorityFeedback(
+          "这一维的观察还没有被保存，请按当前状态重新尝试。",
+        );
+        return;
+      }
+      setChoiceAuthorityFeedback(null);
 
-    setCompletedDimensionIds((previous) =>
-      previous.includes(sequentialCurrentSpaceId) ? previous : [...previous, sequentialCurrentSpaceId],
-    );
+      const completedSpaceSnapshot = completeCurrentSpaceWithExistingEngine(
+        executionSnapshot,
+        context,
+      );
 
-    if (activeDimensionIndex < DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS.length - 1) {
-      setActiveDimensionIndex((previous) => Math.min(DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS.length - 1, previous + 1));
-      setExecutionSnapshot(createNodeRunningExecutionSnapshot(dynamicsInputContext.selectedPressureSeedContext));
-      return;
+      if (activeDimensionIndex < DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS.length - 1) {
+        setActiveDimensionIndex((previous) => Math.min(DYNAMICS_SEQUENTIAL_SIX_SPACE_IDS.length - 1, previous + 1));
+        setExecutionSnapshot(createNodeRunningExecutionSnapshot(dynamicsInputContext.selectedPressureSeedContext));
+        return;
+      }
+
+      setExecutionSnapshot(completedSpaceSnapshot);
+    } finally {
+      dimensionTransitionLockRef.current = false;
     }
-
-    setExecutionSnapshot(completedSpaceSnapshot);
   }
 
   function bloomCosmicNode() {
-    handleSpatialInteraction("CORE_STAR_BLOOM", {
+    void handleSpatialInteraction("CORE_STAR_BLOOM", {
       nodeIndex: executionSnapshot.node.current,
       dimension: sequentialCurrentSpaceId,
       context: "focus",
@@ -3179,6 +3229,33 @@ function HexagramCodeDeliveryShell({
           observationContinuityDecision.checkpointRevision
         }
         data-gravity-observation-authority="TYPED_RESUME_DECISION_READ_ONLY_MIRROR"
+        data-six-dimension-authority={sixDimensionAuthority.status}
+        data-six-dimension-observed-count={completedDimensionIds.length}
+        data-six-dimension-observation-set-reference={
+          sixDimensionAuthority.observationSet?.observationSetId ?? "NONE"
+        }
+        data-six-dimension-completion-receipt-reference={
+          sixDimensionAuthority.completionReceipt
+            ?.completionReceiptReferenceId ?? "NONE"
+        }
+        data-six-dimension-evidence-digest={
+          sixDimensionAuthority.completionReceipt?.evidenceDigest ?? "NONE"
+        }
+        data-choice-action-intention-reference={
+          committedChoiceActionIntention
+            ?.choiceActionIntentionReferenceId ?? "NONE"
+        }
+        data-choice-action-intention-schema={
+          committedChoiceActionIntention?.schemaVersion ?? "NONE"
+        }
+        data-choice-six-dimension-receipt-reference={
+          committedChoiceActionIntention?.schemaVersion ===
+          "XINMAI_CHOICE_ACTION_INTENTION_V3"
+            ? committedChoiceActionIntention.formationSourceSnapshot
+                .sixDimensionObservation
+                .completionReceiptReferenceId
+            : "NONE"
+        }
         data-inner-view-entry-continuity={
           innerViewBodyContinuityActive
             ? "SAME_BODY_FROM_CURRENT_LIFE_WEATHER"
@@ -3565,6 +3642,25 @@ function HexagramCodeDeliveryShell({
             {choiceAuthorityFeedback}
           </p>
         ) : null}
+        <p
+          role="status"
+          aria-live="polite"
+          data-six-dimension-accessibility-status={
+            sixDimensionAuthority.status
+          }
+          style={{
+            position: "absolute",
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+            clip: "rect(0 0 0 0)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {sixDimensionAuthority.status === "COMPLETED"
+            ? "六个生命观察已分别确认，现实选择入口已经可以继续核对。"
+            : `已确认 ${completedDimensionIds.length} 个生命观察；当前是${SIX_SPACE_SHORT_LABELS[sequentialCurrentSpaceId]}。`}
+        </p>
       </main>
     );
   }

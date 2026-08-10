@@ -32,6 +32,20 @@ import type {
   ChoiceGrowthTerminalSummary,
 } from "../types/xinmaiChoicePresentationReadiness";
 import type { XinmaiCanonicalBodyImprintDecision } from "../types/xinmaiCanonicalBodyImprint";
+import {
+  XINMAI_SIX_DIMENSION_PROTOCOL_REVISION,
+  type SixDimensionId,
+  type SixDimensionPresentationAuthorityState,
+  type SixDimensionTypedAcknowledgement,
+} from "../types/xinmaiSixDimensionObservation";
+import {
+  createSixDimensionCanonicalLineageKey,
+  createSixDimensionCommandReferenceId,
+  createSixDimensionIdentityKey,
+  createSixDimensionObservationSetId,
+} from "../services/xinmaiSixDimensionObservationEvidenceValidator";
+import { executeXinmaiSixDimensionObservationCommand } from "../services/xinmaiSixDimensionObservationAuthorityController";
+import { readXinmaiGravityObservationContinuityState } from "../services/xinmaiLivedGrowthTransactionalStore";
 
 const GRAVITY_SURFACE_WATCHDOG_MS = 8_000;
 
@@ -88,6 +102,15 @@ export function GravityProductionSurfaceHost({
     useState<GravityLifeSurfaceOutcome | null>(null);
   const [observationSurfaceOutcome, setObservationSurfaceOutcome] =
     useState<GravityObservationSurfaceOutcome | null>(null);
+  const [sixDimensionAuthority, setSixDimensionAuthority] =
+    useState<SixDimensionPresentationAuthorityState>(() =>
+      Object.freeze({
+        status: "LOADING" as const,
+        observationSet: null,
+        completionReceipt: null,
+        cause: null,
+      }),
+    );
   const deliveredAttemptRef = useRef<string | null>(null);
   const surfaceAttempt = useMemo<GravitySurfaceAdmissionAttempt>(
     () =>
@@ -118,6 +141,174 @@ export function GravityProductionSurfaceHost({
         observationDecision: continuityDecision,
       }),
     [runtimeInput, continuityDecision],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    if (
+      continuityDecision.status !== "OBSERVATION_RECOGNIZED"
+    ) {
+      return () => {
+        cancelled = true;
+      };
+    }
+    const identity = admission.identityReferences;
+    const identityKey = createSixDimensionIdentityKey(
+      identity.sourceReferenceId,
+      identity.starBeastIdentityReferenceId,
+      identity.mansionCoordinateReferenceId,
+    );
+    const catalogRevision =
+      runtimeInput.pressureProvenance.captureProvenance.catalogRevision;
+    const runtimeSeedId =
+      admission.currentPressure.selectedPressureSeedId;
+    const candidateReferenceId =
+      admission.currentPressure.captureProvenance.candidateReferenceId;
+    const lineageKey = createSixDimensionCanonicalLineageKey(
+      identityKey,
+      admission.sourceReality.encounterCycleId,
+      admission.gravityCycleId,
+      runtimeSeedId,
+      catalogRevision,
+    );
+    const observationSetId =
+      createSixDimensionObservationSetId(lineageKey);
+    void readXinmaiGravityObservationContinuityState(
+      `CURRENT:${identity.sourceReferenceId}`,
+    ).then(async (gravityRead) => {
+      if (cancelled) return;
+      const gravityRecord =
+        gravityRead.status === "FOUND" ? gravityRead.record : null;
+      if (
+        gravityRecord === null ||
+        gravityRecord.gravityObservationReferenceId !==
+          admission.gravityObservationReferenceId
+      ) {
+        setSixDimensionAuthority(
+          Object.freeze({
+            status: "SAFE_WITHHELD" as const,
+            observationSet: null,
+            completionReceipt: null,
+            cause: Object.freeze({
+              owner: "GRAVITY" as const,
+              code: "GRAVITY_NOT_RECOGNIZED" as const,
+              retryability: "RETRY_AFTER_REREAD" as const,
+              innerCause: null,
+            }),
+          }),
+        );
+        return;
+      }
+      const result =
+        await executeXinmaiSixDimensionObservationCommand(
+          Object.freeze({
+            type: "CREATE_OBSERVATION_SET" as const,
+            commandReferenceId:
+              createSixDimensionCommandReferenceId(
+                observationSetId,
+                "body",
+                0,
+                0,
+                "CREATE_OBSERVATION_SET",
+              ),
+            expectedGravityObservationRevision:
+              gravityRecord.gravityObservationLineageRevision,
+            identityReferences: identity,
+            encounterCycleId:
+              admission.sourceReality.encounterCycleId,
+            gravityCycleId: admission.gravityCycleId,
+            gravityObservationReferenceId:
+              admission.gravityObservationReferenceId,
+            runtimeSeedId,
+            candidateReferenceId,
+            catalogRevision,
+            dimensionProtocolRevision:
+              XINMAI_SIX_DIMENSION_PROTOCOL_REVISION,
+          }),
+        );
+      if (cancelled) return;
+      setSixDimensionAuthority(
+        result.status === "COMMITTED" ||
+          result.status === "ALREADY_COMMITTED"
+          ? Object.freeze({
+              status:
+                result.observationSet.lifecycle === "OPEN"
+                  ? "OPEN" as const
+                  : "COMPLETED" as const,
+              observationSet: result.observationSet,
+              completionReceipt: result.completionReceipt,
+              cause: null,
+            })
+          : Object.freeze({
+              status: "SAFE_WITHHELD" as const,
+              observationSet: result.observationSet,
+              completionReceipt: result.completionReceipt,
+              cause: result.cause,
+            }),
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [admission, continuityDecision.status, runtimeInput]);
+
+  const acknowledgeSixDimension = useCallback(
+    async (
+      dimensionId: SixDimensionId,
+      acknowledgement: SixDimensionTypedAcknowledgement,
+    ): Promise<boolean> => {
+      const current = sixDimensionAuthority.observationSet;
+      if (current === null || current.lifecycle !== "OPEN") return false;
+      const item = current.items.find(
+        (candidate) => candidate.dimensionId === dimensionId,
+      );
+      if (item === undefined) return false;
+      const commandReferenceId =
+        createSixDimensionCommandReferenceId(
+          current.observationSetId,
+          dimensionId,
+          current.revision,
+          item.itemRevision,
+          `ACKNOWLEDGE_DIMENSION:${acknowledgement}`,
+        );
+      const result =
+        await executeXinmaiSixDimensionObservationCommand(
+          Object.freeze({
+            type: "ACKNOWLEDGE_DIMENSION" as const,
+            commandReferenceId,
+            observationSetId: current.observationSetId,
+            dimensionId,
+            acknowledgement,
+            expectedSetRevision: current.revision,
+            expectedItemRevision: item.itemRevision,
+            sourceReferenceId: item.sourceReferenceId,
+          }),
+        );
+      setSixDimensionAuthority(
+        result.status === "COMMITTED" ||
+          result.status === "ALREADY_COMMITTED"
+          ? Object.freeze({
+              status:
+                result.observationSet.lifecycle === "OPEN"
+                  ? "OPEN" as const
+                  : "COMPLETED" as const,
+              observationSet: result.observationSet,
+              completionReceipt: result.completionReceipt,
+              cause: null,
+            })
+          : Object.freeze({
+              status: "SAFE_WITHHELD" as const,
+              observationSet: result.observationSet,
+              completionReceipt: result.completionReceipt,
+              cause: result.cause,
+            }),
+      );
+      return (
+        result.status === "COMMITTED" ||
+        result.status === "ALREADY_COMMITTED"
+      );
+    },
+    [sixDimensionAuthority.observationSet],
   );
 
   useEffect(() => {
@@ -238,6 +429,8 @@ export function GravityProductionSurfaceHost({
       growthTerminalSummary={growthTerminalSummary}
       canonicalBodyImprintDecision={canonicalBodyImprintDecision}
       actionRouteResolution={actionRouteResolution}
+      sixDimensionAuthority={sixDimensionAuthority}
+      onSixDimensionAcknowledgement={acknowledgeSixDimension}
       growthSummaryPending={growthSummaryPending}
       onExplicitDepartureCommitted={onExplicitDepartureCommitted}
       onGrowthTerminalSummaryRefreshRequested={

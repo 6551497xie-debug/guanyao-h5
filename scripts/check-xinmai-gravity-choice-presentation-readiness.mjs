@@ -107,6 +107,23 @@ const observationDecision = Object.freeze({
   recognition: "USER_CONFIRMED",
   choiceActionIntention: null,
 });
+const completionReceipt = Object.freeze({
+  completionReceiptReferenceId: "six-dimension-completion:test",
+  observationSetId: "six-dimension-observation-set:test",
+  observationSetRevision: 7,
+  dimensionProtocolRevision:
+    "XINMAI_SIX_DIMENSION_PROTOCOL_2026_08_10_V2",
+  contentDigest: "content-digest:test",
+  evidenceDigest: "evidence-digest:test",
+  itemOutcomeReferences: Object.freeze([
+    "outcome:body",
+    "outcome:emotion",
+    "outcome:thought",
+    "outcome:action",
+    "outcome:memory",
+    "outcome:goal",
+  ]),
+});
 const baseInput = Object.freeze({
   surfaceAttempt,
   observationDecision,
@@ -122,6 +139,16 @@ const baseInput = Object.freeze({
     summaryPending: false,
     choiceMutationPending: false,
     recoveryFailure: null,
+  }),
+  newChoiceV3Authority: Object.freeze({
+    observationSet: Object.freeze({
+      lifecycle: "COMPLETED",
+      completionReceiptReferenceId:
+        completionReceipt.completionReceiptReferenceId,
+      evidenceDigest: completionReceipt.evidenceDigest,
+    }),
+    completionReceipt,
+    cause: null,
   }),
 });
 

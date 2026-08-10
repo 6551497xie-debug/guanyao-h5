@@ -25,9 +25,10 @@ const assert = (name, condition) => {
   if (!condition) throw new Error(`FAIL | ${name}`);
   console.log(`PASS | ${name}`);
 };
+const watchdogStart = host.indexOf("const watchdog = window.setTimeout");
 const watchdogBlock = host.slice(
-  host.indexOf("const watchdog = window.setTimeout"),
-  host.indexOf("return ("),
+  watchdogStart,
+  host.indexOf("return (", watchdogStart),
 );
 assert("same-life Host emits Motion outcome", canvas.includes("WEBGL_SAME_LIFE_SURFACE"));
 assert("same-life Host emits Static outcome", canvas.includes("SEMANTIC_STATIC_SAME_LIFE_SURFACE"));

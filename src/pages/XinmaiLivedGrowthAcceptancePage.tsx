@@ -387,6 +387,7 @@ export function XinmaiLivedGrowthAcceptancePage() {
       selectedActionRouteReferenceId:
         actionRouteCandidate.actionRouteReferenceId,
       formationSourceSnapshot,
+      sixDimensionCompletionReceipt: null,
     });
     if (
       committed.status !== "COMMITTED" &&

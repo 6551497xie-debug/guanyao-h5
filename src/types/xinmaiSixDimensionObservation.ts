@@ -144,7 +144,8 @@ export type SixDimensionCommandFenceRecord = Readonly<{
     | "CREATE_OBSERVATION_SET"
     | "ACKNOWLEDGE_DIMENSION"
     | "SKIP_DIMENSION"
-    | "DECLINE_DIMENSION";
+    | "DECLINE_DIMENSION"
+    | "MARK_DIMENSION_UNAVAILABLE";
   inputDigest: string;
   outcomeReferenceId: string | null;
   resultingObservationSetRevision: number;
@@ -178,7 +179,10 @@ export type SixDimensionObservationCommand =
       sourceReferenceId: string;
     }>
   | Readonly<{
-      type: "SKIP_DIMENSION" | "DECLINE_DIMENSION";
+      type:
+        | "SKIP_DIMENSION"
+        | "DECLINE_DIMENSION"
+        | "MARK_DIMENSION_UNAVAILABLE";
       commandReferenceId: string;
       observationSetId: string;
       dimensionId: SixDimensionId;
@@ -290,3 +294,20 @@ export type SixDimensionObservationRecoveryResult =
       completionReceipt: null;
       cause: SixDimensionFailureCause;
     }>;
+
+export type SixDimensionObservationMutationTransactionInput = Readonly<{
+  gravityRecordId: string;
+  expectedGravityObservationReferenceId: string;
+  expectedGravityObservationLineageRevision: number;
+  expectedObservationSetRevision: number;
+  observationSet: CanonicalSixDimensionObservationSet;
+  completionReceipt: SixDimensionCompletionReceipt | null;
+  commandFence: SixDimensionCommandFenceRecord;
+}>;
+
+export type SixDimensionPresentationAuthorityState = Readonly<{
+  status: "LOADING" | "OPEN" | "COMPLETED" | "SAFE_WITHHELD";
+  observationSet: CanonicalSixDimensionObservationSet | null;
+  completionReceipt: SixDimensionCompletionReceipt | null;
+  cause: SixDimensionFailureCause | null;
+}>;

@@ -1,9 +1,24 @@
 import { build } from "esbuild";
 import { mkdtempSync, readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
-const root = resolve(import.meta.dirname, "..");
+const acceptedPhase1 =
+  "a8ae5f5dc273881e8969c10415b26dd4f8ba225d";
+const foundationTemp = mkdtempSync(
+  resolve(tmpdir(), "xinmai-six-dimension-accepted-foundation-"),
+);
+const archivePath = resolve(foundationTemp, "phase-1.tar");
+const acceptedRoot = resolve(foundationTemp, "accepted");
+execFileSync("mkdir", ["-p", acceptedRoot]);
+execFileSync("git", [
+  "archive",
+  `--output=${archivePath}`,
+  acceptedPhase1,
+]);
+execFileSync("tar", ["-xf", archivePath, "-C", acceptedRoot]);
+const root = acceptedRoot;
 const read = (path) => readFileSync(resolve(root, path), "utf8");
 const assert = (condition, message) => {
   if (!condition) {
@@ -315,8 +330,8 @@ const createLegacyV2State = () => {
   return createState(2, stores);
 };
 
-const temp = mkdtempSync(resolve(tmpdir(), "xinmai-six-dimension-foundation-"));
-const runtimePath = resolve(temp, "foundation.mjs");
+const runtimeTemp = mkdtempSync(resolve(tmpdir(), "xinmai-six-dimension-foundation-"));
+const runtimePath = resolve(runtimeTemp, "foundation.mjs");
 await build({
   stdin: {
     contents: `

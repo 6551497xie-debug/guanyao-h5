@@ -20,6 +20,11 @@ import type {
 } from "./xinmaiGravityObservationContinuity";
 import type { GravitySurfaceAdmissionAttempt } from "./xinmaiGravitySurfaceAdmission";
 import type { RealityEncounterIdentityReferences } from "./xinmaiRealityEncounterIntent";
+import type {
+  CanonicalSixDimensionObservationSet,
+  SixDimensionCompletionReceipt,
+  SixDimensionFailureCause,
+} from "./xinmaiSixDimensionObservation";
 
 export type ChoicePresentationLineage = Readonly<{
   identityReferences: RealityEncounterIdentityReferences;
@@ -116,11 +121,17 @@ export type ChoicePresentationReadinessInput = Readonly<{
   actionRouteResolution: ChoiceActionRouteResolution;
   growthTerminalSummary: ChoiceGrowthTerminalSummary;
   operationalState: ChoicePresentationOperationalState;
+  newChoiceV3Authority: Readonly<{
+    observationSet: CanonicalSixDimensionObservationSet | null;
+    completionReceipt: SixDimensionCompletionReceipt | null;
+    cause: SixDimensionFailureCause | null;
+  }>;
 }>;
 
 export type ChoicePresentationWithheldReason =
   | "SURFACE_ATTEMPT_REQUIRED"
   | "OBSERVATION_NOT_RECOGNIZED"
+  | "SIX_DIMENSION_COMPLETION_REQUIRED"
   | "ACTION_ROUTE_REQUIRED"
   | "FORMATION_SOURCE_REQUIRED"
   | "FORMATION_SOURCE_INCOMPLETE"
@@ -138,6 +149,7 @@ export type ChoicePresentationSafeWithheldReason =
   | "SUMMARY_CONFLICT"
   | "ACTION_ROUTE_SAFE_WITHHELD"
   | "ACTION_ROUTE_RUNTIME_PAUSED"
+  | "SIX_DIMENSION_AUTHORITY_UNAVAILABLE"
   | "RUNTIME_RECOVERY_FAILURE";
 
 type ChoicePresentationDecisionBase = Readonly<{

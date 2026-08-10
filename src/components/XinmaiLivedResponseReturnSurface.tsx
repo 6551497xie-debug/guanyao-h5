@@ -345,6 +345,9 @@ export function XinmaiLivedResponseReturnSurface({
       (selected.state !== "RESUME_COMMITTED" &&
         selected.state !== "DEPARTURE_RECONCILIATION_PENDING")
     ) return;
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     setBusy(true);
     setFeedback(null);
     const result = await confirmXinmaiChoiceExplicitDeparture({
@@ -371,6 +374,9 @@ export function XinmaiLivedResponseReturnSurface({
 
   const returnExplicitly = async () => {
     if (busy || selected.state !== "DORMANT_DEPARTURE") return;
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     setBusy(true);
     setFeedback(null);
     const result = await confirmXinmaiChoiceExplicitReturn({
@@ -402,6 +408,9 @@ export function XinmaiLivedResponseReturnSurface({
       (selected.state !== "READY_FOR_LIVED_RESPONSE" &&
         selected.state !== "NO_FACT_TARGET_TERMINATION_PENDING")
     ) return;
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     setBusy(true);
     const result = await resolveXinmaiChoiceReturnWithoutFact({
       admission: selected,
@@ -424,6 +433,9 @@ export function XinmaiLivedResponseReturnSurface({
 
   const confirmFact = async () => {
     if (busy || selected.state !== "READY_FOR_LIVED_RESPONSE") return;
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     setBusy(true);
     setFeedback(null);
     const candidate: LivedResponseCandidate = Object.freeze({

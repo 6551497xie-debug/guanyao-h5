@@ -13,6 +13,7 @@ export type ChoiceActionIntentionPrerequisiteInvalidReason =
   | "LINEAGE_REFERENCES_INVALID"
   | "OBSERVATION_PROOF_INVALID"
   | "ACTION_ROUTE_INVALID"
+  | "SIX_DIMENSION_COMPLETION_RECEIPT_REQUIRED"
   | "FORMATION_SOURCE_INCOMPLETE"
   | "ROUTE_PROJECTION_MISMATCH";
 
@@ -136,9 +137,44 @@ export function validateChoiceActionIntentionPrerequisites(
   });
 }
 
+export function validateChoiceActionIntentionV3Prerequisites(
+  input: CommitChoiceActionIntentionInput,
+): ChoiceActionIntentionPrerequisiteValidation {
+  const base = validateChoiceActionIntentionPrerequisites(input);
+  if (base.status !== "VALID") return base;
+  const receipt = input.sixDimensionCompletionReceipt;
+  const snapshot = input.formationSourceSnapshot;
+  if (
+    receipt === null ||
+    !("schemaVersion" in snapshot) ||
+    snapshot.schemaVersion !==
+      "XINMAI_CHOICE_FORMATION_SOURCE_SNAPSHOT_V2" ||
+    snapshot.sixDimensionObservation.completionReceiptReferenceId !==
+      receipt.completionReceiptReferenceId ||
+    snapshot.sixDimensionObservation.observationSetId !==
+      receipt.observationSetId ||
+    snapshot.sixDimensionObservation.observationSetRevision !==
+      receipt.observationSetRevision ||
+    snapshot.sixDimensionObservation.dimensionProtocolRevision !==
+      receipt.dimensionProtocolRevision ||
+    snapshot.sixDimensionObservation.contentDigest !==
+      receipt.contentDigest ||
+    snapshot.sixDimensionObservation.evidenceDigest !==
+      receipt.evidenceDigest
+  ) {
+    return Object.freeze({
+      status: "INVALID" as const,
+      input: null,
+      reason: "SIX_DIMENSION_COMPLETION_RECEIPT_REQUIRED" as const,
+    });
+  }
+  return base;
+}
+
 export const XinmaiChoiceActionIntentionPrerequisiteValidator =
   Object.freeze({
     validate: validateChoiceActionIntentionPrerequisites,
+    validateV3: validateChoiceActionIntentionV3Prerequisites,
     pure: true as const,
     noStorageRead: true as const,
     noStorageWrite: true as const,

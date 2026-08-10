@@ -35,10 +35,11 @@ const checks = [
     guide.includes(
       'data-xinmai-relation-action="SETTLE_INTO_LIFE_NO_ROUTE"',
     ) &&
-      guide.includes("onClick={() => setLifeContinuityStable(true)}") &&
+      guide.includes("setLifeContinuityStable(true);") &&
+      guide.includes("onContinue?.();") &&
       guide.includes('data-xinmai-route-transition="NONE"') &&
       guide.includes('data-xinmai-module-transition="NONE"') &&
-      !guide.includes("onClick={onContinue}"),
+      !guide.includes("NAVIGATE_TO_CHOICE"),
   ],
   [
     "Choice timing remains intentionally unresolved",

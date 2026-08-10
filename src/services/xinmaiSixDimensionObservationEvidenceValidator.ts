@@ -33,6 +33,7 @@ const COMMAND_TYPES = new Set([
   "ACKNOWLEDGE_DIMENSION",
   "SKIP_DIMENSION",
   "DECLINE_DIMENSION",
+  "MARK_DIMENSION_UNAVAILABLE",
 ]);
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>

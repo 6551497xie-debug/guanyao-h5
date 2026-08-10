@@ -1,6 +1,8 @@
 import {
   XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION,
+  XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION,
   type ChoiceActionIntention,
+  type ChoiceFormationSourceSnapshotV2,
   type CommitChoiceActionIntentionInput,
 } from "../types/xinmaiChoiceActionIntention";
 import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityEncounterIntent";
@@ -22,6 +24,7 @@ import {
 } from "./xinmaiLivedGrowthReference";
 import {
   validateChoiceActionIntentionPrerequisites,
+  validateChoiceActionIntentionV3Prerequisites,
 } from "./xinmaiChoiceActionIntentionPrerequisiteValidator";
 import {
   resolveChoiceActionRoutes,
@@ -288,6 +291,239 @@ export async function commitChoiceActionIntention(
         result.status === "COMMITTED"
           ? "COMMITTED" as const
           : "ALREADY_COMMITTED" as const,
+      intention: result.value,
+    });
+  }
+  return Object.freeze({
+    status: result.status,
+    intention: null,
+    reason:
+      "reason" in result
+        ? result.reason
+        : "PERSISTENCE_UNAVAILABLE",
+  });
+}
+
+export async function commitChoiceActionIntentionV3(
+  input: CommitChoiceActionIntentionInput,
+): Promise<CommitChoiceActionIntentionResult> {
+  if (!canCreateXinmaiChoiceFromActionRoute()) {
+    return Object.freeze({
+      status: "SAFE_WITHHELD" as const,
+      intention: null,
+      reason: "ACTION_ROUTE_RUNTIME_PAUSED" as const,
+    });
+  }
+  const prerequisiteValidation =
+    validateChoiceActionIntentionV3Prerequisites(input);
+  if (
+    prerequisiteValidation.status !== "VALID" ||
+    input.sixDimensionCompletionReceipt === null ||
+    !("schemaVersion" in input.formationSourceSnapshot) ||
+    input.formationSourceSnapshot.schemaVersion !==
+      "XINMAI_CHOICE_FORMATION_SOURCE_SNAPSHOT_V2"
+  ) {
+    return Object.freeze({
+      status: "REJECTED" as const,
+      intention: null,
+      reason: "SIX_DIMENSION_COMPLETION_RECEIPT_REQUIRED" as const,
+    });
+  }
+  const formationSourceSnapshot =
+    input.formationSourceSnapshot as ChoiceFormationSourceSnapshotV2;
+  const completionReceipt = input.sixDimensionCompletionReceipt;
+  const initialRouteResolution = resolveChoiceActionRoutes(
+    input.actionRouteResolverInput,
+  );
+  const initiallySelectedRoute =
+    initialRouteResolution.status === "READY"
+      ? initialRouteResolution.candidates.find(
+          (candidate) =>
+            candidate.actionRouteReferenceId ===
+            input.selectedActionRouteReferenceId,
+        ) ?? null
+      : null;
+  if (initiallySelectedRoute === null) {
+    return Object.freeze({
+      status: "REJECTED" as const,
+      intention: null,
+      reason: "INVALID_INPUT" as const,
+    });
+  }
+  const choiceActionIntentionReferenceId =
+    createStableXinmaiGrowthReference(
+      "choice-intention-v3",
+      input.identityReferences.sourceReferenceId,
+      input.sourceEncounterCycleId,
+      input.gravityCycleId,
+      input.gravityObservationReferenceId,
+      completionReceipt.completionReceiptReferenceId,
+      completionReceipt.evidenceDigest,
+    );
+  const result = await transactXinmaiGravityObservationContinuity(
+    `CURRENT:${input.identityReferences.sourceReferenceId}`,
+    (observation, current) => {
+      const existing = current.choiceActionIntentions.find(
+        (candidate) =>
+          candidate.choiceActionIntentionReferenceId ===
+          choiceActionIntentionReferenceId,
+      );
+      if (existing) {
+        if (
+          existing.schemaVersion !==
+            XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION ||
+          !xinmaiGrowthIdentityMatches(
+            existing.identityReferences,
+            input.identityReferences,
+          ) ||
+          existing.sourceEncounterCycleId !==
+            input.sourceEncounterCycleId ||
+          existing.gravityCycleId !== input.gravityCycleId ||
+          existing.gravityObservationReferenceId !==
+            input.gravityObservationReferenceId ||
+          existing.formationSourceSnapshot.sixDimensionObservation
+            .completionReceiptReferenceId !==
+            completionReceipt.completionReceiptReferenceId ||
+          existing.actionRouteSnapshot.actionRouteReferenceId !==
+            input.selectedActionRouteReferenceId
+        ) {
+          return Object.freeze({
+            status: "REJECTED" as const,
+            reason: "CHOICE_ALREADY_EXISTS" as const,
+          });
+        }
+        return Object.freeze({
+          status: "ALREADY_COMMITTED" as const,
+          value: existing,
+        });
+      }
+      if (
+        observation === null ||
+        observation.gravityObservationReferenceId !==
+          input.gravityObservationReferenceId ||
+        observation.sourceReality.encounterCycleId !==
+          input.sourceEncounterCycleId ||
+        observation.gravityAdmission.gravityCycleId !==
+          input.gravityCycleId ||
+        !xinmaiGrowthIdentityMatches(
+          observation.identityReferences,
+          input.identityReferences,
+        ) ||
+        observation.lifecycleState !== "CURRENT" ||
+        observation.checkpointState !==
+          "OBSERVATION_RECOGNIZED" ||
+        observation.checkpointRevision !==
+          input.expectedObservationCheckpointRevision ||
+        current.choiceActionIntentions.some(
+          (candidate) =>
+            candidate.gravityObservationReferenceId ===
+            input.gravityObservationReferenceId,
+        )
+      ) {
+        return Object.freeze({
+          status: "REJECTED" as const,
+          reason: "OBSERVATION_STALE" as const,
+        });
+      }
+      const currentRouteResolution = resolveChoiceActionRoutes(
+        input.actionRouteResolverInput,
+      );
+      const selectedRoute =
+        currentRouteResolution.status === "READY"
+          ? currentRouteResolution.candidates.find(
+              (candidate) =>
+                candidate.actionRouteReferenceId ===
+                input.selectedActionRouteReferenceId,
+            ) ?? null
+          : null;
+      if (
+        validateChoiceActionIntentionV3Prerequisites(input).status !==
+          "VALID" ||
+        selectedRoute === null ||
+        selectedRoute.canonicalIdentityKey !==
+          initiallySelectedRoute.canonicalIdentityKey ||
+        selectedRoute.pressureProvenance.candidateReferenceId !==
+          observation.pressureProvenance.candidateReferenceId ||
+        selectedRoute.pressureProvenance.selectedPressureSeedId !==
+          observation.pressureProvenance.selectedPressureSeedId
+      ) {
+        return Object.freeze({
+          status: "REJECTED" as const,
+          reason: "ACTION_ROUTE_STALE" as const,
+        });
+      }
+      const now = new Date().toISOString();
+      const intention: ChoiceActionIntention = Object.freeze({
+        schemaVersion:
+          XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION,
+        source: "xinmai_choice_action_intention_controller" as const,
+        choiceActionIntentionReferenceId,
+        identityReferences: Object.freeze({
+          ...input.identityReferences,
+        }),
+        sourceEncounterCycleId: input.sourceEncounterCycleId,
+        targetEncounterCycleId: null,
+        gravityCycleId: input.gravityCycleId,
+        gravityObservationReferenceId:
+          input.gravityObservationReferenceId,
+        state: "COMMITTED" as const,
+        revision: 1,
+        actionSummary: selectedRoute.action.visibleAction.trim(),
+        formationSourceSnapshot,
+        actionRouteSnapshot: Object.freeze({
+          ...selectedRoute,
+          lifecycle: "CONSUMED_BY_CHOICE" as const,
+          revision: 1 as const,
+          userExplicitSelection: true as const,
+        }),
+        committedAt: now,
+        updatedAt: now,
+        provenance: Object.freeze({
+          userExplicitCommit: true as const,
+          sourceAuthority:
+            "XINMAI_CHOICE_ACTION_ROUTE_AUTHORITY" as const,
+          noLivedResponseAuthority: true as const,
+          noCrystalEligibilityAuthority: true as const,
+        }),
+      });
+      return Object.freeze({
+        status: "COMMIT" as const,
+        value: intention,
+        record: Object.freeze({
+          ...observation,
+          checkpointRevision: observation.checkpointRevision + 1,
+          lifecycleState: "CONSUMED_BY_CHOICE" as const,
+          consumedByChoiceActionIntentionReferenceId:
+            choiceActionIntentionReferenceId,
+          updatedAt: now,
+        }),
+        growthEnvelope: Object.freeze({
+          ...current,
+          choiceActionIntentions: Object.freeze([
+            ...current.choiceActionIntentions,
+            intention,
+          ]),
+        }),
+      });
+    },
+    Object.freeze({
+      observationSetId: completionReceipt.observationSetId,
+      observationSetRevision:
+        completionReceipt.observationSetRevision,
+      completionReceiptReferenceId:
+        completionReceipt.completionReceiptReferenceId,
+      dimensionProtocolRevision:
+        completionReceipt.dimensionProtocolRevision,
+      contentDigest: completionReceipt.contentDigest,
+      evidenceDigest: completionReceipt.evidenceDigest,
+    }),
+  );
+  if (
+    result.status === "COMMITTED" ||
+    result.status === "ALREADY_COMMITTED"
+  ) {
+    return Object.freeze({
+      status: result.status,
       intention: result.value,
     });
   }

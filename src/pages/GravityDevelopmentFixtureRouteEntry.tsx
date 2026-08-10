@@ -105,6 +105,18 @@ export function GravityDevelopmentFixtureRouteEntry() {
         candidates: Object.freeze([]) as readonly [],
         reason: "OBSERVATION_NOT_RECOGNIZED" as const,
       })}
+      sixDimensionAuthority={Object.freeze({
+        status: "SAFE_WITHHELD" as const,
+        observationSet: null,
+        completionReceipt: null,
+        cause: Object.freeze({
+          owner: "SIX_DIMENSION_AUTHORITY" as const,
+          code: "MUTATION_POLICY_SAFE_WITHHELD" as const,
+          retryability: "NOT_RETRYABLE" as const,
+          innerCause: null,
+        }),
+      })}
+      onSixDimensionAcknowledgement={async () => false}
       growthSummaryPending={false}
       onExplicitDepartureCommitted={() => undefined}
       onGrowthTerminalSummaryRefreshRequested={

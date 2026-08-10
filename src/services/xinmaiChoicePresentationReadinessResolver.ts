@@ -9,9 +9,7 @@ import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityE
 import {
   validateChoiceActionIntentionPrerequisites,
 } from "./xinmaiChoiceActionIntentionPrerequisiteValidator";
-import {
-  createChoiceRouteFormationSourceSnapshot,
-} from "./xinmaiChoiceActionRouteGrowthProjection";
+import { createChoiceRouteFormationSourceSnapshotV2 } from "./xinmaiChoiceActionRouteGrowthProjection";
 import {
   canCreateXinmaiChoiceFromActionRoute,
 } from "./xinmaiChoiceActionRouteRuntimePolicy";
@@ -246,6 +244,32 @@ export function resolveChoicePresentationReadiness(
       currentLineage,
     );
   }
+  // Existing V1/V2 choices and higher growth assets return above. Only the
+  // new-choice creation branch is gated by canonical V2 observation evidence.
+  if (input.newChoiceV3Authority.cause !== null) {
+    return safeWithheld(
+      input,
+      "SIX_DIMENSION_AUTHORITY_UNAVAILABLE",
+      currentLineage,
+    );
+  }
+  const observationSet = input.newChoiceV3Authority.observationSet;
+  const completionReceipt =
+    input.newChoiceV3Authority.completionReceipt;
+  if (
+    observationSet === null ||
+    completionReceipt === null ||
+    observationSet.lifecycle !== "COMPLETED" ||
+    observationSet.completionReceiptReferenceId !==
+      completionReceipt.completionReceiptReferenceId ||
+    observationSet.evidenceDigest !== completionReceipt.evidenceDigest
+  ) {
+    return withheld(
+      input,
+      "SIX_DIMENSION_COMPLETION_REQUIRED",
+      currentLineage,
+    );
+  }
   if (input.actionRouteResolution.status !== "READY") {
     return safeWithheld(
       input,
@@ -280,12 +304,12 @@ export function resolveChoicePresentationReadiness(
     );
   }
   const formationSourceSnapshot =
-    createChoiceRouteFormationSourceSnapshot({
+    createChoiceRouteFormationSourceSnapshotV2({
       candidate: actionRouteCandidate,
       formation: input.formation,
-      completedNodeCount: input.assetCandidate.completedNodeCount,
       assetCompletionState:
         input.assetCandidate.completionState,
+      completionReceipt,
     });
   if (formationSourceSnapshot === null) {
     return withheld(
@@ -313,6 +337,7 @@ export function resolveChoicePresentationReadiness(
     selectedActionRouteReferenceId:
       actionRouteCandidate.actionRouteReferenceId,
     formationSourceSnapshot,
+    sixDimensionCompletionReceipt: completionReceipt,
   });
   const validation =
     validateChoiceActionIntentionPrerequisites(structuralInput);

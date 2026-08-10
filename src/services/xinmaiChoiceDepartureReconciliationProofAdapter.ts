@@ -1,5 +1,6 @@
 import {
   XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION,
+  XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION,
   type ChoiceActionIntention,
 } from "../types/xinmaiChoiceActionIntention";
 import type {
@@ -32,7 +33,9 @@ export function createXinmaiChoiceDepartureReconciliationProof(input: Readonly<{
 }>): XinmaiChoiceDepartureReconciliationProofResult {
   const { intention, departureReceipt } = input;
   if (
-    intention.schemaVersion !== XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION ||
+    (intention.schemaVersion !== XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION &&
+      intention.schemaVersion !==
+        XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION) ||
     !Number.isInteger(input.observedGrowthEnvelopeRevision) ||
     input.observedGrowthEnvelopeRevision < 1 ||
     !validText(intention.gravityCycleId) ||

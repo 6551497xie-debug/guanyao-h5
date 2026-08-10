@@ -3,7 +3,7 @@ const gravity = fs.readFileSync("src/pages/GravityPage.tsx", "utf8");
 const controller = fs.readFileSync("src/services/xinmaiChoiceActionIntentionController.ts", "utf8");
 const provenance = fs.readFileSync("src/services/xinmaiChoiceReturningProvenanceController.ts", "utf8");
 for (const expected of [
-  "await commitChoiceActionIntention(",
+  "await commitChoiceActionIntentionV3(",
   "choicePresentationDecision.structuralInput",
   "await confirmXinmaiChoiceExplicitDeparture({",
 ]) {
@@ -20,12 +20,16 @@ if (!controller.includes("executeXinmaiLivedGrowthTransaction")) {
 }
 if (
   !controller.includes(
-    "validateChoiceActionIntentionPrerequisites(input)",
+    "validateChoiceActionIntentionV3Prerequisites(input)",
   )
 ) {
-  throw new Error("Choice controller bypasses shared prerequisites");
+  throw new Error("Choice V3 controller bypasses receipt-aware prerequisites");
 }
 for (const expected of [
+  "completionReceipt.observationSetId",
+  "completionReceipt.observationSetRevision",
+  "completionReceipt.completionReceiptReferenceId",
+  "completionReceipt.evidenceDigest",
   "resolveChoiceActionRoutes(",
   "const currentRouteResolution = resolveChoiceActionRoutes(",
   "actionRouteSnapshot: Object.freeze({",
@@ -33,7 +37,7 @@ for (const expected of [
   '"XINMAI_CHOICE_ACTION_ROUTE_AUTHORITY" as const',
 ]) {
   if (!controller.includes(expected)) {
-    throw new Error(`Choice V2 atomic Route boundary missing ${expected}`);
+    throw new Error(`Choice V3 atomic Route boundary missing ${expected}`);
   }
 }
 if (controller.includes("changeExperienceRouteProof")) {

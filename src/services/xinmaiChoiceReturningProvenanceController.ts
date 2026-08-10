@@ -1,5 +1,6 @@
 import {
   XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION,
+  XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION,
   type ChoiceActionIntention,
 } from "../types/xinmaiChoiceActionIntention";
 import {
@@ -172,7 +173,12 @@ export async function confirmXinmaiChoiceExplicitDeparture(input: Readonly<{
       if (!intention) {
         return rejectXinmaiLivedGrowthTransaction("INTENTION_NOT_FOUND");
       }
-      if (intention.schemaVersion !== XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION) {
+      if (
+        intention.schemaVersion !==
+          XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION &&
+        intention.schemaVersion !==
+          XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION
+      ) {
         return rejectXinmaiLivedGrowthTransaction("INTENTION_NOT_V2");
       }
       if (!xinmaiGrowthIdentityMatches(intention.identityReferences, input.identityReferences)) {

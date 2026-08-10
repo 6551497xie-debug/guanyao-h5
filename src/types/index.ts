@@ -3445,7 +3445,9 @@ export type {
   ChoiceActionIntention,
   ChoiceActionIntentionV1,
   ChoiceActionIntentionV2,
+  ChoiceActionIntentionV3,
   ChoiceFormationSourceSnapshot,
+  ChoiceFormationSourceSnapshotV2,
   ChoiceObservationStructuralProof,
   CommitChoiceActionIntentionInput,
 } from "./xinmaiChoiceActionIntention";

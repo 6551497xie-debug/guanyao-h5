@@ -6,11 +6,16 @@ import type {
   ChoiceActionRouteResolverInput,
   ChoiceActionRouteSnapshot,
 } from "./xinmaiChoiceActionRoute";
+import type {
+  SixDimensionCompletionReceipt,
+} from "./xinmaiSixDimensionObservation";
 
 export const XINMAI_CHOICE_ACTION_INTENTION_V1_SCHEMA_VERSION =
   "XINMAI_CHOICE_ACTION_INTENTION_V1" as const;
 export const XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION =
   "XINMAI_CHOICE_ACTION_INTENTION_V2" as const;
+export const XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION =
+  "XINMAI_CHOICE_ACTION_INTENTION_V3" as const;
 
 export type ChoiceFormationSourceSnapshot = Readonly<{
   formation: CurrentHexagramFormationResult;
@@ -20,6 +25,20 @@ export type ChoiceFormationSourceSnapshot = Readonly<{
   action: SingleModelRevisionAction;
   assetCompletionState: "READY_TO_CRYSTALLIZE";
 }>;
+
+export type ChoiceFormationSourceSnapshotV2 =
+  ChoiceFormationSourceSnapshot &
+  Readonly<{
+    schemaVersion: "XINMAI_CHOICE_FORMATION_SOURCE_SNAPSHOT_V2";
+    sixDimensionObservation: Readonly<{
+      completionReceiptReferenceId: string;
+      observationSetId: string;
+      observationSetRevision: number;
+      dimensionProtocolRevision: string;
+      contentDigest: string;
+      evidenceDigest: string;
+    }>;
+  }>;
 
 export type ChoiceObservationStructuralProof = Readonly<{
   status: "OBSERVATION_RECOGNIZED";
@@ -72,9 +91,19 @@ export type ChoiceActionIntentionV2 =
     actionRouteSnapshot: ChoiceActionRouteSnapshot;
   }>;
 
+export type ChoiceActionIntentionV3 =
+  Omit<ChoiceActionIntentionBase, "formationSourceSnapshot"> &
+  Readonly<{
+    schemaVersion:
+      typeof XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION;
+    formationSourceSnapshot: ChoiceFormationSourceSnapshotV2;
+    actionRouteSnapshot: ChoiceActionRouteSnapshot;
+  }>;
+
 export type ChoiceActionIntention =
   | ChoiceActionIntentionV1
-  | ChoiceActionIntentionV2;
+  | ChoiceActionIntentionV2
+  | ChoiceActionIntentionV3;
 
 export type CommitChoiceActionIntentionInput = Readonly<{
   identityReferences: RealityEncounterIdentityReferences;
@@ -85,5 +114,9 @@ export type CommitChoiceActionIntentionInput = Readonly<{
   observationProof: ChoiceObservationStructuralProof;
   actionRouteResolverInput: ChoiceActionRouteResolverInput;
   selectedActionRouteReferenceId: string;
-  formationSourceSnapshot: ChoiceFormationSourceSnapshot;
+  formationSourceSnapshot:
+    | ChoiceFormationSourceSnapshot
+    | ChoiceFormationSourceSnapshotV2;
+  sixDimensionCompletionReceipt:
+    SixDimensionCompletionReceipt | null;
 }>;

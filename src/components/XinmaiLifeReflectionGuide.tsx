@@ -53,6 +53,7 @@ export function XinmaiLifeReflectionGuide({
   onSelfName,
   onPause,
   onResume,
+  onContinue,
 }: XinmaiLifeReflectionGuideProps) {
   const [lifeContinuityStable, setLifeContinuityStable] = useState(false);
 
@@ -320,7 +321,10 @@ export function XinmaiLifeReflectionGuide({
               type="button"
               data-xinmai-relation-action="SETTLE_INTO_LIFE_NO_ROUTE"
               data-xinmai-choice-trigger="WITHHELD"
-              onClick={() => setLifeContinuityStable(true)}
+              onClick={() => {
+                setLifeContinuityStable(true);
+                onContinue?.();
+              }}
             >
               让它继续呼吸
             </button>
