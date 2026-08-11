@@ -100,10 +100,34 @@
 .xinmai-lived-response-return-surface__fact-submit,
 .xinmai-lived-response-return-surface__no-fact,
 .xinmai-lived-response-return-surface__no-fact > div,
+.xinmai-lived-response-return-surface__no-fact-confirmation,
+.xinmai-lived-response-return-surface__no-fact-confirmation > div,
 .xinmai-lived-response-return-surface__recovery {
   display: grid;
   gap: 10px;
   min-width: 0;
+}
+
+.xinmai-lived-response-return-surface__no-fact-confirmation {
+  padding: 14px;
+  border: 1px solid rgba(218, 207, 174, 0.22);
+  border-radius: 12px;
+  background: rgba(18, 27, 29, 0.72);
+}
+
+.xinmai-lived-response-return-surface__no-fact-confirmation h3,
+.xinmai-lived-response-return-surface__no-fact-confirmation p {
+  margin: 0;
+}
+
+.xinmai-lived-response-return-surface__no-fact-confirmation h3 {
+  color: rgba(248, 242, 218, 0.96);
+  font-size: 18px;
+}
+
+.xinmai-lived-response-return-surface__no-fact-confirmation p {
+  color: rgba(231, 228, 210, 0.82);
+  line-height: 1.6;
 }
 
 .xinmai-lived-response-return-surface__fact-choices {

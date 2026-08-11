@@ -1,0 +1,17 @@
+import { readFileSync } from "node:fs";
+const read = (path) => readFileSync(path, "utf8");
+const assert = (condition, message) => { if (!condition) throw new Error(`[visual-semantic-cutover] ${message}`); };
+const resolver = read("src/services/xinmaiSixDimensionSemanticChoreographyResolver.ts");
+const policy = read("src/services/xinmaiVisualSemanticExperiencePolicy.ts");
+const guide = read("src/components/XinmaiLifeReflectionGuide.tsx");
+const checkpoint = read("src/components/XinmaiLivedResponseReturnSurface.tsx");
+const launch = read("src/pages/LaunchLab.tsx");
+const css = read("src/styles/xinmai-six-dimension-semantic-choreography.css");
+
+for (const copy of ["身体哪里先有反应", "感受，清楚到什么程度", "脑中最先出现哪句话", "推进、退开", "像不像某个熟悉的时刻", "最不想失去的"]) assert(resolver.includes(copy), `missing semantic question: ${copy}`);
+for (const copy of ["保存这次身体观察", "保存这次情绪观察", "保存这次思维观察", "保存这次行动观察", "保存这次记忆观察", "保存这次动机观察"]) assert(resolver.includes(copy), `missing acknowledgement: ${copy}`);
+assert(policy.includes("XinmaiVisualSemanticExperiencePolicy =") && policy.includes('"ENABLED"') && policy.includes('"SAFE_WITHHELD"') && guide.includes("grammar.presentationMode") && guide.includes("FINAL_ACKNOWLEDGEMENT_ONLY"), "policy or authority boundary missing");
+assert(checkpoint.includes("回到生活，之后再来") && checkpoint.includes("现在重新确认") && checkpoint.includes("确认不记录，安全返回") && checkpoint.includes("返回继续确认"), "checkpoint branches do not expose complete actions");
+assert(launch.includes("RETURNING_WHISPER_EXAMPLES") && launch.includes("RETURNING_NAME_EXAMPLES") && launch.includes("自己写") && launch.includes("暂时不说"), "optional non-AI templates missing");
+assert(css.includes("min-height: 44px") && css.includes("env(safe-area-inset-bottom)") && css.includes("overflow-x: hidden") && css.includes("prefers-reduced-motion: reduce") && css.includes('data-xinmai-visual-semantic-policy="SAFE_STATIC"'), "mobile/accessibility or safe static contract missing");
+console.log("[XINMAI VISUAL SEMANTIC EXPERIENCE ATOMIC CUTOVER] PASS");

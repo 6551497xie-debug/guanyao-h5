@@ -67,6 +67,13 @@ type FormationFailureReason = Extract<
   { status: "SAFE_WITHHELD" }
 >["reason"];
 
+const RETRYABLE_FORMATION_FAILURES: ReadonlySet<FormationFailureReason> =
+  new Set([
+    "RECOVERY_UNAVAILABLE",
+    "FORMATION_AUTHORITY_UNAVAILABLE",
+    "PRODUCTION_FORMATION_PAUSED",
+  ]);
+
 export function XinmaiLivedResponseReturnSurface({
   identityReferences,
   admissions,
@@ -107,6 +114,9 @@ export function XinmaiLivedResponseReturnSurface({
   >("ATTEMPTED");
   const [summary, setSummary] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [pendingNoFactResolution, setPendingNoFactResolution] = useState<
+    "NOT_ATTEMPTED" | "USER_REJECTED_RECORD" | null
+  >(null);
   const [busy, setBusy] = useState(false);
   const [nextCycleFailure, setNextCycleFailure] = useState<
     Extract<
@@ -128,6 +138,9 @@ export function XinmaiLivedResponseReturnSurface({
     useState<string | null>(null);
   const [formationFailure, setFormationFailure] =
     useState<FormationFailureReason | null>(null);
+  const formationRetryable =
+    formationFailure !== null &&
+    RETRYABLE_FORMATION_FAILURES.has(formationFailure);
   const [returnAcceptanceEvidence, setReturnAcceptanceEvidence] =
     useState<XinmaiLivedResponseReturnAcceptanceEvidence | null>(null);
   const [pendingFormationAuthorities, setPendingFormationAuthorities] =
@@ -438,6 +451,7 @@ export function XinmaiLivedResponseReturnSurface({
         : "这次选择尚未完整保存，请稍后再试。",
     );
     if (result.status === "RESOLVED" || result.status === "ALREADY_RESOLVED") {
+      setPendingNoFactResolution(null);
       onAuthorityRevision?.();
     }
     setBusy(false);
@@ -700,6 +714,46 @@ export function XinmaiLivedResponseReturnSurface({
         </button>
       ) : checkpointDecision.state === "READY_TO_CONFIRM_REAL_RESPONSE" ? (
         <div className="xinmai-lived-response-return-surface__confirmation">
+          {pendingNoFactResolution !== null ? (
+            <div
+              className="xinmai-lived-response-return-surface__no-fact-confirmation"
+              role="group"
+              aria-labelledby="xinmai-no-fact-confirmation-heading"
+            >
+              <h3 id="xinmai-no-fact-confirmation-heading">
+                {pendingNoFactResolution === "NOT_ATTEMPTED"
+                  ? "这一次还没有尝试"
+                  : "这一次不留下记录"}
+              </h3>
+              <p>
+                {pendingNoFactResolution === "NOT_ATTEMPTED"
+                  ? "不会形成 Fact 或 Crystal。你可以回到生活，之后再来，也可以现在重新确认。"
+                  : "不会形成 Fact 或 Crystal。你可以安全返回，也可以回到上一步继续确认。"}
+              </p>
+              <div>
+                <button
+                  className="xinmai-lived-response-return-surface__primary"
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void resolveWithoutFact(pendingNoFactResolution)}
+                >
+                  {pendingNoFactResolution === "NOT_ATTEMPTED"
+                    ? "回到生活，之后再来"
+                    : "确认不记录，安全返回"}
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setPendingNoFactResolution(null)}
+                >
+                  {pendingNoFactResolution === "NOT_ATTEMPTED"
+                    ? "现在重新确认"
+                    : "返回继续确认"}
+                </button>
+              </div>
+            </div>
+          ) : (
+          <>
           <fieldset className="xinmai-lived-response-return-surface__fact-choices">
             <legend>选择真实发生的回应</legend>
             {FACT_OUTCOMES.map((item) => {
@@ -742,18 +796,20 @@ export function XinmaiLivedResponseReturnSurface({
             aria-label="这次不形成真实回应记录"
           >
             <div>
-              <button type="button" disabled={busy} onClick={() => void resolveWithoutFact("NOT_ATTEMPTED")}>
+              <button type="button" disabled={busy} onClick={() => setPendingNoFactResolution("NOT_ATTEMPTED")}>
                 这一次还没有尝试
               </button>
               <small>不形成事实或 Crystal；这一步仍会等你。</small>
             </div>
             <div>
-              <button type="button" disabled={busy} onClick={() => void resolveWithoutFact("USER_REJECTED_RECORD")}>
+              <button type="button" disabled={busy} onClick={() => setPendingNoFactResolution("USER_REJECTED_RECORD")}>
                 我不想记录这次
               </button>
               <small>不记录、不形成，也没有惩罚。</small>
             </div>
           </div>
+          </>
+          )}
         </div>
       ) : checkpointDecision.state === "FORMATION_IN_PROGRESS" ? (
         <div className="xinmai-lived-response-return-surface__progress" aria-hidden="true">
@@ -802,10 +858,20 @@ export function XinmaiLivedResponseReturnSurface({
         </div>
       ) : checkpointDecision.state === "SAFE_WITHHELD" &&
         selected.state === "TERMINAL_BY_GROWTH" &&
-        selected.currentEligibility !== null ? (
+        selected.currentEligibility !== null &&
+        formationRetryable ? (
         <div className="xinmai-lived-response-return-surface__recovery">
           <button type="button" disabled={busy} onClick={retryFormation}>
             重试形成结晶
+          </button>
+        </div>
+      ) : checkpointDecision.state === "SAFE_WITHHELD" &&
+        selected.state === "TERMINAL_BY_GROWTH" &&
+        selected.currentEligibility !== null ? (
+        <div className="xinmai-lived-response-return-surface__recovery">
+          <p>这次形成无法在当前状态重试。已保存的 Fact 与生命资产不会被删除。</p>
+          <button type="button" onClick={() => window.location.assign("/launch-lab")}>
+            保留记录，回到生命世界
           </button>
         </div>
       ) : null}

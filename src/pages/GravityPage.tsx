@@ -378,9 +378,10 @@ function NodeProgressionPanel({
   toneColor,
   activeNode,
   currentDimensionLabel,
+  currentDimensionId,
+  currentDimensionStep,
   finalActionState,
   phase,
-  onApproach,
   onConfirm,
   onSelfName,
   onPause,
@@ -395,6 +396,8 @@ function NodeProgressionPanel({
     dimensionUnderstanding?: string;
   };
   currentDimensionLabel: string;
+  currentDimensionId: SixSpaceId;
+  currentDimensionStep: number;
   finalActionState: SixDimensionCommitPresentationState;
   phase:
     | "OBSERVING"
@@ -404,7 +407,6 @@ function NodeProgressionPanel({
     | "CONFIRMED"
     | "SELF_NAMED"
     | "PAUSED";
-  onApproach: () => void;
   onConfirm: () => void;
   onSelfName: () => void;
   onPause: () => void;
@@ -458,6 +460,7 @@ function NodeProgressionPanel({
       data-dynamics-first-pause-invitation={
         firstPauseInvitationVisible ? "VISIBLE_ONCE" : "DELEGATED_TO_GENESIS_BREATH"
       }
+      className="xinmai-six-dimension-panel"
       style={{
         position: "absolute",
         left: 44,
@@ -489,11 +492,11 @@ function NodeProgressionPanel({
       </span>
       <XinmaiLifeReflectionGuide
         surface="REFLECTION"
+        dimensionId={currentDimensionId}
+        dimensionStep={currentDimensionStep}
         phase={phase}
         observation={livingSentence}
-        understanding={activeNode.dimensionUnderstanding}
         finalActionState={finalActionState}
-        onApproach={onApproach}
         onConfirm={onConfirm}
         onSelfName={onSelfName}
         onPause={onPause}
@@ -1398,9 +1401,10 @@ function CosmicBotanicsField({
           toneColor={toneColor}
           activeNode={experienceState.nodeCopy}
           currentDimensionLabel={SIX_SPACE_SHORT_LABELS[activeConfig.id]}
+          currentDimensionId={activeConfig.id}
+          currentDimensionStep={activeDimensionStep}
           finalActionState={finalActionState}
           phase={innerViewPhase}
-          onApproach={approachLifeState}
           onConfirm={confirmLifeState}
           onSelfName={keepOwnUnderstanding}
           onPause={pauseInnerView}

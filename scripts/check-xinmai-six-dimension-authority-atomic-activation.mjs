@@ -121,7 +121,8 @@ assert(
 assert(
   reflectionGuide.includes("onContinue,") &&
     reflectionGuide.includes("const saved = await onContinue?.();") &&
-    reflectionGuide.includes("if (saved) setLifeContinuityStable(true);") &&
+    reflectionGuide.includes("if (saved) setSavedAnnouncement") &&
+    reflectionGuide.includes('data-xinmai-authority-boundary="FINAL_ACKNOWLEDGEMENT_ONLY"') &&
     page.includes("key={sequentialCurrentSpaceId}") &&
     page.includes('data-dynamics-current-dimension-label={currentDimensionLabel}') &&
     !page.includes("initialInnerViewRelation={innerViewRelation}") &&

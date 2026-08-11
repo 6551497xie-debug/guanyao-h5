@@ -138,6 +138,12 @@ const RealityLifeUniverseCanvas = lazy(() =>
 
 const SANS = "-apple-system, system-ui, sans-serif";
 const MONO = "SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+const RETURNING_WHISPER_EXAMPLES = Object.freeze([
+  "我现在有一点紧",
+  "我还在想刚才那件事",
+  "此刻我想先安静一下",
+]);
+const RETURNING_NAME_EXAMPLES = Object.freeze(["同行者", "守望星", "微光"]);
 
 const MANSION_COORDINATES = Object.freeze(
   Array.from({ length: 28 }, (_, index) => Object.freeze({ index })),
@@ -6313,14 +6319,20 @@ export function LaunchLab({
                     <small id="xinmai-returning-life-whisper-guidance">
                       只留在此刻，不会恢复成下一次现实
                     </small>
-                    <div>
-                      <button
-                        type="button"
-                        data-interaction="WHISPER_SKIPPED"
-                        onClick={skipReturningLifeWhisper}
-                      >
+                    <div className="gy-returning-life-world__template-chips" aria-label="可选示例，不会自动保存">
+                      {RETURNING_WHISPER_EXAMPLES.map((example) => (
+                        <button key={example} type="button" onClick={() => setReturningLifeWhisperText(example)}>
+                          {example}
+                        </button>
+                      ))}
+                      <button type="button" onClick={() => document.getElementById("xinmai-returning-life-whisper")?.focus()}>
+                        自己写
+                      </button>
+                      <button type="button" onClick={skipReturningLifeWhisper}>
                         暂时不说
                       </button>
+                    </div>
+                    <div>
                       <button
                         type="submit"
                         data-interaction="WHISPER_SUBMITTED"
@@ -6424,6 +6436,22 @@ export function LaunchLab({
                           )
                         }
                       />
+                      <div className="gy-returning-life-world__template-chips" aria-label="称呼灵感，不会自动保存">
+                        {RETURNING_NAME_EXAMPLES.map((example) => (
+                          <button key={example} type="button" onClick={() => setReturningRelationshipNameDraft(example)}>
+                            {example}
+                          </button>
+                        ))}
+                        <button type="button" onClick={() => document.getElementById("xinmai-returning-relationship-name")?.focus()}>
+                          自己写
+                        </button>
+                        <button type="button" onClick={() => {
+                          setReturningRelationshipNameDraft("");
+                          setReturningRelationshipNameEditing(false);
+                        }}>
+                          暂时不说
+                        </button>
+                      </div>
                       <div>
                         <button
                           type="button"
@@ -6580,11 +6608,7 @@ export function LaunchLab({
             text-shadow: 0 0 22px rgba(2, 3, 6, 0.92);
           }
           .gy-returning-life-world__cosmos-copy {
-            position: absolute;
-            top: 14.5%;
-            right: 0;
-            left: 0;
-            display: grid;
+            display: none;
             justify-items: center;
             gap: 5px;
             color: rgba(255, 247, 228, 0.46);
@@ -6594,11 +6618,17 @@ export function LaunchLab({
           }
           .gy-returning-life-world__relationship-copy {
             position: absolute;
-            right: 8%;
-            bottom: 4.6%;
-            left: 8%;
+            inset: max(70px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
             display: grid;
+            align-content: end;
             justify-items: center;
+            box-sizing: border-box;
+            max-width: 520px;
+            margin-inline: auto;
+            padding: 18px 0 4px;
+            overflow-x: hidden;
+            overflow-y: auto;
+            overscroll-behavior: contain;
             text-align: center;
           }
           .gy-returning-life-world__relationship-copy strong {
@@ -6687,7 +6717,7 @@ export function LaunchLab({
             gap: 18px;
           }
           .gy-returning-life-world__whisper button {
-            min-height: 32px;
+            min-height: 44px;
             padding: 5px 9px;
             border: 0;
             color: rgba(232, 220, 190, 0.7);
@@ -6731,7 +6761,7 @@ export function LaunchLab({
           }
           .gy-returning-life-world__relationship-name-controls > button,
           .gy-returning-life-world__relationship-name-controls form button {
-            min-height: 30px;
+            min-height: 44px;
             padding: 4px 8px;
             border: 0;
             color: rgba(201, 218, 216, 0.54);
@@ -6783,6 +6813,32 @@ export function LaunchLab({
             display: flex;
             justify-content: center;
             gap: 10px;
+          }
+          .gy-returning-life-world__template-chips {
+            display: flex !important;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 7px !important;
+          }
+          .gy-returning-life-world__template-chips button {
+            min-height: 44px !important;
+            border: 1px solid rgba(190, 220, 220, 0.2) !important;
+            border-radius: 999px !important;
+            padding: 7px 10px !important;
+            line-height: 1.35;
+          }
+          @media (max-width: 340px), (max-height: 600px) {
+            .gy-returning-life-world__relationship-copy {
+              inset-block-start: max(48px, env(safe-area-inset-top));
+              align-content: start;
+            }
+            .gy-returning-life-world__relationship-copy strong {
+              font-size: 16px;
+              line-height: 1.45;
+            }
+            .gy-returning-life-world__whisper {
+              width: 100%;
+            }
           }
           .gy-returning-life-world__relationship-name-controls form p {
             margin: 1px 0 0;

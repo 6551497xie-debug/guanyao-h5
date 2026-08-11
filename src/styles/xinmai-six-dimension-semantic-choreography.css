@@ -1,0 +1,154 @@
+.xinmai-six-dimension-panel {
+  box-sizing: border-box;
+  left: max(14px, env(safe-area-inset-left)) !important;
+  right: max(14px, env(safe-area-inset-right)) !important;
+  bottom: max(12px, env(safe-area-inset-bottom)) !important;
+  width: auto;
+  max-height: min(70dvh, 620px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.xinmai-six-dimension-semantic {
+  box-sizing: border-box;
+  width: min(100%, 480px) !important;
+  gap: 12px !important;
+  padding: 16px;
+  border: 1px solid rgba(189, 210, 210, 0.22);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(5, 10, 15, 0.82), rgba(3, 6, 10, 0.94));
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.34);
+  color: rgba(248, 244, 226, 0.94);
+  text-align: left;
+  text-shadow: none;
+}
+
+.xinmai-six-dimension-semantic__header {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: rgba(189, 221, 215, 0.88);
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: .05em;
+}
+
+.xinmai-six-dimension-semantic__header b {
+  color: rgba(244, 225, 178, .78);
+  font-size: 11px;
+  font-weight: 560;
+}
+
+.xinmai-six-dimension-semantic__source {
+  max-width: 42ch;
+  margin: 0;
+  color: rgba(221, 225, 218, .68);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.xinmai-six-dimension-semantic h2 {
+  max-width: 28ch;
+  margin: 0;
+  color: rgba(255, 249, 231, .97);
+  font-size: clamp(18px, 4.7vw, 23px);
+  font-weight: 620;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.xinmai-six-dimension-semantic__responses,
+.xinmai-six-dimension-semantic__acknowledgement,
+.xinmai-six-dimension-semantic__pause {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+}
+
+.xinmai-six-dimension-semantic button {
+  box-sizing: border-box;
+  min-height: 44px;
+  width: 100%;
+  border: 1px solid rgba(184, 214, 207, .28) !important;
+  border-radius: 12px;
+  padding: 10px 13px !important;
+  background: rgba(27, 53, 57, .54) !important;
+  color: rgba(252, 247, 228, .94) !important;
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+  letter-spacing: 0 !important;
+  text-align: left;
+}
+
+.xinmai-six-dimension-semantic button:hover,
+.xinmai-six-dimension-semantic button:focus-visible {
+  border-color: rgba(244, 225, 178, .76) !important;
+  outline: 3px solid rgba(244, 225, 178, .24) !important;
+  outline-offset: 2px;
+}
+
+.xinmai-six-dimension-semantic button:disabled {
+  cursor: wait;
+  opacity: .58;
+}
+
+.xinmai-six-dimension-semantic__primary {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  border-color: rgba(230, 211, 164, .55) !important;
+  background: rgba(85, 78, 52, .8) !important;
+  text-align: center !important;
+}
+
+.xinmai-six-dimension-semantic__mirror,
+.xinmai-six-dimension-semantic__readiness,
+.xinmai-six-dimension-semantic__boundary,
+.xinmai-six-dimension-semantic__pause p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.xinmai-six-dimension-semantic__mirror { color: rgba(248, 239, 209, .9); font-size: 14px; }
+.xinmai-six-dimension-semantic__readiness,
+.xinmai-six-dimension-semantic__boundary { color: rgba(201, 213, 208, .68); font-size: 11px; }
+.xinmai-six-dimension-semantic__saved { min-height: 1em; color: rgba(174, 224, 210, .9); font-size: 12px; }
+
+.xinmai-six-dimension-semantic__scene-cue { height: 3px; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.06); }
+.xinmai-six-dimension-semantic__scene-cue i { display: block; width: 38%; height: 100%; border-radius: inherit; background: rgba(177, 222, 211, .72); animation: xinmai-semantic-cue 2.8s ease-in-out infinite alternate; }
+[data-xinmai-semantic-dimension="emotion"] .xinmai-six-dimension-semantic__scene-cue i { width: 56%; background: rgba(210, 170, 205, .76); }
+[data-xinmai-semantic-dimension="thought"] .xinmai-six-dimension-semantic__scene-cue i { width: 44%; transform: translateX(46%); background: rgba(184, 204, 241, .76); }
+[data-xinmai-semantic-dimension="action"] .xinmai-six-dimension-semantic__scene-cue i { width: 68%; background: rgba(232, 192, 136, .78); }
+[data-xinmai-semantic-dimension="memory"] .xinmai-six-dimension-semantic__scene-cue i { width: 30%; transform: translateX(140%); background: rgba(178, 183, 224, .72); }
+[data-xinmai-semantic-dimension="goal"] .xinmai-six-dimension-semantic__scene-cue i { width: 22%; transform: translateX(178%); background: rgba(237, 211, 148, .82); }
+
+@keyframes xinmai-semantic-cue { from { opacity: .45; transform: translateX(0); } to { opacity: .95; transform: translateX(160%); } }
+
+[data-xinmai-visual-semantic-policy="SAFE_STATIC"] *,
+[data-xinmai-visual-semantic-policy="SAFE_STATIC"] *::before,
+[data-xinmai-visual-semantic-policy="SAFE_STATIC"] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (max-width: 420px) {
+  .xinmai-six-dimension-panel { max-height: min(72dvh, 610px); }
+  .xinmai-six-dimension-semantic { padding: 14px; border-radius: 15px; }
+  .xinmai-six-dimension-semantic h2 { font-size: clamp(17px, 5.2vw, 20px); }
+}
+
+@media (max-width: 340px), (max-height: 600px) {
+  .xinmai-six-dimension-panel { top: max(92px, env(safe-area-inset-top)) !important; max-height: none; }
+  .xinmai-six-dimension-semantic { gap: 9px !important; padding: 12px; }
+  .xinmai-six-dimension-semantic__source { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xinmai-six-dimension-semantic *,
+  .xinmai-six-dimension-semantic *::before,
+  .xinmai-six-dimension-semantic *::after { animation: none !important; transition: none !important; }
+}
