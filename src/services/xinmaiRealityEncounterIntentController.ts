@@ -35,6 +35,7 @@ import {
   terminalizeXinmaiRealityAdventureLifecycleRecord,
 } from "./xinmaiRealityAdventureLifecycleReconciliationController";
 import { isXinmaiRealityAdventureLifecycleReconciliationMutationEnabled } from "./xinmaiRealityAdventureLifecycleReconciliationMutationPolicy";
+import { isXinmaiPostOwnershipNextRealityCycleMutationEnabled } from "./xinmaiPostOwnershipNextRealityCycleMutationPolicy";
 
 const INTENT_TTL_MS = 2 * 60 * 60 * 1_000;
 const CHOICE_RETURN_CONFLICT_MAX_CANONICAL_READS = 3;
@@ -95,7 +96,7 @@ const qualificationMatchesOrigin = (
   origin === "CHOICE_RETURN"
     ? qualification === "EXPLICIT_RETURN_TO_CHOICE"
     : origin === "CHOICE_CONTINUATION"
-      ? false
+      ? qualification === "CHOICE_ACTION_INTENTION_COMMITTED"
     : qualification === "WHISPER_RESPONSE_SETTLED" ||
       qualification === "WHISPER_SKIPPED" ||
       qualification ===
@@ -260,6 +261,12 @@ export async function requestRealityEncounter(
   ) {
     return storageBlockedRequest(currentIntent, "MUTATION_PAUSED");
   }
+  if (
+    input.origin === "CHOICE_CONTINUATION" &&
+    !isXinmaiPostOwnershipNextRealityCycleMutationEnabled()
+  ) {
+    return storageBlockedRequest(currentIntent, "MUTATION_PAUSED");
+  }
   const identity = normalizeIdentityReferences(input.identityReferences);
   if (identity === null) {
     return Object.freeze({
@@ -294,8 +301,18 @@ export async function requestRealityEncounter(
     returnIntentRequestReferenceId !== null &&
     sourceEncounterCycleId !== null &&
     returnAttemptRevision !== null;
+  const choiceContinuationRequestValid =
+    input.origin === "CHOICE_CONTINUATION" &&
+    input.qualification === "CHOICE_ACTION_INTENTION_COMMITTED" &&
+    choiceActionIntentionReferenceId !== null &&
+    sourceEncounterCycleId !== null &&
+    departureReceiptReferenceId === null &&
+    departureReconciliationReferenceId === null &&
+    returnIntentRequestReferenceId === null &&
+    returnAttemptRevision === null;
   const nonChoiceReturnRequestClean =
     input.origin !== "CHOICE_RETURN" &&
+    input.origin !== "CHOICE_CONTINUATION" &&
     departureReceiptReferenceId === null &&
     departureReconciliationReferenceId === null &&
     returnIntentRequestReferenceId === null &&
@@ -304,7 +321,10 @@ export async function requestRealityEncounter(
   if (
     !qualificationMatchesOrigin(input.origin, input.qualification) ||
     (input.origin === "CHOICE_RETURN" && !choiceReturnRequestValid) ||
+    (input.origin === "CHOICE_CONTINUATION" &&
+      !choiceContinuationRequestValid) ||
     (input.origin !== "CHOICE_RETURN" &&
+      input.origin !== "CHOICE_CONTINUATION" &&
       (choiceActionIntentionReferenceId !== null ||
         !nonChoiceReturnRequestClean))
   ) {
@@ -340,6 +360,15 @@ export async function requestRealityEncounter(
       departureReceiptReferenceId &&
     record.departureReconciliation.choiceActionIntentionReferenceId ===
       choiceActionIntentionReferenceId;
+  const canStartChoiceContinuationFromRecord = (
+    record: RealityAdventureEncounterContinuityRecord,
+  ): boolean =>
+    input.origin === "CHOICE_CONTINUATION" &&
+    record.encounterCycleId === sourceEncounterCycleId &&
+    record.lifecycle === "TERMINAL" &&
+    record.terminalReason === "START_NEW_ENCOUNTER" &&
+    record.activeIdentityKey === undefined &&
+    identityReferencesMatch(record.identityReferences, identity);
   const createRequestedIntent = (
     issuedAt: string,
   ): RealityEncounterIntent =>
@@ -412,6 +441,34 @@ export async function requestRealityEncounter(
       intent.sourceEncounterCycleId === sourceEncounterCycleId &&
       intent.state === "READY_TO_ENTER_REALITY" &&
       intent.routeTarget === "/reality" &&
+      intent.failure === null &&
+      intent.terminalReason === null &&
+      !isExpired(intent)
+    );
+  };
+  const exactChoiceContinuationWinnerMatches = (
+    record: RealityAdventureEncounterContinuityRecord,
+  ): boolean => {
+    const intent = record.realityIntent;
+    return (
+      record.schemaVersion ===
+        "XINMAI_REALITY_ADVENTURE_ENCOUNTER_CONTINUITY_V2" &&
+      record.lifecycle !== "TERMINAL" &&
+      record.terminalReason === null &&
+      record.activeIdentityKey === activeIdentityKey &&
+      record.encounterCycleId === intent.encounterCycleId &&
+      identityReferencesMatch(record.identityReferences, identity) &&
+      identityMatches(intent, identity) &&
+      intent.origin === "CHOICE_CONTINUATION" &&
+      intent.qualification === "CHOICE_ACTION_INTENTION_COMMITTED" &&
+      intent.choiceActionIntentionReferenceId ===
+        choiceActionIntentionReferenceId &&
+      intent.departureReceiptReferenceId === null &&
+      intent.departureReconciliationReferenceId === null &&
+      intent.returnIntentRequestReferenceId === null &&
+      intent.returnAttemptRevision === null &&
+      intent.sourceEncounterCycleId === sourceEncounterCycleId &&
+      intent.state !== "TERMINAL" &&
       intent.failure === null &&
       intent.terminalReason === null &&
       !isExpired(intent)
@@ -493,22 +550,80 @@ export async function requestRealityEncounter(
       "RETURN_CONFLICT_WINNER_NOT_VISIBLE",
     );
   };
-  const activeChoiceReturnRecovery =
-    input.origin === "CHOICE_RETURN"
+  const recoverExactChoiceContinuationAfterUniqueConflict = async (
+  ): Promise<RealityEncounterRequestResult> => {
+    for (
+      let readAttempt = 0;
+      readAttempt < CHOICE_RETURN_CONFLICT_MAX_CANONICAL_READS;
+      readAttempt += 1
+    ) {
+      const winner = await readRealityAdventureContinuity({
+        kind: "ACTIVE_IDENTITY",
+        value: activeIdentityKey,
+      });
+      if (winner.status === "SAFE_WITHHELD") {
+        return storageBlockedRequest(null, winner.reason);
+      }
+      if (winner.status === "NOT_FOUND") continue;
+      if (!exactChoiceContinuationWinnerMatches(winner.record)) {
+        return storageBlockedRequest(
+          null,
+          "CONTINUATION_CONFLICT_PROOF_MISMATCH",
+        );
+      }
+      const source = await readRealityAdventureContinuity({
+        kind: "ENCOUNTER",
+        value: sourceEncounterCycleId as string,
+      });
+      if (source.status === "SAFE_WITHHELD") {
+        return storageBlockedRequest(null, source.reason);
+      }
+      if (
+        source.status !== "FOUND" ||
+        !canStartChoiceContinuationFromRecord(source.record)
+      ) {
+        return storageBlockedRequest(
+          null,
+          "CONTINUATION_CONFLICT_PROOF_MISMATCH",
+        );
+      }
+      publish(winner.record);
+      return Object.freeze({
+        status: "READY" as const,
+        operation: "REQUEST" as const,
+        intent: winner.record.realityIntent,
+        persistence: "CONFIRMED" as const,
+        requestDisposition:
+          "RECOVERED_EXACT_CHOICE_CONTINUATION" as const,
+        reason: null,
+      });
+    }
+    return storageBlockedRequest(
+      null,
+      "CONTINUATION_CONFLICT_WINNER_NOT_VISIBLE",
+    );
+  };
+  const activeRequestRecovery =
+    input.origin === "CHOICE_RETURN" ||
+    input.origin === "CHOICE_CONTINUATION"
       ? await readRealityAdventureContinuity({
           kind: "ACTIVE_IDENTITY",
           value: activeIdentityKey,
         })
       : null;
-  if (activeChoiceReturnRecovery?.status === "SAFE_WITHHELD") {
+  const activeChoiceReturnRecovery =
+    input.origin === "CHOICE_RETURN" ? activeRequestRecovery : null;
+  if (activeRequestRecovery?.status === "SAFE_WITHHELD") {
     return storageBlockedRequest(
       currentIntent,
-      activeChoiceReturnRecovery.reason,
+      activeRequestRecovery.reason,
     );
   }
   const requestLookup =
-    input.origin === "CHOICE_RETURN" &&
-    activeChoiceReturnRecovery?.status === "NOT_FOUND"
+    ((input.origin === "CHOICE_RETURN" &&
+      activeChoiceReturnRecovery?.status === "NOT_FOUND") ||
+      (input.origin === "CHOICE_CONTINUATION" &&
+        activeRequestRecovery?.status === "NOT_FOUND"))
       ? Object.freeze({
           kind: "ENCOUNTER" as const,
           value: sourceEncounterCycleId as string,
@@ -533,6 +648,23 @@ export async function requestRealityEncounter(
                 intent: existing,
                 persistence: null,
                 reason: "CURRENT_IDENTITY_MISMATCH" as const,
+              }),
+            });
+          }
+          if (
+            input.origin === "CHOICE_CONTINUATION" &&
+            exactChoiceContinuationWinnerMatches(record)
+          ) {
+            return Object.freeze({
+              status: "UNCHANGED" as const,
+              record,
+              value: Object.freeze({
+                status: "READY" as const,
+                operation: "REQUEST" as const,
+                intent: existing,
+                persistence: "CONFIRMED" as const,
+                requestDisposition: "ALREADY_CURRENT" as const,
+                reason: null,
               }),
             });
           }
@@ -603,6 +735,23 @@ export async function requestRealityEncounter(
               }),
             });
           }
+          if (canStartChoiceContinuationFromRecord(record)) {
+            const requestedAt = new Date().toISOString();
+            const continuationIntent = createRequestedIntent(requestedAt);
+            return Object.freeze({
+              status: "COMMIT" as const,
+              record: createContinuityRecord(continuationIntent),
+              retainedRecords: Object.freeze([record]),
+              value: Object.freeze({
+                status: "READY" as const,
+                operation: "REQUEST" as const,
+                intent: continuationIntent,
+                persistence: "CONFIRMED" as const,
+                requestDisposition: "CREATED" as const,
+                reason: null,
+              }),
+            });
+          }
           if (
             input.origin === "CHOICE_RETURN" &&
             record.encounterCycleId !== sourceEncounterCycleId
@@ -632,6 +781,23 @@ export async function requestRealityEncounter(
                 intent: existing,
                 persistence: null,
                 reason: "DEPARTURE_RECONCILIATION_REQUIRED" as const,
+              }),
+            });
+          }
+          if (
+            input.origin === "CHOICE_CONTINUATION" &&
+            !canStartChoiceContinuationFromRecord(record)
+          ) {
+            return Object.freeze({
+              status: "REJECTED" as const,
+              record,
+              value: Object.freeze({
+                status: "BLOCKED" as const,
+                operation: "REQUEST" as const,
+                intent: existing,
+                persistence: null,
+                reason:
+                  "CONTINUATION_SOURCE_ENCOUNTER_MISMATCH" as const,
               }),
             });
           }
@@ -711,6 +877,20 @@ export async function requestRealityEncounter(
             }),
           });
         }
+        if (input.origin === "CHOICE_CONTINUATION") {
+          return Object.freeze({
+            status: "REJECTED" as const,
+            record: null,
+            value: Object.freeze({
+              status: "BLOCKED" as const,
+              operation: "REQUEST" as const,
+              intent: null,
+              persistence: null,
+              reason:
+                "CONTINUATION_SOURCE_ENCOUNTER_MISMATCH" as const,
+            }),
+          });
+        }
         const intent = createRequestedIntent(
           new Date().toISOString(),
         );
@@ -729,6 +909,16 @@ export async function requestRealityEncounter(
       },
     });
   if (transaction.status === "SAFE_WITHHELD") {
+    if (
+      input.origin === "CHOICE_CONTINUATION" &&
+      transaction.reason === "UNIQUE_CONSTRAINT_REJECTED" &&
+      transaction.uniqueConstraint?.operation ===
+        "CANONICAL_RECORD_PUT" &&
+      transaction.uniqueConstraint.attemptedActiveIdentityKey ===
+        activeIdentityKey
+    ) {
+      return recoverExactChoiceContinuationAfterUniqueConflict();
+    }
     if (
       input.origin === "CHOICE_RETURN" &&
       transaction.reason === "UNIQUE_CONSTRAINT_REJECTED" &&

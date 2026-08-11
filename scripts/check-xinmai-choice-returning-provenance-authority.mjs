@@ -130,7 +130,11 @@ if (gravity.includes("requestRealityEncounter({")) {
 }
 assertIncludes(gravity, "DormantRealLifeDepartureFocus");
 assertIncludes(launch, "readXinmaiChoiceReturningProvenanceRecovery(");
-assertIncludes(launch, 'choiceReturn:');
+assertIncludes(launch, "beginXinmaiPostOwnershipNextRealityCycle(");
+assertIncludes(launch, 'nextRealityCycle:');
+if (launch.includes('choiceReturn:\n                          "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED"')) {
+  throw new Error("completed Return consumer still reuses the old Reality Intent");
+}
 assertIncludes(surface, "confirmXinmaiChoiceExplicitReturn({");
 assertIncludes(surface, "我回来了");
 assertIncludes(surfaceStyles, "pointer-events: auto");

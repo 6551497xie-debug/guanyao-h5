@@ -77,6 +77,7 @@ import {
 } from "../services/realityExplicitLeaveNavigationDeliveryRuntimePort";
 import { resolveDynamicsInputContext } from "../services/guanyaoDynamicsInputContextAdapter";
 import { XinmaiLivedResponseReturnSurface } from "../components/XinmaiLivedResponseReturnSurface";
+import { beginXinmaiPostOwnershipNextRealityCycle } from "../services/xinmaiPostOwnershipNextRealityCycleController";
 import { resolveXinmaiLivedResponseCheckpointPresentation } from "../services/xinmaiLivedResponseCheckpointPresentationResolver";
 import {
   applyXinmaiReturningSameLifeContinuitySceneProjectionPolicy,
@@ -6244,22 +6245,30 @@ export function LaunchLab({
                       (revision) => revision + 1,
                     );
                   }}
-                  onRealityHandoff={(handoff) => {
-                    navigate(GUANYAO_ROUTES.reality, {
-                      state: {
-                        intentReferenceId: handoff.intentReferenceId,
-                        ...(returningVisualContinuity
-                          ? {
-                              visualContinuity:
-                                returningVisualContinuity,
-                            }
-                          : {}),
-                        choiceReturn:
-                          "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED",
-                        choiceActionIntentionReferenceId:
-                          handoff.choiceActionIntentionReferenceId,
-                      },
-                    });
+                  onNextRealityCycleRequest={async (command) => {
+                    const result =
+                      await beginXinmaiPostOwnershipNextRealityCycle(
+                        command,
+                      );
+                    if (result.status === "READY") {
+                      navigate(GUANYAO_ROUTES.reality, {
+                        state: {
+                          intentReferenceId:
+                            result.freshIntent.intentReferenceId,
+                          ...(returningVisualContinuity
+                            ? {
+                                visualContinuity:
+                                  returningVisualContinuity,
+                              }
+                            : {}),
+                          nextRealityCycle:
+                            "POST_OWNERSHIP_FRESH_INTENT",
+                          choiceActionIntentionReferenceId:
+                            command.choiceActionIntentionReferenceId,
+                        },
+                      });
+                    }
+                    return result;
                   }}
                 />
               ) : null}

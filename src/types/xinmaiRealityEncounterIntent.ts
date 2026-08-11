@@ -152,7 +152,8 @@ export type RealityEncounterRequestInput = Readonly<{
 export type RealityEncounterRequestDisposition =
   | "CREATED"
   | "ALREADY_CURRENT"
-  | "RECOVERED_EXACT_CHOICE_RETURN";
+  | "RECOVERED_EXACT_CHOICE_RETURN"
+  | "RECOVERED_EXACT_CHOICE_CONTINUATION";
 
 export type RealityEncounterRequestResult =
   | Readonly<{
@@ -189,6 +190,9 @@ export type RealityEncounterRequestResult =
         | "LEGACY_SOURCE_CORRUPTED"
         | "RETURN_CONFLICT_WINNER_NOT_VISIBLE"
         | "RETURN_CONFLICT_PROOF_MISMATCH"
+        | "CONTINUATION_SOURCE_ENCOUNTER_MISMATCH"
+        | "CONTINUATION_CONFLICT_WINNER_NOT_VISIBLE"
+        | "CONTINUATION_CONFLICT_PROOF_MISMATCH"
         | "UNIQUE_CONSTRAINT_REJECTED";
     }>;
 

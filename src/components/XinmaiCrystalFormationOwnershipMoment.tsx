@@ -9,10 +9,16 @@ export function XinmaiCrystalFormationOwnershipMoment({
   decision,
   onOwnershipPresented,
   onContinue,
+  continueDisabled = false,
+  continueBusy = false,
+  continueLabel = "带着这道痕迹，继续同行",
 }: Readonly<{
   decision: XinmaiCrystalOwnershipPresentationDecision;
   onOwnershipPresented: () => void;
   onContinue: () => void;
+  continueDisabled?: boolean;
+  continueBusy?: boolean;
+  continueLabel?: string;
 }>) {
   if (decision.state === "FORMATION_PENDING") {
     return (
@@ -153,12 +159,14 @@ export function XinmaiCrystalFormationOwnershipMoment({
         <button
           className="xinmai-crystal-ownership__continue"
           type="button"
+          disabled={continueDisabled}
+          aria-busy={continueBusy}
           onClick={(event) => {
             event.currentTarget.blur();
             onContinue();
           }}
         >
-          带着这道痕迹，继续同行
+          {continueLabel}
         </button>
       </div>
     </article>

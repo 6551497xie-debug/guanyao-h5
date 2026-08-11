@@ -9,6 +9,10 @@ import type {
   LivedResponseOutcome,
 } from "../types/xinmaiLivedResponse";
 import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityEncounterIntent";
+import type {
+  XinmaiPostOwnershipNextRealityCycleCommand,
+  XinmaiPostOwnershipNextRealityCycleResult,
+} from "../types/xinmaiPostOwnershipNextRealityCycle";
 import type { XinmaiChoiceReturningProvenanceAdmission } from "../types/xinmaiChoiceReturningProvenance";
 import type {
   XinmaiLivedResponseFormationRequestEvidence,
@@ -30,6 +34,7 @@ import { resolveCrystalEligibilityForFact } from "../services/xinmaiCrystalEligi
 import { confirmLivedResponseFact } from "../services/xinmaiLivedResponseAuthorityController";
 import { resolveXinmaiLivedResponseCheckpointPresentation } from "../services/xinmaiLivedResponseCheckpointPresentationResolver";
 import { resolveXinmaiReturningSameLifeContinuityPresentation } from "../services/xinmaiReturningSameLifeContinuityPresentationResolver";
+import { resolveXinmaiPostOwnershipNextRealityCyclePresentation } from "../services/xinmaiPostOwnershipNextRealityCyclePresentationResolver";
 import type {
   XinmaiReturningSameLifeContinuityPresentationProjection,
 } from "../types/xinmaiReturningSameLifeContinuityPresentation";
@@ -57,12 +62,6 @@ const FACT_OUTCOMES: readonly Readonly<{
   },
 ]);
 
-export type XinmaiLivedResponseRealityHandoff = Readonly<{
-  intentReferenceId: string;
-  targetEncounterCycleId: string;
-  choiceActionIntentionReferenceId: string;
-}>;
-
 type FormationFailureReason = Extract<
   XinmaiCrystalFormationProductionOutcome,
   { status: "SAFE_WITHHELD" }
@@ -72,7 +71,7 @@ export function XinmaiLivedResponseReturnSurface({
   identityReferences,
   admissions,
   onAuthorityRevision,
-  onRealityHandoff,
+  onNextRealityCycleRequest,
   bodyImprintDecision,
   sourceRenderPlanReferenceId,
   onSameLifeContinuityProjection,
@@ -81,7 +80,9 @@ export function XinmaiLivedResponseReturnSurface({
   identityReferences: RealityEncounterIdentityReferences;
   admissions: readonly XinmaiChoiceReturningProvenanceAdmission[];
   onAuthorityRevision?: () => void;
-  onRealityHandoff?: (handoff: XinmaiLivedResponseRealityHandoff) => void;
+  onNextRealityCycleRequest?: (
+    command: XinmaiPostOwnershipNextRealityCycleCommand,
+  ) => Promise<XinmaiPostOwnershipNextRealityCycleResult>;
   bodyImprintDecision: XinmaiCanonicalBodyImprintDecision;
   sourceRenderPlanReferenceId: string;
   onSameLifeContinuityProjection?: (
@@ -107,6 +108,17 @@ export function XinmaiLivedResponseReturnSurface({
   const [summary, setSummary] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [nextCycleFailure, setNextCycleFailure] = useState<
+    Extract<
+      XinmaiPostOwnershipNextRealityCycleResult,
+      { status: "SAFE_WITHHELD" }
+    > | null
+  >(null);
+  const nextCyclePresentation =
+    resolveXinmaiPostOwnershipNextRealityCyclePresentation(
+      busy,
+      nextCycleFailure,
+    );
   const [confirmedFormation, setConfirmedFormation] = useState<Readonly<{
     choiceActionIntentionReferenceId: string;
     receipt: CrystalFormationReceipt;
@@ -560,25 +572,38 @@ export function XinmaiLivedResponseReturnSurface({
     setBusy(false);
   };
 
-  const handoffConfirmedCrystal = () => {
+  const handoffConfirmedCrystal = async () => {
     if (
+      busy ||
       currentFormationReceipt === null ||
       selected.returnReceipt === null ||
       sameLifeContinuityProjection.status !== "PRESENTABLE" ||
       sameLifeContinuityProjection.checkpointState !== "OWNERSHIP_PRESENTED" ||
       sameLifeContinuityProjection.lineage.crystalReferenceId !==
-        currentFormationReceipt.crystalReferenceId
+        currentFormationReceipt.crystalReferenceId ||
+      onNextRealityCycleRequest === undefined
     ) {
       return;
     }
-    onRealityHandoff?.({
-      intentReferenceId:
-        selected.returnReceipt.realityProof.realityIntentReferenceId,
-      targetEncounterCycleId:
-        selected.returnReceipt.targetEncounterCycleId,
+    setBusy(true);
+    setFeedback("正在为同一生命协调下一段现实。");
+    setNextCycleFailure(null);
+    const result = await onNextRealityCycleRequest({
+      identityReferences,
       choiceActionIntentionReferenceId:
         intention.choiceActionIntentionReferenceId,
+      formationReferenceId: currentFormationReceipt.formationReferenceId,
     });
+    if (result.status === "SAFE_WITHHELD") {
+      setNextCycleFailure(result);
+      setFeedback(
+        resolveXinmaiPostOwnershipNextRealityCyclePresentation(
+          false,
+          result,
+        ).message,
+      );
+    }
+    setBusy(false);
   };
 
   return (
@@ -615,6 +640,13 @@ export function XinmaiLivedResponseReturnSurface({
       data-returning-same-life-continuity-reference={
         sameLifeContinuityProjection.semanticProjectionReferenceId ?? "NONE"
       }
+      data-next-reality-cycle-presentation={nextCyclePresentation.state}
+      data-next-reality-cycle-retryability={
+        nextCyclePresentation.retryability
+      }
+      data-next-reality-cycle-typed-cause={
+        nextCyclePresentation.typedCause ?? "NONE"
+      }
     >
       {checkpointDecision.state !== "OWNERSHIP_PRESENTED" ? (
         <header className="xinmai-lived-response-return-surface__heading">
@@ -632,7 +664,7 @@ export function XinmaiLivedResponseReturnSurface({
         aria-live="polite"
         aria-atomic="true"
       >
-        {liveAnnouncement || feedback || ""}
+        {feedback || liveAnnouncement || ""}
       </p>
       {currentFormationReceipt === null && admissions.length > 1 ? (
         <div
@@ -742,6 +774,9 @@ export function XinmaiLivedResponseReturnSurface({
             )
           }
           onContinue={handoffConfirmedCrystal}
+          continueDisabled={nextCyclePresentation.actionDisabled}
+          continueBusy={nextCyclePresentation.busy}
+          continueLabel={nextCyclePresentation.actionLabel}
         />
       ) : checkpointDecision.state === "SAFE_WITHHELD" &&
         selected.state === "DEPARTURE_RECONCILIATION_PENDING" ? (

@@ -11,6 +11,9 @@ const host = read("src/components/RealityProductionHost.tsx");
 const resolutionProof = read(
   "src/services/xinmaiChoiceReturnResolutionProofAdapter.ts",
 );
+const nextCycle = read(
+  "src/services/xinmaiPostOwnershipNextRealityCycleController.ts",
+);
 
 const requireSource = (source, fragment, message) => {
   if (!source.includes(fragment)) {
@@ -20,9 +23,12 @@ const requireSource = (source, fragment, message) => {
 
 requireSource(
   returning,
-  "returnReceipt.realityProof.realityIntentReferenceId",
-  "Only the confirmed Return Receipt may carry the target Reality intent.",
+  "onNextRealityCycleRequest",
+  "The completed Return surface must issue a typed next-cycle command.",
 );
+if (returning.includes("returnReceipt.realityProof.realityIntentReferenceId")) {
+  throw new Error("Completed Return surface still routes with the historical Intent.");
+}
 requireSource(
   returning,
   "returnReceiptReferenceId:",
@@ -30,8 +36,13 @@ requireSource(
 );
 requireSource(
   launch,
-  '"CHOICE_RETURN_LIVED_RESPONSE_RESOLVED"',
-  "Launch must mark only a resolved lived-response handoff.",
+  '"POST_OWNERSHIP_FRESH_INTENT"',
+  "Launch must navigate only with a fresh post-Ownership Intent.",
+);
+requireSource(
+  nextCycle,
+  'origin: "CHOICE_CONTINUATION"',
+  "The next Reality cycle must use the existing typed Intent Controller.",
 );
 requireSource(
   route,

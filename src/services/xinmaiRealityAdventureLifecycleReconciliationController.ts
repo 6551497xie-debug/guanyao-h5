@@ -10,12 +10,19 @@ import type {
   XinmaiRealityAdventureDepartureReconciliationReadResult,
   XinmaiRealityAdventureLifecycleReconciliationResult,
 } from "../types/xinmaiRealityGravityDepartureReconciliation";
+import type {
+  XinmaiCompletedReturnTargetProof,
+  XinmaiCompletedReturnTargetReconciliationReason,
+  XinmaiCompletedReturnTargetReconciliationResult,
+} from "../types/xinmaiPostOwnershipNextRealityCycle";
 import {
   readRealityAdventureContinuity,
   transactRealityAdventureContinuity,
 } from "./xinmaiRealityAdventureContinuityTransactionalStore";
 import { isXinmaiRealityAdventureLifecycleReconciliationMutationEnabled } from "./xinmaiRealityAdventureLifecycleReconciliationMutationPolicy";
+import { isXinmaiPostOwnershipNextRealityCycleMutationEnabled } from "./xinmaiPostOwnershipNextRealityCycleMutationPolicy";
 import { publishRealityAdventureContinuityRevision } from "./xinmaiRealityAdventureContinuityRevisionObserver";
+import { classifyXinmaiCompletedReturnTargetLifecycle } from "./xinmaiCompletedReturnTargetLifecycleResolver";
 
 const identityMatches = (
   left: XinmaiChoiceDepartureReconciliationProof["identityReferences"],
@@ -117,6 +124,181 @@ const storageReason = (
   XinmaiRealityAdventureLifecycleReconciliationResult,
   { status: "SAFE_WITHHELD" }
 >["reason"] => reason;
+
+const completedReturnRetryability = (
+  reason: XinmaiCompletedReturnTargetReconciliationReason,
+): "RETRYABLE" | "NON_RETRYABLE" =>
+  reason === "TRANSACTION_STORAGE_UNAVAILABLE" ||
+  reason === "TRANSACTION_OPEN_BLOCKED" ||
+  reason === "TRANSACTION_ABORTED" ||
+  reason === "TRANSACTION_CONNECTION_CLOSED" ||
+  reason === "WRITE_UNCONFIRMED"
+    ? "RETRYABLE"
+    : "NON_RETRYABLE";
+
+const completedReturnSafeWithheld = (
+  proof: XinmaiCompletedReturnTargetProof | null,
+  reason: XinmaiCompletedReturnTargetReconciliationReason,
+): XinmaiCompletedReturnTargetReconciliationResult =>
+  Object.freeze({
+    status: "SAFE_WITHHELD" as const,
+    targetEncounterCycleId: proof?.targetEncounterCycleId ?? null,
+    targetRealityIntentReferenceId:
+      proof?.targetRealityIntentReferenceId ?? null,
+    terminalReason: null,
+    canonicalRevision: null,
+    fencingToken: null,
+    reason,
+    retryability: completedReturnRetryability(reason),
+  });
+
+const completedReturnLineageMatches = (
+  record: RealityAdventureEncounterContinuityRecord,
+  proof: XinmaiCompletedReturnTargetProof,
+): boolean => {
+  const intent = record.realityIntent;
+  if (
+    record.encounterCycleId !== proof.targetEncounterCycleId ||
+    intent.encounterCycleId !== proof.targetEncounterCycleId ||
+    intent.intentReferenceId !== proof.targetRealityIntentReferenceId ||
+    intent.origin !== "CHOICE_RETURN" ||
+    intent.qualification !== "EXPLICIT_RETURN_TO_CHOICE" ||
+    intent.choiceActionIntentionReferenceId !==
+      proof.choiceActionIntentionReferenceId ||
+    intent.sourceEncounterCycleId !== proof.sourceEncounterCycleId ||
+    !identityMatches(record.identityReferences, proof.identityReferences) ||
+    !identityMatches(intent, proof.identityReferences) ||
+    record.canonicalRevision < proof.targetRealityProofCanonicalRevision ||
+    record.fencingToken < proof.targetRealityProofFencingToken
+  ) {
+    return false;
+  }
+  const admission = record.gravityAdmission;
+  return admission === null || (
+    identityMatches(admission.identityReferences, proof.identityReferences) &&
+    admission.sourceReality.intentReferenceId ===
+      proof.targetRealityIntentReferenceId &&
+    admission.sourceReality.encounterCycleId ===
+      proof.targetEncounterCycleId &&
+    admission.sourceReality.choiceActionIntentionReferenceId ===
+      proof.choiceActionIntentionReferenceId
+  );
+};
+
+export async function reconcileXinmaiCompletedReturnTargetForNextEncounter(
+  proof: XinmaiCompletedReturnTargetProof,
+): Promise<XinmaiCompletedReturnTargetReconciliationResult> {
+  if (
+    !isXinmaiPostOwnershipNextRealityCycleMutationEnabled() ||
+    !isXinmaiRealityAdventureLifecycleReconciliationMutationEnabled()
+  ) {
+    return completedReturnSafeWithheld(proof, "MUTATION_PAUSED");
+  }
+  type Decision =
+    | Readonly<{ status: "RECONCILED" | "ALREADY_RECONCILED" }>
+    | Readonly<{
+        status: "REJECTED";
+        reason: XinmaiCompletedReturnTargetReconciliationReason;
+      }>;
+  const transaction = await transactRealityAdventureContinuity<Decision>({
+    lookup: Object.freeze({
+      kind: "ENCOUNTER" as const,
+      value: proof.targetEncounterCycleId,
+    }),
+    mutate: (record) => {
+      if (record === null) {
+        return Object.freeze({
+          status: "REJECTED" as const,
+          record: null,
+          value: Object.freeze({
+            status: "REJECTED" as const,
+            reason: "TARGET_NOT_FOUND" as const,
+          }),
+        });
+      }
+      if (!completedReturnLineageMatches(record, proof)) {
+        return Object.freeze({
+          status: "REJECTED" as const,
+          record,
+          value: Object.freeze({
+            status: "REJECTED" as const,
+            reason:
+              record.canonicalRevision <
+                proof.targetRealityProofCanonicalRevision ||
+              record.fencingToken < proof.targetRealityProofFencingToken
+                ? "STALE_REVISION" as const
+                : "PROOF_MISMATCH" as const,
+          }),
+        });
+      }
+      const admission = record.gravityAdmission;
+      const classification = classifyXinmaiCompletedReturnTargetLifecycle({
+        lifecycle: record.lifecycle,
+        activeIdentityKeyPresent: record.activeIdentityKey !== undefined,
+        outerTerminalReason: record.terminalReason,
+        intentState: record.realityIntent.state,
+        intentTerminalReason: record.realityIntent.terminalReason,
+        gravityAdmissionState: admission?.state ?? null,
+        gravityTerminalReason: admission?.terminalReason ?? null,
+      });
+      if (classification === "ALREADY_RECONCILED") {
+        return Object.freeze({
+          status: "UNCHANGED" as const,
+          record,
+          value: Object.freeze({
+            status: "ALREADY_RECONCILED" as const,
+          }),
+        });
+      }
+      if (classification !== "ALLOW") {
+        return Object.freeze({
+          status: "REJECTED" as const,
+          record,
+          value: Object.freeze({
+            status: "REJECTED" as const,
+            reason: classification,
+          }),
+        });
+      }
+      const reconciledAt = new Date().toISOString();
+      return Object.freeze({
+        status: "COMMIT" as const,
+        record: terminalizeXinmaiRealityAdventureLifecycleRecord({
+          record,
+          terminalReason: "START_NEW_ENCOUNTER",
+          terminalAt: reconciledAt,
+        }),
+        value: Object.freeze({ status: "RECONCILED" as const }),
+      });
+    },
+  });
+  if (transaction.status === "SAFE_WITHHELD") {
+    return completedReturnSafeWithheld(proof, transaction.reason);
+  }
+  if (transaction.value.status === "REJECTED" || transaction.record === null) {
+    return completedReturnSafeWithheld(
+      proof,
+      transaction.value.status === "REJECTED"
+        ? transaction.value.reason
+        : "RECOVERY_CORRUPTED",
+    );
+  }
+  publishRealityAdventureContinuityRevision({
+    encounterCycleId: transaction.record.encounterCycleId,
+    canonicalRevision: transaction.record.canonicalRevision,
+    fencingToken: transaction.record.fencingToken,
+  });
+  return Object.freeze({
+    status: transaction.value.status,
+    targetEncounterCycleId: proof.targetEncounterCycleId,
+    targetRealityIntentReferenceId: proof.targetRealityIntentReferenceId,
+    terminalReason: "START_NEW_ENCOUNTER" as const,
+    canonicalRevision: transaction.record.canonicalRevision,
+    fencingToken: transaction.record.fencingToken,
+    reason: null,
+    retryability: "NOT_NEEDED" as const,
+  });
+}
 
 export async function reconcileXinmaiChoiceExplicitDeparture(
   proof: XinmaiChoiceDepartureReconciliationProof,
@@ -353,6 +535,8 @@ export async function readXinmaiChoiceDepartureReconciliation(input: Readonly<{
 export const XinmaiRealityAdventureLifecycleReconciliationController =
   Object.freeze({
     reconcileExplicitDeparture: reconcileXinmaiChoiceExplicitDeparture,
+    reconcileCompletedReturnTarget:
+      reconcileXinmaiCompletedReturnTargetForNextEncounter,
     readExplicitDeparture: readXinmaiChoiceDepartureReconciliation,
     terminalizeRecord: terminalizeXinmaiRealityAdventureLifecycleRecord,
     activeIdentityKeyReleaseOwner: true as const,

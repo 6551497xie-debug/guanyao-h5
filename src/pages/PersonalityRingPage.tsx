@@ -7,6 +7,8 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { readXinmaiCanonicalBodyImprintRecovery } from "../services/xinmaiCanonicalBodyImprintRecoveryAdapter";
+import { beginXinmaiPostOwnershipNextRealityCycle } from "../services/xinmaiPostOwnershipNextRealityCycleController";
+import { resolveXinmaiPostOwnershipNextRealityCyclePresentation } from "../services/xinmaiPostOwnershipNextRealityCyclePresentationResolver";
 import { resolveXinmaiSameLifeAccessibleSemanticMirror } from "../services/xinmaiSameLifeAccessibleSemanticMirror";
 import {
   applyXinmaiReturningSameLifeContinuitySceneProjectionPolicy,
@@ -22,6 +24,7 @@ import {
 } from "../types/xinmaiCanonicalBodyImprint";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
 import type { XinmaiSameLifeSurfaceOutcome } from "../types/xinmaiSameLifeSurfacePresentation";
+import type { XinmaiPostOwnershipNextRealityCycleResult } from "../types/xinmaiPostOwnershipNextRealityCycle";
 import "../styles/reality-pressure-presentation.css";
 import "../styles/xinmai-same-life-surface.css";
 
@@ -60,6 +63,13 @@ export function PersonalityRingPage() {
     useState<string | null>(null);
   const [sameLifeSurfaceOutcome, setSameLifeSurfaceOutcome] =
     useState<XinmaiSameLifeSurfaceOutcome | null>(null);
+  const [nextCycleBusy, setNextCycleBusy] = useState(false);
+  const [nextCycleFailure, setNextCycleFailure] = useState<
+    Extract<
+      XinmaiPostOwnershipNextRealityCycleResult,
+      { status: "SAFE_WITHHELD" }
+    > | null
+  >(null);
 
   useEffect(
     () =>
@@ -105,6 +115,23 @@ export function PersonalityRingPage() {
       (imprint) =>
         imprint.imprintReferenceId === selectedImprintReferenceId,
     ) ?? null;
+  const nextCycleImprint =
+    bodyImprintDecision.status === "IMPRINT_AVAILABLE"
+      ? bodyImprintDecision.imprints.find(
+          (imprint) =>
+            imprint.imprintReferenceId ===
+            bodyImprintDecision.focusedImprintReferenceId,
+        ) ??
+          bodyImprintDecision.imprints[
+            bodyImprintDecision.imprints.length - 1
+          ] ??
+          null
+      : null;
+  const nextCyclePresentation =
+    resolveXinmaiPostOwnershipNextRealityCyclePresentation(
+      nextCycleBusy,
+      nextCycleFailure,
+    );
   const archiveSourceRenderPlanReferenceId = useMemo(
     () =>
       identityRecovery.status === "READY"
@@ -152,6 +179,38 @@ export function PersonalityRingPage() {
     [bodyImprintDecision, sameLifeSurfaceOutcome],
   );
 
+  const beginNextRealityCycle = async () => {
+    if (
+      nextCycleBusy ||
+      nextCycleImprint === null ||
+      identityRecovery.status !== "READY"
+    ) {
+      return;
+    }
+    setNextCycleBusy(true);
+    setNextCycleFailure(null);
+    const result = await beginXinmaiPostOwnershipNextRealityCycle({
+      identityReferences: identityRecovery.identityReferences,
+      choiceActionIntentionReferenceId:
+        nextCycleImprint.choiceActionIntentionReferenceId,
+      formationReferenceId: nextCycleImprint.formationReferenceId,
+    });
+    if (result.status === "READY") {
+      navigate("/reality", {
+        state: {
+          intentReferenceId: result.freshIntent.intentReferenceId,
+          visualContinuity: identityRecovery.visualContinuity,
+          nextRealityCycle: "POST_OWNERSHIP_FRESH_INTENT",
+          choiceActionIntentionReferenceId:
+            nextCycleImprint.choiceActionIntentionReferenceId,
+        },
+      });
+    } else {
+      setNextCycleFailure(result);
+    }
+    setNextCycleBusy(false);
+  };
+
   return (
     <main
       className="gy-same-life-archive"
@@ -171,6 +230,13 @@ export function PersonalityRingPage() {
       data-personality-ring-crystal-copy-role="TEXT_ONLY_NO_BODY_AUTHORITY"
       data-archive-mirror-projection-role="ARCHIVE_SYNC_ONLY"
       data-legacy-r7-archive="ISOLATED_OUTSIDE_CANONICAL_BODY"
+      data-next-reality-cycle-presentation={nextCyclePresentation.state}
+      data-next-reality-cycle-retryability={
+        nextCyclePresentation.retryability
+      }
+      data-next-reality-cycle-typed-cause={
+        nextCyclePresentation.typedCause ?? "NONE"
+      }
       style={{
         position: "fixed",
         inset: 0,
@@ -309,6 +375,29 @@ export function PersonalityRingPage() {
               </li>;
             })}
           </ol>
+        ) : null}
+        {nextCycleImprint !== null ? (
+          <div style={{ display: "grid", gap: 8, justifyItems: "center" }}>
+            <button
+              type="button"
+              disabled={nextCyclePresentation.actionDisabled}
+              aria-busy={nextCyclePresentation.busy}
+              onClick={() => void beginNextRealityCycle()}
+              style={{
+                minHeight: 44,
+                border: "1px solid rgba(236,222,188,0.42)",
+                borderRadius: 999,
+                padding: "10px 18px",
+                background: "rgba(2,3,6,0.62)",
+                color: "rgba(255,239,196,0.94)",
+              }}
+            >
+              {nextCyclePresentation.actionLabel}
+            </button>
+            <small role="status" aria-live="polite" aria-atomic="true">
+              {nextCyclePresentation.message}
+            </small>
+          </div>
         ) : null}
 
         {selectedImprint ? (
