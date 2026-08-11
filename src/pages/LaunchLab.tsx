@@ -509,7 +509,7 @@ const STATE = {
 
 const TOP_LINES = ["日月运行，", "星辰有序。"];
 const CTA_LINES = ["那个被现实遮住的你，", "仍在这里。"];
-const ENTRY_ACTION_LINE = "进入我的生命世界";
+const ENTRY_ACTION_LINE = "开始本次体验";
 const ENTRY_TRANSITION_LINE = "去看见，那个一直存在的自己。";
 const BEAST_COLLAPSE_VISUAL_EVENT = "BEAST_COLLAPSE_VISUAL_EVENT";
 const NODE1_MIRROR_ACTIVATED_EVENT = "NODE1_MIRROR_ACTIVATED";
@@ -3249,7 +3249,7 @@ export function LaunchLab({
             ctx.fillStyle = `rgba(255,247,228,${(relationCopyAlpha * 0.92).toFixed(3)})`;
             ctx.font = `650 ${mainSize}px ${SANS}`;
             ctx.fillText(
-              returningLifeIdentity ? "这里是你的生命世界。" : CTA_LINES[0],
+              returningLifeIdentity ? "这里是你的旅程入口。" : CTA_LINES[0],
               m.w / 2,
               m.h * 0.78,
             );
@@ -6210,7 +6210,7 @@ export function LaunchLab({
         {returningVisualReady ? (
           <section
             className="gy-returning-life-world__copy"
-            aria-label="回到我的生命世界"
+            aria-label="返回我的旅程入口"
           >
             <div className="gy-returning-life-world__cosmos-copy">
               <span>日月运行，</span>

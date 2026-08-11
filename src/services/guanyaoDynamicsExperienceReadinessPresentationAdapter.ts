@@ -65,9 +65,9 @@ export function resolveDynamicsExperienceReadinessPresentation(
       mode: "MOTHER_CONNECTED",
       experienceState: {
         ...experienceState,
-        headline: "你的原始生命倾向正在回应这一刻。",
-        supportingCopy: "这一颗压力，正在与你带来的生命倾向相遇。",
-        pressureCopy: "从这里开始，看见你会怎样感受和回应。",
+        headline: "正在准备身体观察。",
+        supportingCopy: "你选择的现实情境已经保留；控件就绪后可开始选择。",
+        pressureCopy: "接下来只保存你明确确认的这一维观察。",
       },
       pressureContextMarker: "connected",
       motherReference,

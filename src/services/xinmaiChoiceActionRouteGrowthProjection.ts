@@ -73,7 +73,7 @@ export function projectChoiceActionRouteForGrowth(
     beastImpact: Object.freeze({
       before: "旧回应仍在收紧",
       after: "生命为一次现实微实验留出空间",
-      cue: "同一生命没有被替换",
+      cue: "既有旅程记录没有被替换",
     }),
     crystalImprint: Object.freeze({
       imprintLine: candidate.action.completionPrompt,

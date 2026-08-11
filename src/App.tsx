@@ -95,7 +95,7 @@ function LifeUniverseRouteFallback() {
       aria-live="polite"
       data-continuous-scene-route-pending="TRUE"
     >
-      正在确认同一片生命世界
+      正在确认旅程入口
     </div>
   );
 }
@@ -192,13 +192,13 @@ class RealityRouteLoadBoundary extends Component<
           currentIntent?.encounterCycleId ?? "NONE"
         }
       >
-        <p role="status">现实入口暂时没有完整打开。</p>
+        <p role="status">现实入口暂时无法打开。已有记录会保留，你可以重试或返回旅程入口。</p>
         <button
           type="button"
           data-interaction="RETRY_SAME_REALITY_ENCOUNTER"
           onClick={this.retry}
         >
-          继续这一轮
+          重试打开现实入口
         </button>
         <button
           type="button"
@@ -207,8 +207,8 @@ class RealityRouteLoadBoundary extends Component<
           onClick={this.explicitLeave}
         >
           {explicitLeavePending
-            ? "正在让这一轮安静下来"
-            : "这一轮先到这里"}
+            ? "正在退出当前现实情境"
+            : "退出并返回旅程入口"}
         </button>
         {this.props.explicitLeaveState.status === "RETRYABLE" ? (
           <p role="status" data-reality-explicit-leave-feedback="RETRYABLE">
@@ -586,8 +586,8 @@ export default function App() {
             explicitLeaveNavigationDelivery.status
           }
         >
-          <p>这一轮已经停下。</p>
-          <strong>回到同一片生命星河。</strong>
+          <p>当前现实情境已经退出，已有记录会保留。</p>
+          <strong>正在返回旅程入口。</strong>
           {explicitLeaveNavigationDelivery.status ===
           "NAVIGATION_RETRYABLE" ? (
             <button
@@ -595,10 +595,10 @@ export default function App() {
               data-interaction="RETRY_LIFE_WORLD_NAVIGATION"
               onClick={retryLifeWorldNavigation}
             >
-              回到生命世界
+              重试返回旅程入口
             </button>
           ) : (
-            <small>正在回到生命世界</small>
+            <small>正在返回旅程入口</small>
           )}
         </section>
       ) : null}

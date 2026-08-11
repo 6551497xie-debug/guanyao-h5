@@ -26,7 +26,7 @@ for (const copy of [
   "先回到生活",
   "返回重新选择",
   "不想留下这次记录，也可以。",
-  "确认不记录，回到生命世界",
+  "确认不记录，返回旅程入口",
 ]) {
   assert(semantic.includes(copy), `semantic owner missing plain-language contract: ${copy}`);
 }

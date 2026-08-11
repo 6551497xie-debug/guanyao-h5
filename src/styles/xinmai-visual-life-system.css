@@ -579,7 +579,7 @@ body {
 .xinmai-life-app[data-xinmai-surface="REALITY"]
   [data-production-reality-status="SOURCE_NOT_READY"]
   p::after {
-  content: "你的生命世界还未准备好进入现实。";
+  content: "当前还不能进入现实情境；已有记录会保留。";
   color: var(--xinmai-life-muted);
   font-family: var(--xinmai-font-life);
   font-size: 13px;

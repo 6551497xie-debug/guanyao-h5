@@ -628,12 +628,12 @@ export function GravityProductionRouteEntry() {
       >
         <p role="status">
           {assembly.status === "PENDING"
-            ? "同一生命正在靠近这次看见。"
-            : "这次看见还没有被完整承接。"}
+            ? "正在恢复这段旅程的六维观察。"
+            : "六维观察当前无法继续；已有记录会保留。"}
         </p>
         {assembly.status === "RETRYABLE" ? (
           <button type="button" onClick={retry}>
-            继续靠近
+            重试恢复六维观察
           </button>
         ) : null}
         {assembly.status === "BLOCKED" ? (
@@ -641,7 +641,7 @@ export function GravityProductionRouteEntry() {
             type="button"
             onClick={() => navigate("/launch-lab", { replace: true })}
           >
-            回到生命世界
+            返回旅程入口
           </button>
         ) : null}
       </main>

@@ -1072,14 +1072,14 @@ export function RealityProductionRouteEntry({
             data-interaction="RETRY_SAME_REALITY_ENCOUNTER"
             onClick={retryCurrentEncounter}
           >
-            继续这一轮
+            重试准备现实入口
           </button>
         ) : entryPresentation.showReturnToLifeWorld && currentIntent === null ? (
           <button
             type="button"
             onClick={onReturnToLifeWorld}
           >
-            回到生命世界
+            返回旅程入口
           </button>
         ) : null}
         {currentIntent !== null ? (
@@ -1090,8 +1090,8 @@ export function RealityProductionRouteEntry({
             onClick={requestExplicitLeave}
           >
             {explicitLeaveState.status === "PENDING"
-              ? "正在让这一轮安静下来"
-              : "这一轮先到这里"}
+              ? "正在退出当前现实情境"
+              : "退出并返回旅程入口"}
           </button>
         ) : null}
         {explicitLeaveState.status === "RETRYABLE" ? (
@@ -1110,13 +1110,13 @@ export function RealityProductionRouteEntry({
         data-reality-adventure-continuity="SUPERSEDED_BY_GRAVITY"
       >
         <p role="status">
-          这次现实已经由同一生命承接，继续回到它正在发生的地方。
+          这段旅程已经进入六维观察，可以继续查看当前进度。
         </p>
         <button
           type="button"
           onClick={() => navigate(GUANYAO_ROUTES.dynamics)}
         >
-          继续同行
+          继续六维观察
         </button>
       </main>
     );
@@ -1206,7 +1206,7 @@ export function RealityProductionRouteEntry({
         data-production-reality-status="SOURCE_NOT_READY"
         data-guard-reason="REALITY_INTENT_ATTEMPT_NOT_CURRENT"
       >
-        <p role="status">这一轮现实还没有被完整承接。</p>
+        <p role="status">当前现实情境尚未完成接入。已有记录会保留，请返回旅程入口。</p>
       </main>
     );
   }
@@ -1216,7 +1216,7 @@ export function RealityProductionRouteEntry({
         className="gy-reality-route-guard"
         data-production-reality-status="SAME_LIFE_SURFACE_RECOVERING"
       >
-        <p role="status">同一生命正在恢复它已经记住的痕迹。</p>
+        <p role="status">正在恢复这段旅程的既有记录。恢复完成后可继续。</p>
       </main>
     );
   }

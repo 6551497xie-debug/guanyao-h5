@@ -3578,7 +3578,7 @@ function HexagramCodeDeliveryShell({
             </div>
             <p className="gy-reality-life-universe__continuity-copy">
               {innerViewBodyContinuityActive
-                ? "刚才回应的地方，开始显出生命的流动。"
+                ? "正在准备身体观察。"
                 : "现实情境已保留，六维观察可以开始。"}
             </p>
           </div>

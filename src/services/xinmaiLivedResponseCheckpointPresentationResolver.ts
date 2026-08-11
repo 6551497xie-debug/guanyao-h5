@@ -217,7 +217,7 @@ export function resolveXinmaiLivedResponseCheckpointPresentation(
     return decision(input, {
       state: "BASELINE_LIFE_WORLD",
       baselineKind: "NEUTRAL",
-      headline: "这里是你的生命世界。",
+      headline: "这里是你的旅程入口。",
       support:
         "此刻没有等待你确认的现实回应。你可以从这里开始下一段现实。",
       primaryAction: "START_NEW_REALITY",

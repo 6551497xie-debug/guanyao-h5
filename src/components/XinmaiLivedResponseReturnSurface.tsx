@@ -940,9 +940,9 @@ export function XinmaiLivedResponseReturnSurface({
         selected.state === "TERMINAL_BY_GROWTH" &&
         selected.currentEligibility !== null ? (
         <div className="xinmai-lived-response-return-surface__recovery">
-          <p>这次形成无法在当前状态重试。已经保存的真实回应与生命痕迹不会被删除。</p>
+          <p>这次结果当前无法继续保存，也不能在这里重试。已经确认的现实回应与既有记录不会被删除。</p>
           <button type="button" onClick={() => window.location.assign("/launch-lab")}>
-            保留记录，回到生命世界
+            保留记录，返回旅程入口
           </button>
         </div>
       ) : null}

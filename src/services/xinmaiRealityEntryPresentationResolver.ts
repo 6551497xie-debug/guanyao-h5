@@ -1,4 +1,12 @@
 import type { RealityPressureFailureEnvelope } from "../types/realityPressureFailureEnvelope";
+import { readXinmaiFormalStatePresentation } from "./xinmaiSemanticConstitutionFormalStateMatrix";
+
+const realityStateMessage = (state: string): string => {
+  const presentation = readXinmaiFormalStatePresentation("REALITY", state);
+  return presentation === null
+    ? "现实入口当前无法继续。已有记录会保留，请返回旅程入口。"
+    : `${presentation.currentFact} ${presentation.nextAction}。`;
+};
 
 export type XinmaiRealityEntryPresentation = Readonly<{
   state:
@@ -36,7 +44,7 @@ export function resolveXinmaiRealityEntryPresentation(input: Readonly<{
   if (input.deliveryReady) {
     return Object.freeze({
       state: "READY" as const,
-      message: "现实已经准备好，可以进入。",
+      message: realityStateMessage("ADMISSION_READY"),
       retryability: "NON_RETRYABLE" as const,
       showRetry: false,
       showReturnToLifeWorld: false,
@@ -60,7 +68,7 @@ export function resolveXinmaiRealityEntryPresentation(input: Readonly<{
   if (cause === "TARGET_450_NEW_CREATION_SAFE_WITHHELD") {
     return Object.freeze({
       state: "SAFE_WITHHELD" as const,
-      message: "新的现实入口正在安全暂停。你的生命资料已经保留，可以先回到生命世界。",
+      message: realityStateMessage("WITHHELD"),
       retryability: "NON_RETRYABLE" as const,
       showRetry: false,
       showReturnToLifeWorld: true,
@@ -76,7 +84,7 @@ export function resolveXinmaiRealityEntryPresentation(input: Readonly<{
   ) {
     return Object.freeze({
       state: "CATALOG_UNAVAILABLE" as const,
-      message: "当前现实候选还不能承接这段生命资料。资料已经保留，请先回到生命世界。",
+      message: realityStateMessage("NON_RETRYABLE"),
       retryability: "NON_RETRYABLE" as const,
       showRetry: false,
       showReturnToLifeWorld: true,
@@ -86,7 +94,7 @@ export function resolveXinmaiRealityEntryPresentation(input: Readonly<{
   if (retryability === "RETRYABLE") {
     return Object.freeze({
       state: "COORDINATING" as const,
-      message: "现实入口正在协调，可以再试一次。",
+      message: realityStateMessage("RETRYABLE"),
       retryability,
       showRetry: true,
       showReturnToLifeWorld: true,
@@ -95,7 +103,7 @@ export function resolveXinmaiRealityEntryPresentation(input: Readonly<{
   }
   return Object.freeze({
     state: "SOURCE_UNAVAILABLE" as const,
-    message: "这一次现实还没有被完整承接。生命资料已经保留，请先回到生命世界。",
+    message: realityStateMessage("NON_RETRYABLE"),
     retryability: "NON_RETRYABLE" as const,
     showRetry: false,
     showReturnToLifeWorld: true,

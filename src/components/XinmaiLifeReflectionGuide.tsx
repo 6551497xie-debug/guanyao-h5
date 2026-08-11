@@ -72,7 +72,7 @@ export function XinmaiLifeReflectionGuide({
     finalActionState === "PREPARING" ? "这一维观察正在准备，尚未保存。" :
     finalActionState === "SAVING" || continuePending ? "正在保存这一维观察。" :
     finalActionState === "RETRYABLE" ? "这次观察还没有保存，可以重新尝试。" :
-    finalActionState === "SAFE_WITHHELD" ? "这一维暂时无法保存，已有生命记录仍被保留。" :
+    finalActionState === "SAFE_WITHHELD" ? "这一维暂时无法保存，已经保存的观察仍会保留。" :
     "你的选择只在当前画面中；确认保存后才会成为这一维观察。";
 
   function chooseResponse(response: XinmaiSixDimensionSemanticResponse) {

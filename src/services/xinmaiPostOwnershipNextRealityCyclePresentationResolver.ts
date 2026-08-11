@@ -24,7 +24,7 @@ export function resolveXinmaiPostOwnershipNextRealityCyclePresentation(
   if (busy) {
     return Object.freeze({
       state: "COORDINATING" as const,
-      message: "正在为同一生命协调下一段现实。",
+      message: "正在准备下一段现实情境。上一段记录会继续保留。",
       actionLabel: "正在协调下一段现实",
       actionDisabled: true,
       busy: true,

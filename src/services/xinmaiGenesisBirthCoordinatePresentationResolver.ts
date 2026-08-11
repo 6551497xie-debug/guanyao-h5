@@ -282,13 +282,13 @@ export function resolveXinmaiGenesisBirthCoordinatePresentation(
     });
   }
   if (input.status === "LIFE_WORLD_BASELINE") {
-    return Object.freeze({ state: "LIFE_WORLD_BASELINE" as const, headline: "先让这片生命世界认识你的时间", support: "请按出生证明或家人记忆中的当地日期与钟表时间填写；农历与时辰由系统确定性推导。", primaryAction: "BEGIN" as const, showCoordinateFields: false, confirmationEnabled: false, validation, derivationReceipt, sceneEnrichment: "GENERIC_LIFE_WORLD" as const });
+    return Object.freeze({ state: "LIFE_WORLD_BASELINE" as const, headline: "先填写本次体验的时间坐标", support: "请按出生证明或家人记忆中的当地日期与钟表时间填写；农历与时辰只作为文化时间表达，不判断命运。", primaryAction: "BEGIN" as const, showCoordinateFields: false, confirmationEnabled: false, validation, derivationReceipt, sceneEnrichment: "GENERIC_LIFE_WORLD" as const });
   }
   if (input.status === "ACCEPTED") {
-    return Object.freeze({ state: "BIRTH_SOURCE_ACCEPTED" as const, headline: "生命坐标已经确认", support: "同一片生命世界会从这个起点继续显现。", primaryAction: "NONE" as const, showCoordinateFields: false, confirmationEnabled: false, validation, derivationReceipt, sceneEnrichment: "CONFIRMED_BIRTH_SOURCE" as const });
+    return Object.freeze({ state: "BIRTH_SOURCE_ACCEPTED" as const, headline: "时间坐标已经确认", support: "系统会从这份已确认的起点记录继续本次体验。", primaryAction: "NONE" as const, showCoordinateFields: false, confirmationEnabled: false, validation, derivationReceipt, sceneEnrichment: "CONFIRMED_BIRTH_SOURCE" as const });
   }
   if (input.status === "CONFIRMING") {
-    return Object.freeze({ state: "BIRTH_COORDINATE_READY" as const, headline: "正在确认这次生命起点", support: "只有正式来源恢复一致后，才会继续进入生命显现。", primaryAction: "NONE" as const, showCoordinateFields: true, confirmationEnabled: false, validation, derivationReceipt, sceneEnrichment: "GENERIC_LIFE_WORLD" as const });
+    return Object.freeze({ state: "BIRTH_COORDINATE_READY" as const, headline: "正在确认本次时间坐标", support: "正式来源恢复一致后，才能继续进入下一步体验。", primaryAction: "NONE" as const, showCoordinateFields: true, confirmationEnabled: false, validation, derivationReceipt, sceneEnrichment: "GENERIC_LIFE_WORLD" as const });
   }
   return Object.freeze({
     state: validation.status === "VALID" ? "BIRTH_COORDINATE_READY" as const : "BIRTH_COORDINATE_EDITING" as const,
