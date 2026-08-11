@@ -58,6 +58,11 @@ import {
   isSixDimensionCompletionReceipt,
   validateSixDimensionSetReceiptPair,
 } from "./xinmaiSixDimensionObservationEvidenceValidator";
+import {
+  isCanonicalSixDimensionObservationSetRecord,
+  isSixDimensionCompletionReceiptRecord,
+  validateSixDimensionSetReceiptRecordPair,
+} from "./xinmaiSixDimensionSemanticSelectionEvidenceValidator";
 
 const STORE_NAMES: string[] = [
   XINMAI_LIVED_GROWTH_CANONICAL_STORE,
@@ -1718,8 +1723,12 @@ export async function readXinmaiSixDimensionAuthoritySnapshot(): Promise<SixDime
           !Array.isArray(observationSets) ||
           !Array.isArray(completionReceipts) ||
           !Array.isArray(commandFences) ||
-          !observationSets.every(isCanonicalSixDimensionObservationSet) ||
-          !completionReceipts.every(isSixDimensionCompletionReceipt) ||
+          !observationSets.every(
+            isCanonicalSixDimensionObservationSetRecord,
+          ) ||
+          !completionReceipts.every(
+            isSixDimensionCompletionReceiptRecord,
+          ) ||
           !commandFences.every(isSixDimensionCommandFenceRecord)
         ) {
           resolve(
@@ -1744,7 +1753,7 @@ export async function readXinmaiSixDimensionAuthoritySnapshot(): Promise<SixDime
           observationSets.map((set) => set.observationSetId),
         );
         const pairMismatch = observationSets.some((set) =>
-          !validateSixDimensionSetReceiptPair(
+          !validateSixDimensionSetReceiptRecordPair(
             set,
             receiptBySet.get(set.observationSetId) ?? null,
           )) || completionReceipts.some(

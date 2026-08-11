@@ -6,6 +6,14 @@ export const XINMAI_SIX_DIMENSION_OBSERVATION_SCHEMA_VERSION =
   "XINMAI_SIX_DIMENSION_OBSERVATION_SET_V2" as const;
 export const XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_SCHEMA_VERSION =
   "XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_V1" as const;
+export const XINMAI_SIX_DIMENSION_V3_PROTOCOL_REVISION =
+  "XINMAI_SIX_DIMENSION_PROTOCOL_2026_08_11_V3" as const;
+export const XINMAI_SIX_DIMENSION_SEMANTIC_GRAMMAR_REVISION =
+  "XINMAI_SIX_DIMENSION_SEMANTIC_GRAMMAR_2026_08_11_V1" as const;
+export const XINMAI_SIX_DIMENSION_OBSERVATION_V3_SCHEMA_VERSION =
+  "XINMAI_SIX_DIMENSION_OBSERVATION_SET_V3" as const;
+export const XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_V2_SCHEMA_VERSION =
+  "XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_V2" as const;
 
 export const XINMAI_SIX_DIMENSION_OBSERVATION_SET_STORE =
   "six-dimension-observation-set" as const;
@@ -25,6 +33,35 @@ export const XINMAI_SIX_DIMENSION_IDS = Object.freeze([
 
 export type SixDimensionId =
   (typeof XINMAI_SIX_DIMENSION_IDS)[number];
+
+export const XINMAI_SIX_DIMENSION_SEMANTIC_RESPONSE_IDS = Object.freeze({
+  body: Object.freeze(["LOCATED", "UNLOCATED"] as const),
+  emotion: Object.freeze(["CLEAR", "MIXED", "UNCERTAIN"] as const),
+  thought: Object.freeze(["SENTENCE", "FRAGMENT", "PRIVATE"] as const),
+  action: Object.freeze(["ADVANCE", "WITHDRAW", "PAUSE"] as const),
+  memory: Object.freeze(["THEN", "NOW", "UNCERTAIN"] as const),
+  goal: Object.freeze(["NEED", "VALUE", "UNCERTAIN"] as const),
+} satisfies Readonly<Record<SixDimensionId, readonly string[]>>);
+
+export type SixDimensionSemanticResponseIdByDimension = Readonly<{
+  body: (typeof XINMAI_SIX_DIMENSION_SEMANTIC_RESPONSE_IDS.body)[number];
+  emotion: (typeof XINMAI_SIX_DIMENSION_SEMANTIC_RESPONSE_IDS.emotion)[number];
+  thought: (typeof XINMAI_SIX_DIMENSION_SEMANTIC_RESPONSE_IDS.thought)[number];
+  action: (typeof XINMAI_SIX_DIMENSION_SEMANTIC_RESPONSE_IDS.action)[number];
+  memory: (typeof XINMAI_SIX_DIMENSION_SEMANTIC_RESPONSE_IDS.memory)[number];
+  goal: (typeof XINMAI_SIX_DIMENSION_SEMANTIC_RESPONSE_IDS.goal)[number];
+}>;
+
+export type SixDimensionSemanticResponseId =
+  SixDimensionSemanticResponseIdByDimension[SixDimensionId];
+
+export type CanonicalSixDimensionSemanticSelection = Readonly<{
+  semanticGrammarRevision:
+    typeof XINMAI_SIX_DIMENSION_SEMANTIC_GRAMMAR_REVISION;
+  semanticResponseId: SixDimensionSemanticResponseId;
+  semanticSelectionReferenceId: string;
+  semanticSelectionDigest: string;
+}>;
 
 export type SixDimensionItemState =
   | "PENDING"
@@ -51,6 +88,25 @@ export type CanonicalSixDimensionObservationItem = Readonly<{
   sourceReferenceId: string;
   outcomeReferenceId: string | null;
   acknowledgement: SixDimensionTypedAcknowledgement | null;
+  itemRevision: number;
+  committedByCommandReferenceId: string | null;
+  presentedAt: null;
+  observedAt: string | null;
+  updatedAt: string;
+  terminalReason: "USER_DECLINED" | "SOURCE_UNAVAILABLE" | null;
+}>;
+
+export type CanonicalSixDimensionObservationItemV2 =
+  CanonicalSixDimensionObservationItem;
+
+export type CanonicalSixDimensionObservationItemV3 = Readonly<{
+  dimensionId: SixDimensionId;
+  ordinal: 1 | 2 | 3 | 4 | 5 | 6;
+  state: SixDimensionItemState;
+  sourceReferenceId: string;
+  outcomeReferenceId: string | null;
+  acknowledgement: SixDimensionTypedAcknowledgement | null;
+  semanticSelection: CanonicalSixDimensionSemanticSelection | null;
   itemRevision: number;
   committedByCommandReferenceId: string | null;
   presentedAt: null;
@@ -98,6 +154,28 @@ export type CanonicalSixDimensionObservationSet = Readonly<{
   }>;
 }>;
 
+export type CanonicalSixDimensionObservationSetV2 =
+  CanonicalSixDimensionObservationSet;
+
+export type CanonicalSixDimensionObservationSetV3 = Readonly<
+  Omit<
+    CanonicalSixDimensionObservationSetV2,
+    "schemaVersion" | "dimensionProtocolRevision" | "items"
+  > & {
+    schemaVersion:
+      typeof XINMAI_SIX_DIMENSION_OBSERVATION_V3_SCHEMA_VERSION;
+    dimensionProtocolRevision:
+      typeof XINMAI_SIX_DIMENSION_V3_PROTOCOL_REVISION;
+    semanticGrammarRevision:
+      typeof XINMAI_SIX_DIMENSION_SEMANTIC_GRAMMAR_REVISION;
+    items: readonly CanonicalSixDimensionObservationItemV3[];
+  }
+>;
+
+export type CanonicalSixDimensionObservationSetRecord =
+  | CanonicalSixDimensionObservationSetV2
+  | CanonicalSixDimensionObservationSetV3;
+
 export type SixDimensionCompletionReceipt = Readonly<{
   schemaVersion:
     typeof XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_SCHEMA_VERSION;
@@ -136,6 +214,44 @@ export type SixDimensionCompletionReceipt = Readonly<{
     noCrystalAuthority: true;
   }>;
 }>;
+
+export type SixDimensionCompletionReceiptV1 =
+  SixDimensionCompletionReceipt;
+
+export type SixDimensionCompletionReceiptV2 = Readonly<
+  Omit<
+    SixDimensionCompletionReceiptV1,
+    "schemaVersion" | "dimensionProtocolRevision"
+  > & {
+    schemaVersion:
+      typeof XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_V2_SCHEMA_VERSION;
+    dimensionProtocolRevision:
+      typeof XINMAI_SIX_DIMENSION_V3_PROTOCOL_REVISION;
+    semanticGrammarRevision:
+      typeof XINMAI_SIX_DIMENSION_SEMANTIC_GRAMMAR_REVISION;
+    semanticSelectionReferences: readonly [
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+    ];
+    semanticSelectionDigests: readonly [
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+    ];
+    semanticSelectionAggregateDigest: string;
+  }
+>;
+
+export type SixDimensionCompletionReceiptRecord =
+  | SixDimensionCompletionReceiptV1
+  | SixDimensionCompletionReceiptV2;
 
 export type SixDimensionCommandFenceRecord = Readonly<{
   commandReferenceId: string;
@@ -213,6 +329,14 @@ export type SixDimensionObservationCauseCode =
   | "COMPLETION_RECEIPT_MISMATCH"
   | "EVIDENCE_DIGEST_MISMATCH"
   | "CHOICE_VERSION_MISMATCH"
+  | "SEMANTIC_SELECTION_NOT_RECORDED"
+  | "SEMANTIC_RESPONSE_NOT_ALLOWED"
+  | "SEMANTIC_GRAMMAR_REVISION_UNKNOWN"
+  | "SEMANTIC_SELECTION_MISSING"
+  | "SEMANTIC_SELECTION_DIGEST_MISMATCH"
+  | "SEMANTIC_SELECTION_AGGREGATE_DIGEST_MISMATCH"
+  | "MIXED_OBSERVATION_PROTOCOL_VERSIONS"
+  | "CHOICE_SEMANTIC_BINDING_MISMATCH"
   | "TRANSACTION_STORAGE_UNAVAILABLE"
   | "TRANSACTION_OPEN_BLOCKED"
   | "TRANSACTION_ABORTED"
@@ -250,8 +374,8 @@ export type SixDimensionObservationResult<TValue> =
     }>;
 
 export type SixDimensionAuthoritySnapshot = Readonly<{
-  observationSets: readonly CanonicalSixDimensionObservationSet[];
-  completionReceipts: readonly SixDimensionCompletionReceipt[];
+  observationSets: readonly CanonicalSixDimensionObservationSetRecord[];
+  completionReceipts: readonly SixDimensionCompletionReceiptRecord[];
   commandFences: readonly SixDimensionCommandFenceRecord[];
 }>;
 

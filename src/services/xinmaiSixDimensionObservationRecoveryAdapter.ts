@@ -6,6 +6,10 @@ import {
   type SixDimensionObservationRecoveryResult,
 } from "../types/xinmaiSixDimensionObservation";
 import { readXinmaiSixDimensionAuthoritySnapshot } from "./xinmaiLivedGrowthTransactionalStore";
+import {
+  isCanonicalSixDimensionObservationSet,
+  isSixDimensionCompletionReceipt,
+} from "./xinmaiSixDimensionObservationEvidenceValidator";
 
 export const XINMAI_SIX_DIMENSION_RECOVERY_BOUNDARY = Object.freeze({
   canonicalReader:
@@ -101,12 +105,15 @@ export async function recoverXinmaiSixDimensionObservation(
       cause: read.cause,
     });
   }
-  const observationSet =
+  const observationSetRecord =
     read.snapshot.observationSets.find(
       (candidate) =>
         candidate.observationSetId === expected.observationSetId,
     ) ?? null;
-  if (observationSet === null) {
+  if (
+    observationSetRecord === null ||
+    !isCanonicalSixDimensionObservationSet(observationSetRecord)
+  ) {
     return Object.freeze({
       status: "NOT_FOUND" as const,
       observationSet: null,
@@ -114,6 +121,7 @@ export async function recoverXinmaiSixDimensionObservation(
       cause: authorityCause("OBSERVATION_SET_NOT_FOUND"),
     });
   }
+  const observationSet = observationSetRecord;
   const mismatch = expectationMismatch(observationSet, expected);
   if (mismatch !== null) {
     return Object.freeze({
@@ -123,11 +131,16 @@ export async function recoverXinmaiSixDimensionObservation(
       cause: authorityCause(mismatch),
     });
   }
-  const completionReceipt =
+  const completionReceiptRecord =
     read.snapshot.completionReceipts.find(
       (candidate) =>
         candidate.observationSetId === observationSet.observationSetId,
     ) ?? null;
+  const completionReceipt =
+    completionReceiptRecord !== null &&
+    isSixDimensionCompletionReceipt(completionReceiptRecord)
+      ? completionReceiptRecord
+      : null;
   if (
     observationSet.lifecycle !== "OPEN" &&
     completionReceipt === null

@@ -16,6 +16,8 @@ export const XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION =
   "XINMAI_CHOICE_ACTION_INTENTION_V2" as const;
 export const XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION =
   "XINMAI_CHOICE_ACTION_INTENTION_V3" as const;
+export const XINMAI_CHOICE_ACTION_INTENTION_V4_SCHEMA_VERSION =
+  "XINMAI_CHOICE_ACTION_INTENTION_V4" as const;
 
 export type ChoiceFormationSourceSnapshot = Readonly<{
   formation: CurrentHexagramFormationResult;
@@ -37,6 +39,22 @@ export type ChoiceFormationSourceSnapshotV2 =
       dimensionProtocolRevision: string;
       contentDigest: string;
       evidenceDigest: string;
+    }>;
+  }>;
+
+export type ChoiceFormationSourceSnapshotV3 =
+  ChoiceFormationSourceSnapshot &
+  Readonly<{
+    schemaVersion: "XINMAI_CHOICE_FORMATION_SOURCE_SNAPSHOT_V3";
+    sixDimensionObservation: Readonly<{
+      completionReceiptReferenceId: string;
+      observationSetId: string;
+      observationSetRevision: number;
+      dimensionProtocolRevision: string;
+      semanticGrammarRevision: string;
+      contentDigest: string;
+      evidenceDigest: string;
+      semanticSelectionAggregateDigest: string;
     }>;
   }>;
 
@@ -99,6 +117,19 @@ export type ChoiceActionIntentionV3 =
     formationSourceSnapshot: ChoiceFormationSourceSnapshotV2;
     actionRouteSnapshot: ChoiceActionRouteSnapshot;
   }>;
+
+export type ChoiceActionIntentionV4 =
+  Omit<ChoiceActionIntentionBase, "formationSourceSnapshot"> &
+  Readonly<{
+    schemaVersion:
+      typeof XINMAI_CHOICE_ACTION_INTENTION_V4_SCHEMA_VERSION;
+    formationSourceSnapshot: ChoiceFormationSourceSnapshotV3;
+    actionRouteSnapshot: ChoiceActionRouteSnapshot;
+  }>;
+
+export type ChoiceActionIntentionRecord =
+  | ChoiceActionIntention
+  | ChoiceActionIntentionV4;
 
 export type ChoiceActionIntention =
   | ChoiceActionIntentionV1

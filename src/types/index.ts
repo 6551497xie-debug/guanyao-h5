@@ -3446,11 +3446,35 @@ export type {
   ChoiceActionIntentionV1,
   ChoiceActionIntentionV2,
   ChoiceActionIntentionV3,
+  ChoiceActionIntentionV4,
+  ChoiceActionIntentionRecord,
   ChoiceFormationSourceSnapshot,
   ChoiceFormationSourceSnapshotV2,
+  ChoiceFormationSourceSnapshotV3,
   ChoiceObservationStructuralProof,
   CommitChoiceActionIntentionInput,
 } from "./xinmaiChoiceActionIntention";
+
+export type {
+  SixDimensionSemanticSelectionMapItem,
+  SixDimensionSemanticSelectionRecoveryResult,
+  SixDimensionSemanticSelectionMutationResult,
+} from "./xinmaiSixDimensionSemanticSelection";
+
+export type {
+  SixDimensionId,
+  SixDimensionSemanticResponseId,
+  SixDimensionSemanticResponseIdByDimension,
+  CanonicalSixDimensionSemanticSelection,
+  CanonicalSixDimensionObservationItemV2,
+  CanonicalSixDimensionObservationItemV3,
+  CanonicalSixDimensionObservationSetV2,
+  CanonicalSixDimensionObservationSetV3,
+  CanonicalSixDimensionObservationSetRecord,
+  SixDimensionCompletionReceiptV1,
+  SixDimensionCompletionReceiptV2,
+  SixDimensionCompletionReceiptRecord,
+} from "./xinmaiSixDimensionObservation";
 
 export type {
   ChoiceActionRoutePrototypeId,
