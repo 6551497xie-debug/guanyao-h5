@@ -7,7 +7,7 @@ import type {
   ChoiceActionRouteSnapshot,
 } from "./xinmaiChoiceActionRoute";
 import type {
-  SixDimensionCompletionReceipt,
+  SixDimensionCompletionReceiptRecord,
 } from "./xinmaiSixDimensionObservation";
 
 export const XINMAI_CHOICE_ACTION_INTENTION_V1_SCHEMA_VERSION =
@@ -127,14 +127,13 @@ export type ChoiceActionIntentionV4 =
     actionRouteSnapshot: ChoiceActionRouteSnapshot;
   }>;
 
-export type ChoiceActionIntentionRecord =
-  | ChoiceActionIntention
-  | ChoiceActionIntentionV4;
-
 export type ChoiceActionIntention =
   | ChoiceActionIntentionV1
   | ChoiceActionIntentionV2
-  | ChoiceActionIntentionV3;
+  | ChoiceActionIntentionV3
+  | ChoiceActionIntentionV4;
+
+export type ChoiceActionIntentionRecord = ChoiceActionIntention;
 
 export type CommitChoiceActionIntentionInput = Readonly<{
   identityReferences: RealityEncounterIdentityReferences;
@@ -147,7 +146,8 @@ export type CommitChoiceActionIntentionInput = Readonly<{
   selectedActionRouteReferenceId: string;
   formationSourceSnapshot:
     | ChoiceFormationSourceSnapshot
-    | ChoiceFormationSourceSnapshotV2;
+    | ChoiceFormationSourceSnapshotV2
+    | ChoiceFormationSourceSnapshotV3;
   sixDimensionCompletionReceipt:
-    SixDimensionCompletionReceipt | null;
+    SixDimensionCompletionReceiptRecord | null;
 }>;

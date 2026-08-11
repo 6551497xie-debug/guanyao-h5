@@ -545,3 +545,32 @@
   animation: none !important;
   transition: none !important;
 }
+
+.xinmai-crystal-ownership__value-closure {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  text-align: left;
+}
+.xinmai-crystal-ownership__value-closure > dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+.xinmai-crystal-ownership__value-closure > dl > div {
+  padding: 10px 11px;
+  border: 1px solid rgba(194, 214, 205, .16);
+  border-radius: 10px;
+  background: rgba(24, 45, 46, .25);
+}
+.xinmai-crystal-ownership__value-closure dt {
+  color: rgba(188, 214, 207, .72);
+  font-size: 11px;
+}
+.xinmai-crystal-ownership__value-closure dd {
+  margin: 4px 0 0;
+  color: rgba(246, 241, 223, .92);
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { XinmaiCrystalOwnershipPresentationDecision } from "../types/xinmaiCrystalOwnershipPresentation";
 import "../styles/xinmai-crystal-formation-ownership-moment.css";
 
@@ -11,7 +12,8 @@ export function XinmaiCrystalFormationOwnershipMoment({
   onContinue,
   continueDisabled = false,
   continueBusy = false,
-  continueLabel = "带着这道痕迹，继续同行",
+  continueLabel = "开始下一段现实",
+  valueClosure,
 }: Readonly<{
   decision: XinmaiCrystalOwnershipPresentationDecision;
   onOwnershipPresented: () => void;
@@ -19,6 +21,7 @@ export function XinmaiCrystalFormationOwnershipMoment({
   continueDisabled?: boolean;
   continueBusy?: boolean;
   continueLabel?: string;
+  valueClosure?: ReactNode;
 }>) {
   if (decision.state === "FORMATION_PENDING") {
     return (
@@ -145,6 +148,7 @@ export function XinmaiCrystalFormationOwnershipMoment({
         <small className="xinmai-crystal-ownership__crystal-line">
           {visualFacts.crystalLine}
         </small>
+        {valueClosure}
       </div>
 
       <div className="xinmai-crystal-ownership__actions">

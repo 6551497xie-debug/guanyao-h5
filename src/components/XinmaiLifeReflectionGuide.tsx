@@ -18,7 +18,9 @@ type XinmaiLifeReflectionGuideProps = Readonly<{
   onPause?: () => void;
   onResume?: () => void;
   finalActionState?: "PREPARING" | "READY" | "SAVING" | "RETRYABLE" | "SAFE_WITHHELD";
-  onContinue?: () => Promise<boolean>;
+  onContinue?: (
+    response: XinmaiSixDimensionSemanticResponse,
+  ) => Promise<boolean>;
 }>;
 
 export function XinmaiLifeReflectionGuide({
@@ -59,6 +61,7 @@ export function XinmaiLifeReflectionGuide({
 
   const relationEstablished = phase === "CONFIRMED" || phase === "SELF_NAMED";
   const finalDisabled =
+    selectedResponse === null ||
     continuePending || finalActionState === "PREPARING" ||
     finalActionState === "SAVING" || finalActionState === "SAFE_WITHHELD";
   const readinessCopy =
@@ -122,7 +125,8 @@ export function XinmaiLifeReflectionGuide({
               if (finalDisabled) return;
               setContinuePending(true);
               try {
-                const saved = await onContinue?.();
+                if (selectedResponse === null) return;
+                const saved = await onContinue?.(selectedResponse);
                 if (saved) setSavedAnnouncement(`${grammar.label}观察已保存。`);
               } finally { setContinuePending(false); }
             }}
@@ -136,7 +140,7 @@ export function XinmaiLifeReflectionGuide({
           <span className="xinmai-six-dimension-semantic__saved" aria-live="polite">{savedAnnouncement}</span>
         </div>
       )}
-      <p className="xinmai-six-dimension-semantic__boundary">选择不会自动形成事实、Choice 或 Crystal。</p>
+      <p className="xinmai-six-dimension-semantic__boundary">这里只保存你明确确认的观察；下一步仍由你决定。</p>
     </aside>
   );
 }

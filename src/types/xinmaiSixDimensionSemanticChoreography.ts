@@ -1,4 +1,7 @@
 import type { SixSpaceId } from "../runtime/guanyaoRuntimeTypes";
+import type {
+  SixDimensionSemanticResponseId,
+} from "./xinmaiSixDimensionObservation";
 
 export type XinmaiSixDimensionResponseMode =
   | "CONFIRM"
@@ -6,7 +9,7 @@ export type XinmaiSixDimensionResponseMode =
   | "PAUSE";
 
 export type XinmaiSixDimensionSemanticResponse = Readonly<{
-  id: string;
+  id: SixDimensionSemanticResponseId;
   label: string;
   mirror: string;
   mode: XinmaiSixDimensionResponseMode;

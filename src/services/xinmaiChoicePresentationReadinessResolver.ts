@@ -8,8 +8,13 @@ import type {
 import type { RealityEncounterIdentityReferences } from "../types/xinmaiRealityEncounterIntent";
 import {
   validateChoiceActionIntentionPrerequisites,
+  validateChoiceActionIntentionV4Prerequisites,
 } from "./xinmaiChoiceActionIntentionPrerequisiteValidator";
-import { createChoiceRouteFormationSourceSnapshotV2 } from "./xinmaiChoiceActionRouteGrowthProjection";
+import {
+  createChoiceRouteFormationSourceSnapshotV2,
+  createChoiceRouteFormationSourceSnapshotV3,
+} from "./xinmaiChoiceActionRouteGrowthProjection";
+import { isSixDimensionCompletionReceiptV2 } from "./xinmaiSixDimensionSemanticSelectionEvidenceValidator";
 import {
   canCreateXinmaiChoiceFromActionRoute,
 } from "./xinmaiChoiceActionRouteRuntimePolicy";
@@ -303,8 +308,17 @@ export function resolveChoicePresentationReadiness(
       currentLineage,
     );
   }
-  const formationSourceSnapshot =
-    createChoiceRouteFormationSourceSnapshotV2({
+  const formationSourceSnapshot = isSixDimensionCompletionReceiptV2(
+    completionReceipt,
+  )
+    ? createChoiceRouteFormationSourceSnapshotV3({
+        candidate: actionRouteCandidate,
+        formation: input.formation,
+        assetCompletionState:
+          input.assetCandidate.completionState,
+        completionReceipt,
+      })
+    : createChoiceRouteFormationSourceSnapshotV2({
       candidate: actionRouteCandidate,
       formation: input.formation,
       assetCompletionState:
@@ -339,8 +353,9 @@ export function resolveChoicePresentationReadiness(
     formationSourceSnapshot,
     sixDimensionCompletionReceipt: completionReceipt,
   });
-  const validation =
-    validateChoiceActionIntentionPrerequisites(structuralInput);
+  const validation = isSixDimensionCompletionReceiptV2(completionReceipt)
+    ? validateChoiceActionIntentionV4Prerequisites(structuralInput)
+    : validateChoiceActionIntentionPrerequisites(structuralInput);
   if (validation.status !== "VALID") {
     return withheld(
       input,

@@ -65,25 +65,30 @@ for (const responseId of [
   assert(types.includes(`\"${responseId}\"`), `missing bounded response ${responseId}`);
 }
 assert(
-  choiceTypes.includes("XINMAI_CHOICE_ACTION_INTENTION_V4") &&
+    choiceTypes.includes("XINMAI_CHOICE_ACTION_INTENTION_V4") &&
     choiceTypes.includes("XINMAI_CHOICE_FORMATION_SOURCE_SNAPSHOT_V3") &&
-    choiceValidator.includes("choiceV4WriterEnabled: false"),
-  "Choice V4 read-only type/validator contract is incomplete",
+    choiceValidator.includes("choiceV4WriterEnabled: true"),
+  "Choice V4 type/validator activation contract is incomplete",
 );
 assert(
-  policy.includes('= "SAFE_WITHHELD"') &&
-    policy.includes("transactionWritesAllowed: false") &&
-    policy.includes("receiptV2CreationAllowed: false") &&
-    policy.includes("choiceV4CreationAllowed: false"),
-  "new semantic mutation is not hard-withheld",
+  /XINMAI_SIX_DIMENSION_SEMANTIC_SELECTION_NEW_MUTATION:[\s\S]*?=\s*"(?:ENABLED|SAFE_WITHHELD)"/.test(policy) &&
+    policy.includes("transactionWritesAllowed:") &&
+    policy.includes("receiptV2CreationAllowed:") &&
+    policy.includes("choiceV4CreationAllowed:"),
+  "Phase 2 semantic mutation/counter policy is not explicitly frozen",
 );
 for (const activeConsumer of [activeController, activeHost, activePage]) {
   assert(
-    !activeConsumer.includes("SemanticSelectionAuthorityFoundation") &&
-      !activeConsumer.includes("ACKNOWLEDGE_SEMANTIC_SELECTION_V3"),
-    "ordinary product path is wired to V3 mutation during Phase 1",
+    !activeConsumer.includes("SemanticSelectionAuthorityFoundation"),
+    "Phase 2 consumer depends on the zero-write foundation controller",
   );
 }
+assert(
+  activeController.includes("ACKNOWLEDGE_SEMANTIC_SELECTION_V3") &&
+    activeHost.includes("ACKNOWLEDGE_SEMANTIC_SELECTION_V3") &&
+    activePage.includes("SixDimensionSemanticResponseId"),
+  "Phase 2 product path is not wired to bounded semantic commands",
+);
 assert(
   !foundation.includes("transactXinmaiSixDimensionObservation") &&
     !foundation.includes("xinmaiLivedGrowthTransactionalStore") &&

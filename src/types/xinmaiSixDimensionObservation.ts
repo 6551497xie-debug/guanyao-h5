@@ -259,6 +259,7 @@ export type SixDimensionCommandFenceRecord = Readonly<{
   commandType:
     | "CREATE_OBSERVATION_SET"
     | "ACKNOWLEDGE_DIMENSION"
+    | "ACKNOWLEDGE_SEMANTIC_SELECTION_V3"
     | "SKIP_DIMENSION"
     | "DECLINE_DIMENSION"
     | "MARK_DIMENSION_UNAVAILABLE";
@@ -282,7 +283,8 @@ export type SixDimensionObservationCommand =
       candidateReferenceId: string;
       catalogRevision: string;
       dimensionProtocolRevision:
-        typeof XINMAI_SIX_DIMENSION_PROTOCOL_REVISION;
+        | typeof XINMAI_SIX_DIMENSION_PROTOCOL_REVISION
+        | typeof XINMAI_SIX_DIMENSION_V3_PROTOCOL_REVISION;
     }>
   | Readonly<{
       type: "ACKNOWLEDGE_DIMENSION";
@@ -290,6 +292,19 @@ export type SixDimensionObservationCommand =
       observationSetId: string;
       dimensionId: SixDimensionId;
       acknowledgement: SixDimensionTypedAcknowledgement;
+      expectedSetRevision: number;
+      expectedItemRevision: number;
+      sourceReferenceId: string;
+    }>
+  | Readonly<{
+      type: "ACKNOWLEDGE_SEMANTIC_SELECTION_V3";
+      commandReferenceId: string;
+      observationSetId: string;
+      dimensionId: SixDimensionId;
+      acknowledgement: SixDimensionTypedAcknowledgement;
+      semanticGrammarRevision:
+        typeof XINMAI_SIX_DIMENSION_SEMANTIC_GRAMMAR_REVISION;
+      semanticResponseId: SixDimensionSemanticResponseId;
       expectedSetRevision: number;
       expectedItemRevision: number;
       sourceReferenceId: string;
@@ -361,15 +376,15 @@ export type SixDimensionObservationResult<TValue> =
   | Readonly<{
       status: "COMMITTED" | "ALREADY_COMMITTED";
       value: TValue;
-      observationSet: CanonicalSixDimensionObservationSet;
-      completionReceipt: SixDimensionCompletionReceipt | null;
+      observationSet: CanonicalSixDimensionObservationSetRecord;
+      completionReceipt: SixDimensionCompletionReceiptRecord | null;
       cause: null;
     }>
   | Readonly<{
       status: "REJECTED" | "SAFE_WITHHELD";
       value: null;
-      observationSet: CanonicalSixDimensionObservationSet | null;
-      completionReceipt: SixDimensionCompletionReceipt | null;
+      observationSet: CanonicalSixDimensionObservationSetRecord | null;
+      completionReceipt: SixDimensionCompletionReceiptRecord | null;
       cause: SixDimensionFailureCause;
     }>;
 
@@ -424,14 +439,14 @@ export type SixDimensionObservationMutationTransactionInput = Readonly<{
   expectedGravityObservationReferenceId: string;
   expectedGravityObservationLineageRevision: number;
   expectedObservationSetRevision: number;
-  observationSet: CanonicalSixDimensionObservationSet;
-  completionReceipt: SixDimensionCompletionReceipt | null;
+  observationSet: CanonicalSixDimensionObservationSetRecord;
+  completionReceipt: SixDimensionCompletionReceiptRecord | null;
   commandFence: SixDimensionCommandFenceRecord;
 }>;
 
 export type SixDimensionPresentationAuthorityState = Readonly<{
   status: "LOADING" | "OPEN" | "COMPLETED" | "SAFE_WITHHELD";
-  observationSet: CanonicalSixDimensionObservationSet | null;
-  completionReceipt: SixDimensionCompletionReceipt | null;
+  observationSet: CanonicalSixDimensionObservationSetRecord | null;
+  completionReceipt: SixDimensionCompletionReceiptRecord | null;
   cause: SixDimensionFailureCause | null;
 }>;

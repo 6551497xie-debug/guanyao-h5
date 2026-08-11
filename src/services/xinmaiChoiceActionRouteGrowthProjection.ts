@@ -1,8 +1,12 @@
 import type {
   ChoiceFormationSourceSnapshot,
   ChoiceFormationSourceSnapshotV2,
+  ChoiceFormationSourceSnapshotV3,
 } from "../types/xinmaiChoiceActionIntention";
-import type { SixDimensionCompletionReceipt } from "../types/xinmaiSixDimensionObservation";
+import type {
+  SixDimensionCompletionReceipt,
+  SixDimensionCompletionReceiptV2,
+} from "../types/xinmaiSixDimensionObservation";
 import type {
   ChoiceActionRouteCandidate,
 } from "../types/xinmaiChoiceActionRoute";
@@ -155,6 +159,53 @@ export function createChoiceRouteFormationSourceSnapshotV2(input: Readonly<{
   });
 }
 
+export function createChoiceRouteFormationSourceSnapshotV3(input: Readonly<{
+  candidate: ChoiceActionRouteCandidate;
+  formation: CurrentHexagramFormationResult | null;
+  assetCompletionState: string;
+  completionReceipt: SixDimensionCompletionReceiptV2 | null;
+}>): ChoiceFormationSourceSnapshotV3 | null {
+  if (
+    input.formation === null ||
+    input.assetCompletionState !== "READY_TO_CRYSTALLIZE" ||
+    input.completionReceipt === null ||
+    input.completionReceipt.itemOutcomeReferences.length !== 6 ||
+    new Set(input.completionReceipt.itemOutcomeReferences).size !== 6 ||
+    input.completionReceipt.semanticSelectionReferences.length !== 6 ||
+    new Set(input.completionReceipt.semanticSelectionReferences).size !== 6 ||
+    input.completionReceipt.semanticSelectionDigests.length !== 6 ||
+    input.completionReceipt.semanticSelectionAggregateDigest.trim().length === 0
+  ) {
+    return null;
+  }
+  const projection = projectChoiceActionRouteForGrowth(input.candidate);
+  return Object.freeze({
+    schemaVersion:
+      "XINMAI_CHOICE_FORMATION_SOURCE_SNAPSHOT_V3" as const,
+    formation: input.formation,
+    migrationImpact: projection.migrationImpact,
+    completedNodeCount: 6,
+    primaryDimension: projection.dimension,
+    action: projection.action,
+    assetCompletionState: "READY_TO_CRYSTALLIZE" as const,
+    sixDimensionObservation: Object.freeze({
+      completionReceiptReferenceId:
+        input.completionReceipt.completionReceiptReferenceId,
+      observationSetId: input.completionReceipt.observationSetId,
+      observationSetRevision:
+        input.completionReceipt.observationSetRevision,
+      dimensionProtocolRevision:
+        input.completionReceipt.dimensionProtocolRevision,
+      semanticGrammarRevision:
+        input.completionReceipt.semanticGrammarRevision,
+      contentDigest: input.completionReceipt.contentDigest,
+      evidenceDigest: input.completionReceipt.evidenceDigest,
+      semanticSelectionAggregateDigest:
+        input.completionReceipt.semanticSelectionAggregateDigest,
+    }),
+  });
+}
+
 export const XinmaiChoiceActionRouteGrowthProjection =
   Object.freeze({
     project: projectChoiceActionRouteForGrowth,
@@ -162,6 +213,8 @@ export const XinmaiChoiceActionRouteGrowthProjection =
       createChoiceRouteFormationSourceSnapshot,
     createFormationSnapshotV2:
       createChoiceRouteFormationSourceSnapshotV2,
+    createFormationSnapshotV3:
+      createChoiceRouteFormationSourceSnapshotV3,
     derivedOnly: true as const,
     noGrowthAuthority: true as const,
     noStorageWrite: true as const,

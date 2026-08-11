@@ -21,8 +21,8 @@ import type {
 import type { GravitySurfaceAdmissionAttempt } from "./xinmaiGravitySurfaceAdmission";
 import type { RealityEncounterIdentityReferences } from "./xinmaiRealityEncounterIntent";
 import type {
-  CanonicalSixDimensionObservationSet,
-  SixDimensionCompletionReceipt,
+  CanonicalSixDimensionObservationSetRecord,
+  SixDimensionCompletionReceiptRecord,
   SixDimensionFailureCause,
 } from "./xinmaiSixDimensionObservation";
 
@@ -122,8 +122,8 @@ export type ChoicePresentationReadinessInput = Readonly<{
   growthTerminalSummary: ChoiceGrowthTerminalSummary;
   operationalState: ChoicePresentationOperationalState;
   newChoiceV3Authority: Readonly<{
-    observationSet: CanonicalSixDimensionObservationSet | null;
-    completionReceipt: SixDimensionCompletionReceipt | null;
+    observationSet: CanonicalSixDimensionObservationSetRecord | null;
+    completionReceipt: SixDimensionCompletionReceiptRecord | null;
     cause: SixDimensionFailureCause | null;
   }>;
 }>;

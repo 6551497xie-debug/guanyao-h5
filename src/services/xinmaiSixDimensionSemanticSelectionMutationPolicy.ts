@@ -1,18 +1,34 @@
 export type XinmaiSixDimensionSemanticSelectionMutationPolicy =
-  "SAFE_WITHHELD";
+  | "ENABLED"
+  | "SAFE_WITHHELD";
 
 export const XINMAI_SIX_DIMENSION_SEMANTIC_SELECTION_NEW_MUTATION:
-  XinmaiSixDimensionSemanticSelectionMutationPolicy = "SAFE_WITHHELD";
+  XinmaiSixDimensionSemanticSelectionMutationPolicy = "ENABLED";
 
-export const canMutateXinmaiSixDimensionSemanticSelection = (): false =>
-  false;
+const isXinmaiSixDimensionSemanticSelectionMutationEnabled = (
+  policy: XinmaiSixDimensionSemanticSelectionMutationPolicy,
+): boolean => policy === "ENABLED";
+
+export const canMutateXinmaiSixDimensionSemanticSelection = (): boolean =>
+  isXinmaiSixDimensionSemanticSelectionMutationEnabled(
+    XINMAI_SIX_DIMENSION_SEMANTIC_SELECTION_NEW_MUTATION,
+  );
 
 export const XINMAI_SIX_DIMENSION_SEMANTIC_SELECTION_FOUNDATION_POLICY =
   Object.freeze({
-    phase: "AUTHORITY_FOUNDATION_PHASE_1" as const,
+    phase: "ATOMIC_ACTIVATION_PHASE_2" as const,
     mutation:
       XINMAI_SIX_DIMENSION_SEMANTIC_SELECTION_NEW_MUTATION,
-    transactionWritesAllowed: false as const,
-    receiptV2CreationAllowed: false as const,
-    choiceV4CreationAllowed: false as const,
+    transactionWritesAllowed:
+      isXinmaiSixDimensionSemanticSelectionMutationEnabled(
+        XINMAI_SIX_DIMENSION_SEMANTIC_SELECTION_NEW_MUTATION,
+      ),
+    receiptV2CreationAllowed:
+      isXinmaiSixDimensionSemanticSelectionMutationEnabled(
+        XINMAI_SIX_DIMENSION_SEMANTIC_SELECTION_NEW_MUTATION,
+      ),
+    choiceV4CreationAllowed:
+      isXinmaiSixDimensionSemanticSelectionMutationEnabled(
+        XINMAI_SIX_DIMENSION_SEMANTIC_SELECTION_NEW_MUTATION,
+      ),
   });

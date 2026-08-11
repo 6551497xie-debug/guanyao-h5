@@ -20,8 +20,8 @@ import {
   XINMAI_SIX_DIMENSION_COMMAND_FENCE_STORE,
   XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_STORE,
   XINMAI_SIX_DIMENSION_OBSERVATION_SET_STORE,
-  type CanonicalSixDimensionObservationSet,
-  type SixDimensionCompletionReceipt,
+  type CanonicalSixDimensionObservationSetRecord,
+  type SixDimensionCompletionReceiptRecord,
   type SixDimensionAuthorityReadResult,
   type SixDimensionObservationMutationTransactionInput,
   type SixDimensionObservationResult,
@@ -53,14 +53,14 @@ import {
 } from "./xinmaiLivedGrowthRecoveryPersistenceAdapter";
 import { notifyXinmaiLivedGrowthCanonicalRevision } from "./xinmaiLivedGrowthRecoveryRevisionObserver";
 import {
-  isCanonicalSixDimensionObservationSet,
   isSixDimensionCommandFenceRecord,
-  isSixDimensionCompletionReceipt,
-  validateSixDimensionSetReceiptPair,
 } from "./xinmaiSixDimensionObservationEvidenceValidator";
 import {
   isCanonicalSixDimensionObservationSetRecord,
+  isCanonicalSixDimensionObservationSetV3,
   isSixDimensionCompletionReceiptRecord,
+  isSixDimensionCompletionReceiptV2,
+  validateSixDimensionSemanticSelectionIntegrity,
   validateSixDimensionSetReceiptRecordPair,
 } from "./xinmaiSixDimensionSemanticSelectionEvidenceValidator";
 
@@ -1309,6 +1309,8 @@ export async function transactXinmaiGravityObservationContinuity<
     dimensionProtocolRevision: string;
     contentDigest: string;
     evidenceDigest: string;
+    semanticGrammarRevision?: string;
+    semanticSelectionAggregateDigest?: string;
   }>,
 ): Promise<GravityObservationContinuityTransactionOutcome<TValue>> {
   const initialized = await ensureCanonicalState();
@@ -1447,13 +1449,13 @@ export async function transactXinmaiGravityObservationContinuity<
           : recordValue as GravityObservationContinuityRecord;
       if (requiredSixDimensionCompletion !== undefined) {
         if (
-          !isCanonicalSixDimensionObservationSet(
+          !isCanonicalSixDimensionObservationSetRecord(
             sixDimensionSetValue,
           ) ||
-          !isSixDimensionCompletionReceipt(
+          !isSixDimensionCompletionReceiptRecord(
             sixDimensionReceiptValue,
           ) ||
-          !validateSixDimensionSetReceiptPair(
+          !validateSixDimensionSetReceiptRecordPair(
             sixDimensionSetValue,
             sixDimensionReceiptValue,
           ) ||
@@ -1472,6 +1474,21 @@ export async function transactXinmaiGravityObservationContinuity<
             requiredSixDimensionCompletion.completionReceiptReferenceId ||
           sixDimensionReceiptValue.evidenceDigest !==
             requiredSixDimensionCompletion.evidenceDigest ||
+          (requiredSixDimensionCompletion.semanticGrammarRevision !==
+              undefined &&
+            (!("semanticGrammarRevision" in sixDimensionSetValue) ||
+              sixDimensionSetValue.semanticGrammarRevision !==
+                requiredSixDimensionCompletion.semanticGrammarRevision ||
+              !("semanticGrammarRevision" in sixDimensionReceiptValue) ||
+              sixDimensionReceiptValue.semanticGrammarRevision !==
+                requiredSixDimensionCompletion.semanticGrammarRevision)) ||
+          (requiredSixDimensionCompletion
+              .semanticSelectionAggregateDigest !== undefined &&
+            (!("semanticSelectionAggregateDigest" in
+                sixDimensionReceiptValue) ||
+              sixDimensionReceiptValue.semanticSelectionAggregateDigest !==
+                requiredSixDimensionCompletion
+                  .semanticSelectionAggregateDigest)) ||
           currentRecord === null ||
           sixDimensionSetValue.gravityObservationReferenceId !==
             currentRecord.gravityObservationReferenceId ||
@@ -1825,8 +1842,29 @@ const sixDimensionAuthorityCause = (
 export async function transactXinmaiSixDimensionObservation(
   input: SixDimensionObservationMutationTransactionInput,
 ): Promise<
-  SixDimensionObservationResult<CanonicalSixDimensionObservationSet>
+  SixDimensionObservationResult<CanonicalSixDimensionObservationSetRecord>
 > {
+  if (
+    isCanonicalSixDimensionObservationSetV3(input.observationSet) &&
+    !await validateSixDimensionSemanticSelectionIntegrity(
+      input.observationSet,
+      input.completionReceipt !== null &&
+          isSixDimensionCompletionReceiptV2(input.completionReceipt)
+        ? input.completionReceipt
+        : null,
+    )
+  ) {
+    return Object.freeze({
+      status: "REJECTED" as const,
+      value: null,
+      observationSet: null,
+      completionReceipt: null,
+      cause: sixDimensionAuthorityCause(
+        "SEMANTIC_SELECTION_DIGEST_MISMATCH",
+        "NOT_RETRYABLE",
+      ),
+    });
+  }
   const opened = await openCanonicalDatabase();
   if (opened.status !== "OPEN") {
     return Object.freeze({
@@ -1845,7 +1883,7 @@ export async function transactXinmaiSixDimensionObservation(
   }
   const database = opened.database;
   const outcome = await new Promise<
-    SixDimensionObservationResult<CanonicalSixDimensionObservationSet>
+    SixDimensionObservationResult<CanonicalSixDimensionObservationSetRecord>
   >((resolve) => {
     let transaction: IDBTransaction;
     try {
@@ -1883,7 +1921,7 @@ export async function transactXinmaiSixDimensionObservation(
     let currentFenceValue: unknown;
     let gravityValue: unknown;
     let resolvedCount = 0;
-    let result: SixDimensionObservationResult<CanonicalSixDimensionObservationSet> =
+    let result: SixDimensionObservationResult<CanonicalSixDimensionObservationSetRecord> =
       Object.freeze({
         status: "SAFE_WITHHELD" as const,
         value: null,
@@ -1914,9 +1952,9 @@ export async function transactXinmaiSixDimensionObservation(
           : currentFenceValue;
       if (
         (currentSet !== null &&
-          !isCanonicalSixDimensionObservationSet(currentSet)) ||
+          !isCanonicalSixDimensionObservationSetRecord(currentSet)) ||
         (currentReceipt !== null &&
-          !isSixDimensionCompletionReceipt(currentReceipt)) ||
+          !isSixDimensionCompletionReceiptRecord(currentReceipt)) ||
         (currentFence !== null &&
           !isSixDimensionCommandFenceRecord(currentFence)) ||
         !isGravityObservationContinuityRecord(gravityValue)
@@ -1955,9 +1993,9 @@ export async function transactXinmaiSixDimensionObservation(
           status: "REJECTED" as const,
           value: null,
           observationSet:
-            currentSet as CanonicalSixDimensionObservationSet | null,
+            currentSet as CanonicalSixDimensionObservationSetRecord | null,
           completionReceipt:
-            currentReceipt as SixDimensionCompletionReceipt | null,
+            currentReceipt as SixDimensionCompletionReceiptRecord | null,
           cause: sixDimensionAuthorityCause(
             "GRAVITY_NOT_RECOGNIZED",
             "RETRY_AFTER_REREAD",
@@ -1977,9 +2015,9 @@ export async function transactXinmaiSixDimensionObservation(
             status: "REJECTED" as const,
             value: null,
             observationSet:
-              currentSet as CanonicalSixDimensionObservationSet | null,
+              currentSet as CanonicalSixDimensionObservationSetRecord | null,
             completionReceipt:
-              currentReceipt as SixDimensionCompletionReceipt | null,
+              currentReceipt as SixDimensionCompletionReceiptRecord | null,
             cause: sixDimensionAuthorityCause(
               "IDEMPOTENCY_CONFLICT",
               "NOT_RETRYABLE",
@@ -1989,11 +2027,11 @@ export async function transactXinmaiSixDimensionObservation(
         }
         result = Object.freeze({
           status: "ALREADY_COMMITTED" as const,
-          value: currentSet as CanonicalSixDimensionObservationSet,
+          value: currentSet as CanonicalSixDimensionObservationSetRecord,
           observationSet:
-            currentSet as CanonicalSixDimensionObservationSet,
+            currentSet as CanonicalSixDimensionObservationSetRecord,
           completionReceipt:
-            currentReceipt as SixDimensionCompletionReceipt | null,
+            currentReceipt as SixDimensionCompletionReceiptRecord | null,
           cause: null,
         });
         return;
@@ -2008,9 +2046,9 @@ export async function transactXinmaiSixDimensionObservation(
           status: "REJECTED" as const,
           value: null,
           observationSet:
-            currentSet as CanonicalSixDimensionObservationSet | null,
+            currentSet as CanonicalSixDimensionObservationSetRecord | null,
           completionReceipt:
-            currentReceipt as SixDimensionCompletionReceipt | null,
+            currentReceipt as SixDimensionCompletionReceiptRecord | null,
           cause: sixDimensionAuthorityCause(
             "STALE_REVISION",
             "RETRY_AFTER_REREAD",
@@ -2019,11 +2057,11 @@ export async function transactXinmaiSixDimensionObservation(
         return;
       }
       if (
-        !isCanonicalSixDimensionObservationSet(input.observationSet) ||
+        !isCanonicalSixDimensionObservationSetRecord(input.observationSet) ||
         !isSixDimensionCommandFenceRecord(input.commandFence) ||
         (input.completionReceipt !== null &&
-          !isSixDimensionCompletionReceipt(input.completionReceipt)) ||
-        !validateSixDimensionSetReceiptPair(
+          !isSixDimensionCompletionReceiptRecord(input.completionReceipt)) ||
+        !validateSixDimensionSetReceiptRecordPair(
           input.observationSet,
           input.completionReceipt,
         ) ||
@@ -2033,9 +2071,9 @@ export async function transactXinmaiSixDimensionObservation(
           status: "REJECTED" as const,
           value: null,
           observationSet:
-            currentSet as CanonicalSixDimensionObservationSet | null,
+            currentSet as CanonicalSixDimensionObservationSetRecord | null,
           completionReceipt:
-            currentReceipt as SixDimensionCompletionReceipt | null,
+            currentReceipt as SixDimensionCompletionReceiptRecord | null,
           cause: sixDimensionAuthorityCause(
             "INVALID_COMMAND",
             "NOT_RETRYABLE",

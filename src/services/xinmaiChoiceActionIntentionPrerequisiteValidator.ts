@@ -7,6 +7,9 @@ import {
 import {
   validateChoiceActionRouteCandidate,
 } from "./xinmaiChoiceActionRouteValidator";
+import {
+  XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_V2_SCHEMA_VERSION,
+} from "../types/xinmaiSixDimensionObservation";
 
 export type ChoiceActionIntentionPrerequisiteInvalidReason =
   | "IDENTITY_REFERENCES_INVALID"
@@ -171,10 +174,52 @@ export function validateChoiceActionIntentionV3Prerequisites(
   return base;
 }
 
+export function validateChoiceActionIntentionV4Prerequisites(
+  input: CommitChoiceActionIntentionInput,
+): ChoiceActionIntentionPrerequisiteValidation {
+  const base = validateChoiceActionIntentionPrerequisites(input);
+  if (base.status !== "VALID") return base;
+  const receipt = input.sixDimensionCompletionReceipt;
+  const snapshot = input.formationSourceSnapshot;
+  if (
+    receipt === null ||
+    receipt.schemaVersion !==
+      XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_V2_SCHEMA_VERSION ||
+    !("semanticSelectionAggregateDigest" in receipt) ||
+    !("schemaVersion" in snapshot) ||
+    snapshot.schemaVersion !==
+      "XINMAI_CHOICE_FORMATION_SOURCE_SNAPSHOT_V3" ||
+    snapshot.sixDimensionObservation.completionReceiptReferenceId !==
+      receipt.completionReceiptReferenceId ||
+    snapshot.sixDimensionObservation.observationSetId !==
+      receipt.observationSetId ||
+    snapshot.sixDimensionObservation.observationSetRevision !==
+      receipt.observationSetRevision ||
+    snapshot.sixDimensionObservation.dimensionProtocolRevision !==
+      receipt.dimensionProtocolRevision ||
+    snapshot.sixDimensionObservation.semanticGrammarRevision !==
+      receipt.semanticGrammarRevision ||
+    snapshot.sixDimensionObservation.contentDigest !==
+      receipt.contentDigest ||
+    snapshot.sixDimensionObservation.evidenceDigest !==
+      receipt.evidenceDigest ||
+    snapshot.sixDimensionObservation.semanticSelectionAggregateDigest !==
+      receipt.semanticSelectionAggregateDigest
+  ) {
+    return Object.freeze({
+      status: "INVALID" as const,
+      input: null,
+      reason: "SIX_DIMENSION_COMPLETION_RECEIPT_REQUIRED" as const,
+    });
+  }
+  return base;
+}
+
 export const XinmaiChoiceActionIntentionPrerequisiteValidator =
   Object.freeze({
     validate: validateChoiceActionIntentionPrerequisites,
     validateV3: validateChoiceActionIntentionV3Prerequisites,
+    validateV4: validateChoiceActionIntentionV4Prerequisites,
     pure: true as const,
     noStorageRead: true as const,
     noStorageWrite: true as const,

@@ -33,9 +33,12 @@ import type {
 } from "../types/xinmaiChoicePresentationReadiness";
 import type { XinmaiCanonicalBodyImprintDecision } from "../types/xinmaiCanonicalBodyImprint";
 import {
-  XINMAI_SIX_DIMENSION_PROTOCOL_REVISION,
+  XINMAI_SIX_DIMENSION_OBSERVATION_V3_SCHEMA_VERSION,
+  XINMAI_SIX_DIMENSION_SEMANTIC_GRAMMAR_REVISION,
+  XINMAI_SIX_DIMENSION_V3_PROTOCOL_REVISION,
   type SixDimensionId,
   type SixDimensionPresentationAuthorityState,
+  type SixDimensionSemanticResponseId,
   type SixDimensionTypedAcknowledgement,
 } from "../types/xinmaiSixDimensionObservation";
 import {
@@ -223,7 +226,7 @@ export function GravityProductionSurfaceHost({
             candidateReferenceId,
             catalogRevision,
             dimensionProtocolRevision:
-              XINMAI_SIX_DIMENSION_PROTOCOL_REVISION,
+              XINMAI_SIX_DIMENSION_V3_PROTOCOL_REVISION,
           }),
         );
       if (cancelled) return;
@@ -256,6 +259,7 @@ export function GravityProductionSurfaceHost({
     async (
       dimensionId: SixDimensionId,
       acknowledgement: SixDimensionTypedAcknowledgement,
+      semanticResponseId: SixDimensionSemanticResponseId,
     ): Promise<boolean> => {
       const current = sixDimensionAuthority.observationSet;
       if (current === null || current.lifecycle !== "OPEN") return false;
@@ -263,26 +267,45 @@ export function GravityProductionSurfaceHost({
         (candidate) => candidate.dimensionId === dimensionId,
       );
       if (item === undefined) return false;
+      const usesSemanticSelection =
+        current.schemaVersion ===
+          XINMAI_SIX_DIMENSION_OBSERVATION_V3_SCHEMA_VERSION;
       const commandReferenceId =
         createSixDimensionCommandReferenceId(
           current.observationSetId,
           dimensionId,
           current.revision,
           item.itemRevision,
-          `ACKNOWLEDGE_DIMENSION:${acknowledgement}`,
+          usesSemanticSelection
+            ? `ACKNOWLEDGE_SEMANTIC_SELECTION_V3:${acknowledgement}:${semanticResponseId}`
+            : `ACKNOWLEDGE_DIMENSION:${acknowledgement}`,
         );
       const result =
         await executeXinmaiSixDimensionObservationCommand(
-          Object.freeze({
-            type: "ACKNOWLEDGE_DIMENSION" as const,
-            commandReferenceId,
-            observationSetId: current.observationSetId,
-            dimensionId,
-            acknowledgement,
-            expectedSetRevision: current.revision,
-            expectedItemRevision: item.itemRevision,
-            sourceReferenceId: item.sourceReferenceId,
-          }),
+          usesSemanticSelection
+            ? Object.freeze({
+                type: "ACKNOWLEDGE_SEMANTIC_SELECTION_V3" as const,
+                commandReferenceId,
+                observationSetId: current.observationSetId,
+                dimensionId,
+                acknowledgement,
+                semanticGrammarRevision:
+                  XINMAI_SIX_DIMENSION_SEMANTIC_GRAMMAR_REVISION,
+                semanticResponseId,
+                expectedSetRevision: current.revision,
+                expectedItemRevision: item.itemRevision,
+                sourceReferenceId: item.sourceReferenceId,
+              })
+            : Object.freeze({
+                type: "ACKNOWLEDGE_DIMENSION" as const,
+                commandReferenceId,
+                observationSetId: current.observationSetId,
+                dimensionId,
+                acknowledgement,
+                expectedSetRevision: current.revision,
+                expectedItemRevision: item.itemRevision,
+                sourceReferenceId: item.sourceReferenceId,
+              }),
         );
       setSixDimensionAuthority(
         result.status === "COMMITTED" ||

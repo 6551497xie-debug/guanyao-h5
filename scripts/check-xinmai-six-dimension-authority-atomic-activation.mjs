@@ -113,14 +113,16 @@ assert(
   "page-local completion or recovery-to-all-six still authorizes the product",
 );
 assert(
-  host.includes("executeXinmaiSixDimensionObservationCommand") &&
+    host.includes("executeXinmaiSixDimensionObservationCommand") &&
     host.includes('type: "ACKNOWLEDGE_DIMENSION"') &&
+    host.includes('type: "ACKNOWLEDGE_SEMANTIC_SELECTION_V3"') &&
     host.includes("readXinmaiGravityObservationContinuityState"),
   "Production Host is not wired to typed canonical commands",
 );
 assert(
   reflectionGuide.includes("onContinue,") &&
-    reflectionGuide.includes("const saved = await onContinue?.();") &&
+    reflectionGuide.includes("const saved = await onContinue?.(selectedResponse);") &&
+    reflectionGuide.includes("selectedResponse === null") &&
     reflectionGuide.includes("if (saved) setSavedAnnouncement") &&
     reflectionGuide.includes('data-xinmai-authority-boundary="FINAL_ACKNOWLEDGEMENT_ONLY"') &&
     page.includes("key={sequentialCurrentSpaceId}") &&

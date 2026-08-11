@@ -19,6 +19,7 @@ import type {
   XinmaiLivedResponseReturnAcceptanceEvidence,
 } from "../types/xinmaiLivedResponseCheckpointPresentation";
 import { XinmaiCrystalFormationOwnershipMoment } from "./XinmaiCrystalFormationOwnershipMoment";
+import { XinmaiSixDimensionResponseMap } from "./XinmaiSixDimensionResponseMap";
 import { createLivedResponseCandidateReference } from "../services/xinmaiChoiceActionIntentionController";
 import {
   confirmXinmaiChoiceExplicitDeparture,
@@ -48,12 +49,12 @@ const FACT_OUTCOMES: readonly Readonly<{
   {
     value: "ATTEMPTED",
     label: "我试着做了",
-    helper: "确认后会形成一条真实回应记录，并进入 Crystal 形成确认。",
+    helper: "确认后会留下这次真实发生的回应，并继续形成可回看的生命痕迹。",
   },
   {
     value: "COMPLETED_AS_INTENDED",
     label: "我完成了原来的回应",
-    helper: "确认后会形成一条真实回应记录，并进入 Crystal 形成确认。",
+    helper: "确认后会留下这次真实发生的回应，并继续形成可回看的生命痕迹。",
   },
   {
     value: "CHANGED_RESPONSE",
@@ -363,6 +364,18 @@ export function XinmaiLivedResponseReturnSurface({
 
   if (!selected || !selected.intention) return null;
   const intention = selected.intention;
+  const observationSetId =
+    intention.schemaVersion === "XINMAI_CHOICE_ACTION_INTENTION_V3" ||
+    intention.schemaVersion === "XINMAI_CHOICE_ACTION_INTENTION_V4"
+      ? intention.formationSourceSnapshot.sixDimensionObservation.observationSetId
+      : null;
+  const traceOrdinal = Math.max(
+    1,
+    admissions.filter((admission) => admission.formationReceipt !== null)
+      .findIndex((admission) =>
+        admission.intention?.choiceActionIntentionReferenceId ===
+          intention.choiceActionIntentionReferenceId) + 1,
+  );
 
   const depart = async () => {
     if (
@@ -673,6 +686,15 @@ export function XinmaiLivedResponseReturnSurface({
           <blockquote>{intention.actionSummary}</blockquote>
         </header>
       ) : null}
+      {observationSetId !== null &&
+      pendingNoFactResolution === null &&
+      checkpointDecision.state !== "BASELINE_LIFE_WORLD" &&
+      checkpointDecision.state !== "OWNERSHIP_PRESENTED" ? (
+        <XinmaiSixDimensionResponseMap
+          observationSetId={observationSetId}
+          microAction={intention.actionSummary}
+        />
+      ) : null}
       <p
         className="xinmai-lived-response-return-surface__live"
         role="status"
@@ -800,7 +822,7 @@ export function XinmaiLivedResponseReturnSurface({
               确认这是实际发生的
             </button>
             <small>
-              确认后，系统才会依据这次真实回应检查 Crystal 是否正式形成。
+              确认后，这次真实回应才会被保存，并继续形成可回看的生命痕迹。
             </small>
           </div>
           <div
@@ -836,6 +858,23 @@ export function XinmaiLivedResponseReturnSurface({
           "OWNERSHIP_PRESENTED" ? (
         <XinmaiCrystalFormationOwnershipMoment
           decision={ownershipPresentationDecision}
+          valueClosure={
+            <section className="xinmai-crystal-ownership__value-closure" aria-label="这道生命痕迹的完整来路">
+              {observationSetId !== null ? (
+                <XinmaiSixDimensionResponseMap
+                  observationSetId={observationSetId}
+                  microAction={intention.actionSummary}
+                  compact
+                />
+              ) : null}
+              <dl>
+                <div><dt>带回生活的最小一步</dt><dd>{intention.actionSummary}</dd></div>
+                <div><dt>现实里实际发生</dt><dd>{currentFact?.factualSummary || "你已确认这次真实回应。"}</dd></div>
+                <div><dt>这次回应</dt><dd>{currentFact?.responseOutcome === "CHANGED_RESPONSE" ? "实际回应与原计划不同" : currentFact?.responseOutcome === "COMPLETED_AS_INTENDED" ? "按原来准备的方式发生" : "已经在现实中尝试"}</dd></div>
+                <div><dt>形成时间与位置</dt><dd>{currentFormationReceipt.formedAt} · 同一生命中的第 {traceOrdinal} 道痕迹</dd></div>
+              </dl>
+            </section>
+          }
           onOwnershipPresented={() =>
             setOwnershipPresentedCrystalReferenceId(
               currentFormationReceipt.crystalReferenceId,
@@ -881,7 +920,7 @@ export function XinmaiLivedResponseReturnSurface({
         selected.state === "TERMINAL_BY_GROWTH" &&
         selected.currentEligibility !== null ? (
         <div className="xinmai-lived-response-return-surface__recovery">
-          <p>这次形成无法在当前状态重试。已保存的 Fact 与生命资产不会被删除。</p>
+          <p>这次形成无法在当前状态重试。已经保存的真实回应与生命痕迹不会被删除。</p>
           <button type="button" onClick={() => window.location.assign("/launch-lab")}>
             保留记录，回到生命世界
           </button>

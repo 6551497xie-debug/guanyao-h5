@@ -2,6 +2,7 @@ import type { ChoiceActionIntention } from "../types/xinmaiChoiceActionIntention
 import {
   XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION,
   XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION,
+  XINMAI_CHOICE_ACTION_INTENTION_V4_SCHEMA_VERSION,
 } from "../types/xinmaiChoiceActionIntention";
 import {
   XINMAI_CHOICE_RETURNING_REALITY_PROOF_SCHEMA_VERSION,
@@ -59,7 +60,9 @@ export async function readXinmaiChoiceReturningRealityProof(input: Readonly<{
     (input.intention.schemaVersion !==
       XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION &&
       input.intention.schemaVersion !==
-        XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION) ||
+        XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION &&
+      input.intention.schemaVersion !==
+        XINMAI_CHOICE_ACTION_INTENTION_V4_SCHEMA_VERSION) ||
     !input.targetEncounterCycleId.trim() ||
     !input.returnIntentRequestReferenceId.trim() ||
     input.returnAttemptRevision < 1

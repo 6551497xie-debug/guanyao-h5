@@ -61,6 +61,7 @@ import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
 import {
   commitChoiceActionIntentionV3,
+  commitChoiceActionIntentionV4,
 } from "../services/xinmaiChoiceActionIntentionController";
 import { confirmXinmaiChoiceExplicitDeparture } from "../services/xinmaiChoiceReturningProvenanceController";
 import { readXinmaiChoiceReturningProvenanceRecovery } from "../services/xinmaiChoiceReturningProvenanceRecoveryAdapter";
@@ -82,11 +83,16 @@ import type {
   GravityObservationRecognitionProvenance,
   GravityObservationResumeDecision,
 } from "../types/xinmaiGravityObservationContinuity";
+import { XinmaiSixDimensionResponseMap } from "../components/XinmaiSixDimensionResponseMap";
 import type {
   SixDimensionId,
   SixDimensionPresentationAuthorityState,
   SixDimensionTypedAcknowledgement,
+  SixDimensionSemanticResponseId,
 } from "../types/xinmaiSixDimensionObservation";
+import type {
+  XinmaiSixDimensionSemanticResponse,
+} from "../types/xinmaiSixDimensionSemanticChoreography";
 import type {
   XinmaiGravityChoiceSceneSemanticFacts,
   XinmaiRealityGravityChoiceSceneSemanticProjection,
@@ -130,6 +136,7 @@ export type GravityPageProps = Readonly<{
   onSixDimensionAcknowledgement: (
     dimensionId: SixDimensionId,
     acknowledgement: SixDimensionTypedAcknowledgement,
+    semanticResponseId: SixDimensionSemanticResponseId,
   ) => Promise<boolean>;
   growthSummaryPending: boolean;
   onExplicitDepartureCommitted: () => void;
@@ -411,7 +418,9 @@ function NodeProgressionPanel({
   onSelfName: () => void;
   onPause: () => void;
   onResume: () => void;
-  onContinue: () => Promise<boolean>;
+  onContinue: (
+    response: XinmaiSixDimensionSemanticResponse,
+  ) => Promise<boolean>;
 }) {
   const [firstPauseInvitationVisible, setFirstPauseInvitationVisible] = useState(false);
   const hasShownFirstPauseInvitationRef = useRef(false);
@@ -1175,7 +1184,9 @@ function CosmicBotanicsField({
   petalStates: Record<SixSpaceId, CosmicPetalState>;
   activeNodeIndex: number;
   narrativePhase: CosmicNarrativePhase;
-  onNodeBloom: () => Promise<boolean>;
+  onNodeBloom: (
+    response: XinmaiSixDimensionSemanticResponse,
+  ) => Promise<boolean>;
   finalActionState: SixDimensionCommitPresentationState;
   visualSource: RealLifeVisualSource | null;
   visualState: VisualState;
@@ -1281,9 +1292,11 @@ function CosmicBotanicsField({
     setInnerViewPhase(innerViewPhaseBeforePauseRef.current);
   }
 
-  async function continueObservation(): Promise<boolean> {
+  async function continueObservation(
+    response: XinmaiSixDimensionSemanticResponse,
+  ): Promise<boolean> {
     if (!innerViewRelationEstablished) return false;
-    return onNodeBloom();
+    return onNodeBloom(response);
   }
 
   function handleLifeCoreApproach() {
@@ -1451,12 +1464,16 @@ function CosmicBotanicsField({
 
 function SingleModelRevisionActionFocus({
   actionRoute,
+  observationSetId,
+  realityTrigger,
   onConfirm,
   visualSource,
   toneColor,
   innerViewRelation,
 }: {
   actionRoute: ChoiceActionRouteCandidate;
+  observationSetId: string;
+  realityTrigger: string;
   onConfirm: () => void;
   visualSource: RealLifeVisualSource | null;
   toneColor: string;
@@ -1468,6 +1485,7 @@ function SingleModelRevisionActionFocus({
   const [breathHoldState, setBreathHoldState] = useState<
     "RESTING" | "HOLDING" | "RELEASED_EARLY"
   >("RESTING");
+  const [responseMapReady, setResponseMapReady] = useState(false);
   const breathHoldTimerRef = useRef<number | null>(null);
   const breathHoldResetTimerRef = useRef<number | null>(null);
   const breathHoldCompletedRef = useRef(false);
@@ -1499,7 +1517,7 @@ function SingleModelRevisionActionFocus({
 
   function beginBreathHold() {
     if (
-      !responseGapReady ||
+      !responseGapReady || !responseMapReady ||
       innerViewRelation === "AWAITING" ||
       breathHoldState === "HOLDING"
     ) {
@@ -1554,7 +1572,7 @@ function SingleModelRevisionActionFocus({
       data-choice-breath-hold={breathHoldState}
       data-choice-breath-duration-ms="1800"
       data-choice-embodiment="USER_BODY_STAYS_WITH_LIFE_BODY"
-      data-choice-click-confirm="FORBIDDEN"
+      data-choice-click-confirm="AVAILABLE"
       data-choice-answer-model="NONE"
       data-choice-life-effect="RESPONSE_ONLY"
       data-choice-old-path="PRESENT_NOT_AUTOMATIC"
@@ -1647,7 +1665,8 @@ function SingleModelRevisionActionFocus({
           releaseBreathHold();
         }}
         disabled={
-          !responseGapReady || innerViewRelation === "AWAITING"
+          !responseGapReady || !responseMapReady ||
+          innerViewRelation === "AWAITING"
         }
         style={{
           appearance: "none",
@@ -1719,10 +1738,23 @@ function SingleModelRevisionActionFocus({
           justifyItems: "center",
           gap: 10,
           textAlign: "center",
-          pointerEvents: "none",
+          pointerEvents: "auto",
+          maxHeight: "min(66dvh, 620px)",
+          overflowY: "auto",
+          padding: "14px",
+          borderRadius: 18,
+          background: "rgba(5, 8, 12, 0.78)",
+          backdropFilter: "blur(12px)",
           textShadow: "0 0 20px rgba(2,3,6,0.94)",
         }}
       >
+        <XinmaiSixDimensionResponseMap
+          observationSetId={observationSetId}
+          realityTrigger={realityTrigger}
+          microAction={actionRoute.action.visibleAction}
+          compact
+          onReadyChange={setResponseMapReady}
+        />
         <span
           data-choice-inner-view-carry="RECOGNIZED_RELATION_REMAINS_PRESENT"
           style={{
@@ -1785,6 +1817,15 @@ function SingleModelRevisionActionFocus({
               ? "可以慢一点，再陪它停留"
               : "按住生命核心 · 陪它完成一次呼吸"}
         </span>
+        <button
+          type="button"
+          className="xinmai-response-map__primary-action"
+          onClick={onConfirm}
+          disabled={!responseGapReady || !responseMapReady || innerViewRelation === "AWAITING"}
+          aria-label={`确认把这一步带回生活：${actionRoute.action.visibleAction}`}
+        >
+          确认带着这一步回到生活
+        </button>
       </div>
     </section>
   );
@@ -3061,9 +3102,16 @@ function HexagramCodeDeliveryShell({
     setChoiceMutationPending(true);
     let awaitingCanonicalSummary = false;
     try {
-      const result = await commitChoiceActionIntentionV3(
-        choicePresentationDecision.structuralInput,
-      );
+      const result =
+        choicePresentationDecision.structuralInput
+          .sixDimensionCompletionReceipt?.schemaVersion ===
+        "XINMAI_SIX_DIMENSION_COMPLETION_RECEIPT_V2"
+          ? await commitChoiceActionIntentionV4(
+              choicePresentationDecision.structuralInput,
+            )
+          : await commitChoiceActionIntentionV3(
+              choicePresentationDecision.structuralInput,
+            );
       if (
         result.status !== "COMMITTED" &&
         result.status !== "ALREADY_COMMITTED"
@@ -3158,6 +3206,7 @@ function HexagramCodeDeliveryShell({
   async function handleSpatialInteraction(
     eventType: SpatialIntent["type"],
     context: SpatialIntent["payload"] = {},
+    semanticResponseId?: SixDimensionSemanticResponseId,
   ): Promise<boolean> {
     if (eventType !== "CORE_STAR_BLOOM") {
       setExecutionSnapshot((current) => GuanyaoRuntimeEngine.run(current, { type: eventType, payload: context }));
@@ -3171,6 +3220,7 @@ function HexagramCodeDeliveryShell({
       const acknowledged = await onSixDimensionAcknowledgement(
         sequentialCurrentSpaceId,
         "IMPACT_RECOGNIZED_PRESENT",
+        semanticResponseId as SixDimensionSemanticResponseId,
       );
       if (!acknowledged) {
         setChoiceAuthorityFeedback(
@@ -3198,7 +3248,9 @@ function HexagramCodeDeliveryShell({
     }
   }
 
-  async function bloomCosmicNode(): Promise<boolean> {
+  async function bloomCosmicNode(
+    response: XinmaiSixDimensionSemanticResponse,
+  ): Promise<boolean> {
     if (!sixDimensionCommitReady || dimensionTransitionLockRef.current) {
       return false;
     }
@@ -3209,7 +3261,7 @@ function HexagramCodeDeliveryShell({
         dimension: sequentialCurrentSpaceId,
         context: "focus",
         triggerStrength: 1,
-      });
+      }, response.id as SixDimensionSemanticResponseId);
     } finally {
       setSixDimensionMutationPending(false);
     }
@@ -3309,7 +3361,9 @@ function HexagramCodeDeliveryShell({
         }
         data-choice-six-dimension-receipt-reference={
           committedChoiceActionIntention?.schemaVersion ===
-          "XINMAI_CHOICE_ACTION_INTENTION_V3"
+            "XINMAI_CHOICE_ACTION_INTENTION_V3" ||
+          committedChoiceActionIntention?.schemaVersion ===
+            "XINMAI_CHOICE_ACTION_INTENTION_V4"
             ? committedChoiceActionIntention.formationSourceSnapshot
                 .sixDimensionObservation
                 .completionReceiptReferenceId
@@ -3609,6 +3663,11 @@ function HexagramCodeDeliveryShell({
               actionRoute={
                 choicePresentationDecision.actionRouteCandidate
               }
+              observationSetId={
+                choicePresentationDecision.structuralInput
+                  .sixDimensionCompletionReceipt?.observationSetId ?? ""
+              }
+              realityTrigger={selectedPressureSeedSurface}
               onConfirm={handleRevisionActionConfirm}
               visualSource={realLifeVisualSource}
               toneColor={choiceToneColor}

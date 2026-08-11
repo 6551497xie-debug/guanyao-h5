@@ -6212,7 +6212,8 @@ export function LaunchLab({
               <span>星辰有序。</span>
             </div>
             <div className="gy-returning-life-world__relationship-copy">
-              {returningRelationshipNaming.status === "AVAILABLE" ? (
+              {returningChoiceAdmissions.length === 0 &&
+              returningRelationshipNaming.status === "AVAILABLE" ? (
                 <small className="gy-returning-life-world__relationship-name">
                   你仍可以叫它
                   <b>
@@ -6223,7 +6224,7 @@ export function LaunchLab({
                   </b>
                 </small>
               ) : null}
-              {!returningLivedResponseActive ? (
+              {returningChoiceAdmissions.length === 0 ? (
                 <>
                   <strong>{baselineCheckpointDecision.headline}</strong>
                   <small>{baselineCheckpointDecision.support}</small>
@@ -6278,7 +6279,7 @@ export function LaunchLab({
                   }}
                 />
               ) : null}
-              {!returningLivedResponseActive ? (
+              {returningChoiceAdmissions.length === 0 ? (
               <div
                 className="gy-returning-life-world__whisper"
                 onPointerDown={(event) => event.stopPropagation()}
@@ -6400,7 +6401,8 @@ export function LaunchLab({
                 )}
               </div>
               ) : null}
-              {returningRelationshipNaming.status !== "UNAVAILABLE" ? (
+              {returningChoiceAdmissions.length === 0 &&
+              returningRelationshipNaming.status !== "UNAVAILABLE" ? (
                 <div
                   className="gy-returning-life-world__relationship-name-controls"
                   onPointerDown={(event) => event.stopPropagation()}

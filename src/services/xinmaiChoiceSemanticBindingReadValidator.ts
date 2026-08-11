@@ -130,5 +130,5 @@ export const XinmaiChoiceSemanticBindingReadValidator = Object.freeze({
   isChoiceV3: isChoiceActionIntentionV3ReadRecord,
   isChoiceV4: isChoiceActionIntentionV4ReadRecord,
   writesAuthority: false as const,
-  choiceV4WriterEnabled: false as const,
+  choiceV4WriterEnabled: true as const,
 });

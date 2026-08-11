@@ -58,7 +58,7 @@ export function resolveXinmaiPostOwnershipNextRealityCyclePresentation(
   return Object.freeze({
     state: "IDLE" as const,
     message: "",
-    actionLabel: "带着这道痕迹，继续同行",
+    actionLabel: "开始下一段现实",
     actionDisabled: false,
     busy: false,
     retryability: "NOT_NEEDED" as const,

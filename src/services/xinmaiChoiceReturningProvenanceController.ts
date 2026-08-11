@@ -1,6 +1,7 @@
 import {
   XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION,
   XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION,
+  XINMAI_CHOICE_ACTION_INTENTION_V4_SCHEMA_VERSION,
   type ChoiceActionIntention,
 } from "../types/xinmaiChoiceActionIntention";
 import {
@@ -177,7 +178,9 @@ export async function confirmXinmaiChoiceExplicitDeparture(input: Readonly<{
         intention.schemaVersion !==
           XINMAI_CHOICE_ACTION_INTENTION_SCHEMA_VERSION &&
         intention.schemaVersion !==
-          XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION
+          XINMAI_CHOICE_ACTION_INTENTION_V3_SCHEMA_VERSION &&
+        intention.schemaVersion !==
+          XINMAI_CHOICE_ACTION_INTENTION_V4_SCHEMA_VERSION
       ) {
         return rejectXinmaiLivedGrowthTransaction("INTENTION_NOT_V2");
       }
