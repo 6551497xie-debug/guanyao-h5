@@ -6,6 +6,7 @@ import type {
 } from "../types/realityPressureSeedPresentation";
 import "../styles/reality-pressure-presentation.css";
 import "../styles/xinmai-reality-seed-continuous-discovery.css";
+import { resolveXinmaiFreshRealityVisibleNoveltyPresentation } from "../services/xinmaiFreshRealityVisibleNoveltyPresentationResolver";
 
 export const REALITY_PRESSURE_SEED_PRESENTATION_BOUNDARY:
   RealityPressureSeedPresentationBoundary = Object.freeze({
@@ -39,6 +40,7 @@ export const REALITY_PRESSURE_SEED_PRESENTATION_BOUNDARY:
 
 function RealityPressureSeedCandidatePresentation({
   candidate,
+  recentlyCompleted,
   recognitionAvailable,
   onRecognize,
 }: RealityPressureSeedCandidatePresentationProps) {
@@ -48,6 +50,11 @@ function RealityPressureSeedCandidatePresentation({
       data-candidate-selection="USER_RECOGNITION_REQUIRED"
       data-reality-fragment="WORLD_APPROACHING_LIFE"
     >
+      {recentlyCompleted ? (
+        <small data-recently-completed-reality="TRUE">
+          刚刚完成过的一幕
+        </small>
+      ) : null}
       <h3>{candidate.surface}</h3>
       <p>{candidate.shell}</p>
       {recognitionAvailable ? (
@@ -66,6 +73,8 @@ function RealityPressureSeedCandidatePresentation({
 export function RealityPressureSeedPresentation({
   session,
   interactionEnabled,
+  freshPostOwnershipCycle,
+  historicalRealityMemoryKey,
   onRecognize,
   onRequestNextBundle,
   onPause,
@@ -90,6 +99,12 @@ export function RealityPressureSeedPresentation({
       "PRESSURE_SEED_PAUSE",
     );
   const recognized = session.captureState === "SEED_RECOGNIZED";
+  const visibleNovelty =
+    resolveXinmaiFreshRealityVisibleNoveltyPresentation({
+      candidates: session.candidateBundle.candidates,
+      freshPostOwnershipCycle,
+      historicalRealityMemoryKey,
+    });
   const reportedSurfaceOutcomeKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -175,6 +190,10 @@ export function RealityPressureSeedPresentation({
       }
       data-source-reference-id={session.sourceReferenceId}
       data-candidate-bundle-reference={session.candidateBundleReferenceId}
+      data-fresh-reality-visible-novelty={visibleNovelty.state}
+      data-historical-reality-match={
+        visibleNovelty.historicalMatchReferenceId ?? "NONE"
+      }
     >
       <div className="gy-p36__pressure-head">
         <span>现实从远处靠近</span>
@@ -201,10 +220,11 @@ export function RealityPressureSeedPresentation({
           data-reality-seed-discovery="CONTINUOUS_EXISTING_CATALOG"
           data-reality-seed-bundle-continuity="CURSOR_WITHOUT_REPETITION"
         >
-          {session.candidateBundle.candidates.map((candidate) => (
+          {visibleNovelty.candidates.map(({ candidate, recentlyCompleted }) => (
             <RealityPressureSeedCandidatePresentation
               key={candidate.candidateReferenceId}
               candidate={candidate}
+              recentlyCompleted={recentlyCompleted}
               recognitionAvailable={recognitionAvailable}
               onRecognize={onRecognize}
             />

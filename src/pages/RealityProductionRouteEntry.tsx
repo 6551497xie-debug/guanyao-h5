@@ -39,6 +39,7 @@ import {
 } from "../services/xinmaiRealityAdventureContinuityRevisionObserver";
 import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
 import { readXinmaiCanonicalBodyImprintRecovery } from "../services/xinmaiCanonicalBodyImprintRecoveryAdapter";
+import { readXinmaiCompletedRealityVisibleHistory } from "../services/xinmaiCompletedRealityVisibleHistoryReader";
 import {
   createRealityExplicitLeaveRequestFromAdmission,
   createRealityExplicitLeaveRequestFromIntent,
@@ -137,6 +138,7 @@ type RealityRouteState =
       choiceLifeTraceMemoryKey?: string;
       choiceLifeTraceSourceSlot?: number;
       choiceActionIntentionReferenceId?: string;
+      nextRealityCycle?: "POST_OWNERSHIP_FRESH_INTENT";
     }>
   | null;
 
@@ -244,6 +246,8 @@ export function RealityProductionRouteEntry({
     );
   const [canonicalBodyImprintRecoveryReady, setCanonicalBodyImprintRecoveryReady] =
     useState(false);
+  const [completedRealityCandidateReferenceId, setCompletedRealityCandidateReferenceId] =
+    useState<string | null>(null);
 
   useEffect(() => {
     if (identityRecovery.status !== "READY") {
@@ -350,6 +354,34 @@ export function RealityProductionRouteEntry({
     routeState?.returningLifeMemory ?? null;
   const returningLifeWorldEntry =
     routeState?.returningEntry === "SAME_LIFE_NEW_REALITY";
+  const freshPostOwnershipCycle =
+    routeState?.nextRealityCycle === "POST_OWNERSHIP_FRESH_INTENT";
+
+  useEffect(() => {
+    if (!freshPostOwnershipCycle || identityRecovery.status !== "READY") {
+      setCompletedRealityCandidateReferenceId(null);
+      return undefined;
+    }
+    let disposed = false;
+    void readXinmaiCompletedRealityVisibleHistory({
+      identityReferences: identityRecovery.identityReferences,
+      choiceActionIntentionReferenceId:
+        routeState?.choiceActionIntentionReferenceId ?? null,
+    }).then((result) => {
+      if (!disposed) {
+        setCompletedRealityCandidateReferenceId(
+          result.status === "READY" ? result.candidateReferenceId : null,
+        );
+      }
+    });
+    return () => {
+      disposed = true;
+    };
+  }, [
+    freshPostOwnershipCycle,
+    identityRecovery,
+    routeState?.choiceActionIntentionReferenceId,
+  ]);
   const choiceReturn =
     routeState?.choiceReturn ===
     "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED"
@@ -1221,9 +1253,11 @@ export function RealityProductionRouteEntry({
       }
       visualContinuity={visualContinuity}
       historicalRealityMemoryKey={
+        completedRealityCandidateReferenceId ??
         routeReturningLifeMemory?.historicalRealityMemoryKey ??
         historicalLifeMemory.historicalRealityMemoryKey
       }
+      freshPostOwnershipCycle={freshPostOwnershipCycle}
       canonicalBodyImprintDecision={canonicalBodyImprintDecision}
       returningLifeWorldEntry={returningLifeWorldEntry}
       choiceReturn={choiceReturn}

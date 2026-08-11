@@ -132,6 +132,7 @@ export function RealityProductionHost({
   genesisPresenceContinuityContext,
   visualContinuity,
   historicalRealityMemoryKey = null,
+  freshPostOwnershipCycle = false,
   canonicalBodyImprintDecision,
   returningLifeWorldEntry = false,
   choiceReturn = null,
@@ -1075,6 +1076,8 @@ export function RealityProductionHost({
         <RealityPressureSeedPresentation
           session={pressureSeedSession}
           interactionEnabled={realityInteractionActive}
+          freshPostOwnershipCycle={freshPostOwnershipCycle}
+          historicalRealityMemoryKey={historicalRealityMemoryKey}
           onRecognize={recognizePressureSeed}
           onRequestNextBundle={requestNextPressureSeedBundle}
           onPause={pausePressureSeed}

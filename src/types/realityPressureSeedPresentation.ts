@@ -40,6 +40,8 @@ export type RealityPressureSeedPresentationBoundary = Readonly<{
 export type RealityPressureSeedPresentationProps = Readonly<{
   session: RealityProductionPressureSeedSession;
   interactionEnabled: boolean;
+  freshPostOwnershipCycle: boolean;
+  historicalRealityMemoryKey: string | null;
   onRecognize: (candidateReferenceId: string) => void;
   onRequestNextBundle: () => void;
   onPause: () => void;
@@ -53,6 +55,7 @@ export type RealityPressureSeedPresentationProps = Readonly<{
 
 export type RealityPressureSeedCandidatePresentationProps = Readonly<{
   candidate: RealityPressureSeedCandidate;
+  recentlyCompleted: boolean;
   recognitionAvailable: boolean;
   onRecognize: (candidateReferenceId: string) => void;
 }>;

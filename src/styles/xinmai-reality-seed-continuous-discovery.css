@@ -5,6 +5,16 @@
 }
 
 .xinmai-life-app[data-xinmai-surface="REALITY"]
+  [data-recently-completed-reality="TRUE"] {
+  display: block;
+  margin-bottom: 6px;
+  color: rgba(238, 226, 198, 0.58);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  line-height: 1.5;
+}
+
+.xinmai-life-app[data-xinmai-surface="REALITY"]
   .gy-reality-seed-continuation {
   position: relative;
   display: flex;

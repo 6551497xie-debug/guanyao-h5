@@ -4,6 +4,7 @@ import type {
   XinmaiCrystalOwnershipVisualFacts,
 } from "../types/xinmaiCrystalOwnershipPresentation";
 import { XINMAI_CRYSTAL_OWNERSHIP_PRESENTATION_SCHEMA_VERSION } from "../types/xinmaiCrystalOwnershipPresentation";
+import { resolveXinmaiCrystalValueLinePresentation } from "./xinmaiCrystalValueLinePresentationResolver";
 
 export const XINMAI_CRYSTAL_OWNERSHIP_PRESENTATION_POLICY:
   | "ENABLED"
@@ -78,7 +79,9 @@ export function resolveXinmaiCrystalOwnershipPresentation(
       receipt.choiceActionIntentionReferenceId,
     actionSummary: input.actionSummary.trim(),
     crystalTitle: receipt.formedCrystal.crystal.title,
-    crystalLine: receipt.formedCrystal.crystal.copy,
+    crystalLine: resolveXinmaiCrystalValueLinePresentation(
+      receipt.formedCrystal.crystal.copy,
+    ).line,
     ownershipHeadline: "你真实走出的这一步，留下了痕迹。" as const,
     ownershipSupport:
       "它不证明你更好，只记得你曾经这样选择。" as const,

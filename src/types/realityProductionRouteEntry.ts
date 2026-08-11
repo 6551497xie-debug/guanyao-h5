@@ -218,6 +218,7 @@ export type RealityProductionHostProps = Readonly<{
     lifeArchetypeForceCondensationVisualCalibration: GenesisLifeArchetypeForceCondensationVisualCalibration;
   }>;
   historicalRealityMemoryKey?: string | null;
+  freshPostOwnershipCycle?: boolean;
   canonicalBodyImprintDecision: XinmaiCanonicalBodyImprintDecision;
   returningLifeWorldEntry?: boolean;
   choiceReturn?: "CHOICE_RETURN_LIVED_RESPONSE_RESOLVED" | null;
