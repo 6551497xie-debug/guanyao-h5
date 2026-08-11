@@ -99,6 +99,7 @@ import type {
 } from "../types/xinmaiRealityGravityChoiceSceneSemanticPresentation";
 import { RealityGravityInertiaField } from "../components/RealityGravityInertiaField";
 import { XinmaiLifeReflectionGuide } from "../components/XinmaiLifeReflectionGuide";
+import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
 import {
   LIFE_UNIVERSE_CORE_IDENTITY,
   resolveLifeUniverseCrystalImprintGeometry,
@@ -156,10 +157,10 @@ export type GravityPageProps = Readonly<{
 const SIX_SPACE_SHORT_LABELS: Record<SixSpaceId, string> = {
   body: "身体",
   emotion: "情绪",
-  thought: "思维",
-  action: "行动",
-  memory: "记忆",
-  goal: "动机",
+  thought: "想法",
+  action: "行动冲动",
+  memory: "记忆联想",
+  goal: "需要与方向",
 };
 
 type SixDimensionCommitPresentationState =
@@ -211,7 +212,7 @@ type ProductRuntimeDefinition = Readonly<{
 
 const GUANYAO_PRODUCT_RUNTIME_DEFINITION = Object.freeze({
   officialDefinition:
-    "观爻让你看见现实如何在同一个生命的六个窗口留下痕迹，以及这些回应如何逐渐形成惯性。",
+    "观爻帮助你从六个观察窗口看见现实中的反应链，并带走一个可以验证的小行动。",
   threeSecondModel: "现实发生 → 六维生命显影 → 重复回应留下惯性",
   experienceLoop: Object.freeze([
     "现实事实被看见",
@@ -227,7 +228,7 @@ const GUANYAO_PRODUCT_RUNTIME_DEFINITION = Object.freeze({
     "理解它也许曾经保护自己",
   ]),
   userPerception: Object.freeze([
-    "同一个生命仍在",
+    "同一段体验可以连续回看",
     "现实影响可以被观察",
     "这些回应也许曾经保护我",
     "惯性可以被看见而不是被定命",
@@ -1307,7 +1308,7 @@ function CosmicBotanicsField({
 
   return (
     <section
-      aria-label="现实进入同一个生命，并从六个窗口显出回应"
+      aria-label="从六个观察窗口看见现实中的回应"
       data-experience-layer="pure-visual-projection"
       data-visual-grammar="BEAST_PRESSURE_DIMENSION_PARTICLE"
       data-visual-depth-state={visualState.visualDepthState}
@@ -1479,6 +1480,7 @@ function SingleModelRevisionActionFocus({
   toneColor: string;
   innerViewRelation: "AWAITING" | "CONFIRMED" | "SELF_NAMED";
 }) {
+  const semantic = resolveXinmaiJourneySemanticPresentation("CHOICE");
   const [responseGapPhase, setResponseGapPhase] = useState<
     "MERIDIAN_SETTLING" | "LIFE_PAUSING" | "RESPONSE_GAP_OPEN"
   >("MERIDIAN_SETTLING");
@@ -1767,8 +1769,8 @@ function SingleModelRevisionActionFocus({
           }}
         >
           {innerViewRelation === "SELF_NAMED"
-            ? "你保留的那份理解，仍和这颗生命在一起。"
-            : "你刚刚靠近的那种回应，仍在这颗生命里。"}
+            ? "你保留的理解仍在；它不是系统替你作出的结论。"
+            : semantic.explanation}
         </span>
         <span
           data-choice-protective-understanding="CANDIDATE_NOT_CONCLUSION"
@@ -1812,10 +1814,10 @@ function SingleModelRevisionActionFocus({
           }}
         >
           {breathHoldState === "HOLDING"
-            ? "保持这一口呼吸 · 确认带着这一步离开"
+            ? "现在可以确认带走这一小步"
             : breathHoldState === "RELEASED_EARLY"
               ? "可以慢一点，再陪它停留"
-              : "按住生命核心 · 陪它完成一次呼吸"}
+              : "可以轻触体验呼吸，也可以直接使用下方按钮"}
         </span>
         <button
           type="button"
@@ -1824,7 +1826,7 @@ function SingleModelRevisionActionFocus({
           disabled={!responseGapReady || !responseMapReady || innerViewRelation === "AWAITING"}
           aria-label={`确认把这一步带回生活：${actionRoute.action.visibleAction}`}
         >
-          确认带着这一步回到生活
+          {semantic.primaryAction}
         </button>
       </div>
     </section>
@@ -1856,6 +1858,7 @@ function TransformationMomentFocus({
   toneColor: string;
   innerViewRelation: "AWAITING" | "CONFIRMED" | "SELF_NAMED";
 }) {
+  const departureSemantic = resolveXinmaiJourneySemanticPresentation("DEPARTURE");
   const hasPresentation = Boolean(presentation);
   const [responseSpaceSettled, setResponseSpaceSettled] =
     useState(false);
@@ -2188,7 +2191,7 @@ function TransformationMomentFocus({
             aria-label={
               livedResponseRecognitionRequired
                 ? "我还没有看见不同继续观察"
-                : "带着这一步回到生活"
+                : departureSemantic.primaryAction
             }
             data-choice-real-life-departure="USER_EXPLICIT_DEPARTURE"
             data-choice-change-claim="NONE"
@@ -2218,7 +2221,7 @@ function TransformationMomentFocus({
           >
             {livedResponseRecognitionRequired
               ? "我还没有看见不同，继续观察"
-              : "带着这一步，回到生活"}
+              : departureSemantic.primaryAction}
           </button>
         ) : null}
       </div>

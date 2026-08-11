@@ -60,7 +60,8 @@ assert(
   "unique exact/legacy response-map consumer cutover is incomplete",
 );
 assert(
-  gravity.includes("确认带着这一步回到生活") &&
+  gravity.includes('resolveXinmaiJourneySemanticPresentation("CHOICE")') &&
+    gravity.includes("semantic.primaryAction") &&
     gravity.includes('data-choice-click-confirm="AVAILABLE"'),
   "ordinary click/keyboard-equivalent Choice confirmation is missing",
 );

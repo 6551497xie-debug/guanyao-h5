@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { SixSpaceId } from "../runtime/guanyaoRuntimeTypes";
 import { resolveXinmaiSixDimensionSemanticChoreography } from "../services/xinmaiSixDimensionSemanticChoreographyResolver";
+import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
 import type { XinmaiSixDimensionSemanticResponse } from "../types/xinmaiSixDimensionSemanticChoreography";
 
 type ReflectionPhase =
@@ -40,6 +41,9 @@ export function XinmaiLifeReflectionGuide({
     () => resolveXinmaiSixDimensionSemanticChoreography(dimensionId),
     [dimensionId],
   );
+  const semantic = resolveXinmaiJourneySemanticPresentation(
+    dimensionId.toUpperCase() as "BODY" | "EMOTION" | "THOUGHT" | "ACTION" | "MEMORY" | "GOAL",
+  );
   const [selectedResponse, setSelectedResponse] =
     useState<XinmaiSixDimensionSemanticResponse | null>(null);
   const [continuePending, setContinuePending] = useState(false);
@@ -54,7 +58,7 @@ export function XinmaiLifeReflectionGuide({
   if (surface === "REALITY") {
     return (
       <aside className="xinmai-life-reflection-guide xinmai-life-reflection-guide--reality" aria-hidden="true">
-        <span>共同面对</span><strong>现实先靠近，生命再回应。</strong>
+        <span>现实观察</span><strong>现实发生时，看看你的回应怎样出现。</strong>
       </aside>
     );
   }
@@ -93,6 +97,7 @@ export function XinmaiLifeReflectionGuide({
         <span>{dimensionStep}/6 · {grammar.label}</span>
         <b>{selectedResponse ? "尚未保存" : "等待选择"}</b>
       </header>
+      <p className="xinmai-six-dimension-semantic__purpose">{semantic.explanation}</p>
       <div className="xinmai-six-dimension-semantic__scene-cue" aria-hidden="true"><i /></div>
       <p className="xinmai-six-dimension-semantic__source">{observation}</p>
       <h2 id={`xinmai-six-question-${dimensionId}`}>{grammar.question}</h2>

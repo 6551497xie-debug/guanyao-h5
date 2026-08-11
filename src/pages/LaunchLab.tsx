@@ -61,6 +61,7 @@ import { resolveLifeWhisperVisualOutcomeTransition } from "../services/xinmaiLif
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
 import { requestRealityEncounter } from "../services/xinmaiRealityEncounterIntentController";
 import { resolveXinmaiRealityEntryPresentation } from "../services/xinmaiRealityEntryPresentationResolver";
+import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
 import type {
   LifeWhisperRelationshipFact,
   LifeWhisperRelationshipResponsePhase,
@@ -1207,6 +1208,10 @@ export function LaunchLab({
   explicitLeaveNavigationDeliveryTicket = null,
   onExplicitLeaveNavigationDeliveryOutcome,
 }: LaunchLabProps = {}) {
+  const returningWhisperSemantic =
+    resolveXinmaiJourneySemanticPresentation("WHISPER");
+  const namingSemantic =
+    resolveXinmaiJourneySemanticPresentation("NAMING");
   const [launchSceneSession, setLaunchSceneSession] =
     useState<XinmaiContinuousSceneDeferredCanvas2DSession | null>(null);
   const navigate = useNavigate();
@@ -6293,7 +6298,7 @@ export function LaunchLab({
                     }}
                   >
                     <label htmlFor="xinmai-returning-life-whisper">
-                      告诉它，此刻什么正在靠近你
+                      {returningWhisperSemantic.purpose}
                     </label>
                     <textarea
                       id="xinmai-returning-life-whisper"
@@ -6318,7 +6323,7 @@ export function LaunchLab({
                       }}
                     />
                     <small id="xinmai-returning-life-whisper-guidance">
-                      只留在此刻，不会恢复成下一次现实
+                      {returningWhisperSemantic.explanation}
                     </small>
                     <div className="gy-returning-life-world__template-chips" aria-label="可选示例，不会自动保存">
                       {RETURNING_WHISPER_EXAMPLES.map((example) => (
@@ -6330,7 +6335,7 @@ export function LaunchLab({
                         自己写
                       </button>
                       <button type="button" onClick={skipReturningLifeWhisper}>
-                        暂时不说
+                        {returningWhisperSemantic.secondaryAction}
                       </button>
                     </div>
                     <div>
@@ -6341,7 +6346,7 @@ export function LaunchLab({
                           returningLifeWhisperText.trim().length === 0
                         }
                       >
-                        留给它
+                        {returningWhisperSemantic.primaryAction}
                       </button>
                     </div>
                   </form>
@@ -6369,7 +6374,7 @@ export function LaunchLab({
                           data-interaction="RETRY_STARBEAST_RESPONSE"
                           onClick={retryReturningLifeWhisperResponse}
                         >
-                          再靠近一次
+                          重新显示这次视觉回应
                         </button>
                         {returningLifeWhisperUnavailableContinuation ===
                         "NONE" ? (
@@ -6380,7 +6385,7 @@ export function LaunchLab({
                               continueReturningLifeWithoutConfirmedResponse
                             }
                           >
-                            这一次先继续同行
+                            不等待视觉回应，继续
                           </button>
                         ) : null}
                       </div>
@@ -6391,7 +6396,7 @@ export function LaunchLab({
                         data-interaction="RETURNING_REALITY_INTENT"
                         onClick={enterReturningNewReality}
                       >
-                        和它一起进入新的现实
+                        进入新的现实情境
                       </button>
                     ) : null}
                     {returningRealityIntentFeedback ? (
@@ -6401,7 +6406,8 @@ export function LaunchLab({
                 )}
               </div>
               ) : null}
-              {returningChoiceAdmissions.length === 0 &&
+              {returningHasCrystal &&
+              returningChoiceAdmissions.length === 0 &&
               returningRelationshipNaming.status !== "UNAVAILABLE" ? (
                 <div
                   className="gy-returning-life-world__relationship-name-controls"
@@ -6416,7 +6422,7 @@ export function LaunchLab({
                       }}
                     >
                       <label htmlFor="xinmai-returning-relationship-name">
-                        你们之间的称呼
+                        {namingSemantic.purpose}
                       </label>
                       <input
                         id="xinmai-returning-relationship-name"
@@ -6451,7 +6457,7 @@ export function LaunchLab({
                           setReturningRelationshipNameDraft("");
                           setReturningRelationshipNameEditing(false);
                         }}>
-                          暂时不说
+                          {namingSemantic.secondaryAction}
                         </button>
                       </div>
                       <div>
@@ -6471,7 +6477,7 @@ export function LaunchLab({
                               .length === 0
                           }
                         >
-                          留下称呼
+                          {namingSemantic.primaryAction}
                         </button>
                       </div>
                       {returningRelationshipNaming.status ===
@@ -6504,8 +6510,8 @@ export function LaunchLab({
                       onClick={beginReturningRelationshipNameEdit}
                     >
                       {returningRelationshipNaming.status === "AVAILABLE"
-                        ? "调整称呼"
-                        : "给它一个称呼"}
+                        ? "可选：修改同行称呼"
+                        : "可选：设置同行称呼"}
                     </button>
                   )}
                   {returningRelationshipNamePersistence ===

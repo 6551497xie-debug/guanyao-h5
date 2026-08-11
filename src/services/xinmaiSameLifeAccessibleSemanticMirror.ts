@@ -61,7 +61,7 @@ export function resolveXinmaiSameLifeAccessibleSemanticMirror(input: Readonly<{
     return Object.freeze({
       status: "NO_CANONICAL_IMPRINT" as const,
       summary:
-        "这段同行的生命里，还没有可以确认的晶体留痕。真实成长发生后，它会留在同一生命经络中。",
+        "这里还没有由你确认的现实结果。完成一次现实验证后，记录会出现在这里。",
       items: Object.freeze([]),
       autoAnnouncement: "RECOVERY_SILENT" as const,
       authorityWriteback: "FORBIDDEN" as const,
@@ -88,7 +88,7 @@ export function resolveXinmaiSameLifeAccessibleSemanticMirror(input: Readonly<{
       visibleLabel: `真实回应 · ${formatTime(imprint.formedAt, false)}`,
       accessibleName:
         `第${stableOrdinal}道生命留痕。来自一次已经确认的真实回应，` +
-        `形成于${formatTime(imprint.formedAt, true)}，仍保留在同一生命经络中。`,
+        `形成于${formatTime(imprint.formedAt, true)}，并保留在你的观察记录中。`,
     });
   });
   if (items.some((item) => item === null)) return safeWithheld();
@@ -98,8 +98,8 @@ export function resolveXinmaiSameLifeAccessibleSemanticMirror(input: Readonly<{
     status: "IMPRINT_AVAILABLE" as const,
     summary:
       count === 1
-        ? "这段同行的生命里，已经留下1道来自真实回应的晶体留痕。它仍在同一生命经络中。"
-        : `这段同行的生命里，已经留下${count}道来自真实回应的晶体留痕。它们仍在同一生命经络中。`,
+        ? "这里有1道来自你确认过的现实结果。"
+        : `这里有${count}道来自你确认过的现实结果。`,
     items: Object.freeze(typedItems),
     autoAnnouncement: "RECOVERY_SILENT" as const,
     authorityWriteback: "FORBIDDEN" as const,

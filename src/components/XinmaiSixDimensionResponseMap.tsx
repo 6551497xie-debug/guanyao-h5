@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { recoverXinmaiSixDimensionSemanticSelection } from "../services/xinmaiSixDimensionSemanticSelectionRecoveryAdapter";
 import { resolveXinmaiSixDimensionResponseMapPresentation } from "../services/xinmaiSixDimensionResponseMapPresentationResolver";
 import type { XinmaiSixDimensionResponseMapPresentation } from "../types/xinmaiSixDimensionResponseMapPresentation";
+import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
 
 export function XinmaiSixDimensionResponseMap({
   observationSetId,
@@ -16,6 +17,7 @@ export function XinmaiSixDimensionResponseMap({
   compact?: boolean;
   onReadyChange?: (ready: boolean) => void;
 }>) {
+  const semantic = resolveXinmaiJourneySemanticPresentation("RESPONSE_MAP");
   const [presentation, setPresentation] =
     useState<XinmaiSixDimensionResponseMapPresentation | null>(null);
 
@@ -67,7 +69,9 @@ export function XinmaiSixDimensionResponseMap({
     >
       <header>
         <span>触碰你的现实</span>
-        <h3>{presentation.realityTrigger}</h3>
+        <h3>{semantic.purpose}</h3>
+        <p>{semantic.explanation}</p>
+        <blockquote>{presentation.realityTrigger}</blockquote>
       </header>
       <dl>
         {presentation.items.map((item) => (
@@ -77,6 +81,15 @@ export function XinmaiSixDimensionResponseMap({
           </div>
         ))}
       </dl>
+      <section className="xinmai-response-map__three-layer" aria-label="三个可修正的理解问题" data-three-layer-authority="PRESENTATION_ONLY_NO_WRITE">
+        <h4>可以再用三个问题核对这段反应</h4>
+        <p>它们只是可能的理解方向；不确定、不适用都可以，也不会保存成分类。</p>
+        <ul>
+          <li>身体与基本安全在保护什么？</li>
+          <li>关系、规则或责任在要求什么？</li>
+          <li>你想守住哪种长期方向或价值？</li>
+        </ul>
+      </section>
       {microAction ? (
         <p className="xinmai-response-map__causal" data-micro-action-causal-explanation="EXACT_ACTION_GOAL_CHOICE">
           因为你先出现了【{presentation.actionImpulse}】，同时在保护【{presentation.protectedNeed}】，所以下一次先尝试【{microAction}】。

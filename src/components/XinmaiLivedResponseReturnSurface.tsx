@@ -36,6 +36,7 @@ import { confirmLivedResponseFact } from "../services/xinmaiLivedResponseAuthori
 import { resolveXinmaiLivedResponseCheckpointPresentation } from "../services/xinmaiLivedResponseCheckpointPresentationResolver";
 import { resolveXinmaiReturningSameLifeContinuityPresentation } from "../services/xinmaiReturningSameLifeContinuityPresentationResolver";
 import { resolveXinmaiPostOwnershipNextRealityCyclePresentation } from "../services/xinmaiPostOwnershipNextRealityCyclePresentationResolver";
+import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
 import type {
   XinmaiReturningSameLifeContinuityPresentationProjection,
 } from "../types/xinmaiReturningSameLifeContinuityPresentation";
@@ -98,6 +99,13 @@ export function XinmaiLivedResponseReturnSurface({
   ) => void;
   reducedMotion?: boolean;
 }>) {
+  const returnSemantic = resolveXinmaiJourneySemanticPresentation("RETURN");
+  const notAttemptedSemantic =
+    resolveXinmaiJourneySemanticPresentation("NOT_ATTEMPTED");
+  const rejectedRecordSemantic =
+    resolveXinmaiJourneySemanticPresentation("USER_REJECTED_RECORD");
+  const formationSemantic =
+    resolveXinmaiJourneySemanticPresentation("FORMATION");
   const [selectedReferenceId, setSelectedReferenceId] = useState(
     admissions[0]?.intention?.choiceActionIntentionReferenceId ?? null,
   );
@@ -549,7 +557,7 @@ export function XinmaiLivedResponseReturnSurface({
       setFeedback(null);
     } else {
       setFormationFailure(formation.reason);
-      setFeedback("结晶尚未形成。事实与资格仍然保留，可以稍后重试。");
+      setFeedback("这次现实结果还没有保存完成；已确认的内容仍会保留。");
     }
     setPendingFormationAuthorities(null);
     onAuthorityRevision?.();
@@ -593,7 +601,7 @@ export function XinmaiLivedResponseReturnSurface({
       onAuthorityRevision?.();
     } else {
       setFormationFailure(result.reason);
-      setFeedback("结晶尚未形成。事实与资格仍然保留，可以稍后重试。");
+      setFeedback("这次现实结果还没有保存完成；已确认的内容仍会保留。");
     }
     setPendingFormationAuthorities(null);
     setBusy(false);
@@ -613,7 +621,7 @@ export function XinmaiLivedResponseReturnSurface({
       return;
     }
     setBusy(true);
-    setFeedback("正在为同一生命协调下一段现实。");
+    setFeedback("正在准备一段新的现实情境。");
     setNextCycleFailure(null);
     const result = await onNextRealityCycleRequest({
       identityReferences,
@@ -678,11 +686,21 @@ export function XinmaiLivedResponseReturnSurface({
       {checkpointDecision.state !== "OWNERSHIP_PRESENTED" &&
       pendingNoFactResolution === null ? (
         <header className="xinmai-lived-response-return-surface__heading">
-          <small>现实行动确认</small>
+          <small>回到现实后</small>
           <h2 id="xinmai-lived-response-checkpoint-heading">
-            {checkpointDecision.headline}
+            {checkpointDecision.state === "READY_TO_CONFIRM_REAL_RESPONSE"
+              ? returnSemantic.purpose
+              : checkpointDecision.state === "FORMATION_IN_PROGRESS"
+                ? formationSemantic.purpose
+                : checkpointDecision.headline}
           </h2>
-          <p>{checkpointDecision.support}</p>
+          <p>
+            {checkpointDecision.state === "READY_TO_CONFIRM_REAL_RESPONSE"
+              ? returnSemantic.explanation
+              : checkpointDecision.state === "FORMATION_IN_PROGRESS"
+                ? formationSemantic.explanation
+                : checkpointDecision.support}
+          </p>
           <blockquote>{intention.actionSummary}</blockquote>
         </header>
       ) : null}
@@ -730,7 +748,7 @@ export function XinmaiLivedResponseReturnSurface({
       {checkpointDecision.state === "BASELINE_LIFE_WORLD" &&
       checkpointDecision.baselineKind === "CHOICE_AWAITS_DEPARTURE" ? (
         <button className="xinmai-lived-response-return-surface__primary" type="button" disabled={busy} onClick={depart}>
-          带着这一步，回到生活
+          {resolveXinmaiJourneySemanticPresentation("DEPARTURE").primaryAction}
         </button>
       ) : checkpointDecision.state === "BASELINE_LIFE_WORLD" &&
         checkpointDecision.baselineKind === "DEPARTURE_AWAITS_RETURN" ? (
@@ -752,13 +770,13 @@ export function XinmaiLivedResponseReturnSurface({
               </div>
               <h2 id="xinmai-no-fact-confirmation-heading">
                 {pendingNoFactResolution === "NOT_ATTEMPTED"
-                  ? "还没有在现实里试过，也没关系。"
-                  : "不想留下这次记录，也可以。"}
+                  ? notAttemptedSemantic.purpose
+                  : rejectedRecordSemantic.purpose}
               </h2>
               <p>
                 {pendingNoFactResolution === "NOT_ATTEMPTED"
-                  ? "这次不会留下成长记录。你可以先把这一步带回生活，真正试过以后再回来；如果刚才选错了，也可以返回重新选择。"
-                  : "这次不会留下成长记录。你可以确认不记录并回到生命世界；如果刚才选错了，也可以返回重新选择。"}
+                  ? `${notAttemptedSemantic.explanation} 如果刚才选错了，也可以返回重新选择。`
+                  : `${rejectedRecordSemantic.explanation} 如果刚才选错了，也可以返回重新选择。`}
               </p>
               <div className="xinmai-lived-response-return-surface__no-fact-actions">
                 <button
@@ -769,8 +787,8 @@ export function XinmaiLivedResponseReturnSurface({
                   onClick={() => void resolveWithoutFact(pendingNoFactResolution)}
                 >
                   {pendingNoFactResolution === "NOT_ATTEMPTED"
-                    ? "先回到生活"
-                    : "确认不记录，回到生命世界"}
+                    ? notAttemptedSemantic.primaryAction
+                    : rejectedRecordSemantic.primaryAction}
                 </button>
                 <small id="xinmai-no-fact-primary-helper">
                   {pendingNoFactResolution === "NOT_ATTEMPTED"
@@ -782,7 +800,9 @@ export function XinmaiLivedResponseReturnSurface({
                   disabled={busy}
                   onClick={() => setPendingNoFactResolution(null)}
                 >
-                  返回重新选择
+                  {pendingNoFactResolution === "NOT_ATTEMPTED"
+                    ? notAttemptedSemantic.secondaryAction
+                    : rejectedRecordSemantic.secondaryAction}
                 </button>
               </div>
             </div>
@@ -819,7 +839,7 @@ export function XinmaiLivedResponseReturnSurface({
           />
           <div className="xinmai-lived-response-return-surface__fact-submit">
             <button type="button" disabled={busy} onClick={confirmFact}>
-              确认这是实际发生的
+              {returnSemantic.primaryAction}
             </button>
             <small>
               确认后，这次真实回应才会被保存，并继续形成可回看的生命痕迹。
@@ -871,7 +891,7 @@ export function XinmaiLivedResponseReturnSurface({
                 <div><dt>带回生活的最小一步</dt><dd>{intention.actionSummary}</dd></div>
                 <div><dt>现实里实际发生</dt><dd>{currentFact?.factualSummary || "你已确认这次真实回应。"}</dd></div>
                 <div><dt>这次回应</dt><dd>{currentFact?.responseOutcome === "CHANGED_RESPONSE" ? "实际回应与原计划不同" : currentFact?.responseOutcome === "COMPLETED_AS_INTENDED" ? "按原来准备的方式发生" : "已经在现实中尝试"}</dd></div>
-                <div><dt>形成时间与位置</dt><dd>{currentFormationReceipt.formedAt} · 同一生命中的第 {traceOrdinal} 道痕迹</dd></div>
+                <div><dt>形成时间与位置</dt><dd>{currentFormationReceipt.formedAt} · 这段生命记录中的第 {traceOrdinal} 道痕迹</dd></div>
               </dl>
             </section>
           }
@@ -913,7 +933,7 @@ export function XinmaiLivedResponseReturnSurface({
         formationRetryable ? (
         <div className="xinmai-lived-response-return-surface__recovery">
           <button type="button" disabled={busy} onClick={retryFormation}>
-            重试形成结晶
+            {formationSemantic.primaryAction}
           </button>
         </div>
       ) : checkpointDecision.state === "SAFE_WITHHELD" &&

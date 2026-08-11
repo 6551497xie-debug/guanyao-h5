@@ -32,8 +32,8 @@ export function resolveXinmaiRealityGravityChoiceSceneAccessibleSemanticMirror(
     case "REALITY_APPROACHING":
       return Object.freeze({
         status: projection.semanticStage,
-        summary: "同一生命仍在。现实正在靠近，还没有被认出。",
-        transitionAnnouncement: "现实正在靠近同一生命。",
+        summary: "当前还没有选定现实情境。请从可辨认的场景中选择最接近的一幕。",
+        transitionAnnouncement: "现实情境选项已经出现。",
         authorityWriteback: "FORBIDDEN" as const,
       });
     case "PRESSURE_RECOGNIZED":

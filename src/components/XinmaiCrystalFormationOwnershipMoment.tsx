@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { XinmaiCrystalOwnershipPresentationDecision } from "../types/xinmaiCrystalOwnershipPresentation";
+import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
 import "../styles/xinmai-crystal-formation-ownership-moment.css";
 
 const CONDENSING_SHARDS = Object.freeze(
@@ -23,6 +24,8 @@ export function XinmaiCrystalFormationOwnershipMoment({
   continueLabel?: string;
   valueClosure?: ReactNode;
 }>) {
+  const semantic =
+    resolveXinmaiJourneySemanticPresentation("CRYSTAL_OWNERSHIP");
   if (decision.state === "FORMATION_PENDING") {
     return (
       <div
@@ -31,8 +34,8 @@ export function XinmaiCrystalFormationOwnershipMoment({
         data-crystal-success-authority="NOT_CONFIRMED"
       >
         <span className="xinmai-crystal-ownership__pending-breath" aria-hidden="true" />
-        <strong>这道现实回应正在被生命接住。</strong>
-        <small>形成被正式确认以前，不会提前出现 Crystal。</small>
+        <strong>正在保存这次现实结果。</strong>
+        <small>保存完成前，不会提前显示新的生命痕迹。</small>
       </div>
     );
   }
@@ -88,7 +91,7 @@ export function XinmaiCrystalFormationOwnershipMoment({
         <button
           className="xinmai-crystal-ownership__crystal-touch"
           type="button"
-          aria-label="轻触这颗 Crystal，确认它来自这次现实回应"
+          aria-label="查看这道来自现实回应的生命痕迹"
           aria-pressed={ownershipPresented}
           onClick={onOwnershipPresented}
         >
@@ -138,13 +141,11 @@ export function XinmaiCrystalFormationOwnershipMoment({
 
       <div className="xinmai-crystal-ownership__meaning">
         <small className="xinmai-crystal-ownership__eyebrow">
-          {recovered ? "同一颗 Crystal 仍在这里" : "来自你真实走出的这一步"}
+          {recovered ? "这道生命痕迹仍被保留" : "来自你真实走出的这一步"}
         </small>
         <blockquote>{visualFacts.actionSummary}</blockquote>
-        <h2 id="xinmai-crystal-ownership-headline">
-          {visualFacts.ownershipHeadline}
-        </h2>
-        <p>{visualFacts.ownershipSupport}</p>
+        <h2 id="xinmai-crystal-ownership-headline">{semantic.purpose}</h2>
+        <p>{semantic.explanation}</p>
         <small className="xinmai-crystal-ownership__crystal-line">
           {visualFacts.crystalLine}
         </small>
@@ -154,11 +155,11 @@ export function XinmaiCrystalFormationOwnershipMoment({
       <div className="xinmai-crystal-ownership__actions">
         <small>
           {ownershipPresented
-            ? "它已经回应了你的触碰。"
-            : "你可以轻触它，也可以直接继续。"}
+            ? "你已经查看了这道痕迹。"
+            : "可以查看这道痕迹，也可以直接开始下一段现实。"}
         </small>
         <p className="xinmai-crystal-ownership__exit-explanation">
-          继续后会离开这段确认画面，进入同一生命的下一段现实。
+          {semantic.consequence}
         </p>
         <button
           className="xinmai-crystal-ownership__continue"

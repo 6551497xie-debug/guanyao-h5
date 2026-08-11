@@ -18,6 +18,7 @@ import { createIsolatedWebGLPrototypeRenderPlanReference } from "../services/iso
 import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
+import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
 import {
   XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
   type XinmaiCanonicalBodyImprintDecision,
@@ -43,6 +44,8 @@ type ArchiveRouteState =
   | null;
 
 export function PersonalityRingPage() {
+  const archiveSemantic =
+    resolveXinmaiJourneySemanticPresentation("ARCHIVE");
   const location = useLocation();
   const navigate = useNavigate();
   const routeState = location.state as ArchiveRouteState;
@@ -293,7 +296,7 @@ export function PersonalityRingPage() {
           返回
         </button>
         <span style={{ color: "rgba(220,205,169,0.58)", fontSize: 10 }}>
-          生命留痕
+          {archiveSemantic.purpose}
         </span>
         <span />
       </header>
@@ -317,11 +320,11 @@ export function PersonalityRingPage() {
       >
         <strong style={{ maxWidth: 320, fontSize: 15, lineHeight: 1.7 }}>
           {bodyImprintDecision.status === "IMPRINT_AVAILABLE"
-            ? `同一生命已经留下 ${canonicalImprints.length} 道正式成长留痕。`
+            ? `这里有 ${canonicalImprints.length} 道来自你确认过的现实结果。`
             : bodyImprintDecision.status === "NO_CANONICAL_IMPRINT"
               ? legacyHistory.entries.length > 0
                 ? "旧的历史记录仍被保留，但不会被冒充为身体留痕。"
-                : "真实成长发生后，同一生命会在这里留下痕迹。"
+                : "当你确认现实里实际发生的结果，这里会留下可回看的痕迹。"
               : "身体留痕暂时无法确认；既有成长资产不会因此丢失。"}
         </strong>
 
@@ -410,7 +413,7 @@ export function PersonalityRingPage() {
             }
             style={{ color: "rgba(220,205,169,0.6)", lineHeight: 1.6 }}
           >
-            这道留痕来自一次已经确认的现实回应，并属于同一生命身体。
+            这道痕迹来自一次由你确认的现实回应；查看不会改变原记录。
           </small>
         ) : null}
       </section>

@@ -77,7 +77,7 @@ assert(
 for (const marker of [
   'data-crystal-success-authority={visualFacts.successAuthority}',
   'data-authority-writeback="FORBIDDEN"',
-  "你可以轻触它，也可以直接继续。",
+  "可以查看这道痕迹，也可以直接开始下一段现实。",
 ]) {
   assert(moment.includes(marker), `Ownership moment missing ${marker}`);
 }
@@ -93,7 +93,7 @@ assert(
   (moment.match(/className="xinmai-crystal-ownership__crystal-touch"/g) ?? [])
     .length === 1 &&
     moment.includes(
-      'aria-label="轻触这颗 Crystal，确认它来自这次现实回应"',
+      'aria-label="查看这道来自现实回应的生命痕迹"',
     ) &&
     moment.includes("aria-pressed={ownershipPresented}"),
   "Ownership must expose exactly one named, stateful Crystal button",

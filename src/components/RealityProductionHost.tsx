@@ -596,17 +596,17 @@ export function RealityProductionHost({
     : "NOT_ACTIVE";
   const realityContinuityCopy = choiceRhythmValidationActive
     ? pressureVisualState === "PRESSURE_RECOGNIZED"
-      ? "新的现实已经触碰到它。先看身体怎样回应，不急着把不同叫作改变。"
+      ? "新的现实情境已经选定。接下来先看身体怎样回应，不急着下结论。"
       : pressureVisualState === "PRESSURE_PAUSED"
-        ? "你和它仍在这里，新的回应暂时不必接受检验。"
+        ? "这次观察已经暂停；已有内容会保留。"
         : choiceLifeTraceCarried
-          ? "刚刚留下的微弱纹理仍在身体里，新的现实从远处靠近。"
-          : "刚刚出现的空间仍在身体里，新的现实从远处靠近。"
+          ? "上一轮记录仍被保留；新的现实情境正在出现。"
+          : "上一轮已经结束；新的现实情境正在出现。"
     : pressureVisualState === "PRESSURE_RECOGNIZED"
-      ? "新的现实触碰了它，它仍是同一个生命。"
+      ? "现实情境已经选定；接下来会观察你的反应怎样出现。"
       : pressureVisualState === "PRESSURE_PAUSED"
-        ? "你和它仍在这里，现实暂时停在远处。"
-        : "你和它仍在同一片星河里。现实开始从远处靠近。";
+        ? "这次现实选择已经暂停；已有内容会保留。"
+        : "现实情境正在出现，你可以选择最接近的一幕。";
   const realityLifeWeather =
     pressureVisualState === "PRESSURE_RECOGNIZED"
       ? "CURRENT_REALITY_MOVING_THROUGH_SAME_LIFE"
@@ -1060,8 +1060,8 @@ export function RealityProductionHost({
         role="status"
       >
         {choiceRhythmValidationActive
-          ? "你和它，带着新的呼吸继续走。"
-          : "你和它，继续走进现实。"}
+          ? "上一轮已经保留，下一段现实可以开始。"
+          : "从一幕真实情境开始观察。"}
       </p>
       <div className="gy-reality-life-universe__disturbance" aria-hidden="true">
         <span />

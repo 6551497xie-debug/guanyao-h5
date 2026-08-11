@@ -85,7 +85,7 @@ assert(
   "old internal/ambiguous checkpoint copy remains",
 );
 assert(
-  ownership.includes("继续后会离开这段确认画面") &&
+  ownership.includes("semantic.consequence") &&
     !ownership.includes('aria-live="polite"') &&
     !ownership.includes('className="xinmai-crystal-ownership__meaning" role="status"'),
   "Ownership does not expose the exit consequence or duplicates live status",

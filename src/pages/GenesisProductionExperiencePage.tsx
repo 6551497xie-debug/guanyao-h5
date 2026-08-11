@@ -57,6 +57,7 @@ import {
   resolveRelationshipNamingEntryEligibility,
 } from "../services/xinmaiRelationshipNamingPresentationState";
 import { resolveLifeWhisperVisualOutcomeTransition } from "../services/xinmaiLifeWhisperVisualOutcomeTransition";
+import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
 import { resolveXinmaiGenesisLifeOriginNativeControlReadiness } from "../services/xinmaiGenesisLifeOriginNativeControlReadinessResolver";
 import { XINMAI_GENESIS_LIFE_ORIGIN_NATIVE_CONTROL_PRESENTATION_POLICY } from "../services/xinmaiGenesisLifeOriginNativeControlPresentationPolicy";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
@@ -125,6 +126,10 @@ export function GenesisProductionExperiencePage({
   sourceReferenceId,
 }: GenesisProductionExperiencePageProps) {
   const navigate = useNavigate();
+  const genesisSemantic = resolveXinmaiJourneySemanticPresentation("GENESIS_FORMATION");
+  const continuitySemantic = resolveXinmaiJourneySemanticPresentation("STAR_BEAST_CONTINUITY");
+  const whisperSemantic = resolveXinmaiJourneySemanticPresentation("WHISPER");
+  const firstRealityNamingDeferred = true;
   const [canvasHostState, setCanvasHostState] =
     useState<GenesisProductionCanvasHostState>("STARTING");
   const routeAuthorization = useMemo(
@@ -1217,7 +1222,7 @@ export function GenesisProductionExperiencePage({
         <button
           type="button"
           className="gy-genesis-production-experience__origin-invitation"
-          aria-label="轻触这束光，发现属于你的生命星宿"
+          aria-label="开始形成持续体验的视觉同行者"
           data-continuous-scene-near-control="LIFE_ORIGIN"
           data-genesis-life-origin-native-control="READY"
           disabled={false}
@@ -1225,7 +1230,7 @@ export function GenesisProductionExperiencePage({
           tabIndex={0}
           onClick={beginLifeOriginDiscovery}
         >
-          轻触这束光
+          开始形成体验化身
         </button>
       ) : null}
       {lifeOriginControlReadiness.status === "SAFE_WITHHELD" ? (
@@ -1253,7 +1258,7 @@ export function GenesisProductionExperiencePage({
           className="gy-genesis-production-experience__life-whisper"
           data-life-whisper-entry="READY"
           data-life-whisper-fact={lifeWhisperFact}
-          aria-label="生命低语"
+          aria-label="写给此刻自己的可选短句"
         >
           {lifeWhisperFact === "NONE" ? (
             <form
@@ -1264,7 +1269,7 @@ export function GenesisProductionExperiencePage({
               }}
             >
               <label htmlFor="xinmai-life-whisper">
-                留下一句此刻的心声
+                {whisperSemantic.purpose}
               </label>
               <textarea
                 id="xinmai-life-whisper"
@@ -1286,7 +1291,7 @@ export function GenesisProductionExperiencePage({
                 }}
               />
               <p id="xinmai-life-whisper-guidance">
-                只留在此刻，不会被分析
+                {whisperSemantic.explanation}
               </p>
               <div className="gy-genesis-production-experience__life-whisper-actions">
                 <button
@@ -1294,14 +1299,14 @@ export function GenesisProductionExperiencePage({
                   data-interaction="WHISPER_SKIPPED"
                   onClick={skipLifeWhisper}
                 >
-                  暂时不说
+                  {whisperSemantic.secondaryAction}
                 </button>
                 <button
                   type="submit"
                   data-interaction="WHISPER_SUBMITTED"
                   disabled={lifeWhisperText.trim().length === 0}
                 >
-                  留给它
+                  {whisperSemantic.primaryAction}
                 </button>
               </div>
             </form>
@@ -1311,14 +1316,14 @@ export function GenesisProductionExperiencePage({
               className="gy-genesis-production-experience__life-whisper-unavailable"
               role="status"
             >
-              <p>这一次，它的回应没有完整显现。</p>
+              <p>这句短话的视觉回应暂时没有完成；它不会影响后续结果。</p>
               <div className="gy-genesis-production-experience__life-whisper-actions">
                 <button
                   type="button"
                   data-interaction="RETRY_LIFE_WHISPER_RESPONSE"
                   onClick={retryLifeWhisperResponse}
                 >
-                  再靠近一次
+                  再试一次视觉回应
                 </button>
                 <button
                   type="button"
@@ -1327,7 +1332,7 @@ export function GenesisProductionExperiencePage({
                     continueWithoutConfirmedLifeWhisperResponse
                   }
                 >
-                  暂不等待，继续同行
+                  暂不等待，直接继续
                 </button>
               </div>
             </div>
@@ -1338,14 +1343,14 @@ export function GenesisProductionExperiencePage({
             >
               {lifeWhisperFact === "WHISPER_SUBMITTED"
                 ? lifeWhisperResponsePhase === "RESPONDING"
-                  ? "它正在听。"
-                  : "它听见了。这句话只留在此刻。"
-                : "此刻不说，也可以。"}
+                  ? "正在呈现这句话的视觉回应。"
+                  : "视觉回应已完成；原文不会进入观察记录。"
+                : "暂时不写，也可以直接继续。"}
             </p>
           )}
         </section>
       ) : null}
-      {relationshipNamingReady ? (
+      {relationshipNamingReady && !firstRealityNamingDeferred ? (
         <section
           className="gy-genesis-production-experience__relationship-naming"
           data-relationship-naming-entry="READY"
@@ -1387,7 +1392,7 @@ export function GenesisProductionExperiencePage({
                 }
               />
               <p id="xinmai-relationship-name-guidance">
-                它的天地之名不会改变
+                称呼只用于个性化同行体验，不改变任何身份事实
               </p>
               <div className="gy-genesis-production-experience__relationship-naming-actions">
                 <button
@@ -1453,14 +1458,14 @@ export function GenesisProductionExperiencePage({
         "DIRECTION_AWAKENING" &&
       directionFieldCalibrationResult.calibration.phase === "AWAKENING" ? (
         <p className="gy-genesis-production-experience__time-response" role="status">
-          出生宿正在回应天地方位。
+          {genesisSemantic.purpose}。接下来会呈现可继续体验的视觉同行者。
         </p>
       ) : null}
       {manifestationExperienceResult.session.currentState ===
         "FORCE_CONDENSING" &&
       archetypeForceCalibrationResult.calibration.phase === "CONDENSING" ? (
         <p className="gy-genesis-production-experience__time-response" role="status">
-          这股生命力量，正以自己的节律作用于世界。
+          视觉化身正在形成；动画只呈现过程，不产生新的身份结论。
         </p>
       ) : null}
       {presenceVisualRealizationResult?.status === "READY" &&
@@ -1477,15 +1482,15 @@ export function GenesisProductionExperiencePage({
           "APPROACHING"
             ? // “它正在靠近。”退为历史文案；生命并非从外部进入，
               // 而是从同一核心与既有力量节律中逐步被看见。
-              "它正在从这束光中显现。"
+              "体验化身正在从已确认的视觉线索中显现。"
             : presenceVisualRealizationResult.realization.visualPresenceState ===
                 "PRESENT"
               ? // “它一直在那里。”保留为历史语义；认出之前先明确
                 // 这不是新出现的漂亮形象，而是一路同行的同一束光。
-                "你一路看见的那束光，就是它。"
+                continuitySemantic.explanation
               : // “你终于看见它。”退为历史文案；显现完成不等于
                 // 身份成立，用户的主动认出才完成同一生命闭环。
-                "你认出了它：始终是同一个生命。"}
+                "你已确认愿意以这个化身继续体验。"}
         </p>
       ) : null}
       {recognitionActionReady &&
@@ -1496,7 +1501,7 @@ export function GenesisProductionExperiencePage({
           data-interaction="RECOGNITION_CONFIRM"
           onClick={confirmRecognition}
         >
-          认出它一直在那里
+          愿意以这个化身继续体验
         </button>
       ) : null}
       {recognitionRealityResult?.status === "READY" &&
@@ -1512,7 +1517,7 @@ export function GenesisProductionExperiencePage({
           data-genesis-presence-recognition-continuity="READY"
           onClick={enterReality}
         >
-          进入现实观察
+          进入现实情境
         </button>
       ) : null}
     </main>

@@ -6,6 +6,7 @@ const assert = (condition, message) => {
 };
 
 const surface = read("src/components/XinmaiLivedResponseReturnSurface.tsx");
+const semantic = read("src/services/xinmaiJourneySemanticPresentationResolver.ts");
 const styles = read("src/styles/xinmai-lived-response-checkpoint.css");
 const packageJson = read("package.json");
 const pendingStart = surface.indexOf("pendingNoFactResolution !== null ?");
@@ -16,15 +17,18 @@ const pendingBranch = surface.slice(pendingStart, pendingEnd);
 
 for (const copy of [
   "你准备带回生活的这一步",
-  "还没有在现实里试过，也没关系。",
-  "这次不会留下成长记录。你可以先把这一步带回生活，真正试过以后再回来；如果刚才选错了，也可以返回重新选择。",
-  "先回到生活",
   "保留这一步，不留下成长记录；等你真正试过，再从返回入口继续。",
+]) {
+  assert(pendingBranch.includes(copy), `missing plain-language contract: ${copy}`);
+}
+for (const copy of [
+  "还没有在现实里试过，也没关系。",
+  "先回到生活",
   "返回重新选择",
   "不想留下这次记录，也可以。",
   "确认不记录，回到生命世界",
 ]) {
-  assert(pendingBranch.includes(copy), `missing plain-language contract: ${copy}`);
+  assert(semantic.includes(copy), `semantic owner missing plain-language contract: ${copy}`);
 }
 
 assert(

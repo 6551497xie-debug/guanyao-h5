@@ -5,6 +5,7 @@ import {
   XINMAI_GENESIS_BIRTH_NATIVE_INPUT_SYNC_POLICY,
 } from "../services/xinmaiGenesisBirthNativeInputAdapter";
 import type { XinmaiGenesisBirthNativeInput } from "../services/xinmaiGenesisBirthNativeInputAdapter";
+import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
 import type {
   XinmaiGenesisBirthCoordinateDraft,
   XinmaiGenesisBirthCoordinatePresentationDecision,
@@ -66,6 +67,7 @@ export function XinmaiGenesisBirthCoordinateControls({
   onDraftChange,
   onConfirm,
 }: XinmaiGenesisBirthCoordinateControlsProps) {
+  const semantic = resolveXinmaiJourneySemanticPresentation("BIRTH_COORDINATE");
   const latestDraftRef = useRef(draft);
   useLayoutEffect(() => {
     latestDraftRef.current = draft;
@@ -94,9 +96,9 @@ export function XinmaiGenesisBirthCoordinateControls({
       data-native-input-sync={XINMAI_GENESIS_BIRTH_NATIVE_INPUT_SYNC_POLICY}
     >
       <div className="xinmai-genesis-birth-coordinate__copy">
-        <span className="xinmai-genesis-birth-coordinate__eyebrow">生命起点 · 时间坐标</span>
-        <h1 id="xinmai-genesis-birth-coordinate-title">{decision.headline}</h1>
-        <p>{decision.support}</p>
+        <span className="xinmai-genesis-birth-coordinate__eyebrow">体验起点 · 时间坐标</span>
+        <h1 id="xinmai-genesis-birth-coordinate-title">{semantic.purpose}</h1>
+        <p>{semantic.explanation}</p>
       </div>
       {decision.primaryAction === "BEGIN" ? (
         <button className="xinmai-genesis-birth-coordinate__primary" type="button" onClick={onBegin}>
@@ -106,9 +108,9 @@ export function XinmaiGenesisBirthCoordinateControls({
       {decision.showCoordinateFields ? (
         <form onSubmit={submit} noValidate aria-describedby="xinmai-genesis-birth-coordinate-feedback">
           <fieldset disabled={XINMAI_GENESIS_BIRTH_NATIVE_INPUT_SYNC_POLICY !== "ENABLED"}>
-            <legend>让时间进入同一生命核心</legend>
+            <legend>填写出生时间坐标</legend>
             <p className="xinmai-genesis-birth-coordinate__instruction">
-              按出生证明或家人记忆中的当地时间填写。系统只从公历日期与当地钟表时间推导农历和时辰。
+              按出生证明或家人记忆中的当地时间填写。系统以公历作为输入；农历与时辰只作为文化时间表达，不用于判断命运或人格。
             </p>
             <div
               className="xinmai-genesis-birth-coordinate__instrument"
@@ -198,7 +200,7 @@ export function XinmaiGenesisBirthCoordinateControls({
             </div>
             {decision.derivationReceipt ? (
               <div className="xinmai-genesis-birth-coordinate__summary" data-birth-source-derivation="READY">
-                <span>请确认这组生命起点</span>
+                <span>请确认这组时间坐标</span>
                 <strong>
                   {decision.derivationReceipt.canonicalGregorianBirthDate}
                   <i aria-hidden="true">·</i>
@@ -227,7 +229,7 @@ export function XinmaiGenesisBirthCoordinateControls({
               disabled={!decision.confirmationEnabled}
               aria-disabled={!decision.confirmationEnabled}
             >
-              {decision.confirmationEnabled ? "确认这组生命起点" : "完成输入后确认"}
+              {decision.confirmationEnabled ? semantic.primaryAction : "完成输入后确认"}
             </button>
           </fieldset>
         </form>
