@@ -115,15 +115,15 @@ export function resolveDynamicsExperienceState(
       primaryFocus,
       loopLabel: input.loopLabel,
       headline: "你已经从六个方向，看见这次回应。",
-      supportingCopy: "当新的回应被你真实认出，这段经历会在同一个生命里留下纹理。",
-      pressureCopy: "你已经看见，这件事如何落在身体、情绪、思想、行动、记忆与动机里。",
-      beastCopy: "它陪你看见了整段回应，也仍然保持着同一个生命核心。",
+      supportingCopy: "六项观察都已保存；接下来可以回看它们怎样连在一起。",
+      pressureCopy: "你已经看见，这件事如何落在身体、情绪、想法、行动冲动、记忆联想与需要方向里。",
+      beastCopy: "视觉同行者仍在场，但不会替你解释这段回应。",
       nodeCopy: {
         title: "回应已经被完整看见",
-        text: "六个生命窗口，留下了同一条回应的痕迹。",
-        actionText: "先停一下，看看新的空间是否真的出现。",
+        text: "六个观察窗口，保留了你刚才逐项确认的回应。",
+        actionText: "先回看六项选择，再决定要带走哪一个小行动。",
       },
-      crystalCopy: "不必证明改变。只有被你真实认出的回应，才会沉积为生命印记。",
+      crystalCopy: "观察完成不等于改变已经发生；现实结果要等你回来确认。",
     });
   }
 
@@ -135,7 +135,7 @@ export function resolveDynamicsExperienceState(
       headline: "你已经从多个方向看见这件事。",
       supportingCopy: "有些感受开始连在一起，一个不同的回应正在靠近。",
       pressureCopy: "这件事已经被你从几个空间看过。",
-      beastCopy: "你与星兽正在一起辨认，这一次愿意往哪里走。",
+      beastCopy: "视觉同行者陪你辨认这一维，不替你作出选择。",
       nodeCopy,
       crystalCopy: "变化正在发生，还不需要得出答案。",
     });
@@ -149,7 +149,7 @@ export function resolveDynamicsExperienceState(
       headline: "你正在看见，回应是怎样一层层发生的。",
       supportingCopy: "一次只看一个空间，不需要同时理解全部。",
       pressureCopy: "这件事正在落进当前空间。",
-      beastCopy: "你与星兽正在一起辨认这里的感受与回应。",
+      beastCopy: "视觉同行者陪你停留在这一维，选择仍由你确认。",
       nodeCopy,
       crystalCopy: "先把回应看完整，不急着决定下一步。",
     });
@@ -163,9 +163,9 @@ export function resolveDynamicsExperienceState(
       headline: "你已经停下来，看见这一刻。",
       supportingCopy: "接下来，看看这件事如何落在身体、情绪、思想、行动、记忆与动机里。",
       pressureCopy: "这件事已经被你放在眼前。",
-      beastCopy: "你与星兽会一起走进第一个空间。",
+      beastCopy: "视觉同行者会保持在场；第一项观察仍由你明确开始。",
       nodeCopy,
-      crystalCopy: "先让生命状态显影，再讨论改变。",
+      crystalCopy: "先完成逐项观察，再讨论可以尝试的小行动。",
     });
   }
 
@@ -176,7 +176,7 @@ export function resolveDynamicsExperienceState(
     headline: "这一刻，你的感受和回应正在出现。",
     supportingCopy: "先不用改变什么，只看见此刻发生了什么。",
     pressureCopy: "这件事已经来到你面前。",
-    beastCopy: "你与星兽会从这里一起看见，回应如何发生。",
+    beastCopy: "视觉同行者会保持在场，帮助你辨认回应如何发生。",
     nodeCopy,
     crystalCopy: "现实刚刚靠近，先看见此刻的回应。",
   });

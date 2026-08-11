@@ -2,8 +2,40 @@ import { resolveGuanyaoPressureSeedCatalogRevision } from "../data/guanyaoPressu
 import { resolveXinmaiSixDimensionSemanticChoreography } from "./xinmaiSixDimensionSemanticChoreographyResolver";
 import type { SixDimensionSemanticSelectionRecoveryResult } from "../types/xinmaiSixDimensionSemanticSelection";
 import type { XinmaiSixDimensionResponseMapPresentation } from "../types/xinmaiSixDimensionResponseMapPresentation";
+import type {
+  XinmaiActionSemanticResponseId,
+  XinmaiGoalSemanticResponseId,
+} from "../types/xinmaiSixDimensionResponseMapPresentation";
 
 const FALLBACK_TRIGGER = "这一轮选中的现实";
+
+const ACTION_PHRASES: Readonly<Record<XinmaiActionSemanticResponseId, string>> =
+  Object.freeze({
+    ADVANCE: "你最先想推进",
+    WITHDRAW: "你最先想退开",
+    PAUSE: "你最先想停一下再决定",
+  });
+
+const GOAL_PHRASES: Readonly<Record<XinmaiGoalSemanticResponseId, string>> =
+  Object.freeze({
+    NEED: "有一个重要需要不想被忽略",
+    VALUE: "有一项在意的价值不想失去",
+    UNCERTAIN: "想保护什么还不完全确定",
+  });
+
+export function resolveXinmaiMicroActionCausalExplanation(
+  actionSemanticResponseId: XinmaiActionSemanticResponseId,
+  goalSemanticResponseId: XinmaiGoalSemanticResponseId,
+  microAction: string,
+): string {
+  const action = ACTION_PHRASES[actionSemanticResponseId];
+  const goal = GOAL_PHRASES[goalSemanticResponseId];
+  const nextAction = microAction.trim();
+  if (!nextAction) return `${action}，同时${goal}。下一次的小行动还没有明确。`;
+  return goalSemanticResponseId === "UNCERTAIN"
+    ? `${action}，但${goal}。下一次可以先尝试【${nextAction}】。`
+    : `${action}，同时${goal}。下一次可以先尝试【${nextAction}】。`;
+}
 
 const resolveTrigger = (
   recovery: SixDimensionSemanticSelectionRecoveryResult,
@@ -32,8 +64,8 @@ export function resolveXinmaiSixDimensionResponseMapPresentation(
       state: "LEGACY_GENERIC_ONLY" as const,
       realityTrigger,
       items: Object.freeze([]),
-      actionImpulse: null,
-      protectedNeed: null,
+      actionSemanticResponseId: null,
+      goalSemanticResponseId: null,
       safeWithheldReason: "SEMANTIC_SELECTION_NOT_RECORDED" as const,
     });
   }
@@ -42,8 +74,8 @@ export function resolveXinmaiSixDimensionResponseMapPresentation(
       state: "SAFE_WITHHELD" as const,
       realityTrigger,
       items: Object.freeze([]),
-      actionImpulse: null,
-      protectedNeed: null,
+      actionSemanticResponseId: null,
+      goalSemanticResponseId: null,
       safeWithheldReason: recovery.cause.code,
     });
   }
@@ -64,20 +96,24 @@ export function resolveXinmaiSixDimensionResponseMapPresentation(
       selectedMeaning: response.mirror,
     });
   }));
-  const actionImpulse = items.find(
+  const actionSemanticResponseId = recovery.selections.find(
     (item) => item.dimensionId === "action",
-  )?.selectedMeaning ?? null;
-  const protectedNeed = items.find(
+  )?.selection.semanticResponseId;
+  const goalSemanticResponseId = recovery.selections.find(
     (item) => item.dimensionId === "goal",
-  )?.selectedMeaning ?? null;
-  if (recovery.status !== "EXACT_COMPLETE" || !actionImpulse ||
-      !protectedNeed || items.length !== 6) {
+  )?.selection.semanticResponseId;
+  if (recovery.status !== "EXACT_COMPLETE" ||
+      !actionSemanticResponseId ||
+      !goalSemanticResponseId ||
+      !Object.prototype.hasOwnProperty.call(ACTION_PHRASES, actionSemanticResponseId) ||
+      !Object.prototype.hasOwnProperty.call(GOAL_PHRASES, goalSemanticResponseId) ||
+      items.length !== 6) {
     return Object.freeze({
       state: "SAFE_WITHHELD" as const,
       realityTrigger,
       items: Object.freeze([]),
-      actionImpulse: null,
-      protectedNeed: null,
+      actionSemanticResponseId: null,
+      goalSemanticResponseId: null,
       safeWithheldReason: "SEMANTIC_SELECTION_MAP_INCOMPLETE",
     });
   }
@@ -85,8 +121,10 @@ export function resolveXinmaiSixDimensionResponseMapPresentation(
     state: "EXACT" as const,
     realityTrigger,
     items,
-    actionImpulse,
-    protectedNeed,
+    actionSemanticResponseId:
+      actionSemanticResponseId as XinmaiActionSemanticResponseId,
+    goalSemanticResponseId:
+      goalSemanticResponseId as XinmaiGoalSemanticResponseId,
     safeWithheldReason: null,
   });
 }

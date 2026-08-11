@@ -39,8 +39,8 @@ export function resolveXinmaiRealityGravityChoiceSceneAccessibleSemanticMirror(
     case "PRESSURE_RECOGNIZED":
       return Object.freeze({
         status: projection.semanticStage,
-        summary: "你已经认出这条现实。它仍在同一生命中显现。",
-        transitionAnnouncement: "这条现实已经被认出。",
+        summary: "你已选择这段现实情境。接下来看看自己的回应怎样出现。",
+        transitionAnnouncement: "这段现实情境已选择。",
         authorityWriteback: "FORBIDDEN" as const,
       });
     case "GRAVITY_OBSERVING":

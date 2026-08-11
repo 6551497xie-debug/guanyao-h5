@@ -529,7 +529,7 @@ function NodeProgressionPanel({
           transition: "opacity 560ms ease, transform 560ms ease",
         }}
       >
-        轻触那颗正在呼吸的星
+        准备好后，开始这一维观察
       </span>
     </div>
   );
@@ -622,36 +622,34 @@ function LifeCoreInteractionLayer({
 }) {
   if (rendererOwnsVisual) {
     return interactive ? (
-      <span
-        role="button"
-        aria-label="触碰本命生命星群，观察现实引力如何展开"
-        tabIndex={0}
+      <button
+        type="button"
+        aria-label="开始这一维观察"
         data-life-core-hit-area="TRANSPARENT"
         data-life-visual-authority="GENESIS_WEBGL"
         data-life-interaction-target="WEBGL_LIFE_BODY"
         data-mansion-near-layer="GENESIS_WEBGL_ACTIVE_SEVEN"
         data-life-core-invitation="GENESIS_WEBGL_BREATH"
         onClick={onCoreStarClick}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            onCoreStarClick();
-          }
-        }}
         style={{
           position: "absolute",
-          left: `${LIFE_UNIVERSE_CORE_IDENTITY.anchorX * 100}%`,
-          top: `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`,
-          width: "min(62vw, 232px)",
-          height: "min(28vh, 196px)",
-          borderRadius: "46%",
-          transform: "translate(-50%, -50%)",
-          background: "transparent",
-          boxShadow: "none",
+          zIndex: 4,
+          left: "50%",
+          bottom: "max(42px, calc(24px + env(safe-area-inset-bottom)))",
+          minWidth: 180,
+          minHeight: 44,
+          border: `1px solid rgba(${toneColor},0.42)`,
+          borderRadius: 999,
+          transform: "translateX(-50%)",
+          background: "rgba(5,8,12,0.8)",
+          color: "rgba(255,247,224,0.92)",
+          padding: "10px 18px",
           cursor: "pointer",
           pointerEvents: "auto",
         }}
-      />
+      >
+        开始这一维观察
+      </button>
     ) : null;
   }
 
@@ -668,19 +666,9 @@ function LifeCoreInteractionLayer({
         return (
           <span
             key={`core-${index}`}
-            role={interactive ? "button" : undefined}
-            aria-label={interactive ? `本命七宿星位 ${index + 1}` : undefined}
-            tabIndex={interactive ? 0 : undefined}
+            aria-hidden="true"
             data-life-core-hit-area="TRANSPARENT"
             data-mansion-near-layer="ACTIVE_SEVEN_MANSION"
-            onClick={interactive ? onCoreStarClick : undefined}
-            onKeyDown={(event) => {
-              if (!interactive) return;
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onCoreStarClick();
-              }
-            }}
             style={{
               position: "absolute",
               left: `${left}%`,
@@ -691,8 +679,7 @@ function LifeCoreInteractionLayer({
               transform: "translate(-50%, -50%)",
               background: "transparent",
               boxShadow: "none",
-              cursor: interactive ? "pointer" : "default",
-              pointerEvents: interactive ? "auto" : "none",
+              pointerEvents: "none",
             }}
           >
             <span
@@ -766,6 +753,30 @@ function LifeCoreInteractionLayer({
           </span>
         );
       })}
+      {interactive ? (
+        <button
+          type="button"
+          aria-label="开始这一维观察"
+          onClick={onCoreStarClick}
+          style={{
+            position: "absolute",
+            zIndex: 4,
+            left: "50%",
+            bottom: "max(42px, calc(24px + env(safe-area-inset-bottom)))",
+            minWidth: 180,
+            minHeight: 44,
+            border: `1px solid rgba(${toneColor},0.42)`,
+            borderRadius: 999,
+            transform: "translateX(-50%)",
+            background: "rgba(5,8,12,0.8)",
+            color: "rgba(255,247,224,0.92)",
+            padding: "10px 18px",
+            cursor: "pointer",
+          }}
+        >
+          开始这一维观察
+        </button>
+      ) : null}
     </>
   );
 }
@@ -868,8 +879,8 @@ function LifeConstellationLayer({
     <div
       role="group"
       aria-label={birthMansionIndex === null
-        ? "本命坐标待恢复，当前显示中性二十八宿与七曜。"
-        : `${fourSymbol}七宿在当前现实引力下进入六个空间。`}
+        ? "视觉坐标正在恢复；六维观察尚未开始。"
+        : `${fourSymbol}星图作为氛围背景；当前操作是六维观察。`}
       data-visual-primitive="BEAST"
       data-visual-layer="origin-life-under-pressure"
       data-life-source-reference={sourceReferenceId}
@@ -1555,7 +1566,7 @@ function SingleModelRevisionActionFocus({
 
   return (
     <section
-      aria-label="旧回应启动后，生命停一下"
+      aria-label="旧回应出现后，先停一下再选择"
       className="gy-choice-response-gap"
       data-model-revision-action="pending"
       data-action-route-reference={
@@ -1645,7 +1656,7 @@ function SingleModelRevisionActionFocus({
       <button
         ref={confirmButtonRef}
         type="button"
-        aria-label="按住生命核心，陪它完成一次呼吸"
+        aria-label="可选：体验一次短暂停顿"
         className="gy-choice-response-gap__confirm"
         data-revision-claim="LIFE_CORE_TOUCH"
         data-life-core-anchor="LIFE_UNIVERSE_CORE_IDENTITY"
@@ -1801,7 +1812,7 @@ function SingleModelRevisionActionFocus({
             ? actionRoute.action.visibleAction
             : responseGapPhase === "LIFE_PAUSING"
               ? "熟悉的回应正在启动，而生命停了一下。"
-              : "刚刚被看见的流动，仍留在同一身体里。"}
+              : "刚才确认的六项观察仍被保留。"}
         </strong>
         <span
           style={{
@@ -1814,10 +1825,10 @@ function SingleModelRevisionActionFocus({
           }}
         >
           {breathHoldState === "HOLDING"
-            ? "现在可以确认带走这一小步"
+            ? "停顿体验进行中；也可以直接确认下方的小行动"
             : breathHoldState === "RELEASED_EARLY"
-              ? "可以慢一点，再陪它停留"
-              : "可以轻触体验呼吸，也可以直接使用下方按钮"}
+              ? "停顿体验已结束；仍可直接确认下方的小行动"
+              : "停顿体验完全可选；下方按钮可直接完成确认"}
         </span>
         <button
           type="button"
@@ -1920,7 +1931,7 @@ function TransformationMomentFocus({
 
   return (
     <section
-      aria-label="生命为新的回应留出空间"
+      aria-label="把已保存的小行动带回现实"
       className="gy-choice-response-gap gy-choice-response-gap--held"
       data-transformation-moment="active"
       data-change-experience-presentation={hasPresentation ? "active" : "fallback"}
@@ -2080,7 +2091,7 @@ function TransformationMomentFocus({
       {onSediment ? (
         <button
           type="button"
-          aria-label="让这次回应留在生命里"
+          aria-label="确认这次现实回应"
           data-crystal-sediment-action="CONFIRM_RESPONSE_LIVED"
           data-crystal-reward-model="NONE"
           onClick={onSediment}
@@ -2146,13 +2157,13 @@ function TransformationMomentFocus({
             ? livedResponseRecognitionRequired
               ? "这次变化，只能由你认出。"
               : onSediment
-              ? "轻触生命核心 · 让这次回应留在生命里"
-              : "这里留下了一点未被命名的变化"
+              ? "确认后会记录这次实际发生的回应"
+              : "这一步已经保存，真实行动尚未发生"
             : responseTracePhase === "NEW_FLOW"
-              ? "新的流动仍在同一身体里"
+              ? "这一步已经保存，正在准备离开产品"
               : responseTracePhase === "LIFE_SETTLING"
-                ? "生命正在重新找到自己的节律"
-                : "一点变化，安静留在刚刚回应的位置"}
+                ? "现在回到生活，真正尝试以后再回来"
+                : "行动发生以后，再回来记录实际结果"}
         </span>
         {livedResponseRecognitionRequired && onRecognizeLivedResponse ? (
           <button
@@ -2269,7 +2280,7 @@ function DepartureReconciliationPendingFocus({
 }>) {
   return (
     <section
-      aria-label="离场事实已经保存，生命周期仍在协调"
+      aria-label="离开状态正在确认"
       data-choice-departure-state="DEPARTURE_RECONCILIATION_PENDING"
       style={{
         position: "absolute",
@@ -2284,7 +2295,7 @@ function DepartureReconciliationPendingFocus({
     >
       <div style={{ display: "grid", gap: 12, maxWidth: 320 }}>
         <p role="status" style={{ margin: 0, lineHeight: 1.8 }}>
-          离场事实已经保存。生命旅程仍在协调，既有资产不会丢失。
+          这一步已经保存，离开状态仍在确认；已有记录不会丢失。
         </p>
         <button type="button" disabled={busy} onClick={onRetry}>
           重试协调
@@ -2408,7 +2419,7 @@ function CurrentCrystalEndStateFocus({
 
   return (
     <section
-      aria-label="本局生命印记"
+      aria-label="这次现实留下的痕迹"
       data-crystal-view="LIFE_IMPRINT"
       data-crystal-visual-form="SAME_LIFE_IMPRINT"
       data-crystal-materialization="SEDIMENT_NOT_REWARD"
@@ -3568,7 +3579,7 @@ function HexagramCodeDeliveryShell({
             <p className="gy-reality-life-universe__continuity-copy">
               {innerViewBodyContinuityActive
                 ? "刚才回应的地方，开始显出生命的流动。"
-                : "同一束生命光，开始进入现实引力。"}
+                : "现实情境已保留，六维观察可以开始。"}
             </p>
           </div>
         ) : null}
@@ -3786,10 +3797,10 @@ function HexagramCodeDeliveryShell({
           }}
         >
           {sixDimensionAuthority.status === "LOADING"
-            ? `生命观察正在准备；已保存 ${completedDimensionIds.length} 个生命观察，当前是${SIX_SPACE_SHORT_LABELS[sequentialCurrentSpaceId]}。`
+            ? `六维观察正在准备；已保存 ${completedDimensionIds.length} 项，当前是${SIX_SPACE_SHORT_LABELS[sequentialCurrentSpaceId]}。`
             : sixDimensionAuthority.status === "COMPLETED"
-            ? "六个生命观察已分别确认，现实选择入口已经可以继续核对。"
-            : `已确认 ${completedDimensionIds.length} 个生命观察；当前是${SIX_SPACE_SHORT_LABELS[sequentialCurrentSpaceId]}。`}
+            ? "六项观察已分别确认，可以继续选择一个现实中的小行动。"
+            : `已确认 ${completedDimensionIds.length} 项六维观察；当前是${SIX_SPACE_SHORT_LABELS[sequentialCurrentSpaceId]}。`}
         </p>
       </main>
     );

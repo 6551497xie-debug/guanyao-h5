@@ -166,13 +166,13 @@ export function resolveXinmaiLivedResponseCheckpointPresentation(
       baselineKind: null,
       headline: "你真实走出的这一步，留下了痕迹。",
       support: recovered
-        ? "同一颗 Crystal 仍在这里。"
-        : "这颗 Crystal 来自你刚刚确认的真实回应。",
+        ? "这道可回看的痕迹仍被保留。"
+        : "这道痕迹来自你刚刚确认的现实结果。",
       primaryAction: "CONTINUE_TO_REALITY",
       navigationConsequence: "EXIT_EVIDENCE_TO_REALITY",
       announcement: recovered
         ? null
-        : "真实回应已经形成一颗属于这次行动的 Crystal。",
+        : "这次现实结果已经保存为一道可回看的痕迹。",
       announcementReferenceId: recovered
         ? null
         : receipt.formationReferenceId,
@@ -189,10 +189,10 @@ export function resolveXinmaiLivedResponseCheckpointPresentation(
       baselineKind: null,
       headline: "真实回应已经保存。",
       support:
-        "这道痕迹正在被正式确认。Crystal 还没有形成，完成以前不会提前显示。",
+        "这道痕迹正在保存。完成以前不会提前显示。",
       primaryAction: null,
       navigationConsequence: "NONE",
-      announcement: "真实回应已保存，Crystal 尚未形成。",
+      announcement: "现实结果已确认，正在保存为可回看的痕迹。",
       announcementReferenceId: reference,
     });
   }

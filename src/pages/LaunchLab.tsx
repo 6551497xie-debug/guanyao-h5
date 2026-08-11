@@ -576,14 +576,14 @@ const AXIS_COPY: Record<EntryHandoffMode, {
     dimLabel: { year: "年份", month: "月份", day: "日期", hour: "时辰" },
     dimStageLabel: { year: "年份锁定", month: "月份对齐", day: "日期落点", hour: "时辰显影" },
     geoLabel: { province: "出生省份", city: "出生城市" },
-    kicker: "生命坐标",
-    topPrimary: "时间坐标正在归档",
-    topSecondary: "时间定宿，也让母码落位",
-    bodyPrimary: "让星河记住你的出生时间",
+    kicker: "出生时间坐标",
+    topPrimary: "出生时间正在核对",
+    topSecondary: "公历输入会同时显示为文化时间表达",
+    bodyPrimary: "核对你的出生时间",
     bodySecondary: "",
     actionPrimary: "",
-    actionConfirm: "轻触星河，确认生命坐标",
-    lockText: "时间已定 · 母码资产显化",
+    actionConfirm: "确认时间坐标",
+    lockText: "时间坐标已保存",
   },
   OLD_USER: {
     dimLabel: { year: "压力种子", month: "压力层级", day: "压力刻度", hour: "压力锚点" },
@@ -3268,7 +3268,7 @@ export function LaunchLab({
             ctx.font = `620 ${Math.min(13, m.w * 0.033)}px ${SANS}`;
             ctx.fillText(
               returningLifeIdentity
-                ? "轻触星河，回到我的生命世界"
+                ? "进入我的旅程记录"
                 : ENTRY_ACTION_LINE,
               m.w / 2,
               m.h * 0.89,
@@ -5168,7 +5168,7 @@ export function LaunchLab({
           ctx.font = `600 ${Math.min(9.5, cardW * 0.029)}px ${MONO}`;
           ctx.fillText("母码来源：农历时序 · 出生宿形成四象印", cardX + cardPad, cardY + cardH - 33);
           ctx.fillStyle = "rgba(232,200,138,0.56)";
-          ctx.fillText(`母码原型为主体 · ${reveal.starbeast.fourSymbol}为本命盖印`, cardX + cardPad, cardY + cardH - 15);
+          ctx.fillText(`体验化身的视觉底座 · ${reveal.starbeast.fourSymbol}为氛围印记`, cardX + cardPad, cardY + cardH - 15);
         }
         ctx.restore();
 
@@ -5180,7 +5180,7 @@ export function LaunchLab({
         ctx.fillStyle = "rgba(232,200,138,0.52)";
         ctx.font = `600 ${Math.min(11, m.w * 0.028)}px ${MONO}`;
         ctx.textAlign = "left";
-        ctx.fillText("确认本命底座，再进入这一局现实压力", g.railX0, g.railY + 30);
+        ctx.fillText("确认视觉同行者，再进入这一段现实情境", g.railX0, g.railY + 30);
         ctx.textAlign = "right";
         ctx.fillStyle = "rgba(232,200,138,0.72)";
         ctx.fillText("现实压力", g.railX1, g.railY - 18);
@@ -6407,10 +6407,10 @@ export function LaunchLab({
               </div>
               ) : null}
               {returningHasCrystal &&
-              returningChoiceAdmissions.length === 0 &&
               returningRelationshipNaming.status !== "UNAVAILABLE" ? (
                 <div
                   className="gy-returning-life-world__relationship-name-controls"
+                  style={{ display: "grid" }}
                   onPointerDown={(event) => event.stopPropagation()}
                   onClick={(event) => event.stopPropagation()}
                 >

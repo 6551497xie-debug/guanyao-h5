@@ -1303,14 +1303,14 @@ export function RealityLifeUniverseCanvas({
           style={{
             left: `${realitySeedBodyTargetX}%`,
           }}
-          aria-label="靠近生命正在变化的位置"
+          aria-label="开始六维观察"
           data-inner-view-entry="SAME_BODY_LIFE_WEATHER_TRACE"
           data-inner-view-approach-state={innerViewApproachState}
           data-inner-view-entry-visual="HAIRLINE_BREATH_NOT_SECOND_CORE"
           disabled={innerViewApproachState === "BODY_APPROACHED"}
           onClick={onApproachCurrentWeather}
         >
-          <span aria-hidden="true" />
+          <span>开始六维观察</span>
         </button>
       ) : null}
     </>

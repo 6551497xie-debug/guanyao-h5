@@ -69,11 +69,11 @@ export function XinmaiLifeReflectionGuide({
     continuePending || finalActionState === "PREPARING" ||
     finalActionState === "SAVING" || finalActionState === "SAFE_WITHHELD";
   const readinessCopy =
-    finalActionState === "PREPARING" ? "生命观察正在准备，尚未保存。" :
-    finalActionState === "SAVING" || continuePending ? "正在保存这一维的生命观察。" :
+    finalActionState === "PREPARING" ? "这一维观察正在准备，尚未保存。" :
+    finalActionState === "SAVING" || continuePending ? "正在保存这一维观察。" :
     finalActionState === "RETRYABLE" ? "这次观察还没有保存，可以重新尝试。" :
     finalActionState === "SAFE_WITHHELD" ? "这一维暂时无法保存，已有生命记录仍被保留。" :
-    "你的选择只在当前画面中；确认保存后才会成为生命观察。";
+    "你的选择只在当前画面中；确认保存后才会成为这一维观察。";
 
   function chooseResponse(response: XinmaiSixDimensionSemanticResponse) {
     setSelectedResponse(response);
@@ -137,7 +137,7 @@ export function XinmaiLifeReflectionGuide({
             }}
           >
             {continuePending || finalActionState === "SAVING" ? "正在保存" :
-             finalActionState === "PREPARING" ? "生命观察正在准备" :
+             finalActionState === "PREPARING" ? "这一维观察正在准备" :
              finalActionState === "RETRYABLE" ? `重新${grammar.acknowledgementLabel}` :
              finalActionState === "SAFE_WITHHELD" ? "这一维暂时无法保存" : grammar.acknowledgementLabel}
           </button>

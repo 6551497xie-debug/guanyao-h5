@@ -40,7 +40,7 @@ const validationRecoveryCopy = (
   decision: XinmaiGenesisBirthCoordinatePresentationDecision,
 ): string => {
   if (decision.validation.status === "VALID") {
-    return "原始输入与推导结果一致后，才会形成唯一生命起点。";
+    return "核对一致后，系统会保存本次体验唯一的时间坐标记录。";
   }
   switch (decision.validation.reason) {
     case "YEAR_OUTSIDE_SUPPORTED_RANGE":

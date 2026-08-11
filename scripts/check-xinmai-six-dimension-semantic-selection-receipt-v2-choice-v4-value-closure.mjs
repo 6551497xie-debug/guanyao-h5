@@ -107,7 +107,10 @@ const recovery = Object.freeze({
 });
 const map = runtime.resolveXinmaiSixDimensionResponseMapPresentation(recovery);
 assert(map.state === "EXACT" && map.items.length === 6, "exact six-item map is not recoverable");
-assert(map.actionImpulse && map.protectedNeed, "ACTION/GOAL causal inputs are missing");
+assert(
+  map.actionSemanticResponseId === "PAUSE" && map.goalSemanticResponseId === "VALUE",
+  "ACTION/GOAL causal inputs are missing or not bounded IDs",
+);
 const legacy = runtime.resolveXinmaiSixDimensionResponseMapPresentation(Object.freeze({
   status: "LEGACY_GENERIC_ONLY", observationSet: Object.freeze({ pressure: recovery.observationSet.pressure }),
   completionReceipt: null, observedDimensionIds: Object.freeze(dimensions), selections: null,

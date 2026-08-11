@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { recoverXinmaiSixDimensionSemanticSelection } from "../services/xinmaiSixDimensionSemanticSelectionRecoveryAdapter";
-import { resolveXinmaiSixDimensionResponseMapPresentation } from "../services/xinmaiSixDimensionResponseMapPresentationResolver";
+import {
+  resolveXinmaiMicroActionCausalExplanation,
+  resolveXinmaiSixDimensionResponseMapPresentation,
+} from "../services/xinmaiSixDimensionResponseMapPresentationResolver";
 import type { XinmaiSixDimensionResponseMapPresentation } from "../types/xinmaiSixDimensionResponseMapPresentation";
 import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
 
@@ -68,7 +71,7 @@ export function XinmaiSixDimensionResponseMap({
       data-six-dimension-response-map="EXACT_PERSISTED_SELECTIONS"
     >
       <header>
-        <span>触碰你的现实</span>
+        <span>你选择的现实情境</span>
         <h3>{semantic.purpose}</h3>
         <p>{semantic.explanation}</p>
         <blockquote>{presentation.realityTrigger}</blockquote>
@@ -92,7 +95,11 @@ export function XinmaiSixDimensionResponseMap({
       </section>
       {microAction ? (
         <p className="xinmai-response-map__causal" data-micro-action-causal-explanation="EXACT_ACTION_GOAL_CHOICE">
-          因为你先出现了【{presentation.actionImpulse}】，同时在保护【{presentation.protectedNeed}】，所以下一次先尝试【{microAction}】。
+          {resolveXinmaiMicroActionCausalExplanation(
+            presentation.actionSemanticResponseId,
+            presentation.goalSemanticResponseId,
+            microAction,
+          )}
         </p>
       ) : null}
     </section>
