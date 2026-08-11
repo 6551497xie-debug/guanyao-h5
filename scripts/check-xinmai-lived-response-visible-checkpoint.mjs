@@ -73,7 +73,7 @@ for (const marker of [
   "formationRequestEvidence",
   "returnAcceptanceEvidence",
   "READY_TO_CONFIRM_REAL_RESPONSE",
-  "不形成事实或 Crystal；这一步仍会等你。",
+  "不留下成长记录；这一步仍会等你。",
   "不记录、不形成，也没有惩罚。",
 ]) {
   assert(surface.includes(marker), `checkpoint consumer missing ${marker}`);

@@ -662,7 +662,8 @@ export function XinmaiLivedResponseReturnSurface({
         nextCyclePresentation.typedCause ?? "NONE"
       }
     >
-      {checkpointDecision.state !== "OWNERSHIP_PRESENTED" ? (
+      {checkpointDecision.state !== "OWNERSHIP_PRESENTED" &&
+      pendingNoFactResolution === null ? (
         <header className="xinmai-lived-response-return-surface__heading">
           <small>现实行动确认</small>
           <h2 id="xinmai-lived-response-checkpoint-heading">
@@ -680,7 +681,9 @@ export function XinmaiLivedResponseReturnSurface({
       >
         {feedback || liveAnnouncement || ""}
       </p>
-      {currentFormationReceipt === null && admissions.length > 1 ? (
+      {currentFormationReceipt === null &&
+      admissions.length > 1 &&
+      pendingNoFactResolution === null ? (
         <div
           className="xinmai-lived-response-return-surface__choice-switcher"
           aria-label="选择要继续确认的现实行动"
@@ -719,36 +722,45 @@ export function XinmaiLivedResponseReturnSurface({
               className="xinmai-lived-response-return-surface__no-fact-confirmation"
               role="group"
               aria-labelledby="xinmai-no-fact-confirmation-heading"
+              data-no-fact-resolution={pendingNoFactResolution}
             >
-              <h3 id="xinmai-no-fact-confirmation-heading">
+              <div className="xinmai-lived-response-return-surface__pending-step">
+                <small>你准备带回生活的这一步</small>
+                <blockquote>{intention.actionSummary}</blockquote>
+              </div>
+              <h2 id="xinmai-no-fact-confirmation-heading">
                 {pendingNoFactResolution === "NOT_ATTEMPTED"
-                  ? "这一次还没有尝试"
-                  : "这一次不留下记录"}
-              </h3>
+                  ? "还没有在现实里试过，也没关系。"
+                  : "不想留下这次记录，也可以。"}
+              </h2>
               <p>
                 {pendingNoFactResolution === "NOT_ATTEMPTED"
-                  ? "不会形成 Fact 或 Crystal。你可以回到生活，之后再来，也可以现在重新确认。"
-                  : "不会形成 Fact 或 Crystal。你可以安全返回，也可以回到上一步继续确认。"}
+                  ? "这次不会留下成长记录。你可以先把这一步带回生活，真正试过以后再回来；如果刚才选错了，也可以返回重新选择。"
+                  : "这次不会留下成长记录。你可以确认不记录并回到生命世界；如果刚才选错了，也可以返回重新选择。"}
               </p>
-              <div>
+              <div className="xinmai-lived-response-return-surface__no-fact-actions">
                 <button
                   className="xinmai-lived-response-return-surface__primary"
                   type="button"
                   disabled={busy}
+                  aria-describedby="xinmai-no-fact-primary-helper"
                   onClick={() => void resolveWithoutFact(pendingNoFactResolution)}
                 >
                   {pendingNoFactResolution === "NOT_ATTEMPTED"
-                    ? "回到生活，之后再来"
-                    : "确认不记录，安全返回"}
+                    ? "先回到生活"
+                    : "确认不记录，回到生命世界"}
                 </button>
+                <small id="xinmai-no-fact-primary-helper">
+                  {pendingNoFactResolution === "NOT_ATTEMPTED"
+                    ? "保留这一步，不留下成长记录；等你真正试过，再从返回入口继续。"
+                    : "确认后本次不留下成长记录，已经完成的生命资产不会被改动。"}
+                </small>
                 <button
                   type="button"
                   disabled={busy}
                   onClick={() => setPendingNoFactResolution(null)}
                 >
-                  {pendingNoFactResolution === "NOT_ATTEMPTED"
-                    ? "现在重新确认"
-                    : "返回继续确认"}
+                  返回重新选择
                 </button>
               </div>
             </div>
@@ -799,7 +811,7 @@ export function XinmaiLivedResponseReturnSurface({
               <button type="button" disabled={busy} onClick={() => setPendingNoFactResolution("NOT_ATTEMPTED")}>
                 这一次还没有尝试
               </button>
-              <small>不形成事实或 Crystal；这一步仍会等你。</small>
+              <small>不留下成长记录；这一步仍会等你。</small>
             </div>
             <div>
               <button type="button" disabled={busy} onClick={() => setPendingNoFactResolution("USER_REJECTED_RECORD")}>
