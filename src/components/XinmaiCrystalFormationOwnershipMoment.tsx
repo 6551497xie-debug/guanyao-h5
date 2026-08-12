@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { XinmaiCrystalOwnershipPresentationDecision } from "../types/xinmaiCrystalOwnershipPresentation";
 import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
+import { requireXinmaiFormalStatePresentation } from "../services/xinmaiSemanticConstitutionFormalStateMatrix";
 import "../styles/xinmai-crystal-formation-ownership-moment.css";
 
 const CONDENSING_SHARDS = Object.freeze(
@@ -27,6 +28,7 @@ export function XinmaiCrystalFormationOwnershipMoment({
   const semantic =
     resolveXinmaiJourneySemanticPresentation("CRYSTAL_OWNERSHIP");
   if (decision.state === "FORMATION_PENDING") {
+    const formal = requireXinmaiFormalStatePresentation("OWNERSHIP", "PENDING");
     return (
       <div
         className="xinmai-crystal-ownership xinmai-crystal-ownership--pending"
@@ -34,21 +36,22 @@ export function XinmaiCrystalFormationOwnershipMoment({
         data-crystal-success-authority="NOT_CONFIRMED"
       >
         <span className="xinmai-crystal-ownership__pending-breath" aria-hidden="true" />
-        <strong>正在保存这次现实结果。</strong>
-        <small>保存完成前，不会提前显示新的生命痕迹。</small>
+        <strong>{formal.currentFact}</strong>
+        <small>{formal.exitConsequence}</small>
       </div>
     );
   }
 
   if (decision.state === "SAFE_WITHHELD") {
+    const formal = requireXinmaiFormalStatePresentation("OWNERSHIP", "FAILURE");
     return (
       <div
         className="xinmai-crystal-ownership xinmai-crystal-ownership--withheld"
         data-crystal-formation-presentation="SAFE_WITHHELD"
         data-crystal-success-authority="NOT_CONFIRMED"
       >
-        <strong>这道痕迹还没有被完整确认。</strong>
-        <small>已经发生的事实仍被保留，可以稍后再试。</small>
+        <strong>{formal.currentFact}</strong>
+        <small>{formal.exitConsequence}</small>
       </div>
     );
   }
@@ -57,6 +60,10 @@ export function XinmaiCrystalFormationOwnershipMoment({
   const recovered = decision.state === "RECOVERED_EXISTING";
   const ownershipPresented =
     visualFacts.ownershipInteraction === "PRESENTED";
+  const formalOwnership = requireXinmaiFormalStatePresentation(
+    "OWNERSHIP",
+    recovered ? "RECOVERY" : "READY",
+  );
 
   return (
     <article
@@ -69,6 +76,7 @@ export function XinmaiCrystalFormationOwnershipMoment({
       data-motion-presentation={visualFacts.motionPreference}
       data-ownership-interaction={visualFacts.ownershipInteraction}
       data-authority-writeback="FORBIDDEN"
+      data-formal-journey-state={`OWNERSHIP/${formalOwnership.state}`}
       aria-labelledby="xinmai-crystal-ownership-headline"
     >
       <div className="xinmai-crystal-ownership__scene">
@@ -159,7 +167,7 @@ export function XinmaiCrystalFormationOwnershipMoment({
             : "可以查看这道痕迹，也可以直接开始下一段现实。"}
         </small>
         <p className="xinmai-crystal-ownership__exit-explanation">
-          {semantic.consequence}
+          {semantic.consequence} {formalOwnership.exitConsequence}
         </p>
         <button
           className="xinmai-crystal-ownership__continue"

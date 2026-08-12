@@ -120,9 +120,28 @@ export function readXinmaiFormalStatePresentation(
   ) ?? null;
 }
 
+export function requireXinmaiFormalStatePresentation(
+  area: XinmaiFormalJourneyArea,
+  state: string,
+): XinmaiFormalStatePresentation {
+  const presentation = readXinmaiFormalStatePresentation(area, state);
+  if (presentation === null) {
+    throw new Error(`Unknown formal journey state: ${area}/${state}`);
+  }
+  return presentation;
+}
+
+export function formatXinmaiFormalStateStatus(
+  presentation: XinmaiFormalStatePresentation,
+): string {
+  return `${presentation.currentFact} ${presentation.nextAction}。${presentation.exitConsequence}`;
+}
+
 export const XinmaiSemanticConstitutionFormalStatePresentationResolver =
   Object.freeze({
     read: readXinmaiFormalStatePresentation,
+    require: requireXinmaiFormalStatePresentation,
+    formatStatus: formatXinmaiFormalStateStatus,
     writesAuthority: false as const,
     readsStorage: false as const,
     infersMissingFacts: false as const,

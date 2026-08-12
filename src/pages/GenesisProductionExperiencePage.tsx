@@ -58,6 +58,7 @@ import {
 } from "../services/xinmaiRelationshipNamingPresentationState";
 import { resolveLifeWhisperVisualOutcomeTransition } from "../services/xinmaiLifeWhisperVisualOutcomeTransition";
 import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
+import { requireXinmaiFormalStatePresentation } from "../services/xinmaiSemanticConstitutionFormalStateMatrix";
 import { resolveXinmaiGenesisLifeOriginNativeControlReadiness } from "../services/xinmaiGenesisLifeOriginNativeControlReadinessResolver";
 import { XINMAI_GENESIS_LIFE_ORIGIN_NATIVE_CONTROL_PRESENTATION_POLICY } from "../services/xinmaiGenesisLifeOriginNativeControlPresentationPolicy";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
@@ -129,6 +130,10 @@ export function GenesisProductionExperiencePage({
   const genesisSemantic = resolveXinmaiJourneySemanticPresentation("GENESIS_FORMATION");
   const continuitySemantic = resolveXinmaiJourneySemanticPresentation("STAR_BEAST_CONTINUITY");
   const whisperSemantic = resolveXinmaiJourneySemanticPresentation("WHISPER");
+  const genesisLoadingPresentation = requireXinmaiFormalStatePresentation("GENESIS", "LOADING");
+  const genesisFormingPresentation = requireXinmaiFormalStatePresentation("GENESIS", "FORMING");
+  const genesisReadyPresentation = requireXinmaiFormalStatePresentation("GENESIS", "READY");
+  const genesisFailurePresentation = requireXinmaiFormalStatePresentation("GENESIS", "FAILURE");
   const firstRealityNamingDeferred = true;
   const [canvasHostState, setCanvasHostState] =
     useState<GenesisProductionCanvasHostState>("STARTING");
@@ -1115,7 +1120,10 @@ export function GenesisProductionExperiencePage({
         data-production-genesis-status="SOURCE_NOT_READY"
         data-guard-reason={routeAuthorization.guardReason}
       >
-        <p role="status">SOURCE_NOT_READY</p>
+        <p role="status" aria-live="polite">
+          {genesisFailurePresentation.currentFact} {genesisFailurePresentation.nextAction}。
+          {genesisFailurePresentation.exitConsequence}
+        </p>
       </main>
     );
   }
@@ -1128,6 +1136,15 @@ export function GenesisProductionExperiencePage({
       data-source-provenance={routeAuthorization.sourceProvenance}
       data-source-reference-id={routeAuthorization.sourceReferenceId}
       data-production-renderer-host-state={canvasHostState}
+      data-formal-journey-state={`GENESIS/${
+        canvasHostState === "STARTING"
+          ? "LOADING"
+          : canvasHostState === "RENDERING"
+            ? "FORMING"
+            : canvasHostState === "BLOCKED"
+              ? "FAILURE"
+              : "READY"
+      }`}
       data-genesis-runtime-stage={visualCalibrationResult.bundle.runtimeStage}
       data-reality-entry-eligibility={
         recognitionRealityResult?.status === "READY"
@@ -1196,6 +1213,15 @@ export function GenesisProductionExperiencePage({
         relationshipNamingEligibility.source
       }
     >
+      <p className="sr-only" role="status" aria-live="polite">
+        {canvasHostState === "STARTING"
+          ? genesisLoadingPresentation.currentFact
+          : canvasHostState === "RENDERING"
+            ? genesisFormingPresentation.currentFact
+            : canvasHostState === "BLOCKED"
+              ? genesisFailurePresentation.currentFact
+              : genesisReadyPresentation.currentFact}
+      </p>
       <GenesisProductionRendererCanvasHost
         routeAuthorization={routeAuthorization}
         consumerSourceResult={consumerSourceResult}

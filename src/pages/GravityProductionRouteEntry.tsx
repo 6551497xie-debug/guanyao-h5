@@ -36,6 +36,7 @@ import {
   readChoiceGrowthTerminalSummary,
 } from "../services/xinmaiChoiceGrowthTerminalSummaryAdapter";
 import { readXinmaiCanonicalBodyImprintRecovery } from "../services/xinmaiCanonicalBodyImprintRecoveryAdapter";
+import { requireXinmaiFormalStatePresentation } from "../services/xinmaiSemanticConstitutionFormalStateMatrix";
 import {
   subscribeToXinmaiLivedGrowthRecoveryRevision,
 } from "../services/xinmaiLivedGrowthRecoveryRevisionObserver";
@@ -621,19 +622,27 @@ export function GravityProductionRouteEntry() {
   ]);
 
   if (assembly.status !== "READY") {
+    const formalSixState = assembly.status === "PENDING"
+      ? "LOADING"
+      : assembly.status === "RETRYABLE"
+        ? "RETRYABLE"
+        : "NON_RETRYABLE";
+    const formalSixPresentation = requireXinmaiFormalStatePresentation(
+      "SIX_DIMENSION",
+      formalSixState,
+    );
     return (
       <main
         className="gy-reality-route-guard"
         data-gravity-production-route={assembly.status}
+        data-formal-journey-state={`SIX_DIMENSION/${formalSixState}`}
       >
         <p role="status">
-          {assembly.status === "PENDING"
-            ? "正在恢复这段旅程的六维观察。"
-            : "六维观察当前无法继续；已有记录会保留。"}
+          {formalSixPresentation.currentFact} {formalSixPresentation.exitConsequence}
         </p>
         {assembly.status === "RETRYABLE" ? (
           <button type="button" onClick={retry}>
-            重试恢复六维观察
+            {formalSixPresentation.nextAction}
           </button>
         ) : null}
         {assembly.status === "BLOCKED" ? (
@@ -641,7 +650,7 @@ export function GravityProductionRouteEntry() {
             type="button"
             onClick={() => navigate("/launch-lab", { replace: true })}
           >
-            返回旅程入口
+            {formalSixPresentation.nextAction}
           </button>
         ) : null}
       </main>

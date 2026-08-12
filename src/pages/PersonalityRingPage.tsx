@@ -19,6 +19,7 @@ import { subscribeToXinmaiLivedGrowthRecoveryRevision } from "../services/xinmai
 import { readPersonalityRingLite } from "../services/personalityRingLiteService";
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
 import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
+import { requireXinmaiFormalStatePresentation } from "../services/xinmaiSemanticConstitutionFormalStateMatrix";
 import {
   XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
   type XinmaiCanonicalBodyImprintDecision,
@@ -62,6 +63,7 @@ export function PersonalityRingPage() {
     useState<XinmaiCanonicalBodyImprintDecision>(
       XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
     );
+  const [archiveReadPending, setArchiveReadPending] = useState(true);
   const [selectedImprintReferenceId, setSelectedImprintReferenceId] =
     useState<string | null>(null);
   const [sameLifeSurfaceOutcome, setSameLifeSurfaceOutcome] =
@@ -85,6 +87,7 @@ export function PersonalityRingPage() {
   useEffect(() => {
     let disposed = false;
     if (identityRecovery.status !== "READY") {
+      setArchiveReadPending(false);
       setBodyImprintDecision(
         XINMAI_CANONICAL_BODY_IMPRINT_UNAVAILABLE_DECISION,
       );
@@ -92,13 +95,17 @@ export function PersonalityRingPage() {
         disposed = true;
       };
     }
+    setArchiveReadPending(true);
     void readXinmaiCanonicalBodyImprintRecovery({
       identityReferences: identityRecovery.identityReferences,
       visualContinuity: identityRecovery.visualContinuity,
       focusedFormationReferenceId:
         routeState?.formationReferenceId ?? null,
     }).then((decision) => {
-      if (!disposed) setBodyImprintDecision(decision);
+      if (!disposed) {
+        setBodyImprintDecision(decision);
+        setArchiveReadPending(false);
+      }
     });
     return () => {
       disposed = true;
@@ -113,6 +120,23 @@ export function PersonalityRingPage() {
     bodyImprintDecision.status === "IMPRINT_AVAILABLE"
       ? bodyImprintDecision.imprints
       : Object.freeze([]);
+  const archiveFormalState =
+    identityRecovery.status !== "READY"
+      ? "DIRECT_GUARD"
+      : archiveReadPending
+        ? "LOADING"
+        : bodyImprintDecision.status === "IMPRINT_AVAILABLE"
+          ? canonicalImprints.length > 1
+            ? "MULTIPLE"
+            : "ONE"
+          : bodyImprintDecision.status === "NO_CANONICAL_IMPRINT" &&
+              legacyHistory.entries.length === 0
+            ? "EMPTY"
+            : "RECOVERY";
+  const archiveFormalPresentation = requireXinmaiFormalStatePresentation(
+    "ARCHIVE",
+    archiveFormalState,
+  );
   const selectedImprint =
     canonicalImprints.find(
       (imprint) =>
@@ -240,6 +264,7 @@ export function PersonalityRingPage() {
       data-next-reality-cycle-typed-cause={
         nextCyclePresentation.typedCause ?? "NONE"
       }
+      data-formal-journey-state={`ARCHIVE/${archiveFormalState}`}
       style={{
         position: "fixed",
         inset: 0,
@@ -319,14 +344,13 @@ export function PersonalityRingPage() {
         }}
       >
         <strong style={{ maxWidth: 320, fontSize: 15, lineHeight: 1.7 }}>
-          {bodyImprintDecision.status === "IMPRINT_AVAILABLE"
+          {archiveFormalState === "ONE" || archiveFormalState === "MULTIPLE"
             ? `这里有 ${canonicalImprints.length} 道来自你确认过的现实结果。`
-            : bodyImprintDecision.status === "NO_CANONICAL_IMPRINT"
-              ? legacyHistory.entries.length > 0
-                ? "旧的历史记录仍被保留，但不会被冒充为身体留痕。"
-                : "当你确认现实里实际发生的结果，这里会留下可回看的痕迹。"
-              : "身体留痕暂时无法确认；既有成长资产不会因此丢失。"}
+            : archiveFormalPresentation.currentFact}
         </strong>
+        <small role="status" aria-live="polite" aria-atomic="true">
+          {`${archiveFormalPresentation.nextAction}。${archiveFormalPresentation.exitConsequence}`}
+        </small>
 
         {accessibleSemanticMirror.items.length > 0 ? (
           <ol

@@ -14,7 +14,7 @@ assert(packageJson.scripts?.[gateName] === "node scripts/check-xinmai-semantic-c
 assert(packageJson.scripts?.["check:xinmai-lived-growth-authority"]?.includes(gateName), "full suite does not include the direct gate");
 
 const bundle = await build({
-  stdin: { contents: 'export * from "./src/services/xinmaiSemanticConstitutionFormalStateMatrix.ts";', resolveDir: process.cwd(), sourcefile: "formal-state-matrix-gate.ts", loader: "ts" },
+  stdin: { contents: 'export * from "./src/services/xinmaiSemanticConstitutionFormalStateMatrix.ts"; export * from "./src/services/xinmaiSemanticConstitutionFormalStateConsumerMap.ts";', resolveDir: process.cwd(), sourcefile: "formal-state-matrix-gate.ts", loader: "ts" },
   bundle: true,
   platform: "node",
   format: "esm",
@@ -42,6 +42,15 @@ for (const [area, states] of Object.entries(required)) {
   }
 }
 assert(matrix.length === Object.values(required).flat().length, "matrix contains unknown or duplicate states");
+const bindings = runtime.XINMAI_FORMAL_STATE_CONSUMER_BINDINGS;
+assert(bindings.length === matrix.length, "consumer map must bind every formal state");
+assert(runtime.XinmaiSemanticConstitutionFormalStateConsumerMap.unknownConsumers === 0, "consumer map UNKNOWN must be zero");
+for (const row of matrix) {
+  const matches = bindings.filter((binding) => binding.area === row.area && binding.state === row.state);
+  assert(matches.length === 1, `${row.area}/${row.state} must have one consumer binding`);
+  assert(matches[0].applicability === "WIRED" || Boolean(matches[0].notApplicableReason), `${row.area}/${row.state} unaccounted consumer`);
+  assert(matches[0].publicChannels.includes("VISIBLE") && matches[0].publicChannels.includes("STATUS") && matches[0].publicChannels.includes("ARIA"), `${row.area}/${row.state} public channels incomplete`);
+}
 
 const formalConsumers = Object.freeze([
   "src/App.tsx",
@@ -84,6 +93,25 @@ for (const requiredCopy of ["正在准备身体观察。", "你选择的现实�
   assert(source.includes(requiredCopy), `required factual state copy missing: ${requiredCopy}`);
 }
 assert(read("src/services/xinmaiRealityEntryPresentationResolver.ts").includes("readXinmaiFormalStatePresentation"), "Reality entry does not consume the formal state matrix");
+for (const path of [
+  "src/components/XinmaiGenesisBirthCoordinateControls.tsx",
+  "src/pages/GenesisProductionExperiencePage.tsx",
+  "src/pages/GravityProductionRouteEntry.tsx",
+  "src/pages/GravityPage.tsx",
+  "src/components/XinmaiLifeReflectionGuide.tsx",
+  "src/services/guanyaoDynamicsExperienceReadinessPresentationAdapter.ts",
+  "src/services/guanyaoDynamicsExperienceStateAdapter.ts",
+  "src/services/guanyaoDynamicsCurrentCrystalPresentationAdapter.ts",
+  "src/services/xinmaiLivedResponseCheckpointPresentationResolver.ts",
+  "src/components/XinmaiLivedResponseReturnSurface.tsx",
+  "src/components/XinmaiCrystalFormationOwnershipMoment.tsx",
+  "src/services/xinmaiPostOwnershipNextRealityCyclePresentationResolver.ts",
+  "src/pages/PersonalityRingPage.tsx",
+]) {
+  assert(read(path).includes("xinmaiSemanticConstitutionFormalStateMatrix"), `actual consumer is not wired: ${path}`);
+}
+assert(!read("src/pages/GravityPage.tsx").includes("刚才回应的地方，开始显出生命的流动。"), "Gravity transient still uses old public copy");
+assert(read("src/pages/GravityPage.tsx").includes("sixDimensionFormalPresentation.currentFact"), "Gravity transient does not render typed state fact");
 
 const frozenAuthorityDigests = Object.freeze({
   "src/services/xinmaiSixDimensionObservationAuthorityController.ts": "7365fc289b61851b98d9b21f1b2d280b6d217833830b890c64f66ecebe9006f9",
@@ -95,4 +123,4 @@ const frozenAuthorityDigests = Object.freeze({
 });
 for (const [path, digest] of Object.entries(frozenAuthorityDigests)) assert(sha256(path) === digest, `frozen Authority drifted: ${path}`);
 
-console.log(`[XINMAI FORMAL STATE MATRIX] PASS · ${matrix.length}/${matrix.length} states · 8/8 areas · UNKNOWN=0 · public forbidden=0`);
+console.log(`[XINMAI FORMAL STATE MATRIX] PASS · ${matrix.length}/${matrix.length} states · ${bindings.length}/${bindings.length} actual consumer bindings · 8/8 areas · UNKNOWN=0 · public forbidden=0`);

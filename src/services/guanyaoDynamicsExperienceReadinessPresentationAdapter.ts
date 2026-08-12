@@ -1,6 +1,7 @@
 import type { DynamicsExperienceState } from "../types/dynamicsExperiencePresentation";
 import type { DynamicsInputReadiness } from "./guanyaoDynamicsInputReadinessAdapter";
 import type { DynamicsMotherPresentationResult } from "./guanyaoDynamicsMotherPresentationAdapter";
+import { requireXinmaiFormalStatePresentation } from "./xinmaiSemanticConstitutionFormalStateMatrix";
 
 export type DynamicsExperienceReadinessPresentationAdapterInput = Readonly<{
   experienceState: DynamicsExperienceState;
@@ -42,14 +43,15 @@ export function resolveDynamicsExperienceReadinessPresentation(
   } as const;
 
   if (!inputReadiness.hasPressureContext) {
+    const formal = requireXinmaiFormalStatePresentation("SIX_DIMENSION", "PREPARING");
     return {
       semanticRole: "EXPERIENCE_READINESS_PRESENTATION",
       mode: "SAFE_PREVIEW",
       experienceState: {
         ...experienceState,
         loopLabel: "六个空间预览",
-        headline: "这一局还没有开始。",
-        supportingCopy: "准备好时，选择此刻最想看清的一件事。",
+        headline: formal.currentFact,
+        supportingCopy: `你选择的现实情境已经保留；控件就绪后可开始选择。${formal.exitConsequence}`,
         pressureCopy: "先不用解释，也不需要立刻得出答案。",
         beastCopy: "你与星兽会从这里一起走进六个空间。",
       },
@@ -60,13 +62,14 @@ export function resolveDynamicsExperienceReadinessPresentation(
   }
 
   if (motherCodeName && experienceState.stage === "PRESSURE") {
+    const formal = requireXinmaiFormalStatePresentation("SIX_DIMENSION", "LOADING");
     return {
       semanticRole: "EXPERIENCE_READINESS_PRESENTATION",
       mode: "MOTHER_CONNECTED",
       experienceState: {
         ...experienceState,
-        headline: "正在准备身体观察。",
-        supportingCopy: "你选择的现实情境已经保留；控件就绪后可开始选择。",
+        headline: `正在准备身体观察。${formal.currentFact}`,
+        supportingCopy: formal.exitConsequence,
         pressureCopy: "接下来只保存你明确确认的这一维观察。",
       },
       pressureContextMarker: "connected",

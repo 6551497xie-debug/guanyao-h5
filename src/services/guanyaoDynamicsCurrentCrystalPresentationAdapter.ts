@@ -1,5 +1,6 @@
 import { resolveDynamicsPressureFieldLabel } from "./guanyaoCurrentHexagramFormationAdapter";
 import type { DynamicsCurrentCrystalEndState } from "./guanyaoDynamicsCrystalRuntimeAdapter";
+import { requireXinmaiFormalStatePresentation } from "./xinmaiSemanticConstitutionFormalStateMatrix";
 
 export type DynamicsCurrentCrystalPresentationGuardrails = Readonly<{
   isPersonaMigrationExpression: true;
@@ -44,6 +45,7 @@ export function resolveDynamicsCurrentCrystalPresentation(
   input: DynamicsCurrentCrystalPresentationAdapterInput,
 ): DynamicsCurrentCrystalPresentation {
   const state = input.currentCrystalEndState;
+  const recovery = requireXinmaiFormalStatePresentation("ARCHIVE", "RECOVERY");
   const motherName = state.mother.motherCodeName || state.mother.lowerTrigram;
   const hexagramTitle =
     state.hexagram.hexagramName ??
@@ -65,7 +67,7 @@ export function resolveDynamicsCurrentCrystalPresentation(
     primaryDimensionLabel,
     crystalCopy: state.crystal.copy,
     cardJourneyCopy: `这段旅程从【${motherName}】进入【${hexagramTitle}】。经过你确认的回应与现实结果，它留下了一道可回看的痕迹。`,
-    cardPrivacyCopy: "看看这段旅程留下的记录。它只保留这次变化，不展示具体压力原句。",
+    cardPrivacyCopy: `${recovery.currentFact} ${recovery.exitConsequence}`,
     behaviorReading: [
       "这道记录不保留你的压力原句。",
       `它留下的是当时确认的反应，在「${hexagramTitle}」这段旅程中经过现实验证后发生的变化。`,

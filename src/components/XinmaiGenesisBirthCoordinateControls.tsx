@@ -6,6 +6,7 @@ import {
 } from "../services/xinmaiGenesisBirthNativeInputAdapter";
 import type { XinmaiGenesisBirthNativeInput } from "../services/xinmaiGenesisBirthNativeInputAdapter";
 import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
+import { requireXinmaiFormalStatePresentation } from "../services/xinmaiSemanticConstitutionFormalStateMatrix";
 import type {
   XinmaiGenesisBirthCoordinateDraft,
   XinmaiGenesisBirthCoordinatePresentationDecision,
@@ -69,6 +70,20 @@ export function XinmaiGenesisBirthCoordinateControls({
 }: XinmaiGenesisBirthCoordinateControlsProps) {
   const semantic = resolveXinmaiJourneySemanticPresentation("BIRTH_COORDINATE");
   const latestDraftRef = useRef(draft);
+  const formalBirthState =
+    decision.state === "BIRTH_SOURCE_ACCEPTED"
+      ? "RECOVERY"
+      : draft.precision === "UNKNOWN"
+        ? "UNKNOWN"
+        : decision.validation.status === "VALID"
+          ? draft.precision === "APPROXIMATE_RANGE" ? "RANGE" : "VALID"
+          : decision.validation.reason === "CALENDAR_UNAVAILABLE"
+            ? "FAILURE"
+            : "EMPTY";
+  const formalBirthPresentation = requireXinmaiFormalStatePresentation(
+    "BIRTH",
+    formalBirthState,
+  );
   useLayoutEffect(() => {
     latestDraftRef.current = draft;
   }, [draft]);
@@ -87,6 +102,7 @@ export function XinmaiGenesisBirthCoordinateControls({
       className="xinmai-genesis-birth-coordinate"
       aria-labelledby="xinmai-genesis-birth-coordinate-title"
       data-birth-coordinate-state={decision.state}
+      data-formal-journey-state={`BIRTH/${formalBirthState}`}
       data-scene-enrichment={decision.sceneEnrichment}
       data-birth-coordinate-validation={
         decision.validation.status === "VALID"
@@ -221,7 +237,7 @@ export function XinmaiGenesisBirthCoordinateControls({
               className="xinmai-genesis-birth-coordinate__feedback"
               data-birth-coordinate-feedback={decision.validation.status}
             >
-              {validationRecoveryCopy(decision)}
+              {validationRecoveryCopy(decision)} {formalBirthPresentation.exitConsequence}
             </p>
             <button
               className="xinmai-genesis-birth-coordinate__primary"

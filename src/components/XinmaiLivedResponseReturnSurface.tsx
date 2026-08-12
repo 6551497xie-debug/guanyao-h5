@@ -37,6 +37,7 @@ import { resolveXinmaiLivedResponseCheckpointPresentation } from "../services/xi
 import { resolveXinmaiReturningSameLifeContinuityPresentation } from "../services/xinmaiReturningSameLifeContinuityPresentationResolver";
 import { resolveXinmaiPostOwnershipNextRealityCyclePresentation } from "../services/xinmaiPostOwnershipNextRealityCyclePresentationResolver";
 import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
+import { requireXinmaiFormalStatePresentation } from "../services/xinmaiSemanticConstitutionFormalStateMatrix";
 import type {
   XinmaiReturningSameLifeContinuityPresentationProjection,
 } from "../types/xinmaiReturningSameLifeContinuityPresentation";
@@ -641,6 +642,26 @@ export function XinmaiLivedResponseReturnSurface({
     setBusy(false);
   };
 
+  const returnFormalState = pendingNoFactResolution === "NOT_ATTEMPTED"
+    ? "NOT_ATTEMPTED"
+    : pendingNoFactResolution === "USER_REJECTED_RECORD"
+      ? "REJECTED"
+      : checkpointDecision.state === "READY_TO_CONFIRM_REAL_RESPONSE"
+        ? "SELECTION"
+        : checkpointDecision.state === "FORMATION_IN_PROGRESS"
+          ? "FORMATION_PENDING"
+          : checkpointDecision.state === "OWNERSHIP_PRESENTED"
+            ? "FORMED"
+            : checkpointDecision.state === "SAFE_WITHHELD"
+              ? formationFailure !== null
+                ? "RETRYABLE"
+                : "NON_RETRYABLE"
+              : "PENDING";
+  const returnFormalPresentation = requireXinmaiFormalStatePresentation(
+    "RETURN",
+    returnFormalState,
+  );
+
   return (
     <section
       className="xinmai-lived-response-return-surface"
@@ -682,6 +703,7 @@ export function XinmaiLivedResponseReturnSurface({
       data-next-reality-cycle-typed-cause={
         nextCyclePresentation.typedCause ?? "NONE"
       }
+      data-formal-journey-state={`RETURN/${returnFormalState}`}
     >
       {checkpointDecision.state !== "OWNERSHIP_PRESENTED" &&
       pendingNoFactResolution === null ? (
@@ -719,7 +741,7 @@ export function XinmaiLivedResponseReturnSurface({
         aria-live="polite"
         aria-atomic="true"
       >
-        {feedback || liveAnnouncement || ""}
+        {feedback || liveAnnouncement || `${returnFormalPresentation.currentFact} ${returnFormalPresentation.nextAction}。${returnFormalPresentation.exitConsequence}`}
       </p>
       {currentFormationReceipt === null &&
       admissions.length > 1 &&
@@ -908,6 +930,9 @@ export function XinmaiLivedResponseReturnSurface({
       ) : checkpointDecision.state === "SAFE_WITHHELD" &&
         selected.state === "DEPARTURE_RECONCILIATION_PENDING" ? (
         <div className="xinmai-lived-response-return-surface__recovery">
+          <p role="status">
+            {requireXinmaiFormalStatePresentation("CHOICE", "DEPARTURE_PREPARING").currentFact}
+          </p>
           <button type="button" disabled={busy} onClick={depart}>
             重试协调
           </button>

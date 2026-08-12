@@ -26,6 +26,7 @@ import { resolveDynamicsChangeExperienceRuntime } from "../services/guanyaoDynam
 import { resolveDynamicsMotherPresentation } from "../services/guanyaoDynamicsMotherPresentationAdapter";
 import { resolveDynamicsExperienceState } from "../services/guanyaoDynamicsExperienceStateAdapter";
 import { resolveDynamicsExperienceReadinessPresentation } from "../services/guanyaoDynamicsExperienceReadinessPresentationAdapter";
+import { requireXinmaiFormalStatePresentation } from "../services/xinmaiSemanticConstitutionFormalStateMatrix";
 import { resolveDynamicsValueFlow } from "../services/guanyaoDynamicsValueFlowAdapter";
 import { resolveDynamicsVisualState } from "../services/guanyaoDynamicsVisualStateAdapter";
 import { readRealUserGenesisVisualSourceContext } from "../services/realUserGenesisVisualSourceContext";
@@ -2761,6 +2762,23 @@ function HexagramCodeDeliveryShell({
             ? "RETRYABLE"
             : "READY"
           : "SAFE_WITHHELD";
+  const sixDimensionFormalState =
+    sixDimensionAuthority.status === "COMPLETED"
+      ? "RECEIPT_COMPLETE"
+      : sixDimensionMutationPending
+        ? "SAVING"
+        : sixDimensionAuthority.status === "LOADING"
+          ? "LOADING"
+          : sixDimensionCommitReady
+            ? authorityAllowsRetry ? "RETRYABLE" : "OPEN"
+            : sixDimensionAuthority.cause?.retryability === "NOT_RETRYABLE"
+              ? "NON_RETRYABLE"
+              : "PREPARING";
+  const sixDimensionFormalPresentation =
+    requireXinmaiFormalStatePresentation(
+      "SIX_DIMENSION",
+      sixDimensionFormalState,
+    );
   const completedSixDimensionCount = sixSpaceProgress.completedSpaceCount;
   const visualState = resolveDynamicsVisualState({
     completedNodeCount: executionSnapshot.node.completed.length,
@@ -2879,6 +2897,19 @@ function HexagramCodeDeliveryShell({
   const choicePresentationReady =
     choicePresentationDecision.state ===
     "READY_TO_PRESENT";
+  const choiceFormalState = choiceMutationPending
+    ? "LOADING"
+    : choicePresentationDecision.state === "READY_TO_PRESENT"
+      ? "READY"
+      : choicePresentationDecision.state === "RESUME_COMMITTED"
+        ? "COMMITTED"
+        : choicePresentationDecision.state === "TERMINAL_BY_GROWTH"
+          ? "RECOVERY"
+          : "LOADING";
+  const choiceFormalPresentation = requireXinmaiFormalStatePresentation(
+    "CHOICE",
+    choiceFormalState,
+  );
   const gravitySceneSemanticFacts = useMemo<
     XinmaiGravityChoiceSceneSemanticFacts | null
   >(
@@ -3428,6 +3459,7 @@ function HexagramCodeDeliveryShell({
         data-choice-presentation-reason={
           choicePresentationDecision.reason
         }
+        data-formal-journey-choice-state={choiceFormalState}
         data-choice-growth-terminal-summary={
           growthTerminalSummary.state
         }
@@ -3577,9 +3609,7 @@ function HexagramCodeDeliveryShell({
               <span />
             </div>
             <p className="gy-reality-life-universe__continuity-copy">
-              {innerViewBodyContinuityActive
-                ? "正在准备身体观察。"
-                : "现实情境已保留，六维观察可以开始。"}
+              {SIX_SPACE_SHORT_LABELS[sequentialCurrentSpaceId]} · {sixDimensionFormalPresentation.currentFact}
             </p>
           </div>
         ) : null}
@@ -3787,6 +3817,7 @@ function HexagramCodeDeliveryShell({
           data-six-dimension-accessibility-status={
             sixDimensionAuthority.status
           }
+          data-formal-journey-state={`SIX_DIMENSION/${sixDimensionFormalState}`}
           style={{
             position: "absolute",
             width: 1,
@@ -3796,11 +3827,22 @@ function HexagramCodeDeliveryShell({
             whiteSpace: "nowrap",
           }}
         >
-          {sixDimensionAuthority.status === "LOADING"
-            ? `六维观察正在准备；已保存 ${completedDimensionIds.length} 项，当前是${SIX_SPACE_SHORT_LABELS[sequentialCurrentSpaceId]}。`
-            : sixDimensionAuthority.status === "COMPLETED"
-            ? "六项观察已分别确认，可以继续选择一个现实中的小行动。"
-            : `已确认 ${completedDimensionIds.length} 项六维观察；当前是${SIX_SPACE_SHORT_LABELS[sequentialCurrentSpaceId]}。`}
+          {`${SIX_SPACE_SHORT_LABELS[sequentialCurrentSpaceId]}。${sixDimensionFormalPresentation.currentFact} ${sixDimensionFormalPresentation.nextAction}。${sixDimensionFormalPresentation.exitConsequence}`}
+        </p>
+        <p
+          role="status"
+          aria-live="polite"
+          data-formal-choice-state={choiceFormalState}
+          style={{
+            position: "absolute",
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+            clip: "rect(0 0 0 0)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {`${choiceFormalPresentation.currentFact} ${choiceFormalPresentation.nextAction}。${choiceFormalPresentation.exitConsequence}`}
         </p>
       </main>
     );

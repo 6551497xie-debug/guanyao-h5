@@ -4,6 +4,7 @@ import type {
   DynamicsExperienceStage,
   DynamicsExperienceState,
 } from "../types/dynamicsExperiencePresentation";
+import { requireXinmaiFormalStatePresentation } from "./xinmaiSemanticConstitutionFormalStateMatrix";
 
 export type DynamicsExperienceStateAdapterInput = Readonly<{
   completedNodeCount: number;
@@ -79,6 +80,7 @@ export function resolveDynamicsExperienceState(
   input: DynamicsExperienceStateAdapterInput,
 ): DynamicsExperienceState {
   const nodeNumber = Math.min(6, Math.max(1, input.currentNode));
+  const formalPreparing = requireXinmaiFormalStatePresentation("SIX_DIMENSION", "PREPARING");
   const stage: DynamicsExperienceStage =
     input.enginePhase === "COMPLETE" || input.completedNodeCount >= 6
       ? "CRYSTAL"
@@ -173,8 +175,8 @@ export function resolveDynamicsExperienceState(
     stage,
     primaryFocus,
     loopLabel: input.loopLabel,
-    headline: "这一刻，你的感受和回应正在出现。",
-    supportingCopy: "先不用改变什么，只看见此刻发生了什么。",
+    headline: formalPreparing.currentFact,
+    supportingCopy: formalPreparing.exitConsequence,
     pressureCopy: "这件事已经来到你面前。",
     beastCopy: "视觉同行者会保持在场，帮助你辨认回应如何发生。",
     nodeCopy,

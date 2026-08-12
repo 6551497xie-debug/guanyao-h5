@@ -1,4 +1,5 @@
 import type { XinmaiPostOwnershipNextRealityCycleResult } from "../types/xinmaiPostOwnershipNextRealityCycle";
+import { requireXinmaiFormalStatePresentation } from "./xinmaiSemanticConstitutionFormalStateMatrix";
 
 export type XinmaiPostOwnershipNextRealityCyclePresentation = Readonly<{
   state:
@@ -22,9 +23,10 @@ export function resolveXinmaiPostOwnershipNextRealityCyclePresentation(
   > | null,
 ): XinmaiPostOwnershipNextRealityCyclePresentation {
   if (busy) {
+    const formal = requireXinmaiFormalStatePresentation("OWNERSHIP", "FRESH_CYCLE_PREPARING");
     return Object.freeze({
       state: "COORDINATING" as const,
-      message: "正在准备下一段现实情境。上一段记录会继续保留。",
+      message: `${formal.currentFact} ${formal.exitConsequence}`,
       actionLabel: "正在协调下一段现实",
       actionDisabled: true,
       busy: true,
@@ -33,10 +35,10 @@ export function resolveXinmaiPostOwnershipNextRealityCyclePresentation(
     });
   }
   if (result?.retryability === "RETRYABLE") {
+    const formal = requireXinmaiFormalStatePresentation("OWNERSHIP", "FAILURE");
     return Object.freeze({
       state: "RETRY_AVAILABLE" as const,
-      message:
-        "下一段现实还没有完整接上。已形成的生命资产都在，可以重试协调。",
+      message: `${formal.currentFact} ${formal.exitConsequence}`,
       actionLabel: "重试进入下一段现实",
       actionDisabled: false,
       busy: false,
@@ -45,9 +47,10 @@ export function resolveXinmaiPostOwnershipNextRealityCyclePresentation(
     });
   }
   if (result !== null) {
+    const formal = requireXinmaiFormalStatePresentation("OWNERSHIP", "FAILURE");
     return Object.freeze({
       state: "SAFE_WITHHELD" as const,
-      message: "当前还不能开始下一段现实。已完成的生命资产会继续保留。",
+      message: `${formal.currentFact} ${formal.exitConsequence}`,
       actionLabel: "下一段现实暂未开放",
       actionDisabled: true,
       busy: false,

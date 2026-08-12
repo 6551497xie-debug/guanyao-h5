@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { SixSpaceId } from "../runtime/guanyaoRuntimeTypes";
 import { resolveXinmaiSixDimensionSemanticChoreography } from "../services/xinmaiSixDimensionSemanticChoreographyResolver";
 import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
+import { requireXinmaiFormalStatePresentation } from "../services/xinmaiSemanticConstitutionFormalStateMatrix";
 import type { XinmaiSixDimensionSemanticResponse } from "../types/xinmaiSixDimensionSemanticChoreography";
 
 type ReflectionPhase =
@@ -64,16 +65,33 @@ export function XinmaiLifeReflectionGuide({
   }
 
   const relationEstablished = phase === "CONFIRMED" || phase === "SELF_NAMED";
+  const formalSixState = finalActionState === "PREPARING"
+    ? "PREPARING"
+    : finalActionState === "SAVING"
+      ? "SAVING"
+      : finalActionState === "RETRYABLE"
+        ? "RETRYABLE"
+        : finalActionState === "SAFE_WITHHELD"
+          ? "NON_RETRYABLE"
+          : "OPEN";
+  const formalSixPresentation = requireXinmaiFormalStatePresentation(
+    "SIX_DIMENSION",
+    formalSixState,
+  );
+  const savedFormalPresentation = requireXinmaiFormalStatePresentation(
+    "SIX_DIMENSION",
+    "SAVED",
+  );
   const finalDisabled =
     selectedResponse === null ||
     continuePending || finalActionState === "PREPARING" ||
     finalActionState === "SAVING" || finalActionState === "SAFE_WITHHELD";
   const readinessCopy =
-    finalActionState === "PREPARING" ? "这一维观察正在准备，尚未保存。" :
-    finalActionState === "SAVING" || continuePending ? "正在保存这一维观察。" :
-    finalActionState === "RETRYABLE" ? "这次观察还没有保存，可以重新尝试。" :
-    finalActionState === "SAFE_WITHHELD" ? "这一维暂时无法保存，已经保存的观察仍会保留。" :
-    "你的选择只在当前画面中；确认保存后才会成为这一维观察。";
+    finalActionState === "PREPARING"
+      ? `这一维观察正在准备，尚未保存。${formalSixPresentation.exitConsequence}`
+      : finalActionState === "SAFE_WITHHELD"
+        ? `已经保存的观察仍会保留。${formalSixPresentation.exitConsequence}`
+        : `确认保存后才会成为这一维观察。${formalSixPresentation.currentFact} ${formalSixPresentation.exitConsequence}`;
 
   function chooseResponse(response: XinmaiSixDimensionSemanticResponse) {
     setSelectedResponse(response);
@@ -91,6 +109,7 @@ export function XinmaiLifeReflectionGuide({
       data-xinmai-spatial-mode={grammar.spatialMode}
       data-xinmai-visual-semantic-policy={grammar.presentationMode}
       data-xinmai-authority-boundary="FINAL_ACKNOWLEDGEMENT_ONLY"
+      data-formal-journey-state={`SIX_DIMENSION/${formalSixState}`}
       aria-labelledby={`xinmai-six-question-${dimensionId}`}
     >
       <header className="xinmai-six-dimension-semantic__header">
@@ -132,7 +151,7 @@ export function XinmaiLifeReflectionGuide({
               try {
                 if (selectedResponse === null) return;
                 const saved = await onContinue?.(selectedResponse);
-                if (saved) setSavedAnnouncement(`${grammar.label}观察已保存。`);
+                if (saved) setSavedAnnouncement(`${grammar.label}观察已保存。${savedFormalPresentation.nextAction}。`);
               } finally { setContinuePending(false); }
             }}
           >

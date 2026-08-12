@@ -3,6 +3,12 @@ import type {
   XinmaiLivedResponseCheckpointPresentationInput,
 } from "../types/xinmaiLivedResponseCheckpointPresentation";
 import { XINMAI_LIVED_RESPONSE_CHECKPOINT_PRESENTATION_SCHEMA_VERSION } from "../types/xinmaiLivedResponseCheckpointPresentation";
+import { requireXinmaiFormalStatePresentation } from "./xinmaiSemanticConstitutionFormalStateMatrix";
+
+const formalReturn = (state: string) =>
+  requireXinmaiFormalStatePresentation("RETURN", state);
+const formalChoice = (state: string) =>
+  requireXinmaiFormalStatePresentation("CHOICE", state);
 
 export const XINMAI_LIVED_RESPONSE_CHECKPOINT_PRESENTATION_POLICY:
   | "ENABLED"
@@ -42,9 +48,8 @@ const safeWithheld = (
   decision(input, {
     state: "SAFE_WITHHELD",
     baselineKind: null,
-    headline: "这一步暂时还不能被完整确认。",
-    support:
-      "已经保存的现实回应和生命资产仍被保留。不会用旧记录或页面状态代替它。",
+    headline: formalReturn("NON_RETRYABLE").currentFact,
+    support: formalReturn("NON_RETRYABLE").exitConsequence,
     primaryAction: null,
     navigationConsequence: "NONE",
     announcement: null,
@@ -164,7 +169,7 @@ export function resolveXinmaiLivedResponseCheckpointPresentation(
     return decision(input, {
       state: "OWNERSHIP_PRESENTED",
       baselineKind: null,
-      headline: "你真实走出的这一步，留下了痕迹。",
+      headline: formalReturn("FORMED").currentFact,
       support: recovered
         ? "这道可回看的痕迹仍被保留。"
         : "这道痕迹来自你刚刚确认的现实结果。",
@@ -187,9 +192,8 @@ export function resolveXinmaiLivedResponseCheckpointPresentation(
     return decision(input, {
       state: "FORMATION_IN_PROGRESS",
       baselineKind: null,
-      headline: "真实回应已经保存。",
-      support:
-        "这道痕迹正在保存。完成以前不会提前显示。",
+      headline: formalReturn("FORMATION_PENDING").currentFact,
+      support: formalReturn("FORMATION_PENDING").exitConsequence,
       primaryAction: null,
       navigationConsequence: "NONE",
       announcement: "现实结果已确认，正在保存为可回看的痕迹。",
@@ -201,8 +205,8 @@ export function resolveXinmaiLivedResponseCheckpointPresentation(
     return decision(input, {
       state: "RETURN_ACCEPTED_AWAITING_RESPONSE",
       baselineKind: null,
-      headline: "你已经回到这一步。",
-      support: "现实回应正在准备好。完成以前，不会提前形成痕迹。",
+      headline: formalReturn("PENDING").currentFact,
+      support: formalReturn("PENDING").exitConsequence,
       primaryAction: null,
       navigationConsequence: "REVEAL_RESPONSE",
       announcement: "你已经回到这一步，现实回应正在准备好。",
@@ -228,12 +232,12 @@ export function resolveXinmaiLivedResponseCheckpointPresentation(
   }
 
   if (admission.state === "RESUME_COMMITTED") {
+    const committed = formalChoice("COMMITTED");
     return decision(input, {
       state: "BASELINE_LIFE_WORLD",
       baselineKind: "CHOICE_AWAITS_DEPARTURE",
-      headline: "这一步已经由你选定。",
-      support:
-        "现在可以把它带回生活。真实发生什么，仍由你在现实里决定。",
+      headline: committed.currentFact,
+      support: committed.exitConsequence,
       primaryAction: "CONFIRM_DEPARTURE",
       navigationConsequence: "NONE",
       announcement: null,
@@ -242,11 +246,12 @@ export function resolveXinmaiLivedResponseCheckpointPresentation(
   }
 
   if (admission.state === "DORMANT_DEPARTURE") {
+    const departed = formalChoice("DEPARTED");
     return decision(input, {
       state: "BASELINE_LIFE_WORLD",
       baselineKind: "DEPARTURE_AWAITS_RETURN",
-      headline: "这一步正在等你回来确认。",
-      support: "只有你明确回来，我们才会询问现实里真实发生了什么。",
+      headline: departed.currentFact,
+      support: departed.exitConsequence,
       primaryAction: "CONFIRM_RETURN",
       navigationConsequence: "NONE",
       announcement: null,
@@ -259,7 +264,7 @@ export function resolveXinmaiLivedResponseCheckpointPresentation(
     return decision(input, {
       state: "READY_TO_CONFIRM_REAL_RESPONSE",
       baselineKind: null,
-      headline: "现在，只确认现实里真实发生了什么。",
+      headline: formalReturn("SELECTION").purpose,
       support:
         "尝试过、完成了原来的回应，或换了一种回应，都可以成为这次真实记录。还没尝试或不想记录，也不会受到惩罚。",
       primaryAction: "CONFIRM_REAL_RESPONSE",
