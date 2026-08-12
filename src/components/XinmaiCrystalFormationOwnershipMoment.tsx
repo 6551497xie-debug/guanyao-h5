@@ -99,7 +99,7 @@ export function XinmaiCrystalFormationOwnershipMoment({
         <button
           className="xinmai-crystal-ownership__crystal-touch"
           type="button"
-          aria-label="查看这道来自现实回应的生命痕迹"
+          aria-label="查看本轮现实实验的模型更新"
           aria-pressed={ownershipPresented}
           onClick={onOwnershipPresented}
         >
@@ -149,22 +149,19 @@ export function XinmaiCrystalFormationOwnershipMoment({
 
       <div className="xinmai-crystal-ownership__meaning">
         <small className="xinmai-crystal-ownership__eyebrow">
-          {recovered ? "这道生命痕迹仍被保留" : "来自你真实走出的这一步"}
+          {recovered ? "这一轮现实实验仍被保留" : "现实已经给出反馈"}
         </small>
         <blockquote>{visualFacts.actionSummary}</blockquote>
         <h2 id="xinmai-crystal-ownership-headline">{semantic.purpose}</h2>
         <p>{semantic.explanation}</p>
-        <small className="xinmai-crystal-ownership__crystal-line">
-          {visualFacts.crystalLine}
-        </small>
         {valueClosure}
       </div>
 
       <div className="xinmai-crystal-ownership__actions">
         <small>
           {ownershipPresented
-            ? "你已经查看了这道痕迹。"
-            : "可以查看这道痕迹，也可以直接开始下一段现实。"}
+            ? "本轮更新已经展开。"
+            : "查看本轮更新，或直接开始下一次实验。"}
         </small>
         <p className="xinmai-crystal-ownership__exit-explanation">
           {semantic.consequence} {formalOwnership.exitConsequence}

@@ -50,8 +50,8 @@ try {
     (marker) => assertExcludes("orchestrator owns no fixture, engine, renderer, or clock", source.orchestrator, marker),
   );
 
-  assertIncludes("Moon keeps frozen hold", source.timing, "MOON_ORIGIN: 2200");
-  assertIncludes("flow stages keep frozen hold", source.timing, "STAR_RIVER: 1800");
+  assertIncludes("Moon keeps reviewed hold", source.timing, "MOON_ORIGIN: 900");
+  assertIncludes("flow stages keep reviewed hold", source.timing, "STAR_RIVER: 700");
   assertIncludes("prototype consumes shared frozen timing", source.prototypeHarness, "GENESIS_FROZEN_STAGE_HOLD_MS");
   assertExcludes("prototype no longer owns Moon timing", source.prototypeHarness, "? 2200 : 1800");
 
@@ -62,10 +62,10 @@ try {
     'trigger: "TIME_DELIVERY"',
     "window.setTimeout",
     "window.clearTimeout",
-    "把时间交给星河",
+    "Launch has already accepted all four birth-time coordinates",
     "visualCalibrationBundle={visualCalibrationResult.bundle}",
   ].forEach((marker) => assertIncludes("production page timeline connection", source.page, marker));
-  ["fixtureGenesisVisualConsumerSource", "genesisPreviewIntegration", "createIsolatedWebGLRendererPrototype", "resolveStarbeastFromBirthDate", "runMotherCodeLandingEngine", "useNavigate", "localStorage", "sessionStorage"].forEach(
+  ["fixtureGenesisVisualConsumerSource", "genesisPreviewIntegration", "createIsolatedWebGLRendererPrototype", "resolveStarbeastFromBirthDate", "runMotherCodeLandingEngine", "localStorage", "sessionStorage"].forEach(
     (marker) => assertExcludes("production page remains source and route isolated", source.page, marker),
   );
   assertIncludes("formal route target is registered", source.routes, 'genesis: "/genesis"');
@@ -108,8 +108,8 @@ try {
     current = advanced.session;
   }
   assertEqual("frozen sequence", observed.map(([stage]) => stage).join(","), "MOON_ORIGIN,STAR_RIVER,TIME_RESONANCE,SYMBOL_REVEAL,HEXAGRAM_IMPRINT,LIFE_FORCE,STAR_BEAST_REVEAL,COMPLETION");
-  assertEqual("Moon timing unchanged", observed[0][2], 2200);
-  assertEqual("Star timing unchanged", observed[1][2], 1800);
+  assertEqual("Moon timing reviewed", observed[0][2], 900);
+  assertEqual("Star timing reviewed", observed[1][2], 700);
   assertEqual("Time waits for delivery", observed[2][1], "WAIT_FOR_TIME_DELIVERY");
   assertEqual("Time has no timer", observed[2][2], null);
   assertEqual("Completion holds recognition", observed[7][1], "RECOGNITION_HOLD");

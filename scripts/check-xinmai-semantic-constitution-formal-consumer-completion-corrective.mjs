@@ -59,7 +59,7 @@ assert(
 );
 
 const choreography = read("src/services/xinmaiSixDimensionSemanticChoreographyResolver.ts");
-for (const label of ["身体", "情绪", "想法", "行动冲动", "记忆联想", "需要与方向"]) {
+for (const label of ["身体", "感受", "判断", "行动倾向", "熟悉感", "保护目标"]) {
   assert(choreography.includes(`label: "${label}"`), `missing dimension label: ${label}`);
 }
 for (const action of [
@@ -119,9 +119,10 @@ for (const action of ["ADVANCE", "WITHDRAW", "PAUSE"]) {
       goal,
       "先停一口呼吸，再决定是否回应",
     );
-    assert(sentence.includes("下一次可以先尝试【先停一口呼吸，再决定是否回应】"), `${action}/${goal} loses the selected micro-action`);
+    assert(sentence.includes("先停一口呼吸，再决定是否回应"), `${action}/${goal} loses the selected micro-action`);
+    assert(sentence.includes("小实验"), `${action}/${goal} does not frame the action as a reality experiment`);
     assert(!sentence.includes("人格结论") && !sentence.includes("被看见，但"), `${action}/${goal} reuses explanatory summary as a phrase`);
-    assert(goal !== "UNCERTAIN" || sentence.includes("还不完全确定"), `${action}/${goal} invents a certain protected need`);
+    assert(goal !== "UNCERTAIN" || sentence.includes("还不确定"), `${action}/${goal} invents a certain protected need`);
   }
 }
 

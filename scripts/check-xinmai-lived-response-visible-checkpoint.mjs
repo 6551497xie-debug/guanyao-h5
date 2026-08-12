@@ -73,8 +73,8 @@ for (const marker of [
   "formationRequestEvidence",
   "returnAcceptanceEvidence",
   "READY_TO_CONFIRM_REAL_RESPONSE",
-  "不留下成长记录；这一步仍会等你。",
-  "不记录、不形成，也没有惩罚。",
+  "这次先结束；以后想试，再开始一次新的现实实验。",
+  "这次不保存反馈；已经完成的旅程不会改变。",
 ]) {
   assert(surface.includes(marker), `checkpoint consumer missing ${marker}`);
 }

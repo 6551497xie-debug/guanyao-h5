@@ -11,16 +11,16 @@ const FALLBACK_TRIGGER = "这一轮选中的现实";
 
 const ACTION_PHRASES: Readonly<Record<XinmaiActionSemanticResponseId, string>> =
   Object.freeze({
-    ADVANCE: "你最先想推进",
-    WITHDRAW: "你最先想退开",
-    PAUSE: "你最先想停一下再决定",
+    ADVANCE: "自动反应准备立刻推进",
+    WITHDRAW: "自动反应准备退开",
+    PAUSE: "自动反应准备先停住",
   });
 
 const GOAL_PHRASES: Readonly<Record<XinmaiGoalSemanticResponseId, string>> =
   Object.freeze({
-    NEED: "有一个重要需要不想被忽略",
-    VALUE: "有一项在意的价值不想失去",
-    UNCERTAIN: "想保护什么还不完全确定",
+    NEED: "它在保护一个现实需要",
+    VALUE: "它在保护一种重要价值",
+    UNCERTAIN: "它想保护什么还不确定",
   });
 
 export function resolveXinmaiMicroActionCausalExplanation(
@@ -31,10 +31,10 @@ export function resolveXinmaiMicroActionCausalExplanation(
   const action = ACTION_PHRASES[actionSemanticResponseId];
   const goal = GOAL_PHRASES[goalSemanticResponseId];
   const nextAction = microAction.trim();
-  if (!nextAction) return `${action}，同时${goal}。下一次的小行动还没有明确。`;
+  if (!nextAction) return `${action}；${goal}。现实实验还没有选定。`;
   return goalSemanticResponseId === "UNCERTAIN"
-    ? `${action}，但${goal}。下一次可以先尝试【${nextAction}】。`
-    : `${action}，同时${goal}。下一次可以先尝试【${nextAction}】。`;
+    ? `${action}，但${goal}。这次用一个小实验收集反馈：${nextAction}`
+    : `${action}，因为${goal}。这次用一个小实验检验它：${nextAction}`;
 }
 
 const resolveTrigger = (

@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { SixSpaceId } from "../runtime/guanyaoRuntimeTypes";
 import { resolveXinmaiSixDimensionSemanticChoreography } from "../services/xinmaiSixDimensionSemanticChoreographyResolver";
-import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
 import { requireXinmaiFormalStatePresentation } from "../services/xinmaiSemanticConstitutionFormalStateMatrix";
 import type { XinmaiSixDimensionSemanticResponse } from "../types/xinmaiSixDimensionSemanticChoreography";
 
@@ -15,8 +14,8 @@ type XinmaiLifeReflectionGuideProps = Readonly<{
   dimensionStep?: number;
   phase?: ReflectionPhase;
   observation?: string;
-  onConfirm?: () => void;
-  onSelfName?: () => void;
+  onConfirm?: () => boolean | void | Promise<boolean | void>;
+  onSelfName?: () => boolean | void | Promise<boolean | void>;
   onPause?: () => void;
   onResume?: () => void;
   finalActionState?: "PREPARING" | "READY" | "SAVING" | "RETRYABLE" | "SAFE_WITHHELD";
@@ -42,18 +41,19 @@ export function XinmaiLifeReflectionGuide({
     () => resolveXinmaiSixDimensionSemanticChoreography(dimensionId),
     [dimensionId],
   );
-  const semantic = resolveXinmaiJourneySemanticPresentation(
-    dimensionId.toUpperCase() as "BODY" | "EMOTION" | "THOUGHT" | "ACTION" | "MEMORY" | "GOAL",
-  );
   const [selectedResponse, setSelectedResponse] =
     useState<XinmaiSixDimensionSemanticResponse | null>(null);
   const [continuePending, setContinuePending] = useState(false);
   const [savedAnnouncement, setSavedAnnouncement] = useState("");
+  const [relationReady, setRelationReady] = useState(false);
+  const committedResponseRef = useRef<string | null>(null);
 
   useEffect(() => {
     setSelectedResponse(null);
     setContinuePending(false);
     setSavedAnnouncement("");
+    setRelationReady(false);
+    committedResponseRef.current = null;
   }, [dimensionId, dimensionStep]);
 
   if (surface === "REALITY") {
@@ -64,7 +64,7 @@ export function XinmaiLifeReflectionGuide({
     );
   }
 
-  const relationEstablished = phase === "CONFIRMED" || phase === "SELF_NAMED";
+  const relationEstablished = relationReady || phase === "CONFIRMED" || phase === "SELF_NAMED";
   const formalSixState = finalActionState === "PREPARING"
     ? "PREPARING"
     : finalActionState === "SAVING"
@@ -74,32 +74,65 @@ export function XinmaiLifeReflectionGuide({
         : finalActionState === "SAFE_WITHHELD"
           ? "NON_RETRYABLE"
           : "OPEN";
+  const finalDisabled = selectedResponse === null || continuePending ||
+    finalActionState === "PREPARING" || finalActionState === "SAVING" ||
+    finalActionState === "SAFE_WITHHELD";
   const formalSixPresentation = requireXinmaiFormalStatePresentation(
     "SIX_DIMENSION",
     formalSixState,
   );
-  const savedFormalPresentation = requireXinmaiFormalStatePresentation(
-    "SIX_DIMENSION",
-    "SAVED",
-  );
-  const finalDisabled =
-    selectedResponse === null ||
-    continuePending || finalActionState === "PREPARING" ||
-    finalActionState === "SAVING" || finalActionState === "SAFE_WITHHELD";
-  const readinessCopy =
-    finalActionState === "PREPARING"
-      ? `这一维观察正在准备，尚未保存。${formalSixPresentation.exitConsequence}`
-      : finalActionState === "SAFE_WITHHELD"
-        ? `已经保存的观察仍会保留。${formalSixPresentation.exitConsequence}`
-        : `确认保存后才会成为这一维观察。${formalSixPresentation.currentFact} ${formalSixPresentation.exitConsequence}`;
 
-  function chooseResponse(response: XinmaiSixDimensionSemanticResponse) {
+  async function saveResponse(response: XinmaiSixDimensionSemanticResponse) {
+    if (
+      committedResponseRef.current === response.id ||
+      continuePending ||
+      finalActionState === "PREPARING" ||
+      finalActionState === "SAVING" ||
+      finalActionState === "SAFE_WITHHELD"
+    ) return;
+    setContinuePending(true);
+    try {
+      const saved = await onContinue?.(response);
+      if (saved) {
+        committedResponseRef.current = response.id;
+        setSavedAnnouncement(`${grammar.label}已加入反应路径。`);
+      }
+    } finally {
+      setContinuePending(false);
+    }
+  }
+
+  async function chooseResponse(response: XinmaiSixDimensionSemanticResponse) {
     setSelectedResponse(response);
     setSavedAnnouncement("");
-    if (response.mode === "PAUSE") onPause?.();
-    else if (response.mode === "KEEP_OWN_MEANING") onSelfName?.();
-    else onConfirm?.();
+    if (response.mode === "PAUSE") {
+      onPause?.();
+      return;
+    }
+    const relationResult = response.mode === "KEEP_OWN_MEANING"
+      ? await onSelfName?.()
+      : await onConfirm?.();
+    if (relationResult === false) return;
+    setRelationReady(true);
+    if (finalActionState === "READY" || finalActionState === "RETRYABLE") {
+      await saveResponse(response);
+    }
   }
+
+  useEffect(() => {
+    if (
+      selectedResponse !== null &&
+      relationEstablished &&
+      (finalActionState === "READY" || finalActionState === "RETRYABLE") &&
+      committedResponseRef.current !== selectedResponse.id &&
+      !continuePending
+    ) {
+      void saveResponse(selectedResponse);
+    }
+  }, [continuePending, finalActionState, relationEstablished, selectedResponse]);
+
+  const actNumber = dimensionStep <= 2 ? 1 : dimensionStep <= 4 ? 2 : 3;
+  const actLabel = actNumber === 1 ? "信号" : actNumber === 2 ? "预测" : "模式与保护目标";
 
   return (
     <aside
@@ -109,16 +142,15 @@ export function XinmaiLifeReflectionGuide({
       data-xinmai-spatial-mode={grammar.spatialMode}
       data-xinmai-visual-semantic-policy={grammar.presentationMode}
       data-xinmai-authority-boundary="FINAL_ACKNOWLEDGEMENT_ONLY"
-      data-formal-journey-state={`SIX_DIMENSION/${formalSixState}`}
+      data-formal-journey-state={`SIX_DIMENSION/${formalSixPresentation.state}`}
       aria-labelledby={`xinmai-six-question-${dimensionId}`}
     >
       <header className="xinmai-six-dimension-semantic__header">
-        <span>{dimensionStep}/6 · {grammar.label}</span>
-        <b>{selectedResponse ? "尚未保存" : "等待选择"}</b>
+        <span>第 {actNumber} 幕 · {actLabel}</span>
+        <b>{dimensionStep}/6</b>
       </header>
-      <p className="xinmai-six-dimension-semantic__purpose">{semantic.explanation}</p>
       <div className="xinmai-six-dimension-semantic__scene-cue" aria-hidden="true"><i /></div>
-      <p className="xinmai-six-dimension-semantic__source">{observation}</p>
+      {dimensionStep === 1 ? <p className="xinmai-six-dimension-semantic__source">{observation}</p> : null}
       <h2 id={`xinmai-six-question-${dimensionId}`}>{grammar.question}</h2>
 
       {phase === "PAUSED" ? (
@@ -126,10 +158,17 @@ export function XinmaiLifeReflectionGuide({
           <p>{selectedResponse?.mirror ?? "这次观察停在这里，尚未保存。"}</p>
           <button type="button" onClick={onResume}>回到这个问题</button>
         </div>
-      ) : !relationEstablished ? (
+      ) : selectedResponse === null ? (
         <div className="xinmai-six-dimension-semantic__responses" role="group" aria-label={`${grammar.label}观察选项`}>
           {grammar.responses.map((response) => (
-            <button key={response.id} type="button" onClick={() => chooseResponse(response)}>
+            <button
+              key={response.id}
+              type="button"
+              onClick={(event) => {
+                event.currentTarget.blur();
+                void chooseResponse(response);
+              }}
+            >
               {response.label}
             </button>
           ))}
@@ -137,34 +176,24 @@ export function XinmaiLifeReflectionGuide({
       ) : (
         <div className="xinmai-six-dimension-semantic__acknowledgement">
           <p className="xinmai-six-dimension-semantic__mirror" role="status" aria-live="polite">
-            {selectedResponse?.mirror ?? "你的理解已被保留；这一维仍未保存。"}
+            {selectedResponse.mirror}
           </p>
-          <p className="xinmai-six-dimension-semantic__readiness" role="status" aria-live="polite">{readinessCopy}</p>
-          <button
-            className="xinmai-six-dimension-semantic__primary"
-            type="button"
-            disabled={finalDisabled}
-            aria-busy={continuePending || finalActionState === "PREPARING" || finalActionState === "SAVING" ? "true" : undefined}
-            onClick={async () => {
-              if (finalDisabled) return;
-              setContinuePending(true);
-              try {
-                if (selectedResponse === null) return;
-                const saved = await onContinue?.(selectedResponse);
-                if (saved) setSavedAnnouncement(`${grammar.label}观察已保存。${savedFormalPresentation.nextAction}。`);
-              } finally { setContinuePending(false); }
-            }}
-          >
-            {continuePending || finalActionState === "SAVING" ? "正在保存" :
-             finalActionState === "PREPARING" ? "这一维观察正在准备" :
-             finalActionState === "RETRYABLE" ? `重新${grammar.acknowledgementLabel}` :
-             finalActionState === "SAFE_WITHHELD" ? "这一维暂时无法保存" : grammar.acknowledgementLabel}
-          </button>
-          {finalActionState === "SAFE_WITHHELD" ? <button type="button" onClick={onPause}>先停在这里</button> : null}
+          {continuePending || finalActionState === "PREPARING" || finalActionState === "SAVING" ? (
+            <p className="xinmai-six-dimension-semantic__readiness" role="status" aria-live="polite">
+              {finalActionState === "PREPARING" ? "正在准备保存；你的选择还没有丢失。" : "正在加入反应路径…"}
+            </p>
+          ) : null}
+          {finalActionState === "RETRYABLE" ? <button className="xinmai-six-dimension-semantic__primary" type="button" disabled={finalDisabled} onClick={() => void saveResponse(selectedResponse)}>重新加入路径</button> : null}
+          {finalActionState === "SAFE_WITHHELD" ? (
+            <div role="status">
+              <p className="xinmai-six-dimension-semantic__readiness">这次选择暂时不能保存；已经完成的步骤不受影响。</p>
+              <button type="button" onClick={onPause}>先停在这里</button>
+            </div>
+          ) : null}
           <span className="xinmai-six-dimension-semantic__saved" aria-live="polite">{savedAnnouncement}</span>
         </div>
       )}
-      <p className="xinmai-six-dimension-semantic__boundary">这里只保存你明确确认的观察；下一步仍由你决定。</p>
+      {selectedResponse === null ? <p className="xinmai-six-dimension-semantic__boundary">选最接近的一项，路径会自动继续。</p> : null}
     </aside>
   );
 }

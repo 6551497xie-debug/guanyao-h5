@@ -424,25 +424,7 @@ function NodeProgressionPanel({
     response: XinmaiSixDimensionSemanticResponse,
   ) => Promise<boolean>;
 }) {
-  const [firstPauseInvitationVisible, setFirstPauseInvitationVisible] = useState(false);
-  const hasShownFirstPauseInvitationRef = useRef(false);
   const livingSentence = activeNode.dimensionInsight ?? activeNode.text.replace(/\s*\n\s*/g, "");
-
-  useEffect(() => {
-    if (!visible) {
-      setFirstPauseInvitationVisible(false);
-      return undefined;
-    }
-    if (hasShownFirstPauseInvitationRef.current) return undefined;
-
-    hasShownFirstPauseInvitationRef.current = true;
-    setFirstPauseInvitationVisible(true);
-    const timer = window.setTimeout(() => {
-      setFirstPauseInvitationVisible(false);
-    }, 1800);
-
-    return () => window.clearTimeout(timer);
-  }, [visible]);
 
   return (
     <div
@@ -468,9 +450,7 @@ function NodeProgressionPanel({
           ? "RELATION_ESTABLISHED"
           : "WAITING_FOR_USER_RELATION"
       }
-      data-dynamics-first-pause-invitation={
-        firstPauseInvitationVisible ? "VISIBLE_ONCE" : "DELEGATED_TO_GENESIS_BREATH"
-      }
+      data-dynamics-first-pause-invitation="REMOVED_FROM_REQUIRED_FLOW"
       className="xinmai-six-dimension-panel"
       style={{
         position: "absolute",
@@ -487,20 +467,6 @@ function NodeProgressionPanel({
         animation: "gy-copy-fade-in 520ms ease both",
       }}
     >
-      <span
-        role="status"
-        aria-live="polite"
-        data-dynamics-current-dimension-label={currentDimensionLabel}
-        style={{
-          display: "block",
-          marginBottom: 8,
-          color: `rgba(${toneColor},0.72)`,
-          fontSize: 11,
-          letterSpacing: "0.08em",
-        }}
-      >
-        当前观察 · {currentDimensionLabel}
-      </span>
       <XinmaiLifeReflectionGuide
         surface="REFLECTION"
         dimensionId={currentDimensionId}
@@ -514,24 +480,6 @@ function NodeProgressionPanel({
         onResume={onResume}
         onContinue={onContinue}
       />
-      <span
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          top: "calc(100% + 8px)",
-          left: "50%",
-          transform: `translate(-50%, ${firstPauseInvitationVisible ? 0 : 4}px)`,
-          width: "100%",
-          color: `rgba(${toneColor},0.56)`,
-          fontSize: 9.5,
-          lineHeight: 1.5,
-          letterSpacing: "0.06em",
-          opacity: firstPauseInvitationVisible ? 1 : 0,
-          transition: "opacity 560ms ease, transform 560ms ease",
-        }}
-      >
-        准备好后，开始这一维观察
-      </span>
     </div>
   );
 }
@@ -1267,27 +1215,29 @@ function CosmicBotanicsField({
   }
 
   async function confirmLifeState() {
-    if (relationMutationPendingRef.current) return;
+    if (relationMutationPendingRef.current) return false;
     relationMutationPendingRef.current = true;
     const confirmed = await onInnerViewRelationEstablished(
       "CONFIRMED",
     );
     relationMutationPendingRef.current = false;
-    if (!confirmed) return;
+    if (!confirmed) return false;
     setInnerViewRelationEstablished(true);
     setInnerViewPhase("CONFIRMED");
+    return true;
   }
 
   async function keepOwnUnderstanding() {
-    if (relationMutationPendingRef.current) return;
+    if (relationMutationPendingRef.current) return false;
     relationMutationPendingRef.current = true;
     const confirmed = await onInnerViewRelationEstablished(
       "SELF_NAMED",
     );
     relationMutationPendingRef.current = false;
-    if (!confirmed) return;
+    if (!confirmed) return false;
     setInnerViewRelationEstablished(true);
     setInnerViewPhase("SELF_NAMED");
+    return true;
   }
 
   function pauseInnerView() {
@@ -1493,81 +1443,16 @@ function SingleModelRevisionActionFocus({
   innerViewRelation: "AWAITING" | "CONFIRMED" | "SELF_NAMED";
 }) {
   const semantic = resolveXinmaiJourneySemanticPresentation("CHOICE");
-  const [responseGapPhase, setResponseGapPhase] = useState<
-    "MERIDIAN_SETTLING" | "LIFE_PAUSING" | "RESPONSE_GAP_OPEN"
-  >("MERIDIAN_SETTLING");
-  const [breathHoldState, setBreathHoldState] = useState<
-    "RESTING" | "HOLDING" | "RELEASED_EARLY"
-  >("RESTING");
   const [responseMapReady, setResponseMapReady] = useState(false);
-  const breathHoldTimerRef = useRef<number | null>(null);
-  const breathHoldResetTimerRef = useRef<number | null>(null);
-  const breathHoldCompletedRef = useRef(false);
-  const confirmButtonRef = useRef<HTMLButtonElement | null>(null);
-  const responseGapReady = responseGapPhase === "RESPONSE_GAP_OPEN";
+  const responseGapPhase = "RESPONSE_GAP_OPEN" as const;
+  const responseGapReady = true;
   const coreAnchorTop = visualSource
     ? `${LIFE_UNIVERSE_CORE_IDENTITY.anchorY * 100}%`
     : "31%";
 
-  useEffect(() => {
-    const pauseTimer = window.setTimeout(() => {
-      setResponseGapPhase("LIFE_PAUSING");
-    }, 1_300);
-    const responseGapTimer = window.setTimeout(() => {
-      setResponseGapPhase("RESPONSE_GAP_OPEN");
-    }, 2800);
-
-    return () => {
-      window.clearTimeout(pauseTimer);
-      window.clearTimeout(responseGapTimer);
-      if (breathHoldTimerRef.current !== null) {
-        window.clearTimeout(breathHoldTimerRef.current);
-      }
-      if (breathHoldResetTimerRef.current !== null) {
-        window.clearTimeout(breathHoldResetTimerRef.current);
-      }
-    };
-  }, []);
-
-  function beginBreathHold() {
-    if (
-      !responseGapReady || !responseMapReady ||
-      innerViewRelation === "AWAITING" ||
-      breathHoldState === "HOLDING"
-    ) {
-      return;
-    }
-    if (breathHoldResetTimerRef.current !== null) {
-      window.clearTimeout(breathHoldResetTimerRef.current);
-      breathHoldResetTimerRef.current = null;
-    }
-    breathHoldCompletedRef.current = false;
-    setBreathHoldState("HOLDING");
-    breathHoldTimerRef.current = window.setTimeout(() => {
-      breathHoldCompletedRef.current = true;
-      breathHoldTimerRef.current = null;
-      confirmButtonRef.current?.blur();
-      onConfirm();
-    }, 1_800);
-  }
-
-  function releaseBreathHold() {
-    if (breathHoldCompletedRef.current) return;
-    if (breathHoldTimerRef.current !== null) {
-      window.clearTimeout(breathHoldTimerRef.current);
-      breathHoldTimerRef.current = null;
-    }
-    if (breathHoldState !== "HOLDING") return;
-    setBreathHoldState("RELEASED_EARLY");
-    breathHoldResetTimerRef.current = window.setTimeout(() => {
-      setBreathHoldState("RESTING");
-      breathHoldResetTimerRef.current = null;
-    }, 720);
-  }
-
   return (
     <section
-      aria-label="旧回应出现后，先停一下再选择"
+      aria-label="选择一个现实实验"
       className="gy-choice-response-gap"
       data-model-revision-action="pending"
       data-action-route-reference={
@@ -1583,8 +1468,8 @@ function SingleModelRevisionActionFocus({
       }
       data-choice-transition-phase={responseGapPhase}
       data-choice-transition-source="THIRD_APPROACH_SAME_BODY_MERIDIAN"
-      data-choice-breath-hold={breathHoldState}
-      data-choice-breath-duration-ms="1800"
+      data-choice-breath-hold="REMOVED_FROM_REQUIRED_FLOW"
+      data-choice-breath-duration-ms="0"
       data-choice-embodiment="USER_BODY_STAYS_WITH_LIFE_BODY"
       data-choice-click-confirm="AVAILABLE"
       data-choice-answer-model="NONE"
@@ -1628,13 +1513,7 @@ function SingleModelRevisionActionFocus({
           visualSource={visualSource}
           pressureIntensity={0.32}
           interactionEnabled={false}
-          innerViewRevealDepth={
-            responseGapPhase === "MERIDIAN_SETTLING"
-              ? 3
-              : responseGapPhase === "LIFE_PAUSING"
-                ? 2
-                : 1
-          }
+          innerViewRevealDepth={1}
         />
       </div>
 
@@ -1653,93 +1532,6 @@ function SingleModelRevisionActionFocus({
           filter: "blur(8px)",
         }}
       />
-
-      <button
-        ref={confirmButtonRef}
-        type="button"
-        aria-label="可选：体验一次短暂停顿"
-        className="gy-choice-response-gap__confirm"
-        data-revision-claim="LIFE_CORE_TOUCH"
-        data-life-core-anchor="LIFE_UNIVERSE_CORE_IDENTITY"
-        data-choice-participation="WILLING_TO_PAUSE"
-        onPointerDown={(event) => {
-          event.currentTarget.setPointerCapture(event.pointerId);
-          beginBreathHold();
-        }}
-        onPointerUp={releaseBreathHold}
-        onPointerCancel={releaseBreathHold}
-        onKeyDown={(event) => {
-          if (event.key !== "Enter" && event.key !== " ") return;
-          event.preventDefault();
-          if (!event.repeat) beginBreathHold();
-        }}
-        onKeyUp={(event) => {
-          if (event.key !== "Enter" && event.key !== " ") return;
-          event.preventDefault();
-          releaseBreathHold();
-        }}
-        disabled={
-          !responseGapReady || !responseMapReady ||
-          innerViewRelation === "AWAITING"
-        }
-        style={{
-          appearance: "none",
-          position: "absolute",
-          left: `${LIFE_UNIVERSE_CORE_IDENTITY.anchorX * 100}%`,
-          top: coreAnchorTop,
-          zIndex: 2,
-          width: "min(64vw, 236px)",
-          height: "min(28vh, 196px)",
-          transform: "translate(-50%, -50%)",
-          border: 0,
-          borderRadius: "48%",
-          background: "transparent",
-          padding: 0,
-          touchAction: "none",
-          cursor:
-            responseGapReady && innerViewRelation !== "AWAITING"
-              ? "pointer"
-              : "default",
-        }}
-      >
-        <span
-          aria-hidden="true"
-          className="gy-choice-response-gap__invitation"
-          style={{
-            position: "absolute",
-            left: "50%",
-            top: "50%",
-            width: 54,
-            height: 32,
-            transform: "translate(-50%, -50%)",
-            background:
-              "radial-gradient(ellipse, rgba(255,239,205,0.1), transparent 72%)",
-            filter: "blur(3px)",
-            pointerEvents: "none",
-          }}
-        />
-        <span
-          aria-hidden="true"
-          className="gy-choice-breath-hold__ring"
-        >
-          <svg viewBox="0 0 44 44">
-            <circle
-              className="gy-choice-breath-hold__track"
-              cx="22"
-              cy="22"
-              r="19"
-              pathLength="1"
-            />
-            <circle
-              className="gy-choice-breath-hold__progress"
-              cx="22"
-              cy="22"
-              r="19"
-              pathLength="1"
-            />
-          </svg>
-        </span>
-      </button>
 
       <div
         style={{
@@ -1769,37 +1561,8 @@ function SingleModelRevisionActionFocus({
           compact
           onReadyChange={setResponseMapReady}
         />
-        <span
-          data-choice-inner-view-carry="RECOGNIZED_RELATION_REMAINS_PRESENT"
-          style={{
-            maxWidth: 286,
-            color: "rgba(185,203,236,0.38)",
-            fontSize: 9,
-            lineHeight: 1.55,
-            letterSpacing: "0.06em",
-            textWrap: "balance",
-          }}
-        >
-          {innerViewRelation === "SELF_NAMED"
-            ? "你保留的理解仍在；它不是系统替你作出的结论。"
-            : semantic.explanation}
-        </span>
-        <span
-          data-choice-protective-understanding="CANDIDATE_NOT_CONCLUSION"
-          style={{
-            maxWidth: 290,
-            color: "rgba(220,205,169,0.56)",
-            fontSize: 10.5,
-            lineHeight: 1.58,
-            textWrap: "balance",
-          }}
-        >
-          {innerViewRelation === "SELF_NAMED"
-            ? "它不需要被系统定义，也可能曾经保护过你。"
-            : "这种回应，也许曾经帮助你保护自己。"}
-        </span>
         <strong
-          data-choice-awareness-copy="PAUSE"
+          data-choice-awareness-copy="REALITY_EXPERIMENT"
           style={{
             maxWidth: 300,
             color: "rgba(245,240,226,0.84)",
@@ -1809,34 +1572,14 @@ function SingleModelRevisionActionFocus({
             textWrap: "balance",
           }}
         >
-          {responseGapReady
-            ? actionRoute.action.visibleAction
-            : responseGapPhase === "LIFE_PAUSING"
-              ? "熟悉的回应正在启动，而生命停了一下。"
-              : "刚才确认的六项观察仍被保留。"}
+          {actionRoute.action.visibleAction}
         </strong>
-        <span
-          style={{
-            color: "rgba(199,169,107,0.5)",
-            fontSize: 9.5,
-            letterSpacing: "0.08em",
-            opacity:
-              responseGapReady && innerViewRelation !== "AWAITING" ? 1 : 0,
-            transition: "opacity 680ms ease",
-          }}
-        >
-          {breathHoldState === "HOLDING"
-            ? "停顿体验进行中；也可以直接确认下方的小行动"
-            : breathHoldState === "RELEASED_EARLY"
-              ? "停顿体验已结束；仍可直接确认下方的小行动"
-              : "停顿体验完全可选；下方按钮可直接完成确认"}
-        </span>
         <button
           type="button"
           className="xinmai-response-map__primary-action"
           onClick={onConfirm}
           disabled={!responseGapReady || !responseMapReady || innerViewRelation === "AWAITING"}
-          aria-label={`确认把这一步带回生活：${actionRoute.action.visibleAction}`}
+          aria-label={`选择这个现实实验：${actionRoute.action.visibleAction}`}
         >
           {semantic.primaryAction}
         </button>

@@ -17,16 +17,18 @@ const pendingBranch = surface.slice(pendingStart, pendingEnd);
 
 for (const copy of [
   "你准备带回生活的这一步",
-  "保留这一步，不留下成长记录；等你真正试过，再从返回入口继续。",
+  "这次先结束；以后想试，再开始一次新的现实实验。",
 ]) {
   assert(pendingBranch.includes(copy), `missing plain-language contract: ${copy}`);
 }
 for (const copy of [
-  "还没有在现实里试过，也没关系。",
+  "这次还没试",
+  "实验会留在这里，真正发生后再回来。",
   "先回到生活",
+  "换一个实验",
+  "这次不记录",
+  "结束本轮",
   "返回重新选择",
-  "不想留下这次记录，也可以。",
-  "确认不记录，返回旅程入口",
 ]) {
   assert(semantic.includes(copy), `semantic owner missing plain-language contract: ${copy}`);
 }

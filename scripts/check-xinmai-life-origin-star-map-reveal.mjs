@@ -76,7 +76,7 @@ const assertions = [
       !canvasHostSource.includes("onLifeOriginDiscoveryRequest") &&
       canvasHostSource.includes("data-life-origin-discovery-phase") &&
       experiencePageSource.includes(
-        "const LIFE_ORIGIN_DISCOVERY_DURATION_MS = 5_200;",
+        "const LIFE_ORIGIN_DISCOVERY_DURATION_MS = 1_800;",
       ) &&
       experiencePageSource.includes(
         'setLifeOriginDiscoveryPhase("DISCOVERING")',

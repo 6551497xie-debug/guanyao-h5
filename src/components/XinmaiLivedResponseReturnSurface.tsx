@@ -50,18 +50,18 @@ const FACT_OUTCOMES: readonly Readonly<{
 }>[] = Object.freeze([
   {
     value: "ATTEMPTED",
-    label: "我试着做了",
-    helper: "确认后会留下这次真实发生的回应，并继续形成可回看的生命痕迹。",
+    label: "试了，但结果还不确定",
+    helper: "记录现实已经给出的第一轮信号。",
   },
   {
     value: "COMPLETED_AS_INTENDED",
-    label: "我完成了原来的回应",
-    helper: "确认后会留下这次真实发生的回应，并继续形成可回看的生命痕迹。",
+    label: "结果基本符合预期",
+    helper: "原来的判断得到了一部分现实支持。",
   },
   {
     value: "CHANGED_RESPONSE",
-    label: "现实里，我用了另一种回应",
-    helper: "改变回应同样可以成为真实记录，不要求符合原计划。",
+    label: "现实让我换了做法",
+    helper: "新的反馈改变了原来的行动。",
   },
 ]);
 
@@ -123,6 +123,7 @@ export function XinmaiLivedResponseReturnSurface({
     Exclude<LivedResponseOutcome, "NOT_ATTEMPTED" | "UNABLE_TO_CONTINUE">
   >("ATTEMPTED");
   const [summary, setSummary] = useState("");
+  const [optionalSummaryVisible, setOptionalSummaryVisible] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [pendingNoFactResolution, setPendingNoFactResolution] = useState<
     "NOT_ATTEMPTED" | "USER_REJECTED_RECORD" | null
@@ -378,14 +379,6 @@ export function XinmaiLivedResponseReturnSurface({
     intention.schemaVersion === "XINMAI_CHOICE_ACTION_INTENTION_V4"
       ? intention.formationSourceSnapshot.sixDimensionObservation.observationSetId
       : null;
-  const traceOrdinal = Math.max(
-    1,
-    admissions.filter((admission) => admission.formationReceipt !== null)
-      .findIndex((admission) =>
-        admission.intention?.choiceActionIntentionReferenceId ===
-          intention.choiceActionIntentionReferenceId) + 1,
-  );
-
   const depart = async () => {
     if (
       busy ||
@@ -468,8 +461,8 @@ export function XinmaiLivedResponseReturnSurface({
         ? result.intentTermination === "RETRYABLE"
           ? "你的选择已经保存，这次确认仍在安全结束，可以重试。"
           : resolution === "NOT_ATTEMPTED"
-            ? "还没有尝试，也没有关系。这一步仍会等你。"
-            : "这次不作记录。你仍然可以继续同行。"
+            ? "这次实验先结束；以后想试，可以重新开始。"
+            : "这次不保存反馈，已经完成的旅程不会改变。"
         : "这次选择尚未完整保存，请稍后再试。",
     );
     if (result.status === "RESOLVED" || result.status === "ALREADY_RESOLVED") {
@@ -814,8 +807,8 @@ export function XinmaiLivedResponseReturnSurface({
                 </button>
                 <small id="xinmai-no-fact-primary-helper">
                   {pendingNoFactResolution === "NOT_ATTEMPTED"
-                    ? "保留这一步，不留下成长记录；等你真正试过，再从返回入口继续。"
-                    : "确认后本次不留下成长记录，已经完成的生命资产不会被改动。"}
+                    ? "这次先结束；以后想试，再开始一次新的现实实验。"
+                    : "这次不保存反馈；已经完成的旅程不会改变。"}
                 </small>
                 <button
                   type="button"
@@ -831,7 +824,7 @@ export function XinmaiLivedResponseReturnSurface({
           ) : (
           <>
           <fieldset className="xinmai-lived-response-return-surface__fact-choices">
-            <legend>选择真实发生的回应</legend>
+            <legend>这次实验，现实怎样回应？</legend>
             {FACT_OUTCOMES.map((item) => {
               const helperId = `xinmai-lived-response-${item.value.toLowerCase()}-helper`;
               return (
@@ -851,21 +844,29 @@ export function XinmaiLivedResponseReturnSurface({
               );
             })}
           </fieldset>
-          <textarea
-            rows={2}
-            maxLength={180}
-            value={summary}
-            aria-label="补充实际发生的事实"
-            onChange={(event) => setSummary(event.target.value)}
-            placeholder="可以留下一句实际发生的事实"
-          />
+          {optionalSummaryVisible ? (
+            <textarea
+              rows={2}
+              maxLength={180}
+              value={summary}
+              aria-label="补充一条现实细节（可选）"
+              onChange={(event) => setSummary(event.target.value)}
+              placeholder="例如：对方解释了权限，但时间边界仍不清楚"
+            />
+          ) : (
+            <button
+              className="xinmai-lived-response-return-surface__optional-detail"
+              type="button"
+              onClick={() => setOptionalSummaryVisible(true)}
+            >
+              补充一条现实细节（可选）
+            </button>
+          )}
           <div className="xinmai-lived-response-return-surface__fact-submit">
             <button type="button" disabled={busy} onClick={confirmFact}>
               {returnSemantic.primaryAction}
             </button>
-            <small>
-              确认后，这次真实回应才会被保存，并继续形成可回看的生命痕迹。
-            </small>
+            <small>只选结果就可以；补充细节完全可选。</small>
           </div>
           <div
             className="xinmai-lived-response-return-surface__no-fact"
@@ -875,13 +876,13 @@ export function XinmaiLivedResponseReturnSurface({
               <button type="button" disabled={busy} onClick={() => setPendingNoFactResolution("NOT_ATTEMPTED")}>
                 这一次还没有尝试
               </button>
-              <small>不留下成长记录；这一步仍会等你。</small>
+              <small>实验会保留，真正发生后再回来。</small>
             </div>
             <div>
               <button type="button" disabled={busy} onClick={() => setPendingNoFactResolution("USER_REJECTED_RECORD")}>
                 我不想记录这次
               </button>
-              <small>不记录、不形成，也没有惩罚。</small>
+              <small>结束这一轮，不生成模型更新。</small>
             </div>
           </div>
           </>
@@ -901,19 +902,11 @@ export function XinmaiLivedResponseReturnSurface({
         <XinmaiCrystalFormationOwnershipMoment
           decision={ownershipPresentationDecision}
           valueClosure={
-            <section className="xinmai-crystal-ownership__value-closure" aria-label="这道生命痕迹的完整来路">
-              {observationSetId !== null ? (
-                <XinmaiSixDimensionResponseMap
-                  observationSetId={observationSetId}
-                  microAction={intention.actionSummary}
-                  compact
-                />
-              ) : null}
+            <section className="xinmai-crystal-ownership__value-closure" aria-label="本轮现实实验与模型更新">
               <dl>
-                <div><dt>带回生活的最小一步</dt><dd>{intention.actionSummary}</dd></div>
-                <div><dt>现实里实际发生</dt><dd>{currentFact?.factualSummary || "你已确认这次真实回应。"}</dd></div>
-                <div><dt>这次回应</dt><dd>{currentFact?.responseOutcome === "CHANGED_RESPONSE" ? "实际回应与原计划不同" : currentFact?.responseOutcome === "COMPLETED_AS_INTENDED" ? "按原来准备的方式发生" : "已经在现实中尝试"}</dd></div>
-                <div><dt>形成时间与位置</dt><dd>{currentFormationReceipt.formedAt} · 这段生命记录中的第 {traceOrdinal} 道痕迹</dd></div>
+                <div><dt>这次验证的动作</dt><dd>{intention.actionSummary}</dd></div>
+                <div><dt>现实给出的反馈</dt><dd>{currentFact?.factualSummary || "这次实验已经在现实中发生。"}</dd></div>
+                <div><dt>本轮模型更新</dt><dd>{currentFact?.responseOutcome === "CHANGED_RESPONSE" ? "原来的做法需要调整" : currentFact?.responseOutcome === "COMPLETED_AS_INTENDED" ? "原来的判断得到现实支持" : "已经获得第一轮反馈，继续观察"}</dd></div>
               </dl>
             </section>
           }

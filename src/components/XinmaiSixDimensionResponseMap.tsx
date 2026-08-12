@@ -71,12 +71,11 @@ export function XinmaiSixDimensionResponseMap({
       data-six-dimension-response-map="EXACT_PERSISTED_SELECTIONS"
     >
       <header>
-        <span>你选择的现实情境</span>
+        <span>现实情境</span>
         <h3>{semantic.purpose}</h3>
-        <p>{semantic.explanation}</p>
         <blockquote>{presentation.realityTrigger}</blockquote>
       </header>
-      <dl>
+      <dl aria-label="自动反应路径">
         {presentation.items.map((item) => (
           <div key={item.dimensionId} data-response-map-dimension={item.dimensionId}>
             <dt>{item.dimensionLabel}</dt>
@@ -84,13 +83,12 @@ export function XinmaiSixDimensionResponseMap({
           </div>
         ))}
       </dl>
-      <section className="xinmai-response-map__three-layer" aria-label="三个可修正的理解问题" data-three-layer-authority="PRESENTATION_ONLY_NO_WRITE">
-        <h4>可以再用三个问题核对这段反应</h4>
-        <p>它们只是可能的理解方向；不确定、不适用都可以，也不会保存成分类。</p>
+      <section className="xinmai-response-map__three-layer" aria-label="三种同时在场的力量" data-three-layer-authority="PRESENTATION_ONLY_NO_WRITE">
+        <h4>这条路径里，三种力量可能同时在场</h4>
         <ul>
-          <li>身体与基本安全在保护什么？</li>
-          <li>关系、规则或责任在要求什么？</li>
-          <li>你想守住哪种长期方向或价值？</li>
+          <li><b>生存：</b>身体与安全正在保护什么？</li>
+          <li><b>社会：</b>关系、身份或规则正在要求什么？</li>
+          <li><b>文明：</b>你愿意把什么价值带到未来？</li>
         </ul>
       </section>
       {microAction ? (

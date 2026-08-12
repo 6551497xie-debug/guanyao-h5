@@ -121,12 +121,12 @@ assert(
 );
 assert(
   reflectionGuide.includes("onContinue,") &&
-    reflectionGuide.includes("const saved = await onContinue?.(selectedResponse);") &&
+    reflectionGuide.includes("const saved = await onContinue?.(response);") &&
     reflectionGuide.includes("selectedResponse === null") &&
-    reflectionGuide.includes("if (saved) setSavedAnnouncement") &&
+    reflectionGuide.includes("if (saved) {") &&
+    reflectionGuide.includes("committedResponseRef.current = response.id") &&
     reflectionGuide.includes('data-xinmai-authority-boundary="FINAL_ACKNOWLEDGEMENT_ONLY"') &&
     page.includes("key={sequentialCurrentSpaceId}") &&
-    page.includes('data-dynamics-current-dimension-label={currentDimensionLabel}') &&
     !page.includes("initialInnerViewRelation={innerViewRelation}") &&
     page.includes(
       'function handleLifeCoreApproach() {\n    if (!innerViewRelationEstablished) {\n      approachLifeState();\n    }\n  }',
@@ -136,7 +136,7 @@ assert(
   "per-dimension reflection can inherit prior state, bypass final continuation, or strand its lock",
 );
 assert(
-  page.includes("confirmButtonRef.current?.blur();") &&
+  reflectionGuide.includes("event.currentTarget.blur();") &&
     returnSurface.includes("document.activeElement.blur();") &&
     ownership.includes("event.currentTarget.blur();"),
   "state-changing actions can leave focus inside an aria-hidden surface",

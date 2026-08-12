@@ -46,7 +46,7 @@ assert(
 );
 for (const [label, source, needle] of [
   ["Reality", reality, "resolveXinmaiJourneySemanticPresentation"],
-  ["six-dimension", reflection, "resolveXinmaiJourneySemanticPresentation"],
+  ["six-dimension", reflection, "resolveXinmaiSixDimensionSemanticChoreography"],
   ["Response Map", map, 'resolveXinmaiJourneySemanticPresentation("RESPONSE_MAP")'],
   ["Choice/Departure", gravity, "resolveXinmaiJourneySemanticPresentation"],
   ["Return/Formation", returned, 'resolveXinmaiJourneySemanticPresentation("RETURN")'],
@@ -57,9 +57,9 @@ for (const [label, source, needle] of [
 }
 assert(
   map.includes("PRESENTATION_ONLY_NO_WRITE") &&
-    map.includes("身体与基本安全在保护什么？") &&
-    map.includes("关系、规则或责任在要求什么？") &&
-    map.includes("你想守住哪种长期方向或价值？"),
+    map.includes("身体与安全正在保护什么") &&
+    map.includes("关系、身份或规则正在要求什么") &&
+    map.includes("你愿意把什么价值带到未来"),
   "the three-layer lens is missing or claims write authority",
 );
 assert(
