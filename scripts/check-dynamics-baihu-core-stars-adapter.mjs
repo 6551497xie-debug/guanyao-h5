@@ -8,9 +8,14 @@ const rootDir = process.cwd();
 const adapterPath = path.join(rootDir, "src/services/guanyaoDynamicsBaiHuCoreStarsAdapter.ts");
 const typePath = path.join(rootDir, "src/types/dynamicsBaiHuCoreStars.ts");
 const gravityPath = path.join(rootDir, "src/pages/GravityPage.tsx");
+const lifeUniverseCanvasPath = path.join(
+  rootDir,
+  "src/components/RealityLifeUniverseCanvas.tsx",
+);
 const adapterSource = fs.readFileSync(adapterPath, "utf8");
 const typeSource = fs.readFileSync(typePath, "utf8");
 const gravitySource = fs.readFileSync(gravityPath, "utf8");
+const lifeUniverseCanvasSource = fs.readFileSync(lifeUniverseCanvasPath, "utf8");
 const tempModulePath = path.join(os.tmpdir(), `guanyao-baihu-core-stars-${process.pid}.mjs`);
 
 const assertEqual = (name, actual, expected) => {
@@ -127,10 +132,44 @@ try {
   assertExcludes("adapter does not consume runtime projection", adapterSource, "RuntimeProjection");
   assertExcludes("adapter does not access DOM", adapterSource, "document.");
   assertExcludes("adapter stays localStorage neutral", adapterSource, "localStorage");
-  assertIncludes("Gravity delegates BaiHu core stars", gravitySource, "resolveDynamicsBaiHuCoreStars({");
-  assertIncludes("Gravity passes seed identity", gravitySource, "seedId: executionSnapshot.seed.id");
-  assertIncludes("Gravity passes pressure surface", gravitySource, "selectedPressureSeedSurface,");
-  assertIncludes("Gravity consumes projected core stars", gravitySource, "coreStars={baiHuCoreStars.coreStars}");
+  assertExcludes(
+    "Gravity does not restore the retired BaiHu adapter consumer",
+    gravitySource,
+    "resolveDynamicsBaiHuCoreStars",
+  );
+  assertIncludes(
+    "Gravity consumes the identity-bound life constellation",
+    gravitySource,
+    "function LifeConstellationLayer(",
+  );
+  assertIncludes(
+    "Gravity reads the recognized real-life visual source",
+    gravitySource,
+    "readRealUserGenesisVisualSourceContext()",
+  );
+  assertIncludes(
+    "Gravity passes the recognized life visual source",
+    gravitySource,
+    "visualSource={realLifeVisualSource}",
+  );
+  assertIncludes(
+    "Reality life universe consumes the personal Star Beast render plan",
+    lifeUniverseCanvasSource,
+    "projectPersonalStarBeastRenderPlanToLifePresence(",
+  );
+  const retiredAdapterRuntimeConsumers = fs
+    .readdirSync(path.join(rootDir, "src"), { recursive: true })
+    .filter((entry) => typeof entry === "string" && /\.(?:ts|tsx)$/.test(entry))
+    .map((entry) => path.join(rootDir, "src", entry))
+    .filter((filePath) => filePath !== adapterPath)
+    .filter((filePath) =>
+      fs.readFileSync(filePath, "utf8").includes("resolveDynamicsBaiHuCoreStars("),
+    );
+  assertEqual(
+    "retired BaiHu adapter has no hidden Runtime consumer",
+    retiredAdapterRuntimeConsumers.length,
+    0,
+  );
   assertExcludes("Gravity no longer owns BaiHu hash", gravitySource, "hashPressureBeastInput");
   assertExcludes("Gravity no longer owns pressure beast seed", gravitySource, "resolvePressureBeastSeed");
   assertExcludes("Gravity no longer builds BaiHu core stars", gravitySource, "buildRuntimeBaiHuCoreStars");
