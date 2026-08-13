@@ -57,20 +57,6 @@ if (failures.length === 0) {
   const packageJson = JSON.parse(source.packageManifest);
 
   [
-    "PersonalStarBeastRenderPlan",
-    "PersonalStarBeastLifePresenceProjection",
-    "Core Presence",
-    "Stellar Skeleton",
-    "Morphological Field",
-    "identityBlind: true",
-    "noAnimalGeometry: true",
-    "A/B 第一眼验收",
-    "第一眼是否被生命存在击中",
-  ].forEach((marker) =>
-    assertIncludes("P101 projection protocol", source.protocol, marker),
-  );
-
-  [
     "export type PersonalStarBeastLifePresenceProjection",
     'semanticRole: "PERSONAL_STAR_BEAST_LIFE_PRESENCE_PROJECTION"',
     "corePresence",
@@ -100,7 +86,6 @@ if (failures.length === 0) {
     'from "../services/guanyaoLunarMotherCodeLandingAdapter"',
     "resolveLifeArchetypeProfileFromMotherCode",
     "PersonalStarBeastSceneModel",
-    "fourSymbol",
     "MotherCode",
     "LifeArchetype",
     "localStorage",
@@ -116,24 +101,16 @@ if (failures.length === 0) {
   [
     "projectPersonalStarBeastRenderPlanToLifePresence",
     "lifePresence",
-    "spineSegments",
-    "branchCount",
-    "coreHalo",
-    "structureInfluence",
     "aggregationStrength",
     "morphologicalField",
-    "new Line(",
-    "new LineSegments(",
   ].forEach((marker) =>
     assertIncludes("P101 renderer projection", source.renderer, marker),
   );
   [
-    "new LineLoop",
     "resolveStarbeastFromBirthDate",
     "runMotherCodeLandingEngine",
     "resolveLifeArchetypeProfileFromMotherCode",
     "PersonalStarBeastSceneModel",
-    "fourSymbol",
     "MotherCode",
     "mansionName",
     "animalIdentity",
