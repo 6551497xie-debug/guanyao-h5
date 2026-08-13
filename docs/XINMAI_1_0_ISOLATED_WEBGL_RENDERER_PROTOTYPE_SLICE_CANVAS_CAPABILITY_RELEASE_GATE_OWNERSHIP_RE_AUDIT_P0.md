@@ -2,7 +2,7 @@
 
 ## Verdict
 
-**A. CORRECTIVE APPLICATION READY — ONE B-CLASS CANVAS TEST-DOUBLE CONTRACT MODERNIZATION**
+**A. CORRECTIVE APPLICATION READY — ONE B-CLASS CANVAS MODERNIZATION AND ONE C-CLASS LEXICAL RETIREMENT**
 
 Audit only. Renderer, prototype facade, Canvas Consumer, page, route, CSS, Runtime, Authority, DB, Store, schema, Catalog, and Gate implementation are unchanged in this blade.
 
@@ -34,6 +34,16 @@ For the isolated no-WebGL case, the correct test answer is `hasAttribute: () => 
 
 No synthetic Reality attribute may be added. No production guard may convert arbitrary non-Canvas objects into accepted Canvas inputs.
 
+## Masked lexical failure
+
+Replaying the proposed Canvas correction revealed a second pre-existing failure that the original uncaught TypeError had prevented the Gate from reporting:
+
+`P99 Renderer stays identity blind forbidden=fourSymbol`
+
+The shared Renderer legally consumes the reviewed `fourSymbolDirectionFieldVisualCalibration` visual projection. It does not call the Four-Symbol identity engine or infer identity. The broad substring ban therefore confuses a typed downstream visual calibration with upstream identity ownership.
+
+This assertion is **C — Legacy Prototype Detail**, not A. The corrective must retire the single broad `fourSymbol` lexical assertion while preserving the specific bans on identity resolvers, `MotherCode`, `mansionName`, `animalIdentity`, animal labels, and Storage.
+
 ## Full Gate classification
 
 All 138 expanded logical assertions are classified in:
@@ -42,9 +52,9 @@ All 138 expanded logical assertions are classified in:
 
 | Class | Count | Disposition |
 |---|---:|---|
-| A — Canonical Fact | 42 | KEEP |
+| A — Canonical Fact | 41 | KEEP |
 | B — Consumer Contract | 62 | KEEP; modernize the one failing Canvas double |
-| C — Legacy Presentation / Prototype Detail | 34 | RETIRE from Release ownership enforcement |
+| C — Legacy Presentation / Prototype Detail | 35 | RETIRE from Release ownership enforcement |
 | D — Unknown / Ambiguous | 0 | None |
 | Total | 138 | Fully classified |
 
@@ -63,10 +73,10 @@ The next corrective may modify only:
 
 It must:
 
-1. retain all 42 A-class facts;
+1. retain all 41 A-class facts;
 2. retain all 62 B-class contracts;
 3. update the no-WebGL Canvas double to satisfy the current non-Reality `HTMLCanvasElement` capability boundary;
-4. retire all 34 C-class legacy implementation/protocol assertions from Release ownership enforcement;
+4. retire all 35 C-class legacy implementation/protocol assertions, including the broad `fourSymbol` lexical ban, from Release ownership enforcement;
 5. preserve identity blindness, deterministic projection, typed fallback, authorization boundary, viewport validation, no Storage ownership, and Consumer isolation;
 6. run the dedicated Gate and full Release lifecycle;
 7. stop at the next independent owner failure.

@@ -25,7 +25,9 @@ All arrays, file checks, dependency checks, Consumer scans, and runtime expectat
 | 054–059 | 6 | Context loss/recovery, render/resize/dispose, typed fallback surface | B | KEEP |
 | 060–063 | 4 | Isolated facade, shared-core delegation, authorization blocks | B | KEEP |
 | 064–065 | 2 | Prototype/shared core do not own scheduling loops | B | KEEP |
-| 066–079 | 14 | Renderer excludes identity engines, identity labels, animal symbols, and Storage | A | KEEP |
+| 066–069 | 4 | Renderer excludes direct identity engines and scene-model input | A | KEEP |
+| 070 | 1 | Broad `fourSymbol` substring exclusion | C | RETIRE; typed visual calibration is legal downstream consumption |
+| 071–079 | 9 | Renderer excludes Mother Code, identity labels, animal symbols, and Storage | A | KEEP |
 | 080–090 | 11 | Exact original P99 protocol title/copy/next-step wording | C | RETIRE assertions |
 | 091–093 | 3 | Shared authorization reference and public type exports | B | KEEP |
 | 094–097 | 4 | Exact dependency presence/absence and single import-site topology | C | RETIRE assertions |
@@ -46,9 +48,9 @@ All arrays, file checks, dependency checks, Consumer scans, and runtime expectat
 
 | Class | Count |
 |---|---:|
-| A | 42 |
+| A | 41 |
 | B | 62 |
-| C | 34 |
+| C | 35 |
 | D | 0 |
 | Total | 138 |
 
