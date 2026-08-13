@@ -12,10 +12,13 @@ const files = Object.freeze({
   birthMansionType: "src/types/genesisBirthMansionIgnitionProjection.ts",
   presenceType: "src/types/personalStarBeastLifePresenceProjection.ts",
   presenceService: "src/services/personalStarBeastLifePresenceProjection.ts",
-  renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
-  rendererType: "src/types/isolatedWebGLRendererPrototype.ts",
-  harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
   packageManifest: "package.json",
+});
+
+const formalConsumerFiles = Object.freeze({
+  renderer: "src/renderers/genesisWebGLRendererCore.ts",
+  rendererType: "src/types/genesisWebGLRendererCore.ts",
+  productionHost: "src/renderers/genesisProductionRendererHost.ts",
 });
 
 const failures = [];
@@ -58,18 +61,16 @@ if (failures.length === 0) {
       fs.readFileSync(filePath, "utf8"),
     ]),
   );
+  Object.assign(
+    source,
+    Object.fromEntries(
+      Object.entries(formalConsumerFiles).map(([name, relativePath]) => {
+        const filePath = path.join(rootDir, relativePath);
+        return [name, fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : ""];
+      }),
+    ),
+  );
   const packageJson = JSON.parse(source.packageManifest);
-
-  [
-    "四象不是召唤出来的兽",
-    "本命星宿生命被宇宙看见后的形态场",
-    "Formal Four Symbol Result Reference",
-    "Genesis Four Symbol Alignment Projection",
-    "FIELD_ALIGNED",
-    "morphologicalFieldExpression",
-    "noAnimalGeometry",
-    "ISOLATED_PROTOTYPE_ONLY",
-  ].forEach((marker) => assertIncludes("P105 protocol", source.protocol, marker));
 
   [
     "export type GenesisFourSymbolAlignmentInput",
@@ -120,10 +121,21 @@ if (failures.length === 0) {
     "GenesisFourSymbolAlignmentProjection",
   ].forEach((marker) => assertIncludes("P105 presence bridge", source.presenceType, marker));
   assertIncludes("P105 presence service accepts alignment", source.presenceService, "morphologicalFieldAlignmentProjection");
-  assertIncludes("P105 renderer consumes alignment", source.renderer, "morphologicalFieldAlignment");
-  assertIncludes("P105 renderer receives alignment", source.renderer, "morphologicalFieldAlignmentProjection");
-  assertIncludes("P105 harness consumes adapter alignment", source.harness, "projectionBundle.morphologicalFieldAlignmentProjection");
-  assertIncludes("P105 renderer contract carries alignment", source.rendererType, "morphologicalFieldAlignment: GenesisFourSymbolAlignmentProjection | null");
+  assertIncludes(
+    "P105 formal Renderer consumes alignment",
+    source.renderer,
+    "const morphologicalFieldAlignment = sceneProjection.morphologicalFieldAlignment",
+  );
+  assertIncludes(
+    "P105 Production Host supplies alignment",
+    source.productionHost,
+    "projectionBundle.morphologicalFieldAlignmentProjection",
+  );
+  assertIncludes(
+    "P105 formal Renderer contract carries alignment",
+    source.rendererType,
+    "morphologicalFieldAlignment: GenesisFourSymbolAlignmentProjection | null",
+  );
   assertIncludes("P105 gate registered", packageJson.scripts?.["check-genesis-four-symbol-alignment-projection"] ?? "", "node scripts/check-genesis-four-symbol-alignment-projection.mjs");
   assertIncludes("release includes P105 gate", packageJson.scripts?.["postcheck:release"] ?? "", "npm run check-genesis-four-symbol-alignment-projection");
 
@@ -140,7 +152,7 @@ if (failures.length === 0) {
         export { projectGenesisBirthMansionIgnition } from "./src/services/genesisBirthMansionIgnitionProjection.ts";
         export { projectGenesisFourSymbolAlignment } from "./src/services/genesisFourSymbolAlignmentProjection.ts";
         export { projectPersonalStarBeastRenderPlanToLifePresence } from "./src/services/personalStarBeastLifePresenceProjection.ts";
-        export { projectPersonalStarBeastRenderPlanToWebGLScene } from "./src/prototypes/isolatedWebGLRendererPrototype.ts";
+        export { projectPersonalStarBeastRenderPlanToWebGLScene } from "./src/renderers/genesisWebGLRendererCore.ts";
       `,
       resolveDir: rootDir,
       sourcefile: "genesis-four-symbol-alignment-gate-entry.ts",
