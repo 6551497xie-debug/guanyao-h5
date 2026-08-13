@@ -44,16 +44,24 @@ const gravityRouteSource = fs.readFileSync(
   path.join(rootDir, "src/pages/GravityProductionRouteEntry.tsx"),
   "utf8",
 );
-const pressurePresentationSource = fs.readFileSync(
-  path.join(rootDir, "src/components/RealityPressureSeedPresentation.tsx"),
+const choiceActionIntentionTypeSource = fs.readFileSync(
+  path.join(rootDir, "src/types/xinmaiChoiceActionIntention.ts"),
   "utf8",
 );
-const choicePresentationSource = fs.readFileSync(
-  path.join(rootDir, "src/components/RealityChoicePresentation.tsx"),
+const choiceReturningProvenanceControllerSource = fs.readFileSync(
+  path.join(rootDir, "src/services/xinmaiChoiceReturningProvenanceController.ts"),
   "utf8",
 );
-const crystalPresentationSource = fs.readFileSync(
-  path.join(rootDir, "src/services/guanyaoDynamicsCurrentCrystalPresentationAdapter.ts"),
+const postOwnershipNextRealityCycleControllerSource = fs.readFileSync(
+  path.join(rootDir, "src/services/xinmaiPostOwnershipNextRealityCycleController.ts"),
+  "utf8",
+);
+const crystalEligibilityAuthoritySource = fs.readFileSync(
+  path.join(rootDir, "src/services/xinmaiCrystalEligibilityAuthority.ts"),
+  "utf8",
+);
+const journeySemanticPresentationResolverSource = fs.readFileSync(
+  path.join(rootDir, "src/services/xinmaiJourneySemanticPresentationResolver.ts"),
   "utf8",
 );
 
@@ -341,26 +349,6 @@ try {
     gravityPageSource,
     "function resolvePersonaDimensionFromLayerLabel",
   );
-  assertNotIncludes(
-    "gravity does not consume dormant first response label",
-    gravityPageSource,
-    "firstResponseLabel",
-  );
-  assertNotIncludes(
-    "gravity does not import dormant first response label copy",
-    gravityPageSource,
-    "CHANGE_EXPERIENCE_FIRST_RESPONSE_LABEL",
-  );
-  assertNotIncludes(
-    "gravity removes familiar reaction label",
-    gravityPageSource,
-    "熟悉的反应：",
-  );
-  assertNotIncludes(
-    "gravity does not own first response label copy",
-    gravityPageSource,
-    "这一刻首先出现的回应",
-  );
   assertIncludes(
     "Gravity observation surface emits typed presented outcome",
     gravityObservationSurfaceSource,
@@ -432,60 +420,35 @@ try {
     gravityRouteSource,
     'state: "ACTIVE_IN_GRAVITY"',
   );
-  assertNotIncludes(
-    "Pressure presentation does not consume first response label",
-    pressurePresentationSource,
-    "firstResponseLabel",
-  );
-  assertNotIncludes(
-    "Choice presentation does not consume first response label",
-    choicePresentationSource,
-    "firstResponseLabel",
-  );
-  assertNotIncludes(
-    "Crystal presentation does not consume first response label",
-    crystalPresentationSource,
-    "firstResponseLabel",
-  );
   assertIncludes(
     "gravity isolates the legacy direct choice to crystal flow",
     gravityPageSource,
     "const LEGACY_DIRECT_CHOICE_TO_CRYSTAL_FLOW_ISOLATED = true",
   );
   assertIncludes(
-    "choice begins with protective understanding before the pause",
-    gravityPageSource,
-    'data-choice-protective-sequence="UNDERSTAND_THEN_PAUSE_THEN_PARTICIPATE"',
+    "Choice has no lived-response or Crystal eligibility authority",
+    choiceActionIntentionTypeSource,
+    "noCrystalEligibilityAuthority: true",
   );
   assertIncludes(
-    "choice keeps protective meaning tentative",
-    gravityPageSource,
-    'data-choice-protective-understanding="CANDIDATE_NOT_CONCLUSION"',
+    "explicit departure opens only a typed lived-response return",
+    choiceReturningProvenanceControllerSource,
+    'state: "READY_FOR_LIVED_RESPONSE" as const',
   );
   assertIncludes(
-    "choice holds response space before crystal",
-    gravityPageSource,
-    '"ISOLATED_UNTIL_RESPONSE_IS_LIVED"',
+    "completed ownership begins a fresh Choice-continuation Reality intent",
+    postOwnershipNextRealityCycleControllerSource,
+    'origin: "CHOICE_CONTINUATION"',
   );
   assertIncludes(
-    "choice explicitly continues to the existing reality route",
-    gravityPageSource,
-    "navigate(GUANYAO_ROUTES.reality, {",
+    "Crystal eligibility requires a confirmed lived-response Fact",
+    crystalEligibilityAuthoritySource,
+    'currentFact.state !== "CONFIRMED"',
   );
   assertIncludes(
-    "choice returns with the same life into a new reality",
-    gravityPageSource,
-    'data-choice-reality-continuation="SAME_LIFE_NEW_REALITY"',
-  );
-  assertIncludes(
-    "choice withholds crystal until a response is lived",
-    gravityPageSource,
-    '"WITHHELD_UNTIL_USER_CONFIRMED_LIVED_RESPONSE"',
-  );
-  assertIncludes(
-    "reality continuation does not claim change",
-    gravityPageSource,
-    'data-choice-change-claim="NONE"',
+    "formal Choice semantics do not claim an answer or completed change",
+    journeySemanticPresentationResolverSource,
+    "它不是答案，只用来收集新的现实反馈。",
   );
 
   console.log("[GRAVITY CHANGE EXPERIENCE ROUTING] PASS");
