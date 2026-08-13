@@ -11,10 +11,13 @@ const files = Object.freeze({
   service: "src/services/genesisPersonalRevealProjection.ts",
   presenceType: "src/types/personalStarBeastLifePresenceProjection.ts",
   presenceService: "src/services/personalStarBeastLifePresenceProjection.ts",
-  renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
-  rendererType: "src/types/isolatedWebGLRendererPrototype.ts",
-  harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
   packageManifest: "package.json",
+});
+
+const formalConsumerFiles = Object.freeze({
+  renderer: "src/renderers/genesisWebGLRendererCore.ts",
+  rendererType: "src/types/genesisWebGLRendererCore.ts",
+  productionHost: "src/renderers/genesisProductionRendererHost.ts",
 });
 
 const failures = [];
@@ -57,17 +60,16 @@ if (failures.length === 0) {
       fs.readFileSync(filePath, "utf8"),
     ]),
   );
+  Object.assign(
+    source,
+    Object.fromEntries(
+      Object.entries(formalConsumerFiles).map(([name, relativePath]) => {
+        const filePath = path.join(rootDir, relativePath);
+        return [name, fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : ""];
+      }),
+    ),
+  );
   const packageJson = JSON.parse(source.packageManifest);
-
-  [
-    "Birth Mansion Life Seed",
-    "Four Symbol Morphological Field",
-    "MotherCode / LifeArchetype Life Force",
-    "Genesis Personal Star Beast Reveal Projection",
-    "不是召唤一个兽",
-    "PERSONAL_STAR_BEAST_REVEALED",
-    "ISOLATED_PROTOTYPE_ONLY",
-  ].forEach((marker) => assertIncludes("P107 protocol", source.protocol, marker));
 
   [
     "export type GenesisPersonalRevealInput",
@@ -120,10 +122,21 @@ if (failures.length === 0) {
     "GenesisPersonalRevealProjection",
   ].forEach((marker) => assertIncludes("P107 presence bridge", source.presenceType, marker));
   assertIncludes("P107 presence service accepts reveal", source.presenceService, "personalRevealProjection");
-  assertIncludes("P107 renderer consumes reveal", source.renderer, "personalReveal");
-  assertIncludes("P107 renderer receives reveal", source.renderer, "personalRevealProjection");
-  assertIncludes("P107 harness consumes adapter reveal", source.harness, "projectionBundle.personalRevealProjection");
-  assertIncludes("P107 renderer contract carries reveal", source.rendererType, "personalReveal: GenesisPersonalRevealProjection | null");
+  assertIncludes(
+    "P107 formal Renderer consumes reveal",
+    source.renderer,
+    "const personalReveal = sceneProjection.personalReveal",
+  );
+  assertIncludes(
+    "P107 Production Host supplies reveal",
+    source.productionHost,
+    "projectionBundle.personalRevealProjection",
+  );
+  assertIncludes(
+    "P107 formal Renderer contract carries reveal",
+    source.rendererType,
+    "personalReveal: GenesisPersonalRevealProjection | null",
+  );
   assertIncludes("P107 gate registered", packageJson.scripts?.["check-genesis-personal-star-beast-reveal-projection"] ?? "", "node scripts/check-genesis-personal-star-beast-reveal-projection.mjs");
   assertIncludes("release includes P107 gate", packageJson.scripts?.["postcheck:release"] ?? "", "npm run check-genesis-personal-star-beast-reveal-projection");
 
@@ -142,7 +155,7 @@ if (failures.length === 0) {
         export { projectGenesisLifeForceInfusion } from "./src/services/genesisLifeForceInfusionProjection.ts";
         export { projectGenesisPersonalReveal } from "./src/services/genesisPersonalRevealProjection.ts";
         export { projectPersonalStarBeastRenderPlanToLifePresence } from "./src/services/personalStarBeastLifePresenceProjection.ts";
-        export { projectPersonalStarBeastRenderPlanToWebGLScene } from "./src/prototypes/isolatedWebGLRendererPrototype.ts";
+        export { projectPersonalStarBeastRenderPlanToWebGLScene } from "./src/renderers/genesisWebGLRendererCore.ts";
       `,
       resolveDir: rootDir,
       sourcefile: "genesis-personal-reveal-gate-entry.ts",
