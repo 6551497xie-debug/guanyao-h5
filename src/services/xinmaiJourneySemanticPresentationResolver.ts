@@ -12,7 +12,7 @@ const c = (purpose: string, explanation: string, primaryAction: string, secondar
   Object.freeze({ purpose, explanation, primaryAction, secondaryAction, consequence, atmosphere });
 
 const COPY: Readonly<Record<XinmaiJourneySemanticNodeId, Copy>> = Object.freeze({
-  BIRTH_COORDINATE: c("先建立你的时间坐标", "这趟旅程会从你来到世界的时刻开始。", "确认时间坐标", "暂时不知道精确时间", "确认后进入星脉。", "一颗时间坐标在星图中亮起"),
+  BIRTH_COORDINATE: c("从更远的地方，看一眼我们所在的世界", "你的肉身在地球上进入时间。出生时刻会成为你与另一生命相遇的坐标。", "确认出生时刻", "暂时不知道精确时间", "确认后，从这个坐标进入第一次相遇。", "月地视域中，人类主体与远方宇宙生命彼此注意"),
   GENESIS_FORMATION: c("你的星脉同行者正在出现", "它会陪你穿过每一次现实实验。", "继续", "稍后再来", "形成后即可进入现实。", "星宿与星河承载连续感"),
   STAR_BEAST_CONTINUITY: c("你的同行者已经出现", "接下来，带一个最近卡住你的现实问题进来。", "继续", "先离开", "继续后可写一句此刻的话，也可以直接进入现实。", "同行者在同一片星图中保持可辨认"),
   WHISPER: c("此刻，有什么想对自己说？", "可写一个词，也可以直接继续。", "写下这句话", "直接进入现实", "这句话只留在此刻。", "一句话获得视觉回应"),

@@ -20,6 +20,7 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import type { EntryCardRendererOptions } from "../components/entry/EntryCardRenderer";
 import { XinmaiGenesisBirthCoordinateControls } from "../components/XinmaiGenesisBirthCoordinateControls";
+import { XinmaiOverviewEffectEntryStatic } from "../components/XinmaiOverviewEffectEntryStatic";
 import { GyMobilePreviewFrame } from "../components/visual/GyMobilePreviewFrame";
 import {
   getFourBeastTrigramVisualGrammar,
@@ -62,6 +63,7 @@ import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedI
 import { requestRealityEncounter } from "../services/xinmaiRealityEncounterIntentController";
 import { resolveXinmaiRealityEntryPresentation } from "../services/xinmaiRealityEntryPresentationResolver";
 import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
+import { XINMAI_OVERVIEW_EFFECT_ENTRY_PRESENTATION_POLICY } from "../services/xinmaiOverviewEffectEntryPresentationPolicy";
 import type {
   LifeWhisperRelationshipFact,
   LifeWhisperRelationshipResponsePhase,
@@ -120,6 +122,10 @@ import {
   projectLifeUniverseStarToViewport,
   resolveLifeUniverseCoreFrame,
 } from "../renderers/lifeUniverseStarField";
+import {
+  drawXinmaiOverviewEffectEntryScene,
+  XINMAI_OVERVIEW_EFFECT_ENTRY_SCENE_VERSION,
+} from "../renderers/xinmaiOverviewEffectEntryScene";
 import {
   createXinmaiContinuousSceneDeferredCanvas2DRendererAdapter,
   type XinmaiContinuousSceneDeferredCanvas2DSession,
@@ -1214,6 +1220,7 @@ export function LaunchLab({
     resolveXinmaiJourneySemanticPresentation("NAMING");
   const [launchSceneSession, setLaunchSceneSession] =
     useState<XinmaiContinuousSceneDeferredCanvas2DSession | null>(null);
+  const [overviewEngaged, setOverviewEngaged] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const lastExplicitLeaveDeliveryOutcomeKeyRef =
@@ -1752,9 +1759,15 @@ export function LaunchLab({
               semanticProjection: null,
             }),
             runtimeFactory: launchSceneRuntimeFactory,
-            staticSurface: null,
+            staticSurface: (
+              <XinmaiOverviewEffectEntryStatic engaged={overviewEngaged} />
+            ),
             canvasClassName: "light-field",
             canvasAttributes: Object.freeze({
+              "data-overview-effect-entry-scene":
+                XINMAI_OVERVIEW_EFFECT_ENTRY_SCENE_VERSION,
+              "data-overview-effect-subject-model":
+                "DUAL_SUBJECT_SINGLE_FACT_SOURCE",
               "data-launch-interaction-state": interactionState,
               "data-launch-scene": scene,
               "data-launch-timeline": timeline[scene],
@@ -1765,6 +1778,7 @@ export function LaunchLab({
     [
       interactionState,
       launchSceneRuntimeFactory,
+      overviewEngaged,
       returningVisualReady,
       scene,
       snapshotIndex,
@@ -1966,6 +1980,7 @@ export function LaunchLab({
       pulsed: false,
       moonReleaseStarted: false,
       moonReleaseT: 0,
+      overviewEngagement: 0,
       chaos: MANSION_COORDINATES.map((_, index) => ({
         ph: LIFE_UNIVERSE_STAR_FIELD[index]!.phase,
         sp: LIFE_UNIVERSE_STAR_FIELD[index]!.speed,
@@ -2742,6 +2757,10 @@ export function LaunchLab({
 
     function step(dt: number) {
       m.t += dt;
+      const overviewEngagementTarget = overviewEngaged ? 1 : 0;
+      m.overviewEngagement +=
+        (overviewEngagementTarget - m.overviewEngagement) *
+        Math.min(1, dt * 2.4);
       if (
         m.pendingAxisMode === "NEW_USER" &&
         (m.state === STATE.TIME_CALIBRATION ||
@@ -3189,25 +3208,15 @@ export function LaunchLab({
               (1 - smooth(0.04, 0.74, m.moonReleaseT)),
           );
         } else {
-          drawTaiyinMoonEntrance(
-            ctx,
-            m.w,
-            m.h,
-            now,
-            smooth(0.72, 1.65, m.t),
-            moonReleaseProgress,
-          );
-          if (m.moonReleaseStarted) {
-            drawTimeReceivingLifeCore(
-              ctx,
-              m.w,
-              m.h,
-              now,
-              smooth(0.12, 0.58, m.moonReleaseT),
-              m.lunarDayVisual,
-              0,
-            );
-          }
+          drawXinmaiOverviewEffectEntryScene(ctx, {
+            width: m.w,
+            height: m.h,
+            seconds: now,
+            engagement: m.overviewEngagement,
+            reducedMotion:
+              XINMAI_OVERVIEW_EFFECT_ENTRY_PRESENTATION_POLICY ===
+              "SAFE_WITHHELD",
+          });
         }
 
         const topLineStarts = [1.7, 2.05];
@@ -5762,6 +5771,7 @@ export function LaunchLab({
     commitPressureSeedCapture,
     launchSceneSession,
     navigate,
+    overviewEngaged,
     returningLifeContext,
     returningLifeIdentity,
     returningRealityContext,
@@ -6160,6 +6170,7 @@ export function LaunchLab({
             draft={birthCoordinateSession.draft}
             decision={birthCoordinateDecision}
             onBegin={() => {
+              setOverviewEngaged(true);
               setBirthCoordinateSession((current) =>
                 beginXinmaiGenesisBirthCoordinateInput(current),
               );

@@ -110,9 +110,12 @@ export function XinmaiGenesisBirthCoordinateControls({
           : decision.validation.reason
       }
       data-native-input-sync={XINMAI_GENESIS_BIRTH_NATIVE_INPUT_SYNC_POLICY}
+      data-overview-effect-entry="LUNAR_EARTH_OVERVIEW"
+      data-subject-anchor="FIRST_PERSON_OBSERVER_AND_ACTOR"
+      data-star-beast-relation="OTHER_COSMIC_LIFE"
     >
       <div className="xinmai-genesis-birth-coordinate__copy">
-        <span className="xinmai-genesis-birth-coordinate__eyebrow">体验起点 · 时间坐标</span>
+        <span className="xinmai-genesis-birth-coordinate__eyebrow">月地视域 · 现实起点</span>
         <h1 id="xinmai-genesis-birth-coordinate-title">{semantic.purpose}</h1>
         <p>{semantic.explanation}</p>
       </div>

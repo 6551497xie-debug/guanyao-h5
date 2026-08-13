@@ -30,6 +30,25 @@
   text-align: center;
 }
 
+.xinmai-genesis-birth-coordinate[data-birth-coordinate-state="LIFE_WORLD_BASELINE"] {
+  justify-content: flex-end;
+  padding-bottom: max(38px, env(safe-area-inset-bottom));
+  background:
+    linear-gradient(180deg, rgb(2 3 6 / 0%) 0 48%, rgb(2 3 6 / 58%) 72%, rgb(2 3 6 / 92%) 100%);
+}
+
+.xinmai-genesis-birth-coordinate[data-birth-coordinate-state="LIFE_WORLD_BASELINE"]
+  .xinmai-genesis-birth-coordinate__copy {
+  max-width: 390px;
+  padding: 16px 18px 4px;
+  text-shadow: 0 2px 22px rgb(0 0 0 / 88%);
+}
+
+.xinmai-genesis-birth-coordinate[data-overview-effect-entry="LUNAR_EARTH_OVERVIEW"]
+  .xinmai-genesis-birth-coordinate__eyebrow {
+  color: #9db8bc;
+}
+
 .xinmai-genesis-birth-coordinate__eyebrow {
   display: block;
   margin-bottom: 8px;
@@ -273,6 +292,10 @@
 
   .xinmai-genesis-birth-coordinate form {
     padding: 14px;
+  }
+
+  .xinmai-genesis-birth-coordinate[data-birth-coordinate-state="LIFE_WORLD_BASELINE"] {
+    justify-content: flex-end;
   }
 }
 
