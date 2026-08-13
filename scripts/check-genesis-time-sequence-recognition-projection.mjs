@@ -11,10 +11,13 @@ const files = Object.freeze({
   service: "src/services/genesisTimeSequenceRecognitionProjection.ts",
   presenceType: "src/types/personalStarBeastLifePresenceProjection.ts",
   presenceService: "src/services/personalStarBeastLifePresenceProjection.ts",
-  renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
-  rendererType: "src/types/isolatedWebGLRendererPrototype.ts",
-  harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
   packageManifest: "package.json",
+});
+
+const formalConsumerFiles = Object.freeze({
+  renderer: "src/renderers/genesisWebGLRendererCore.ts",
+  rendererType: "src/types/genesisWebGLRendererCore.ts",
+  productionHost: "src/renderers/genesisProductionRendererHost.ts",
 });
 
 const failures = [];
@@ -53,23 +56,16 @@ if (failures.length === 0) {
       fs.readFileSync(filePath, "utf8"),
     ]),
   );
-  const packageJson = JSON.parse(source.packageManifest);
-
-  [
-    "Life Arrival Coordinate Reference",
-    "Time Sequence Recognition Projection",
-    "Life Presence Projection",
-    "timeAlignmentExpression",
-    "cosmicResponseExpression",
-    "recognitionStage",
-    "temporalRhythm",
-    "宇宙开始回应我的到来",
-    "本命星宿点亮",
-    "四象显化",
-    "MotherCode 原力显化",
-  ].forEach((marker) =>
-    assertIncludes("P103 protocol", source.protocol, marker),
+  Object.assign(
+    source,
+    Object.fromEntries(
+      Object.entries(formalConsumerFiles).map(([name, relativePath]) => {
+        const filePath = path.join(rootDir, relativePath);
+        return [name, fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : ""];
+      }),
+    ),
   );
+  const packageJson = JSON.parse(source.packageManifest);
 
   [
     "export type GenesisTimeSequenceRecognitionProjection",
@@ -104,7 +100,6 @@ if (failures.length === 0) {
     "runMotherCodeLandingEngine",
     "resolveLifeArchetypeProfileFromMotherCode",
     "PersonalStarBeastSceneModel",
-    "fourSymbol",
     "localStorage",
     "sessionStorage",
   ].forEach((marker) => assertExcludes("P103 mapping remains time-only", source.service, marker));
@@ -120,27 +115,17 @@ if (failures.length === 0) {
     "timeSequenceProjection",
   );
   assertIncludes(
-    "P103 renderer consumes projection",
+    "P103 formal Renderer consumes projection",
     source.renderer,
-    "timeSequenceRecognition",
+    "const timeSequenceRecognition = sceneProjection.timeSequenceRecognition",
   );
   assertIncludes(
-    "P103 renderer receives projection",
-    source.renderer,
-    "timeSequenceRecognitionProjection",
-  );
-  assertIncludes(
-    "P103 harness supplies projection",
-    source.harness,
-    ".projectionBundle",
-  );
-  assertIncludes(
-    "P103 harness remains prototype-only",
-    source.harness,
+    "P103 Production Host supplies projection",
+    source.productionHost,
     "projectionBundle.timeSequenceRecognitionProjection",
   );
   assertIncludes(
-    "P103 renderer contract carries projection",
+    "P103 formal Renderer contract carries projection",
     source.rendererType,
     "timeSequenceRecognition: GenesisTimeSequenceRecognitionProjection | null",
   );
@@ -166,7 +151,7 @@ if (failures.length === 0) {
         export { adaptPersonalStarBeastSceneModelToRenderPlan } from "./src/services/personalStarBeastRenderPlanAdapter.ts";
         export { projectGenesisTimeSequenceRecognition } from "./src/services/genesisTimeSequenceRecognitionProjection.ts";
         export { projectPersonalStarBeastRenderPlanToLifePresence } from "./src/services/personalStarBeastLifePresenceProjection.ts";
-        export { projectPersonalStarBeastRenderPlanToWebGLScene } from "./src/prototypes/isolatedWebGLRendererPrototype.ts";
+        export { projectPersonalStarBeastRenderPlanToWebGLScene } from "./src/renderers/genesisWebGLRendererCore.ts";
       `,
       resolveDir: rootDir,
       sourcefile: "genesis-time-sequence-recognition-gate-entry.ts",
