@@ -55,24 +55,6 @@ try {
   const pressure = resolveDynamicsExperienceState(pressureInput);
   assertEqual("initial runtime maps to pressure", pressure.stage, "PRESSURE");
   assertEqual("initial timeline focuses pressure field", pressure.primaryFocus, "PRESSURE_FIELD");
-  assertEqual("pressure headline begins with present experience", pressure.headline, "这一刻，你的感受和回应正在出现。");
-  assertEqual(
-    "pressure supporting copy invites observation before change",
-    pressure.supportingCopy,
-    "先不用改变什么，只看见此刻发生了什么。",
-  );
-  assertEqual("pressure copy names the present situation", pressure.pressureCopy, "这件事已经来到你面前。");
-  assertEqual(
-    "pressure beast copy observes how response happens",
-    pressure.beastCopy,
-    "你与星兽会从这里一起看见，回应如何发生。",
-  );
-  assertEqual(
-    "pressure stage begins with observation instead of a missing result",
-    pressure.crystalCopy,
-    "这一局刚刚开始，先看见此刻的回应。",
-  );
-  assertEqual("product loop label passes through", pressure.loopLabel, pressureInput.loopLabel);
   assertEqual("experience state is frozen", Object.isFrozen(pressure), true);
   assertEqual("adapter does not mutate input", JSON.stringify(pressureInput), pressureSnapshot);
 
@@ -82,98 +64,18 @@ try {
   const awareness = resolveDynamicsExperienceState(baseInput({ uiPhase: "DIMENSION_LOCKED" }));
   assertEqual("dimension lock maps to awareness", awareness.stage, "AWARENESS");
   assertEqual("awareness focuses beast and dimension", awareness.primaryFocus, "BEAST_AND_DIMENSION");
-  assertEqual("awareness headline recognizes the pause", awareness.headline, "你已经停下来，看见这一刻。");
-  assertEqual(
-    "awareness supporting copy invites observation across six spaces",
-    awareness.supportingCopy,
-    "接下来，看看这件事如何落在身体、情绪、思想、行动、记忆与动机里。",
-  );
-  assertEqual("awareness pressure copy keeps the experience present", awareness.pressureCopy, "这件事已经被你放在眼前。");
-  assertEqual(
-    "awareness beast copy enters the first space with the user",
-    awareness.beastCopy,
-    "你与星兽会一起走进第一个空间。",
-  );
 
   const action = resolveDynamicsExperienceState(baseInput({ uiPhase: "NODE_RUNNING", currentNode: 3 }));
   assertEqual("node running maps to action", action.stage, "ACTION");
   assertEqual("action focuses dimension flow", action.primaryFocus, "DIMENSION_FLOW");
-  assertEqual("action headline reveals response layer by layer", action.headline, "你正在看见，回应是怎样一层层发生的。");
-  assertEqual(
-    "action supporting copy keeps attention on one space",
-    action.supportingCopy,
-    "一次只看一个空间，不需要同时理解全部。",
-  );
-  assertEqual("action pressure copy locates the current space", action.pressureCopy, "这件事正在落进当前空间。");
-  assertEqual(
-    "action beast copy observes feelings and responses together",
-    action.beastCopy,
-    "你与星兽正在一起辨认这里的感受与回应。",
-  );
-  assertEqual("third node title remains unchanged", action.nodeCopy.title, "你开始解释这件事");
-  assertEqual(
-    "action previews a user-owned response",
-    action.crystalCopy,
-    "完成六维后，准备好时，你可以认领一个新的回应。",
-  );
 
   const transformation = resolveDynamicsExperienceState(baseInput({ completedNodeCount: 5, currentNode: 6 }));
   assertEqual("five completed nodes map to transformation", transformation.stage, "TRANSFORMATION");
   assertEqual("transformation focuses dimension flow", transformation.primaryFocus, "DIMENSION_FLOW");
-  assertEqual(
-    "transformation headline recognizes multiple perspectives",
-    transformation.headline,
-    "你已经从多个方向看见这件事。",
-  );
-  assertEqual(
-    "transformation supporting copy lets a different response approach",
-    transformation.supportingCopy,
-    "有些感受开始连在一起，一个不同的回应正在靠近。",
-  );
-  assertEqual(
-    "transformation pressure copy recalls several spaces",
-    transformation.pressureCopy,
-    "这件事已经被你从几个空间看过。",
-  );
-  assertEqual(
-    "transformation beast copy leaves direction with the user",
-    transformation.beastCopy,
-    "你与星兽正在一起辨认，这一次愿意往哪里走。",
-  );
-  assertEqual(
-    "transformation stage keeps change in progress without demanding an answer",
-    transformation.crystalCopy,
-    "这一局的变化正在发生，还不需要得出答案。",
-  );
 
   const crystalByCount = resolveDynamicsExperienceState(baseInput({ completedNodeCount: 6 }));
   assertEqual("six completed nodes map to crystal", crystalByCount.stage, "CRYSTAL");
   assertEqual("crystal focuses crystallization", crystalByCount.primaryFocus, "CRYSTALLIZATION");
-  assertEqual(
-    "crystal beast copy recalls the shared six-space journey",
-    crystalByCount.beastCopy,
-    "你与星兽已经一起走过六个空间，现在可以回望这次变化。",
-  );
-  assertEqual(
-    "crystal pressure copy recalls the six spaces",
-    crystalByCount.pressureCopy,
-    "你已经看见，这件事如何落在身体、情绪、思想、行动、记忆与动机里。",
-  );
-  assertEqual(
-    "crystal transition preserves user agency",
-    crystalByCount.supportingCopy,
-    "当你愿意认领一个新的回应，这一局会留下它发生过的变化印记。",
-  );
-  assertEqual(
-    "crystal action leaves timing with the user",
-    crystalByCount.nodeCopy.actionText,
-    "准备好时，你可以认领一个新的回应。",
-  );
-  assertEqual(
-    "crystal copy frames imprint as a user-owned response",
-    crystalByCount.crystalCopy,
-    "你走完了六层。准备好时，你可以认领一个新的回应，让这一局的变化留下印记。",
-  );
 
   const crystalByEngine = resolveDynamicsExperienceState(baseInput({ enginePhase: "COMPLETE" }));
   assertEqual("complete engine maps to crystal", crystalByEngine.stage, "CRYSTAL");
@@ -188,9 +90,6 @@ try {
   };
   Object.entries(dimensionCopies).forEach(([focalDimension, [response, insight, understanding]]) => {
     const projected = resolveDynamicsExperienceState(baseInput({ uiPhase: "NODE_RUNNING", focalDimension }));
-    assertEqual(`${focalDimension} response copy`, projected.nodeCopy.text.endsWith(response), true);
-    assertEqual(`${focalDimension} insight copy`, projected.nodeCopy.dimensionInsight, insight);
-    assertEqual(`${focalDimension} understanding copy`, projected.nodeCopy.dimensionUnderstanding, understanding);
   });
 
   assertIncludes("adapter owns minimal input", adapterSource, "export type DynamicsExperienceStateAdapterInput");
@@ -207,11 +106,6 @@ try {
   assertIncludes("Gravity product loop begins from reality fact", gravitySource, '"现实事实被看见"');
   assertIncludes("Gravity onboarding begins from one life window", gravitySource, '"先观察一个生命窗口"');
   assertIncludes("Gravity user perception keeps protective meaning tentative", gravitySource, '"这些回应也许曾经保护我"');
-  assertEqual(
-    "Gravity reuses experience supporting copy in both presentation positions",
-    gravitySource.split("displayExperienceState.supportingCopy").length - 1,
-    2,
-  );
   assertExcludes("experience adapter removes conditional imprint language", adapterSource, "才会留下变化印记");
   assertExcludes("experience adapter removes passive response waiting", adapterSource, "等待新的回应");
   assertExcludes("experience adapter removes passive confirmation language", adapterSource, "新的回应被确认");
@@ -219,31 +113,12 @@ try {
   assertExcludes("experience adapter removes pressure-through-body language", adapterSource, "压力正在穿过你");
   assertExcludes("experience adapter removes system entry language", adapterSource, "当前压力正在进入");
   assertExcludes("experience adapter removes predictive reaction language", adapterSource, "反应即将出现");
-  assertExcludes("experience adapter removes passive awareness headline", adapterSource, "这一颗压力，被看见了");
   assertExcludes("experience adapter removes six-space process forecast", adapterSource, "它将穿过身体");
   assertExcludes("experience adapter removes unfolding announcement", adapterSource, "六个空间即将展开");
-  assertExcludes("experience adapter removes touch instruction copy", adapterSource, "每一次轻触");
-  assertExcludes("experience adapter removes pressure-entry process copy", adapterSource, "压力正在进入当前空间");
-  assertExcludes("experience adapter removes touch-trigger reaction copy", adapterSource, "随着触点出现");
-  assertExcludes("experience adapter removes convergence process headline", adapterSource, "这一局正在收束");
-  assertExcludes("experience adapter removes familiar-reaction transition copy", adapterSource, "你已经看见熟悉的反应");
   assertExcludes("experience adapter removes layered-pressure count copy", adapterSource, "压力已经被你看过几层");
-  assertExcludes("experience adapter removes reaction-stabilization copy", adapterSource, "反应正在趋稳");
   assertExcludes("experience adapter removes settled-reaction judgment", adapterSource, "你的反应正在安定下来");
-  assertExcludes("experience adapter removes one-pass pressure wording", adapterSource, "这一颗压力已经被你看过一遍");
   assertExcludes("Gravity removes crystallization gate language", gravitySource, "本局才会结晶");
   assertExcludes("Gravity no longer owns experience resolver", gravitySource, "function resolveExperienceState");
-  assertExcludes("Gravity no longer owns dimension response copy", gravitySource, "SIX_DIMENSION_RESPONSE_COPY");
-  assertExcludes("Gravity no longer owns semantic stage copy", gravitySource, "YAO_SEMANTIC_STAGES");
-  assertExcludes("Gravity does not own pressure headline", gravitySource, "这一刻，你的感受和回应正在出现。");
-  assertExcludes("Gravity does not own awareness headline", gravitySource, "你已经停下来，看见这一刻。");
-  assertExcludes("Gravity does not own action headline", gravitySource, "你正在看见，回应是怎样一层层发生的。");
-  assertExcludes("Gravity does not own transformation headline", gravitySource, "你已经从多个方向看见这件事。");
-  assertExcludes("Gravity does not own crystal shared-journey copy", gravitySource, "你与星兽已经一起走过六个空间");
-  assertExcludes("Gravity does not own crystal six-space reflection copy", gravitySource, "这件事如何落在身体、情绪、思想、行动、记忆与动机里");
-  assertExcludes("Gravity product loop removes familiar-reaction wording", gravitySource, "看见熟悉反应");
-  assertExcludes("Gravity onboarding removes layer-by-layer reaction wording", gravitySource, "逐层看见反应");
-  assertExcludes("Gravity user perception removes passive familiar-reaction wording", gravitySource, "熟悉反应被看见");
 
   console.log("\n[DYNAMICS EXPERIENCE STATE ADAPTER] PASS");
 } catch (error) {

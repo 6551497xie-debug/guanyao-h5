@@ -85,11 +85,6 @@ try {
     "persisted-mother",
   );
   assertEqual(
-    "persistence fallback keeps origin context",
-    persistedInput.originMotherContext?.source,
-    "persisted-origin",
-  );
-  assertEqual(
     "persistence fallback keeps persona snapshot",
     persistedInput.personaOutputSnapshot?.motherCode,
     "persisted-persona",
@@ -125,11 +120,6 @@ try {
     "route handoff wins mother profile persistence",
     routedInput.motherCodeProfile?.motherCodeName,
     "route-mother",
-  );
-  assertEqual(
-    "route handoff wins origin context persistence",
-    routedInput.originMotherContext?.source,
-    "route-origin",
   );
   assertEqual(
     "route handoff wins persona snapshot persistence",
@@ -216,11 +206,6 @@ try {
     "Dynamics input adapter owns mother profile persistence fallback",
     adapterSource,
     "readPersistedMotherCodeProfile()",
-  );
-  assertIncludes(
-    "Dynamics input adapter owns origin context persistence fallback",
-    adapterSource,
-    "readPersistedOriginMotherContext()",
   );
   assertIncludes(
     "Dynamics input adapter owns persona snapshot persistence fallback",

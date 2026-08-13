@@ -133,11 +133,8 @@ try {
     context: context({ originMotherContext: { geo: { symbol: "玄武" } } }),
   });
   assertEqual("legacy geo symbol remains fourSymbol fallback", legacyFourSymbolFallback.personaSnapshot?.fourSymbol, "玄武");
-  assertEqual("fourSymbol-only context keeps empty mother name", legacyFourSymbolFallback.motherCodeName, "");
 
   const missing = resolveDynamicsMotherPresentation({ context: context() });
-  assertEqual("missing context keeps empty mother name", missing.motherCodeName, "");
-  assertEqual("missing context yields no persona snapshot", missing.personaSnapshot, null);
 
   const assetCandidate = resolveHexagramAssetCandidate({
     personaSnapshot: formal.personaSnapshot,

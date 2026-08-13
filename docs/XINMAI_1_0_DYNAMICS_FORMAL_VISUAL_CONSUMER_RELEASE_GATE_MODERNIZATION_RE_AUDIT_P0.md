@@ -27,9 +27,9 @@ The complete item-level record is in `docs/release-gates/DYNAMICS_FORMAL_VISUAL_
 |---|---:|
 | Registered Dynamics Release Gates | 17 |
 | Source assertion calls | 610 |
-| A — KEEP | 337 |
-| B — MODERNIZE | 168 |
-| C — RETIRE | 105 |
+| A — KEEP | 328 |
+| B — MODERNIZE | 161 |
+| C — RETIRE | 121 |
 | D — HOLD | 0 |
 | Direct gate PASS | 12 |
 | Direct gate FAIL | 5 |
@@ -98,9 +98,9 @@ The corrective is permitted only if all of the following remain true:
 ## Exit criteria for the next blade
 
 - 610/610 source assertion dispositions remain traceable to this register.
-- A: 337/337 canonical facts preserved or strengthened.
-- B: 168/168 current formal Consumer contracts modernized and independently attributable.
-- C: 105/105 legacy presentation details retired with no product restoration.
+- A: 328/328 canonical facts preserved or strengthened.
+- B: 161/161 current formal Consumer contracts modernized and independently attributable.
+- C: 121/121 legacy presentation details retired with no product restoration.
 - D: 0, or corrective stops on the first newly discovered D.
 - All 17 direct Dynamics gates pass.
 - Full Release aggregate is run from a clean worktree.

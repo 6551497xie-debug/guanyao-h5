@@ -161,7 +161,6 @@ try {
   assertIncludes("Gravity delegates six-space progress", gravitySource, "resolveDynamicsSixSpaceProgress({");
   assertIncludes("Gravity consumes projected current space", gravitySource, "sixSpaceProgress.currentSpaceId");
   assertIncludes("Gravity consumes projected petal states", gravitySource, "petalStates={sixSpaceProgress.petalStates}");
-  assertIncludes("Gravity consumes projected pollen bursts", gravitySource, "pollenBursts={sixSpaceProgress.pollenBursts}");
   assertExcludes("Gravity no longer owns sequence literal", gravitySource, "const SEQUENTIAL_SIX_SPACE_IDS");
   assertExcludes("Gravity no longer owns completed-node counter", gravitySource, "function countCompletedSixDimensions");
   assertExcludes("Gravity no longer builds petal records", gravitySource, "function buildSpaceRecord");

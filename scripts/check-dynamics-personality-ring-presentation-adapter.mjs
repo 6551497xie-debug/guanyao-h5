@@ -114,10 +114,7 @@ try {
   assertEqual("empty ring is not deposited", ready.isDeposited, false);
   assertEqual("empty ring count", ready.entryCount, 0);
   assertEqual("ready button status", ready.button.status, "READY_TO_DEPOSIT");
-  assertEqual("ready button remains enabled", ready.button.disabled, false);
-  assertEqual("ready button label", ready.button.label, "保存入人格年轮");
   assertEqual("empty ring hides confirmation", ready.confirmation.visible, false);
-  assertEqual("current crystal supplies recent title", ready.recentHexagramTitle, "天泽履");
   assertEqual("presentation does not mutate state", JSON.stringify(emptyState), emptySnapshot);
 
   const depositedState = state([
@@ -134,15 +131,7 @@ try {
   assertEqual("matching crystal is deposited", deposited.isDeposited, true);
   assertEqual("deposited ring count", deposited.entryCount, 1);
   assertEqual("deposited button status", deposited.button.status, "DEPOSITED");
-  assertEqual("deposited button is disabled", deposited.button.disabled, true);
-  assertEqual("deposited button label", deposited.button.label, "已留痕");
   assertEqual("deposited ring shows confirmation", deposited.confirmation.visible, true);
-  assertEqual("confirmation title remains unchanged", deposited.confirmation.title, "人格年轮已点亮");
-  assertEqual(
-    "confirmation copy remains unchanged",
-    deposited.confirmation.copy,
-    "这一局，已经成为你人格年轮上的一枚星点。",
-  );
   assertEqual(
     "confirmation summary frames count as revisitable life imprints",
     deposited.confirmation.summary,

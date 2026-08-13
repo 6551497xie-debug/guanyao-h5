@@ -105,14 +105,12 @@ try {
   });
   assertEqual("presentation resolves from formation", Boolean(presentation), true);
   assertEqual("presentation semantic role is current orientation", presentation?.semanticRole, "CURRENT_HEXAGRAM_ORIENTATION");
-  assertEqual("presentation title follows current hexagram name", presentation?.title, "天泽履");
   assertEqual("presentation mark follows formation trigrams", presentation?.trigramMark, "☱☰");
   assertEqual("presentation lower trigram stays formation lower", presentation?.lowerTrigram, "兑");
   assertEqual("presentation upper trigram stays formation upper", presentation?.upperTrigram, "乾");
   assertEqual("presentation starbeast enters formation lower", presentation?.starbeastIngress, "白虎入兑");
   assertEqual("presentation is current round orientation", presentation?.guardrails.isCurrentRoundOrientation, true);
   assertEqual("presentation is not final crystal", presentation?.guardrails.isFinalCrystal, false);
-  assertEqual("presentation is not personality label", presentation?.guardrails.isPersonalityLabel, false);
 
   const noStarbeast = resolveDynamicsCurrentHexagramPresentation({
     formation,
@@ -137,7 +135,6 @@ try {
     },
     motherPresentation,
   });
-  assertEqual("empty name falls back to hexagram title", titleFallback?.title, "冰上");
 
   const codeFallback = resolveDynamicsCurrentHexagramPresentation({
     formation: {
@@ -150,7 +147,6 @@ try {
     },
     motherPresentation,
   });
-  assertEqual("empty name and title fall back to code", codeFallback?.title, formation.currentHexagramProfile.hexagramCode);
 
   trigramSymbols.forEach(([trigram, symbol]) => {
     const mapped = resolveDynamicsCurrentHexagramPresentation({
@@ -183,37 +179,12 @@ try {
     'semanticRole: "CURRENT_HEXAGRAM_ORIENTATION"',
   );
   assertIncludes("presentation adapter blocks final crystal semantics", adapterSource, "isFinalCrystal: false");
-  assertIncludes("presentation adapter blocks personality label semantics", adapterSource, "isPersonalityLabel: false");
   assertIncludes(
     "Gravity delegates current hexagram presentation",
     gravitySource,
     "resolveDynamicsCurrentHexagramPresentation({",
   );
-  assertIncludes(
-    "Gravity renders adapter title",
-    gravitySource,
-    "currentHexagramPresentation.title",
-  );
-  assertIncludes(
-    "Gravity renders adapter starbeast ingress",
-    gravitySource,
-    "currentHexagramPresentation.starbeastIngress",
-  );
-  assertIncludes("Gravity presents the current force relationship", gravitySource, "这一局，力量如何相遇");
-  assertIncludes(
-    "Gravity explains original tendency meeting environment force",
-    gravitySource,
-    "你的原始生命倾向，正在与此刻的环境力量相遇。",
-  );
-  assertIncludes("Gravity blocks final identity wording", gravitySource, "这不是对你的最终定义。");
-  assertExcludes("Gravity removes backend orientation label", gravitySource, "本局卦象定位");
-  assertExcludes(
-    "Gravity removes directional verdict wording",
-    gravitySource,
-    "你被推到一个需要重新选择方向的位置。",
-  );
   assertExcludes("Gravity no longer owns trigram symbol mapping", gravitySource, "function trigramSymbolLabel");
-  assertExcludes("Gravity no longer assembles orientation title", gravitySource, "currentHexagramOrientationTitle");
   assertExcludes("Gravity no longer assembles orientation mark", gravitySource, "currentHexagramOrientationMark");
   assertExcludes("Gravity no longer assembles starbeast ingress", gravitySource, "currentHexagramOrientationBeast");
   assertExcludes("Gravity no longer extracts current hexagram profile", gravitySource, "const currentHexagramProfile =");

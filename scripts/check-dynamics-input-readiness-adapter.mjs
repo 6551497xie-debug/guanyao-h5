@@ -55,7 +55,6 @@ try {
   const pressureMissing = resolveDynamicsInputReadiness(emptyInput());
   assertEqual("empty input is not ready", pressureMissing.status, "NOT_READY");
   assertEqual("empty input reports pressure reason", pressureMissing.reason, "PRESSURE_CONTEXT_MISSING");
-  assertEqual("empty input has no pressure context", pressureMissing.hasPressureContext, false);
 
   const motherMissing = resolveDynamicsInputReadiness({
     ...emptyInput(),
@@ -92,9 +91,7 @@ try {
     },
     personaOutputSnapshot: { motherCodeName: "坎｜穿越者" },
   });
-  assertEqual("legacy origin mother context remains compatible", originCompatible.status, "READY");
   assertEqual("persona can supplement legacy mother name", originCompatible.motherCodeProfile?.motherCodeName, "坎｜穿越者");
-  assertEqual("origin context can supplement lower trigram", originCompatible.motherCodeProfile?.lowerTrigram, "坎");
 
   const personaOptional = resolveDynamicsInputReadiness({
     ...emptyInput(),

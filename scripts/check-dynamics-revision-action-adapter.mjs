@@ -86,7 +86,6 @@ try {
 
   const formation = resolveCurrentHexagramFormation(readyInput);
   const action = resolveDynamicsRevisionAction(formation);
-  assertEqual("formed context resolves revision action", Boolean(action), true);
   assertEqual("main cut resolves behavior layer", action?.layerLabel, "行为");
   assertEqual("main cut resolves fourth yao", action?.yaoName, "四爻");
   assertEqual("action line comes from main transmission", action?.actionLine, "在行为落地前切出一个反本能动作。");

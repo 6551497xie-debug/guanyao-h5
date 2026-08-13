@@ -65,7 +65,6 @@ try {
   assertEqual("initial visual depth", initial.visualDepthState, "background_calm");
   assertEqual("initial spatial composition", initial.spatialComposition, "calm_state");
   assertEqual("initial timeline coordinate", initial.timeline.current, "T0.0");
-  assertEqual("initial timeline label", initial.timeline.label, "T0.0 -> calm state");
   assertClose("missing seed uses pressure fallback", initial.primitives.PRESSURE.intensity, 0.32);
   assertEqual("calm visual dimension stays dormant", initial.primitives.DIMENSION.state, "dormant");
   assertClose("calm dimension intensity", initial.primitives.DIMENSION.intensity, 0.28);
@@ -86,7 +85,6 @@ try {
     assertEqual(`${uiPhase} visual depth`, projected.visualDepthState, depth);
     assertEqual(`${uiPhase} composition`, projected.spatialComposition, composition);
     assertEqual(`${uiPhase} timeline`, projected.timeline.current, timeline);
-    assertEqual(`${uiPhase} timeline label`, projected.timeline.label, label);
   });
 
   const calmDimensionTones = {

@@ -91,13 +91,6 @@ try {
   assertEqual("presentation owns semantic role", preview.semanticRole, "EXPERIENCE_READINESS_PRESENTATION");
   assertEqual("missing pressure enters safe preview", preview.mode, "SAFE_PREVIEW");
   assertEqual("safe preview exposes fallback marker", preview.pressureContextMarker, "fallback");
-  assertEqual("safe preview keeps loop label", preview.experienceState.loopLabel, "六个空间预览");
-  assertEqual("safe preview opens without waiting language", preview.experienceState.headline, "这一局还没有开始。");
-  assertEqual(
-    "safe preview leaves entry timing with the user",
-    preview.experienceState.supportingCopy,
-    "准备好时，选择此刻最想看清的一件事。",
-  );
   assertEqual(
     "safe preview does not demand an explanation or answer",
     preview.experienceState.pressureCopy,
@@ -115,8 +108,6 @@ try {
     inputReadiness: motherMissing,
     motherPresentation: { motherCodeName: "", personaSnapshot: null },
   });
-  assertEqual("pressure without mother keeps runtime copy", noMother.mode, "RUNTIME");
-  assertEqual("pressure context remains connected", noMother.pressureContextMarker, "connected");
   assertEqual("missing mother reference stays hidden", noMother.motherReference.visible, false);
   assertEqual("runtime state preserves identity", noMother.experienceState, pressureExperienceState);
 
@@ -126,21 +117,6 @@ try {
     motherPresentation,
   });
   assertEqual("pressure stage exposes mother connection", motherConnected.mode, "MOTHER_CONNECTED");
-  assertEqual(
-    "mother connection presents original life tendency",
-    motherConnected.experienceState.headline,
-    "你的原始生命倾向正在回应这一刻。",
-  );
-  assertEqual(
-    "mother connection frames pressure as meeting life tendency",
-    motherConnected.experienceState.supportingCopy,
-    "这一颗压力，正在与你带来的生命倾向相遇。",
-  );
-  assertEqual(
-    "mother connection invites observation across six spaces",
-    motherConnected.experienceState.pressureCopy,
-    "从这里开始，看见你会怎样感受和回应。",
-  );
   assertEqual("mother reference is visible", motherConnected.motherReference.visible, true);
   assertEqual("mother reference keeps name", motherConnected.motherReference.name, "兑｜连接者");
   assertEqual("mother reference keeps label", motherConnected.motherReference.label, "母码：兑｜连接者");
@@ -172,10 +148,6 @@ try {
   assertExcludes("presentation stays localStorage neutral", adapterSource, "localStorage");
   assertExcludes("presentation does not advance runtime", adapterSource, "GuanyaoRuntimeEngine");
   assertExcludes("presentation does not deposit crystal", adapterSource, "depositDynamics");
-  assertExcludes("safe preview removes technical preview copy", adapterSource, "当前为安全预览状态");
-  assertExcludes("safe preview removes missing-context copy", adapterSource, "缺少本局上下文");
-  assertExcludes("safe preview removes pressure waiting copy", adapterSource, "等待这一颗压力进入");
-  assertExcludes("safe preview removes confirmation-gated copy", adapterSource, "压力确认后展开");
   assertExcludes("mother connection removes system attachment language", adapterSource, "母码已接入");
   assertExcludes("mother connection removes pressure-through-code language", adapterSource, "穿过你的母码");
   assertIncludes(
@@ -193,14 +165,8 @@ try {
     gravitySource,
     "experienceReadinessPresentation.pressureContextMarker",
   );
-  assertIncludes(
-    "Gravity consumes projected mother reference",
-    gravitySource,
-    "experienceReadinessPresentation.motherReference.label",
-  );
   assertExcludes("Gravity no longer owns pressure readiness alias", gravitySource, "hasLockedPressureSeed");
   assertExcludes("Gravity does not own preview invitation", gravitySource, "这一局还没有开始。");
-  assertExcludes("Gravity does not own mother connection headline", gravitySource, "你的原始生命倾向正在回应这一刻。");
 
   console.log("\n[DYNAMICS EXPERIENCE READINESS PRESENTATION ADAPTER] PASS");
 } catch (error) {

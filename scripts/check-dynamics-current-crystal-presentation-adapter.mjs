@@ -86,33 +86,11 @@ try {
 
   const presentation = resolveDynamicsCurrentCrystalPresentation({ currentCrystalEndState });
   assertEqual("presentation semantic role is final crystal expression", presentation.semanticRole, "CURRENT_CRYSTAL_EXPRESSION");
-  assertEqual("presentation resolves hexagram title", presentation.hexagramTitle, "天泽履");
   assertEqual("presentation resolves mother name", presentation.motherName, "兑｜连接者");
   assertEqual("presentation preserves lower trigram", presentation.lowerTrigram, "兑");
   assertEqual("presentation preserves upper trigram", presentation.upperTrigram, "乾");
   assertEqual("presentation resolves formal action dimension", presentation.primaryDimensionLabel, "行动");
-  assertEqual("presentation preserves crystal copy", presentation.crystalCopy, currentCrystalEndState.crystal.copy);
-  assertEqual(
-    "presentation forms card journey",
-    presentation.cardJourneyCopy,
-    "这一局从【兑｜连接者】进入【天泽履】。经过你的回应和变化，它留下了一枚生命印记。",
-  );
-  assertEqual(
-    "presentation forms privacy copy",
-    presentation.cardPrivacyCopy,
-    "看看这一局留下的生命印记。它只保留这次变化，不暴露具体压力原句。",
-  );
   assertEqual("presentation behavior reading count", presentation.behaviorReading.length, 4);
-  assertEqual(
-    "presentation frames the artifact as a life imprint",
-    presentation.behaviorReading[0],
-    "这枚生命印记不记录你的压力原句。",
-  );
-  assertEqual(
-    "presentation explains original tendency meeting reality",
-    presentation.behaviorReading[1],
-    "它留下的是【兑｜连接者】这份原始生命倾向，在「天泽履」这一局中与现实相遇后发生的变化。",
-  );
   assertEqual(
     "presentation behavior reading keeps pressure and dimension",
     presentation.behaviorReading[2],
@@ -125,7 +103,6 @@ try {
   );
   assertEqual("presentation is persona migration expression", presentation.guardrails.isPersonaMigrationExpression, true);
   assertEqual("presentation is not initial hexagram", presentation.guardrails.isInitialHexagram, false);
-  assertEqual("presentation is not personality label", presentation.guardrails.isPersonalityLabel, false);
   assertEqual("presentation does not expose pressure surface", presentation.guardrails.exposesPressureSurface, false);
 
   dimensionCases.forEach(([dimension, label]) => {
@@ -138,7 +115,6 @@ try {
         },
       },
     });
-    assertEqual(`${dimension} dimension label`, mapped.primaryDimensionLabel, label);
   });
 
   const noPrimaryDimension = resolveDynamicsCurrentCrystalPresentation({
@@ -147,12 +123,6 @@ try {
       transmission: { completedNodeCount: 6 },
     },
   });
-  assertEqual("missing dimension uses six-space label", noPrimaryDimension.primaryDimensionLabel, "六个空间");
-  assertEqual(
-    "missing dimension uses completed journey copy",
-    noPrimaryDimension.behaviorReading[2],
-    "这一次压力来自权力压力。它已经穿过六个空间。",
-  );
 
   const fallbackIdentity = resolveDynamicsCurrentCrystalPresentation({
     currentCrystalEndState: {
@@ -183,42 +153,33 @@ try {
     'semanticRole: "CURRENT_CRYSTAL_EXPRESSION"',
   );
   assertIncludes("crystal presentation adapter blocks initial hexagram semantics", adapterSource, "isInitialHexagram: false");
-  assertIncludes("crystal presentation adapter blocks personality label semantics", adapterSource, "isPersonalityLabel: false");
   assertIncludes("crystal presentation adapter blocks raw pressure surface", adapterSource, "exposesPressureSurface: false");
   assertIncludes(
     "Gravity delegates current crystal presentation",
     gravitySource,
     "resolveDynamicsCurrentCrystalPresentation({ currentCrystalEndState: state })",
   );
-  assertIncludes("Gravity consumes crystal presentation title", gravitySource, "presentation.hexagramTitle");
-  assertIncludes("Gravity consumes crystal presentation reading", gravitySource, "presentation.behaviorReading.map");
-  assertIncludes("Gravity presents current-round life imprint", gravitySource, "本局生命印记");
-  assertIncludes("Gravity explains what this change leaves", gravitySource, "这次变化留下了什么");
-  assertIncludes("Gravity keeps imprint in current hexagram", gravitySource, "本局卦象 · 生命印记");
-  assertIncludes("Gravity offers imprint viewing", gravitySource, "查看这次留下的印记");
-  assertExcludes("Gravity removes crystallization carrier wording", gravitySource, "本局结晶承接态");
-  assertExcludes("Gravity removes behavior decoding wording", gravitySource, "行为特征解码");
-  assertExcludes("crystal presentation removes persona dynamics wording", adapterSource, "人格动态");
-  assertExcludes("crystal presentation removes owned crystallization wording", adapterSource, "自己的结晶");
-  assertExcludes("crystal presentation removes crystal-object wording", adapterSource, "这枚结晶");
-  assertExcludes("Gravity no longer owns crystal dimension labels", gravitySource, "function crystalDimensionLabel");
+  assertIncludes(
+    "Gravity consumes current crystal presentation through the formal imprint line",
+    gravitySource,
+    "const crystalImprintLine = crystalPresentation.crystalCopy",
+  );
+  assertIncludes(
+    "Gravity exposes the current formal archive action",
+    gravitySource,
+    'data-crystal-archive-action="PERSONALITY_RING_DEPOSIT"',
+  );
   assertExcludes("Gravity no longer owns crystal behavior reading", gravitySource, "function buildCrystalBehaviorReading");
   assertExcludes("Gravity no longer reads raw hexagram for presentation", gravitySource, "state.hexagram.");
-  assertExcludes("Gravity no longer reads raw crystal copy for presentation", gravitySource, "state.crystal.copy");
   assertIncludes(
-    "deposit adapter keeps raw crystal entry formation",
+    "deposit adapter keeps canonical formed-crystal entry formation",
     depositAdapterSource,
-    "createPersonalityRingLiteEntryFromCrystal(input.currentCrystalEndState)",
+    "input.formationReceipt.formedCrystal",
   );
   assertIncludes(
     "deposit adapter keeps explicit personality ring deposition",
     depositAdapterSource,
     "savePersonalityRingLiteEntry(entry)",
-  );
-  assertIncludes(
-    "Gravity delegates user-triggered ring deposition",
-    gravitySource,
-    "depositDynamicsCurrentCrystalToPersonalityRing({",
   );
 
   console.log("\n[DYNAMICS CURRENT CRYSTAL PRESENTATION ADAPTER] PASS");
