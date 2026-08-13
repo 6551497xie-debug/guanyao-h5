@@ -10,6 +10,7 @@ const assert = (condition, message) => {
 
 const page = read("src/pages/GenesisProductionExperiencePage.tsx");
 const surface = read("src/components/XinmaiLifeCompanionRelationshipActivationSurface.tsx");
+const lifecycleResolver = read("src/services/xinmaiLifeCompanionRelationshipLifecycleResolver.ts");
 const controller = read("src/services/xinmaiLifeCompanionRelationshipAuthorityController.ts");
 const policy = read("src/services/xinmaiLifeCompanionCanonicalMutationPolicy.ts");
 const store = read("src/services/xinmaiLifeCompanionRelationshipCanonicalStore.ts");
@@ -34,7 +35,9 @@ for (const forbidden of [
 ]) assert(!page.includes(forbidden), `legacy/reality consumer remains reachable: ${forbidden}`);
 
 assert(surface.includes(">确认同行<") || surface.includes(': "确认同行"'), "explicit companionship action is missing");
-assert(surface.includes("recoverXinmaiLifeCompanionCanonicalRelationship"), "refresh recovery is missing");
+assert(surface.includes("recoverXinmaiLifeCompanionCanonicalRelationship"), "first-confirmation defensive recovery is missing");
+assert(lifecycleResolver.includes("recoverXinmaiLifeCompanionCanonicalRelationship"), "formal lifecycle recovery is missing");
+assert(page.includes('relationshipLifecycleResult.status !== "FIRST_ENCOUNTER_REQUIRED"'), "formal recovery does not precede First Encounter presentation");
 assert(controller.includes("commitXinmaiLifeCompanionCanonicalRelationship"), "controller does not own the canonical write");
 assert(policy.includes('"ENABLED" as "ENABLED" | "SAFE_WITHHELD"'), "Candidate mutation is not enabled");
 assert(policy.includes("createsRealityIntent: false"), "relationship mutation can create Reality");

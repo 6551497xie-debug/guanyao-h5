@@ -38,8 +38,14 @@ import type {
 } from "../types/genesisProductionExperiencePage";
 import type { GenesisProductionRecognitionRealityResult } from "../types/genesisProductionRecognitionRealityEntry";
 import { XinmaiLifeCompanionRelationshipActivationSurface } from "../components/XinmaiLifeCompanionRelationshipActivationSurface";
+import { XinmaiLifeCompanionRelationshipLifecycleSurface } from "../components/XinmaiLifeCompanionRelationshipLifecycleSurface";
 import { resolveXinmaiLifeCompanionFirstEncounterVisualOutcome } from "../services/xinmaiLifeCompanionFirstEncounterVisualOutcomeAdapter";
 import { resolveXinmaiLifeCompanionRecognizedIdentity } from "../services/xinmaiLifeCompanionRecognizedIdentityAdapter";
+import {
+  resolveXinmaiLifeCompanionRelationshipLifecycle,
+  resolveXinmaiLifeCompanionRelationshipLifecycleIdentity,
+  type XinmaiLifeCompanionRelationshipLifecycleResult,
+} from "../services/xinmaiLifeCompanionRelationshipLifecycleResolver";
 import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
 import { requireXinmaiFormalStatePresentation } from "../services/xinmaiSemanticConstitutionFormalStateMatrix";
 import { resolveXinmaiGenesisLifeOriginNativeControlReadiness } from "../services/xinmaiGenesisLifeOriginNativeControlReadinessResolver";
@@ -229,6 +235,46 @@ export function GenesisProductionExperiencePage({
         : "MOTION",
     );
   const lifeOriginDiscoveryTimerRef = useRef<number | null>(null);
+  const relationshipLifecycleRequestRef = useRef(0);
+  const [relationshipRecoveryAttempt, setRelationshipRecoveryAttempt] =
+    useState(0);
+  const relationshipLifecycleIdentityResult = useMemo(
+    () =>
+      resolveXinmaiLifeCompanionRelationshipLifecycleIdentity({
+        sourceReferenceId: authorizedSourceReferenceId,
+        consumerSourceResult,
+      }),
+    [authorizedSourceReferenceId, consumerSourceResult],
+  );
+  const [relationshipLifecycleResult, setRelationshipLifecycleResult] =
+    useState<
+      | Readonly<{
+          status: "RESOLVING_IDENTITY" | "RECOVERING_RELATIONSHIP";
+        }>
+      | XinmaiLifeCompanionRelationshipLifecycleResult
+    >(() => Object.freeze({ status: "RESOLVING_IDENTITY" as const }));
+
+  useEffect(() => {
+    const requestReference = ++relationshipLifecycleRequestRef.current;
+    setRelationshipLifecycleResult(
+      relationshipLifecycleIdentityResult.status === "READY"
+        ? Object.freeze({ status: "RECOVERING_RELATIONSHIP" as const })
+        : Object.freeze({ status: "RESOLVING_IDENTITY" as const }),
+    );
+    void resolveXinmaiLifeCompanionRelationshipLifecycle({
+      identityResult: relationshipLifecycleIdentityResult,
+    }).then((result) => {
+      if (relationshipLifecycleRequestRef.current !== requestReference) {
+        return;
+      }
+      setRelationshipLifecycleResult(result);
+    });
+    return () => {
+      if (relationshipLifecycleRequestRef.current === requestReference) {
+        relationshipLifecycleRequestRef.current += 1;
+      }
+    };
+  }, [relationshipLifecycleIdentityResult, relationshipRecoveryAttempt]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -769,6 +815,50 @@ export function GenesisProductionExperiencePage({
           {genesisFailurePresentation.currentFact} {genesisFailurePresentation.nextAction}。
           {genesisFailurePresentation.exitConsequence}
         </p>
+      </main>
+    );
+  }
+
+  if (relationshipLifecycleResult.status !== "FIRST_ENCOUNTER_REQUIRED") {
+    return (
+      <main
+        className="gy-genesis-production-experience"
+        data-production-genesis-status="AUTHORIZED_PRODUCTION_GENESIS"
+        data-source-experience-mode={routeAuthorization.sourceExperienceMode}
+        data-source-provenance={routeAuthorization.sourceProvenance}
+        data-source-reference-id={routeAuthorization.sourceReferenceId}
+        data-production-renderer-host-state={canvasHostState}
+        data-formal-journey-state="GENESIS/RELATIONSHIP_RECOVERY"
+        data-life-companion-formal-lifecycle={
+          relationshipLifecycleResult.status
+        }
+        data-life-whisper-entry="DEFERRED"
+        data-relationship-naming-entry="DEFERRED"
+        data-reality-entry="DEFERRED"
+      >
+        <GenesisProductionRendererCanvasHost
+          routeAuthorization={routeAuthorization}
+          consumerSourceResult={consumerSourceResult}
+          visualCalibrationBundle={visualCalibrationResult.bundle}
+          fourSymbolDirectionFieldVisualCalibration={
+            directionFieldCalibrationResult.calibration
+          }
+          lifeArchetypeForceCondensationVisualCalibration={
+            archetypeForceCalibrationResult.calibration
+          }
+          lifeOriginDiscoveryPhase={lifeOriginDiscoveryPhase}
+          lifeOriginControlReadiness={lifeOriginControlReadiness}
+          lifeWhisperRelationshipVisualFact={
+            DORMANT_LIFE_WHISPER_RELATIONSHIP_VISUAL_FACT
+          }
+          onStateChange={setCanvasHostState}
+        />
+        <XinmaiLifeCompanionRelationshipLifecycleSurface
+          state={relationshipLifecycleResult}
+          onRetry={() =>
+            setRelationshipRecoveryAttempt((attempt) => attempt + 1)
+          }
+        />
       </main>
     );
   }
