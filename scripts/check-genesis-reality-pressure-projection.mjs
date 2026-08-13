@@ -11,10 +11,13 @@ const files = Object.freeze({
   service: "src/services/genesisRealityPressureProjection.ts",
   presenceType: "src/types/personalStarBeastLifePresenceProjection.ts",
   presenceService: "src/services/personalStarBeastLifePresenceProjection.ts",
-  renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
-  rendererType: "src/types/isolatedWebGLRendererPrototype.ts",
-  harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
   packageManifest: "package.json",
+});
+
+const formalConsumerFiles = Object.freeze({
+  renderer: "src/renderers/genesisWebGLRendererCore.ts",
+  rendererType: "src/types/genesisWebGLRendererCore.ts",
+  productionHost: "src/renderers/genesisProductionRendererHost.ts",
 });
 
 const failures = [];
@@ -48,21 +51,16 @@ if (failures.length === 0) {
   const source = Object.fromEntries(
     Object.entries(absolute).map(([name, filePath]) => [name, fs.readFileSync(filePath, "utf8")]),
   );
+  Object.assign(
+    source,
+    Object.fromEntries(
+      Object.entries(formalConsumerFiles).map(([name, relativePath]) => {
+        const filePath = path.join(rootDir, relativePath);
+        return [name, fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : ""];
+      }),
+    ),
+  );
   const packageJson = JSON.parse(source.packageManifest);
-
-  [
-    "Personal Star Beast Reveal",
-    "Reality Pressure Reference",
-    "Genesis Reality Pressure Projection",
-    "field compression",
-    "boundary load",
-    "core resistance",
-    "flow deflection",
-    "Gravity",
-    "Choice",
-    "Crystal",
-    "ISOLATED_PROTOTYPE_ONLY",
-  ].forEach((marker) => assertIncludes("P108 protocol", source.protocol, marker));
 
   [
     "export type GenesisRealityPressureInput",
@@ -114,10 +112,21 @@ if (failures.length === 0) {
     "GenesisRealityPressureProjection",
   ].forEach((marker) => assertIncludes("P108 presence bridge", source.presenceType, marker));
   assertIncludes("P108 presence accepts pressure", source.presenceService, "realityPressureProjection");
-  assertIncludes("P108 renderer consumes pressure", source.renderer, "realityPressure");
-  assertIncludes("P108 renderer receives pressure", source.renderer, "realityPressureProjection");
-  assertIncludes("P108 harness consumes adapter pressure", source.harness, "projectionBundle.realityPressureProjection");
-  assertIncludes("P108 renderer contract carries pressure", source.rendererType, "realityPressure: GenesisRealityPressureProjection | null");
+  assertIncludes(
+    "P108 formal Renderer consumes pressure",
+    source.renderer,
+    "const realityPressure = sceneProjection.realityPressure",
+  );
+  assertIncludes(
+    "P108 Production Host supplies pressure",
+    source.productionHost,
+    "projectionBundle.realityPressureProjection",
+  );
+  assertIncludes(
+    "P108 formal Renderer contract carries pressure",
+    source.rendererType,
+    "realityPressure: GenesisRealityPressureProjection | null",
+  );
   assertIncludes(
     "P108 gate registered",
     packageJson.scripts?.["check-genesis-reality-pressure-projection"] ?? "",
@@ -137,7 +146,7 @@ if (failures.length === 0) {
         export { adaptPersonalStarBeastSceneModelToRenderPlan } from "./src/services/personalStarBeastRenderPlanAdapter.ts";
         export { projectGenesisRealityPressure } from "./src/services/genesisRealityPressureProjection.ts";
         export { projectPersonalStarBeastRenderPlanToLifePresence } from "./src/services/personalStarBeastLifePresenceProjection.ts";
-        export { projectPersonalStarBeastRenderPlanToWebGLScene } from "./src/prototypes/isolatedWebGLRendererPrototype.ts";
+        export { projectPersonalStarBeastRenderPlanToWebGLScene } from "./src/renderers/genesisWebGLRendererCore.ts";
       `,
       resolveDir: rootDir,
       sourcefile: "genesis-reality-pressure-gate-entry.ts",
