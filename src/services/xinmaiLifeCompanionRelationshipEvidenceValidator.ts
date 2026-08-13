@@ -47,6 +47,23 @@ export const createXinmaiLifeCompanionIdentityKey = (
     identity.mansionCoordinateReferenceId,
   ].map(encodeURIComponent).join("::");
 
+export async function createXinmaiLifeCompanionRelationshipId(
+  identity: XinmaiLifeCompanionIdentityReferences,
+): Promise<string | null> {
+  const digest = await digestXinmaiLifeCompanionEvidence({
+    identityReferences: identity,
+  });
+  return digest === null ? null : `life-companion-relationship:${digest}`;
+}
+
+export const createXinmaiLifeCompanionFirstEncounterReceiptReferenceId = (
+  evidenceDigest: string,
+): string => `first-encounter-receipt:${evidenceDigest}`;
+
+export const createXinmaiLifeCompanionOutcomeReferenceId = (
+  commandDigest: string,
+): string => `life-companion-outcome:${commandDigest}`;
+
 export const xinmaiLifeCompanionIdentityMatches = (
   left: XinmaiLifeCompanionIdentityReferences,
   right: XinmaiLifeCompanionIdentityReferences,
@@ -123,6 +140,21 @@ export const isXinmaiLifeCompanionRelationshipAggregate = (
 ): value is XinmaiLifeCompanionRelationshipAggregate => {
   if (
     !isRecord(value) ||
+    !hasExactKeys(value, [
+      "schemaVersion",
+      "protocolRevision",
+      "relationshipId",
+      "identityKey",
+      "identityReferences",
+      "state",
+      "firstEncounterReceiptReferenceId",
+      "firstEncounterReceipt",
+      "relationshipDigest",
+      "revision",
+      "createdAt",
+      "updatedAt",
+      "provenance",
+    ]) ||
     value.schemaVersion !==
       XINMAI_LIFE_COMPANION_RELATIONSHIP_SCHEMA_VERSION ||
     value.protocolRevision !==
@@ -145,7 +177,18 @@ export const isXinmaiLifeCompanionRelationshipAggregate = (
     value.revision !== 1 ||
     !validText(value.createdAt) ||
     !validText(value.updatedAt) ||
-    !isRecord(value.provenance)
+    !isRecord(value.provenance) ||
+    !hasExactKeys(value.provenance, [
+      "identityAuthority",
+      "relationshipAuthority",
+      "explicitCompanionshipConfirmationRequired",
+      "lifeWhisperRequired",
+      "namingRequired",
+      "realityRequired",
+      "noRawWhisperPersistence",
+      "noPrivateFreeTextPersistence",
+      "noBackfill",
+    ])
   ) {
     return false;
   }
@@ -168,6 +211,16 @@ export const isXinmaiLifeCompanionCommandFence = (
   value: unknown,
 ): value is XinmaiLifeCompanionCommandFence =>
   isRecord(value) &&
+  hasExactKeys(value, [
+    "schemaVersion",
+    "commandReferenceId",
+    "outcomeReferenceId",
+    "relationshipId",
+    "identityKey",
+    "commandDigest",
+    "outcome",
+    "committedAt",
+  ]) &&
   value.schemaVersion ===
     XINMAI_LIFE_COMPANION_COMMAND_FENCE_SCHEMA_VERSION &&
   validText(value.commandReferenceId) &&
@@ -178,10 +231,60 @@ export const isXinmaiLifeCompanionCommandFence = (
   value.outcome === "COMPANIONSHIP_CONFIRMED" &&
   validText(value.committedAt);
 
+export async function digestXinmaiLifeCompanionRelationshipCommand(
+  commandReferenceId: string,
+  relationship: XinmaiLifeCompanionRelationshipAggregate,
+): Promise<string | null> {
+  return digestXinmaiLifeCompanionEvidence({
+    type: "CONFIRM_COMPANIONSHIP",
+    commandReferenceId,
+    relationshipSchemaVersion: relationship.schemaVersion,
+    relationshipProtocolRevision: relationship.protocolRevision,
+    relationshipId: relationship.relationshipId,
+    identityReferences: relationship.identityReferences,
+    responseCycleReferenceId:
+      relationship.firstEncounterReceipt.responseCycleReferenceId,
+    visualOutcomeReferenceId:
+      relationship.firstEncounterReceipt.visualOutcomeReferenceId,
+    visualOutcome: relationship.firstEncounterReceipt.visualOutcome,
+  });
+}
+
+export async function validateXinmaiLifeCompanionCommandFenceBinding(
+  relationship: XinmaiLifeCompanionRelationshipAggregate,
+  fence: unknown,
+): Promise<boolean> {
+  if (
+    !isXinmaiLifeCompanionCommandFence(fence) ||
+    fence.relationshipId !== relationship.relationshipId ||
+    fence.identityKey !== relationship.identityKey
+  ) {
+    return false;
+  }
+  const commandDigest = await digestXinmaiLifeCompanionRelationshipCommand(
+    fence.commandReferenceId,
+    relationship,
+  );
+  return commandDigest !== null &&
+    fence.commandDigest === commandDigest &&
+    fence.outcomeReferenceId ===
+      createXinmaiLifeCompanionOutcomeReferenceId(commandDigest);
+}
+
 export async function validateXinmaiLifeCompanionRelationshipEvidence(
   relationship: unknown,
 ): Promise<boolean> {
   if (!isXinmaiLifeCompanionRelationshipAggregate(relationship)) {
+    return false;
+  }
+  const expectedRelationshipId =
+    await createXinmaiLifeCompanionRelationshipId(
+      relationship.identityReferences,
+    );
+  if (
+    expectedRelationshipId === null ||
+    relationship.relationshipId !== expectedRelationshipId
+  ) {
     return false;
   }
   const receiptDigest = await digestXinmaiLifeCompanionEvidence({
@@ -196,7 +299,11 @@ export async function validateXinmaiLifeCompanionRelationshipEvidence(
   });
   if (
     receiptDigest === null ||
-    receiptDigest !== relationship.firstEncounterReceipt.evidenceDigest
+    receiptDigest !== relationship.firstEncounterReceipt.evidenceDigest ||
+    relationship.firstEncounterReceiptReferenceId !==
+      createXinmaiLifeCompanionFirstEncounterReceiptReferenceId(
+        receiptDigest,
+      )
   ) {
     return false;
   }

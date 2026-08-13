@@ -13,6 +13,7 @@ import {
   createXinmaiLifeCompanionIdentityKey,
   isXinmaiLifeCompanionCommandFence,
   isXinmaiLifeCompanionRelationshipAggregate,
+  validateXinmaiLifeCompanionCommandFenceBinding,
   validateXinmaiLifeCompanionRelationshipEvidence,
   xinmaiLifeCompanionIdentityMatches,
 } from "./xinmaiLifeCompanionRelationshipEvidenceValidator";
@@ -216,9 +217,11 @@ export async function commitXinmaiLifeCompanionCanonicalRelationship(
   if (
     !isXinmaiLifeCompanionRelationshipAggregate(relationship) ||
     !isXinmaiLifeCompanionCommandFence(fence) ||
-    fence.relationshipId !== relationship.relationshipId ||
-    fence.identityKey !== relationship.identityKey ||
-    !(await validateXinmaiLifeCompanionRelationshipEvidence(relationship))
+    !(await validateXinmaiLifeCompanionRelationshipEvidence(relationship)) ||
+    !(await validateXinmaiLifeCompanionCommandFenceBinding(
+      relationship,
+      fence,
+    ))
   ) {
     return Object.freeze({
       status: "CONFLICT" as const,
@@ -236,6 +239,7 @@ export async function commitXinmaiLifeCompanionCanonicalRelationship(
     let existingFence: unknown = null;
     let reads = 0;
     let result: XinmaiLifeCompanionCanonicalCommitResult | null = null;
+    let commitPrepared = false;
     const conflict = (reason: "COMMAND_FENCE_CONFLICT" | "IDENTITY_ALREADY_BOUND") => {
       result = Object.freeze({
         status: "CONFLICT" as const,
@@ -268,7 +272,10 @@ export async function commitXinmaiLifeCompanionCanonicalRelationship(
             existingRelationship.relationshipId === relationship.relationshipId &&
             existingRelationship.relationshipDigest === relationship.relationshipDigest &&
             existingFence.commandReferenceId === fence.commandReferenceId &&
-            existingFence.outcomeReferenceId === fence.outcomeReferenceId
+            existingFence.outcomeReferenceId === fence.outcomeReferenceId &&
+            existingFence.commandDigest === fence.commandDigest &&
+            existingFence.relationshipId === fence.relationshipId &&
+            existingFence.identityKey === fence.identityKey
           ) {
             result = Object.freeze({
               status: "ALREADY_COMMITTED" as const,
@@ -286,6 +293,10 @@ export async function commitXinmaiLifeCompanionCanonicalRelationship(
         const fenceAdd = fenceStore.add(fence);
         relationshipAdd.onerror = (event) => {
           event.preventDefault();
+          if (result !== null) {
+            transaction.abort();
+            return;
+          }
           if (relationshipAdd.error?.name === "QuotaExceededError") {
             result = Object.freeze({
               status: "UNAVAILABLE" as const,
@@ -300,6 +311,10 @@ export async function commitXinmaiLifeCompanionCanonicalRelationship(
         };
         fenceAdd.onerror = (event) => {
           event.preventDefault();
+          if (result !== null) {
+            transaction.abort();
+            return;
+          }
           if (fenceAdd.error?.name === "QuotaExceededError") {
             result = Object.freeze({
               status: "UNAVAILABLE" as const,
@@ -312,11 +327,7 @@ export async function commitXinmaiLifeCompanionCanonicalRelationship(
           }
           transaction.abort();
         };
-        result = Object.freeze({
-          status: "COMMITTED" as const,
-          relationship,
-          fence,
-        });
+        commitPrepared = true;
       };
       const existingRelationshipRequest = relationshipStore
         .index("identityKey")
@@ -345,16 +356,28 @@ export async function commitXinmaiLifeCompanionCanonicalRelationship(
     }
     transaction.onabort = () => {
       database.close();
-      resolve(result ?? Object.freeze({
-        status: "UNAVAILABLE" as const,
-        reason: "TRANSACTION_ABORTED" as const,
-        relationship: null,
-        fence: null,
-      }));
+      resolve(
+        result?.status === "CONFLICT" || result?.status === "UNAVAILABLE"
+          ? result
+          : Object.freeze({
+              status: "UNAVAILABLE" as const,
+              reason: "TRANSACTION_ABORTED" as const,
+              relationship: null,
+              fence: null,
+            }),
+      );
     };
     transaction.onerror = () => undefined;
     transaction.oncomplete = () => {
       database.close();
+      if (commitPrepared) {
+        resolve(Object.freeze({
+          status: "COMMITTED" as const,
+          relationship,
+          fence,
+        }));
+        return;
+      }
       resolve(result ?? commitUnavailable("FAILED"));
     };
   });

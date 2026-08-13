@@ -75,7 +75,9 @@ for (const boundary of [
 assert(
   validator.includes("hasExactKeys") &&
     validator.includes('crypto.subtle.digest("SHA-256"') &&
-    validator.includes("validateXinmaiLifeCompanionRelationshipEvidence"),
+    validator.includes("validateXinmaiLifeCompanionRelationshipEvidence") &&
+    validator.includes("validateXinmaiLifeCompanionCommandFenceBinding") &&
+    validator.includes("createXinmaiLifeCompanionOutcomeReferenceId"),
   "exact schema/digest validator is incomplete",
 );
 for (const consumer of [
@@ -193,6 +195,12 @@ class FakeTransaction {
     this.oncomplete = null;
     this.onabort = null;
     this.onerror = null;
+    this.abortSnapshot = state.mode === "ABORT_TRANSACTION"
+      ? new Map([...state.stores].map(([name, store]) => [
+          name,
+          new Map([...store.records].map(([key, value]) => [key, clone(value)])),
+        ]))
+      : null;
     queueMicrotask(() => this.completeWhenReady());
   }
   objectStore(name) {
@@ -211,7 +219,12 @@ class FakeTransaction {
     if (this.settled || this.pending !== 0) return;
     this.settled = true;
     queueMicrotask(() => {
-      if (this.state.mode === "ABORT_TRANSACTION") this.onabort?.();
+      if (this.state.mode === "ABORT_TRANSACTION") {
+        for (const [name, records] of this.abortSnapshot ?? []) {
+          this.state.stores.get(name).records = records;
+        }
+        this.onabort?.();
+      }
       else this.oncomplete?.();
     });
   }
@@ -318,7 +331,8 @@ const identity = Object.freeze({
   mansionCoordinateReferenceId: "mansion:one",
 });
 const identityKey = runtime.createXinmaiLifeCompanionIdentityKey(identity);
-const relationshipId = `relationship:${identityKey}`;
+const relationshipId = await runtime.createXinmaiLifeCompanionRelationshipId(identity);
+assert(relationshipId !== null, "deterministic relationship ID was not created");
 const receiptEvidence = {
   relationshipId,
   identityKey,
@@ -335,7 +349,10 @@ const relationshipBase = {
   identityKey,
   identityReferences: identity,
   state: "COMPANIONSHIP_CONFIRMED",
-  firstEncounterReceiptReferenceId: `first-encounter:${identityKey}`,
+  firstEncounterReceiptReferenceId:
+    runtime.createXinmaiLifeCompanionFirstEncounterReceiptReferenceId(
+      evidenceDigest,
+    ),
   revision: 1,
 };
 const relationshipDigest = await runtime.digestXinmaiLifeCompanionEvidence({
@@ -373,17 +390,29 @@ const relationship = Object.freeze({
     noBackfill: true,
   }),
 });
+const commandDigest =
+  await runtime.digestXinmaiLifeCompanionRelationshipCommand(
+    "command:one",
+    relationship,
+  );
+assert(commandDigest !== null, "deterministic command digest was not created");
 const fence = Object.freeze({
   schemaVersion: runtime.XINMAI_LIFE_COMPANION_COMMAND_FENCE_SCHEMA_VERSION,
   commandReferenceId: "command:one",
-  outcomeReferenceId: "relationship-outcome:one",
+  outcomeReferenceId:
+    runtime.createXinmaiLifeCompanionOutcomeReferenceId(commandDigest),
   relationshipId,
   identityKey,
-  commandDigest: "command-digest:one",
+  commandDigest,
   outcome: "COMPANIONSHIP_CONFIRMED",
   committedAt: "2026-08-13T00:00:00.000Z",
 });
 assert(await runtime.validateXinmaiLifeCompanionRelationshipEvidence(relationship), "valid relationship evidence was rejected");
+assert(await runtime.validateXinmaiLifeCompanionCommandFenceBinding(relationship, fence), "valid command fence binding was rejected");
+assert(!runtime.isXinmaiLifeCompanionRelationshipAggregate({ ...relationship, rawWhisper: "private" }), "aggregate accepted an undeclared private field");
+assert(!runtime.isXinmaiLifeCompanionRelationshipAggregate({ ...relationship, provenance: { ...relationship.provenance, privateText: "private" } }), "provenance accepted an undeclared private field");
+assert(!runtime.isXinmaiLifeCompanionCommandFence({ ...fence, privateText: "private" }), "command fence accepted an undeclared field");
+assert(!(await runtime.validateXinmaiLifeCompanionCommandFenceBinding(relationship, { ...fence, commandDigest: "tampered" })), "tampered command digest was accepted");
 const committed = await runtime.commitXinmaiLifeCompanionCanonicalRelationship(relationship, fence);
 assert(committed.status === "COMMITTED", "foundation transaction did not commit atomically");
 const duplicate = await runtime.commitXinmaiLifeCompanionCanonicalRelationship(relationship, fence);
@@ -393,7 +422,21 @@ assert(countsAfter.relationships === 1 && countsAfter.fences === 1, "duplicate c
 const recovered = await runtime.recoverXinmaiLifeCompanionCanonicalRelationship(identity);
 assert(recovered.status === "READY", "canonical relationship did not recover");
 
-const conflictingFence = Object.freeze({ ...fence, commandReferenceId: "command:two", outcomeReferenceId: "relationship-outcome:two" });
+const conflictingCommandDigest =
+  await runtime.digestXinmaiLifeCompanionRelationshipCommand(
+    "command:two",
+    relationship,
+  );
+assert(conflictingCommandDigest !== null, "second deterministic command digest was not created");
+const conflictingFence = Object.freeze({
+  ...fence,
+  commandReferenceId: "command:two",
+  commandDigest: conflictingCommandDigest,
+  outcomeReferenceId:
+    runtime.createXinmaiLifeCompanionOutcomeReferenceId(
+      conflictingCommandDigest,
+    ),
+});
 const conflict = await runtime.commitXinmaiLifeCompanionCanonicalRelationship(relationship, conflictingFence);
 assert(conflict.status === "CONFLICT", "second command did not fail closed");
 
@@ -426,5 +469,39 @@ assert(quota.status === "UNAVAILABLE" && quota.reason === "STORAGE_QUOTA_EXCEEDE
 quotaState.mode = "NORMAL";
 const quotaCounts = await runtime.inspectXinmaiLifeCompanionCanonicalStoreCounts();
 assert(quotaCounts.relationships === 0 && quotaCounts.fences === 0, "quota failure left a partial write");
+
+const abortWriteState = createState();
+installIndexedDb(abortWriteState);
+await runtime.inspectXinmaiLifeCompanionCanonicalStoreCounts();
+abortWriteState.mode = "ABORT_TRANSACTION";
+const abortedWrite = await runtime.commitXinmaiLifeCompanionCanonicalRelationship(relationship, fence);
+assert(abortedWrite.status === "UNAVAILABLE" && abortedWrite.reason === "TRANSACTION_ABORTED", "write transaction abort was reported as committed");
+abortWriteState.mode = "NORMAL";
+const abortWriteCounts = await runtime.inspectXinmaiLifeCompanionCanonicalStoreCounts();
+assert(abortWriteCounts.relationships === 0 && abortWriteCounts.fences === 0, "aborted write left a partial record");
+
+const concurrentSameState = createState();
+installIndexedDb(concurrentSameState);
+await runtime.inspectXinmaiLifeCompanionCanonicalStoreCounts();
+const concurrentSame = await Promise.all([
+  runtime.commitXinmaiLifeCompanionCanonicalRelationship(relationship, fence),
+  runtime.commitXinmaiLifeCompanionCanonicalRelationship(relationship, fence),
+]);
+assert(concurrentSame.filter((entry) => entry.status === "COMMITTED").length === 1, "same-command race did not produce one commit");
+assert(concurrentSame.every((entry) => entry.status === "COMMITTED" || entry.status === "ALREADY_COMMITTED" || entry.status === "CONFLICT"), "same-command race produced an invalid outcome");
+const concurrentSameCounts = await runtime.inspectXinmaiLifeCompanionCanonicalStoreCounts();
+assert(concurrentSameCounts.relationships === 1 && concurrentSameCounts.fences === 1, "same-command race created duplicate records");
+
+const concurrentDifferentState = createState();
+installIndexedDb(concurrentDifferentState);
+await runtime.inspectXinmaiLifeCompanionCanonicalStoreCounts();
+const concurrentDifferent = await Promise.all([
+  runtime.commitXinmaiLifeCompanionCanonicalRelationship(relationship, fence),
+  runtime.commitXinmaiLifeCompanionCanonicalRelationship(relationship, conflictingFence),
+]);
+assert(concurrentDifferent.filter((entry) => entry.status === "COMMITTED").length === 1, "different-command race did not produce one commit");
+assert(concurrentDifferent.filter((entry) => entry.status === "CONFLICT").length === 1, "different-command race did not fence the loser");
+const concurrentDifferentCounts = await runtime.inspectXinmaiLifeCompanionCanonicalStoreCounts();
+assert(concurrentDifferentCounts.relationships === 1 && concurrentDifferentCounts.fences === 1, "different-command race created duplicate records");
 
 console.log("[XINMAI LIFE COMPANION RELATIONSHIP AUTHORITY FOUNDATION] PASS");
