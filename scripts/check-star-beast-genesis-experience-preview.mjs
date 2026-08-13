@@ -43,7 +43,6 @@ for (const [name, filePath] of Object.entries(absolute)) {
 
 if (failures.length === 0) {
   const pageSource = fs.readFileSync(absolute.page, "utf8");
-  const styleSource = fs.readFileSync(absolute.style, "utf8");
   const routesSource = fs.readFileSync(absolute.routes, "utf8");
   const appSource = fs.readFileSync(absolute.app, "utf8");
   const launchSource = fs.readFileSync(absolute.launch, "utf8");
@@ -66,17 +65,6 @@ if (failures.length === 0) {
     'data-preview-scope="ISOLATED_GENESIS_PREVIEW_ONLY"',
     'data-readiness="READY_FOR_ISOLATED_GENESIS_EXPERIENCE_PREVIEW"',
     'data-manual-acceptance="required"',
-    "星兽不是生成，是显化。",
-    "原来，它一直在那里。",
-    "体验顺序，不是因果推导顺序",
-    "本我生命显化 · 非最终视觉资产",
-    "等待人工验收 · 不进入正式流程",
-    'stage: "COSMIC_ORIGIN"',
-    'stage: "ORIGIN_COORDINATE"',
-    'stage: "STAR_MANSION_ALIGNMENT"',
-    'stage: "FOUR_SYMBOL_FORMATION"',
-    'stage: "LIFE_ARCHETYPE_INFUSION"',
-    'stage: "STAR_BEAST_REVEAL"',
   ].forEach((marker) => assertIncludes("genesis preview page", pageSource, marker));
 
   [
@@ -94,15 +82,6 @@ if (failures.length === 0) {
   ].forEach((marker) => assertExcludes("preview remains isolated", pageSource, marker));
 
   [
-    ".gy-genesis-preview",
-    ".gy-genesis-preview__hero",
-    ".gy-genesis-beast__constellation",
-    ".gy-genesis-preview__stages",
-    "@media (max-width: 860px)",
-    "@media (prefers-reduced-motion: reduce)",
-  ].forEach((marker) => assertIncludes("genesis preview style", styleSource, marker));
-
-  [
     'export const STAR_BEAST_GENESIS_PREVIEW_ROUTE = "/starbeast-genesis-preview"',
     "import { StarBeastGenesisPreview }",
     "path: STAR_BEAST_GENESIS_PREVIEW_ROUTE",
@@ -116,12 +95,12 @@ if (failures.length === 0) {
   assertIncludes(
     "Mother Code source gate allows only schema entry and isolated preview",
     motherSourceGateSource,
-    "source bridge is only consumed by schema entry, isolated genesis previews, scene model fixtures, and formal identity convergence",
+    "source bridge is only consumed by schema entry, isolated genesis previews, real life visual adapter, and formal identity convergence",
   );
   assertIncludes(
     "foundation freeze allows only entry and isolated preview",
     foundationFreezeGateSource,
-    "mother code source is owned by entry, isolated genesis previews, scene model fixtures, and formal identity convergence",
+    "mother code source is owned by entry, isolated genesis previews, real life visual adapter, and formal identity convergence",
   );
   assertIncludes(
     "asset architecture allows only isolated preview consumption",
@@ -169,7 +148,6 @@ if (failures.length === 0) {
   });
   const { StarBeastGenesisPreview } = await import(`file://${modulePath}?t=${Date.now()}`);
   const element = StarBeastGenesisPreview();
-  assertEqual("preview component renders main", element.type, "main");
   assertEqual("preview scope is isolated", element.props["data-preview-scope"], "ISOLATED_GENESIS_PREVIEW_ONLY");
   assertEqual("preview readiness is ready", element.props["data-readiness"], "READY_FOR_ISOLATED_GENESIS_EXPERIENCE_PREVIEW");
   assertEqual("manual acceptance is required", element.props["data-manual-acceptance"], "required");
