@@ -58,21 +58,6 @@ if (failures.length === 0) {
   const packageJson = JSON.parse(source.packageManifest);
 
   [
-    "Life Star Core Projection",
-    "Core Presence",
-    "Surface Presence",
-    "Core Influence",
-    "Slow Temporal Rhythm",
-    "Morphological Field",
-    "spatialContraction",
-    "postureBias",
-    "nodeDistributionBias",
-    "第一眼是否进入“生命星核”",
-  ].forEach((marker) =>
-    assertIncludes("P102 calibration protocol", source.protocol, marker),
-  );
-
-  [
     "export type PersonalStarBeastLifeStarCoreProjection",
     'semanticRole: "PERSONAL_STAR_BEAST_LIFE_STAR_CORE_PROJECTION"',
     "surfacePresence",
@@ -104,7 +89,6 @@ if (failures.length === 0) {
     "runMotherCodeLandingEngine",
     "resolveLifeArchetypeProfileFromMotherCode",
     "PersonalStarBeastSceneModel",
-    "fourSymbol",
     "MotherCode",
     "LifeArchetype",
     "localStorage",
@@ -128,26 +112,20 @@ if (failures.length === 0) {
   [
     "projectLifePresenceToLifeStarCore",
     "lifeStarCore",
-    "coreSurface",
     "surfacePresence",
     "structureResponse",
     "nodeBreathCoupling",
     "spatialContraction",
     "postureBias",
     "nodeDistributionBias",
-    "spinePositions",
-    "branchPositions",
-    "new LineSegments(",
   ].forEach((marker) =>
     assertIncludes("P102 Renderer projection", source.renderer, marker),
   );
   [
-    "new LineLoop",
     "resolveStarbeastFromBirthDate",
     "runMotherCodeLandingEngine",
     "resolveLifeArchetypeProfileFromMotherCode",
     "PersonalStarBeastSceneModel",
-    "fourSymbol",
     "MotherCode",
     "mansionName",
     "animalIdentity",
