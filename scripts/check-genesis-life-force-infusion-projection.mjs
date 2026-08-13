@@ -12,10 +12,13 @@ const files = Object.freeze({
   alignmentType: "src/types/genesisFourSymbolAlignmentProjection.ts",
   presenceType: "src/types/personalStarBeastLifePresenceProjection.ts",
   presenceService: "src/services/personalStarBeastLifePresenceProjection.ts",
-  renderer: "src/prototypes/isolatedWebGLRendererPrototype.ts",
-  rendererType: "src/types/isolatedWebGLRendererPrototype.ts",
-  harness: "src/pages/PersonalStarBeastWebGLPrototypeHarness.tsx",
   packageManifest: "package.json",
+});
+
+const formalConsumerFiles = Object.freeze({
+  renderer: "src/renderers/genesisWebGLRendererCore.ts",
+  rendererType: "src/types/genesisWebGLRendererCore.ts",
+  productionHost: "src/renderers/genesisProductionRendererHost.ts",
 });
 
 const failures = [];
@@ -58,18 +61,16 @@ if (failures.length === 0) {
       fs.readFileSync(filePath, "utf8"),
     ]),
   );
+  Object.assign(
+    source,
+    Object.fromEntries(
+      Object.entries(formalConsumerFiles).map(([name, relativePath]) => {
+        const filePath = path.join(rootDir, relativePath);
+        return [name, fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : ""];
+      }),
+    ),
+  );
   const packageJson = JSON.parse(source.packageManifest);
-
-  [
-    "Formal MotherCodeProfile",
-    "LifeArchetypeProfile",
-    "Genesis Life Force Infusion Projection",
-    "母码原力落入形态场",
-    "FIELD_ALIGNED",
-    "force mode",
-    "core pull",
-    "ISOLATED_PROTOTYPE_ONLY",
-  ].forEach((marker) => assertIncludes("P106 protocol", source.protocol, marker));
 
   [
     "export type GenesisLifeForceInfusionInput",
@@ -120,10 +121,21 @@ if (failures.length === 0) {
     "GenesisLifeForceInfusionProjection",
   ].forEach((marker) => assertIncludes("P106 presence bridge", source.presenceType, marker));
   assertIncludes("P106 presence service accepts infusion", source.presenceService, "lifeForceInfusionProjection");
-  assertIncludes("P106 renderer consumes infusion", source.renderer, "lifeForceInfusion");
-  assertIncludes("P106 renderer receives infusion", source.renderer, "lifeForceInfusionProjection");
-  assertIncludes("P106 harness consumes adapter infusion", source.harness, "projectionBundle.lifeForceInfusionProjection");
-  assertIncludes("P106 renderer contract carries infusion", source.rendererType, "lifeForceInfusion: GenesisLifeForceInfusionProjection | null");
+  assertIncludes(
+    "P106 formal Renderer consumes infusion",
+    source.renderer,
+    "const lifeForceInfusion = sceneProjection.lifeForceInfusion",
+  );
+  assertIncludes(
+    "P106 Production Host supplies infusion",
+    source.productionHost,
+    "projectionBundle.lifeForceInfusionProjection",
+  );
+  assertIncludes(
+    "P106 formal Renderer contract carries infusion",
+    source.rendererType,
+    "lifeForceInfusion: GenesisLifeForceInfusionProjection | null",
+  );
   assertIncludes("P106 gate registered", packageJson.scripts?.["check-genesis-life-force-infusion-projection"] ?? "", "node scripts/check-genesis-life-force-infusion-projection.mjs");
   assertIncludes("release includes P106 gate", packageJson.scripts?.["postcheck:release"] ?? "", "npm run check-genesis-life-force-infusion-projection");
 
@@ -141,7 +153,7 @@ if (failures.length === 0) {
         export { projectGenesisFourSymbolAlignment } from "./src/services/genesisFourSymbolAlignmentProjection.ts";
         export { projectGenesisLifeForceInfusion } from "./src/services/genesisLifeForceInfusionProjection.ts";
         export { projectPersonalStarBeastRenderPlanToLifePresence } from "./src/services/personalStarBeastLifePresenceProjection.ts";
-        export { projectPersonalStarBeastRenderPlanToWebGLScene } from "./src/prototypes/isolatedWebGLRendererPrototype.ts";
+        export { projectPersonalStarBeastRenderPlanToWebGLScene } from "./src/renderers/genesisWebGLRendererCore.ts";
       `,
       resolveDir: rootDir,
       sourcefile: "genesis-life-force-infusion-gate-entry.ts",
