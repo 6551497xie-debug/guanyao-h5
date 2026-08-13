@@ -113,21 +113,22 @@ export function XinmaiGenesisBirthCoordinateControls({
       data-overview-effect-entry="LUNAR_EARTH_OVERVIEW"
       data-subject-anchor="FIRST_PERSON_OBSERVER_AND_ACTOR"
       data-star-beast-relation="OTHER_COSMIC_LIFE"
+      data-world-axiom="BIRTH_BEGINS_ENCOUNTER_NOT_LIFE"
     >
       <div className="xinmai-genesis-birth-coordinate__copy">
-        <span className="xinmai-genesis-birth-coordinate__eyebrow">月地视域 · 现实起点</span>
+        <span className="xinmai-genesis-birth-coordinate__eyebrow">月地总观 · 寻找生命</span>
         <h1 id="xinmai-genesis-birth-coordinate-title">{semantic.purpose}</h1>
         <p>{semantic.explanation}</p>
       </div>
       {decision.primaryAction === "BEGIN" ? (
         <button className="xinmai-genesis-birth-coordinate__primary" type="button" onClick={onBegin}>
-          填写出生时间
+          校准相遇坐标
         </button>
       ) : null}
       {decision.showCoordinateFields ? (
         <form onSubmit={submit} noValidate aria-describedby="xinmai-genesis-birth-coordinate-feedback">
           <fieldset disabled={XINMAI_GENESIS_BIRTH_NATIVE_INPUT_SYNC_POLICY !== "ENABLED"}>
-            <legend>填写出生时间坐标</legend>
+            <legend>校准相遇坐标</legend>
             <p className="xinmai-genesis-birth-coordinate__instruction">
               按出生证明或家人记忆中的当地时间填写。系统以公历作为输入；农历与时辰只作为文化时间表达，不用于判断命运或人格。
             </p>
@@ -248,7 +249,7 @@ export function XinmaiGenesisBirthCoordinateControls({
               disabled={!decision.confirmationEnabled}
               aria-disabled={!decision.confirmationEnabled}
             >
-              {decision.confirmationEnabled ? semantic.primaryAction : "完成输入后确认"}
+              {decision.confirmationEnabled ? "确认这个相遇坐标" : "完成坐标信息后确认"}
             </button>
           </fieldset>
         </form>

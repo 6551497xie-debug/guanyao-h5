@@ -1,5 +1,5 @@
 export const XINMAI_OVERVIEW_EFFECT_ENTRY_SCENE_VERSION =
-  "XINMAI_OVERVIEW_EFFECT_ENTRY_SCENE_V1" as const;
+  "XINMAI_OVERVIEW_EFFECT_ENTRY_SCENE_V2" as const;
 
 export type XinmaiOverviewEffectEntrySceneInput = Readonly<{
   width: number;
@@ -207,25 +207,41 @@ const drawStarBeastSignal = (
 ) => {
   const { width, height, engagement, seconds, reducedMotion } = input;
   const x = width * 0.18;
-  const y = height * 0.42;
+  const y = height * 0.405;
   const shortEdge = Math.min(width, height);
   const scale = Math.max(0.82, shortEdge / 390);
-  const awake = 0.86 + smooth(0.12, 0.9, engagement) * 0.14;
-  const breath = reducedMotion ? 1 : 0.9 + Math.sin(seconds * 0.52) * 0.1;
+  const awake = 0.92 + smooth(0.12, 0.9, engagement) * 0.08;
+  const breath = reducedMotion ? 1 : 0.82 + Math.sin(seconds * 0.86) * 0.18;
 
-  const presence = context.createRadialGradient(x, y, 0, x, y, 56 * scale);
-  presence.addColorStop(0, `rgba(148,219,216,${(0.18 * awake * breath).toFixed(3)})`);
-  presence.addColorStop(0.44, `rgba(97,167,175,${(0.08 * awake).toFixed(3)})`);
+  const presence = context.createRadialGradient(x, y, 0, x, y, 72 * scale);
+  presence.addColorStop(0, `rgba(169,235,226,${(0.34 * awake * breath).toFixed(3)})`);
+  presence.addColorStop(0.28, `rgba(107,187,189,${(0.14 * awake).toFixed(3)})`);
+  presence.addColorStop(0.62, `rgba(66,121,143,${(0.055 * awake).toFixed(3)})`);
   presence.addColorStop(1, "rgba(40,83,104,0)");
   context.fillStyle = presence;
   context.beginPath();
-  context.arc(x, y, 56 * scale, 0, Math.PI * 2);
+  context.arc(x, y, 72 * scale, 0, Math.PI * 2);
   context.fill();
 
+  context.save();
+  context.shadowColor = "rgba(154,235,224,0.92)";
+  context.shadowBlur = 16 * scale * breath;
+  context.fillStyle = `rgba(221,255,246,${(0.82 * awake).toFixed(3)})`;
+  context.beginPath();
+  context.arc(x, y, (2.25 + breath * 0.9) * scale, 0, Math.PI * 2);
+  context.fill();
+  context.shadowBlur = 0;
+  context.strokeStyle = `rgba(155,226,219,${(0.34 * breath).toFixed(3)})`;
+  context.lineWidth = 0.8;
+  context.beginPath();
+  context.arc(x, y, (10 + breath * 5) * scale, 0, Math.PI * 2);
+  context.stroke();
+  context.restore();
+
   const nodes = [
-    [-22, 8], [-12, -10], [0, -17], [13, -6], [22, 12], [6, 18], [-9, 15],
+    [-31, 11], [-19, -15], [0, -28], [22, -11], [34, 17], [9, 29], [-17, 24],
   ] as const;
-  context.strokeStyle = `rgba(151,218,214,${(0.34 * awake).toFixed(3)})`;
+  context.strokeStyle = `rgba(151,218,214,${(0.28 * awake).toFixed(3)})`;
   context.lineWidth = 0.8;
   context.beginPath();
   nodes.forEach(([nodeX, nodeY], index) => {
@@ -240,12 +256,12 @@ const drawStarBeastSignal = (
     const pulse = reducedMotion
       ? 1
       : 0.72 + Math.sin(seconds * 0.7 + index * 0.88) * 0.22;
-    context.fillStyle = `rgba(190,236,229,${(0.56 * awake * pulse).toFixed(3)})`;
+    context.fillStyle = `rgba(190,236,229,${(0.48 * awake * pulse).toFixed(3)})`;
     context.beginPath();
     context.arc(
       x + nodeX * scale,
       y + nodeY * scale,
-      (index === 2 ? 1.8 : 1.15) * scale,
+      (index === 2 ? 1.7 : 1.05) * scale,
       0,
       Math.PI * 2,
     );

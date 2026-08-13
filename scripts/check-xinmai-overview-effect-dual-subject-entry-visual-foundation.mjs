@@ -14,6 +14,7 @@ const launch = read("src/pages/LaunchLab.tsx");
 const controls = read("src/components/XinmaiGenesisBirthCoordinateControls.tsx");
 const semantic = read("src/services/xinmaiJourneySemanticPresentationResolver.ts");
 const policy = read("src/services/xinmaiOverviewEffectEntryPresentationPolicy.ts");
+const worldAxiom = read("src/services/xinmaiEncounterWorldAxiom.ts");
 
 requireText(renderer, "drawSunlight", "missing off-screen solar illumination");
 requireText(renderer, "drawEarth", "missing Earth reality field");
@@ -46,10 +47,17 @@ requireText(
   "star beast is not identified as another cosmic life",
 );
 requireText(
-  semantic,
-  "出生时刻会成为你与另一生命相遇的坐标",
-  "entry semantics do not explain the body/other-life relationship",
+  controls,
+  'data-world-axiom="BIRTH_BEGINS_ENCOUNTER_NOT_LIFE"',
+  "encounter world axiom is not public",
 );
+requireText(
+  worldAxiom,
+  "出生不是生命的开始，而是相遇的开始",
+  "encounter world axiom is not frozen",
+);
+requireText(semantic, "XINMAI_ENCOUNTER_WORLD_AXIOM.publicStatement", "entry semantics bypass the frozen world axiom");
+requireText(semantic, "校准相遇坐标", "entry action remains a form-filling task");
 requireText(
   policy,
   'XINMAI_OVERVIEW_EFFECT_ENTRY_PRESENTATION_POLICY',
