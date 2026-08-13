@@ -8,6 +8,11 @@ import ts from "typescript";
 const rootDir = process.cwd();
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "guanyao-primary-petal-resolver-"));
 const gravityPageSource = fs.readFileSync(path.join(rootDir, "src/pages/GravityPage.tsx"), "utf8");
+const gravityDevelopmentFixtureRouteEntrySource = fs.readFileSync(
+  path.join(rootDir, "src/pages/GravityDevelopmentFixtureRouteEntry.tsx"),
+  "utf8",
+);
+const appSource = fs.readFileSync(path.join(rootDir, "src/App.tsx"), "utf8");
 const resolverSource = fs.readFileSync(
   path.join(rootDir, "src/services/guanyaoPrimaryPetalResolver.ts"),
   "utf8",
@@ -166,9 +171,49 @@ try {
 
   assertEqual("unknown dev fixture stays disconnected", resolvePrimaryPetalDevFixture("unknown"), null);
   assertIncludes(
-    "gravity consumes centralized primary petal dev fixture",
-    gravityPageSource,
+    "isolated development route consumes centralized primary petal dev fixture",
+    gravityDevelopmentFixtureRouteEntrySource,
     "resolvePrimaryPetalDevFixture(fixtureKey)",
+  );
+  assertIncludes(
+    "development fixture route freezes development-only ownership",
+    gravityDevelopmentFixtureRouteEntrySource,
+    "developmentOnly: true as const",
+  );
+  assertIncludes(
+    "development fixture route stays separate from production",
+    gravityDevelopmentFixtureRouteEntrySource,
+    "separateFromProductionRoute: true as const",
+  );
+  assertIncludes(
+    "development fixture route performs no production recovery read",
+    gravityDevelopmentFixtureRouteEntrySource,
+    "noProductionRecoveryRead: true as const",
+  );
+  assertIncludes(
+    "development fixture route performs no production admission write",
+    gravityDevelopmentFixtureRouteEntrySource,
+    "noProductionAdmissionWrite: true as const",
+  );
+  assertIncludes(
+    "development fixture route performs no production active commit",
+    gravityDevelopmentFixtureRouteEntrySource,
+    "noProductionActiveCommit: true as const",
+  );
+  assertIncludes(
+    "development fixture route is registered",
+    appSource,
+    'path="/dynamics-dev"',
+  );
+  assertIncludes(
+    "development fixture route is guarded by development environment",
+    appSource,
+    "{import.meta.env.DEV ? (",
+  );
+  assertNotIncludes(
+    "production gravity does not consume primary petal dev fixture resolver",
+    gravityPageSource,
+    "resolvePrimaryPetalDevFixture",
   );
   assertNotIncludes(
     "gravity no longer owns primary petal dev fixtures",
