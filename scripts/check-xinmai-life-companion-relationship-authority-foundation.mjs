@@ -43,23 +43,20 @@ for (const forbidden of [
   assert(!controller.includes(forbidden), `controller contains ${forbidden}`);
 }
 assert(
-  policy.includes('state: "SAFE_WITHHELD"') &&
-    policy.includes("transactionWriterEnabled: false") &&
-    policy.includes("createsRelationshipAggregate: false") &&
-    policy.includes("writesFirstEncounterReceipt: false") &&
-    policy.includes("writesCommandFence: false") &&
+  policy.includes('"ENABLED" as "ENABLED" | "SAFE_WITHHELD"') &&
+    policy.includes('XINMAI_LIFE_COMPANION_RELATIONSHIP_NEW_MUTATION') &&
     policy.includes("createsRealityIntent: false") &&
     policy.includes("writesLifeWhisper: false") &&
     policy.includes("writesNaming: false"),
-  "Phase 1 zero-write policy is incomplete",
+  "Phase 2 relationship-only mutation policy is incomplete",
 );
 assert(
-  controller.includes('status: "SAFE_WITHHELD"') &&
-    controller.includes('code: "MUTATION_POLICY_SAFE_WITHHELD"') &&
-    controller.includes('retryability: "NOT_RETRYABLE"') &&
-    !controller.includes("CanonicalStore") &&
-    !/\.add\(|\.put\(|\.delete\(/.test(controller),
-  "Phase 1 Controller can reach a writer",
+  controller.includes("commitXinmaiLifeCompanionCanonicalRelationship") &&
+    controller.includes('type !== "CONFIRM_COMPANIONSHIP"') &&
+    controller.includes('"MUTATION_POLICY_SAFE_WITHHELD"') &&
+    !controller.includes("localStorage") &&
+    !controller.includes("sessionStorage"),
+  "Phase 2 relationship Controller contract is incomplete",
 );
 for (const boundary of [
   "noIdentityAsRelationship",
@@ -80,17 +77,21 @@ assert(
     validator.includes("createXinmaiLifeCompanionOutcomeReferenceId"),
   "exact schema/digest validator is incomplete",
 );
-for (const consumer of [
-  "src/pages/GenesisProductionExperiencePage.tsx",
-  "src/pages/LaunchLab.tsx",
-  "src/pages/RealityProductionRouteEntry.tsx",
-]) {
+const genesisConsumer = read("src/pages/GenesisProductionExperiencePage.tsx");
+assert(
+  genesisConsumer.includes("XinmaiLifeCompanionRelationshipActivationSurface") &&
+    genesisConsumer.includes('data-life-whisper-entry="DEFERRED"') &&
+    genesisConsumer.includes('data-relationship-naming-entry="DEFERRED"') &&
+    genesisConsumer.includes('data-reality-entry="DEFERRED"'),
+  "formal Genesis consumer is not relationship-only",
+);
+for (const consumer of ["src/pages/LaunchLab.tsx", "src/pages/RealityProductionRouteEntry.tsx"]) {
   const source = read(consumer);
   assert(
     !source.includes("xinmaiLifeCompanionRelationshipAuthorityController") &&
       !source.includes("xinmaiLifeCompanionCanonicalRecoveryAdapter") &&
       !source.includes("xinmaiLifeCompanionRelationshipCanonicalStore"),
-    `Phase 1 canonical consumer wiring detected in ${consumer}`,
+    `unexpected relationship Authority consumer detected in ${consumer}`,
   );
 }
 assert(
@@ -299,22 +300,22 @@ await build({
 });
 const runtime = await import(`file://${runtimePath}?t=${Date.now()}`);
 
-const zeroWriteState = createState();
-installIndexedDb(zeroWriteState);
-const withheld = await runtime.executeXinmaiLifeCompanionRelationshipCommand({
+const controllerState = createState();
+installIndexedDb(controllerState);
+const controllerCommit = await runtime.executeXinmaiLifeCompanionRelationshipCommand({
   type: "CONFIRM_COMPANIONSHIP",
-  commandReferenceId: "command:withheld",
   identityReferences: {
-    sourceReferenceId: "source:one",
-    starBeastIdentityReferenceId: "beast:one",
-    mansionCoordinateReferenceId: "mansion:one",
+    sourceReferenceId: "source:controller",
+    starBeastIdentityReferenceId: "beast:controller",
+    mansionCoordinateReferenceId: "mansion:controller",
   },
-  responseCycleReferenceId: "cycle:one",
-  visualOutcomeReferenceId: "outcome:one",
+  responseCycleReferenceId: "cycle:controller",
+  visualOutcomeReferenceId: "outcome:controller",
   visualOutcome: "MOTION_RESPONSE",
 });
-assert(withheld.status === "SAFE_WITHHELD", "Controller is not SAFE_WITHHELD");
-assert(zeroWriteState.version === 0 && zeroWriteState.stores.size === 0, "withheld command opened or wrote the DB");
+assert(controllerCommit.status === "COMMITTED", "enabled Controller did not commit");
+const controllerCounts = await runtime.inspectXinmaiLifeCompanionCanonicalStoreCounts();
+assert(controllerCounts.relationships === 1 && controllerCounts.fences === 1, "Controller did not write exactly one aggregate/fence");
 
 const state = createState();
 installIndexedDb(state);
@@ -342,6 +343,8 @@ const receiptEvidence = {
   visualOutcome: "MOTION_RESPONSE",
 };
 const evidenceDigest = await runtime.digestXinmaiLifeCompanionEvidence(receiptEvidence);
+const commandReferenceId =
+  runtime.createXinmaiLifeCompanionCommandReferenceId(evidenceDigest);
 const relationshipBase = {
   schemaVersion: runtime.XINMAI_LIFE_COMPANION_RELATIONSHIP_SCHEMA_VERSION,
   protocolRevision: runtime.XINMAI_LIFE_COMPANION_RELATIONSHIP_PROTOCOL_REVISION,
@@ -392,13 +395,13 @@ const relationship = Object.freeze({
 });
 const commandDigest =
   await runtime.digestXinmaiLifeCompanionRelationshipCommand(
-    "command:one",
+    commandReferenceId,
     relationship,
   );
 assert(commandDigest !== null, "deterministic command digest was not created");
 const fence = Object.freeze({
   schemaVersion: runtime.XINMAI_LIFE_COMPANION_COMMAND_FENCE_SCHEMA_VERSION,
-  commandReferenceId: "command:one",
+  commandReferenceId,
   outcomeReferenceId:
     runtime.createXinmaiLifeCompanionOutcomeReferenceId(commandDigest),
   relationshipId,

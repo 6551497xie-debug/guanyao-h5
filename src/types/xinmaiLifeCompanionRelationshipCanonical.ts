@@ -124,19 +124,35 @@ export type XinmaiLifeCompanionCanonicalCommitResult =
 
 export type XinmaiLifeCompanionRelationshipCommand = Readonly<{
   type: "CONFIRM_COMPANIONSHIP";
-  commandReferenceId: string;
   identityReferences: XinmaiLifeCompanionIdentityReferences;
   responseCycleReferenceId: string;
   visualOutcomeReferenceId: string;
   visualOutcome: XinmaiLifeCompanionFirstEncounterVisualOutcome;
 }>;
 
-export type XinmaiLifeCompanionRelationshipCommandResult = Readonly<{
-  status: "SAFE_WITHHELD";
-  code: "MUTATION_POLICY_SAFE_WITHHELD";
-  retryability: "NOT_RETRYABLE";
-  relationship: null;
-}>;
+export type XinmaiLifeCompanionRelationshipCommandResult =
+  | Readonly<{
+      status: "COMMITTED" | "ALREADY_COMMITTED";
+      code: "COMPANIONSHIP_CONFIRMED";
+      retryability: "NOT_RETRYABLE";
+      relationship: XinmaiLifeCompanionRelationshipAggregate;
+    }>
+  | Readonly<{
+      status: "SAFE_WITHHELD" | "BLOCKED";
+      code:
+        | "MUTATION_POLICY_SAFE_WITHHELD"
+        | "COMMAND_INVALID"
+        | "CRYPTOGRAPHIC_EVIDENCE_UNAVAILABLE"
+        | "COMMAND_FENCE_CONFLICT"
+        | "IDENTITY_ALREADY_BOUND"
+        | "STORAGE_UNAVAILABLE"
+        | "STORAGE_BLOCKED"
+        | "STORAGE_FAILED"
+        | "STORAGE_QUOTA_EXCEEDED"
+        | "TRANSACTION_ABORTED";
+      retryability: "RETRYABLE" | "NOT_RETRYABLE";
+      relationship: null;
+    }>;
 
 export type XinmaiLifeCompanionRelationshipRecoveryResult =
   | Readonly<{

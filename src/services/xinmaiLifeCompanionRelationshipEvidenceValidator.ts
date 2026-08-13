@@ -64,6 +64,10 @@ export const createXinmaiLifeCompanionOutcomeReferenceId = (
   commandDigest: string,
 ): string => `life-companion-outcome:${commandDigest}`;
 
+export const createXinmaiLifeCompanionCommandReferenceId = (
+  firstEncounterEvidenceDigest: string,
+): string => `confirm-companionship:${firstEncounterEvidenceDigest}`;
+
 export const xinmaiLifeCompanionIdentityMatches = (
   left: XinmaiLifeCompanionIdentityReferences,
   right: XinmaiLifeCompanionIdentityReferences,
@@ -266,6 +270,10 @@ export async function validateXinmaiLifeCompanionCommandFenceBinding(
     relationship,
   );
   return commandDigest !== null &&
+    fence.commandReferenceId ===
+      createXinmaiLifeCompanionCommandReferenceId(
+        relationship.firstEncounterReceipt.evidenceDigest,
+      ) &&
     fence.commandDigest === commandDigest &&
     fence.outcomeReferenceId ===
       createXinmaiLifeCompanionOutcomeReferenceId(commandDigest);

@@ -72,13 +72,12 @@ export type GenesisProductionExperiencePageBoundary = Readonly<{
   productionTimelineOrchestrationOnly: true;
   timeDeliveryOnlyInteraction: true;
   completionRecognitionHoldRequired: true;
-  productionRecognitionRealityBridgeOnly: true;
-  explicitRealityEntryRequired: true;
-  productionRealityRouteHandoffOnly: true;
-  realityEntryContextRequiredBeforeNavigation: true;
-  realityRouteActivationSourceRequiredBeforeNavigation: true;
-  explicitRealityRequestDateCaptureOnly: true;
-  explicitUserConfirmedRealityNavigationOnly: true;
+  productionRecognitionContinuityOnly: true;
+  explicitCompanionshipConfirmationRequired: true;
+  canonicalRelationshipWriteOnly: true;
+  lifeWhisperDeferred: true;
+  namingDeferred: true;
+  realityDeferred: true;
   sourceReferenceExcludedFromUrl: true;
   noAutomaticRealityNavigation: true;
   noAutomaticRealityEntry: true;
@@ -93,5 +92,5 @@ export type GenesisProductionExperiencePageBoundary = Readonly<{
   noGravity: true;
   noChoice: true;
   noCrystal: true;
-  noStorageWrite: true;
+  noNonRelationshipStorageWrite: true;
 }>;

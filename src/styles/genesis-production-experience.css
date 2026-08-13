@@ -233,7 +233,8 @@
 }
 
 .gy-genesis-production-experience__life-whisper,
-.gy-genesis-production-experience__relationship-naming {
+.gy-genesis-production-experience__relationship-naming,
+.gy-genesis-production-experience__relationship-activation {
   position: absolute;
   z-index: 2;
   right: 24px;
@@ -244,6 +245,32 @@
   color: rgb(238 226 198 / 78%);
   font-family: var(--gy-font-serif);
   animation: gy-genesis-life-whisper-arrive 620ms ease-out both;
+}
+
+.gy-genesis-production-experience__relationship-activation {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.gy-genesis-production-experience__relationship-activation p,
+.gy-genesis-production-experience__relationship-activation strong {
+  max-width: 32rem;
+  margin: 0;
+}
+
+.gy-genesis-production-experience__relationship-activation p {
+  color: rgb(190 210 210 / 68%);
+  font-size: 12px;
+  line-height: 1.8;
+  letter-spacing: 0.1em;
+}
+
+.gy-genesis-production-experience__relationship-activation strong {
+  color: rgb(238 226 198 / 88%);
+  font: 400 15px/1.8 var(--gy-font-serif);
+  letter-spacing: 0.14em;
 }
 
 .gy-genesis-production-experience__life-whisper-form,
@@ -408,7 +435,8 @@
 
 @media (max-height: 700px) {
   .gy-genesis-production-experience__life-whisper,
-  .gy-genesis-production-experience__relationship-naming {
+  .gy-genesis-production-experience__relationship-naming,
+  .gy-genesis-production-experience__relationship-activation {
     bottom: max(78px, calc(env(safe-area-inset-bottom) + 62px));
   }
 
@@ -422,7 +450,8 @@
   .gy-genesis-production-experience__origin-invitation,
   .gy-genesis-production-experience__origin-identity,
   .gy-genesis-production-experience__life-whisper,
-  .gy-genesis-production-experience__relationship-naming {
+  .gy-genesis-production-experience__relationship-naming,
+  .gy-genesis-production-experience__relationship-activation {
     animation: none;
   }
 }

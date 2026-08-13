@@ -7,81 +7,62 @@ const assert = (condition, message) => {
   }
 };
 
-const types = read("src/types/xinmaiLifeCompanionRelationship.ts");
-const policy = read("src/services/xinmaiLifeCompanionRelationshipRuntimePolicy.ts");
-const controller = read("src/services/xinmaiLifeCompanionFirstEncounterController.ts");
-const recovery = read("src/services/xinmaiLifeCompanionRelationshipRecoveryAdapter.ts");
-const session = read("src/services/sessionService.ts");
+const types = read("src/types/xinmaiLifeCompanionRelationshipCanonical.ts");
+const policy = read("src/services/xinmaiLifeCompanionCanonicalMutationPolicy.ts");
+const controller = read("src/services/xinmaiLifeCompanionRelationshipAuthorityController.ts");
+const recovery = read("src/services/xinmaiLifeCompanionCanonicalRecoveryAdapter.ts");
 const genesis = read("src/pages/GenesisProductionExperiencePage.tsx");
-const reality = read("src/pages/RealityProductionRouteEntry.tsx");
-const presentation = read("src/services/xinmaiRealityEntryPresentationResolver.ts");
 
 for (const value of [
-  "XINMAI_LIFE_COMPANION_FIRST_ENCOUNTER_V1",
-  "XINMAI_LIFE_COMPANION_RELATIONSHIP_2026_08_13_P0",
-  'encounterState: "FIRST_ENCOUNTER_COMPLETED"',
-  'trustState: "FIRST_EXCHANGE_ESTABLISHED"',
-  'companionState: "MET"',
-  "rawWhisperPersisted: false",
+  "XINMAI_LIFE_COMPANION_RELATIONSHIP_V1",
+  "XINMAI_LIFE_COMPANION_FIRST_ENCOUNTER_RECEIPT_V1",
+  "XINMAI_LIFE_COMPANION_RELATIONSHIP_PROTOCOL_2026_08_13_P1",
+  'state: "COMPANIONSHIP_CONFIRMED"',
+  "noRawWhisperPersistence: true",
 ]) {
   assert(types.includes(value), `missing frozen relationship contract: ${value}`);
 }
 
 assert(
-  policy.includes('"ENABLED"') &&
-    policy.includes('"SAFE_WITHHELD"'),
+  policy.includes('"ENABLED" as "ENABLED" | "SAFE_WITHHELD"') &&
+    policy.includes("createsRealityIntent: false") &&
+    policy.includes("writesLifeWhisper: false") &&
+    policy.includes("writesNaming: false"),
   "forward relationship policy is missing",
 );
 assert(
-  controller.includes("resolveRecognizedRelationshipIdentityReferences") &&
-    controller.includes("persistXinmaiLifeCompanionFirstEncounterReceipt") &&
-    controller.includes('initiation === "SILENCE_CHOSEN"') &&
-    controller.includes("rawWhisperPersisted: false") &&
+  controller.includes("commitXinmaiLifeCompanionCanonicalRelationship") &&
+    controller.includes('type !== "CONFIRM_COMPANIONSHIP"') &&
+    controller.includes("noRawWhisperPersistence: true") &&
     !controller.includes("whisperText"),
   "first encounter is not identity-bound or persists private whisper text",
 );
 assert(
-  session.includes("readXinmaiLifeCompanionFirstEncounterReceipt") &&
-    session.includes("persistXinmaiLifeCompanionFirstEncounterReceipt") &&
-    session.includes("IDENTITY_REFERENCE_MISMATCH"),
-  "first encounter receipt is not recoverable and identity-fenced",
-);
-assert(
   recovery.includes('status: "READY"') &&
-    !recovery.includes("readStarBeastRelationshipNamingAsset") &&
-    !recovery.includes("naming:"),
+    recovery.includes("noNamingAsRelationship") &&
+    recovery.includes("noLifeWhisperAsRelationship") &&
+    recovery.includes("noRealityIntentAsRelationship"),
   "relationship recovery improperly consumes optional Naming",
 );
 
-const commitIndex = genesis.indexOf("commitXinmaiLifeCompanionFirstEncounter");
-const requestIndex = genesis.indexOf("await requestRealityEncounter", commitIndex);
 assert(
-  commitIndex >= 0 && requestIndex > commitIndex,
-  "Reality intent can be created before the First Encounter receipt",
+  genesis.includes("XinmaiLifeCompanionRelationshipActivationSurface") &&
+    !genesis.includes("requestRealityEncounter") &&
+    !genesis.includes("commitXinmaiLifeCompanionFirstEncounter"),
+  "formal Genesis did not cut over to the canonical Relationship consumer",
 );
 for (const copy of [
   "开始寻找远方生命",
   "认出这个生命",
-  "确认同行，进入现实",
+  "现在，你可以决定是否从这里开始同行",
 ]) {
   assert(genesis.includes(copy), `missing user-visible journey action: ${copy}`);
 }
 assert(
-  genesis.includes("data-first-encounter-authority") &&
-    genesis.includes("data-life-companion-relationship"),
+  genesis.includes('data-life-whisper-entry="DEFERRED"') &&
+    genesis.includes('data-relationship-naming-entry="DEFERRED"') &&
+    genesis.includes('data-reality-entry="DEFERRED"'),
   "Genesis does not expose the typed First Encounter/Relationship state",
-);
-assert(
-  reality.includes("recoverXinmaiLifeCompanionRelationship") &&
-    reality.includes('"LEGACY_HANDOFF"') &&
-    !reality.includes("relationshipAvailable: identityRecovery.status"),
-  "Reality still treats Identity as Relationship or lacks legacy read-only recovery",
-);
-assert(
-  presentation.includes('relationshipReadiness:') &&
-    presentation.includes('"NOT_ESTABLISHED"') &&
-    presentation.includes('"RELATIONSHIP_UNAVAILABLE"'),
-  "Reality Presentation does not distinguish missing from corrupt relationship evidence",
 );
 
 console.log("[XINMAI IDENTITY → FIRST ENCOUNTER → RELATIONSHIP] PASS");

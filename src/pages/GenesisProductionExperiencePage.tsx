@@ -11,17 +11,10 @@ import {
 } from "../services/genesisProductionRuntimeConsumer";
 import { orchestrateGenesisProductionTimeline } from "../services/genesisProductionTimelineOrchestrator";
 import {
-  activateGenesisProductionRealityEntryContext,
   advanceGenesisProductionRecognitionRealityEntry,
   clearGenesisProductionRealityEntryContext,
   initializeGenesisProductionRecognitionRealityEntry,
 } from "../services/genesisProductionRecognitionRealityEntry";
-import {
-  resolveGenesisProductionRealityRouteHandoff,
-} from "../services/genesisProductionRealityRouteHandoff";
-import {
-  clearRealityRouteActivationSourceContext,
-} from "../services/realityRouteActivationSourceContext";
 import { bridgeGenesisProductionRuntimeToVisualCalibration } from "../services/genesisProductionVisualCalibrationBridge";
 import { calibrateGenesisFourSymbolDirectionField } from "../services/genesisFourSymbolDirectionFieldVisualCalibration";
 import { calibrateGenesisLifeArchetypeForceCondensation } from "../services/genesisLifeArchetypeForceCondensationVisualCalibration";
@@ -37,10 +30,6 @@ import type { GenesisManifestationExperienceStateResult } from "../types/genesis
 import { realizeGenesisStarBeastPresence } from "../services/genesisStarBeastPresenceVisualRealization";
 import { activateGenesisPresenceApproachContinuity } from "../services/genesisPresenceApproachContinuityActivation";
 import { activateGenesisPresenceRecognitionContinuity } from "../services/genesisPresenceRecognitionContinuityActivation";
-import {
-  activateGenesisRealityPresenceContinuityContext,
-  clearGenesisRealityPresenceContinuityContext,
-} from "../services/genesisRealityPresenceContinuityBridge";
 import type { GenesisPresenceRecognitionPhase } from "../types/genesisStarBeastPresenceVisualRealization";
 import type {
   GenesisProductionCanvasHostState,
@@ -48,34 +37,14 @@ import type {
   GenesisProductionExperiencePageProps,
 } from "../types/genesisProductionExperiencePage";
 import type { GenesisProductionRecognitionRealityResult } from "../types/genesisProductionRecognitionRealityEntry";
-import {
-  createStarBeastRelationshipNamingAsset,
-  persistRecognizedGenesisLifeAssets,
-} from "../services/sessionService";
-import {
-  resolveFirstEncounterRealityEntryIntent,
-  resolveRelationshipNamingEntryEligibility,
-} from "../services/xinmaiRelationshipNamingPresentationState";
-import { resolveLifeWhisperVisualOutcomeTransition } from "../services/xinmaiLifeWhisperVisualOutcomeTransition";
+import { XinmaiLifeCompanionRelationshipActivationSurface } from "../components/XinmaiLifeCompanionRelationshipActivationSurface";
+import { resolveXinmaiLifeCompanionFirstEncounterVisualOutcome } from "../services/xinmaiLifeCompanionFirstEncounterVisualOutcomeAdapter";
+import { resolveXinmaiLifeCompanionRecognizedIdentity } from "../services/xinmaiLifeCompanionRecognizedIdentityAdapter";
 import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
 import { requireXinmaiFormalStatePresentation } from "../services/xinmaiSemanticConstitutionFormalStateMatrix";
 import { resolveXinmaiGenesisLifeOriginNativeControlReadiness } from "../services/xinmaiGenesisLifeOriginNativeControlReadinessResolver";
 import { XINMAI_GENESIS_LIFE_ORIGIN_NATIVE_CONTROL_PRESENTATION_POLICY } from "../services/xinmaiGenesisLifeOriginNativeControlPresentationPolicy";
-import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
-import { requestRealityEncounter } from "../services/xinmaiRealityEncounterIntentController";
-import { observeRealityEncounterRequestOutcome } from "../services/gravityEntryAcceptanceRuntimePort";
-import { STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS } from "../types/starBeastRelationshipNamingAsset";
-import type {
-  LifeWhisperRelationshipFact,
-  LifeWhisperRelationshipResponsePhase,
-  LifeWhisperSurfaceVisualResponseOutcome,
-  LifeWhisperUnavailableContinuation,
-} from "../types/xinmaiLifeWhisperRelationship";
-import type {
-  XinmaiFirstEncounterStarBeastResponse,
-  XinmaiLifeCompanionFirstEncounterCommitResult,
-} from "../types/xinmaiLifeCompanionRelationship";
-import { commitXinmaiLifeCompanionFirstEncounter } from "../services/xinmaiLifeCompanionFirstEncounterController";
+import { DORMANT_LIFE_WHISPER_RELATIONSHIP_VISUAL_FACT } from "../types/xinmaiLifeWhisperRelationship";
 import type {
   XinmaiGenesisLifeOriginActivationRevalidation,
   XinmaiGenesisLifeOriginDiscoveryPhase,
@@ -92,9 +61,7 @@ const PRESENCE_RECOGNITION_TIMING_MS = Object.freeze({
   RESPONSE_HOLD: 500,
 });
 
-const REALITY_ENTRY_VISUAL_HOLD_MS = 320;
 const LIFE_ORIGIN_DISCOVERY_DURATION_MS = 1_800;
-const FIRST_ENCOUNTER_LIFE_WHISPER_OUTCOME_WATCHDOG_MS = 6_000;
 
 export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
   GenesisProductionExperiencePageBoundary = Object.freeze({
@@ -104,13 +71,12 @@ export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
     productionTimelineOrchestrationOnly: true,
     timeDeliveryOnlyInteraction: true,
     completionRecognitionHoldRequired: true,
-    productionRecognitionRealityBridgeOnly: true,
-    explicitRealityEntryRequired: true,
-    productionRealityRouteHandoffOnly: true,
-    realityEntryContextRequiredBeforeNavigation: true,
-    realityRouteActivationSourceRequiredBeforeNavigation: true,
-    explicitRealityRequestDateCaptureOnly: true,
-    explicitUserConfirmedRealityNavigationOnly: true,
+    productionRecognitionContinuityOnly: true,
+    explicitCompanionshipConfirmationRequired: true,
+    canonicalRelationshipWriteOnly: true,
+    lifeWhisperDeferred: true,
+    namingDeferred: true,
+    realityDeferred: true,
     sourceReferenceExcludedFromUrl: true,
     noAutomaticRealityNavigation: true,
     noAutomaticRealityEntry: true,
@@ -125,7 +91,7 @@ export const GENESIS_PRODUCTION_EXPERIENCE_PAGE_BOUNDARY:
     noGravity: true,
     noChoice: true,
     noCrystal: true,
-    noStorageWrite: true,
+    noNonRelationshipStorageWrite: true,
   });
 
 export function GenesisProductionExperiencePage({
@@ -134,12 +100,10 @@ export function GenesisProductionExperiencePage({
   const navigate = useNavigate();
   const genesisSemantic = resolveXinmaiJourneySemanticPresentation("GENESIS_FORMATION");
   const continuitySemantic = resolveXinmaiJourneySemanticPresentation("STAR_BEAST_CONTINUITY");
-  const whisperSemantic = resolveXinmaiJourneySemanticPresentation("WHISPER");
   const genesisLoadingPresentation = requireXinmaiFormalStatePresentation("GENESIS", "LOADING");
   const genesisFormingPresentation = requireXinmaiFormalStatePresentation("GENESIS", "FORMING");
   const genesisReadyPresentation = requireXinmaiFormalStatePresentation("GENESIS", "READY");
   const genesisFailurePresentation = requireXinmaiFormalStatePresentation("GENESIS", "FAILURE");
-  const firstRealityNamingDeferred = true;
   const [canvasHostState, setCanvasHostState] =
     useState<GenesisProductionCanvasHostState>("STARTING");
   const routeAuthorization = useMemo(
@@ -257,86 +221,26 @@ export function GenesisProductionExperiencePage({
     useState<XinmaiGenesisLifeOriginDiscoveryPhase>("DORMANT");
   const [lifeOriginActivationRevalidation, setLifeOriginActivationRevalidation] =
     useState<XinmaiGenesisLifeOriginActivationRevalidation>("CURRENT");
-  const [lifeWhisperText, setLifeWhisperText] = useState("");
-  const [lifeWhisperFact, setLifeWhisperFact] =
-    useState<LifeWhisperRelationshipFact>("NONE");
-  const [lifeWhisperResponsePhase, setLifeWhisperResponsePhase] =
-    useState<LifeWhisperRelationshipResponsePhase>("DORMANT");
-  const [
-    lifeWhisperResponseCycleId,
-    setLifeWhisperResponseCycleId,
-  ] = useState<string | null>(null);
-  const [
-    lifeWhisperUnavailableContinuation,
-    setLifeWhisperUnavailableContinuation,
-  ] = useState<LifeWhisperUnavailableContinuation>("NONE");
-  const [
-    lifeWhisperUnavailableReason,
-    setLifeWhisperUnavailableReason,
-  ] = useState<
-    Extract<
-      LifeWhisperSurfaceVisualResponseOutcome,
-      { status: "VISUAL_RESPONSE_UNAVAILABLE" }
-    >["reason"] | null
-  >(null);
-  const [
-    lifeWhisperSettlementAuthority,
-    setLifeWhisperSettlementAuthority,
-  ] = useState<
-    "MOTION_VISUAL_OUTCOME" | "STATIC_VISUAL_OUTCOME" | null
-  >(null);
-  const [relationshipNameDraft, setRelationshipNameDraft] = useState("");
-  const [relationshipName, setRelationshipName] = useState<string | null>(
-    null,
-  );
-  const [relationshipNamingState, setRelationshipNamingState] = useState<
-    "PENDING" | "NAMED" | "SKIPPED"
-  >("PENDING");
-  const [relationshipNamingPersistence, setRelationshipNamingPersistence] =
-    useState<"PERSISTED" | "CURRENT_CYCLE_ONLY" | null>(null);
-  const [firstEncounterCommitResult, setFirstEncounterCommitResult] =
-    useState<XinmaiLifeCompanionFirstEncounterCommitResult | null>(null);
+  const [relationshipPresentationMode, setRelationshipPresentationMode] =
+    useState<"MOTION" | "REDUCED_MOTION">(() =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "REDUCED_MOTION"
+        : "MOTION",
+    );
   const lifeOriginDiscoveryTimerRef = useRef<number | null>(null);
-  const lifeWhisperFactRef =
-    useRef<LifeWhisperRelationshipFact>("NONE");
-  const lifeWhisperResponsePhaseRef =
-    useRef<LifeWhisperRelationshipResponsePhase>("DORMANT");
-  const lifeWhisperResponseCycleIdRef = useRef<string | null>(null);
-  const lifeWhisperResponseCycleSequenceRef = useRef(0);
-  const lifeWhisperOutcomeWatchdogRef = useRef<number | null>(null);
-  const realityEntryTimerRef = useRef<number | null>(null);
-  const clearLifeWhisperOutcomeWatchdog = useCallback(() => {
-    if (lifeWhisperOutcomeWatchdogRef.current !== null) {
-      window.clearTimeout(lifeWhisperOutcomeWatchdogRef.current);
-      lifeWhisperOutcomeWatchdogRef.current = null;
-    }
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateMode = () => {
+      setRelationshipPresentationMode(
+        media.matches ? "REDUCED_MOTION" : "MOTION",
+      );
+    };
+    updateMode();
+    media.addEventListener("change", updateMode);
+    return () => media.removeEventListener("change", updateMode);
   }, []);
-  const beginLifeWhisperResponseCycle = useCallback(() => {
-    clearLifeWhisperOutcomeWatchdog();
-    lifeWhisperResponseCycleSequenceRef.current += 1;
-    const responseCycleId =
-      `first-encounter-life-whisper-cycle-${lifeWhisperResponseCycleSequenceRef.current}`;
-    lifeWhisperResponseCycleIdRef.current = responseCycleId;
-    setLifeWhisperResponseCycleId(responseCycleId);
-    lifeWhisperResponsePhaseRef.current = "RESPONDING";
-    setLifeWhisperResponsePhase("RESPONDING");
-    setLifeWhisperUnavailableContinuation("NONE");
-    setLifeWhisperUnavailableReason(null);
-    setLifeWhisperSettlementAuthority(null);
-    lifeWhisperOutcomeWatchdogRef.current = window.setTimeout(() => {
-      if (
-        lifeWhisperResponseCycleIdRef.current !== responseCycleId ||
-        lifeWhisperFactRef.current !== "WHISPER_SUBMITTED" ||
-        lifeWhisperResponsePhaseRef.current !== "RESPONDING"
-      ) {
-        return;
-      }
-      lifeWhisperOutcomeWatchdogRef.current = null;
-      lifeWhisperResponsePhaseRef.current = "UNAVAILABLE";
-      setLifeWhisperResponsePhase("UNAVAILABLE");
-      setLifeWhisperUnavailableReason("OUTCOME_WATCHDOG_EXPIRED");
-    }, FIRST_ENCOUNTER_LIFE_WHISPER_OUTCOME_WATCHDOG_MS);
-  }, [clearLifeWhisperOutcomeWatchdog]);
   const recognitionInteractionAvailability =
     recognitionRealityResult?.status === "READY"
       ? recognitionRealityResult.session.interactionAvailability
@@ -427,78 +331,64 @@ export function GenesisProductionExperiencePage({
       recognitionRealityResult,
     ],
   );
-  const lifeWhisperEntryReady =
+  const relationshipActivationPrerequisitesReady =
     recognitionRealityResult?.status === "READY" &&
     recognitionRealityResult.session.interactionAvailability ===
       "ENTER_REALITY" &&
     presenceRecognitionContinuityResult?.status === "READY" &&
     recognitionResponseSettled;
-  const lifeWhisperRelationIntentResolved =
-    resolveFirstEncounterRealityEntryIntent({
-      lifeWhisperFact,
-      lifeWhisperResponsePhase,
-      unavailableContinuation: lifeWhisperUnavailableContinuation,
-    });
-  const relationshipNamingEligibility =
-    resolveRelationshipNamingEntryEligibility({
-      lifeWhisperEntryReady,
-      lifeWhisperFact,
-      lifeWhisperResponsePhase,
-    });
-  const relationshipNamingReady =
-    relationshipNamingEligibility.status === "READY";
+  const recognizedIdentityResult = useMemo(
+    () =>
+      consumerSourceResult?.status === "READY" &&
+      presenceVisualRealizationResult?.status === "READY"
+        ? resolveXinmaiLifeCompanionRecognizedIdentity({
+            sourceReferenceId: authorizedSourceReferenceId,
+            consumerSourceResult,
+            presenceVisualRealization:
+              presenceVisualRealizationResult.realization,
+          })
+        : null,
+    [
+      authorizedSourceReferenceId,
+      consumerSourceResult,
+      presenceVisualRealizationResult,
+    ],
+  );
+  const firstEncounterVisualOutcomeResult = useMemo(
+    () =>
+      presenceRecognitionContinuityResult === null
+        ? null
+        : resolveXinmaiLifeCompanionFirstEncounterVisualOutcome({
+            recognitionContinuity: presenceRecognitionContinuityResult,
+            presentationMode: relationshipPresentationMode,
+          }),
+    [
+      presenceRecognitionContinuityResult,
+      relationshipPresentationMode,
+    ],
+  );
 
   useEffect(() => {
     clearGenesisProductionRealityEntryContext();
-    clearRealityRouteActivationSourceContext();
-    clearGenesisRealityPresenceContinuityContext();
     setRecognitionRealityResult(null);
     setTimeDeliveryResponse(null);
     setRecognitionPromptReady(false);
     setRecognitionResponseSettled(false);
     setLifeOriginDiscoveryPhase("DORMANT");
     setLifeOriginActivationRevalidation("CURRENT");
-    setLifeWhisperText("");
-    setLifeWhisperFact("NONE");
-    lifeWhisperFactRef.current = "NONE";
-    setLifeWhisperResponsePhase("DORMANT");
-    lifeWhisperResponsePhaseRef.current = "DORMANT";
-    setLifeWhisperResponseCycleId(null);
-    lifeWhisperResponseCycleIdRef.current = null;
-    lifeWhisperResponseCycleSequenceRef.current = 0;
-    setLifeWhisperUnavailableContinuation("NONE");
-    setLifeWhisperUnavailableReason(null);
-    setLifeWhisperSettlementAuthority(null);
-    setRelationshipNameDraft("");
-    setRelationshipName(null);
-    setRelationshipNamingState("PENDING");
-    setRelationshipNamingPersistence(null);
-    setFirstEncounterCommitResult(null);
     if (lifeOriginDiscoveryTimerRef.current !== null) {
       window.clearTimeout(lifeOriginDiscoveryTimerRef.current);
       lifeOriginDiscoveryTimerRef.current = null;
     }
-    clearLifeWhisperOutcomeWatchdog();
-    if (realityEntryTimerRef.current !== null) {
-      window.clearTimeout(realityEntryTimerRef.current);
-      realityEntryTimerRef.current = null;
-    }
-  }, [
-    clearLifeWhisperOutcomeWatchdog,
-    routeAuthorization.sourceReferenceId,
-  ]);
+  }, [routeAuthorization.sourceReferenceId]);
 
   useEffect(
     () => () => {
       if (lifeOriginDiscoveryTimerRef.current !== null) {
         window.clearTimeout(lifeOriginDiscoveryTimerRef.current);
       }
-      clearLifeWhisperOutcomeWatchdog();
-      if (realityEntryTimerRef.current !== null) {
-        window.clearTimeout(realityEntryTimerRef.current);
-      }
     },
-    [clearLifeWhisperOutcomeWatchdog],
+    [],
   );
 
   useEffect(() => {
@@ -842,283 +732,6 @@ export function GenesisProductionExperiencePage({
     setRecognitionRealityResult(recognizedRealityResult);
   };
 
-  const submitLifeWhisper = () => {
-    if (
-      !lifeWhisperEntryReady ||
-      lifeWhisperFact !== "NONE" ||
-      lifeWhisperText.trim().length === 0
-    ) {
-      return;
-    }
-    setLifeWhisperText("");
-    lifeWhisperFactRef.current = "WHISPER_SUBMITTED";
-    setLifeWhisperFact("WHISPER_SUBMITTED");
-    beginLifeWhisperResponseCycle();
-  };
-
-  const skipLifeWhisper = () => {
-    if (!lifeWhisperEntryReady || lifeWhisperFact !== "NONE") {
-      return;
-    }
-    clearLifeWhisperOutcomeWatchdog();
-    setLifeWhisperText("");
-    lifeWhisperFactRef.current = "WHISPER_SKIPPED";
-    setLifeWhisperFact("WHISPER_SKIPPED");
-    lifeWhisperResponsePhaseRef.current = "SKIPPED";
-    setLifeWhisperResponsePhase("SKIPPED");
-    lifeWhisperResponseCycleIdRef.current = null;
-    setLifeWhisperResponseCycleId(null);
-    setLifeWhisperUnavailableContinuation("NONE");
-    setLifeWhisperUnavailableReason(null);
-    setLifeWhisperSettlementAuthority(null);
-  };
-
-  const handleLifeWhisperVisualResponseOutcome = useCallback(
-    (outcome: LifeWhisperSurfaceVisualResponseOutcome) => {
-      const transition = resolveLifeWhisperVisualOutcomeTransition({
-        expectedSourceReferenceId: authorizedSourceReferenceId,
-        currentResponseCycleId:
-          lifeWhisperResponseCycleIdRef.current,
-        lifeWhisperFact: lifeWhisperFactRef.current,
-        lifeWhisperResponsePhase:
-          lifeWhisperResponsePhaseRef.current,
-        outcome,
-      });
-      if (transition.action === "SETTLE") {
-        clearLifeWhisperOutcomeWatchdog();
-        lifeWhisperResponsePhaseRef.current = "SETTLED";
-        setLifeWhisperResponsePhase("SETTLED");
-        setLifeWhisperSettlementAuthority(transition.authority);
-        setLifeWhisperUnavailableReason(null);
-        return;
-      }
-      if (transition.action === "MARK_UNAVAILABLE") {
-        clearLifeWhisperOutcomeWatchdog();
-        lifeWhisperResponsePhaseRef.current = "UNAVAILABLE";
-        setLifeWhisperResponsePhase("UNAVAILABLE");
-        setLifeWhisperUnavailableReason(transition.reason);
-        setLifeWhisperSettlementAuthority(null);
-      }
-    },
-    [
-      clearLifeWhisperOutcomeWatchdog,
-      authorizedSourceReferenceId,
-    ],
-  );
-
-  const retryLifeWhisperResponse = () => {
-    if (
-      lifeWhisperFactRef.current !== "WHISPER_SUBMITTED" ||
-      lifeWhisperResponsePhaseRef.current !== "UNAVAILABLE"
-    ) {
-      return;
-    }
-    beginLifeWhisperResponseCycle();
-  };
-
-  const continueWithoutConfirmedLifeWhisperResponse = () => {
-    if (
-      lifeWhisperFactRef.current !== "WHISPER_SUBMITTED" ||
-      lifeWhisperResponsePhaseRef.current !== "UNAVAILABLE"
-    ) {
-      return;
-    }
-    setLifeWhisperUnavailableContinuation(
-      "CONTINUE_WITHOUT_CONFIRMED_RESPONSE",
-    );
-  };
-
-  const submitRelationshipName = () => {
-    const normalizedName = relationshipNameDraft.trim();
-    if (
-      !relationshipNamingReady ||
-      relationshipNamingState !== "PENDING" ||
-      normalizedName.length === 0 ||
-      consumerSourceResult?.status !== "READY" ||
-      recognitionRealityResult?.status !== "READY" ||
-      visualCalibrationResult?.status !== "READY" ||
-      directionFieldCalibrationResult?.status !== "AVAILABLE" ||
-      archetypeForceCalibrationResult?.status !== "AVAILABLE" ||
-      presenceVisualRealizationResult?.status !== "READY"
-    ) {
-      return;
-    }
-
-    const visualContinuity = Object.freeze({
-      sourceReferenceId:
-        recognitionRealityResult.session.sourceReferenceId,
-      consumerSourceResult,
-      visualCalibrationBundle: visualCalibrationResult.bundle,
-      fourSymbolDirectionFieldVisualCalibration:
-        directionFieldCalibrationResult.calibration,
-      lifeArchetypeForceCondensationVisualCalibration:
-        archetypeForceCalibrationResult.calibration,
-    });
-    persistRecognizedGenesisLifeAssets({
-      visualContinuity,
-      presenceVisualRealization:
-        presenceVisualRealizationResult.realization,
-    });
-    const result = createStarBeastRelationshipNamingAsset({
-      relationshipName: normalizedName,
-      visualContinuity,
-    });
-    setRelationshipNameDraft("");
-    if (result.status === "READY") {
-      setRelationshipName(result.asset.relationshipName);
-      setRelationshipNamingPersistence(result.persistence);
-      setRelationshipNamingState("NAMED");
-      return;
-    }
-
-    // 关系称呼是可选资产；身份失配、损坏或存储不可用都不能阻断同行。
-    setRelationshipName(null);
-    setRelationshipNamingPersistence(null);
-    setRelationshipNamingState("SKIPPED");
-  };
-
-  const skipRelationshipNaming = () => {
-    if (
-      !relationshipNamingReady ||
-      relationshipNamingState !== "PENDING"
-    ) {
-      return;
-    }
-    setRelationshipNameDraft("");
-    setRelationshipName(null);
-    setRelationshipNamingPersistence(null);
-    setRelationshipNamingState("SKIPPED");
-  };
-
-  const enterReality = async () => {
-    if (
-      consumerSourceResult === null ||
-      consumerSourceResult.status !== "READY" ||
-      recognitionRealityResult?.status !== "READY" ||
-      recognitionRealityResult.session.interactionAvailability !==
-        "ENTER_REALITY" ||
-      presenceRecognitionContinuityResult?.status !== "READY" ||
-      visualCalibrationResult === null ||
-      visualCalibrationResult.status !== "READY" ||
-      directionFieldCalibrationResult === null ||
-      directionFieldCalibrationResult.status !== "AVAILABLE" ||
-      archetypeForceCalibrationResult === null ||
-      archetypeForceCalibrationResult.status !== "AVAILABLE" ||
-      presenceVisualRealizationResult === null ||
-      presenceVisualRealizationResult.status !== "READY" ||
-      !lifeWhisperRelationIntentResolved
-    ) {
-      return;
-    }
-    const result = advanceGenesisProductionRecognitionRealityEntry(
-      recognitionRealityResult.session,
-      "ENTER_REALITY",
-    );
-    if (result.status === "READY") {
-      clearLifeWhisperOutcomeWatchdog();
-      lifeWhisperResponseCycleIdRef.current = null;
-      const entryContext =
-        activateGenesisProductionRealityEntryContext(result.session);
-      const handoff = resolveGenesisProductionRealityRouteHandoff({
-        entryContext,
-        sourceReferenceId: result.session.sourceReferenceId,
-      });
-      if (handoff.status === "READY") {
-        const presenceContinuityContext =
-          presenceVisualRealizationResult?.status === "READY"
-            ? activateGenesisRealityPresenceContinuityContext({
-                presenceRealization:
-                  presenceVisualRealizationResult.realization,
-                realityEntryContext: entryContext,
-              })
-            : null;
-        if (presenceContinuityContext !== null) {
-          const visualContinuity = Object.freeze({
-            sourceReferenceId: result.session.sourceReferenceId,
-            consumerSourceResult,
-            visualCalibrationBundle: visualCalibrationResult.bundle,
-            fourSymbolDirectionFieldVisualCalibration:
-              directionFieldCalibrationResult.calibration,
-            lifeArchetypeForceCondensationVisualCalibration:
-              archetypeForceCalibrationResult.calibration,
-          });
-          persistRecognizedGenesisLifeAssets({
-            visualContinuity,
-            presenceVisualRealization:
-              presenceVisualRealizationResult.realization,
-          });
-          const userInitiation =
-            lifeWhisperFactRef.current === "WHISPER_SKIPPED"
-              ? "SILENCE_CHOSEN" as const
-              : "WHISPER_SHARED" as const;
-          const starBeastResponse: XinmaiFirstEncounterStarBeastResponse | null =
-            userInitiation === "SILENCE_CHOSEN"
-              ? "SILENCE_HELD"
-              : lifeWhisperSettlementAuthority === "MOTION_VISUAL_OUTCOME"
-                ? "MOTION_RESPONSE"
-                : lifeWhisperSettlementAuthority === "STATIC_VISUAL_OUTCOME"
-                  ? "STATIC_RESPONSE"
-                  : lifeWhisperUnavailableContinuation ===
-                      "CONTINUE_WITHOUT_CONFIRMED_RESPONSE"
-                    ? "RESPONSE_UNAVAILABLE_ACCEPTED"
-                    : null;
-          if (starBeastResponse === null) return;
-          const encounterCommit =
-            commitXinmaiLifeCompanionFirstEncounter({
-              sourceReferenceId: result.session.sourceReferenceId,
-              userInitiation,
-              starBeastResponse,
-            });
-          setFirstEncounterCommitResult(encounterCommit);
-          if (encounterCommit.status === "BLOCKED") return;
-          const identityRecovery =
-            recoverRealityRecognizedIdentity({
-              visualContinuity,
-              presenceVisualRealization:
-                presenceVisualRealizationResult.realization,
-            });
-          const qualification =
-            lifeWhisperFactRef.current === "WHISPER_SKIPPED"
-              ? "WHISPER_SKIPPED" as const
-              : lifeWhisperResponsePhaseRef.current === "SETTLED"
-                ? "WHISPER_RESPONSE_SETTLED" as const
-                : lifeWhisperUnavailableContinuation ===
-                    "CONTINUE_WITHOUT_CONFIRMED_RESPONSE"
-                  ? "RESPONSE_UNAVAILABLE_EXPLICITLY_CONTINUED" as const
-                  : null;
-          const intentResult =
-            identityRecovery.status === "READY" &&
-            qualification !== null
-              ? await requestRealityEncounter({
-                  origin: "FIRST_ENCOUNTER",
-                  qualification,
-                  identityReferences:
-                    identityRecovery.identityReferences,
-                })
-              : null;
-          if (intentResult !== null) {
-            observeRealityEncounterRequestOutcome(intentResult);
-          }
-          if (intentResult?.status === "READY") {
-            setRecognitionRealityResult(result);
-            // This brief hold preserves the existing same-body visual
-            // continuity. It is not a Reality success authority.
-            realityEntryTimerRef.current = window.setTimeout(() => {
-              realityEntryTimerRef.current = null;
-              navigate(handoff.routeTarget, {
-                state: {
-                  intentReferenceId:
-                    intentResult.intent.intentReferenceId,
-                  visualContinuity,
-                },
-              });
-            }, REALITY_ENTRY_VISUAL_HOLD_MS);
-          }
-        }
-      }
-    }
-  };
-
   if (
     routeAuthorization.status !== "READY" ||
     consumerSourceResult === null ||
@@ -1178,10 +791,8 @@ export function GenesisProductionExperiencePage({
               : "READY"
       }`}
       data-genesis-runtime-stage={visualCalibrationResult.bundle.runtimeStage}
-      data-reality-entry-eligibility={
-        recognitionRealityResult?.status === "READY"
-          ? recognitionRealityResult.session.realityEntryEligibility
-          : "NOT_ELIGIBLE"
+      data-relationship-activation={
+        relationshipActivationPrerequisitesReady ? "READY" : "NOT_READY"
       }
       data-genesis-time-delivery-response={
         timeDeliveryResponse?.responseState ?? "DORMANT"
@@ -1221,38 +832,9 @@ export function GenesisProductionExperiencePage({
       data-genesis-life-origin-native-control-reason={
         lifeOriginControlReadiness.reason ?? "NONE"
       }
-      data-life-whisper-entry-ready={
-        lifeWhisperEntryReady ? "READY" : "NOT_READY"
-      }
-      data-life-whisper-fact={lifeWhisperFact}
-      data-life-whisper-response-phase={lifeWhisperResponsePhase}
-      data-life-whisper-response-cycle={
-        lifeWhisperResponseCycleId === null ? "NONE" : "CURRENT"
-      }
-      data-life-whisper-response-authority={
-        lifeWhisperSettlementAuthority ?? "NONE"
-      }
-      data-life-whisper-unavailable-reason={
-        lifeWhisperUnavailableReason ?? "NONE"
-      }
-      data-life-whisper-unavailable-continuation={
-        lifeWhisperUnavailableContinuation
-      }
-      data-relationship-naming-state={
-        relationshipNamingReady ? relationshipNamingState : "NOT_READY"
-      }
-      data-relationship-naming-eligibility-source={
-        relationshipNamingEligibility.source
-      }
-      data-first-encounter-authority={
-        firstEncounterCommitResult?.status ?? "NOT_COMMITTED"
-      }
-      data-life-companion-relationship={
-        firstEncounterCommitResult !== null &&
-        firstEncounterCommitResult.status !== "BLOCKED"
-          ? "ESTABLISHED"
-          : "NOT_ESTABLISHED"
-      }
+      data-life-whisper-entry="DEFERRED"
+      data-relationship-naming-entry="DEFERRED"
+      data-reality-entry="DEFERRED"
     >
       <p className="sr-only" role="status" aria-live="polite">
         {canvasHostState === "STARTING"
@@ -1275,13 +857,8 @@ export function GenesisProductionExperiencePage({
         }
         lifeOriginDiscoveryPhase={lifeOriginDiscoveryPhase}
         lifeOriginControlReadiness={lifeOriginControlReadiness}
-        lifeWhisperRelationshipVisualFact={{
-          lifeWhisperFact,
-          lifeWhisperResponsePhase,
-          responseCycleId: lifeWhisperResponseCycleId,
-        }}
-        onLifeWhisperVisualResponseOutcome={
-          handleLifeWhisperVisualResponseOutcome
+        lifeWhisperRelationshipVisualFact={
+          DORMANT_LIFE_WHISPER_RELATIONSHIP_VISUAL_FACT
         }
         onStateChange={setCanvasHostState}
       />
@@ -1318,186 +895,6 @@ export function GenesisProductionExperiencePage({
           >
             返回出生信息
           </button>
-        </section>
-      ) : null}
-      {lifeWhisperEntryReady && !relationshipNamingReady ? (
-        <section
-          className="gy-genesis-production-experience__life-whisper"
-          data-life-whisper-entry="READY"
-          data-life-whisper-fact={lifeWhisperFact}
-          aria-label="写给此刻自己的可选短句"
-        >
-          {lifeWhisperFact === "NONE" ? (
-            <form
-              className="gy-genesis-production-experience__life-whisper-form"
-              onSubmit={(event) => {
-                event.preventDefault();
-                submitLifeWhisper();
-              }}
-            >
-              <label htmlFor="xinmai-life-whisper">
-                {whisperSemantic.purpose}
-              </label>
-              <textarea
-                id="xinmai-life-whisper"
-                value={lifeWhisperText}
-                rows={1}
-                maxLength={120}
-                placeholder="一句话，一个词，都可以"
-                aria-describedby="xinmai-life-whisper-guidance"
-                onChange={(event) => setLifeWhisperText(event.target.value)}
-                onKeyDown={(event) => {
-                  if (
-                    !event.nativeEvent.isComposing &&
-                    event.key === "Enter" &&
-                    (event.metaKey || event.ctrlKey)
-                  ) {
-                    event.preventDefault();
-                    submitLifeWhisper();
-                  }
-                }}
-              />
-              <p id="xinmai-life-whisper-guidance">
-                {whisperSemantic.explanation}
-              </p>
-              <div className="gy-genesis-production-experience__life-whisper-actions">
-                <button
-                  type="button"
-                  data-interaction="WHISPER_SKIPPED"
-                  onClick={skipLifeWhisper}
-                >
-                  {whisperSemantic.secondaryAction}
-                </button>
-                <button
-                  type="submit"
-                  data-interaction="WHISPER_SUBMITTED"
-                  disabled={lifeWhisperText.trim().length === 0}
-                >
-                  {whisperSemantic.primaryAction}
-                </button>
-              </div>
-            </form>
-          ) : lifeWhisperFact === "WHISPER_SUBMITTED" &&
-            lifeWhisperResponsePhase === "UNAVAILABLE" ? (
-            <div
-              className="gy-genesis-production-experience__life-whisper-unavailable"
-              role="status"
-            >
-              <p>这句短话的视觉回应暂时没有完成；它不会影响后续结果。</p>
-              <div className="gy-genesis-production-experience__life-whisper-actions">
-                <button
-                  type="button"
-                  data-interaction="RETRY_LIFE_WHISPER_RESPONSE"
-                  onClick={retryLifeWhisperResponse}
-                >
-                  再试一次视觉回应
-                </button>
-                <button
-                  type="button"
-                  data-interaction="CONTINUE_WITHOUT_CONFIRMED_RESPONSE"
-                  onClick={
-                    continueWithoutConfirmedLifeWhisperResponse
-                  }
-                >
-                  暂不等待，直接继续
-                </button>
-              </div>
-            </div>
-          ) : (
-            <p
-              className="gy-genesis-production-experience__life-whisper-settled"
-              role="status"
-            >
-              {lifeWhisperFact === "WHISPER_SUBMITTED"
-                ? lifeWhisperResponsePhase === "RESPONDING"
-                  ? "正在呈现这句话的视觉回应。"
-                  : "视觉回应已完成；原文不会进入观察记录。"
-                : "暂时不写，也可以直接继续。"}
-            </p>
-          )}
-        </section>
-      ) : null}
-      {relationshipNamingReady && !firstRealityNamingDeferred ? (
-        <section
-          className="gy-genesis-production-experience__relationship-naming"
-          data-relationship-naming-entry="READY"
-          data-relationship-naming-persistence={
-            relationshipNamingPersistence ?? "NONE"
-          }
-          aria-label="生命伙伴关系称呼"
-        >
-          {relationshipNamingState === "PENDING" ? (
-            <form
-              className="gy-genesis-production-experience__relationship-naming-form"
-              onSubmit={(event) => {
-                event.preventDefault();
-                submitRelationshipName();
-              }}
-            >
-              <label htmlFor="xinmai-relationship-name">
-                如果愿意，可以这样称呼它
-              </label>
-              <input
-                id="xinmai-relationship-name"
-                type="text"
-                value={relationshipNameDraft}
-                maxLength={
-                  STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS * 2
-                }
-                autoComplete="off"
-                placeholder="一个只属于你们的称呼"
-                aria-describedby="xinmai-relationship-name-guidance"
-                onChange={(event) =>
-                  setRelationshipNameDraft(
-                    Array.from(event.target.value)
-                      .slice(
-                        0,
-                        STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS,
-                      )
-                      .join(""),
-                  )
-                }
-              />
-              <p id="xinmai-relationship-name-guidance">
-                称呼只用于个性化同行体验，不改变任何身份事实
-              </p>
-              <div className="gy-genesis-production-experience__relationship-naming-actions">
-                <button
-                  type="button"
-                  data-interaction="RELATIONSHIP_NAMING_SKIPPED"
-                  onClick={skipRelationshipNaming}
-                >
-                  以后再说
-                </button>
-                <button
-                  type="submit"
-                  data-interaction="RELATIONSHIP_NAME_CREATED"
-                  disabled={relationshipNameDraft.trim().length === 0}
-                >
-                  留下称呼
-                </button>
-              </div>
-            </form>
-          ) : (
-            <p
-              className="gy-genesis-production-experience__relationship-naming-settled"
-              role="status"
-            >
-              {relationshipNamingState === "NAMED" &&
-              relationshipName !== null ? (
-                <>
-                  你可以叫它
-                  <strong>{relationshipName}</strong>
-                  {relationshipNamingPersistence ===
-                  "CURRENT_CYCLE_ONLY" ? (
-                    <span>这个称呼暂时只留在此刻。</span>
-                  ) : null}
-                </>
-              ) : (
-                "不命名，也不妨碍你们继续同行。"
-              )}
-            </p>
-          )}
         </section>
       ) : null}
       {timeDeliveryResponse !== null &&
@@ -1557,7 +954,7 @@ export function GenesisProductionExperiencePage({
                 continuitySemantic.explanation
               : // “你终于看见它。”退为历史文案；显现完成不等于
                 // 身份成立，用户的主动认出才完成同一生命闭环。
-                "你已经认出它。接下来，看看它如何回应你的第一次表达。"}
+                "你已经认出它。现在，你可以决定是否从这里开始同行。"}
         </p>
       ) : null}
       {recognitionActionReady &&
@@ -1571,40 +968,13 @@ export function GenesisProductionExperiencePage({
           认出这个生命
         </button>
       ) : null}
-      {recognitionRealityResult?.status === "READY" &&
-      recognitionRealityResult.session.interactionAvailability ===
-        "ENTER_REALITY" &&
-      presenceRecognitionContinuityResult?.status === "READY" &&
-      recognitionResponseSettled &&
-      lifeWhisperRelationIntentResolved ? (
-        <>
-          {firstEncounterCommitResult?.status === "BLOCKED" ? (
-            <p
-              className="gy-genesis-production-experience__presence-response"
-              role="status"
-            >
-              {firstEncounterCommitResult.retryability === "RETRYABLE"
-                ? "这次相遇还没有安全留下。已确认的生命身份仍会保留，你可以再试一次。"
-                : "这次相遇暂时停在这里。已确认的生命身份仍会保留。"}
-            </p>
-          ) : null}
-          {firstEncounterCommitResult === null ||
-          firstEncounterCommitResult.status !== "BLOCKED" ||
-          firstEncounterCommitResult.retryability === "RETRYABLE" ? (
-            <button
-              type="button"
-              className="gy-genesis-production-experience__completion-action"
-              data-interaction="ENTER_REALITY"
-              data-genesis-presence-recognition-continuity="READY"
-              onClick={enterReality}
-            >
-              {firstEncounterCommitResult !== null &&
-              firstEncounterCommitResult.status !== "BLOCKED"
-                ? "第一次相遇已经留下，正在进入现实"
-                : "确认同行，进入现实"}
-            </button>
-          ) : null}
-        </>
+      {relationshipActivationPrerequisitesReady &&
+      recognizedIdentityResult !== null &&
+      firstEncounterVisualOutcomeResult !== null ? (
+        <XinmaiLifeCompanionRelationshipActivationSurface
+          identityResult={recognizedIdentityResult}
+          visualOutcomeResult={firstEncounterVisualOutcomeResult}
+        />
       ) : null}
     </main>
   );
