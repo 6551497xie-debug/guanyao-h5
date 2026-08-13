@@ -72,6 +72,11 @@ import type {
   LifeWhisperUnavailableContinuation,
 } from "../types/xinmaiLifeWhisperRelationship";
 import type {
+  XinmaiFirstEncounterStarBeastResponse,
+  XinmaiLifeCompanionFirstEncounterCommitResult,
+} from "../types/xinmaiLifeCompanionRelationship";
+import { commitXinmaiLifeCompanionFirstEncounter } from "../services/xinmaiLifeCompanionFirstEncounterController";
+import type {
   XinmaiGenesisLifeOriginActivationRevalidation,
   XinmaiGenesisLifeOriginDiscoveryPhase,
 } from "../types/xinmaiGenesisLifeOriginNativeControlReadiness";
@@ -289,6 +294,8 @@ export function GenesisProductionExperiencePage({
   >("PENDING");
   const [relationshipNamingPersistence, setRelationshipNamingPersistence] =
     useState<"PERSISTED" | "CURRENT_CYCLE_ONLY" | null>(null);
+  const [firstEncounterCommitResult, setFirstEncounterCommitResult] =
+    useState<XinmaiLifeCompanionFirstEncounterCommitResult | null>(null);
   const lifeOriginDiscoveryTimerRef = useRef<number | null>(null);
   const lifeWhisperFactRef =
     useRef<LifeWhisperRelationshipFact>("NONE");
@@ -466,6 +473,7 @@ export function GenesisProductionExperiencePage({
     setRelationshipName(null);
     setRelationshipNamingState("PENDING");
     setRelationshipNamingPersistence(null);
+    setFirstEncounterCommitResult(null);
     if (lifeOriginDiscoveryTimerRef.current !== null) {
       window.clearTimeout(lifeOriginDiscoveryTimerRef.current);
       lifeOriginDiscoveryTimerRef.current = null;
@@ -1039,6 +1047,30 @@ export function GenesisProductionExperiencePage({
             presenceVisualRealization:
               presenceVisualRealizationResult.realization,
           });
+          const userInitiation =
+            lifeWhisperFactRef.current === "WHISPER_SKIPPED"
+              ? "SILENCE_CHOSEN" as const
+              : "WHISPER_SHARED" as const;
+          const starBeastResponse: XinmaiFirstEncounterStarBeastResponse | null =
+            userInitiation === "SILENCE_CHOSEN"
+              ? "SILENCE_HELD"
+              : lifeWhisperSettlementAuthority === "MOTION_VISUAL_OUTCOME"
+                ? "MOTION_RESPONSE"
+                : lifeWhisperSettlementAuthority === "STATIC_VISUAL_OUTCOME"
+                  ? "STATIC_RESPONSE"
+                  : lifeWhisperUnavailableContinuation ===
+                      "CONTINUE_WITHOUT_CONFIRMED_RESPONSE"
+                    ? "RESPONSE_UNAVAILABLE_ACCEPTED"
+                    : null;
+          if (starBeastResponse === null) return;
+          const encounterCommit =
+            commitXinmaiLifeCompanionFirstEncounter({
+              sourceReferenceId: result.session.sourceReferenceId,
+              userInitiation,
+              starBeastResponse,
+            });
+          setFirstEncounterCommitResult(encounterCommit);
+          if (encounterCommit.status === "BLOCKED") return;
           const identityRecovery =
             recoverRealityRecognizedIdentity({
               visualContinuity,
@@ -1212,6 +1244,15 @@ export function GenesisProductionExperiencePage({
       data-relationship-naming-eligibility-source={
         relationshipNamingEligibility.source
       }
+      data-first-encounter-authority={
+        firstEncounterCommitResult?.status ?? "NOT_COMMITTED"
+      }
+      data-life-companion-relationship={
+        firstEncounterCommitResult !== null &&
+        firstEncounterCommitResult.status !== "BLOCKED"
+          ? "ESTABLISHED"
+          : "NOT_ESTABLISHED"
+      }
     >
       <p className="sr-only" role="status" aria-live="polite">
         {canvasHostState === "STARTING"
@@ -1248,7 +1289,7 @@ export function GenesisProductionExperiencePage({
         <button
           type="button"
           className="gy-genesis-production-experience__origin-invitation"
-          aria-label="开始形成持续体验的视觉同行者"
+          aria-label="开始寻找远方生命"
           data-continuous-scene-near-control="LIFE_ORIGIN"
           data-genesis-life-origin-native-control="READY"
           disabled={false}
@@ -1256,7 +1297,7 @@ export function GenesisProductionExperiencePage({
           tabIndex={0}
           onClick={beginLifeOriginDiscovery}
         >
-          开始形成体验化身
+          开始寻找远方生命
         </button>
       ) : null}
       {lifeOriginControlReadiness.status === "SAFE_WITHHELD" ? (
@@ -1484,7 +1525,7 @@ export function GenesisProductionExperiencePage({
         "DIRECTION_AWAKENING" &&
       directionFieldCalibrationResult.calibration.phase === "AWAKENING" ? (
         <p className="gy-genesis-production-experience__time-response" role="status">
-          {genesisSemantic.purpose}。接下来会呈现可继续体验的视觉同行者。
+          {genesisSemantic.purpose}。接下来会让你认出这个已经存在的远方生命。
         </p>
       ) : null}
       {manifestationExperienceResult.session.currentState ===
@@ -1508,7 +1549,7 @@ export function GenesisProductionExperiencePage({
           "APPROACHING"
             ? // “它正在靠近。”退为历史文案；生命并非从外部进入，
               // 而是从同一核心与既有力量节律中逐步被看见。
-              "体验化身正在从已确认的视觉线索中显现。"
+              "远方的生命信号正在变得清晰。"
             : presenceVisualRealizationResult.realization.visualPresenceState ===
                 "PRESENT"
               ? // “它一直在那里。”保留为历史语义；认出之前先明确
@@ -1516,7 +1557,7 @@ export function GenesisProductionExperiencePage({
                 continuitySemantic.explanation
               : // “你终于看见它。”退为历史文案；显现完成不等于
                 // 身份成立，用户的主动认出才完成同一生命闭环。
-                "你已确认愿意以这个化身继续体验。"}
+                "你已经认出它。接下来，看看它如何回应你的第一次表达。"}
         </p>
       ) : null}
       {recognitionActionReady &&
@@ -1527,7 +1568,7 @@ export function GenesisProductionExperiencePage({
           data-interaction="RECOGNITION_CONFIRM"
           onClick={confirmRecognition}
         >
-          愿意以这个化身继续体验
+          认出这个生命
         </button>
       ) : null}
       {recognitionRealityResult?.status === "READY" &&
@@ -1536,15 +1577,34 @@ export function GenesisProductionExperiencePage({
       presenceRecognitionContinuityResult?.status === "READY" &&
       recognitionResponseSettled &&
       lifeWhisperRelationIntentResolved ? (
-        <button
-          type="button"
-          className="gy-genesis-production-experience__completion-action"
-          data-interaction="ENTER_REALITY"
-          data-genesis-presence-recognition-continuity="READY"
-          onClick={enterReality}
-        >
-          进入现实情境
-        </button>
+        <>
+          {firstEncounterCommitResult?.status === "BLOCKED" ? (
+            <p
+              className="gy-genesis-production-experience__presence-response"
+              role="status"
+            >
+              {firstEncounterCommitResult.retryability === "RETRYABLE"
+                ? "这次相遇还没有安全留下。已确认的生命身份仍会保留，你可以再试一次。"
+                : "这次相遇暂时停在这里。已确认的生命身份仍会保留。"}
+            </p>
+          ) : null}
+          {firstEncounterCommitResult === null ||
+          firstEncounterCommitResult.status !== "BLOCKED" ||
+          firstEncounterCommitResult.retryability === "RETRYABLE" ? (
+            <button
+              type="button"
+              className="gy-genesis-production-experience__completion-action"
+              data-interaction="ENTER_REALITY"
+              data-genesis-presence-recognition-continuity="READY"
+              onClick={enterReality}
+            >
+              {firstEncounterCommitResult !== null &&
+              firstEncounterCommitResult.status !== "BLOCKED"
+                ? "第一次相遇已经留下，正在进入现实"
+                : "确认同行，进入现实"}
+            </button>
+          ) : null}
+        </>
       ) : null}
     </main>
   );

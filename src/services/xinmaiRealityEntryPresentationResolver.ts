@@ -12,6 +12,7 @@ export type XinmaiRealityEntryPresentation = Readonly<{
   state:
     | "READY"
     | "AWAITING_RELATIONSHIP"
+    | "RELATIONSHIP_UNAVAILABLE"
     | "AWAITING_ENTRY_QUALIFICATION"
     | "COORDINATING"
     | "CATALOG_UNAVAILABLE"
@@ -25,13 +26,27 @@ export type XinmaiRealityEntryPresentation = Readonly<{
 }>;
 
 export function resolveXinmaiRealityEntryPresentation(input: Readonly<{
-  relationshipAvailable: boolean;
+  relationshipReadiness:
+    | "READY"
+    | "LEGACY_HANDOFF"
+    | "NOT_ESTABLISHED"
+    | "BLOCKED";
   entryIntentReady: boolean;
   deliveryReady: boolean;
   failure: RealityPressureFailureEnvelope | null;
   authorityRetryAvailable: boolean;
 }>): XinmaiRealityEntryPresentation {
-  if (!input.relationshipAvailable) {
+  if (input.relationshipReadiness === "BLOCKED") {
+    return Object.freeze({
+      state: "RELATIONSHIP_UNAVAILABLE" as const,
+      message: "第一次相遇的记录暂时无法核对。身份记录仍会保留，请返回旅程入口。",
+      retryability: "NON_RETRYABLE" as const,
+      showRetry: false,
+      showReturnToLifeWorld: true,
+      typedCause: "NONE" as const,
+    });
+  }
+  if (input.relationshipReadiness === "NOT_ESTABLISHED") {
     return Object.freeze({
       state: "AWAITING_RELATIONSHIP" as const,
       message: "先完成你们之间的关系确认，再进入现实。",

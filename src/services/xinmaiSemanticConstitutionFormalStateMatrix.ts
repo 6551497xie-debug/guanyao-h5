@@ -49,9 +49,9 @@ export const XINMAI_SEMANTIC_CONSTITUTION_FORMAL_STATE_MATRIX = Object.freeze([
   p("BIRTH", "FAILURE", "说明时间坐标为何没有保存。", "本次保存没有完成。", "重试保存时间坐标", "已填写内容留在当前表单，不会冒充已保存。", "RETRYABLE"),
   p("BIRTH", "RECOVERY", "恢复已经确认的时间坐标。", "正在读取已有起点记录。", "等待恢复完成", "离开不会改写已有记录。", "NOT_APPLICABLE"),
 
-  p("GENESIS", "LOADING", "载入视觉同行者与时间坐标。", "正在读取已确认的起点记录。", "等待载入完成", "离开不会改变已保存记录。", "NOT_APPLICABLE"),
-  p("GENESIS", "FORMING", "用连续画面承接已确认的起点。", "视觉同行者正在形成，尚未代表新的事实。", "继续等待形成", "动画未完成不会冒充身份确认。", "NOT_APPLICABLE"),
-  p("GENESIS", "READY", "说明视觉同行者只承载持续体验。", "起点记录与视觉呈现已准备好。", "继续进入现实情境", "跳过称呼不会损失任何旅程资产。", "NOT_APPLICABLE"),
+  p("GENESIS", "LOADING", "读取相遇坐标与远方生命信号。", "正在读取已确认的相遇坐标。", "等待读取完成", "离开不会改变已保存记录。", "NOT_APPLICABLE"),
+  p("GENESIS", "FORMING", "让远方生命的视觉信号逐渐清晰。", "远方生命的视觉信号正在显现，尚未代表关系已经成立。", "继续等待显现", "动画未完成不会冒充身份或关系确认。", "NOT_APPLICABLE"),
+  p("GENESIS", "READY", "准备让你认出这个已经存在的远方生命。", "相遇坐标与视觉信号已经准备好。", "开始寻找远方生命", "稍后再命名不会损失任何旅程资产。", "NOT_APPLICABLE"),
   p("GENESIS", "FAILURE", "说明形成过程为何中断。", "视觉呈现当前无法完成，起点记录仍保留。", "重试形成", "返回入口不会删除起点记录。", "RETRYABLE"),
   p("GENESIS", "RETURNING", "恢复已有旅程的视觉连续性。", "正在读取已有记录，不会重新生成起点。", "继续已有旅程", "返回入口不会改写旧记录。", "NOT_APPLICABLE"),
 

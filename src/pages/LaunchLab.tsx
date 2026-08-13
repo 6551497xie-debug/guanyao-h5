@@ -62,6 +62,7 @@ import { resolveLifeWhisperVisualOutcomeTransition } from "../services/xinmaiLif
 import { recoverRealityRecognizedIdentity } from "../services/realityRecognizedIdentityRecoveryAdapter";
 import { requestRealityEncounter } from "../services/xinmaiRealityEncounterIntentController";
 import { resolveXinmaiRealityEntryPresentation } from "../services/xinmaiRealityEntryPresentationResolver";
+import { recoverXinmaiLifeCompanionRelationship } from "../services/xinmaiLifeCompanionRelationshipRecoveryAdapter";
 import { resolveXinmaiJourneySemanticPresentation } from "../services/xinmaiJourneySemanticPresentationResolver";
 import { XINMAI_OVERVIEW_EFFECT_ENTRY_PRESENTATION_POLICY } from "../services/xinmaiOverviewEffectEntryPresentationPolicy";
 import type {
@@ -1650,8 +1651,12 @@ export function LaunchLab({
     });
   const returningRealityEntryPresentation =
     resolveXinmaiRealityEntryPresentation({
-      relationshipAvailable:
-        returningRelationshipNaming.status === "AVAILABLE",
+      relationshipReadiness:
+        recoverXinmaiLifeCompanionRelationship().status === "READY"
+          ? "READY"
+          : returningRelationshipNaming.status === "AVAILABLE"
+            ? "LEGACY_HANDOFF"
+            : "NOT_ESTABLISHED",
       entryIntentReady: returningLifeWhisperRealityIntentReady,
       deliveryReady: returningLifeWhisperRealityIntentReady,
       failure: null,

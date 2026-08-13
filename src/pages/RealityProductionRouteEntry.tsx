@@ -49,6 +49,7 @@ import { executeRealityToGravityCutover } from "../services/realityToGravityCuto
 import { observeRealityToGravityCutoverResult } from "../services/gravityEntryAcceptanceRuntimePort";
 import { readXinmaiChoiceReturnResolutionProof } from "../services/xinmaiChoiceReturnResolutionProofAdapter";
 import { resolveXinmaiRealityEntryPresentation } from "../services/xinmaiRealityEntryPresentationResolver";
+import { recoverXinmaiLifeCompanionRelationship } from "../services/xinmaiLifeCompanionRelationshipRecoveryAdapter";
 import { createRealityPressureFailureEnvelope } from "../types/realityPressureFailureEnvelope";
 import { GUANYAO_ROUTES } from "../routes/guanyaoRoutes";
 import type {
@@ -239,6 +240,9 @@ export function RealityProductionRouteEntry({
     recoverRealityRecognizedIdentity({
       visualContinuity: routeVisualContinuity,
     }),
+  );
+  const [relationshipRecovery] = useState(() =>
+    recoverXinmaiLifeCompanionRelationship(),
   );
   const [canonicalBodyImprintDecision, setCanonicalBodyImprintDecision] =
     useState<XinmaiCanonicalBodyImprintDecision>(
@@ -992,9 +996,20 @@ export function RealityProductionRouteEntry({
     (postCommitTransaction.status === "FAILED"
       ? postCommitTransaction.failure
       : assemblyFailure) ?? hostAcceptanceFailure;
+  const currentIntentAuthority = readCurrentRealityEncounterIntent();
+  const relationshipReadiness =
+    relationshipRecovery.status === "READY"
+      ? "READY" as const
+      : currentIntentAuthority !== null
+        ? "LEGACY_HANDOFF" as const
+        : relationshipRecovery.status === "BLOCKED"
+          ? "BLOCKED" as const
+          : "NOT_ESTABLISHED" as const;
 
   if (
     identityRecovery.status !== "READY" ||
+    relationshipReadiness === "NOT_ESTABLISHED" ||
+    relationshipReadiness === "BLOCKED" ||
     postCommitTransaction.status !== "READY" ||
     admissionResult?.status !== "READY" ||
     encounterAdmission === null ||
@@ -1010,7 +1025,7 @@ export function RealityProductionRouteEntry({
       "READY_FOR_CONSUMER_INITIALIZATION" ||
     genesisPresenceContinuityContext === null
   ) {
-    const currentIntent = readCurrentRealityEncounterIntent();
+    const currentIntent = currentIntentAuthority;
     const retryAvailable =
       currentIntent?.state === "FAILED_RETRYABLE" ||
       postCommitTransaction.status === "FAILED" &&
@@ -1033,7 +1048,7 @@ export function RealityProductionRouteEntry({
             )
           : null;
     const entryPresentation = resolveXinmaiRealityEntryPresentation({
-      relationshipAvailable: identityRecovery.status === "READY",
+      relationshipReadiness,
       entryIntentReady: currentIntent !== null,
       deliveryReady: deliveryResult?.status === "READY",
       failure: authorityFailure,
@@ -1062,6 +1077,7 @@ export function RealityProductionRouteEntry({
         data-reality-entry-presentation={entryPresentation.state}
         data-reality-entry-typed-cause={entryPresentation.typedCause}
         data-reality-entry-retryability={entryPresentation.retryability}
+        data-life-companion-relationship-authority={relationshipReadiness}
       >
         <p role="status">
           {entryPresentation.message}

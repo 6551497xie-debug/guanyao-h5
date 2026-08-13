@@ -4,6 +4,12 @@ import type { LaunchLifeSourceSession } from "../types/launchLifeSourceSession";
 import type { RealUserGenesisVisualSourceContext } from "../types/realUserGenesisVisualSourceContext";
 import type { XinmaiGenesisBirthSourcePersistenceRepresentations } from "../types/xinmaiGenesisBirthSourceRecovery";
 import type { XinmaiGenesisBirthInputDraftAsset } from "../types/xinmaiGenesisBirthSourceDerivation";
+import {
+  XINMAI_LIFE_COMPANION_FIRST_ENCOUNTER_SCHEMA_VERSION,
+  XINMAI_LIFE_COMPANION_RELATIONSHIP_PROTOCOL_REVISION,
+  type XinmaiLifeCompanionFirstEncounterReadResult,
+  type XinmaiLifeCompanionFirstEncounterReceipt,
+} from "../types/xinmaiLifeCompanionRelationship";
 import type { RealityProductionHostProps } from "../types/realityProductionRouteEntry";
 import {
   STARBEAST_RELATIONSHIP_NAME_MAX_CODE_POINTS,
@@ -77,6 +83,8 @@ const GENESIS_PRESENCE_REALIZATION_ASSET_KEY =
   "genesisPresenceVisualRealization";
 const STARBEAST_RELATIONSHIP_NAMING_ASSET_KEY =
   "starBeastRelationshipNamingAsset";
+const LIFE_COMPANION_FIRST_ENCOUNTER_RECEIPT_ASSET_KEY =
+  "xinmaiLifeCompanionFirstEncounterReceipt";
 const GENESIS_BIRTH_INPUT_DRAFT_ASSET_KEY = "xinmaiGenesisBirthInputDraft";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -211,7 +219,37 @@ const isStarBeastRelationshipNamingAsset = (
   Number.isInteger(value.revision) &&
   value.revision > 0;
 
-type RecognizedRelationshipIdentityReferences = Readonly<{
+const isLifeCompanionFirstEncounterReceipt = (
+  value: unknown,
+): value is XinmaiLifeCompanionFirstEncounterReceipt =>
+  isRecord(value) &&
+  value.schemaVersion ===
+    XINMAI_LIFE_COMPANION_FIRST_ENCOUNTER_SCHEMA_VERSION &&
+  value.protocolRevision ===
+    XINMAI_LIFE_COMPANION_RELATIONSHIP_PROTOCOL_REVISION &&
+  typeof value.receiptReferenceId === "string" &&
+  value.receiptReferenceId.trim().length > 0 &&
+  typeof value.sourceReferenceId === "string" &&
+  value.sourceReferenceId.trim().length > 0 &&
+  typeof value.starBeastIdentityReferenceId === "string" &&
+  value.starBeastIdentityReferenceId.trim().length > 0 &&
+  typeof value.mansionCoordinateReferenceId === "string" &&
+  value.mansionCoordinateReferenceId.trim().length > 0 &&
+  (value.userInitiation === "WHISPER_SHARED" ||
+    value.userInitiation === "SILENCE_CHOSEN") &&
+  (value.starBeastResponse === "MOTION_RESPONSE" ||
+    value.starBeastResponse === "STATIC_RESPONSE" ||
+    value.starBeastResponse === "RESPONSE_UNAVAILABLE_ACCEPTED" ||
+    value.starBeastResponse === "SILENCE_HELD") &&
+  value.encounterState === "FIRST_ENCOUNTER_COMPLETED" &&
+  value.trustState === "FIRST_EXCHANGE_ESTABLISHED" &&
+  value.companionState === "MET" &&
+  value.rawWhisperPersisted === false &&
+  typeof value.createdAt === "string" &&
+  value.createdAt.trim().length > 0 &&
+  value.revision === 1;
+
+export type RecognizedRelationshipIdentityReferences = Readonly<{
   sourceReferenceId: string;
   starBeastIdentityReferenceId: string;
   mansionCoordinateReferenceId: string;
@@ -381,7 +419,7 @@ export function readPersistedGenesisPresenceVisualRealization():
   return value as GenesisStarBeastPresenceVisualRealization;
 }
 
-const resolveRecognizedRelationshipIdentityReferences = (
+export const resolveRecognizedRelationshipIdentityReferences = (
   visualContinuityInput?: RealityProductionHostProps["visualContinuity"],
 ): RecognizedRelationshipIdentityReferences | null => {
   const lifeSourceSession = readPersistedLaunchLifeSourceSession();
@@ -434,6 +472,60 @@ const resolveRecognizedRelationshipIdentityReferences = (
     mansionCoordinateReferenceId,
   });
 };
+
+export function readXinmaiLifeCompanionFirstEncounterReceipt():
+  XinmaiLifeCompanionFirstEncounterReadResult {
+  const value = readPersistedAsset(
+    LIFE_COMPANION_FIRST_ENCOUNTER_RECEIPT_ASSET_KEY,
+  );
+  if (value === null) {
+    return Object.freeze({ status: "NOT_FOUND", receipt: null });
+  }
+  if (!isLifeCompanionFirstEncounterReceipt(value)) {
+    return Object.freeze({
+      status: "UNAVAILABLE",
+      reason: "RECEIPT_INVALID",
+      receipt: null,
+    });
+  }
+  const identityReferences = resolveRecognizedRelationshipIdentityReferences();
+  if (
+    identityReferences === null ||
+    value.sourceReferenceId !== identityReferences.sourceReferenceId ||
+    value.starBeastIdentityReferenceId !==
+      identityReferences.starBeastIdentityReferenceId ||
+    value.mansionCoordinateReferenceId !==
+      identityReferences.mansionCoordinateReferenceId
+  ) {
+    return Object.freeze({
+      status: "UNAVAILABLE",
+      reason: "IDENTITY_REFERENCE_MISMATCH",
+      receipt: null,
+    });
+  }
+  return Object.freeze({ status: "AVAILABLE", receipt: value });
+}
+
+export function persistXinmaiLifeCompanionFirstEncounterReceipt(
+  receipt: XinmaiLifeCompanionFirstEncounterReceipt,
+): boolean {
+  if (!isLifeCompanionFirstEncounterReceipt(receipt)) return false;
+  writePersistedAssets({
+    [LIFE_COMPANION_FIRST_ENCOUNTER_RECEIPT_ASSET_KEY]: receipt,
+  });
+  const stored = readPersistedAsset(
+    LIFE_COMPANION_FIRST_ENCOUNTER_RECEIPT_ASSET_KEY,
+  );
+  return (
+    isLifeCompanionFirstEncounterReceipt(stored) &&
+    stored.receiptReferenceId === receipt.receiptReferenceId &&
+    stored.sourceReferenceId === receipt.sourceReferenceId &&
+    stored.starBeastIdentityReferenceId ===
+      receipt.starBeastIdentityReferenceId &&
+    stored.mansionCoordinateReferenceId ===
+      receipt.mansionCoordinateReferenceId
+  );
+}
 
 const relationshipAssetMatchesIdentity = (
   asset: StarBeastRelationshipNamingAsset,
