@@ -82,8 +82,8 @@ if (failures.length === 0) {
   ].forEach((marker) => assertIncludes("P44 spatial distance service", source.service, marker));
 
   [
-    "genesisSpatialDistanceCalibration: GenesisSpatialDistanceCalibration | null",
-    "genesisSpatialDistanceCalibration?: GenesisSpatialDistanceCalibration | null",
+    "genesisSpatialDistanceCalibration: GenesisSpatialDistanceCalibrationCore | null",
+    "genesisSpatialDistanceCalibration?: GenesisSpatialDistanceCalibrationCore | null",
   ].forEach((marker) => assertIncludes("P44 renderer input boundary", source.rendererType, marker));
 
   [
