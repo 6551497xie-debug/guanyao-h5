@@ -14,6 +14,15 @@ const typePath = path.join(rootDir, "src/types/gravityRuntimeInput.ts");
 const fusionTypePath = path.join(rootDir, "src/types/guanyaoGeoChronoMotherFusion.ts");
 const launchPath = path.join(rootDir, "src/pages/LaunchLab.tsx");
 const gravityPath = path.join(rootDir, "src/pages/GravityPage.tsx");
+const birthCoordinateAdmissionPath = path.join(
+  rootDir,
+  "src/services/xinmaiGenesisBirthCoordinateAdmissionController.ts",
+);
+const gravityRoutePath = path.join(rootDir, "src/pages/GravityProductionRouteEntry.tsx");
+const gravityRuntimeInputPath = path.join(
+  rootDir,
+  "src/services/gravityProductionRuntimeInputAdapter.ts",
+);
 const adapterSource = fs.readFileSync(adapterPath, "utf8");
 const handoffSource = fs.readFileSync(handoffPath, "utf8");
 const inputAdapterSource = fs.readFileSync(inputAdapterPath, "utf8");
@@ -23,6 +32,9 @@ const typeSource = fs.readFileSync(typePath, "utf8");
 const fusionTypeSource = fs.readFileSync(fusionTypePath, "utf8");
 const launchSource = fs.readFileSync(launchPath, "utf8");
 const gravitySource = fs.readFileSync(gravityPath, "utf8");
+const birthCoordinateAdmissionSource = fs.readFileSync(birthCoordinateAdmissionPath, "utf8");
+const gravityRouteSource = fs.readFileSync(gravityRoutePath, "utf8");
+const gravityRuntimeInputSource = fs.readFileSync(gravityRuntimeInputPath, "utf8");
 const tempAdapterPath = path.join(os.tmpdir(), `guanyao-mother-context-adapter-${process.pid}.mjs`);
 const tempHandoffPath = path.join(os.tmpdir(), `guanyao-mother-handoff-${process.pid}.mjs`);
 const tempPersistencePath = path.join(os.tmpdir(), `guanyao-mother-context-persistence-${process.pid}.mjs`);
@@ -244,26 +256,40 @@ try {
   assertExcludes("formal stored context excludes geo symbol", storedContextBlock, "symbol?:");
   assertExcludes("formal stored context excludes top-level fourBeast", storedContextBlock, "fourBeast?:");
   assertIncludes("handoff adapter builds complete starbeast context", handoffSource, "starbeast: reveal.starbeast");
-  assertIncludes("Launch delegates mother handoff construction", launchSource, "buildDynamicsMotherHandoff(reveal)");
   assertIncludes(
-    "Launch persists adapter-owned origin context",
+    "Launch delegates birth-coordinate admission",
     launchSource,
-    "writeOriginMotherContext(motherHandoff.originMotherContext)",
-  );
-  assertIncludes(
-    "Launch carries mother bundle into Dynamics route",
-    launchSource,
-    "mother: dynamicsMotherHandoffRef.current",
-  );
-  assertIncludes(
-    "Launch names persistence latch as an attempt",
-    launchSource,
-    "originMotherContextPersistenceAttempted",
+    "confirmXinmaiGenesisBirthCoordinate({",
   );
   assertExcludes(
-    "Launch does not mislabel persistence attempt as success",
+    "Launch does not construct the mother handoff",
     launchSource,
-    "originMotherContextPersisted",
+    "buildDynamicsMotherHandoff(",
+  );
+  assertExcludes(
+    "Launch does not persist origin context",
+    launchSource,
+    "writeOriginMotherContext(",
+  );
+  assertIncludes(
+    "Birth-coordinate admission constructs the mother handoff",
+    birthCoordinateAdmissionSource,
+    "buildDynamicsMotherHandoff(",
+  );
+  assertIncludes(
+    "Birth-coordinate admission persists adapter-owned origin context",
+    birthCoordinateAdmissionSource,
+    "writeOriginMotherContext({",
+  );
+  assertIncludes(
+    "Birth-coordinate admission binds the life-source session",
+    birthCoordinateAdmissionSource,
+    "lifeSourceSession: sessionResult.session",
+  );
+  assertExcludes(
+    "Birth-coordinate admission does not own origin context storage key",
+    birthCoordinateAdmissionSource,
+    "guanyao:originMotherContext",
   );
   assertExcludes("Launch does not own origin context storage key", launchSource, "guanyao:originMotherContext");
   assertExcludes("new handoff stops top-level fourBeast mirror", handoffSource, "fourBeast:");
@@ -284,7 +310,26 @@ try {
     inputAdapterSource,
     "readPersistedOriginMotherContext()",
   );
-  assertIncludes("Gravity delegates input resolution", gravitySource, "resolveDynamicsInputContext({");
+  assertIncludes(
+    "Gravity consumes typed dynamics input",
+    gravitySource,
+    "dynamicsInputContext: DynamicsInputContext",
+  );
+  assertIncludes(
+    "Gravity route delegates production runtime input resolution",
+    gravityRouteSource,
+    "resolveGravityProductionRuntimeInput({",
+  );
+  assertIncludes(
+    "Gravity runtime input consumes the trusted origin context",
+    gravityRuntimeInputSource,
+    "lifeSourceSession.originMotherResult",
+  );
+  assertExcludes(
+    "Gravity runtime input does not read historical origin context storage",
+    gravityRuntimeInputSource,
+    "readPersistedOriginMotherContext",
+  );
   assertIncludes(
     "Dynamics input adapter prioritizes routed mother profile",
     dynamicsInputBlock,

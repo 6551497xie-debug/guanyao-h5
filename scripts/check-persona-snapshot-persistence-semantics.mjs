@@ -17,6 +17,15 @@ const paths = {
   runtimeTypes: path.join(rootDir, "src/types/gravityRuntimeInput.ts"),
   launch: path.join(rootDir, "src/pages/LaunchLab.tsx"),
   gravity: path.join(rootDir, "src/pages/GravityPage.tsx"),
+  birthCoordinateAdmission: path.join(
+    rootDir,
+    "src/services/xinmaiGenesisBirthCoordinateAdmissionController.ts",
+  ),
+  gravityRoute: path.join(rootDir, "src/pages/GravityProductionRouteEntry.tsx"),
+  gravityRuntimeInput: path.join(
+    rootDir,
+    "src/services/gravityProductionRuntimeInputAdapter.ts",
+  ),
   motherLab: path.join(rootDir, "src/pages/MotherLab.tsx"),
   fixtures: path.join(rootDir, "src/services/fixtures/changeExperienceRuntimeSmokeFixtures.ts"),
 };
@@ -299,11 +308,26 @@ try {
   assertExcludes("handoff adapter stops persona fourBeast writes", handoffSnapshotBlock, "fourBeast:");
   assertExcludes("handoff adapter stops persona direction writes", handoffSnapshotBlock, "direction:");
   assertIncludes(
-    "Launch delegates persona persistence",
-    sources.launch,
+    "Birth-coordinate admission delegates persona persistence",
+    sources.birthCoordinateAdmission,
     "writePersonaOutputSnapshot(motherHandoff.personaOutputSnapshot)",
   );
+  assertIncludes(
+    "Launch delegates birth-coordinate admission",
+    sources.launch,
+    "confirmXinmaiGenesisBirthCoordinate({",
+  );
+  assertExcludes(
+    "Launch does not invoke persona persistence",
+    sources.launch,
+    "writePersonaOutputSnapshot(",
+  );
   assertExcludes("Launch does not own persona storage key", sources.launch, "guanyao:personaOutputSnapshot");
+  assertExcludes(
+    "Birth-coordinate admission does not own persona storage key",
+    sources.birthCoordinateAdmission,
+    "guanyao:personaOutputSnapshot",
+  );
   assertIncludes("deterministic snapshot type owns formal starbeast", engineSnapshotTypeBlock, "starbeast: {");
   assertIncludes("deterministic snapshot type owns schema version", engineSnapshotTypeBlock, "schemaVersion: typeof GUANYAO_PERSONA_SNAPSHOT_SCHEMA_VERSION");
   assertExcludes("deterministic snapshot type excludes direction", engineSnapshotTypeBlock, "direction: Direction;");
@@ -323,7 +347,26 @@ try {
     sources.inputAdapter,
     "readPersistedPersonaOutputSnapshot()",
   );
-  assertIncludes("Gravity delegates input resolution", sources.gravity, "resolveDynamicsInputContext({");
+  assertIncludes(
+    "Gravity consumes typed dynamics input",
+    sources.gravity,
+    "dynamicsInputContext: DynamicsInputContext",
+  );
+  assertIncludes(
+    "Gravity route delegates production runtime input resolution",
+    sources.gravityRoute,
+    "resolveGravityProductionRuntimeInput({",
+  );
+  assertIncludes(
+    "Gravity runtime input derives the persona snapshot from trusted life-source facts",
+    sources.gravityRuntimeInput,
+    "personaOutputSnapshot: Object.freeze({",
+  );
+  assertExcludes(
+    "Gravity runtime input does not read historical persona storage",
+    sources.gravityRuntimeInput,
+    "readPersistedPersonaOutputSnapshot",
+  );
   assertExcludes("Gravity does not own persona storage key", sources.gravity, "guanyao:personaOutputSnapshot");
   assertIncludes("MotherLab consumes normalized fourSymbol", sources.motherLab, "snapshot.fourSymbol");
   assertExcludes("formal smoke fixtures exclude fourBeast", sources.fixtures, "fourBeast:");

@@ -10,8 +10,17 @@ const paths = {
   inputAdapter: path.join(rootDir, "src/services/guanyaoDynamicsInputContextAdapter.ts"),
   runtimeTypes: path.join(rootDir, "src/types/gravityRuntimeInput.ts"),
   launch: path.join(rootDir, "src/pages/LaunchLab.tsx"),
+  birthCoordinateAdmission: path.join(
+    rootDir,
+    "src/services/xinmaiGenesisBirthCoordinateAdmissionController.ts",
+  ),
   chrono: path.join(rootDir, "src/pages/ChronoPage.tsx"),
   gravity: path.join(rootDir, "src/pages/GravityPage.tsx"),
+  gravityRoute: path.join(rootDir, "src/pages/GravityProductionRouteEntry.tsx"),
+  gravityRuntimeInput: path.join(
+    rootDir,
+    "src/services/gravityProductionRuntimeInputAdapter.ts",
+  ),
   r8: path.join(rootDir, "src/adapters/guanyaoR8ReadModelAdapter.ts"),
 };
 const sources = Object.fromEntries(
@@ -144,16 +153,70 @@ try {
     'schemaVersion?: "GUANYAO_MOTHER_CODE_PROFILE_V2"',
   );
   assertIncludes(
-    "Launch delegates profile persistence",
+    "Launch delegates birth-coordinate admission",
+    sources.launch,
+    "confirmXinmaiGenesisBirthCoordinate({",
+  );
+  assertIncludes(
+    "Launch imports the typed birth-coordinate admission owner",
+    sources.launch,
+    'from "../services/xinmaiGenesisBirthCoordinateAdmissionController"',
+  );
+  assertExcludes(
+    "Launch does not invoke profile persistence",
     sources.launch,
     "writeMotherCodeProfile(motherHandoff.motherCodeProfile)",
   );
   assertExcludes("Launch does not own profile storage key", sources.launch, "guanyao:motherCodeProfile");
+  assertIncludes(
+    "Birth-coordinate admission delegates profile persistence",
+    sources.birthCoordinateAdmission,
+    "writeMotherCodeProfile(motherHandoff.motherCodeProfile)",
+  );
+  assertIncludes(
+    "Birth-coordinate admission imports the persistence adapter",
+    sources.birthCoordinateAdmission,
+    'from "./guanyaoMotherCodeProfilePersistenceAdapter"',
+  );
+  assertExcludes(
+    "Birth-coordinate admission does not own profile storage key",
+    sources.birthCoordinateAdmission,
+    "guanyao:motherCodeProfile",
+  );
   assertIncludes("Chrono delegates profile persistence", sources.chrono, "writeMotherCodeProfile(motherCodeProfile)");
   assertExcludes("Chrono does not own profile storage key", sources.chrono, "guanyao:motherCodeProfile");
   assertIncludes("Dynamics input adapter delegates profile reading", sources.inputAdapter, "readPersistedMotherCodeProfile()");
-  assertIncludes("Gravity delegates input resolution", sources.gravity, "resolveDynamicsInputContext({");
+  assertIncludes(
+    "Gravity consumes typed dynamics input",
+    sources.gravity,
+    "dynamicsInputContext: DynamicsInputContext",
+  );
   assertExcludes("Gravity does not own profile storage key", sources.gravity, "guanyao:motherCodeProfile");
+  assertIncludes(
+    "Gravity production route delegates runtime input resolution",
+    sources.gravityRoute,
+    "resolveGravityProductionRuntimeInput({",
+  );
+  assertExcludes(
+    "Gravity production route does not own profile storage key",
+    sources.gravityRoute,
+    "guanyao:motherCodeProfile",
+  );
+  assertIncludes(
+    "Gravity runtime input consumes the trusted life-source profile",
+    sources.gravityRuntimeInput,
+    "lifeSourceSession.motherCodeLandingResult.motherCodeProfile",
+  );
+  assertExcludes(
+    "Gravity runtime input does not read historical profile storage",
+    sources.gravityRuntimeInput,
+    "readPersistedMotherCodeProfile",
+  );
+  assertExcludes(
+    "Gravity runtime input does not own profile storage key",
+    sources.gravityRuntimeInput,
+    "guanyao:motherCodeProfile",
+  );
   assertIncludes("R8 delegates profile reading", sources.r8, "readPersistedMotherCodeProfile()");
   assertExcludes("R8 does not own profile storage key", sources.r8, "guanyao:motherCodeProfile");
   assertIncludes(

@@ -15,6 +15,11 @@ const paths = {
   scene: path.join(rootDir, "src/pages/ScenePage.tsx"),
   motherField: path.join(rootDir, "src/pages/MotherFieldEngine.tsx"),
   gravity: path.join(rootDir, "src/pages/GravityPage.tsx"),
+  gravityRoute: path.join(rootDir, "src/pages/GravityProductionRouteEntry.tsx"),
+  gravityRuntimeInput: path.join(
+    rootDir,
+    "src/services/gravityProductionRuntimeInputAdapter.ts",
+  ),
   r8: path.join(rootDir, "src/adapters/guanyaoR8ReadModelAdapter.ts"),
 };
 const sources = Object.fromEntries(
@@ -159,11 +164,15 @@ try {
     sources.domainTypes,
     "GUANYAO_SELECTED_PRESSURE_SEED_CONTEXT_V2",
   );
-  assertIncludes("Launch delegates context persistence", sources.launch, "writeSelectedPressureSeedContext(selectedPressureSeedContext)");
-  assertIncludes(
-    "Launch hands formal pressure context to Dynamics route",
+  assertExcludes(
+    "Launch does not invoke legacy pressure context persistence",
     sources.launch,
-    "navigate(GUANYAO_ROUTES.dynamics, { state: dynamicsHandoffState })",
+    "writeSelectedPressureSeedContext(",
+  );
+  assertExcludes(
+    "Launch does not create legacy Dynamics route state",
+    sources.launch,
+    "state: dynamicsHandoffState",
   );
   assertExcludes("Launch does not own context storage key", sources.launch, "guanyao:selectedPressureSeedContext");
   assertExcludes("Launch does not persist orphaned triple force result", sources.launch, "guanyao:tripleForceLandingResult");
@@ -193,9 +202,24 @@ try {
     "readPersistedSelectedPressureSeedContext()",
   );
   assertIncludes(
-    "Gravity delegates unknown Dynamics route state",
+    "Gravity consumes typed dynamics input",
     sources.gravity,
-    "handoffState: location.state",
+    "dynamicsInputContext: DynamicsInputContext",
+  );
+  assertIncludes(
+    "Gravity route delegates production runtime input resolution",
+    sources.gravityRoute,
+    "resolveGravityProductionRuntimeInput({",
+  );
+  assertIncludes(
+    "Gravity runtime input consumes the admitted pressure context",
+    sources.gravityRuntimeInput,
+    "admission.currentPressure.selectedPressureSeedContext",
+  );
+  assertExcludes(
+    "Gravity runtime input does not read historical pressure context storage",
+    sources.gravityRuntimeInput,
+    "readPersistedSelectedPressureSeedContext",
   );
   assertIncludes(
     "Dynamics input adapter prioritizes route pressure context",
